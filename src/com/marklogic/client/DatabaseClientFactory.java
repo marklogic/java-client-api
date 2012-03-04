@@ -7,11 +7,8 @@ public class DatabaseClientFactory {
 	    BASIC, DIGEST, NONE;
 	}
 
-	protected DatabaseClientFactory() {
-	}
-
-	static public DatabaseClientFactory newInstance() {
-		return null; // TODO
+	public DatabaseClientFactory() {
+		 // TODO
 	}
 
 	public DatabaseClient connect(String host, int port, String user, String password, Authentication type) {
