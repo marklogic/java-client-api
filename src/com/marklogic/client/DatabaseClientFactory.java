@@ -2,19 +2,18 @@ package com.marklogic.client;
 
 import javax.net.ssl.SSLContext;
 
-public class DatabaseClientFactory {
+import com.marklogic.client.iml.DatabaseClientFactoryImpl;
+
+abstract public class DatabaseClientFactory {
 	public enum Authentication {
 	    BASIC, DIGEST, NONE;
 	}
 
-	public DatabaseClientFactory() {
-		 // TODO
+	public static DatabaseClientFactory newFactory() {
+		// TODO: check properties on CLASSPATH for override before defaulting
+		return new DatabaseClientFactoryImpl();
 	}
 
-	public DatabaseClient connect(String host, int port, String user, String password, Authentication type) {
-		return null; // TODO
-	}
-	public DatabaseClient connect(String host, int port, String user, String password, SSLContext context) {
-		return null; // TODO
-	}
+	abstract public DatabaseClient connect(String host, int port, String user, String password, Authentication type);
+	abstract public DatabaseClient connect(String host, int port, String user, String password, SSLContext context);
 }
