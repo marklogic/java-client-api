@@ -4,6 +4,5 @@ import javax.xml.transform.Source;
 
 import com.marklogic.client.abstractio.XMLReadHandle;
 
-public interface SourceHandle extends XMLReadHandle {
-    public Source get();
+public interface SourceHandle extends XMLReadHandle<Source> {
 }

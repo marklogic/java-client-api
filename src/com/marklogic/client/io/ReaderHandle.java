@@ -6,7 +6,6 @@ import com.marklogic.client.abstractio.JSONReadWriteHandle;
 import com.marklogic.client.abstractio.TextReadWriteHandle;
 import com.marklogic.client.abstractio.XMLReadWriteHandle;
 
-public interface ReaderHandle extends JSONReadWriteHandle, TextReadWriteHandle, XMLReadWriteHandle {
-    public Reader get();
+public interface ReaderHandle extends JSONReadWriteHandle<Reader>, TextReadWriteHandle<Reader>, XMLReadWriteHandle<Reader> {
     public ReaderHandle on(Reader content);
 }

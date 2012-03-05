@@ -8,7 +8,6 @@ import com.marklogic.client.abstractio.GenericReadWriteHandle;
 import com.marklogic.client.abstractio.TextReadWriteHandle;
 import com.marklogic.client.abstractio.XMLReadWriteHandle;
 
-public interface InputStreamHandle extends GenericReadWriteHandle, BinaryReadWriteHandle, JSONReadWriteHandle, TextReadWriteHandle, XMLReadWriteHandle {
-	public InputStream get();
+public interface InputStreamHandle extends GenericReadWriteHandle<InputStream>, BinaryReadWriteHandle<InputStream>, JSONReadWriteHandle<InputStream>, TextReadWriteHandle<InputStream>, XMLReadWriteHandle<InputStream> {
     public InputStreamHandle on(InputStream content);
 }

@@ -1,5 +1,5 @@
 package com.marklogic.client.abstractio;
 
-public interface BinaryReadWriteHandle extends BinaryReadHandle, BinaryWriteHandle {
+public interface BinaryReadWriteHandle<C> extends BinaryReadHandle<C>, BinaryWriteHandle<C> {
 
 }

@@ -1,5 +1,5 @@
 package com.marklogic.client.abstractio;
 
-public interface JSONReadHandle extends JSONContentHandle, AbstractReadHandle {
+public interface JSONReadHandle<C> extends JSONContentHandle<C>, AbstractReadHandle<C> {
 
 }

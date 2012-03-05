@@ -1,5 +1,5 @@
 package com.marklogic.client.abstractio;
 
-public interface XMLReadHandle extends XMLContentHandle, AbstractReadHandle {
+public interface XMLReadHandle<C> extends XMLContentHandle<C>, AbstractReadHandle<C> {
 
 }
