@@ -13,7 +13,7 @@ import com.marklogic.client.TextDocument;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.XMLDocument;
 
-public class DatabaseClientImpl implements DatabaseClient {
+class DatabaseClientImpl implements DatabaseClient {
 	private RESTServices services;
 
 	DatabaseClientImpl(RESTServices services) {
@@ -31,8 +31,7 @@ public class DatabaseClientImpl implements DatabaseClient {
 	}
 
 	public BinaryDocument newBinaryDocument(String uri) {
-		// TODO Auto-generated method stub
-		return null;
+		return new BinaryDocumentImpl(services, uri);
 	}
 
 	public JSONDocument newJSONDocument(String uri) {
@@ -41,13 +40,11 @@ public class DatabaseClientImpl implements DatabaseClient {
 	}
 
 	public TextDocument newTextDocument(String uri) {
-		// TODO Auto-generated method stub
-		return null;
+		return new TextDocumentImpl(services, uri);
 	}
 
 	public XMLDocument newXMLDocument(String uri) {
-		// TODO Auto-generated method stub
-		return null;
+		return new XMLDocumentImpl(services, uri);
 	}
 
 	public RequestLogger newLogger(OutputStream out) {
@@ -66,6 +63,13 @@ public class DatabaseClientImpl implements DatabaseClient {
 	}
 
 	public void release() {
-		// TODO Auto-generated method stub
+		if (services != null)
+			services.release();
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		release();
+		super.finalize();
 	}
 }
