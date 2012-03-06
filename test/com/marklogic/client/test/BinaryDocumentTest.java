@@ -24,14 +24,6 @@ public class BinaryDocumentTest {
 		doc = null;
 	}
 
-	@Test
-	public void testNewHandle() {
-		BytesHandle bytesHandle = doc.newHandle(BytesHandle.class);
-		assertNotNull("Binary document could not create bytes handle", bytesHandle);
-		InputStreamHandle inputStreamHandle = doc.newHandle(InputStreamHandle.class);
-		assertNotNull("Binary document could not create input stream handle", inputStreamHandle);
-	}
-
 /*
 	@Test
 	public void testExists() {
@@ -41,11 +33,11 @@ public class BinaryDocumentTest {
 
 	@Test
 	public void testReadClassOfTMetadataArray() throws IOException {
-		BytesHandle bytesHandle = doc.read(BytesHandle.class);
-		assertTrue("Binary document read null bytes handle", bytesHandle != null);
+		BytesHandle bytesHandle = new BytesHandle();
+		doc.read(bytesHandle);
 		assertTrue("Binary document read 0 bytes", bytesHandle.get().length > 0);
-		InputStreamHandle inputStreamHandle = doc.read(InputStreamHandle.class);
-		assertNotNull("Binary document read null input stream handle",inputStreamHandle);
+		InputStreamHandle inputStreamHandle = new InputStreamHandle();
+		doc.read(inputStreamHandle);
 		byte[] b = Common.streamToBytes(inputStreamHandle.get());
 		assertTrue("Binary document read binary empty input stream",b.length > 0);
 	}
