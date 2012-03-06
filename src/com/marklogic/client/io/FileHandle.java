@@ -2,12 +2,44 @@ package com.marklogic.client.io;
 
 import java.io.File;
 
-import com.marklogic.client.abstractio.BinaryReadWriteHandle;
-import com.marklogic.client.abstractio.JSONReadWriteHandle;
-import com.marklogic.client.abstractio.GenericReadWriteHandle;
-import com.marklogic.client.abstractio.TextReadWriteHandle;
-import com.marklogic.client.abstractio.XMLReadWriteHandle;
+import com.marklogic.client.docio.BinaryReadHandle;
+import com.marklogic.client.docio.BinaryWriteHandle;
+import com.marklogic.client.docio.GenericReadHandle;
+import com.marklogic.client.docio.GenericWriteHandle;
+import com.marklogic.client.docio.JSONReadHandle;
+import com.marklogic.client.docio.JSONWriteHandle;
+import com.marklogic.client.docio.TextReadHandle;
+import com.marklogic.client.docio.TextWriteHandle;
+import com.marklogic.client.docio.XMLReadHandle;
+import com.marklogic.client.docio.XMLWriteHandle;
 
-public interface FileHandle extends GenericReadWriteHandle<File>, BinaryReadWriteHandle<File>, JSONReadWriteHandle<File>, TextReadWriteHandle<File>, XMLReadWriteHandle<File> {
-    public FileHandle on(File content);
+public class FileHandle
+	implements
+		BinaryReadHandle<File>, BinaryWriteHandle<File>,
+		GenericReadHandle<File>, GenericWriteHandle<File>,
+		JSONReadHandle<File>, JSONWriteHandle<File>, 
+		TextReadHandle<File>, TextWriteHandle<File>,
+		XMLReadHandle<File>, XMLWriteHandle<File>
+{
+	public FileHandle() {
+	}
+
+	private File content;
+	public File get() {
+		return content;
+	}
+
+	public void set(File content) {
+		this.content = content;
+	}
+
+	public Class<File> receiveAs() {
+		return File.class;
+	}
+	public void receiveContent(File content) {
+		this.content = content;
+	}
+	public File sendContent() {
+		return content;
+	}
 }

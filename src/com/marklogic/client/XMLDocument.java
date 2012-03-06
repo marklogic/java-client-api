@@ -1,10 +1,9 @@
 package com.marklogic.client;
 
-import com.marklogic.client.abstractio.XMLContentHandle;
-import com.marklogic.client.abstractio.XMLReadHandle;
-import com.marklogic.client.abstractio.XMLWriteHandle;
+import com.marklogic.client.docio.XMLReadHandle;
+import com.marklogic.client.docio.XMLWriteHandle;
 
-public interface XMLDocument extends AbstractDocument<XMLContentHandle, XMLReadHandle, XMLWriteHandle> {
+public interface XMLDocument extends AbstractDocument<XMLReadHandle, XMLWriteHandle> {
     public enum DocumentRepair {
         FULL, NONE;
     }

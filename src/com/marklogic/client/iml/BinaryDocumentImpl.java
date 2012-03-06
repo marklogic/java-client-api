@@ -2,26 +2,25 @@ package com.marklogic.client.iml;
 
 import com.marklogic.client.BinaryDocument;
 import com.marklogic.client.Transaction;
-import com.marklogic.client.abstractio.BinaryContentHandle;
-import com.marklogic.client.abstractio.BinaryReadHandle;
-import com.marklogic.client.abstractio.BinaryWriteHandle;
+import com.marklogic.client.docio.BinaryReadHandle;
+import com.marklogic.client.docio.BinaryWriteHandle;
 
 class BinaryDocumentImpl
-	extends AbstractDocumentImpl<BinaryContentHandle, BinaryReadHandle, BinaryWriteHandle>
+	extends AbstractDocumentImpl<BinaryReadHandle, BinaryWriteHandle>
 	implements BinaryDocument
 {
 	BinaryDocumentImpl(RESTServices services, String uri) {
 		super(services, uri);
 	}
 
-	public <T extends BinaryReadHandle> T read(Class<T> as, long start, long length, Metadata... categories) {
+	public BinaryReadHandle read(BinaryReadHandle handle, long start, long length, Metadata... categories) {
 		// TODO Auto-generated method stub
-		return null;
+		return handle;
 	}
 
-	public <T extends BinaryReadHandle> T read(Class<T> as, long start, long length, Transaction transaction, Metadata... categories) {
+	public BinaryReadHandle read(BinaryReadHandle handle, long start, long length, Transaction transaction, Metadata... categories) {
 		// TODO Auto-generated method stub
-		return null;
+		return handle;
 	}
 
 	private MetadataExtraction metadataExtraction = MetadataExtraction.NONE;

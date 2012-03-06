@@ -1,12 +1,11 @@
 package com.marklogic.client.iml;
 
 import com.marklogic.client.XMLDocument;
-import com.marklogic.client.abstractio.XMLContentHandle;
-import com.marklogic.client.abstractio.XMLReadHandle;
-import com.marklogic.client.abstractio.XMLWriteHandle;
+import com.marklogic.client.docio.XMLReadHandle;
+import com.marklogic.client.docio.XMLWriteHandle;
 
 class XMLDocumentImpl
-    extends AbstractDocumentImpl<XMLContentHandle, XMLReadHandle, XMLWriteHandle>
+    extends AbstractDocumentImpl<XMLReadHandle, XMLWriteHandle>
     implements XMLDocument
 {
 

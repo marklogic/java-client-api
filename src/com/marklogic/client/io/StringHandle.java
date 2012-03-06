@@ -1,9 +1,36 @@
 package com.marklogic.client.io;
 
-import com.marklogic.client.abstractio.JSONReadWriteHandle;
-import com.marklogic.client.abstractio.TextReadWriteHandle;
-import com.marklogic.client.abstractio.XMLReadWriteHandle;
+import com.marklogic.client.docio.JSONReadHandle;
+import com.marklogic.client.docio.JSONWriteHandle;
+import com.marklogic.client.docio.TextReadHandle;
+import com.marklogic.client.docio.TextWriteHandle;
+import com.marklogic.client.docio.XMLReadHandle;
+import com.marklogic.client.docio.XMLWriteHandle;
 
-public interface StringHandle extends JSONReadWriteHandle<String>, TextReadWriteHandle<String>, XMLReadWriteHandle<String> {
-    public StringHandle on(String content);
+public class StringHandle
+	implements
+		JSONReadHandle<String>, JSONWriteHandle<String>, 
+		TextReadHandle<String>, TextWriteHandle<String>,
+		XMLReadHandle<String>, XMLWriteHandle<String>
+{
+	public StringHandle() {
+	}
+
+	private String content;
+	public String get() {
+		return content;
+	}
+	public void set(String content) {
+		this.content = content;
+	}
+
+	public Class<String> receiveAs() {
+		return String.class;
+	}
+	public void receiveContent(String content) {
+		this.content = content;
+	}
+	public String sendContent() {
+		return content;
+	}
 }

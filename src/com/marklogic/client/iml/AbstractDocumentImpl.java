@@ -6,16 +6,12 @@ import com.marklogic.client.DocumentPermissions;
 import com.marklogic.client.DocumentProperties;
 import com.marklogic.client.RequestLogger;
 import com.marklogic.client.Transaction;
-import com.marklogic.client.abstractio.AbstractContentHandle;
-import com.marklogic.client.abstractio.AbstractReadHandle;
-import com.marklogic.client.abstractio.AbstractWriteHandle;
-import com.marklogic.client.iml.io.BytesHandleImpl;
-import com.marklogic.client.iml.io.InputStreamHandleImpl;
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.AbstractDocument.Metadata;
+import com.marklogic.client.docio.AbstractReadHandle;
+import com.marklogic.client.docio.AbstractWriteHandle;
 
-abstract class AbstractDocumentImpl<N extends AbstractContentHandle, R extends AbstractReadHandle, W extends AbstractWriteHandle>
-	implements AbstractDocument<N, R, W>
+abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends AbstractWriteHandle>
+	implements AbstractDocument<R, W>
 {
 	private RESTServices services;
 
@@ -24,43 +20,23 @@ abstract class AbstractDocumentImpl<N extends AbstractContentHandle, R extends A
 		setUri(uri);
 	}
 
-	public <T extends N> T newHandle(Class<T> as) {
-		return makeHandle(as);
-	}
-	private <T> T makeHandle(Class<T> as) {
-		if (as == BytesHandle.class)
-			return (T) new BytesHandleImpl();
-		if (as == InputStreamHandle.class)
-			return (T) new InputStreamHandleImpl();
-		try {
-			return (T) as.newInstance();
-		} catch (InstantiationException e) {
-			// TODO: log exception
-			throw new RuntimeException(e);
-		} catch (IllegalAccessException e) {
-			// TODO: log exception
-			throw new RuntimeException(e);
-		}
-	}
-
 	public boolean exists() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	public <T extends R> T read(Class<T> handleAs, Metadata... categories) {
+	public R read(R handle, Metadata... categories) {
 		/* TODO:
 		   check that uri exists
 		   after response, reset metadata and set flag
 		 */
-		T handle = makeHandle(handleAs);
-		handle.set(services.get(handle.handles(), uri, getMimetype(), categories));
+		handle.receiveContent(services.get(handle.receiveAs(), uri, getMimetype(), categories));
 		return handle;
 	}
 
-	public <T extends R> T read(Class<T> handleAs, Transaction transaction, Metadata... categories) {
+	public R read(R handle, Transaction transaction, Metadata... categories) {
 		// TODO Auto-generated method stub
-		return null;
+		return handle;
 	}
 
 	public void write(W handle) {
@@ -76,6 +52,20 @@ abstract class AbstractDocumentImpl<N extends AbstractContentHandle, R extends A
 	public void delete(Transaction transaction) {
 		// TODO Auto-generated method stub
 	}
+
+    public void readMetadata(Metadata... categories) {
+		// TODO Auto-generated method stub
+    }
+    public void readMetadata(Transaction transaction, Metadata... categories) {
+		// TODO Auto-generated method stub
+    }
+
+    public void writeMetadata() {
+		// TODO Auto-generated method stub
+    }
+    public void writeMetadata(Transaction transaction) {
+		// TODO Auto-generated method stub
+    }
 
 	private String uri;
 	public String getUri() {

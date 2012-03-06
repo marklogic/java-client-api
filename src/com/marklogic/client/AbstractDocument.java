@@ -1,27 +1,29 @@
 package com.marklogic.client;
 
-import com.marklogic.client.abstractio.AbstractContentHandle;
-import com.marklogic.client.abstractio.AbstractReadHandle;
-import com.marklogic.client.abstractio.AbstractWriteHandle;
+import com.marklogic.client.docio.AbstractReadHandle;
+import com.marklogic.client.docio.AbstractWriteHandle;
 
-public interface AbstractDocument<N extends AbstractContentHandle, R extends AbstractReadHandle, W extends AbstractWriteHandle> {
+public interface AbstractDocument<R extends AbstractReadHandle, W extends AbstractWriteHandle> {
     public enum Metadata {
         ALL, COLLECTIONS, PERMISSIONS, PROPERTIES, QUALITY, NONE;
     }
 
-    // factory method for content handles
-    public <T extends N> T newHandle(Class<T> as);
- 
     public boolean exists();
  
     // content with optional metadata
-    public <T extends R> T read(Class<T> handleAs, Metadata... categories);
-    public <T extends R> T read(Class<T> handleAs, Transaction transaction, Metadata... categories);
+    public R read(R handle, Metadata... categories);
+    public R read(R handle, Transaction transaction, Metadata... categories);
     public void write(W handle);
     public void write(W handle, Transaction transaction);
     public void delete();
     public void delete(Transaction transaction);
- 
+
+    // metadata only
+    public void readMetadata(Metadata... categories);
+    public void readMetadata(Transaction transaction, Metadata... categories);
+    public void writeMetadata();
+    public void writeMetadata(Transaction transaction);
+
     // properties of the document including metadata but not content
     public String getUri();
     public void setUri(String uri);
