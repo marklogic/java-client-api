@@ -20,6 +20,10 @@ public class JAXBHandle implements XMLReadHandle<Object>, XMLWriteHandle<Object>
     public void set(Object content) {
     	this.content = content;
     }
+    public JAXBHandle on(Object content) {
+    	set(content);
+    	return this;
+    }
 
     public Class<Object> receiveAs() {
 		return Object.class;

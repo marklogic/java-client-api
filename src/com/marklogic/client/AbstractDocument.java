@@ -11,8 +11,8 @@ public interface AbstractDocument<R extends AbstractReadHandle, W extends Abstra
     public boolean exists();
  
     // content with optional metadata
-    public R read(R handle, Metadata... categories);
-    public R read(R handle, Transaction transaction, Metadata... categories);
+    public <T extends R> T read(T handle, Metadata... categories);
+    public <T extends R> T read(T handle, Transaction transaction, Metadata... categories);
     public void write(W handle);
     public void write(W handle, Transaction transaction);
     public void delete();

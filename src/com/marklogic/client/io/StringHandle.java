@@ -23,6 +23,10 @@ public class StringHandle
 	public void set(String content) {
 		this.content = content;
 	}
+	public StringHandle on(String content) {
+		set(content);
+		return this;
+	}
 
 	public Class<String> receiveAs() {
 		return String.class;

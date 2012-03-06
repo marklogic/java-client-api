@@ -28,6 +28,10 @@ public class DOMHandle
     public void set(Document content) {
     	this.content = content;
     }
+    public DOMHandle on(Document content) {
+    	set(content);
+    	return this;
+    }
 
 	public Class<InputStream> receiveAs() {
 		return InputStream.class;

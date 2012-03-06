@@ -31,6 +31,10 @@ public class InputStreamHandle
 	public void set(InputStream content) {
 		this.content = content;
 	}
+	public InputStreamHandle on(InputStream content) {
+		set(content);
+		return this;
+	}
 
 	public Class<InputStream> receiveAs() {
 		return InputStream.class;

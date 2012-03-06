@@ -13,12 +13,12 @@ class BinaryDocumentImpl
 		super(services, uri);
 	}
 
-	public BinaryReadHandle read(BinaryReadHandle handle, long start, long length, Metadata... categories) {
+	public <T extends BinaryReadHandle> T read(T handle, long start, long length, Metadata... categories) {
 		// TODO Auto-generated method stub
 		return handle;
 	}
 
-	public BinaryReadHandle read(BinaryReadHandle handle, long start, long length, Transaction transaction, Metadata... categories) {
+	public <T extends BinaryReadHandle> T read(T handle, long start, long length, Transaction transaction, Metadata... categories) {
 		// TODO Auto-generated method stub
 		return handle;
 	}

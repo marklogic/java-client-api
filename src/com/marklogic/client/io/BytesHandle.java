@@ -29,6 +29,10 @@ public class BytesHandle
 	public void set(byte[] content) {
 		this.content = content;
 	}
+	public BytesHandle on(byte[] content) {
+		set(content);
+		return this;
+	}
 
 	public Class<byte[]> receiveAs() {
 		return byte[].class;

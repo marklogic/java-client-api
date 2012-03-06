@@ -28,9 +28,12 @@ public class FileHandle
 	public File get() {
 		return content;
 	}
-
 	public void set(File content) {
 		this.content = content;
+	}
+	public FileHandle on(File content) {
+		set(content);
+    	return this;
 	}
 
 	public Class<File> receiveAs() {

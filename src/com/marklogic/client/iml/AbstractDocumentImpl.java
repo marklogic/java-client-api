@@ -25,7 +25,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		return false;
 	}
 
-	public R read(R handle, Metadata... categories) {
+	public <T extends R> T read(T handle, Metadata... categories) {
 		/* TODO:
 		   check that uri exists
 		   after response, reset metadata and set flag
@@ -34,7 +34,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		return handle;
 	}
 
-	public R read(R handle, Transaction transaction, Metadata... categories) {
+	public <T extends R> T read(T handle, Transaction transaction, Metadata... categories) {
 		// TODO Auto-generated method stub
 		return handle;
 	}

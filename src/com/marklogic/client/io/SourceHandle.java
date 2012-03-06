@@ -12,6 +12,7 @@ public class SourceHandle implements XMLReadHandle<Source> {
 	public Source get() {
 		return content;
 	}
+
 	public Class<Source> receiveAs() {
 		return Source.class;
 	}

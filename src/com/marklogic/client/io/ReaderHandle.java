@@ -25,6 +25,10 @@ public class ReaderHandle
 	public void set(Reader content) {
 		this.content = content;
 	}
+	public ReaderHandle on(Reader content) {
+		set(content);
+		return this;
+	}
 
 	public Class<Reader> receiveAs() {
 		return Reader.class;
