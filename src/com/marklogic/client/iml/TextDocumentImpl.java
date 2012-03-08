@@ -10,5 +10,6 @@ class TextDocumentImpl
 {
 	TextDocumentImpl(RESTServices services, String uri) {
 		super(services, uri);
+		setMimetype("text/plain");
 	}
 }

@@ -11,6 +11,7 @@ class XMLDocumentImpl
 
 	XMLDocumentImpl(RESTServices services, String uri) {
 		super(services, uri);
+		setMimetype("application/xml");
 	}
 
 	private DocumentRepair repair;

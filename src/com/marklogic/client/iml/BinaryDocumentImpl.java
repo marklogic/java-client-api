@@ -11,6 +11,7 @@ class BinaryDocumentImpl
 {
 	BinaryDocumentImpl(RESTServices services, String uri) {
 		super(services, uri);
+		setMimetype("application/xml");
 	}
 
 	public <T extends BinaryReadHandle> T read(T handle, long start, long length, Metadata... categories) {

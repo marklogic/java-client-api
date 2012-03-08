@@ -2,6 +2,7 @@ package com.marklogic.client;
 
 import java.util.Map;
 
-public interface DocumentProperties extends Map<String,String> {
+// The value must be a boxed primitive such as Boolean, Date, Number, or String
+public interface DocumentProperties extends Map<String,Object> {
 
 }
