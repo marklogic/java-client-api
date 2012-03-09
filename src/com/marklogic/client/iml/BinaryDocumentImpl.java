@@ -11,12 +11,11 @@ class BinaryDocumentImpl
 {
 	BinaryDocumentImpl(RESTServices services, String uri) {
 		super(services, uri);
-		setMimetype("application/xml");
+		setMimetype("application/x-unknown-content-type");
 	}
 
 	public <T extends BinaryReadHandle> T read(T handle, long start, long length, Metadata... categories) {
-		// TODO Auto-generated method stub
-		return handle;
+		return read(handle, start, length, null, categories);
 	}
 
 	public <T extends BinaryReadHandle> T read(T handle, long start, long length, Transaction transaction, Metadata... categories) {

@@ -39,36 +39,36 @@ public class JerseyServices implements RESTServices {
 		client.destroy();
 	}
 
-	public void delete(String uri) {
-		ClientResponse response = makeDocumentResource(uri, null).delete(ClientResponse.class);
+	public void delete(String uri, String transactionId) {
+		ClientResponse response = makeDocumentResource(uri, null, transactionId).delete(ClientResponse.class);
 		// TODO: more fine-grained inspection of response status
 		if (response.getClientResponseStatus() != ClientResponse.Status.OK)
 			throw new RuntimeException("delete failed "+response.getClientResponseStatus());
 	}
 // TODO: use to verify existence and get format
-	public void head(String uri) {
-		ClientResponse response = makeDocumentResource(uri, null).head();
+	public void head(String uri, String transactionId) {
+		ClientResponse response = makeDocumentResource(uri, null, transactionId).head();
 		// TODO: more fine-grained inspection of response status
 		if (response.getClientResponseStatus() != ClientResponse.Status.OK)
 			throw new RuntimeException("delete failed "+response.getClientResponseStatus());
 	}
-	public <T> T get(Class<T> as, String uri, String mimetype, Set<Metadata> categories) {
+	public <T> T get(Class<T> as, String uri, String mimetype, Set<Metadata> categories, String transactionId) {
 		ClientResponse response =
-			makeDocumentResource(uri, categories).accept(mimetype).get(ClientResponse.class);
+			makeDocumentResource(uri, categories, transactionId).accept(mimetype).get(ClientResponse.class);
 		// TODO: more fine-grained inspection of response status
 		if (response.getClientResponseStatus() != ClientResponse.Status.OK)
 			throw new RuntimeException("read failed "+response.getClientResponseStatus());
 		return response.getEntity(as);
 	}
-	public void put(String uri, String mimetype, Object value, Set<Metadata> categories) {
+	public void put(String uri, String mimetype, Object value, Set<Metadata> categories, String transactionId) {
 		ClientResponse response =
-			makeDocumentResource(uri, categories).type(mimetype).put(ClientResponse.class, value);
+			makeDocumentResource(uri, categories, transactionId).type(mimetype).put(ClientResponse.class, value);
 		// TODO: more fine-grained inspection of response status
 		if (response.getClientResponseStatus() != ClientResponse.Status.OK)
 			throw new RuntimeException("write failed "+response.getClientResponseStatus());
 	}
 
-	private WebResource makeDocumentResource(String uri, Set<Metadata> categories) {
+	private WebResource makeDocumentResource(String uri, Set<Metadata> categories, String transactionId) {
 		MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
 		queryParams.add("uri", uri);
 		if (categories == null || categories.size() == 0)
@@ -76,6 +76,8 @@ public class JerseyServices implements RESTServices {
 		else
 			for (Metadata category: categories)
 				queryParams.add("category", category.name().toLowerCase());
+		if (transactionId != null)
+			queryParams.add("txid", transactionId);
 		return connection.path("documents").queryParams(queryParams);
 	}
 }

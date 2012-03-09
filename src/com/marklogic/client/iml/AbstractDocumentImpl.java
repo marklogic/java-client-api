@@ -47,56 +47,55 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
     }
 
 	public boolean exists() {
-		// TODO Auto-generated method stub
+		// TODO: head request setting length and mimetype
 		return false;
 	}
 
 	public <T extends R> T read(T handle) {
+		return read(handle, null);
+	}
+
+	public <T extends R> T read(T handle, Transaction transaction) {
 		/* TODO:
-		   check that uri exists
 		   after response, reset metadata and set flag
 		 */
 		handle.receiveContent(
-				services.get(handle.receiveAs(), uri, getMimetype(),processedMetadata)
+				services.get(handle.receiveAs(), uri, getMimetype(), processedMetadata,
+						(transaction == null) ? null : transaction.getTransactionId())
 				);
 		return handle;
 	}
 
-	public <T extends R> T read(T handle, Transaction transaction) {
-		// TODO Auto-generated method stub
-		return handle;
-	}
-
 	public void write(W handle) {
-		// TODO Auto-generated method stub
+		write(handle, null);
 	}
 	public void write(W handle, Transaction transaction) {
 		// TODO Auto-generated method stub
 	}
 
 	public void delete() {
-		// TODO Auto-generated method stub
+		delete(null);
 	}
 	public void delete(Transaction transaction) {
 		// TODO Auto-generated method stub
 	}
 
     public void readMetadata() {
-		// TODO Auto-generated method stub
+		readMetadata(null);
     }
     public void readMetadata(Transaction transaction) {
 		// TODO Auto-generated method stub
     }
 
     public void writeMetadata() {
-		// TODO Auto-generated method stub
+		writeMetadata(null);
     }
     public void writeMetadata(Transaction transaction) {
 		// TODO Auto-generated method stub
     }
 
     public void resetMetadata() {
-		// TODO Auto-generated method stub
+		resetMetadata(null);
     }
     public void resetMetadata(Transaction transaction) {
 		// TODO Auto-generated method stub
