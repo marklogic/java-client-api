@@ -16,8 +16,7 @@ public class Common {
 
 	static DatabaseClient client;
 	static void connect() {
-		DatabaseClientFactory factory = DatabaseClientFactory.newFactory();
-		client = factory.connect(
+		client = DatabaseClientFactory.connect(
 			Common.HOST, Common.PORT, Common.USERNAME, Common.PASSWORD, Authentication.DIGEST
 			);
 	}

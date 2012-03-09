@@ -13,10 +13,10 @@ import com.marklogic.client.TextDocument;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.XMLDocument;
 
-class DatabaseClientImpl implements DatabaseClient {
+public class DatabaseClientImpl implements DatabaseClient {
 	private RESTServices services;
 
-	DatabaseClientImpl(RESTServices services) {
+	public DatabaseClientImpl(RESTServices services) {
 		this.services = services;
 	}
 

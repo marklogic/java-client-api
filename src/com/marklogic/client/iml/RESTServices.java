@@ -5,7 +5,7 @@ import java.util.Set;
 import com.marklogic.client.AbstractDocument.Metadata;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 
-interface RESTServices {
+public interface RESTServices {
 	public void connect(String host, int port, String user, String password, Authentication type);
 	public void release();
 

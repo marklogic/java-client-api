@@ -16,11 +16,11 @@ import com.sun.jersey.api.client.filter.HTTPDigestAuthFilter;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
-class JerseyServices implements RESTServices {
+public class JerseyServices implements RESTServices {
 	private Client client;
 	private WebResource connection;
 
-	JerseyServices () {
+	public JerseyServices () {
 	}
 
 	public void connect(String host, int port, String user, String password, Authentication type) {
