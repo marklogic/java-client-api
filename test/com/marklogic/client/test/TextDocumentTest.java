@@ -1,37 +1,21 @@
 package com.marklogic.client.test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.marklogic.client.TextDocument;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.StringHandle;
 
 public class TextDocumentTest {
-	private TextDocument doc;
-	@Before
-	public void setup() {
-		doc = Common.client.newTextDocument("/sample/second.txt");
-	}
-	@After
-	public void teardown() {
-		doc = null;
-	}
-
-/*
-	@Test
-	public void testExists() {
-		fail("Not yet implemented");
-	}
- */
-
 	@Test
 	public void testReadClassOfTMetadataArray() throws IOException {
+		TextDocument doc = Common.client.newTextDocument("/sample/second.txt");
 		BytesHandle bytesHandle = new BytesHandle();
 		doc.read(bytesHandle);
 		assertTrue("Text document read 0 bytes", bytesHandle.get().length > 0);
@@ -46,24 +30,22 @@ public class TextDocumentTest {
 	public void testReadClassOfTTransactionMetadataArray() {
 		fail("Not yet implemented");
 	}
+ */
 
 	@Test
 	public void testWriteW() {
-		fail("Not yet implemented");
+		String uri = "/test/testWrite1.txt";
+		String text = "A simple text document";
+		TextDocument doc = Common.client.newTextDocument(uri);
+		StringHandle stringHandle = new StringHandle();
+		stringHandle.set(text);
+		doc.write(stringHandle);
+		assertEquals("Text document write difference",text,doc.read(new StringHandle()).get());
 	}
 
+/*
 	@Test
 	public void testWriteWTransaction() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testDelete() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testDeleteTransaction() {
 		fail("Not yet implemented");
 	}
  */

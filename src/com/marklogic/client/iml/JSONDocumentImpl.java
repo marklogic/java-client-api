@@ -20,7 +20,7 @@ public class JSONDocumentImpl
 {
 	JSONDocumentImpl(RESTServices services, String uri) {
 		super(services, uri);
-		setMimetype("application/xml");
+		setMimetype("application/json");
 	}
 
 	private String language;

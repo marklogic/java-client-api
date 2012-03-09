@@ -60,7 +60,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		   after response, reset metadata and set flag
 		 */
 		handle.receiveContent(
-				services.get(handle.receiveAs(), uri, getMimetype(), processedMetadata,
+				services.get(handle.receiveAs(), uri, mimetype, processedMetadata,
 						(transaction == null) ? null : transaction.getTransactionId())
 				);
 		return handle;
@@ -70,14 +70,15 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		write(handle, null);
 	}
 	public void write(W handle, Transaction transaction) {
-		// TODO Auto-generated method stub
+		services.put(uri, mimetype, handle.sendContent(), processedMetadata,
+				(transaction == null) ? null : transaction.getTransactionId());
 	}
 
 	public void delete() {
 		delete(null);
 	}
 	public void delete(Transaction transaction) {
-		// TODO Auto-generated method stub
+		services.delete(uri, (transaction == null) ? null : transaction.getTransactionId());
 	}
 
     public void readMetadata() {

@@ -64,7 +64,8 @@ public class JerseyServices implements RESTServices {
 		ClientResponse response =
 			makeDocumentResource(uri, categories, transactionId).type(mimetype).put(ClientResponse.class, value);
 		// TODO: more fine-grained inspection of response status
-		if (response.getClientResponseStatus() != ClientResponse.Status.OK)
+		ClientResponse.Status status = response.getClientResponseStatus();
+		if (status != ClientResponse.Status.CREATED && status != ClientResponse.Status.NO_CONTENT)
 			throw new RuntimeException("write failed "+response.getClientResponseStatus());
 	}
 

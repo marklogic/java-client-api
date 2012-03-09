@@ -10,7 +10,8 @@ import org.junit.runners.Suite;
 	DatabaseClientFactoryTest.class,
 	DatabaseClientTest.class,
 	BinaryDocumentTest.class,
-	TextDocumentTest.class
+	TextDocumentTest.class,
+	XMLDocumentTest.class
 	})
 public class AllClientTests {
 	@BeforeClass
