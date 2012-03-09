@@ -47,7 +47,12 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
     }
 
 	public boolean exists() {
-		// TODO: head request setting length and mimetype
+		return exists(null);
+    }
+
+	public boolean exists(Transaction transaction) {
+		services.head(uri, (transaction == null) ? null : transaction.getTransactionId());
+		// TODO: length and mimetype
 		return false;
 	}
 
@@ -56,9 +61,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 	}
 
 	public <T extends R> T read(T handle, Transaction transaction) {
-		/* TODO:
-		   after response, reset metadata and set flag
-		 */
+		// TODO: after response, reset metadata and set flag
 		handle.receiveContent(
 				services.get(handle.receiveAs(), uri, mimetype, processedMetadata,
 						(transaction == null) ? null : transaction.getTransactionId())

@@ -14,23 +14,10 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.StringHandle;
 
 public class XMLDocumentTest {
-	@Test
-	public void testReadT() {
-		XMLDocument doc = Common.client.newXMLDocument("/sample/first.xml");
-		DOMHandle domHandle = new DOMHandle();
-		Document domDocument = doc.read(domHandle).get();
-		assertTrue("Failed to read DOM document", domDocument != null && domDocument.getDocumentElement() != null);
-	}
-
-/*
-	@Test
-	public void testReadTTransaction() {
-		fail("Not yet implemented");
-	}
- */
+	// TODO: test Source reader, SAX handler, StAX stream reader, StAX event reader, JAXB reader and writer 
 
 	@Test
-	public void testWriteW() throws ParserConfigurationException {
+	public void testReadWrite() throws ParserConfigurationException {
 		String uri = "/test/testWrite1.xml";
 		Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		Element root = domDocument.createElement("root");
@@ -41,13 +28,8 @@ public class XMLDocumentTest {
 		XMLDocument doc = Common.client.newXMLDocument(uri);
 		doc.write(new DOMHandle().on(domDocument));
 		String docText = doc.read(new StringHandle()).get();
-		assertTrue("Failed to write DOM document", docText != null && docText.length() > 0);
+		assertTrue("Failed to read XML document asString", docText != null && docText.length() > 0);
+		domDocument = doc.read(new DOMHandle()).get();
+		assertTrue("Failed to read XML document with DOM", domDocument != null && domDocument.getDocumentElement() != null);
 	}
-
-/*
-	@Test
-	public void testWriteWTransaction() {
-		fail("Not yet implemented");
-	}
- */
 }

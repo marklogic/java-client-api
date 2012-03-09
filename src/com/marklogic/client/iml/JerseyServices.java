@@ -42,7 +42,7 @@ public class JerseyServices implements RESTServices {
 	public void delete(String uri, String transactionId) {
 		ClientResponse response = makeDocumentResource(uri, null, transactionId).delete(ClientResponse.class);
 		// TODO: more fine-grained inspection of response status
-		if (response.getClientResponseStatus() != ClientResponse.Status.OK)
+		if (response.getClientResponseStatus() != ClientResponse.Status.NO_CONTENT)
 			throw new RuntimeException("delete failed "+response.getClientResponseStatus());
 	}
 // TODO: use to verify existence and get format

@@ -26,6 +26,7 @@ public interface AbstractDocument<R extends AbstractReadHandle, W extends Abstra
 
     // check document existence and get length
     public boolean exists();
+    public boolean exists(Transaction transaction);
  
     // content with optional metadata
     public <T extends R> T read(T handle);
