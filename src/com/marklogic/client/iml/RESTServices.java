@@ -1,5 +1,7 @@
 package com.marklogic.client.iml;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.marklogic.client.AbstractDocument.Metadata;
@@ -11,6 +13,6 @@ public interface RESTServices {
 
 	public void delete(String uri, String transactionId);
 	public <T> T get(Class<T> as, String uri, String mimetype, Set<Metadata> categories, String transactionId);
-	public void head(String uri, String transactionId);
+	public Map<String,List<String>> head(String uri, String transactionId);
 	public void put(String uri, String mimetype, Object value, Set<Metadata> categories, String transactionId);
 }

@@ -2,7 +2,7 @@ package com.marklogic.client.iml;
 
 import com.marklogic.client.Transaction;
 
-public class TransactionIml implements Transaction {
+public class TransactionImpl implements Transaction {
 
 	private String transactionId;
 	public String getTransactionId() {

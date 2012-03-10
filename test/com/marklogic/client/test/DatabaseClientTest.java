@@ -5,7 +5,10 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import com.marklogic.client.BinaryDocument;
+import com.marklogic.client.GenericDocument;
+import com.marklogic.client.JSONDocument;
 import com.marklogic.client.TextDocument;
+import com.marklogic.client.XMLDocument;
 
 public class DatabaseClientTest {
 /*
@@ -15,12 +18,11 @@ public class DatabaseClientTest {
 	}
  */
 
-/*
 	@Test
 	public void testNewDocument() {
-		fail("Not yet implemented");
+		GenericDocument doc = Common.client.newDocument("/some/doc.unknown");
+		assertNotNull("Client could not create generic document", doc);
 	}
- */
 
 	@Test
 	public void testNewBinaryDocument() {
@@ -28,12 +30,11 @@ public class DatabaseClientTest {
 		assertNotNull("Client could not create binary document", doc);
 	}
 
-/*
 	@Test
 	public void testNewJSONDocument() {
-		fail("Not yet implemented");
+		JSONDocument doc = Common.client.newJSONDocument("/some/doc.json");
+		assertNotNull("Client could not create JSON document", doc);
 	}
- */
 
 	@Test
 	public void testNewTextDocument() {
@@ -41,12 +42,13 @@ public class DatabaseClientTest {
 		assertNotNull("Client could not create text document", doc);
 	}
 
-/*
 	@Test
 	public void testNewXMLDocument() {
-		fail("Not yet implemented");
+		XMLDocument doc = Common.client.newXMLDocument("/some/doc.xml");
+		assertNotNull("Client could not create XML document", doc);
 	}
 
+/*
 	@Test
 	public void testNewLogger() {
 		fail("Not yet implemented");

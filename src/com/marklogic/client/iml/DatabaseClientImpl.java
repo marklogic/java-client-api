@@ -21,13 +21,12 @@ public class DatabaseClientImpl implements DatabaseClient {
 	}
 
 	public Transaction openTransaction() {
-		// TODO Auto-generated method stub
-		return null;
+		// TODO: open the transaction and pass the transaction ID to the constructor
+		return new TransactionImpl();
 	}
 
 	public GenericDocument newDocument(String uri) {
-		// TODO Auto-generated method stub
-		return null;
+		return new GenericDocumentImpl(services, uri);
 	}
 
 	public BinaryDocument newBinaryDocument(String uri) {
@@ -35,8 +34,7 @@ public class DatabaseClientImpl implements DatabaseClient {
 	}
 
 	public JSONDocument newJSONDocument(String uri) {
-		// TODO Auto-generated method stub
-		return null;
+		return new JSONDocumentImpl(services, uri);
 	}
 
 	public TextDocument newTextDocument(String uri) {

@@ -1,6 +1,8 @@
 package com.marklogic.client.iml;
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,7 +41,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
     }
     public void setProcessedMetadata(Metadata... categories) {
     	if (processedMetadata == null)
-    		processedMetadata = Collections.emptySet();
+    		processedMetadata = new HashSet<Metadata>();
     	else
     		processedMetadata.clear();
     	for (Metadata category: categories)
@@ -51,9 +53,26 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
     }
 
 	public boolean exists(Transaction transaction) {
-		services.head(uri, (transaction == null) ? null : transaction.getTransactionId());
-		// TODO: length and mimetype
-		return false;
+		Map<String,List<String>> headers = services.head(uri, (transaction == null) ? null : transaction.getTransactionId());
+		if (headers == null)
+			return false;
+
+		List<String> values = null;
+		if (headers.containsKey("Content-Type")) {
+			values = headers.get("Content-Type");
+			if (values != null) {
+				String type = values.get(0);
+				mimetype = type.contains(";") ? type.substring(0, type.indexOf(";")) : type;
+			}
+		}
+		if (headers.containsKey("Content-Length")) {
+			values = headers.get("Content-Length");
+			if (values != null) {
+				byteLength = Integer.valueOf(values.get(0));
+			}
+		}
+
+		return true;
 	}
 
 	public <T extends R> T read(T handle) {
@@ -106,33 +125,40 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
     }
 
     public <T extends XMLReadHandle> T readMetadataAsXML(T handle) {
-		// TODO Auto-generated method stub
-		return handle;
+		return readMetadataAsXML(handle, null);
     }
     public <T extends XMLReadHandle> T readMetadataAsXML(T handle, Transaction transaction) {
-		// TODO Auto-generated method stub
+		handle.receiveContent(
+				services.get(handle.receiveAs(), uri, mimetype, processedMetadata,
+						(transaction == null) ? null : transaction.getTransactionId())
+				);
 		return handle;
     }
+
     public void writeMetadataAsXML(XMLWriteHandle handle) {
-		// TODO Auto-generated method stub
+    	writeMetadataAsXML(handle, null);
     }
     public void writeMetadataAsXML(XMLWriteHandle handle, Transaction transaction) {
-		// TODO Auto-generated method stub
+		services.put(uri, mimetype, handle.sendContent(), processedMetadata,
+				(transaction == null) ? null : transaction.getTransactionId());
     }
 
     public <T extends JSONReadHandle> T readMetadataAsJSON(T handle) {
-		// TODO Auto-generated method stub
-		return handle;
+		return readMetadataAsJSON(handle, null);
     }
     public <T extends JSONReadHandle> T readMetadataAsJSON(T handle, Transaction transaction) {
-		// TODO Auto-generated method stub
+		handle.receiveContent(
+				services.get(handle.receiveAs(), uri, mimetype, processedMetadata,
+						(transaction == null) ? null : transaction.getTransactionId())
+				);
 		return handle;
     }
     public void writeMetadataAsJSON(JSONWriteHandle handle) {
-		// TODO Auto-generated method stub
+    	writeMetadataAsJSON(handle, null);
     }
     public void writeMetadataAsJSON(JSONWriteHandle handle, Transaction transaction) {
-		// TODO Auto-generated method stub
+		services.put(uri, mimetype, handle.sendContent(), processedMetadata,
+				(transaction == null) ? null : transaction.getTransactionId());
     }
 
     private String uri;

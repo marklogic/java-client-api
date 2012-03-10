@@ -1,5 +1,7 @@
 package com.marklogic.client.iml;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -42,22 +44,35 @@ public class JerseyServices implements RESTServices {
 	public void delete(String uri, String transactionId) {
 		ClientResponse response = makeDocumentResource(uri, null, transactionId).delete(ClientResponse.class);
 		// TODO: more fine-grained inspection of response status
-		if (response.getClientResponseStatus() != ClientResponse.Status.NO_CONTENT)
-			throw new RuntimeException("delete failed "+response.getClientResponseStatus());
+		ClientResponse.Status status = response.getClientResponseStatus();
+		response.close(); 
+		if (status != ClientResponse.Status.NO_CONTENT) {
+			throw new RuntimeException("delete failed "+status);
+		}
 	}
-// TODO: use to verify existence and get format
-	public void head(String uri, String transactionId) {
+	public Map<String,List<String>> head(String uri, String transactionId) {
 		ClientResponse response = makeDocumentResource(uri, null, transactionId).head();
 		// TODO: more fine-grained inspection of response status
-		if (response.getClientResponseStatus() != ClientResponse.Status.OK)
-			throw new RuntimeException("delete failed "+response.getClientResponseStatus());
+		ClientResponse.Status status = response.getClientResponseStatus();
+		response.close(); 
+		if (status == ClientResponse.Status.NOT_FOUND) {
+			return null;
+		}
+		if (status != ClientResponse.Status.OK) {
+			throw new RuntimeException("head failed "+response.getClientResponseStatus());
+		}
+		return response.getHeaders();
 	}
+	// TODO:  does the handle need to cache the response so it can close the response?
 	public <T> T get(Class<T> as, String uri, String mimetype, Set<Metadata> categories, String transactionId) {
 		ClientResponse response =
 			makeDocumentResource(uri, categories, transactionId).accept(mimetype).get(ClientResponse.class);
 		// TODO: more fine-grained inspection of response status
-		if (response.getClientResponseStatus() != ClientResponse.Status.OK)
-			throw new RuntimeException("read failed "+response.getClientResponseStatus());
+		ClientResponse.Status status = response.getClientResponseStatus();
+		if (status != ClientResponse.Status.OK) {
+			response.close(); 
+			throw new RuntimeException("read failed "+status);
+		}
 		return response.getEntity(as);
 	}
 	public void put(String uri, String mimetype, Object value, Set<Metadata> categories, String transactionId) {
@@ -65,8 +80,10 @@ public class JerseyServices implements RESTServices {
 			makeDocumentResource(uri, categories, transactionId).type(mimetype).put(ClientResponse.class, value);
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
-		if (status != ClientResponse.Status.CREATED && status != ClientResponse.Status.NO_CONTENT)
-			throw new RuntimeException("write failed "+response.getClientResponseStatus());
+		response.close(); 
+		if (status != ClientResponse.Status.CREATED && status != ClientResponse.Status.NO_CONTENT) {
+			throw new RuntimeException("write failed "+status);
+		}
 	}
 
 	private WebResource makeDocumentResource(String uri, Set<Metadata> categories, String transactionId) {
