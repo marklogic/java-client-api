@@ -1,10 +1,12 @@
 package com.marklogic.client.iml;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.AbstractDocument;
 import com.marklogic.client.DocumentCollections;
@@ -12,8 +14,6 @@ import com.marklogic.client.DocumentPermissions;
 import com.marklogic.client.DocumentProperties;
 import com.marklogic.client.RequestLogger;
 import com.marklogic.client.Transaction;
-import com.marklogic.client.AbstractDocument.Metadata;
-import com.marklogic.client.AbstractDocument.MetadataUpdate;
 import com.marklogic.client.docio.AbstractReadHandle;
 import com.marklogic.client.docio.AbstractWriteHandle;
 import com.marklogic.client.docio.JSONReadHandle;
@@ -24,6 +24,8 @@ import com.marklogic.client.docio.XMLWriteHandle;
 abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends AbstractWriteHandle>
 	implements AbstractDocument<R, W>
 {
+	static final private Logger logger = LoggerFactory.getLogger(AbstractDocumentImpl.class);
+
 	private RESTServices services;
 
 	AbstractDocumentImpl(RESTServices services, String uri) {
@@ -53,6 +55,8 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
     }
 
 	public boolean exists(Transaction transaction) {
+		logger.info("Checking existence of {}",uri);
+
 		Map<String,List<String>> headers = services.head(uri, (transaction == null) ? null : transaction.getTransactionId());
 		if (headers == null)
 			return false;
@@ -80,6 +84,8 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 	}
 
 	public <T extends R> T read(T handle, Transaction transaction) {
+		logger.info("Reading content for {}",uri);
+
 		// TODO: after response, reset metadata and set flag
 		handle.receiveContent(
 				services.get(handle.receiveAs(), uri, mimetype, processedMetadata,
@@ -92,6 +98,8 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		write(handle, null);
 	}
 	public void write(W handle, Transaction transaction) {
+		logger.info("Writing content for {}",uri);
+
 		services.put(uri, mimetype, handle.sendContent(), processedMetadata,
 				(transaction == null) ? null : transaction.getTransactionId());
 	}
@@ -100,6 +108,8 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		delete(null);
 	}
 	public void delete(Transaction transaction) {
+		logger.info("Deleting {}",uri);
+
 		services.delete(uri, (transaction == null) ? null : transaction.getTransactionId());
 	}
 
@@ -107,6 +117,8 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		readMetadata(null);
     }
     public void readMetadata(Transaction transaction) {
+		logger.info("Reading metadata for {}",uri);
+
 		// TODO Auto-generated method stub
     }
 
@@ -114,6 +126,8 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		writeMetadata(null);
     }
     public void writeMetadata(Transaction transaction) {
+		logger.info("Writing metadata for {}",uri);
+
 		// TODO Auto-generated method stub
     }
 
@@ -121,6 +135,8 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		resetMetadata(null);
     }
     public void resetMetadata(Transaction transaction) {
+		logger.info("Resetting metadata for {}",uri);
+
 		// TODO Auto-generated method stub
     }
 
@@ -128,6 +144,8 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		return readMetadataAsXML(handle, null);
     }
     public <T extends XMLReadHandle> T readMetadataAsXML(T handle, Transaction transaction) {
+		logger.info("Reading metadata as XML for {}",uri);
+
 		handle.receiveContent(
 				services.get(handle.receiveAs(), uri, mimetype, processedMetadata,
 						(transaction == null) ? null : transaction.getTransactionId())
@@ -139,6 +157,8 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
     	writeMetadataAsXML(handle, null);
     }
     public void writeMetadataAsXML(XMLWriteHandle handle, Transaction transaction) {
+		logger.info("Writing metadata as XML for {}",uri);
+
 		services.put(uri, mimetype, handle.sendContent(), processedMetadata,
 				(transaction == null) ? null : transaction.getTransactionId());
     }
@@ -147,6 +167,8 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		return readMetadataAsJSON(handle, null);
     }
     public <T extends JSONReadHandle> T readMetadataAsJSON(T handle, Transaction transaction) {
+		logger.info("Reading metadata as JSON for {}",uri);
+
 		handle.receiveContent(
 				services.get(handle.receiveAs(), uri, mimetype, processedMetadata,
 						(transaction == null) ? null : transaction.getTransactionId())
@@ -157,6 +179,8 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
     	writeMetadataAsJSON(handle, null);
     }
     public void writeMetadataAsJSON(JSONWriteHandle handle, Transaction transaction) {
+		logger.info("Writing metadata as JSON for {}",uri);
+
 		services.put(uri, mimetype, handle.sendContent(), processedMetadata,
 				(transaction == null) ? null : transaction.getTransactionId());
     }

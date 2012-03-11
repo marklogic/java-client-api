@@ -5,9 +5,14 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.marklogic.client.docio.XMLReadHandle;
 
 public class SourceHandle implements XMLReadHandle<Source> {
+	static final private Logger logger = LoggerFactory.getLogger(SourceHandle.class);
+
 	public SourceHandle() {
 	}
 
@@ -17,9 +22,11 @@ public class SourceHandle implements XMLReadHandle<Source> {
 	}
 	public void process(Transformer transformer, Result result) {
 		try {
+			logger.info("Transforming source into result");
+
 			transformer.transform(content, result);
 		} catch (TransformerException e) {
-			// TODO: log exception
+			logger.error("Failed to transform source into result",e);
 			throw new RuntimeException(e);
 		}
 	}

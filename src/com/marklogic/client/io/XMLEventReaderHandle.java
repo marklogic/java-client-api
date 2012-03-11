@@ -7,9 +7,14 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.marklogic.client.docio.XMLReadHandle;
 
 public class XMLEventReaderHandle implements XMLReadHandle<InputStream> {
+	static final private Logger logger = LoggerFactory.getLogger(XMLEventReaderHandle.class);
+
 	public XMLEventReaderHandle() {
 	}
 
@@ -23,12 +28,14 @@ public class XMLEventReaderHandle implements XMLReadHandle<InputStream> {
 	}
 	public void receiveContent(InputStream content) {
 		try {
+			logger.info("Parsing StAX events from input stream");
+
 			this.content = XMLInputFactory.newFactory().createXMLEventReader(content);
 		} catch (XMLStreamException e) {
-			// TODO: log exception
+			logger.error("Failed to parse StAX events from input stream",e);
 			throw new RuntimeException(e);
 		} catch (FactoryConfigurationError e) {
-			// TODO: log exception
+			logger.error("Failed to parse StAX events from input stream",e);
 			throw new RuntimeException(e);
 		}
 	}

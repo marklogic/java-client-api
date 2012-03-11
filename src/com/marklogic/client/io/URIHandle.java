@@ -8,6 +8,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.marklogic.client.docio.BinaryReadHandle;
 import com.marklogic.client.docio.BinaryWriteHandle;
 import com.marklogic.client.docio.GenericReadHandle;
@@ -24,7 +27,9 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
     GenericReadHandle<InputStream>, GenericWriteHandle<InputStream>, JSONReadHandle<InputStream>, JSONWriteHandle<InputStream>, 
     TextReadHandle<InputStream>, TextWriteHandle<InputStream>, XMLReadHandle<InputStream>, XMLWriteHandle<InputStream>
 {
-	private static final int BUFFER_SIZE = 1024;
+	static final private Logger logger = LoggerFactory.getLogger(URIHandle.class);
+
+	static final private int BUFFER_SIZE = 1024;
 
 	public URIHandle(String uri) {
 		set(uri);
@@ -47,6 +52,8 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 	}
 	public void receiveContent(InputStream content) {
 		try {
+			logger.info("Updating URI with content read from database");
+
 			OutputStream out = new BufferedOutputStream(new URI(uri).toURL().openConnection().getOutputStream());
 			byte[] buf = new byte[BUFFER_SIZE];
 			int len = 0;
@@ -56,27 +63,29 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 			content.close();
 			out.close();
 		} catch (MalformedURLException e) {
-			// TODO: log exception
+			logger.error("Failed to update URI with content read from database",e);
 			throw new RuntimeException(e);
 		} catch (IOException e) {
-			// TODO: log exception
+			logger.error("Failed to update URI with content read from database",e);
 			throw new RuntimeException(e);
 		} catch (URISyntaxException e) {
-			// TODO: log exception
+			logger.error("Failed to update URI with content read from database",e);
 			throw new RuntimeException(e);
 		}
 	}
 	public InputStream sendContent() {
 		try {
+			logger.info("Retrieving content from URI to write to database");
+
 			return new URI(uri).toURL().openStream();
 		} catch (MalformedURLException e) {
-			// TODO: log exception
+			logger.error("Failed to retrieving content from URI to write to database",e);
 			throw new RuntimeException(e);
 		} catch (IOException e) {
-			// TODO: log exception
+			logger.error("Failed to retrieving content from URI to write to database",e);
 			throw new RuntimeException(e);
 		} catch (URISyntaxException e) {
-			// TODO: log exception
+			logger.error("Failed to retrieving content from URI to write to database",e);
 			throw new RuntimeException(e);
 		}
 	}

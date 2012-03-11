@@ -1,8 +1,16 @@
 package com.marklogic.client.iml;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.marklogic.client.Transaction;
 
-public class TransactionImpl implements Transaction {
+class TransactionImpl implements Transaction {
+	static final private Logger logger = LoggerFactory.getLogger(TransactionImpl.class);
+
+	TransactionImpl(String transactionId) {
+		this.transactionId = transactionId;
+	}
 
 	private String transactionId;
 	public String getTransactionId() {
@@ -13,13 +21,15 @@ public class TransactionImpl implements Transaction {
 	}
 
 	public void commit() {
-		// TODO Auto-generated method stub
+		logger.info("Committing transaction {}",transactionId);
 
+		// TODO Auto-generated method stub
 	}
 
 	public void rollback() {
-		// TODO Auto-generated method stub
+		logger.info("Rolling back transaction {}",transactionId);
 
+		// TODO Auto-generated method stub
 	}
 
 }

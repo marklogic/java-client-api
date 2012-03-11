@@ -6,6 +6,9 @@ import java.util.Set;
 
 import javax.ws.rs.core.MultivaluedMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.marklogic.client.AbstractDocument.Metadata;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.sun.jersey.api.client.Client;
@@ -19,6 +22,8 @@ import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class JerseyServices implements RESTServices {
+	static final private Logger logger = LoggerFactory.getLogger(JerseyServices.class);
+
 	private Client client;
 	private WebResource connection;
 
@@ -26,6 +31,9 @@ public class JerseyServices implements RESTServices {
 	}
 
 	public void connect(String host, int port, String user, String password, Authentication type) {
+		if (logger.isInfoEnabled())
+			logger.info("Connecting to {} at {} as {}",new Object[]{host,port,user});
+
 		ClientConfig config = new DefaultClientConfig();
 		client = ApacheHttpClient.create(config);
 		if (type == Authentication.BASIC)
@@ -37,11 +45,15 @@ public class JerseyServices implements RESTServices {
 		connection = client.resource("http://"+host+":"+port+"/");
 	}
 	public void release() {
+		logger.info("Releasing connection");
+
 		connection = null;
 		client.destroy();
 	}
 
 	public void delete(String uri, String transactionId) {
+		logger.info("Deleting {} in transaction {}", uri, transactionId);
+
 		ClientResponse response = makeDocumentResource(uri, null, transactionId).delete(ClientResponse.class);
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
@@ -51,6 +63,8 @@ public class JerseyServices implements RESTServices {
 		}
 	}
 	public Map<String,List<String>> head(String uri, String transactionId) {
+		logger.info("Requesting head for {} in transaction {}", uri, transactionId);
+
 		ClientResponse response = makeDocumentResource(uri, null, transactionId).head();
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
@@ -65,6 +79,8 @@ public class JerseyServices implements RESTServices {
 	}
 	// TODO:  does the handle need to cache the response so it can close the response?
 	public <T> T get(Class<T> as, String uri, String mimetype, Set<Metadata> categories, String transactionId) {
+		logger.info("Getting {} in transaction {}", uri, transactionId);
+
 		ClientResponse response =
 			makeDocumentResource(uri, categories, transactionId).accept(mimetype).get(ClientResponse.class);
 		// TODO: more fine-grained inspection of response status
@@ -76,6 +92,8 @@ public class JerseyServices implements RESTServices {
 		return response.getEntity(as);
 	}
 	public void put(String uri, String mimetype, Object value, Set<Metadata> categories, String transactionId) {
+		logger.info("Putting {} in transaction {}", uri, transactionId);
+
 		ClientResponse response =
 			makeDocumentResource(uri, categories, transactionId).type(mimetype).put(ClientResponse.class, value);
 		// TODO: more fine-grained inspection of response status

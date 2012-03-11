@@ -6,6 +6,8 @@ import java.io.InputStream;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -18,6 +20,8 @@ import com.marklogic.client.docio.XMLWriteHandle;
 public class DOMHandle
 	implements XMLReadHandle<InputStream>, XMLWriteHandle<String>
 {
+	static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
+
 	public DOMHandle() {
 	}
 
@@ -38,29 +42,33 @@ public class DOMHandle
 	}
 	public void receiveContent(InputStream content) {
 		try {
+			logger.info("Parsing DOM document from input stream");
+
 			this.content = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(content);
 		} catch (SAXException e) {
-			// TODO: log exception
+			logger.error("Failed to parse DOM document from input stream",e);
 			throw new RuntimeException(e);
 		} catch (IOException e) {
-			// TODO: log exception
+			logger.error("Failed to parse DOM document from input stream",e);
 			throw new RuntimeException(e);
 		} catch (ParserConfigurationException e) {
-			// TODO: log exception
+			logger.error("Failed to parse DOM document from input stream",e);
 			throw new RuntimeException(e);
 		}
 	}
 	public String sendContent() {
 		try {
+			logger.info("Serializing DOM document as String");
+
 			return ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder().getDOMImplementation()).createLSSerializer().writeToString(content);
 		} catch (DOMException e) {
-			// TODO: log exception
+			logger.error("Failed to serialize DOM document as String",e);
 			throw new RuntimeException(e);
 		} catch (LSException e) {
-			// TODO: log exception
+			logger.error("Failed to serialize DOM document as String",e);
 			throw new RuntimeException(e);
 		} catch (ParserConfigurationException e) {
-			// TODO: log exception
+			logger.error("Failed to serialize DOM document as String",e);
 			throw new RuntimeException(e);
 		}
 	}
