@@ -1,12 +1,12 @@
 package com.marklogic.client.iml;
 
-import com.marklogic.client.TextDocument;
+import com.marklogic.client.TextDocumentBuffer;
 import com.marklogic.client.docio.TextReadHandle;
 import com.marklogic.client.docio.TextWriteHandle;
 
 class TextDocumentImpl
 	extends AbstractDocumentImpl<TextReadHandle, TextWriteHandle>
-	implements TextDocument
+	implements TextDocumentBuffer
 {
 	TextDocumentImpl(RESTServices services, String uri) {
 		super(services, uri);

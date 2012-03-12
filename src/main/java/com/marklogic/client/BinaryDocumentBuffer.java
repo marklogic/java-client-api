@@ -3,7 +3,7 @@ package com.marklogic.client;
 import com.marklogic.client.docio.BinaryReadHandle;
 import com.marklogic.client.docio.BinaryWriteHandle;
 
-public interface BinaryDocument extends AbstractDocument<BinaryReadHandle, BinaryWriteHandle> {
+public interface BinaryDocumentBuffer extends AbstractDocumentBuffer<BinaryReadHandle, BinaryWriteHandle> {
 	public enum MetadataExtraction {
 		PROPERTIES, DOCUMENT, NONE;
 	}

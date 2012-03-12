@@ -1,5 +1,5 @@
 package com.marklogic.client;
 
-public enum PermittedCapability {
+public enum Capability {
     EXECUTE, INSERT, READ, UPDATE;
 }

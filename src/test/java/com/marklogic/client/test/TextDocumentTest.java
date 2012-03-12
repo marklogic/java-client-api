@@ -8,7 +8,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.marklogic.client.TextDocument;
+import com.marklogic.client.TextDocumentBuffer;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
@@ -29,7 +29,7 @@ public class TextDocumentTest {
 	public void testReadWrite() throws IOException {
 		String uri = "/test/testWrite1.txt";
 		String text = "A simple text document";
-		TextDocument doc = Common.client.newTextDocument(uri);
+		TextDocumentBuffer doc = Common.client.newTextDocumentBuffer(uri);
 		doc.write(new StringHandle().on(text));
 		assertEquals("Text document write difference",text,doc.read(new StringHandle()).get());
 

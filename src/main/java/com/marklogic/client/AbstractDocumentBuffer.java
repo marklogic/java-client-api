@@ -10,7 +10,7 @@ import com.marklogic.client.docio.JSONWriteHandle;
 import com.marklogic.client.docio.XMLReadHandle;
 import com.marklogic.client.docio.XMLWriteHandle;
 
-public interface AbstractDocument<R extends AbstractReadHandle, W extends AbstractWriteHandle> {
+public interface AbstractDocumentBuffer<R extends AbstractReadHandle, W extends AbstractWriteHandle> {
     public enum Metadata {
         ALL, COLLECTIONS, PERMISSIONS, PROPERTIES, QUALITY, NONE;
     }
@@ -20,9 +20,9 @@ public interface AbstractDocument<R extends AbstractReadHandle, W extends Abstra
     }
 
     // select categories of metadata to read, write, or reset
-    public Set<Metadata> getProcessedMetadata();
-    public void setProcessedMetadata(Set<Metadata> categories);
-    public void setProcessedMetadata(Metadata... categories);
+    public Set<Metadata> getMetadataCategories();
+    public void setMetadataCategories(Set<Metadata> categories);
+    public void setMetadataCategories(Metadata... categories);
 
     // check document existence and get length
     public boolean exists();
@@ -41,8 +41,8 @@ public interface AbstractDocument<R extends AbstractReadHandle, W extends Abstra
     public void readMetadata(Transaction transaction);
     public void writeMetadata();
     public void writeMetadata(Transaction transaction);
-    public void resetMetadata();
-    public void resetMetadata(Transaction transaction);
+    public void writeDefaultMetadata();
+    public void writeDefaultMetadata(Transaction transaction);
 
     public <T extends XMLReadHandle> T readMetadataAsXML(T handle);
     public <T extends XMLReadHandle> T readMetadataAsXML(T handle, Transaction transaction);

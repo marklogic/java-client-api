@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import javax.xml.bind.DatatypeConverter;
 
-import com.marklogic.client.BinaryDocument;
+import com.marklogic.client.BinaryDocumentBuffer;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.InputStreamHandle;
 
@@ -32,7 +32,7 @@ public class BinaryDocumentTest {
 	@Test
 	public void testReadWrite() throws IOException {
 		String uri = "/test/binary-sample.png";
-		BinaryDocument doc = Common.client.newBinaryDocument(uri);
+		BinaryDocumentBuffer doc = Common.client.newBinaryDocumentBuffer(uri);
 		doc.write(new BytesHandle().on(BYTES_BINARY));
 		byte[] buf = doc.read(new BytesHandle()).get();
 		assertTrue("Binary document read 0 bytes", buf.length > 0);

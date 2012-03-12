@@ -3,14 +3,14 @@ package com.marklogic.client.iml;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.BinaryDocument;
+import com.marklogic.client.BinaryDocumentBuffer;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.docio.BinaryReadHandle;
 import com.marklogic.client.docio.BinaryWriteHandle;
 
 class BinaryDocumentImpl
 	extends AbstractDocumentImpl<BinaryReadHandle, BinaryWriteHandle>
-	implements BinaryDocument
+	implements BinaryDocumentBuffer
 {
 	static final private Logger logger = LoggerFactory.getLogger(BinaryDocumentImpl.class);
 

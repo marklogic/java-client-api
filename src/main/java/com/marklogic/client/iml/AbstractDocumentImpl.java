@@ -8,7 +8,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.AbstractDocument;
+import com.marklogic.client.AbstractDocumentBuffer;
 import com.marklogic.client.DocumentCollections;
 import com.marklogic.client.DocumentPermissions;
 import com.marklogic.client.DocumentProperties;
@@ -22,7 +22,7 @@ import com.marklogic.client.docio.XMLReadHandle;
 import com.marklogic.client.docio.XMLWriteHandle;
 
 abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends AbstractWriteHandle>
-	implements AbstractDocument<R, W>
+	implements AbstractDocumentBuffer<R, W>
 {
 	static final private Logger logger = LoggerFactory.getLogger(AbstractDocumentImpl.class);
 
@@ -35,13 +35,13 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 
     // select categories of metadata to read, write, or reset
 	private Set<Metadata> processedMetadata;
-    public Set<Metadata> getProcessedMetadata() {
+    public Set<Metadata> getMetadataCategories() {
     	return processedMetadata;
     }
-    public void setProcessedMetadata(Set<Metadata> categories) {
+    public void setMetadataCategories(Set<Metadata> categories) {
     	this.processedMetadata = categories;    	
     }
-    public void setProcessedMetadata(Metadata... categories) {
+    public void setMetadataCategories(Metadata... categories) {
     	if (processedMetadata == null)
     		processedMetadata = new HashSet<Metadata>();
     	else
@@ -131,10 +131,10 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		// TODO Auto-generated method stub
     }
 
-    public void resetMetadata() {
-		resetMetadata(null);
+    public void writeDefaultMetadata() {
+		writeDefaultMetadata(null);
     }
-    public void resetMetadata(Transaction transaction) {
+    public void writeDefaultMetadata(Transaction transaction) {
 		logger.info("Resetting metadata for {}",uri);
 
 		// TODO Auto-generated method stub

@@ -7,7 +7,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
-import com.marklogic.client.TextDocument;
+import com.marklogic.client.TextDocumentBuffer;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.StringHandle;
 
@@ -24,7 +24,7 @@ public class GenericDocumentTest {
 	@Test
 	public void testExists() {
 		String uri = "/test/testExists1.txt";
-		TextDocument doc = Common.client.newTextDocument(uri);
+		TextDocumentBuffer doc = Common.client.newTextDocumentBuffer(uri);
 		assertTrue("Non-existent document appears to exists", !doc.exists());
 		doc.write(new StringHandle().on("A simple text document"));
 		assertTrue("Existent document doesn't appear to exist", doc.exists());
@@ -34,7 +34,7 @@ public class GenericDocumentTest {
 	@Test
 	public void testDelete() {
 		String uri = "/test/testDelete1.txt";
-		TextDocument doc = Common.client.newTextDocument(uri);
+		TextDocumentBuffer doc = Common.client.newTextDocumentBuffer(uri);
 		doc.write(new StringHandle().on("A simple text document"));
 		String text = doc.read(new StringHandle()).get();
 		assertTrue("Could not create document for deletion", text != null && text.length() > 0);
@@ -64,7 +64,7 @@ public class GenericDocumentTest {
 	@Test
 	public void testReadWriteMetadataAsXML() {
 		String uri = "/test/testMetadataXML1.txt";
-		TextDocument doc = Common.client.newTextDocument(uri);
+		TextDocumentBuffer doc = Common.client.newTextDocumentBuffer(uri);
 		doc.write(new StringHandle().on("A simple text document"));
 		String temporaryTest = doc.readMetadataAsXML(new StringHandle()).get();
 		assertTrue("Could not get document metadata as XML", temporaryTest != null && temporaryTest.length() > 0);

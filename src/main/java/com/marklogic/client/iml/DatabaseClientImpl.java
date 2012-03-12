@@ -5,16 +5,16 @@ import java.io.OutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.BinaryDocument;
+import com.marklogic.client.BinaryDocumentBuffer;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.GenericDocument;
-import com.marklogic.client.JSONDocument;
+import com.marklogic.client.GenericDocumentBuffer;
+import com.marklogic.client.JSONDocumentBuffer;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.RequestLogger;
-import com.marklogic.client.TextDocument;
+import com.marklogic.client.TextDocumentBuffer;
 import com.marklogic.client.Transaction;
-import com.marklogic.client.XMLDocument;
+import com.marklogic.client.XMLDocumentBuffer;
 
 public class DatabaseClientImpl implements DatabaseClient {
 	static final private Logger logger = LoggerFactory.getLogger(DatabaseClientImpl.class);
@@ -34,23 +34,23 @@ public class DatabaseClientImpl implements DatabaseClient {
 		return new TransactionImpl(transactionId);
 	}
 
-	public GenericDocument newDocument(String uri) {
+	public GenericDocumentBuffer newDocumentBuffer(String uri) {
 		return new GenericDocumentImpl(services, uri);
 	}
 
-	public BinaryDocument newBinaryDocument(String uri) {
+	public BinaryDocumentBuffer newBinaryDocumentBuffer(String uri) {
 		return new BinaryDocumentImpl(services, uri);
 	}
 
-	public JSONDocument newJSONDocument(String uri) {
+	public JSONDocumentBuffer newJSONDocumentBuffer(String uri) {
 		return new JSONDocumentImpl(services, uri);
 	}
 
-	public TextDocument newTextDocument(String uri) {
+	public TextDocumentBuffer newTextDocumentBuffer(String uri) {
 		return new TextDocumentImpl(services, uri);
 	}
 
-	public XMLDocument newXMLDocument(String uri) {
+	public XMLDocumentBuffer newXMLDocumentBuffer(String uri) {
 		return new XMLDocumentImpl(services, uri);
 	}
 

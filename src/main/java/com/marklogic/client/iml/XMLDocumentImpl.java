@@ -1,12 +1,12 @@
 package com.marklogic.client.iml;
 
-import com.marklogic.client.XMLDocument;
+import com.marklogic.client.XMLDocumentBuffer;
 import com.marklogic.client.docio.XMLReadHandle;
 import com.marklogic.client.docio.XMLWriteHandle;
 
 class XMLDocumentImpl
     extends AbstractDocumentImpl<XMLReadHandle, XMLWriteHandle>
-    implements XMLDocument
+    implements XMLDocumentBuffer
 {
 
 	XMLDocumentImpl(RESTServices services, String uri) {

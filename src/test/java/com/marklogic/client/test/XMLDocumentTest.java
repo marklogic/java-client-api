@@ -16,7 +16,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.XMLDocument;
+import com.marklogic.client.XMLDocumentBuffer;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.StringHandle;
 
@@ -42,7 +42,7 @@ public class XMLDocumentTest {
 		root.appendChild(domDocument.createElement("child"));
 		root.appendChild(domDocument.createTextNode("mixed"));
 		domDocument.appendChild(root);
-		XMLDocument doc = Common.client.newXMLDocument(uri);
+		XMLDocumentBuffer doc = Common.client.newXMLDocumentBuffer(uri);
 		doc.write(new DOMHandle().on(domDocument));
 		String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
 				.getDOMImplementation()).createLSSerializer().writeToString(domDocument);

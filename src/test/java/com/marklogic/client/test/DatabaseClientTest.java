@@ -6,11 +6,11 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.marklogic.client.BinaryDocument;
-import com.marklogic.client.GenericDocument;
-import com.marklogic.client.JSONDocument;
-import com.marklogic.client.TextDocument;
-import com.marklogic.client.XMLDocument;
+import com.marklogic.client.BinaryDocumentBuffer;
+import com.marklogic.client.GenericDocumentBuffer;
+import com.marklogic.client.JSONDocumentBuffer;
+import com.marklogic.client.TextDocumentBuffer;
+import com.marklogic.client.XMLDocumentBuffer;
 
 public class DatabaseClientTest {
 	@BeforeClass
@@ -31,31 +31,31 @@ public class DatabaseClientTest {
 
 	@Test
 	public void testNewDocument() {
-		GenericDocument doc = Common.client.newDocument("/some/doc.unknown");
+		GenericDocumentBuffer doc = Common.client.newDocumentBuffer("/some/doc.unknown");
 		assertNotNull("Client could not create generic document", doc);
 	}
 
 	@Test
 	public void testNewBinaryDocument() {
-		BinaryDocument doc = Common.client.newBinaryDocument("/some/doc.png");
+		BinaryDocumentBuffer doc = Common.client.newBinaryDocumentBuffer("/some/doc.png");
 		assertNotNull("Client could not create binary document", doc);
 	}
 
 	@Test
 	public void testNewJSONDocument() {
-		JSONDocument doc = Common.client.newJSONDocument("/some/doc.json");
+		JSONDocumentBuffer doc = Common.client.newJSONDocumentBuffer("/some/doc.json");
 		assertNotNull("Client could not create JSON document", doc);
 	}
 
 	@Test
 	public void testNewTextDocument() {
-		TextDocument doc = Common.client.newTextDocument("/some/doc.txt");
+		TextDocumentBuffer doc = Common.client.newTextDocumentBuffer("/some/doc.txt");
 		assertNotNull("Client could not create text document", doc);
 	}
 
 	@Test
 	public void testNewXMLDocument() {
-		XMLDocument doc = Common.client.newXMLDocument("/some/doc.xml");
+		XMLDocumentBuffer doc = Common.client.newXMLDocumentBuffer("/some/doc.xml");
 		assertNotNull("Client could not create XML document", doc);
 	}
 

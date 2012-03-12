@@ -6,11 +6,11 @@ public interface DatabaseClient {
     public Transaction openTransaction();
     
     // factory methods for documents
-    public GenericDocument newDocument(String uri);
-    public BinaryDocument  newBinaryDocument(String uri);
-    public JSONDocument    newJSONDocument(String uri);
-    public TextDocument    newTextDocument(String uri);
-    public XMLDocument     newXMLDocument(String uri);
+    public GenericDocumentBuffer newDocumentBuffer(String uri);
+    public BinaryDocumentBuffer  newBinaryDocumentBuffer(String uri);
+    public JSONDocumentBuffer    newJSONDocumentBuffer(String uri);
+    public TextDocumentBuffer    newTextDocumentBuffer(String uri);
+    public XMLDocumentBuffer     newXMLDocumentBuffer(String uri);
  
     public RequestLogger newLogger(OutputStream out);
  
