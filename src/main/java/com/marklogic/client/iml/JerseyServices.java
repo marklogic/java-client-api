@@ -42,7 +42,7 @@ public class JerseyServices implements RESTServices {
 			client.addFilter(new HTTPDigestAuthFilter(user, password));
 		else
 			throw new RuntimeException("Internal error - unknown authentication type: "+type.name());
-		connection = client.resource("http://"+host+":"+port+"/");
+		connection = client.resource("http://"+host+":"+port+"/v1/");
 	}
 	public void release() {
 		logger.info("Releasing connection");
