@@ -19,6 +19,11 @@
     <version>4.10</version>
     <scope>test</scope>
 </dependency>
+<dependency>
+	<groupId>xmlunit</groupId>
+	<artifactId>xmlunit</artifactId>
+	<version>1.3</version>
+</dependency>
 <!--
 <dependency>
     <groupId>com.sun.jersey</groupId>
