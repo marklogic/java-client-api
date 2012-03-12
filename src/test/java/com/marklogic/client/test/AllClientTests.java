@@ -19,12 +19,4 @@ import org.junit.runners.Suite;
 	XMLDocumentTest.class
 	})
 public class AllClientTests {
-	@BeforeClass
-	public static void beforeClass() {
-		Common.connect();
-	}
-	@AfterClass
-	public static void afterClass() {
-		Common.release();
-	}
 }

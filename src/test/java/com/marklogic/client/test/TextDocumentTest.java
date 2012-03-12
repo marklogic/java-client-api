@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.TextDocument;
@@ -12,6 +14,15 @@ import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
 
 public class TextDocumentTest {
+	@BeforeClass
+	public static void beforeClass() {
+		Common.connect();
+	}
+	@AfterClass
+	public static void afterClass() {
+		Common.release();
+	}
+
 	// TODO: test Reader
 
 	@Test

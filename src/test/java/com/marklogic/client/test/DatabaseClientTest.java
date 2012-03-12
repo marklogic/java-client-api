@@ -2,6 +2,8 @@ package com.marklogic.client.test;
 
 import static org.junit.Assert.assertNotNull;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.BinaryDocument;
@@ -11,6 +13,15 @@ import com.marklogic.client.TextDocument;
 import com.marklogic.client.XMLDocument;
 
 public class DatabaseClientTest {
+	@BeforeClass
+	public static void beforeClass() {
+		Common.connect();
+	}
+	@AfterClass
+	public static void afterClass() {
+		Common.release();
+	}
+
 /*
 	@Test
 	public void testOpenTransaction() {

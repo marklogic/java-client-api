@@ -2,6 +2,8 @@ package com.marklogic.client.test;
 
 import static org.junit.Assert.*;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
@@ -10,6 +12,15 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.StringHandle;
 
 public class GenericDocumentTest {
+	@BeforeClass
+	public static void beforeClass() {
+		Common.connect();
+	}
+	@AfterClass
+	public static void afterClass() {
+		Common.release();
+	}
+
 	@Test
 	public void testExists() {
 		String uri = "/test/testExists1.txt";
