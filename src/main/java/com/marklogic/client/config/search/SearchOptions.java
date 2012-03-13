@@ -95,51 +95,44 @@ public class SearchOptions {
 	private SearchOption newQueryOption(Object ot) {
 		logger.debug("Making new query option for object of class "
 				+ ot.getClass().getName());
-		String className = ot.getClass().getName();
-		if (className.equals("com.marklogic.client.config.search.jaxb.Term")) {
+		Class clazz = ot.getClass();
+		if (clazz == com.marklogic.client.config.search.jaxb.Term.class) {
 			return new Term((com.marklogic.client.config.search.jaxb.Term) ot);
-		} else if (className
-				.equals("com.marklogic.client.config.search.jaxb.Grammar")) {
+		} else if (clazz == com.marklogic.client.config.search.jaxb.Grammar.class) {
 			return new Grammar(
 					(com.marklogic.client.config.search.jaxb.Grammar) ot);
-		} else if (className
-				.equals("com.marklogic.client.config.search.jaxb.Constraint")) {
+		} else if (clazz == com.marklogic.client.config.search.jaxb.Constraint.class) {
 			com.marklogic.client.config.search.jaxb.Constraint constraint = (com.marklogic.client.config.search.jaxb.Constraint) ot;
 			Object constraintSpec = constraint.getConstraint().get(0);
-			if (constraintSpec.getClass().getName()
-					.equals("com.marklogic.client.config.search.jaxb.Range")) {
+			if (constraintSpec.getClass() == com.marklogic.client.config.search.jaxb.Range.class) {
 				return new RangeConstraint(constraint.getName(),
 						(Range) constraintSpec);
-			} else if (constraintSpec.getClass().getName()
-					.equals("com.marklogic.client.config.search.jaxb.Value")) {
+			} else if (constraintSpec.getClass() == com.marklogic.client.config.search.jaxb.Value.class) {
 				return new ValueConstraint(constraint.getName(),
 						(Value) constraintSpec);
-			} else if (constraintSpec.getClass().getName()
-					.equals("com.marklogic.client.config.search.jaxb.Word")) {
+			} else if (constraintSpec.getClass() == com.marklogic.client.config.search.jaxb.Word.class) {
 				return new WordConstraint(constraint.getName(),
 						(Word) constraintSpec);
 			}
-		} else if (className
-				.equals("com.marklogic.client.config.search.jaxb.Operator")) {
+		} else if (clazz == com.marklogic.client.config.search.jaxb.Operator.class) {
 			return new Operator(
 					(com.marklogic.client.config.search.jaxb.Operator) ot);
-		} else if (className
-				.equals("com.marklogic.client.config.search.jaxb.TransformResults")) {
+		} else if (clazz == com.marklogic.client.config.search.jaxb.TransformResults.class) {
 			return new TransformResults(
 					(com.marklogic.client.config.search.jaxb.TransformResults) ot);
-		} else if (className
-				.equals("com.marklogic.client.config.search.jaxb.DefaultSuggestionSource")) {
+		} else if (clazz == com.marklogic.client.config.search.jaxb.DefaultSuggestionSource.class) {
 			return new DefaultSuggestionSource(
 					(com.marklogic.client.config.search.jaxb.DefaultSuggestionSource) ot);
-		} else if (className
-				.equals("com.marklogic.client.config.search.jaxb.SuggestionSource")) {
+		} else if (clazz == com.marklogic.client.config.search.jaxb.SuggestionSource.class) {
 			return new SuggestionSource(
 					(com.marklogic.client.config.search.jaxb.SuggestionSource) ot);
-		}else if (className.equals("com.marklogic.client.config.search.jaxb.Annotation")) {
-			return new Annotation(  (com.marklogic.client.config.search.jaxb.Annotation) ot);
-		} else if (className.equals("com.marklogic.client.config.search.jaxb.SortOrder")) {
-			return new SortOrder(  (com.marklogic.client.config.search.jaxb.SortOrder) ot);
-		} else if (className.equals("javax.xml.bind.JAXBElement")) {
+		} else if (clazz == com.marklogic.client.config.search.jaxb.Annotation.class) {
+			return new Annotation(
+					(com.marklogic.client.config.search.jaxb.Annotation) ot);
+		} else if (clazz == com.marklogic.client.config.search.jaxb.SortOrder.class) {
+			return new SortOrder(
+					(com.marklogic.client.config.search.jaxb.SortOrder) ot);
+		} else if (clazz == javax.xml.bind.JAXBElement.class) {
 
 		} else {
 			throw new MarkLogicUnhandledElementException(ot.getClass()
