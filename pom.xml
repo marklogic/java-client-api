@@ -4,10 +4,10 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.marklogic</groupId>
-	<artifactId>dbapi-java</artifactId>
+	<artifactId>client-api-java</artifactId>
 	<packaging>jar</packaging>
 	<version>1.0-SNAPSHOT</version>
-	<name>dbapi-java</name>
+	<name>client-api-java</name>
 	<url>http://maven.apache.org</url>
 
 
