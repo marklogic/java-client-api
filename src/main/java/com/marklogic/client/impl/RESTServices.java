@@ -1,4 +1,4 @@
-package com.marklogic.client.iml;
+package com.marklogic.client.impl;
 
 import java.util.List;
 import java.util.Map;

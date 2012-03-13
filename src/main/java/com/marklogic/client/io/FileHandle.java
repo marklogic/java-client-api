@@ -22,6 +22,11 @@ public class FileHandle
 		XMLReadHandle<File>, XMLWriteHandle<File>
 {
 	public FileHandle() {
+		super();
+	}
+	public FileHandle(File content) {
+		this();
+		set(content);
 	}
 
 	private File content;

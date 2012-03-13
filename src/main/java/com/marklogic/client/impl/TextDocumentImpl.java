@@ -1,4 +1,4 @@
-package com.marklogic.client.iml;
+package com.marklogic.client.impl;
 
 import com.marklogic.client.TextDocumentBuffer;
 import com.marklogic.client.docio.TextReadHandle;

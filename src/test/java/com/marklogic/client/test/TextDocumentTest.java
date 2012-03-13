@@ -2,7 +2,9 @@ package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -10,7 +12,9 @@ import org.junit.Test;
 
 import com.marklogic.client.TextDocumentBuffer;
 import com.marklogic.client.io.BytesHandle;
+import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 
 public class TextDocumentTest {
@@ -22,8 +26,6 @@ public class TextDocumentTest {
 	public static void afterClass() {
 		Common.release();
 	}
-
-	// TODO: test Reader
 
 	@Test
 	public void testReadWrite() throws IOException {
@@ -40,7 +42,14 @@ public class TextDocumentTest {
 		InputStreamHandle inputStreamHandle = new InputStreamHandle();
 		doc.read(inputStreamHandle);
 		byte[] b = Common.streamToBytes(inputStreamHandle.get());
-		assertEquals("Text document mismatch reading input stream",b.length,text.length());
+		assertEquals("Text document mismatch reading input stream",new String(b),text);
+
+		Reader reader = doc.read(new ReaderHandle()).get();
+		String s = Common.readerToString(reader);
+		assertEquals("Text document mismatch with reader",s,text);
+
+		File file = doc.read(new FileHandle()).get();
+		assertEquals("Text document mismatch with file",text.length(),file.length());
 	}
 
 }

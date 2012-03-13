@@ -14,6 +14,11 @@ public class StringHandle
 		XMLReadHandle<String>, XMLWriteHandle<String>
 {
 	public StringHandle() {
+		super();
+	}
+	public StringHandle(String content) {
+		this();
+		set(content);
 	}
 
 	private String content;

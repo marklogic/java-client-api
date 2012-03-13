@@ -5,9 +5,9 @@ import javax.net.ssl.SSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.iml.DatabaseClientImpl;
-import com.marklogic.client.iml.JerseyServices;
-import com.marklogic.client.iml.RESTServices;
+import com.marklogic.client.impl.DatabaseClientImpl;
+import com.marklogic.client.impl.JerseyServices;
+import com.marklogic.client.impl.RESTServices;
 
 public class DatabaseClientFactory {
 	static final private Logger logger = LoggerFactory.getLogger(DatabaseClientFactory.class);

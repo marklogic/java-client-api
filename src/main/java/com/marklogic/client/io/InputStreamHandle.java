@@ -22,6 +22,11 @@ public class InputStreamHandle
 		XMLReadHandle<InputStream>, XMLWriteHandle<InputStream>
 {
 	public InputStreamHandle() {
+		super();
+	}
+	public InputStreamHandle(InputStream content) {
+		this();
+		set(content);
 	}
 
 	private InputStream content;

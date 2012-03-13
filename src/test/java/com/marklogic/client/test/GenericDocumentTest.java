@@ -68,6 +68,7 @@ public class GenericDocumentTest {
 		doc.write(new StringHandle().on("A simple text document"));
 		String temporaryTest = doc.readMetadataAsXML(new StringHandle()).get();
 		assertTrue("Could not get document metadata as XML", temporaryTest != null && temporaryTest.length() > 0);
+
 // TODO: server is producing invalid XML
 //		Document domDocument = doc.readMetadataAsXML(new DOMHandle()).get();
 //		assertTrue("Could not get document metadata as XML", domDocument != null);

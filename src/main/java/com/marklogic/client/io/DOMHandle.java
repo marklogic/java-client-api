@@ -23,6 +23,11 @@ public class DOMHandle
 	static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
 
 	public DOMHandle() {
+		super();
+	}
+	public DOMHandle(Document content) {
+		this();
+		set(content);
 	}
 
 	private Document content;

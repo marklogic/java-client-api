@@ -3,6 +3,8 @@ package com.marklogic.client.test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringWriter;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
@@ -32,5 +34,14 @@ public class Common {
 			baos.write(b, 0, len);
 		}
 		return baos.toByteArray();
+	}
+	static String readerToString(Reader r) throws IOException {
+		StringWriter w = new StringWriter(); 
+		char[] cbuf = new char[1000];
+		int len = 0;
+		while (((len=r.read(cbuf)) != -1)) {
+			w.write(cbuf, 0, len);
+		}
+		return w.toString();
 	}
 }

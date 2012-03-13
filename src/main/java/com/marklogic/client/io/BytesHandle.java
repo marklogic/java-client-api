@@ -20,6 +20,11 @@ public class BytesHandle
 		XMLReadHandle<byte[]>, XMLWriteHandle<byte[]>
 {
 	public BytesHandle() {
+		super();
+	}
+	public BytesHandle(byte[] content) {
+		this();
+		set(content);
 	}
 
 	private byte[] content;

@@ -1,16 +1,19 @@
 package com.marklogic.client.io;
 
+import java.io.InputStream;
+
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.docio.XMLReadHandle;
 
-public class SourceHandle implements XMLReadHandle<Source> {
+public class SourceHandle implements XMLReadHandle<InputStream> {
 	static final private Logger logger = LoggerFactory.getLogger(SourceHandle.class);
 
 	public SourceHandle() {
@@ -31,10 +34,10 @@ public class SourceHandle implements XMLReadHandle<Source> {
 		}
 	}
 
-	public Class<Source> receiveAs() {
-		return Source.class;
+	public Class<InputStream> receiveAs() {
+		return InputStream.class;
 	}
-	public void receiveContent(Source content) {
-		this.content = content;
+	public void receiveContent(InputStream content) {
+		this.content = new StreamSource(content);
 	}
 }

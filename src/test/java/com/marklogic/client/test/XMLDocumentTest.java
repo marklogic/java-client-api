@@ -2,11 +2,23 @@ package com.marklogic.client.test;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMResult;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -15,10 +27,18 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+import org.xml.sax.Attributes;
 
 import com.marklogic.client.XMLDocumentBuffer;
 import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.InputSourceHandle;
+import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.URIHandle;
+import com.marklogic.client.io.XMLEventReaderHandle;
+import com.marklogic.client.io.XMLStreamReaderHandle;
 
 public class XMLDocumentTest {
 	@BeforeClass
@@ -30,10 +50,10 @@ public class XMLDocumentTest {
 		Common.release();
 	}
 
-	// TODO: test Source reader, SAX handler, StAX stream reader, StAX event reader, JAXB reader and writer 
+	// TODO: test JAXB reader and writer
 
 	@Test
-	public void testReadWrite() throws ParserConfigurationException, SAXException, IOException {
+	public void testReadWrite() throws ParserConfigurationException, SAXException, IOException, TransformerConfigurationException, TransformerFactoryConfigurationError, XMLStreamException {
 		String uri = "/test/testWrite1.xml";
 		Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		Element root = domDocument.createElement("root");
@@ -49,8 +69,82 @@ public class XMLDocumentTest {
 		String docText = doc.read(new StringHandle()).get();
 		assertNotNull("Read null string for XML content",docText);
 		assertXMLEqual("Failed to read XML document as String", docText, domString);
+
 		Document readDoc = doc.read(new DOMHandle()).get();
 		assertNotNull("Read null document for XML content",readDoc);
 		assertXMLEqual("Failed to read XML document as DOM",domDocument,readDoc);
+		DOMResult result = new DOMResult();
+		doc.read(new SourceHandle()).process(TransformerFactory.newInstance().newTransformer(), result);
+		readDoc = (Document) result.getNode();
+		assertNotNull("Read null document from transform on XML content",readDoc);
+		assertXMLEqual("Failed to transform XML document with DOM",domDocument,readDoc);
+
+		final HashMap<String,Integer> counter = new HashMap<String,Integer>(); 
+		counter.put("elementCount",0);
+		counter.put("attributeCount",0);
+		DefaultHandler handler = new DefaultHandler() {
+			public void startElement(String uri, String localName, String qName, Attributes attributes) {
+				counter.put("elementCount",counter.get("elementCount") + 1);
+				if (attributes != null) {
+					int elementAttributeCount = attributes.getLength();
+					if (elementAttributeCount > 0)
+						counter.put("attributeCount",counter.get("attributeCount") + elementAttributeCount);
+				}
+			}
+		};
+		doc.read(new InputSourceHandle()).process(handler);
+		assertTrue("Failed to process XML document with SAX",
+				counter.get("elementCount") == 2 && counter.get("attributeCount") == 2);
+
+		XMLStreamReader streamReader = doc.read(new XMLStreamReaderHandle()).get();
+		int elementCount = 0;
+		int attributeCount = 0;
+		while (streamReader.hasNext()) {
+			if (streamReader.next() != XMLStreamReader.START_ELEMENT)
+				continue;
+			elementCount++;
+			int elementAttributeCount = streamReader.getAttributeCount();
+			if (elementAttributeCount > 0)
+				attributeCount += elementAttributeCount;
+		}
+		streamReader.close();
+		assertTrue("Failed to process XML document with StAX stream reader",
+				elementCount == 2 && attributeCount == 2);
+
+		XMLEventReader eventReader = doc.read(new XMLEventReaderHandle()).get();
+		elementCount = 0;
+		attributeCount = 0;
+		while (eventReader.hasNext()) {
+			XMLEvent event = eventReader.nextEvent();
+			if (!event.isStartElement())
+				continue;
+			StartElement element = event.asStartElement();
+			elementCount++;
+			Iterator<Object> attributes = element.getAttributes();
+			while (attributes.hasNext()) {
+				attributes.next();
+				attributeCount++;
+			}
+		}
+		eventReader.close();
+		assertTrue("Failed to process XML document with StAX event reader",
+				elementCount == 2 && attributeCount == 2);
+	}
+
+	private static boolean testURIHandle = false;
+
+	@Test
+	public void testURIHandle() {
+		if (!testURIHandle)
+			return;
+
+		String service =
+"http://graphical.weather.gov/xml/sample_products/browser_interface/ndfdBrowserClientByDay.php?whichClient=NDFDgenByDayMultiZipCode&zipCodeList=94070&format=12+hourly&numDays=1";
+		String uri2 = "/test/testWrite2.xml";
+		XMLDocumentBuffer doc = Common.client.newXMLDocumentBuffer(uri2);
+		doc.write(new URIHandle(service));
+		String docText = doc.read(new StringHandle()).get();
+		assertNotNull("Read null string for URI with XML content",docText);
+		assertTrue("Read empty string for URI with XML content",docText.length() > 0);
 	}
 }

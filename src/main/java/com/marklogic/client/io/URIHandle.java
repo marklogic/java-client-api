@@ -31,7 +31,11 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 
 	static final private int BUFFER_SIZE = 1024;
 
+	public URIHandle() {
+		super();
+	}
 	public URIHandle(String uri) {
+		this();
 		set(uri);
 	}
 
