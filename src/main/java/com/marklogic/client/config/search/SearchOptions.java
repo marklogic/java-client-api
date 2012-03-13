@@ -131,6 +131,14 @@ public class SearchOptions {
 				.equals("com.marklogic.client.config.search.jaxb.DefaultSuggestionSource")) {
 			return new DefaultSuggestionSource(
 					(com.marklogic.client.config.search.jaxb.DefaultSuggestionSource) ot);
+		} else if (className
+				.equals("com.marklogic.client.config.search.jaxb.SuggestionSource")) {
+			return new SuggestionSource(
+					(com.marklogic.client.config.search.jaxb.SuggestionSource) ot);
+		}else if (className.equals("com.marklogic.client.config.search.jaxb.Annotation")) {
+			return new Annotation(  (com.marklogic.client.config.search.jaxb.Annotation) ot);
+		} else if (className.equals("com.marklogic.client.config.search.jaxb.SortOrder")) {
+			return new SortOrder(  (com.marklogic.client.config.search.jaxb.SortOrder) ot);
 		} else if (className.equals("javax.xml.bind.JAXBElement")) {
 
 		} else {
@@ -146,9 +154,8 @@ public class SearchOptions {
 		List<Object> opts = this.getUnboundOptions("return-facets");
 		if (opts.size() == 0) {
 			return false;
-		}
-		else {
-			return ( (JAXBElement<Boolean>) opts.get(0)).getValue();
+		} else {
+			return ((JAXBElement<Boolean>) opts.get(0)).getValue();
 		}
 	};
 
@@ -172,12 +179,14 @@ public class SearchOptions {
 		List<Object> existingReturnFacetsList = this
 				.getUnboundOptions("return-facets");
 		if (existingReturnFacetsList.size() == 0) {
-			JAXBElement<Boolean> newElement = new JAXBElement<Boolean>(new QName(
-					"http://marklogic.com/appservices/search",
-					"return-facets"), Boolean.class, new Boolean(returnFacets));
-			    logger.debug("Here is the new element " + newElement.getName() + " and its value " + newElement.getValue());
-				this.jaxbOptions.getQueryOptions().add(newElement);
-			} else {
+			JAXBElement<Boolean> newElement = new JAXBElement<Boolean>(
+					new QName("http://marklogic.com/appservices/search",
+							"return-facets"), Boolean.class, new Boolean(
+							returnFacets));
+			logger.debug("Here is the new element " + newElement.getName()
+					+ " and its value " + newElement.getValue());
+			this.jaxbOptions.getQueryOptions().add(newElement);
+		} else {
 			JAXBElement<Boolean> existingReturnFacets = (JAXBElement<Boolean>) existingReturnFacetsList
 					.get(0);
 			existingReturnFacets.setValue(returnFacets);
