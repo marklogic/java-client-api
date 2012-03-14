@@ -16,6 +16,8 @@ import javax.xml.namespace.QName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import sun.security.action.GetBooleanAction;
+
 import com.marklogic.client.config.search.jaxb.Options;
 import com.marklogic.client.config.search.jaxb.Range;
 import com.marklogic.client.config.search.jaxb.Value;
@@ -30,8 +32,6 @@ public class SearchOptions {
 	private Options jaxbOptions;
 
 	Logger logger = (Logger) LoggerFactory.getLogger(SearchOptions.class);
-
-	private List<Constraint> constraints;
 
 	public SearchOptions() {
 		this.jaxbOptions = new Options();
@@ -95,6 +95,7 @@ public class SearchOptions {
 	private SearchOption newQueryOption(Object ot) {
 		logger.debug("Making new query option for object of class "
 				+ ot.getClass().getName());
+		@SuppressWarnings("rawtypes")
 		Class clazz = ot.getClass();
 		if (clazz == com.marklogic.client.config.search.jaxb.Term.class) {
 			return new Term((com.marklogic.client.config.search.jaxb.Term) ot);
@@ -142,22 +143,13 @@ public class SearchOptions {
 
 	};
 
-	@SuppressWarnings("unchecked")
-	public boolean getReturnFacets() {
-		List<Object> opts = this.getUnboundOptions("return-facets");
-		if (opts.size() == 0) {
-			return false;
-		} else {
-			return ((JAXBElement<Boolean>) opts.get(0)).getValue();
-		}
-	};
-
 	private List<Object> getUnboundOptions(String localName) {
 		List<Object> options = this.jaxbOptions.getQueryOptions();
 		List<Object> conformingOptions = new ArrayList<Object>();
 		for (Object option : options) {
 			if (option.getClass() == javax.xml.bind.JAXBElement.class) {
-				JAXBElement jaxbElement = (JAXBElement<Object>) option;
+				@SuppressWarnings("unchecked")
+				JAXBElement<Object> jaxbElement = (JAXBElement<Object>) option;
 				if (jaxbElement.getName().equals(
 						new QName("http://marklogic.com/appservices/search",
 								localName))) {
@@ -168,44 +160,163 @@ public class SearchOptions {
 		return conformingOptions;
 	}
 
-	public void setReturnFacets(boolean returnFacets) {
-		List<Object> existingReturnFacetsList = this
-				.getUnboundOptions("return-facets");
-		if (existingReturnFacetsList.size() == 0) {
-			JAXBElement<Boolean> newElement = new JAXBElement<Boolean>(
-					new QName("http://marklogic.com/appservices/search",
-							"return-facets"), Boolean.class, new Boolean(
-							returnFacets));
+	@SuppressWarnings("unchecked")
+	private Object getAtomicOption(String optionName) {
+		List<Object> opts = this.getUnboundOptions(optionName);
+		if (opts.size() == 0) {
+			return false;
+		} else {
+			return ((JAXBElement<Object>) opts.get(0)).getValue();
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private String getStringOption(String optionName) {
+		List<Object> opts = this.getUnboundOptions(optionName);
+		if (opts.size() == 0) {
+			return null;
+		} else {
+			return ((JAXBElement<String>) opts.get(0)).getValue();
+		}
+	}
+
+	private void setAtomicOption(String optionName, Object value, Class clazz) {
+		List<Object> existingFlagAsList = this.getUnboundOptions(optionName);
+		if (existingFlagAsList.size() == 0) {
+			JAXBElement<Object> newElement = new JAXBElement<Object>(new QName(
+					"http://marklogic.com/appservices/search", optionName),
+					clazz, value);
 			logger.debug("Here is the new element " + newElement.getName()
 					+ " and its value " + newElement.getValue());
 			this.jaxbOptions.getQueryOptions().add(newElement);
 		} else {
-			JAXBElement<Boolean> existingReturnFacets = (JAXBElement<Boolean>) existingReturnFacetsList
+			@SuppressWarnings("unchecked")
+			JAXBElement<Object> existingOption = (JAXBElement<Object>) existingFlagAsList
 					.get(0);
-			existingReturnFacets.setValue(returnFacets);
+			existingOption.setValue(value);
 		}
-	};
+	}
+
 	/*
-	 * public boolean getReturnConstraints() { ... }; public void
-	 * setReturnConstraints(boolean returnFacets) { ... }; public boolean
-	 * getReturnMetrics() { ... }; public void setReturnMetrics(boolean
-	 * returnFacets) { ... }' public boolean getReturnPlan() { ... }; public
-	 * void setReturnPlan(boolean returnFacets) { ... }; public boolean
-	 * getReturnQText() { ... }; public void setReturnQText(boolean
-	 * returnFacets) { ... }; public boolean getReturnResults() { ... }; public
-	 * void setReturnResults(boolean returnFacets) { ... }; public boolean
-	 * getReturnSimilar() { ... }; public void setReturnSimilar(boolean
-	 * returnSimilar) { ... };
+	 * private void setStringOption(String optionName, String value) {
+	 * List<Object> existingOptionsAsList = this.getUnboundOptions(optionName);
+	 * if (existingOptionsAsList.size() == 0) { JAXBElement<String> newElement =
+	 * new JAXBElement<String>( new
+	 * QName("http://marklogic.com/appservices/search", optionName),
+	 * String.class, new String(value)); logger.debug("Here is the new element "
+	 * + newElement.getName() + " and its value " + newElement.getValue());
+	 * this.jaxbOptions.getQueryOptions().add(newElement); } else {
 	 * 
-	 * 
-	 * public boolean getDebug() { ... }; public void setDebug(boolean debug) {
-	 * ... }; public int getConcurrencyLevel() { ... }; public void
-	 * setConcurrencyLevel(int concurrencyLevel) { ... }; public String
-	 * getFragmentScope() { ... }; public void setFragmentScope(String
-	 * fragmentScope) { ... }; public int getConcurrencyLevel() { ... }; public
-	 * void setConcurrencyLevel(int concurrencyLevel) { ... }; public long
-	 * getPageLength() { ... }; public void setPageLength(long pageLength) { ...
-	 * }; public double getQualityWeight() { ... }; public void
-	 * setQualityWeight(double qualityWeight) { ... };
+	 * @SuppressWarnings("unchecked") JAXBElement<String> existingOption =
+	 * (JAXBElement<String>) existingOptionsAsList .get(0);
+	 * existingOption.setValue(value); } }
 	 */
+
+	/*********************************************
+	 * Methods for accessing simple atomic options
+	 ********************************************* 
+	 */
+
+	public boolean getReturnFacets() {
+		return (Boolean) getAtomicOption("return-facets");
+	};
+
+	public void setReturnFacets(boolean returnFacets) {
+		setAtomicOption("return-facets", returnFacets, Boolean.class);
+	}
+
+	public void add(SearchOption searchOption) {
+		jaxbOptions.getQueryOptions().add(searchOption.asJaxbObject());
+	}
+
+	public boolean getReturnConstraints() {
+		return (Boolean) getAtomicOption("return-constraints");
+	};
+
+	public void setReturnConstraints(boolean returnConstraints) {
+		setAtomicOption("return-constraints", returnConstraints,
+				Boolean.class);
+	};
+
+	public boolean getReturnMetrics() {
+		return (Boolean) getAtomicOption("return-metrics");
+	};
+
+	public void setReturnMetrics(boolean returnMetrics) {
+		setAtomicOption("return-metrics", returnMetrics, Boolean.class);
+	}
+
+	public boolean getReturnPlan() {
+		return (Boolean) getAtomicOption("return-plan");
+	};
+
+	public void setReturnPlan(boolean returnPlan) {
+		setAtomicOption("return-plan", returnPlan, Boolean.class);
+	};
+
+	public boolean getReturnQText() {
+		return (Boolean) getAtomicOption("return-qtext");
+	};
+
+	public void setReturnQueryText(boolean returnQueryText) {
+		setAtomicOption("return-qtext", returnQueryText, Boolean.class);
+	};
+
+	public boolean getReturnResults() {
+		return (Boolean) getAtomicOption("return-results");
+	};
+
+	public void setReturnResults(boolean returnResults) {
+		setAtomicOption("return-results", returnResults, Boolean.class);
+	};
+
+	public boolean getReturnSimilar() {
+		return (Boolean) getAtomicOption("return-similar");
+	};
+
+	public void setReturnSimilar(boolean returnSimilar) {
+		setAtomicOption("return-similar", returnSimilar, Boolean.class);
+
+	};
+
+	public boolean getDebug() {
+		return (Boolean) getAtomicOption("debug");
+	};
+
+	public void setDebug(boolean debug) {
+		setAtomicOption("debug", debug, Boolean.class);
+	};
+
+	public String getFragmentScope() {
+		return (String) getAtomicOption("fragment-scope");
+	};
+
+	public void setFragmentScope(String fragmentScope) {
+		setAtomicOption("fragment-scope", fragmentScope, String.class);
+	};
+
+	public int getConcurrencyLevel() {
+		return (Integer) getAtomicOption("concurrency-level");
+	};
+
+	public void setConcurrencyLevel(int concurrencyLevel) {
+		setAtomicOption("concurrency-level", concurrencyLevel, Integer.class);
+	};
+
+	public long getPageLength() {
+		return (Long) getAtomicOption("page-length");
+	};
+
+	public void setPageLength(long pageLength) {
+		setAtomicOption("page-length", pageLength, Long.class);
+
+	};
+
+	public double getQualityWeight() {
+		return (Double) getAtomicOption("quality-weight");
+	};
+
+	public void setQualityWeight(double qualityWeight) {
+		setAtomicOption("quality-weight", qualityWeight, Double.class);
+	};
 }

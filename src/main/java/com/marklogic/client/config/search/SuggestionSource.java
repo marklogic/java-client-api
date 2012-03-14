@@ -5,7 +5,7 @@ public class SuggestionSource extends IndexableConstraint implements
 
 	public SuggestionSource(
 			com.marklogic.client.config.search.jaxb.SuggestionSource ot) {
-		// TODO Auto-generated constructor stub
+		super(null);
 	}
 
 }

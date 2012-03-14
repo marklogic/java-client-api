@@ -5,7 +5,9 @@ public class DefaultSuggestionSource extends IndexableConstraint implements
 
 	public DefaultSuggestionSource(
 			com.marklogic.client.config.search.jaxb.DefaultSuggestionSource ot) {
-		// TODO Auto-generated constructor stub
+		super(null);
+		
 	}
 
+	
 }

@@ -7,4 +7,10 @@ public class TransformResults implements SearchOption {
 		// TODO Auto-generated constructor stub
 	}
 
+	@Override
+	public Object asJaxbObject() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
