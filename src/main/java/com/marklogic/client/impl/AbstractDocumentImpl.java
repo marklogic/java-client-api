@@ -8,29 +8,29 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.AbstractDocumentBuffer;
-import com.marklogic.client.DocumentCollections;
-import com.marklogic.client.DocumentPermissions;
-import com.marklogic.client.DocumentProperties;
+import com.marklogic.client.AbstractDocumentManager;
+import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.RequestLogger;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.docio.AbstractReadHandle;
 import com.marklogic.client.docio.AbstractWriteHandle;
-import com.marklogic.client.docio.JSONReadHandle;
-import com.marklogic.client.docio.JSONWriteHandle;
-import com.marklogic.client.docio.XMLReadHandle;
-import com.marklogic.client.docio.XMLWriteHandle;
+import com.marklogic.client.docio.MetadataReadHandle;
+import com.marklogic.client.docio.MetadataWriteHandle;
 
 abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends AbstractWriteHandle>
-	implements AbstractDocumentBuffer<R, W>
+	implements AbstractDocumentManager<R, W>
 {
 	static final private Logger logger = LoggerFactory.getLogger(AbstractDocumentImpl.class);
 
 	private RESTServices services;
+	private String defaultMimetype;
 
-	AbstractDocumentImpl(RESTServices services, String uri) {
+	AbstractDocumentImpl(RESTServices services) {
 		this.services = services;
-		setUri(uri);
+	}
+	AbstractDocumentImpl(RESTServices services, String defaultMimetype) {
+		this(services);
+		this.defaultMimetype = defaultMimetype;
 	}
 
     // select categories of metadata to read, write, or reset
@@ -50,11 +50,11 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
     		processedMetadata.add(category);
     }
 
-	public boolean exists() {
-		return exists(null);
+	public boolean exists(DocumentIdentifier docId) {
+		return exists(docId, null);
     }
-
-	public boolean exists(Transaction transaction) {
+	public boolean exists(DocumentIdentifier docId, Transaction transaction) {
+		String uri = docId.getUri();
 		logger.info("Checking existence of {}",uri);
 
 		Map<String,List<String>> headers = services.head(uri, (transaction == null) ? null : transaction.getTransactionId());
@@ -66,180 +66,107 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 			values = headers.get("Content-Type");
 			if (values != null) {
 				String type = values.get(0);
-				mimetype = type.contains(";") ? type.substring(0, type.indexOf(";")) : type;
+				docId.setMimetype(
+						type.contains(";") ? type.substring(0, type.indexOf(";")) : type
+						);
 			}
 		}
 		if (headers.containsKey("Content-Length")) {
 			values = headers.get("Content-Length");
 			if (values != null) {
-				byteLength = Integer.valueOf(values.get(0));
+				docId.setByteLength(
+						Integer.valueOf(values.get(0))
+						);
 			}
 		}
 
 		return true;
 	}
 
-	public <T extends R> T read(T handle) {
-		return read(handle, null);
+	public <T extends R> T read(DocumentIdentifier docId, T contentHandle) {
+		return read(docId, null, contentHandle, null);
 	}
-
-	public <T extends R> T read(T handle, Transaction transaction) {
+	public <T extends R> T read(DocumentIdentifier docId, MetadataReadHandle metadataHandle, T contentHandle) {
+		return read(docId, metadataHandle, contentHandle, null);
+	}
+	public <T extends R> T read(DocumentIdentifier docId, T contentHandle, Transaction transaction) {
+		return read(docId, null, contentHandle, transaction);
+	}
+	public <T extends R> T read(DocumentIdentifier docId, MetadataReadHandle metadataHandle, T contentHandle, Transaction transaction) {
+		String uri = docId.getUri();
 		logger.info("Reading content for {}",uri);
 
 		// TODO: after response, reset metadata and set flag
-		handle.receiveContent(
-				services.get(handle.receiveAs(), uri, mimetype, processedMetadata,
+		String mimetype = docId.getMimetype();
+		if (mimetype == null && defaultMimetype != null)
+			mimetype = defaultMimetype;
+		contentHandle.receiveContent(
+				services.get(contentHandle.receiveAs(), uri, mimetype, processedMetadata,
 						(transaction == null) ? null : transaction.getTransactionId())
 				);
-		return handle;
+		return contentHandle;
 	}
 
-	public void write(W handle) {
-		write(handle, null);
+	public void write(DocumentIdentifier docId, W contentHandle) {
+		write(docId, null, contentHandle, null);
 	}
-	public void write(W handle, Transaction transaction) {
+	public void write(DocumentIdentifier docId, MetadataWriteHandle metadata, W contentHandle) {
+		write(docId, metadata, contentHandle, null);
+	}
+	public void write(DocumentIdentifier docId, W contentHandle, Transaction transaction) {
+		write(docId, null, contentHandle, transaction);
+	}
+	public void write(DocumentIdentifier docId, MetadataWriteHandle metadata, W contentHandle, Transaction transaction) {
+		String uri = docId.getUri();
 		logger.info("Writing content for {}",uri);
 
-		services.put(uri, mimetype, handle.sendContent(), processedMetadata,
+		String mimetype = docId.getMimetype();
+		if (mimetype == null && defaultMimetype != null)
+			mimetype = defaultMimetype;
+		services.put(uri, mimetype, contentHandle.sendContent(), processedMetadata,
 				(transaction == null) ? null : transaction.getTransactionId());
 	}
 
-	public void delete() {
-		delete(null);
+	public void delete(DocumentIdentifier docId) {
+		delete(docId, null);
 	}
-	public void delete(Transaction transaction) {
+	public void delete(DocumentIdentifier docId, Transaction transaction) {
+		String uri = docId.getUri();
 		logger.info("Deleting {}",uri);
 
 		services.delete(uri, (transaction == null) ? null : transaction.getTransactionId());
 	}
 
-    public void readMetadata() {
-		readMetadata(null);
+    public <T extends MetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle) {
+		return readMetadata(docId, null, null);
     }
-    public void readMetadata(Transaction transaction) {
+    public <T extends MetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle, Transaction transaction) {
+		String uri = docId.getUri();
 		logger.info("Reading metadata for {}",uri);
 
 		// TODO Auto-generated method stub
+		return metadataHandle;
     }
 
-    public void writeMetadata() {
-		writeMetadata(null);
+    public void writeMetadata(DocumentIdentifier docId, MetadataWriteHandle metadataHandle) {
+		writeMetadata(docId, null, null);
     }
-    public void writeMetadata(Transaction transaction) {
+    public void writeMetadata(DocumentIdentifier docId, MetadataWriteHandle metadataHandle, Transaction transaction) {
+		String uri = docId.getUri();
 		logger.info("Writing metadata for {}",uri);
 
 		// TODO Auto-generated method stub
     }
 
-    public void writeDefaultMetadata() {
-		writeDefaultMetadata(null);
+    public void writeDefaultMetadata(DocumentIdentifier docId) {
+		writeDefaultMetadata(docId, null);
     }
-    public void writeDefaultMetadata(Transaction transaction) {
+    public void writeDefaultMetadata(DocumentIdentifier docId, Transaction transaction) {
+		String uri = docId.getUri();
 		logger.info("Resetting metadata for {}",uri);
 
 		// TODO Auto-generated method stub
     }
-
-    public <T extends XMLReadHandle> T readMetadataAsXML(T handle) {
-		return readMetadataAsXML(handle, null);
-    }
-    public <T extends XMLReadHandle> T readMetadataAsXML(T handle, Transaction transaction) {
-		logger.info("Reading metadata as XML for {}",uri);
-
-		handle.receiveContent(
-				services.get(handle.receiveAs(), uri, mimetype, processedMetadata,
-						(transaction == null) ? null : transaction.getTransactionId())
-				);
-		return handle;
-    }
-
-    public void writeMetadataAsXML(XMLWriteHandle handle) {
-    	writeMetadataAsXML(handle, null);
-    }
-    public void writeMetadataAsXML(XMLWriteHandle handle, Transaction transaction) {
-		logger.info("Writing metadata as XML for {}",uri);
-
-		services.put(uri, mimetype, handle.sendContent(), processedMetadata,
-				(transaction == null) ? null : transaction.getTransactionId());
-    }
-
-    public <T extends JSONReadHandle> T readMetadataAsJSON(T handle) {
-		return readMetadataAsJSON(handle, null);
-    }
-    public <T extends JSONReadHandle> T readMetadataAsJSON(T handle, Transaction transaction) {
-		logger.info("Reading metadata as JSON for {}",uri);
-
-		handle.receiveContent(
-				services.get(handle.receiveAs(), uri, mimetype, processedMetadata,
-						(transaction == null) ? null : transaction.getTransactionId())
-				);
-		return handle;
-    }
-    public void writeMetadataAsJSON(JSONWriteHandle handle) {
-    	writeMetadataAsJSON(handle, null);
-    }
-    public void writeMetadataAsJSON(JSONWriteHandle handle, Transaction transaction) {
-		logger.info("Writing metadata as JSON for {}",uri);
-
-		services.put(uri, mimetype, handle.sendContent(), processedMetadata,
-				(transaction == null) ? null : transaction.getTransactionId());
-    }
-
-    private String uri;
-	public String getUri() {
-		return uri;
-	}
-	public void setUri(String uri) {
-		this.uri = uri;
-	}
-
-	private int byteLength = 0;
-	public int getByteLength() {
-    	return byteLength;
-    }
-
-	private String mimetype;
-	public String getMimetype() {
-		return mimetype;
-	}
-	public void setMimetype(String mimetype) {
-		this.mimetype = mimetype;
-	}
-
-	public DocumentCollections getCollections() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	public void setCollections(DocumentCollections collections) {
-		// TODO Auto-generated method stub
-	}
-    public void setCollections(String... collections) {
-		// TODO Auto-generated method stub
-	}
-
-	public DocumentPermissions getPermissions() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	public void setPermissions(DocumentPermissions permissions) {
-		// TODO Auto-generated method stub
-	}
-
-	public DocumentProperties getProperties() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	public void setProperties(DocumentProperties properties) {
-		// TODO Auto-generated method stub
-	}
-
-	private int quality = 0;
-	public int getQuality() {
-		return quality;
-	}
-	public void setQuality(int quality) {
-		this.quality = quality;
-	}
 
 	private String readTransformName;
     public String getReadTransformName() {

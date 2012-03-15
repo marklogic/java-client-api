@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.marklogic.client.AbstractDocumentBuffer.Metadata;
+import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 
 public interface RESTServices {

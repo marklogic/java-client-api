@@ -4,13 +4,13 @@ import java.io.OutputStream;
 
 public interface DatabaseClient {
     public Transaction openTransaction();
-    
+
     // factory methods for documents
-    public GenericDocumentBuffer newDocumentBuffer(String uri);
-    public BinaryDocumentBuffer  newBinaryDocumentBuffer(String uri);
-    public JSONDocumentBuffer    newJSONDocumentBuffer(String uri);
-    public TextDocumentBuffer    newTextDocumentBuffer(String uri);
-    public XMLDocumentBuffer     newXMLDocumentBuffer(String uri);
+    public GenericDocumentManager newDocumentManager();
+    public BinaryDocumentManager  newBinaryDocumentManager();
+    public JSONDocumentManager    newJSONDocumentManager();
+    public TextDocumentManager    newTextDocumentManager();
+    public XMLDocumentManager     newXMLDocumentManager();
  
     public RequestLogger newLogger(OutputStream out);
  

@@ -5,16 +5,16 @@ import java.io.OutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.BinaryDocumentBuffer;
+import com.marklogic.client.BinaryDocumentManager;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.GenericDocumentBuffer;
-import com.marklogic.client.JSONDocumentBuffer;
+import com.marklogic.client.GenericDocumentManager;
+import com.marklogic.client.JSONDocumentManager;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.RequestLogger;
-import com.marklogic.client.TextDocumentBuffer;
+import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.Transaction;
-import com.marklogic.client.XMLDocumentBuffer;
+import com.marklogic.client.XMLDocumentManager;
 
 public class DatabaseClientImpl implements DatabaseClient {
 	static final private Logger logger = LoggerFactory.getLogger(DatabaseClientImpl.class);
@@ -34,24 +34,24 @@ public class DatabaseClientImpl implements DatabaseClient {
 		return new TransactionImpl(transactionId);
 	}
 
-	public GenericDocumentBuffer newDocumentBuffer(String uri) {
-		return new GenericDocumentImpl(services, uri);
+	public GenericDocumentManager newDocumentManager() {
+		return new GenericDocumentImpl(services);
 	}
 
-	public BinaryDocumentBuffer newBinaryDocumentBuffer(String uri) {
-		return new BinaryDocumentImpl(services, uri);
+	public BinaryDocumentManager newBinaryDocumentManager() {
+		return new BinaryDocumentImpl(services);
 	}
 
-	public JSONDocumentBuffer newJSONDocumentBuffer(String uri) {
-		return new JSONDocumentImpl(services, uri);
+	public JSONDocumentManager newJSONDocumentManager() {
+		return new JSONDocumentImpl(services);
 	}
 
-	public TextDocumentBuffer newTextDocumentBuffer(String uri) {
-		return new TextDocumentImpl(services, uri);
+	public TextDocumentManager newTextDocumentManager() {
+		return new TextDocumentImpl(services);
 	}
 
-	public XMLDocumentBuffer newXMLDocumentBuffer(String uri) {
-		return new XMLDocumentImpl(services, uri);
+	public XMLDocumentManager newXMLDocumentManager() {
+		return new XMLDocumentImpl(services);
 	}
 
 	public RequestLogger newLogger(OutputStream out) {

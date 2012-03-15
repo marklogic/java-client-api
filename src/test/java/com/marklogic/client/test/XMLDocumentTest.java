@@ -31,7 +31,8 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import org.xml.sax.Attributes;
 
-import com.marklogic.client.XMLDocumentBuffer;
+import com.marklogic.client.DocumentIdentifier;
+import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputSourceHandle;
 import com.marklogic.client.io.SourceHandle;
@@ -55,6 +56,8 @@ public class XMLDocumentTest {
 	@Test
 	public void testReadWrite() throws ParserConfigurationException, SAXException, IOException, TransformerConfigurationException, TransformerFactoryConfigurationError, XMLStreamException {
 		String uri = "/test/testWrite1.xml";
+		DocumentIdentifier docId = new DocumentIdentifier(uri);
+
 		Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		Element root = domDocument.createElement("root");
 		root.setAttribute("xml:lang", "en");
@@ -62,19 +65,20 @@ public class XMLDocumentTest {
 		root.appendChild(domDocument.createElement("child"));
 		root.appendChild(domDocument.createTextNode("mixed"));
 		domDocument.appendChild(root);
-		XMLDocumentBuffer doc = Common.client.newXMLDocumentBuffer(uri);
-		doc.write(new DOMHandle().on(domDocument));
+
+		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+		docMgr.write(docId, new DOMHandle().on(domDocument));
 		String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
 				.getDOMImplementation()).createLSSerializer().writeToString(domDocument);
-		String docText = doc.read(new StringHandle()).get();
+		String docText = docMgr.read(docId, new StringHandle()).get();
 		assertNotNull("Read null string for XML content",docText);
 		assertXMLEqual("Failed to read XML document as String", docText, domString);
 
-		Document readDoc = doc.read(new DOMHandle()).get();
+		Document readDoc = docMgr.read(docId, new DOMHandle()).get();
 		assertNotNull("Read null document for XML content",readDoc);
 		assertXMLEqual("Failed to read XML document as DOM",domDocument,readDoc);
 		DOMResult result = new DOMResult();
-		doc.read(new SourceHandle()).process(TransformerFactory.newInstance().newTransformer(), result);
+		docMgr.read(docId, new SourceHandle()).process(TransformerFactory.newInstance().newTransformer(), result);
 		readDoc = (Document) result.getNode();
 		assertNotNull("Read null document from transform on XML content",readDoc);
 		assertXMLEqual("Failed to transform XML document with DOM",domDocument,readDoc);
@@ -92,11 +96,11 @@ public class XMLDocumentTest {
 				}
 			}
 		};
-		doc.read(new InputSourceHandle()).process(handler);
+		docMgr.read(docId, new InputSourceHandle()).process(handler);
 		assertTrue("Failed to process XML document with SAX",
 				counter.get("elementCount") == 2 && counter.get("attributeCount") == 2);
 
-		XMLStreamReader streamReader = doc.read(new XMLStreamReaderHandle()).get();
+		XMLStreamReader streamReader = docMgr.read(docId, new XMLStreamReaderHandle()).get();
 		int elementCount = 0;
 		int attributeCount = 0;
 		while (streamReader.hasNext()) {
@@ -111,7 +115,7 @@ public class XMLDocumentTest {
 		assertTrue("Failed to process XML document with StAX stream reader",
 				elementCount == 2 && attributeCount == 2);
 
-		XMLEventReader eventReader = doc.read(new XMLEventReaderHandle()).get();
+		XMLEventReader eventReader = docMgr.read(docId, new XMLEventReaderHandle()).get();
 		elementCount = 0;
 		attributeCount = 0;
 		while (eventReader.hasNext()) {
@@ -141,9 +145,11 @@ public class XMLDocumentTest {
 		String service =
 "http://graphical.weather.gov/xml/sample_products/browser_interface/ndfdBrowserClientByDay.php?whichClient=NDFDgenByDayMultiZipCode&zipCodeList=94070&format=12+hourly&numDays=1";
 		String uri2 = "/test/testWrite2.xml";
-		XMLDocumentBuffer doc = Common.client.newXMLDocumentBuffer(uri2);
-		doc.write(new URIHandle(service));
-		String docText = doc.read(new StringHandle()).get();
+		DocumentIdentifier docId = new DocumentIdentifier(uri2);
+
+		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+		docMgr.write(docId, new URIHandle(service));
+		String docText = docMgr.read(docId, new StringHandle()).get();
 		assertNotNull("Read null string for URI with XML content",docText);
 		assertTrue("Read empty string for URI with XML content",docText.length() > 0);
 	}

@@ -9,7 +9,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.AbstractDocumentBuffer.Metadata;
+import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;

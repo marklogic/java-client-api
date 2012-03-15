@@ -1,5 +1,5 @@
 package com.marklogic.client.docio;
 
-public interface JSONWriteHandle<C> extends AbstractWriteHandle<C> {
+public interface JSONWriteHandle<C> extends MetadataWriteHandle<C> {
 
 }

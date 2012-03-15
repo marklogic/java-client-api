@@ -6,11 +6,11 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.marklogic.client.BinaryDocumentBuffer;
-import com.marklogic.client.GenericDocumentBuffer;
-import com.marklogic.client.JSONDocumentBuffer;
-import com.marklogic.client.TextDocumentBuffer;
-import com.marklogic.client.XMLDocumentBuffer;
+import com.marklogic.client.BinaryDocumentManager;
+import com.marklogic.client.GenericDocumentManager;
+import com.marklogic.client.JSONDocumentManager;
+import com.marklogic.client.TextDocumentManager;
+import com.marklogic.client.XMLDocumentManager;
 
 public class DatabaseClientTest {
 	@BeforeClass
@@ -31,31 +31,31 @@ public class DatabaseClientTest {
 
 	@Test
 	public void testNewDocument() {
-		GenericDocumentBuffer doc = Common.client.newDocumentBuffer("/some/doc.unknown");
+		GenericDocumentManager doc = Common.client.newDocumentManager();
 		assertNotNull("Client could not create generic document", doc);
 	}
 
 	@Test
 	public void testNewBinaryDocument() {
-		BinaryDocumentBuffer doc = Common.client.newBinaryDocumentBuffer("/some/doc.png");
+		BinaryDocumentManager doc = Common.client.newBinaryDocumentManager();
 		assertNotNull("Client could not create binary document", doc);
 	}
 
 	@Test
 	public void testNewJSONDocument() {
-		JSONDocumentBuffer doc = Common.client.newJSONDocumentBuffer("/some/doc.json");
+		JSONDocumentManager doc = Common.client.newJSONDocumentManager();
 		assertNotNull("Client could not create JSON document", doc);
 	}
 
 	@Test
 	public void testNewTextDocument() {
-		TextDocumentBuffer doc = Common.client.newTextDocumentBuffer("/some/doc.txt");
+		TextDocumentManager doc = Common.client.newTextDocumentManager();
 		assertNotNull("Client could not create text document", doc);
 	}
 
 	@Test
 	public void testNewXMLDocument() {
-		XMLDocumentBuffer doc = Common.client.newXMLDocumentBuffer("/some/doc.xml");
+		XMLDocumentManager doc = Common.client.newXMLDocumentManager();
 		assertNotNull("Client could not create XML document", doc);
 	}
 

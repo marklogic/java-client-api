@@ -3,30 +3,38 @@ package com.marklogic.client.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.BinaryDocumentBuffer;
+import com.marklogic.client.BinaryDocumentManager;
+import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.docio.BinaryReadHandle;
 import com.marklogic.client.docio.BinaryWriteHandle;
+import com.marklogic.client.docio.MetadataReadHandle;
 
 class BinaryDocumentImpl
 	extends AbstractDocumentImpl<BinaryReadHandle, BinaryWriteHandle>
-	implements BinaryDocumentBuffer
+	implements BinaryDocumentManager
 {
 	static final private Logger logger = LoggerFactory.getLogger(BinaryDocumentImpl.class);
 
-	BinaryDocumentImpl(RESTServices services, String uri) {
-		super(services, uri);
-		setMimetype("application/x-unknown-content-type");
+	BinaryDocumentImpl(RESTServices services) {
+		super(services, "application/x-unknown-content-type");
 	}
 
-	public <T extends BinaryReadHandle> T read(T handle, long start, long length, Metadata... categories) {
-		return read(handle, start, length, null, categories);
+	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, T contentHandle, long start, long length) {
+		return read(docId, null, contentHandle, start, length, null);
 	}
-	public <T extends BinaryReadHandle> T read(T handle, long start, long length, Transaction transaction, Metadata... categories) {
-		logger.info("Reading range of binary content for {}",getUri());
+	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, MetadataReadHandle metadataHandle, T contentHandle, long start, long length) {
+		return read(docId, metadataHandle, contentHandle, start, length, null);
+	}
+	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, T contentHandle, long start, long length, Transaction transaction) {
+		return read(docId, null, contentHandle, start, length, transaction);
+	}
+	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, MetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction) {
+		String uri = docId.getUri();
+		logger.info("Reading range of binary content for {}",uri);
 
 		// TODO Auto-generated method stub
-		return handle;
+		return contentHandle;
 	}
 
 	private MetadataExtraction metadataExtraction = MetadataExtraction.NONE;

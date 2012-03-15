@@ -10,7 +10,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.marklogic.client.TextDocumentBuffer;
+import com.marklogic.client.DocumentIdentifier;
+import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.InputStreamHandle;
@@ -31,24 +32,25 @@ public class TextDocumentTest {
 	public void testReadWrite() throws IOException {
 		String uri = "/test/testWrite1.txt";
 		String text = "A simple text document";
-		TextDocumentBuffer doc = Common.client.newTextDocumentBuffer(uri);
-		doc.write(new StringHandle().on(text));
-		assertEquals("Text document write difference",text,doc.read(new StringHandle()).get());
+		DocumentIdentifier docId = new DocumentIdentifier(uri);
+		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
+		docMgr.write(docId, new StringHandle().on(text));
+		assertEquals("Text document write difference",text,docMgr.read(docId, new StringHandle()).get());
 
 		BytesHandle bytesHandle = new BytesHandle();
-		doc.read(bytesHandle);
+		docMgr.read(docId, bytesHandle);
 		assertEquals("Text document mismatch reading bytes", bytesHandle.get().length,text.length());
 
 		InputStreamHandle inputStreamHandle = new InputStreamHandle();
-		doc.read(inputStreamHandle);
+		docMgr.read(docId, inputStreamHandle);
 		byte[] b = Common.streamToBytes(inputStreamHandle.get());
 		assertEquals("Text document mismatch reading input stream",new String(b),text);
 
-		Reader reader = doc.read(new ReaderHandle()).get();
+		Reader reader = docMgr.read(docId, new ReaderHandle()).get();
 		String s = Common.readerToString(reader);
 		assertEquals("Text document mismatch with reader",s,text);
 
-		File file = doc.read(new FileHandle()).get();
+		File file = docMgr.read(docId, new FileHandle()).get();
 		assertEquals("Text document mismatch with file",text.length(),file.length());
 	}
 
