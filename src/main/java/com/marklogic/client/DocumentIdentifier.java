@@ -13,6 +13,10 @@ public class DocumentIdentifier {
 	public void setUri(String uri) {
 		this.uri = uri;
 	}
+	public DocumentIdentifier on(String uri) {
+		setUri(uri);
+		return this;
+	}
 
 	private int byteLength = 0;
 	public int getByteLength() {
