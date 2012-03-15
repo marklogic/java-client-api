@@ -27,6 +27,11 @@ public class RangeConstraint extends IndexableConstraint implements
 		this(name, new Range());
 	}
 
+	/**
+	 * add a bucket to a range constraint to support facets.  This method adds a bucket with no upper or lower bounds.
+	 * @param name Name of the bucket.
+	 * @param label Label for the bucket to be used in text.
+	 */
 	public void addBucket(String name, String label) {
 		Bucket bucket = new Bucket();
 		bucket.setName(name);
@@ -34,6 +39,13 @@ public class RangeConstraint extends IndexableConstraint implements
 		jaxbObject.getElementOrAttributeOrFragmentScope().add(bucket);
 	}
 
+	/**
+	 * add a bucket to a range constraint to support facets.  This methods adds a bucket with lower and upper bounds defined.
+	 * @param name Name of the bucket element.
+	 * @param label Label for the bucket to be used in text.
+	 * @param ge The lower bound of the bucket.  Stands for "greater than or equal to"
+	 * @param lt The upper bound of the bucket.  Stands for "less than"
+	 */
 	public void addBucket(String name, String label, String ge, String lt) {
 		Bucket bucket = new Bucket();
 		bucket.setName(name);

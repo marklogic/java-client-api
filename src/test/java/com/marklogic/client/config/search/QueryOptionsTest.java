@@ -72,6 +72,16 @@ public class QueryOptionsTest {
 		assertTrue(!options.getReturnFacets());		
 	}
 	
+
+	@Test
+	public void setFragmentScope() {
+		SearchOptions options = new SearchOptions();
+		options.setFragmentScope("Properties");
+		logger.debug("here is fragment-scope: " + options.getFragmentScope());
+		assertEquals(options.getFragmentScope(), "Properties");
+		options.setFragmentScope("Documents");	
+		assertEquals(options.getFragmentScope(), "Documents");
+	}
 	
 	
 	@Test
