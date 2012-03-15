@@ -6,6 +6,9 @@ import com.marklogic.client.docio.GenericReadHandle;
 import com.marklogic.client.docio.GenericWriteHandle;
 import com.marklogic.client.docio.JSONReadHandle;
 import com.marklogic.client.docio.JSONWriteHandle;
+import com.marklogic.client.docio.StructureFormat;
+import com.marklogic.client.docio.StructureReadHandle;
+import com.marklogic.client.docio.StructureWriteHandle;
 import com.marklogic.client.docio.TextReadHandle;
 import com.marklogic.client.docio.TextWriteHandle;
 import com.marklogic.client.docio.XMLReadHandle;
@@ -17,7 +20,8 @@ public class BytesHandle
 		GenericReadHandle<byte[]>, GenericWriteHandle<byte[]>,
 		JSONReadHandle<byte[]>, JSONWriteHandle<byte[]>, 
 		TextReadHandle<byte[]>, TextWriteHandle<byte[]>,
-		XMLReadHandle<byte[]>, XMLWriteHandle<byte[]>
+		XMLReadHandle<byte[]>, XMLWriteHandle<byte[]>,
+		StructureReadHandle<byte[]>, StructureWriteHandle<byte[]>
 {
 	public BytesHandle() {
 		super();
@@ -37,6 +41,14 @@ public class BytesHandle
 	public BytesHandle on(byte[] content) {
 		set(content);
 		return this;
+	}
+
+	private StructureFormat format = StructureFormat.XML;
+	public StructureFormat getFormat() {
+		return format;
+	}
+	public void setFormat(StructureFormat format) {
+		this.format = format;
 	}
 
 	public Class<byte[]> receiveAs() {

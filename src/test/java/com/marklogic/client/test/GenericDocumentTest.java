@@ -11,6 +11,7 @@ import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.docio.StructureFormat;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.StringHandle;
 
@@ -68,8 +69,13 @@ public class GenericDocumentTest {
 
 		docMgr.setMetadataCategories(Metadata.ALL);
 
-		Document domDocument = docMgr.readMetadataAsXML(docId, new DOMHandle()).get();
-		assertTrue("Could not get document metadata as XML", domDocument != null);
+		Document domMetadata = docMgr.readMetadata(docId, new DOMHandle()).get();
+		assertTrue("Could not get document metadata as XML", domMetadata != null);
+
+		StringHandle jsonStringHandle = new StringHandle();
+		jsonStringHandle.setFormat(StructureFormat.JSON);
+		String stringMetadata = docMgr.readMetadata(docId, jsonStringHandle).get();
+		assertTrue("Could not get document metadata as JSON", stringMetadata != null || stringMetadata.length() == 0);
 
 // TODO: verify collections, permissions, properties, and quality; modify and write
 	}

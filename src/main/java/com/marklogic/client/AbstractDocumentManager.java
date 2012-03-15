@@ -9,7 +9,8 @@ import com.marklogic.client.docio.JSONReadHandle;
 import com.marklogic.client.docio.JSONWriteHandle;
 import com.marklogic.client.docio.XMLReadHandle;
 import com.marklogic.client.docio.XMLWriteHandle;
-import com.marklogic.client.io.MetadataHandle;
+import com.marklogic.client.docio.MetadataReadHandle;
+import com.marklogic.client.docio.MetadataWriteHandle;
 
 public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends AbstractWriteHandle> {
     public enum Metadata {
@@ -31,33 +32,23 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
  
     // content with optional metadata
     public <T extends R> T read(DocumentIdentifier docId, T contentHandle);
-    public <T extends R> T read(DocumentIdentifier docId, MetadataHandle metadataHandle, T contentHandle);
+    public <T extends R> T read(DocumentIdentifier docId, MetadataReadHandle metadataHandle, T contentHandle);
     public <T extends R> T read(DocumentIdentifier docId, T contentHandle, Transaction transaction);
-    public <T extends R> T read(DocumentIdentifier docId, MetadataHandle metadataHandle, T contentHandle, Transaction transaction);
+    public <T extends R> T read(DocumentIdentifier docId, MetadataReadHandle metadataHandle, T contentHandle, Transaction transaction);
     public void write(DocumentIdentifier docId, W contentHandle);
-    public void write(DocumentIdentifier docId, MetadataHandle metadata, W contentHandle);
+    public void write(DocumentIdentifier docId, MetadataWriteHandle metadata, W contentHandle);
     public void write(DocumentIdentifier docId, W contentHandle, Transaction transaction);
-    public void write(DocumentIdentifier docId, MetadataHandle metadata, W contentHandle, Transaction transaction);
+    public void write(DocumentIdentifier docId, MetadataWriteHandle metadata, W contentHandle, Transaction transaction);
     public void delete(DocumentIdentifier docId);
     public void delete(DocumentIdentifier docId, Transaction transaction);
 
     // metadata only
-    public MetadataHandle readMetadata(DocumentIdentifier docId, MetadataHandle metadataHandle);
-    public MetadataHandle readMetadata(DocumentIdentifier docId, MetadataHandle metadataHandle, Transaction transaction);
-    public void writeMetadata(DocumentIdentifier docId, MetadataHandle metadataHandle);
-    public void writeMetadata(DocumentIdentifier docId, MetadataHandle metadataHandle, Transaction transaction);
+    public <T extends MetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle);
+    public <T extends MetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle, Transaction transaction);
+    public void writeMetadata(DocumentIdentifier docId, MetadataWriteHandle metadataHandle);
+    public void writeMetadata(DocumentIdentifier docId, MetadataWriteHandle metadataHandle, Transaction transaction);
     public void writeDefaultMetadata(DocumentIdentifier docId);
     public void writeDefaultMetadata(DocumentIdentifier docId, Transaction transaction);
-
-    public <T extends XMLReadHandle> T readMetadataAsXML(DocumentIdentifier docId, T metadataHandle);
-    public <T extends XMLReadHandle> T readMetadataAsXML(DocumentIdentifier docId, T metadataHandle, Transaction transaction);
-    public void writeMetadataAsXML(DocumentIdentifier docId, XMLWriteHandle metadataHandle);
-    public void writeMetadataAsXML(DocumentIdentifier docId, XMLWriteHandle metadataHandle, Transaction transaction);
-
-    public <T extends JSONReadHandle> T readMetadataAsJSON(DocumentIdentifier docId, T metadataHandle);
-    public <T extends JSONReadHandle> T readMetadataAsJSON(DocumentIdentifier docId, T metadataHandle, Transaction transaction);
-    public void writeMetadataAsJSON(DocumentIdentifier docId, JSONWriteHandle metadataHandle);
-    public void writeMetadataAsJSON(DocumentIdentifier docId, JSONWriteHandle metadataHandle, Transaction transaction);
 
     public String getReadTransformName();
     public void setReadTransformName(String name);

@@ -14,11 +14,16 @@ import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSException;
 import org.xml.sax.SAXException;
 
+import com.marklogic.client.docio.StructureFormat;
+import com.marklogic.client.docio.StructureReadHandle;
+import com.marklogic.client.docio.StructureWriteHandle;
 import com.marklogic.client.docio.XMLReadHandle;
 import com.marklogic.client.docio.XMLWriteHandle;
 
 public class DOMHandle
-	implements XMLReadHandle<InputStream>, XMLWriteHandle<String>
+	implements
+		XMLReadHandle<InputStream>, XMLWriteHandle<String>,
+		StructureReadHandle<InputStream>, StructureWriteHandle<String>
 {
 	static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
 
@@ -41,6 +46,14 @@ public class DOMHandle
     	set(content);
     	return this;
     }
+
+	public StructureFormat getFormat() {
+		return StructureFormat.XML;
+	}
+	public void setFormat(StructureFormat format) {
+		if (format != StructureFormat.XML)
+			new RuntimeException("DOMHandle supports the XML format only");
+	}
 
 	public Class<InputStream> receiveAs() {
 		return InputStream.class;

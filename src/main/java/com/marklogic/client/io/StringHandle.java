@@ -2,6 +2,9 @@ package com.marklogic.client.io;
 
 import com.marklogic.client.docio.JSONReadHandle;
 import com.marklogic.client.docio.JSONWriteHandle;
+import com.marklogic.client.docio.StructureFormat;
+import com.marklogic.client.docio.StructureReadHandle;
+import com.marklogic.client.docio.StructureWriteHandle;
 import com.marklogic.client.docio.TextReadHandle;
 import com.marklogic.client.docio.TextWriteHandle;
 import com.marklogic.client.docio.XMLReadHandle;
@@ -11,7 +14,8 @@ public class StringHandle
 	implements
 		JSONReadHandle<String>, JSONWriteHandle<String>, 
 		TextReadHandle<String>, TextWriteHandle<String>,
-		XMLReadHandle<String>, XMLWriteHandle<String>
+		XMLReadHandle<String>, XMLWriteHandle<String>,
+		StructureReadHandle<String>, StructureWriteHandle<String>
 {
 	public StringHandle() {
 		super();
@@ -31,6 +35,14 @@ public class StringHandle
 	public StringHandle on(String content) {
 		set(content);
 		return this;
+	}
+
+	private StructureFormat format = StructureFormat.XML;
+	public StructureFormat getFormat() {
+		return format;
+	}
+	public void setFormat(StructureFormat format) {
+		this.format = format;
 	}
 
 	public Class<String> receiveAs() {

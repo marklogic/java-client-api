@@ -4,6 +4,9 @@ import java.io.Reader;
 
 import com.marklogic.client.docio.JSONReadHandle;
 import com.marklogic.client.docio.JSONWriteHandle;
+import com.marklogic.client.docio.StructureFormat;
+import com.marklogic.client.docio.StructureReadHandle;
+import com.marklogic.client.docio.StructureWriteHandle;
 import com.marklogic.client.docio.TextReadHandle;
 import com.marklogic.client.docio.TextWriteHandle;
 import com.marklogic.client.docio.XMLReadHandle;
@@ -13,7 +16,8 @@ public class ReaderHandle
 	implements
 		JSONReadHandle<Reader>, JSONWriteHandle<Reader>, 
 		TextReadHandle<Reader>, TextWriteHandle<Reader>,
-		XMLReadHandle<Reader>, XMLWriteHandle<Reader>
+		XMLReadHandle<Reader>, XMLWriteHandle<Reader>,
+		StructureReadHandle<Reader>, StructureWriteHandle<Reader>
 {
     public ReaderHandle() {
     }
@@ -28,6 +32,14 @@ public class ReaderHandle
 	public ReaderHandle on(Reader content) {
 		set(content);
 		return this;
+	}
+
+	private StructureFormat format = StructureFormat.XML;
+	public StructureFormat getFormat() {
+		return format;
+	}
+	public void setFormat(StructureFormat format) {
+		this.format = format;
 	}
 
 	public Class<Reader> receiveAs() {

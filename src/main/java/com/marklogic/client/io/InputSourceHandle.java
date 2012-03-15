@@ -13,9 +13,13 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import com.marklogic.client.docio.StructureFormat;
+import com.marklogic.client.docio.StructureReadHandle;
 import com.marklogic.client.docio.XMLReadHandle;
 
-public class InputSourceHandle implements XMLReadHandle<InputStream> {
+public class InputSourceHandle
+	implements XMLReadHandle<InputStream>, StructureReadHandle<InputStream>
+{
 	static final private Logger logger = LoggerFactory.getLogger(InputSourceHandle.class);
 
 	public InputSourceHandle() {
@@ -42,6 +46,14 @@ public class InputSourceHandle implements XMLReadHandle<InputStream> {
 			logger.error("Failed to process input source with SAX content handler",e);
 			throw new RuntimeException(e);
 		}
+	}
+
+	public StructureFormat getFormat() {
+		return StructureFormat.XML;
+	}
+	public void setFormat(StructureFormat format) {
+		if (format != StructureFormat.XML)
+			new RuntimeException("InputSourceHandle supports the XML format only");
 	}
 
 	public Class<InputStream> receiveAs() {

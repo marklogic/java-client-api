@@ -17,6 +17,9 @@ import com.marklogic.client.docio.GenericReadHandle;
 import com.marklogic.client.docio.GenericWriteHandle;
 import com.marklogic.client.docio.JSONReadHandle;
 import com.marklogic.client.docio.JSONWriteHandle;
+import com.marklogic.client.docio.StructureFormat;
+import com.marklogic.client.docio.StructureReadHandle;
+import com.marklogic.client.docio.StructureWriteHandle;
 import com.marklogic.client.docio.TextReadHandle;
 import com.marklogic.client.docio.TextWriteHandle;
 import com.marklogic.client.docio.XMLReadHandle;
@@ -24,8 +27,11 @@ import com.marklogic.client.docio.XMLWriteHandle;
 
 public class URIHandle
 implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
-    GenericReadHandle<InputStream>, GenericWriteHandle<InputStream>, JSONReadHandle<InputStream>, JSONWriteHandle<InputStream>, 
-    TextReadHandle<InputStream>, TextWriteHandle<InputStream>, XMLReadHandle<InputStream>, XMLWriteHandle<InputStream>
+    GenericReadHandle<InputStream>, GenericWriteHandle<InputStream>,
+    JSONReadHandle<InputStream>, JSONWriteHandle<InputStream>, 
+    TextReadHandle<InputStream>, TextWriteHandle<InputStream>,
+    XMLReadHandle<InputStream>, XMLWriteHandle<InputStream>,
+	StructureReadHandle<InputStream>, StructureWriteHandle<InputStream>
 {
 	static final private Logger logger = LoggerFactory.getLogger(URIHandle.class);
 
@@ -49,6 +55,14 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 	public URIHandle on(String uri) {
 		set(uri);
 		return this;
+	}
+
+	private StructureFormat format = StructureFormat.XML;
+	public StructureFormat getFormat() {
+		return format;
+	}
+	public void setFormat(StructureFormat format) {
+		this.format = format;
 	}
 
 	public Class<InputStream> receiveAs() {

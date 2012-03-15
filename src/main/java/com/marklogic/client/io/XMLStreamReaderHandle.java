@@ -10,9 +10,13 @@ import javax.xml.stream.XMLStreamReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.marklogic.client.docio.StructureFormat;
+import com.marklogic.client.docio.StructureReadHandle;
 import com.marklogic.client.docio.XMLReadHandle;
 
-public class XMLStreamReaderHandle implements XMLReadHandle<InputStream> {
+public class XMLStreamReaderHandle
+	implements XMLReadHandle<InputStream>, StructureReadHandle<InputStream>
+{
 	static final private Logger logger = LoggerFactory.getLogger(XMLStreamReaderHandle.class);
 
 	public XMLStreamReaderHandle() {
@@ -21,6 +25,14 @@ public class XMLStreamReaderHandle implements XMLReadHandle<InputStream> {
 	private XMLStreamReader content;
 	public XMLStreamReader get() {
 		return content;
+	}
+
+	public StructureFormat getFormat() {
+		return StructureFormat.XML;
+	}
+	public void setFormat(StructureFormat format) {
+		if (format != StructureFormat.XML)
+			new RuntimeException("XMLStreamReaderHandle supports the XML format only");
 	}
 
 	public Class<InputStream> receiveAs() {
