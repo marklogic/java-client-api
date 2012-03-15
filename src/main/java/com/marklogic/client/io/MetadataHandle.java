@@ -4,12 +4,11 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
 
-import com.marklogic.client.docio.MetadataReadHandle;
-import com.marklogic.client.docio.MetadataWriteHandle;
+import com.marklogic.client.docio.AbstractReadHandle;
+import com.marklogic.client.docio.AbstractWriteHandle;
 
 public class MetadataHandle
-    implements
-        MetadataReadHandle<InputStream>, MetadataWriteHandle<InputStream>
+    implements AbstractReadHandle<InputStream>, AbstractWriteHandle<InputStream>
 {
 	public interface DocumentCollections extends Set<String> {
 	}

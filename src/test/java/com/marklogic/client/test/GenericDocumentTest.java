@@ -68,17 +68,10 @@ public class GenericDocumentTest {
 
 		docMgr.setMetadataCategories(Metadata.ALL);
 
-		String temporaryTest = docMgr.readMetadata(docId, new StringHandle()).get();
-		assertTrue("Could not get document metadata as XML", temporaryTest != null && temporaryTest.length() > 0);
-System.out.println(temporaryTest);
-/*
-
- */
-		Document domDocument = docMgr.readMetadata(docId, new DOMHandle()).get();
+		Document domDocument = docMgr.readMetadataAsXML(docId, new DOMHandle()).get();
 		assertTrue("Could not get document metadata as XML", domDocument != null);
 
 // TODO: verify collections, permissions, properties, and quality; modify and write
-//		assertTrue("Could not get document metadata as XML", domDocument.getElementsByTagNameNS("", "") != null);
 	}
 
 /*
