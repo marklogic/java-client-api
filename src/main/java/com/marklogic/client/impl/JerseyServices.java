@@ -1,5 +1,6 @@
 package com.marklogic.client.impl;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -107,8 +108,11 @@ public class JerseyServices implements RESTServices {
 	private WebResource makeDocumentResource(String uri, Set<Metadata> categories, String transactionId) {
 		MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
 		queryParams.add("uri", uri);
-		if (categories == null || categories.size() == 0)
+		if (categories == null || categories.size() == 0 || categories.contains(Metadata.NONE))
 			queryParams.add("category", "content");
+		else if (categories.contains(Metadata.ALL))
+			queryParams.put("category", Arrays.asList(new String[]{
+					"collections", "permissions", "properties", "quality"}));
 		else
 			for (Metadata category: categories)
 				queryParams.add("category", category.name().toLowerCase());

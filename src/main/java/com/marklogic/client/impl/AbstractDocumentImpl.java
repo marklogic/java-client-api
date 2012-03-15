@@ -94,16 +94,34 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 	}
 	public <T extends R> T read(DocumentIdentifier docId, MetadataReadHandle metadataHandle, T contentHandle, Transaction transaction) {
 		String uri = docId.getUri();
-		logger.info("Reading content for {}",uri);
+		logger.info("Reading metadata and content for {}",uri);
 
-		// TODO: after response, reset metadata and set flag
 		String mimetype = docId.getMimetype();
 		if (mimetype == null && defaultMimetype != null)
 			mimetype = defaultMimetype;
-		contentHandle.receiveContent(
+
+		if (metadataHandle != null && contentHandle != null) {
+			// TODO: multipart
+			;
+		} else if (metadataHandle != null) {
+			Set<Metadata> metadata = processedMetadata;
+			if (processedMetadata == null || processedMetadata.contains(Metadata.NONE)) {
+				metadata = new HashSet<Metadata>();
+				metadata.add(Metadata.ALL);
+			}
+			metadataHandle.receiveContent(
+					services.get(metadataHandle.receiveAs(), uri, mimetype, metadata,
+							(transaction == null) ? null : transaction.getTransactionId())
+					);
+		} else if (contentHandle != null) {
+			contentHandle.receiveContent(
 				services.get(contentHandle.receiveAs(), uri, mimetype, processedMetadata,
 						(transaction == null) ? null : transaction.getTransactionId())
 				);
+		}
+
+		// TODO: after response, reset metadata and set flag
+
 		return contentHandle;
 	}
 
@@ -116,15 +134,29 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 	public void write(DocumentIdentifier docId, W contentHandle, Transaction transaction) {
 		write(docId, null, contentHandle, transaction);
 	}
-	public void write(DocumentIdentifier docId, MetadataWriteHandle metadata, W contentHandle, Transaction transaction) {
+	public void write(DocumentIdentifier docId, MetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction) {
 		String uri = docId.getUri();
 		logger.info("Writing content for {}",uri);
 
 		String mimetype = docId.getMimetype();
 		if (mimetype == null && defaultMimetype != null)
 			mimetype = defaultMimetype;
-		services.put(uri, mimetype, contentHandle.sendContent(), processedMetadata,
+
+		if (metadataHandle != null && contentHandle != null) {
+			// TODO: multipart
+			;
+		} else if (metadataHandle != null) {
+			Set<Metadata> metadata = processedMetadata;
+			if (processedMetadata == null || processedMetadata.contains(Metadata.NONE)) {
+				metadata = new HashSet<Metadata>();
+				metadata.add(Metadata.ALL);
+			}
+			services.put(uri, mimetype, metadataHandle.sendContent(), metadata,
+					(transaction == null) ? null : transaction.getTransactionId());
+		} else if (contentHandle != null) {
+			services.put(uri, mimetype, contentHandle.sendContent(), processedMetadata,
 				(transaction == null) ? null : transaction.getTransactionId());
+		}
 	}
 
 	public void delete(DocumentIdentifier docId) {
@@ -138,24 +170,19 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 	}
 
     public <T extends MetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle) {
-		return readMetadata(docId, null, null);
+		return readMetadata(docId, metadataHandle, null);
     }
     public <T extends MetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle, Transaction transaction) {
-		String uri = docId.getUri();
-		logger.info("Reading metadata for {}",uri);
+		read(docId, metadataHandle, null, transaction);
 
-		// TODO Auto-generated method stub
 		return metadataHandle;
     }
 
     public void writeMetadata(DocumentIdentifier docId, MetadataWriteHandle metadataHandle) {
-		writeMetadata(docId, null, null);
+		writeMetadata(docId, metadataHandle, null);
     }
     public void writeMetadata(DocumentIdentifier docId, MetadataWriteHandle metadataHandle, Transaction transaction) {
-		String uri = docId.getUri();
-		logger.info("Writing metadata for {}",uri);
-
-		// TODO Auto-generated method stub
+		write(docId, metadataHandle, null, transaction);
     }
 
     public void writeDefaultMetadata(DocumentIdentifier docId) {

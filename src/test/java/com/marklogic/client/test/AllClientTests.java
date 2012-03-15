@@ -15,6 +15,7 @@ import org.junit.runners.Suite;
 	DatabaseClientTest.class,
 	GenericDocumentTest.class,
 	BinaryDocumentTest.class,
+	JSONDocumentTest.class,
 	TextDocumentTest.class,
 	XMLDocumentTest.class
 	})

@@ -51,6 +51,7 @@ public class XMLDocumentTest {
 		Common.release();
 	}
 
+	// TODO: repair parameter
 	// TODO: test JAXB reader and writer
 
 	@Test
@@ -68,6 +69,7 @@ public class XMLDocumentTest {
 
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		docMgr.write(docId, new DOMHandle().on(domDocument));
+
 		String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
 				.getDOMImplementation()).createLSSerializer().writeToString(domDocument);
 		String docText = docMgr.read(docId, new StringHandle()).get();

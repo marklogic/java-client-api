@@ -5,9 +5,13 @@ import static org.junit.Assert.assertTrue;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.w3c.dom.Document;
 
+import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.TextDocumentManager;
+import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.StringHandle;
 
 public class GenericDocumentTest {
@@ -50,23 +54,34 @@ public class GenericDocumentTest {
 		assertTrue("Could not delete document", text == null && hadException);
 	}
 
-/*
 	@Test
 	public void testReadWriteMetadata() {
-		String uri = "/test/testMetadataXML1.txt";
+		String uri = "/test/testMetadataXML1.xml";
+		String content = "<?xml version='1.0' encoding='UTF-8'?>\n"+
+			"<root mode='mixed' xml:lang='en'>\n"+
+			"<child mode='basic'>value</child>\n"+
+			"A simple XML document\n"+
+			"</root>\n";
 		DocumentIdentifier docId = new DocumentIdentifier(uri);
-		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
-		docMgr.write(docId, new StringHandle().on("A simple text document"));
+		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+		docMgr.write(docId, new StringHandle().on(content));
+
+		docMgr.setMetadataCategories(Metadata.ALL);
+
 		String temporaryTest = docMgr.readMetadata(docId, new StringHandle()).get();
 		assertTrue("Could not get document metadata as XML", temporaryTest != null && temporaryTest.length() > 0);
+System.out.println(temporaryTest);
+/*
 
-// TODO: server is producing invalid XML
-//		Document domDocument = docMgr.readMetadataAsXML(new DOMHandle()).get();
-//		assertTrue("Could not get document metadata as XML", domDocument != null);
+ */
+		Document domDocument = docMgr.readMetadata(docId, new DOMHandle()).get();
+		assertTrue("Could not get document metadata as XML", domDocument != null);
+
 // TODO: verify collections, permissions, properties, and quality; modify and write
 //		assertTrue("Could not get document metadata as XML", domDocument.getElementsByTagNameNS("", "") != null);
 	}
 
+/*
 	@Test
 	public void testResetMetadata() {
 		fail("Not yet implemented");
