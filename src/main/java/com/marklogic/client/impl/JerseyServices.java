@@ -23,7 +23,9 @@ import com.sun.jersey.api.client.filter.HTTPDigestAuthFilter;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import com.sun.jersey.multipart.BodyPart;
+import com.sun.jersey.multipart.Boundary;
 import com.sun.jersey.multipart.MultiPart;
+import com.sun.jersey.multipart.MultiPartMediaTypes;
 
 public class JerseyServices implements RESTServices {
 	static final private Logger logger = LoggerFactory.getLogger(JerseyServices.class);
@@ -58,7 +60,9 @@ public class JerseyServices implements RESTServices {
 	public void delete(String uri, String transactionId) {
 		logger.info("Deleting {} in transaction {}", uri, transactionId);
 
-		ClientResponse response = makeDocumentResource(uri, null, transactionId).delete(ClientResponse.class);
+		ClientResponse response = makeDocumentResource(
+				makeDocumentParams(uri, null, transactionId)
+				).delete(ClientResponse.class);
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close(); 
@@ -70,8 +74,9 @@ public class JerseyServices implements RESTServices {
 	public <T> T get(String uri, String transactionId, Set<Metadata> categories, String mimetype, Class<T> as) {
 		logger.info("Getting {} in transaction {}", uri, transactionId);
 
-		ClientResponse response =
-			makeDocumentResource(uri, categories, transactionId).accept(mimetype).get(ClientResponse.class);
+		ClientResponse response = makeDocumentResource(
+				makeDocumentParams(uri, categories, transactionId)
+			).accept(mimetype).get(ClientResponse.class);
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
 		if (status != ClientResponse.Status.OK) {
@@ -83,8 +88,21 @@ public class JerseyServices implements RESTServices {
 	public Object[] get(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Class[] as) {
 		logger.info("Getting multipart for {} in transaction {}", uri, transactionId);
 
+		if (mimetypes == null || mimetypes.length == 0)
+			throw new RuntimeException("mime types not specified for read");
+		if (as == null || as.length == 0)
+			throw new RuntimeException("handle classes not specified for read");
+		if (mimetypes.length != as.length)
+			throw new RuntimeException("mistmatch between mime types and handle classes for read");
+
+		MultivaluedMap<String, String> docParams = makeDocumentParams(uri, categories, transactionId, true);
+		if (mimetypes[0].startsWith("application/")) {
+			docParams.add("format", mimetypes[0].substring("application/".length()));
+		}
+
+// "multipart/mixed; boundary=document-metadata-content-boundary"
 		ClientResponse response =
-			makeDocumentResource(uri, categories, transactionId).accept("multipart/mixed").get(ClientResponse.class);
+			makeDocumentResource(docParams).accept(Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE)).get(ClientResponse.class);
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
 		if (status != ClientResponse.Status.OK) {
@@ -117,7 +135,9 @@ public class JerseyServices implements RESTServices {
 	public Map<String,List<String>> head(String uri, String transactionId) {
 		logger.info("Requesting head for {} in transaction {}", uri, transactionId);
 
-		ClientResponse response = makeDocumentResource(uri, null, transactionId).head();
+		ClientResponse response = makeDocumentResource(
+					makeDocumentParams(uri, null, transactionId)
+				).head();
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close(); 
@@ -132,8 +152,9 @@ public class JerseyServices implements RESTServices {
 	public void put(String uri, String transactionId, Set<Metadata> categories, String mimetype, Object value) {
 		logger.info("Putting {} in transaction {}", uri, transactionId);
 
-		ClientResponse response =
-			makeDocumentResource(uri, categories, transactionId).type(mimetype).put(ClientResponse.class, value);
+		ClientResponse response = makeDocumentResource(
+					makeDocumentParams(uri, categories, transactionId)
+				).type(mimetype).put(ClientResponse.class, value);
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close(); 
@@ -144,14 +165,30 @@ public class JerseyServices implements RESTServices {
 	public void put(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Object[] values) {
 		logger.info("Putting multipart for {} in transaction {}", uri, transactionId);
 
+		if (mimetypes == null || mimetypes.length == 0)
+			throw new RuntimeException("mime types not specified for write");
+		if (values == null || values.length == 0)
+			throw new RuntimeException("values not specified for write");
+		if (mimetypes.length != values.length)
+			throw new RuntimeException("mistmatch between mime types and values for write");
+
 		MultiPart multiPart = new MultiPart();
+		multiPart.setMediaType(new MediaType("multipart","mixed"));
 		for (int i=0; i < mimetypes.length; i++) {
-			String[] typeParts = mimetypes[i].split("/", 1);
-			multiPart = multiPart.bodyPart(new BodyPart(values[i], new MediaType(typeParts[0],typeParts[1])));
+			String[] typeParts = 
+				mimetypes[i].contains("/") ? mimetypes[i].split("/", 2) : null;
+			multiPart = multiPart.bodyPart(new BodyPart(values[i],
+				typeParts != null ?
+					new MediaType(typeParts[0],typeParts[1]) : MediaType.WILDCARD_TYPE
+					));
 		}
 
+		MultivaluedMap<String, String> docParams = makeDocumentParams(uri, categories, transactionId, true);
+
+// .type("multipart/mixed; boundary=document-metadata-content-boundary")
+// "multipart/mixed"
 		ClientResponse response =
-			makeDocumentResource(uri, categories, transactionId).type("multipart/mixed").put(ClientResponse.class, multiPart);
+			makeDocumentResource(docParams).type(Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE)).put(ClientResponse.class, multiPart);
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close(); 
@@ -160,19 +197,33 @@ public class JerseyServices implements RESTServices {
 		}
 	}
 
-	private WebResource makeDocumentResource(String uri, Set<Metadata> categories, String transactionId) {
-		MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
-		queryParams.add("uri", uri);
-		if (categories == null || categories.size() == 0 || categories.contains(Metadata.NONE))
-			queryParams.add("category", "content");
-		else if (categories.contains(Metadata.ALL))
-			queryParams.put("category", Arrays.asList(new String[]{
-					"collections", "permissions", "properties", "quality"}));
-		else
-			for (Metadata category: categories)
-				queryParams.add("category", category.name().toLowerCase());
+	private MultivaluedMap<String, String> makeDocumentParams(String uri, Set<Metadata> categories, String transactionId) {
+		return makeDocumentParams(uri, categories, transactionId, false);
+	}
+	private MultivaluedMap<String, String> makeDocumentParams(String uri, Set<Metadata> categories, String transactionId, boolean withContent) {
+		MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
+		docParams.add("uri", uri);
+		if (categories == null || categories.size() == 0 || categories.contains(Metadata.NONE)) {
+			docParams.add("category", "content");
+		} else {
+			if (withContent)
+				docParams.add("category", "content");
+			if (categories.contains(Metadata.ALL)) {
+				for (String category: new String[]{
+					"collections", "permissions", "properties", "quality"
+					})
+					docParams.add("category", category);
+			} else {
+				for (Metadata category: categories)
+					docParams.add("category", category.name().toLowerCase());
+			}
+		}
 		if (transactionId != null)
-			queryParams.add("txid", transactionId);
+			docParams.add("txid", transactionId);
+		return docParams;
+	}
+
+	private WebResource makeDocumentResource(MultivaluedMap<String, String> queryParams) {
 		return connection.path("documents").queryParams(queryParams);
 	}
 }

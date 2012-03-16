@@ -122,6 +122,9 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 			} else {
 				metadata = processedMetadata;
 			}
+		} else {
+			metadata = new HashSet<Metadata>();
+			metadata.add(Metadata.NONE);
 		}
 
 		String contentMimetype = null;
@@ -156,7 +159,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 				services.get(
 						uri,
 						(transaction == null) ? null : transaction.getTransactionId(),
-						processedMetadata,
+						metadata,
 						contentMimetype,
 						contentHandle.receiveAs()
 						)
@@ -200,6 +203,9 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 			} else {
 				metadata = processedMetadata;
 			}
+		} else {
+			metadata = new HashSet<Metadata>();
+			metadata.add(Metadata.NONE);
 		}
 
 		String contentMimetype = null;
@@ -229,7 +235,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 			services.put(
 					uri,
 					(transaction == null) ? null : transaction.getTransactionId(),
-					processedMetadata,
+					metadata,
 					contentMimetype,
 					contentHandle.sendContent()
 					);

@@ -1,11 +1,17 @@
 package com.marklogic.client.test;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+
+import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.DocumentIdentifier;
@@ -56,7 +62,7 @@ public class GenericDocumentTest {
 	}
 
 	@Test
-	public void testReadWriteMetadata() {
+	public void testReadWriteMetadata() throws SAXException, IOException, XpathException {
 		String uri = "/test/testMetadataXML1.xml";
 		String content = "<?xml version='1.0' encoding='UTF-8'?>\n"+
 			"<root mode='mixed' xml:lang='en'>\n"+
@@ -67,31 +73,31 @@ public class GenericDocumentTest {
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		docMgr.write(docId, new StringHandle().on(content));
 
-		String metadata = "<?xml version='1.0' encoding='UTF-8'?>\n"+
-		"<rapi:metadata xmlns:rapi=\"http://marklogic.com/rest-api\">\n"+
-		  "<rapi:collections>\n"+
-		    "<rapi:collection>/document/collection1</rapi:collection>\n"+
-		    "<rapi:collection>/document/collection2</rapi:collection>\n"+
-		  "</rapi:collections>\n"+
-		  "<rapi:permissions>\n"+
-		    "<rapi:permission>\n"+
-		      "<rapi:role-name>app-user</rapi:role-name>\n"+
-		      "<rapi:capability>update</rapi:capability>\n"+
-		      "<rapi:capability>read</rapi:capability>\n"+
-		    "</rapi:permission>\n"+
-		  "</rapi:permissions>\n"+
-		  "<prop:properties xmlns:prop=\"http://marklogic.com/xdmp/property\">\n"+
-		    "<first>value one</first>\n"+
-		    "<second>2</second>\n"+
-		  "</prop:properties>\n"+
-		  "<rapi:quality>3</rapi:quality>\n"+
+		String metadata = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
+		"<rapi:metadata uri=\"/test/testMetadataXML1.xml\" xsi:schemaLocation=\"http://marklogic.com/rest-api/database dbmeta.xsd\" xmlns:rapi=\"http://marklogic.com/rest-api\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"+
+		"  <rapi:collections>\n"+
+		"    <rapi:collection>/document/collection1</rapi:collection>\n"+
+		"    <rapi:collection>/document/collection2</rapi:collection>\n"+
+		"  </rapi:collections>\n"+
+		"  <rapi:permissions>\n"+
+		"    <rapi:permission>\n"+
+		"      <rapi:role-name>app-user</rapi:role-name>\n"+
+		"      <rapi:capability>update</rapi:capability>\n"+
+		"      <rapi:capability>read</rapi:capability>\n"+
+		"    </rapi:permission>\n"+
+		"  </rapi:permissions>\n"+
+		"  <prop:properties xmlns:prop=\"http://marklogic.com/xdmp/property\">\n"+
+		"    <first>value one</first>\n"+
+		"    <second>2</second>\n"+
+		"  </prop:properties>\n"+
+		"  <rapi:quality>3</rapi:quality>\n"+
 		"</rapi:metadata>\n";
 
 		docMgr.setMetadataCategories(Metadata.ALL);
 		docMgr.writeMetadata(docId, new StringHandle().on(metadata));
 
-		String stringMetadata = docMgr.readMetadata(docId, new StringHandle()).get();
-		System.out.println(stringMetadata);
+		StringHandle xmlStringHandle = new StringHandle();
+		String stringMetadata = docMgr.readMetadata(docId, xmlStringHandle).get();
 		assertTrue("Could not get document metadata as an XML String", stringMetadata != null || stringMetadata.length() == 0);
 
 		Document domMetadata = docMgr.readMetadata(docId, new DOMHandle()).get();
@@ -101,6 +107,29 @@ public class GenericDocumentTest {
 		jsonStringHandle.setFormat(StructureFormat.JSON);
 		stringMetadata = docMgr.readMetadata(docId, jsonStringHandle).get();
 		assertTrue("Could not get document metadata as JSON", stringMetadata != null || stringMetadata.length() == 0);
+
+		String docText = docMgr.read(docId, xmlStringHandle, new StringHandle()).get();
+		stringMetadata = xmlStringHandle.get();
+		assertXMLEqual("Failed to read document content in single request",content,docText);
+		assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",stringMetadata);
+		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='app-user'])",stringMetadata);
+		assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",stringMetadata);
+		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='3'])",stringMetadata);
+
+		// http://bugtrack.marklogic.com/16564
+		boolean exhibitMultipartDecodeDefect = false;
+		if (exhibitMultipartDecodeDefect) {
+			String uri2 = "/test/testMetadataXML2.xml";
+			docId.setUri(uri2);
+			docMgr.write(docId, new StringHandle().on(content), new StringHandle().on(metadata));
+			docText = docMgr.read(docId, xmlStringHandle, new StringHandle()).get();
+			stringMetadata = xmlStringHandle.get();
+			assertXMLEqual("Failed to write document content in single request",content,docText);
+			assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",stringMetadata);
+			assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='app-user'])",stringMetadata);
+			assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",stringMetadata);
+			assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='3'])",stringMetadata);
+		}
 
 // TODO: verify collections, permissions, properties, and quality; modify and write
 	}
