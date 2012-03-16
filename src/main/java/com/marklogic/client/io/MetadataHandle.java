@@ -4,11 +4,11 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
 
+import com.marklogic.client.Format;
 import com.marklogic.client.docio.AbstractReadHandle;
 import com.marklogic.client.docio.AbstractWriteHandle;
 import com.marklogic.client.docio.MetadataReadHandle;
 import com.marklogic.client.docio.MetadataWriteHandle;
-import com.marklogic.client.docio.StructureFormat;
 
 public class MetadataHandle
     implements
@@ -66,11 +66,11 @@ public class MetadataHandle
 		this.quality = quality;
 	}
 
-	public StructureFormat getFormat() {
-		return StructureFormat.XML;
+	public Format getFormat() {
+		return Format.XML;
 	}
-	public void setFormat(StructureFormat format) {
-		if (format != StructureFormat.XML)
+	public void setFormat(Format format) {
+		if (format != Format.XML)
 			new RuntimeException("MetadataHandle supports the XML format only");
 	}
 

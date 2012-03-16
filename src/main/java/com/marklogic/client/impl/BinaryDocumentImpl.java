@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.BinaryDocumentManager;
 import com.marklogic.client.DocumentIdentifier;
+import com.marklogic.client.Format;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.docio.BinaryReadHandle;
 import com.marklogic.client.docio.BinaryWriteHandle;
@@ -17,7 +18,7 @@ class BinaryDocumentImpl
 	static final private Logger logger = LoggerFactory.getLogger(BinaryDocumentImpl.class);
 
 	BinaryDocumentImpl(RESTServices services) {
-		super(services, "application/x-unknown-content-type");
+		super(services, Format.BINARY);
 	}
 
 	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, T contentHandle, long start, long length) {

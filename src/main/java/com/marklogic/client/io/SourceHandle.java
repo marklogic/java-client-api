@@ -11,7 +11,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.docio.StructureFormat;
+import com.marklogic.client.Format;
 import com.marklogic.client.docio.StructureReadHandle;
 import com.marklogic.client.docio.XMLReadHandle;
 
@@ -38,11 +38,11 @@ public class SourceHandle
 		}
 	}
 
-	public StructureFormat getFormat() {
-		return StructureFormat.XML;
+	public Format getFormat() {
+		return Format.XML;
 	}
-	public void setFormat(StructureFormat format) {
-		if (format != StructureFormat.XML)
+	public void setFormat(Format format) {
+		if (format != Format.XML)
 			new RuntimeException("SourceHandle supports the XML format only");
 	}
 

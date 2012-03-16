@@ -50,6 +50,8 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
     public void writeDefaultMetadata(DocumentIdentifier docId);
     public void writeDefaultMetadata(DocumentIdentifier docId, Transaction transaction);
 
+    public Format getContentFormat();
+
     public String getReadTransformName();
     public void setReadTransformName(String name);
     public Map<String,String> getReadTransformParameters();

@@ -13,7 +13,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-import com.marklogic.client.docio.StructureFormat;
+import com.marklogic.client.Format;
 import com.marklogic.client.docio.StructureReadHandle;
 import com.marklogic.client.docio.XMLReadHandle;
 
@@ -48,11 +48,11 @@ public class InputSourceHandle
 		}
 	}
 
-	public StructureFormat getFormat() {
-		return StructureFormat.XML;
+	public Format getFormat() {
+		return Format.XML;
 	}
-	public void setFormat(StructureFormat format) {
-		if (format != StructureFormat.XML)
+	public void setFormat(Format format) {
+		if (format != Format.XML)
 			new RuntimeException("InputSourceHandle supports the XML format only");
 	}
 

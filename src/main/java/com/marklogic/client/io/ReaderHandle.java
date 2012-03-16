@@ -2,9 +2,9 @@ package com.marklogic.client.io;
 
 import java.io.Reader;
 
+import com.marklogic.client.Format;
 import com.marklogic.client.docio.JSONReadHandle;
 import com.marklogic.client.docio.JSONWriteHandle;
-import com.marklogic.client.docio.StructureFormat;
 import com.marklogic.client.docio.StructureReadHandle;
 import com.marklogic.client.docio.StructureWriteHandle;
 import com.marklogic.client.docio.TextReadHandle;
@@ -34,11 +34,11 @@ public class ReaderHandle
 		return this;
 	}
 
-	private StructureFormat format = StructureFormat.XML;
-	public StructureFormat getFormat() {
+	private Format format = Format.XML;
+	public Format getFormat() {
 		return format;
 	}
-	public void setFormat(StructureFormat format) {
+	public void setFormat(Format format) {
 		this.format = format;
 	}
 

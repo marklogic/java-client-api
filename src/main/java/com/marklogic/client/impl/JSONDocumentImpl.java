@@ -1,5 +1,6 @@
 package com.marklogic.client.impl;
 
+import com.marklogic.client.Format;
 import com.marklogic.client.JSONDocumentManager;
 import com.marklogic.client.docio.JSONReadHandle;
 import com.marklogic.client.docio.JSONWriteHandle;
@@ -9,7 +10,7 @@ public class JSONDocumentImpl
     implements JSONDocumentManager
 {
 	JSONDocumentImpl(RESTServices services) {
-		super(services,"application/json");
+		super(services,Format.JSON);
 	}
 
 	private String language;

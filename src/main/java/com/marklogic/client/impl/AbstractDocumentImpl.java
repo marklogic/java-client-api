@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.marklogic.client.AbstractDocumentManager;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.RequestLogger;
+import com.marklogic.client.Format;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.docio.AbstractReadHandle;
@@ -19,7 +20,6 @@ import com.marklogic.client.docio.JSONReadHandle;
 import com.marklogic.client.docio.JSONWriteHandle;
 import com.marklogic.client.docio.MetadataReadHandle;
 import com.marklogic.client.docio.MetadataWriteHandle;
-import com.marklogic.client.docio.StructureFormat;
 import com.marklogic.client.docio.XMLReadHandle;
 import com.marklogic.client.docio.XMLWriteHandle;
 import com.marklogic.client.io.MetadataHandle;
@@ -30,15 +30,16 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 	static final private Logger logger = LoggerFactory.getLogger(AbstractDocumentImpl.class);
 
 	private RESTServices services;
-	private String defaultMimetype;
 
-	AbstractDocumentImpl(RESTServices services) {
+	AbstractDocumentImpl(RESTServices services, Format contentFormat) {
 		this.services = services;
+		this.contentFormat = contentFormat;
 	}
-	AbstractDocumentImpl(RESTServices services, String defaultMimetype) {
-		this(services);
-		this.defaultMimetype = defaultMimetype;
-	}
+
+	private Format contentFormat;
+    public Format getContentFormat() {
+    	return contentFormat;
+    }
 
     // select categories of metadata to read, write, or reset
 	private Set<Metadata> processedMetadata;
@@ -106,15 +107,14 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		String metadataMimetype = null;
 		Set<Metadata> metadata = null;
 		if (metadataHandle != null) {
-			StructureFormat metadataFormat = metadataHandle.getFormat();
-			if (metadataFormat == StructureFormat.JSON) {
-				metadataMimetype = "application/json";
-			} else if (metadataFormat == StructureFormat.XML) {
-				metadataMimetype = "application/xml";
-			} else {
-				logger.warn("Unknown metadata format {}",metadataFormat.name());
-				metadataMimetype = "application/xml";
+			Format metadataFormat = metadataHandle.getFormat();
+			if (metadataFormat == null || (metadataFormat != Format.JSON && metadataFormat != Format.XML)) {
+				logger.warn("Unsupported metadata format {}, using XML",metadataFormat.name());
+				metadataHandle.setFormat(Format.XML);
+				metadataFormat = Format.XML;
 			}
+
+			metadataMimetype = metadataFormat.getDefaultMimetype();
 
 			if (processedMetadata == null || processedMetadata.contains(Metadata.NONE)) {
 				metadata = new HashSet<Metadata>();
@@ -130,8 +130,11 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		String contentMimetype = null;
 		if (contentHandle != null) {
 			contentMimetype = docId.getMimetype();
-			if (contentMimetype == null && defaultMimetype != null)
-				contentMimetype = defaultMimetype;
+			if (contentFormat != null && contentFormat != Format.UNKNOWN) {
+				contentHandle.setFormat(contentFormat);
+				if (contentMimetype == null)
+					contentMimetype = contentFormat.getDefaultMimetype();
+			}
 		}
 
 		if (metadataHandle != null && contentHandle != null) {
@@ -187,15 +190,14 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		String metadataMimetype = null;
 		Set<Metadata> metadata = null;
 		if (metadataHandle != null) {
-			StructureFormat metadataFormat = metadataHandle.getFormat();
-			if (metadataFormat == StructureFormat.JSON) {
-				metadataMimetype = "application/json";
-			} else if (metadataFormat == StructureFormat.XML) {
-				metadataMimetype = "application/xml";
-			} else {
-				logger.warn("Unknown metadata format {}",metadataFormat.name());
-				metadataMimetype = "application/xml";
+			Format metadataFormat = metadataHandle.getFormat();
+			if (metadataFormat == null || (metadataFormat != Format.JSON && metadataFormat != Format.XML)) {
+				logger.warn("Unsupported metadata format {}, using XML",metadataFormat.name());
+				metadataHandle.setFormat(Format.XML);
+				metadataFormat = Format.XML;
 			}
+
+			metadataMimetype = metadataFormat.getDefaultMimetype();
 
 			if (processedMetadata == null || processedMetadata.contains(Metadata.NONE)) {
 				metadata = new HashSet<Metadata>();
@@ -211,8 +213,11 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		String contentMimetype = null;
 		if (contentHandle != null) {
 			contentMimetype = docId.getMimetype();
-			if (contentMimetype == null && defaultMimetype != null)
-				contentMimetype = defaultMimetype;
+			if (contentFormat != null && contentFormat != Format.UNKNOWN) {
+				contentHandle.setFormat(contentFormat);
+				if (contentMimetype == null)
+					contentMimetype = contentFormat.getDefaultMimetype();
+			}
 		}
 
 		if (metadataHandle != null && contentHandle != null) {

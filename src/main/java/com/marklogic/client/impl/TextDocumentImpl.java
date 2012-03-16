@@ -1,5 +1,6 @@
 package com.marklogic.client.impl;
 
+import com.marklogic.client.Format;
 import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.docio.TextReadHandle;
 import com.marklogic.client.docio.TextWriteHandle;
@@ -9,6 +10,6 @@ class TextDocumentImpl
 	implements TextDocumentManager
 {
 	TextDocumentImpl(RESTServices services) {
-		super(services, "text/plain");
+		super(services, Format.TEXT);
 	}
 }

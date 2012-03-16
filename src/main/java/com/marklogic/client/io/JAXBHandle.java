@@ -2,6 +2,7 @@ package com.marklogic.client.io;
 
 import javax.xml.bind.JAXBContext;
 
+import com.marklogic.client.Format;
 import com.marklogic.client.docio.XMLReadHandle;
 import com.marklogic.client.docio.XMLWriteHandle;
 
@@ -24,6 +25,14 @@ public class JAXBHandle implements XMLReadHandle<Object>, XMLWriteHandle<Object>
     	set(content);
     	return this;
     }
+
+	public Format getFormat() {
+		return Format.XML;
+	}
+	public void setFormat(Format format) {
+		if (format != Format.XML)
+			new RuntimeException("JAXBHandle supports the XML format only");
+	}
 
     public Class<Object> receiveAs() {
 		return Object.class;

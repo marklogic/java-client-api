@@ -100,7 +100,6 @@ public class JerseyServices implements RESTServices {
 			docParams.add("format", mimetypes[0].substring("application/".length()));
 		}
 
-// "multipart/mixed; boundary=document-metadata-content-boundary"
 		ClientResponse response =
 			makeDocumentResource(docParams).accept(Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE)).get(ClientResponse.class);
 		// TODO: more fine-grained inspection of response status
@@ -185,8 +184,6 @@ public class JerseyServices implements RESTServices {
 
 		MultivaluedMap<String, String> docParams = makeDocumentParams(uri, categories, transactionId, true);
 
-// .type("multipart/mixed; boundary=document-metadata-content-boundary")
-// "multipart/mixed"
 		ClientResponse response =
 			makeDocumentResource(docParams).type(Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE)).put(ClientResponse.class, multiPart);
 		// TODO: more fine-grained inspection of response status

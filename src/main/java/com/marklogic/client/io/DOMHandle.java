@@ -14,7 +14,7 @@ import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSException;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.docio.StructureFormat;
+import com.marklogic.client.Format;
 import com.marklogic.client.docio.StructureReadHandle;
 import com.marklogic.client.docio.StructureWriteHandle;
 import com.marklogic.client.docio.XMLReadHandle;
@@ -47,11 +47,11 @@ public class DOMHandle
     	return this;
     }
 
-	public StructureFormat getFormat() {
-		return StructureFormat.XML;
+	public Format getFormat() {
+		return Format.XML;
 	}
-	public void setFormat(StructureFormat format) {
-		if (format != StructureFormat.XML)
+	public void setFormat(Format format) {
+		if (format != Format.XML)
 			new RuntimeException("DOMHandle supports the XML format only");
 	}
 

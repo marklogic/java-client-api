@@ -1,5 +1,6 @@
 package com.marklogic.client.impl;
 
+import com.marklogic.client.Format;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.docio.XMLReadHandle;
 import com.marklogic.client.docio.XMLWriteHandle;
@@ -10,7 +11,7 @@ class XMLDocumentImpl
 {
 
 	XMLDocumentImpl(RESTServices services) {
-		super(services, "application/xml");
+		super(services, Format.XML);
 	}
 
 	private DocumentRepair repair;

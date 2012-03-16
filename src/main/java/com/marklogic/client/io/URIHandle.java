@@ -11,13 +11,13 @@ import java.net.URISyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.marklogic.client.Format;
 import com.marklogic.client.docio.BinaryReadHandle;
 import com.marklogic.client.docio.BinaryWriteHandle;
 import com.marklogic.client.docio.GenericReadHandle;
 import com.marklogic.client.docio.GenericWriteHandle;
 import com.marklogic.client.docio.JSONReadHandle;
 import com.marklogic.client.docio.JSONWriteHandle;
-import com.marklogic.client.docio.StructureFormat;
 import com.marklogic.client.docio.StructureReadHandle;
 import com.marklogic.client.docio.StructureWriteHandle;
 import com.marklogic.client.docio.TextReadHandle;
@@ -57,11 +57,11 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 		return this;
 	}
 
-	private StructureFormat format = StructureFormat.XML;
-	public StructureFormat getFormat() {
+	private Format format = Format.XML;
+	public Format getFormat() {
 		return format;
 	}
-	public void setFormat(StructureFormat format) {
+	public void setFormat(Format format) {
 		this.format = format;
 	}
 
