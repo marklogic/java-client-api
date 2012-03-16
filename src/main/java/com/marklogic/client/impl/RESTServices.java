@@ -12,7 +12,9 @@ public interface RESTServices {
 	public void release();
 
 	public void delete(String uri, String transactionId);
-	public <T> T get(Class<T> as, String uri, String mimetype, Set<Metadata> categories, String transactionId);
+	public <T> T get(String uri, String transactionId, Set<Metadata> categories, String mimetype, Class<T> as);
+	public Object[] get(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Class[] as);
 	public Map<String,List<String>> head(String uri, String transactionId);
-	public void put(String uri, String mimetype, Object value, Set<Metadata> categories, String transactionId);
+	public void put(String uri, String transactionId, Set<Metadata> categories, String mimetype, Object value);
+	public void put(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Object[] values);
 }

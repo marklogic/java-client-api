@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.slf4j.Logger;
@@ -21,6 +22,8 @@ import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.api.client.filter.HTTPDigestAuthFilter;
 import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
+import com.sun.jersey.multipart.BodyPart;
+import com.sun.jersey.multipart.MultiPart;
 
 public class JerseyServices implements RESTServices {
 	static final private Logger logger = LoggerFactory.getLogger(JerseyServices.class);
@@ -63,6 +66,54 @@ public class JerseyServices implements RESTServices {
 			throw new RuntimeException("delete failed "+status);
 		}
 	}
+	// TODO:  does the handle need to cache the response so it can close the response?
+	public <T> T get(String uri, String transactionId, Set<Metadata> categories, String mimetype, Class<T> as) {
+		logger.info("Getting {} in transaction {}", uri, transactionId);
+
+		ClientResponse response =
+			makeDocumentResource(uri, categories, transactionId).accept(mimetype).get(ClientResponse.class);
+		// TODO: more fine-grained inspection of response status
+		ClientResponse.Status status = response.getClientResponseStatus();
+		if (status != ClientResponse.Status.OK) {
+			response.close(); 
+			throw new RuntimeException("read failed "+status);
+		}
+		return response.getEntity(as);
+	}
+	public Object[] get(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Class[] as) {
+		logger.info("Getting multipart for {} in transaction {}", uri, transactionId);
+
+		ClientResponse response =
+			makeDocumentResource(uri, categories, transactionId).accept("multipart/mixed").get(ClientResponse.class);
+		// TODO: more fine-grained inspection of response status
+		ClientResponse.Status status = response.getClientResponseStatus();
+		if (status != ClientResponse.Status.OK) {
+			response.close(); 
+			throw new RuntimeException("read failed "+status);
+		}
+
+		MultiPart entity = response.getEntity(MultiPart.class);
+		if (entity == null)
+			return null;
+
+		List<BodyPart> partList = entity.getBodyParts();
+		if (partList == null)
+			return null;
+
+		int partCount = partList.size();
+		if (partCount == 0)
+			return null;
+		if (partCount != as.length)
+			throw new RuntimeException(
+					"read expected "+as.length+" parts but got "+partCount+" parts");
+
+		Object[] parts = new Object[partCount];
+		for (int i=0; i < partCount; i++) {
+			parts[i] = partList.get(i).getEntityAs(as[i]);
+		}
+
+		return parts;
+	}
 	public Map<String,List<String>> head(String uri, String transactionId) {
 		logger.info("Requesting head for {} in transaction {}", uri, transactionId);
 
@@ -78,25 +129,29 @@ public class JerseyServices implements RESTServices {
 		}
 		return response.getHeaders();
 	}
-	// TODO:  does the handle need to cache the response so it can close the response?
-	public <T> T get(Class<T> as, String uri, String mimetype, Set<Metadata> categories, String transactionId) {
-		logger.info("Getting {} in transaction {}", uri, transactionId);
-
-		ClientResponse response =
-			makeDocumentResource(uri, categories, transactionId).accept(mimetype).get(ClientResponse.class);
-		// TODO: more fine-grained inspection of response status
-		ClientResponse.Status status = response.getClientResponseStatus();
-		if (status != ClientResponse.Status.OK) {
-			response.close(); 
-			throw new RuntimeException("read failed "+status);
-		}
-		return response.getEntity(as);
-	}
-	public void put(String uri, String mimetype, Object value, Set<Metadata> categories, String transactionId) {
+	public void put(String uri, String transactionId, Set<Metadata> categories, String mimetype, Object value) {
 		logger.info("Putting {} in transaction {}", uri, transactionId);
 
 		ClientResponse response =
 			makeDocumentResource(uri, categories, transactionId).type(mimetype).put(ClientResponse.class, value);
+		// TODO: more fine-grained inspection of response status
+		ClientResponse.Status status = response.getClientResponseStatus();
+		response.close(); 
+		if (status != ClientResponse.Status.CREATED && status != ClientResponse.Status.NO_CONTENT) {
+			throw new RuntimeException("write failed "+status);
+		}
+	}
+	public void put(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Object[] values) {
+		logger.info("Putting multipart for {} in transaction {}", uri, transactionId);
+
+		MultiPart multiPart = new MultiPart();
+		for (int i=0; i < mimetypes.length; i++) {
+			String[] typeParts = mimetypes[i].split("/", 1);
+			multiPart = multiPart.bodyPart(new BodyPart(values[i], new MediaType(typeParts[0],typeParts[1])));
+		}
+
+		ClientResponse response =
+			makeDocumentResource(uri, categories, transactionId).type("multipart/mixed").put(ClientResponse.class, multiPart);
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close(); 

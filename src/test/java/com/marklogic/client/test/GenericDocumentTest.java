@@ -67,14 +67,39 @@ public class GenericDocumentTest {
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		docMgr.write(docId, new StringHandle().on(content));
 
+		String metadata = "<?xml version='1.0' encoding='UTF-8'?>\n"+
+		"<rapi:metadata xmlns:rapi=\"http://marklogic.com/rest-api\">\n"+
+		  "<rapi:collections>\n"+
+		    "<rapi:collection>/document/collection1</rapi:collection>\n"+
+		    "<rapi:collection>/document/collection2</rapi:collection>\n"+
+		  "</rapi:collections>\n"+
+		  "<rapi:permissions>\n"+
+		    "<rapi:permission>\n"+
+		      "<rapi:role-name>app-user</rapi:role-name>\n"+
+		      "<rapi:capability>update</rapi:capability>\n"+
+		      "<rapi:capability>read</rapi:capability>\n"+
+		    "</rapi:permission>\n"+
+		  "</rapi:permissions>\n"+
+		  "<prop:properties xmlns:prop=\"http://marklogic.com/xdmp/property\">\n"+
+		    "<first>value one</first>\n"+
+		    "<second>2</second>\n"+
+		  "</prop:properties>\n"+
+		  "<rapi:quality>3</rapi:quality>\n"+
+		"</rapi:metadata>\n";
+
 		docMgr.setMetadataCategories(Metadata.ALL);
+		docMgr.writeMetadata(docId, new StringHandle().on(metadata));
+
+		String stringMetadata = docMgr.readMetadata(docId, new StringHandle()).get();
+		System.out.println(stringMetadata);
+		assertTrue("Could not get document metadata as an XML String", stringMetadata != null || stringMetadata.length() == 0);
 
 		Document domMetadata = docMgr.readMetadata(docId, new DOMHandle()).get();
-		assertTrue("Could not get document metadata as XML", domMetadata != null);
+		assertTrue("Could not get document metadata as an XML document", domMetadata != null);
 
 		StringHandle jsonStringHandle = new StringHandle();
 		jsonStringHandle.setFormat(StructureFormat.JSON);
-		String stringMetadata = docMgr.readMetadata(docId, jsonStringHandle).get();
+		stringMetadata = docMgr.readMetadata(docId, jsonStringHandle).get();
 		assertTrue("Could not get document metadata as JSON", stringMetadata != null || stringMetadata.length() == 0);
 
 // TODO: verify collections, permissions, properties, and quality; modify and write

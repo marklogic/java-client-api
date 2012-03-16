@@ -12,6 +12,7 @@ import com.marklogic.client.AbstractDocumentManager;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.RequestLogger;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.docio.AbstractReadHandle;
 import com.marklogic.client.docio.AbstractWriteHandle;
 import com.marklogic.client.docio.JSONReadHandle;
@@ -103,6 +104,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		logger.info("Reading metadata and content for {}",uri);
 
 		String metadataMimetype = null;
+		Set<Metadata> metadata = null;
 		if (metadataHandle != null) {
 			StructureFormat metadataFormat = metadataHandle.getFormat();
 			if (metadataFormat == StructureFormat.JSON) {
@@ -112,6 +114,13 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 			} else {
 				logger.warn("Unknown metadata format {}",metadataFormat.name());
 				metadataMimetype = "application/xml";
+			}
+
+			if (processedMetadata == null || processedMetadata.contains(Metadata.NONE)) {
+				metadata = new HashSet<Metadata>();
+				metadata.add(Metadata.ALL);
+			} else {
+				metadata = processedMetadata;
 			}
 		}
 
@@ -123,22 +132,34 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		}
 
 		if (metadataHandle != null && contentHandle != null) {
-			// TODO: multipart
-			;
+			Object[] values = services.get(
+					uri, 
+					(transaction == null) ? null : transaction.getTransactionId(),
+					metadata,
+					new String[]{metadataMimetype, contentMimetype},
+					new Class[]{metadataHandle.receiveAs(), contentHandle.receiveAs()}
+					);
+			metadataHandle.receiveContent(values[0]);
+			contentHandle.receiveContent(values[1]);
 		} else if (metadataHandle != null) {
-			Set<Metadata> metadata = processedMetadata;
-			if (processedMetadata == null || processedMetadata.contains(Metadata.NONE)) {
-				metadata = new HashSet<Metadata>();
-				metadata.add(Metadata.ALL);
-			}
 			metadataHandle.receiveContent(
-					services.get(metadataHandle.receiveAs(), uri, metadataMimetype, metadata,
-							(transaction == null) ? null : transaction.getTransactionId())
+					services.get(
+							uri,
+							(transaction == null) ? null : transaction.getTransactionId(),
+							metadata,
+							metadataMimetype,
+							metadataHandle.receiveAs()
+							)
 					);
 		} else if (contentHandle != null) {
 			contentHandle.receiveContent(
-				services.get(contentHandle.receiveAs(), uri, contentMimetype, processedMetadata,
-						(transaction == null) ? null : transaction.getTransactionId())
+				services.get(
+						uri,
+						(transaction == null) ? null : transaction.getTransactionId(),
+						processedMetadata,
+						contentMimetype,
+						contentHandle.receiveAs()
+						)
 				);
 		}
 
@@ -161,6 +182,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		logger.info("Writing content for {}",uri);
 
 		String metadataMimetype = null;
+		Set<Metadata> metadata = null;
 		if (metadataHandle != null) {
 			StructureFormat metadataFormat = metadataHandle.getFormat();
 			if (metadataFormat == StructureFormat.JSON) {
@@ -170,6 +192,13 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 			} else {
 				logger.warn("Unknown metadata format {}",metadataFormat.name());
 				metadataMimetype = "application/xml";
+			}
+
+			if (processedMetadata == null || processedMetadata.contains(Metadata.NONE)) {
+				metadata = new HashSet<Metadata>();
+				metadata.add(Metadata.ALL);
+			} else {
+				metadata = processedMetadata;
 			}
 		}
 
@@ -181,19 +210,29 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		}
 
 		if (metadataHandle != null && contentHandle != null) {
-			// TODO: multipart
-			;
+			services.put(
+					uri,
+					(transaction == null) ? null : transaction.getTransactionId(),
+					metadata,
+					new String[]{metadataMimetype, contentMimetype},
+					new Object[] {metadataHandle.sendContent(), contentHandle.sendContent()}
+					);
 		} else if (metadataHandle != null) {
-			Set<Metadata> metadata = processedMetadata;
-			if (processedMetadata == null || processedMetadata.contains(Metadata.NONE)) {
-				metadata = new HashSet<Metadata>();
-				metadata.add(Metadata.ALL);
-			}
-			services.put(uri, metadataMimetype, metadataHandle.sendContent(), metadata,
-					(transaction == null) ? null : transaction.getTransactionId());
+			services.put(
+					uri,
+					(transaction == null) ? null : transaction.getTransactionId(),
+					metadata,
+					metadataMimetype,
+					metadataHandle.sendContent()
+					);
 		} else if (contentHandle != null) {
-			services.put(uri, contentMimetype, contentHandle.sendContent(), processedMetadata,
-				(transaction == null) ? null : transaction.getTransactionId());
+			services.put(
+					uri,
+					(transaction == null) ? null : transaction.getTransactionId(),
+					processedMetadata,
+					contentMimetype,
+					contentHandle.sendContent()
+					);
 		}
 	}
 
