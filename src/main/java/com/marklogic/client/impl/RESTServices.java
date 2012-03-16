@@ -11,7 +11,7 @@ public interface RESTServices {
 	public void connect(String host, int port, String user, String password, Authentication type);
 	public void release();
 
-	public void delete(String uri, String transactionId);
+	public void delete(String uri, String transactionId, Set<Metadata> categories);
 	public <T> T get(String uri, String transactionId, Set<Metadata> categories, String mimetype, Class<T> as);
 	public Object[] get(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Class[] as);
 	public Map<String,List<String>> head(String uri, String transactionId);

@@ -57,11 +57,11 @@ public class JerseyServices implements RESTServices {
 		client.destroy();
 	}
 
-	public void delete(String uri, String transactionId) {
+	public void delete(String uri, String transactionId, Set<Metadata> categories) {
 		logger.info("Deleting {} in transaction {}", uri, transactionId);
 
 		ClientResponse response = makeDocumentResource(
-				makeDocumentParams(uri, null, transactionId)
+				makeDocumentParams(uri, categories, transactionId)
 				).delete(ClientResponse.class);
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();

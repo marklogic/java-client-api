@@ -117,6 +117,8 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 			metadataMimetype = metadataFormat.getDefaultMimetype();
 
 			if (processedMetadata == null || processedMetadata.contains(Metadata.NONE)) {
+				if (processedMetadata.contains(Metadata.NONE))
+					logger.warn("Metadata categories set to NONE but metadata handle provided, reading ALL");
 				metadata = new HashSet<Metadata>();
 				metadata.add(Metadata.ALL);
 			} else {
@@ -200,6 +202,8 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 			metadataMimetype = metadataFormat.getDefaultMimetype();
 
 			if (processedMetadata == null || processedMetadata.contains(Metadata.NONE)) {
+				if (processedMetadata.contains(Metadata.NONE))
+					logger.warn("Metadata categories set to NONE but metadata handle provided, writing ALL");
 				metadata = new HashSet<Metadata>();
 				metadata.add(Metadata.ALL);
 			} else {
@@ -254,7 +258,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		String uri = docId.getUri();
 		logger.info("Deleting {}",uri);
 
-		services.delete(uri, (transaction == null) ? null : transaction.getTransactionId());
+		services.delete(uri, (transaction == null) ? null : transaction.getTransactionId(), null);
 	}
 
     public <T extends MetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle) {
@@ -280,7 +284,17 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		String uri = docId.getUri();
 		logger.info("Resetting metadata for {}",uri);
 
-		// TODO Auto-generated method stub
+		Set<Metadata> metadata = null;
+		if (processedMetadata == null || processedMetadata.contains(Metadata.NONE)) {
+			if (processedMetadata.contains(Metadata.NONE))
+				logger.warn("Metadata categories set to NONE but writing default metadata, writing ALL");
+			metadata = new HashSet<Metadata>();
+			metadata.add(Metadata.ALL);
+		} else {
+			metadata = processedMetadata;
+		}
+
+		services.delete(uri, (transaction == null) ? null : transaction.getTransactionId(), metadata);
     }
 
 	private String readTransformName;

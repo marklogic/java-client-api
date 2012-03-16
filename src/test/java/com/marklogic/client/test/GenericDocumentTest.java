@@ -111,6 +111,7 @@ public class GenericDocumentTest {
 		String docText = docMgr.read(docId, xmlStringHandle, new StringHandle()).get();
 		stringMetadata = xmlStringHandle.get();
 		assertXMLEqual("Failed to read document content in single request",content,docText);
+		assertTrue("Could not read document metadata in a single request", stringMetadata != null);
 		assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",stringMetadata);
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='app-user'])",stringMetadata);
 		assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",stringMetadata);
@@ -131,14 +132,13 @@ public class GenericDocumentTest {
 			assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='3'])",stringMetadata);
 		}
 
-// TODO: verify collections, permissions, properties, and quality; modify and write
+		docMgr.writeDefaultMetadata(docId);
+		stringMetadata = docMgr.readMetadata(docId, xmlStringHandle).get();
+		assertTrue("Could not read document metadata after write default", stringMetadata != null);
+		assertXpathEvaluatesTo("0","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",stringMetadata);
+		assertXpathEvaluatesTo("0","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='app-user'])",stringMetadata);
+		assertXpathEvaluatesTo("0","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",stringMetadata);
+		assertXpathEvaluatesTo("0","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='3'])",stringMetadata);
 	}
-
-/*
-	@Test
-	public void testResetMetadata() {
-		fail("Not yet implemented");
-	}
- */
 
 }
