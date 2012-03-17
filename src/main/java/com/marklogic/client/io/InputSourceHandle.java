@@ -25,6 +25,14 @@ public class InputSourceHandle
 	public InputSourceHandle() {
 	}
 
+	private DBResolver resolver;
+	public DBResolver getResolver() {
+		return resolver;
+	}
+	public void setResolver(DBResolver resolver) {
+		this.resolver = resolver;
+	}
+
 	private InputSource content;
 	public InputSource get() {
     	return content;
@@ -33,8 +41,17 @@ public class InputSourceHandle
 		try {
 			logger.info("Processing input source with SAX content handler");
 
-			XMLReader reader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
+			SAXParserFactory factory = makeSAXParserFactory();
+			if (factory == null) {
+				throw new RuntimeException("Failed to make SAX parser factory");
+			}
+
+			XMLReader reader = factory.newSAXParser().getXMLReader();
+			if (resolver != null)
+				reader.setEntityResolver(resolver);
+
 			reader.setContentHandler(handler);
+
 			reader.parse(content);
 		} catch (SAXException e) {
 			logger.error("Failed to process input source with SAX content handler",e);
@@ -61,5 +78,14 @@ public class InputSourceHandle
 	}
 	public void receiveContent(InputStream content) {
 		this.content = new InputSource(content);
+	}
+
+	protected SAXParserFactory makeSAXParserFactory() throws SAXException, ParserConfigurationException {
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		factory.setNamespaceAware(true);
+		factory.setValidating(false);
+		// TODO: XInclude
+
+		return factory;
 	}
 }

@@ -36,6 +36,15 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		this.contentFormat = contentFormat;
 	}
 
+	RESTServices getServices() {
+		return services;
+	}
+	void setServices(RESTServices services) {
+		this.services = services;
+	}
+
+
+
 	private Format contentFormat;
     public Format getContentFormat() {
     	return contentFormat;

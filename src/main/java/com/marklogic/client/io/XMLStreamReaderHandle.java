@@ -22,6 +22,14 @@ public class XMLStreamReaderHandle
 	public XMLStreamReaderHandle() {
 	}
 
+	private DBResolver resolver;
+	public DBResolver getResolver() {
+		return resolver;
+	}
+	public void setResolver(DBResolver resolver) {
+		this.resolver = resolver;
+	}
+
 	private XMLStreamReader content;
 	public XMLStreamReader get() {
 		return content;
@@ -42,7 +50,15 @@ public class XMLStreamReaderHandle
 		try {
 			logger.info("Parsing StAX stream from input stream");
 
-			this.content = XMLInputFactory.newFactory().createXMLStreamReader(content);
+			XMLInputFactory factory = makeXMLInputFactory();
+			if (factory == null) {
+				throw new RuntimeException("Failed to make StAX input factory");
+			}
+
+			if (resolver != null)
+				factory.setXMLResolver(resolver);
+
+			this.content = factory.createXMLStreamReader(content);
 		} catch (XMLStreamException e) {
 			logger.error("Failed to parse StAX stream from input stream",e);
 			throw new RuntimeException(e);
@@ -50,5 +66,13 @@ public class XMLStreamReaderHandle
 			logger.error("Failed to parse StAX stream from input stream",e);
 			throw new RuntimeException(e);
 		}
+	}
+
+	protected XMLInputFactory makeXMLInputFactory() {
+		XMLInputFactory factory = XMLInputFactory.newFactory();
+		factory.setProperty("javax.xml.stream.isNamespaceAware", new Boolean(true));
+		factory.setProperty("javax.xml.stream.isValidating",     new Boolean(false));
+
+		return factory;
 	}
 }

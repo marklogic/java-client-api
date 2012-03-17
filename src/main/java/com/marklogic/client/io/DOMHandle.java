@@ -3,6 +3,7 @@ package com.marklogic.client.io;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -35,6 +36,14 @@ public class DOMHandle
 		set(content);
 	}
 
+	private DBResolver resolver;
+	public DBResolver getResolver() {
+		return resolver;
+	}
+	public void setResolver(DBResolver resolver) {
+		this.resolver = resolver;
+	}
+
 	private Document content;
 	public Document get() {
 		return content;
@@ -62,7 +71,16 @@ public class DOMHandle
 		try {
 			logger.info("Parsing DOM document from input stream");
 
-			this.content = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(content);
+			DocumentBuilderFactory factory = makeDocumentBuilderFactory();
+			if (factory == null) {
+				throw new RuntimeException("Failed to make DOM document builder factory");
+			}
+
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			if (resolver != null)
+				builder.setEntityResolver(resolver);
+
+			this.content = builder.parse(content);
 		} catch (SAXException e) {
 			logger.error("Failed to parse DOM document from input stream",e);
 			throw new RuntimeException(e);
@@ -89,5 +107,14 @@ public class DOMHandle
 			logger.error("Failed to serialize DOM document as String",e);
 			throw new RuntimeException(e);
 		}
+	}
+
+	protected DocumentBuilderFactory makeDocumentBuilderFactory() throws ParserConfigurationException {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setNamespaceAware(true);
+		factory.setValidating(false);
+		// TODO: XInclude
+
+		return factory;
 	}
 }
