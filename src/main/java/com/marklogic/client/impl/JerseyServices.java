@@ -200,7 +200,7 @@ public class JerseyServices implements RESTServices {
 	private MultivaluedMap<String, String> makeDocumentParams(String uri, Set<Metadata> categories, String transactionId, boolean withContent) {
 		MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
 		docParams.add("uri", uri);
-		if (categories == null || categories.size() == 0 || categories.contains(Metadata.NONE)) {
+		if (categories == null || categories.size() == 0) {
 			docParams.add("category", "content");
 		} else {
 			if (withContent)

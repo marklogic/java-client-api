@@ -51,18 +51,21 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
     }
 
     // select categories of metadata to read, write, or reset
-	private Set<Metadata> processedMetadata;
+	final private Set<Metadata> processedMetadata;
+	{
+		HashSet<Metadata> metadata = new HashSet<Metadata>();
+		metadata.add(Metadata.ALL);
+		processedMetadata = metadata;
+	}
     public Set<Metadata> getMetadataCategories() {
     	return processedMetadata;
     }
     public void setMetadataCategories(Set<Metadata> categories) {
-    	this.processedMetadata = categories;    	
+		processedMetadata.clear();
+		processedMetadata.addAll(categories);
     }
     public void setMetadataCategories(Metadata... categories) {
-    	if (processedMetadata == null)
-    		processedMetadata = new HashSet<Metadata>();
-    	else
-    		processedMetadata.clear();
+   		processedMetadata.clear();
     	for (Metadata category: categories)
     		processedMetadata.add(category);
     }
@@ -125,17 +128,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 
 			metadataMimetype = metadataFormat.getDefaultMimetype();
 
-			if (processedMetadata == null || processedMetadata.contains(Metadata.NONE)) {
-				if (processedMetadata.contains(Metadata.NONE))
-					logger.warn("Metadata categories set to NONE but metadata handle provided, reading ALL");
-				metadata = new HashSet<Metadata>();
-				metadata.add(Metadata.ALL);
-			} else {
-				metadata = processedMetadata;
-			}
-		} else {
-			metadata = new HashSet<Metadata>();
-			metadata.add(Metadata.NONE);
+			metadata = processedMetadata;
 		}
 
 		String contentMimetype = null;
@@ -210,17 +203,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 
 			metadataMimetype = metadataFormat.getDefaultMimetype();
 
-			if (processedMetadata == null || processedMetadata.contains(Metadata.NONE)) {
-				if (processedMetadata.contains(Metadata.NONE))
-					logger.warn("Metadata categories set to NONE but metadata handle provided, writing ALL");
-				metadata = new HashSet<Metadata>();
-				metadata.add(Metadata.ALL);
-			} else {
-				metadata = processedMetadata;
-			}
-		} else {
-			metadata = new HashSet<Metadata>();
-			metadata.add(Metadata.NONE);
+			metadata = processedMetadata;
 		}
 
 		String contentMimetype = null;
@@ -293,17 +276,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		String uri = docId.getUri();
 		logger.info("Resetting metadata for {}",uri);
 
-		Set<Metadata> metadata = null;
-		if (processedMetadata == null || processedMetadata.contains(Metadata.NONE)) {
-			if (processedMetadata.contains(Metadata.NONE))
-				logger.warn("Metadata categories set to NONE but writing default metadata, writing ALL");
-			metadata = new HashSet<Metadata>();
-			metadata.add(Metadata.ALL);
-		} else {
-			metadata = processedMetadata;
-		}
-
-		services.delete(uri, (transaction == null) ? null : transaction.getTransactionId(), metadata);
+		services.delete(uri, (transaction == null) ? null : transaction.getTransactionId(), processedMetadata);
     }
 
 	private String readTransformName;

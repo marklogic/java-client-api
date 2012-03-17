@@ -14,7 +14,7 @@ import com.marklogic.client.docio.MetadataWriteHandle;
 
 public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends AbstractWriteHandle> {
     public enum Metadata {
-        ALL, COLLECTIONS, PERMISSIONS, PROPERTIES, QUALITY, NONE;
+        ALL, COLLECTIONS, PERMISSIONS, PROPERTIES, QUALITY;
     }
     // whether all permissions and properties are replaced or only named permissions and properties
     public enum MetadataUpdate {
