@@ -14,6 +14,10 @@ import com.marklogic.client.Format;
 import com.marklogic.client.docio.StructureReadHandle;
 import com.marklogic.client.docio.XMLReadHandle;
 
+/**
+ * An XML Stream Reader Handle represents XML content as an XML stream reader
+ * for reading as a StAX pull stream.
+ */
 public class XMLStreamReaderHandle
 	implements XMLReadHandle<InputStream>, StructureReadHandle<InputStream>
 {

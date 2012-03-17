@@ -12,6 +12,9 @@ import com.marklogic.client.docio.TextWriteHandle;
 import com.marklogic.client.docio.XMLReadHandle;
 import com.marklogic.client.docio.XMLWriteHandle;
 
+/**
+ * A Reader Handle represents document content as a reader for reading or writing.
+ */
 public class ReaderHandle
 	implements
 		JSONReadHandle<Reader>, JSONWriteHandle<Reader>, 

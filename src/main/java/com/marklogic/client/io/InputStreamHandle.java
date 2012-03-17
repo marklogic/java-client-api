@@ -16,6 +16,9 @@ import com.marklogic.client.docio.TextWriteHandle;
 import com.marklogic.client.docio.XMLReadHandle;
 import com.marklogic.client.docio.XMLWriteHandle;
 
+/**
+ * An Input Stream Handle represents document content as an input stream for reading or writing.
+ */
 public class InputStreamHandle
 	implements
 		BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,

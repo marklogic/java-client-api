@@ -21,6 +21,9 @@ import com.marklogic.client.docio.StructureWriteHandle;
 import com.marklogic.client.docio.XMLReadHandle;
 import com.marklogic.client.docio.XMLWriteHandle;
 
+/**
+ * A DOM Handle represents XML content as a DOM document for reading or writing.
+ */
 public class DOMHandle
 	implements
 		XMLReadHandle<InputStream>, XMLWriteHandle<String>,

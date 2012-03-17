@@ -1,5 +1,8 @@
 package com.marklogic.client;
 
+/**
+ * A Document Identifier identifies a document for database read, write, and delete operations.
+ */
 public class DocumentIdentifier {
 	public DocumentIdentifier(String uri) {
 		super();

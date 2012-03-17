@@ -15,6 +15,10 @@ import com.marklogic.client.Format;
 import com.marklogic.client.docio.StructureReadHandle;
 import com.marklogic.client.docio.XMLReadHandle;
 
+/**
+ * A Source Handle represents XML content as a transform source for reading,
+ * potentially with transformation by a Transformer into a Result.
+ */
 public class SourceHandle
 	implements XMLReadHandle<InputStream>, StructureReadHandle<InputStream>
 {

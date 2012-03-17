@@ -25,6 +25,10 @@ import com.marklogic.client.docio.TextWriteHandle;
 import com.marklogic.client.docio.XMLReadHandle;
 import com.marklogic.client.docio.XMLWriteHandle;
 
+/**
+ * A URI Handle sends read document content to a URI or
+ * receives written database content from a URI.
+ */
 public class URIHandle
 implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
     GenericReadHandle<InputStream>, GenericWriteHandle<InputStream>,

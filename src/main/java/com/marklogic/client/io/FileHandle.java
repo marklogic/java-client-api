@@ -16,6 +16,9 @@ import com.marklogic.client.docio.TextWriteHandle;
 import com.marklogic.client.docio.XMLReadHandle;
 import com.marklogic.client.docio.XMLWriteHandle;
 
+/**
+ * A File Handle represents document content as a file for reading or writing.
+ */
 public class FileHandle
 	implements
 		BinaryReadHandle<File>, BinaryWriteHandle<File>,

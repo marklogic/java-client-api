@@ -14,6 +14,9 @@ import com.marklogic.client.docio.TextWriteHandle;
 import com.marklogic.client.docio.XMLReadHandle;
 import com.marklogic.client.docio.XMLWriteHandle;
 
+/**
+ * A Bytes Handle represents document content as a byte array for reading or writing.
+ */
 public class BytesHandle
 	implements
 		BinaryReadHandle<byte[]>, BinaryWriteHandle<byte[]>,

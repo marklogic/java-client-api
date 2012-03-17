@@ -10,6 +10,9 @@ import com.marklogic.client.docio.TextWriteHandle;
 import com.marklogic.client.docio.XMLReadHandle;
 import com.marklogic.client.docio.XMLWriteHandle;
 
+/**
+ * A String Handle represents document content as a string for reading or writing.
+ */
 public class StringHandle
 	implements
 		JSONReadHandle<String>, JSONWriteHandle<String>, 

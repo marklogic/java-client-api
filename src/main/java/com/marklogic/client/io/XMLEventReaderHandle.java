@@ -14,6 +14,10 @@ import com.marklogic.client.Format;
 import com.marklogic.client.docio.StructureReadHandle;
 import com.marklogic.client.docio.XMLReadHandle;
 
+/**
+ * An XML Event Reader Handle represents XML content as an XML event reader
+ * for reading as a series of StAX events.
+ */
 public class XMLEventReaderHandle
 	implements XMLReadHandle<InputStream>, StructureReadHandle<InputStream>
 {

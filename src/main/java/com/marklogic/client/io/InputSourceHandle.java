@@ -17,6 +17,10 @@ import com.marklogic.client.Format;
 import com.marklogic.client.docio.StructureReadHandle;
 import com.marklogic.client.docio.XMLReadHandle;
 
+/**
+ * An Input Source Handle represents XML content as an input source for reading,
+ * potentially with processing by a SAX content handler.
+ */
 public class InputSourceHandle
 	implements XMLReadHandle<InputStream>, StructureReadHandle<InputStream>
 {

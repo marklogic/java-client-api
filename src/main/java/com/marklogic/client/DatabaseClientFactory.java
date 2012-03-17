@@ -9,6 +9,9 @@ import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.impl.JerseyServices;
 import com.marklogic.client.impl.RESTServices;
 
+/**
+ * A Database Client Factory connects to a database to create a database client.
+ */
 public class DatabaseClientFactory {
 	static final private Logger logger = LoggerFactory.getLogger(DatabaseClientFactory.class);
 
@@ -19,6 +22,16 @@ public class DatabaseClientFactory {
 	private DatabaseClientFactory() {
 	}
 
+	/**
+	 * Connects to a database, creating a client to access the database.
+	 * 
+	 * @param host
+	 * @param port
+	 * @param user
+	 * @param password
+	 * @param type
+	 * @return
+	 */
 	static public DatabaseClient connect(String host, int port, String user, String password, Authentication type) {
 		if (logger.isInfoEnabled())
 			logger.info("Connecting to {} at {} as {}",new Object[]{host,port,user});
