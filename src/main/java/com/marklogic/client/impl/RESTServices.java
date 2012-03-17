@@ -17,4 +17,5 @@ public interface RESTServices {
 	public Map<String,List<String>> head(String uri, String transactionId);
 	public void put(String uri, String transactionId, Set<Metadata> categories, String mimetype, Object value);
 	public void put(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Object[] values);
+    public <T> T stringSearch(Class <T> as, String uri, String searchText, String transactionId);
 }

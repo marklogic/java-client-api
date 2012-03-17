@@ -60,8 +60,7 @@ public class DatabaseClientImpl implements DatabaseClient {
 	}
 
 	public QueryManager newQueryManager() {
-		// TODO Auto-generated method stub
-		return null;
+        return new QueryManagerImpl(services);
 	}
 
 	public QueryOptionsManager newQueryOptionsManager() {

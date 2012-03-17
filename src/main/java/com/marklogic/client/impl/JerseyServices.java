@@ -223,4 +223,20 @@ public class JerseyServices implements RESTServices {
 	private WebResource makeDocumentResource(MultivaluedMap<String, String> queryParams) {
 		return connection.path("documents").queryParams(queryParams);
 	}
+
+    // FIXME: is this even close to reasonable?
+    public <T> T stringSearch(Class<T> as, String uri, String text, String transactionId) {
+        logger.info("Searching for {} in transaction {}", text, transactionId);
+
+        MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
+        docParams.add("q", text);
+
+        ClientResponse response = connection.path("search").queryParams(docParams).get(ClientResponse.class);
+        ClientResponse.Status status = response.getClientResponseStatus();
+        if (status != ClientResponse.Status.OK) {
+            response.close();
+            throw new RuntimeException("search failed "+status);
+        }
+        return response.getEntity(as);
+    }
 }
