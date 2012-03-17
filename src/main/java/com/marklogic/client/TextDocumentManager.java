@@ -1,7 +1,7 @@
 package com.marklogic.client;
 
-import com.marklogic.client.docio.TextReadHandle;
-import com.marklogic.client.docio.TextWriteHandle;
+import com.marklogic.client.io.marker.TextReadHandle;
+import com.marklogic.client.io.marker.TextWriteHandle;
 
 /**
  * A Text Document Manager supports database operations on text documents.

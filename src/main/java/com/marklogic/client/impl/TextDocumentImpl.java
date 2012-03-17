@@ -2,8 +2,8 @@ package com.marklogic.client.impl;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.TextDocumentManager;
-import com.marklogic.client.docio.TextReadHandle;
-import com.marklogic.client.docio.TextWriteHandle;
+import com.marklogic.client.io.marker.TextReadHandle;
+import com.marklogic.client.io.marker.TextWriteHandle;
 
 class TextDocumentImpl
 	extends AbstractDocumentImpl<TextReadHandle, TextWriteHandle>

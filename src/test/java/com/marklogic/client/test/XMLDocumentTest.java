@@ -15,6 +15,7 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -79,11 +80,17 @@ public class XMLDocumentTest {
 		Document readDoc = docMgr.read(docId, new DOMHandle()).get();
 		assertNotNull("Read null document for XML content",readDoc);
 		assertXMLEqual("Failed to read XML document as DOM",domDocument,readDoc);
-		DOMResult result = new DOMResult();
-		docMgr.read(docId, new SourceHandle()).process(TransformerFactory.newInstance().newTransformer(), result);
-		readDoc = (Document) result.getNode();
-		assertNotNull("Read null document from transform on XML content",readDoc);
-		assertXMLEqual("Failed to transform XML document with DOM",domDocument,readDoc);
+
+		String uri2 = "/test/testWrite2.xml";
+		DocumentIdentifier docId2 = new DocumentIdentifier(uri2);
+
+		Transformer transformer = TransformerFactory.newInstance().newTransformer();
+		SourceHandle sourceHandle = new SourceHandle();
+		sourceHandle.setTransformer(transformer);
+		docMgr.write(docId2, docMgr.read(docId, sourceHandle));
+		readDoc = docMgr.read(docId2, new DOMHandle()).get();
+		assertNotNull("Read null document for transform result",readDoc);
+		assertXMLEqual("Transform result not equivalent to source",domDocument,readDoc);
 
 		final HashMap<String,Integer> counter = new HashMap<String,Integer>(); 
 		counter.put("elementCount",0);

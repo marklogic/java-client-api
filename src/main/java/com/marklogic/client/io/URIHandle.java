@@ -12,18 +12,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.Format;
-import com.marklogic.client.docio.BinaryReadHandle;
-import com.marklogic.client.docio.BinaryWriteHandle;
-import com.marklogic.client.docio.GenericReadHandle;
-import com.marklogic.client.docio.GenericWriteHandle;
-import com.marklogic.client.docio.JSONReadHandle;
-import com.marklogic.client.docio.JSONWriteHandle;
-import com.marklogic.client.docio.StructureReadHandle;
-import com.marklogic.client.docio.StructureWriteHandle;
-import com.marklogic.client.docio.TextReadHandle;
-import com.marklogic.client.docio.TextWriteHandle;
-import com.marklogic.client.docio.XMLReadHandle;
-import com.marklogic.client.docio.XMLWriteHandle;
+import com.marklogic.client.io.marker.BinaryReadHandle;
+import com.marklogic.client.io.marker.BinaryWriteHandle;
+import com.marklogic.client.io.marker.GenericReadHandle;
+import com.marklogic.client.io.marker.GenericWriteHandle;
+import com.marklogic.client.io.marker.JSONReadHandle;
+import com.marklogic.client.io.marker.JSONWriteHandle;
+import com.marklogic.client.io.marker.StructureReadHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
+import com.marklogic.client.io.marker.TextReadHandle;
+import com.marklogic.client.io.marker.TextWriteHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * A URI Handle sends read document content to a URI or
@@ -99,7 +99,16 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 		try {
 			logger.info("Retrieving content from URI to write to database");
 
-			return new URI(uri).toURL().openStream();
+			if (uri == null) {
+				throw new RuntimeException("No uri to write");
+			}
+
+			InputStream stream = new URI(uri).toURL().openStream();
+			if (stream == null) {
+				throw new RuntimeException("No stream to write");
+			}
+
+			return stream;
 		} catch (MalformedURLException e) {
 			logger.error("Failed to retrieving content from URI to write to database",e);
 			throw new RuntimeException(e);

@@ -3,8 +3,8 @@ package com.marklogic.client.io;
 import javax.xml.bind.JAXBContext;
 
 import com.marklogic.client.Format;
-import com.marklogic.client.docio.XMLReadHandle;
-import com.marklogic.client.docio.XMLWriteHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
 
 // TODO: sender / receiver
 
@@ -41,6 +41,10 @@ public class JAXBHandle implements XMLReadHandle<Object>, XMLWriteHandle<Object>
 		this.content = content;
 	}
 	public Object sendContent() {
+		if (content == null) {
+			throw new RuntimeException("No object to write");
+		}
+
 		return content;
 	}
 }

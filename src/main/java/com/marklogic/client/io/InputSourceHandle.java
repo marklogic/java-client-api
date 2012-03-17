@@ -14,8 +14,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import com.marklogic.client.Format;
-import com.marklogic.client.docio.StructureReadHandle;
-import com.marklogic.client.docio.XMLReadHandle;
+import com.marklogic.client.io.marker.StructureReadHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
 
 /**
  * An Input Source Handle represents XML content as an input source for reading,
@@ -45,7 +45,7 @@ public class InputSourceHandle
 		try {
 			logger.info("Processing input source with SAX content handler");
 
-			SAXParserFactory factory = makeSAXParserFactory();
+			SAXParserFactory factory = getFactory();
 			if (factory == null) {
 				throw new RuntimeException("Failed to make SAX parser factory");
 			}
@@ -77,13 +77,15 @@ public class InputSourceHandle
 			new RuntimeException("InputSourceHandle supports the XML format only");
 	}
 
-	public Class<InputStream> receiveAs() {
-		return InputStream.class;
+	private SAXParserFactory factory;
+	public SAXParserFactory getFactory() throws SAXException, ParserConfigurationException {
+		if (factory == null)
+			factory = makeSAXParserFactory();
+		return factory;
 	}
-	public void receiveContent(InputStream content) {
-		this.content = new InputSource(content);
+	public void setFactory(SAXParserFactory factory) {
+		this.factory = factory;
 	}
-
 	protected SAXParserFactory makeSAXParserFactory() throws SAXException, ParserConfigurationException {
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		factory.setNamespaceAware(true);
@@ -91,5 +93,12 @@ public class InputSourceHandle
 		// TODO: XInclude
 
 		return factory;
+	}
+
+	public Class<InputStream> receiveAs() {
+		return InputStream.class;
+	}
+	public void receiveContent(InputStream content) {
+		this.content = new InputSource(content);
 	}
 }

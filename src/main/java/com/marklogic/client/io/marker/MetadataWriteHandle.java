@@ -1,4 +1,4 @@
-package com.marklogic.client.docio;
+package com.marklogic.client.io.marker;
 
 /**
  * A Metadata Write Handle can represent metadata written to the database.

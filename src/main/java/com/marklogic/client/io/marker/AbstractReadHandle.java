@@ -1,4 +1,4 @@
-package com.marklogic.client.docio;
+package com.marklogic.client.io.marker;
 
 import com.marklogic.client.Format;
 

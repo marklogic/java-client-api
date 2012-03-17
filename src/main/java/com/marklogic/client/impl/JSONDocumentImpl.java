@@ -2,8 +2,8 @@ package com.marklogic.client.impl;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.JSONDocumentManager;
-import com.marklogic.client.docio.JSONReadHandle;
-import com.marklogic.client.docio.JSONWriteHandle;
+import com.marklogic.client.io.marker.JSONReadHandle;
+import com.marklogic.client.io.marker.JSONWriteHandle;
 
 public class JSONDocumentImpl
     extends AbstractDocumentImpl<JSONReadHandle, JSONWriteHandle> 

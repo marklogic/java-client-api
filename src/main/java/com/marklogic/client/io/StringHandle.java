@@ -1,14 +1,14 @@
 package com.marklogic.client.io;
 
 import com.marklogic.client.Format;
-import com.marklogic.client.docio.JSONReadHandle;
-import com.marklogic.client.docio.JSONWriteHandle;
-import com.marklogic.client.docio.StructureReadHandle;
-import com.marklogic.client.docio.StructureWriteHandle;
-import com.marklogic.client.docio.TextReadHandle;
-import com.marklogic.client.docio.TextWriteHandle;
-import com.marklogic.client.docio.XMLReadHandle;
-import com.marklogic.client.docio.XMLWriteHandle;
+import com.marklogic.client.io.marker.JSONReadHandle;
+import com.marklogic.client.io.marker.JSONWriteHandle;
+import com.marklogic.client.io.marker.StructureReadHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
+import com.marklogic.client.io.marker.TextReadHandle;
+import com.marklogic.client.io.marker.TextWriteHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * A String Handle represents document content as a string for reading or writing.
@@ -55,6 +55,10 @@ public class StringHandle
 		this.content = content;
 	}
 	public String sendContent() {
+		if (content == null) {
+			throw new RuntimeException("No string to write");
+		}
+
 		return content;
 	}
 }

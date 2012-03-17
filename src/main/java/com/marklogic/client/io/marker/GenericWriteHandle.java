@@ -1,4 +1,4 @@
-package com.marklogic.client.docio;
+package com.marklogic.client.io.marker;
 
 /**
  * A Generic Write Handle can represent content of an unknown format written to the database.

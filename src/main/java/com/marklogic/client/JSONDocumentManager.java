@@ -1,7 +1,7 @@
 package com.marklogic.client;
 
-import com.marklogic.client.docio.JSONReadHandle;
-import com.marklogic.client.docio.JSONWriteHandle;
+import com.marklogic.client.io.marker.JSONReadHandle;
+import com.marklogic.client.io.marker.JSONWriteHandle;
 
 /**
  * A JSON Document Manager supports database operations on JSON documents.

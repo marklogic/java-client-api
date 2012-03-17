@@ -1,18 +1,18 @@
 package com.marklogic.client.io;
 
 import com.marklogic.client.Format;
-import com.marklogic.client.docio.BinaryReadHandle;
-import com.marklogic.client.docio.BinaryWriteHandle;
-import com.marklogic.client.docio.GenericReadHandle;
-import com.marklogic.client.docio.GenericWriteHandle;
-import com.marklogic.client.docio.JSONReadHandle;
-import com.marklogic.client.docio.JSONWriteHandle;
-import com.marklogic.client.docio.StructureReadHandle;
-import com.marklogic.client.docio.StructureWriteHandle;
-import com.marklogic.client.docio.TextReadHandle;
-import com.marklogic.client.docio.TextWriteHandle;
-import com.marklogic.client.docio.XMLReadHandle;
-import com.marklogic.client.docio.XMLWriteHandle;
+import com.marklogic.client.io.marker.BinaryReadHandle;
+import com.marklogic.client.io.marker.BinaryWriteHandle;
+import com.marklogic.client.io.marker.GenericReadHandle;
+import com.marklogic.client.io.marker.GenericWriteHandle;
+import com.marklogic.client.io.marker.JSONReadHandle;
+import com.marklogic.client.io.marker.JSONWriteHandle;
+import com.marklogic.client.io.marker.StructureReadHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
+import com.marklogic.client.io.marker.TextReadHandle;
+import com.marklogic.client.io.marker.TextWriteHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * A Bytes Handle represents document content as a byte array for reading or writing.
@@ -61,6 +61,10 @@ public class BytesHandle
 		this.content = content;
 	}
 	public byte[] sendContent() {
+		if (content == null || content.length == 0) {
+			throw new RuntimeException("No bytes to write");
+		}
+
 		return content;
 	}
 }

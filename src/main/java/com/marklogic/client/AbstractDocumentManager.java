@@ -3,10 +3,10 @@ package com.marklogic.client;
 import java.util.Map;
 import java.util.Set;
 
-import com.marklogic.client.docio.AbstractReadHandle;
-import com.marklogic.client.docio.AbstractWriteHandle;
-import com.marklogic.client.docio.MetadataReadHandle;
-import com.marklogic.client.docio.MetadataWriteHandle;
+import com.marklogic.client.io.marker.AbstractReadHandle;
+import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.MetadataReadHandle;
+import com.marklogic.client.io.marker.MetadataWriteHandle;
 
 /**
  * A Document Manager provides database operations on a document.

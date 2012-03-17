@@ -1,4 +1,4 @@
-package com.marklogic.client.docio;
+package com.marklogic.client.io.marker;
 
 /**
  * A Structure Write Handle can represent a data structure written to the database.

@@ -1,4 +1,4 @@
-package com.marklogic.client.docio;
+package com.marklogic.client.io.marker;
 
 /**
  * A JSON Write Handle can represent JSON content written to the database.

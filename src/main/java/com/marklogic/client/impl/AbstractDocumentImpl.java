@@ -1,9 +1,15 @@
 package com.marklogic.client.impl;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,15 +20,15 @@ import com.marklogic.client.RequestLogger;
 import com.marklogic.client.Format;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.AbstractDocumentManager.Metadata;
-import com.marklogic.client.docio.AbstractReadHandle;
-import com.marklogic.client.docio.AbstractWriteHandle;
-import com.marklogic.client.docio.JSONReadHandle;
-import com.marklogic.client.docio.JSONWriteHandle;
-import com.marklogic.client.docio.MetadataReadHandle;
-import com.marklogic.client.docio.MetadataWriteHandle;
-import com.marklogic.client.docio.XMLReadHandle;
-import com.marklogic.client.docio.XMLWriteHandle;
 import com.marklogic.client.io.MetadataHandle;
+import com.marklogic.client.io.marker.AbstractReadHandle;
+import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.JSONReadHandle;
+import com.marklogic.client.io.marker.JSONWriteHandle;
+import com.marklogic.client.io.marker.MetadataReadHandle;
+import com.marklogic.client.io.marker.MetadataWriteHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
 
 abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends AbstractWriteHandle>
 	implements AbstractDocumentManager<R, W>
@@ -166,7 +172,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 				services.get(
 						uri,
 						(transaction == null) ? null : transaction.getTransactionId(),
-						metadata,
+						null,
 						contentMimetype,
 						contentHandle.receiveAs()
 						)
@@ -236,7 +242,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 			services.put(
 					uri,
 					(transaction == null) ? null : transaction.getTransactionId(),
-					metadata,
+					null,
 					contentMimetype,
 					contentHandle.sendContent()
 					);
@@ -341,5 +347,4 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 	public void stopLogging() {
 		// TODO Auto-generated method stub
 	}
-
 }

@@ -5,10 +5,10 @@ import java.util.Map;
 import java.util.Set;
 
 import com.marklogic.client.Format;
-import com.marklogic.client.docio.AbstractReadHandle;
-import com.marklogic.client.docio.AbstractWriteHandle;
-import com.marklogic.client.docio.MetadataReadHandle;
-import com.marklogic.client.docio.MetadataWriteHandle;
+import com.marklogic.client.io.marker.AbstractReadHandle;
+import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.MetadataReadHandle;
+import com.marklogic.client.io.marker.MetadataWriteHandle;
 
 public class MetadataHandle
     implements

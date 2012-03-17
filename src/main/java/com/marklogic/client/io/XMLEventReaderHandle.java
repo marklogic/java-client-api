@@ -11,8 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.Format;
-import com.marklogic.client.docio.StructureReadHandle;
-import com.marklogic.client.docio.XMLReadHandle;
+import com.marklogic.client.io.marker.StructureReadHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
 
 /**
  * An XML Event Reader Handle represents XML content as an XML event reader
@@ -47,6 +47,23 @@ public class XMLEventReaderHandle
 			new RuntimeException("XMLEventReaderHandle supports the XML format only");
 	}
 
+	private XMLInputFactory factory;
+	public XMLInputFactory getFactory() {
+		if (factory == null)
+			factory = makeXMLInputFactory();
+		return factory;
+	}
+	public void setFactory(XMLInputFactory factory) {
+		this.factory = factory;
+	}
+	protected XMLInputFactory makeXMLInputFactory() {
+		XMLInputFactory factory = XMLInputFactory.newFactory();
+		factory.setProperty("javax.xml.stream.isNamespaceAware", new Boolean(true));
+		factory.setProperty("javax.xml.stream.isValidating",     new Boolean(false));
+
+		return factory;
+	}
+
 	public Class<InputStream> receiveAs() {
 		return InputStream.class;
 	}
@@ -54,7 +71,7 @@ public class XMLEventReaderHandle
 		try {
 			logger.info("Parsing StAX events from input stream");
 
-			XMLInputFactory factory = makeXMLInputFactory();
+			XMLInputFactory factory = getFactory();
 			if (factory == null) {
 				throw new RuntimeException("Failed to make StAX input factory");
 			}
@@ -70,13 +87,5 @@ public class XMLEventReaderHandle
 			logger.error("Failed to parse StAX events from input stream",e);
 			throw new RuntimeException(e);
 		}
-	}
-
-	protected XMLInputFactory makeXMLInputFactory() {
-		XMLInputFactory factory = XMLInputFactory.newFactory();
-		factory.setProperty("javax.xml.stream.isNamespaceAware", new Boolean(true));
-		factory.setProperty("javax.xml.stream.isValidating",     new Boolean(false));
-
-		return factory;
 	}
 }

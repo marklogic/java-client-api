@@ -1,8 +1,8 @@
 package com.marklogic.client;
 
-import com.marklogic.client.docio.BinaryReadHandle;
-import com.marklogic.client.docio.BinaryWriteHandle;
-import com.marklogic.client.docio.MetadataReadHandle;
+import com.marklogic.client.io.marker.BinaryReadHandle;
+import com.marklogic.client.io.marker.BinaryWriteHandle;
+import com.marklogic.client.io.marker.MetadataReadHandle;
 
 /**
  * A Binary Document Manager provides database operations on binary documents.

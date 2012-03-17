@@ -7,9 +7,9 @@ import com.marklogic.client.BinaryDocumentManager;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.Format;
 import com.marklogic.client.Transaction;
-import com.marklogic.client.docio.BinaryReadHandle;
-import com.marklogic.client.docio.BinaryWriteHandle;
-import com.marklogic.client.docio.MetadataReadHandle;
+import com.marklogic.client.io.marker.BinaryReadHandle;
+import com.marklogic.client.io.marker.BinaryWriteHandle;
+import com.marklogic.client.io.marker.MetadataReadHandle;
 
 class BinaryDocumentImpl
 	extends AbstractDocumentImpl<BinaryReadHandle, BinaryWriteHandle>

@@ -2,8 +2,8 @@ package com.marklogic.client.impl;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.GenericDocumentManager;
-import com.marklogic.client.docio.GenericReadHandle;
-import com.marklogic.client.docio.GenericWriteHandle;
+import com.marklogic.client.io.marker.GenericReadHandle;
+import com.marklogic.client.io.marker.GenericWriteHandle;
 
 public class GenericDocumentImpl
     extends AbstractDocumentImpl<GenericReadHandle, GenericWriteHandle>

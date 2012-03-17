@@ -2,6 +2,7 @@ package com.marklogic.client.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -13,21 +14,22 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSException;
+import org.w3c.dom.ls.LSOutput;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.Format;
-import com.marklogic.client.docio.StructureReadHandle;
-import com.marklogic.client.docio.StructureWriteHandle;
-import com.marklogic.client.docio.XMLReadHandle;
-import com.marklogic.client.docio.XMLWriteHandle;
+import com.marklogic.client.io.marker.StructureReadHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * A DOM Handle represents XML content as a DOM document for reading or writing.
  */
 public class DOMHandle
-	implements
-		XMLReadHandle<InputStream>, XMLWriteHandle<String>,
-		StructureReadHandle<InputStream>, StructureWriteHandle<String>
+	implements OutputStreamSender,
+		XMLReadHandle<InputStream>, XMLWriteHandle<OutputStreamSender>,
+		StructureReadHandle<InputStream>, StructureWriteHandle<OutputStreamSender>
 {
 	static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
 
@@ -67,6 +69,24 @@ public class DOMHandle
 			new RuntimeException("DOMHandle supports the XML format only");
 	}
 
+	private DocumentBuilderFactory factory;
+	public DocumentBuilderFactory getFactory() throws ParserConfigurationException {
+		if (factory == null)
+			factory = makeDocumentBuilderFactory();
+		return factory;
+	}
+	public void setFactory(DocumentBuilderFactory factory) {
+		this.factory = factory;
+	}
+	protected DocumentBuilderFactory makeDocumentBuilderFactory() throws ParserConfigurationException {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setNamespaceAware(true);
+		factory.setValidating(false);
+		// TODO: XInclude
+
+		return factory;
+	}
+
 	public Class<InputStream> receiveAs() {
 		return InputStream.class;
 	}
@@ -74,7 +94,7 @@ public class DOMHandle
 		try {
 			logger.info("Parsing DOM document from input stream");
 
-			DocumentBuilderFactory factory = makeDocumentBuilderFactory();
+			DocumentBuilderFactory factory = getFactory();
 			if (factory == null) {
 				throw new RuntimeException("Failed to make DOM document builder factory");
 			}
@@ -95,11 +115,26 @@ public class DOMHandle
 			throw new RuntimeException(e);
 		}
 	}
-	public String sendContent() {
+	public OutputStreamSender sendContent() {
+		return this;
+	}
+	public void write(OutputStream out) throws IOException {
 		try {
-			logger.info("Serializing DOM document as String");
+			logger.info("Serializing DOM document to output stream");
 
-			return ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder().getDOMImplementation()).createLSSerializer().writeToString(content);
+			if (content == null) {
+				throw new RuntimeException("No document to write");
+			}
+
+			DocumentBuilderFactory factory = getFactory();
+			if (factory == null) {
+				throw new RuntimeException("Failed to make DOM document builder factory");
+			}
+
+			DOMImplementationLS domImpl = (DOMImplementationLS) factory.newDocumentBuilder().getDOMImplementation();
+			LSOutput domOutput = domImpl.createLSOutput();
+			domOutput.setByteStream(out);
+			domImpl.createLSSerializer().write(content, domOutput);
 		} catch (DOMException e) {
 			logger.error("Failed to serialize DOM document as String",e);
 			throw new RuntimeException(e);
@@ -110,14 +145,5 @@ public class DOMHandle
 			logger.error("Failed to serialize DOM document as String",e);
 			throw new RuntimeException(e);
 		}
-	}
-
-	protected DocumentBuilderFactory makeDocumentBuilderFactory() throws ParserConfigurationException {
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		factory.setNamespaceAware(true);
-		factory.setValidating(false);
-		// TODO: XInclude
-
-		return factory;
 	}
 }

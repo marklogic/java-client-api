@@ -1,6 +1,7 @@
 package com.marklogic.client.impl;
 
-import java.util.Arrays;
+import java.io.InputStream;
+import java.io.Reader;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.io.OutputStreamSender;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -70,7 +72,9 @@ public class JerseyServices implements RESTServices {
 			throw new RuntimeException("delete failed "+status);
 		}
 	}
-	// TODO:  does the handle need to cache the response so it can close the response?
+
+	// TODO:  does an Input Stream or Reader handle need to cache the response so it can close the response?
+
 	public <T> T get(String uri, String transactionId, Set<Metadata> categories, String mimetype, Class<T> as) {
 		logger.info("Getting {} in transaction {}", uri, transactionId);
 
@@ -83,7 +87,12 @@ public class JerseyServices implements RESTServices {
 			response.close(); 
 			throw new RuntimeException("read failed "+status);
 		}
-		return response.getEntity(as);
+
+		T entity = response.getEntity(as);
+		if (as != InputStream.class && as != Reader.class)
+			response.close();
+
+		return entity;
 	}
 	public Object[] get(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Class[] as) {
 		logger.info("Getting multipart for {} in transaction {}", uri, transactionId);
@@ -129,6 +138,8 @@ public class JerseyServices implements RESTServices {
 			parts[i] = partList.get(i).getEntityAs(as[i]);
 		}
 
+		response.close();
+
 		return parts;
 	}
 	public Map<String,List<String>> head(String uri, String transactionId) {
@@ -153,7 +164,9 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = makeDocumentResource(
 					makeDocumentParams(uri, categories, transactionId)
-				).type(mimetype).put(ClientResponse.class, value);
+				).type(mimetype).put(ClientResponse.class,
+						(value instanceof OutputStreamSender) ?
+								new StreamingOutputImpl((OutputStreamSender) value) : value);
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close(); 
@@ -176,7 +189,9 @@ public class JerseyServices implements RESTServices {
 		for (int i=0; i < mimetypes.length; i++) {
 			String[] typeParts = 
 				mimetypes[i].contains("/") ? mimetypes[i].split("/", 2) : null;
-			multiPart = multiPart.bodyPart(new BodyPart(values[i],
+			multiPart = multiPart.bodyPart(new BodyPart(
+					(values[i] instanceof OutputStreamSender) ?
+							new StreamingOutputImpl((OutputStreamSender) values[i]) : values[i],
 				typeParts != null ?
 					new MediaType(typeParts[0],typeParts[1]) : MediaType.WILDCARD_TYPE
 					));
