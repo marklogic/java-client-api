@@ -1,14 +1,12 @@
 package com.marklogic.client.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.marklogic.client.Transaction;
 
 class TransactionImpl implements Transaction {
-	static final private Logger logger = LoggerFactory.getLogger(TransactionImpl.class);
+	private RESTServices services;
 
-	TransactionImpl(String transactionId) {
+	TransactionImpl(RESTServices services, String transactionId) {
+		this.services = services;
 		this.transactionId = transactionId;
 	}
 
@@ -21,15 +19,11 @@ class TransactionImpl implements Transaction {
 	}
 
 	public void commit() {
-		logger.info("Committing transaction {}",transactionId);
-
-		// TODO Auto-generated method stub
+		services.commitTransaction(getTransactionId());
 	}
 
 	public void rollback() {
-		logger.info("Rolling back transaction {}",transactionId);
-
-		// TODO Auto-generated method stub
+		services.rollbackTransaction(getTransactionId());
 	}
 
 }

@@ -26,12 +26,7 @@ public class DatabaseClientImpl implements DatabaseClient {
 	}
 
 	public Transaction openTransaction() {
-		// TODO: open the transaction and pass the transaction ID to the constructor
-		String transactionId = null;
-
-		logger.info("Opening transaction {}",transactionId);
-
-		return new TransactionImpl(transactionId);
+		return new TransactionImpl(services, services.openTransaction());
 	}
 
 	public GenericDocumentManager newDocumentManager() {

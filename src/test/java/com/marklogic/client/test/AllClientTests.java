@@ -17,7 +17,8 @@ import org.junit.runners.Suite;
 	BinaryDocumentTest.class,
 	JSONDocumentTest.class,
 	TextDocumentTest.class,
-	XMLDocumentTest.class
+	XMLDocumentTest.class,
+	MetadataHandleTest.class
 	})
 public class AllClientTests {
 }

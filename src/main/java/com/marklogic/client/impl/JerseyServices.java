@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
@@ -207,6 +208,55 @@ public class JerseyServices implements RESTServices {
 		if (status != ClientResponse.Status.CREATED && status != ClientResponse.Status.NO_CONTENT) {
 			throw new RuntimeException("write failed "+status);
 		}
+	}
+
+	public String openTransaction() {
+        logger.info("Opening transaction");
+
+        MultivaluedMap<String, String> transParams = new MultivaluedMapImpl();
+        transParams.add("name", "java-client-"+new Random().nextLong());
+
+        ClientResponse response = connection.path("transactions").queryParams(transParams).post(ClientResponse.class);
+        ClientResponse.Status status = response.getClientResponseStatus();
+        if (status != ClientResponse.Status.SEE_OTHER) {
+            response.close();
+            throw new RuntimeException("transaction open failed "+status);
+        }
+
+        String location = response.getHeaders().getFirst("Location");
+        response.close();
+        if (location == null)
+            throw new RuntimeException("transaction open failed to provide location");
+        if (!location.contains("/"))
+            throw new RuntimeException("transaction open produced invalid location "+location);
+
+        return location.substring(location.lastIndexOf("/") + 1);
+	}
+	public void commitTransaction(String transactionId) {
+        logger.info("Committing transaction {}",transactionId);
+
+        if (transactionId == null)
+            throw new RuntimeException("Committing transaction without id");
+
+        ClientResponse response = connection.path("transactions/"+transactionId).put(ClientResponse.class);
+        ClientResponse.Status status = response.getClientResponseStatus();
+        response.close();
+        if (status != ClientResponse.Status.NO_CONTENT) {
+            throw new RuntimeException("transaction commit failed "+status);
+        }
+	}
+	public void rollbackTransaction(String transactionId) {
+        logger.info("Rolling back transaction {}",transactionId);
+
+        if (transactionId == null)
+            throw new RuntimeException("Rolling back transaction without id");
+
+        ClientResponse response = connection.path("transactions/"+transactionId).delete(ClientResponse.class);
+        ClientResponse.Status status = response.getClientResponseStatus();
+        response.close();
+        if (status != ClientResponse.Status.NO_CONTENT) {
+            throw new RuntimeException("transaction rollback failed "+status);
+        }
 	}
 
 	private MultivaluedMap<String, String> makeDocumentParams(String uri, Set<Metadata> categories, String transactionId) {

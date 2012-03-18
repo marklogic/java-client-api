@@ -3,6 +3,7 @@ package com.marklogic.client.test;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
@@ -17,6 +18,7 @@ import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.Format;
 import com.marklogic.client.TextDocumentManager;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.StringHandle;
@@ -61,37 +63,39 @@ public class GenericDocumentTest {
 		assertTrue("Could not delete document", text == null && hadException);
 	}
 
+	final String content = "<?xml version='1.0' encoding='UTF-8'?>\n"+
+	"<root mode='mixed' xml:lang='en'>\n"+
+	"<child mode='basic'>value</child>\n"+
+	"A simple XML document\n"+
+	"</root>\n";
+
+	final String metadata =
+	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
+	"<rapi:metadata uri=\"/test/testMetadataXML1.xml\" xsi:schemaLocation=\"http://marklogic.com/rest-api/database dbmeta.xsd\" xmlns:rapi=\"http://marklogic.com/rest-api\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"+
+	"  <rapi:collections>\n"+
+	"    <rapi:collection>/document/collection1</rapi:collection>\n"+
+	"    <rapi:collection>/document/collection2</rapi:collection>\n"+
+	"  </rapi:collections>\n"+
+	"  <rapi:permissions>\n"+
+	"    <rapi:permission>\n"+
+	"      <rapi:role-name>app-user</rapi:role-name>\n"+
+	"      <rapi:capability>update</rapi:capability>\n"+
+	"      <rapi:capability>read</rapi:capability>\n"+
+	"    </rapi:permission>\n"+
+	"  </rapi:permissions>\n"+
+	"  <prop:properties xmlns:prop=\"http://marklogic.com/xdmp/property\">\n"+
+	"    <first>value one</first>\n"+
+	"    <second>2</second>\n"+
+	"  </prop:properties>\n"+
+	"  <rapi:quality>3</rapi:quality>\n"+
+	"</rapi:metadata>\n";
+
 	@Test
 	public void testReadWriteMetadata() throws SAXException, IOException, XpathException {
 		String uri = "/test/testMetadataXML1.xml";
-		String content = "<?xml version='1.0' encoding='UTF-8'?>\n"+
-			"<root mode='mixed' xml:lang='en'>\n"+
-			"<child mode='basic'>value</child>\n"+
-			"A simple XML document\n"+
-			"</root>\n";
 		DocumentIdentifier docId = new DocumentIdentifier(uri);
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		docMgr.write(docId, new StringHandle().on(content));
-
-		String metadata = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
-		"<rapi:metadata uri=\"/test/testMetadataXML1.xml\" xsi:schemaLocation=\"http://marklogic.com/rest-api/database dbmeta.xsd\" xmlns:rapi=\"http://marklogic.com/rest-api\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"+
-		"  <rapi:collections>\n"+
-		"    <rapi:collection>/document/collection1</rapi:collection>\n"+
-		"    <rapi:collection>/document/collection2</rapi:collection>\n"+
-		"  </rapi:collections>\n"+
-		"  <rapi:permissions>\n"+
-		"    <rapi:permission>\n"+
-		"      <rapi:role-name>app-user</rapi:role-name>\n"+
-		"      <rapi:capability>update</rapi:capability>\n"+
-		"      <rapi:capability>read</rapi:capability>\n"+
-		"    </rapi:permission>\n"+
-		"  </rapi:permissions>\n"+
-		"  <prop:properties xmlns:prop=\"http://marklogic.com/xdmp/property\">\n"+
-		"    <first>value one</first>\n"+
-		"    <second>2</second>\n"+
-		"  </prop:properties>\n"+
-		"  <rapi:quality>3</rapi:quality>\n"+
-		"</rapi:metadata>\n";
 
 		docMgr.setMetadataCategories(Metadata.ALL);
 		docMgr.writeMetadata(docId, new StringHandle().on(metadata));
@@ -141,4 +145,49 @@ public class GenericDocumentTest {
 		assertXpathEvaluatesTo("0","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='3'])",stringMetadata);
 	}
 
+	@Test
+	public void testCommit() {
+		String uri1 = "/test/testExists1.txt";
+		String uri2 = "/test/testExists2.txt";
+
+		DocumentIdentifier docId1 = new DocumentIdentifier(uri1);
+		DocumentIdentifier docId2 = new DocumentIdentifier(uri2);
+
+		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
+		docMgr.write(docId1,new StringHandle().on("A simple text document"));
+
+		Transaction transaction = Common.client.openTransaction();
+		StringHandle docHandle = docMgr.read(docId1, new StringHandle(), transaction);
+		docMgr.write(docId2, docHandle, transaction);
+		docMgr.delete(docId1, transaction);
+		transaction.commit();
+
+		assertTrue("Document 1 exists",        !docMgr.exists(docId1));
+		assertTrue("Document 2 doesn't exist",  docMgr.exists(docId2));
+
+		docMgr.delete(docId2);
+	}
+
+	@Test
+	public void testRollback() {
+		String uri1 = "/test/testExists1.txt";
+		String uri2 = "/test/testExists2.txt";
+
+		DocumentIdentifier docId1 = new DocumentIdentifier(uri1);
+		DocumentIdentifier docId2 = new DocumentIdentifier(uri2);
+
+		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
+		docMgr.write(docId1,new StringHandle().on("A simple text document"));
+
+		Transaction transaction = Common.client.openTransaction();
+		StringHandle docHandle = docMgr.read(docId1, new StringHandle(), transaction);
+		docMgr.write(docId2, docHandle, transaction);
+		docMgr.delete(docId1, transaction);
+		transaction.rollback();
+
+		assertTrue("Document 1 doesn't exist",  docMgr.exists(docId1));
+		assertTrue("Document 2 exists",        !docMgr.exists(docId2));
+
+		docMgr.delete(docId1);
+	}
 }
