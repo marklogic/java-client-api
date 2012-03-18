@@ -68,6 +68,11 @@ public class XMLEventReaderHandle
 		return InputStream.class;
 	}
 	public void receiveContent(InputStream content) {
+		if (content == null) {
+			this.content = null;
+			return;
+		}
+
 		try {
 			logger.info("Parsing StAX events from input stream");
 

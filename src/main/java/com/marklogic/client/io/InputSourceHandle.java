@@ -99,6 +99,11 @@ public class InputSourceHandle
 		return InputStream.class;
 	}
 	public void receiveContent(InputStream content) {
+		if (content == null) {
+			this.content = null;
+			return;
+		}
+
 		this.content = new InputSource(content);
 	}
 }

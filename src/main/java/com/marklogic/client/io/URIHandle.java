@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,19 +43,19 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 	public URIHandle() {
 		super();
 	}
-	public URIHandle(String uri) {
+	public URIHandle(URI uri) {
 		this();
 		set(uri);
 	}
 
-	private String uri;
-	public String get() {
+	private URI uri;
+	public URI get() {
 		return uri;
 	}
-	public void set(String uri) {
+	public void set(URI uri) {
 		this.uri = uri;
 	}
-	public URIHandle on(String uri) {
+	public URIHandle on(URI uri) {
 		set(uri);
 		return this;
 	}
@@ -73,10 +72,14 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 		return InputStream.class;
 	}
 	public void receiveContent(InputStream content) {
+		if (content == null) {
+			return;
+		}
+
 		try {
 			logger.info("Updating URI with content read from database");
 
-			OutputStream out = new BufferedOutputStream(new URI(uri).toURL().openConnection().getOutputStream());
+			OutputStream out = new BufferedOutputStream(get().toURL().openConnection().getOutputStream());
 			byte[] buf = new byte[BUFFER_SIZE];
 			int len = 0;
 			while ((len = content.read(buf, 0, BUFFER_SIZE)) != -1) {
@@ -90,9 +93,6 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 		} catch (IOException e) {
 			logger.error("Failed to update URI with content read from database",e);
 			throw new RuntimeException(e);
-		} catch (URISyntaxException e) {
-			logger.error("Failed to update URI with content read from database",e);
-			throw new RuntimeException(e);
 		}
 	}
 	public InputStream sendContent() {
@@ -103,7 +103,7 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 				throw new RuntimeException("No uri to write");
 			}
 
-			InputStream stream = new URI(uri).toURL().openStream();
+			InputStream stream = get().toURL().openStream();
 			if (stream == null) {
 				throw new RuntimeException("No stream to write");
 			}
@@ -113,9 +113,6 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 			logger.error("Failed to retrieving content from URI to write to database",e);
 			throw new RuntimeException(e);
 		} catch (IOException e) {
-			logger.error("Failed to retrieving content from URI to write to database",e);
-			throw new RuntimeException(e);
-		} catch (URISyntaxException e) {
 			logger.error("Failed to retrieving content from URI to write to database",e);
 			throw new RuntimeException(e);
 		}

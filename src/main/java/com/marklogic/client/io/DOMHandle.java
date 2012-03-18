@@ -91,6 +91,11 @@ public class DOMHandle
 		return InputStream.class;
 	}
 	public void receiveContent(InputStream content) {
+		if (content == null) {
+			this.content = null;
+			return;
+		}
+
 		try {
 			logger.info("Parsing DOM document from input stream");
 
@@ -104,6 +109,7 @@ public class DOMHandle
 				builder.setEntityResolver(resolver);
 
 			this.content = builder.parse(content);
+			content.close();
 		} catch (SAXException e) {
 			logger.error("Failed to parse DOM document from input stream",e);
 			throw new RuntimeException(e);

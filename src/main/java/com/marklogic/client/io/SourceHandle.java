@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -53,6 +54,27 @@ public class SourceHandle
 		set(content);
 		return this;
 	}
+	public void process(Result result) {
+		logger.info("Transforming source into result");
+		try {
+			if (content == null) {
+				throw new RuntimeException("No source to transform");
+			}
+
+			Transformer transformer = null;
+			if (this.transformer != null) {
+				transformer = getTransformer();
+			} else {
+				logger.warn("No transformer, so using identity transform");
+				transformer = TransformerFactory.newInstance().newTransformer();
+			}
+
+			transformer.transform(content, result);
+		} catch (TransformerException e) {
+			logger.error("Failed to transform source into result",e);
+			throw new RuntimeException(e);
+		}
+	}
 
 	public Format getFormat() {
 		return Format.XML;
@@ -66,31 +88,17 @@ public class SourceHandle
 		return InputStream.class;
 	}
 	public void receiveContent(InputStream content) {
+		if (content == null) {
+			this.content = null;
+			return;
+		}
+
 		this.content = new StreamSource(content);
 	}
 	public OutputStreamSender sendContent() {
 		return this;
 	}
 	public void write(OutputStream out) throws IOException {
-		try {
-			logger.info("Transforming source into result");
-
-			if (content == null) {
-				throw new RuntimeException("No source to write");
-			}
-
-			Transformer transformer = null;
-			if (this.transformer != null) {
-				transformer = getTransformer();
-			} else {
-				logger.warn("No transformer, so using identity transform");
-				transformer = TransformerFactory.newInstance().newTransformer();
-			}
-
-			transformer.transform(content, new StreamResult(out));
-		} catch (TransformerException e) {
-			logger.error("Failed to transform source into result",e);
-			throw new RuntimeException(e);
-		}
+		process(new StreamResult(out));
 	}
 }

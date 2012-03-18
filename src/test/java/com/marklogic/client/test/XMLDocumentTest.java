@@ -5,6 +5,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -147,7 +149,7 @@ public class XMLDocumentTest {
 	private static boolean testURIHandle = false;
 
 	@Test
-	public void testURIHandle() {
+	public void testURIHandle() throws URISyntaxException {
 		if (!testURIHandle)
 			return;
 
@@ -157,7 +159,7 @@ public class XMLDocumentTest {
 		DocumentIdentifier docId = new DocumentIdentifier(uri2);
 
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
-		docMgr.write(docId, new URIHandle(service));
+		docMgr.write(docId, new URIHandle(new URI(service)));
 		String docText = docMgr.read(docId, new StringHandle()).get();
 		assertNotNull("Read null string for URI with XML content",docText);
 		assertTrue("Read empty string for URI with XML content",docText.length() > 0);
