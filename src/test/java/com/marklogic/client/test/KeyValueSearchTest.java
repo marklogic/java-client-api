@@ -1,28 +1,18 @@
 package com.marklogic.client.test;
 
 import com.marklogic.client.QueryManager;
-import com.marklogic.client.QueryOptionsManager;
+import com.marklogic.client.config.search.KeyValueQueryDefinition;
 import com.marklogic.client.config.search.MatchDocumentSummary;
 import com.marklogic.client.config.search.MatchLocation;
-import com.marklogic.client.config.search.QueryDefinition;
 import com.marklogic.client.config.search.SearchResults;
 import com.marklogic.client.config.search.StringQueryDefinition;
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.ReaderHandle;
-import com.marklogic.client.io.StringHandle;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.w3c.dom.Document;
 
-import java.io.File;
+import javax.xml.namespace.QName;
 import java.io.IOException;
-import java.io.Reader;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
@@ -33,7 +23,7 @@ import static org.junit.Assert.assertNotNull;
  * Time: 1:20 PM
  * To change this template use File | Settings | File Templates.
  */
-public class StringSearchTest {
+public class KeyValueSearchTest {
     @BeforeClass
     public static void beforeClass() {
         Common.connect();
@@ -45,11 +35,12 @@ public class StringSearchTest {
     }
 
     @Test
-    public void testStringSearch() throws IOException {
+    public void testKVSearch() throws IOException {
         QueryManager queryMgr = Common.client.newQueryManager();
-        StringQueryDefinition qdef = queryMgr.newStringCriteria(null);
-        qdef.setCriteria("and");
+        KeyValueQueryDefinition qdef = queryMgr.newKeyValueCriteria(null);
 
+        qdef.put(queryMgr.newElementLocator(new QName("leaf")), "leaf3");
+        
         SearchResults results = queryMgr.search(qdef);
         assertNotNull(results);
         assertFalse(results.getMetrics().getTotalTime() == -1);

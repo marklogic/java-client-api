@@ -1,6 +1,10 @@
 package com.marklogic.client.impl;
 
+import com.marklogic.client.ElementLocator;
+import com.marklogic.client.KeyLocator;
 import com.marklogic.client.QueryManager;
+import com.marklogic.client.ValueLocator;
+import com.marklogic.client.config.search.KeyValueQueryDefinition;
 import com.marklogic.client.config.search.MarkLogicIOException;
 import com.marklogic.client.config.search.QueryDefinition;
 import com.marklogic.client.config.search.SearchMetrics;
@@ -15,6 +19,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.namespace.QName;
 import java.io.InputStream;
 import java.util.Date;
 
@@ -41,6 +46,26 @@ public class QueryManagerImpl implements QueryManager {
     }
 
     @Override
+    public KeyValueQueryDefinition newKeyValueCriteria(String optionsUri) {
+        return new KeyValueQueryDefinitionImpl(optionsUri);
+    }
+
+    @Override
+    public ElementLocator newElementLocator(QName element) {
+        return new ElementLocatorImpl(element);
+    }
+
+    @Override
+    public ElementLocator newElementLocator(QName element, QName attribute) {
+        return new ElementLocatorImpl(element, attribute);
+    }
+
+    @Override
+    public KeyLocator newKeyLocator(String key) {
+        return new KeyLocatorImpl(key);
+    }
+
+    @Override
     public SearchResults search(QueryDefinition criteria) {
         try {
             jc = JAXBContext.newInstance("com.marklogic.client.config.search.jaxb");
@@ -50,6 +75,8 @@ public class QueryManagerImpl implements QueryManager {
             InputStream resultXML = null;
             if (criteria instanceof StringQueryDefinition) {
                 resultXML = services.stringSearch(InputStream.class, null, ((StringQueryDefinition) criteria).getCriteria(), null);
+            } else if (criteria instanceof KeyValueQueryDefinition) {
+                resultXML = services.keyValueSearch(InputStream.class, null, ((KeyValueQueryDefinition) criteria), null);
             } else {
                 throw new UnsupportedOperationException("Unexpected search criteria: " + criteria.getClass().getName());
             }

@@ -10,6 +10,9 @@ import java.util.Set;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
+import com.marklogic.client.ElementLocator;
+import com.marklogic.client.KeyLocator;
+import com.marklogic.client.ValueLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -297,6 +300,33 @@ public class JerseyServices implements RESTServices {
         docParams.add("q", text);
 
         ClientResponse response = connection.path("search").queryParams(docParams).get(ClientResponse.class);
+        ClientResponse.Status status = response.getClientResponseStatus();
+        if (status != ClientResponse.Status.OK) {
+            response.close();
+            throw new RuntimeException("search failed "+status);
+        }
+        return response.getEntity(as);
+    }
+
+    // FIXME: is this even close to reasonable?
+    public <T> T keyValueSearch(Class<T> as, String uri, Map<ValueLocator, String> keyValues, String transactionId) {
+        logger.info("Searching for keys/values in transaction {}", transactionId);
+
+        MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
+        for (ValueLocator loc : keyValues.keySet()) {
+            if (loc instanceof KeyLocator) {
+                docParams.add("key", ((KeyLocator) loc).getKey());
+            } else {
+                ElementLocator eloc = (ElementLocator) loc;
+                docParams.add("element", eloc.getElement().toString());
+                if (eloc.getAttribute() != null) {
+                    docParams.add("attribute", eloc.getAttribute().toString());
+                }
+            }
+            docParams.add("value", keyValues.get(loc));
+        }
+
+        ClientResponse response = connection.path("keyvalue").queryParams(docParams).get(ClientResponse.class);
         ClientResponse.Status status = response.getClientResponseStatus();
         if (status != ClientResponse.Status.OK) {
             response.close();
