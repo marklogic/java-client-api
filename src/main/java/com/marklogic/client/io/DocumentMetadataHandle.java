@@ -39,7 +39,6 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
 public class DocumentMetadataHandle
     implements
-    	AbstractReadHandle<Object>, AbstractWriteHandle<MetadataJAXB>,
     	DocumentMetadataReadHandle<Object>, DocumentMetadataWriteHandle<MetadataJAXB>
 {
 	static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
