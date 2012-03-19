@@ -20,11 +20,11 @@ import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.MetadataHandle;
-import com.marklogic.client.io.MetadataHandle.Capability;
-import com.marklogic.client.io.MetadataHandle.DocumentCollections;
-import com.marklogic.client.io.MetadataHandle.DocumentPermissions;
-import com.marklogic.client.io.MetadataHandle.DocumentProperties;
+import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.DocumentMetadataHandle.Capability;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.io.StringHandle;
 
 public class MetadataHandleTest {
@@ -70,7 +70,7 @@ public class MetadataHandleTest {
 		"  <rapi:quality>3</rapi:quality>\n"+
 		"</rapi:metadata>\n";
 
-		MetadataHandle metaHandle = new MetadataHandle();
+		DocumentMetadataHandle metaHandle = new DocumentMetadataHandle();
 		metaHandle.getCollections().addAll("/document/collection1", "/document/collection2");
 		metaHandle.getPermissions().add("app-user", Capability.UPDATE, Capability.READ);
 // TODO:
@@ -86,7 +86,7 @@ public class MetadataHandleTest {
 		assertTrue("Could not get document metadata as an XML String", stringMetadata != null || stringMetadata.length() == 0);
 
 		docMgr.writeMetadata(docId, new StringHandle().on(metadataText));
-		metaHandle = docMgr.readMetadata(docId, new MetadataHandle());
+		metaHandle = docMgr.readMetadata(docId, new DocumentMetadataHandle());
 		assertTrue("Could not get document metadata as a structure", metaHandle != null);
 		DocumentCollections collections = metaHandle.getCollections();
 		assertEquals("Collection with wrong size", 2, collections.size());

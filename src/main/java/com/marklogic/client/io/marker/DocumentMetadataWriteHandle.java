@@ -5,5 +5,5 @@ package com.marklogic.client.io.marker;
  *
  * @param <C>
  */
-public interface MetadataWriteHandle<C> extends AbstractWriteHandle<C> {
+public interface DocumentMetadataWriteHandle<C> extends AbstractWriteHandle<C> {
 }

@@ -34,13 +34,13 @@ import com.marklogic.client.impl.jaxb.metadata.PropertiesJAXB;
 import com.marklogic.client.impl.jaxb.security.CapabilityJAXB;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
-import com.marklogic.client.io.marker.MetadataReadHandle;
-import com.marklogic.client.io.marker.MetadataWriteHandle;
+import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
+import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
 public class DocumentMetadataHandle
     implements
     	AbstractReadHandle<Object>, AbstractWriteHandle<MetadataJAXB>,
-    	MetadataReadHandle<Object>, MetadataWriteHandle<MetadataJAXB>
+    	DocumentMetadataReadHandle<Object>, DocumentMetadataWriteHandle<MetadataJAXB>
 {
 	static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
 

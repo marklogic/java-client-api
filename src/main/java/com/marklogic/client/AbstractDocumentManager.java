@@ -5,8 +5,8 @@ import java.util.Set;
 
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
-import com.marklogic.client.io.marker.MetadataReadHandle;
-import com.marklogic.client.io.marker.MetadataWriteHandle;
+import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
+import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
 /**
  * A Document Manager provides database operations on a document.
@@ -61,7 +61,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param contentHandle
      * @return
      */
-    public <T extends R> T read(DocumentIdentifier docId, MetadataReadHandle metadataHandle, T contentHandle);
+    public <T extends R> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle);
     /**
      * Reads the document content from an open database transaction in the representation provided by the handle
      * 
@@ -82,7 +82,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param transaction
      * @return
      */
-    public <T extends R> T read(DocumentIdentifier docId, MetadataReadHandle metadataHandle, T contentHandle, Transaction transaction);
+    public <T extends R> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction);
 
     /**
      * Writes the document content to the database from the representation provided by the handle
@@ -98,7 +98,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param metadata
      * @param contentHandle
      */
-    public void write(DocumentIdentifier docId, MetadataWriteHandle metadata, W contentHandle);
+    public void write(DocumentIdentifier docId, DocumentMetadataWriteHandle metadata, W contentHandle);
     /**
      * Writes the document content to an open database transaction from the representation provided by the handle
      * 
@@ -115,7 +115,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param contentHandle
      * @param transaction
      */
-    public void write(DocumentIdentifier docId, MetadataWriteHandle metadata, W contentHandle, Transaction transaction);
+    public void write(DocumentIdentifier docId, DocumentMetadataWriteHandle metadata, W contentHandle, Transaction transaction);
 
     /**
      * Deletes the document metadata and content from the database
@@ -139,7 +139,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param metadataHandle
      * @return
      */
-    public <T extends MetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle);
+    public <T extends DocumentMetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle);
     /**
      * Reads the document metadata from an open database transaction in the representation provided by the handle
      * 
@@ -149,7 +149,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param transaction
      * @return
      */
-    public <T extends MetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle, Transaction transaction);
+    public <T extends DocumentMetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle, Transaction transaction);
 
     /**
      * Writes the document metadata to the database from the representation provided by the handle
@@ -157,7 +157,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param docId
      * @param metadataHandle
      */
-    public void writeMetadata(DocumentIdentifier docId, MetadataWriteHandle metadataHandle);
+    public void writeMetadata(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle);
     /**
      * Writes the document metadata to an open database transaction from the representation provided by the handle
      * 
@@ -165,7 +165,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param metadataHandle
      * @param transaction
      */
-    public void writeMetadata(DocumentIdentifier docId, MetadataWriteHandle metadataHandle, Transaction transaction);
+    public void writeMetadata(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle, Transaction transaction);
 
     /**
      * Reverts the document metadata in the database to the defaults

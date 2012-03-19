@@ -20,13 +20,13 @@ import com.marklogic.client.RequestLogger;
 import com.marklogic.client.Format;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.AbstractDocumentManager.Metadata;
-import com.marklogic.client.io.MetadataHandle;
+import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.MetadataReadHandle;
-import com.marklogic.client.io.marker.MetadataWriteHandle;
+import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
+import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
@@ -112,13 +112,13 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 	public <T extends R> T read(DocumentIdentifier docId, T contentHandle) {
 		return read(docId, null, contentHandle, null);
 	}
-	public <T extends R> T read(DocumentIdentifier docId, MetadataReadHandle metadataHandle, T contentHandle) {
+	public <T extends R> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle) {
 		return read(docId, metadataHandle, contentHandle, null);
 	}
 	public <T extends R> T read(DocumentIdentifier docId, T contentHandle, Transaction transaction) {
 		return read(docId, null, contentHandle, transaction);
 	}
-	public <T extends R> T read(DocumentIdentifier docId, MetadataReadHandle metadataHandle, T contentHandle, Transaction transaction) {
+	public <T extends R> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction) {
 		String uri = docId.getUri();
 		logger.info("Reading metadata and content for {}",uri);
 
@@ -187,13 +187,13 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 	public void write(DocumentIdentifier docId, W contentHandle) {
 		write(docId, null, contentHandle, null);
 	}
-	public void write(DocumentIdentifier docId, MetadataWriteHandle metadata, W contentHandle) {
+	public void write(DocumentIdentifier docId, DocumentMetadataWriteHandle metadata, W contentHandle) {
 		write(docId, metadata, contentHandle, null);
 	}
 	public void write(DocumentIdentifier docId, W contentHandle, Transaction transaction) {
 		write(docId, null, contentHandle, transaction);
 	}
-	public void write(DocumentIdentifier docId, MetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction) {
+	public void write(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction) {
 		String uri = docId.getUri();
 		logger.info("Writing content for {}",uri);
 
@@ -259,19 +259,19 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		services.delete(uri, (transaction == null) ? null : transaction.getTransactionId(), null);
 	}
 
-    public <T extends MetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle) {
+    public <T extends DocumentMetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle) {
 		return readMetadata(docId, metadataHandle, null);
     }
-    public <T extends MetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle, Transaction transaction) {
+    public <T extends DocumentMetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle, Transaction transaction) {
 		read(docId, metadataHandle, null, transaction);
 
 		return metadataHandle;
     }
 
-    public void writeMetadata(DocumentIdentifier docId, MetadataWriteHandle metadataHandle) {
+    public void writeMetadata(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle) {
 		writeMetadata(docId, metadataHandle, null);
     }
-    public void writeMetadata(DocumentIdentifier docId, MetadataWriteHandle metadataHandle, Transaction transaction) {
+    public void writeMetadata(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle, Transaction transaction) {
 		write(docId, metadataHandle, null, transaction);
     }
 

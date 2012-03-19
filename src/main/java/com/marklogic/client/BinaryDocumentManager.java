@@ -2,7 +2,7 @@ package com.marklogic.client;
 
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
-import com.marklogic.client.io.marker.MetadataReadHandle;
+import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 
 /**
  * A Binary Document Manager provides database operations on binary documents.
@@ -34,7 +34,7 @@ public interface BinaryDocumentManager extends AbstractDocumentManager<BinaryRea
      * @param length
      * @return
      */
-	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, MetadataReadHandle metadataHandle, T contentHandle, long start, long length);
+	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length);
     /**
      * Reads a range of bytes from the content of a binary document for an open database transaction in the representation provided by the handle
      * 
@@ -59,7 +59,7 @@ public interface BinaryDocumentManager extends AbstractDocumentManager<BinaryRea
      * @param transaction
      * @return
      */
-	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, MetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction);
+	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction);
 
 	public MetadataExtraction getMetadataExtraction();
 	public void setMetadataExtraction(MetadataExtraction policy);

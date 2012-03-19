@@ -5,5 +5,5 @@ package com.marklogic.client.io.marker;
  *
  * @param <C>
  */
-public interface MetadataReadHandle<C> extends AbstractReadHandle<C> {
+public interface DocumentMetadataReadHandle<C> extends AbstractReadHandle<C> {
 }
