@@ -14,12 +14,12 @@ public interface RESTServices {
 
 	public String openTransaction();
 
-	public void delete(String uri, String transactionId, Set<Metadata> categories);
-	public <T> T get(String uri, String transactionId, Set<Metadata> categories, String mimetype, Class<T> as);
-	public Object[] get(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Class[] as);
+	public void deleteDocument(String uri, String transactionId, Set<Metadata> categories);
+	public <T> T getDocument(String uri, String transactionId, Set<Metadata> categories, String mimetype, Class<T> as);
+	public Object[] getDocument(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Class[] as);
 	public Map<String,List<String>> head(String uri, String transactionId);
-	public void put(String uri, String transactionId, Set<Metadata> categories, String mimetype, Object value);
-	public void put(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Object[] values);
+	public void putDocument(String uri, String transactionId, Set<Metadata> categories, String mimetype, Object value);
+	public void putDocument(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Object[] values);
 
     public <T> T stringSearch(Class <T> as, String uri, String searchText, String transactionId);
     public <T> T keyValueSearch(Class <T> as, String uri, Map<ValueLocator, String> keyValues, String transactionId);

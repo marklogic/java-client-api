@@ -1,34 +1,22 @@
 package com.marklogic.client.impl;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.StreamingOutput;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.AbstractDocumentManager;
 import com.marklogic.client.DocumentIdentifier;
-import com.marklogic.client.RequestLogger;
 import com.marklogic.client.Format;
+import com.marklogic.client.RequestLogger;
 import com.marklogic.client.Transaction;
-import com.marklogic.client.AbstractDocumentManager.Metadata;
-import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
-import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
 
 abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends AbstractWriteHandle>
 	implements AbstractDocumentManager<R, W>
@@ -148,7 +136,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		}
 
 		if (metadataHandle != null && contentHandle != null) {
-			Object[] values = services.get(
+			Object[] values = services.getDocument(
 					uri, 
 					(transaction == null) ? null : transaction.getTransactionId(),
 					metadata,
@@ -159,7 +147,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 			contentHandle.receiveContent(values[1]);
 		} else if (metadataHandle != null) {
 			metadataHandle.receiveContent(
-					services.get(
+					services.getDocument(
 							uri,
 							(transaction == null) ? null : transaction.getTransactionId(),
 							metadata,
@@ -169,7 +157,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 					);
 		} else if (contentHandle != null) {
 			contentHandle.receiveContent(
-				services.get(
+				services.getDocument(
 						uri,
 						(transaction == null) ? null : transaction.getTransactionId(),
 						null,
@@ -223,7 +211,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		}
 
 		if (metadataHandle != null && contentHandle != null) {
-			services.put(
+			services.putDocument(
 					uri,
 					(transaction == null) ? null : transaction.getTransactionId(),
 					metadata,
@@ -231,7 +219,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 					new Object[] {metadataHandle.sendContent(), contentHandle.sendContent()}
 					);
 		} else if (metadataHandle != null) {
-			services.put(
+			services.putDocument(
 					uri,
 					(transaction == null) ? null : transaction.getTransactionId(),
 					metadata,
@@ -239,7 +227,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 					metadataHandle.sendContent()
 					);
 		} else if (contentHandle != null) {
-			services.put(
+			services.putDocument(
 					uri,
 					(transaction == null) ? null : transaction.getTransactionId(),
 					null,
@@ -256,7 +244,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		String uri = docId.getUri();
 		logger.info("Deleting {}",uri);
 
-		services.delete(uri, (transaction == null) ? null : transaction.getTransactionId(), null);
+		services.deleteDocument(uri, (transaction == null) ? null : transaction.getTransactionId(), null);
 	}
 
     public <T extends DocumentMetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle) {
@@ -282,7 +270,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		String uri = docId.getUri();
 		logger.info("Resetting metadata for {}",uri);
 
-		services.delete(uri, (transaction == null) ? null : transaction.getTransactionId(), processedMetadata);
+		services.deleteDocument(uri, (transaction == null) ? null : transaction.getTransactionId(), processedMetadata);
     }
 
 	private String readTransformName;

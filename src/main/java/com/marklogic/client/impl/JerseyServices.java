@@ -63,7 +63,7 @@ public class JerseyServices implements RESTServices {
 		client.destroy();
 	}
 
-	public void delete(String uri, String transactionId, Set<Metadata> categories) {
+	public void deleteDocument(String uri, String transactionId, Set<Metadata> categories) {
 		logger.info("Deleting {} in transaction {}", uri, transactionId);
 
 		ClientResponse response = makeDocumentResource(
@@ -79,7 +79,7 @@ public class JerseyServices implements RESTServices {
 
 	// TODO:  does an Input Stream or Reader handle need to cache the response so it can close the response?
 
-	public <T> T get(String uri, String transactionId, Set<Metadata> categories, String mimetype, Class<T> as) {
+	public <T> T getDocument(String uri, String transactionId, Set<Metadata> categories, String mimetype, Class<T> as) {
 		logger.info("Getting {} in transaction {}", uri, transactionId);
 
 		ClientResponse response = makeDocumentResource(
@@ -98,7 +98,7 @@ public class JerseyServices implements RESTServices {
 
 		return entity;
 	}
-	public Object[] get(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Class[] as) {
+	public Object[] getDocument(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Class[] as) {
 		logger.info("Getting multipart for {} in transaction {}", uri, transactionId);
 
 		if (mimetypes == null || mimetypes.length == 0)
@@ -163,7 +163,7 @@ public class JerseyServices implements RESTServices {
 		}
 		return response.getHeaders();
 	}
-	public void put(String uri, String transactionId, Set<Metadata> categories, String mimetype, Object value) {
+	public void putDocument(String uri, String transactionId, Set<Metadata> categories, String mimetype, Object value) {
 		logger.info("Putting {} in transaction {}", uri, transactionId);
 
 		ClientResponse response = makeDocumentResource(
@@ -178,7 +178,7 @@ public class JerseyServices implements RESTServices {
 			throw new RuntimeException("write failed "+status);
 		}
 	}
-	public void put(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Object[] values) {
+	public void putDocument(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Object[] values) {
 		logger.info("Putting multipart for {} in transaction {}", uri, transactionId);
 
 		if (mimetypes == null || mimetypes.length == 0)
