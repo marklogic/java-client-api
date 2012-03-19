@@ -1,4 +1,4 @@
-package com.marklogic.client.config.search;
+package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -19,6 +19,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.marklogic.client.config.search.IndexReference;
+import com.marklogic.client.config.search.RangeConstraint;
+import com.marklogic.client.config.search.SearchOption;
+import com.marklogic.client.config.search.SearchOptions;
 
 
 public class QueryOptionsTest {
