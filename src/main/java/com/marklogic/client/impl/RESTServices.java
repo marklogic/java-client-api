@@ -7,6 +7,7 @@ import java.util.Set;
 import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.ValueLocator;
+import com.marklogic.client.config.search.SearchOptions;
 
 public interface RESTServices {
 	public void connect(String host, int port, String user, String password, Authentication type);
@@ -26,4 +27,10 @@ public interface RESTServices {
 
 	public void commitTransaction(String transactionId);
 	public void rollbackTransaction(String transactionId);
+
+	public SearchOptions get(String searchOptionsName);
+	public void put(String searchOptionsName, SearchOptions options);
+	public void delete(String searchOptionsName);
+
+	
 }

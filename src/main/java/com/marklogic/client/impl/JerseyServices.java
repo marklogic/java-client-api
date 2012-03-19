@@ -1,7 +1,5 @@
 package com.marklogic.client.impl;
 
-import java.io.InputStream;
-import java.io.Reader;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -9,6 +7,7 @@ import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.xml.bind.JAXBException;
 
 import com.marklogic.client.ElementLocator;
 import com.marklogic.client.KeyLocator;
@@ -19,32 +18,26 @@ import org.slf4j.LoggerFactory;
 import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.marker.OutputStreamSender;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
-import com.sun.jersey.api.client.filter.HTTPDigestAuthFilter;
-import com.sun.jersey.client.apache.ApacheHttpClient;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
-import com.sun.jersey.multipart.BodyPart;
-import com.sun.jersey.multipart.Boundary;
-import com.sun.jersey.multipart.MultiPart;
-import com.sun.jersey.multipart.MultiPartMediaTypes;
+import com.marklogic.client.config.search.MarkLogicIOException;
+import com.marklogic.client.config.search.SearchOptions;
 
 public class JerseyServices implements RESTServices {
-	static final private Logger logger = LoggerFactory.getLogger(JerseyServices.class);
+	static final private Logger logger = LoggerFactory
+			.getLogger(JerseyServices.class);
 
 	private Client client;
 	private WebResource connection;
 
-	public JerseyServices () {
+	private String QUERY_OPTIONS_BASE = "/config/search/";
+
+	public JerseyServices() {
 	}
 
-	public void connect(String host, int port, String user, String password, Authentication type) {
+	public void connect(String host, int port, String user, String password,
+			Authentication type) {
 		if (logger.isInfoEnabled())
-			logger.info("Connecting to {} at {} as {}",new Object[]{host,port,user});
+			logger.info("Connecting to {} at {} as {}", new Object[] { host,
+					port, user });
 
 		ClientConfig config = new DefaultClientConfig();
 		client = ApacheHttpClient.create(config);
@@ -53,9 +46,12 @@ public class JerseyServices implements RESTServices {
 		else if (type == Authentication.DIGEST)
 			client.addFilter(new HTTPDigestAuthFilter(user, password));
 		else
-			throw new RuntimeException("Internal error - unknown authentication type: "+type.name());
-		connection = client.resource("http://"+host+":"+port+"/v1/");
+			throw new RuntimeException(
+					"Internal error - unknown authentication type: "
+							+ type.name());
+		connection = client.resource("http://" + host + ":" + port + "/v1/");
 	}
+
 	public void release() {
 		logger.info("Releasing connection");
 
@@ -67,13 +63,13 @@ public class JerseyServices implements RESTServices {
 		logger.info("Deleting {} in transaction {}", uri, transactionId);
 
 		ClientResponse response = makeDocumentResource(
-				makeDocumentParams(uri, categories, transactionId)
-				).delete(ClientResponse.class);
+				makeDocumentParams(uri, categories, transactionId)).delete(
+				ClientResponse.class);
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
-		response.close(); 
+		response.close();
 		if (status != ClientResponse.Status.NO_CONTENT) {
-			throw new RuntimeException("delete failed "+status);
+			throw new RuntimeException("delete failed " + status);
 		}
 	}
 
@@ -83,13 +79,13 @@ public class JerseyServices implements RESTServices {
 		logger.info("Getting {} in transaction {}", uri, transactionId);
 
 		ClientResponse response = makeDocumentResource(
-				makeDocumentParams(uri, categories, transactionId)
-			).accept(mimetype).get(ClientResponse.class);
+				makeDocumentParams(uri, categories, transactionId)).accept(
+				mimetype).get(ClientResponse.class);
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
 		if (status != ClientResponse.Status.OK) {
-			response.close(); 
-			throw new RuntimeException("read failed "+status);
+			response.close();
+			throw new RuntimeException("read failed " + status);
 		}
 
 		T entity = response.getEntity(as);
@@ -98,6 +94,7 @@ public class JerseyServices implements RESTServices {
 
 		return entity;
 	}
+
 	public Object[] getDocument(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Class[] as) {
 		logger.info("Getting multipart for {} in transaction {}", uri, transactionId);
 
@@ -106,20 +103,24 @@ public class JerseyServices implements RESTServices {
 		if (as == null || as.length == 0)
 			throw new RuntimeException("handle classes not specified for read");
 		if (mimetypes.length != as.length)
-			throw new RuntimeException("mistmatch between mime types and handle classes for read");
+			throw new RuntimeException(
+					"mistmatch between mime types and handle classes for read");
 
-		MultivaluedMap<String, String> docParams = makeDocumentParams(uri, categories, transactionId, true);
+		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
+				categories, transactionId, true);
 		if (mimetypes[0].startsWith("application/")) {
-			docParams.add("format", mimetypes[0].substring("application/".length()));
+			docParams.add("format",
+					mimetypes[0].substring("application/".length()));
 		}
 
-		ClientResponse response =
-			makeDocumentResource(docParams).accept(Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE)).get(ClientResponse.class);
+		ClientResponse response = makeDocumentResource(docParams).accept(
+				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE))
+				.get(ClientResponse.class);
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
 		if (status != ClientResponse.Status.OK) {
-			response.close(); 
-			throw new RuntimeException("read failed "+status);
+			response.close();
+			throw new RuntimeException("read failed " + status);
 		}
 
 		MultiPart entity = response.getEntity(MultiPart.class);
@@ -134,11 +135,11 @@ public class JerseyServices implements RESTServices {
 		if (partCount == 0)
 			return null;
 		if (partCount != as.length)
-			throw new RuntimeException(
-					"read expected "+as.length+" parts but got "+partCount+" parts");
+			throw new RuntimeException("read expected " + as.length
+					+ " parts but got " + partCount + " parts");
 
 		Object[] parts = new Object[partCount];
-		for (int i=0; i < partCount; i++) {
+		for (int i = 0; i < partCount; i++) {
 			parts[i] = partList.get(i).getEntityAs(as[i]);
 		}
 
@@ -146,20 +147,22 @@ public class JerseyServices implements RESTServices {
 
 		return parts;
 	}
-	public Map<String,List<String>> head(String uri, String transactionId) {
-		logger.info("Requesting head for {} in transaction {}", uri, transactionId);
+
+	public Map<String, List<String>> head(String uri, String transactionId) {
+		logger.info("Requesting head for {} in transaction {}", uri,
+				transactionId);
 
 		ClientResponse response = makeDocumentResource(
-					makeDocumentParams(uri, null, transactionId)
-				).head();
+				makeDocumentParams(uri, null, transactionId)).head();
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
-		response.close(); 
+		response.close();
 		if (status == ClientResponse.Status.NOT_FOUND) {
 			return null;
 		}
 		if (status != ClientResponse.Status.OK) {
-			throw new RuntimeException("head failed "+response.getClientResponseStatus());
+			throw new RuntimeException("head failed "
+					+ response.getClientResponseStatus());
 		}
 		return response.getHeaders();
 	}
@@ -173,9 +176,10 @@ public class JerseyServices implements RESTServices {
 								new StreamingOutputImpl((OutputStreamSender) value) : value);
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
-		response.close(); 
-		if (status != ClientResponse.Status.CREATED && status != ClientResponse.Status.NO_CONTENT) {
-			throw new RuntimeException("write failed "+status);
+		response.close();
+		if (status != ClientResponse.Status.CREATED
+				&& status != ClientResponse.Status.NO_CONTENT) {
+			throw new RuntimeException("write failed " + status);
 		}
 	}
 	public void putDocument(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Object[] values) {
@@ -186,7 +190,8 @@ public class JerseyServices implements RESTServices {
 		if (values == null || values.length == 0)
 			throw new RuntimeException("values not specified for write");
 		if (mimetypes.length != values.length)
-			throw new RuntimeException("mistmatch between mime types and values for write");
+			throw new RuntimeException(
+					"mistmatch between mime types and values for write");
 
 		MultiPart multiPart = new MultiPart();
 		multiPart.setMediaType(new MediaType("multipart","mixed"));
@@ -201,15 +206,18 @@ public class JerseyServices implements RESTServices {
 					));
 		}
 
-		MultivaluedMap<String, String> docParams = makeDocumentParams(uri, categories, transactionId, true);
+		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
+				categories, transactionId, true);
 
-		ClientResponse response =
-			makeDocumentResource(docParams).type(Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE)).put(ClientResponse.class, multiPart);
+		ClientResponse response = makeDocumentResource(docParams).type(
+				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE))
+				.put(ClientResponse.class, multiPart);
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
-		response.close(); 
-		if (status != ClientResponse.Status.CREATED && status != ClientResponse.Status.NO_CONTENT) {
-			throw new RuntimeException("write failed "+status);
+		response.close();
+		if (status != ClientResponse.Status.CREATED
+				&& status != ClientResponse.Status.NO_CONTENT) {
+			throw new RuntimeException("write failed " + status);
 		}
 	}
 
@@ -265,7 +273,9 @@ public class JerseyServices implements RESTServices {
 	private MultivaluedMap<String, String> makeDocumentParams(String uri, Set<Metadata> categories, String transactionId) {
 		return makeDocumentParams(uri, categories, transactionId, false);
 	}
-	private MultivaluedMap<String, String> makeDocumentParams(String uri, Set<Metadata> categories, String transactionId, boolean withContent) {
+
+	private MultivaluedMap<String, String> makeDocumentParams(String uri,
+			Set<Metadata> categories, String transactionId, boolean withContent) {
 		MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
 		docParams.add("uri", uri);
 		if (categories == null || categories.size() == 0) {
@@ -274,12 +284,11 @@ public class JerseyServices implements RESTServices {
 			if (withContent)
 				docParams.add("category", "content");
 			if (categories.contains(Metadata.ALL)) {
-				for (String category: new String[]{
-					"collections", "permissions", "properties", "quality"
-					})
+				for (String category : new String[] { "collections",
+						"permissions", "properties", "quality" })
 					docParams.add("category", category);
 			} else {
-				for (Metadata category: categories)
+				for (Metadata category : categories)
 					docParams.add("category", category.name().toLowerCase());
 			}
 		}
@@ -288,7 +297,8 @@ public class JerseyServices implements RESTServices {
 		return docParams;
 	}
 
-	private WebResource makeDocumentResource(MultivaluedMap<String, String> queryParams) {
+	private WebResource makeDocumentResource(
+			MultivaluedMap<String, String> queryParams) {
 		return connection.path("documents").queryParams(queryParams);
 	}
 
@@ -334,4 +344,41 @@ public class JerseyServices implements RESTServices {
         }
         return response.getEntity(as);
     }
+
+	@Override
+	// TODO rewrite to JSON, XML, or JAXB output.
+	public SearchOptions get(String searchOptionsName) {
+		ClientResponse clientResponse = connection.path(QUERY_OPTIONS_BASE + searchOptionsName)
+				.accept("application/xml").get(ClientResponse.class);
+
+		try {
+			return new SearchOptions(clientResponse.getEntityInputStream());
+		} catch (JAXBException e) {
+			throw new MarkLogicIOException("Could not get options from server",
+					e);
+
+		}
+	}
+
+	public void put(String searchOptionsName, SearchOptions options) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try {
+			options.writeTo(baos);
+		} catch (JAXBException e) {
+			throw new MarkLogicIOException(
+					"Could not build options to send to server", e);
+		}
+		ClientResponse clientResponse = connection.path(QUERY_OPTIONS_BASE + searchOptionsName)
+				.type("application/xml")
+				.put(ClientResponse.class, baos.toByteArray());
+
+		
+	}
+
+	@Override
+	public void delete(String searchOptionsName) {
+		ClientResponse clientResponse = connection.path(QUERY_OPTIONS_BASE + searchOptionsName)
+				.accept("application/xml").delete(ClientResponse.class);
+
+	}
 }

@@ -38,7 +38,7 @@ public class GenericDocumentTest {
 		String uri = "/test/testExists1.txt";
 		DocumentIdentifier docId = new DocumentIdentifier(uri);
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
-		assertTrue("Non-existent document appears to exists", !docMgr.exists(docId));
+		assertTrue("Non-existent document appears to exist", !docMgr.exists(docId));
 		docMgr.write(docId,new StringHandle().on("A simple text document"));
 		assertTrue("Existent document doesn't appear to exist", docMgr.exists(docId));
 		docMgr.delete(docId);

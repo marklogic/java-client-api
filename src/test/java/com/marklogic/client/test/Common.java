@@ -13,6 +13,8 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 public class Common {
 	final public static String USERNAME = "rest-writer";
 	final public static String PASSWORD = "x";
+	final public static String ADMIN_USERNAME = "rest-admin";
+	final public static String ADMIN_PASSWORD = "x";
 	final public static String HOST     = "localhost";
 	final public static int    PORT     = 8011;
 
@@ -21,6 +23,12 @@ public class Common {
 		client = DatabaseClientFactory.connect(
 			Common.HOST, Common.PORT, Common.USERNAME, Common.PASSWORD, Authentication.DIGEST
 			);
+	}
+
+	static void connectAdmin() {
+		client = DatabaseClientFactory.connect(
+				Common.HOST, Common.PORT, Common.ADMIN_USERNAME, Common.ADMIN_PASSWORD, Authentication.DIGEST
+				);
 	}
 	static void release() {
 		client = null;

@@ -15,6 +15,7 @@ import com.marklogic.client.RequestLogger;
 import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.config.search.SearchOptions;
 
 public class DatabaseClientImpl implements DatabaseClient {
 	static final private Logger logger = LoggerFactory.getLogger(DatabaseClientImpl.class);
@@ -59,8 +60,7 @@ public class DatabaseClientImpl implements DatabaseClient {
 	}
 
 	public QueryOptionsManager newQueryOptionsManager() {
-		// TODO Auto-generated method stub
-		return null;
+		return new QueryOptionsManagerImpl(services);
 	}
 
 	public void release() {
