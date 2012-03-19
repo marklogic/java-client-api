@@ -8,7 +8,7 @@ import com.marklogic.client.config.search.SearchResults;
 import com.marklogic.client.config.search.StringQueryDefinition;
 import com.marklogic.client.config.search.jaxb.Metrics;
 import com.marklogic.client.config.search.jaxb.Response;
-import com.marklogic.client.docio.XMLReadHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
