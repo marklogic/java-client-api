@@ -37,7 +37,7 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.MetadataReadHandle;
 import com.marklogic.client.io.marker.MetadataWriteHandle;
 
-public class MetadataHandle
+public class DocumentMetadataHandle
     implements
     	AbstractReadHandle<Object>, AbstractWriteHandle<MetadataJAXB>,
     	MetadataReadHandle<Object>, MetadataWriteHandle<MetadataJAXB>
@@ -211,7 +211,7 @@ public class MetadataHandle
 		}
 	}
 
-	public MetadataHandle() {
+	public DocumentMetadataHandle() {
 		super();
 	}
 
