@@ -1,5 +1,8 @@
 package com.marklogic.client.impl;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.Reader;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -9,17 +12,30 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.xml.bind.JAXBException;
 
-import com.marklogic.client.ElementLocator;
-import com.marklogic.client.KeyLocator;
-import com.marklogic.client.ValueLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.io.marker.OutputStreamSender;
+import com.marklogic.client.ElementLocator;
+import com.marklogic.client.KeyLocator;
+import com.marklogic.client.ValueLocator;
 import com.marklogic.client.config.search.MarkLogicIOException;
 import com.marklogic.client.config.search.SearchOptions;
+import com.marklogic.client.io.marker.OutputStreamSender;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
+import com.sun.jersey.api.client.filter.HTTPDigestAuthFilter;
+import com.sun.jersey.client.apache.ApacheHttpClient;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
+import com.sun.jersey.multipart.BodyPart;
+import com.sun.jersey.multipart.Boundary;
+import com.sun.jersey.multipart.MultiPart;
+import com.sun.jersey.multipart.MultiPartMediaTypes;
 
 public class JerseyServices implements RESTServices {
 	static final private Logger logger = LoggerFactory
