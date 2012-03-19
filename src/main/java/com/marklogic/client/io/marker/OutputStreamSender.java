@@ -1,4 +1,4 @@
-package com.marklogic.client.io;
+package com.marklogic.client.io.marker;
 
 import java.io.IOException;
 import java.io.OutputStream;

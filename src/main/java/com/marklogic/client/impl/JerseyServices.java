@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.io.OutputStreamSender;
+import com.marklogic.client.io.marker.OutputStreamSender;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
