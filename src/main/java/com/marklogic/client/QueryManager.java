@@ -3,7 +3,7 @@ package com.marklogic.client;
 import com.marklogic.client.config.search.QueryDefinition;
 import com.marklogic.client.config.search.SearchResults;
 import com.marklogic.client.config.search.StringQueryDefinition;
-import com.marklogic.client.docio.XMLReadHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
 
 public interface QueryManager {
     // constants that can be used as values for pagination
