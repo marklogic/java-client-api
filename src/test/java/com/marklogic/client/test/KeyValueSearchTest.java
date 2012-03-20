@@ -6,6 +6,7 @@ import com.marklogic.client.config.search.MatchDocumentSummary;
 import com.marklogic.client.config.search.MatchLocation;
 import com.marklogic.client.config.search.SearchResults;
 import com.marklogic.client.config.search.StringQueryDefinition;
+import com.marklogic.client.io.SearchHandle;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -40,8 +41,7 @@ public class KeyValueSearchTest {
         KeyValueQueryDefinition qdef = queryMgr.newKeyValueCriteria(null);
 
         qdef.put(queryMgr.newElementLocator(new QName("leaf")), "leaf3");
-        
-        SearchResults results = queryMgr.search(qdef);
+        SearchHandle results = queryMgr.search(new SearchHandle(), qdef);
         assertNotNull(results);
         assertFalse(results.getMetrics().getTotalTime() == -1);
 

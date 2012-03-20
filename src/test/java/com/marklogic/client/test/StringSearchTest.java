@@ -2,6 +2,7 @@ package com.marklogic.client.test;
 
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.QueryOptionsManager;
+import com.marklogic.client.config.search.KeyValueQueryDefinition;
 import com.marklogic.client.config.search.MatchDocumentSummary;
 import com.marklogic.client.config.search.MatchLocation;
 import com.marklogic.client.config.search.QueryDefinition;
@@ -12,12 +13,14 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.ReaderHandle;
+import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
+import javax.xml.namespace.QName;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
@@ -48,9 +51,9 @@ public class StringSearchTest {
     public void testStringSearch() throws IOException {
         QueryManager queryMgr = Common.client.newQueryManager();
         StringQueryDefinition qdef = queryMgr.newStringCriteria(null);
-        qdef.setCriteria("and");
+        qdef.setCriteria("leaf3");
 
-        SearchResults results = queryMgr.search(qdef);
+        SearchHandle results = queryMgr.search(new SearchHandle(), qdef);
         assertNotNull(results);
         assertFalse(results.getMetrics().getTotalTime() == -1);
 
@@ -61,7 +64,20 @@ public class StringSearchTest {
                 assertNotNull(location.getAllSnippetText());
             }
         }
-        
+
         assertNotNull(summaries);
+    }
+
+    @Test
+    public void testStringStringSearch() throws IOException {
+        QueryManager queryMgr = Common.client.newQueryManager();
+        StringQueryDefinition qdef = queryMgr.newStringCriteria(null);
+        qdef.setCriteria("leaf3");
+
+        StringHandle handle = new StringHandle();
+        handle = queryMgr.search(handle, qdef);
+
+        assertNotNull(handle);
+        assertNotNull(handle.get());
     }
 }

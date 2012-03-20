@@ -7,6 +7,7 @@ import java.util.Set;
 import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.ValueLocator;
+import com.marklogic.client.config.search.QueryDefinition;
 import com.marklogic.client.config.search.SearchOptions;
 
 public interface RESTServices {
@@ -22,8 +23,7 @@ public interface RESTServices {
 	public void putDocument(String uri, String transactionId, Set<Metadata> categories, String mimetype, Object value);
 	public void putDocument(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Object[] values);
 
-    public <T> T stringSearch(Class <T> as, String uri, String searchText, String transactionId);
-    public <T> T keyValueSearch(Class <T> as, String uri, Map<ValueLocator, String> keyValues, String transactionId);
+    public <T> T search(Class <T> as, QueryDefinition queryDef, long start, String transactionId);
 
 	public void commitTransaction(String transactionId);
 	public void rollbackTransaction(String transactionId);

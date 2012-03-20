@@ -9,7 +9,7 @@ package com.marklogic.client.config.search;
  */
 public interface SearchResults {
     public QueryDefinition getQueryCriteria();
-    public int getTotalResults();
+    public long getTotalResults();
 
     public SearchMetrics          getMetrics();
     public MatchDocumentSummary[] getMatchResults();

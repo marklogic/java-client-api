@@ -12,6 +12,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.xml.bind.JAXBException;
 
+import com.marklogic.client.config.search.KeyValueQueryDefinition;
+import com.marklogic.client.config.search.QueryDefinition;
+import com.marklogic.client.config.search.StringQueryDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -319,40 +322,41 @@ public class JerseyServices implements RESTServices {
 	}
 
     // FIXME: is this even close to reasonable?
-    public <T> T stringSearch(Class<T> as, String uri, String text, String transactionId) {
-        logger.info("Searching for {} in transaction {}", text, transactionId);
-
+    public <T> T search(Class<T> as, QueryDefinition queryDef, long start, String transactionId) {
         MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
-        docParams.add("q", text);
+        ClientResponse response = null;
 
-        ClientResponse response = connection.path("search").queryParams(docParams).get(ClientResponse.class);
-        ClientResponse.Status status = response.getClientResponseStatus();
-        if (status != ClientResponse.Status.OK) {
-            response.close();
-            throw new RuntimeException("search failed "+status);
+        if (start > 1) {
+            docParams.add("start", ""+start);
         }
-        return response.getEntity(as);
-    }
+        
+        if (queryDef instanceof StringQueryDefinition) {
+            String text = ((StringQueryDefinition) queryDef).getCriteria();
+            logger.info("Searching for {} in transaction {}", text, transactionId);
 
-    // FIXME: is this even close to reasonable?
-    public <T> T keyValueSearch(Class<T> as, String uri, Map<ValueLocator, String> keyValues, String transactionId) {
-        logger.info("Searching for keys/values in transaction {}", transactionId);
+            docParams.add("q", text);
+            response = connection.path("search").queryParams(docParams).get(ClientResponse.class);
+        } else if (queryDef instanceof KeyValueQueryDefinition) {
+            Map<ValueLocator, String> pairs = ((KeyValueQueryDefinition) queryDef);
+            logger.info("Searching for keys/values in transaction {}", transactionId);
 
-        MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
-        for (ValueLocator loc : keyValues.keySet()) {
-            if (loc instanceof KeyLocator) {
-                docParams.add("key", ((KeyLocator) loc).getKey());
-            } else {
-                ElementLocator eloc = (ElementLocator) loc;
-                docParams.add("element", eloc.getElement().toString());
-                if (eloc.getAttribute() != null) {
-                    docParams.add("attribute", eloc.getAttribute().toString());
+            for (ValueLocator loc : pairs.keySet()) {
+                if (loc instanceof KeyLocator) {
+                    docParams.add("key", ((KeyLocator) loc).getKey());
+                } else {
+                    ElementLocator eloc = (ElementLocator) loc;
+                    docParams.add("element", eloc.getElement().toString());
+                    if (eloc.getAttribute() != null) {
+                        docParams.add("attribute", eloc.getAttribute().toString());
+                    }
                 }
+                docParams.add("value", pairs.get(loc));
             }
-            docParams.add("value", keyValues.get(loc));
+            response = connection.path("keyvalue").queryParams(docParams).get(ClientResponse.class);
+        } else {
+            throw new UnsupportedOperationException("Cannot search with " + queryDef.getClass().getName());
         }
-
-        ClientResponse response = connection.path("keyvalue").queryParams(docParams).get(ClientResponse.class);
+        
         ClientResponse.Status status = response.getClientResponseStatus();
         if (status != ClientResponse.Status.OK) {
             response.close();

@@ -3,25 +3,17 @@ package com.marklogic.client.impl;
 import com.marklogic.client.ElementLocator;
 import com.marklogic.client.KeyLocator;
 import com.marklogic.client.QueryManager;
-import com.marklogic.client.ValueLocator;
 import com.marklogic.client.config.search.KeyValueQueryDefinition;
-import com.marklogic.client.config.search.MarkLogicIOException;
 import com.marklogic.client.config.search.QueryDefinition;
-import com.marklogic.client.config.search.SearchMetrics;
-import com.marklogic.client.config.search.SearchResults;
 import com.marklogic.client.config.search.StringQueryDefinition;
-import com.marklogic.client.config.search.jaxb.Metrics;
 import com.marklogic.client.config.search.jaxb.Response;
-import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.io.marker.StructureReadHandle;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
-import java.io.InputStream;
-import java.util.Date;
 
 /**
  * Created by IntelliJ IDEA.
@@ -66,36 +58,25 @@ public class QueryManagerImpl implements QueryManager {
     }
 
     @Override
-    public SearchResults search(QueryDefinition criteria) {
-        try {
-            jc = JAXBContext.newInstance("com.marklogic.client.config.search.jaxb");
-            unmarshaller = jc.createUnmarshaller();
-            m = jc.createMarshaller();
-            
-            InputStream resultXML = null;
-            if (criteria instanceof StringQueryDefinition) {
-                resultXML = services.stringSearch(InputStream.class, null, ((StringQueryDefinition) criteria).getCriteria(), null);
-            } else if (criteria instanceof KeyValueQueryDefinition) {
-                resultXML = services.keyValueSearch(InputStream.class, null, ((KeyValueQueryDefinition) criteria), null);
-            } else {
-                throw new UnsupportedOperationException("Unexpected search criteria: " + criteria.getClass().getName());
-            }
-            jaxbResponse = (Response) unmarshaller.unmarshal(resultXML);
-        } catch (JAXBException e) {
-            throw new MarkLogicIOException(
-                    "Could not construct search results because of thrown JAXB Exception",
-                    e);
-        }
-
-        SearchResults results = new SearchResultsImpl(criteria, jaxbResponse);
-        return results;
+    public <T extends StructureReadHandle> T search(T searchHandle, QueryDefinition querydef) {
+        return search(searchHandle, querydef, 1, null);
     }
 
     @Override
-    public <T extends XMLReadHandle> T searchAsXml(T handle, QueryDefinition criteria) {
-        return null;
+    public <T extends StructureReadHandle> T search(T searchHandle, QueryDefinition querydef, long start) {
+        return search(searchHandle, querydef, start, null);
     }
 
-    
-    
+    @Override
+    public <T extends StructureReadHandle> T search(T searchHandle, QueryDefinition querydef, String transactionId) {
+        return search(searchHandle, querydef, 1, transactionId);
+    }
+
+    public <T extends StructureReadHandle> T search(T searchHandle, QueryDefinition querydef, long start, String transactionId) {
+        if (searchHandle instanceof SearchHandle) {
+            ((SearchHandle) searchHandle).setQueryCriteria(querydef);
+        }
+        searchHandle.receiveContent(services.search(searchHandle.receiveAs(), querydef, start, transactionId));
+        return searchHandle;
+    }
 }

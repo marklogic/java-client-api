@@ -18,7 +18,9 @@ import org.junit.runners.Suite;
 	JSONDocumentTest.class,
 	TextDocumentTest.class,
 	XMLDocumentTest.class,
-	MetadataHandleTest.class
+	MetadataHandleTest.class,
+    KeyValueSearchTest.class,
+    StringSearchTest.class
 	})
 public class AllClientTests {
 }
