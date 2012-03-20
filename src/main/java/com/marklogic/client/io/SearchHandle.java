@@ -13,6 +13,7 @@ import com.marklogic.client.config.search.jaxb.Metrics;
 import com.marklogic.client.config.search.jaxb.Response;
 import com.marklogic.client.config.search.jaxb.Result;
 import com.marklogic.client.config.search.jaxb.Snippet;
+import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,7 @@ import java.util.List;
  * Time: 10:41 AM
  * To change this template use File | Settings | File Templates.
  */
-public class SearchHandle implements StructureReadHandle<InputStream>, SearchResults {
+public class SearchHandle implements SearchReadHandle<InputStream>, SearchResults {
     static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
     protected JAXBContext jc = null;
     protected Unmarshaller unmarshaller = null;

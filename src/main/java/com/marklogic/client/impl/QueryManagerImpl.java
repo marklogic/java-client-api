@@ -8,6 +8,7 @@ import com.marklogic.client.config.search.QueryDefinition;
 import com.marklogic.client.config.search.StringQueryDefinition;
 import com.marklogic.client.config.search.jaxb.Response;
 import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 
 import javax.xml.bind.JAXBContext;
@@ -58,21 +59,21 @@ public class QueryManagerImpl implements QueryManager {
     }
 
     @Override
-    public <T extends StructureReadHandle> T search(T searchHandle, QueryDefinition querydef) {
+    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef) {
         return search(searchHandle, querydef, 1, null);
     }
 
     @Override
-    public <T extends StructureReadHandle> T search(T searchHandle, QueryDefinition querydef, long start) {
+    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, long start) {
         return search(searchHandle, querydef, start, null);
     }
 
     @Override
-    public <T extends StructureReadHandle> T search(T searchHandle, QueryDefinition querydef, String transactionId) {
+    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, String transactionId) {
         return search(searchHandle, querydef, 1, transactionId);
     }
 
-    public <T extends StructureReadHandle> T search(T searchHandle, QueryDefinition querydef, long start, String transactionId) {
+    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, long start, String transactionId) {
         if (searchHandle instanceof SearchHandle) {
             ((SearchHandle) searchHandle).setQueryCriteria(querydef);
         }

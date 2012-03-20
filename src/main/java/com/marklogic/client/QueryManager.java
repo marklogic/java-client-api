@@ -3,6 +3,7 @@ package com.marklogic.client;
 import com.marklogic.client.config.search.KeyValueQueryDefinition;
 import com.marklogic.client.config.search.QueryDefinition;
 import com.marklogic.client.config.search.StringQueryDefinition;
+import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 
 import javax.xml.namespace.QName;
@@ -19,8 +20,8 @@ public interface QueryManager {
     public ElementLocator newElementLocator(QName element, QName attribute);
     public KeyLocator newKeyLocator(String key);
 
-    public <T extends StructureReadHandle> T search(T searchHandle, QueryDefinition querydef);
-    public <T extends StructureReadHandle> T search(T searchHandle, QueryDefinition querydef, long start);
-    public <T extends StructureReadHandle> T search(T searchHandle, QueryDefinition querydef, String transactionId);
-    public <T extends StructureReadHandle> T search(T searchHandle, QueryDefinition querydef, long start, String transactionId);
+    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef);
+    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, long start);
+    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, String transactionId);
+    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, long start, String transactionId);
 }
