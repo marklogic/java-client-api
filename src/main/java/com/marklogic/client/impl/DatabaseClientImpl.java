@@ -51,8 +51,7 @@ public class DatabaseClientImpl implements DatabaseClient {
 	}
 
 	public RequestLogger newLogger(OutputStream out) {
-		// TODO Auto-generated method stub
-		return null;
+		return new RequestLoggerImpl(out);
 	}
 
 	public QueryManager newQueryManager() {

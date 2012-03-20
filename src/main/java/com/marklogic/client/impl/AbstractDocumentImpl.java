@@ -1,5 +1,6 @@
 package com.marklogic.client.impl;
 
+import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -140,6 +141,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 					uri, 
 					(transaction == null) ? null : transaction.getTransactionId(),
 					metadata,
+					getReadParams(),
 					new String[]{metadataMimetype, contentMimetype},
 					new Class[]{metadataHandle.receiveAs(), contentHandle.receiveAs()}
 					);
@@ -151,6 +153,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 							uri,
 							(transaction == null) ? null : transaction.getTransactionId(),
 							metadata,
+							getReadParams(),
 							metadataMimetype,
 							metadataHandle.receiveAs()
 							)
@@ -161,6 +164,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 						uri,
 						(transaction == null) ? null : transaction.getTransactionId(),
 						null,
+						getReadParams(),
 						contentMimetype,
 						contentHandle.receiveAs()
 						)
@@ -215,6 +219,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 					uri,
 					(transaction == null) ? null : transaction.getTransactionId(),
 					metadata,
+					getWriteParams(),
 					new String[]{metadataMimetype, contentMimetype},
 					new Object[] {metadataHandle.sendContent(), contentHandle.sendContent()}
 					);
@@ -223,6 +228,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 					uri,
 					(transaction == null) ? null : transaction.getTransactionId(),
 					metadata,
+					getWriteParams(),
 					metadataMimetype,
 					metadataHandle.sendContent()
 					);
@@ -231,6 +237,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 					uri,
 					(transaction == null) ? null : transaction.getTransactionId(),
 					null,
+					getWriteParams(),
 					contentMimetype,
 					contentHandle.sendContent()
 					);
@@ -329,10 +336,36 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		versionMatched = match;
 	}
 
+	// hooks for extension
+	protected Map<String,String> getReadParams() {
+		return null;
+	}
+	protected Map<String,String> getWriteParams() {
+		return null;
+	}
+
+	private RequestLogger requestLogger;
 	public void startLogging(RequestLogger logger) {
-		// TODO Auto-generated method stub
+		requestLogger = logger;
 	}
 	public void stopLogging() {
-		// TODO Auto-generated method stub
+		if (requestLogger == null) return;
+
+		PrintStream out = requestLogger.getPrintStream();
+		if (out != null) out.flush();
+
+		requestLogger = null;
+	}
+	protected boolean isLoggerEnabled() {
+		if (requestLogger != null)
+			return requestLogger.isEnabled();
+
+		return false;
+	}
+	protected PrintStream getLogger() {
+		if (requestLogger == null)
+			return null;
+
+		return requestLogger.getPrintStream();
 	}
 }

@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.xml.XMLConstants;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -81,6 +82,9 @@ public class DocumentMetadataHandle
 	    EXECUTE, INSERT, READ, UPDATE;
 	}
 	public interface DocumentProperties extends Map<QName,Object> {
+		public NamespaceContext getNamespaceContext();
+		public void setNamespaceContext(NamespaceContext context);
+
 		public boolean containsKey(String key);
 
 		public Object get(String key);
@@ -117,12 +121,46 @@ public class DocumentMetadataHandle
 		public Object put(String name, String     value);
 	}
 	private class PropertiesImpl extends HashMap<QName,Object> implements DocumentProperties {
-		public boolean containsKey(String key) {
-			return super.containsKey(new QName(key));
+		private NamespaceContext context;
+		public NamespaceContext getNamespaceContext() {
+			return context;
+		}
+		public void setNamespaceContext(NamespaceContext context) {
+			this.context = context;
 		}
 
-		public Object get(String key) {
-			return super.get(new QName(key));
+		private QName makeQName(String name) {
+			if (name == null) return null;
+
+			if (name.contains(":")) {
+				if (context == null)
+					throw new RuntimeException("No namespace context for resolving key with prefix: "+name);
+				String[] parts = name.split(":", 2);
+				String prefix = parts[0];
+				if (prefix == null)
+					throw new RuntimeException("Empty prefix in key: "+name);
+				String localPart = parts[1];
+				if (localPart == null)
+					throw new RuntimeException("Empty local part in key: "+name);
+				String uri = context.getNamespaceURI(prefix);
+				if (uri == null || XMLConstants.NULL_NS_URI.equals(uri))
+					throw new RuntimeException("No namespace uri defined in context for prefix "+prefix+" of key: "+name);
+				return new QName(uri,localPart, prefix);
+			} else if (context != null) {
+				String uri = context.getNamespaceURI(XMLConstants.DEFAULT_NS_PREFIX);
+				if (uri != null && !XMLConstants.NULL_NS_URI.equals(uri))
+					return new QName(uri,name);
+			}
+
+			return new QName(name);
+		}
+
+		public boolean containsKey(String name) {
+			return super.containsKey(makeQName(name));
+		}
+
+		public Object get(String name) {
+			return super.get(makeQName(name));
 		}
 
 		public <T> T get(QName name, Class<T> as) {
@@ -134,7 +172,7 @@ public class DocumentMetadataHandle
 			throw new RuntimeException("Cannot get value of "+value.getClass().getName()+" as "+as.getName());
 		}
 		public <T> T get(String name, Class<T> as) {
-			return get(new QName(name), as);
+			return get(makeQName(name), as);
 		}
 
 		public Object put(QName name, BigDecimal value) {
@@ -185,43 +223,43 @@ public class DocumentMetadataHandle
 
 		// TODO: namespace context for names with prefixes
 		public Object put(String name, BigDecimal value) {
-			return put(new QName(name), value);
+			return put(makeQName(name), value);
 		}
 		public Object put(String name, BigInteger value) {
-			return put(new QName(name), value);
+			return put(makeQName(name), value);
 		}
 		public Object put(String name, Boolean value) {
-			return put(new QName(name), value);
+			return put(makeQName(name), value);
 		}
 		public Object put(String name, Byte value) {
-			return put(new QName(name), value);
+			return put(makeQName(name), value);
 		}
 		public Object put(String name, byte[] value) {
-			return put(new QName(name), value);
+			return put(makeQName(name), value);
 		}
 		public Object put(String name, Calendar value) {
-			return put(new QName(name), value);
+			return put(makeQName(name), value);
 		}
 		public Object put(String name, Double value) {
-			return put(new QName(name), value);
+			return put(makeQName(name), value);
 		}
 		public Object put(String name, Float value) {
-			return put(new QName(name), value);
+			return put(makeQName(name), value);
 		}
 		public Object put(String name, Integer value) {
-			return put(new QName(name), value);
+			return put(makeQName(name), value);
 		}
 		public Object put(String name, Long value) {
-			return put(new QName(name), value);
+			return put(makeQName(name), value);
 		}
 		public Object put(String name, NodeList value) {
-			return put(new QName(name), value);
+			return put(makeQName(name), value);
 		}
 		public Object put(String name, Short value) {
-			return put(new QName(name), value);
+			return put(makeQName(name), value);
 		}
 		public Object put(String name, String value) {
-			return put(new QName(name), value);
+			return put(makeQName(name), value);
 		}
 	}
 

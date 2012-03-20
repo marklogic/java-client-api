@@ -36,6 +36,7 @@ import org.xml.sax.Attributes;
 
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.XMLDocumentManager.DocumentRepair;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputSourceHandle;
 import com.marklogic.client.io.SourceHandle;
@@ -144,6 +145,19 @@ public class XMLDocumentTest {
 		eventReader.close();
 		assertTrue("Failed to process XML document with StAX event reader",
 				elementCount == 2 && attributeCount == 2);
+
+		String truncatedDoc ="<root><poorlyFormed></root>";
+		docMgr.setDocumentRepair(DocumentRepair.FULL);
+		docMgr.write(docId, new StringHandle().on(truncatedDoc));
+
+		docMgr.setDocumentRepair(DocumentRepair.NONE);
+		boolean threwException = false;
+		try {
+			docMgr.write(docId, new StringHandle().on(truncatedDoc));
+		} catch(RuntimeException ex) {
+			threwException = true;
+		}
+		assertTrue("Expected failure on truncated XML document with no repair", threwException);
 	}
 
 	private static boolean testURIHandle = false;

@@ -17,11 +17,11 @@ public interface RESTServices {
 	public String openTransaction();
 
 	public void deleteDocument(String uri, String transactionId, Set<Metadata> categories);
-	public <T> T getDocument(String uri, String transactionId, Set<Metadata> categories, String mimetype, Class<T> as);
-	public Object[] getDocument(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Class[] as);
+	public <T> T getDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Class<T> as);
+	public Object[] getDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Class[] as);
 	public Map<String,List<String>> head(String uri, String transactionId);
-	public void putDocument(String uri, String transactionId, Set<Metadata> categories, String mimetype, Object value);
-	public void putDocument(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Object[] values);
+	public void putDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Object value);
+	public void putDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Object[] values);
 
     public <T> T search(Class <T> as, QueryDefinition queryDef, long start, String transactionId);
 
@@ -32,5 +32,4 @@ public interface RESTServices {
 	public void put(String searchOptionsName, SearchOptions options);
 	public void delete(String searchOptionsName);
 
-	
 }

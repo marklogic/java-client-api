@@ -1,5 +1,8 @@
 package com.marklogic.client.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,8 +45,22 @@ class BinaryDocumentImpl
 	public MetadataExtraction getMetadataExtraction() {
 		return metadataExtraction;
 	}
-
 	public void setMetadataExtraction(MetadataExtraction policy) {
 		metadataExtraction = policy;	
+	}
+
+	protected Map<String,String> getWriteParams() {
+		if (metadataExtraction == null || metadataExtraction == MetadataExtraction.NONE)
+			return null;
+
+		HashMap<String,String> params = new HashMap<String,String>();
+		if (metadataExtraction == MetadataExtraction.PROPERTIES)
+			params.put("extract", "property");
+		else if (metadataExtraction == MetadataExtraction.DOCUMENT)
+			params.put("extract", "document");
+		else
+			throw new RuntimeException("Internal error - unknown metadata extraction policy: "+metadataExtraction.name());
+
+		return params;
 	}
 }

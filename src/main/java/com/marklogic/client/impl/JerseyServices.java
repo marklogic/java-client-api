@@ -82,7 +82,7 @@ public class JerseyServices implements RESTServices {
 		logger.info("Deleting {} in transaction {}", uri, transactionId);
 
 		ClientResponse response = makeDocumentResource(
-				makeDocumentParams(uri, categories, transactionId)).delete(
+				makeDocumentParams(uri, categories, transactionId, null)).delete(
 				ClientResponse.class);
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
@@ -94,11 +94,11 @@ public class JerseyServices implements RESTServices {
 
 	// TODO:  does an Input Stream or Reader handle need to cache the response so it can close the response?
 
-	public <T> T getDocument(String uri, String transactionId, Set<Metadata> categories, String mimetype, Class<T> as) {
+	public <T> T getDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Class<T> as) {
 		logger.info("Getting {} in transaction {}", uri, transactionId);
 
 		ClientResponse response = makeDocumentResource(
-				makeDocumentParams(uri, categories, transactionId)).accept(
+				makeDocumentParams(uri, categories, transactionId, extraParams)).accept(
 				mimetype).get(ClientResponse.class);
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
@@ -114,7 +114,7 @@ public class JerseyServices implements RESTServices {
 		return entity;
 	}
 
-	public Object[] getDocument(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Class[] as) {
+	public Object[] getDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Class[] as) {
 		logger.info("Getting multipart for {} in transaction {}", uri, transactionId);
 
 		if (mimetypes == null || mimetypes.length == 0)
@@ -126,7 +126,7 @@ public class JerseyServices implements RESTServices {
 					"mistmatch between mime types and handle classes for read");
 
 		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
-				categories, transactionId, true);
+				categories, transactionId, extraParams, true);
 		if (mimetypes[0].startsWith("application/")) {
 			docParams.add("format",
 					mimetypes[0].substring("application/".length()));
@@ -172,7 +172,7 @@ public class JerseyServices implements RESTServices {
 				transactionId);
 
 		ClientResponse response = makeDocumentResource(
-				makeDocumentParams(uri, null, transactionId)).head();
+				makeDocumentParams(uri, null, transactionId, null)).head();
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
@@ -185,11 +185,11 @@ public class JerseyServices implements RESTServices {
 		}
 		return response.getHeaders();
 	}
-	public void putDocument(String uri, String transactionId, Set<Metadata> categories, String mimetype, Object value) {
+	public void putDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Object value) {
 		logger.info("Putting {} in transaction {}", uri, transactionId);
 
 		ClientResponse response = makeDocumentResource(
-					makeDocumentParams(uri, categories, transactionId)
+					makeDocumentParams(uri, categories, transactionId, extraParams)
 				).type(mimetype).put(ClientResponse.class,
 						(value instanceof OutputStreamSender) ?
 								new StreamingOutputImpl((OutputStreamSender) value) : value);
@@ -201,7 +201,7 @@ public class JerseyServices implements RESTServices {
 			throw new RuntimeException("write failed " + status);
 		}
 	}
-	public void putDocument(String uri, String transactionId, Set<Metadata> categories, String[] mimetypes, Object[] values) {
+	public void putDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Object[] values) {
 		logger.info("Putting multipart for {} in transaction {}", uri, transactionId);
 
 		if (mimetypes == null || mimetypes.length == 0)
@@ -226,7 +226,7 @@ public class JerseyServices implements RESTServices {
 		}
 
 		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
-				categories, transactionId, true);
+				categories, transactionId, extraParams, true);
 
 		ClientResponse response = makeDocumentResource(docParams).type(
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE))
@@ -289,13 +289,18 @@ public class JerseyServices implements RESTServices {
         }
 	}
 
-	private MultivaluedMap<String, String> makeDocumentParams(String uri, Set<Metadata> categories, String transactionId) {
-		return makeDocumentParams(uri, categories, transactionId, false);
+	private MultivaluedMap<String, String> makeDocumentParams(String uri, Set<Metadata> categories, String transactionId, Map<String,String> extraParams) {
+		return makeDocumentParams(uri, categories, transactionId, extraParams, false);
 	}
 
 	private MultivaluedMap<String, String> makeDocumentParams(String uri,
-			Set<Metadata> categories, String transactionId, boolean withContent) {
+			Set<Metadata> categories, String transactionId, Map<String, String> extraParams, boolean withContent) {
 		MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
+		if (extraParams != null && extraParams.size() > 0) {
+			for (Map.Entry<String, String> entry: extraParams.entrySet()) {
+				docParams.putSingle(entry.getKey(), entry.getValue());
+			}
+		}
 		docParams.add("uri", uri);
 		if (categories == null || categories.size() == 0) {
 			docParams.add("category", "content");
@@ -365,7 +370,6 @@ public class JerseyServices implements RESTServices {
         return response.getEntity(as);
     }
 
-	@Override
 	// TODO rewrite to JSON, XML, or JAXB output.
 	public SearchOptions get(String searchOptionsName) {
 		ClientResponse clientResponse = connection.path(QUERY_OPTIONS_BASE + searchOptionsName)
@@ -395,7 +399,6 @@ public class JerseyServices implements RESTServices {
 		
 	}
 
-	@Override
 	public void delete(String searchOptionsName) {
 		ClientResponse clientResponse = connection.path(QUERY_OPTIONS_BASE + searchOptionsName)
 				.accept("application/xml").delete(ClientResponse.class);

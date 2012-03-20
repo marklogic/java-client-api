@@ -7,13 +7,18 @@ import java.io.IOException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.w3c.dom.Document;
 
 import javax.xml.bind.DatatypeConverter;
 
 import com.marklogic.client.BinaryDocumentManager;
+import com.marklogic.client.AbstractDocumentManager.Metadata;
+import com.marklogic.client.BinaryDocumentManager.MetadataExtraction;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.io.BytesHandle;
+import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.StringHandle;
 
 public class BinaryDocumentTest {
 	@BeforeClass
@@ -43,5 +48,11 @@ public class BinaryDocumentTest {
 		assertTrue("Binary document read 0 bytes", buf.length > 0);
 		buf = Common.streamToBytes(docMgr.read(docId, new InputStreamHandle()).get());
 		assertTrue("Binary document read binary empty input stream",buf.length > 0);
+
+// TODO: use a binary with metadata and verify property
+//		docMgr.setMetadataExtraction(MetadataExtraction.PROPERTIES);
+//		docMgr.setMetadataCategories(Metadata.PROPERTIES);
+//		String metadataString = docMgr.readMetadata(docId, new StringHandle()).get();
+//		Document metadataDocument = docMgr.readMetadata(docId, new DOMHandle()).get();
 	}
 }

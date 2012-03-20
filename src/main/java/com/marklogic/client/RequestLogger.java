@@ -1,11 +1,12 @@
 package com.marklogic.client;
 
+import java.io.PrintStream;
+
 public interface RequestLogger {
 	// suspend or resume logging
     public boolean isEnabled();
     public void setEnabled(boolean enabled);
  
-    // operations on the encapsulated Writer or OutputStream
-    public void flush();
+    public PrintStream getPrintStream();
     public void close();
 }
