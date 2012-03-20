@@ -1,20 +1,20 @@
 package com.marklogic.client.io;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -24,22 +24,20 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
+import org.xml.sax.SAXException;
 
 import com.marklogic.client.Format;
-import com.marklogic.client.impl.jaxb.metadata.CollectionsJAXB;
-import com.marklogic.client.impl.jaxb.metadata.MetadataJAXB;
-import com.marklogic.client.impl.jaxb.metadata.PermissionJAXB;
-import com.marklogic.client.impl.jaxb.metadata.PermissionsJAXB;
-import com.marklogic.client.impl.jaxb.metadata.PropertiesJAXB;
-import com.marklogic.client.impl.jaxb.security.CapabilityJAXB;
-import com.marklogic.client.io.marker.AbstractReadHandle;
-import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.impl.BasicXMLSerializer;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
+import com.marklogic.client.io.marker.OutputStreamSender;
 
 public class DocumentMetadataHandle
-    implements
-    	DocumentMetadataReadHandle<Object>, DocumentMetadataWriteHandle<MetadataJAXB>
+    implements OutputStreamSender,
+    	DocumentMetadataReadHandle<InputStream>, DocumentMetadataWriteHandle<OutputStreamSender>
 {
 	static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
 
@@ -83,6 +81,13 @@ public class DocumentMetadataHandle
 	    EXECUTE, INSERT, READ, UPDATE;
 	}
 	public interface DocumentProperties extends Map<QName,Object> {
+		public boolean containsKey(String key);
+
+		public Object get(String key);
+
+		public <T> T get(QName name, Class<T> as);
+		public <T> T get(String name, Class<T> as);
+
 		public Object put(QName name, BigDecimal value);
 		public Object put(QName name, BigInteger value);
 		public Object put(QName name, Boolean    value);
@@ -96,6 +101,7 @@ public class DocumentMetadataHandle
 		public Object put(QName name, NodeList   value);
 		public Object put(QName name, Short      value);
 		public Object put(QName name, String     value);
+
 		public Object put(String name, BigDecimal value);
 		public Object put(String name, BigInteger value);
 		public Object put(String name, Boolean    value);
@@ -109,10 +115,28 @@ public class DocumentMetadataHandle
 		public Object put(String name, NodeList   value);
 		public Object put(String name, Short      value);
 		public Object put(String name, String     value);
-		public <T> T get(QName name, Class<T> as);
-		public <T> T get(String name, Class<T> as);
 	}
 	private class PropertiesImpl extends HashMap<QName,Object> implements DocumentProperties {
+		public boolean containsKey(String key) {
+			return super.containsKey(new QName(key));
+		}
+
+		public Object get(String key) {
+			return super.get(new QName(key));
+		}
+
+		public <T> T get(QName name, Class<T> as) {
+			Object value = get(name);
+			if (value == null)
+				return null;
+			if (value.getClass() == as)
+				return (T) value;
+			throw new RuntimeException("Cannot get value of "+value.getClass().getName()+" as "+as.getName());
+		}
+		public <T> T get(String name, Class<T> as) {
+			return get(new QName(name), as);
+		}
+
 		public Object put(QName name, BigDecimal value) {
 			return super.put(name, value);
 		}
@@ -153,6 +177,9 @@ public class DocumentMetadataHandle
 			return super.put(name, value);
 		}
 		public Object put(QName name, Object value) {
+			if (value instanceof Number || value instanceof Boolean || value instanceof Byte || value instanceof byte[] ||
+					value instanceof Calendar || value instanceof NodeList || value instanceof String)
+				return super.put(name, value);
 			throw new RuntimeException("Invalid value for metadata property "+value.getClass().getName());
 		}
 
@@ -196,19 +223,10 @@ public class DocumentMetadataHandle
 		public Object put(String name, String value) {
 			return put(new QName(name), value);
 		}
-
-		public <T> T get(QName name, Class<T> as) {
-			Object value = get(name);
-			if (value == null)
-				return null;
-			if (value.getClass() == as)
-				return (T) value;
-			throw new RuntimeException("Cannot get value of "+value.getClass().getName()+" as "+as.getName());
-		}
-		public <T> T get(String name, Class<T> as) {
-			return get(new QName(name), as);
-		}
 	}
+
+	final static private String REST_API_NS     = "http://marklogic.com/rest-api";
+	final static private String PROPERTY_API_NS = "http://marklogic.com/xdmp/property";
 
 	public DocumentMetadataHandle() {
 		super();
@@ -260,83 +278,115 @@ public class DocumentMetadataHandle
 			new RuntimeException("MetadataHandle supports the XML format only");
 	}
 
-	public Class receiveAs() {
-		return MetadataJAXB.class;
+	public Class<InputStream> receiveAs() {
+		return InputStream.class;
 	}
-	public void receiveContent(Object content) {
-		if (content == null)
-			return;
-		if (!(content instanceof JAXBElement))
-			throw new RuntimeException("Content of unknown class "+content.getClass().getName());
+	public void receiveContent(InputStream content) {
+		try {
+			logger.info("Parsing metadata structure from input stream");
 
-		JAXBElement jaxb = (JAXBElement) content;
+			Document document = null;
+			if (content != null) {
+				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+				factory.setNamespaceAware(true);
+				factory.setValidating(false);
+				DocumentBuilder builder = factory.newDocumentBuilder();
+				document = builder.parse(content);
+				content.close();
+			}
 
-		Object value = jaxb.getValue();
-		if (value == null)
-			return;
-		if (!(value instanceof MetadataJAXB))
-			throw new RuntimeException("Content of unknown class "+value.getClass().getName());
-
-		receiveMetadataImpl((MetadataJAXB) value);
+			receiveMetadataImpl(document);
+		} catch (SAXException e) {
+			logger.error("Failed to parse metadata structure from input stream",e);
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			logger.error("Failed to parse metadata structure from input stream",e);
+			throw new RuntimeException(e);
+		} catch (ParserConfigurationException e) {
+			logger.error("Failed to parse metadata structure from input stream",e);
+			throw new RuntimeException(e);
+		}
 	}
-	public MetadataJAXB sendContent() {
-		MetadataJAXB metadata = sendMetadataImpl();
-
-		return metadata;
+	public OutputStreamSender sendContent() {
+		return this;
+	}
+	public void write(OutputStream out) throws IOException {
+		sendMetadataImpl(out);
 	}
 
 // TODO: select the metadata sent
 
-	private void receiveMetadataImpl(MetadataJAXB in) {
-		receiveCollectionsImpl(in.getCollections());
-		receivePermissionsImpl(in.getPermissions());
-		receivePropertiesImpl(in.getProperties());
-		setQuality(in.getQuality());
+	private void receiveMetadataImpl(Document document) {
+		receiveCollectionsImpl(document);
+		receivePermissionsImpl(document);
+		receivePropertiesImpl(document);
+		receiveQualityImpl(document);
 	}
-	private void receiveCollectionsImpl(CollectionsJAXB in) {
-		getCollections().clear();
-		if (in == null)
+	private void receiveCollectionsImpl(Document document) {
+		DocumentCollections collections = getCollections();
+		collections.clear();
+
+		if (document == null)
 			return;
-
-		getCollections().addAll(in.getCollection());
-	}
-	private void receivePermissionsImpl(PermissionsJAXB in) {
-		getPermissions().clear();
-		if (in == null)
-			return;
-
-		List<PermissionJAXB> permissions = in.getPermission();
-		if (permissions.size() < 1)
-			return;
-
-		for (PermissionJAXB permission: permissions) {
-			List<CapabilityJAXB> capabilities = permission.getCapability();
-			if (capabilities.size() < 1)
-				continue;
-
-			HashSet<Capability> caps = new HashSet<Capability>(capabilities.size());
-			for (CapabilityJAXB capability: capabilities) {
-				caps.add(Capability.valueOf(capability.name()));
-			}
-
-			getPermissions().put(permission.getRoleName(), caps);
+		
+		NodeList collectionsIn = document.getElementsByTagNameNS(REST_API_NS, "collection");
+		for (int i=0; i < collectionsIn.getLength(); i++) {
+			collections.add(collectionsIn.item(i).getTextContent());
 		}
 	}
-	private void receivePropertiesImpl(PropertiesJAXB in) {
-// TEMPORARY
-if (true) return;
+	private void receivePermissionsImpl(Document document) {
+		DocumentPermissions permissions = getPermissions();
+		permissions.clear();
 
+		if (document == null)
+			return;
+
+		NodeList permissionsIn = document.getElementsByTagNameNS(REST_API_NS, "permission");
+		for (int i=0; i < permissionsIn.getLength(); i++) {
+			String roleName = null;
+			HashSet<Capability> caps = new HashSet<Capability>();
+
+			NodeList children = permissionsIn.item(i).getChildNodes();
+			for (int j=0; j < children.getLength(); j++) {
+				Node node = children.item(j);
+				if (node.getNodeType() != Node.ELEMENT_NODE)
+					continue;
+				Element element = (Element) node;
+
+				if ("role-name".equals(element.getLocalName()))
+					roleName = element.getTextContent();
+				else if ("capability".equals(element.getLocalName()))
+					caps.add(Capability.valueOf(element.getTextContent().toUpperCase()));
+				else
+					logger.warn("Skipping unknown permission element", element.getTagName());
+			}
+
+			if (roleName == null || caps.size() == 0) {
+				logger.warn("Could not parse permission");
+				continue;
+			}
+
+			permissions.put(roleName, caps);
+		}
+	}
+	private void receivePropertiesImpl(Document document) {
 		DocumentProperties properties = getProperties();
 		properties.clear();
 
-		if (in == null)
+		if (document == null)
 			return;
 
-		List<Element> propertiesIn = in.getAny();
-		if (properties == null || properties.size() < 1)
+		Node propertyContainer = document.getElementsByTagNameNS(PROPERTY_API_NS, "properties").item(0);
+		if (propertyContainer == null)
 			return;
 
-		for (Element property: propertiesIn) {
+		NodeList propertiesIn = propertyContainer.getChildNodes();
+		for (int i=0; i < propertiesIn.getLength(); i++) {
+			Node node = propertiesIn.item(i);
+			if (node.getNodeType() != Node.ELEMENT_NODE)
+				continue;
+			Element property = (Element) node;
+
 			QName propertyName = null;
 
 			String namespaceURI = property.getNamespaceURI();
@@ -359,8 +409,8 @@ if (true) return;
 			NodeList children = property.getChildNodes();
 			boolean hasChildElements = false;
 			int childCount = children.getLength();
-			for (int i=0; i < childCount; i++) {
-				Node child = children.item(i);
+			for (int j=0; j < childCount; j++) {
+				Node child = children.item(j);
 				if (child.getNodeType() == Node.ELEMENT_NODE) {
 					hasChildElements = true;
 					break;
@@ -371,6 +421,8 @@ if (true) return;
 				continue;
 			}
 
+			// TODO: casting known properties such as prop:last-modified
+
 			String value = property.getTextContent();
 			if (property.hasAttributeNS(
 					XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type")) {
@@ -378,122 +430,158 @@ if (true) return;
 						XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type");
 				properties.put(propertyName, convertXMLValue(type, value));
 				continue;
+			} else {
+				properties.put(propertyName, value);
 			}
 
 			properties.put(propertyName, value);
 		}
 	}
-
-	private MetadataJAXB sendMetadataImpl() {
-		MetadataJAXB metadataJAXB = new MetadataJAXB();
-		CollectionsJAXB collectionsJAXB = sendCollectionsImpl();
-		if (collectionsJAXB != null)
-			metadataJAXB.setCollections(collectionsJAXB);
-
-		PermissionsJAXB permissionsJAXB = sendPermissionsImpl();
-		if (permissionsJAXB != null)
-			metadataJAXB.setPermissions(permissionsJAXB);
-
-		PropertiesJAXB propertiesJAXB = sendPropertiesImpl();
-		if (propertiesJAXB != null)
-			metadataJAXB.setProperties(propertiesJAXB);
-
-		metadataJAXB.setQuality(getQuality());
-
-		return metadataJAXB;
-	}
-	private CollectionsJAXB sendCollectionsImpl() {
-		DocumentCollections collections = getCollections();
-		if (collections == null || collections.size() < 1)
-			return null;
-
-		CollectionsJAXB collectionsJAXB = new CollectionsJAXB();
-		List<String> collectionList = collectionsJAXB.getCollection();
-		for (String collection: collections)
-			collectionList.add(collection);
-
-		return collectionsJAXB;
-	}
-	private PermissionsJAXB sendPermissionsImpl() {
-		DocumentPermissions permissions = getPermissions();
-		if (permissions == null || permissions.size() < 1)
-			return null;
-
-		PermissionsJAXB permissionsJAXB = new PermissionsJAXB();
-
-		List<PermissionJAXB> permissionList = permissionsJAXB.getPermission();
-		for (Map.Entry<String, Set<Capability>> permission: permissions.entrySet()) {
-			PermissionJAXB permissionJAXB = new PermissionJAXB();
-
-			permissionJAXB.setRoleName(permission.getKey());
-
-			List<CapabilityJAXB> capabilityList = permissionJAXB.getCapability();
-			for (Capability capability: permission.getValue()) {
-				capabilityList.add(CapabilityJAXB.valueOf(capability.name()));
-			}
-
-			permissionList.add(permissionJAXB);
+	private void receiveQualityImpl(Document document) {
+		if (document == null) {
+			setQuality(0);
+			return;
 		}
 
-		return permissionsJAXB;
-	}
-	private PropertiesJAXB sendPropertiesImpl() {
+		Node quality = document.getElementsByTagNameNS(REST_API_NS, "quality").item(0);
+		if (quality == null) {
+			setQuality(0);
+			return;
+		}
+
+		String qualityText = quality.getTextContent();
+		if (qualityText == null) {
+			setQuality(0);
+			return;
+		}
+
+		int qualityNum = 0;
 		try {
-			DocumentProperties properties = getProperties();
-			if (properties == null || properties.size() < 1)
-				return null;
+			qualityNum = Integer.parseInt(qualityText);
+			
+		} catch(NumberFormatException ex) {
+			logger.warn("Could not parse quality integer from", qualityText);
+		}
 
-			Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+		setQuality(qualityNum);
+	}
 
-			PropertiesJAXB propertiesJAXB = new PropertiesJAXB();
+	private void sendMetadataImpl(OutputStream out) {
+		try {
+			BasicXMLSerializer serializer = new BasicXMLSerializer();
+			serializer.writeXMLProlog(out);
+			serializer.writeContainerOpenStart(out, "rapi:metadata");
+			serializer.writeNamespace(out, "rapi", REST_API_NS);
+			serializer.writeNamespace(out, "prop", PROPERTY_API_NS);
+			serializer.writeNamespace(out, "xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+			serializer.writeNamespace(out, "xs",   XMLConstants.W3C_XML_SCHEMA_NS_URI);
+			serializer.writeOpenEnd(out);
 
-// TEMPORARY
-if (true) return propertiesJAXB;
+			sendCollectionsImpl(serializer, out);
+			sendPermissionsImpl(serializer, out);
+			sendPropertiesImpl(serializer, out);
+			sendQualityImpl(serializer, out);
 
-			List<Element> propertyList = propertiesJAXB.getAny();
-			for (Map.Entry<QName, Object> property: properties.entrySet()) {
+			serializer.writeClose(out, "rapi:metadata");
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to serialize metadata", e);
+		}
+	}
+	private void sendCollectionsImpl(BasicXMLSerializer serializer, OutputStream out) throws IOException {
+		serializer.writeContainerOpen(out, "rapi:collections");
+
+		for (String collection: getCollections()) {
+			serializer.writeOpen(out, "rapi:collection");
+			serializer.writeText(out, collection);
+			serializer.writeClose(out, "rapi:collection");
+		}
+
+		serializer.writeClose(out, "rapi:collections");
+	}
+	private void sendPermissionsImpl(BasicXMLSerializer serializer, OutputStream out) throws IOException {
+		serializer.writeContainerOpen(out, "rapi:permissions");
+
+		for (Map.Entry<String, Set<Capability>> permission: getPermissions().entrySet()) {
+			serializer.writeContainerOpen(out, "rapi:permission");
+
+			serializer.writeOpen(out, "rapi:role-name");
+			serializer.writeText(out, permission.getKey());
+			serializer.writeClose(out, "rapi:role-name");
+
+			for (Capability capability: permission.getValue()) {
+				serializer.writeOpen(out, "rapi:capability");
+				serializer.writeText(out, capability.name().toLowerCase());
+				serializer.writeClose(out, "rapi:capability");
+			}
+
+			serializer.writeClose(out, "rapi:permission");
+		}
+
+		serializer.writeClose(out, "rapi:permissions");
+	}
+	private void sendPropertiesImpl(BasicXMLSerializer serializer, OutputStream out) throws IOException {
+		serializer.writeContainerOpen(out, "prop:properties");
+
+		LSOutput     domOutput     = null;
+		LSSerializer domSerializer = null;
+		for (Map.Entry<QName, Object> property: getProperties().entrySet()) {
 				QName  propertyName = property.getKey();
 				Object value        = property.getValue();
 
+				boolean hasNodeValue = value instanceof NodeList;
+
 				String namespaceURI = propertyName.getNamespaceURI();
-				String localPart = propertyName.getLocalPart();
-				Element element = null;
+				String prefix       = null;
+				String localPart    = propertyName.getLocalPart();
 				if (namespaceURI != null && namespaceURI.length() > 0) {
-					String prefix = propertyName.getPrefix();
-					if (prefix != null && prefix.length() > 0) {
-						element = document.createElementNS(namespaceURI, prefix+":"+localPart);
-					} else {
-						element = document.createElementNS(namespaceURI, localPart);
-					}
+					if (PROPERTY_API_NS.equals(namespaceURI))
+						continue;
+
+					prefix = propertyName.getPrefix();
+
+					serializer.writeOpenStart(out, prefix, localPart);
+					serializer.writeNamespace(out, prefix, namespaceURI);
 				} else {
-					element = document.createElement(localPart);
+					serializer.writeOpenStart(out, localPart);
 				}
 
-// failed hack to declare xs namespace
-//				element.setAttributeNS(XMLConstants.W3C_XML_SCHEMA_NS_URI, "xs:ns", "");
+				if (!hasNodeValue) {
+					serializer.writeEscapedAttribute(out, "xsi:type", convertedJavaType(value));
+				}
 
-				// TODO: allow for structures and other kinds of DOM representations
+				serializer.writeOpenEnd(out);
 
-				if (value instanceof NodeList) {
+				if (!hasNodeValue) {
+					serializer.writeText(out, convertJavaValue(value));
+				} else {
 					NodeList children = (NodeList) value;
 					for (int i=0; i < children.getLength(); i++) {
-						element.appendChild(children.item(i));
+						Node node = children.item(i);
+
+						if (domOutput == null || domSerializer == null) {
+							Document document = (node instanceof Document) ? (Document) node : node.getOwnerDocument();
+
+							DOMImplementationLS domImpl = (DOMImplementationLS) document.getImplementation();
+
+							domOutput = domImpl.createLSOutput();
+							domOutput.setByteStream(out);
+							domSerializer = domImpl.createLSSerializer();
+							domSerializer.getDomConfig().setParameter("xml-declaration", false);
+						}
+
+						domSerializer.write(node, domOutput);
 					}
-					propertyList.add(element);
-					continue;
 				}
 
-				element.setAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI,
-						"xsi:type",
-						convertedJavaType(value));
-				element.setTextContent(convertJavaValue(value));
-				propertyList.add(element);
-			}
-
-			return propertiesJAXB;
-		} catch (ParserConfigurationException e) {
-			throw new RuntimeException("Failed to create properties",e);
+				serializer.writeClose(out, prefix, localPart);
 		}
+
+		serializer.writeClose(out, "prop:properties");
+	}
+	private void sendQualityImpl(BasicXMLSerializer serializer, OutputStream out) throws IOException {
+		serializer.writeOpen(out, "rapi:quality");
+		serializer.writeText(out, String.valueOf(getQuality()));
+		serializer.writeClose(out, "rapi:quality");
 	}
 
 	// TODO: move to utility class
