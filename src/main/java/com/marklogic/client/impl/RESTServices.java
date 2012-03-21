@@ -6,15 +6,12 @@ import java.util.Set;
 
 import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.ValueLocator;
 import com.marklogic.client.config.search.QueryDefinition;
 import com.marklogic.client.config.search.SearchOptions;
 
 public interface RESTServices {
 	public void connect(String host, int port, String user, String password, Authentication type);
 	public void release();
-
-	public String openTransaction();
 
 	public void deleteDocument(String uri, String transactionId, Set<Metadata> categories);
 	public <T> T getDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Class<T> as);
@@ -25,6 +22,7 @@ public interface RESTServices {
 
     public <T> T search(Class <T> as, QueryDefinition queryDef, long start, String transactionId);
 
+	public String openTransaction();
 	public void commitTransaction(String transactionId);
 	public void rollbackTransaction(String transactionId);
 
@@ -32,4 +30,10 @@ public interface RESTServices {
 	public void put(String searchOptionsName, SearchOptions options);
 	public void delete(String searchOptionsName);
 
+	// namespaces, etc.
+	public <T> T getValue(String type, String key, String mimetype, Class<T> as);
+	public <T> T getValues(String type, String mimetype, Class<T> as);
+	public void putValue(String type, String key, String mimetype, Object value);
+	public void deleteValue(String type, String key);
+	public void deleteValues(String type);
 }

@@ -22,6 +22,8 @@ public interface DatabaseClient {
     public QueryManager        newQueryManager();
     public QueryOptionsManager newQueryOptionsManager();
 
+    public NamespacesManager newNamespacesManager();
+
     /**
      * Closes a database connection.  After the connection is closed,
      * document and query managers can no longer access the database.

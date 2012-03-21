@@ -126,7 +126,7 @@ public class GenericDocumentTest {
 		if (exhibitMultipartDecodeDefect) {
 			String uri2 = "/test/testMetadataXML2.xml";
 			docId.setUri(uri2);
-			docMgr.write(docId, new StringHandle().on(content), new StringHandle().on(metadata));
+			docMgr.write(docId, new StringHandle().on(metadata), new StringHandle().on(content));
 			docText = docMgr.read(docId, xmlStringHandle, new StringHandle()).get();
 			stringMetadata = xmlStringHandle.get();
 			assertXMLEqual("Failed to write document content in single request",content,docText);

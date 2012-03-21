@@ -409,4 +409,79 @@ public class JerseyServices implements RESTServices {
 				.accept("application/xml").delete(ClientResponse.class);
 
 	}
+
+	// namespaces, etc.
+	public <T> T getValue(String type, String key, String mimetype, Class<T> as) {
+		logger.info("Getting {}/{}", type, key);
+
+		ClientResponse response = connection.path(type+"/"+key).accept(mimetype).get(ClientResponse.class);
+		// TODO: more fine-grained inspection of response status
+		ClientResponse.Status status = response.getClientResponseStatus();
+		if (status != ClientResponse.Status.OK) {
+			response.close();
+			if (status == ClientResponse.Status.NOT_FOUND)
+				return null;
+			else
+				throw new RuntimeException("read failed " + status);
+		}
+
+		T entity = response.getEntity(as);
+		if (as != InputStream.class && as != Reader.class)
+			response.close();
+
+		return entity;
+	}
+	public <T> T getValues(String type, String mimetype, Class<T> as) {
+		logger.info("Getting {}", type);
+
+		ClientResponse response = connection.path(type).accept(mimetype).get(ClientResponse.class);
+		// TODO: more fine-grained inspection of response status
+		ClientResponse.Status status = response.getClientResponseStatus();
+		if (status != ClientResponse.Status.OK) {
+			response.close();
+			throw new RuntimeException("read failed " + status);
+		}
+
+		T entity = response.getEntity(as);
+		if (as != InputStream.class && as != Reader.class)
+			response.close();
+
+		return entity;
+	}
+	public void putValue(String type, String key, String mimetype, Object value) {
+		logger.info("Putting {}/{}", type, key);
+
+		ClientResponse response = connection.path(type+"/"+key).type(mimetype).put(
+				ClientResponse.class,
+				(value instanceof OutputStreamSender) ?
+						new StreamingOutputImpl((OutputStreamSender) value) : value);
+		// TODO: more fine-grained inspection of response status
+		ClientResponse.Status status = response.getClientResponseStatus();
+		response.close();
+		if (status != ClientResponse.Status.OK) {
+			throw new RuntimeException("write failed " + status);
+		}
+	}
+	public void deleteValue(String type, String key) {
+		logger.info("Deleting {}/{}", type, key);
+
+		ClientResponse response = connection.path(type+"/"+key).delete(ClientResponse.class);
+		// TODO: more fine-grained inspection of response status
+		ClientResponse.Status status = response.getClientResponseStatus();
+		response.close();
+		if (status != ClientResponse.Status.NO_CONTENT) {
+			throw new RuntimeException("delete failed " + status);
+		}
+	}
+	public void deleteValues(String type) {
+		logger.info("Deleting {}", type);
+
+		ClientResponse response = connection.path(type).delete(ClientResponse.class);
+		// TODO: more fine-grained inspection of response status
+		ClientResponse.Status status = response.getClientResponseStatus();
+		response.close();
+		if (status != ClientResponse.Status.NO_CONTENT) {
+			throw new RuntimeException("delete failed " + status);
+		}
+	}
 }

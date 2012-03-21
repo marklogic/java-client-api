@@ -9,6 +9,7 @@ import com.marklogic.client.BinaryDocumentManager;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.GenericDocumentManager;
 import com.marklogic.client.JSONDocumentManager;
+import com.marklogic.client.NamespacesManager;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.RequestLogger;
@@ -61,6 +62,10 @@ public class DatabaseClientImpl implements DatabaseClient {
 	public QueryOptionsManager newQueryOptionsManager() {
 		return new QueryOptionsManagerImpl(services);
 	}
+
+    public NamespacesManager newNamespacesManager() {
+    	return new NamespacesManagerImpl(services);
+    }
 
 	public void release() {
 		logger.info("Releasing connection");
