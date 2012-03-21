@@ -37,8 +37,13 @@ class BinaryDocumentImpl
 		String uri = docId.getUri();
 		logger.info("Reading range of binary content for {}",uri);
 
-		// TODO Auto-generated method stub
-		return contentHandle;
+		HashMap<String,String> extraParams = new HashMap<String,String>();
+		if (length > 0)
+			extraParams.put("range", start+"-"+(start + length));
+		else
+			extraParams.put("range", String.valueOf(start));
+
+		return read(docId, metadataHandle, contentHandle, transaction, extraParams);
 	}
 
 	private MetadataExtraction metadataExtraction = MetadataExtraction.NONE;

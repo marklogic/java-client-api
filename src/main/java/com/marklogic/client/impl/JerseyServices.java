@@ -97,9 +97,12 @@ public class JerseyServices implements RESTServices {
 	public <T> T getDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Class<T> as) {
 		logger.info("Getting {} in transaction {}", uri, transactionId);
 
-		ClientResponse response = makeDocumentResource(
-				makeDocumentParams(uri, categories, transactionId, extraParams)).accept(
-				mimetype).get(ClientResponse.class);
+		WebResource.Builder resource = makeDocumentResource(
+				makeDocumentParams(uri, categories, transactionId, extraParams)
+				).accept(mimetype);
+		if (extraParams != null && extraParams.containsKey("range"))
+			resource = resource.header("range", extraParams.get("range"));
+		ClientResponse response = resource.get(ClientResponse.class);
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
 		if (status != ClientResponse.Status.OK) {
@@ -298,7 +301,9 @@ public class JerseyServices implements RESTServices {
 		MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
 		if (extraParams != null && extraParams.size() > 0) {
 			for (Map.Entry<String, String> entry: extraParams.entrySet()) {
-				docParams.putSingle(entry.getKey(), entry.getValue());
+				String extraKey = entry.getKey();
+				if (!"range".equalsIgnoreCase(extraKey))
+					docParams.putSingle(extraKey, entry.getValue());
 			}
 		}
 		docParams.add("uri", uri);

@@ -108,6 +108,9 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		return read(docId, null, contentHandle, transaction);
 	}
 	public <T extends R> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction) {
+		return read(docId, metadataHandle, contentHandle, transaction, getReadParams());
+	}
+	public <T extends R> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction, Map<String,String> extraParams) {
 		String uri = docId.getUri();
 		logger.info("Reading metadata and content for {}",uri);
 
@@ -141,7 +144,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 					uri, 
 					(transaction == null) ? null : transaction.getTransactionId(),
 					metadata,
-					getReadParams(),
+					extraParams,
 					new String[]{metadataMimetype, contentMimetype},
 					new Class[]{metadataHandle.receiveAs(), contentHandle.receiveAs()}
 					);
@@ -153,7 +156,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 							uri,
 							(transaction == null) ? null : transaction.getTransactionId(),
 							metadata,
-							getReadParams(),
+							extraParams,
 							metadataMimetype,
 							metadataHandle.receiveAs()
 							)
@@ -164,7 +167,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 						uri,
 						(transaction == null) ? null : transaction.getTransactionId(),
 						null,
-						getReadParams(),
+						extraParams,
 						contentMimetype,
 						contentHandle.receiveAs()
 						)
@@ -186,6 +189,9 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		write(docId, null, contentHandle, transaction);
 	}
 	public void write(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction) {
+		write(docId, metadataHandle, contentHandle, transaction, getWriteParams());
+	}
+	public void write(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction, Map<String,String> extraParams) {
 		String uri = docId.getUri();
 		logger.info("Writing content for {}",uri);
 
@@ -219,7 +225,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 					uri,
 					(transaction == null) ? null : transaction.getTransactionId(),
 					metadata,
-					getWriteParams(),
+					extraParams,
 					new String[]{metadataMimetype, contentMimetype},
 					new Object[] {metadataHandle.sendContent(), contentHandle.sendContent()}
 					);
@@ -228,7 +234,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 					uri,
 					(transaction == null) ? null : transaction.getTransactionId(),
 					metadata,
-					getWriteParams(),
+					extraParams,
 					metadataMimetype,
 					metadataHandle.sendContent()
 					);
@@ -237,7 +243,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 					uri,
 					(transaction == null) ? null : transaction.getTransactionId(),
 					null,
-					getWriteParams(),
+					extraParams,
 					contentMimetype,
 					contentHandle.sendContent()
 					);

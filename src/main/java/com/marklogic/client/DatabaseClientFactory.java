@@ -42,7 +42,12 @@ public class DatabaseClientFactory {
 		return new DatabaseClientImpl(services);		
 	}
 	static public DatabaseClient connect(String host, int port, String user, String password, SSLContext context) {
-		// TODO
+/* TODO: pass context through to RESTServices
+		ClientConfig config = new DefaultClientConfig();
+		context.init(null, myTrustManager, null);
+		config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hostnameVerifier, context));
+// Also add .header(AUTHENTICATION_HEADER, authentication) to request
+ */
 		return null;		
 	}
 }
