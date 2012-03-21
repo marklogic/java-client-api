@@ -1,5 +1,8 @@
 package com.marklogic.client.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.marklogic.client.Format;
 import com.marklogic.client.JSONDocumentManager;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -21,4 +24,13 @@ public class JSONDocumentImpl
 		this.language = language;
 	}
 
+	protected Map<String,String> getWriteParams() {
+		if (language == null)
+			return null;
+
+		HashMap<String,String> params = new HashMap<String,String>();
+		params.put("lang", language);
+
+		return params;
+	}
 }

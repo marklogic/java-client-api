@@ -7,13 +7,18 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 
+import javax.xml.XMLConstants;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.w3c.dom.Document;
 
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.JSONDocumentManager;
+import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.io.BytesHandle;
+import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.ReaderHandle;
@@ -67,5 +72,14 @@ public class JSONDocumentTest {
 
 		File file = docMgr.read(docId, new FileHandle()).get();
 		assertEquals("JSON document mismatch with file",testText.length(),file.length());
+
+		String lang = "fr-CA";
+		docMgr.setLanguage(lang);
+		docMgr.write(docId, new StringHandle().on(content));
+		
+		XMLDocumentManager xmlMgr = Common.client.newXMLDocumentManager();
+		Document document = xmlMgr.read(docId, new DOMHandle()).get();
+		assertEquals("Failed to set language attribute on JSON", lang,
+				document.getDocumentElement().getAttributeNS(XMLConstants.XML_NS_URI, "lang"));
 	}
 }
