@@ -13,7 +13,7 @@ import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
- * An OutputStreamWriteHandle generates output during writing.
+ * An OutputStreamHandle generates output during writing.
  * 
  * You define a class that implements the OutputStreamSender interface.
  * When the client is ready to write to the server, it calls the write()
@@ -21,12 +21,12 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * generates the output to be written to the server.  The OutputStreamSender
  * implementer is typically an anonymous class.
  * 
- * Initialize the OutputStreamWriteHandle with the OutputStreamSender implementer
- * before passing the OutputStreamWriteHandle to the write() method of
- * a document manager.
+ * Initialize the OutputStreamHandle with the OutputStreamSender implementer
+ * before passing the OutputStreamHandle to the write() method of a document
+ * manager.
  *
  */
-public class OutputStreamWriteHandle
+public class OutputStreamHandle
     implements
 	    BinaryWriteHandle<OutputStreamSender>,
         GenericWriteHandle<OutputStreamSender>,
@@ -35,12 +35,12 @@ public class OutputStreamWriteHandle
         XMLWriteHandle<OutputStreamSender>,
         StructureWriteHandle<OutputStreamSender>
 {
-	static final private Logger logger = LoggerFactory.getLogger(OutputStreamWriteHandle.class);
+	static final private Logger logger = LoggerFactory.getLogger(OutputStreamHandle.class);
 
-	public OutputStreamWriteHandle() {
+	public OutputStreamHandle() {
 		super();
 	}
-	public OutputStreamWriteHandle(OutputStreamSender sender) {
+	public OutputStreamHandle(OutputStreamSender sender) {
 		this();
 		set(sender);
 	}
@@ -60,7 +60,7 @@ public class OutputStreamWriteHandle
 	public void set(OutputStreamSender sender) {
 		this.sender = sender;
 	}
-	public OutputStreamWriteHandle on(OutputStreamSender sender) {
+	public OutputStreamHandle on(OutputStreamSender sender) {
 		set(sender);
 		return this;
 	}

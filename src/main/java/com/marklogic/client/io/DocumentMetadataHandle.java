@@ -106,19 +106,9 @@ public class DocumentMetadataHandle
 		public Object put(QName name, Short      value);
 		public Object put(QName name, String     value);
 
-		public Object put(String name, BigDecimal value);
-		public Object put(String name, BigInteger value);
-		public Object put(String name, Boolean    value);
-		public Object put(String name, Byte       value);
-		public Object put(String name, byte[]     value);
-		public Object put(String name, Calendar   value);
-		public Object put(String name, Double     value);
-		public Object put(String name, Float      value);
-		public Object put(String name, Integer    value);
-		public Object put(String name, Long       value);
-		public Object put(String name, NodeList   value);
-		public Object put(String name, Short      value);
-		public Object put(String name, String     value);
+		public Object put(String name, Object value);
+
+		public Object remove(String key);
 	}
 	private class PropertiesImpl extends HashMap<QName,Object> implements DocumentProperties {
 		private NamespaceContext context;
@@ -221,45 +211,12 @@ public class DocumentMetadataHandle
 			throw new RuntimeException("Invalid value for metadata property "+value.getClass().getName());
 		}
 
-		// TODO: namespace context for names with prefixes
-		public Object put(String name, BigDecimal value) {
+		public Object put(String name, Object value) {
 			return put(makeQName(name), value);
 		}
-		public Object put(String name, BigInteger value) {
-			return put(makeQName(name), value);
-		}
-		public Object put(String name, Boolean value) {
-			return put(makeQName(name), value);
-		}
-		public Object put(String name, Byte value) {
-			return put(makeQName(name), value);
-		}
-		public Object put(String name, byte[] value) {
-			return put(makeQName(name), value);
-		}
-		public Object put(String name, Calendar value) {
-			return put(makeQName(name), value);
-		}
-		public Object put(String name, Double value) {
-			return put(makeQName(name), value);
-		}
-		public Object put(String name, Float value) {
-			return put(makeQName(name), value);
-		}
-		public Object put(String name, Integer value) {
-			return put(makeQName(name), value);
-		}
-		public Object put(String name, Long value) {
-			return put(makeQName(name), value);
-		}
-		public Object put(String name, NodeList value) {
-			return put(makeQName(name), value);
-		}
-		public Object put(String name, Short value) {
-			return put(makeQName(name), value);
-		}
-		public Object put(String name, String value) {
-			return put(makeQName(name), value);
+
+		public Object remove(String name) {
+			return super.remove(makeQName(name));
 		}
 	}
 
