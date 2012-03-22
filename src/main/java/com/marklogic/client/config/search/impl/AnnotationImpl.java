@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import com.marklogic.client.config.search.Annotation;
-import com.marklogic.client.test.QueryOptionsTest;
 
 
 
