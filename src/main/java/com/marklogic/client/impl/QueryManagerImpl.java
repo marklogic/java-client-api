@@ -4,8 +4,11 @@ import com.marklogic.client.ElementLocator;
 import com.marklogic.client.KeyLocator;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.config.search.KeyValueQueryDefinition;
+import com.marklogic.client.config.search.MatchDocumentSummary;
 import com.marklogic.client.config.search.QueryDefinition;
 import com.marklogic.client.config.search.StringQueryDefinition;
+import com.marklogic.client.config.search.StructuredQueryBuilder;
+import com.marklogic.client.config.search.StructuredQueryDefinition;
 import com.marklogic.client.config.search.jaxb.Response;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
@@ -43,6 +46,10 @@ public class QueryManagerImpl implements QueryManager {
         return new KeyValueQueryDefinitionImpl(optionsUri);
     }
 
+    public StructuredQueryBuilder newStructuredQueryBuilder() {
+        return new StructuredQueryBuilder();
+    }
+    
     @Override
     public ElementLocator newElementLocator(QName element) {
         return new ElementLocatorImpl(element);
@@ -79,5 +86,27 @@ public class QueryManagerImpl implements QueryManager {
         }
         searchHandle.receiveContent(services.search(searchHandle.receiveAs(), querydef, start, transactionId));
         return searchHandle;
+    }
+
+    @Override
+    public MatchDocumentSummary findOne(QueryDefinition querydef) {
+        SearchHandle results = search(new SearchHandle(), querydef);
+        MatchDocumentSummary[] summaries = results.getMatchResults();
+        if (summaries.length > 0) {
+            return summaries[0];
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public MatchDocumentSummary findOne(QueryDefinition querydef, String transactionId) {
+        SearchHandle results = search(new SearchHandle(), querydef, transactionId);
+        MatchDocumentSummary[] summaries = results.getMatchResults();
+        if (summaries.length > 0) {
+            return summaries[0];
+        } else {
+            return null;
+        }
     }
 }

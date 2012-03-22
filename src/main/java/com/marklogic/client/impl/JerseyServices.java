@@ -3,6 +3,7 @@ package com.marklogic.client.impl;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -15,6 +16,9 @@ import javax.xml.bind.JAXBException;
 import com.marklogic.client.config.search.KeyValueQueryDefinition;
 import com.marklogic.client.config.search.QueryDefinition;
 import com.marklogic.client.config.search.StringQueryDefinition;
+import com.marklogic.client.config.search.StructuredQueryDefinition;
+import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -364,6 +368,10 @@ public class JerseyServices implements RESTServices {
                 docParams.add("value", pairs.get(loc));
             }
             response = connection.path("keyvalue").queryParams(docParams).get(ClientResponse.class);
+        } else if (queryDef instanceof StructuredQueryDefinition) {
+            String structure = ((StructuredQueryDefinition) queryDef).serialize();
+            String mimetype = "application/xml";
+            response = connection.path("search").type(mimetype).post(ClientResponse.class, structure);
         } else {
             throw new UnsupportedOperationException("Cannot search with " + queryDef.getClass().getName());
         }

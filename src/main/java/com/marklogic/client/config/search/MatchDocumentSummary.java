@@ -1,5 +1,7 @@
 package com.marklogic.client.config.search;
 
+import com.marklogic.client.DocumentIdentifier;
+
 /**
  * Created by IntelliJ IDEA.
  * User: ndw
@@ -13,5 +15,6 @@ public interface MatchDocumentSummary {
     public double getConfidence();
     public double getFitness();
     public String getPath();
+    public DocumentIdentifier docId();
     public MatchLocation[] getMatchLocations();
 }

@@ -1,5 +1,6 @@
 package com.marklogic.client.io;
 
+import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.Format;
 import com.marklogic.client.config.search.MarkLogicIOException;
 import com.marklogic.client.config.search.MatchDocumentSummary;
@@ -240,6 +241,16 @@ public class SearchHandle implements SearchReadHandle<InputStream>, SearchResult
             }
 
             return locations;
+        }
+        
+        public DocumentIdentifier docId() {
+            return new MatchDocumentSummaryId(uri);
+        }
+        
+        private class MatchDocumentSummaryId extends DocumentIdentifier {
+            public MatchDocumentSummaryId(String uri) {
+                super(uri);
+            }
         }
     }
 

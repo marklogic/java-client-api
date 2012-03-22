@@ -19,6 +19,8 @@ import org.junit.runners.Suite;
 	MetadataHandleTest.class,
     KeyValueSearchTest.class,
     StringSearchTest.class,
+    StructuredQueryBuilderTest.class,
+    StructuredSearchTest.class,
     NamespacesManagerTest.class
 	})
 public class AllClientTests {
