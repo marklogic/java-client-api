@@ -1,24 +1,10 @@
 package com.marklogic.client.config.search;
 
-public class AdditionalQuery extends StringQueryOption implements SearchOption {
+import org.w3c.dom.Element;
 
+public interface AdditionalQuery {
 
-	@Override
-	public String getValue() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setValue(String value) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public Object asJaxbObject() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	public void setQuery(Element ctsQuery);
+	public Element getQuery();
+	
 }

@@ -2,47 +2,21 @@ package com.marklogic.client.config.search;
 
 import javax.xml.namespace.QName;
 
-import com.marklogic.client.config.search.jaxb.Attribute;
-import com.marklogic.client.config.search.jaxb.Element;
-import com.marklogic.client.config.search.jaxb.Field;
+public interface IndexReference {
 
-public class IndexReference {
+	public QName getElement();
 
-	Attribute attribute;
-	Element element;
-	Field field;
-	//Path path;
-	
-	
-	public QName getElement() {
-		return new QName(element.getNs(), element.getName());
-	}
-	
-	public void addAttributeQName(QName attributeQName) {
-		attribute = new Attribute();
-		attribute.setNs(attributeQName.getNamespaceURI());
-		attribute.setName(attributeQName.getLocalPart());
-	}
-	
-	public void addElementQName(QName elementQName) {
-		element = new Element();
-		element.setNs(elementQName.getNamespaceURI());
-		element.setName(elementQName.getLocalPart());
-	}
-	
-	public void addField(String name) {
-		field = new Field();
-		field.setName(name);
-	}
+	public void addField(String name);
 
-	public QName getAttribute() {
-		return new QName(attribute.getNs(), attribute.getName());		
-	}
-	
-	public String getField() {
-		return field.getName();
-	}
+	public QName getAttribute();
+
+	public String getField();
+
+	public void addElementAttributeIndex(QName elementQName,
+			QName attributeQName);
+
+	public void addElementIndex(QName elementQName);
+
+	public void addFieldIndex(String fieldName);
+
 }
-
-
-

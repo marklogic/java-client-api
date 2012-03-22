@@ -29,6 +29,7 @@ import com.marklogic.client.KeyLocator;
 import com.marklogic.client.ValueLocator;
 import com.marklogic.client.config.search.MarkLogicIOException;
 import com.marklogic.client.config.search.SearchOptions;
+import com.marklogic.client.config.search.impl.SearchOptionsImpl;
 import com.marklogic.client.io.marker.OutputStreamSender;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientRequest.Builder;
@@ -83,7 +84,8 @@ public class JerseyServices implements RESTServices {
 		client.destroy();
 	}
 
-	public void deleteDocument(String uri, String transactionId, Set<Metadata> categories) {
+	public void deleteDocument(String uri, String transactionId,
+			Set<Metadata> categories) {
 		logger.info("Deleting {} in transaction {}", uri, transactionId);
 
 		ClientResponse response = makeDocumentResource(
@@ -97,7 +99,8 @@ public class JerseyServices implements RESTServices {
 		}
 	}
 
-	// TODO:  does an Input Stream or Reader handle need to cache the response so it can close the response?
+	// TODO: does an Input Stream or Reader handle need to cache the response so
+	// it can close the response?
 
 	public <T> T getDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Class<T> as) {
 		logger.info("Getting {} in transaction {}", uri, transactionId);
@@ -209,6 +212,7 @@ public class JerseyServices implements RESTServices {
 			throw new RuntimeException("write failed " + status);
 		}
 	}
+
 	public void putDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Object[] values) {
 		logger.info("Putting multipart for {} in transaction {}", uri, transactionId);
 
@@ -221,16 +225,16 @@ public class JerseyServices implements RESTServices {
 					"mistmatch between mime types and values for write");
 
 		MultiPart multiPart = new MultiPart();
-		multiPart.setMediaType(new MediaType("multipart","mixed"));
-		for (int i=0; i < mimetypes.length; i++) {
-			String[] typeParts = 
-				mimetypes[i].contains("/") ? mimetypes[i].split("/", 2) : null;
-			multiPart = multiPart.bodyPart(new BodyPart(
-					(values[i] instanceof OutputStreamSender) ?
-							new StreamingOutputImpl((OutputStreamSender) values[i]) : values[i],
-				typeParts != null ?
-					new MediaType(typeParts[0],typeParts[1]) : MediaType.WILDCARD_TYPE
-					));
+		multiPart.setMediaType(new MediaType("multipart", "mixed"));
+		for (int i = 0; i < mimetypes.length; i++) {
+			String[] typeParts = mimetypes[i].contains("/") ? mimetypes[i]
+					.split("/", 2) : null;
+			multiPart = multiPart
+					.bodyPart(new BodyPart(
+							(values[i] instanceof OutputStreamSender) ? new StreamingOutputImpl(
+									(OutputStreamSender) values[i]) : values[i],
+							typeParts != null ? new MediaType(typeParts[0],
+									typeParts[1]) : MediaType.WILDCARD_TYPE));
 		}
 
 		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
@@ -249,52 +253,59 @@ public class JerseyServices implements RESTServices {
 	}
 
 	public String openTransaction() {
-        logger.info("Opening transaction");
+		logger.info("Opening transaction");
 
-        MultivaluedMap<String, String> transParams = new MultivaluedMapImpl();
-        transParams.add("name", "java-client-"+new Random().nextLong());
+		MultivaluedMap<String, String> transParams = new MultivaluedMapImpl();
+		transParams.add("name", "java-client-" + new Random().nextLong());
 
-        ClientResponse response = connection.path("transactions").queryParams(transParams).post(ClientResponse.class);
-        ClientResponse.Status status = response.getClientResponseStatus();
-        if (status != ClientResponse.Status.SEE_OTHER) {
-            response.close();
-            throw new RuntimeException("transaction open failed "+status);
-        }
+		ClientResponse response = connection.path("transactions")
+				.queryParams(transParams).post(ClientResponse.class);
+		ClientResponse.Status status = response.getClientResponseStatus();
+		if (status != ClientResponse.Status.SEE_OTHER) {
+			response.close();
+			throw new RuntimeException("transaction open failed " + status);
+		}
 
-        String location = response.getHeaders().getFirst("Location");
-        response.close();
-        if (location == null)
-            throw new RuntimeException("transaction open failed to provide location");
-        if (!location.contains("/"))
-            throw new RuntimeException("transaction open produced invalid location "+location);
+		String location = response.getHeaders().getFirst("Location");
+		response.close();
+		if (location == null)
+			throw new RuntimeException(
+					"transaction open failed to provide location");
+		if (!location.contains("/"))
+			throw new RuntimeException(
+					"transaction open produced invalid location " + location);
 
-        return location.substring(location.lastIndexOf("/") + 1);
+		return location.substring(location.lastIndexOf("/") + 1);
 	}
+
 	public void commitTransaction(String transactionId) {
-        logger.info("Committing transaction {}",transactionId);
+		logger.info("Committing transaction {}", transactionId);
 
-        if (transactionId == null)
-            throw new RuntimeException("Committing transaction without id");
+		if (transactionId == null)
+			throw new RuntimeException("Committing transaction without id");
 
-        ClientResponse response = connection.path("transactions/"+transactionId).put(ClientResponse.class);
-        ClientResponse.Status status = response.getClientResponseStatus();
-        response.close();
-        if (status != ClientResponse.Status.NO_CONTENT) {
-            throw new RuntimeException("transaction commit failed "+status);
-        }
+		ClientResponse response = connection.path(
+				"transactions/" + transactionId).put(ClientResponse.class);
+		ClientResponse.Status status = response.getClientResponseStatus();
+		response.close();
+		if (status != ClientResponse.Status.NO_CONTENT) {
+			throw new RuntimeException("transaction commit failed " + status);
+		}
 	}
+
 	public void rollbackTransaction(String transactionId) {
-        logger.info("Rolling back transaction {}",transactionId);
+		logger.info("Rolling back transaction {}", transactionId);
 
-        if (transactionId == null)
-            throw new RuntimeException("Rolling back transaction without id");
+		if (transactionId == null)
+			throw new RuntimeException("Rolling back transaction without id");
 
-        ClientResponse response = connection.path("transactions/"+transactionId).delete(ClientResponse.class);
-        ClientResponse.Status status = response.getClientResponseStatus();
-        response.close();
-        if (status != ClientResponse.Status.NO_CONTENT) {
-            throw new RuntimeException("transaction rollback failed "+status);
-        }
+		ClientResponse response = connection.path(
+				"transactions/" + transactionId).delete(ClientResponse.class);
+		ClientResponse.Status status = response.getClientResponseStatus();
+		response.close();
+		if (status != ClientResponse.Status.NO_CONTENT) {
+			throw new RuntimeException("transaction rollback failed " + status);
+		}
 	}
 
 	private MultivaluedMap<String, String> makeDocumentParams(String uri, Set<Metadata> categories, String transactionId, Map<String,String> extraParams) {
@@ -385,20 +396,27 @@ public class JerseyServices implements RESTServices {
     }
 
 	// TODO rewrite to JSON, XML, or JAXB output.
-	public SearchOptions get(String searchOptionsName) {
-		ClientResponse clientResponse = connection.path(QUERY_OPTIONS_BASE + searchOptionsName)
+	public SearchOptions getOptions(String searchOptionsName) {
+		ClientResponse clientResponse = connection
+				.path(QUERY_OPTIONS_BASE + searchOptionsName)
 				.accept("application/xml").get(ClientResponse.class);
 
-		try {
-			return new SearchOptions(clientResponse.getEntityInputStream());
-		} catch (JAXBException e) {
-			throw new MarkLogicIOException("Could not get options from server",
-					e);
-
+		if (clientResponse.getClientResponseStatus() == ClientResponse.Status.OK) {
+			try {
+				return new SearchOptionsImpl(clientResponse.getEntityInputStream());
+			} catch (JAXBException e) {
+				throw new MarkLogicIOException(
+						"Could not get options from server", e);
+			}
+		} else {
+			throw new MarkLogicIOException("Unexpected response "
+					+ clientResponse.getClientResponseStatus()
+					+ " from Server thrown for options name "
+					+ searchOptionsName);
 		}
 	}
 
-	public void put(String searchOptionsName, SearchOptions options) {
+	public void putOptions(String searchOptionsName, SearchOptions options) {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
 			options.writeTo(baos);
@@ -406,15 +424,20 @@ public class JerseyServices implements RESTServices {
 			throw new MarkLogicIOException(
 					"Could not build options to send to server", e);
 		}
-		ClientResponse clientResponse = connection.path(QUERY_OPTIONS_BASE + searchOptionsName)
+		ClientResponse clientResponse = connection
+				.path(QUERY_OPTIONS_BASE + searchOptionsName)
 				.type("application/xml")
 				.put(ClientResponse.class, baos.toByteArray());
-
-		
+		logger.debug("Returned from PUT with status code {}", clientResponse.getStatus());
+		if(clientResponse.getStatus() == 400) {
+			throw new MarkLogicIOException("Bad Request sent to REST server. " + clientResponse.getEntityInputStream().toString());
+		}
 	}
 
-	public void delete(String searchOptionsName) {
-		ClientResponse clientResponse = connection.path(QUERY_OPTIONS_BASE + searchOptionsName)
+	@Override
+	public void deleteOptions(String searchOptionsName) {
+		ClientResponse clientResponse = connection
+				.path(QUERY_OPTIONS_BASE + searchOptionsName)
 				.accept("application/xml").delete(ClientResponse.class);
 
 	}

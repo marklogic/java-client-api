@@ -21,7 +21,7 @@
 				</javadoc>
 			</class>
 			<bindings node="./xs:choice">
-				<property name="queryOptions">
+				<property name="searchOptions">
 				</property>
 			</bindings>
 		</bindings>
@@ -38,12 +38,15 @@
 				</property>
 			</bindings>
 		</bindings>
+        <bindings node='//xs:element[@name="additional-query"]'> 
+			<class name="AdditionalQuery">
+            </class> 
+        </bindings>
 
 		<!-- <bindings node='//xs:element[@name="searchable-expression"]'> <class 
 			name="SearchableExpression"></class> </bindings> <bindings node='//xs:element[@name="search-option"]'> 
 			<class name="SearchOption"></class> </bindings> <bindings node='//xs:element[@name="forest"]'> 
-			<class name="Forest"></class> </bindings> <bindings node='//xs:element[@name="additional-query"]'> 
-			<class name="AdditionalQuery"></class> </bindings> <bindings node='//xs:element[@name="fragment-scope"]'> 
+			<class name="Forest"></class> </bindings>  <bindings node='//xs:element[@name="fragment-scope"]'> 
 			<class name="FragmentScope"></class> </bindings> <bindings node='//xs:element[@name="concurrency-level"]'> 
 			<class name="ConcurrencyLevel"></class> </bindings> <bindings node='//xs:element[@name="quality-weight"]'> 
 			<class name="QualityWeight"></class> </bindings> <bindings node='//xs:element[@name="debug"]'> 

@@ -1,11 +1,9 @@
 package com.marklogic.client.config.search;
 
-public class SuggestionSource extends IndexableConstraint implements
-		SearchOption {
+public interface SuggestionSource extends Annotate, Indexable, Suggestable {
 
-	public SuggestionSource(
-			com.marklogic.client.config.search.jaxb.SuggestionSource ot) {
-		super(null);
-	}
-
+	public void useWordLexicon(String collation);
+	public void useWordLexicon(String collation, String fragmentScope);
+	public void useWordLexicon();
+	
 }

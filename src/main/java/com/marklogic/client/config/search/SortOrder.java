@@ -1,15 +1,17 @@
 package com.marklogic.client.config.search;
 
-public class SortOrder implements SearchOption {
+public interface SortOrder extends SearchOption, Annotate, Indexable {
 
-	public SortOrder(com.marklogic.client.config.search.jaxb.SortOrder ot) {
-		// TODO Auto-generated constructor stub
-	}
-
-	@Override
-	public Object asJaxbObject() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	
+	public String getType();
+	public void setType(String type);
+	public String getDirection();
+	public void setDirection(String direction);
+	public void setCollation(String collation);
+	public String getCollation();
+	public void setScore();
+	public boolean getScore();
+	
+	
+	
 }

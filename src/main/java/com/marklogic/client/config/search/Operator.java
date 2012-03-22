@@ -1,15 +1,14 @@
 package com.marklogic.client.config.search;
 
-public class Operator implements SearchOption {
+import java.util.List;
 
-	public Operator(com.marklogic.client.config.search.jaxb.Operator ot) {
-		// TODO Auto-generated constructor stub
-	}
+public interface Operator extends Annotate {
 
-	@Override
-	public Object asJaxbObject() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public String getName();
+	public void setName(String name);
+	
+	public List<State> getStates();
+	
+	
 
 }

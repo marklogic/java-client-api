@@ -19,17 +19,17 @@ public class QueryOptionsManagerImpl implements QueryOptionsManager {
 	
 	@Override
 	public SearchOptions readOptions(String name) {
-		return services.get(name);
+		return services.getOptions(name);
 	}
 
 	@Override
 	public void writeOptions(String name, SearchOptions options) {
-		services.put(name, options);
+		services.putOptions(name, options);
 	}
 
 	@Override
 	public void deleteOptions(String name) {
-		services.delete(name);
+		services.deleteOptions(name);
 	}
 
 }

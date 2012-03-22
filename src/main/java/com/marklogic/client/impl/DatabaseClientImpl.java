@@ -16,7 +16,7 @@ import com.marklogic.client.RequestLogger;
 import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.XMLDocumentManager;
-import com.marklogic.client.config.search.SearchOptions;
+import com.marklogic.client.config.search.impl.SearchOptionsImpl;
 
 public class DatabaseClientImpl implements DatabaseClient {
 	static final private Logger logger = LoggerFactory.getLogger(DatabaseClientImpl.class);

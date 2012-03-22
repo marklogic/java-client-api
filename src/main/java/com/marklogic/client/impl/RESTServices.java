@@ -26,9 +26,9 @@ public interface RESTServices {
 	public void commitTransaction(String transactionId);
 	public void rollbackTransaction(String transactionId);
 
-	public SearchOptions get(String searchOptionsName);
-	public void put(String searchOptionsName, SearchOptions options);
-	public void delete(String searchOptionsName);
+	public SearchOptions getOptions(String searchOptionsName);
+	public void putOptions(String searchOptionsName, SearchOptions options);
+	public void deleteOptions(String searchOptionsName);
 
 	// namespaces, etc.
 	public <T> T getValue(String type, String key, String mimetype, Class<T> as);

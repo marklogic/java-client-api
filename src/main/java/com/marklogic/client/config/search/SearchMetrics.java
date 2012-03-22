@@ -1,6 +1,5 @@
 package com.marklogic.client.config.search;
 
-import java.util.Date;
 
 /**
  * Created by IntelliJ IDEA.

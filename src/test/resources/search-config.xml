@@ -82,12 +82,15 @@
       </search:range>
     </search:constraint>
     <search:constraint name="inname">
-      <search:word>
+        <search:word>
 
-    <search:element ns="http://marklogic.com/wikipedia" name="name"/>
-    <search:term-option>punctuation-insensitive</search:term-option>
-      </search:word>
-      <search:annotation/>
+            <search:element ns="http://marklogic.com/wikipedia" name="name"/>
+            <search:term-option>punctuation-insensitive</search:term-option>
+        </search:word>
+        <search:annotation>
+            <proj:front-page xmlns:proj="http://marklogic.com/appservices/project">true</proj:front-page>
+            <proj:side-bar   xmlns:proj="http://marklogic.com/appservices/project">false</proj:side-bar>
+        </search:annotation>
     </search:constraint>
     <search:constraint name="intitle">
       <search:word>
@@ -114,6 +117,10 @@
 
     </search:sort-order>
       </search:state>
+        <search:annotation>
+            <proj:front-page xmlns:proj="http://marklogic.com/appservices/project">false</proj:front-page>
+            <proj:side-bar   xmlns:proj="http://marklogic.com/appservices/project">false</proj:side-bar>
+        </search:annotation>
     </search:operator>
     <search:transform-results apply="snippet">
       <search:preferred-elements><search:element ns="http://www.w3.org/1999/xhtml" name="p"/></search:preferred-elements>

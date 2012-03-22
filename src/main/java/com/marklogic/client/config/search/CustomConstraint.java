@@ -1,21 +1,14 @@
 package com.marklogic.client.config.search;
 
-import javax.xml.namespace.QName;
+public interface CustomConstraint extends Constraint, Facetable, Annotate, Terms {
 
-public class CustomConstraint extends Constraint {
-
-	public CustomConstraint(String name) {
-		super(name);
-	}
-
-	public void addElementAttributeIndex(QName qName, QName qName2) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public IndexReference getIndex() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	public void setParse(FunctionRef function);
+	public FunctionRef getParse();
+	public void setStartFacet(FunctionRef function);
+	public FunctionRef getStartFacet();
+	public void setFinishFacet(FunctionRef function);
+	public FunctionRef getFinishFacet();
+	
+	
+	
 }

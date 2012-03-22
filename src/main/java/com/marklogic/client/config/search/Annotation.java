@@ -1,15 +1,14 @@
 package com.marklogic.client.config.search;
 
-public class Annotation implements SearchOption {
+import java.util.List;
 
-	Annotation(com.marklogic.client.config.search.jaxb.Annotation ot) {
-		// TODO Auto-generated constructor stub
-	}
+import org.w3c.dom.Element;
 
-	@Override
-	public Object asJaxbObject() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+public interface Annotation {
 
+	public void add(Element element);
+	public void clearAnnotations();
+	public void setContent(List<Element> elementList);
+	public List<Element> getContent();
+	
 }

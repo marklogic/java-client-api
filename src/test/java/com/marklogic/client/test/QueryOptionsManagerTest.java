@@ -12,9 +12,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.QueryOptionsManager;
+import com.marklogic.client.config.search.MarkLogicIOException;
 import com.marklogic.client.config.search.SearchOptions;
+import com.marklogic.client.config.search.impl.SearchOptionsImpl;
 
 public class QueryOptionsManagerTest {
+	
+	
 	@BeforeClass
 	public static void beforeClass() {
 		Common.connectAdmin();
@@ -31,7 +35,7 @@ public class QueryOptionsManagerTest {
 		QueryOptionsManager mgr = Common.client.newQueryOptionsManager();
 		assertNotNull("Client could not create query options manager", mgr);
 
-		SearchOptions options = new SearchOptions();
+		SearchOptions options = new SearchOptionsImpl();
         mgr.writeOptions("testempty", options);
         
         SearchOptions returned = mgr.readOptions("testempty");
@@ -42,9 +46,23 @@ public class QueryOptionsManagerTest {
 		String optionsResult = baos.toString();
 
 		assertTrue("Empty options result not empty",optionsResult.contains("<options xmlns=\"http://marklogic.com/appservices/search\"/>"));
+		
+		mgr.deleteOptions("testempty");
+		
+		
 	};
 	
+	/*
+	 * commenting out pending figuring out blocking problem
+	@Test(expected=MarkLogicIOException.class)
+	public void testNotFoundOptions() {
+		QueryOptionsManager mgr = Common.client.newQueryOptionsManager();
 
-	
-	
+		mgr.deleteOptions("testempty");
+		
+		//mgr.readOptions("testempty");
+		
+	}
+	*/
+
 }

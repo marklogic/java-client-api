@@ -87,16 +87,13 @@
 		    <artifactId>jersey-multipart</artifactId>
 		    <version>1.12</version>
 		</dependency>
-
 		<!-- <dependency> <groupId>com.sun.jersey.contribs</groupId> <artifactId>jersey-json</artifactId> 
 			<version>1.12</version> </dependency> -->
-
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-
 		<dependency>
 			<groupId>javax.xml.bind</groupId>
 			<artifactId>jaxb-api</artifactId>
@@ -108,5 +105,4 @@
 			<version>2.2.5</version>
 		</dependency>
 	</dependencies>
-
 </project>
