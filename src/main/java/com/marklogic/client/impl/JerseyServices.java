@@ -27,6 +27,7 @@ import com.marklogic.client.config.search.MarkLogicIOException;
 import com.marklogic.client.config.search.SearchOptions;
 import com.marklogic.client.io.marker.OutputStreamSender;
 import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientRequest.Builder;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
@@ -448,17 +449,34 @@ public class JerseyServices implements RESTServices {
 
 		return entity;
 	}
+	public void postValue(String type, String key, String mimetype, Object value) {
+		putPostValueImpl("post", type, key, mimetype, value);
+	}
 	public void putValue(String type, String key, String mimetype, Object value) {
+		putPostValueImpl("put", type, key, mimetype, value);
+	}
+	private void putPostValueImpl(String method, String type, String key, String mimetype, Object value) {
 		logger.info("Putting {}/{}", type, key);
 
-		ClientResponse response = connection.path(type+"/"+key).type(mimetype).put(
-				ClientResponse.class,
-				(value instanceof OutputStreamSender) ?
-						new StreamingOutputImpl((OutputStreamSender) value) : value);
+		Object sentValue = (value instanceof OutputStreamSender) ?
+				new StreamingOutputImpl((OutputStreamSender) value) : value;
+
+		ClientResponse response = null;
+		ClientResponse.Status expectedStatus = null;
+		if ("put".equals(method)) {
+			response = connection.path(type+"/"+key).type(mimetype).put(ClientResponse.class, sentValue);
+			expectedStatus = ClientResponse.Status.NO_CONTENT;
+		} else if ("post".equals(method)) {
+			response = connection.path(type).type(mimetype).post(ClientResponse.class, sentValue);
+			expectedStatus = ClientResponse.Status.CREATED;
+		} else {
+			throw new RuntimeException("unknown method type " + method);
+		}
+
 		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
-		if (status != ClientResponse.Status.OK) {
+		if (status != expectedStatus) {
 			throw new RuntimeException("write failed " + status);
 		}
 	}

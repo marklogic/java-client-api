@@ -33,6 +33,7 @@ public interface RESTServices {
 	// namespaces, etc.
 	public <T> T getValue(String type, String key, String mimetype, Class<T> as);
 	public <T> T getValues(String type, String mimetype, Class<T> as);
+	public void postValue(String type, String key, String mimetype, Object value);
 	public void putValue(String type, String key, String mimetype, Object value);
 	public void deleteValue(String type, String key);
 	public void deleteValues(String type);

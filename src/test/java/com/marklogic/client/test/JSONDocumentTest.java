@@ -35,8 +35,6 @@ public class JSONDocumentTest {
 		Common.release();
 	}
 
-	// TODO: language parameter
-
 	@Test
 	public void testReadWrite() throws IOException {
 		String uri = "/test/testWrite1.json";
