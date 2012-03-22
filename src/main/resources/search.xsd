@@ -361,8 +361,8 @@
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="search:element"/>
-        <xs:element ref="search:attribute"/>
         <xs:element ref="search:field"/>
+        <xs:element ref="search:attribute"/>
         <xs:element ref="search:score"/>
         <xs:element ref="search:annotation"/>
       </xs:choice>
@@ -400,6 +400,7 @@
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="search:term-option"/>
         <xs:element ref="search:empty"/>
+        <xs:element ref="search:weight"/>
       </xs:choice>
       <xs:attribute name="apply" type="xs:NCName"/>
       <xs:attribute name="ns" type="xs:anyURI"/>
@@ -430,9 +431,11 @@
           <xs:element ref="search:field"/>
         </xs:choice>
         <xs:element ref="search:term-option"/>
+        <xs:element ref="search:weight"/>
       </xs:choice>
     </xs:complexType>
   </xs:element>
+  <xs:element name="weight" type="xs:double"/>
   <xs:element name="word" substitutionGroup="search:constraint-type">
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -445,6 +448,7 @@
           <xs:element ref="search:field"/>
         </xs:choice>
         <xs:element ref="search:term-option"/>
+        <xs:element ref="search:weight"/>
       </xs:choice>
       <xs:attribute name="collation" type="xs:anyURI"/>
     </xs:complexType>
@@ -462,6 +466,9 @@
       <xs:any processContents="skip"/>
     </xs:sequence>
   </xs:group>
+  <xs:attributeGroup name="any-attribute">
+    <xs:anyAttribute processContents="skip"/>
+  </xs:attributeGroup>
   <xs:group name="any-nonsearch-element">
     <xs:choice>
       <xs:any namespace="##other" processContents="skip"/>
@@ -500,18 +507,17 @@
   <xs:element name="boxes" substitutionGroup="search:ResponseFacet">
     <xs:complexType>
       <xs:sequence>
-        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:box"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" name="box">
+          <xs:complexType>
+            <xs:attribute name="count" use="required" type="xs:unsignedInt"/>
+            <xs:attribute name="s" use="required" type="xs:double"/>
+            <xs:attribute name="w" use="required" type="xs:double"/>
+            <xs:attribute name="n" use="required" type="xs:double"/>
+            <xs:attribute name="e" use="required" type="xs:double"/>
+          </xs:complexType>
+        </xs:element>
       </xs:sequence>
       <xs:attribute name="name" use="required"/>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="box">
-    <xs:complexType>
-      <xs:attribute name="count" use="required" type="xs:unsignedInt"/>
-      <xs:attribute name="s" use="required" type="xs:double"/>
-      <xs:attribute name="w" use="required" type="xs:double"/>
-      <xs:attribute name="n" use="required" type="xs:double"/>
-      <xs:attribute name="e" use="required" type="xs:double"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="ResponseFacet" abstract="true"/>
@@ -520,8 +526,8 @@
       <xs:sequence>
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:result"/>
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:ResponseFacet"/>
-        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:qtext"/>
-        <xs:element minOccurs="0" ref="search:query"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" name="qtext" type="xs:string"/>
+        <xs:element minOccurs="0" name="query" type="search:any-cts-element"/>
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:constraint"/>
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:warning"/>
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:report"/>
@@ -563,8 +569,6 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="highlight" type="xs:string"/>
-  <xs:element name="qtext" type="xs:string"/>
-  <xs:element name="query" type="search:any-cts-element"/>
   <xs:element name="warning">
     <xs:complexType mixed="true">
       <xs:attribute name="id" use="required"/>
@@ -596,4 +600,293 @@
   <xs:element name="facet-resolution-time" type="xs:duration"/>
   <xs:element name="snippet-resolution-time" type="xs:duration"/>
   <xs:element name="total-time" type="xs:duration"/>
+  <xs:element name="query">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:QueryType"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:operator-state"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:qtext"/>
+        <xs:element ref="search:annotation"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="operator-state">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:operator-name"/>
+        <xs:element ref="search:state-name"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="operator-name" type="search:qtext-token"/>
+  <xs:element name="state-name" type="search:qtext-token"/>
+  <xs:element name="qtext">
+    <xs:complexType mixed="true">
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="QueryType" abstract="true"/>
+  <xs:element name="and-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:QueryType"/>
+        <xs:element minOccurs="0" ref="search:ordered"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ordered" type="xs:boolean"/>
+  <xs:element name="or-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:QueryType"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="and-not-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:positive-query"/>
+        <xs:element ref="search:negative-query"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="positive-query">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:QueryType"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="negative-query">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:QueryType"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="not-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:QueryType"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="near-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:QueryType"/>
+        <xs:element minOccurs="0" ref="search:ordered"/>
+        <xs:element minOccurs="0" ref="search:distance"/>
+        <xs:element minOccurs="0" ref="search:distance-weight"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="distance" type="xs:integer"/>
+  <xs:element name="distance-weight" type="xs:double"/>
+  <xs:element name="document-fragment-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:QueryType"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="properties-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:QueryType"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="locks-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:QueryType"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="directory-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:uri"/>
+        <xs:element minOccurs="0" ref="search:infinite"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="uri" type="xs:string"/>
+  <xs:element name="infinite" type="xs:boolean"/>
+  <xs:element name="document-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:uri"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="collection-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:uri"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="term-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:text"/>
+        <xs:element minOccurs="0" ref="search:weight"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="text" type="xs:string"/>
+  <xs:element name="constraint-name" type="search:qtext-token"/>
+  <xs:element name="element-constraint-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:constraint-name"/>
+        <xs:element ref="search:QueryType"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="properties-constraint-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:constraint-name"/>
+        <xs:element ref="search:QueryType"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="collection-constraint-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:constraint-name"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:uri"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="value-constraint-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:constraint-name"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:text"/>
+        <xs:element minOccurs="0" ref="search:weight"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="word-constraint-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:constraint-name"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:text"/>
+        <xs:element minOccurs="0" ref="search:weight"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="range-constraint-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:constraint-name"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" name="value" type="xs:string"/>
+        <xs:element minOccurs="0" ref="search:range-operator"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="range-operator">
+    <xs:simpleType>
+      <xs:restriction base="xs:token">
+        <xs:enumeration value="LT"/>
+        <xs:enumeration value="LE"/>
+        <xs:enumeration value="GT"/>
+        <xs:enumeration value="GE"/>
+        <xs:enumeration value="EQ"/>
+        <xs:enumeration value="NE"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:element>
+  <xs:element name="geospatial-constraint-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:constraint-name"/>
+        <xs:group minOccurs="0" maxOccurs="unbounded" ref="search:RegionType"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="point">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:latitude"/>
+        <xs:element ref="search:longitude"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="latitude" type="xs:float"/>
+  <xs:element name="longitude" type="xs:float"/>
+  <xs:element name="circle">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:radius"/>
+        <xs:element ref="search:point"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="radius" type="xs:float"/>
+  <xs:element name="box">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:south"/>
+        <xs:element ref="search:west"/>
+        <xs:element ref="search:north"/>
+        <xs:element ref="search:east"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="south" type="xs:float"/>
+  <xs:element name="west" type="xs:float"/>
+  <xs:element name="north" type="xs:float"/>
+  <xs:element name="east" type="xs:float"/>
+  <xs:element name="polygon">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:point"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:group name="RegionType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="search:point"/>
+        <xs:element ref="search:circle"/>
+        <xs:element ref="search:box"/>
+        <xs:element ref="search:polygon"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:group>
+  <xs:element name="custom-constraint-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:constraint-name"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:text"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
 </xs:schema>
