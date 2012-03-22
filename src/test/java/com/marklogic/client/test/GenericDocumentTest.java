@@ -121,20 +121,16 @@ public class GenericDocumentTest {
 		assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",stringMetadata);
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='3'])",stringMetadata);
 
-		// http://bugtrack.marklogic.com/16564
-		boolean exhibitMultipartDecodeDefect = false;
-		if (exhibitMultipartDecodeDefect) {
-			String uri2 = "/test/testMetadataXML2.xml";
-			docId.setUri(uri2);
-			docMgr.write(docId, new StringHandle().on(metadata), new StringHandle().on(content));
-			docText = docMgr.read(docId, xmlStringHandle, new StringHandle()).get();
-			stringMetadata = xmlStringHandle.get();
-			assertXMLEqual("Failed to write document content in single request",content,docText);
-			assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",stringMetadata);
-			assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='app-user'])",stringMetadata);
-			assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",stringMetadata);
-			assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='3'])",stringMetadata);
-		}
+		String uri2 = "/test/testMetadataXML2.xml";
+		docId.setUri(uri2);
+		docMgr.write(docId, new StringHandle().on(metadata), new StringHandle().on(content));
+		docText = docMgr.read(docId, xmlStringHandle, new StringHandle()).get();
+		stringMetadata = xmlStringHandle.get();
+		assertXMLEqual("Failed to write document content in single request",content,docText);
+		assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",stringMetadata);
+		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='app-user'])",stringMetadata);
+		assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",stringMetadata);
+		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='3'])",stringMetadata);
 
 		docMgr.writeDefaultMetadata(docId);
 		stringMetadata = docMgr.readMetadata(docId, xmlStringHandle).get();
