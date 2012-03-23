@@ -69,9 +69,8 @@ public class StructuredSearchTest {
 
         MatchDocumentSummary summary = queryMgr.findOne(t);
         if (summary != null) {
-            DocumentIdentifier docId = summary.docId();
             GenericDocumentManager docMgr = Common.client.newDocumentManager();
-            assertTrue("Document exists", docMgr.exists(docId));
+            assertTrue("Document exists", docMgr.exists(summary));
         }
     }
 }

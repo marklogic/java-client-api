@@ -9,12 +9,11 @@ import com.marklogic.client.DocumentIdentifier;
  * Time: 10:44 AM
  * To change this template use File | Settings | File Templates.
  */
-public interface MatchDocumentSummary {
+public interface MatchDocumentSummary extends DocumentIdentifier {
     public String getUri();
     public int    getScore();
     public double getConfidence();
     public double getFitness();
     public String getPath();
-    public DocumentIdentifier docId();
     public MatchLocation[] getMatchLocations();
 }

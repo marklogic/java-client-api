@@ -14,9 +14,7 @@ import com.marklogic.client.config.search.jaxb.Metrics;
 import com.marklogic.client.config.search.jaxb.Response;
 import com.marklogic.client.config.search.jaxb.Result;
 import com.marklogic.client.config.search.jaxb.Snippet;
-import com.marklogic.client.impl.DocumentIdentifierImpl;
 import com.marklogic.client.io.marker.SearchReadHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -188,6 +186,8 @@ public class SearchHandle implements SearchReadHandle<InputStream>, SearchResult
         private String path = null;
         private Result result = null;
         private MatchLocation[] locations = null;
+        private String mimetype = null;
+        private int byteLength = 0;
 
         public MatchDocumentSummaryImpl(String uri, int score, double confidence, double fitness, String path, Result result) {
             this.uri = uri;
@@ -247,15 +247,45 @@ public class SearchHandle implements SearchReadHandle<InputStream>, SearchResult
 
             return locations;
         }
-        
-        public DocumentIdentifier docId() {
-            return new MatchDocumentSummaryId(uri);
+
+        @Override
+        public void setUri(String uri) {
+            throw new UnsupportedOperationException("Cannot set URI on MatchDocumentSummar");
         }
-        
-        private class MatchDocumentSummaryId extends DocumentIdentifierImpl implements DocumentIdentifier {
-            public MatchDocumentSummaryId(String uri) {
-                super(uri);
+
+        @Override
+        public DocumentIdentifier withUri(String uri) {
+            if (uri != null && uri.equals(this.uri)) {
+                return this;
+            } else {
+                throw new UnsupportedOperationException("Cannot set URI on MatchDocumentSummar");
             }
+        }
+
+        @Override
+        public String getMimetype() {
+            return mimetype;
+        }
+
+        @Override
+        public void setMimetype(String mimetype) {
+            this.mimetype = mimetype;
+        }
+
+        @Override
+        public DocumentIdentifier withMimetype(String mimetype) {
+            setMimetype(mimetype);
+            return this;
+        }
+
+        @Override
+        public int getByteLength() {
+            return byteLength;
+        }
+
+        @Override
+        public void setByteLength(int length) {
+            byteLength = length;
         }
     }
 
