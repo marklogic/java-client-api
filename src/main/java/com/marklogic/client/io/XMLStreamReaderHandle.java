@@ -48,6 +48,10 @@ public class XMLStreamReaderHandle
 		if (format != Format.XML)
 			new RuntimeException("XMLStreamReaderHandle supports the XML format only");
 	}
+	public XMLStreamReaderHandle withFormat(Format format) {
+		setFormat(format);
+		return this;
+	}
 
 	public XMLInputFactory getFactory() {
 		if (factory == null)

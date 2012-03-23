@@ -274,6 +274,10 @@ public class DocumentMetadataHandle
 		if (format != Format.XML)
 			new RuntimeException("MetadataHandle supports the XML format only");
 	}
+	public DocumentMetadataHandle withFormat(Format format) {
+		setFormat(format);
+		return this;
+	}
 
 	public Class<InputStream> receiveAs() {
 		return InputStream.class;

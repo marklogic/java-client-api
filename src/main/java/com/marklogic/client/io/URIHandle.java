@@ -68,6 +68,10 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 	public void setFormat(Format format) {
 		this.format = format;
 	}
+	public URIHandle withFormat(Format format) {
+		setFormat(format);
+		return this;
+	}
 
 	public Class<InputStream> receiveAs() {
 		return InputStream.class;

@@ -48,6 +48,10 @@ public class XMLEventReaderHandle
 		if (format != Format.XML)
 			new RuntimeException("XMLEventReaderHandle supports the XML format only");
 	}
+	public XMLEventReaderHandle withFormat(Format format) {
+		setFormat(format);
+		return this;
+	}
 
 	public XMLInputFactory getFactory() {
 		if (factory == null)

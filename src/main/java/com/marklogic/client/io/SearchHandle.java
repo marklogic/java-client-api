@@ -56,8 +56,12 @@ public class SearchHandle implements SearchReadHandle<InputStream>, SearchResult
         if (format != Format.XML)
             new RuntimeException("SearchHandle supports the XML format only");
     }
+	public SearchHandle withFormat(Format format) {
+		setFormat(format);
+		return this;
+	}
 
-    @Override
+	@Override
     public Class<InputStream> receiveAs() {
         return InputStream.class;
     }

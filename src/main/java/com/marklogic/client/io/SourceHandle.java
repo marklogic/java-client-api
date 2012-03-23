@@ -85,6 +85,10 @@ public class SourceHandle
 		if (format != Format.XML)
 			new RuntimeException("SourceHandle supports the XML format only");
 	}
+	public SourceHandle withFormat(Format format) {
+		setFormat(format);
+		return this;
+	}
 
 	public Class<InputStream> receiveAs() {
 		return InputStream.class;

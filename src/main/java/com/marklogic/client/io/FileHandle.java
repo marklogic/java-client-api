@@ -56,6 +56,10 @@ public class FileHandle
 	public void setFormat(Format format) {
 		this.format = format;
 	}
+	public FileHandle withFormat(Format format) {
+		setFormat(format);
+		return this;
+	}
 
 	public Class<File> receiveAs() {
 		return File.class;

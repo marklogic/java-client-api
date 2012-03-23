@@ -34,6 +34,10 @@ public class JAXBHandle implements XMLReadHandle<Object>, XMLWriteHandle<Object>
 		if (format != Format.XML)
 			new RuntimeException("JAXBHandle supports the XML format only");
 	}
+	public JAXBHandle withFormat(Format format) {
+		setFormat(format);
+		return this;
+	}
 
     public Class<Object> receiveAs() {
 		return Object.class;

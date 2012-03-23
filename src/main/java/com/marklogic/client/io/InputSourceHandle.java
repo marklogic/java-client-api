@@ -78,6 +78,10 @@ public class InputSourceHandle
 		if (format != Format.XML)
 			new RuntimeException("InputSourceHandle supports the XML format only");
 	}
+	public InputSourceHandle withFormat(Format format) {
+		setFormat(format);
+		return this;
+	}
 
 	public SAXParserFactory getFactory() throws SAXException, ParserConfigurationException {
 		if (factory == null)

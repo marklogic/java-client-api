@@ -54,6 +54,10 @@ public class BytesHandle
 	public void setFormat(Format format) {
 		this.format = format;
 	}
+	public BytesHandle withFormat(Format format) {
+		setFormat(format);
+		return this;
+	}
 
 	public Class<byte[]> receiveAs() {
 		return byte[].class;

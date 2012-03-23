@@ -56,6 +56,10 @@ public class InputStreamHandle
 	public void setFormat(Format format) {
 		this.format = format;
 	}
+	public InputStreamHandle withFormat(Format format) {
+		setFormat(format);
+		return this;
+	}
 
 	public Class<InputStream> receiveAs() {
 		return InputStream.class;

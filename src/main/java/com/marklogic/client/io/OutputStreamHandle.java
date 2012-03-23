@@ -54,6 +54,10 @@ public class OutputStreamHandle
 	public void setFormat(Format format) {
 		this.format = format;
 	}
+	public OutputStreamHandle withFormat(Format format) {
+		setFormat(format);
+		return this;
+	}
 
 	public OutputStreamSender get() {
 		return sender;

@@ -48,6 +48,10 @@ public class StringHandle
 	public void setFormat(Format format) {
 		this.format = format;
 	}
+	public StringHandle withFormat(Format format) {
+		setFormat(format);
+		return this;
+	}
 
 	public Class<String> receiveAs() {
 		return String.class;

@@ -45,6 +45,10 @@ public class ReaderHandle
 	public void setFormat(Format format) {
 		this.format = format;
 	}
+	public ReaderHandle withFormat(Format format) {
+		setFormat(format);
+		return this;
+	}
 
 	public Class<Reader> receiveAs() {
 		return Reader.class;

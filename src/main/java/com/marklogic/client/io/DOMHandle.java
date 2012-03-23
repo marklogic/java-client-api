@@ -71,6 +71,10 @@ public class DOMHandle
 		if (format != Format.XML)
 			new RuntimeException("DOMHandle supports the XML format only");
 	}
+	public DOMHandle withFormat(Format format) {
+		setFormat(format);
+		return this;
+	}
 
 	public DocumentBuilderFactory getFactory() throws ParserConfigurationException {
 		if (factory == null)
