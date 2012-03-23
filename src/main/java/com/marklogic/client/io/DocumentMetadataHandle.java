@@ -30,6 +30,7 @@ import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.impl.BasicXMLSerializer;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
@@ -128,17 +129,17 @@ public class DocumentMetadataHandle
 
 			if (name.contains(":")) {
 				if (context == null)
-					throw new RuntimeException("No namespace context for resolving key with prefix: "+name);
+					throw new IllegalStateException("No namespace context for resolving key with prefix: "+name);
 				String[] parts = name.split(":", 2);
 				String prefix = parts[0];
 				if (prefix == null)
-					throw new RuntimeException("Empty prefix in key: "+name);
+					throw new IllegalArgumentException("Empty prefix in key: "+name);
 				String localPart = parts[1];
 				if (localPart == null)
-					throw new RuntimeException("Empty local part in key: "+name);
+					throw new IllegalArgumentException("Empty local part in key: "+name);
 				String uri = context.getNamespaceURI(prefix);
 				if (uri == null || XMLConstants.NULL_NS_URI.equals(uri))
-					throw new RuntimeException("No namespace uri defined in context for prefix "+prefix+" of key: "+name);
+					throw new IllegalStateException("No namespace uri defined in context for prefix "+prefix+" of key: "+name);
 				return new QName(uri,localPart, prefix);
 			} else if (context != null) {
 				String uri = context.getNamespaceURI(XMLConstants.DEFAULT_NS_PREFIX);
@@ -163,7 +164,7 @@ public class DocumentMetadataHandle
 				return null;
 			if (value.getClass() == as)
 				return (T) value;
-			throw new RuntimeException("Cannot get value of "+value.getClass().getName()+" as "+as.getName());
+			throw new IllegalArgumentException("Cannot get value of "+value.getClass().getName()+" as "+as.getName());
 		}
 		public <T> T get(String name, Class<T> as) {
 			return get(makeQName(name), as);
@@ -212,7 +213,7 @@ public class DocumentMetadataHandle
 			if (value instanceof Number || value instanceof Boolean || value instanceof Byte || value instanceof byte[] ||
 					value instanceof Calendar || value instanceof NodeList || value instanceof String)
 				return super.put(name, value);
-			throw new RuntimeException("Invalid value for metadata property "+value.getClass().getName());
+			throw new IllegalArgumentException("Invalid value for metadata property "+value.getClass().getName());
 		}
 
 		public Object put(String name, Object value) {
@@ -272,7 +273,7 @@ public class DocumentMetadataHandle
 	}
 	public void setFormat(Format format) {
 		if (format != Format.XML)
-			new RuntimeException("MetadataHandle supports the XML format only");
+			new IllegalArgumentException("MetadataHandle supports the XML format only");
 	}
 	public DocumentMetadataHandle withFormat(Format format) {
 		setFormat(format);
@@ -299,13 +300,13 @@ public class DocumentMetadataHandle
 			receiveMetadataImpl(document);
 		} catch (SAXException e) {
 			logger.error("Failed to parse metadata structure from input stream",e);
-			throw new RuntimeException(e);
+			throw new MarkLogicInternalException(e);
 		} catch (IOException e) {
 			logger.error("Failed to parse metadata structure from input stream",e);
-			throw new RuntimeException(e);
+			throw new MarkLogicInternalException(e);
 		} catch (ParserConfigurationException e) {
 			logger.error("Failed to parse metadata structure from input stream",e);
-			throw new RuntimeException(e);
+			throw new MarkLogicInternalException(e);
 		}
 	}
 	public OutputStreamSender sendContent() {
@@ -485,7 +486,7 @@ public class DocumentMetadataHandle
 
 			serializer.writeClose(out, "rapi:metadata");
 		} catch (IOException e) {
-			throw new RuntimeException("Failed to serialize metadata", e);
+			throw new MarkLogicInternalException("Failed to serialize metadata", e);
 		}
 	}
 	private void sendCollectionsImpl(BasicXMLSerializer serializer, OutputStream out) throws IOException {

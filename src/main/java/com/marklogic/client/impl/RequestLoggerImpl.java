@@ -22,7 +22,7 @@ public class RequestLoggerImpl implements RequestLogger {
 	}
 	public void setEnabled(boolean enabled) {
 		if (out == null && enabled == true)
-			throw new RuntimeException("Cannot enable closed request logger");
+			throw new IllegalStateException("Cannot enable closed request logger");
 		this.enabled = enabled;
 	}
 

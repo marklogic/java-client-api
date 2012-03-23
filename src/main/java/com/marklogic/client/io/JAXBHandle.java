@@ -32,7 +32,7 @@ public class JAXBHandle implements XMLReadHandle<Object>, XMLWriteHandle<Object>
 	}
 	public void setFormat(Format format) {
 		if (format != Format.XML)
-			new RuntimeException("JAXBHandle supports the XML format only");
+			new IllegalArgumentException("JAXBHandle supports the XML format only");
 	}
 	public JAXBHandle withFormat(Format format) {
 		setFormat(format);
@@ -47,7 +47,7 @@ public class JAXBHandle implements XMLReadHandle<Object>, XMLWriteHandle<Object>
 	}
 	public Object sendContent() {
 		if (content == null) {
-			throw new RuntimeException("No object to write");
+			throw new IllegalStateException("No object to write");
 		}
 
 		return content;

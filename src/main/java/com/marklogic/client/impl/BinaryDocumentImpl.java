@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import com.marklogic.client.BinaryDocumentManager;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
@@ -65,7 +66,7 @@ class BinaryDocumentImpl
 		else if (metadataExtraction == MetadataExtraction.DOCUMENT)
 			params.put("extract", "document");
 		else
-			throw new RuntimeException("Internal error - unknown metadata extraction policy: "+metadataExtraction.name());
+			throw new MarkLogicInternalException("Internal error - unknown metadata extraction policy: "+metadataExtraction.name());
 
 		return params;
 	}

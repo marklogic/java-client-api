@@ -73,7 +73,7 @@ public class OutputStreamHandle
 	@Override
 	public OutputStreamSender sendContent() {
 		if (sender == null) {
-			throw new RuntimeException("No sender for writing to output stream");
+			throw new IllegalStateException("No sender for writing to output stream");
 		}
 
 		return sender;

@@ -18,6 +18,7 @@ import org.w3c.dom.ls.LSOutput;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.io.marker.OutputStreamSender;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
@@ -69,7 +70,7 @@ public class DOMHandle
 	}
 	public void setFormat(Format format) {
 		if (format != Format.XML)
-			new RuntimeException("DOMHandle supports the XML format only");
+			new IllegalArgumentException("DOMHandle supports the XML format only");
 	}
 	public DOMHandle withFormat(Format format) {
 		setFormat(format);
@@ -107,7 +108,7 @@ public class DOMHandle
 
 			DocumentBuilderFactory factory = getFactory();
 			if (factory == null) {
-				throw new RuntimeException("Failed to make DOM document builder factory");
+				throw new MarkLogicInternalException("Failed to make DOM document builder factory");
 			}
 
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -118,13 +119,13 @@ public class DOMHandle
 			content.close();
 		} catch (SAXException e) {
 			logger.error("Failed to parse DOM document from input stream",e);
-			throw new RuntimeException(e);
+			throw new MarkLogicInternalException(e);
 		} catch (IOException e) {
 			logger.error("Failed to parse DOM document from input stream",e);
-			throw new RuntimeException(e);
+			throw new MarkLogicInternalException(e);
 		} catch (ParserConfigurationException e) {
 			logger.error("Failed to parse DOM document from input stream",e);
-			throw new RuntimeException(e);
+			throw new MarkLogicInternalException(e);
 		}
 	}
 	public OutputStreamSender sendContent() {
@@ -135,12 +136,12 @@ public class DOMHandle
 			logger.info("Serializing DOM document to output stream");
 
 			if (content == null) {
-				throw new RuntimeException("No document to write");
+				throw new IllegalStateException("No document to write");
 			}
 
 			DocumentBuilderFactory factory = getFactory();
 			if (factory == null) {
-				throw new RuntimeException("Failed to make DOM document builder factory");
+				throw new MarkLogicInternalException("Failed to make DOM document builder factory");
 			}
 
 			DOMImplementationLS domImpl = (DOMImplementationLS) factory.newDocumentBuilder().getDOMImplementation();
@@ -148,14 +149,14 @@ public class DOMHandle
 			domOutput.setByteStream(out);
 			domImpl.createLSSerializer().write(content, domOutput);
 		} catch (DOMException e) {
-			logger.error("Failed to serialize DOM document as String",e);
-			throw new RuntimeException(e);
+			logger.error("Failed to serialize DOM document to output stream",e);
+			throw new MarkLogicInternalException(e);
 		} catch (LSException e) {
-			logger.error("Failed to serialize DOM document as String",e);
-			throw new RuntimeException(e);
+			logger.error("Failed to serialize DOM document to output stream",e);
+			throw new MarkLogicInternalException(e);
 		} catch (ParserConfigurationException e) {
-			logger.error("Failed to serialize DOM document as String",e);
-			throw new RuntimeException(e);
+			logger.error("Failed to serialize DOM document to output stream",e);
+			throw new MarkLogicInternalException(e);
 		}
 	}
 }

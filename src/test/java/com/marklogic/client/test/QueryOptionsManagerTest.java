@@ -11,8 +11,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.config.search.MarkLogicIOException;
 import com.marklogic.client.config.search.SearchOptions;
 import com.marklogic.client.config.search.impl.SearchOptionsImpl;
 

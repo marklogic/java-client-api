@@ -10,7 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.AbstractDocumentManager;
+import com.marklogic.client.BadRequestException;
 import com.marklogic.client.DocumentIdentifier;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.Format;
 import com.marklogic.client.RequestLogger;
 import com.marklogic.client.Transaction;
@@ -72,10 +76,10 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
     		processedMetadata.add(category);
     }
 
-	public boolean exists(DocumentIdentifier docId) {
+	public boolean exists(DocumentIdentifier docId) throws ForbiddenUserException, FailedRequestException {
 		return exists(docId, null);
     }
-	public boolean exists(DocumentIdentifier docId, Transaction transaction) {
+	public boolean exists(DocumentIdentifier docId, Transaction transaction) throws ForbiddenUserException, FailedRequestException {
 		String uri = docId.getUri();
 		logger.info("Checking existence of {}",uri);
 
@@ -105,19 +109,19 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		return true;
 	}
 
-	public <T extends R> T read(DocumentIdentifier docId, T contentHandle) {
+	public <T extends R> T read(DocumentIdentifier docId, T contentHandle) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
 		return read(docId, null, contentHandle, null);
 	}
-	public <T extends R> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle) {
+	public <T extends R> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
 		return read(docId, metadataHandle, contentHandle, null);
 	}
-	public <T extends R> T read(DocumentIdentifier docId, T contentHandle, Transaction transaction) {
+	public <T extends R> T read(DocumentIdentifier docId, T contentHandle, Transaction transaction) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
 		return read(docId, null, contentHandle, transaction);
 	}
-	public <T extends R> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction) {
+	public <T extends R> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
 		return read(docId, metadataHandle, contentHandle, transaction, getReadParams());
 	}
-	public <T extends R> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction, Map<String,String> extraParams) {
+	public <T extends R> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction, Map<String,String> extraParams) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
 		String uri = docId.getUri();
 		logger.info("Reading metadata and content for {}",uri);
 
@@ -186,19 +190,19 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		return contentHandle;
 	}
 
-	public void write(DocumentIdentifier docId, W contentHandle) {
+	public void write(DocumentIdentifier docId, W contentHandle) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
 		write(docId, null, contentHandle, null);
 	}
-	public void write(DocumentIdentifier docId, DocumentMetadataWriteHandle metadata, W contentHandle) {
+	public void write(DocumentIdentifier docId, DocumentMetadataWriteHandle metadata, W contentHandle) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
 		write(docId, metadata, contentHandle, null);
 	}
-	public void write(DocumentIdentifier docId, W contentHandle, Transaction transaction) {
+	public void write(DocumentIdentifier docId, W contentHandle, Transaction transaction) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
 		write(docId, null, contentHandle, transaction);
 	}
-	public void write(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction) {
+	public void write(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
 		write(docId, metadataHandle, contentHandle, transaction, getWriteParams());
 	}
-	public void write(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction, Map<String,String> extraParams) {
+	public void write(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction, Map<String,String> extraParams) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
 		String uri = docId.getUri();
 		logger.info("Writing content for {}",uri);
 
@@ -257,36 +261,36 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		}
 	}
 
-	public void delete(DocumentIdentifier docId) {
+	public void delete(DocumentIdentifier docId) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		delete(docId, null);
 	}
-	public void delete(DocumentIdentifier docId, Transaction transaction) {
+	public void delete(DocumentIdentifier docId, Transaction transaction) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		String uri = docId.getUri();
 		logger.info("Deleting {}",uri);
 
 		services.deleteDocument(uri, (transaction == null) ? null : transaction.getTransactionId(), null);
 	}
 
-    public <T extends DocumentMetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle) {
+    public <T extends DocumentMetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		return readMetadata(docId, metadataHandle, null);
     }
-    public <T extends DocumentMetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle, Transaction transaction) {
+    public <T extends DocumentMetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle, Transaction transaction) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		read(docId, metadataHandle, null, transaction);
 
 		return metadataHandle;
     }
 
-    public void writeMetadata(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle) {
+    public void writeMetadata(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		writeMetadata(docId, metadataHandle, null);
     }
-    public void writeMetadata(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle, Transaction transaction) {
+    public void writeMetadata(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle, Transaction transaction) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		write(docId, metadataHandle, null, transaction);
     }
 
-    public void writeDefaultMetadata(DocumentIdentifier docId) {
+    public void writeDefaultMetadata(DocumentIdentifier docId) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		writeDefaultMetadata(docId, null);
     }
-    public void writeDefaultMetadata(DocumentIdentifier docId, Transaction transaction) {
+    public void writeDefaultMetadata(DocumentIdentifier docId, Transaction transaction) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		String uri = docId.getUri();
 		logger.info("Resetting metadata for {}",uri);
 

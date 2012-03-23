@@ -69,7 +69,7 @@ public class InputStreamHandle
 	}
 	public InputStream sendContent() {
 		if (content == null) {
-			throw new RuntimeException("No stream to write");
+			throw new IllegalStateException("No stream to write");
 		}
 
 		return content;

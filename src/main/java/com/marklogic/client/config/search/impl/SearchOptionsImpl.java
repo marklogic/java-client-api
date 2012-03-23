@@ -16,7 +16,7 @@ import javax.xml.namespace.QName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.config.search.MarkLogicIOException;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.config.search.MarkLogicUnhandledElementException;
 import com.marklogic.client.config.search.SearchOption;
 import com.marklogic.client.config.search.SearchOptions;

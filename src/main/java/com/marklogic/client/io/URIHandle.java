@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
 import com.marklogic.client.io.marker.GenericReadHandle;
@@ -94,10 +95,10 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 			out.close();
 		} catch (MalformedURLException e) {
 			logger.error("Failed to update URI with content read from database",e);
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		} catch (IOException e) {
 			logger.error("Failed to update URI with content read from database",e);
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		}
 	}
 	public InputStream sendContent() {
@@ -105,21 +106,21 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 			logger.info("Retrieving content from URI to write to database");
 
 			if (uri == null) {
-				throw new RuntimeException("No uri to write");
+				throw new IllegalStateException("No uri to write");
 			}
 
 			InputStream stream = get().toURL().openStream();
 			if (stream == null) {
-				throw new RuntimeException("No stream to write");
+				throw new MarkLogicIOException("No stream to write");
 			}
 
 			return stream;
 		} catch (MalformedURLException e) {
 			logger.error("Failed to retrieving content from URI to write to database",e);
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		} catch (IOException e) {
 			logger.error("Failed to retrieving content from URI to write to database",e);
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		}
 	}
 }

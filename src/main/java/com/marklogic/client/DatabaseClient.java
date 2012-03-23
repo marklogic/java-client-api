@@ -8,7 +8,7 @@ import java.io.OutputStream;
  * that access the database using the connection.
  */
 public interface DatabaseClient {
-    public Transaction openTransaction();
+    public Transaction openTransaction() throws ForbiddenUserException, FailedRequestException;
 
 	public DocumentIdentifier newDocumentIdentifier(String uri);
 

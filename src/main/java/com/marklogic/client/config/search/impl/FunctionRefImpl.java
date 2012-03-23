@@ -8,8 +8,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.config.search.FunctionRef;
-import com.marklogic.client.config.search.MarkLogicIOException;
 
 
 

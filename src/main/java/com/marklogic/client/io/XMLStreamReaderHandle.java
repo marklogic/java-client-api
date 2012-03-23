@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
 
@@ -46,7 +47,7 @@ public class XMLStreamReaderHandle
 	}
 	public void setFormat(Format format) {
 		if (format != Format.XML)
-			new RuntimeException("XMLStreamReaderHandle supports the XML format only");
+			new IllegalArgumentException("XMLStreamReaderHandle supports the XML format only");
 	}
 	public XMLStreamReaderHandle withFormat(Format format) {
 		setFormat(format);
@@ -83,7 +84,7 @@ public class XMLStreamReaderHandle
 
 			XMLInputFactory factory = getFactory();
 			if (factory == null) {
-				throw new RuntimeException("Failed to make StAX input factory");
+				throw new MarkLogicInternalException("Failed to make StAX input factory");
 			}
 
 			if (resolver != null)
@@ -92,10 +93,10 @@ public class XMLStreamReaderHandle
 			this.content = factory.createXMLStreamReader(content);
 		} catch (XMLStreamException e) {
 			logger.error("Failed to parse StAX stream from input stream",e);
-			throw new RuntimeException(e);
+			throw new MarkLogicInternalException(e);
 		} catch (FactoryConfigurationError e) {
 			logger.error("Failed to parse StAX stream from input stream",e);
-			throw new RuntimeException(e);
+			throw new MarkLogicInternalException(e);
 		}
 	}
 }

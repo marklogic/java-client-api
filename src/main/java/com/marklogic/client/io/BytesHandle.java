@@ -67,7 +67,7 @@ public class BytesHandle
 	}
 	public byte[] sendContent() {
 		if (content == null || content.length == 0) {
-			throw new RuntimeException("No bytes to write");
+			throw new IllegalStateException("No bytes to write");
 		}
 
 		return content;

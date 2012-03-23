@@ -18,7 +18,11 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.EditableNamespaceContext;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.NamespacesManager;
+import com.marklogic.client.ResourceNotFoundException;
 
 class NamespacesManagerImpl implements NamespacesManager {
 	static final private Logger logger = LoggerFactory.getLogger(NamespacesManagerImpl.class);
@@ -35,7 +39,7 @@ class NamespacesManagerImpl implements NamespacesManager {
 	}
 
 	@Override
-	public String readPrefix(String prefix) {
+	public String readPrefix(String prefix) throws ForbiddenUserException, FailedRequestException {
 		if (prefix == null)
 			throw new IllegalArgumentException("Cannot read namespace for null prefix");
 
@@ -52,7 +56,7 @@ class NamespacesManagerImpl implements NamespacesManager {
 		return matcher.toMatchResult().group(3);
 	}
 	@Override
-	public EditableNamespaceContext readAll() {
+	public EditableNamespaceContext readAll() throws ForbiddenUserException, FailedRequestException {
 		EditableNamespaceContext context = new EditableNamespaceContext();
 
 		try {
@@ -101,19 +105,19 @@ class NamespacesManagerImpl implements NamespacesManager {
 			}
 		} catch (SAXException e) {
 			logger.error("Failed to parse DOM document for namespace bindings",e);
-			throw new RuntimeException(e);
+			throw new MarkLogicInternalException(e);
 		} catch (IOException e) {
 			logger.error("Failed to parse DOM document for namespace bindings",e);
-			throw new RuntimeException(e);
+			throw new MarkLogicInternalException(e);
 		} catch (ParserConfigurationException e) {
 			logger.error("Failed to parse DOM document for namespace bindings",e);
-			throw new RuntimeException(e);
+			throw new MarkLogicInternalException(e);
 		}
 
 		return context;
 	}
 	@Override
-	public void addPrefix(String prefix, String namespaceUri) {
+	public void addPrefix(String prefix, String namespaceUri) throws ForbiddenUserException, FailedRequestException {
 		if (prefix == null)
 			throw new IllegalArgumentException("Cannot write binding for null prefix");
 		if (namespaceUri == null)
@@ -129,7 +133,7 @@ class NamespacesManagerImpl implements NamespacesManager {
 		services.postValue("config/namespaces", prefix, "application/xml", structure);
 	}
 	@Override
-	public void updatePrefix(String prefix, String namespaceUri) {
+	public void updatePrefix(String prefix, String namespaceUri) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (prefix == null)
 			throw new IllegalArgumentException("Cannot write binding for null prefix");
 		if (namespaceUri == null)
@@ -145,14 +149,14 @@ class NamespacesManagerImpl implements NamespacesManager {
 		services.putValue("config/namespaces", prefix, "application/xml", structure);
 	}
 	@Override
-	public void deletePrefix(String prefix) {
+	public void deletePrefix(String prefix) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (prefix == null)
 			throw new IllegalArgumentException("Cannot delete binding for null prefix");
 
 		services.deleteValue("config/namespaces", prefix);
 	}
 	@Override
-	public void deleteAll() {
+	public void deleteAll() throws ForbiddenUserException, FailedRequestException {
 		services.deleteValues("config/namespaces");
 	}
 }

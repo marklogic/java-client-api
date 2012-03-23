@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.io.DBResolver;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -36,7 +37,7 @@ class XMLDocumentImpl
 		else if (repair == DocumentRepair.NONE)
 			params.put("repair", "none");
 		else
-			throw new RuntimeException("Internal error - unknown repair policy: "+repair.name());
+			throw new MarkLogicInternalException("Internal error - unknown repair policy: "+repair.name());
 
 		return params;
 	}

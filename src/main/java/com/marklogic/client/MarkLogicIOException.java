@@ -1,4 +1,4 @@
-package com.marklogic.client.config.search;
+package com.marklogic.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +13,11 @@ public class MarkLogicIOException extends RuntimeException {
 	
 	Exception thrown;
 	
+	public MarkLogicIOException(Exception e) {
+		thrown = e;
+		logger.error(e.getMessage());
+		e.printStackTrace();
+	}
 	public MarkLogicIOException(String string, Exception e) {
 		thrown = e;
 		logger.error(string);

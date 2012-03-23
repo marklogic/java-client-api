@@ -2,7 +2,7 @@ package com.marklogic.client.io;
 
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.Format;
-import com.marklogic.client.config.search.MarkLogicIOException;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.config.search.MatchDocumentSummary;
 import com.marklogic.client.config.search.MatchLocation;
 import com.marklogic.client.config.search.MatchSnippet;
@@ -53,7 +53,7 @@ public class SearchHandle implements SearchReadHandle<InputStream>, SearchResult
     @Override
     public void setFormat(Format format) {
         if (format != Format.XML)
-            new RuntimeException("SearchHandle supports the XML format only");
+            new IllegalArgumentException("SearchHandle supports the XML format only");
     }
 
 	public SearchHandle withFormat(Format format) {

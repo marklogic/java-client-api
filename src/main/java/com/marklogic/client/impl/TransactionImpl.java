@@ -1,5 +1,7 @@
 package com.marklogic.client.impl;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.Transaction;
 
 class TransactionImpl implements Transaction {
@@ -18,11 +20,11 @@ class TransactionImpl implements Transaction {
 		this.transactionId = transactionId;
 	}
 
-	public void commit() {
+	public void commit() throws ForbiddenUserException, FailedRequestException {
 		services.commitTransaction(getTransactionId());
 	}
 
-	public void rollback() {
+	public void rollback() throws ForbiddenUserException, FailedRequestException {
 		services.rollbackTransaction(getTransactionId());
 	}
 

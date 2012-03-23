@@ -58,7 +58,7 @@ public class ReaderHandle
 	}
 	public Reader sendContent() {
 		if (content == null) {
-			throw new RuntimeException("No character stream to write");
+			throw new IllegalStateException("No character stream to write");
 		}
 
 		return content;

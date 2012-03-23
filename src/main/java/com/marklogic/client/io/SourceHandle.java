@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.OutputStreamSender;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
@@ -56,11 +57,11 @@ public class SourceHandle
 		set(content);
 		return this;
 	}
-	public void process(Result result) {
+	public void transform(Result result) {
 		logger.info("Transforming source into result");
 		try {
 			if (content == null) {
-				throw new RuntimeException("No source to transform");
+				throw new IllegalStateException("No source to transform");
 			}
 
 			Transformer transformer = null;
@@ -74,7 +75,7 @@ public class SourceHandle
 			transformer.transform(content, result);
 		} catch (TransformerException e) {
 			logger.error("Failed to transform source into result",e);
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		}
 	}
 
@@ -83,7 +84,7 @@ public class SourceHandle
 	}
 	public void setFormat(Format format) {
 		if (format != Format.XML)
-			new RuntimeException("SourceHandle supports the XML format only");
+			new IllegalArgumentException("SourceHandle supports the XML format only");
 	}
 	public SourceHandle withFormat(Format format) {
 		setFormat(format);
@@ -105,6 +106,6 @@ public class SourceHandle
 		return this;
 	}
 	public void write(OutputStream out) throws IOException {
-		process(new StreamResult(out));
+		transform(new StreamResult(out));
 	}
 }

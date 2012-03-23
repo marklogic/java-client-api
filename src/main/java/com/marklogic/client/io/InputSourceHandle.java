@@ -14,6 +14,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
 
@@ -49,7 +50,7 @@ public class InputSourceHandle
 
 			SAXParserFactory factory = getFactory();
 			if (factory == null) {
-				throw new RuntimeException("Failed to make SAX parser factory");
+				throw new MarkLogicInternalException("Failed to make SAX parser factory");
 			}
 
 			XMLReader reader = factory.newSAXParser().getXMLReader();
@@ -61,13 +62,13 @@ public class InputSourceHandle
 			reader.parse(content);
 		} catch (SAXException e) {
 			logger.error("Failed to process input source with SAX content handler",e);
-			throw new RuntimeException(e);
+			throw new MarkLogicInternalException(e);
 		} catch (ParserConfigurationException e) {
 			logger.error("Failed to process input source with SAX content handler",e);
-			throw new RuntimeException(e);
+			throw new MarkLogicInternalException(e);
 		} catch (IOException e) {
 			logger.error("Failed to process input source with SAX content handler",e);
-			throw new RuntimeException(e);
+			throw new MarkLogicInternalException(e);
 		}
 	}
 
@@ -76,7 +77,7 @@ public class InputSourceHandle
 	}
 	public void setFormat(Format format) {
 		if (format != Format.XML)
-			new RuntimeException("InputSourceHandle supports the XML format only");
+			new IllegalArgumentException("InputSourceHandle supports the XML format only");
 	}
 	public InputSourceHandle withFormat(Format format) {
 		setFormat(format);

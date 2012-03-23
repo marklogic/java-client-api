@@ -16,12 +16,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.AbstractDocumentManager.Metadata;
+import com.marklogic.client.BadRequestException;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ElementLocator;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.KeyLocator;
+import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.ValueLocator;
 import com.marklogic.client.config.search.KeyValueQueryDefinition;
-import com.marklogic.client.config.search.MarkLogicIOException;
 import com.marklogic.client.config.search.QueryDefinition;
 import com.marklogic.client.config.search.SearchOptions;
 import com.marklogic.client.config.search.StringQueryDefinition;
@@ -75,10 +80,11 @@ public class JerseyServices implements RESTServices {
 		else if (type == Authentication.DIGEST)
 			client.addFilter(new HTTPDigestAuthFilter(user, password));
 		else
-			throw new RuntimeException(
+			throw new MarkLogicInternalException(
 					"Internal error - unknown authentication type: "
 							+ type.name());
 		connection = client.resource("http://" + host + ":" + port + "/v1/");
+// TODO: verify connection
 	}
 
 	public void release() {
@@ -88,25 +94,29 @@ public class JerseyServices implements RESTServices {
 		client.destroy();
 	}
 
-	public void deleteDocument(String uri, String transactionId,
-			Set<Metadata> categories) {
+	public void deleteDocument(String uri, String transactionId, Set<Metadata> categories)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		logger.info("Deleting {} in transaction {}", uri, transactionId);
 
 		ClientResponse response = makeDocumentResource(
 				makeDocumentParams(uri, categories, transactionId, null)).delete(
 				ClientResponse.class);
-		// TODO: more fine-grained inspection of response status
+
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
-		if (status != ClientResponse.Status.NO_CONTENT) {
-			throw new RuntimeException("delete failed " + status);
-		}
+		if (status == ClientResponse.Status.NOT_FOUND)
+			throw new ResourceNotFoundException("Could not delete non-existent document");
+		if (status == ClientResponse.Status.FORBIDDEN)
+			throw new ForbiddenUserException("User is not allowed to delete documents");
+		if (status != ClientResponse.Status.NO_CONTENT)
+			throw new FailedRequestException("delete failed: "+status.getReasonPhrase());
 	}
 
 	// TODO: does an Input Stream or Reader handle need to cache the response so
 	// it can close the response?
 
-	public <T> T getDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Class<T> as) {
+	public <T> T getDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Class<T> as)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		logger.info("Getting {} in transaction {}", uri, transactionId);
 
 		WebResource.Builder resource = makeDocumentResource(
@@ -114,12 +124,21 @@ public class JerseyServices implements RESTServices {
 				).accept(mimetype);
 		if (extraParams != null && extraParams.containsKey("range"))
 			resource = resource.header("range", extraParams.get("range"));
+
 		ClientResponse response = resource.get(ClientResponse.class);
-		// TODO: more fine-grained inspection of response status
+
 		ClientResponse.Status status = response.getClientResponseStatus();
+		if (status == ClientResponse.Status.NOT_FOUND) {
+			response.close();
+			throw new ResourceNotFoundException("Could not read non-existent document");
+		}
+		if (status == ClientResponse.Status.FORBIDDEN) {
+			response.close();
+			throw new ForbiddenUserException("User is not allowed to read documents");
+		}
 		if (status != ClientResponse.Status.OK) {
 			response.close();
-			throw new RuntimeException("read failed " + status);
+			throw new FailedRequestException("read failed: "+status.getReasonPhrase());
 		}
 
 		T entity = response.getEntity(as);
@@ -129,15 +148,16 @@ public class JerseyServices implements RESTServices {
 		return entity;
 	}
 
-	public Object[] getDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Class[] as) {
+	public Object[] getDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Class[] as)
+	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		logger.info("Getting multipart for {} in transaction {}", uri, transactionId);
 
 		if (mimetypes == null || mimetypes.length == 0)
-			throw new RuntimeException("mime types not specified for read");
+			throw new BadRequestException("mime types not specified for read");
 		if (as == null || as.length == 0)
-			throw new RuntimeException("handle classes not specified for read");
+			throw new BadRequestException("handle classes not specified for read");
 		if (mimetypes.length != as.length)
-			throw new RuntimeException(
+			throw new BadRequestException(
 					"mistmatch between mime types and handle classes for read");
 
 		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
@@ -150,11 +170,19 @@ public class JerseyServices implements RESTServices {
 		ClientResponse response = makeDocumentResource(docParams).accept(
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE))
 				.get(ClientResponse.class);
-		// TODO: more fine-grained inspection of response status
+
 		ClientResponse.Status status = response.getClientResponseStatus();
+		if (status == ClientResponse.Status.NOT_FOUND) {
+			response.close();
+			throw new ResourceNotFoundException("Could not read non-existent document");
+		}
+		if (status == ClientResponse.Status.FORBIDDEN) {
+			response.close();
+			throw new ForbiddenUserException("User is not allowed to read documents");
+		}
 		if (status != ClientResponse.Status.OK) {
 			response.close();
-			throw new RuntimeException("read failed " + status);
+			throw new FailedRequestException("read failed: "+status.getReasonPhrase());
 		}
 
 		MultiPart entity = response.getEntity(MultiPart.class);
@@ -169,7 +197,7 @@ public class JerseyServices implements RESTServices {
 		if (partCount == 0)
 			return null;
 		if (partCount != as.length)
-			throw new RuntimeException("read expected " + as.length
+			throw new FailedRequestException("read expected " + as.length
 					+ " parts but got " + partCount + " parts");
 
 		Object[] parts = new Object[partCount];
@@ -182,25 +210,27 @@ public class JerseyServices implements RESTServices {
 		return parts;
 	}
 
-	public Map<String, List<String>> head(String uri, String transactionId) {
+	public Map<String, List<String>> head(String uri, String transactionId) throws ForbiddenUserException, FailedRequestException {
 		logger.info("Requesting head for {} in transaction {}", uri,
 				transactionId);
 
 		ClientResponse response = makeDocumentResource(
 				makeDocumentParams(uri, null, transactionId, null)).head();
-		// TODO: more fine-grained inspection of response status
+		Map<String, List<String>> headers = response.getHeaders();
+
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
-		if (status == ClientResponse.Status.NOT_FOUND) {
+		if (status == ClientResponse.Status.NOT_FOUND)
 			return null;
-		}
-		if (status != ClientResponse.Status.OK) {
-			throw new RuntimeException("head failed "
-					+ response.getClientResponseStatus());
-		}
-		return response.getHeaders();
+		if (status == ClientResponse.Status.FORBIDDEN)
+			throw new ForbiddenUserException("User is not allowed to check the existence of documents");
+		if (status != ClientResponse.Status.OK)
+			throw new FailedRequestException("Document existence check failed: "+status.getReasonPhrase());
+
+		return headers;
 	}
-	public void putDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Object value) {
+	public void putDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Object value)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		logger.info("Putting {} in transaction {}", uri, transactionId);
 
 		ClientResponse response = makeDocumentResource(
@@ -208,24 +238,27 @@ public class JerseyServices implements RESTServices {
 				).type(mimetype).put(ClientResponse.class,
 						(value instanceof OutputStreamSender) ?
 								new StreamingOutputImpl((OutputStreamSender) value) : value);
-		// TODO: more fine-grained inspection of response status
+
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
+		if (status == ClientResponse.Status.NOT_FOUND)
+			throw new ResourceNotFoundException("Could not write non-existent document");
+		if (status == ClientResponse.Status.FORBIDDEN)
+			throw new ForbiddenUserException("User is not allowed to write documents");
 		if (status != ClientResponse.Status.CREATED
-				&& status != ClientResponse.Status.NO_CONTENT) {
-			throw new RuntimeException("write failed " + status);
-		}
+				&& status != ClientResponse.Status.NO_CONTENT)
+			throw new FailedRequestException("write failed: "+status.getReasonPhrase());
 	}
-
-	public void putDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Object[] values) {
+	public void putDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Object[] values)
+	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		logger.info("Putting multipart for {} in transaction {}", uri, transactionId);
 
 		if (mimetypes == null || mimetypes.length == 0)
-			throw new RuntimeException("mime types not specified for write");
+			throw new BadRequestException("mime types not specified for write");
 		if (values == null || values.length == 0)
-			throw new RuntimeException("values not specified for write");
+			throw new BadRequestException("values not specified for write");
 		if (mimetypes.length != values.length)
-			throw new RuntimeException(
+			throw new BadRequestException(
 					"mistmatch between mime types and values for write");
 
 		MultiPart multiPart = new MultiPart();
@@ -247,16 +280,19 @@ public class JerseyServices implements RESTServices {
 		ClientResponse response = makeDocumentResource(docParams).type(
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE))
 				.put(ClientResponse.class, multiPart);
-		// TODO: more fine-grained inspection of response status
+
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
+		if (status == ClientResponse.Status.NOT_FOUND)
+			throw new ResourceNotFoundException("Could not write non-existent document");
+		if (status == ClientResponse.Status.FORBIDDEN)
+			throw new ForbiddenUserException("User is not allowed to write documents");
 		if (status != ClientResponse.Status.CREATED
-				&& status != ClientResponse.Status.NO_CONTENT) {
-			throw new RuntimeException("write failed " + status);
-		}
+				&& status != ClientResponse.Status.NO_CONTENT)
+			throw new FailedRequestException("write failed: "+status.getReasonPhrase());
 	}
 
-	public String openTransaction() {
+	public String openTransaction() throws ForbiddenUserException, FailedRequestException {
 		logger.info("Opening transaction");
 
 		MultivaluedMap<String, String> transParams = new MultivaluedMapImpl();
@@ -264,52 +300,60 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = connection.path("transactions")
 				.queryParams(transParams).post(ClientResponse.class);
+
 		ClientResponse.Status status = response.getClientResponseStatus();
+		if (status == ClientResponse.Status.FORBIDDEN) {
+			response.close();
+			throw new ForbiddenUserException("User is not allowed to open transactions");
+		}
 		if (status != ClientResponse.Status.SEE_OTHER) {
 			response.close();
-			throw new RuntimeException("transaction open failed " + status);
+			throw new FailedRequestException("transaction open failed: " + status.getReasonPhrase());
 		}
 
 		String location = response.getHeaders().getFirst("Location");
 		response.close();
 		if (location == null)
-			throw new RuntimeException(
+			throw new MarkLogicInternalException(
 					"transaction open failed to provide location");
 		if (!location.contains("/"))
-			throw new RuntimeException(
+			throw new MarkLogicInternalException(
 					"transaction open produced invalid location " + location);
 
 		return location.substring(location.lastIndexOf("/") + 1);
 	}
 
-	public void commitTransaction(String transactionId) {
+	public void commitTransaction(String transactionId) throws ForbiddenUserException, FailedRequestException {
 		logger.info("Committing transaction {}", transactionId);
 
 		if (transactionId == null)
-			throw new RuntimeException("Committing transaction without id");
+			throw new MarkLogicInternalException("Committing transaction without id");
 
 		ClientResponse response = connection.path(
 				"transactions/" + transactionId).put(ClientResponse.class);
+
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
-		if (status != ClientResponse.Status.NO_CONTENT) {
-			throw new RuntimeException("transaction commit failed " + status);
-		}
+		if (status == ClientResponse.Status.FORBIDDEN)
+			throw new ForbiddenUserException("User is not allowed to commit transactions");
+		if (status != ClientResponse.Status.NO_CONTENT)
+			throw new FailedRequestException("transaction commit failed: " + status.getReasonPhrase());
 	}
 
-	public void rollbackTransaction(String transactionId) {
+	public void rollbackTransaction(String transactionId) throws ForbiddenUserException, FailedRequestException {
 		logger.info("Rolling back transaction {}", transactionId);
 
 		if (transactionId == null)
-			throw new RuntimeException("Rolling back transaction without id");
+			throw new MarkLogicInternalException("Rolling back transaction without id");
 
 		ClientResponse response = connection.path(
 				"transactions/" + transactionId).delete(ClientResponse.class);
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
-		if (status != ClientResponse.Status.NO_CONTENT) {
-			throw new RuntimeException("transaction rollback failed " + status);
-		}
+		if (status == ClientResponse.Status.FORBIDDEN)
+			throw new ForbiddenUserException("User is not allowed to rollback transactions");
+		if (status != ClientResponse.Status.NO_CONTENT)
+			throw new FailedRequestException("transaction rollback failed: " + status.getReasonPhrase());
 	}
 
 	private MultivaluedMap<String, String> makeDocumentParams(String uri, Set<Metadata> categories, String transactionId, Map<String,String> extraParams) {
@@ -352,7 +396,8 @@ public class JerseyServices implements RESTServices {
 	}
 
     // FIXME: is this even close to reasonable?
-    public <T> T search(Class<T> as, QueryDefinition queryDef, String mimetype, long start, String transactionId) {
+    public <T> T search(Class<T> as, QueryDefinition queryDef, String mimetype, long start, String transactionId)
+    throws ForbiddenUserException, FailedRequestException {
         MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
         ClientResponse response = null;
         
@@ -391,11 +436,20 @@ public class JerseyServices implements RESTServices {
         }
         
         ClientResponse.Status status = response.getClientResponseStatus();
+		if (status == ClientResponse.Status.FORBIDDEN) {
+            response.close();
+			throw new ForbiddenUserException("User is not allowed to search");
+		}
         if (status != ClientResponse.Status.OK) {
             response.close();
-            throw new RuntimeException("search failed "+status);
+            throw new FailedRequestException("search failed: "+status.getReasonPhrase());
         }
-        return response.getEntity(as);
+
+		T entity = response.getEntity(as);
+		if (as != InputStream.class && as != Reader.class)
+			response.close();
+
+		return entity;
     }
 
 	// TODO rewrite to JSON, XML, or JAXB output.
@@ -446,18 +500,21 @@ public class JerseyServices implements RESTServices {
 	}
 
 	// namespaces, etc.
-	public <T> T getValue(String type, String key, String mimetype, Class<T> as) {
+	public <T> T getValue(String type, String key, String mimetype, Class<T> as)
+	throws ForbiddenUserException, FailedRequestException {
 		logger.info("Getting {}/{}", type, key);
 
 		ClientResponse response = connection.path(type+"/"+key).accept(mimetype).get(ClientResponse.class);
-		// TODO: more fine-grained inspection of response status
+
 		ClientResponse.Status status = response.getClientResponseStatus();
 		if (status != ClientResponse.Status.OK) {
 			response.close();
 			if (status == ClientResponse.Status.NOT_FOUND)
 				return null;
+			else if (status == ClientResponse.Status.FORBIDDEN)
+				throw new ForbiddenUserException("User is not allowed to read "+type);
 			else
-				throw new RuntimeException("read failed " + status);
+				throw new FailedRequestException(type+" read failed: " + status.getReasonPhrase());
 		}
 
 		T entity = response.getEntity(as);
@@ -466,15 +523,20 @@ public class JerseyServices implements RESTServices {
 
 		return entity;
 	}
-	public <T> T getValues(String type, String mimetype, Class<T> as) {
+	public <T> T getValues(String type, String mimetype, Class<T> as)
+	throws ForbiddenUserException, FailedRequestException {
 		logger.info("Getting {}", type);
 
 		ClientResponse response = connection.path(type).accept(mimetype).get(ClientResponse.class);
-		// TODO: more fine-grained inspection of response status
+
 		ClientResponse.Status status = response.getClientResponseStatus();
+		if (status == ClientResponse.Status.FORBIDDEN) {
+			response.close();
+			throw new ForbiddenUserException("User is not allowed to read "+type);
+		}
 		if (status != ClientResponse.Status.OK) {
 			response.close();
-			throw new RuntimeException("read failed " + status);
+			throw new FailedRequestException(type+" read failed: " + status.getReasonPhrase());
 		}
 
 		T entity = response.getEntity(as);
@@ -483,10 +545,12 @@ public class JerseyServices implements RESTServices {
 
 		return entity;
 	}
-	public void postValue(String type, String key, String mimetype, Object value) {
+	public void postValue(String type, String key, String mimetype, Object value)
+	throws ForbiddenUserException, FailedRequestException {
 		putPostValueImpl("post", type, key, mimetype, value);
 	}
-	public void putValue(String type, String key, String mimetype, Object value) {
+	public void putValue(String type, String key, String mimetype, Object value)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		putPostValueImpl("put", type, key, mimetype, value);
 	}
 	private void putPostValueImpl(String method, String type, String key, String mimetype, Object value) {
@@ -504,36 +568,42 @@ public class JerseyServices implements RESTServices {
 			response = connection.path(type).type(mimetype).post(ClientResponse.class, sentValue);
 			expectedStatus = ClientResponse.Status.CREATED;
 		} else {
-			throw new RuntimeException("unknown method type " + method);
+			throw new MarkLogicInternalException("unknown method type " + method);
 		}
 
-		// TODO: more fine-grained inspection of response status
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
-		if (status != expectedStatus) {
-			throw new RuntimeException("write failed " + status);
-		}
+		if (status == ClientResponse.Status.FORBIDDEN)
+			throw new ForbiddenUserException("User is not allowed to write "+type);
+		if (status == ClientResponse.Status.NOT_FOUND)
+			throw new ResourceNotFoundException(type+" not found for write");
+		if (status != expectedStatus)
+			throw new FailedRequestException(type+" write failed: " + status.getReasonPhrase());
 	}
-	public void deleteValue(String type, String key) {
+	public void deleteValue(String type, String key) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		logger.info("Deleting {}/{}", type, key);
 
 		ClientResponse response = connection.path(type+"/"+key).delete(ClientResponse.class);
-		// TODO: more fine-grained inspection of response status
+
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
-		if (status != ClientResponse.Status.NO_CONTENT) {
-			throw new RuntimeException("delete failed " + status);
-		}
+		if (status == ClientResponse.Status.FORBIDDEN)
+			throw new ForbiddenUserException("User is not allowed to delete "+type);
+		if (status == ClientResponse.Status.NOT_FOUND)
+			throw new ResourceNotFoundException(type+" not found for delete");
+		if (status != ClientResponse.Status.NO_CONTENT)
+			throw new FailedRequestException("delete failed: " + status.getReasonPhrase());
 	}
-	public void deleteValues(String type) {
+	public void deleteValues(String type) throws ForbiddenUserException, FailedRequestException {
 		logger.info("Deleting {}", type);
 
 		ClientResponse response = connection.path(type).delete(ClientResponse.class);
-		// TODO: more fine-grained inspection of response status
+
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
-		if (status != ClientResponse.Status.NO_CONTENT) {
-			throw new RuntimeException("delete failed " + status);
-		}
+		if (status == ClientResponse.Status.FORBIDDEN)
+			throw new ForbiddenUserException("User is not allowed to delete "+type);
+		if (status != ClientResponse.Status.NO_CONTENT)
+			throw new FailedRequestException("delete failed: " + status.getReasonPhrase());
 	}
 }

@@ -69,7 +69,7 @@ public class FileHandle
 	}
 	public File sendContent() {
 		if (content == null) {
-			throw new RuntimeException("No file to write");
+			throw new IllegalStateException("No file to write");
 		}
 
 		return content;

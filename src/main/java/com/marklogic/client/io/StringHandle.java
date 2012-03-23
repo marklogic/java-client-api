@@ -61,7 +61,7 @@ public class StringHandle
 	}
 	public String sendContent() {
 		if (content == null) {
-			throw new RuntimeException("No string to write");
+			throw new IllegalStateException("No string to write");
 		}
 
 		return content;
