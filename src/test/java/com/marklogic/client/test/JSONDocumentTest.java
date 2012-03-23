@@ -38,7 +38,8 @@ public class JSONDocumentTest {
 	@Test
 	public void testReadWrite() throws IOException {
 		String uri = "/test/testWrite1.json";
-		DocumentIdentifier docId = new DocumentIdentifier(uri);
+
+		DocumentIdentifier docId = Common.client.newDocumentIdentifier(uri);
 
 		String content = "{\n"+
 		"\"stringKey\":\"string value\",\n"+

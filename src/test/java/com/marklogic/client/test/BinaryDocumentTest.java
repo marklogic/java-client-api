@@ -41,7 +41,8 @@ public class BinaryDocumentTest {
 	@Test
 	public void testReadWrite() throws IOException, XpathException {
 		String uri = "/test/binary-sample.png";
-		DocumentIdentifier docId = new DocumentIdentifier(uri);
+
+		DocumentIdentifier docId = Common.client.newDocumentIdentifier(uri);
 		docId.setMimetype("image/png");
 
 		BinaryDocumentManager docMgr = Common.client.newBinaryDocumentManager();

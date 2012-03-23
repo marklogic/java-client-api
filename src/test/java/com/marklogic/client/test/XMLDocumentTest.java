@@ -61,7 +61,8 @@ public class XMLDocumentTest {
 	@Test
 	public void testReadWrite() throws ParserConfigurationException, SAXException, IOException, TransformerConfigurationException, TransformerFactoryConfigurationError, XMLStreamException {
 		String uri = "/test/testWrite1.xml";
-		DocumentIdentifier docId = new DocumentIdentifier(uri);
+
+		DocumentIdentifier docId = Common.client.newDocumentIdentifier(uri);
 
 		Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		Element root = domDocument.createElement("root");
@@ -85,7 +86,8 @@ public class XMLDocumentTest {
 		assertXMLEqual("Failed to read XML document as DOM",domDocument,readDoc);
 
 		String uri2 = "/test/testWrite2.xml";
-		DocumentIdentifier docId2 = new DocumentIdentifier(uri2);
+
+		DocumentIdentifier docId2 = Common.client.newDocumentIdentifier(uri2);
 
 		Transformer transformer = TransformerFactory.newInstance().newTransformer();
 		SourceHandle sourceHandle = new SourceHandle();
@@ -170,7 +172,8 @@ public class XMLDocumentTest {
 		String service =
 "http://graphical.weather.gov/xml/sample_products/browser_interface/ndfdBrowserClientByDay.php?whichClient=NDFDgenByDayMultiZipCode&zipCodeList=94070&format=12+hourly&numDays=1";
 		String uri2 = "/test/testWrite2.xml";
-		DocumentIdentifier docId = new DocumentIdentifier(uri2);
+
+		DocumentIdentifier docId = Common.client.newDocumentIdentifier(uri2);
 
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		docMgr.write(docId, new URIHandle(new URI(service)));

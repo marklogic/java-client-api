@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.BinaryDocumentManager;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.GenericDocumentManager;
 import com.marklogic.client.JSONDocumentManager;
 import com.marklogic.client.NamespacesManager;
@@ -16,7 +17,6 @@ import com.marklogic.client.RequestLogger;
 import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.XMLDocumentManager;
-import com.marklogic.client.config.search.impl.SearchOptionsImpl;
 
 public class DatabaseClientImpl implements DatabaseClient {
 	static final private Logger logger = LoggerFactory.getLogger(DatabaseClientImpl.class);
@@ -31,22 +31,22 @@ public class DatabaseClientImpl implements DatabaseClient {
 		return new TransactionImpl(services, services.openTransaction());
 	}
 
+	public DocumentIdentifier newDocumentIdentifier(String uri) {
+		return new DocumentIdentifierImpl(uri);
+	}
+
 	public GenericDocumentManager newDocumentManager() {
 		return new GenericDocumentImpl(services);
 	}
-
 	public BinaryDocumentManager newBinaryDocumentManager() {
 		return new BinaryDocumentImpl(services);
 	}
-
 	public JSONDocumentManager newJSONDocumentManager() {
 		return new JSONDocumentImpl(services);
 	}
-
 	public TextDocumentManager newTextDocumentManager() {
 		return new TextDocumentImpl(services);
 	}
-
 	public XMLDocumentManager newXMLDocumentManager() {
 		return new XMLDocumentImpl(services);
 	}

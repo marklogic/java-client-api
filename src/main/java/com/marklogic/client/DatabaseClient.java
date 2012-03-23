@@ -10,7 +10,9 @@ import java.io.OutputStream;
 public interface DatabaseClient {
     public Transaction openTransaction();
 
-    // factory methods for documents
+	public DocumentIdentifier newDocumentIdentifier(String uri);
+
+    // factory methods for document managers
     public GenericDocumentManager newDocumentManager();
     public BinaryDocumentManager  newBinaryDocumentManager();
     public JSONDocumentManager    newJSONDocumentManager();

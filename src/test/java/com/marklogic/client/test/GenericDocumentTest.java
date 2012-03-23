@@ -36,7 +36,9 @@ public class GenericDocumentTest {
 	@Test
 	public void testExists() {
 		String uri = "/test/testExists1.txt";
-		DocumentIdentifier docId = new DocumentIdentifier(uri);
+
+		DocumentIdentifier docId = Common.client.newDocumentIdentifier(uri);
+
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
 		assertTrue("Non-existent document appears to exist", !docMgr.exists(docId));
 		docMgr.write(docId,new StringHandle().with("A simple text document"));
@@ -47,7 +49,9 @@ public class GenericDocumentTest {
 	@Test
 	public void testDelete() {
 		String uri = "/test/testDelete1.txt";
-		DocumentIdentifier docId = new DocumentIdentifier(uri);
+
+		DocumentIdentifier docId = Common.client.newDocumentIdentifier(uri);
+
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
 		docMgr.write(docId, new StringHandle().with("A simple text document"));
 		String text = docMgr.read(docId, new StringHandle()).get();
@@ -93,7 +97,9 @@ public class GenericDocumentTest {
 	@Test
 	public void testReadWriteMetadata() throws SAXException, IOException, XpathException {
 		String uri = "/test/testMetadataXML1.xml";
-		DocumentIdentifier docId = new DocumentIdentifier(uri);
+
+		DocumentIdentifier docId = Common.client.newDocumentIdentifier(uri);
+
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		docMgr.write(docId, new StringHandle().with(content));
 
@@ -146,8 +152,8 @@ public class GenericDocumentTest {
 		String uri1 = "/test/testExists1.txt";
 		String uri2 = "/test/testExists2.txt";
 
-		DocumentIdentifier docId1 = new DocumentIdentifier(uri1);
-		DocumentIdentifier docId2 = new DocumentIdentifier(uri2);
+		DocumentIdentifier docId1 = Common.client.newDocumentIdentifier(uri1);
+		DocumentIdentifier docId2 = Common.client.newDocumentIdentifier(uri2);
 
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
 		docMgr.write(docId1,new StringHandle().with("A simple text document"));
@@ -169,8 +175,8 @@ public class GenericDocumentTest {
 		String uri1 = "/test/testExists1.txt";
 		String uri2 = "/test/testExists2.txt";
 
-		DocumentIdentifier docId1 = new DocumentIdentifier(uri1);
-		DocumentIdentifier docId2 = new DocumentIdentifier(uri2);
+		DocumentIdentifier docId1 = Common.client.newDocumentIdentifier(uri1);
+		DocumentIdentifier docId2 = Common.client.newDocumentIdentifier(uri2);
 
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
 		docMgr.write(docId1,new StringHandle().with("A simple text document"));

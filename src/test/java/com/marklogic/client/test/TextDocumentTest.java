@@ -32,7 +32,9 @@ public class TextDocumentTest {
 	public void testReadWrite() throws IOException {
 		String uri = "/test/testWrite1.txt";
 		String text = "A simple text document";
-		DocumentIdentifier docId = new DocumentIdentifier(uri);
+
+		DocumentIdentifier docId = Common.client.newDocumentIdentifier(uri);
+
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
 		docMgr.write(docId, new StringHandle().with(text));
 		assertEquals("Text document write difference",text,docMgr.read(docId, new StringHandle()).get());

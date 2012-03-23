@@ -14,6 +14,7 @@ import com.marklogic.client.config.search.jaxb.Metrics;
 import com.marklogic.client.config.search.jaxb.Response;
 import com.marklogic.client.config.search.jaxb.Result;
 import com.marklogic.client.config.search.jaxb.Snippet;
+import com.marklogic.client.impl.DocumentIdentifierImpl;
 import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import org.slf4j.Logger;
@@ -251,7 +252,7 @@ public class SearchHandle implements SearchReadHandle<InputStream>, SearchResult
             return new MatchDocumentSummaryId(uri);
         }
         
-        private class MatchDocumentSummaryId extends DocumentIdentifier {
+        private class MatchDocumentSummaryId extends DocumentIdentifierImpl implements DocumentIdentifier {
             public MatchDocumentSummaryId(String uri) {
                 super(uri);
             }
