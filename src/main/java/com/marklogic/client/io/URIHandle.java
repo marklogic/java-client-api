@@ -40,6 +40,9 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 
 	static final private int BUFFER_SIZE = 1024;
 
+	private URI    uri;
+	private Format format = Format.XML;
+
 	public URIHandle() {
 		super();
 	}
@@ -48,7 +51,6 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 		set(uri);
 	}
 
-	private URI uri;
 	public URI get() {
 		return uri;
 	}
@@ -60,7 +62,6 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 		return this;
 	}
 
-	private Format format = Format.XML;
 	public Format getFormat() {
 		return format;
 	}

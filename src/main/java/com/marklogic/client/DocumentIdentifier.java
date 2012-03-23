@@ -4,12 +4,15 @@ package com.marklogic.client;
  * A Document Identifier identifies a document for database read, write, and delete operations.
  */
 public class DocumentIdentifier {
+	private String uri;
+	private int    byteLength = 0;
+	private String mimetype;
+
 	public DocumentIdentifier(String uri) {
 		super();
 		this.uri = uri;
 	}
 
-	private String uri;
 	public String getUri() {
 		return uri;
 	}
@@ -21,7 +24,6 @@ public class DocumentIdentifier {
 		return this;
 	}
 
-	private int byteLength = 0;
 	public int getByteLength() {
     	return byteLength;
     }
@@ -29,7 +31,6 @@ public class DocumentIdentifier {
     	byteLength = length;
     }
 
-	private String mimetype;
 	public String getMimetype() {
 		return mimetype;
 	}

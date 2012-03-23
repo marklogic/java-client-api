@@ -20,6 +20,8 @@ class BinaryDocumentImpl
 {
 	static final private Logger logger = LoggerFactory.getLogger(BinaryDocumentImpl.class);
 
+	private MetadataExtraction metadataExtraction = MetadataExtraction.NONE;
+
 	BinaryDocumentImpl(RESTServices services) {
 		super(services, Format.BINARY);
 	}
@@ -46,7 +48,6 @@ class BinaryDocumentImpl
 		return read(docId, metadataHandle, contentHandle, transaction, extraParams);
 	}
 
-	private MetadataExtraction metadataExtraction = MetadataExtraction.NONE;
 	public MetadataExtraction getMetadataExtraction() {
 		return metadataExtraction;
 	}

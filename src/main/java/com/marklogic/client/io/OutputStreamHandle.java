@@ -37,6 +37,9 @@ public class OutputStreamHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(OutputStreamHandle.class);
 
+	private Format             format = Format.XML;
+	private OutputStreamSender sender;
+
 	public OutputStreamHandle() {
 		super();
 	}
@@ -45,7 +48,6 @@ public class OutputStreamHandle
 		set(sender);
 	}
 
-	private Format format = Format.XML;
 	public Format getFormat() {
 		return format;
 	}
@@ -53,7 +55,6 @@ public class OutputStreamHandle
 		this.format = format;
 	}
 
-	private OutputStreamSender sender;
 	public OutputStreamSender get() {
 		return sender;
 	}

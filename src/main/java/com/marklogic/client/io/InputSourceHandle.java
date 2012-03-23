@@ -26,10 +26,13 @@ public class InputSourceHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(InputSourceHandle.class);
 
+	private DBResolver       resolver;
+	private InputSource      content;
+	private SAXParserFactory factory;
+
 	public InputSourceHandle() {
 	}
 
-	private DBResolver resolver;
 	public DBResolver getResolver() {
 		return resolver;
 	}
@@ -37,7 +40,6 @@ public class InputSourceHandle
 		this.resolver = resolver;
 	}
 
-	private InputSource content;
 	public InputSource get() {
     	return content;
     }
@@ -77,7 +79,6 @@ public class InputSourceHandle
 			new RuntimeException("InputSourceHandle supports the XML format only");
 	}
 
-	private SAXParserFactory factory;
 	public SAXParserFactory getFactory() throws SAXException, ParserConfigurationException {
 		if (factory == null)
 			factory = makeSAXParserFactory();

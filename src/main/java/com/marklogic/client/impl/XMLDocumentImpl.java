@@ -13,11 +13,12 @@ class XMLDocumentImpl
     extends AbstractDocumentImpl<XMLReadHandle, XMLWriteHandle>
     implements XMLDocumentManager
 {
+	private DocumentRepair repair;
+
 	XMLDocumentImpl(RESTServices services) {
 		super(services, Format.XML);
 	}
 
-	private DocumentRepair repair;
 	public DocumentRepair getDocumentRepair() {
 		return repair;
 	}

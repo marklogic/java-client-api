@@ -10,11 +10,12 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
 
 public class JAXBHandle implements XMLReadHandle<Object>, XMLWriteHandle<Object> {
 	private JAXBContext context;
+	private Object      content;
+
 	public JAXBHandle(JAXBContext context) {
 		this.context = context;
 	}
 
-	private Object content;
 	public Object get() {
 		return content;
 	}

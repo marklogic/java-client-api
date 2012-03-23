@@ -25,13 +25,15 @@ class NamespacesManagerImpl implements NamespacesManager {
 
 	private RESTServices services;
 
+	private final static Pattern NAMESPACE_PATTERN = Pattern.compile(
+		"<([^: >]+:)?namespace-uri(\\s[^>]+)?>([^<>]+)</([^: >]+:)?namespace-uri>"
+		);
+
 	NamespacesManagerImpl(RESTServices services) {
 		super();
 		this.services = services;
 	}
 
-	private final static Pattern NAMESPACE_PATTERN = Pattern.compile(
-			"<([^: >]+:)?namespace-uri(\\s[^>]+)?>([^<>]+)</([^: >]+:)?namespace-uri>");
 	@Override
 	public String readPrefix(String prefix) {
 		if (prefix == null)

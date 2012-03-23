@@ -24,10 +24,11 @@ public class BasicXMLSerializer {
 
 	private int containerDepth = 0;
 	private int containedDepth = 0;
+	private int indentStep = 3;
+
 	public BasicXMLSerializer() {
 	}
 
-	private int indentStep = 3;
 	public int getIndentStep() {
 		return indentStep;
 	}

@@ -7,7 +7,8 @@ import com.marklogic.client.RequestLogger;
 
 public class RequestLoggerImpl implements RequestLogger {
 	private PrintStream out;
-	
+	private boolean     enabled = true;
+
 	public RequestLoggerImpl(OutputStream out) {
 		this.out = new PrintStream(out);
 	}
@@ -16,7 +17,6 @@ public class RequestLoggerImpl implements RequestLogger {
 		return out;
 	}
 
-	private boolean enabled = true;
 	public boolean isEnabled() {
 		return enabled;
 	}

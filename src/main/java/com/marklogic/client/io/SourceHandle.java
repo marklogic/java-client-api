@@ -33,10 +33,12 @@ public class SourceHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(SourceHandle.class);
 
+	private Transformer transformer;
+	private Source      content;
+
 	public SourceHandle() {
 	}
 
-	private Transformer transformer;
 	public Transformer getTransformer() {
 		return transformer;
 	}
@@ -44,7 +46,6 @@ public class SourceHandle
 		this.transformer = transformer;
 	}
 
-	private Source content;
 	public Source get() {
 		return content;
 	}

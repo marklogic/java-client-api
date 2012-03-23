@@ -34,6 +34,10 @@ public class DOMHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
 
+	private DBResolver             resolver;
+	private Document               content;
+	private DocumentBuilderFactory factory;
+
 	public DOMHandle() {
 		super();
 	}
@@ -42,7 +46,6 @@ public class DOMHandle
 		set(content);
 	}
 
-	private DBResolver resolver;
 	public DBResolver getResolver() {
 		return resolver;
 	}
@@ -50,7 +53,6 @@ public class DOMHandle
 		this.resolver = resolver;
 	}
 
-	private Document content;
 	public Document get() {
 		return content;
 	}
@@ -70,7 +72,6 @@ public class DOMHandle
 			new RuntimeException("DOMHandle supports the XML format only");
 	}
 
-	private DocumentBuilderFactory factory;
 	public DocumentBuilderFactory getFactory() throws ParserConfigurationException {
 		if (factory == null)
 			factory = makeDocumentBuilderFactory();

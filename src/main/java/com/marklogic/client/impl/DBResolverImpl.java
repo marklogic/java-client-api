@@ -18,6 +18,7 @@ class DBResolverImpl implements DBResolver {
 	static final private Logger logger = LoggerFactory.getLogger(DBResolverImpl.class);
 
 	private RESTServices services;
+	private String baseURI;
 
 	DBResolverImpl(RESTServices services) {
 		this.services = services;
@@ -43,7 +44,6 @@ class DBResolverImpl implements DBResolver {
 		return null;
 	}
 
-	private String baseURI;
 	public String getBaseURI() {
 		return baseURI;
 	}

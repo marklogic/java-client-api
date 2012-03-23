@@ -4,13 +4,13 @@ import com.marklogic.client.Transaction;
 
 class TransactionImpl implements Transaction {
 	private RESTServices services;
+	private String       transactionId;
 
 	TransactionImpl(RESTServices services, String transactionId) {
 		this.services = services;
 		this.transactionId = transactionId;
 	}
 
-	private String transactionId;
 	public String getTransactionId() {
 		return transactionId;
 	}

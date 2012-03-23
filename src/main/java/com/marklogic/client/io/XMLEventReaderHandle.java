@@ -23,10 +23,13 @@ public class XMLEventReaderHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(XMLEventReaderHandle.class);
 
+	private DBResolver      resolver;
+	private XMLEventReader  content;
+	private XMLInputFactory factory;
+
 	public XMLEventReaderHandle() {
 	}
 
-	private DBResolver resolver;
 	public DBResolver getResolver() {
 		return resolver;
 	}
@@ -34,7 +37,6 @@ public class XMLEventReaderHandle
 		this.resolver = resolver;
 	}
 
-	private XMLEventReader content;
 	public XMLEventReader get() {
 		return content;
 	}
@@ -47,7 +49,6 @@ public class XMLEventReaderHandle
 			new RuntimeException("XMLEventReaderHandle supports the XML format only");
 	}
 
-	private XMLInputFactory factory;
 	public XMLInputFactory getFactory() {
 		if (factory == null)
 			factory = makeXMLInputFactory();

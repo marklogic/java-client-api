@@ -22,10 +22,12 @@ public class ReaderHandle
 		XMLReadHandle<Reader>, XMLWriteHandle<Reader>,
 		StructureReadHandle<Reader>, StructureWriteHandle<Reader>
 {
+    private Reader content;
+	private Format format = Format.XML;
+
     public ReaderHandle() {
     }
-	
-    private Reader content;
+
     public Reader get() {
     	return content;
     }
@@ -37,7 +39,6 @@ public class ReaderHandle
 		return this;
 	}
 
-	private Format format = Format.XML;
 	public Format getFormat() {
 		return format;
 	}

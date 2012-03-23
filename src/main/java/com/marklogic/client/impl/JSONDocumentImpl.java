@@ -12,11 +12,12 @@ public class JSONDocumentImpl
     extends AbstractDocumentImpl<JSONReadHandle, JSONWriteHandle> 
     implements JSONDocumentManager
 {
+	private String language;
+
 	JSONDocumentImpl(RESTServices services) {
 		super(services,Format.JSON);
 	}
 
-	private String language;
 	public String getLanguage() {
 		return language;
 	}

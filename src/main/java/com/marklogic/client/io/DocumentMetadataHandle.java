@@ -41,7 +41,10 @@ public class DocumentMetadataHandle
     implements OutputStreamSender,
     	DocumentMetadataReadHandle<InputStream>, DocumentMetadataWriteHandle<OutputStreamSender>
 {
-	static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
+	final static private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
+
+	final static private String REST_API_NS     = "http://marklogic.com/rest-api";
+	final static private String PROPERTY_API_NS = "http://marklogic.com/xdmp/property";
 
 	public interface DocumentCollections extends Set<String> {
 		public void addAll(String... collections);
@@ -221,14 +224,15 @@ public class DocumentMetadataHandle
 		}
 	}
 
-	final static private String REST_API_NS     = "http://marklogic.com/rest-api";
-	final static private String PROPERTY_API_NS = "http://marklogic.com/xdmp/property";
+	private DocumentCollections collections;
+    private DocumentPermissions permissions;
+	private DocumentProperties  properties;
+	private int                 quality = 0;
 
 	public DocumentMetadataHandle() {
 		super();
 	}
 
-	private DocumentCollections collections;
 	public DocumentCollections getCollections() {
 		if (collections == null)
 			collections = new CollectionsImpl();
@@ -238,7 +242,6 @@ public class DocumentMetadataHandle
 		this.collections = collections;
 	}
 
-    private DocumentPermissions permissions;
 	public DocumentPermissions getPermissions() {
 		if (permissions == null)
 			permissions = new PermissionsImpl();
@@ -248,7 +251,6 @@ public class DocumentMetadataHandle
 		this.permissions = permissions;
 	}
 
-	private DocumentProperties properties;
 	public DocumentProperties getProperties() {
 		if (properties == null)
 			properties = new PropertiesImpl();
@@ -258,7 +260,6 @@ public class DocumentMetadataHandle
 		this.properties = properties;
 	}
 
-	private int quality = 0;
 	public int getQuality() {
 		return quality;
 	}
@@ -309,8 +310,6 @@ public class DocumentMetadataHandle
 	public void write(OutputStream out) throws IOException {
 		sendMetadataImpl(out);
 	}
-
-// TODO: select the metadata sent
 
 	private void receiveMetadataImpl(Document document) {
 		receiveCollectionsImpl(document);
@@ -462,6 +461,7 @@ public class DocumentMetadataHandle
 		setQuality(qualityNum);
 	}
 
+	// TODO: select the metadata sent
 	private void sendMetadataImpl(OutputStream out) {
 		try {
 			// org.apache.xml.serialize.XMLSerializer

@@ -28,6 +28,9 @@ public class InputStreamHandle
 		XMLReadHandle<InputStream>, XMLWriteHandle<InputStream>,
 		StructureReadHandle<InputStream>, StructureWriteHandle<InputStream>
 {
+	private InputStream content;
+	private Format      format = Format.XML;
+
 	public InputStreamHandle() {
 		super();
 	}
@@ -36,7 +39,6 @@ public class InputStreamHandle
 		set(content);
 	}
 
-	private InputStream content;
 	public InputStream get() {
 		return content;
 	}
@@ -48,7 +50,6 @@ public class InputStreamHandle
 		return this;
 	}
 
-	private Format format = Format.XML;
 	public Format getFormat() {
 		return format;
 	}

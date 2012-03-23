@@ -20,6 +20,9 @@ public class StringHandle
 		XMLReadHandle<String>, XMLWriteHandle<String>,
 		StructureReadHandle<String>, StructureWriteHandle<String>
 {
+	private String content;
+	private Format format = Format.XML;
+
 	public StringHandle() {
 		super();
 	}
@@ -28,7 +31,6 @@ public class StringHandle
 		set(content);
 	}
 
-	private String content;
 	public String get() {
 		return content;
 	}
@@ -40,7 +42,6 @@ public class StringHandle
 		return this;
 	}
 
-	private Format format = Format.XML;
 	public Format getFormat() {
 		return format;
 	}

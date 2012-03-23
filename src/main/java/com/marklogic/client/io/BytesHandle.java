@@ -26,6 +26,9 @@ public class BytesHandle
 		XMLReadHandle<byte[]>, XMLWriteHandle<byte[]>,
 		StructureReadHandle<byte[]>, StructureWriteHandle<byte[]>
 {
+	private byte[] content;
+	private Format format = Format.XML;
+
 	public BytesHandle() {
 		super();
 	}
@@ -34,7 +37,6 @@ public class BytesHandle
 		set(content);
 	}
 
-	private byte[] content;
 	public byte[] get() {
 		return content;
 	}
@@ -46,7 +48,6 @@ public class BytesHandle
 		return this;
 	}
 
-	private Format format = Format.XML;
 	public Format getFormat() {
 		return format;
 	}

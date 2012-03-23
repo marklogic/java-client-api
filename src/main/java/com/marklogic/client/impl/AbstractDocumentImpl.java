@@ -24,7 +24,18 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 {
 	static final private Logger logger = LoggerFactory.getLogger(AbstractDocumentImpl.class);
 
-	private RESTServices services;
+	final private Set<Metadata> processedMetadata;
+
+	private RESTServices       services;
+	private Format             contentFormat;
+	private String             readTransformName;
+    private Map<String,String> readTransformParams;
+	private String             writeTransformName;
+    private Map<String,String> writeTransformParams;
+    private String             forestName;
+	private MetadataUpdate     metadataUpdatePolicy;
+	private boolean            versionMatched = false;
+	private RequestLogger      requestLogger;
 
 	AbstractDocumentImpl(RESTServices services, Format contentFormat) {
 		this.services = services;
@@ -38,15 +49,11 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		this.services = services;
 	}
 
-
-
-	private Format contentFormat;
     public Format getContentFormat() {
     	return contentFormat;
     }
 
     // select categories of metadata to read, write, or reset
-	final private Set<Metadata> processedMetadata;
 	{
 		HashSet<Metadata> metadata = new HashSet<Metadata>();
 		metadata.add(Metadata.ALL);
@@ -286,7 +293,6 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		services.deleteDocument(uri, (transaction == null) ? null : transaction.getTransactionId(), processedMetadata);
     }
 
-	private String readTransformName;
     public String getReadTransformName() {
     	return readTransformName;
     }
@@ -294,7 +300,6 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
     	this.readTransformName = name;
     }
 
-    private Map<String,String> readTransformParams;
     public Map<String,String> getReadTransformParameters() {
     	return readTransformParams;
     }
@@ -302,7 +307,6 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
     	this.readTransformParams = parameters;
     }
  
-	private String writeTransformName;
     public String getWriteTransformName() {
     	return writeTransformName;
     }
@@ -310,7 +314,6 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
     	this.writeTransformName = name;
     }
 
-    private Map<String,String> writeTransformParams;
     public Map<String,String> getWriteTransformParameters() {
     	return writeTransformParams;
     }
@@ -318,7 +321,6 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
     	this.writeTransformParams = parameters;
     }
  
-    private String forestName;
     public String getForestName() {
     	return forestName;
     }
@@ -326,7 +328,6 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
     	this.forestName = forestName;
     }
 
-	private MetadataUpdate metadataUpdatePolicy;
     public MetadataUpdate getMetadataUpdatePolicy() {
     	return metadataUpdatePolicy;
     }
@@ -334,7 +335,6 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
     	metadataUpdatePolicy = policy;
     }
 
-	private boolean versionMatched = false;
 	public boolean isVersionMatched() {
 		return versionMatched;
 	}
@@ -350,7 +350,6 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		return null;
 	}
 
-	private RequestLogger requestLogger;
 	public void startLogging(RequestLogger logger) {
 		requestLogger = logger;
 	}

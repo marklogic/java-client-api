@@ -28,6 +28,9 @@ public class FileHandle
 		XMLReadHandle<File>, XMLWriteHandle<File>,
 		StructureReadHandle<File>, StructureWriteHandle<File>
 {
+	private File   content;
+	private Format format = Format.XML;
+
 	public FileHandle() {
 		super();
 	}
@@ -36,7 +39,6 @@ public class FileHandle
 		set(content);
 	}
 
-	private File content;
 	public File get() {
 		return content;
 	}
@@ -48,7 +50,6 @@ public class FileHandle
     	return this;
 	}
 
-	private Format format = Format.XML;
 	public Format getFormat() {
 		return format;
 	}
