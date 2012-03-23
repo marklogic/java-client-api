@@ -20,7 +20,7 @@ public interface RESTServices {
 	public void putDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Object value);
 	public void putDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Object[] values);
 
-    public <T> T search(Class <T> as, QueryDefinition queryDef, long start, String transactionId);
+    public <T> T search(Class <T> as, QueryDefinition queryDef, String mimetype, long start, String transactionId);
 
 	public String openTransaction();
 	public void commitTransaction(String transactionId);

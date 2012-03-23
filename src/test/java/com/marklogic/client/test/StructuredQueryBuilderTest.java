@@ -20,7 +20,7 @@ import static org.junit.Assert.assertNotNull;
 public class StructuredQueryBuilderTest {
     @Test
     public void testBuilder() throws IOException {
-        StructuredQueryBuilder qb = new StructuredQueryBuilder();
+        StructuredQueryBuilder qb = new StructuredQueryBuilder(null);
         StructuredQueryDefinition t = qb.term("leaf3");
         
         assertEquals("<query xmlns='http://marklogic.com/appservices/search'><term><text>leaf3</text></term></query>", t.serialize());

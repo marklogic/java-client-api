@@ -11,6 +11,12 @@ package com.marklogic.client.config.search;
 // TODO: Implement the rest of the query types
 
 public class StructuredQueryBuilder {
+    String optionsName = null;
+
+    public StructuredQueryBuilder(String optionsName) {
+        this.optionsName = optionsName;
+    }
+    
     public AndQuery and(StructuredQueryDefinition... queries) {
         return new AndQuery(queries);
     }
@@ -31,6 +37,9 @@ public class StructuredQueryBuilder {
         String uri = null;
 
         public String serialize() {
+            if (uri == null) {
+                setOptionsUri(optionsName);
+            }
             return "<query xmlns='http://marklogic.com/appservices/search'>" + innerSerialize() + "</query>";
         }
 

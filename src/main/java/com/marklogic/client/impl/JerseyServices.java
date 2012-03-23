@@ -352,10 +352,10 @@ public class JerseyServices implements RESTServices {
 	}
 
     // FIXME: is this even close to reasonable?
-    public <T> T search(Class<T> as, QueryDefinition queryDef, long start, String transactionId) {
+    public <T> T search(Class<T> as, QueryDefinition queryDef, String mimetype, long start, String transactionId) {
         MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
         ClientResponse response = null;
-
+        
         if (start > 1) {
             docParams.add("start", ""+start);
         }
@@ -365,7 +365,7 @@ public class JerseyServices implements RESTServices {
             logger.info("Searching for {} in transaction {}", text, transactionId);
 
             docParams.add("q", text);
-            response = connection.path("search").queryParams(docParams).get(ClientResponse.class);
+            response = connection.path("search").queryParams(docParams).accept(mimetype).get(ClientResponse.class);
         } else if (queryDef instanceof KeyValueQueryDefinition) {
             Map<ValueLocator, String> pairs = ((KeyValueQueryDefinition) queryDef);
             logger.info("Searching for keys/values in transaction {}", transactionId);
@@ -382,11 +382,10 @@ public class JerseyServices implements RESTServices {
                 }
                 docParams.add("value", pairs.get(loc));
             }
-            response = connection.path("keyvalue").queryParams(docParams).get(ClientResponse.class);
+            response = connection.path("keyvalue").queryParams(docParams).accept(mimetype).get(ClientResponse.class);
         } else if (queryDef instanceof StructuredQueryDefinition) {
             String structure = ((StructuredQueryDefinition) queryDef).serialize();
-            String mimetype = "application/xml";
-            response = connection.path("search").type(mimetype).post(ClientResponse.class, structure);
+            response = connection.path("search").type("application/xml").post(ClientResponse.class, structure);
         } else {
             throw new UnsupportedOperationException("Cannot search with " + queryDef.getClass().getName());
         }

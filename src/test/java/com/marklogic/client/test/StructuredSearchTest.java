@@ -43,7 +43,7 @@ public class StructuredSearchTest {
     @Test
     public void testStructuredSearch() throws IOException {
         QueryManager queryMgr = Common.client.newQueryManager();
-        StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
+        StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(null);
         StructuredQueryDefinition t = qb.term("leaf3");
 
         SearchHandle results = queryMgr.search(new SearchHandle(), t);
@@ -64,7 +64,7 @@ public class StructuredSearchTest {
     @Test
     public void testStructuredSearch1() throws IOException {
         QueryManager queryMgr = Common.client.newQueryManager();
-        StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
+        StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(null);
         StructuredQueryDefinition t = qb.term("leaf3");
 
         MatchDocumentSummary summary = queryMgr.findOne(t);

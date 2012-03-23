@@ -1,6 +1,7 @@
 package com.marklogic.client.impl;
 
 import com.marklogic.client.ElementLocator;
+import com.marklogic.client.Format;
 import com.marklogic.client.KeyLocator;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.config.search.KeyValueQueryDefinition;
@@ -37,17 +38,17 @@ public class QueryManagerImpl implements QueryManager {
         this.services = services;
     }
     
-    public StringQueryDefinition newStringCriteria(String optionsUri) {
-        return new StringQueryDefinitionImpl(optionsUri);
+    public StringQueryDefinition newStringCriteria(String optionsName) {
+        return new StringQueryDefinitionImpl(optionsName);
     }
 
     @Override
-    public KeyValueQueryDefinition newKeyValueCriteria(String optionsUri) {
-        return new KeyValueQueryDefinitionImpl(optionsUri);
+    public KeyValueQueryDefinition newKeyValueCriteria(String optionsName) {
+        return new KeyValueQueryDefinitionImpl(optionsName);
     }
 
-    public StructuredQueryBuilder newStructuredQueryBuilder() {
-        return new StructuredQueryBuilder();
+    public StructuredQueryBuilder newStructuredQueryBuilder(String optionsName) {
+        return new StructuredQueryBuilder(optionsName);
     }
     
     @Override
@@ -84,7 +85,16 @@ public class QueryManagerImpl implements QueryManager {
         if (searchHandle instanceof SearchHandle) {
             ((SearchHandle) searchHandle).setQueryCriteria(querydef);
         }
-        searchHandle.receiveContent(services.search(searchHandle.receiveAs(), querydef, start, transactionId));
+        String mimetype = null;
+        if (searchHandle.getFormat() == Format.XML) {
+            mimetype = "application/xml";            
+        } else if (searchHandle.getFormat() == Format.JSON) {
+            mimetype = "application/json";
+        } else {
+            throw new UnsupportedOperationException("Only XML and JSON search results are possible.");
+        }
+
+        searchHandle.receiveContent(services.search(searchHandle.receiveAs(), querydef, mimetype, start, transactionId));
         return searchHandle;
     }
 
