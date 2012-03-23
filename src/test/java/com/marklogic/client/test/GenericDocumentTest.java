@@ -39,7 +39,7 @@ public class GenericDocumentTest {
 		DocumentIdentifier docId = new DocumentIdentifier(uri);
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
 		assertTrue("Non-existent document appears to exist", !docMgr.exists(docId));
-		docMgr.write(docId,new StringHandle().on("A simple text document"));
+		docMgr.write(docId,new StringHandle().with("A simple text document"));
 		assertTrue("Existent document doesn't appear to exist", docMgr.exists(docId));
 		docMgr.delete(docId);
 	}
@@ -49,7 +49,7 @@ public class GenericDocumentTest {
 		String uri = "/test/testDelete1.txt";
 		DocumentIdentifier docId = new DocumentIdentifier(uri);
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
-		docMgr.write(docId, new StringHandle().on("A simple text document"));
+		docMgr.write(docId, new StringHandle().with("A simple text document"));
 		String text = docMgr.read(docId, new StringHandle()).get();
 		assertTrue("Could not create document for deletion", text != null && text.length() > 0);
 		docMgr.delete(docId);
@@ -95,10 +95,10 @@ public class GenericDocumentTest {
 		String uri = "/test/testMetadataXML1.xml";
 		DocumentIdentifier docId = new DocumentIdentifier(uri);
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
-		docMgr.write(docId, new StringHandle().on(content));
+		docMgr.write(docId, new StringHandle().with(content));
 
 		docMgr.setMetadataCategories(Metadata.ALL);
-		docMgr.writeMetadata(docId, new StringHandle().on(metadata));
+		docMgr.writeMetadata(docId, new StringHandle().with(metadata));
 
 		StringHandle xmlStringHandle = new StringHandle();
 		String stringMetadata = docMgr.readMetadata(docId, xmlStringHandle).get();
@@ -123,7 +123,7 @@ public class GenericDocumentTest {
 
 		String uri2 = "/test/testMetadataXML2.xml";
 		docId.setUri(uri2);
-		docMgr.write(docId, new StringHandle().on(metadata), new StringHandle().on(content));
+		docMgr.write(docId, new StringHandle().with(metadata), new StringHandle().with(content));
 		docText = docMgr.read(docId, xmlStringHandle, new StringHandle()).get();
 		stringMetadata = xmlStringHandle.get();
 		assertXMLEqual("Failed to write document content in single request",content,docText);
@@ -150,7 +150,7 @@ public class GenericDocumentTest {
 		DocumentIdentifier docId2 = new DocumentIdentifier(uri2);
 
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
-		docMgr.write(docId1,new StringHandle().on("A simple text document"));
+		docMgr.write(docId1,new StringHandle().with("A simple text document"));
 
 		Transaction transaction = Common.client.openTransaction();
 		StringHandle docHandle = docMgr.read(docId1, new StringHandle(), transaction);
@@ -173,7 +173,7 @@ public class GenericDocumentTest {
 		DocumentIdentifier docId2 = new DocumentIdentifier(uri2);
 
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
-		docMgr.write(docId1,new StringHandle().on("A simple text document"));
+		docMgr.write(docId1,new StringHandle().with("A simple text document"));
 
 		Transaction transaction = Common.client.openTransaction();
 		StringHandle docHandle = docMgr.read(docId1, new StringHandle(), transaction);

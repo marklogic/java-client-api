@@ -48,7 +48,7 @@ public class JSONDocumentTest {
 		"}\n";
 
 		JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
-		docMgr.write(docId, new StringHandle().on(content));
+		docMgr.write(docId, new StringHandle().with(content));
 
 		String testText = content.replace("\n", "");
 		String docText = docMgr.read(docId, new StringHandle()).get();
@@ -73,7 +73,7 @@ public class JSONDocumentTest {
 
 		String lang = "fr-CA";
 		docMgr.setLanguage(lang);
-		docMgr.write(docId, new StringHandle().on(content));
+		docMgr.write(docId, new StringHandle().with(content));
 		
 		XMLDocumentManager xmlMgr = Common.client.newXMLDocumentManager();
 		Document document = xmlMgr.read(docId, new DOMHandle()).get();

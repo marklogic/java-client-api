@@ -34,7 +34,7 @@ public class ReaderHandle
 	public void set(Reader content) {
 		this.content = content;
 	}
-	public ReaderHandle on(Reader content) {
+	public ReaderHandle with(Reader content) {
 		set(content);
 		return this;
 	}

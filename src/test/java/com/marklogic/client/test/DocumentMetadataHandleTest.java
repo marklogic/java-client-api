@@ -49,7 +49,7 @@ public class DocumentMetadataHandleTest {
 			"</root>\n";
 		DocumentIdentifier docId = new DocumentIdentifier(uri);
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
-		docMgr.write(docId, new StringHandle().on(content));
+		docMgr.write(docId, new StringHandle().with(content));
 
 		String metadataText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
 		"<rapi:metadata uri=\"/test/testMetadataXML1.xml\" xsi:schemaLocation=\"http://marklogic.com/rest-api/database dbmeta.xsd\" xmlns:rapi=\"http://marklogic.com/rest-api\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"+
@@ -100,7 +100,7 @@ public class DocumentMetadataHandleTest {
 
 		for (int pass=0; pass < 2; pass++) {
 			if (pass==0) {
-				docMgr.writeMetadata(docId, new StringHandle().on(metadataText));
+				docMgr.writeMetadata(docId, new StringHandle().with(metadataText));
 			} else if (pass==1) {
 				docMgr.writeMetadata(docId, metaWriteHandle);
 				StringHandle xmlStringHandle = new StringHandle();

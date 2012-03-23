@@ -22,7 +22,7 @@ public class JAXBHandle implements XMLReadHandle<Object>, XMLWriteHandle<Object>
     public void set(Object content) {
     	this.content = content;
     }
-    public JAXBHandle on(Object content) {
+    public JAXBHandle with(Object content) {
     	set(content);
     	return this;
     }

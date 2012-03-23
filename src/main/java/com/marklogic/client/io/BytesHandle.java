@@ -43,7 +43,7 @@ public class BytesHandle
 	public void set(byte[] content) {
 		this.content = content;
 	}
-	public BytesHandle on(byte[] content) {
+	public BytesHandle with(byte[] content) {
 		set(content);
 		return this;
 	}

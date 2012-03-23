@@ -72,7 +72,7 @@ public class XMLDocumentTest {
 		domDocument.appendChild(root);
 
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
-		docMgr.write(docId, new DOMHandle().on(domDocument));
+		docMgr.write(docId, new DOMHandle().with(domDocument));
 
 		String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
 				.getDOMImplementation()).createLSSerializer().writeToString(domDocument);
@@ -148,12 +148,12 @@ public class XMLDocumentTest {
 
 		String truncatedDoc ="<root><poorlyFormed></root>";
 		docMgr.setDocumentRepair(DocumentRepair.FULL);
-		docMgr.write(docId, new StringHandle().on(truncatedDoc));
+		docMgr.write(docId, new StringHandle().with(truncatedDoc));
 
 		docMgr.setDocumentRepair(DocumentRepair.NONE);
 		boolean threwException = false;
 		try {
-			docMgr.write(docId, new StringHandle().on(truncatedDoc));
+			docMgr.write(docId, new StringHandle().with(truncatedDoc));
 		} catch(RuntimeException ex) {
 			threwException = true;
 		}

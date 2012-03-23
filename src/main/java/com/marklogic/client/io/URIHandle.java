@@ -57,7 +57,7 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 	public void set(URI uri) {
 		this.uri = uri;
 	}
-	public URIHandle on(URI uri) {
+	public URIHandle with(URI uri) {
 		set(uri);
 		return this;
 	}

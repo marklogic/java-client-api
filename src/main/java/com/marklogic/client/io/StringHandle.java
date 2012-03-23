@@ -37,7 +37,7 @@ public class StringHandle
 	public void set(String content) {
 		this.content = content;
 	}
-	public StringHandle on(String content) {
+	public StringHandle with(String content) {
 		set(content);
 		return this;
 	}

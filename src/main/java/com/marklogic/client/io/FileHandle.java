@@ -45,7 +45,7 @@ public class FileHandle
 	public void set(File content) {
 		this.content = content;
 	}
-	public FileHandle on(File content) {
+	public FileHandle with(File content) {
 		set(content);
     	return this;
 	}

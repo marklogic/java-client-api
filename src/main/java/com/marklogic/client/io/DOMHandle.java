@@ -59,7 +59,7 @@ public class DOMHandle
     public void set(Document content) {
     	this.content = content;
     }
-    public DOMHandle on(Document content) {
+    public DOMHandle with(Document content) {
     	set(content);
     	return this;
     }

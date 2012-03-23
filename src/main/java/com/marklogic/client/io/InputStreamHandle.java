@@ -45,7 +45,7 @@ public class InputStreamHandle
 	public void set(InputStream content) {
 		this.content = content;
 	}
-	public InputStreamHandle on(InputStream content) {
+	public InputStreamHandle with(InputStream content) {
 		set(content);
 		return this;
 	}

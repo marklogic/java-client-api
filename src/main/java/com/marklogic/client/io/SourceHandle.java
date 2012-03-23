@@ -52,7 +52,7 @@ public class SourceHandle
 	public void set(Source content) {
 		this.content = content;
 	}
-	public SourceHandle on(Source content) {
+	public SourceHandle with(Source content) {
 		set(content);
 		return this;
 	}

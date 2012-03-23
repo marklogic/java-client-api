@@ -61,7 +61,7 @@ public class OutputStreamHandle
 	public void set(OutputStreamSender sender) {
 		this.sender = sender;
 	}
-	public OutputStreamHandle on(OutputStreamSender sender) {
+	public OutputStreamHandle with(OutputStreamSender sender) {
 		set(sender);
 		return this;
 	}

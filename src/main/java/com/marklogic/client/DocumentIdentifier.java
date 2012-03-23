@@ -19,8 +19,19 @@ public class DocumentIdentifier {
 	public void setUri(String uri) {
 		this.uri = uri;
 	}
-	public DocumentIdentifier on(String uri) {
+	public DocumentIdentifier withUri(String uri) {
 		setUri(uri);
+		return this;
+	}
+
+	public String getMimetype() {
+		return mimetype;
+	}
+	public void setMimetype(String mimetype) {
+		this.mimetype = mimetype;
+	}
+	public DocumentIdentifier withMimetype(String mimetype) {
+		setMimetype(mimetype);
 		return this;
 	}
 
@@ -30,11 +41,4 @@ public class DocumentIdentifier {
 	public void setByteLength(int length) {
     	byteLength = length;
     }
-
-	public String getMimetype() {
-		return mimetype;
-	}
-	public void setMimetype(String mimetype) {
-		this.mimetype = mimetype;
-	}
 }

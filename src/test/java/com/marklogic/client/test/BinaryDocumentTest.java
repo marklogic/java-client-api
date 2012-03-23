@@ -46,7 +46,7 @@ public class BinaryDocumentTest {
 
 		BinaryDocumentManager docMgr = Common.client.newBinaryDocumentManager();
 		docMgr.setMetadataExtraction(MetadataExtraction.PROPERTIES);
-		docMgr.write(docId, new BytesHandle().on(BYTES_BINARY));
+		docMgr.write(docId, new BytesHandle().with(BYTES_BINARY));
 
 		byte[] buf = docMgr.read(docId, new BytesHandle()).get();
 		assertEquals("Binary document read wrong number of bytes", BYTES_BINARY.length, buf.length);
