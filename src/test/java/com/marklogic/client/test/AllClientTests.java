@@ -16,7 +16,7 @@ import org.junit.runners.Suite;
 	JSONDocumentTest.class,
 	TextDocumentTest.class,
 	XMLDocumentTest.class,
-	MetadataHandleTest.class,
+	DocumentMetadataHandleTest.class,
     KeyValueSearchTest.class,
     StringSearchTest.class,
     StructuredQueryBuilderTest.class,

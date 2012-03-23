@@ -20,6 +20,10 @@ public class Common {
 
 	static DatabaseClient client;
 	static void connect() {
+		if (client != null) {
+			client.release();
+			client = null;
+		}
 		client = DatabaseClientFactory.connect(
 			Common.HOST, Common.PORT, Common.USERNAME, Common.PASSWORD, Authentication.DIGEST
 			);

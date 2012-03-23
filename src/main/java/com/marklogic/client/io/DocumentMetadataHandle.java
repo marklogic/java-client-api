@@ -1,6 +1,5 @@
 package com.marklogic.client.io;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -35,6 +34,8 @@ import com.marklogic.client.impl.BasicXMLSerializer;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.OutputStreamSender;
+
+// import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
 public class DocumentMetadataHandle
     implements OutputStreamSender,
@@ -463,6 +464,7 @@ public class DocumentMetadataHandle
 
 	private void sendMetadataImpl(OutputStream out) {
 		try {
+			// org.apache.xml.serialize.XMLSerializer
 			BasicXMLSerializer serializer = new BasicXMLSerializer();
 			serializer.writeXMLProlog(out);
 			serializer.writeContainerOpenStart(out, "rapi:metadata");

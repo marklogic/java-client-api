@@ -3,7 +3,6 @@ package com.marklogic.client.impl;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -13,12 +12,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.xml.bind.JAXBException;
 
-import com.marklogic.client.config.search.KeyValueQueryDefinition;
-import com.marklogic.client.config.search.QueryDefinition;
-import com.marklogic.client.config.search.StringQueryDefinition;
-import com.marklogic.client.config.search.StructuredQueryDefinition;
-import org.apache.commons.httpclient.methods.RequestEntity;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,19 +20,25 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.ElementLocator;
 import com.marklogic.client.KeyLocator;
 import com.marklogic.client.ValueLocator;
+import com.marklogic.client.config.search.KeyValueQueryDefinition;
 import com.marklogic.client.config.search.MarkLogicIOException;
+import com.marklogic.client.config.search.QueryDefinition;
 import com.marklogic.client.config.search.SearchOptions;
+import com.marklogic.client.config.search.StringQueryDefinition;
+import com.marklogic.client.config.search.StructuredQueryDefinition;
 import com.marklogic.client.config.search.impl.SearchOptionsImpl;
 import com.marklogic.client.io.marker.OutputStreamSender;
 import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientRequest.Builder;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.api.client.filter.HTTPDigestAuthFilter;
+
 import com.sun.jersey.client.apache.ApacheHttpClient;
+// import com.sun.jersey.client.apache4.ApacheHttpClient4;
+
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import com.sun.jersey.multipart.BodyPart;
 import com.sun.jersey.multipart.Boundary;
@@ -64,7 +63,12 @@ public class JerseyServices implements RESTServices {
 			logger.info("Connecting to {} at {} as {}", new Object[] { host,
 					port, user });
 
+		if (client != null)
+			client.destroy();
+
+		// see also DefaultApacheHttpClient4Config()
 		ClientConfig config = new DefaultClientConfig();
+//		client = ApacheHttpClient4.create(config);
 		client = ApacheHttpClient.create(config);
 		if (type == Authentication.BASIC)
 			client.addFilter(new HTTPBasicAuthFilter(user, password));

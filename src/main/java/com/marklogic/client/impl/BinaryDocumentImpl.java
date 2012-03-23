@@ -39,9 +39,9 @@ class BinaryDocumentImpl
 
 		HashMap<String,String> extraParams = new HashMap<String,String>();
 		if (length > 0)
-			extraParams.put("range", start+"-"+(start + length));
+			extraParams.put("range", "bytes="+start+"-"+(start + length));
 		else
-			extraParams.put("range", String.valueOf(start));
+			extraParams.put("range", "bytes="+String.valueOf(start));
 
 		return read(docId, metadataHandle, contentHandle, transaction, extraParams);
 	}
@@ -60,7 +60,7 @@ class BinaryDocumentImpl
 
 		HashMap<String,String> params = new HashMap<String,String>();
 		if (metadataExtraction == MetadataExtraction.PROPERTIES)
-			params.put("extract", "property");
+			params.put("extract", "properties");
 		else if (metadataExtraction == MetadataExtraction.DOCUMENT)
 			params.put("extract", "document");
 		else

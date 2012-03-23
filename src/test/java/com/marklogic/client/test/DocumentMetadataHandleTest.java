@@ -29,7 +29,7 @@ import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.io.StringHandle;
 
-public class MetadataHandleTest {
+public class DocumentMetadataHandleTest {
 	@BeforeClass
 	public static void beforeClass() {
 		Common.connect();
