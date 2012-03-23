@@ -4,6 +4,7 @@ import com.marklogic.client.ElementLocator;
 import com.marklogic.client.Format;
 import com.marklogic.client.KeyLocator;
 import com.marklogic.client.QueryManager;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.config.search.KeyValueQueryDefinition;
 import com.marklogic.client.config.search.MatchDocumentSummary;
 import com.marklogic.client.config.search.QueryDefinition;
@@ -77,11 +78,11 @@ public class QueryManagerImpl implements QueryManager {
     }
 
     @Override
-    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, String transactionId) {
-        return search(searchHandle, querydef, 1, transactionId);
+    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, Transaction transaction) {
+        return search(searchHandle, querydef, 1, transaction);
     }
 
-    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, long start, String transactionId) {
+    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, long start, Transaction transaction) {
         if (searchHandle instanceof SearchHandle) {
             ((SearchHandle) searchHandle).setQueryCriteria(querydef);
         }
@@ -94,7 +95,8 @@ public class QueryManagerImpl implements QueryManager {
             throw new UnsupportedOperationException("Only XML and JSON search results are possible.");
         }
 
-        searchHandle.receiveContent(services.search(searchHandle.receiveAs(), querydef, mimetype, start, transactionId));
+        String tid = transaction == null ? null : transaction.getTransactionId();
+        searchHandle.receiveContent(services.search(searchHandle.receiveAs(), querydef, mimetype, start, tid));
         return searchHandle;
     }
 
@@ -110,8 +112,8 @@ public class QueryManagerImpl implements QueryManager {
     }
 
     @Override
-    public MatchDocumentSummary findOne(QueryDefinition querydef, String transactionId) {
-        SearchHandle results = search(new SearchHandle(), querydef, transactionId);
+    public MatchDocumentSummary findOne(QueryDefinition querydef, Transaction transaction) {
+        SearchHandle results = search(new SearchHandle(), querydef, transaction);
         MatchDocumentSummary[] summaries = results.getMatchResults();
         if (summaries.length > 0) {
             return summaries[0];

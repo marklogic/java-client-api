@@ -26,9 +26,9 @@ public interface QueryManager {
 
     public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef);
     public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, long start);
-    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, String transactionId);
-    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, long start, String transactionId);
+    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, Transaction transaction);
+    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, long start, Transaction transaction);
 
     public MatchDocumentSummary findOne(QueryDefinition querydef);
-    public MatchDocumentSummary findOne(QueryDefinition querydef, String transactionId);
+    public MatchDocumentSummary findOne(QueryDefinition querydef, Transaction transaction);
 }
