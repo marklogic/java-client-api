@@ -38,16 +38,16 @@ public class StructuredQueryBuilder {
 
         public String serialize() {
             if (uri == null) {
-                setOptionsUri(optionsName);
+                setOptionsName(optionsName);
             }
             return "<query xmlns='http://marklogic.com/appservices/search'>" + innerSerialize() + "</query>";
         }
 
-        public String getOptionsUri() {
+        public String getOptionsName() {
             return uri;
         }
 
-        public void setOptionsUri(String uri) {
+        public void setOptionsName(String uri) {
             this.uri = uri;
         }
 

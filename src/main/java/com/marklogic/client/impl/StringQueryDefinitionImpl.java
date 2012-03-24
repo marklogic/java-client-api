@@ -29,12 +29,12 @@ public class StringQueryDefinitionImpl implements StringQueryDefinition {
     }
 
     @Override
-    public String getOptionsUri() {
+    public String getOptionsName() {
         return optionsUri;
     }
 
     @Override
-    public void setOptionsUri(String uri) {
+    public void setOptionsName(String uri) {
         // FIXME: check for null?
         optionsUri = uri;
     }

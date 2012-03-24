@@ -84,12 +84,12 @@ public class KeyValueQueryDefinitionImpl implements KeyValueQueryDefinition {
     }
 
     @Override
-    public String getOptionsUri() {
+    public String getOptionsName() {
         return optionsUri;
     }
 
     @Override
-    public void setOptionsUri(String uri) {
+    public void setOptionsName(String uri) {
         optionsUri = uri;
     }
 }

@@ -8,7 +8,7 @@ package com.marklogic.client.config.search;
  * To change this template use File | Settings | File Templates.
  */
 public interface QueryDefinition {
-    public String getOptionsUri();
-    public void setOptionsUri(String uri);
+    public String getOptionsName();
+    public void setOptionsName(String name);
 }
 
