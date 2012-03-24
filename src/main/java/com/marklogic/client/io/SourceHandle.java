@@ -46,6 +46,10 @@ public class SourceHandle
 	public void setTransformer(Transformer transformer) {
 		this.transformer = transformer;
 	}
+	public SourceHandle withTransformer(Transformer transformer) {
+		setTransformer(transformer);
+		return this;
+	}
 
 	public Source get() {
 		return content;
