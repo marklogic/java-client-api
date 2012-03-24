@@ -48,7 +48,7 @@ public class DocumentMetadataHandleTest {
 			"A simple XML document\n"+
 			"</root>\n";
 
-		DocumentIdentifier docId = Common.client.newDocumentIdentifier(uri);
+		DocumentIdentifier docId = Common.client.newDocId(uri);
 
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		docMgr.write(docId, new StringHandle().with(content));

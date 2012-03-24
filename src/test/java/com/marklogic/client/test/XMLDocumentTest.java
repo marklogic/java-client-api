@@ -62,7 +62,7 @@ public class XMLDocumentTest {
 	public void testReadWrite() throws ParserConfigurationException, SAXException, IOException, TransformerConfigurationException, TransformerFactoryConfigurationError, XMLStreamException {
 		String uri = "/test/testWrite1.xml";
 
-		DocumentIdentifier docId = Common.client.newDocumentIdentifier(uri);
+		DocumentIdentifier docId = Common.client.newDocId(uri);
 
 		Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		Element root = domDocument.createElement("root");
@@ -87,7 +87,7 @@ public class XMLDocumentTest {
 
 		String uri2 = "/test/testWrite2.xml";
 
-		DocumentIdentifier docId2 = Common.client.newDocumentIdentifier(uri2);
+		DocumentIdentifier docId2 = Common.client.newDocId(uri2);
 
 		Transformer transformer = TransformerFactory.newInstance().newTransformer();
 		SourceHandle sourceHandle = new SourceHandle();
@@ -173,7 +173,7 @@ public class XMLDocumentTest {
 "http://graphical.weather.gov/xml/sample_products/browser_interface/ndfdBrowserClientByDay.php?whichClient=NDFDgenByDayMultiZipCode&zipCodeList=94070&format=12+hourly&numDays=1";
 		String uri2 = "/test/testWrite2.xml";
 
-		DocumentIdentifier docId = Common.client.newDocumentIdentifier(uri2);
+		DocumentIdentifier docId = Common.client.newDocId(uri2);
 
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		docMgr.write(docId, new URIHandle(new URI(service)));

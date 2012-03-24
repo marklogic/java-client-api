@@ -39,7 +39,7 @@ public class JSONDocumentTest {
 	public void testReadWrite() throws IOException {
 		String uri = "/test/testWrite1.json";
 
-		DocumentIdentifier docId = Common.client.newDocumentIdentifier(uri);
+		DocumentIdentifier docId = Common.client.newDocId(uri);
 
 		String content = "{\n"+
 		"\"stringKey\":\"string value\",\n"+

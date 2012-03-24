@@ -30,12 +30,16 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
     /**
      * Checks whether a document exists and gets its length and format
      * 
+     * To call exists(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
      * @param docId
      * @return
      */
     public boolean exists(DocumentIdentifier docId) throws ForbiddenUserException, FailedRequestException;
     /**
      * Checks whether a document exists in an open transaction and gets its length and format
+     * 
+     * To call exists(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
      * 
      * @param docId
      * @param transaction
@@ -46,6 +50,8 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
     /**
      * Reads the document content from the database in the representation provided by the handle
      * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
      * @param <T>
      * @param docId
      * @param contentHandle
@@ -54,6 +60,8 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
     public <T extends R> T read(DocumentIdentifier docId, T contentHandle) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
     /**
      * Reads the document metadata and content from the database in the representations provided by the handles
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
      * 
      * @param <T>
      * @param docId
@@ -65,6 +73,8 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
     /**
      * Reads the document content from an open database transaction in the representation provided by the handle
      * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
      * @param <T>
      * @param docId
      * @param contentHandle
@@ -74,6 +84,8 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
     public <T extends R> T read(DocumentIdentifier docId, T contentHandle, Transaction transaction) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
     /**
      * Reads the document metadata and content from an open database transaction in the representations provided by the handles
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
      * 
      * @param <T>
      * @param docId
@@ -87,12 +99,16 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
     /**
      * Writes the document content to the database from the representation provided by the handle
      * 
+     * To call write(), an application must authenticate as rest-writer or rest-admin.
+     * 
      * @param docId
      * @param contentHandle
      */
     public void write(DocumentIdentifier docId, W contentHandle) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
     /**
      * Writes the document metadata and content to the database from the representations provided by the handles
+     * 
+     * To call write(), an application must authenticate as rest-writer or rest-admin.
      * 
      * @param docId
      * @param metadata
@@ -102,6 +118,8 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
     /**
      * Writes the document content to an open database transaction from the representation provided by the handle
      * 
+     * To call write(), an application must authenticate as rest-writer or rest-admin.
+     * 
      * @param docId
      * @param contentHandle
      * @param transaction
@@ -109,6 +127,8 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
     public void write(DocumentIdentifier docId, W contentHandle, Transaction transaction) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
     /**
      * Writes the document metadata and content to an open database transaction from the representations provided by the handles
+     * 
+     * To call write(), an application must authenticate as rest-writer or rest-admin.
      * 
      * @param docId
      * @param metadata
@@ -120,11 +140,15 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
     /**
      * Deletes the document metadata and content from the database
      * 
+     * To call delete(), an application must authenticate as rest-writer or rest-admin.
+     * 
      * @param docId
      */
     public void delete(DocumentIdentifier docId) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Deletes the document metadata and content from an open database transaction
+     * 
+     * To call delete(), an application must authenticate as rest-writer or rest-admin.
      * 
      * @param docId
      * @param transaction
@@ -134,6 +158,8 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
     /**
      * Reads the document metadata from the database in the representation provided by the handle
      * 
+     * To call readMetadata(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
      * @param <T>
      * @param docId
      * @param metadataHandle
@@ -142,6 +168,8 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
     public <T extends DocumentMetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Reads the document metadata from an open database transaction in the representation provided by the handle
+     * 
+     * To call readMetadata(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
      * 
      * @param <T>
      * @param docId
@@ -154,12 +182,16 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
     /**
      * Writes the document metadata to the database from the representation provided by the handle
      * 
+     * To call writeMetadata(), an application must authenticate as rest-writer or rest-admin.
+     * 
      * @param docId
      * @param metadataHandle
      */
     public void writeMetadata(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document metadata to an open database transaction from the representation provided by the handle
+     * 
+     * To call writeMetadata(), an application must authenticate as rest-writer or rest-admin.
      * 
      * @param docId
      * @param metadataHandle
@@ -170,11 +202,15 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
     /**
      * Reverts the document metadata in the database to the defaults
      * 
+     * To call writeDefaultMetadata(), an application must authenticate as rest-writer or rest-admin.
+     * 
      * @param docId
      */
     public void writeDefaultMetadata(DocumentIdentifier docId) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Reverts the document metadata in an open database transaction to the defaults
+     * 
+     * To call writeDefaultMetadata(), an application must authenticate as rest-writer or rest-admin.
      * 
      * @param docId
      * @param transaction

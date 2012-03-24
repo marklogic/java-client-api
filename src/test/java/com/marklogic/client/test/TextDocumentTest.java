@@ -33,7 +33,7 @@ public class TextDocumentTest {
 		String uri = "/test/testWrite1.txt";
 		String text = "A simple text document";
 
-		DocumentIdentifier docId = Common.client.newDocumentIdentifier(uri);
+		DocumentIdentifier docId = Common.client.newDocId(uri);
 
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
 		docMgr.write(docId, new StringHandle().with(text));

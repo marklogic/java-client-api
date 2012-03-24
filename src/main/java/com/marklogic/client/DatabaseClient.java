@@ -8,9 +8,20 @@ import java.io.OutputStream;
  * that access the database using the connection.
  */
 public interface DatabaseClient {
-    public Transaction openTransaction() throws ForbiddenUserException, FailedRequestException;
+    /**
+     * Starts a transaction.  You can pass the transaction to the read(), write(), or delete() methods
+     * of a document manager or the search() method of a query manager to perform operations within a
+     * multistatement transaction.
+     * 
+     * To call openTransaction(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @return
+     * @throws ForbiddenUserException
+     * @throws FailedRequestException
+     */
+	public Transaction openTransaction() throws ForbiddenUserException, FailedRequestException;
 
-	public DocumentIdentifier newDocumentIdentifier(String uri);
+	public DocumentIdentifier newDocId(String uri);
 
     // factory methods for document managers
     public GenericDocumentManager newDocumentManager();

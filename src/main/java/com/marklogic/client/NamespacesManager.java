@@ -2,6 +2,8 @@ package com.marklogic.client;
 
 /**
  * The NamespacesManager provides access and editing for the namespaces defined on the server.
+ * 
+ * To use NamespacesManager, an application must authenticate as rest-admin.
  */
 public interface NamespacesManager {
     public String readPrefix(String prefix) throws ForbiddenUserException, FailedRequestException;

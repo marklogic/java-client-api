@@ -33,7 +33,7 @@ public class DatabaseClientImpl implements DatabaseClient {
 		return new TransactionImpl(services, services.openTransaction());
 	}
 
-	public DocumentIdentifier newDocumentIdentifier(String uri) {
+	public DocumentIdentifier newDocId(String uri) {
 		return new DocumentIdentifierImpl(uri);
 	}
 
