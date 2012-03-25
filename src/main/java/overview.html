@@ -1,0 +1,74 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>MarkLogic Java API Overview</title></head>
+<body>
+<h2>MarkLogic Java API</h2>
+<p>
+	The MarkLogic Java API support reading, writing, and deleting
+	document content and metadata as well as querying documents.
+</p>
+
+<h2>Before Starting</h2>
+<p>
+	Before using the API, create a REST server for your database.
+	If the database has existing documents, modify the roles with
+	privileges to read and write those documents to inherit from
+	rest-reader and rest-writer. 
+</p>
+<h2>Creating a Database Client</h2>
+<p>
+	Use {@link com.marklogic.client.DatabaseClientFactory}.connect()
+	to create a client for a database.  You can then use the
+	{@link com.marklogic.client.DatabaseClient} factory methods
+	(which begin with "new") to create document, configuration,
+	and query managers.
+</p>
+<h2>Working with Document Managers</h2>
+<p>
+	Use the {@link com.marklogic.client.DatabaseClient} to create
+	the appropriate document manager for the format of the content --
+	a {@link com.marklogic.client.BinaryDocumentManager} for a binary
+	document, an {@link com.marklogic.client.XMLDocumentManager} for
+	an XML document, and so on.
+</p>
+<p>
+	Create a {@link com.marklogic.client.DocumentIdentifier} with the
+	URI of the document in the database.
+</p>
+<p>
+	Create a handle for the document content in the representation that you
+	need.  For instance, to read a binary document into a temporary file,
+	create a {@link com.marklogic.client.io.FileHandle}.  To read an XML
+	document into a DOM, create a {@link com.marklogic.client.io.DOMHandle}.
+</p>
+<p>
+	To read document content from the database, pass the 
+	{@link com.marklogic.client.DocumentIdentifier} and
+	content handle to the read() method of the document manager and then use the
+	methods of the handle to get the content.  To write document content to the
+	database, set the content in a handle and then pass the 
+	{@link com.marklogic.client.DocumentIdentifier} and
+	content handle to the write() method of the document manager.
+</p>
+<p>
+	You can read or write document metadata in the same request as document
+	content or separately.
+</p>
+<h2>Working with the Search Option Manager</h2>
+<p>
+	To search in a database, you create indexes on the fields and elements
+	of documents and define constraints that specify how to search on these
+	indexes.  Use {@link com.marklogic.client.QueryOptionsManager} to write,
+	read, and delete search options. 
+</p>
+<h2>Working with the Query Manager</h2>
+<p>
+	Use {@link com.marklogic.client.QueryManager} to search documents or
+	extract values, co-occurrences of values, or full tuple records from
+	document indexes.  The search() method takes the name for search options
+	that you wrote to the database previously, a query definition including
+	the search criteria, and a handle for representing the results.  You can
+	supply search criteria as a string, keys-value pairs, or a structure.
+	You can	represent results as JSON, XML, or a Java data structure. 
+</p>
+</body>
+</html>

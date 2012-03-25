@@ -176,8 +176,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		write(docId, metadataHandle, contentHandle, transaction, getWriteParams());
 	}
 	public void write(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction, Map<String,String> extraParams) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
-		String uri = docId.getUri();
-		logger.info("Writing content for {}",uri);
+		logger.info("Writing content for {}",docId.getUri());
 
 		String metadataMimetype = null;
 		Set<Metadata> metadata = null;
@@ -206,7 +205,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 
 		if (metadataHandle != null && contentHandle != null) {
 			services.putDocument(
-					uri,
+					docId,
 					(transaction == null) ? null : transaction.getTransactionId(),
 					metadata,
 					extraParams,
@@ -215,7 +214,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 					);
 		} else if (metadataHandle != null) {
 			services.putDocument(
-					uri,
+					docId,
 					(transaction == null) ? null : transaction.getTransactionId(),
 					metadata,
 					extraParams,
@@ -224,7 +223,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 					);
 		} else if (contentHandle != null) {
 			services.putDocument(
-					uri,
+					docId,
 					(transaction == null) ? null : transaction.getTransactionId(),
 					null,
 					extraParams,
@@ -238,10 +237,9 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		delete(docId, null);
 	}
 	public void delete(DocumentIdentifier docId, Transaction transaction) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		String uri = docId.getUri();
-		logger.info("Deleting {}",uri);
+		logger.info("Deleting {}",docId.getUri());
 
-		services.deleteDocument(uri, (transaction == null) ? null : transaction.getTransactionId(), null);
+		services.deleteDocument(docId, (transaction == null) ? null : transaction.getTransactionId(), null);
 	}
 
     public <T extends DocumentMetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
@@ -264,10 +262,9 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		writeDefaultMetadata(docId, null);
     }
     public void writeDefaultMetadata(DocumentIdentifier docId, Transaction transaction) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		String uri = docId.getUri();
-		logger.info("Resetting metadata for {}",uri);
+		logger.info("Resetting metadata for {}",docId.getUri());
 
-		services.deleteDocument(uri, (transaction == null) ? null : transaction.getTransactionId(), processedMetadata);
+		services.deleteDocument(docId, (transaction == null) ? null : transaction.getTransactionId(), processedMetadata);
     }
 
     public String getReadTransformName() {

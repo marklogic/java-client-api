@@ -4,7 +4,9 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -12,16 +14,15 @@ import java.util.Iterator;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.dom.DOMResult;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -29,10 +30,9 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
+import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
-
-import org.xml.sax.Attributes;
 
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.XMLDocumentManager;
@@ -159,23 +159,40 @@ public class XMLDocumentTest {
 		assertTrue("Expected failure on truncated XML document with no repair", threwException);
 	}
 
-	private static boolean testURIHandle = false;
-
 	@Test
-	public void testURIHandle() throws URISyntaxException {
-		if (!testURIHandle)
-			return;
+	public void testURIHandle() throws URISyntaxException, IOException {
+		// throws Jersey ClientHandlerException wrapping IOException Stream closed
+		boolean testPath = false;
+		if (testPath) {
+			String path1 = "src/test/resources/simple-data.xml";
 
-		String service =
+			File file1 = new File(path1).getCanonicalFile();
+			assertTrue("Cannot read test file",file1.canRead());
+
+			URI uri = file1.toURI();
+
+			DocumentIdentifier docId = Common.client.newDocId("/"+path1);
+
+			XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+			docMgr.write(docId, new URIHandle(uri));
+
+			String docText = docMgr.read(docId, new StringHandle()).get();
+			assertNotNull("Read null string for URI with XML content",docText);
+			assertTrue("Read empty string for URI with XML content",docText.length() > 0);
+		}
+
+		if (Common.HAS_WEB_CONNECTION) {
+			String service =
 "http://graphical.weather.gov/xml/sample_products/browser_interface/ndfdBrowserClientByDay.php?whichClient=NDFDgenByDayMultiZipCode&zipCodeList=94070&format=12+hourly&numDays=1";
-		String uri2 = "/test/testWrite2.xml";
+			String uri2 = "/test/testWrite2.xml";
 
-		DocumentIdentifier docId = Common.client.newDocId(uri2);
+			DocumentIdentifier docId2 = Common.client.newDocId(uri2);
 
-		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
-		docMgr.write(docId, new URIHandle(new URI(service)));
-		String docText = docMgr.read(docId, new StringHandle()).get();
-		assertNotNull("Read null string for URI with XML content",docText);
-		assertTrue("Read empty string for URI with XML content",docText.length() > 0);
+			XMLDocumentManager docMgr2 = Common.client.newXMLDocumentManager();
+			docMgr2.write(docId2, new URIHandle(new URI(service)));
+			String docText2 = docMgr2.read(docId2, new StringHandle()).get();
+			assertNotNull("Read null string for URI with XML content",docText2);
+			assertTrue("Read empty string for URI with XML content",docText2.length() > 0);
+		}
 	}
 }

@@ -21,7 +21,7 @@ public interface RESTServices {
 	public void connect(String host, int port, String user, String password, Authentication type, SSLContext context, HostnameVerifier verifier);
 	public void release();
 
-	public void deleteDocument(String uri, String transactionId, Set<Metadata> categories)
+	public void deleteDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public <T> T getDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Class<T> as)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -29,9 +29,9 @@ public interface RESTServices {
 		throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public boolean head(DocumentIdentifier docId, String transactionId)
 		throws ForbiddenUserException, FailedRequestException;
-	public void putDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Object value)
+	public void putDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Object value)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public void putDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Object[] values)
+	public void putDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Object[] values)
 		throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     public <T> T search(Class <T> as, QueryDefinition queryDef, String mimetype, long start, String transactionId)

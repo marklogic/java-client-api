@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,13 +107,24 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 		try {
 			logger.info("Retrieving content from URI to write to database");
 
+			URI uri = get();
 			if (uri == null) {
 				throw new IllegalStateException("No uri to write");
 			}
 
-			InputStream stream = get().toURL().openStream();
+			URL url = uri.toURL();
+			if (url == null) {
+				throw new MarkLogicIOException("Could not create URL to write for "+uri.toString());
+			}
+
+			URLConnection connection = url.openConnection();
+			if (connection == null) {
+				throw new MarkLogicIOException("Could not open connection to write for "+uri.toString());
+			}
+
+			InputStream stream = connection.getInputStream();
 			if (stream == null) {
-				throw new MarkLogicIOException("No stream to write");
+				throw new MarkLogicIOException("Could not get stream to write for "+uri.toString());
 			}
 
 			return stream;

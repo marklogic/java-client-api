@@ -18,6 +18,8 @@ public class Common {
 	final public static String HOST     = "localhost";
 	final public static int    PORT     = 8011;
 
+	final public static boolean HAS_WEB_CONNECTION = false;
+
 	static DatabaseClient client;
 	static void connect() {
 		if (client != null) {

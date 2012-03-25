@@ -118,8 +118,14 @@ public class JerseyServices implements RESTServices {
 		client.destroy();
 	}
 
-	public void deleteDocument(String uri, String transactionId, Set<Metadata> categories)
+	public void deleteDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		if (docId == null)
+			throw new IllegalArgumentException("Document delete with null document identifier");
+		String uri = docId.getUri();
+		if (uri == null)
+			throw new IllegalArgumentException("Document delete for document identifier without uri");
+
 		logger.info("Deleting {} in transaction {}", uri, transactionId);
 
 		ClientResponse response = makeDocumentResource(
@@ -278,8 +284,16 @@ public class JerseyServices implements RESTServices {
 
 		return true;
 	}
-	public void putDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Object value)
+	public void putDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Object value)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		if (docId == null)
+			throw new IllegalArgumentException("Document write with null document identifier");
+		String uri = docId.getUri();
+		if (uri == null)
+			throw new IllegalArgumentException("Document write for document identifier without uri");
+		if (value == null)
+			throw new IllegalArgumentException("Document write with null value for "+uri);
+
 		logger.info("Putting {} in transaction {}", uri, transactionId);
 
 		ClientResponse response = makeDocumentResource(
@@ -298,8 +312,16 @@ public class JerseyServices implements RESTServices {
 				&& status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("write failed: "+status.getReasonPhrase());
 	}
-	public void putDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Object[] values)
+	public void putDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Object[] values)
 	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		if (docId == null)
+			throw new IllegalArgumentException("Document write with null document identifier");
+		String uri = docId.getUri();
+		if (uri == null)
+			throw new IllegalArgumentException("Document write for document identifier without uri");
+		if (values == null || values.length == 0)
+			throw new IllegalArgumentException("Document write with null values for "+uri);
+
 		logger.info("Putting multipart for {} in transaction {}", uri, transactionId);
 
 		if (mimetypes == null || mimetypes.length == 0)
