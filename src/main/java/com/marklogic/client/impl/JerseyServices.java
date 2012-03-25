@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.BadRequestException;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ElementLocator;
@@ -64,17 +66,23 @@ public class JerseyServices implements RESTServices {
 	public JerseyServices() {
 	}
 
-	public void connect(String host, int port, String user, String password, Authentication type) {
-		connect(host, port, user, password, type, null);		
-	}
-	public void connect(String host, int port, String user, String password, SSLContext context) {
-// TODO: confirm that SSL authentication is always basic
-		connect(host, port, user, password, Authentication.BASIC, context);
-	}
-	private void connect(String host, int port, String user, String password, Authentication type, SSLContext context) {
+	public void connect(String host, int port, String user, String password, Authentication type, SSLContext context, HostnameVerifier verifier) {
 		if (logger.isInfoEnabled())
 			logger.info("Connecting to {} at {} as {}", new Object[] { host,
 					port, user });
+
+		if (host == null)
+			throw new IllegalArgumentException("No host provided");
+		if (user == null)
+			throw new IllegalArgumentException("No user provided");
+		if (password == null)
+			throw new IllegalArgumentException("No password provided");
+		if (type == null) {
+			if (context != null)
+				type = Authentication.BASIC;
+			else
+				throw new IllegalArgumentException("No authentication type provided");
+		}
 
 		if (connection != null)
 			connection = null;
@@ -86,7 +94,8 @@ public class JerseyServices implements RESTServices {
 		// see also DefaultApacheHttpClient4Config()
 		ClientConfig config = new DefaultClientConfig();
 		if (context != null)
-			config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(null, context));
+			// TODO: confirm that verifier can be null or supply default verifier that returns true
+			config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(verifier, context));
 
 //		client = ApacheHttpClient4.create(config);
 		client = ApacheHttpClient.create(config);
@@ -130,8 +139,14 @@ public class JerseyServices implements RESTServices {
 	// TODO: does an Input Stream or Reader handle need to cache the response so
 	// it can close the response?
 
-	public <T> T getDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Class<T> as)
+	public <T> T getDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Class<T> as)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		if (docId == null)
+			throw new IllegalArgumentException("Document read with null document identifier");
+		String uri = docId.getUri();
+		if (uri == null)
+			throw new IllegalArgumentException("Document read for document identifier without uri");
+
 		logger.info("Getting {} in transaction {}", uri, transactionId);
 
 		WebResource.Builder resource = makeDocumentResource(
@@ -156,6 +171,8 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException("read failed: "+status.getReasonPhrase());
 		}
 
+		updateDocumentIdentifier(docId, response.getHeaders());
+
 		T entity = response.getEntity(as);
 		if (as != InputStream.class && as != Reader.class)
 			response.close();
@@ -163,8 +180,14 @@ public class JerseyServices implements RESTServices {
 		return entity;
 	}
 
-	public Object[] getDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Class[] as)
+	public Object[] getDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Class[] as)
 	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		if (docId == null)
+			throw new IllegalArgumentException("Document read with null document identifier");
+		String uri = docId.getUri();
+		if (uri == null)
+			throw new IllegalArgumentException("Document read for document identifier without uri");
+
 		logger.info("Getting multipart for {} in transaction {}", uri, transactionId);
 
 		if (mimetypes == null || mimetypes.length == 0)
@@ -200,6 +223,8 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException("read failed: "+status.getReasonPhrase());
 		}
 
+		updateDocumentIdentifier(docId, response.getHeaders());
+
 		MultiPart entity = response.getEntity(MultiPart.class);
 		if (entity == null)
 			return null;
@@ -225,24 +250,33 @@ public class JerseyServices implements RESTServices {
 		return parts;
 	}
 
-	public Map<String, List<String>> head(String uri, String transactionId) throws ForbiddenUserException, FailedRequestException {
+	public boolean head(DocumentIdentifier docId, String transactionId) throws ForbiddenUserException, FailedRequestException {
+		if (docId == null)
+			throw new IllegalArgumentException("Existence check with null document identifier");
+		String uri = docId.getUri();
+		if (uri == null)
+			throw new IllegalArgumentException("Existence check for document identifier without uri");
+
 		logger.info("Requesting head for {} in transaction {}", uri,
 				transactionId);
 
 		ClientResponse response = makeDocumentResource(
 				makeDocumentParams(uri, null, transactionId, null)).head();
-		Map<String, List<String>> headers = response.getHeaders();
+
+		MultivaluedMap<String, String> headers = response.getHeaders();
 
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
 		if (status == ClientResponse.Status.NOT_FOUND)
-			return null;
+			return false;
 		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException("User is not allowed to check the existence of documents");
 		if (status != ClientResponse.Status.OK)
 			throw new FailedRequestException("Document existence check failed: "+status.getReasonPhrase());
 
-		return headers;
+		updateDocumentIdentifier(docId, headers);
+
+		return true;
 	}
 	public void putDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Object value)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
@@ -408,6 +442,29 @@ public class JerseyServices implements RESTServices {
 	private WebResource makeDocumentResource(
 			MultivaluedMap<String, String> queryParams) {
 		return connection.path("documents").queryParams(queryParams);
+	}
+
+	private void updateDocumentIdentifier(DocumentIdentifier docId, MultivaluedMap<String, String> headers) {
+		if (headers == null) return;
+
+		List<String> values = null;
+		if (docId.getMimetype() == null && headers.containsKey("Content-Type")) {
+			values = headers.get("Content-Type");
+			if (values != null) {
+				String type = values.get(0);
+				docId.setMimetype(
+						type.contains(";") ? type.substring(0, type.indexOf(";")) : type
+						);
+			}
+		}
+		if (headers.containsKey("Content-Length")) {
+			values = headers.get("Content-Length");
+			if (values != null) {
+				docId.setByteLength(
+						Integer.valueOf(values.get(0))
+						);
+			}
+		}
 	}
 
     // FIXME: is this even close to reasonable?

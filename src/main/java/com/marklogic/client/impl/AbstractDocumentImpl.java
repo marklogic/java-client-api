@@ -80,33 +80,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		return exists(docId, null);
     }
 	public boolean exists(DocumentIdentifier docId, Transaction transaction) throws ForbiddenUserException, FailedRequestException {
-		String uri = docId.getUri();
-		logger.info("Checking existence of {}",uri);
-
-		Map<String,List<String>> headers = services.head(uri, (transaction == null) ? null : transaction.getTransactionId());
-		if (headers == null)
-			return false;
-
-		List<String> values = null;
-		if (headers.containsKey("Content-Type")) {
-			values = headers.get("Content-Type");
-			if (values != null) {
-				String type = values.get(0);
-				docId.setMimetype(
-						type.contains(";") ? type.substring(0, type.indexOf(";")) : type
-						);
-			}
-		}
-		if (headers.containsKey("Content-Length")) {
-			values = headers.get("Content-Length");
-			if (values != null) {
-				docId.setByteLength(
-						Integer.valueOf(values.get(0))
-						);
-			}
-		}
-
-		return true;
+		return services.head(docId, (transaction == null) ? null : transaction.getTransactionId());
 	}
 
 	public <T extends R> T read(DocumentIdentifier docId, T contentHandle) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
@@ -122,8 +96,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		return read(docId, metadataHandle, contentHandle, transaction, getReadParams());
 	}
 	public <T extends R> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction, Map<String,String> extraParams) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
-		String uri = docId.getUri();
-		logger.info("Reading metadata and content for {}",uri);
+		logger.info("Reading metadata and content for {}", docId.getUri());
 
 		String metadataMimetype = null;
 		Set<Metadata> metadata = null;
@@ -152,7 +125,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 
 		if (metadataHandle != null && contentHandle != null) {
 			Object[] values = services.getDocument(
-					uri, 
+					docId, 
 					(transaction == null) ? null : transaction.getTransactionId(),
 					metadata,
 					extraParams,
@@ -164,7 +137,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		} else if (metadataHandle != null) {
 			metadataHandle.receiveContent(
 					services.getDocument(
-							uri,
+							docId,
 							(transaction == null) ? null : transaction.getTransactionId(),
 							metadata,
 							extraParams,
@@ -175,7 +148,7 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		} else if (contentHandle != null) {
 			contentHandle.receiveContent(
 				services.getDocument(
-						uri,
+						docId,
 						(transaction == null) ? null : transaction.getTransactionId(),
 						null,
 						extraParams,

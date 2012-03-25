@@ -4,9 +4,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
 import com.marklogic.client.BadRequestException;
+import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
@@ -16,17 +18,16 @@ import com.marklogic.client.config.search.QueryDefinition;
 import com.marklogic.client.config.search.SearchOptions;
 
 public interface RESTServices {
-	public void connect(String host, int port, String user, String password, Authentication type);
-	public void connect(String host, int port, String user, String password, SSLContext context);
+	public void connect(String host, int port, String user, String password, Authentication type, SSLContext context, HostnameVerifier verifier);
 	public void release();
 
 	public void deleteDocument(String uri, String transactionId, Set<Metadata> categories)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public <T> T getDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Class<T> as)
+	public <T> T getDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Class<T> as)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public Object[] getDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Class[] as)
+	public Object[] getDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Class[] as)
 		throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public Map<String,List<String>> head(String uri, String transactionId)
+	public boolean head(DocumentIdentifier docId, String transactionId)
 		throws ForbiddenUserException, FailedRequestException;
 	public void putDocument(String uri, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Object value)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;

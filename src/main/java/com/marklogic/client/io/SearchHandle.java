@@ -188,7 +188,7 @@ public class SearchHandle implements SearchReadHandle<InputStream>, SearchResult
         private Result result = null;
         private MatchLocation[] locations = null;
         private String mimetype = null;
-        private int byteLength = 0;
+        private long byteLength = 0;
 
         public MatchDocumentSummaryImpl(String uri, int score, double confidence, double fitness, String path, Result result) {
             this.uri = uri;
@@ -280,12 +280,12 @@ public class SearchHandle implements SearchReadHandle<InputStream>, SearchResult
         }
 
         @Override
-        public int getByteLength() {
+        public long getByteLength() {
             return byteLength;
         }
 
         @Override
-        public void setByteLength(int length) {
+        public void setByteLength(long length) {
             byteLength = length;
         }
     }

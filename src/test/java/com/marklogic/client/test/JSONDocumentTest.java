@@ -74,8 +74,9 @@ public class JSONDocumentTest {
 		String lang = "fr-CA";
 		docMgr.setLanguage(lang);
 		docMgr.write(docId, new StringHandle().with(content));
-		
+
 		XMLDocumentManager xmlMgr = Common.client.newXMLDocumentManager();
+		docId.setMimetype(null);  // set to application/json by read
 		Document document = xmlMgr.read(docId, new DOMHandle()).get();
 		assertEquals("Failed to set language attribute on JSON", lang,
 				document.getDocumentElement().getAttributeNS(XMLConstants.XML_NS_URI, "lang"));

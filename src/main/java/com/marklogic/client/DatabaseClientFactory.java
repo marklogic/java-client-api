@@ -1,5 +1,6 @@
 package com.marklogic.client;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
 import org.slf4j.Logger;
@@ -33,16 +34,14 @@ public class DatabaseClientFactory {
 	 * @return
 	 */
 	static public DatabaseClient connect(String host, int port, String user, String password, Authentication type) {
-		RESTServices services = new JerseyServices();
-		services.connect(host, port, user, password, type);
-
-		return new DatabaseClientImpl(services);		
+		return connect(host, port, user, password, type, null);		
 	}
-	static public DatabaseClient connect(String host, int port, String user, String password, SSLContext context) {
-		// TODO: add optional javax.net.ssl.HostnameVerifier?
-
+	static public DatabaseClient connect(String host, int port, String user, String password, Authentication type, SSLContext context) {
+		return connect(host, port, user, password, type, context, null);		
+	}
+	static public DatabaseClient connect(String host, int port, String user, String password, Authentication type, SSLContext context, HostnameVerifier verifier) {
 		RESTServices services = new JerseyServices();
-		services.connect(host, port, user, password, context);
+		services.connect(host, port, user, password, type, context, verifier);
 
 		return new DatabaseClientImpl(services);		
 	}

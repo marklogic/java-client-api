@@ -4,12 +4,12 @@ import com.marklogic.client.DocumentIdentifier;
 
 public class DocumentIdentifierImpl implements DocumentIdentifier {
 	private String uri;
-	private int    byteLength = 0;
+	private long   byteLength = UNKNOWN_LENGTH;
 	private String mimetype;
 
 	public DocumentIdentifierImpl(String uri) {
 		super();
-		this.uri = uri;
+		setUri(uri);
 	}
 
 	public String getUri() {
@@ -17,8 +17,10 @@ public class DocumentIdentifierImpl implements DocumentIdentifier {
 	}
 	public void setUri(String uri) {
 		this.uri = uri;
+		if (byteLength != UNKNOWN_LENGTH)
+			byteLength = UNKNOWN_LENGTH;
 	}
-	public DocumentIdentifierImpl withUri(String uri) {
+	public DocumentIdentifier withUri(String uri) {
 		setUri(uri);
 		return this;
 	}
@@ -29,15 +31,15 @@ public class DocumentIdentifierImpl implements DocumentIdentifier {
 	public void setMimetype(String mimetype) {
 		this.mimetype = mimetype;
 	}
-	public DocumentIdentifierImpl withMimetype(String mimetype) {
+	public DocumentIdentifier withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;
 	}
 
-	public int getByteLength() {
+	public long getByteLength() {
     	return byteLength;
     }
-	public void setByteLength(int length) {
+	public void setByteLength(long length) {
     	byteLength = length;
     }
 }
