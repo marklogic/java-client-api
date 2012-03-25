@@ -33,21 +33,17 @@ public class DatabaseClientFactory {
 	 * @return
 	 */
 	static public DatabaseClient connect(String host, int port, String user, String password, Authentication type) {
-		if (logger.isInfoEnabled())
-			logger.info("Connecting to {} at {} as {}",new Object[]{host,port,user});
-
 		RESTServices services = new JerseyServices();
 		services.connect(host, port, user, password, type);
 
 		return new DatabaseClientImpl(services);		
 	}
 	static public DatabaseClient connect(String host, int port, String user, String password, SSLContext context) {
-/* TODO: pass context through to RESTServices
-		ClientConfig config = new DefaultClientConfig();
-		context.init(null, myTrustManager, null);
-		config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(hostnameVerifier, context));
-// Also add .header(AUTHENTICATION_HEADER, authentication) to request
- */
-		return null;		
+		// TODO: add optional javax.net.ssl.HostnameVerifier?
+
+		RESTServices services = new JerseyServices();
+		services.connect(host, port, user, password, context);
+
+		return new DatabaseClientImpl(services);		
 	}
 }

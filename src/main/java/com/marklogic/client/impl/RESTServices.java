@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.net.ssl.SSLContext;
+
 import com.marklogic.client.BadRequestException;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
@@ -15,6 +17,7 @@ import com.marklogic.client.config.search.SearchOptions;
 
 public interface RESTServices {
 	public void connect(String host, int port, String user, String password, Authentication type);
+	public void connect(String host, int port, String user, String password, SSLContext context);
 	public void release();
 
 	public void deleteDocument(String uri, String transactionId, Set<Metadata> categories)

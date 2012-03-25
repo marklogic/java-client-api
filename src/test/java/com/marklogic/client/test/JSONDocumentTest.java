@@ -24,7 +24,6 @@ import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 
-
 public class JSONDocumentTest {
 	@BeforeClass
 	public static void beforeClass() {

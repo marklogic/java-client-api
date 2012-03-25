@@ -55,9 +55,6 @@ public class XMLDocumentTest {
 		Common.release();
 	}
 
-	// TODO: repair parameter
-	// TODO: test JAXB reader and writer
-
 	@Test
 	public void testReadWrite() throws ParserConfigurationException, SAXException, IOException, TransformerConfigurationException, TransformerFactoryConfigurationError, XMLStreamException {
 		String uri = "/test/testWrite1.xml";

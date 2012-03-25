@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.xml.bind.JAXBException;
@@ -42,6 +43,7 @@ import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.api.client.filter.HTTPDigestAuthFilter;
 
 import com.sun.jersey.client.apache.ApacheHttpClient;
+import com.sun.jersey.client.urlconnection.HTTPSProperties;
 // import com.sun.jersey.client.apache4.ApacheHttpClient4;
 
 import com.sun.jersey.core.util.MultivaluedMapImpl;
@@ -62,17 +64,30 @@ public class JerseyServices implements RESTServices {
 	public JerseyServices() {
 	}
 
-	public void connect(String host, int port, String user, String password,
-			Authentication type) {
+	public void connect(String host, int port, String user, String password, Authentication type) {
+		connect(host, port, user, password, type, null);		
+	}
+	public void connect(String host, int port, String user, String password, SSLContext context) {
+// TODO: confirm that SSL authentication is always basic
+		connect(host, port, user, password, Authentication.BASIC, context);
+	}
+	private void connect(String host, int port, String user, String password, Authentication type, SSLContext context) {
 		if (logger.isInfoEnabled())
 			logger.info("Connecting to {} at {} as {}", new Object[] { host,
 					port, user });
 
-		if (client != null)
+		if (connection != null)
+			connection = null;
+		if (client != null) {
 			client.destroy();
+			client = null;
+		}
 
 		// see also DefaultApacheHttpClient4Config()
 		ClientConfig config = new DefaultClientConfig();
+		if (context != null)
+			config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(null, context));
+
 //		client = ApacheHttpClient4.create(config);
 		client = ApacheHttpClient.create(config);
 		if (type == Authentication.BASIC)
@@ -84,7 +99,7 @@ public class JerseyServices implements RESTServices {
 					"Internal error - unknown authentication type: "
 							+ type.name());
 		connection = client.resource("http://" + host + ":" + port + "/v1/");
-// TODO: verify connection
+// TODO: verify connection and, for DIGEST, make an initial request
 	}
 
 	public void release() {

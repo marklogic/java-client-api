@@ -18,6 +18,9 @@ import com.marklogic.client.io.marker.XMLReadHandle;
 /**
  * An XML Stream Reader Handle represents XML content as an XML stream reader
  * for reading as a StAX pull stream.
+ * 
+ * When finished with the stream reader, close the stream reader to release
+ * the response.
  */
 public class XMLStreamReaderHandle
 	implements XMLReadHandle<InputStream>, StructureReadHandle<InputStream>
@@ -38,6 +41,15 @@ public class XMLStreamReaderHandle
 		this.resolver = resolver;
 	}
 
+	/**
+	 * Returns an XML Stream Reader for for reading a resource from the database
+	 * as a StAX pull stream.
+	 * 
+     * When finished with the stream reader, close the stream reader to release
+     * the response.
+	 * 
+	 * @return
+	 */
 	public XMLStreamReader get() {
 		return content;
 	}

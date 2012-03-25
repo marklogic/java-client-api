@@ -13,7 +13,9 @@ import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
- * A Reader Handle represents document content as a reader for reading or writing.
+ * A Reader Handle represents a resource as a reader for reading or writing.
+ * 
+ * When finished with the reader, close the reader to release the resources.
  */
 public class ReaderHandle
 	implements
@@ -28,6 +30,14 @@ public class ReaderHandle
     public ReaderHandle() {
     }
 
+    /**
+	 * Returns a reader for a resource read from the database.
+	 * 
+     * When finished with the reader, close the reader to release
+     * the response.
+     * 
+     * @return
+     */
     public Reader get() {
     	return content;
     }

@@ -18,6 +18,9 @@ import com.marklogic.client.io.marker.XMLReadHandle;
 /**
  * An XML Event Reader Handle represents XML content as an XML event reader
  * for reading as a series of StAX events.
+ * 
+ * When finished with the event reader, close the event reader to release
+ * the response.
  */
 public class XMLEventReaderHandle
 	implements XMLReadHandle<InputStream>, StructureReadHandle<InputStream>
@@ -38,6 +41,15 @@ public class XMLEventReaderHandle
 		this.resolver = resolver;
 	}
 
+	/**
+	 * Returns an XML Event Reader for for reading a resource from the database
+	 * as a series of StAX events.
+	 * 
+     * When finished with the event reader, close the event reader to release
+     * the response.
+	 * 
+	 * @return
+	 */
 	public XMLEventReader get() {
 		return content;
 	}

@@ -17,7 +17,10 @@ import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
- * An Input Stream Handle represents document content as an input stream for reading or writing.
+ * An Input Stream Handle represents a resource as an input stream for reading or writing.
+ * 
+ * When finished with the input stream, close the input stream to release
+ * the response.
  */
 public class InputStreamHandle
 	implements
@@ -39,6 +42,14 @@ public class InputStreamHandle
 		set(content);
 	}
 
+	/**
+	 * Returns an input stream for a resource read from the database.
+	 * 
+     * When finished with the input stream, close the input stream to release
+     * the response.
+	 * 
+	 * @return
+	 */
 	public InputStream get() {
 		return content;
 	}

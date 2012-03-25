@@ -107,6 +107,10 @@ public class SourceHandle
 		this.content = new StreamSource(content);
 	}
 	public OutputStreamSender sendContent() {
+		if (content == null) {
+			throw new IllegalStateException("No source to transform to result for writing");
+		}
+
 		return this;
 	}
 	public void write(OutputStream out) throws IOException {

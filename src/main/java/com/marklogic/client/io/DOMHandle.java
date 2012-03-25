@@ -129,15 +129,15 @@ public class DOMHandle
 		}
 	}
 	public OutputStreamSender sendContent() {
+		if (content == null) {
+			throw new IllegalStateException("No document to write");
+		}
+
 		return this;
 	}
 	public void write(OutputStream out) throws IOException {
 		try {
 			logger.info("Serializing DOM document to output stream");
-
-			if (content == null) {
-				throw new IllegalStateException("No document to write");
-			}
 
 			DocumentBuilderFactory factory = getFactory();
 			if (factory == null) {
