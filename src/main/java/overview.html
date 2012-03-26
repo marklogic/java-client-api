@@ -71,17 +71,6 @@ docMgr.read(docId, handle);
 org.w3c.dom.Document document = handle.get();
 </pre>
 <p>
-    The read() method returns the content handle (following the fluent design pattern),
-    so the same operation can also be expressed in a single line:
-</p>
-<pre>
-org.w3c.dom.Document document =
-    client.newXMLDocumentManager().read(
-        client.newDocId("/db/path/to/myDoc.xml"),
-        new DOMHandle()
-        ).get();
-</pre>
-<p>
 	To write content to a document in the database, set the content in a handle and then pass the 
 	{@link com.marklogic.client.DocumentIdentifier} and	content handle to the write() method
 	of the document manager. The following example write the content of the 
@@ -96,16 +85,6 @@ DOMHandle handle = new DOMHandle();
 handle.set(document);
 
 docMgr.write(docId, handle);
-</pre>
-<p>Like most handles, the DOMHandle provide a <code>with()</code> method that sets the content and
-returns the handle as a fluent convenience.  Thus, the same operation can be expressed in a single line:
-</p>
-<pre>
-org.w3c.dom.Document document = ... <em>create or modify the document</em> ...;
-client.newXMLDocumentManager().write(
-    client.newDocId("/db/path/to/myDoc.xml"),
-    new DOMHandle().with(document)
-    );
 </pre>
 <p>
 	To learn which handles you can use to read the content of an XML document, look at the classes 
@@ -146,17 +125,6 @@ handle.set(options);
 
 optionsMgr.writeOptions("shipments", handle);
 </pre>
-<p>
-	The write operation for query options can be expressed more concisely:
-</p>
-<pre>
-QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
-
-SearchOptions options = optionsMgr.newOptions();
-options.add(options.newValueConstraint("port", new ElementIndex(new QName("port")));
-
-optionsMgr.writeOptions("shipments", new SearchOptionsHandle().with(options));
-</pre>
 <h2>Working with the Query Manager</h2>
 <p>
 	Use {@link com.marklogic.client.QueryManager} to search documents or
@@ -184,16 +152,6 @@ DOMHandle handle = new DOMHandle();
 queryMgr.search(querydef, handle);
 
 org.w3c.dom.Document results = handle.get();
-</pre>
-<p>
-	The search operation can be expressed more concisely:
-</p>
-<pre>
-org.w3c.dom.Document results = 
-    client.newQueryManager().search(
-        queryMgr.newStringCriteria("shipments").withCriteria("electronics port:Lisbon"),
-        new DOMHandle()
-        ).get();
 </pre>
 <p>
 	Besides XML or JSON, you can also get search results as a Java data structure by using
@@ -224,6 +182,54 @@ for (MatchDocumentSummary docSummary: results.getMatchResults()) {
         }
     }
 }
+</pre>
+<h2>Concise Code with Fluent Interfaces</h2>
+<p>The API makes use of fluent interfaces so that, when you become familiar with the API,
+you can execute operations concisely.
+</p>
+<p>
+    For instance, because the read() method returns the content handle,
+    the earlier read operation can be expressed in a single line:
+</p>
+<pre>
+org.w3c.dom.Document document =
+    client.newXMLDocumentManager().read(
+        client.newDocId("/db/path/to/myDoc.xml"),
+        new DOMHandle()
+        ).get();
+</pre>
+<p>
+    Because most handles provide a <code>with()</code> method that sets the content and
+    returns the handle, you can a write operation in a single line:
+</p>
+<pre>
+org.w3c.dom.Document document = ... <em>create or modify the document</em> ...;
+
+client.newXMLDocumentManager().write(
+    client.newDocId("/db/path/to/myDoc.xml"),
+    new DOMHandle().with(document)
+    );
+</pre>
+<p>
+	You can write query options concisely:
+</p>
+<pre>
+QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
+
+SearchOptions options = optionsMgr.newOptions();
+options.add(options.newValueConstraint("port", new ElementIndex(new QName("port")));
+
+optionsMgr.writeOptions("shipments", new SearchOptionsHandle().with(options));
+</pre>
+<p>
+	When convenient, you can write a search operation in a single line:
+</p>
+<pre>
+org.w3c.dom.Document results = 
+    client.newQueryManager().search(
+        queryMgr.newStringCriteria("shipments").withCriteria("electronics port:Lisbon"),
+        new DOMHandle()
+        ).get();
 </pre>
 </body>
 </html>
