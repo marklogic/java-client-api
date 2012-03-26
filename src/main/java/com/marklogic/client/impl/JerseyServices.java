@@ -700,4 +700,12 @@ public class JerseyServices implements RESTServices {
 		if (status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("delete failed: " + status.getReasonPhrase());
 	}
+
+	// backdoors for testing
+	public Client getClient() {
+		return client;
+	}
+	public WebResource getConnection() {
+		return connection;
+	}
 }

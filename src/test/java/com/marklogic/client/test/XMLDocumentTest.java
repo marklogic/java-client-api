@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -41,7 +42,6 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputSourceHandle;
 import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.URIHandle;
 import com.marklogic.client.io.XMLEventReaderHandle;
 import com.marklogic.client.io.XMLStreamReaderHandle;
 
@@ -157,42 +157,5 @@ public class XMLDocumentTest {
 			threwException = true;
 		}
 		assertTrue("Expected failure on truncated XML document with no repair", threwException);
-	}
-
-	@Test
-	public void testURIHandle() throws URISyntaxException, IOException {
-		// throws Jersey ClientHandlerException wrapping IOException Stream closed
-		boolean testPath = false;
-		if (testPath) {
-			String path1 = "src/test/resources/simple-data.xml";
-
-			File file1 = new File(path1).getCanonicalFile();
-			assertTrue("Cannot read test file",file1.canRead());
-
-			URI uri = file1.toURI();
-
-			DocumentIdentifier docId = Common.client.newDocId("/"+path1);
-
-			XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
-			docMgr.write(docId, new URIHandle(uri));
-
-			String docText = docMgr.read(docId, new StringHandle()).get();
-			assertNotNull("Read null string for URI with XML content",docText);
-			assertTrue("Read empty string for URI with XML content",docText.length() > 0);
-		}
-
-		if (Common.HAS_WEB_CONNECTION) {
-			String service =
-"http://graphical.weather.gov/xml/sample_products/browser_interface/ndfdBrowserClientByDay.php?whichClient=NDFDgenByDayMultiZipCode&zipCodeList=94070&format=12+hourly&numDays=1";
-			String uri2 = "/test/testWrite2.xml";
-
-			DocumentIdentifier docId2 = Common.client.newDocId(uri2);
-
-			XMLDocumentManager docMgr2 = Common.client.newXMLDocumentManager();
-			docMgr2.write(docId2, new URIHandle(new URI(service)));
-			String docText2 = docMgr2.read(docId2, new StringHandle()).get();
-			assertNotNull("Read null string for URI with XML content",docText2);
-			assertTrue("Read empty string for URI with XML content",docText2.length() > 0);
-		}
 	}
 }

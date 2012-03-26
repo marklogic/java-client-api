@@ -81,4 +81,9 @@ public class DatabaseClientImpl implements DatabaseClient {
 		release();
 		super.finalize();
 	}
+
+	// undocumented backdoor for testing
+	public RESTServices getService() {
+		return services;
+	}
 }

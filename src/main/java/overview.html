@@ -27,39 +27,136 @@
 	Use the {@link com.marklogic.client.DatabaseClient} to create
 	the appropriate document manager for the format of the content --
 	a {@link com.marklogic.client.BinaryDocumentManager} for a binary
-	document, an {@link com.marklogic.client.XMLDocumentManager} for
-	an XML document, and so on.
+	document or an {@link com.marklogic.client.XMLDocumentManager} for
+	an XML document. The client also provides {@link com.marklogic.client.JSONDocumentManager}
+	and {@link com.marklogic.client.TextDocumentManager} document manager
+	for those formats. Use {@link com.marklogic.client.GenericDocumentManager}
+	if you don't know the format or need to process multiple documents
+	with different formats.  
 </p>
 <p>
-	Create a {@link com.marklogic.client.DocumentIdentifier} with the
-	URI of the document in the database.
+	To identify a document in the database, you create a
+	{@link com.marklogic.client.DocumentIdentifier} with the document URI.
 </p>
 <p>
-	Create a handle for the document content in the representation that you
-	need.  For instance, to read a binary document into a temporary file,
-	create a {@link com.marklogic.client.io.FileHandle}.  To read an XML
-	document into a DOM, create a {@link com.marklogic.client.io.DOMHandle}.
+	To access document content, you create a <em>handle</em> object that supports
+	the appropriate representation.	This concept of content handles is core to the Java API.
+	For instance, consider a binary JPEG file.
+	To write this file to the database, you create a {@link com.marklogic.client.io.FileHandle}
+	and call the handle's set() method with the File object. You then pass the handle
+	to the operation that writes the binary content to the database.
+</p>
+<p>
+	Similarly, let's say you want to read the content of an XML document from the database
+	into a DOM document. You pass a {@link com.marklogic.client.io.DOMHandle} to the
+	operation that reads the XML content.  The read operation populates the DOMHandle
+	with the content. You can then call the handle's get() method
+	to get the org.w3c.dom.Document object. In short, a handle acts as a container
+	for content in a representation.
 </p>
 <p>
 	To read document content from the database, pass the 
-	{@link com.marklogic.client.DocumentIdentifier} and
-	content handle to the read() method of the document manager and then use the
-	methods of the handle to get the content.  To write document content to the
-	database, set the content in a handle and then pass the 
-	{@link com.marklogic.client.DocumentIdentifier} and
-	content handle to the write() method of the document manager.
+	{@link com.marklogic.client.DocumentIdentifier} and handle to the read() method 
+	of the document manager. Then use the methods of the handle to get the content.  
+	The following example reads the content of the <code>/db/path/to/myDoc.xml</code>
+	database document into a DOM document:
+</p>
+<pre>
+XMLDocumentManager docMgr = client.newXMLDocumentManager();
+DocumentIdentifier docId = client.newDocId("/db/path/to/myDoc.xml");
+DOMHandle handle = new DOMHandle();
+
+docMgr.read(docId, handle);
+
+org.w3c.dom.Document document = handle.get();
+</pre>
+<p>
+    The read() method returns the content handle (following the fluent design pattern),
+    so the same operation can also be expressed in a single line:
+</p>
+<pre>
+org.w3c.dom.Document document =
+    client.newXMLDocumentManager().read(
+        client.newDocId("/db/path/to/myDoc.xml"),
+        new DOMHandle()
+        ).get();
+</pre>
+<p>
+	To write content to a document in the database, set the content in a handle and then pass the 
+	{@link com.marklogic.client.DocumentIdentifier} and	content handle to the write() method
+	of the document manager. The following example write the content of the 
+	<code>/db/path/to/myDoc.xml</code> database document from a DOM document:
+</p>
+<pre>
+org.w3c.dom.Document document = ... <em>create or modify the document</em> ...;
+
+XMLDocumentManager docMgr = client.newXMLDocumentManager();
+DocumentIdentifier docId = client.newDocId("/db/path/to/myDoc.xml");
+DOMHandle handle = new DOMHandle();
+handle.set(document);
+
+docMgr.write(docId, handle);
+</pre>
+<p>Like most handles, the DOMHandle provide a <code>with()</code> method that sets the content and
+returns the handle as a fluent convenience.  Thus, the same operation can be expressed in a single line:
+</p>
+<pre>
+org.w3c.dom.Document document = ... <em>create or modify the document</em> ...;
+client.newXMLDocumentManager().write(
+    client.newDocId("/db/path/to/myDoc.xml"),
+    new DOMHandle().with(document)
+    );
+</pre>
+<p>
+	To learn which handles you can use to read the content of an XML document, look at the classes 
+	that implement {@link com.marklogic.client.io.marker.XMLReadHandle}.  To learn which handles
+	you can use to write the content of an XML document, look at the classes that implement
+	{@link com.marklogic.client.io.marker.XMLWriteHandle}.  
+	{@link com.marklogic.client.BinaryDocumentManager},
+	{@link com.marklogic.client.JSONDocumentManager},
+	{@link com.marklogic.client.TextDocumentManager}, and
+	{@link com.marklogic.client.GenericDocumentManager}
+	each have corresponding read and write handles that identify the handle classes
+	that can be used when reading and writing documents of that format.
 </p>
 <p>
 	You can read or write document metadata in the same request as document
 	content or separately.
 </p>
-<h2>Working with the Search Option Manager</h2>
+<h2>Working with the Query Options Manager</h2>
 <p>
 	To search in a database, you create indexes on the fields and elements
 	of documents and define constraints that specify how to search on these
 	indexes.  Use {@link com.marklogic.client.QueryOptionsManager} to write,
 	read, and delete search options. 
 </p>
+<p>
+	The following example writes new query options named "shipments" with a single constraint.
+	The constraint names the "port" location within documents for queries that use the
+	"shipments" query options.
+</p>
+<pre>
+QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
+
+SearchOptions options = optionsMgr.newOptions();
+options.add(options.newValueConstraint("port", new ElementIndex(new QName("port")));
+
+SearchOptionsHandle handle = new SearchOptionsHandle();
+handle.set(options);
+
+optionsMgr.writeOptions("shipments", handle);
+</pre>
+<p>
+	The write operation for query options can be expressed more concisely:
+</p>
+<pre>
+QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
+
+SearchOptions options = optionsMgr.newOptions();
+options.add(options.newValueConstraint("port", new ElementIndex(new QName("port")));
+
+optionsMgr.writeOptions("shipments", new SearchOptionsHandle().with(options));
+</pre>
 <h2>Working with the Query Manager</h2>
 <p>
 	Use {@link com.marklogic.client.QueryManager} to search documents or
@@ -70,5 +167,63 @@
 	supply search criteria as a string, keys-value pairs, or a structure.
 	You can	represent results as JSON, XML, or a Java data structure. 
 </p>
+<p>
+	The following example uses the "shipments" query options written to database previously.
+	The search criteria matches documents that contain the term "electronics" as well as
+	a <code>&lt;port&gt;</code> element with a value of "Lisbon".  The example reads
+	the search results into a DOM document.
+</p>
+<pre>
+QueryManager queryMgr = client.newQueryManager();
+
+StringQueryDefinition querydef = queryMgr.newStringCriteria("shipments");
+querydef.setCriteria("electronics port:Lisbon");
+
+DOMHandle handle = new DOMHandle();
+
+queryMgr.search(querydef, handle);
+
+org.w3c.dom.Document results = handle.get();
+</pre>
+<p>
+	The search operation can be expressed more concisely:
+</p>
+<pre>
+org.w3c.dom.Document results = 
+    client.newQueryManager().search(
+        queryMgr.newStringCriteria("shipments").withCriteria("electronics port:Lisbon"),
+        new DOMHandle()
+        ).get();
+</pre>
+<p>
+	Besides XML or JSON, you can also get search results as a Java data structure by using
+	{@link com.marklogic.client.io.SearchHandle}.  This approach is often the most convenient
+	way to manipulate search results as demonstrated in the following example:
+</p>
+<pre>
+QueryManager queryMgr = client.newQueryManager();
+
+StringQueryDefinition querydef = queryMgr.newStringCriteria("shipments");
+querydef.setCriteria("electronics port:Lisbon");
+
+SearchHandle results = new SearchHandle();
+
+queryMgr.search(querydef, results);
+
+... <em>do something at the response level (total response, metrics, and so on)</em> ...
+for (MatchDocumentSummary docSummary: results.getMatchResults()) {
+    ... <em>do something for a matching document</em> ...
+    for (MatchLocation location : docSummary.getMatchLocations()) {
+        ... <em>do something at the match location level</em> ...
+        for (MatchSnippet snippet : location.getSnippets()) {
+            if (snippet.isHighlighted()) {
+                ... <em>do something with highlighted text</em> ...
+            } else {
+                ... <em>do something with unhighlighted text</em> ...
+            }
+        }
+    }
+}
+</pre>
 </body>
 </html>
