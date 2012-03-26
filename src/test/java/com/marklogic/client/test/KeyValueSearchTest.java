@@ -41,7 +41,7 @@ public class KeyValueSearchTest {
         KeyValueQueryDefinition qdef = queryMgr.newKeyValueCriteria(null);
 
         qdef.put(queryMgr.newElementLocator(new QName("leaf")), "leaf3");
-        SearchHandle results = queryMgr.search(new SearchHandle(), qdef);
+        SearchHandle results = queryMgr.search(qdef, new SearchHandle());
         assertNotNull(results);
         assertFalse(results.getMetrics().getTotalTime() == -1);
 

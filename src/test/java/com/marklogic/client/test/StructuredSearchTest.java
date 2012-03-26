@@ -46,7 +46,7 @@ public class StructuredSearchTest {
         StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(null);
         StructuredQueryDefinition t = qb.term("leaf3");
 
-        SearchHandle results = queryMgr.search(new SearchHandle(), t);
+        SearchHandle results = queryMgr.search(t, new SearchHandle());
         assertNotNull(results);
         assertFalse(results.getMetrics().getTotalTime() == -1);
 

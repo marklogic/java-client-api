@@ -24,10 +24,10 @@ public interface QueryManager {
     public ElementLocator newElementLocator(QName element, QName attribute);
     public KeyLocator newKeyLocator(String key);
 
-    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef);
-    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, long start);
-    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, Transaction transaction);
-    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, long start, Transaction transaction);
+    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle);
+    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start);
+    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction);
+    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction);
 
     public MatchDocumentSummary findOne(QueryDefinition querydef);
     public MatchDocumentSummary findOne(QueryDefinition querydef, Transaction transaction);

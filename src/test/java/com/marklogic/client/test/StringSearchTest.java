@@ -44,7 +44,7 @@ public class StringSearchTest {
         StringQueryDefinition qdef = queryMgr.newStringCriteria(null);
         qdef.setCriteria("leaf3");
 
-        SearchHandle results = queryMgr.search(new SearchHandle(), qdef);
+        SearchHandle results = queryMgr.search(qdef, new SearchHandle());
         assertNotNull(results);
         assertFalse(results.getMetrics().getTotalTime() == -1);
 
@@ -66,7 +66,7 @@ public class StringSearchTest {
         qdef.setCriteria("leaf3");
 
         StringHandle handle = new StringHandle();
-        handle = queryMgr.search(handle, qdef);
+        handle = queryMgr.search(qdef, handle);
 
         assertNotNull(handle);
         assertNotNull(handle.get());

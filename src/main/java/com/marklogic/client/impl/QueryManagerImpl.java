@@ -68,21 +68,21 @@ public class QueryManagerImpl implements QueryManager {
     }
 
     @Override
-    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef) {
-        return search(searchHandle, querydef, 1, null);
+    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle) {
+        return search(querydef, searchHandle, 1, null);
     }
 
     @Override
-    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, long start) {
-        return search(searchHandle, querydef, start, null);
+    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start) {
+        return search(querydef, searchHandle, start, null);
     }
 
     @Override
-    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, Transaction transaction) {
-        return search(searchHandle, querydef, 1, transaction);
+    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction) {
+        return search(querydef, searchHandle, 1, transaction);
     }
 
-    public <T extends SearchReadHandle> T search(T searchHandle, QueryDefinition querydef, long start, Transaction transaction) {
+    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction) {
         if (searchHandle instanceof SearchHandle) {
             ((SearchHandle) searchHandle).setQueryCriteria(querydef);
         }
@@ -102,7 +102,7 @@ public class QueryManagerImpl implements QueryManager {
 
     @Override
     public MatchDocumentSummary findOne(QueryDefinition querydef) {
-        SearchHandle results = search(new SearchHandle(), querydef);
+        SearchHandle results = search(querydef, new SearchHandle());
         MatchDocumentSummary[] summaries = results.getMatchResults();
         if (summaries.length > 0) {
             return summaries[0];
@@ -113,7 +113,7 @@ public class QueryManagerImpl implements QueryManager {
 
     @Override
     public MatchDocumentSummary findOne(QueryDefinition querydef, Transaction transaction) {
-        SearchHandle results = search(new SearchHandle(), querydef, transaction);
+        SearchHandle results = search(querydef, new SearchHandle(), transaction);
         MatchDocumentSummary[] summaries = results.getMatchResults();
         if (summaries.length > 0) {
             return summaries[0];
