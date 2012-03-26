@@ -1,6 +1,5 @@
 package com.marklogic.client.impl;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.List;
@@ -12,7 +11,6 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.xml.bind.JAXBException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,20 +19,17 @@ import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.BadRequestException;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DocumentIdentifier;
-import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ElementLocator;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.KeyLocator;
 import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ValueLocator;
 import com.marklogic.client.config.search.KeyValueQueryDefinition;
 import com.marklogic.client.config.search.QueryDefinition;
-import com.marklogic.client.config.search.SearchOptions;
 import com.marklogic.client.config.search.StringQueryDefinition;
 import com.marklogic.client.config.search.StructuredQueryDefinition;
-import com.marklogic.client.config.search.impl.SearchOptionsImpl;
 import com.marklogic.client.io.marker.OutputStreamSender;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -43,11 +38,8 @@ import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.api.client.filter.HTTPDigestAuthFilter;
-
 import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.urlconnection.HTTPSProperties;
-// import com.sun.jersey.client.apache4.ApacheHttpClient4;
-
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import com.sun.jersey.multipart.BodyPart;
 import com.sun.jersey.multipart.Boundary;
@@ -61,7 +53,6 @@ public class JerseyServices implements RESTServices {
 	private Client client;
 	private WebResource connection;
 
-	private String QUERY_OPTIONS_BASE = "/config/search/";
 
 	public JerseyServices() {
 	}
@@ -546,54 +537,8 @@ public class JerseyServices implements RESTServices {
 		return entity;
     }
 
-	// TODO rewrite to JSON, XML, or JAXB output.
-	public SearchOptions getOptions(String searchOptionsName) {
-		ClientResponse clientResponse = connection
-				.path(QUERY_OPTIONS_BASE + searchOptionsName)
-				.accept("application/xml").get(ClientResponse.class);
 
-		if (clientResponse.getClientResponseStatus() == ClientResponse.Status.OK) {
-			try {
-				return new SearchOptionsImpl(clientResponse.getEntityInputStream());
-			} catch (JAXBException e) {
-				throw new MarkLogicIOException(
-						"Could not get options from server", e);
-			}
-		} else {
-			throw new MarkLogicIOException("Unexpected response "
-					+ clientResponse.getClientResponseStatus()
-					+ " from Server thrown for options name "
-					+ searchOptionsName);
-		}
-	}
-
-	public void putOptions(String searchOptionsName, SearchOptions options) {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		try {
-			options.writeTo(baos);
-		} catch (JAXBException e) {
-			throw new MarkLogicIOException(
-					"Could not build options to send to server", e);
-		}
-		ClientResponse clientResponse = connection
-				.path(QUERY_OPTIONS_BASE + searchOptionsName)
-				.type("application/xml")
-				.put(ClientResponse.class, baos.toByteArray());
-		logger.debug("Returned from PUT with status code {}", clientResponse.getStatus());
-		if(clientResponse.getStatus() == 400) {
-			throw new MarkLogicIOException("Bad Request sent to REST server. " + clientResponse.getEntityInputStream().toString());
-		}
-	}
-
-	@Override
-	public void deleteOptions(String searchOptionsName) {
-		ClientResponse clientResponse = connection
-				.path(QUERY_OPTIONS_BASE + searchOptionsName)
-				.accept("application/xml").delete(ClientResponse.class);
-
-	}
-
-	// namespaces, etc.
+	// namespaces, search options etc.
 	public <T> T getValue(String type, String key, String mimetype, Class<T> as)
 	throws ForbiddenUserException, FailedRequestException {
 		logger.info("Getting {}/{}", type, key);

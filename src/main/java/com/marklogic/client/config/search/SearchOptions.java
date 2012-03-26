@@ -1,20 +1,15 @@
 package com.marklogic.client.config.search;
 
-import java.io.OutputStream;
 import java.util.List;
 
-import javax.xml.bind.JAXBException;
+import com.marklogic.client.config.search.jaxb.Options;
 
 
 public interface SearchOptions {
 
-	public abstract void writeTo(OutputStream os) throws JAXBException;
-
-	public abstract String toString();
-
-	public abstract List<SearchOption> getAll();
-
-	public abstract boolean getReturnFacets();
+	public Options getJAXBContent(); 
+	
+	public boolean getReturnFacets();
 
 	public abstract void setReturnFacets(boolean returnFacets);
 
@@ -65,5 +60,19 @@ public interface SearchOptions {
 	public abstract void setQualityWeight(double qualityWeight);
 
 	public List<SearchOption> getByClassName(@SuppressWarnings("rawtypes") Class clazz);
+
+	public List<SearchOption> getAll();
+
+	public List<String> getSearchOptions();
+
+	public List<Constraint> getConstraints();
+
+	public Term getTerm();
+
+	public Grammar getGrammar();
+
+	public List<Operator> getOperators();
+
+	public TransformResults getTransformResults();
 
 }

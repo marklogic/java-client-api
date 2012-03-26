@@ -41,10 +41,6 @@ public interface RESTServices {
 	public void commitTransaction(String transactionId) throws ForbiddenUserException, FailedRequestException;
 	public void rollbackTransaction(String transactionId) throws ForbiddenUserException, FailedRequestException;
 
-	public SearchOptions getOptions(String searchOptionsName);
-	public void putOptions(String searchOptionsName, SearchOptions options);
-	public void deleteOptions(String searchOptionsName);
-
 	// namespaces, etc.
 	public <T> T getValue(String type, String key, String mimetype, Class<T> as)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;

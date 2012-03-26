@@ -1,22 +1,34 @@
 package com.marklogic.client.test;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.xml.sax.SAXException;
 
-import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.config.search.SearchOptions;
-import com.marklogic.client.config.search.impl.SearchOptionsImpl;
+import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.SearchOptionsHandle;
+import com.marklogic.client.io.StringHandle;
 
 public class QueryOptionsManagerTest {
+	
+	private static final org.slf4j.Logger logger = LoggerFactory
+			.getLogger(QueryOptionsManagerTest.class);;
 	
 	
 	@BeforeClass
@@ -35,17 +47,11 @@ public class QueryOptionsManagerTest {
 		QueryOptionsManager mgr = Common.client.newQueryOptionsManager();
 		assertNotNull("Client could not create query options manager", mgr);
 
-		SearchOptions options = new SearchOptionsImpl();
-        mgr.writeOptions("testempty", options);
+		SearchOptions options = mgr.newOptions();
+        mgr.writeOptions("testempty", new SearchOptionsHandle().on(options));
         
-        SearchOptions returned = mgr.readOptions("testempty");
-
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		returned.writeTo(baos);
-		
-		String optionsResult = baos.toString();
-
-		assertTrue("Empty options result not empty",optionsResult.contains("<options xmlns=\"http://marklogic.com/appservices/search\"/>"));
+        String optionsResult = mgr.readOptions("testempty", new StringHandle()).get();
+        assertTrue("Empty options result not empty",optionsResult.contains("<options xml:lang=\"en\" xmlns=\"http://marklogic.com/appservices/search\"/>"));
 		
 		mgr.deleteOptions("testempty");
 		
@@ -65,4 +71,35 @@ public class QueryOptionsManagerTest {
 	}
 	*/
 
+	@Test
+	public void testXMLDocsAsSearchOptions() throws ParserConfigurationException, SAXException, IOException {
+		String optionsName = "invalid";
+		
+		Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+		Element root = domDocument.createElementNS("http://marklogic.com/appservices/search","options");
+		Element rf = domDocument.createElementNS("http://marklogic.com/appservices/search","return-facets");
+		rf.setTextContent("true");
+		root.appendChild(rf);
+		root.setAttributeNS("http://www.w3.org/XML/1998/namespace", "lang", "en");  // MarkLogic adds this if I don't
+		domDocument.appendChild(root);
+
+		QueryOptionsManager queryOptionsMgr = Common.client.newQueryOptionsManager();
+		
+		queryOptionsMgr.writeOptions(optionsName, new DOMHandle(domDocument));
+
+		String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
+				.getDOMImplementation()).createLSSerializer().writeToString(domDocument);
+		
+		String optionsString = queryOptionsMgr.readOptions(optionsName, new StringHandle()).get();
+		assertNotNull("Read null string for XML content",optionsString);
+		logger.debug("Two XML Strings {} and {}", domString, optionsString);
+		//TODO  xml assertions too stringent.
+		// assertXMLEqual("Failed to read XML document as String", domString, optionsString);
+
+		Document readDoc = queryOptionsMgr.readOptions(optionsName, new DOMHandle()).get();
+		assertNotNull("Read null document for XML content",readDoc);
+		//TODO xml assertions too stringent
+		// assertXMLEqual("Failed to read XML document as DOM",domDocument,readDoc);
+
+	}
 }

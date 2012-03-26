@@ -8,6 +8,7 @@ import com.marklogic.client.io.marker.BinaryWriteHandle;
 import com.marklogic.client.io.marker.GenericWriteHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.OutputStreamSender;
+import com.marklogic.client.io.marker.SearchOptionsWriteHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
@@ -33,7 +34,8 @@ public class OutputStreamHandle
         JSONWriteHandle<OutputStreamSender>, 
         TextWriteHandle<OutputStreamSender>,
         XMLWriteHandle<OutputStreamSender>,
-        StructureWriteHandle<OutputStreamSender>
+        StructureWriteHandle<OutputStreamSender>,
+        SearchOptionsWriteHandle<OutputStreamSender>
 {
 	static final private Logger logger = LoggerFactory.getLogger(OutputStreamHandle.class);
 

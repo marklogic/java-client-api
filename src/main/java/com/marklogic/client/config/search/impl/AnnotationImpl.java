@@ -17,7 +17,7 @@ public class AnnotationImpl extends AtomicSearchOption implements Annotation {
 
 	Logger logger = (Logger) LoggerFactory.getLogger(AnnotationImpl.class);
 	
-	AnnotationImpl(com.marklogic.client.config.search.jaxb.Annotation ot) {
+	public AnnotationImpl(com.marklogic.client.config.search.jaxb.Annotation ot) {
 		jaxbObject = ot;
 	}
 
