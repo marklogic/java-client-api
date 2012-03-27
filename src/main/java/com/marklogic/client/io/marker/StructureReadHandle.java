@@ -5,5 +5,5 @@ package com.marklogic.client.io.marker;
  *
  * @param <C>
  */
-public interface StructureReadHandle<C> extends DocumentMetadataReadHandle<C>, SearchReadHandle<C> {
+public interface StructureReadHandle<C> extends QueryOptionsReadHandle<C>, DocumentMetadataReadHandle<C>, SearchReadHandle<C> {
 }

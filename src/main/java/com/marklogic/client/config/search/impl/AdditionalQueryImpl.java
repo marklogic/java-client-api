@@ -3,9 +3,9 @@ package com.marklogic.client.config.search.impl;
 import org.w3c.dom.Element;
 
 import com.marklogic.client.config.search.AdditionalQuery;
-import com.marklogic.client.config.search.SearchOption;
+import com.marklogic.client.config.search.QueryOption;
 
-public class AdditionalQueryImpl extends AtomicSearchOption implements SearchOption, AdditionalQuery {
+public class AdditionalQueryImpl extends AtomicSearchOption implements QueryOption, AdditionalQuery {
 
 	com.marklogic.client.config.search.jaxb.AdditionalQuery jaxbObject;
 	

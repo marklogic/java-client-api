@@ -6,7 +6,7 @@ import org.w3c.dom.Element;
 
 import com.marklogic.client.config.search.Term;
 
-public class TermImpl extends AbstractSearchOption implements Term {
+public class TermImpl extends AbstractQueryOption implements Term {
 	
 	private com.marklogic.client.config.search.jaxb.Term jaxbObject;
 	

@@ -6,10 +6,10 @@ import java.util.List;
 import org.w3c.dom.Element;
 
 import com.marklogic.client.config.search.Operator;
-import com.marklogic.client.config.search.SearchOption;
+import com.marklogic.client.config.search.QueryOption;
 import com.marklogic.client.config.search.State;
 
-public class OperatorImpl extends AbstractSearchOption implements SearchOption, Operator {
+public class OperatorImpl extends AbstractQueryOption implements QueryOption, Operator {
 
     private com.marklogic.client.config.search.jaxb.Operator jaxbObject;
     

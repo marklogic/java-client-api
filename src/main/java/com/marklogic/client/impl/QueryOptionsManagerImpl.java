@@ -7,10 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.config.search.SearchOptions;
-import com.marklogic.client.io.SearchOptionsHandle;
-import com.marklogic.client.io.marker.SearchOptionsReadHandle;
-import com.marklogic.client.io.marker.SearchOptionsWriteHandle;
+import com.marklogic.client.config.search.QueryOptions;
+import com.marklogic.client.io.QueryOptionsHandle;
+import com.marklogic.client.io.marker.QueryOptionsReadHandle;
+import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
 public class QueryOptionsManagerImpl implements QueryOptionsManager {
 
@@ -34,13 +34,13 @@ public class QueryOptionsManagerImpl implements QueryOptionsManager {
 	
 
 	@Override
-	public SearchOptions newOptions() {
-		SearchOptionsHandle handle = new SearchOptionsHandle();
+	public QueryOptions newOptions() {
+		QueryOptionsHandle handle = new QueryOptionsHandle();
 		return handle;
 	}
 
 	@Override
-	public <T extends SearchOptionsReadHandle> T readOptions(String name, T searchOptionsHandle) {
+	public <T extends QueryOptionsReadHandle> T readOptions(String name, T searchOptionsHandle) {
 		if (name == null)
 			throw new IllegalArgumentException("Cannot read options for null name");
 
@@ -49,7 +49,7 @@ public class QueryOptionsManagerImpl implements QueryOptionsManager {
 	}
 
 	@Override
-	public <T extends SearchOptionsWriteHandle> void writeOptions(String name,
+	public <T extends QueryOptionsWriteHandle> void writeOptions(String name,
 			T searchOptionsHandle) {
 		services.putValue(QUERY_OPTIONS_BASE, name, "application/xml", searchOptionsHandle.sendContent());
 	}

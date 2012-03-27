@@ -25,8 +25,8 @@ import com.marklogic.client.config.search.Grammar;
 import com.marklogic.client.config.search.MarkLogicBindingException;
 import com.marklogic.client.config.search.MarkLogicUnhandledElementException;
 import com.marklogic.client.config.search.Operator;
-import com.marklogic.client.config.search.SearchOption;
-import com.marklogic.client.config.search.SearchOptions;
+import com.marklogic.client.config.search.QueryOption;
+import com.marklogic.client.config.search.QueryOptions;
 import com.marklogic.client.config.search.Term;
 import com.marklogic.client.config.search.TransformResults;
 import com.marklogic.client.config.search.impl.AdditionalQueryImpl;
@@ -54,21 +54,21 @@ import com.marklogic.client.config.search.jaxb.Range;
 import com.marklogic.client.config.search.jaxb.Value;
 import com.marklogic.client.config.search.jaxb.Word;
 import com.marklogic.client.io.marker.OutputStreamSender;
-import com.marklogic.client.io.marker.SearchOptionsReadHandle;
-import com.marklogic.client.io.marker.SearchOptionsWriteHandle;
+import com.marklogic.client.io.marker.QueryOptionsReadHandle;
+import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
-public class SearchOptionsHandle implements
-		SearchOptionsReadHandle<InputStream>,
-		SearchOptionsWriteHandle<OutputStreamSender>, SearchOptions,
+public class QueryOptionsHandle implements
+		QueryOptionsReadHandle<InputStream>,
+		QueryOptionsWriteHandle<OutputStreamSender>, QueryOptions,
 		OutputStreamSender {
 	static final private Logger logger = LoggerFactory
-			.getLogger(SearchOptionsHandle.class);
+			.getLogger(QueryOptionsHandle.class);
 	protected JAXBContext jc = null;
 	protected Unmarshaller unmarshaller = null;
 	protected Marshaller m = null;
 	private Options jaxbOptions = null;
 
-	public SearchOptionsHandle() {
+	public QueryOptionsHandle() {
 		this.jaxbOptions = new Options();
 	}
 
@@ -109,15 +109,15 @@ public class SearchOptionsHandle implements
 		return this;
 	}
 
-	public SearchOptions get() {
+	public QueryOptions get() {
 		return this;
 	}
 
-	public void set(SearchOptions options) {
+	public void set(QueryOptions options) {
 		this.jaxbOptions = options.getJAXBContent();
 	}
 
-	public SearchOptionsHandle on(SearchOptions options) {
+	public QueryOptionsHandle on(QueryOptions options) {
 		set(options);
 		return this;
 	}
@@ -182,8 +182,8 @@ public class SearchOptionsHandle implements
 	}
 
 	@Override
-	public void add(SearchOption searchOption) {
-		jaxbOptions.getSearchOptions().add(searchOption.asJaxbObject());
+	public void add(QueryOption queryOption) {
+		jaxbOptions.getSearchOptions().add(queryOption.asJaxbObject());
 	}
 
 	@Override
@@ -299,9 +299,9 @@ public class SearchOptionsHandle implements
 	}
 
 	@Override
-	public List<SearchOption> getByClassName(Class clazz) {
-		List<SearchOption> toReturn = new ArrayList<SearchOption>();
-		for (SearchOption option : getAll()) {
+	public List<QueryOption> getByClassName(Class clazz) {
+		List<QueryOption> toReturn = new ArrayList<QueryOption>();
+		for (QueryOption option : getAll()) {
 			if (option.getClass() == clazz) {
 				toReturn.add(option);
 			}
@@ -332,7 +332,7 @@ public class SearchOptionsHandle implements
 			write(baos);
 		} catch (IOException e) {
 			throw new MarkLogicIOException(
-					"Failed to make String representation of SearchOptions", e);
+					"Failed to make String representation of QueryOptions", e);
 		}
 		return baos.toString();
 	}
@@ -342,13 +342,13 @@ public class SearchOptionsHandle implements
 		return jaxbOptions;
 	}
 
-	public List<SearchOption> getAll() {
-		List<SearchOption> options = new ArrayList<SearchOption>();
+	public List<QueryOption> getAll() {
+		List<QueryOption> options = new ArrayList<QueryOption>();
 		for (Object ot : this.jaxbOptions.getSearchOptions()) {
 			if (ot.getClass().getPackage().toString()
 					.contains("com.marklogic.client.config.search.jaxb")) {
 				logger.debug("Instantiating POJO class to wrap");
-				SearchOption newOption = this.newQueryOption(ot);
+				QueryOption newOption = this.newQueryOption(ot);
 				// add all options that are handled by POJOs to the return
 				// lists.
 				if (newOption != null) {
@@ -361,7 +361,7 @@ public class SearchOptionsHandle implements
 		return options;
 	};
 
-	private SearchOption newQueryOption(Object ot) {
+	private QueryOption newQueryOption(Object ot) {
 		logger.debug("Making new query option for object of class "
 				+ ot.getClass().getName());
 		@SuppressWarnings("rawtypes")
@@ -446,7 +446,7 @@ public class SearchOptionsHandle implements
 	@Override
 	public List<String> getSearchOptions() {
 		List<String> l = new ArrayList<String>();
-		for (SearchOption option : getAll()) {
+		for (QueryOption option : getAll()) {
 			if (option instanceof JAXBElement<?>) {
 				JAXBElement<String> e = (JAXBElement<String>) option;
 				if (e.getName() == new QName("http://marklogic.com/appservices/search", "search-option")) {
@@ -461,7 +461,7 @@ public class SearchOptionsHandle implements
 	public List<Constraint> getConstraints() {
 		List<Constraint> l = new ArrayList<Constraint>();
 
-		for (SearchOption option : getAll()) {
+		for (QueryOption option : getAll()) {
 			if (option instanceof Constraint) {
 				l.add((Constraint) option);
 			}
@@ -471,7 +471,7 @@ public class SearchOptionsHandle implements
 	
 	@Override
 	public Term getTerm() {
-		for (SearchOption option : getAll()) {
+		for (QueryOption option : getAll()) {
 			if (option instanceof Term) {
 				return (Term) option;
 			}
@@ -481,7 +481,7 @@ public class SearchOptionsHandle implements
 
 	@Override
 	public Grammar getGrammar() {
-		for (SearchOption option : getAll()) {
+		for (QueryOption option : getAll()) {
 			if (option instanceof Grammar) {
 				return (Grammar) option;
 			}
@@ -493,7 +493,7 @@ public class SearchOptionsHandle implements
 	public List<Operator> getOperators() {
 		List<Operator> l = new ArrayList<Operator>();
 
-		for (SearchOption option : getAll()) {
+		for (QueryOption option : getAll()) {
 			if (option instanceof Operator) {
 				l.add((Operator) option);
 			}
@@ -503,7 +503,7 @@ public class SearchOptionsHandle implements
 
 	@Override
 	public TransformResults getTransformResults() {
-		for (SearchOption option : getAll()) {
+		for (QueryOption option : getAll()) {
 			if (option instanceof TransformResults) {
 				return (TransformResults) option;
 			}

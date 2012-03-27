@@ -6,10 +6,10 @@ import javax.xml.namespace.QName;
 
 import com.marklogic.client.ElementLocator;
 import com.marklogic.client.config.search.FunctionRef;
-import com.marklogic.client.config.search.SearchOption;
+import com.marklogic.client.config.search.QueryOption;
 import com.marklogic.client.config.search.TransformResults;
 
-public class TransformResultsImpl implements SearchOption, TransformResults {
+public class TransformResultsImpl implements QueryOption, TransformResults {
 
 	private com.marklogic.client.config.search.jaxb.TransformResults jaxbObject;
 

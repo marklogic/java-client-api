@@ -5,5 +5,5 @@ package com.marklogic.client.io.marker;
  *
  * @param <C>
  */
-public interface StructureWriteHandle<C> extends DocumentMetadataWriteHandle<C> {
+public interface StructureWriteHandle<C> extends QueryOptionsWriteHandle<C>, DocumentMetadataWriteHandle<C> {
 }

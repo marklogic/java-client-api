@@ -33,8 +33,8 @@ import com.marklogic.client.config.search.Grammar;
 import com.marklogic.client.config.search.IndexReference;
 import com.marklogic.client.config.search.Operator;
 import com.marklogic.client.config.search.RangeConstraint;
-import com.marklogic.client.config.search.SearchOption;
-import com.marklogic.client.config.search.SearchOptions;
+import com.marklogic.client.config.search.QueryOption;
+import com.marklogic.client.config.search.QueryOptions;
 import com.marklogic.client.config.search.SortOrder;
 import com.marklogic.client.config.search.Term;
 import com.marklogic.client.config.search.TransformResults;
@@ -48,7 +48,7 @@ import com.marklogic.client.config.search.impl.SortOrderImpl;
 import com.marklogic.client.config.search.impl.SuggestionSourceImpl;
 import com.marklogic.client.config.search.impl.ValueConstraintImpl;
 import com.marklogic.client.config.search.impl.WordConstraintImpl;
-import com.marklogic.client.io.SearchOptionsHandle;
+import com.marklogic.client.io.QueryOptionsHandle;
 
 
 public class QueryOptionsTest {
@@ -56,7 +56,7 @@ public class QueryOptionsTest {
 	private JAXBContext jc;
 	private Marshaller m;
 	private QueryOptionsManager mgr;
-	private SearchOptions testOptions;
+	private QueryOptions testOptions;
 	
 	Logger logger = (Logger) LoggerFactory.getLogger(QueryOptionsTest.class);
 	
@@ -80,13 +80,13 @@ public class QueryOptionsTest {
 		assertNotNull("Client could not create query options manager", mgr);
 		
 		testOptions = mgr.newOptions();
-		SearchOptionsHandle impl = (SearchOptionsHandle) testOptions;
+		QueryOptionsHandle impl = (QueryOptionsHandle) testOptions;
 		impl.receiveContent(new FileInputStream(new File("src/test/resources/search-config.xml")));
 	}
 
 	@Test
 	public void testEmptyQueryOptions() throws JAXBException {
-		SearchOptions options = mgr.newOptions();
+		QueryOptions options = mgr.newOptions();
 
 		String optionsResult = options.toString();
 	       
@@ -96,13 +96,13 @@ public class QueryOptionsTest {
 	
 	@Test
 	public void marshallAndExamine() throws FileNotFoundException, JAXBException {
-		SearchOptions options = mgr.newOptions();
-		SearchOptionsHandle impl = (SearchOptionsHandle) options;
+		QueryOptions options = mgr.newOptions();
+		QueryOptionsHandle impl = (QueryOptionsHandle) options;
 		impl.receiveContent(new FileInputStream(new File("src/test/resources/search-config.xml")));
 		
-		List<SearchOption> optionList = options.getAll();
+		List<QueryOption> optionList = options.getAll();
 		
-		for (SearchOption o : optionList) {
+		for (QueryOption o : optionList) {
 		  logger.debug(o.toString());
 		}
 		assertTrue(!options.getReturnFacets());
@@ -112,7 +112,7 @@ public class QueryOptionsTest {
 	
 	@Test
 	public void setReturnFacets() {
-		SearchOptions options = mgr.newOptions();
+		QueryOptions options = mgr.newOptions();
 		options.setReturnFacets(true);
 		logger.debug("here is return facets: " + options.getReturnFacets());
 		assertTrue(options.getReturnFacets());
@@ -123,7 +123,7 @@ public class QueryOptionsTest {
 
 	@Test
 	public void setFragmentScope() {
-		SearchOptions options = mgr.newOptions();
+		QueryOptions options = mgr.newOptions();
 		options.setFragmentScope("Properties");
 		logger.debug("here is fragment-scope: " + options.getFragmentScope());
 		assertEquals(options.getFragmentScope(), "Properties");
@@ -134,7 +134,7 @@ public class QueryOptionsTest {
 	
 	@Test
 	public void parseComprehensiveOptions() {
-		SearchOptions options = testOptions;
+		QueryOptions options = testOptions;
 		List<String> searchOptions = options.getSearchOptions();
 		List<Constraint> constraints = options.getConstraints();
 		
@@ -158,7 +158,7 @@ public class QueryOptionsTest {
 	
 	@Test
 	public void buildRangeConstraintTest() {
-		SearchOptions options = mgr.newOptions();
+		QueryOptions options = mgr.newOptions();
 		RangeConstraint range = new RangeConstraintImpl("decade");
 		options.add(range);
 		
@@ -185,13 +185,13 @@ public class QueryOptionsTest {
 		String optionsString = options.toString();
 		
 		logger.debug(optionsString);
-		assertTrue("Serialized Range AbstractSearchOption should contain this string", optionsString.contains("<bucket name=\"2000s\">2000s</bucket>"));
+		assertTrue("Serialized Range AbstractQueryOption should contain this string", optionsString.contains("<bucket name=\"2000s\">2000s</bucket>"));
 		
 	}
 	
 	@Test
 	public void buildValueConstraintTest() {
-		SearchOptions options = mgr.newOptions();
+		QueryOptions options = mgr.newOptions();
 		ValueConstraintImpl vc = new ValueConstraintImpl("sumlev");
 		options.add(vc);
 		
@@ -201,13 +201,13 @@ public class QueryOptionsTest {
 		String optionsString = options.toString();
 		logger.debug(optionsString);
 		
-		assertTrue("Serialized Value AbstractSearchOption should contain this string", optionsString.contains("<element name=\"sumlev\" ns=\"\""));
+		assertTrue("Serialized Value AbstractQueryOption should contain this string", optionsString.contains("<element name=\"sumlev\" ns=\"\""));
 		
 	}
 
 	@Test
 	public void buildWordConstraintTest() {
-		SearchOptions options = mgr.newOptions();
+		QueryOptions options = mgr.newOptions();
 		WordConstraint wc = new WordConstraintImpl("intitle");
 		options.add(wc);
 		
@@ -218,14 +218,14 @@ public class QueryOptionsTest {
 		String optionsString = options.toString();
 		logger.debug(optionsString);
 		
-		assertTrue("Serialized Value AbstractSearchOption should contain this string", optionsString.contains("<field name=\"titlefield\""));
+		assertTrue("Serialized Value AbstractQueryOption should contain this string", optionsString.contains("<field name=\"titlefield\""));
 		
 	}
 	
 
 	@Test
 	public void buildSuggestionSources() {
-		SearchOptions options = mgr.newOptions();
+		QueryOptions options = mgr.newOptions();
 		DefaultSuggestionSourceImpl dss = new DefaultSuggestionSourceImpl();
 		SuggestionSourceImpl ss = new SuggestionSourceImpl();
 		
@@ -244,7 +244,7 @@ public class QueryOptionsTest {
 	
 	@Test
 	public void buildCollectionConstraint() {
-		SearchOptions options = mgr.newOptions();
+		QueryOptions options = mgr.newOptions();
 		CollectionConstraintImpl c = new CollectionConstraintImpl("coll");
 		c.setDoFacets(true);
 		c.addFacetOption("limit=10");
@@ -258,10 +258,10 @@ public class QueryOptionsTest {
 	@Test
 	public void serializeAndStoreElementQueryConstraint() throws JAXBException {
 		String optionsString = "<options xmlns=\"http://marklogic.com/appservices/search\"><constraint name=\"sample\"><element-query name=\"title\" ns=\"http://my/namespace\" /></constraint></options>";
-		SearchOptions options = mgr.newOptions();
-		SearchOptionsHandle impl = (SearchOptionsHandle) options;
+		QueryOptions options = mgr.newOptions();
+		QueryOptionsHandle impl = (QueryOptionsHandle) options;
 		impl.receiveContent(new ByteArrayInputStream(optionsString.getBytes()));
-		List<SearchOption> l = options.getAll();
+		List<QueryOption> l = options.getAll();
 		ElementQueryConstraintImpl eqc = (ElementQueryConstraintImpl) l.get(0);
 		
 		assertEquals("Name attribute doesn't match expected.", eqc.getName(), "title" );
@@ -272,10 +272,10 @@ public class QueryOptionsTest {
 	public void serializeAndStoreCustomConstraint() throws JAXBException
 	{
 		String optionsString = "<options xmlns=\"http://marklogic.com/appservices/search\"><constraint name=\"custom\"><custom facet=\"true\"><parse apply=\"parse\" ns=\"http://my/namespace\" at=\"/my/parse.xqy\" /><start-facet apply=\"start\" ns=\"http://my/namespace\" at=\"/my/start.xqy\" /><finish-facet apply=\"finish\" ns=\"http://my/namespace\" at=\"/my/finish.xqy\" /></custom></constraint></options>";
-		SearchOptions options = mgr.newOptions();
-		SearchOptionsHandle impl = (SearchOptionsHandle) options;
+		QueryOptions options = mgr.newOptions();
+		QueryOptionsHandle impl = (QueryOptionsHandle) options;
 		impl.receiveContent(new ByteArrayInputStream(optionsString.getBytes()));
-		List<SearchOption> l = options.getAll();
+		List<QueryOption> l = options.getAll();
 		CustomConstraint cc = (CustomConstraint) l.get(0);
 		
 		logger.debug(options.toString());
@@ -291,16 +291,16 @@ public class QueryOptionsTest {
 	
 	@Test
 	public void parseAndBuildPropertiesConstraint() {
-		SearchOptions options = mgr.newOptions();
+		QueryOptions options = mgr.newOptions();
 		
 		PropertiesConstraintImpl pc = new PropertiesConstraintImpl("props");
 		options.add(pc);
 		
 		logger.debug(options.toString());
 		
-		mgr.writeOptions("props", new SearchOptionsHandle().on(options));
+		mgr.writeOptions("props", new QueryOptionsHandle().on(options));
 		
-		SearchOptions options2 = mgr.readOptions("props", new SearchOptionsHandle()).get();
+		QueryOptions options2 = mgr.readOptions("props", new QueryOptionsHandle()).get();
 		assertEquals("Unexpected class from JAXB unmarshalling", options2.getAll().get(0).getClass().getName(), PropertiesConstraintImpl.class.getName());
 		
 	}
@@ -309,7 +309,7 @@ public class QueryOptionsTest {
 	public void parseAndBuildAdditionalQuery() throws JAXBException {
 		String optionsString = "<options xmlns=\"http://marklogic.com/appservices/search\"><additional-query><directory-query xmlns=\"http://marklogic.com/cts\"><uri>/oscars/</uri></directory-query></additional-query></options>";
 		ByteArrayInputStream bais = new ByteArrayInputStream(optionsString.getBytes());
-		SearchOptionsHandle options = (SearchOptionsHandle) mgr.newOptions();
+		QueryOptionsHandle options = (QueryOptionsHandle) mgr.newOptions();
 		options.receiveContent(bais);
 		
 		AdditionalQuery aq = (AdditionalQuery) options.getAll().get(0);
@@ -328,8 +328,8 @@ public class QueryOptionsTest {
 	
 	@Test
 	public void parseAndBuildAnnotation() throws JAXBException, FileNotFoundException {
-		SearchOptions options = this.testOptions;
-		SearchOptionsHandle impl = (SearchOptionsHandle) options;
+		QueryOptions options = this.testOptions;
+		QueryOptionsHandle impl = (QueryOptionsHandle) options;
 		impl.receiveContent(new FileInputStream(new File("src/test/resources/search-config.xml")));
 		
 		// find the annotation.
@@ -356,7 +356,7 @@ public class QueryOptionsTest {
 	
 	@Test
 	public void parseAndBuildOperator() throws FileNotFoundException, JAXBException {
-		SearchOptions options = testOptions;
+		QueryOptions options = testOptions;
 		
 		Operator operator = (Operator) options.getByClassName(com.marklogic.client.config.search.impl.OperatorImpl.class).get(0);
 		

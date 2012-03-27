@@ -3,9 +3,9 @@ package com.marklogic.client.config.search.impl;
 import java.util.List;
 
 import com.marklogic.client.config.search.Grammar;
-import com.marklogic.client.config.search.SearchOption;
+import com.marklogic.client.config.search.QueryOption;
 
-public class GrammarImpl implements SearchOption, Grammar {
+public class GrammarImpl implements QueryOption, Grammar {
 
 
 	private com.marklogic.client.config.search.jaxb.Grammar jaxbObject;

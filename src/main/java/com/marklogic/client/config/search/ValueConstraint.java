@@ -1,5 +1,5 @@
 package com.marklogic.client.config.search;
 
-public interface ValueConstraint extends SearchOption, Constraint, Indexable, Terms {
+public interface ValueConstraint extends QueryOption, Constraint, Indexable, Terms {
 
 }

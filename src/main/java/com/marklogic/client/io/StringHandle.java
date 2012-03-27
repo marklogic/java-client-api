@@ -3,8 +3,8 @@ package com.marklogic.client.io;
 import com.marklogic.client.Format;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.SearchOptionsReadHandle;
-import com.marklogic.client.io.marker.SearchOptionsWriteHandle;
+import com.marklogic.client.io.marker.QueryOptionsReadHandle;
+import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
@@ -20,8 +20,7 @@ public class StringHandle
 		JSONReadHandle<String>, JSONWriteHandle<String>, 
 		TextReadHandle<String>, TextWriteHandle<String>,
 		XMLReadHandle<String>, XMLWriteHandle<String>,
-		StructureReadHandle<String>, StructureWriteHandle<String>,
-		SearchOptionsReadHandle<String>, SearchOptionsWriteHandle<String>
+		StructureReadHandle<String>, StructureWriteHandle<String>
 {
 	private String content;
 	private Format format = Format.XML;

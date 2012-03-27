@@ -1,10 +1,10 @@
 package com.marklogic.client.config.search.impl;
 
 import com.marklogic.client.config.search.DefaultSuggestionSource;
-import com.marklogic.client.config.search.SearchOption;
+import com.marklogic.client.config.search.QueryOption;
 
 public class DefaultSuggestionSourceImpl extends SuggestionSourceImpl implements
-		SearchOption, DefaultSuggestionSource {
+		QueryOption, DefaultSuggestionSource {
 
 	private com.marklogic.client.config.search.jaxb.DefaultSuggestionSource jaxbObject;
 	

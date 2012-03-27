@@ -20,9 +20,9 @@ import org.w3c.dom.ls.DOMImplementationLS;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.config.search.SearchOptions;
+import com.marklogic.client.config.search.QueryOptions;
 import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.SearchOptionsHandle;
+import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
 
 public class QueryOptionsManagerTest {
@@ -47,8 +47,8 @@ public class QueryOptionsManagerTest {
 		QueryOptionsManager mgr = Common.client.newQueryOptionsManager();
 		assertNotNull("Client could not create query options manager", mgr);
 
-		SearchOptions options = mgr.newOptions();
-        mgr.writeOptions("testempty", new SearchOptionsHandle().on(options));
+		QueryOptions options = mgr.newOptions();
+        mgr.writeOptions("testempty", new QueryOptionsHandle().on(options));
         
         String optionsResult = mgr.readOptions("testempty", new StringHandle()).get();
         assertTrue("Empty options result not empty",optionsResult.contains("<options xml:lang=\"en\" xmlns=\"http://marklogic.com/appservices/search\"/>"));

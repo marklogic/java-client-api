@@ -10,13 +10,13 @@ import org.w3c.dom.Element;
 import com.marklogic.client.config.search.Annotate;
 import com.marklogic.client.config.search.IndexReference;
 import com.marklogic.client.config.search.Indexable;
-import com.marklogic.client.config.search.SearchOption;
+import com.marklogic.client.config.search.QueryOption;
 import com.marklogic.client.config.search.jaxb.Annotation;
 
 
 
 
-public abstract class AbstractSearchOption implements SearchOption, Indexable, Annotate {
+public abstract class AbstractQueryOption implements QueryOption, Indexable, Annotate {
 
 	protected IndexReference indexReferenceImpl;
 
@@ -49,11 +49,11 @@ public abstract class AbstractSearchOption implements SearchOption, Indexable, A
 
 	public abstract List<Element> getAnnotations();
 	
-	public void addAnnotation(SearchOption parentObject, Element annotation) {
+	public void addAnnotation(QueryOption parentObject, Element annotation) {
 		parentObject.getJAXBChildren().add(annotation);
 	}
 	
-	public List<Element> getAnnotations(SearchOption parentObject) {
+	public List<Element> getAnnotations(QueryOption parentObject) {
 		List<Element> l = new ArrayList<Element>();
 		List<Object> children = parentObject.getJAXBChildren();
 		for (Object o : children ) {

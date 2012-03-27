@@ -1,6 +1,6 @@
 package com.marklogic.client.config.search;
 
-public interface SortOrder extends SearchOption, Annotate, Indexable {
+public interface SortOrder extends QueryOption, Annotate, Indexable {
 
 	
 	public String getType();

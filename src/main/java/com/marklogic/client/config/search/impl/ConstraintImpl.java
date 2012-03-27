@@ -10,7 +10,7 @@ import com.marklogic.client.config.search.Annotation;
 import com.marklogic.client.config.search.Constraint;
 
 
-public abstract class ConstraintImpl extends AbstractSearchOption implements Constraint, Annotate {
+public abstract class ConstraintImpl extends AbstractQueryOption implements Constraint, Annotate {
 
 	protected com.marklogic.client.config.search.jaxb.Constraint jaxbConstraint;
 	

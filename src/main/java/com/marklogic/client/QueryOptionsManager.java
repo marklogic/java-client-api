@@ -1,32 +1,32 @@
 package com.marklogic.client;
 
-import com.marklogic.client.config.search.SearchOptions;
-import com.marklogic.client.io.marker.SearchOptionsReadHandle;
-import com.marklogic.client.io.marker.SearchOptionsWriteHandle;
+import com.marklogic.client.config.search.QueryOptions;
+import com.marklogic.client.io.marker.QueryOptionsReadHandle;
+import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
 public interface QueryOptionsManager {
 	
 	/**
-	 * Generate a new, empty SearchOptions configuration.
-	 * @return an empty SearchOptions object.
+	 * Generate a new, empty QueryOptions configuration.
+	 * @return an empty QueryOptions object.
 	 */
-	public SearchOptions newOptions();
+	public QueryOptions newOptions();
 	
 	/**
-	 * Create a SearchOptions configuration by reading it
+	 * Create a QueryOptions configuration by reading it
 	 * from the REST Server by name.
 	 * @param name
-	 * @return the SearchOptions holding the search configuration
+	 * @return the QueryOptions holding the search configuration
 	 */
-    public <T extends SearchOptionsReadHandle> T readOptions(String name, T searchOptionsHandle);
+    public <T extends QueryOptionsReadHandle> T readOptions(String name, T searchOptionsHandle);
     
     /**
-     * Write a SearchOptions configuration to the REST
+     * Write a QueryOptions configuration to the REST
      * server using a specific name.
      * @param name
      * @param options
      */
-    public <T extends SearchOptionsWriteHandle> void writeOptions(String name, T searchOptionsHandle);
+    public <T extends QueryOptionsWriteHandle> void writeOptions(String name, T searchOptionsHandle);
     
     /**
      * Remove a search configuration from the REST server.

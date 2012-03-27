@@ -5,7 +5,7 @@ import java.util.List;
 
 
 
-public interface SearchOption {
+public interface QueryOption {
 
 	public Object asJaxbObject();
 

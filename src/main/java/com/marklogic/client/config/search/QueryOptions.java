@@ -5,7 +5,7 @@ import java.util.List;
 import com.marklogic.client.config.search.jaxb.Options;
 
 
-public interface SearchOptions {
+public interface QueryOptions {
 
 	public Options getJAXBContent(); 
 	
@@ -13,7 +13,7 @@ public interface SearchOptions {
 
 	public abstract void setReturnFacets(boolean returnFacets);
 
-	public abstract void add(SearchOption searchOption);
+	public abstract void add(QueryOption queryOption);
 
 	public abstract boolean getReturnConstraints();
 
@@ -59,9 +59,9 @@ public interface SearchOptions {
 
 	public abstract void setQualityWeight(double qualityWeight);
 
-	public List<SearchOption> getByClassName(@SuppressWarnings("rawtypes") Class clazz);
+	public List<QueryOption> getByClassName(@SuppressWarnings("rawtypes") Class clazz);
 
-	public List<SearchOption> getAll();
+	public List<QueryOption> getAll();
 
 	public List<String> getSearchOptions();
 

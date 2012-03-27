@@ -20,8 +20,6 @@ import org.xml.sax.SAXException;
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.io.marker.OutputStreamSender;
-import com.marklogic.client.io.marker.SearchOptionsReadHandle;
-import com.marklogic.client.io.marker.SearchOptionsWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -33,8 +31,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
 public class DOMHandle
 	implements OutputStreamSender,
 		XMLReadHandle<InputStream>, XMLWriteHandle<OutputStreamSender>,
-		StructureReadHandle<InputStream>, StructureWriteHandle<OutputStreamSender>,
-		SearchOptionsReadHandle<InputStream>, SearchOptionsWriteHandle<OutputStreamSender>
+		StructureReadHandle<InputStream>, StructureWriteHandle<OutputStreamSender>
 {
 	static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
 

@@ -6,7 +6,7 @@ import org.w3c.dom.Element;
 
 import com.marklogic.client.config.search.Annotation;
 
-public abstract class AtomicSearchOption extends AbstractSearchOption {
+public abstract class AtomicSearchOption extends AbstractQueryOption {
 
 	@Override
 	public List<Object> getJAXBChildren() {

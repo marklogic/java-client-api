@@ -1,6 +1,6 @@
 package com.marklogic.client.config.search;
 
-public interface RangeConstraint extends SearchOption, Constraint, Facetable, Indexable {
+public interface RangeConstraint extends QueryOption, Constraint, Facetable, Indexable {
 
 	/**
 	 * add a bucket to a range constraint to support facets.  This method adds a bucket with no upper or lower bounds.

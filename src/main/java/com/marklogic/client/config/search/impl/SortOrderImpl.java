@@ -7,7 +7,7 @@ import org.w3c.dom.Element;
 import com.marklogic.client.config.search.SortOrder;
 import com.marklogic.client.config.search.jaxb.Score;
 
-public class SortOrderImpl extends AbstractSearchOption implements SortOrder {
+public class SortOrderImpl extends AbstractQueryOption implements SortOrder {
 
 	private com.marklogic.client.config.search.jaxb.SortOrder jaxbObject;
 	
