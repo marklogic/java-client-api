@@ -82,6 +82,11 @@ public class JerseyServices implements RESTServices {
 			client = null;
 		}
 
+		// TODO: integrated control of HTTP Client and Jersey Client logging
+		System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
+		System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire.header", "warn");
+		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "warn");
+
 		// ClientConfig config = new DefaultClientConfig();
 		// see also DefaultApacheHttpClient4Config()
 		DefaultApacheHttpClientConfig config = new DefaultApacheHttpClientConfig();
@@ -293,9 +298,12 @@ public class JerseyServices implements RESTServices {
 
 		logger.info("Putting {} in transaction {}", uri, transactionId);
 
-		ClientResponse response = makeDocumentResource(
-					makeDocumentParams(uri, categories, transactionId, extraParams)
-				).type(mimetype).put(ClientResponse.class,
+		WebResource webResource = makeDocumentResource(
+				makeDocumentParams(uri, categories, transactionId, extraParams)
+			);
+		WebResource.Builder builder = (mimetype != null) ?
+			webResource.type(mimetype) : webResource.getRequestBuilder();
+		ClientResponse response = builder.put(ClientResponse.class,
 						(value instanceof OutputStreamSender) ?
 								new StreamingOutputImpl((OutputStreamSender) value) : value);
 

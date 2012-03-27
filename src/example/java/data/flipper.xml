@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<product>
+    <name>Flipper</name>
+    <domain>Real Estate</domain>
+    <description>Discovers correlations and trending criteria.
+    Finds neighborhoods matching specified criteria.
+    Sends alert when a property qualifies for criteria. 
+    </description>
+</product>
