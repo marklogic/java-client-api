@@ -4,8 +4,6 @@ import com.marklogic.client.QueryManager;
 import com.marklogic.client.config.search.KeyValueQueryDefinition;
 import com.marklogic.client.config.search.MatchDocumentSummary;
 import com.marklogic.client.config.search.MatchLocation;
-import com.marklogic.client.config.search.SearchResults;
-import com.marklogic.client.config.search.StringQueryDefinition;
 import com.marklogic.client.io.SearchHandle;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -38,7 +36,7 @@ public class KeyValueSearchTest {
     @Test
     public void testKVSearch() throws IOException {
         QueryManager queryMgr = Common.client.newQueryManager();
-        KeyValueQueryDefinition qdef = queryMgr.newKeyValueCriteria(null);
+        KeyValueQueryDefinition qdef = queryMgr.newKeyValueDefinition(null);
 
         qdef.put(queryMgr.newElementLocator(new QName("leaf")), "leaf3");
         SearchHandle results = queryMgr.search(qdef, new SearchHandle());

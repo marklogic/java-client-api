@@ -9,12 +9,8 @@ import com.marklogic.client.io.StringHandle;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.w3c.dom.Document;
 
-import javax.xml.namespace.QName;
-import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -41,7 +37,7 @@ public class StringSearchTest {
     @Test
     public void testStringSearch() throws IOException {
         QueryManager queryMgr = Common.client.newQueryManager();
-        StringQueryDefinition qdef = queryMgr.newStringCriteria(null);
+        StringQueryDefinition qdef = queryMgr.newStringDefinition(null);
         qdef.setCriteria("leaf3");
 
         SearchHandle results = queryMgr.search(qdef, new SearchHandle());
@@ -62,7 +58,7 @@ public class StringSearchTest {
     @Test
     public void testStringStringSearch() throws IOException {
         QueryManager queryMgr = Common.client.newQueryManager();
-        StringQueryDefinition qdef = queryMgr.newStringCriteria(null);
+        StringQueryDefinition qdef = queryMgr.newStringDefinition(null);
         qdef.setCriteria("leaf3");
 
         StringHandle handle = new StringHandle();

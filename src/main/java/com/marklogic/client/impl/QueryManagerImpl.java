@@ -39,12 +39,12 @@ public class QueryManagerImpl implements QueryManager {
         this.services = services;
     }
     
-    public StringQueryDefinition newStringCriteria(String optionsName) {
+    public StringQueryDefinition newStringDefinition(String optionsName) {
         return new StringQueryDefinitionImpl(optionsName);
     }
 
     @Override
-    public KeyValueQueryDefinition newKeyValueCriteria(String optionsName) {
+    public KeyValueQueryDefinition newKeyValueDefinition(String optionsName) {
         return new KeyValueQueryDefinitionImpl(optionsName);
     }
 

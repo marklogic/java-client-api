@@ -16,8 +16,8 @@ public interface QueryManager {
     static final public long DEFAULT_PAGE_LENGTH = 10;
     static final public long START = 1;
 
-    public StringQueryDefinition newStringCriteria(String optionsName);
-    public KeyValueQueryDefinition newKeyValueCriteria(String optionsName);
+    public StringQueryDefinition newStringDefinition(String optionsName);
+    public KeyValueQueryDefinition newKeyValueDefinition(String optionsName);
     public StructuredQueryBuilder newStructuredQueryBuilder(String optionsName);
 
     public ElementLocator newElementLocator(QName element);
