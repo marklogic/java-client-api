@@ -53,7 +53,6 @@ import com.marklogic.client.config.search.jaxb.Properties;
 import com.marklogic.client.config.search.jaxb.Range;
 import com.marklogic.client.config.search.jaxb.Value;
 import com.marklogic.client.config.search.jaxb.Word;
-import com.marklogic.client.io.marker.OutputStreamSender;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 

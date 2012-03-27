@@ -19,7 +19,6 @@ import org.xml.sax.SAXException;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.io.marker.OutputStreamSender;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;

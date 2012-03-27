@@ -34,7 +34,6 @@ import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.impl.BasicXMLSerializer;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
-import com.marklogic.client.io.marker.OutputStreamSender;
 
 // import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 

@@ -40,7 +40,11 @@
 </p>
 <p>
 	To access document content, you create a <em>handle</em> object that supports
-	the appropriate representation.	This concept of content handles is core to the Java API.
+	the appropriate representation.	This concept of content handles is core to the Java API
+	(applying the adapter design pattern so the API can read content from or
+	write content to an extensible set of representations).
+</p>
+<p>
 	For instance, consider a binary JPEG file.
 	To write this file to the database, you create a {@link com.marklogic.client.io.FileHandle}
 	and call the handle's set() method with the File object. You then pass the handle
@@ -107,7 +111,7 @@ docMgr.write(docId, handle);
 	To search in a database, you create indexes on the fields and elements
 	of documents and define constraints that specify how to search on these
 	indexes.  Use {@link com.marklogic.client.QueryOptionsManager} to write,
-	read, and delete search options. 
+	read, and delete query options. 
 </p>
 <p>
 	The following example writes new query options named "shipments" with a single constraint.
@@ -117,11 +121,8 @@ docMgr.write(docId, handle);
 <pre>
 QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
 
-SearchOptions options = optionsMgr.newOptions();
-options.add(options.newValueConstraint("port", new ElementIndex(new QName("port")));
-
-SearchOptionsHandle handle = new SearchOptionsHandle();
-handle.set(options);
+QueryOptionsHandle handle = new QueryOptionsHandle();
+options.add(handle.newValueConstraint("port", new ElementIndex(new QName("port")));
 
 optionsMgr.writeOptions("shipments", handle);
 </pre>
@@ -209,17 +210,6 @@ client.newXMLDocumentManager().write(
     client.newDocId("/db/path/to/myDoc.xml"),
     new DOMHandle().with(document)
     );
-</pre>
-<p>
-	You can write query options concisely:
-</p>
-<pre>
-QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
-
-SearchOptions options = optionsMgr.newOptions();
-options.add(options.newValueConstraint("port", new ElementIndex(new QName("port")));
-
-optionsMgr.writeOptions("shipments", new SearchOptionsHandle().with(options));
 </pre>
 <p>
 	When convenient, you can write a search operation in a single line:

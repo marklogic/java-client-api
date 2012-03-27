@@ -30,15 +30,16 @@ import com.marklogic.client.config.search.KeyValueQueryDefinition;
 import com.marklogic.client.config.search.QueryDefinition;
 import com.marklogic.client.config.search.StringQueryDefinition;
 import com.marklogic.client.config.search.StructuredQueryDefinition;
-import com.marklogic.client.io.marker.OutputStreamSender;
+import com.marklogic.client.io.OutputStreamSender;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.api.client.filter.HTTPDigestAuthFilter;
 import com.sun.jersey.client.apache.ApacheHttpClient;
+import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
+import com.sun.jersey.client.apache.config.ApacheHttpClientState;
+import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
 import com.sun.jersey.client.urlconnection.HTTPSProperties;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import com.sun.jersey.multipart.BodyPart;
@@ -50,9 +51,8 @@ public class JerseyServices implements RESTServices {
 	static final private Logger logger = LoggerFactory
 			.getLogger(JerseyServices.class);
 
-	private Client client;
-	private WebResource connection;
-
+	private ApacheHttpClient client;
+	private WebResource      connection;
 
 	public JerseyServices() {
 	}
@@ -82,11 +82,16 @@ public class JerseyServices implements RESTServices {
 			client = null;
 		}
 
+		// ClientConfig config = new DefaultClientConfig();
 		// see also DefaultApacheHttpClient4Config()
-		ClientConfig config = new DefaultClientConfig();
+		DefaultApacheHttpClientConfig config = new DefaultApacheHttpClientConfig();
+		config.getProperties().put(ApacheHttpClientConfig.PROPERTY_PREEMPTIVE_AUTHENTICATION, true);
 		if (context != null)
 			// TODO: confirm that verifier can be null or supply default verifier that returns true
 			config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(verifier, context));
+
+		ApacheHttpClientState state = config.getState();
+		state.setCredentials(null, host, port, user, password);
 
 //		client = ApacheHttpClient4.create(config);
 		client = ApacheHttpClient.create(config);
@@ -99,7 +104,8 @@ public class JerseyServices implements RESTServices {
 					"Internal error - unknown authentication type: "
 							+ type.name());
 		connection = client.resource("http://" + host + ":" + port + "/v1/");
-// TODO: verify connection and, for DIGEST, make an initial request
+
+// NOTE:  can get Apache HTTPClient object with client getClientHandler().getHttpClient() 
 	}
 
 	public void release() {

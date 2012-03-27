@@ -18,6 +18,11 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * A File Handle represents document content as a file for reading or writing.
+ * 
+ * When writing JSON, text, or XML content, you should use a File only
+ * if the file is encoded in UTF-8.  If the characters have a different encoding, use
+ * a ReaderHandle and specify the correct character encoding for the file when
+ * creating the Reader.
  */
 public class FileHandle
 	implements

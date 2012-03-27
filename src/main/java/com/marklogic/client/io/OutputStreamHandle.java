@@ -7,7 +7,6 @@ import com.marklogic.client.Format;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
 import com.marklogic.client.io.marker.GenericWriteHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.OutputStreamSender;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;

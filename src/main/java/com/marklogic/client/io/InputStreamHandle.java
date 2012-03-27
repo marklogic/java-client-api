@@ -21,6 +21,11 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * 
  * When finished with the input stream, close the input stream to release
  * the response.
+ * 
+ * When writing JSON, text, or XML content, you should use an InputStream only
+ * if the stream is encoded in UTF-8.  If the characters have a different encoding, use
+ * a ReaderHandle and specify the correct character encoding for the stream when
+ * creating the Reader.
  */
 public class InputStreamHandle
 	implements

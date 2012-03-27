@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.StreamingOutput;
 
-import com.marklogic.client.io.marker.OutputStreamSender;
+import com.marklogic.client.io.OutputStreamSender;
 
 class StreamingOutputImpl implements StreamingOutput {
 	private OutputStreamSender handle;
