@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Attr;
@@ -17,22 +15,22 @@ import org.w3c.dom.NamedNodeMap;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.config.search.MatchDocumentSummary;
-import com.marklogic.client.config.search.MatchLocation;
-import com.marklogic.client.config.search.MatchSnippet;
 import com.marklogic.client.config.search.StringQueryDefinition;
 import com.marklogic.client.config.search.ValueConstraint;
 import com.marklogic.client.config.search.impl.ValueConstraintImpl;
-import com.marklogic.client.example.cookbook.DocumentWrite;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.io.StringHandle;
 
+/**
+ * The Oscars example illustrates creating query options that define constraints,
+ * searching with criteria that uses constraints, and opening documents from 
+ * search results.
+ */
 public class Oscars {
 	static final private String OPTIONS_NAME = "oscars";
 
@@ -48,16 +46,19 @@ public class Oscars {
 				props.getProperty("example.authentication_type").toUpperCase()
 				);
 
-		Oscars oscars = new Oscars();
-		oscars.configure( host, port, user, password, authType );
-		oscars.search(    host, port, user, password, authType );
+		new Oscars().run(host, port, user, password, authType);
 	}
 
-	public void configure(String host, int port, String user, String password, Authentication authType)
-	throws IOException, ParserConfigurationException {
+	public void run(String host, int port, String user, String password, Authentication authType) {
+		System.out.println("example: "+Oscars.class.getName());
+
+		configure( host, port, user, password, authType );
+		search(    host, port, user, password, authType );
+	}
+
+	public void configure(String host, int port, String user, String password, Authentication authType) {
 		// connect the client
-		DatabaseClient client =
-			DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
 
 		// create a manager for writing query options
 		QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
@@ -97,17 +98,13 @@ public class Oscars {
 		// write the query options to the database
 		optionsMgr.writeOptions(OPTIONS_NAME, writeHandle);
 
-// System.out.println(optionsMgr.readOptions(OPTIONS_NAME, new StringHandle()).get());
-
 		// release the client
 		client.release();
 	}
 
-	public void search(String host, int port, String user, String password, Authentication authType)
-	throws IOException {
+	public void search(String host, int port, String user, String password, Authentication authType) {
 		// connect the client
-		DatabaseClient client =
-			DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
 
 		// create a manager for searching
 		QueryManager queryMgr = client.newQueryManager();
@@ -164,8 +161,7 @@ public class Oscars {
 	// get the configuration for the example
 	public static Properties loadProperties() throws IOException {
 		String propsName = "Example.properties";
-		InputStream propsStream =
-			DocumentWrite.class.getClassLoader().getResourceAsStream(propsName);
+		InputStream propsStream = Oscars.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
 			throw new RuntimeException("Could not read example properties");
 

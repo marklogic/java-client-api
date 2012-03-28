@@ -105,7 +105,7 @@ public class KeyValueSearch {
 		InputStreamHandle contentHandle = new InputStreamHandle();
 
 		for (String filename: filenames) {
-			InputStream docStream = DocumentRead.class.getClassLoader().getResourceAsStream(
+			InputStream docStream = KeyValueSearch.class.getClassLoader().getResourceAsStream(
 					"data"+File.separator+filename);
 			if (docStream == null)
 				throw new RuntimeException("Could not read document example");

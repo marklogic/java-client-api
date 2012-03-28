@@ -46,7 +46,7 @@ public class AllExamples {
 	public static Properties loadProperties() throws IOException {
 		String propsName = "Example.properties";
 		InputStream propsStream =
-			DocumentWrite.class.getClassLoader().getResourceAsStream(propsName);
+			AllExamples.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
 			throw new RuntimeException("Could not read example properties");
 

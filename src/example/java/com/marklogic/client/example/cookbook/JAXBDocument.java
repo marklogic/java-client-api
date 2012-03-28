@@ -109,7 +109,7 @@ public class JAXBDocument {
 		// delete the document
 		docMgr.delete(docId);
 
-		System.out.println("Wrote, read, and deleted "+product.getName()+" as:\n"+productDoc);
+		System.out.println("Wrote, read, and deleted "+product.getName()+" using JAXB:\n"+productDoc);
 
 		// release the client
 		client.release();
@@ -119,7 +119,7 @@ public class JAXBDocument {
 	public static Properties loadProperties() throws IOException {
 		String propsName = "Example.properties";
 		InputStream propsStream =
-			DocumentFormats.class.getClassLoader().getResourceAsStream(propsName);
+			JAXBDocument.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
 			throw new RuntimeException("Could not read example properties");
 

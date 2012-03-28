@@ -19,6 +19,9 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
 /**
  * A File Handle represents document content as a file for reading or writing.
  * 
+ * When you read a database document into a file handle, the API creates a temporary
+ * file.  You can then open the file or move it with the File.renameTo() method.
+ * 
  * When writing JSON, text, or XML content, you should use a File only
  * if the file is encoded in UTF-8.  If the characters have a different encoding, use
  * a ReaderHandle and specify the correct character encoding for the file when
