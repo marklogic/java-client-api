@@ -25,11 +25,6 @@ public class WordConstraintImpl extends ConstraintImpl implements WordConstraint
 	    indexReferenceImpl = new IndexReferenceImpl(jaxbObject.getElementOrAttributeOrFragmentScope());
 	}
 
-	@Override
-	public void addTermOption(String termOption) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	@Override
 	public List<Object> getJAXBChildren() {

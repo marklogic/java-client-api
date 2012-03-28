@@ -9,7 +9,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -25,7 +24,7 @@ public class CustomConstraintImpl extends ConstraintImpl implements Facetable,
 
 	private Custom jaxbObject;
 
-	private FunctionRef parse, startFacet, finishFacet;
+	private FunctionRefImpl parse, startFacet, finishFacet;
 
 	public CustomConstraintImpl(String name) {
 		super(name);
@@ -96,24 +95,6 @@ public class CustomConstraintImpl extends ConstraintImpl implements Facetable,
 
 	}
 
-	@Override
-	public void addAnnotation(Element annotation) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public List<Element> getAnnotations() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void addTermOption(String termOption) {
-		jaxbObject.getParseOrStartFacetOrFinishFacet().add(
-				JAXBHelper.wrapString(JAXBHelper.newQNameFor("term-option"),
-						termOption));
-	}
 
 	@Override
 	public void setParse(FunctionRef function) {

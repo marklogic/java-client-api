@@ -2,6 +2,7 @@ package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -29,13 +30,16 @@ import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.config.search.AdditionalQuery;
 import com.marklogic.client.config.search.Constraint;
 import com.marklogic.client.config.search.CustomConstraint;
+import com.marklogic.client.config.search.FunctionRef;
 import com.marklogic.client.config.search.Grammar;
 import com.marklogic.client.config.search.IndexReference;
+import com.marklogic.client.config.search.Joiner;
 import com.marklogic.client.config.search.Operator;
-import com.marklogic.client.config.search.RangeConstraint;
 import com.marklogic.client.config.search.QueryOption;
 import com.marklogic.client.config.search.QueryOptions;
+import com.marklogic.client.config.search.RangeConstraint;
 import com.marklogic.client.config.search.SortOrder;
+import com.marklogic.client.config.search.Starter;
 import com.marklogic.client.config.search.Term;
 import com.marklogic.client.config.search.TransformResults;
 import com.marklogic.client.config.search.WordConstraint;
@@ -135,22 +139,42 @@ public class QueryOptionsTest {
 	@Test
 	public void parseComprehensiveOptions() {
 		QueryOptions options = testOptions;
-		List<String> searchOptions = options.getSearchOptions();
 		List<Constraint> constraints = options.getConstraints();
+		for (Constraint c : constraints) {
+			logger.debug(c.getName());
+			
+		}
+		RangeConstraint r = options.getByClassName(RangeConstraintImpl.class).get(0);
+		assertEquals(r.getName(), "award");
 		
 		//TODO constraint verification
 		Term term = options.getTerm();
-		//TODO term verification
+		List<String> termOptions = term.getTermOptions();
+		assertEquals("First term option is 'punctuation-insensitive'", termOptions.get(0), "punctuation-insensitive");
+		assertEquals("Second term option is 'unwildcarded'", termOptions.get(1), "unwildcarded");
+		
+		FunctionRef applyFunction = term.getTermFunction();
+		assertNull("Apply function doesn't exist on this term", applyFunction);
+		assertEquals("Term empty apply is all-results", "all-results", term.getEmpty().getApply());
+		
 		Grammar grammar = options.getGrammar();
-		//TODO grammar verification
+		
+		assertEquals("Grammar quotation", grammar.getQuotation(), "\"");
+		assertEquals("Grammar implicit", grammar.getImplicit().getLocalName(), "and-query");
+		List<Joiner> joiners = grammar.getJoiners();
+		assertEquals("joiner attribute incorrect", joiners.get(0).getApply(), "infix");
+		List<Starter> starters = grammar.getStarters();
+		assertNull("starter attribute should be null", starters.get(1).getDelimiter());
+		assertEquals("starter attribute incorrect", starters.get(1).getStrength(), 40);
+		
 		List<Operator> operators = options.getOperators();
 		//TODO operator verification
-		TransformResults transformResults = options.getTransformResults();
 		
+		TransformResults transformResults = options.getTransformResults();
 		assertEquals("Apply attribute for transform-results", transformResults.getApply(), "snippet");
-		//ElementLocator element = transformResults.getPreferredElements().get(0);
-		//assertEquals("Element name from transform-results", element.getElement().getLocalPart(), "p");
-		//assertEquals("Max Matches from transform-results", transformResults.getMaxMatches(), 1);
+		ElementLocator element = transformResults.getPreferredElements().get(0);
+		assertEquals("Element name from transform-results", "p", element.getElement().getLocalPart());
+		assertEquals("Max Matches from transform-results", 1, transformResults.getMaxMatches());
 		
 		
 		

@@ -59,7 +59,9 @@ public interface QueryOptions {
 
 	public abstract void setQualityWeight(double qualityWeight);
 
-	public List<QueryOption> getByClassName(@SuppressWarnings("rawtypes") Class clazz);
+	public <T extends QueryOption> T getOneByClassName(Class<T> clazz);
+
+	public <T extends QueryOption> List<T> getByClassName(Class<T> class1);
 
 	public List<QueryOption> getAll();
 
@@ -74,5 +76,7 @@ public interface QueryOptions {
 	public List<Operator> getOperators();
 
 	public TransformResults getTransformResults();
+
+
 
 }

@@ -15,7 +15,7 @@ public class ElementLocatorImpl implements ElementLocator {
     QName element = null;
     QName attribute = null;
 
-    protected ElementLocatorImpl(QName element) {
+    public ElementLocatorImpl(QName element) {
         this.element = element;
     }
 

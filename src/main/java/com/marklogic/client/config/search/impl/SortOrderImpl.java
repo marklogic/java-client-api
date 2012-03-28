@@ -53,13 +53,13 @@ public class SortOrderImpl extends AbstractQueryOption implements SortOrder {
 	}
 
 	@Override
-	public String getDirection() {
-		return jaxbObject.getDirection();
+	public Direction getDirection() {
+		return Direction.valueOf(jaxbObject.getDirection().toUpperCase());
 	}
 
 	@Override
-	public void setDirection(String direction) {
-		jaxbObject.setDirection(direction);
+	public void setDirection(Direction direction) {
+		jaxbObject.setDirection(direction.toString().toLowerCase());
 	}
 
 	@Override

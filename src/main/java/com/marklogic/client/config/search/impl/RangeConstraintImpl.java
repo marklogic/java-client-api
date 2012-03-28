@@ -7,7 +7,6 @@ import javax.xml.namespace.QName;
 
 import org.w3c.dom.Element;
 
-import com.marklogic.client.config.search.Annotation;
 import com.marklogic.client.config.search.Facetable;
 import com.marklogic.client.config.search.RangeConstraint;
 import com.marklogic.client.config.search.jaxb.Bucket;
@@ -39,13 +38,6 @@ public class RangeConstraintImpl extends ConstraintImpl implements Facetable,
 				this.jaxbObject.getElementOrAttributeOrFragmentScope());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.marklogic.client.config.search.impl.RangeConstraintI#addBucket(java
-	 * .lang.String, java.lang.String)
-	 */
 	@Override
 	public void addBucket(String name, String label) {
 		Bucket bucket = new Bucket();
@@ -54,13 +46,6 @@ public class RangeConstraintImpl extends ConstraintImpl implements Facetable,
 		jaxbObject.getElementOrAttributeOrFragmentScope().add(bucket);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.marklogic.client.config.search.impl.RangeConstraintI#addBucket(java
-	 * .lang.String, java.lang.String, java.lang.String, java.lang.String)
-	 */
 	@Override
 	public void addBucket(String name, String label, String ge, String lt) {
 		Bucket bucket = new Bucket();

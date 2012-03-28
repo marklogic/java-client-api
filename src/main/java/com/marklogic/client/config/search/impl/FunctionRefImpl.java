@@ -64,7 +64,6 @@ public class FunctionRefImpl implements FunctionRef {
 	}
 
 
-	@Override
 	public void fillFrom(Node c) {
 		this.setApply(c.getAttributes().getNamedItem("apply").getNodeValue());
 		this.setNs(c.getAttributes().getNamedItem("ns").getNodeValue());

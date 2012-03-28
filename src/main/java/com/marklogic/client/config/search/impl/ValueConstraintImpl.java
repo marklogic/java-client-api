@@ -27,11 +27,6 @@ public class ValueConstraintImpl extends ConstraintImpl implements ValueConstrai
 	    indexReferenceImpl = new IndexReferenceImpl(getJAXBChildren());
 	}
 
-	@Override
-	public void addTermOption(String termOption) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	@Override
 	public List<Object> getJAXBChildren() {

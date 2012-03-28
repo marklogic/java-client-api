@@ -11,7 +11,7 @@ import com.marklogic.client.config.search.Annotation;
 
 
 
-public class AnnotationImpl extends AtomicSearchOption implements Annotation {
+public class AnnotationImpl extends AbstractQueryOption implements Annotation {
 
 	com.marklogic.client.config.search.jaxb.Annotation jaxbObject;
 
@@ -53,5 +53,10 @@ public class AnnotationImpl extends AtomicSearchOption implements Annotation {
 	@Override
 	public void clearAnnotations() {
 		jaxbObject.getContent().clear();
+	}
+
+	@Override
+	public List<Object> getJAXBChildren() {
+		return null;
 	}
 }

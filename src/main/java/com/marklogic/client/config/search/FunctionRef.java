@@ -1,6 +1,5 @@
 package com.marklogic.client.config.search;
 
-import org.w3c.dom.Node;
 
 public interface FunctionRef {
 
@@ -12,6 +11,5 @@ public interface FunctionRef {
 	public String getNs();
 	public String getAt();
 	
-	public void fillFrom(Node c);
 	
 }

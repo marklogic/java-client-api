@@ -1,6 +1,6 @@
 package com.marklogic.client.config.search;
 
-public interface CustomConstraint extends Constraint, Facetable, Annotate, Terms {
+public interface CustomConstraint extends Constraint, Facetable, Annotate, TermOptions {
 
 	public void setParse(FunctionRef function);
 	public FunctionRef getParse();

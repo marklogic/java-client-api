@@ -56,8 +56,7 @@ import com.marklogic.client.config.search.jaxb.Word;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
-public class QueryOptionsHandle implements
-		QueryOptionsReadHandle<InputStream>,
+public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 		QueryOptionsWriteHandle<OutputStreamSender>, QueryOptions,
 		OutputStreamSender {
 	static final private Logger logger = LoggerFactory
@@ -298,17 +297,6 @@ public class QueryOptionsHandle implements
 	}
 
 	@Override
-	public List<QueryOption> getByClassName(Class clazz) {
-		List<QueryOption> toReturn = new ArrayList<QueryOption>();
-		for (QueryOption option : getAll()) {
-			if (option.getClass() == clazz) {
-				toReturn.add(option);
-			}
-		}
-		return toReturn;
-	}
-
-	@Override
 	public void write(OutputStream out) throws IOException {
 		try {
 			jc = JAXBContext
@@ -439,16 +427,15 @@ public class QueryOptionsHandle implements
 
 	}
 
-	
-	
-	
 	@Override
 	public List<String> getSearchOptions() {
 		List<String> l = new ArrayList<String>();
 		for (QueryOption option : getAll()) {
 			if (option instanceof JAXBElement<?>) {
 				JAXBElement<String> e = (JAXBElement<String>) option;
-				if (e.getName() == new QName("http://marklogic.com/appservices/search", "search-option")) {
+				if (e.getName() == new QName(
+						"http://marklogic.com/appservices/search",
+						"search-option")) {
 					l.add(e.getValue());
 				}
 			}
@@ -467,7 +454,7 @@ public class QueryOptionsHandle implements
 		}
 		return l;
 	}
-	
+
 	@Override
 	public Term getTerm() {
 		for (QueryOption option : getAll()) {
@@ -487,7 +474,7 @@ public class QueryOptionsHandle implements
 		}
 		return null;
 	}
-	
+
 	@Override
 	public List<Operator> getOperators() {
 		List<Operator> l = new ArrayList<Operator>();
@@ -508,6 +495,30 @@ public class QueryOptionsHandle implements
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public <T extends QueryOption> T getOneByClassName(Class<T> clazz) {
+		List<T> l = getByClassName(clazz);
+		if (l.size() == 0) {
+			return null;
+		} else {
+			return l.get(0);
+		}
+	}
+
+	@Override
+	public <T extends QueryOption> List<T> getByClassName(Class<T> clazz) {
+		List<QueryOption> all = getAll();
+		List<T> l = new ArrayList<T>();
+		for (QueryOption option : all) {
+			if (option.getClass() == clazz) {
+				l.add((T) option);
+			}
+		}
+		return l;
 	};
+	
+
 
 }
