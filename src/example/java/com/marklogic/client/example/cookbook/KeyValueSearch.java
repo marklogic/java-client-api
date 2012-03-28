@@ -11,7 +11,6 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DocumentIdentifier;
-import com.marklogic.client.GenericDocumentManager;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.config.search.KeyValueQueryDefinition;
@@ -43,11 +42,11 @@ public class KeyValueSearch {
 		run(host, port, writer_user, writer_password, authType);
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType)
-	throws IOException {
+	public static void run(String host, int port, String user, String password, Authentication authType) {
+		System.out.println("example: "+KeyValueSearch.class.getName());
+
 		// connect the client
-		DatabaseClient client =
-			DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
 
 		setUpExample(client);
 
@@ -121,7 +120,7 @@ public class KeyValueSearch {
 
 	// clean up by deleting the documents and options used in the example query
 	public static void tearDownExample(DatabaseClient client) {
-		GenericDocumentManager docMgr = client.newDocumentManager();
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
 		DocumentIdentifier docId = client.newDocId(null);
 

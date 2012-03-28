@@ -28,11 +28,13 @@ public class ClientConnect {
 		run(host, port, writer_user, writer_password, authType);
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType)
-	throws IOException {
+	public static void run(String host, int port, String user, String password, Authentication authType) {
+		System.out.println("example: "+ClientConnect.class.getName());
+
 		// connect the client
-		DatabaseClient client =
-			DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
+
+		// ... do something with the client ...
 
 		System.out.println("Connected to "+host+":"+port+" as "+user);
 

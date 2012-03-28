@@ -9,13 +9,11 @@ import org.w3c.dom.Document;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.XMLDocumentManager;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputStreamHandle;
-
-import com.marklogic.client.io.StringHandle;
 
 /**
  * DocumentReader illustrates how to read the content of a database document.
@@ -37,13 +35,13 @@ public class DocumentRead {
 		run(host, port, writer_user, writer_password, authType);
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType)
-	throws IOException {
+	public static void run(String host, int port, String user, String password, Authentication authType) {
+		System.out.println("example: "+DocumentRead.class.getName());
+
 		String filename = "flipper.xml";
 
 		// connect the client
-		DatabaseClient client =
-			DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
 
 		// create a manager for XML documents
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();

@@ -17,7 +17,7 @@ import com.marklogic.client.config.search.impl.ValueConstraintImpl;
 import com.marklogic.client.io.QueryOptionsHandle;
 
 /**
- * QueryOptions illustrates working with query options.
+ * QueryOptions illustrates writing, reading, and deleting query options.
  */
 public class QueryOptions {
 
@@ -36,13 +36,13 @@ public class QueryOptions {
 		run(host, port, admin_user, admin_password, authType);
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType)
-	throws IOException {
+	public static void run(String host, int port, String user, String password, Authentication authType) {
+		System.out.println("example: "+QueryOptions.class.getName());
+
 		String optionsName = "products";
 
 		// connect the client
-		DatabaseClient client =
-			DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
 
 		// create a manager for writing, reading, and deleting query options
 		QueryOptionsManager optionsMgr = client.newQueryOptionsManager();

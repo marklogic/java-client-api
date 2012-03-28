@@ -14,6 +14,7 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.io.JAXBHandle;
+import com.marklogic.client.io.StringHandle;
 
 /**
  * JAXBDocument illustrates how to write and read a JAXB object structure as a database document.
@@ -34,7 +35,7 @@ public class JAXBDocument {
 		run(host, port, writer_user, writer_password, authType);
 	}
 
-	// The class for creating JAXB objects
+	// A class with JAXB annotations
 	@XmlRootElement
 	static public class Product {
 		private String name;
@@ -64,10 +65,11 @@ public class JAXBDocument {
 	}
 
 	public static void run(String host, int port, String user, String password, Authentication authType)
-	throws IOException, JAXBException {
+	throws JAXBException {
+		System.out.println("example: "+JAXBDocument.class.getName());
+
 		// connect the client
-		DatabaseClient client =
-			DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
 
 		JAXBContext context = JAXBContext.newInstance(Product.class);
 
@@ -98,11 +100,16 @@ public class JAXBDocument {
 
 		// access the document content
 		product = (Product) readHandle.get();
+		
+		// ... do something with the JAXB object ...
+
+		// read the persisted XML document for the logging message
+		String productDoc = docMgr.read(docId, new StringHandle()).get();
 
 		// delete the document
 		docMgr.delete(docId);
 
-		System.out.println("Wrote, read, and deleted "+product.getName());
+		System.out.println("Wrote, read, and deleted "+product.getName()+" as:\n"+productDoc);
 
 		// release the client
 		client.release();

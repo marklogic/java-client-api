@@ -33,8 +33,9 @@ public class DocumentFormats {
 		run(host, port, writer_user, writer_password, authType);
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType)
-	throws IOException {
+	public static void run(String host, int port, String user, String password, Authentication authType) {
+		System.out.println("example: "+DocumentFormats.class.getName());
+
 		// a list of files with the format of each file
 		String[][] fileEntries = {
 				{"mlfavicon.png",   "binary"},
@@ -44,8 +45,7 @@ public class DocumentFormats {
 				};
 
 		// connect the client
-		DatabaseClient client =
-			DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
 
 		// iterate over the files
 		for (String[] fileEntry: fileEntries) {

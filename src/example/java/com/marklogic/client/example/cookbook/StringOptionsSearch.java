@@ -5,47 +5,83 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import javax.xml.namespace.QName;
+
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DocumentIdentifier;
-import com.marklogic.client.GenericDocumentManager;
 import com.marklogic.client.QueryManager;
+import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.config.search.MatchDocumentSummary;
 import com.marklogic.client.config.search.MatchLocation;
 import com.marklogic.client.config.search.MatchSnippet;
 import com.marklogic.client.config.search.StringQueryDefinition;
+import com.marklogic.client.config.search.ValueConstraint;
+import com.marklogic.client.config.search.impl.ValueConstraintImpl;
 import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.SearchHandle;
 
 /**
- * StringSearch illustrates searching for documents and iterating over results
- * with simple string criteria.
+ * StringOptionsSearch illustrates searching for documents and iterating over results
+ * with string criteria referencing a constraint defined by options.
  */
-public class StringSearch {
+public class StringOptionsSearch {
+	static final private String OPTIONS_NAME = "products";
+
 	static final private String[] filenames = {"curbappeal.xml", "flipper.xml", "justintime.xml"};
 
 	public static void main(String[] args) throws IOException {
 		Properties props = loadProperties();
 
-		// connection parameters for writer user
+		// connection parameters for writer and admin users
 		String         host            = props.getProperty("example.host");
 		int            port            = Integer.parseInt(props.getProperty("example.port"));
 		String         writer_user     = props.getProperty("example.writer_user");
 		String         writer_password = props.getProperty("example.writer_password");
+		String         admin_user      = props.getProperty("example.admin_user");
+		String         admin_password  = props.getProperty("example.admin_password");
 		Authentication authType        = Authentication.valueOf(
 				props.getProperty("example.authentication_type").toUpperCase()
 				);
 
-		run(host, port, writer_user, writer_password, authType);
+		run(host, port, admin_user, admin_password, writer_user, writer_password, authType);
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType)
-	throws IOException {
+	public static void run(String host, int port, String admin_user, String admin_password, String writer_user, String writer_password, Authentication authType) {
+		System.out.println("example: "+StringOptionsSearch.class.getName());
+
+		configure( host, port, admin_user,  admin_password,  authType );
+		search(    host, port, writer_user, writer_password, authType );
+
+		tearDownExample(host, port, admin_user, admin_password, authType);
+	}
+
+	public static void configure(String host, int port, String user, String password, Authentication authType) {
 		// connect the client
-		DatabaseClient client =
-			DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
+
+		// create a manager for writing query options
+		QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
+
+		// create and initialize a handle with query options
+		QueryOptionsHandle writeHandle = new QueryOptionsHandle();
+		ValueConstraint constraint = new ValueConstraintImpl("industry");
+		constraint.addElementIndex(new QName("industry"));
+		writeHandle.add(constraint);
+
+		// write the query options to the database
+		optionsMgr.writeOptions(OPTIONS_NAME, writeHandle);
+
+		// release the client
+		client.release();
+	}
+
+	public static void search(String host, int port, String user, String password, Authentication authType) {
+		// connect the client
+		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
 
 		setUpExample(client);
 
@@ -53,8 +89,8 @@ public class StringSearch {
 		QueryManager queryMgr = client.newQueryManager();
 
 		// create a search definition
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(null);
-		querydef.setCriteria("neighborhood");
+		StringQueryDefinition querydef = queryMgr.newStringDefinition(OPTIONS_NAME);
+		querydef.setCriteria("neighborhood industry:\"Real Estate\"");
 
 		// create a handle for the search results
 		SearchHandle resultsHandle = new SearchHandle();
@@ -69,6 +105,8 @@ public class StringSearch {
 		MatchDocumentSummary[] docSummaries = resultsHandle.getMatchResults();
 		System.out.println("Listing "+docSummaries.length+" documents:\n");
 		for (MatchDocumentSummary docSummary: docSummaries) {
+// temporarary workaround for known problem
+if (true) continue;
 
 			// iterate over the match locations within a result document
 			MatchLocation[] locations = docSummary.getMatchLocations();
@@ -88,8 +126,6 @@ public class StringSearch {
 				System.out.println();
 			}
 		}
-
-		tearDownExample(client);
 
 		// release the client
 		client.release();
@@ -117,9 +153,12 @@ public class StringSearch {
 		}
 	}
 
-	// clean up by deleting the documents and options used in the example query
-	public static void tearDownExample(DatabaseClient client) {
-		GenericDocumentManager docMgr = client.newDocumentManager();
+	// clean up by deleting the documents and query options used in the example query
+	public static void tearDownExample(
+			String host, int port, String user, String password, Authentication authType) {
+		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
+
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
 		DocumentIdentifier docId = client.newDocId(null);
 
@@ -128,13 +167,19 @@ public class StringSearch {
 
 			docMgr.delete(docId);
 		}
+
+		QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
+
+		optionsMgr.deleteOptions(OPTIONS_NAME);
+
+		client.release();
 	}
 
 	// get the configuration for the example
 	public static Properties loadProperties() throws IOException {
 		String propsName = "Example.properties";
 		InputStream propsStream =
-			StringSearch.class.getClassLoader().getResourceAsStream(propsName);
+			StringOptionsSearch.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
 			throw new RuntimeException("Could not read example properties");
 
