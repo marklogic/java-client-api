@@ -122,7 +122,9 @@ docMgr.write(docId, handle);
 QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
 
 QueryOptionsHandle handle = new QueryOptionsHandle();
-options.add(handle.newValueConstraint("port", new ElementIndex(new QName("port")));
+ValueConstraint constraint = new ValueConstraintImpl("port");
+constraint.addElementIndex(new QName("port"));
+handle.add(constraint);
 
 optionsMgr.writeOptions("shipments", handle);
 </pre>
@@ -145,7 +147,7 @@ optionsMgr.writeOptions("shipments", handle);
 <pre>
 QueryManager queryMgr = client.newQueryManager();
 
-StringQueryDefinition querydef = queryMgr.newStringCriteria("shipments");
+StringQueryDefinition querydef = queryMgr.newStringDefinition("shipments");
 querydef.setCriteria("electronics port:Lisbon");
 
 DOMHandle handle = new DOMHandle();
@@ -162,7 +164,7 @@ org.w3c.dom.Document results = handle.get();
 <pre>
 QueryManager queryMgr = client.newQueryManager();
 
-StringQueryDefinition querydef = queryMgr.newStringCriteria("shipments");
+StringQueryDefinition querydef = queryMgr.newStringDefinition("shipments");
 querydef.setCriteria("electronics port:Lisbon");
 
 SearchHandle results = new SearchHandle();
@@ -217,7 +219,7 @@ client.newXMLDocumentManager().write(
 <pre>
 org.w3c.dom.Document results = 
     client.newQueryManager().search(
-        queryMgr.newStringCriteria("shipments").withCriteria("electronics port:Lisbon"),
+        queryMgr.newStringDefinition("shipments").withCriteria("electronics port:Lisbon"),
         new DOMHandle()
         ).get();
 </pre>

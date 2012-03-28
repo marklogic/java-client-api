@@ -1,4 +1,4 @@
-package com.marklogic.client.example.first;
+package com.marklogic.client.example.cookbook;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,21 +22,21 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
  * DocumentMetadataReader illustrates how to read the metadata and content of a database document
  * in a single request.
  */
-public class DocumentMetadataReader {
+public class DocumentMetadataRead {
 
 	public static void main(String[] args) throws IOException {
 		Properties props = loadProperties();
 
-		// connection parameters
-		String         host     = props.getProperty("example.host");
-		int            port     = Integer.parseInt(props.getProperty("example.port"));
-		String         user     = props.getProperty("example.writer_user");
-		String         password = props.getProperty("example.writer_password");
-		Authentication authType = Authentication.valueOf(
+		// connection parameters for writer user
+		String         host            = props.getProperty("example.host");
+		int            port            = Integer.parseInt(props.getProperty("example.port"));
+		String         writer_user     = props.getProperty("example.writer_user");
+		String         writer_password = props.getProperty("example.writer_password");
+		Authentication authType        = Authentication.valueOf(
 				props.getProperty("example.authentication_type").toUpperCase()
 				);
 
-		run(host, port, user, password, authType);
+		run(host, port, writer_user, writer_password, authType);
 	}
 
 	public static void run(String host, int port, String user, String password, Authentication authType)
@@ -73,7 +73,7 @@ public class DocumentMetadataReader {
 		String rootName = document.getDocumentElement().getTagName();
 		String collFirst = collections.toArray(new String[collections.size()])[0];
 		System.out.println("Read /example/"+filename +
-				" metadata and content with <"+rootName+"/> root in '"+collFirst+"' collection");
+				" metadata and content with the <"+rootName+"/> root element in the '"+collFirst+"' collection");
 
 		tearDownExample(docMgr, docId);
 
@@ -83,7 +83,7 @@ public class DocumentMetadataReader {
 
 	// set up by writing document metadata and content for the example to read
 	public static void setUpExample(XMLDocumentManager docMgr, DocumentIdentifier docId, String filename) {
-		InputStream docStream = DocumentMetadataReader.class.getClassLoader().getResourceAsStream(
+		InputStream docStream = DocumentMetadataRead.class.getClassLoader().getResourceAsStream(
 				"data"+File.separator+filename);
 		if (docStream == null)
 			throw new RuntimeException("Could not read document example");
@@ -109,7 +109,7 @@ public class DocumentMetadataReader {
 	public static Properties loadProperties() throws IOException {
 		String propsName = "Example.properties";
 		InputStream propsStream =
-			DocumentMetadataReader.class.getClassLoader().getResourceAsStream(propsName);
+			DocumentMetadataRead.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
 			throw new RuntimeException("Could not read example properties");
 

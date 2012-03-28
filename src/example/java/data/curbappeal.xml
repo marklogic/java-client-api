@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <product>
     <name>Curb Appeal</name>
-    <domain>Real Estate</domain>
+    <industry>Real Estate</industry>
     <description>Provides heatmap of income demographics for selected neighborhoods. 
     Includes leaderboard for weekly orders on remodel materials including color schemes.
     </description>

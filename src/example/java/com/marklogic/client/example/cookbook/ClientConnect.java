@@ -1,4 +1,4 @@
-package com.marklogic.client.example.first;
+package com.marklogic.client.example.cookbook;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,21 +11,21 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 /**
  * ClientConnector illustrates how to connect to a database.
  */
-public class ClientConnector {
+public class ClientConnect {
 
 	public static void main(String[] args) throws IOException {
 		Properties props = loadProperties();
 
-		// connection parameters
-		String         host     = props.getProperty("example.host");
-		int            port     = Integer.parseInt(props.getProperty("example.port"));
-		String         user     = props.getProperty("example.writer_user");
-		String         password = props.getProperty("example.writer_password");
-		Authentication authType = Authentication.valueOf(
+		// connection parameters for writer user
+		String         host            = props.getProperty("example.host");
+		int            port            = Integer.parseInt(props.getProperty("example.port"));
+		String         writer_user     = props.getProperty("example.writer_user");
+		String         writer_password = props.getProperty("example.writer_password");
+		Authentication authType        = Authentication.valueOf(
 				props.getProperty("example.authentication_type").toUpperCase()
 				);
 
-		run(host, port, user, password, authType);
+		run(host, port, writer_user, writer_password, authType);
 	}
 
 	public static void run(String host, int port, String user, String password, Authentication authType)
@@ -44,7 +44,7 @@ public class ClientConnector {
 	public static Properties loadProperties() throws IOException {
 		String propsName = "Example.properties";
 		InputStream propsStream =
-			ClientConnector.class.getClassLoader().getResourceAsStream(propsName);
+			ClientConnect.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
 			throw new RuntimeException("Could not read example properties");
 

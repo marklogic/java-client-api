@@ -1,4 +1,4 @@
-package com.marklogic.client.example.first;
+package com.marklogic.client.example.cookbook;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,23 +14,23 @@ import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.InputStreamHandle;
 
 /**
- * DocumentFormats illustrates how to work with documents in multiple formats.
+ * DocumentFormats illustrates working with documents in multiple or unknown formats.
  */
 public class DocumentFormats {
 
 	public static void main(String[] args) throws IOException {
 		Properties props = loadProperties();
 
-		// connection parameters
-		String         host     = props.getProperty("example.host");
-		int            port     = Integer.parseInt(props.getProperty("example.port"));
-		String         user     = props.getProperty("example.writer_user");
-		String         password = props.getProperty("example.writer_password");
-		Authentication authType = Authentication.valueOf(
+		// connection parameters for writer user
+		String         host            = props.getProperty("example.host");
+		int            port            = Integer.parseInt(props.getProperty("example.port"));
+		String         writer_user     = props.getProperty("example.writer_user");
+		String         writer_password = props.getProperty("example.writer_password");
+		Authentication authType        = Authentication.valueOf(
 				props.getProperty("example.authentication_type").toUpperCase()
 				);
 
-		run(host, port, user, password, authType);
+		run(host, port, writer_user, writer_password, authType);
 	}
 
 	public static void run(String host, int port, String user, String password, Authentication authType)
@@ -47,9 +47,10 @@ public class DocumentFormats {
 		DatabaseClient client =
 			DatabaseClientFactory.connect(host, port, user, password, authType);
 
+		// iterate over the files
 		for (String[] fileEntry: fileEntries) {
 			String filename = fileEntry[0];
-			String format   = fileEntry[1];  // used only for the writeReadDeleteDocument() log message
+			String format   = fileEntry[1];  // used only for the log message
 
 			writeReadDeleteDocument(client, filename, format);
 		}
@@ -93,7 +94,7 @@ public class DocumentFormats {
 		docMgr.delete(docId);
 
 		System.out.println("Wrote, read, and deleted /example/"+filename+
-				" content in the "+format+" format");
+				" content with "+document.length+" bytes in the "+format+" format");
 	}
 
 	// get the configuration for the example
