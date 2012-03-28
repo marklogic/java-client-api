@@ -9,9 +9,9 @@ import com.marklogic.client.config.search.Term;
 import com.marklogic.client.config.search.jaxb.Empty;
 
 public class TermImpl extends AbstractQueryOption implements Term {
-	
+
 	private com.marklogic.client.config.search.jaxb.Term jaxbObject;
-	
+
 	public TermImpl(com.marklogic.client.config.search.jaxb.Term ot) {
 		jaxbObject = ot;
 	}
@@ -26,14 +26,17 @@ public class TermImpl extends AbstractQueryOption implements Term {
 		return jaxbObject.getTermOptionOrEmpty();
 	}
 
-
 	@Override
 	public FunctionRef getTermFunction() {
-		FunctionRef f = new FunctionRefImpl(new QName("", "dummyname"));
-		f.setApply(jaxbObject.getApply());
-		f.setNs(jaxbObject.getNs());
-		f.setAt(jaxbObject.getAt());
-		return f;
+		if (jaxbObject.getAt() == null) {
+			return null;
+		} else {
+			FunctionRef f = new FunctionRefImpl(new QName("", "dummyname"));
+			f.setApply(jaxbObject.getApply());
+			f.setNs(jaxbObject.getNs());
+			f.setAt(jaxbObject.getAt());
+			return f;
+		}
 	}
 
 	@Override
@@ -65,7 +68,7 @@ public class TermImpl extends AbstractQueryOption implements Term {
 		List<Object> children = getJAXBChildren();
 		for (Object o : children) {
 			if (o instanceof Empty) {
-				children.remove(o);	
+				children.remove(o);
 			}
 		}
 		Empty e = new Empty();
@@ -80,7 +83,7 @@ public class TermImpl extends AbstractQueryOption implements Term {
 		List<Object> children = getJAXBChildren();
 		for (Object o : children) {
 			if (o instanceof Empty) {
-				children.remove(o);	
+				children.remove(o);
 			}
 		}
 		Empty e = new Empty();
@@ -97,7 +100,7 @@ public class TermImpl extends AbstractQueryOption implements Term {
 	@Override
 	public void setWeight(double weight) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }
