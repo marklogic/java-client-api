@@ -18,7 +18,6 @@ import com.marklogic.client.config.search.KeyValueQueryDefinition;
 import com.marklogic.client.config.search.MatchDocumentSummary;
 import com.marklogic.client.config.search.MatchLocation;
 import com.marklogic.client.config.search.MatchSnippet;
-import com.marklogic.client.config.search.StringQueryDefinition;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.SearchHandle;
 

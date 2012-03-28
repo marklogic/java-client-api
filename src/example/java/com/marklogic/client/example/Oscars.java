@@ -114,7 +114,7 @@ public class Oscars {
 
 		// create a search definition
 		StringQueryDefinition querydef = queryMgr.newStringDefinition(OPTIONS_NAME);
-		querydef.setCriteria("Olivier AND Elsinore");
+		querydef.setCriteria("Lawrence Olivier");
 
 		// create a handle for the search results
 		SearchHandle resultsHandle = new SearchHandle();
@@ -175,79 +175,3 @@ public class Oscars {
 		return props;
 	}
 }
-
-/* TODO: delete
-
-DOMHandle writeHandle = new DOMHandle();
-
-Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-writeHandle.set(document);
-
-String searchNs = "http://marklogic.com/appservices/search";
-String wikiNs   = "http://marklogic.com/wikipedia";
-
-Element root = document.createElementNS(searchNs, "options");
-document.appendChild(root);
-
-Element parent = document.createElementNS(searchNs, "constraint");
-parent.setAttribute("name", "award");
-root.appendChild(parent);
-
-Element child = document.createElementNS(searchNs, "value");
-parent.appendChild(child);
-parent = child;
-
-child = document.createElementNS(searchNs, "element");
-child.setAttribute("ns",    wikiNs);
-child.setAttribute("name", "oscar");
-parent.appendChild(child);
-
-child = document.createElementNS(searchNs, "attribute");
-child.setAttribute("ns",    XMLConstants.NULL_NS_URI);
-child.setAttribute("name", "award");
-parent.appendChild(child);
-
-parent = document.createElementNS(searchNs, "constraint");
-parent.setAttribute("name", "year");
-root.appendChild(parent);
-
-child = document.createElementNS(searchNs, "value");
-parent.appendChild(child);
-parent = child;
-
-child = document.createElementNS(searchNs, "element");
-child.setAttribute("ns",    wikiNs);
-child.setAttribute("name", "oscar");
-parent.appendChild(child);
-
-child = document.createElementNS(searchNs, "attribute");
-child.setAttribute("ns",    XMLConstants.NULL_NS_URI);
-child.setAttribute("name", "year");
-parent.appendChild(child);
-
-parent = document.createElementNS(searchNs, "constraint");
-parent.setAttribute("name", "winner");
-root.appendChild(parent);
-
-child = document.createElementNS(searchNs, "value");
-parent.appendChild(child);
-parent = child;
-
-child = document.createElementNS(searchNs, "element");
-child.setAttribute("ns",    wikiNs);
-child.setAttribute("name", "oscar");
-parent.appendChild(child);
-
-child = document.createElementNS(searchNs, "attribute");
-child.setAttribute("ns",    XMLConstants.NULL_NS_URI);
-child.setAttribute("name", "winner");
-parent.appendChild(child);
-
-parent = document.createElementNS(searchNs, "return-results");
-parent.setTextContent("true");
-root.appendChild(parent);
-
-parent = document.createElementNS(searchNs, "return-facets");
-parent.setTextContent("false");
-root.appendChild(parent);
-*/

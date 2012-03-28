@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import javax.xml.bind.JAXBException;
+
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 
 /**
@@ -11,7 +13,7 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
  * before running any example.
  */
 public class AllExamples {
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, JAXBException {
 		Properties props = loadProperties();
 
 		// connection parameters for writer and admin users
@@ -33,6 +35,7 @@ public class AllExamples {
 		DocumentMetadataRead.run(  host, port, writer_user, writer_password, authType );
 		DocumentDelete.run(        host, port, writer_user, writer_password, authType );
 		DocumentFormats.run(       host, port, writer_user, writer_password, authType );
+		JAXBDocument.run(          host, port, writer_user, writer_password, authType );
 		QueryOptions.run(          host, port, admin_user,  admin_password,  authType );
 		StringSearch.run(          host, port, writer_user, writer_password, authType );
 		KeyValueSearch.run(        host, port, writer_user, writer_password, authType );
