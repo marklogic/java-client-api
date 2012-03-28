@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import javax.xml.namespace.QName;
+
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -12,6 +14,7 @@ import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.GenericDocumentManager;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.config.search.KeyValueQueryDefinition;
 import com.marklogic.client.config.search.MatchDocumentSummary;
 import com.marklogic.client.config.search.MatchLocation;
 import com.marklogic.client.config.search.MatchSnippet;
@@ -20,10 +23,10 @@ import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.SearchHandle;
 
 /**
- * StringSearch illustrates searching for documents and iterating over results
- * with simple string criteria.
+ * KeyValueSearch illustrates searching for documents and iterating over results
+ * with simple pairs of element names and values.
  */
-public class StringSearch {
+public class KeyValueSearch {
 	static final private String[] filenames = {"curbappeal.xml", "flipper.xml", "justintime.xml"};
 
 	public static void main(String[] args) throws IOException {
@@ -53,8 +56,8 @@ public class StringSearch {
 		QueryManager queryMgr = client.newQueryManager();
 
 		// create a search definition
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(null);
-		querydef.setCriteria("neighborhood");
+		KeyValueQueryDefinition querydef = queryMgr.newKeyValueDefinition(null);
+		querydef.put(queryMgr.newElementLocator(new QName("industry")), "Real Estate");
 
 		// create a handle for the search results
 		SearchHandle resultsHandle = new SearchHandle();
@@ -63,7 +66,7 @@ public class StringSearch {
 		queryMgr.search(querydef, resultsHandle);
 
 		System.out.println("Matched "+resultsHandle.getTotalResults()+
-				" documents with '"+querydef.getCriteria()+"'\n");
+				" documents with 'industry' value of 'Real Estate'\n");
 
 		// iterate over the result documents
 		MatchDocumentSummary[] docSummaries = resultsHandle.getMatchResults();
@@ -134,7 +137,7 @@ public class StringSearch {
 	public static Properties loadProperties() throws IOException {
 		String propsName = "Example.properties";
 		InputStream propsStream =
-			StringSearch.class.getClassLoader().getResourceAsStream(propsName);
+			KeyValueSearch.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
 			throw new RuntimeException("Could not read example properties");
 

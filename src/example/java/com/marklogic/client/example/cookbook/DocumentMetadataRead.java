@@ -70,10 +70,10 @@ public class DocumentMetadataRead {
 		// access the document content
 		Document document = contentHandle.get();
 
-		String rootName = document.getDocumentElement().getTagName();
 		String collFirst = collections.toArray(new String[collections.size()])[0];
+		String rootName = document.getDocumentElement().getTagName();
 		System.out.println("Read /example/"+filename +
-				" metadata and content with the <"+rootName+"/> root element in the '"+collFirst+"' collection");
+				" metadata and content in the '"+collFirst+"' collection with the <"+rootName+"/> root element");
 
 		tearDownExample(docMgr, docId);
 

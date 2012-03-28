@@ -15,6 +15,8 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputStreamHandle;
 
+import com.marklogic.client.io.StringHandle;
+
 /**
  * DocumentReader illustrates how to read the content of a database document.
  */
