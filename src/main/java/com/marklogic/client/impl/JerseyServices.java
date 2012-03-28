@@ -503,6 +503,11 @@ public class JerseyServices implements RESTServices {
         if (start > 1) {
             docParams.add("start", ""+start);
         }
+
+        String optionsName = queryDef.getOptionsName();
+        if (optionsName != null && optionsName.length() > 0) {
+            docParams.add("options", optionsName);
+        }
         
         if (queryDef instanceof StringQueryDefinition) {
             String text = ((StringQueryDefinition) queryDef).getCriteria();
