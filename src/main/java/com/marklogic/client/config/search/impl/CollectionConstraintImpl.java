@@ -61,15 +61,4 @@ public class CollectionConstraintImpl extends ConstraintImpl implements Facetabl
 	}
 
 
-	@Override
-	public void addAnnotation(Element annotation) {
-		throw new MarkLogicBindingException("Annotations not allowed on CollectionConstraint.");
-	}
-
-	@Override
-	public List<Element> getAnnotations() {
-		throw new MarkLogicBindingException("Annotations not allowed on CollectionConstraint.");
-	}
-
-
 }

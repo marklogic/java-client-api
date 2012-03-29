@@ -12,10 +12,10 @@ import org.w3c.dom.Element;
 interface StateOrTopLevel extends Annotatable {
 
 	public Element getAdditionalQuery();
-	public boolean getDebug();
+	public Boolean getDebug();
 	public List<Long> getForests();
-	public long getPageLength();
-	public double getQualityWeight();
+	public Long getPageLength();
+	public Double getQualityWeight();
 	public String getSearchableExpression();
 	public List<String> getSearchOptions();
 	public List<SortOrder> getSortOrders();
@@ -26,7 +26,7 @@ interface StateOrTopLevel extends Annotatable {
 	public void setForest(Long forest);
 	public void setForests(List<Long> forests);
 	public void setPageLength(Long pageLength);
-	public void setQualityWeight(double qualityWeight);
+	public void setQualityWeight(Double qualityWeight);
 	public void setSearchableExpression(String searchableExpression);
 	public void setSearchOptions(List<String> searchOptions);
 	public void setTransformResults(TransformResults transformResults);

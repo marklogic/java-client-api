@@ -5,41 +5,41 @@ import java.util.List;
 
 public interface QueryOptions extends JAXBBackedQueryOption, StateOrTopLevel {
 	
-	public boolean getReturnFacets();
+	public Boolean getReturnFacets();
 
-	public void setReturnFacets(boolean returnFacets);
+	public void setReturnFacets(Boolean returnFacets);
 
 	public void add(JAXBBackedQueryOption jAXBBackedQueryOption);
 
-	public boolean getReturnConstraints();
+	public Boolean getReturnConstraints();
 
-	public void setReturnConstraints(boolean returnConstraints);
+	public void setReturnConstraints(Boolean returnConstraints);
 
-	public boolean getReturnMetrics();
+	public Boolean getReturnMetrics();
 
-	public void setReturnMetrics(boolean returnMetrics);
+	public void setReturnMetrics(Boolean returnMetrics);
 
-	public boolean getReturnPlan();
+	public Boolean getReturnPlan();
 
-	public void setReturnPlan(boolean returnPlan);
+	public void setReturnPlan(Boolean returnPlan);
 
-	public boolean getReturnQText();
+	public Boolean getReturnQText();
 
-	public void setReturnQueryText(boolean returnQueryText);
+	public void setReturnQueryText(Boolean returnQueryText);
 
-	public boolean getReturnResults();
+	public Boolean getReturnResults();
 
-	public void setReturnResults(boolean returnResults);
+	public void setReturnResults(Boolean returnResults);
 
-	public boolean getReturnSimilar();
+	public Boolean getReturnSimilar();
 
-	public void setReturnSimilar(boolean returnSimilar);
+	public void setReturnSimilar(Boolean returnSimilar);
 
 	public String getFragmentScope();
 
 	public void setFragmentScope(String fragmentScope);
 
-	public int getConcurrencyLevel();
+	public Integer getConcurrencyLevel();
 
 	public void setConcurrencyLevel(Integer concurrencyLevel);
 

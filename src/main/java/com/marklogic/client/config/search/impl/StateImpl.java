@@ -46,7 +46,7 @@ public class StateImpl extends AbstractQueryOption<com.marklogic.client.config.s
 	}
 
 	@Override
-	public long getPageLength() {
+	public Long getPageLength() {
 		return JAXBHelper.getOneSimpleByElementName(this, "page-length");
 	}
 
@@ -66,12 +66,12 @@ public class StateImpl extends AbstractQueryOption<com.marklogic.client.config.s
 	}
 
 	@Override
-	public double getQualityWeight() {
+	public Double getQualityWeight() {
 		return JAXBHelper.getOneSimpleByElementName(this, "quality-weight");
 	}
 
 	@Override
-	public void setQualityWeight(double qualityWeight) {
+	public void setQualityWeight(Double qualityWeight) {
 		JAXBHelper.setOneSimpleByElementName(this, "quality-weight", qualityWeight);
 	}
 
@@ -91,7 +91,7 @@ public class StateImpl extends AbstractQueryOption<com.marklogic.client.config.s
 	}
 
 	@Override
-	public boolean getDebug() {
+	public Boolean getDebug() {
 		return JAXBHelper.getOneSimpleByElementName(this, "debug");
 	}
 

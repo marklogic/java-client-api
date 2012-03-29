@@ -138,12 +138,12 @@ public class CustomConstraintImpl extends ConstraintImpl<Custom> implements Face
 
 
 	@Override
-	public double getWeight() {
+	public Double getWeight() {
 		return JAXBHelper.getOneSimpleByElementName(this ,"weight");
 	}
 	
 	@Override
-	public void setWeight(double weight) {
+	public void setWeight(Double weight) {
 		JAXBHelper.setOneSimpleByElementName(this, "weight", weight);
 	}
 

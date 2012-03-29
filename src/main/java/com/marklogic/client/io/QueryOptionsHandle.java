@@ -71,7 +71,7 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 	}
 
 	@Override
-	public int getConcurrencyLevel() {
+	public Integer getConcurrencyLevel() {
 		return (Integer) JAXBHelper.getOneSimpleByElementName(this,
 				"concurrency-level");
 	}
@@ -82,7 +82,7 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 	}
 
 	@Override
-	public boolean getDebug() {
+	public Boolean getDebug() {
 		return (Boolean) JAXBHelper.getOneSimpleByElementName(this, "debug");
 	}
 
@@ -117,17 +117,17 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 	};
 
 	@Override
-	public long getPageLength() {
+	public Long getPageLength() {
 		return (Long) JAXBHelper.getOneSimpleByElementName(this, "page-length");
 	};
 
 	@Override
-	public double getQualityWeight() {
+	public Double getQualityWeight() {
 		return (Double) JAXBHelper.getOneSimpleByElementName(this,
 				"quality-weight");
 	};
 
-	private boolean returnWithDefault(Boolean returnValue, Boolean defaultValue) {
+	private Boolean returnWithDefault(Boolean returnValue, Boolean defaultValue) {
 		if (returnValue == null) {
 			return defaultValue;
 		} else {
@@ -136,49 +136,49 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 	}
 
 	@Override
-	public boolean getReturnConstraints() {
+	public Boolean getReturnConstraints() {
 		return returnWithDefault(
 				(Boolean) JAXBHelper.getOneSimpleByElementName(this,
 						"return-constraints"), false);
 	}
 
 	@Override
-	public boolean getReturnFacets() {
+	public Boolean getReturnFacets() {
 		return returnWithDefault(
 				(Boolean) JAXBHelper.getOneSimpleByElementName(this,
 						"return-facets"), true);
 	};
 
 	@Override
-	public boolean getReturnMetrics() {
+	public Boolean getReturnMetrics() {
 		return returnWithDefault(
 				(Boolean) JAXBHelper.getOneSimpleByElementName(this,
 						"return-metrics"), true);
 	};
 
 	@Override
-	public boolean getReturnPlan() {
+	public Boolean getReturnPlan() {
 		return returnWithDefault(
 				(Boolean) JAXBHelper.getOneSimpleByElementName(this,
 						"return-plan"), false);
 	};
 
 	@Override
-	public boolean getReturnQText() {
+	public Boolean getReturnQText() {
 		return returnWithDefault(
 				(Boolean) JAXBHelper.getOneSimpleByElementName(this,
 						"return-qtext"), false);
 	};
 
 	@Override
-	public boolean getReturnResults() {
+	public Boolean getReturnResults() {
 		return returnWithDefault(
 				(Boolean) JAXBHelper.getOneSimpleByElementName(this,
 						"return-results"), true);
 	}
 
 	@Override
-	public boolean getReturnSimilar() {
+	public Boolean getReturnSimilar() {
 		return returnWithDefault(
 				(Boolean) JAXBHelper.getOneSimpleByElementName(this,
 						"return-similar"), false);
@@ -294,48 +294,48 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 	}
 
 	@Override
-	public void setQualityWeight(double qualityWeight) {
+	public void setQualityWeight(Double qualityWeight) {
 		JAXBHelper.setOneSimpleByElementName(this, "quality-weight",
 				qualityWeight);
 	}
 
 	@Override
-	public void setReturnConstraints(boolean returnConstraints) {
+	public void setReturnConstraints(Boolean returnConstraints) {
 		JAXBHelper.setOneSimpleByElementName(this, "return-constraints",
 				returnConstraints);
 	}
 
 	@Override
-	public void setReturnFacets(boolean returnFacets) {
+	public void setReturnFacets(Boolean returnFacets) {
 		JAXBHelper.setOneSimpleByElementName(this, "return-facets",
 				returnFacets);
 	}
 
 	@Override
-	public void setReturnMetrics(boolean returnMetrics) {
+	public void setReturnMetrics(Boolean returnMetrics) {
 		JAXBHelper.setOneSimpleByElementName(this, "return-metrics",
 				returnMetrics);
 	}
 
 	@Override
-	public void setReturnPlan(boolean returnPlan) {
+	public void setReturnPlan(Boolean returnPlan) {
 		JAXBHelper.setOneSimpleByElementName(this, "return-plan", returnPlan);
 	}
 
 	@Override
-	public void setReturnQueryText(boolean returnQueryText) {
+	public void setReturnQueryText(Boolean returnQueryText) {
 		JAXBHelper.setOneSimpleByElementName(this, "return-qtext",
 				returnQueryText);
 	}
 
 	@Override
-	public void setReturnResults(boolean returnResults) {
+	public void setReturnResults(Boolean returnResults) {
 		JAXBHelper.setOneSimpleByElementName(this, "return-results",
 				returnResults);
 	}
 
 	@Override
-	public void setReturnSimilar(boolean returnSimilar) {
+	public void setReturnSimilar(Boolean returnSimilar) {
 		JAXBHelper.setOneSimpleByElementName(this, "return-similar",
 				returnSimilar);
 

@@ -91,12 +91,12 @@ public class TermImpl extends AbstractQueryOption<com.marklogic.client.config.se
 	}
 
 	@Override
-	public double getWeight() {
+	public Double getWeight() {
 		return JAXBHelper.getOneSimpleByElementName(this ,"weight");
 	}
 	
 	@Override
-	public void setWeight(double weight) {
+	public void setWeight(Double weight) {
 		JAXBHelper.setOneSimpleByElementName(this, "weight", weight);
 	}
 

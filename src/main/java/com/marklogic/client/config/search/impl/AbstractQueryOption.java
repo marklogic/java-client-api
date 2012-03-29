@@ -1,12 +1,10 @@
 package com.marklogic.client.config.search.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
 
 import org.w3c.dom.Element;
 
@@ -85,7 +83,14 @@ abstract class AbstractQueryOption<T> implements JAXBBackedQueryOption {
 		for (Object o : children) {
 			if (o instanceof Annotation) {
 				Annotation a = (Annotation) o;
-				l.addAll((Collection<? extends Element>) a.getContent());
+				for (Object elementObject : a.getContent()) {
+					if (elementObject instanceof Element) {
+						Element e = (Element) elementObject;
+						l.add(e);
+					} else if (elementObject instanceof String) {
+						// FIXME don't drop strings
+					}
+				}
 			}
 		}
 		return l;
