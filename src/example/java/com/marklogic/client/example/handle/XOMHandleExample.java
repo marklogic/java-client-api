@@ -5,9 +5,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.jdom.Document;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
+import nu.xom.Document;
+import nu.xom.Builder;
+import nu.xom.ParsingException;
+import nu.xom.ValidityException;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
@@ -16,12 +17,13 @@ import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.XMLDocumentManager;
 
 /**
- * JDOMHandleExample illustrates writing and reading content as a JDOM structure
- * using the JDOMHandle example of a content handle extension.
+ * XOMHandleExample illustrates writing and reading content as a XOM structure
+ * using the XOMHandle example of a content handle extension.
  */
-public class JDOMHandleExample {
+public class XOMHandleExample {
 
-	public static void main(String[] args) throws IOException, JDOMException {
+	public static void main(String[] args)
+	throws IOException, ValidityException, ParsingException {
 		Properties props = loadProperties();
 
 		// connection parameters for writer user
@@ -37,8 +39,8 @@ public class JDOMHandleExample {
 	}
 
 	public static void run(String host, int port, String user, String password, Authentication authType)
-	throws JDOMException, IOException {
-		System.out.println("example: "+JDOMHandleExample.class.getName());
+	throws ValidityException, ParsingException, IOException {
+		System.out.println("example: "+XOMHandleExample.class.getName());
 
 		String filename = "flipper.xml";
 
@@ -49,25 +51,25 @@ public class JDOMHandleExample {
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
 		// parse the example file into a JDOM structure
-		InputStream docStream = JDOMHandleExample.class.getClassLoader().getResourceAsStream(
+		InputStream docStream = XOMHandleExample.class.getClassLoader().getResourceAsStream(
 				"data"+File.separator+filename);
 		if (docStream == null)
 			throw new RuntimeException("Could not read document example");
 
-		Document writeDocument = new SAXBuilder(false).build(docStream);
+		Document writeDocument = new Builder(false).build(docStream);
 
 		// create an identifier for the document
 		DocumentIdentifier docId = client.newDocId("/example/"+filename);
 
 		// create a handle for the document
-		JDOMHandle writeHandle = new JDOMHandle();
+		XOMHandle writeHandle = new XOMHandle();
 		writeHandle.set(writeDocument);
 
 		// write the document
 		docMgr.write(docId, writeHandle);
 
 		// create a handle to receive the document content
-		JDOMHandle readHandle = new JDOMHandle();
+		XOMHandle readHandle = new XOMHandle();
 
 		// read the document content
 		docMgr.read(docId, readHandle);
@@ -77,13 +79,13 @@ public class JDOMHandleExample {
 
 		// ... do something with the document content ...
 
-		String rootName = readDocument.getRootElement().getName();
+		String rootName = readDocument.getRootElement().getQualifiedName();
 
 		// delete the document
 		docMgr.delete(docId);
 
 		System.out.println("Wrote and read /example/"+filename+
-				" content with the <"+rootName+"/> root element using JDOM");
+				" content with the <"+rootName+"/> root element using XOM");
 
 		// release the client
 		client.release();
@@ -92,7 +94,7 @@ public class JDOMHandleExample {
 	// get the configuration for the example
 	public static Properties loadProperties() throws IOException {
 		String propsName = "Example.properties";
-		InputStream propsStream = JDOMHandleExample.class.getClassLoader().getResourceAsStream(propsName);
+		InputStream propsStream = XOMHandleExample.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
 			throw new RuntimeException("Could not read example properties");
 

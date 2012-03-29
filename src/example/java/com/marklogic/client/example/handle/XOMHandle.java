@@ -4,10 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.jdom.Document;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.XMLOutputter;
+import nu.xom.Builder;
+import nu.xom.Document;
+import nu.xom.ParsingException;
+import nu.xom.Serializer;
+import nu.xom.ValidityException;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.io.OutputStreamSender;
@@ -17,47 +18,38 @@ import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
- * A JDOM Handle represents XML content as a JDOM document for reading or writing.
+ * A XOM Handle represents XML content as a XOM document for reading or writing.
  */
-public class JDOMHandle
+public class XOMHandle
     implements OutputStreamSender,
     	XMLReadHandle<InputStream>, XMLWriteHandle<OutputStreamSender>,
     	StructureReadHandle<InputStream>, StructureWriteHandle<OutputStreamSender>
 {
-	private Document     content;
-	private SAXBuilder   builder;
-	private XMLOutputter outputter;
+	private Document content;
+	private Builder  builder;
 
-	public JDOMHandle() {
+	public XOMHandle() {
 		super();
 	}
-	public JDOMHandle(Document content) {
+	public XOMHandle(Document content) {
 		this();
     	set(content);
 	}
 
-	public SAXBuilder getBuilder() {
+	public Builder getBuilder() {
 		if (builder == null)
 			builder = makeBuilder();
 		return builder;
 	}
-	public void setBuilder(SAXBuilder builder) {
+	public void setBuilder(Builder builder) {
 		this.builder = builder;
 	}
-	protected SAXBuilder makeBuilder() {
-		return new SAXBuilder(false);
+	protected Builder makeBuilder() {
+		return new Builder(false);
 	}
 
-	public XMLOutputter getOutputter() {
-		if (outputter == null)
-			outputter = makeOutputter();
-		return outputter;
-	}
-	public void setOutputter(XMLOutputter outputter) {
-		this.outputter = outputter;
-	}
-	protected XMLOutputter makeOutputter() {
-		return new XMLOutputter();
+	protected Serializer makeSerializer(OutputStream out) {
+		return new Serializer(out);
 	}
 
 	public Document get() {
@@ -66,7 +58,7 @@ public class JDOMHandle
     public void set(Document content) {
     	this.content = content;
     }
-    public JDOMHandle with(Document content) {
+    public XOMHandle with(Document content) {
     	set(content);
     	return this;
     }
@@ -76,9 +68,9 @@ public class JDOMHandle
 	}
 	public void setFormat(Format format) {
 		if (format != Format.XML)
-			new IllegalArgumentException("JDOMHandle supports the XML format only");
+			new IllegalArgumentException("XOMHandle supports the XML format only");
 	}
-	public JDOMHandle withFormat(Format format) {
+	public XOMHandle withFormat(Format format) {
 		setFormat(format);
 		return this;
 	}
@@ -94,7 +86,9 @@ public class JDOMHandle
 
 		try {
 			this.content = getBuilder().build(content);
-		} catch (JDOMException e) {
+		} catch (ValidityException e) {
+			throw new RuntimeException(e);
+		} catch (ParsingException e) {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -111,7 +105,7 @@ public class JDOMHandle
 	}
 	@Override
 	public void write(OutputStream out) throws IOException {
-		getOutputter().output(content, out);
+		makeSerializer(out).write(content);
 	}
 
 }
