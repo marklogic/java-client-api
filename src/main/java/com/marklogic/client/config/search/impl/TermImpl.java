@@ -8,9 +8,8 @@ import com.marklogic.client.config.search.FunctionRef;
 import com.marklogic.client.config.search.Term;
 import com.marklogic.client.config.search.jaxb.Empty;
 
-public class TermImpl extends AbstractQueryOption implements Term {
+public class TermImpl extends AbstractQueryOption<com.marklogic.client.config.search.jaxb.Term> implements Term {
 
-	private com.marklogic.client.config.search.jaxb.Term jaxbObject;
 
 	public TermImpl(com.marklogic.client.config.search.jaxb.Term ot) {
 		jaxbObject = ot;
@@ -93,14 +92,12 @@ public class TermImpl extends AbstractQueryOption implements Term {
 
 	@Override
 	public double getWeight() {
-		// TODO Auto-generated method stub
-		return 0;
+		return JAXBHelper.getOneSimpleByElementName(this ,"weight");
 	}
-
+	
 	@Override
 	public void setWeight(double weight) {
-		// TODO Auto-generated method stub
-
+		JAXBHelper.setOneSimpleByElementName(this, "weight", weight);
 	}
 
 }

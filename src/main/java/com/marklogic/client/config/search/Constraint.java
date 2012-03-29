@@ -1,8 +1,10 @@
 package com.marklogic.client.config.search;
 
-public interface Constraint extends Annotate {
+public interface Constraint extends JAXBBackedQueryOption, Annotatable {
 
-	public String getName();
+	void setName(String name);
+
+	String getName();
 
 	
 }

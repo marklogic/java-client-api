@@ -1,5 +1,10 @@
 package com.marklogic.client.impl;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.namespace.QName;
+
 import com.marklogic.client.ElementLocator;
 import com.marklogic.client.Format;
 import com.marklogic.client.KeyLocator;
@@ -10,16 +15,9 @@ import com.marklogic.client.config.search.MatchDocumentSummary;
 import com.marklogic.client.config.search.QueryDefinition;
 import com.marklogic.client.config.search.StringQueryDefinition;
 import com.marklogic.client.config.search.StructuredQueryBuilder;
-import com.marklogic.client.config.search.StructuredQueryDefinition;
 import com.marklogic.client.config.search.jaxb.Response;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.namespace.QName;
 
 /**
  * Created by IntelliJ IDEA.

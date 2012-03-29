@@ -2,7 +2,6 @@ package com.marklogic.client.impl;
 
 import java.io.PrintStream;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,11 +11,11 @@ import org.slf4j.LoggerFactory;
 import com.marklogic.client.AbstractDocumentManager;
 import com.marklogic.client.BadRequestException;
 import com.marklogic.client.DocumentIdentifier;
-import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.Format;
 import com.marklogic.client.RequestLogger;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;

@@ -8,9 +8,8 @@ import com.marklogic.client.config.search.MarkLogicBindingException;
 import com.marklogic.client.config.search.jaxb.Constraint;
 import com.marklogic.client.config.search.jaxb.ElementQuery;
 
-public class ElementQueryConstraintImpl extends ConstraintImpl {
+public class ElementQueryConstraintImpl extends ConstraintImpl<ElementQuery> {
 
-	ElementQuery jaxbObject;
 	
 	public ElementQueryConstraintImpl(String name) {
 		super(name);

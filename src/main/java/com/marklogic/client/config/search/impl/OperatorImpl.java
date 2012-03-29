@@ -6,12 +6,11 @@ import java.util.List;
 import org.w3c.dom.Element;
 
 import com.marklogic.client.config.search.Operator;
-import com.marklogic.client.config.search.QueryOption;
+import com.marklogic.client.config.search.JAXBBackedQueryOption;
 import com.marklogic.client.config.search.State;
 
-public class OperatorImpl extends AbstractQueryOption implements QueryOption, Operator {
+public class OperatorImpl extends AbstractQueryOption<com.marklogic.client.config.search.jaxb.Operator > implements JAXBBackedQueryOption, Operator {
 
-    private com.marklogic.client.config.search.jaxb.Operator jaxbObject;
     
 	public OperatorImpl(com.marklogic.client.config.search.jaxb.Operator ot) {
 		jaxbObject = ot;
@@ -37,15 +36,6 @@ public class OperatorImpl extends AbstractQueryOption implements QueryOption, Op
 		jaxbObject.setName(name);
 	}
 
-	@Override
-	public void addAnnotation(Element annotation) {
-		addAnnotation(this, annotation);
-	}
-
-	@Override
-	public List<Element> getAnnotations() {
-		return getAnnotations(this);
-	}
 
 	public List<State> getStates() {
 		List<State> l = new ArrayList<State>();

@@ -19,10 +19,9 @@ import com.marklogic.client.config.search.jaxb.Range;
  * @author cgreer
  * 
  */
-public class RangeConstraintImpl extends ConstraintImpl implements Facetable,
+public class RangeConstraintImpl extends ConstraintImpl<Range> implements Facetable,
 		RangeConstraint {
 
-	private Range jaxbObject;
 
 	public RangeConstraintImpl(Constraint constraint, Range range) {
 		super(constraint);
@@ -34,8 +33,7 @@ public class RangeConstraintImpl extends ConstraintImpl implements Facetable,
 		super(name);
 		jaxbObject = new Range();
 		jaxbConstraint.getConstraint().add(jaxbObject);
-		indexReferenceImpl = new IndexReferenceImpl(
-				this.jaxbObject.getElementOrAttributeOrFragmentScope());
+		indexReferenceImpl = new IndexReferenceImpl(getJAXBChildren());
 	}
 
 	@Override
@@ -82,13 +80,13 @@ public class RangeConstraintImpl extends ConstraintImpl implements Facetable,
 	}
 
 	@Override
-	public void addAnnotation(Element annotation) {
-		super.addAnnotation(this, annotation);
+	public void setType(QName type) {
+		jaxbObject.setType(type);
 	}
 
 	@Override
-	public List<Element> getAnnotations() {
-		return super.getAnnotations(this);
+	public QName getType() {
+		return jaxbObject.getType();
 	}
 
 }

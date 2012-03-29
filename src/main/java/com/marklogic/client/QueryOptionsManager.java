@@ -1,6 +1,7 @@
 package com.marklogic.client;
 
 import com.marklogic.client.config.search.QueryOptions;
+import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
@@ -26,7 +27,7 @@ public interface QueryOptionsManager {
      * @param name
      * @param options
      */
-    public <T extends QueryOptionsWriteHandle> void writeOptions(String name, T searchOptionsHandle);
+    public void writeOptions(String name, QueryOptionsWriteHandle searchOptionsHandle);
     
     /**
      * Remove a search configuration from the REST server.

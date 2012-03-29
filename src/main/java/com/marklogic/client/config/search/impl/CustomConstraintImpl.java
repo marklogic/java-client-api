@@ -19,10 +19,8 @@ import com.marklogic.client.config.search.MarkLogicBindingException;
 import com.marklogic.client.config.search.jaxb.Constraint;
 import com.marklogic.client.config.search.jaxb.Custom;
 
-public class CustomConstraintImpl extends ConstraintImpl implements Facetable,
+public class CustomConstraintImpl extends ConstraintImpl<Custom> implements Facetable,
 		CustomConstraint {
-
-	private Custom jaxbObject;
 
 	private FunctionRefImpl parse, startFacet, finishFacet;
 
@@ -136,6 +134,17 @@ public class CustomConstraintImpl extends ConstraintImpl implements Facetable,
 	/* Children are handled within this class */
 	public List<Object> getJAXBChildren() {
 		return null;
+	}
+
+
+	@Override
+	public double getWeight() {
+		return JAXBHelper.getOneSimpleByElementName(this ,"weight");
+	}
+	
+	@Override
+	public void setWeight(double weight) {
+		JAXBHelper.setOneSimpleByElementName(this, "weight", weight);
 	}
 
 }

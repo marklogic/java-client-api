@@ -1,6 +1,6 @@
 package com.marklogic.client.config.search;
 
-public interface SuggestionSource extends Annotate, Indexable, Suggestable {
+public interface SuggestionSource extends Annotatable, Indexable, Suggestable {
 
 	public void useWordLexicon(String collation);
 	public void useWordLexicon(String collation, String fragmentScope);

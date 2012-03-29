@@ -7,9 +7,8 @@ import org.w3c.dom.Element;
 import com.marklogic.client.config.search.SortOrder;
 import com.marklogic.client.config.search.jaxb.Score;
 
-public class SortOrderImpl extends AbstractQueryOption implements SortOrder {
+public class SortOrderImpl extends AbstractQueryOption<com.marklogic.client.config.search.jaxb.SortOrder> implements SortOrder {
 
-	private com.marklogic.client.config.search.jaxb.SortOrder jaxbObject;
 	
 	public SortOrderImpl(com.marklogic.client.config.search.jaxb.SortOrder ot) {
 		jaxbObject = ot;
@@ -22,23 +21,8 @@ public class SortOrderImpl extends AbstractQueryOption implements SortOrder {
 	}
 
 	@Override
-	public Object asJaxbObject() {
-		return jaxbObject;
-	}
-
-	@Override
 	public List<Object> getJAXBChildren() {
 		return jaxbObject.getElementOrAttributeOrField();
-	}
-
-	@Override
-	public void addAnnotation(Element annotation) {
-		addAnnotation(this, annotation);
-	}
-
-	@Override
-	public List<Element> getAnnotations() {
-		return getAnnotations(this);
 	}
 
 

@@ -6,24 +6,23 @@ import com.marklogic.client.config.search.Joiner.Tokenize;
 
 public interface Starter extends FunctionRef {
 
-
-	public int getStrength();
+	public String getDelimiter();
 	
 	public QName getElement();
 	
 	public String getOptions();
 	
-	public String getDelimiter();
+	public int getStrength();
 	
 	public Tokenize getTokenize();
 
-	public void setStrength(int strength);
+	public void setDelimiter(String delimiter);
 	
 	public void setElement(QName element);
 	
 	public void setOptions(String options);
 	
-	public void setDelimiter(String delimiter);
+	public void setStrength(int strength);
 	
 	public void setTokenize(Tokenize tokenize);
 	

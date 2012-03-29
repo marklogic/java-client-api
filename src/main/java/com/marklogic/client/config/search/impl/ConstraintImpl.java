@@ -1,16 +1,14 @@
 package com.marklogic.client.config.search.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.w3c.dom.Element;
 
-import com.marklogic.client.config.search.Annotate;
-import com.marklogic.client.config.search.Annotation;
+import com.marklogic.client.config.search.Annotatable;
 import com.marklogic.client.config.search.Constraint;
 
-public abstract class ConstraintImpl extends AbstractQueryOption implements
-		Constraint, Annotate {
+public abstract class ConstraintImpl<T> extends AbstractQueryOption<T> implements
+		Constraint, Annotatable {
 
 	protected com.marklogic.client.config.search.jaxb.Constraint jaxbConstraint;
 
@@ -32,22 +30,25 @@ public abstract class ConstraintImpl extends AbstractQueryOption implements
 	public String getName() {
 		return jaxbConstraint.getName();
 	}
+	
+	@Override
+	public void setName(String name) {
+		jaxbConstraint.setName(name);
+	}
 
+	@Override
+	public List<Object> getJAXBChildren() {
+		return null;
+	}
+
+
+	@Override
 	public void addAnnotation(Element annotation) {
-		jaxbConstraint.getConstraint().add(annotation);
+		super.addAnnotation(jaxbConstraint, annotation);
 	}
 
+	@Override
 	public List<Element> getAnnotations() {
-		List<Element> l = new ArrayList<Element>();
-		List<Object> children = jaxbConstraint.getConstraint();
-		for (Object o : children) {
-			if (o instanceof com.marklogic.client.config.search.jaxb.Annotation) {
-				Annotation a = (Annotation) new AnnotationImpl(
-						(com.marklogic.client.config.search.jaxb.Annotation) o);
-				l.addAll(a.getContent());
-			}
-		}
-		return l;
+		return super.getAnnotations(jaxbConstraint);
 	}
-
 }

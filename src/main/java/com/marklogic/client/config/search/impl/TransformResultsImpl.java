@@ -13,12 +13,12 @@ import org.w3c.dom.NodeList;
 import com.marklogic.client.ElementLocator;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.config.search.FunctionRef;
-import com.marklogic.client.config.search.QueryOption;
+import com.marklogic.client.config.search.JAXBBackedQueryOption;
 import com.marklogic.client.config.search.TransformResults;
 import com.marklogic.client.impl.ElementLocatorImpl;
 import com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl;
 
-public class TransformResultsImpl implements QueryOption, TransformResults {
+public class TransformResultsImpl implements JAXBBackedQueryOption, TransformResults {
 
 	private com.marklogic.client.config.search.jaxb.TransformResults jaxbObject;
 	private Document document;
@@ -144,7 +144,6 @@ public class TransformResultsImpl implements QueryOption, TransformResults {
 	@Override
 	public void setPreferredElements(List<ElementLocator> elements) {
 		List<Element> children = jaxbObject.getAnyElement();
-		List<Element> newChildren = new ArrayList<Element>();
 		for (Element e : children) {
 			if (e.getNodeName().equals("element")) {
 				children.remove(e);

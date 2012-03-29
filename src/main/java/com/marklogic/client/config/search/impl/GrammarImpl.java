@@ -7,21 +7,15 @@ import org.w3c.dom.Element;
 
 import com.marklogic.client.config.search.Grammar;
 import com.marklogic.client.config.search.Joiner;
-import com.marklogic.client.config.search.QueryOption;
+import com.marklogic.client.config.search.JAXBBackedQueryOption;
 import com.marklogic.client.config.search.Starter;
 
-public class GrammarImpl extends AbstractQueryOption implements QueryOption, Grammar {
+public class GrammarImpl extends AbstractQueryOption<com.marklogic.client.config.search.jaxb.Grammar> implements JAXBBackedQueryOption, Grammar {
 
 
-	private com.marklogic.client.config.search.jaxb.Grammar jaxbObject;
 	
 	public GrammarImpl(com.marklogic.client.config.search.jaxb.Grammar ot) {
 		jaxbObject = ot;
-	}
-
-	@Override
-	public Object asJaxbObject() {
-		return jaxbObject;
 	}
 
 	@Override
@@ -63,7 +57,8 @@ public class GrammarImpl extends AbstractQueryOption implements QueryOption, Gra
 		return joiners;
 	}
 
-	private <T> List<T> getElementList(QueryOption option,
+	@SuppressWarnings("unchecked")
+	private <T> List<T> getElementList(JAXBBackedQueryOption option,
 			Class<T> clazz) {
 		List<T> l = new ArrayList<T>();
 		for (Object o : option.getJAXBChildren() ) {
@@ -85,4 +80,5 @@ public class GrammarImpl extends AbstractQueryOption implements QueryOption, Gra
 		return starters;
 	}
 
+	
 }

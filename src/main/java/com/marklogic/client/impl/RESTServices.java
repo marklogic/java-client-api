@@ -1,21 +1,19 @@
 package com.marklogic.client.impl;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
+import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.BadRequestException;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.AbstractDocumentManager.Metadata;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.config.search.QueryDefinition;
-import com.marklogic.client.config.search.QueryOptions;
 
 public interface RESTServices {
 	public void connect(String host, int port, String user, String password, Authentication type, SSLContext context, HostnameVerifier verifier);

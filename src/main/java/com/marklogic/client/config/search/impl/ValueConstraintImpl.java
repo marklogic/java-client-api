@@ -2,18 +2,14 @@ package com.marklogic.client.config.search.impl;
 
 import java.util.List;
 
-import org.w3c.dom.Element;
-
 import com.marklogic.client.config.search.ValueConstraint;
 import com.marklogic.client.config.search.jaxb.Constraint;
 import com.marklogic.client.config.search.jaxb.Value;
 
 
-public class ValueConstraintImpl extends ConstraintImpl implements ValueConstraint {
+public class ValueConstraintImpl extends ConstraintImpl<Value> implements ValueConstraint {
 
 	
-	private Value jaxbObject;
-
 	public ValueConstraintImpl(Constraint constraint, Value value) {
 		super(constraint);
 		jaxbObject = value;
@@ -33,16 +29,15 @@ public class ValueConstraintImpl extends ConstraintImpl implements ValueConstrai
 		return jaxbObject.getElementOrAttributeOrFragmentScope();
 	}
 
-	@Override
-	public void addAnnotation(Element annotation) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	@Override
-	public List<Element> getAnnotations() {
-		// TODO Auto-generated method stub
-		return null;
+	public double getWeight() {
+		return JAXBHelper.getOneSimpleByElementName(this ,"weight");
+	}
+	
+	@Override
+	public void setWeight(double weight) {
+		JAXBHelper.setOneSimpleByElementName(this, "weight", weight);
 	}
 
 

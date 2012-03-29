@@ -12,10 +12,9 @@ import com.marklogic.client.config.search.SuggestionSource;
 import com.marklogic.client.config.search.jaxb.Annotation;
 import com.marklogic.client.config.search.jaxb.WordLexicon;
 
-public class SuggestionSourceImpl extends AbstractQueryOption implements Indexable,SuggestionSource {
+public class SuggestionSourceImpl extends AbstractQueryOption<com.marklogic.client.config.search.jaxb.SuggestionSource> implements Indexable,SuggestionSource {
 
 
-	private com.marklogic.client.config.search.jaxb.SuggestionSource jaxbObject;
 	protected IndexReference indexReferenceImpl;
 	
 	public SuggestionSourceImpl(

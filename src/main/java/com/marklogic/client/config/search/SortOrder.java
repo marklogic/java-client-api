@@ -1,6 +1,6 @@
 package com.marklogic.client.config.search;
 
-public interface SortOrder extends QueryOption, Annotate, Indexable {
+public interface SortOrder extends JAXBBackedQueryOption, Annotatable, Indexable {
 
 	public enum Direction { ASCENDING, DESCENDING };
 	

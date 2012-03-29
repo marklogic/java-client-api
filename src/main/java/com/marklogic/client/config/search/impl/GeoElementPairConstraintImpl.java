@@ -2,8 +2,6 @@ package com.marklogic.client.config.search.impl;
 
 import java.util.List;
 
-import com.marklogic.client.config.search.Annotation;
-
 public class GeoElementPairConstraintImpl extends GeospatialConstraintImpl {
 
 	public GeoElementPairConstraintImpl(String name) {

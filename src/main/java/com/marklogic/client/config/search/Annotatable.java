@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.w3c.dom.Element;
 
-public interface Annotate  {
+public interface Annotatable  {
 
 	public void addAnnotation(Element annotation);
 	public List<Element> getAnnotations();

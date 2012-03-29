@@ -7,4 +7,9 @@ public interface TermOptions {
 
 	public List<String> getTermOptions();
 	public void setTermOptions(List<String> termOptions);
+	
+
+	public double getWeight();
+	public void setWeight(double weight);
+	
 }

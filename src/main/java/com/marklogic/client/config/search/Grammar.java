@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.w3c.dom.Element;
 
-public interface Grammar {
+public interface Grammar extends JAXBBackedQueryOption {
 
 	String getQuotation();
 

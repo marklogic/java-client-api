@@ -19,6 +19,17 @@ public class IndexReferenceImpl implements IndexReference {
 
 	public IndexReferenceImpl(List<Object> jaxbList) {
 		this.jaxbList = jaxbList;
+		for (Object o : jaxbList) {
+			if (o instanceof Attribute) {
+				attribute = (Attribute) o;
+			} else if (o instanceof Element) {
+				element = (Element) o;
+			}
+			else if (o instanceof Field) {
+				field = (Field) o;
+			}
+			// TODO path range index
+		}
 	}
 
 	@Override

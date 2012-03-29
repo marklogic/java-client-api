@@ -2,7 +2,6 @@ package com.marklogic.client.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

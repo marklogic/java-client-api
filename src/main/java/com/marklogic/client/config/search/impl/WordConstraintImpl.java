@@ -6,10 +6,9 @@ import com.marklogic.client.config.search.WordConstraint;
 import com.marklogic.client.config.search.jaxb.Constraint;
 import com.marklogic.client.config.search.jaxb.Word;
 
-public class WordConstraintImpl extends ConstraintImpl implements WordConstraint {
+public class WordConstraintImpl extends ConstraintImpl<Word> implements WordConstraint {
 
 
-	private Word jaxbObject;
 
 	public WordConstraintImpl(Constraint constraint, Word w) {
 		super(constraint);
@@ -31,5 +30,15 @@ public class WordConstraintImpl extends ConstraintImpl implements WordConstraint
 		return jaxbObject.getElementOrAttributeOrFragmentScope();
 	}
 
+
+	@Override
+	public double getWeight() {
+		return JAXBHelper.getOneSimpleByElementName(this ,"weight");
+	}
+	
+	@Override
+	public void setWeight(double weight) {
+		JAXBHelper.setOneSimpleByElementName(this, "weight", weight);
+	}
 
 }

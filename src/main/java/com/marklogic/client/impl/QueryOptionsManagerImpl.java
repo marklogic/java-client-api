@@ -1,8 +1,5 @@
 package com.marklogic.client.impl;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,9 +46,8 @@ public class QueryOptionsManagerImpl implements QueryOptionsManager {
 	}
 
 	@Override
-	public <T extends QueryOptionsWriteHandle> void writeOptions(String name,
-			T searchOptionsHandle) {
-		services.putValue(QUERY_OPTIONS_BASE, name, "application/xml", searchOptionsHandle.sendContent());
+	public void writeOptions(String name, QueryOptionsWriteHandle queryOptionsHandle) {
+		services.putValue(QUERY_OPTIONS_BASE, name, "application/xml", queryOptionsHandle.sendContent());
 	}
 
 }

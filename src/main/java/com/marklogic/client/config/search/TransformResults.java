@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.marklogic.client.ElementLocator;
 
-public interface TransformResults extends QueryOption {
+public interface TransformResults extends JAXBBackedQueryOption {
 
 	public enum Apply { SNIPPET, RAW };
 	

@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -13,61 +12,83 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.PropertyException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.namespace.QName;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Element;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.config.search.Constraint;
 import com.marklogic.client.config.search.Grammar;
+import com.marklogic.client.config.search.JAXBBackedQueryOption;
 import com.marklogic.client.config.search.MarkLogicBindingException;
-import com.marklogic.client.config.search.MarkLogicUnhandledElementException;
 import com.marklogic.client.config.search.Operator;
-import com.marklogic.client.config.search.QueryOption;
 import com.marklogic.client.config.search.QueryOptions;
+import com.marklogic.client.config.search.SortOrder;
 import com.marklogic.client.config.search.Term;
 import com.marklogic.client.config.search.TransformResults;
-import com.marklogic.client.config.search.impl.AdditionalQueryImpl;
-import com.marklogic.client.config.search.impl.AnnotationImpl;
-import com.marklogic.client.config.search.impl.CollectionConstraintImpl;
-import com.marklogic.client.config.search.impl.CustomConstraintImpl;
-import com.marklogic.client.config.search.impl.DefaultSuggestionSourceImpl;
-import com.marklogic.client.config.search.impl.ElementQueryConstraintImpl;
-import com.marklogic.client.config.search.impl.GrammarImpl;
-import com.marklogic.client.config.search.impl.OperatorImpl;
-import com.marklogic.client.config.search.impl.PropertiesConstraintImpl;
-import com.marklogic.client.config.search.impl.RangeConstraintImpl;
-import com.marklogic.client.config.search.impl.SortOrderImpl;
-import com.marklogic.client.config.search.impl.SuggestionSourceImpl;
-import com.marklogic.client.config.search.impl.TermImpl;
-import com.marklogic.client.config.search.impl.TransformResultsImpl;
-import com.marklogic.client.config.search.impl.ValueConstraintImpl;
-import com.marklogic.client.config.search.impl.WordConstraintImpl;
-import com.marklogic.client.config.search.jaxb.Collection;
-import com.marklogic.client.config.search.jaxb.Custom;
-import com.marklogic.client.config.search.jaxb.ElementQuery;
+import com.marklogic.client.config.search.impl.JAXBHelper;
+import com.marklogic.client.config.search.jaxb.AdditionalQuery;
 import com.marklogic.client.config.search.jaxb.Options;
-import com.marklogic.client.config.search.jaxb.Properties;
-import com.marklogic.client.config.search.jaxb.Range;
-import com.marklogic.client.config.search.jaxb.Value;
-import com.marklogic.client.config.search.jaxb.Word;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
 public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 		QueryOptionsWriteHandle<OutputStreamSender>, QueryOptions,
 		OutputStreamSender {
+	@SuppressWarnings("unused")
 	static final private Logger logger = LoggerFactory
 			.getLogger(QueryOptionsHandle.class);
 	protected JAXBContext jc = null;
 	protected Unmarshaller unmarshaller = null;
 	protected Marshaller m = null;
 	private Options jaxbOptions = null;
+	private com.marklogic.client.config.search.jaxb.AdditionalQuery additionalQuery;
 
 	public QueryOptionsHandle() {
 		this.jaxbOptions = new Options();
+		additionalQuery = new com.marklogic.client.config.search.jaxb.AdditionalQuery();
+	}
+
+	@Override
+	public void add(JAXBBackedQueryOption jAXBBackedQueryOption) {
+		jaxbOptions.getSearchOptions().add(jAXBBackedQueryOption.asJaxbObject());
+	}
+
+	@Override
+	public Object asJaxbObject() {
+		return jaxbOptions;
+	}
+
+	public QueryOptions get() {
+		return this;
+	}
+
+	@Override
+	public Element getAdditionalQuery() {
+		return additionalQuery.getValue().getAny();
+	}
+
+	@Override
+	public int getConcurrencyLevel() {
+		return (Integer) JAXBHelper.getOneSimpleByElementName(this,
+				"concurrency-level");
+	}
+
+	@Override
+	public List<Constraint> getConstraints() {
+		return JAXBHelper.getByClassName(this, Constraint.class);
+	}
+
+	@Override
+	public boolean getDebug() {
+		return (Boolean) JAXBHelper.getOneSimpleByElementName(this, "debug");
+	}
+
+	@Override
+	public List<Long> getForests() {
+		return JAXBHelper.getSimpleByElementName(this, "forest");
 	}
 
 	@Override
@@ -76,16 +97,130 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 	}
 
 	@Override
-	public void setFormat(Format format) {
-		if (format != Format.XML)
-			new RuntimeException("SearchHandle supports the XML format only");
+	public String getFragmentScope() {
+		return JAXBHelper.getOneSimpleByElementName(this, "fragment-scope");
+	};
+
+	@Override
+	public Grammar getGrammar() {
+		return JAXBHelper.getOneByClassName(this, Grammar.class);
 	}
+
+	@Override
+	public List<Object> getJAXBChildren() {
+		return jaxbOptions.getSearchOptions();
+	}
+
+	@Override
+	public List<Operator> getOperators() {
+		return JAXBHelper.getByClassName(this, Operator.class);
+	};
+
+	@Override
+	public long getPageLength() {
+		return (Long) JAXBHelper.getOneSimpleByElementName(this, "page-length");
+	};
+
+	@Override
+	public double getQualityWeight() {
+		return (Double) JAXBHelper.getOneSimpleByElementName(this,
+				"quality-weight");
+	};
+
+	private boolean returnWithDefault(Boolean returnValue, Boolean defaultValue) {
+		if (returnValue == null) {
+			return defaultValue;
+		} else {
+			return returnValue;
+		}
+	}
+
+	@Override
+	public boolean getReturnConstraints() {
+		return returnWithDefault(
+				(Boolean) JAXBHelper.getOneSimpleByElementName(this,
+						"return-constraints"), false);
+	}
+
+	@Override
+	public boolean getReturnFacets() {
+		return returnWithDefault(
+				(Boolean) JAXBHelper.getOneSimpleByElementName(this,
+						"return-facets"), true);
+	};
+
+	@Override
+	public boolean getReturnMetrics() {
+		return returnWithDefault(
+				(Boolean) JAXBHelper.getOneSimpleByElementName(this,
+						"return-metrics"), true);
+	};
+
+	@Override
+	public boolean getReturnPlan() {
+		return returnWithDefault(
+				(Boolean) JAXBHelper.getOneSimpleByElementName(this,
+						"return-plan"), false);
+	};
+
+	@Override
+	public boolean getReturnQText() {
+		return returnWithDefault(
+				(Boolean) JAXBHelper.getOneSimpleByElementName(this,
+						"return-qtext"), false);
+	};
+
+	@Override
+	public boolean getReturnResults() {
+		return returnWithDefault(
+				(Boolean) JAXBHelper.getOneSimpleByElementName(this,
+						"return-results"), true);
+	}
+
+	@Override
+	public boolean getReturnSimilar() {
+		return returnWithDefault(
+				(Boolean) JAXBHelper.getOneSimpleByElementName(this,
+						"return-similar"), false);
+	}
+
+	public String getSearchableExpression() {
+		return (String) JAXBHelper.getOneSimpleByElementName(this,
+				"searchable-expression");
+	};
+
+	@Override
+	public List<String> getSearchOptions() {
+		return JAXBHelper.getSimpleByElementName(this, "search-option");
+
+	};
+
+	@Override
+	public List<SortOrder> getSortOrders() {
+		return JAXBHelper.getByClassName(this, SortOrder.class);
+	};
+
+	@Override
+	public Term getTerm() {
+		return JAXBHelper.getOneByClassName(this, Term.class);
+	};
+
+	@Override
+	public TransformResults getTransformResults() {
+		return JAXBHelper.getOneByClassName(this, TransformResults.class);
+	};
+
+	public QueryOptionsHandle on(QueryOptions options) {
+		set(options);
+		return this;
+	};
 
 	@Override
 	public Class<InputStream> receiveAs() {
 		return InputStream.class;
-	}
+	};
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void receiveContent(InputStream content) {
 		try {
@@ -96,204 +231,140 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 			JAXBElement<Options> jaxbElement = (JAXBElement<Options>) unmarshaller
 					.unmarshal(content);
 			jaxbOptions = jaxbElement.getValue();
+			additionalQuery = (AdditionalQuery) JAXBHelper
+					.getOneJAXBByElementName(this, "additional-query");
 		} catch (JAXBException e) {
 			throw new MarkLogicIOException(
 					"Could not construct search results because of thrown JAXB Exception",
 					e);
 		}
-	}
+	};
 
 	public OutputStreamSender sendContent() {
 		return this;
-	}
-
-	public QueryOptions get() {
-		return this;
-	}
+	};
 
 	public void set(QueryOptions options) {
-		this.jaxbOptions = options.getJAXBContent();
-	}
-
-	public QueryOptionsHandle on(QueryOptions options) {
-		set(options);
-		return this;
-	}
-
-	private List<Object> getUnboundOptions(String localName) {
-		List<Object> options = this.jaxbOptions.getSearchOptions();
-		List<Object> conformingOptions = new ArrayList<Object>();
-		for (Object option : options) {
-			if (option.getClass() == javax.xml.bind.JAXBElement.class) {
-				@SuppressWarnings("unchecked")
-				JAXBElement<Object> jaxbElement = (JAXBElement<Object>) option;
-				if (jaxbElement.getName().equals(
-						new QName("http://marklogic.com/appservices/search",
-								localName))) {
-					conformingOptions.add(option);
-				}
-			}
-		}
-		return conformingOptions;
-	}
-
-	@SuppressWarnings("unchecked")
-	private Object getAtomicOption(String optionName) {
-		List<Object> opts = this.getUnboundOptions(optionName);
-		if (opts.size() == 0) {
-			return false;
-		} else {
-			return ((JAXBElement<Object>) opts.get(0)).getValue();
-		}
-	}
-
-	private void setAtomicOption(String optionName, Object value, Class clazz) {
-		List<Object> existingFlagAsList = this.getUnboundOptions(optionName);
-		if (existingFlagAsList.size() == 0) {
-			JAXBElement<Object> newElement = new JAXBElement<Object>(new QName(
-					"http://marklogic.com/appservices/search", optionName),
-					clazz, value);
-			logger.debug("Here is the new element " + newElement.getName()
-					+ " and its value " + newElement.getValue());
-			this.jaxbOptions.getSearchOptions().add(newElement);
-		} else {
-			@SuppressWarnings("unchecked")
-			JAXBElement<Object> existingOption = (JAXBElement<Object>) existingFlagAsList
-					.get(0);
-			existingOption.setValue(value);
-		}
-	}
-
-	/*********************************************
-	 * Methods for accessing simple atomic options
-	 ********************************************* 
-	 */
-
-	@Override
-	public boolean getReturnFacets() {
-		return (Boolean) getAtomicOption("return-facets");
+		this.jaxbOptions = (Options) options.asJaxbObject();
 	};
 
 	@Override
-	public void setReturnFacets(boolean returnFacets) {
-		setAtomicOption("return-facets", returnFacets, Boolean.class);
+	public void setAdditionalQuery(Element ctsQuery) {
+		additionalQuery.getValue().setAny(ctsQuery);
+	};
+
+	@Override
+	public void setConcurrencyLevel(Integer concurrencyLevel) {
+		JAXBHelper.setOneSimpleByElementName(this, "concurrency-level",
+				concurrencyLevel);
 	}
 
 	@Override
-	public void add(QueryOption queryOption) {
-		jaxbOptions.getSearchOptions().add(queryOption.asJaxbObject());
+	public void setDebug(Boolean debug) {
+		JAXBHelper.setOneSimpleByElementName(this, "debug", debug);
 	}
 
 	@Override
-	public boolean getReturnConstraints() {
-		return (Boolean) getAtomicOption("return-constraints");
-	};
-
-	@Override
-	public void setReturnConstraints(boolean returnConstraints) {
-		setAtomicOption("return-constraints", returnConstraints, Boolean.class);
-	};
-
-	@Override
-	public boolean getReturnMetrics() {
-		return (Boolean) getAtomicOption("return-metrics");
-	};
-
-	@Override
-	public void setReturnMetrics(boolean returnMetrics) {
-		setAtomicOption("return-metrics", returnMetrics, Boolean.class);
+	public void setForest(Long forest) {
+		JAXBHelper.setOneSimpleByElementName(this, "forest", forest);
 	}
 
 	@Override
-	public boolean getReturnPlan() {
-		return (Boolean) getAtomicOption("return-plan");
-	};
+	public void setForests(List<Long> forests) {
+		JAXBHelper.setSimpleByElementName(this, "forest", forests);
+	}
 
 	@Override
-	public void setReturnPlan(boolean returnPlan) {
-		setAtomicOption("return-plan", returnPlan, Boolean.class);
-	};
-
-	@Override
-	public boolean getReturnQText() {
-		return (Boolean) getAtomicOption("return-qtext");
-	};
-
-	@Override
-	public void setReturnQueryText(boolean returnQueryText) {
-		setAtomicOption("return-qtext", returnQueryText, Boolean.class);
-	};
-
-	@Override
-	public boolean getReturnResults() {
-		return (Boolean) getAtomicOption("return-results");
-	};
-
-	@Override
-	public void setReturnResults(boolean returnResults) {
-		setAtomicOption("return-results", returnResults, Boolean.class);
-	};
-
-	@Override
-	public boolean getReturnSimilar() {
-		return (Boolean) getAtomicOption("return-similar");
-	};
-
-	@Override
-	public void setReturnSimilar(boolean returnSimilar) {
-		setAtomicOption("return-similar", returnSimilar, Boolean.class);
-
-	};
-
-	@Override
-	public boolean getDebug() {
-		return (Boolean) getAtomicOption("debug");
-	};
-
-	@Override
-	public void setDebug(boolean debug) {
-		setAtomicOption("debug", debug, Boolean.class);
-	};
-
-	@Override
-	public String getFragmentScope() {
-		return (String) getAtomicOption("fragment-scope");
-	};
+	public void setFormat(Format format) {
+		if (format != Format.XML)
+			new RuntimeException(
+					"QueryOptionsHandle supports the XML format only");
+	}
 
 	@Override
 	public void setFragmentScope(String fragmentScope) {
-		setAtomicOption("fragment-scope", fragmentScope, String.class);
-	};
+		JAXBHelper.setOneSimpleByElementName(this, "fragment-scope",
+				fragmentScope);
+	}
 
 	@Override
-	public int getConcurrencyLevel() {
-		return (Integer) getAtomicOption("concurrency-level");
-	};
+	public void setPageLength(Long pageLength) {
+		JAXBHelper.setOneSimpleByElementName(this, "page-length", pageLength);
 
-	@Override
-	public void setConcurrencyLevel(int concurrencyLevel) {
-		setAtomicOption("concurrency-level", concurrencyLevel, Integer.class);
-	};
-
-	@Override
-	public long getPageLength() {
-		return (Long) getAtomicOption("page-length");
-	};
-
-	@Override
-	public void setPageLength(long pageLength) {
-		setAtomicOption("page-length", pageLength, Long.class);
-
-	};
-
-	@Override
-	public double getQualityWeight() {
-		return (Double) getAtomicOption("quality-weight");
-	};
+	}
 
 	@Override
 	public void setQualityWeight(double qualityWeight) {
-		setAtomicOption("quality-weight", qualityWeight, Double.class);
+		JAXBHelper.setOneSimpleByElementName(this, "quality-weight",
+				qualityWeight);
+	}
+
+	@Override
+	public void setReturnConstraints(boolean returnConstraints) {
+		JAXBHelper.setOneSimpleByElementName(this, "return-constraints",
+				returnConstraints);
+	}
+
+	@Override
+	public void setReturnFacets(boolean returnFacets) {
+		JAXBHelper.setOneSimpleByElementName(this, "return-facets",
+				returnFacets);
+	}
+
+	@Override
+	public void setReturnMetrics(boolean returnMetrics) {
+		JAXBHelper.setOneSimpleByElementName(this, "return-metrics",
+				returnMetrics);
+	}
+
+	@Override
+	public void setReturnPlan(boolean returnPlan) {
+		JAXBHelper.setOneSimpleByElementName(this, "return-plan", returnPlan);
+	}
+
+	@Override
+	public void setReturnQueryText(boolean returnQueryText) {
+		JAXBHelper.setOneSimpleByElementName(this, "return-qtext",
+				returnQueryText);
+	}
+
+	@Override
+	public void setReturnResults(boolean returnResults) {
+		JAXBHelper.setOneSimpleByElementName(this, "return-results",
+				returnResults);
+	}
+
+	@Override
+	public void setReturnSimilar(boolean returnSimilar) {
+		JAXBHelper.setOneSimpleByElementName(this, "return-similar",
+				returnSimilar);
+
+	}
+
+	public void setSearchableExpression(String searchableExpression) {
+		JAXBHelper.setOneSimpleByElementName(this, "searchable-expression",
+				searchableExpression);
+	}
+
+	@Override
+	public void setSearchOptions(List<String> searchOptions) {
+		JAXBHelper.setSimpleByElementName(this, "search-option", searchOptions);
+	}
+
+	@Override
+	public void setTransformResults(TransformResults transformResults) {
+		JAXBHelper.setOneByClassName(this, transformResults);
+	}
+
+	public String toString() {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try {
+			write(baos);
+		} catch (IOException e) {
+			throw new MarkLogicIOException(
+					"Failed to make String representation of QueryOptions", e);
+		}
+		return baos.toString();
 	}
 
 	@Override
@@ -313,212 +384,15 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 
 	}
 
-	public String toString() {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		try {
-			write(baos);
-		} catch (IOException e) {
-			throw new MarkLogicIOException(
-					"Failed to make String representation of QueryOptions", e);
-		}
-		return baos.toString();
+	@Override
+	public void addAnnotation(Element annotation) {
+		
 	}
 
 	@Override
-	public Options getJAXBContent() {
-		return jaxbOptions;
-	}
-
-	public List<QueryOption> getAll() {
-		List<QueryOption> options = new ArrayList<QueryOption>();
-		for (Object ot : this.jaxbOptions.getSearchOptions()) {
-			if (ot.getClass().getPackage().toString()
-					.contains("com.marklogic.client.config.search.jaxb")) {
-				logger.debug("Instantiating POJO class to wrap");
-				QueryOption newOption = this.newQueryOption(ot);
-				// add all options that are handled by POJOs to the return
-				// lists.
-				if (newOption != null) {
-					options.add(this.newQueryOption(ot));
-				}
-			} else {
-				// TODO nothing?
-			}
-		}
-		return options;
-	};
-
-	private QueryOption newQueryOption(Object ot) {
-		logger.debug("Making new query option for object of class "
-				+ ot.getClass().getName());
-		@SuppressWarnings("rawtypes")
-		Class clazz = ot.getClass();
-		if (clazz == com.marklogic.client.config.search.jaxb.Term.class) {
-			return new TermImpl(
-					(com.marklogic.client.config.search.jaxb.Term) ot);
-		} else if (clazz == com.marklogic.client.config.search.jaxb.Grammar.class) {
-			return new GrammarImpl(
-					(com.marklogic.client.config.search.jaxb.Grammar) ot);
-		} else if (ot instanceof com.marklogic.client.config.search.jaxb.Constraint) {
-			com.marklogic.client.config.search.jaxb.Constraint constraint = (com.marklogic.client.config.search.jaxb.Constraint) ot;
-			List<Object> constraintChildren = constraint.getConstraint();
-			for (int i = 0; i < constraintChildren.size(); i++) {
-				@SuppressWarnings("unchecked")
-				JAXBElement<Object> constraintElement = (JAXBElement<Object>) constraintChildren
-						.get(i);
-
-				Object constraintSpec = constraintElement.getValue();
-				logger.debug("Class of constraintSpec to dispatch "
-						+ constraintSpec.getClass());
-				if (constraintSpec instanceof com.marklogic.client.config.search.jaxb.Range) {
-					return new RangeConstraintImpl(constraint,
-							(Range) constraintSpec);
-				} else if (constraintSpec instanceof com.marklogic.client.config.search.jaxb.Collection) {
-					return new CollectionConstraintImpl(constraint,
-							(Collection) constraintSpec);
-				} else if (constraintSpec.getClass() == com.marklogic.client.config.search.jaxb.Value.class) {
-					return new ValueConstraintImpl(constraint,
-							(Value) constraintSpec);
-				} else if (constraintSpec.getClass() == com.marklogic.client.config.search.jaxb.Word.class) {
-					return new WordConstraintImpl(constraint,
-							(Word) constraintSpec);
-				} else if (constraintSpec instanceof com.marklogic.client.config.search.jaxb.ElementQuery) {
-					return new ElementQueryConstraintImpl(constraint,
-							(ElementQuery) constraintSpec);
-				} else if (constraintSpec instanceof com.marklogic.client.config.search.jaxb.Properties) {
-					return new PropertiesConstraintImpl(constraint,
-							(Properties) constraintSpec);
-				} else if (constraintSpec instanceof com.marklogic.client.config.search.jaxb.Custom) {
-					return new CustomConstraintImpl(constraint,
-							(Custom) constraintSpec);
-				} else if (constraintSpec instanceof com.marklogic.client.config.search.jaxb.Annotation) {
-					return new AnnotationImpl(
-							(com.marklogic.client.config.search.jaxb.Annotation) constraintSpec);
-				}
-			}
-		} else if (clazz == com.marklogic.client.config.search.jaxb.Operator.class) {
-			return new OperatorImpl(
-					(com.marklogic.client.config.search.jaxb.Operator) ot);
-		} else if (clazz == com.marklogic.client.config.search.jaxb.TransformResults.class) {
-			return new TransformResultsImpl(
-					(com.marklogic.client.config.search.jaxb.TransformResults) ot);
-		} else if (clazz == com.marklogic.client.config.search.jaxb.DefaultSuggestionSource.class) {
-			return new DefaultSuggestionSourceImpl(
-					(com.marklogic.client.config.search.jaxb.DefaultSuggestionSource) ot);
-		} else if (clazz == com.marklogic.client.config.search.jaxb.SuggestionSource.class) {
-			return new SuggestionSourceImpl(
-					(com.marklogic.client.config.search.jaxb.SuggestionSource) ot);
-		} else if (clazz == com.marklogic.client.config.search.jaxb.Annotation.class) {
-			return new AnnotationImpl(
-					(com.marklogic.client.config.search.jaxb.Annotation) ot);
-		} else if (clazz == com.marklogic.client.config.search.jaxb.SortOrder.class) {
-			return new SortOrderImpl(
-					(com.marklogic.client.config.search.jaxb.SortOrder) ot);
-		} else if (clazz == com.marklogic.client.config.search.jaxb.AdditionalQuery.class) {
-			return new AdditionalQueryImpl(
-					(com.marklogic.client.config.search.jaxb.AdditionalQuery) ot);
-		} else if (clazz == javax.xml.bind.JAXBElement.class) {
-
-		} else {
-			throw new MarkLogicUnhandledElementException(ot.getClass()
-					.getName());
-		}
-		return null;
-
-	}
-
-	@Override
-	public List<String> getSearchOptions() {
-		List<String> l = new ArrayList<String>();
-		for (QueryOption option : getAll()) {
-			if (option instanceof JAXBElement<?>) {
-				JAXBElement<String> e = (JAXBElement<String>) option;
-				if (e.getName() == new QName(
-						"http://marklogic.com/appservices/search",
-						"search-option")) {
-					l.add(e.getValue());
-				}
-			}
-		}
-		return l;
-	}
-
-	@Override
-	public List<Constraint> getConstraints() {
-		List<Constraint> l = new ArrayList<Constraint>();
-
-		for (QueryOption option : getAll()) {
-			if (option instanceof Constraint) {
-				l.add((Constraint) option);
-			}
-		}
-		return l;
-	}
-
-	@Override
-	public Term getTerm() {
-		for (QueryOption option : getAll()) {
-			if (option instanceof Term) {
-				return (Term) option;
-			}
-		}
+	public List<Element> getAnnotations() {
+		// TODO Auto-generated method stub
 		return null;
 	}
-
-	@Override
-	public Grammar getGrammar() {
-		for (QueryOption option : getAll()) {
-			if (option instanceof Grammar) {
-				return (Grammar) option;
-			}
-		}
-		return null;
-	}
-
-	@Override
-	public List<Operator> getOperators() {
-		List<Operator> l = new ArrayList<Operator>();
-
-		for (QueryOption option : getAll()) {
-			if (option instanceof Operator) {
-				l.add((Operator) option);
-			}
-		}
-		return l;
-	}
-
-	@Override
-	public TransformResults getTransformResults() {
-		for (QueryOption option : getAll()) {
-			if (option instanceof TransformResults) {
-				return (TransformResults) option;
-			}
-		}
-		return null;
-	}
-
-	@Override
-	public <T extends QueryOption> T getOneByClassName(Class<T> clazz) {
-		List<T> l = getByClassName(clazz);
-		if (l.size() == 0) {
-			return null;
-		} else {
-			return l.get(0);
-		}
-	}
-
-	@Override
-	public <T extends QueryOption> List<T> getByClassName(Class<T> clazz) {
-		List<QueryOption> all = getAll();
-		List<T> l = new ArrayList<T>();
-		for (QueryOption option : all) {
-			if (option.getClass() == clazz) {
-				l.add((T) option);
-			}
-		}
-		return l;
-	};
-	
-
 
 }

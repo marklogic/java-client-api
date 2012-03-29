@@ -2,68 +2,46 @@ package com.marklogic.client.config.search;
 
 import java.util.List;
 
-import com.marklogic.client.config.search.jaxb.Options;
 
-
-public interface QueryOptions {
-
-	public Options getJAXBContent(); 
+public interface QueryOptions extends JAXBBackedQueryOption, StateOrTopLevel {
 	
 	public boolean getReturnFacets();
 
-	public abstract void setReturnFacets(boolean returnFacets);
+	public void setReturnFacets(boolean returnFacets);
 
-	public abstract void add(QueryOption queryOption);
+	public void add(JAXBBackedQueryOption jAXBBackedQueryOption);
 
-	public abstract boolean getReturnConstraints();
+	public boolean getReturnConstraints();
 
-	public abstract void setReturnConstraints(boolean returnConstraints);
+	public void setReturnConstraints(boolean returnConstraints);
 
-	public abstract boolean getReturnMetrics();
+	public boolean getReturnMetrics();
 
-	public abstract void setReturnMetrics(boolean returnMetrics);
+	public void setReturnMetrics(boolean returnMetrics);
 
-	public abstract boolean getReturnPlan();
+	public boolean getReturnPlan();
 
-	public abstract void setReturnPlan(boolean returnPlan);
+	public void setReturnPlan(boolean returnPlan);
 
-	public abstract boolean getReturnQText();
+	public boolean getReturnQText();
 
-	public abstract void setReturnQueryText(boolean returnQueryText);
+	public void setReturnQueryText(boolean returnQueryText);
 
-	public abstract boolean getReturnResults();
+	public boolean getReturnResults();
 
-	public abstract void setReturnResults(boolean returnResults);
+	public void setReturnResults(boolean returnResults);
 
-	public abstract boolean getReturnSimilar();
+	public boolean getReturnSimilar();
 
-	public abstract void setReturnSimilar(boolean returnSimilar);
+	public void setReturnSimilar(boolean returnSimilar);
 
-	public abstract boolean getDebug();
+	public String getFragmentScope();
 
-	public abstract void setDebug(boolean debug);
+	public void setFragmentScope(String fragmentScope);
 
-	public abstract String getFragmentScope();
+	public int getConcurrencyLevel();
 
-	public abstract void setFragmentScope(String fragmentScope);
-
-	public abstract int getConcurrencyLevel();
-
-	public abstract void setConcurrencyLevel(int concurrencyLevel);
-
-	public abstract long getPageLength();
-
-	public abstract void setPageLength(long pageLength);
-
-	public abstract double getQualityWeight();
-
-	public abstract void setQualityWeight(double qualityWeight);
-
-	public <T extends QueryOption> T getOneByClassName(Class<T> clazz);
-
-	public <T extends QueryOption> List<T> getByClassName(Class<T> class1);
-
-	public List<QueryOption> getAll();
+	public void setConcurrencyLevel(Integer concurrencyLevel);
 
 	public List<String> getSearchOptions();
 
@@ -76,7 +54,5 @@ public interface QueryOptions {
 	public List<Operator> getOperators();
 
 	public TransformResults getTransformResults();
-
-
 
 }

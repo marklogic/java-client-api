@@ -10,9 +10,8 @@ import com.marklogic.client.config.search.jaxb.Constraint;
 import com.marklogic.client.config.search.jaxb.Properties;
 
 
-public class PropertiesConstraintImpl extends ConstraintImpl implements PropertiesConstraint {
+public class PropertiesConstraintImpl extends ConstraintImpl<Properties> implements PropertiesConstraint {
 
-	private Properties jaxbObject;
 	
 	public PropertiesConstraintImpl(Constraint constraint, Properties props) {
 		super(constraint);

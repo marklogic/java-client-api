@@ -6,7 +6,6 @@ public interface Joiner  extends FunctionRef {
 
 	public enum Tokenize { WORD, DEFAULT };
 	
-
 	public int getStrength();
 	
 	public QName getElement();
