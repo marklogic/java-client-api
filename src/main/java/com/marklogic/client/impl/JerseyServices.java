@@ -301,8 +301,9 @@ public class JerseyServices implements RESTServices {
 		WebResource webResource = makeDocumentResource(
 				makeDocumentParams(uri, categories, transactionId, extraParams)
 			);
-		WebResource.Builder builder = (mimetype != null) ?
-			webResource.type(mimetype) : webResource.getRequestBuilder();
+		WebResource.Builder builder = webResource.type(
+			(mimetype != null) ? mimetype : MediaType.WILDCARD
+			);
 		ClientResponse response = builder.put(ClientResponse.class,
 						(value instanceof OutputStreamSender) ?
 								new StreamingOutputImpl((OutputStreamSender) value) : value);

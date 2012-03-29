@@ -41,8 +41,8 @@
 <p>
 	To access document content, you create a <em>handle</em> object that supports
 	the appropriate representation.	This concept of content handles is core to the Java API
-	(applying the adapter design pattern so the API can read content from or
-	write content to an extensible set of representations).
+	(making use of the Adapter design pattern so the API can read or write content
+	with a diverse and extensible set of representations).
 </p>
 <p>
 	For instance, consider a binary JPEG file.
@@ -187,7 +187,7 @@ for (MatchDocumentSummary docSummary: results.getMatchResults()) {
 }
 </pre>
 <h2>Concise Code with Fluent Interfaces</h2>
-<p>The API makes use of fluent interfaces so that, when you become familiar with the API,
+<p>The API makes use of the Fluent Interface design pattern so that, when you become familiar with the API,
 you can execute operations concisely.
 </p>
 <p>

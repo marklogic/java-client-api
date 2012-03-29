@@ -1,6 +1,7 @@
 {
-"contents" : "Standard Industrial Classification (SIC) Code List",
+"title"  : "Standard Industrial Classification (SIC) Code List",
 "source" : "http://www.sec.gov/info/edgar/siccodes.htm",
+"codes"  : [
 {
 "SIC Code" : 100,
 "Industry Title" : "AGRICULTURAL PRODUCTION-CROPS"
@@ -1777,4 +1778,5 @@
 "SIC Code" : 9995,
 "Industry Title" : "NON-OPERATING ESTABLISHMENTS"
         }
+    ]
 }
