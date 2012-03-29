@@ -40,6 +40,8 @@ public class AllExamples {
 		QueryOptions.run(          host, port, admin_user,  admin_password,  authType );
 		StringOptionsSearch.run(
 				host, port, admin_user, admin_password, writer_user, writer_password, authType);
+		MultiStatementTransaction.run(
+				host, port, writer_user, writer_password, authType);
 	}
 
 	// get the configuration for the examples
