@@ -6,6 +6,9 @@ import java.io.PrintStream;
  * Request Logger records the requests sent to the server.  After creating
  * a document or query manager, you can set a logger on the manager.  You
  * can choose to log content sent to the server as well as requests.
+ * 
+ * FileHandle constitutes an exception to the ability to log content.  Only
+ * the name of the file is logged.
  */
 public interface RequestLogger {
 	public final static long NO_CONTENT  = 0;
