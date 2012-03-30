@@ -25,7 +25,7 @@ public class QueryOptionsManagerImpl implements QueryOptionsManager {
 
 	@Override
 	public void deleteOptions(String name) {
-		services.deleteValue(QUERY_OPTIONS_BASE, name);
+		services.deleteValue(null, QUERY_OPTIONS_BASE, name);
 	}
 
 	
@@ -41,13 +41,13 @@ public class QueryOptionsManagerImpl implements QueryOptionsManager {
 		if (name == null)
 			throw new IllegalArgumentException("Cannot read options for null name");
 
-		searchOptionsHandle.receiveContent(services.getValue(QUERY_OPTIONS_BASE, name, "application/xml", searchOptionsHandle.receiveAs()));
+		searchOptionsHandle.receiveContent(services.getValue(null, QUERY_OPTIONS_BASE, name, "application/xml", searchOptionsHandle.receiveAs()));
 		return searchOptionsHandle;
 	}
 
 	@Override
 	public void writeOptions(String name, QueryOptionsWriteHandle queryOptionsHandle) {
-		services.putValue(QUERY_OPTIONS_BASE, name, "application/xml", queryOptionsHandle.sendContent());
+		services.putValue(null, QUERY_OPTIONS_BASE, name, "application/xml", queryOptionsHandle.sendContent());
 	}
 
 }

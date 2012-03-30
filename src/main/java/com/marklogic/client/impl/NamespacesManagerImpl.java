@@ -23,14 +23,17 @@ import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.NamespacesManager;
 import com.marklogic.client.ResourceNotFoundException;
 
-class NamespacesManagerImpl implements NamespacesManager {
+class NamespacesManagerImpl
+    extends AbstractLoggingManager
+    implements NamespacesManager
+{
 	static final private Logger logger = LoggerFactory.getLogger(NamespacesManagerImpl.class);
 
-	private RESTServices services;
-
-	private final static Pattern NAMESPACE_PATTERN = Pattern.compile(
+	static final private Pattern NAMESPACE_PATTERN = Pattern.compile(
 		"<([^: >]+:)?namespace-uri(\\s[^>]+)?>([^<>]+)</([^: >]+:)?namespace-uri>"
 		);
+
+	private RESTServices services;
 
 	NamespacesManagerImpl(RESTServices services) {
 		super();
@@ -42,7 +45,7 @@ class NamespacesManagerImpl implements NamespacesManager {
 		if (prefix == null)
 			throw new IllegalArgumentException("Cannot read namespace for null prefix");
 
-		String binding = services.getValue("config/namespaces", prefix, "application/xml", String.class);
+		String binding = services.getValue(requestLogger, "config/namespaces", prefix, "application/xml", String.class);
 		if (binding == null)
 			return null;
 
@@ -59,7 +62,7 @@ class NamespacesManagerImpl implements NamespacesManager {
 		EditableNamespaceContext context = new EditableNamespaceContext();
 
 		try {
-			InputStream stream = services.getValues("config/namespaces", "application/xml", InputStream.class);
+			InputStream stream = services.getValues(requestLogger, "config/namespaces", "application/xml", InputStream.class);
 			if (stream == null)
 				return null;
 
@@ -129,7 +132,7 @@ class NamespacesManagerImpl implements NamespacesManager {
 			"    <namespace-uri>"+namespaceUri+"</namespace-uri>\n"+
 			"</namespace>\n";
 
-		services.postValue("config/namespaces", prefix, "application/xml", structure);
+		services.postValue(requestLogger, "config/namespaces", prefix, "application/xml", structure);
 	}
 	@Override
 	public void updatePrefix(String prefix, String namespaceUri) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
@@ -145,17 +148,17 @@ class NamespacesManagerImpl implements NamespacesManager {
 			"    <namespace-uri>"+namespaceUri+"</namespace-uri>\n"+
 			"</namespace>\n";
 
-		services.putValue("config/namespaces", prefix, "application/xml", structure);
+		services.putValue(requestLogger, "config/namespaces", prefix, "application/xml", structure);
 	}
 	@Override
 	public void deletePrefix(String prefix) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (prefix == null)
 			throw new IllegalArgumentException("Cannot delete binding for null prefix");
 
-		services.deleteValue("config/namespaces", prefix);
+		services.deleteValue(requestLogger, "config/namespaces", prefix);
 	}
 	@Override
 	public void deleteAll() throws ForbiddenUserException, FailedRequestException {
-		services.deleteValues("config/namespaces");
+		services.deleteValues(requestLogger, "config/namespaces");
 	}
 }

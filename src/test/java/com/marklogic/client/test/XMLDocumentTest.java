@@ -69,11 +69,12 @@ public class XMLDocumentTest {
 		root.appendChild(domDocument.createTextNode("mixed"));
 		domDocument.appendChild(root);
 
+		String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
+				.getDOMImplementation()).createLSSerializer().writeToString(domDocument);
+
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		docMgr.write(docId, new DOMHandle().with(domDocument));
 
-		String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
-				.getDOMImplementation()).createLSSerializer().writeToString(domDocument);
 		String docText = docMgr.read(docId, new StringHandle()).get();
 		assertNotNull("Read null string for XML content",docText);
 		assertXMLEqual("Failed to read XML document as String", docText, domString);

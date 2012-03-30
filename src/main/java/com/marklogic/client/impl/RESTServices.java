@@ -12,6 +12,7 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.RequestLogger;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.config.search.QueryDefinition;
 
@@ -19,17 +20,17 @@ public interface RESTServices {
 	public void connect(String host, int port, String user, String password, Authentication type, SSLContext context, HostnameVerifier verifier);
 	public void release();
 
-	public void deleteDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories)
+	public void deleteDocument(RequestLogger logger, DocumentIdentifier docId, String transactionId, Set<Metadata> categories)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public <T> T getDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Class<T> as)
+	public <T> T getDocument(RequestLogger logger, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Class<T> as)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public Object[] getDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Class[] as)
+	public Object[] getDocument(RequestLogger logger, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Class[] as)
 		throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public boolean head(DocumentIdentifier docId, String transactionId)
+	public boolean head(RequestLogger logger, DocumentIdentifier docId, String transactionId)
 		throws ForbiddenUserException, FailedRequestException;
-	public void putDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Object value)
+	public void putDocument(RequestLogger logger, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Object value)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public void putDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Object[] values)
+	public void putDocument(RequestLogger logger, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Object[] values)
 		throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     public <T> T search(Class <T> as, QueryDefinition queryDef, String mimetype, long start, String transactionId)
@@ -40,16 +41,16 @@ public interface RESTServices {
 	public void rollbackTransaction(String transactionId) throws ForbiddenUserException, FailedRequestException;
 
 	// namespaces, etc.
-	public <T> T getValue(String type, String key, String mimetype, Class<T> as)
+	public <T> T getValue(RequestLogger logger, String type, String key, String mimetype, Class<T> as)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public <T> T getValues(String type, String mimetype, Class<T> as)
+	public <T> T getValues(RequestLogger logger, String type, String mimetype, Class<T> as)
 		throws ForbiddenUserException, FailedRequestException;
-	public void postValue(String type, String key, String mimetype, Object value)
+	public void postValue(RequestLogger logger, String type, String key, String mimetype, Object value)
 		throws ForbiddenUserException, FailedRequestException;
-	public void putValue(String type, String key, String mimetype, Object value)
+	public void putValue(RequestLogger logger, String type, String key, String mimetype, Object value)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public void deleteValue(String type, String key)
+	public void deleteValue(RequestLogger logger, String type, String key)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public void deleteValues(String type)
+	public void deleteValues(RequestLogger logger, String type)
 		throws ForbiddenUserException, FailedRequestException;
 }

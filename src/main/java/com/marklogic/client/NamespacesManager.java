@@ -12,4 +12,6 @@ public interface NamespacesManager {
     public void updatePrefix(String prefix, String namespaceURI) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     public void deletePrefix(String prefix) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     public void deleteAll() throws ForbiddenUserException, FailedRequestException;
+    public void startLogging(RequestLogger logger);
+    public void stopLogging();
 }

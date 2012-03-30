@@ -23,6 +23,7 @@ import com.marklogic.client.io.JAXBHandle;
     StringSearchTest.class,
     StructuredQueryBuilderTest.class,
     StructuredSearchTest.class,
+    RequestLoggerTest.class,
 // works when run independently but throws JUnit error in suite
 //  JAXBHandle.class,
     NamespacesManagerTest.class

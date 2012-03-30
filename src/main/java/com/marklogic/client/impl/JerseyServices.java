@@ -1,7 +1,9 @@
 package com.marklogic.client.impl;
 
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.io.Reader;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -24,6 +26,7 @@ import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.KeyLocator;
 import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.RequestLogger;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ValueLocator;
 import com.marklogic.client.config.search.KeyValueQueryDefinition;
@@ -48,8 +51,7 @@ import com.sun.jersey.multipart.MultiPart;
 import com.sun.jersey.multipart.MultiPartMediaTypes;
 
 public class JerseyServices implements RESTServices {
-	static final private Logger logger = LoggerFactory
-			.getLogger(JerseyServices.class);
+	static final private Logger logger = LoggerFactory.getLogger(JerseyServices.class);
 
 	private ApacheHttpClient client;
 	private WebResource      connection;
@@ -120,10 +122,11 @@ public class JerseyServices implements RESTServices {
 		client.destroy();
 	}
 
-	public void deleteDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories)
+	public void deleteDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (docId == null)
 			throw new IllegalArgumentException("Document delete with null document identifier");
+
 		String uri = docId.getUri();
 		if (uri == null)
 			throw new IllegalArgumentException("Document delete for document identifier without uri");
@@ -142,15 +145,18 @@ public class JerseyServices implements RESTServices {
 			throw new ForbiddenUserException("User is not allowed to delete documents");
 		if (status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("delete failed: "+status.getReasonPhrase());
+
+		logRequest(reqlog, "deleted %s document", uri);
 	}
 
 	// TODO: does an Input Stream or Reader handle need to cache the response so
 	// it can close the response?
 
-	public <T> T getDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Class<T> as)
+	public <T> T getDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Class<T> as)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (docId == null)
 			throw new IllegalArgumentException("Document read with null document identifier");
+
 		String uri = docId.getUri();
 		if (uri == null)
 			throw new IllegalArgumentException("Document read for document identifier without uri");
@@ -179,19 +185,27 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException("read failed: "+status.getReasonPhrase());
 		}
 
+		logRequest(reqlog, "read %s document from %s transaction with %s mime type and %s metadata categories",
+				uri,
+				(transactionId != null) ? transactionId : "no",
+				(mimetype != null) ? mimetype : "no",
+				stringJoin(categories, ", ", "no")
+				);
+
 		updateDocumentIdentifier(docId, response.getHeaders());
 
 		T entity = response.getEntity(as);
 		if (as != InputStream.class && as != Reader.class)
 			response.close();
 
-		return entity;
+		return (reqlog != null) ? reqlog.copyContent(entity) : entity;
 	}
 
-	public Object[] getDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Class[] as)
+	public Object[] getDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Class[] as)
 	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (docId == null)
 			throw new IllegalArgumentException("Document read with null document identifier");
+
 		String uri = docId.getUri();
 		if (uri == null)
 			throw new IllegalArgumentException("Document read for document identifier without uri");
@@ -231,6 +245,12 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException("read failed: "+status.getReasonPhrase());
 		}
 
+		logRequest(reqlog, "read %s document from %s transaction with %s metadata categories and content",
+				uri,
+				(transactionId != null) ? transactionId : "no",
+				stringJoin(categories, ", ", "no")
+				);
+
 		updateDocumentIdentifier(docId, response.getHeaders());
 
 		MultiPart entity = response.getEntity(MultiPart.class);
@@ -250,7 +270,8 @@ public class JerseyServices implements RESTServices {
 
 		Object[] parts = new Object[partCount];
 		for (int i = 0; i < partCount; i++) {
-			parts[i] = partList.get(i).getEntityAs(as[i]);
+			Object part = partList.get(i).getEntityAs(as[i]);
+			parts[i] = (reqlog != null) ? reqlog.copyContent(part) : part;
 		}
 
 		response.close();
@@ -258,9 +279,10 @@ public class JerseyServices implements RESTServices {
 		return parts;
 	}
 
-	public boolean head(DocumentIdentifier docId, String transactionId) throws ForbiddenUserException, FailedRequestException {
+	public boolean head(RequestLogger reqlog, DocumentIdentifier docId, String transactionId) throws ForbiddenUserException, FailedRequestException {
 		if (docId == null)
 			throw new IllegalArgumentException("Existence check with null document identifier");
+
 		String uri = docId.getUri();
 		if (uri == null)
 			throw new IllegalArgumentException("Existence check for document identifier without uri");
@@ -282,21 +304,35 @@ public class JerseyServices implements RESTServices {
 		if (status != ClientResponse.Status.OK)
 			throw new FailedRequestException("Document existence check failed: "+status.getReasonPhrase());
 
+		logRequest(reqlog, "checked %s document from %s transaction",
+				uri,
+				(transactionId != null) ? transactionId : "no"
+				);
+
 		updateDocumentIdentifier(docId, headers);
 
 		return true;
 	}
-	public void putDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Object value)
+	public void putDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Object value)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (docId == null)
 			throw new IllegalArgumentException("Document write with null document identifier");
+
 		String uri = docId.getUri();
 		if (uri == null)
 			throw new IllegalArgumentException("Document write for document identifier without uri");
+
 		if (value == null)
 			throw new IllegalArgumentException("Document write with null value for "+uri);
 
 		logger.info("Putting {} in transaction {}", uri, transactionId);
+
+		logRequest(reqlog, "writing %s document from %s transaction with %s mime type and %s metadata categories",
+				uri,
+				(transactionId != null) ? transactionId : "no",
+				(mimetype != null) ? mimetype : "no",
+				stringJoin(categories, ", ", "no")
+				);
 
 		WebResource webResource = makeDocumentResource(
 				makeDocumentParams(uri, categories, transactionId, extraParams)
@@ -304,9 +340,13 @@ public class JerseyServices implements RESTServices {
 		WebResource.Builder builder = webResource.type(
 			(mimetype != null) ? mimetype : MediaType.WILDCARD
 			);
-		ClientResponse response = builder.put(ClientResponse.class,
-						(value instanceof OutputStreamSender) ?
-								new StreamingOutputImpl((OutputStreamSender) value) : value);
+		ClientResponse response = null;
+		if (value instanceof OutputStreamSender)
+			response = builder.put(ClientResponse.class, new StreamingOutputImpl((OutputStreamSender) value, reqlog));
+		else if (reqlog != null)
+			response = builder.put(ClientResponse.class, reqlog.copyContent(value));
+		else
+			response = builder.put(ClientResponse.class, value);
 
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
@@ -318,37 +358,52 @@ public class JerseyServices implements RESTServices {
 				&& status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("write failed: "+status.getReasonPhrase());
 	}
-	public void putDocument(DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Object[] values)
+	public void putDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Object[] values)
 	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (docId == null)
 			throw new IllegalArgumentException("Document write with null document identifier");
+
 		String uri = docId.getUri();
 		if (uri == null)
 			throw new IllegalArgumentException("Document write for document identifier without uri");
+
+		if (mimetypes == null || mimetypes.length == 0)
+			throw new IllegalArgumentException("mime types not specified for write");
+
 		if (values == null || values.length == 0)
-			throw new IllegalArgumentException("Document write with null values for "+uri);
+			throw new IllegalArgumentException("values not specified for write");
+
+		if (mimetypes.length != values.length)
+			throw new IllegalArgumentException(
+					"mistmatch between mime types and values for write");
 
 		logger.info("Putting multipart for {} in transaction {}", uri, transactionId);
 
-		if (mimetypes == null || mimetypes.length == 0)
-			throw new BadRequestException("mime types not specified for write");
-		if (values == null || values.length == 0)
-			throw new BadRequestException("values not specified for write");
-		if (mimetypes.length != values.length)
-			throw new BadRequestException(
-					"mistmatch between mime types and values for write");
+		logRequest(reqlog, "writing %s document from %s transaction with %s metadata categories and content",
+				uri,
+				(transactionId != null) ? transactionId : "no",
+				stringJoin(categories, ", ", "no")
+				);
 
 		MultiPart multiPart = new MultiPart();
 		multiPart.setMediaType(new MediaType("multipart", "mixed"));
 		for (int i = 0; i < mimetypes.length; i++) {
 			String[] typeParts = mimetypes[i].contains("/") ? mimetypes[i]
 					.split("/", 2) : null;
-			multiPart = multiPart
-					.bodyPart(new BodyPart(
-							(values[i] instanceof OutputStreamSender) ? new StreamingOutputImpl(
-									(OutputStreamSender) values[i]) : values[i],
-							typeParts != null ? new MediaType(typeParts[0],
-									typeParts[1]) : MediaType.WILDCARD_TYPE));
+
+			MediaType typePart = (typeParts != null) ?
+					new MediaType(typeParts[0], typeParts[1]) :
+					MediaType.WILDCARD_TYPE;
+
+			BodyPart bodyPart = null;
+			if (values[i] instanceof OutputStreamSender)
+				bodyPart = new BodyPart(new StreamingOutputImpl((OutputStreamSender) values[i], reqlog), typePart);
+			else if (reqlog != null)
+				bodyPart = new BodyPart(reqlog.copyContent(values[i]), typePart);
+			else
+				bodyPart = new BodyPart(values[i], typePart);
+
+			multiPart = multiPart.bodyPart(bodyPart);
 		}
 
 		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
@@ -559,7 +614,7 @@ public class JerseyServices implements RESTServices {
 
 
 	// namespaces, search options etc.
-	public <T> T getValue(String type, String key, String mimetype, Class<T> as)
+	public <T> T getValue(RequestLogger reqlog, String type, String key, String mimetype, Class<T> as)
 	throws ForbiddenUserException, FailedRequestException {
 		logger.info("Getting {}/{}", type, key);
 
@@ -576,13 +631,19 @@ public class JerseyServices implements RESTServices {
 				throw new FailedRequestException(type+" read failed: " + status.getReasonPhrase());
 		}
 
+		logRequest(reqlog, "read %s value with %s key and %s mime type",
+				type,
+				key,
+				(mimetype != null) ? mimetype : null
+				);
+
 		T entity = response.getEntity(as);
 		if (as != InputStream.class && as != Reader.class)
 			response.close();
 
-		return entity;
+		return (reqlog != null) ? reqlog.copyContent(entity) : entity;
 	}
-	public <T> T getValues(String type, String mimetype, Class<T> as)
+	public <T> T getValues(RequestLogger reqlog, String type, String mimetype, Class<T> as)
 	throws ForbiddenUserException, FailedRequestException {
 		logger.info("Getting {}", type);
 
@@ -598,25 +659,41 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException(type+" read failed: " + status.getReasonPhrase());
 		}
 
+		logRequest(reqlog, "read %s values with %s mime type",
+				type,
+				(mimetype != null) ? mimetype : null
+				);
+
 		T entity = response.getEntity(as);
 		if (as != InputStream.class && as != Reader.class)
 			response.close();
 
-		return entity;
+		return (reqlog != null) ? reqlog.copyContent(entity) : entity;
 	}
-	public void postValue(String type, String key, String mimetype, Object value)
+	public void postValue(RequestLogger reqlog, String type, String key, String mimetype, Object value)
 	throws ForbiddenUserException, FailedRequestException {
-		putPostValueImpl("post", type, key, mimetype, value);
+		putPostValueImpl(reqlog, "post", type, key, mimetype, value);
 	}
-	public void putValue(String type, String key, String mimetype, Object value)
+	public void putValue(RequestLogger reqlog, String type, String key, String mimetype, Object value)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		putPostValueImpl("put", type, key, mimetype, value);
+		putPostValueImpl(reqlog, "put", type, key, mimetype, value);
 	}
-	private void putPostValueImpl(String method, String type, String key, String mimetype, Object value) {
+	private void putPostValueImpl(RequestLogger reqlog, String method, String type, String key, String mimetype, Object value) {
 		logger.info("Putting {}/{}", type, key);
 
-		Object sentValue = (value instanceof OutputStreamSender) ?
-				new StreamingOutputImpl((OutputStreamSender) value) : value;
+		logRequest(reqlog, "writing %s value with %s key and %s mime type",
+				type,
+				key,
+				(mimetype != null) ? mimetype : null
+				);
+
+		Object sentValue = null;
+		if (value instanceof OutputStreamSender)
+			sentValue = new StreamingOutputImpl((OutputStreamSender) value, reqlog);
+		else if (reqlog != null)
+			sentValue = reqlog.copyContent(value);
+		else
+			sentValue = value;
 
 		ClientResponse response = null;
 		ClientResponse.Status expectedStatus = null;
@@ -639,7 +716,7 @@ public class JerseyServices implements RESTServices {
 		if (status != expectedStatus)
 			throw new FailedRequestException(type+" write failed: " + status.getReasonPhrase());
 	}
-	public void deleteValue(String type, String key) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+	public void deleteValue(RequestLogger reqlog, String type, String key) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		logger.info("Deleting {}/{}", type, key);
 
 		ClientResponse response = connection.path(type+"/"+key).delete(ClientResponse.class);
@@ -652,8 +729,13 @@ public class JerseyServices implements RESTServices {
 			throw new ResourceNotFoundException(type+" not found for delete");
 		if (status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("delete failed: " + status.getReasonPhrase());
+
+		logRequest(reqlog, "deleted %s value with %s key",
+				type,
+				key
+				);
 	}
-	public void deleteValues(String type) throws ForbiddenUserException, FailedRequestException {
+	public void deleteValues(RequestLogger reqlog, String type) throws ForbiddenUserException, FailedRequestException {
 		logger.info("Deleting {}", type);
 
 		ClientResponse response = connection.path(type).delete(ClientResponse.class);
@@ -664,6 +746,43 @@ public class JerseyServices implements RESTServices {
 			throw new ForbiddenUserException("User is not allowed to delete "+type);
 		if (status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("delete failed: " + status.getReasonPhrase());
+
+		logRequest(reqlog, "deleted %s values",
+				type
+				);
+	}
+
+	private void logRequest(RequestLogger reqlog, String message, Object... params) {
+		if (reqlog == null)
+			return;
+
+		PrintStream out = reqlog.getPrintStream();
+		if (out == null)
+			return;
+
+		if (params == null || params.length == 0) {
+			out.println(message);
+		} else {
+			out.format(message, params);
+			out.println();
+		}
+	}
+
+	private String stringJoin(Collection collection, String separator, String defaultValue) {
+		if (collection == null || collection.size() == 0)
+			return defaultValue;
+
+		StringBuilder builder = null;
+		for (Object value: collection) {
+			if (builder == null)
+				builder = new StringBuilder();
+			else
+				builder.append(separator);
+
+			builder.append(value);
+		}
+
+		return (builder != null) ? builder.toString() : null;
 	}
 
 	// backdoors for testing
