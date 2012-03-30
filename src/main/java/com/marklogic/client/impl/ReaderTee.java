@@ -1,28 +1,33 @@
 package com.marklogic.client.impl;
 
-import java.io.FilterReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.nio.CharBuffer;
 
-public class ReaderTee extends FilterReader {
+public class ReaderTee extends Reader {
+	private Reader             in;
 	private OutputStreamWriter tee;
 	private long               max  = 0;
 	private long               sent = 0;
 
 	public ReaderTee(Reader in, OutputStream tee, long max) {
-		super(in);
+		super();
+		this.in  = in;
 		this.tee = new OutputStreamWriter(tee);
 		this.max = max;
 	}
 
 	@Override
 	public int read() throws IOException {
-		if (sent >= max)
-			return super.read();
+		if (in == null)
+			throw new IOException("Reader closed");
 
-		int b = super.read();
+		if (sent >= max)
+			return in.read();
+
+		int b = in.read();
 		if (b == -1) {
 			cleanupTee();
 			return b;
@@ -33,26 +38,69 @@ public class ReaderTee extends FilterReader {
 			return b;
 		}
 
-		sent++;
 		tee.write(b);
 
-		if (sent >= max)
+		sent++;
+		if (sent == max)
 			cleanupTee();
 
 		return b;
 	}
 	@Override
-	public int read(char[] cbuf, int off, int len) throws IOException {
-		if (sent >= max)
-			return super.read(cbuf, off, len);
+	public int read(char[] cbuf) throws IOException {
+		if (in == null)
+			throw new IOException("Reader closed");
 
-		int resultLen = super.read(cbuf, off, len);
+		if (sent >= max)
+			return in.read(cbuf);
+
+		int resultLen = in.read(cbuf);
+		if (resultLen < 1) {
+			if (resultLen == -1)
+				cleanupTee();
+			return resultLen;
+		}
+		
+		return readTee(cbuf, 0, resultLen);
+	}
+	@Override
+	public int read(char[] cbuf, int off, int len) throws IOException {
+		if (in == null)
+			throw new IOException("Reader closed");
+
+		if (sent >= max)
+			return in.read(cbuf, off, len);
+
+		int resultLen = in.read(cbuf, off, len);
+		if (resultLen < 1) {
+			if (resultLen == -1)
+				cleanupTee();
+			return resultLen;
+		}
+		
+		return readTee(cbuf, off, resultLen);
+	}
+	@Override
+	public int read(CharBuffer target) throws IOException {
+		if (in == null)
+			throw new IOException("Reader closed");
+
+		if (sent >= max)
+			return in.read(target);
+
+		int resultLen = in.read(target);
 		if (resultLen < 1) {
 			if (resultLen == -1)
 				cleanupTee();
 			return resultLen;
 		}
 
+		char[] cbuf = new char[resultLen];
+		target.get(cbuf);
+
+		return readTee(cbuf, 0, resultLen);
+	}
+	private int readTee(char[] cbuf, int off, int resultLen) throws IOException {
 		if (max == Long.MAX_VALUE) {
 			tee.write(cbuf, off, resultLen);
 			return resultLen;
@@ -68,9 +116,56 @@ public class ReaderTee extends FilterReader {
 		return resultLen;
 	}
 	private void cleanupTee() throws IOException {
-		if (tee != null) {
-			tee.flush();
-			tee = null;
-		}
+		if (tee == null)
+			return;
+
+		tee.flush();
+		tee = null;
+	}
+	@Override
+	public void close() throws IOException {
+		if (in == null)
+			throw new IOException("Reader closed");
+
+		in.close();
+		in = null;
+
+		cleanupTee();
+	}
+
+	@Override
+	public boolean ready() throws IOException {
+		if (in == null)
+			throw new IOException("Reader closed");
+
+		return in.ready();
+	}
+	@Override
+	public boolean markSupported() {
+		if (in == null)
+			return false;
+
+		return in.markSupported();
+	}
+	@Override
+	public void mark(int readAheadLimit) throws IOException {
+		if (in == null)
+			throw new IOException("Reader closed");
+
+		in.mark(readAheadLimit);
+	}
+	@Override
+	public void reset() throws IOException {
+		if (in == null)
+			throw new IOException("Reader closed");
+
+		in.reset();
+	}
+	@Override
+	public long skip(long n) throws IOException {
+		if (in == null)
+			throw new IOException("Reader closed");
+
+		return in.skip(n);
 	}
 }

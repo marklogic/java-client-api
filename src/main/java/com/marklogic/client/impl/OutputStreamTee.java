@@ -1,66 +1,64 @@
 package com.marklogic.client.impl;
 
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class OutputStreamTee extends FilterOutputStream {
+public class OutputStreamTee extends OutputStream {
+	private OutputStream out;
 	private OutputStream tee;
 	private long         max  = 0;
 	private long         sent = 0;
-	private byte[]       buf  = new byte[1024];
-	private int          next = 0;
-	private boolean      did  = false;
 
 	public OutputStreamTee(OutputStream out, OutputStream tee, long max) {
-		super(out);
+		super();
+		this.out = out;
 		this.tee = tee;
 		this.max = max;
 	}
 
 	@Override
 	public void write(int b) throws IOException {
-		if (did) {
-			super.write(b);
+		if (out == null)
+			throw new IOException("Output Stream closed");
+
+		out.write(b);
+
+		if (max == Long.MAX_VALUE) {
+			tee.write(b);
+			return;
+		} else if (sent >= max) {
 			return;
 		}
 
-		buf[next] = (byte) b;
-		next++;
-		if (next > buf.length) {
-			flushBuffer();
-		}
+		tee.write(b);
 
-		did = true;
-		super.write(b);
-		did = false;
+		sent++;
+		if (sent == max)
+			cleanupTee();
 	}
 	@Override
 	public void write(byte[] b) throws IOException {
-		if (did) {
-			super.write(b);
-			return;
-		}
+		if (out == null)
+			throw new IOException("Output Stream closed");
 
-		write(b, 0, b.length);
+		out.write(b);
+
+		writeTee(b, 0, b.length);
 	}
 	@Override
 	public void write(byte[] b, int off, int len) throws IOException {
-		if (did) {
-			super.write(b, off, len);
-			return;
-		}
+		if (out == null)
+			throw new IOException("Output Stream closed");
 
-		if (next > 0) {
-			flushBuffer();
-		}
+		out.write(b, off, len);
 
-		did = true;
-		super.write(b, off, len);
-		did = false;
-
+		writeTee(b, off, len);
+	}
+	private void writeTee(byte[] b, int off, int len) throws IOException {
 		if (max == Long.MAX_VALUE) {
 			tee.write(b, off, len);
+			return;
+		} else if (sent >= max) {
 			return;
 		}
 
@@ -71,40 +69,33 @@ public class OutputStreamTee extends FilterOutputStream {
 		if (sent >= max)
 			cleanupTee();
 	}
-	private void flushBuffer() throws IOException {
-		if (next == 0)
-			return;
-
-		int len = Math.min(next, buf.length);
-		next = 0;
-		write(buf, 0, len);
-	}
 
 	@Override
 	public void flush() throws IOException {
+		if (out == null)
+			throw new IOException("Output Stream closed");
+
+		out.flush();
+
 		if (tee != null) {
-			if (next > 0) {
-				flushBuffer();
-			}
 			tee.flush();
 		}
-
-		did = true;
-		super.flush();
-		did = false;
 	}
 	@Override
 	public void close() throws IOException {
-		if (tee != null) {
-			cleanupTee();
-		}
+		if (out == null)
+			throw new IOException("Output Stream closed");
 
-		did = true;
-		super.close();
-		did = false;
+		out.close();
+		out = null;
+
+		cleanupTee();
 	}
 	private void cleanupTee() throws IOException {
-		flush();
+		if (tee == null)
+			return;
+
+		tee.flush();
 		tee = null;
 	}
 }

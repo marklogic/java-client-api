@@ -1,27 +1,31 @@
 package com.marklogic.client.impl;
 
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class InputStreamTee extends FilterInputStream {
+public class InputStreamTee extends InputStream {
+	private InputStream  in;
 	private OutputStream tee;
 	private long         max  = 0;
 	private long         sent = 0;
 
 	public InputStreamTee(InputStream in, OutputStream tee, long max) {
-		super(in);
+		super();
+		this.in  = in;
 		this.tee = tee;
 		this.max = max;
 	}
 
 	@Override
 	public int read() throws IOException {
-		if (sent >= max)
-			return super.read();
+		if (in == null)
+			throw new IOException("Input Stream closed");
 
-		int b = super.read();
+		if (sent >= max)
+			return in.read();
+
+		int b = in.read();
 		if (b == -1) {
 			cleanupTee();
 			return b;
@@ -32,27 +36,35 @@ public class InputStreamTee extends FilterInputStream {
 			return b;
 		}
 
-		sent++;
 		tee.write(b);
 
-		if (sent >= max)
+		sent++;
+		if (sent == max)
 			cleanupTee();
 
 		return b;
 	}
 	@Override
 	public int read(byte[] b) throws IOException {
-		if (sent >= max)
-			return super.read(b);
+		if (in == null)
+			throw new IOException("Input Stream closed");
 
-		return read(b, 0, b.length);
+		if (sent >= max)
+			return in.read(b);
+
+		return readTee(b, 0, in.read(b));
 	}
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
-		if (sent >= max)
-			return super.read(b, off, len);
+		if (in == null)
+			throw new IOException("Input Stream closed");
 
-		int resultLen = super.read(b, off, len);
+		if (sent >= max)
+			return in.read(b, off, len);
+
+		return readTee(b, 0, in.read(b, off, len));
+	}
+	private int readTee(byte[] b, int off, int resultLen) throws IOException {
 		if (resultLen < 1) {
 			if (resultLen == -1)
 				cleanupTee();
@@ -74,9 +86,56 @@ public class InputStreamTee extends FilterInputStream {
 		return resultLen;
 	}
 	private void cleanupTee() throws IOException {
-		if (tee != null) {
-			tee.flush();
-			tee = null;
-		}
+		if (tee == null)
+			return;
+
+		tee.flush();
+		tee = null;
+	}
+	@Override
+	public void close() throws IOException {
+		if (in == null)
+			throw new IOException("Input Stream closed");
+
+		in.close();
+		in = null;
+
+		cleanupTee();
+	}
+
+	@Override
+	public int available() throws IOException {
+		if (in == null)
+			throw new IOException("Input Stream closed");
+
+		return in.available();
+	}
+	@Override
+	public boolean markSupported() {
+		if (in == null)
+			return false;
+
+		return in.markSupported();
+	}
+	@Override
+	public synchronized void mark(int readlimit) {
+		if (in == null)
+			return;
+
+		in.mark(readlimit);
+	}
+	@Override
+	public synchronized void reset() throws IOException {
+		if (in == null)
+			throw new IOException("Input Stream closed");
+
+		in.reset();
+	}
+	@Override
+	public long skip(long n) throws IOException {
+		if (in == null)
+			throw new IOException("Input Stream closed");
+
+		return in.skip(n);
 	}
 }
