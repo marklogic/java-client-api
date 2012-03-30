@@ -14,7 +14,7 @@ public class QueryOptionsManagerImpl implements QueryOptionsManager {
 
 	static final private Logger logger = LoggerFactory.getLogger(AbstractDocumentImpl.class);
 
-	private String QUERY_OPTIONS_BASE = "/config/search";
+	private String QUERY_OPTIONS_BASE = "/config/query";
 	private RESTServices services;
 	
 	public QueryOptionsManagerImpl(RESTServices services) {

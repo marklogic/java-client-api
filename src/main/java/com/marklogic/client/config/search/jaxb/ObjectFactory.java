@@ -329,7 +329,7 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Bucket }
+     * Create an instance of {@link BucketImpl }
      * 
      */
     public Bucket createBucket() {
@@ -457,7 +457,7 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Heatmap }
+     * Create an instance of {@link HeatmapImpl }
      * 
      */
     public Heatmap createHeatmap() {

@@ -27,14 +27,19 @@ import org.w3c.dom.Element;
 
 import com.marklogic.client.ElementLocator;
 import com.marklogic.client.QueryOptionsManager;
+import com.marklogic.client.config.search.Bucket;
 import com.marklogic.client.config.search.Constraint;
 import com.marklogic.client.config.search.CustomConstraint;
 import com.marklogic.client.config.search.FunctionRef;
+import com.marklogic.client.config.search.GeoAttrPairConstraint;
+import com.marklogic.client.config.search.GeoElementConstraint;
+import com.marklogic.client.config.search.GeoElementPairConstraint;
 import com.marklogic.client.config.search.Grammar;
+import com.marklogic.client.config.search.Heatmap;
 import com.marklogic.client.config.search.IndexReference;
+import com.marklogic.client.config.search.JAXBBackedQueryOption;
 import com.marklogic.client.config.search.Joiner;
 import com.marklogic.client.config.search.Operator;
-import com.marklogic.client.config.search.JAXBBackedQueryOption;
 import com.marklogic.client.config.search.QueryOptions;
 import com.marklogic.client.config.search.RangeConstraint;
 import com.marklogic.client.config.search.SortOrder;
@@ -42,7 +47,6 @@ import com.marklogic.client.config.search.Starter;
 import com.marklogic.client.config.search.State;
 import com.marklogic.client.config.search.Term;
 import com.marklogic.client.config.search.TransformResults;
-import com.marklogic.client.config.search.ValueConstraint;
 import com.marklogic.client.config.search.WordConstraint;
 import com.marklogic.client.config.search.impl.CollectionConstraintImpl;
 import com.marklogic.client.config.search.impl.DefaultSuggestionSourceImpl;
@@ -62,6 +66,7 @@ public class QueryOptionsTest {
 	private Marshaller m;
 	private QueryOptionsManager mgr;
 	private QueryOptions testOptions;
+	private QueryOptions geoOptions;
 
 	Logger logger = (Logger) LoggerFactory.getLogger(QueryOptionsTest.class);
 
@@ -87,6 +92,12 @@ public class QueryOptionsTest {
 		QueryOptionsHandle impl = (QueryOptionsHandle) testOptions;
 		impl.receiveContent(new FileInputStream(new File(
 				"src/test/resources/search-config.xml")));
+		
+		geoOptions = mgr.newOptions();
+
+		impl = (QueryOptionsHandle) geoOptions;
+		impl.receiveContent(new FileInputStream(new File(
+				"src/test/resources/search-config-geo.xml")));
 	}
 
 	@Test
@@ -203,6 +214,18 @@ public class QueryOptionsTest {
 	}
 
 	@Test
+	public void parseGeoOptions() {
+		QueryOptions options = geoOptions;
+		List<Constraint> constraints = options.getConstraints();
+		
+		GeoElementConstraint gec = (GeoElementConstraint) constraints.get(0);
+		GeoAttrPairConstraint gapc = (GeoAttrPairConstraint) constraints.get(1);
+		GeoElementPairConstraint gepc = (GeoElementPairConstraint) constraints.get(2);
+		
+		Heatmap h = gapc.getHeatmap();
+		assertEquals("Heatmap attribute check", "-118.2" , Double.toString(h.getE()));
+	}
+	@Test
 	public void buildRangeConstraintTest() {
 		QueryOptions options = mgr.newOptions();
 		RangeConstraint range = new RangeConstraintImpl("decade");
@@ -243,6 +266,11 @@ public class QueryOptionsTest {
 				"Serialized Range AbstractQueryOption should contain this string",
 				optionsString.contains("type=\"xs:gYear\""));
 
+		Bucket b = (Bucket) range.getBuckets().get(0);
+		assertNull("Bucket value should be as expected. ", b.getLt());
+
+		b = (Bucket) range.getBuckets().get(1);
+		assertEquals("Bucket value should be as expected. ", b.getLt(), "2000");
 	}
 
 	@Test

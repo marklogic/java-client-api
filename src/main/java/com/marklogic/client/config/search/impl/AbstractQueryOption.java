@@ -18,6 +18,9 @@ import com.marklogic.client.config.search.jaxb.Constraint;
 
 abstract class AbstractQueryOption<T> implements JAXBBackedQueryOption {
 
+	/**
+	 * Used only by subclasses that implement Indexable, but here as a convenience.
+	 */
 	protected IndexReference indexReferenceImpl;
 	protected T jaxbObject;
 	
@@ -129,6 +132,38 @@ abstract class AbstractQueryOption<T> implements JAXBBackedQueryOption {
 		}
 	}
 	
+
+	public List<String> getGeoOptions() {
+		List<Object> children = getJAXBChildren();
+		List<String> termOptions = new ArrayList<String>();
+		for (Object o : children) {
+			if (o instanceof JAXBElement<?>) {
+				JAXBElement<String> termElement = (JAXBElement<String>) o;
+				if (termElement.getName() == JAXBHelper.newQNameFor("geo-option")) {
+					termOptions.add(termElement.getValue());
+				}
+			}
+			else if (o instanceof String) {
+				termOptions.add((String) o);  //TODO this might not work across elements.
+			}
+		}
+		return termOptions;
+	}
+
+	public void setGeoOptions(List<String> termOptions) {
+		List<Object> children = getJAXBChildren();
+		for (Object o : children) {
+			if (o instanceof JAXBElement<?>) {
+				JAXBElement<String> termElement = (JAXBElement<String>) o;
+				if (termElement.getName() == JAXBHelper.newQNameFor("geo-option")) {
+					children.remove(o);
+				}
+			}
+		}
+		for (String termOption : termOptions) {
+			getJAXBChildren().add(JAXBHelper.wrapString(JAXBHelper.newQNameFor("geo-option"), termOption));
+		}
+	}
 
 }
 		

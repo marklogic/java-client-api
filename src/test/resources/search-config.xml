@@ -164,5 +164,23 @@
         </search:state>
 
     </search:operator>
-  </search:options>
+    <search:constraint name="fieldrangebucket">
+        <search:range type="xs:dateTime">
+            <search:facet-option>ascending</search:facet-option>
+            <search:field name="fieldrangebucket"/>
+            <search:computed-bucket name="older" lt="-P365D" anchor="now"
+                >Older than 1 years</search:computed-bucket>
+            <search:computed-bucket name="year" ge="-P365D" lt="-P30D" anchor="now"
+                >1 month to 1 year ago</search:computed-bucket>
+            <search:computed-bucket name="month" ge="-P30D" lt="-P7D" anchor="now"
+                >7 to 30 days ago</search:computed-bucket>
+            <search:computed-bucket name="week" ge="-P7D" lt="-P1D" anchor="now"
+                >1 to 7 days ago</search:computed-bucket>
+            <search:computed-bucket name="today" ge="-P1D" lt="P0D" anchor="now"
+                >Today</search:computed-bucket>
+            <search:computed-bucket name="future" ge="P0D" anchor="now"
+                >Future</search:computed-bucket>
+        </search:range>
+ </search:constraint> 
+</search:options>
 

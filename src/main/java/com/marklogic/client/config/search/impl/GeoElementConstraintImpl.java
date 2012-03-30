@@ -2,17 +2,30 @@ package com.marklogic.client.config.search.impl;
 
 import java.util.List;
 
-public class GeoElementConstraintImpl extends GeospatialConstraintImpl {
+import com.marklogic.client.config.search.GeoElementConstraint;
+import com.marklogic.client.config.search.jaxb.Constraint;
+import com.marklogic.client.config.search.jaxb.GeoElem;
+
+public class GeoElementConstraintImpl extends GeospatialConstraintImpl<GeoElem> implements GeoElementConstraint {
+
 
 	public GeoElementConstraintImpl(String name) {
 		super(name);
+		jaxbObject = new GeoElem();
+	}
+	
+    GeoElementConstraintImpl(Constraint constraint, GeoElem geoElement) {
+		super(constraint);
+		jaxbObject = geoElement;
+		heatmap = new HeatmapImpl((com.marklogic.client.config.search.jaxb.Heatmap) JAXBHelper.getOneJAXBByElementName(this, "heatmap"));
+
 	}
 
 	@Override
 	public List<Object> getJAXBChildren() {
-		// TODO Auto-generated method stub
-		return null;
+		return jaxbObject.getParentOrElementOrFacetOption();
 	}
+
 
 
 }

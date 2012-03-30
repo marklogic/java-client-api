@@ -1,6 +1,9 @@
 package com.marklogic.client.config.search;
 
+import java.util.List;
+
 import javax.xml.namespace.QName;
+
 
 public interface RangeConstraint extends JAXBBackedQueryOption, Constraint, Facetable, Indexable {
 
@@ -20,6 +23,8 @@ public interface RangeConstraint extends JAXBBackedQueryOption, Constraint, Face
 	 */
 	public void addBucket(String name, String label, String ge,
 			String lt);
+	
+	public List<Bucket> getBuckets();  // TODO refactor jaxb class out of interface.
 
 	public void setType(QName string);
 	public QName getType();

@@ -5,11 +5,9 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
-import org.w3c.dom.Element;
-
 import com.marklogic.client.config.search.Facetable;
 import com.marklogic.client.config.search.RangeConstraint;
-import com.marklogic.client.config.search.jaxb.Bucket;
+import com.marklogic.client.config.search.Bucket;
 import com.marklogic.client.config.search.jaxb.Constraint;
 import com.marklogic.client.config.search.jaxb.Range;
 
@@ -38,7 +36,7 @@ public class RangeConstraintImpl extends ConstraintImpl<Range> implements Faceta
 
 	@Override
 	public void addBucket(String name, String label) {
-		Bucket bucket = new Bucket();
+		com.marklogic.client.config.search.jaxb.Bucket bucket = new com.marklogic.client.config.search.jaxb.Bucket();
 		bucket.setName(name);
 		bucket.setContent(label);
 		jaxbObject.getElementOrAttributeOrFragmentScope().add(bucket);
@@ -46,7 +44,7 @@ public class RangeConstraintImpl extends ConstraintImpl<Range> implements Faceta
 
 	@Override
 	public void addBucket(String name, String label, String ge, String lt) {
-		Bucket bucket = new Bucket();
+		com.marklogic.client.config.search.jaxb.Bucket bucket = new com.marklogic.client.config.search.jaxb.Bucket();
 		bucket.setName(name);
 		bucket.setContent(label);
 		bucket.setGe(ge);
@@ -87,6 +85,11 @@ public class RangeConstraintImpl extends ConstraintImpl<Range> implements Faceta
 	@Override
 	public QName getType() {
 		return jaxbObject.getType();
+	}
+
+	@Override
+	public List<Bucket> getBuckets() {
+		return JAXBHelper.getByClassName(this, Bucket.class);
 	}
 
 }

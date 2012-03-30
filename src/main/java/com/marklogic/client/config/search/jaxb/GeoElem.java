@@ -90,7 +90,7 @@ public class GeoElem {
      * {@link JAXBElement }{@code <}{@link String }{@code >}
      * {@link JAXBElement }{@code <}{@link String }{@code >}
      * {@link JAXBElement }{@code <}{@link GeoElem.Element }{@code >}
-     * {@link Heatmap }
+     * {@link HeatmapImpl }
      * {@link Parent }
      * 
      * 

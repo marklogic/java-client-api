@@ -79,7 +79,7 @@ public class GeoElemPair {
      * {@link JAXBElement }{@code <}{@link String }{@code >}
      * {@link Lon }
      * {@link JAXBElement }{@code <}{@link String }{@code >}
-     * {@link Heatmap }
+     * {@link HeatmapImpl }
      * {@link Lat }
      * {@link Parent }
      * 

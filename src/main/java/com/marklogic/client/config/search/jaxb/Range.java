@@ -99,7 +99,7 @@ public class Range {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Bucket }
+     * {@link BucketImpl }
      * {@link Element }
      * {@link Field }
      * {@link Attribute }
