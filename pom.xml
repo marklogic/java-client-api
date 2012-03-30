@@ -68,7 +68,7 @@
 					<links>
                     	<link>http://docs.oracle.com/javase/6/docs/api/</link>
                     </links>
-                    <overview/>
+                    <overview>${basedir}/src/main/javadoc/overview.html</overview>
 					<show>public</show>
                     <use/>
                 </configuration>
