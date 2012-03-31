@@ -3,12 +3,16 @@ package com.marklogic.client.io;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.config.search.FacetHeatmapValue;
+import com.marklogic.client.config.search.FacetResult;
+import com.marklogic.client.config.search.FacetValue;
 import com.marklogic.client.config.search.MatchDocumentSummary;
 import com.marklogic.client.config.search.MatchLocation;
 import com.marklogic.client.config.search.MatchSnippet;
 import com.marklogic.client.config.search.QueryDefinition;
 import com.marklogic.client.config.search.SearchMetrics;
 import com.marklogic.client.config.search.SearchResults;
+import com.marklogic.client.config.search.jaxb.Facet;
 import com.marklogic.client.config.search.jaxb.Match;
 import com.marklogic.client.config.search.jaxb.Metrics;
 import com.marklogic.client.config.search.jaxb.Response;
@@ -27,6 +31,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * Created by IntelliJ IDEA.
@@ -44,6 +49,8 @@ public class SearchHandle implements SearchReadHandle<InputStream>, SearchResult
     private QueryDefinition querydef = null;
     SearchMetrics metrics = null;
     MatchDocumentSummary[] summary = null;
+    FacetResult[] facets = null;
+    String[] facetNames = null;
 
     @Override
     public Format getFormat() {
@@ -91,6 +98,8 @@ public class SearchHandle implements SearchReadHandle<InputStream>, SearchResult
         jaxbResponse = null;
         metrics = null;
         summary = null;
+        facets = null;
+        facetNames = null;
     }
     
     @Override
@@ -143,6 +152,41 @@ public class SearchHandle implements SearchReadHandle<InputStream>, SearchResult
         }
 
         return summary;
+    }
+
+    @Override
+    public FacetResult[] getFacetResults() {
+        if (jaxbResponse == null || facets != null) {
+            return facets;
+        }
+
+        List<JAXBElement<?>> jfacets = jaxbResponse.getResponseFacet();
+        facets = new FacetResult[jfacets.size()];
+        int pos = 0;
+        for (JAXBElement<?> jfacet : jfacets) {
+            facets[pos++] = new FacetResultImpl(jfacet);
+        }
+
+        return facets;
+    }
+
+    @Override
+    public FacetResult getFacetResult(String name) {
+        getFacetResults();
+        if (facets != null) {
+            for (FacetResult facet : facets) {
+                if (facet.getName().equals(name)) {
+                    return facet;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String[] getFacetNames() {
+        getFacetResults();
+        return facetNames;
     }
 
     private class SearchMetricsImpl implements SearchMetrics {
@@ -350,6 +394,117 @@ public class SearchHandle implements SearchReadHandle<InputStream>, SearchResult
         @Override
         public String getText() {
             return text;
+        }
+    }
+
+    public class FacetResultImpl implements FacetResult {
+        private String name = null;
+        private FacetValue[] values = null;
+
+        public FacetResultImpl(JAXBElement jelem) {
+            if (jelem.getDeclaredType() == com.marklogic.client.config.search.jaxb.Facet.class) {
+                com.marklogic.client.config.search.jaxb.Facet jfacet
+                        = (com.marklogic.client.config.search.jaxb.Facet) jelem.getValue();
+                name = jfacet.getName();
+
+                List<com.marklogic.client.config.search.jaxb.FacetValue> jvalues = jfacet.getFacetValue();
+                values = new FacetValue[jvalues.size()];
+                int pos = 0;
+                for (com.marklogic.client.config.search.jaxb.FacetValue jvalue : jvalues) {
+                    values[pos++] = new FacetValueImpl(jvalue);
+                }
+            } else if (jelem.getDeclaredType() == com.marklogic.client.config.search.jaxb.Boxes.class) {
+                com.marklogic.client.config.search.jaxb.Boxes jfacet
+                        = (com.marklogic.client.config.search.jaxb.Boxes) jelem.getValue();
+                name = jfacet.getName();
+
+                List<com.marklogic.client.config.search.jaxb.Box> jvalues = jfacet.getBox();
+                values = new FacetValue[jvalues.size()];
+                int pos = 0;
+                for (com.marklogic.client.config.search.jaxb.Box jvalue : jvalues) {
+                    values[pos++] = new FacetHeatmapValueImpl(jvalue);
+                }
+
+            } else {
+                throw new UnsupportedOperationException("Unexpected facet value: facet or boxes expected.");
+            }
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public FacetValue[] getFacetValues() {
+            return values;
+        }
+    }
+
+    public class FacetValueImpl implements FacetValue {
+        private String name = null;
+        private long count = 0;
+        private String label = null;
+
+        public FacetValueImpl(com.marklogic.client.config.search.jaxb.FacetValue jvalue) {
+            name = jvalue.getName();
+            count = jvalue.getCount();
+            //FIXME: this isn't right
+            label = name;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public long getCount() {
+            return count;
+        }
+
+        @Override
+        public String getLabel() {
+            return label;
+        }
+    }
+
+    public class FacetHeatmapValueImpl implements FacetHeatmapValue {
+        private String name = null;
+        private long count = 0;
+        private String label = null;
+        private double[] box = null;
+
+        public FacetHeatmapValueImpl(com.marklogic.client.config.search.jaxb.Box jvalue) {
+            box = new double[4];
+            box[0] = jvalue.getS();
+            box[1] = jvalue.getW();
+            box[2] = jvalue.getN();
+            box[3] = jvalue.getE();
+
+            name = "[" + box[0] + ", " + box[1]+ ", " + box[2] + ", " + box[3] + "]";
+            count = jvalue.getCount();
+            label = name;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public long getCount() {
+            return count;
+        }
+
+        @Override
+        public String getLabel() {
+            return label;
+        }
+
+        @Override
+        public double[] getBox() {
+            return box;
         }
     }
 }

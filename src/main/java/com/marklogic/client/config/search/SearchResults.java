@@ -14,8 +14,8 @@ public interface SearchResults {
     public SearchMetrics          getMetrics();
     public MatchDocumentSummary[] getMatchResults();
 
-    /*
-    public FacetResult[]          getFacetResults();}
-    */
+    public FacetResult[]          getFacetResults();
+    public FacetResult            getFacetResult(String name);
+    public String[]               getFacetNames();
 }
 
