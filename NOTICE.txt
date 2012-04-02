@@ -1,0 +1,17 @@
+   =========================================================================
+   ==  NOTICE file corresponding to the section 4 d of                    ==
+   ==  the Apache License, Version 2.0,                                   ==
+   ==  in this case for the MarkLogic Java API distribution.              ==
+   =========================================================================
+
+MarkLogic Java API
+Copyright 2012 MarkLogic Corporation
+
+This product includes software developed by
+The Apache Software Foundation (http://www.apache.org/).
+
+This product includes software (Jersey and mimepull) developed by
+Oracle Corporation (www.oracle.com/).
+
+This product includes software (slf4j and logback) developed by
+Quality Open Software (http://www.qos.ch/).
