@@ -124,7 +124,7 @@ public class DocumentMetadataHandleTest {
 			assertEquals("Permission key with wrong value size", 2, permissions.get("app-user").size());
 			assertTrue("Permission key with wrong values", permissions.get("app-user").contains(Capability.READ) && permissions.get("app-user").contains(Capability.UPDATE));
 			DocumentProperties properties = metaReadHandle.getProperties();
-			assertEquals("Properties with wrong size", 4, properties.size());
+			assertEquals("Properties with wrong size", 3, properties.size());
 			assertTrue("Properties without first property", properties.containsKey("first"));
 			assertTrue("Properties without second property", properties.containsKey("second"));
 			assertTrue("Properties without third property", properties.containsKey("third"));

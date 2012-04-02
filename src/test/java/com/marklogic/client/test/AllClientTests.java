@@ -3,8 +3,6 @@ package com.marklogic.client.test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-import com.marklogic.client.io.JAXBHandle;
-
 /* NOTE:
  * Create a REST server that matches the parameters in Common.java before running the tests
  */
