@@ -13,10 +13,10 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.XMLDocumentManager;
-import com.marklogic.client.config.search.KeyValueQueryDefinition;
-import com.marklogic.client.config.search.MatchDocumentSummary;
-import com.marklogic.client.config.search.MatchLocation;
-import com.marklogic.client.config.search.MatchSnippet;
+import com.marklogic.client.config.KeyValueQueryDefinition;
+import com.marklogic.client.config.MatchDocumentSummary;
+import com.marklogic.client.config.MatchLocation;
+import com.marklogic.client.config.MatchSnippet;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.SearchHandle;
 

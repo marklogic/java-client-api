@@ -11,9 +11,9 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.config.search.Constraint;
-import com.marklogic.client.config.search.ValueConstraint;
-import com.marklogic.client.config.search.impl.ValueConstraintImpl;
+import com.marklogic.client.config.Constraint;
+import com.marklogic.client.config.ValueConstraint;
+import com.marklogic.client.config.impl.ValueConstraintImpl;
 import com.marklogic.client.io.QueryOptionsHandle;
 
 /**
