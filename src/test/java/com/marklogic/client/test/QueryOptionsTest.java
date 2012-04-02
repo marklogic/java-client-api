@@ -10,6 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -27,37 +28,40 @@ import org.w3c.dom.Element;
 
 import com.marklogic.client.ElementLocator;
 import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.config.search.Bucket;
-import com.marklogic.client.config.search.Constraint;
-import com.marklogic.client.config.search.CustomConstraint;
-import com.marklogic.client.config.search.FunctionRef;
-import com.marklogic.client.config.search.GeoAttrPairConstraint;
-import com.marklogic.client.config.search.GeoElementConstraint;
-import com.marklogic.client.config.search.GeoElementPairConstraint;
-import com.marklogic.client.config.search.Grammar;
-import com.marklogic.client.config.search.Heatmap;
-import com.marklogic.client.config.search.IndexReference;
-import com.marklogic.client.config.search.JAXBBackedQueryOption;
-import com.marklogic.client.config.search.Joiner;
-import com.marklogic.client.config.search.Operator;
-import com.marklogic.client.config.search.QueryOptions;
-import com.marklogic.client.config.search.RangeConstraint;
-import com.marklogic.client.config.search.SortOrder;
-import com.marklogic.client.config.search.Starter;
-import com.marklogic.client.config.search.State;
-import com.marklogic.client.config.search.Term;
-import com.marklogic.client.config.search.TransformResults;
-import com.marklogic.client.config.search.WordConstraint;
-import com.marklogic.client.config.search.impl.CollectionConstraintImpl;
-import com.marklogic.client.config.search.impl.DefaultSuggestionSourceImpl;
-import com.marklogic.client.config.search.impl.ElementQueryConstraintImpl;
-import com.marklogic.client.config.search.impl.JAXBHelper;
-import com.marklogic.client.config.search.impl.PropertiesConstraintImpl;
-import com.marklogic.client.config.search.impl.RangeConstraintImpl;
-import com.marklogic.client.config.search.impl.SortOrderImpl;
-import com.marklogic.client.config.search.impl.SuggestionSourceImpl;
-import com.marklogic.client.config.search.impl.ValueConstraintImpl;
-import com.marklogic.client.config.search.impl.WordConstraintImpl;
+import com.marklogic.client.config.AnchorValue;
+import com.marklogic.client.config.Bucket;
+import com.marklogic.client.config.ComputedBucket;
+import com.marklogic.client.config.Constraint;
+import com.marklogic.client.config.CustomConstraint;
+import com.marklogic.client.config.FunctionRef;
+import com.marklogic.client.config.GeoAttrPairConstraint;
+import com.marklogic.client.config.GeoElementConstraint;
+import com.marklogic.client.config.GeoElementPairConstraint;
+import com.marklogic.client.config.Grammar;
+import com.marklogic.client.config.Heatmap;
+import com.marklogic.client.config.IndexReference;
+import com.marklogic.client.config.JAXBBackedQueryOption;
+import com.marklogic.client.config.Joiner;
+import com.marklogic.client.config.Operator;
+import com.marklogic.client.config.QueryOptions;
+import com.marklogic.client.config.RangeConstraint;
+import com.marklogic.client.config.SortOrder;
+import com.marklogic.client.config.Starter;
+import com.marklogic.client.config.State;
+import com.marklogic.client.config.Term;
+import com.marklogic.client.config.TransformResults;
+import com.marklogic.client.config.WordConstraint;
+import com.marklogic.client.config.impl.CollectionConstraintImpl;
+import com.marklogic.client.config.impl.ComputedBucketImpl;
+import com.marklogic.client.config.impl.DefaultSuggestionSourceImpl;
+import com.marklogic.client.config.impl.ElementQueryConstraintImpl;
+import com.marklogic.client.config.impl.JAXBHelper;
+import com.marklogic.client.config.impl.PropertiesConstraintImpl;
+import com.marklogic.client.config.impl.RangeConstraintImpl;
+import com.marklogic.client.config.impl.SortOrderImpl;
+import com.marklogic.client.config.impl.SuggestionSourceImpl;
+import com.marklogic.client.config.impl.ValueConstraintImpl;
+import com.marklogic.client.config.impl.WordConstraintImpl;
 import com.marklogic.client.io.QueryOptionsHandle;
 
 public class QueryOptionsTest {
@@ -271,6 +275,19 @@ public class QueryOptionsTest {
 
 		b = (Bucket) range.getBuckets().get(1);
 		assertEquals("Bucket value should be as expected. ", b.getLt(), "2000");
+		
+		ComputedBucket c = new ComputedBucketImpl();
+		c.setAnchor(AnchorValue.NOW);
+		List<ComputedBucket> cBuckets = new ArrayList<ComputedBucket>();
+		cBuckets.add(c);
+		range.setComputedBuckets(cBuckets);
+		
+		List<ComputedBucket> computedBuckets = range.getComputedBuckets();
+		assertEquals("Size of computed buckets", 1, computedBuckets.size());
+		ComputedBucket computedBucket = computedBuckets.get(0);
+	    
+		assertEquals("Computed bucket anchor", AnchorValue.NOW, computedBucket.getAnchor());
+		
 	}
 
 	@Test
@@ -434,11 +451,11 @@ public class QueryOptionsTest {
 
 		// find the annotation.
 		WordConstraint word = (WordConstraint) JAXBHelper.getOneByClassName(options, 
-				com.marklogic.client.config.search.WordConstraint.class);
+				com.marklogic.client.config.WordConstraint.class);
 		
 		logger.debug("Word: {}", word);
 		
-		List<Element> annotations = word.getAnnotations();
+		List<Element> annotations = word.getQueryAnnotations();
 		assertEquals("Got two annotations from word contraint", 2, annotations.size());
 		logger.debug("Annotations from search-config.xml {}", annotations);
 		 
@@ -465,6 +482,8 @@ public class QueryOptionsTest {
 
 		State s = (State) operator.getStates().get(0);
 		
+		assertEquals("State from operator", "relevance", s.getName());
+		
 		SortOrder so = new SortOrderImpl();
 		so.addElementAttributeIndex(new QName("http://my/namespace", "green"),
 				new QName("http://my/namespace", "pantone"));
@@ -472,7 +491,7 @@ public class QueryOptionsTest {
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-		m.marshal(so.asJaxbObject(), baos);
+		m.marshal(so.asJAXB(), baos);
 		String sortString = baos.toString();
 
 		logger.debug("Sort order found from test config {}", sortString);

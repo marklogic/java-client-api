@@ -1,7 +1,7 @@
 package com.marklogic.client.impl;
 
 import com.marklogic.client.ValueLocator;
-import com.marklogic.client.config.search.KeyValueQueryDefinition;
+import com.marklogic.client.config.KeyValueQueryDefinition;
 
 import java.util.Collection;
 import java.util.Hashtable;

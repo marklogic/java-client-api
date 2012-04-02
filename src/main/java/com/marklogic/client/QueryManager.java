@@ -1,11 +1,11 @@
 package com.marklogic.client;
 
-import com.marklogic.client.config.search.KeyValueQueryDefinition;
-import com.marklogic.client.config.search.MatchDocumentSummary;
-import com.marklogic.client.config.search.QueryDefinition;
-import com.marklogic.client.config.search.StringQueryDefinition;
-import com.marklogic.client.config.search.StructuredQueryBuilder;
-import com.marklogic.client.config.search.StructuredQueryDefinition;
+import com.marklogic.client.config.KeyValueQueryDefinition;
+import com.marklogic.client.config.MatchDocumentSummary;
+import com.marklogic.client.config.QueryDefinition;
+import com.marklogic.client.config.StringQueryDefinition;
+import com.marklogic.client.config.StructuredQueryBuilder;
+import com.marklogic.client.config.StructuredQueryDefinition;
 import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 

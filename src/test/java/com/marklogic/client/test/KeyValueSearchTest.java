@@ -1,9 +1,9 @@
 package com.marklogic.client.test;
 
 import com.marklogic.client.QueryManager;
-import com.marklogic.client.config.search.KeyValueQueryDefinition;
-import com.marklogic.client.config.search.MatchDocumentSummary;
-import com.marklogic.client.config.search.MatchLocation;
+import com.marklogic.client.config.KeyValueQueryDefinition;
+import com.marklogic.client.config.MatchDocumentSummary;
+import com.marklogic.client.config.MatchLocation;
 import com.marklogic.client.io.SearchHandle;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

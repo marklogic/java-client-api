@@ -1,7 +1,8 @@
 package com.marklogic.client.test;
 
-import com.marklogic.client.config.search.StructuredQueryDefinition;
-import com.marklogic.client.config.search.StructuredQueryBuilder;
+import com.marklogic.client.config.StructuredQueryBuilder;
+import com.marklogic.client.config.StructuredQueryDefinition;
+
 import org.junit.Test;
 
 import java.io.IOException;

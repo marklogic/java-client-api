@@ -1,6 +1,6 @@
 package com.marklogic.client.impl;
 
-import com.marklogic.client.config.search.StringQueryDefinition;
+import com.marklogic.client.config.StringQueryDefinition;
 
 /**
  * Created by IntelliJ IDEA.

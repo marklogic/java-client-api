@@ -19,16 +19,16 @@ import org.w3c.dom.Element;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.config.search.Constraint;
-import com.marklogic.client.config.search.Grammar;
-import com.marklogic.client.config.search.JAXBBackedQueryOption;
-import com.marklogic.client.config.search.MarkLogicBindingException;
-import com.marklogic.client.config.search.Operator;
-import com.marklogic.client.config.search.QueryOptions;
-import com.marklogic.client.config.search.SortOrder;
-import com.marklogic.client.config.search.Term;
-import com.marklogic.client.config.search.TransformResults;
-import com.marklogic.client.config.search.impl.JAXBHelper;
+import com.marklogic.client.config.Constraint;
+import com.marklogic.client.config.Grammar;
+import com.marklogic.client.config.JAXBBackedQueryOption;
+import com.marklogic.client.config.MarkLogicBindingException;
+import com.marklogic.client.config.Operator;
+import com.marklogic.client.config.QueryOptions;
+import com.marklogic.client.config.SortOrder;
+import com.marklogic.client.config.Term;
+import com.marklogic.client.config.TransformResults;
+import com.marklogic.client.config.impl.JAXBHelper;
 import com.marklogic.client.config.search.jaxb.AdditionalQuery;
 import com.marklogic.client.config.search.jaxb.Options;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
@@ -53,11 +53,11 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 
 	@Override
 	public void add(JAXBBackedQueryOption jAXBBackedQueryOption) {
-		jaxbOptions.getSearchOptions().add(jAXBBackedQueryOption.asJaxbObject());
+		jaxbOptions.getSearchOptions().add(jAXBBackedQueryOption.asJAXB());
 	}
 
 	@Override
-	public Object asJaxbObject() {
+	public Object asJAXB() {
 		return jaxbOptions;
 	}
 
@@ -245,7 +245,7 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 	};
 
 	public void set(QueryOptions options) {
-		this.jaxbOptions = (Options) options.asJaxbObject();
+		this.jaxbOptions = (Options) options.asJAXB();
 	};
 
 	@Override
@@ -385,12 +385,12 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 	}
 
 	@Override
-	public void addAnnotation(Element annotation) {
+	public void addQueryAnnotation(Element annotation) {
 		
 	}
 
 	@Override
-	public List<Element> getAnnotations() {
+	public List<Element> getQueryAnnotations() {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -14,7 +14,7 @@ import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.RequestLogger;
 import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.config.search.QueryDefinition;
+import com.marklogic.client.config.QueryDefinition;
 
 public interface RESTServices {
 	public void connect(String host, int port, String user, String password, Authentication type, SSLContext context, HostnameVerifier verifier);

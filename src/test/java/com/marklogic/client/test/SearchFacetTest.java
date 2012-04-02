@@ -2,11 +2,11 @@ package com.marklogic.client.test;
 
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.config.search.FacetResult;
-import com.marklogic.client.config.search.MatchDocumentSummary;
-import com.marklogic.client.config.search.MatchLocation;
-import com.marklogic.client.config.search.QueryOptions;
-import com.marklogic.client.config.search.StringQueryDefinition;
+import com.marklogic.client.config.FacetResult;
+import com.marklogic.client.config.MatchDocumentSummary;
+import com.marklogic.client.config.MatchLocation;
+import com.marklogic.client.config.QueryOptions;
+import com.marklogic.client.config.StringQueryDefinition;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.SearchHandle;

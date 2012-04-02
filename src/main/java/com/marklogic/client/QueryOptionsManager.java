@@ -1,6 +1,6 @@
 package com.marklogic.client;
 
-import com.marklogic.client.config.search.QueryOptions;
+import com.marklogic.client.config.QueryOptions;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
