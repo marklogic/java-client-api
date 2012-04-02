@@ -275,21 +275,24 @@ public class SearchHandle implements SearchReadHandle<InputStream>, SearchResult
             }
 
             List<Snippet> jaxbSnippets = result.getSnippet();
-            locations = new MatchLocation[jaxbSnippets.size()];
-            int idx = 0;
+
+            // FIXME: ? The total number of snippet matches across all the snippets
+            // is variable. So we just build them dynamically.
+            Vector<MatchLocation> locVector = new Vector<MatchLocation>();
             for (Snippet snippet : jaxbSnippets) {
                 for (Object jaxbMatch : snippet.getMatchOrAnyOrAny()) {
                     if (jaxbMatch instanceof Match) {
                         Match match = (Match) jaxbMatch;
                         String path = match.getPath();
-                        locations[idx] = new MatchLocationImpl(path, match);
-                        idx++;
+                        locVector.add(new MatchLocationImpl(path, match));
                     } else {
                         throw new UnsupportedOperationException("Cannot parse customized snippets");
                     }
                 }
             }
 
+            locations = new MatchLocation[0];
+            locations = locVector.toArray(locations);
             return locations;
         }
 
