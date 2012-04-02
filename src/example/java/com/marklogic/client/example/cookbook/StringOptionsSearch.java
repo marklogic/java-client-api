@@ -105,12 +105,12 @@ public class StringOptionsSearch {
 		MatchDocumentSummary[] docSummaries = resultsHandle.getMatchResults();
 		System.out.println("Listing "+docSummaries.length+" documents:\n");
 		for (MatchDocumentSummary docSummary: docSummaries) {
-// temporarary workaround for known problem
-if (true) continue;
+			String uri = docSummary.getUri();
+			int score = docSummary.getScore();
 
 			// iterate over the match locations within a result document
 			MatchLocation[] locations = docSummary.getMatchLocations();
-			System.out.println("Matched "+locations.length+" locations in "+docSummary.getUri()+":");
+			System.out.println("Matched "+locations.length+" locations in "+uri+" with "+score+" score:");
 			for (MatchLocation location: locations) {
 
 				// iterate over the snippets at a match location
