@@ -34,6 +34,7 @@ import org.junit.runners.Suite;
 	DocumentMetadataHandleTest.class,
     KeyValueSearchTest.class,
     StringSearchTest.class,
+    DOMSearchResultTest.class,
     StructuredQueryBuilderTest.class,
     StructuredSearchTest.class,
     RequestLoggerTest.class,
