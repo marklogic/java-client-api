@@ -15,7 +15,14 @@
  */
 package com.marklogic.client.io;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Reader;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -33,12 +40,14 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * When finished with the reader, close the reader to release the resources.
  */
 public class ReaderHandle
-	implements
-		JSONReadHandle<Reader>, JSONWriteHandle<Reader>, 
-		TextReadHandle<Reader>, TextWriteHandle<Reader>,
-		XMLReadHandle<Reader>, XMLWriteHandle<Reader>,
-		StructureReadHandle<Reader>, StructureWriteHandle<Reader>
+	implements OutputStreamSender,
+		JSONReadHandle<Reader>, JSONWriteHandle<OutputStreamSender>, 
+		TextReadHandle<Reader>, TextWriteHandle<OutputStreamSender>,
+		XMLReadHandle<Reader>, XMLWriteHandle<OutputStreamSender>,
+		StructureReadHandle<Reader>, StructureWriteHandle<OutputStreamSender>
 {
+	final static private int BUFFER_SIZE = 1024;
+
     private Reader content;
 	private Format format = Format.XML;
 
@@ -81,11 +90,36 @@ public class ReaderHandle
 	public void receiveContent(Reader content) {
 		this.content = content;
 	}
-	public Reader sendContent() {
+	public ReaderHandle sendContent() {
 		if (content == null) {
 			throw new IllegalStateException("No character stream to write");
 		}
 
-		return content;
+		return this;
+	}
+
+	@Override
+	public void write(OutputStream out) throws IOException {
+		Charset charset = Charset.forName("UTF-8");
+		CharsetEncoder encoder = charset.newEncoder();
+
+		CharBuffer charBuf = CharBuffer.allocate(BUFFER_SIZE);
+		byte[] buf = new byte[BUFFER_SIZE * 2];
+		ByteBuffer byteBuf = ByteBuffer.wrap(buf);
+
+		while (content.read(charBuf) != -1) {
+			encoder.reset();
+			charBuf.flip();
+			byteBuf.clear();
+			CoderResult result = encoder.encode(charBuf, byteBuf, false);
+			if (result.isError()) {
+				throw new RuntimeException(result.toString());
+			}
+			byteBuf.flip();
+			out.write(buf, 0, byteBuf.limit());
+			charBuf.clear();
+		}
+
+		out.flush();
 	}
 }
