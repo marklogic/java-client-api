@@ -48,13 +48,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
-/**
- * Created by IntelliJ IDEA.
- * User: ndw
- * Date: 3/20/12
- * Time: 10:41 AM
- * To change this template use File | Settings | File Templates.
- */
 public class SearchHandle implements SearchReadHandle<InputStream>, SearchResults {
     static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
     protected JAXBContext jc = null;

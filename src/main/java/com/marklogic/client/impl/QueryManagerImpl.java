@@ -34,13 +34,6 @@ import com.marklogic.client.config.search.jaxb.Response;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
 
-/**
- * Created by IntelliJ IDEA.
- * User: ndw
- * Date: 3/14/12
- * Time: 1:31 PM
- * To change this template use File | Settings | File Templates.
- */
 public class QueryManagerImpl implements QueryManager {
     protected JAXBContext jc = null;
     protected Unmarshaller unmarshaller = null;

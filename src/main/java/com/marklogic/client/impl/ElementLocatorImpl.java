@@ -19,13 +19,6 @@ import com.marklogic.client.ElementLocator;
 
 import javax.xml.namespace.QName;
 
-/**
- * Created by IntelliJ IDEA.
- * User: ndw
- * Date: 3/19/12
- * Time: 11:15 AM
- * To change this template use File | Settings | File Templates.
- */
 public class ElementLocatorImpl implements ElementLocator {
     QName element = null;
     QName attribute = null;

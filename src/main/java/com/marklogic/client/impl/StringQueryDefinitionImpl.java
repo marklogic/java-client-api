@@ -17,13 +17,6 @@ package com.marklogic.client.impl;
 
 import com.marklogic.client.config.StringQueryDefinition;
 
-/**
- * Created by IntelliJ IDEA.
- * User: ndw
- * Date: 3/14/12
- * Time: 1:39 PM
- * To change this template use File | Settings | File Templates.
- */
 public class StringQueryDefinitionImpl implements StringQueryDefinition {
     private String criteria = null;
     private String optionsUri = null;

@@ -23,13 +23,6 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Created by IntelliJ IDEA.
- * User: ndw
- * Date: 3/19/12
- * Time: 10:51 AM
- * To change this template use File | Settings | File Templates.
- */
 public class KeyValueQueryDefinitionImpl implements KeyValueQueryDefinition {
     String optionsUri = null;
     Map<ValueLocator, String> defs = new Hashtable<ValueLocator, String> ();

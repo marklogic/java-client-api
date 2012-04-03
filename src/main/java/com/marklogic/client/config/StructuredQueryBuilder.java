@@ -15,14 +15,6 @@
  */
 package com.marklogic.client.config;
 
-/**
- * Created by IntelliJ IDEA.
- * User: ndw
- * Date: 3/22/12
- * Time: 11:14 AM
- * To change this template use File | Settings | File Templates.
- */
-
 // TODO: Implement the rest of the query types
 
 public class StructuredQueryBuilder {
