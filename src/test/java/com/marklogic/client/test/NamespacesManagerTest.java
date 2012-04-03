@@ -48,7 +48,9 @@ public class NamespacesManagerTest {
 		nsMgr.addPrefix("skos", "http://www.w3.org/2004/02/skos/core#");
 
 		EditableNamespaceContext context = nsMgr.readAll();
-		assertEquals("Failed to retrieve three namespaces", 3, context.size());
+
+		int initialSize = context.size();
+		assertTrue("Failed to retrieve three namespaces", initialSize >= 3);
 		assertEquals("Did not retrieve RDF namespace", 
 				"http://purl.org/dc/terms/",
 				context.get("dc"));
@@ -66,7 +68,8 @@ public class NamespacesManagerTest {
 
 		nsMgr.deletePrefix("dc");
 		context = nsMgr.readAll();
-		assertEquals("Failed to delete namespace", 2, context.size());
+		// assumes no concurrent deletes
+		assertEquals("Failed to delete namespace", initialSize - 1, context.size());
 
 		nsMgr.deleteAll();
 		context = nsMgr.readAll();
