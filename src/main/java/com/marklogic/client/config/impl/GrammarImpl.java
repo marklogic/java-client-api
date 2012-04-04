@@ -21,11 +21,11 @@ import java.util.List;
 import org.w3c.dom.Element;
 
 import com.marklogic.client.config.Grammar;
-import com.marklogic.client.config.JAXBBackedQueryOption;
+import com.marklogic.client.config.BoundQueryOption;
 import com.marklogic.client.config.Joiner;
 import com.marklogic.client.config.Starter;
 
-public class GrammarImpl extends AbstractQueryOption<com.marklogic.client.config.search.jaxb.Grammar> implements JAXBBackedQueryOption, Grammar {
+public class GrammarImpl extends AbstractQueryOption<com.marklogic.client.config.search.jaxb.Grammar> implements BoundQueryOption, Grammar {
 
 
 	//TODO construct from scratch.
@@ -74,7 +74,7 @@ public class GrammarImpl extends AbstractQueryOption<com.marklogic.client.config
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> List<T> getElementList(JAXBBackedQueryOption option,
+	private <T> List<T> getElementList(BoundQueryOption option,
 			Class<T> clazz) {
 		List<T> l = new ArrayList<T>();
 		for (Object o : option.getJAXBChildren() ) {

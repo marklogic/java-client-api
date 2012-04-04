@@ -18,13 +18,13 @@ package com.marklogic.client.config;
 import java.util.List;
 
 
-public interface QueryOptions extends JAXBBackedQueryOption, StateOrTopLevel {
+public interface QueryOptions extends BoundQueryOption, StateOrTopLevel {
 	
 	public Boolean getReturnFacets();
 
 	public void setReturnFacets(Boolean returnFacets);
 
-	public void add(JAXBBackedQueryOption jAXBBackedQueryOption);
+	public void add(BoundQueryOption boundQueryOption);
 
 	public Boolean getReturnConstraints();
 

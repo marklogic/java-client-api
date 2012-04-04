@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.config;
 
-public interface Heatmap extends JAXBBackedQueryOption {
+public interface Heatmap extends BoundQueryOption {
 	/**
      * Gets the northern boundary of the box.
      * 

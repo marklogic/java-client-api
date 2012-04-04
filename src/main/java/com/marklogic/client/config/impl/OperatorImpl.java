@@ -20,11 +20,11 @@ import java.util.List;
 
 import org.w3c.dom.Element;
 
-import com.marklogic.client.config.JAXBBackedQueryOption;
+import com.marklogic.client.config.BoundQueryOption;
 import com.marklogic.client.config.Operator;
 import com.marklogic.client.config.State;
 
-public class OperatorImpl extends AbstractQueryOption<com.marklogic.client.config.search.jaxb.Operator > implements JAXBBackedQueryOption, Operator {
+public class OperatorImpl extends AbstractQueryOption<com.marklogic.client.config.search.jaxb.Operator > implements BoundQueryOption, Operator {
 
     
 	OperatorImpl(com.marklogic.client.config.search.jaxb.Operator ot) {

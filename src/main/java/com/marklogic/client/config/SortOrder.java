@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.config;
 
-public interface SortOrder extends JAXBBackedQueryOption, QueryAnnotatable, Indexable {
+public interface SortOrder extends BoundQueryOption, QueryAnnotatable, Indexable {
 
 	public enum Direction { ASCENDING, DESCENDING };
 	

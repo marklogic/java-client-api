@@ -26,7 +26,7 @@ import java.util.List;
  * @author cgreer
  *
  */
-public interface JAXBBackedQueryOption {
+public interface BoundQueryOption {
 
 	/**
 	 * 
@@ -36,7 +36,7 @@ public interface JAXBBackedQueryOption {
 
 	/**
 	 * 
-	 * @return the list of child objects associated with this JAXBBackedQueryOption componenet.
+	 * @return the list of child objects associated with this BoundQueryOption componenet.
 	 */
 	public List<Object> getJAXBChildren();
 	

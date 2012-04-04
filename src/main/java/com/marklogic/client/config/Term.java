@@ -17,7 +17,7 @@ package com.marklogic.client.config;
 
 import java.util.List;
 
-public interface Term extends JAXBBackedQueryOption, TermOptions {
+public interface Term extends BoundQueryOption, TermOptions {
 
 	public enum EmptyApply { ALL_RESULTS };
 	
@@ -32,5 +32,6 @@ public interface Term extends JAXBBackedQueryOption, TermOptions {
 	public void setEmpty(FunctionRef function);
 	public void setEmpty(EmptyApply apply);
 	
+	//TODO need more test cases/examples to flesh out full functionality?
 
 }

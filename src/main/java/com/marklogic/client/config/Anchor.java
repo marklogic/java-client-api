@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.config;
 
-public interface Anchor  extends JAXBBackedQueryOption, FunctionRef {
+public interface Anchor  extends BoundQueryOption, FunctionRef {
 
 	
 	// TODO there are no examples for this usage in the docs yet.  defer to post EA-1

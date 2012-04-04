@@ -19,7 +19,7 @@ package com.marklogic.client.config;
  * A Bucket represents a particular range of data
  * to a RangeConstraint.
  */
-public interface Bucket extends JAXBBackedQueryOption {
+public interface Bucket extends BoundQueryOption {
 
 	public String getContent();
 

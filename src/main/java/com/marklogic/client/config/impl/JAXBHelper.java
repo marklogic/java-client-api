@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.config.FunctionRef;
-import com.marklogic.client.config.JAXBBackedQueryOption;
+import com.marklogic.client.config.BoundQueryOption;
 import com.marklogic.client.config.MarkLogicUnhandledElementException;
 import com.marklogic.client.config.search.jaxb.Collection;
 import com.marklogic.client.config.search.jaxb.Custom;
@@ -68,7 +68,7 @@ public class JAXBHelper {
 		return new QName("http://marklogic.com/appservices/search", localName);
 	}
 
-	public static JAXBBackedQueryOption newQueryOption(Object ot) {
+	public static BoundQueryOption newQueryOption(Object ot) {
 		logger.debug("Making new query option for object of class "
 				+ ot.getClass().getName());
 		@SuppressWarnings("rawtypes")
@@ -171,8 +171,8 @@ public class JAXBHelper {
 	 * @param clazz
 	 * @return a child object of parent based on class name clazz.
 	 */
-	public static <T extends JAXBBackedQueryOption> T getOneByClassName(
-			JAXBBackedQueryOption parent, Class<T> clazz) {
+	public static <T extends BoundQueryOption> T getOneByClassName(
+			BoundQueryOption parent, Class<T> clazz) {
 		List<T> l = getByClassName(parent, clazz);
 		if (l.size() == 0) {
 			return null;
@@ -181,14 +181,14 @@ public class JAXBHelper {
 		}
 	}
 
-	public static <T extends JAXBBackedQueryOption> List<T> getByClassName(
-			JAXBBackedQueryOption parent, Class<T> clazz) {
-		List<JAXBBackedQueryOption> options = new ArrayList<JAXBBackedQueryOption>();
+	public static <T extends BoundQueryOption> List<T> getByClassName(
+			BoundQueryOption parent, Class<T> clazz) {
+		List<BoundQueryOption> options = new ArrayList<BoundQueryOption>();
 		for (Object ot : parent.getJAXBChildren()) {
 			if (ot.getClass().getPackage().toString()
 					.contains("com.marklogic.client.config.search.jaxb")) {
 				logger.debug("Instantiating POJO class to wrap");
-				JAXBBackedQueryOption newOption = JAXBHelper.newQueryOption(ot);
+				BoundQueryOption newOption = JAXBHelper.newQueryOption(ot);
 				// add all options that are handled by POJOs to the return
 				// lists.
 				if (newOption != null && clazz.isInstance(newOption)) {
@@ -201,14 +201,14 @@ public class JAXBHelper {
 		return (List<T>) options;
 	}
 	
-	public static <T extends JAXBBackedQueryOption> void setByClassName(
-			JAXBBackedQueryOption parent, List<T> listOfValues, Class<T> clazz) {
+	public static <T extends BoundQueryOption> void setByClassName(
+			BoundQueryOption parent, List<T> listOfValues, Class<T> clazz) {
 		List<Object> l = parent.getJAXBChildren();
 		for (Object ot : l) {
 			if (ot.getClass().getPackage().toString()
 					.contains("com.marklogic.client.config.search.jaxb")) {
 				logger.debug("Instantiating POJO class to wrap");
-				JAXBBackedQueryOption newOption = JAXBHelper.newQueryOption(ot);
+				BoundQueryOption newOption = JAXBHelper.newQueryOption(ot);
 				// add all options that are handled by POJOs to the return
 				// lists.
 				if (newOption != null && clazz.isInstance(newOption)) {
@@ -224,7 +224,7 @@ public class JAXBHelper {
 	}
 
 	public static <T extends Object> List<T> getSimpleByElementName(
-			JAXBBackedQueryOption parent, String localName) {
+			BoundQueryOption parent, String localName) {
 		List<T> l = new ArrayList<T>();
 		for (Object ot : parent.getJAXBChildren()) {
 			if (ot instanceof JAXBElement<?>) {
@@ -240,7 +240,7 @@ public class JAXBHelper {
 	}
 
 	public static <T extends Object> T getOneSimpleByElementName(
-			JAXBBackedQueryOption parent, String localName) {
+			BoundQueryOption parent, String localName) {
 		List<T> l = getSimpleByElementName(parent, localName);
 		if (l.size() == 0) {
 			return null;
@@ -249,9 +249,9 @@ public class JAXBHelper {
 		}
 	}
 
-	public static Object getOneJAXBByElementName(JAXBBackedQueryOption parent,
+	public static Object getOneJAXBByElementName(BoundQueryOption parent,
 			String localName) {
-		List<JAXBBackedQueryOption> options = new ArrayList<JAXBBackedQueryOption>();
+		List<BoundQueryOption> options = new ArrayList<BoundQueryOption>();
 		for (Object ot : parent.getJAXBChildren()) {
 			if (ot instanceof JAXBElement<?>) {
 				JAXBElement<Object> e = (JAXBElement<Object>) ot;
@@ -265,7 +265,7 @@ public class JAXBHelper {
 		return null;
 	}
 
-	private static List<Object> getUnboundOptions(JAXBBackedQueryOption option,
+	private static List<Object> getUnboundOptions(BoundQueryOption option,
 			String localName) {
 		List<Object> options = option.getJAXBChildren();
 		List<Object> conformingOptions = new ArrayList<Object>();
@@ -284,7 +284,7 @@ public class JAXBHelper {
 	}
 
 	public static <T extends Object> void setOneSimpleByElementName(
-			JAXBBackedQueryOption option, String localName, T value) {
+			BoundQueryOption option, String localName, T value) {
 		List<Object> existingFlagAsList = getUnboundOptions(option, localName);
 		if (existingFlagAsList.size() == 0) {
 			JAXBElement<Object> newElement = new JAXBElement<Object>(new QName(
@@ -302,15 +302,15 @@ public class JAXBHelper {
 	}
 
 	public static <T extends Object> void setSimpleByElementName(
-			JAXBBackedQueryOption option, String localName, List<T> values) {
+			BoundQueryOption option, String localName, List<T> values) {
 		List<Object> existingFlagAsList = getUnboundOptions(option, localName);
 		option.getJAXBChildren().removeAll(existingFlagAsList);
 		existingFlagAsList.addAll(values);
 
 	}
 
-	public static void setOneByClassName(JAXBBackedQueryOption parent,
-			JAXBBackedQueryOption value) {
+	public static void setOneByClassName(BoundQueryOption parent,
+			BoundQueryOption value) {
 		for (Object ot : parent.getJAXBChildren()) {
 			if (value.asJAXB().getClass().isInstance(ot)) {
 				ot = value.asJAXB();

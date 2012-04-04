@@ -24,7 +24,7 @@ import javax.xml.namespace.QName;
 import org.w3c.dom.Element;
 
 import com.marklogic.client.config.IndexReference;
-import com.marklogic.client.config.JAXBBackedQueryOption;
+import com.marklogic.client.config.BoundQueryOption;
 import com.marklogic.client.config.search.jaxb.Annotation;
 import com.marklogic.client.config.search.jaxb.Constraint;
 
@@ -35,7 +35,7 @@ import com.marklogic.client.config.search.jaxb.Constraint;
  * A class containing useful methods shared amongst most objects in the 
  * query configuration.  
  */
-abstract class AbstractQueryOption<T> implements JAXBBackedQueryOption {
+abstract class AbstractQueryOption<T> implements BoundQueryOption {
 
 	/**
 	 * Used only by subclasses that implement Indexable, but here as a convenience.

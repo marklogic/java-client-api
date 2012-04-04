@@ -19,7 +19,7 @@ import java.util.List;
 
 import org.w3c.dom.Element;
 
-public interface Grammar extends JAXBBackedQueryOption {
+public interface Grammar extends BoundQueryOption {
 
 	String getQuotation();
 

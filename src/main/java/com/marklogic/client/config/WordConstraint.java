@@ -15,6 +15,6 @@
  */
 package com.marklogic.client.config;
 
-public interface WordConstraint extends JAXBBackedQueryOption, Constraint, TermOptions, Indexable {
+public interface WordConstraint extends BoundQueryOption, Constraint, TermOptions, Indexable {
 
 }

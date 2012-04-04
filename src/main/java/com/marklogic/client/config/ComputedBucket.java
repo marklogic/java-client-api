@@ -17,7 +17,7 @@ package com.marklogic.client.config;
 
 
 
-public interface ComputedBucket extends JAXBBackedQueryOption {
+public interface ComputedBucket extends BoundQueryOption {
 
 	public String getName();
 	public void setName(String name);

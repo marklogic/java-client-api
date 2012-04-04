@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.config;
 
-public interface Constraint extends JAXBBackedQueryOption, QueryAnnotatable {
+public interface Constraint extends BoundQueryOption, QueryAnnotatable {
 
 	void setName(String name);
 

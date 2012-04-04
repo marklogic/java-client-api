@@ -15,6 +15,6 @@
  */
 package com.marklogic.client.config;
 
-public interface ValueConstraint extends JAXBBackedQueryOption, Constraint, Indexable, TermOptions {
+public interface ValueConstraint extends BoundQueryOption, Constraint, Indexable, TermOptions {
 
 }

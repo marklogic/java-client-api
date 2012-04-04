@@ -24,7 +24,7 @@ import org.w3c.dom.Element;
  * @author cgreer
  *
  */
-interface StateOrTopLevel extends JAXBBackedQueryOption, QueryAnnotatable {
+interface StateOrTopLevel extends BoundQueryOption, QueryAnnotatable {
 
 	public Element getAdditionalQuery();
 	public Boolean getDebug();

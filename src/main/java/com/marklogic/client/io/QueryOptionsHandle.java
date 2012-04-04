@@ -36,7 +36,7 @@ import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.config.Constraint;
 import com.marklogic.client.config.Grammar;
-import com.marklogic.client.config.JAXBBackedQueryOption;
+import com.marklogic.client.config.BoundQueryOption;
 import com.marklogic.client.config.MarkLogicBindingException;
 import com.marklogic.client.config.Operator;
 import com.marklogic.client.config.QueryOptions;
@@ -67,8 +67,8 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 	}
 
 	@Override
-	public void add(JAXBBackedQueryOption jAXBBackedQueryOption) {
-		jaxbOptions.getSearchOptions().add(jAXBBackedQueryOption.asJAXB());
+	public void add(BoundQueryOption boundQueryOption) {
+		jaxbOptions.getSearchOptions().add(boundQueryOption.asJAXB());
 	}
 
 	@Override

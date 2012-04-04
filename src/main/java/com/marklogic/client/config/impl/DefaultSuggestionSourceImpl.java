@@ -16,10 +16,10 @@
 package com.marklogic.client.config.impl;
 
 import com.marklogic.client.config.DefaultSuggestionSource;
-import com.marklogic.client.config.JAXBBackedQueryOption;
+import com.marklogic.client.config.BoundQueryOption;
 
 public class DefaultSuggestionSourceImpl extends SuggestionSourceImpl implements
-		JAXBBackedQueryOption, DefaultSuggestionSource {
+		BoundQueryOption, DefaultSuggestionSource {
 
 	private com.marklogic.client.config.search.jaxb.DefaultSuggestionSource jaxbObject;
 	

@@ -55,7 +55,7 @@ import com.marklogic.client.config.GeoElementPairConstraint;
 import com.marklogic.client.config.Grammar;
 import com.marklogic.client.config.Heatmap;
 import com.marklogic.client.config.IndexReference;
-import com.marklogic.client.config.JAXBBackedQueryOption;
+import com.marklogic.client.config.BoundQueryOption;
 import com.marklogic.client.config.Joiner;
 import com.marklogic.client.config.Operator;
 import com.marklogic.client.config.QueryOptions;
@@ -142,7 +142,7 @@ public class QueryOptionsTest {
 		List<Object> optionList = options.getJAXBChildren();
 
 		for (Object o : optionList) {
-			JAXBBackedQueryOption option = JAXBHelper.newQueryOption(o);
+			BoundQueryOption option = JAXBHelper.newQueryOption(o);
 			logger.debug(o.toString());
 		}
 		assertTrue(options.getReturnFacets());  //default is true

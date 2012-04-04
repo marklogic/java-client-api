@@ -28,12 +28,12 @@ import org.w3c.dom.NodeList;
 import com.marklogic.client.ElementLocator;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.config.FunctionRef;
-import com.marklogic.client.config.JAXBBackedQueryOption;
+import com.marklogic.client.config.BoundQueryOption;
 import com.marklogic.client.config.TransformResults;
 import com.marklogic.client.impl.ElementLocatorImpl;
 import com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl;
 
-public class TransformResultsImpl implements JAXBBackedQueryOption, TransformResults {
+public class TransformResultsImpl implements BoundQueryOption, TransformResults {
 
 	private com.marklogic.client.config.search.jaxb.TransformResults jaxbObject;
 	private Document document;

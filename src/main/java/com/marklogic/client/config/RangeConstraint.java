@@ -20,7 +20,7 @@ import java.util.List;
 import javax.xml.namespace.QName;
 
 
-public interface RangeConstraint extends JAXBBackedQueryOption, Constraint, Facetable, Indexable {
+public interface RangeConstraint extends BoundQueryOption, Constraint, Facetable, Indexable {
 
 	/**
 	 * add a bucket to a range constraint to support facets.  This method adds a bucket with no upper or lower bounds.
