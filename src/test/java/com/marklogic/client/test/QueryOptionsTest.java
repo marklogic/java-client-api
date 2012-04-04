@@ -319,7 +319,7 @@ public class QueryOptionsTest {
 
 		assertTrue(
 				"Serialized Value AbstractQueryOption should contain this string",
-				optionsString.contains("<element name=\"sumlev\" ns=\"\""));
+				optionsString.contains("name=\"sumlev\""));
 
 	}
 
@@ -513,7 +513,7 @@ public class QueryOptionsTest {
 		assertTrue("Sort order should contain empty score element",
 				sortString.contains("<score/>"));
 		assertTrue("Sort order should contain element index def",
-				sortString.contains("<element name=\"green\""));
+				sortString.contains("name=\"green\""));
 
 		// TODO unset score
 		//
