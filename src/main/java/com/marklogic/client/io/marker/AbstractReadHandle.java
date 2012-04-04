@@ -27,15 +27,15 @@ public interface AbstractReadHandle<C> {
 	public void setFormat(Format format);
 
 	/**
-	 * Declares the class of the content received from the database.  This method
-	 * is part of the contract between a read handle and the API.  You should rarely
-	 * if ever need to call this method directly when using the handle.
+	 * As part of the contract between a read handle and the API, 
+	 * declares the class of the content received from the database.
+	 * You should rarely if ever need to call this method directly when using the handle.
 	 * @return
 	 */
 	public Class<C> receiveAs();
 	/**
-	 * Receives content from the database.  This method is part of the contract
-	 * between a read handle and the API.  You should rarely
+	 * As part of the contract between a read handle and the API, 
+	 * receives content from the database.  You should rarely
 	 * if ever need to call this method directly when using the handle.
 	 * @return
 	 */

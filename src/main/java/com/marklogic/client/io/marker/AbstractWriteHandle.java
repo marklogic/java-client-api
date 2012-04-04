@@ -27,8 +27,8 @@ public interface AbstractWriteHandle<C> {
 	public void setFormat(Format format);
 
 	/**
-	 * Sends content to the database.  This method is part of the contract
-	 * between a write handle and the API.  You should rarely
+	 * As part of the contract between a write handle and the API, 
+	 * sends content to the database.  You should rarely
 	 * if ever need to call this method directly when using the handle.
 	 * @return
 	 */
