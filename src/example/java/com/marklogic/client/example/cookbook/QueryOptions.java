@@ -20,16 +20,13 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
-import javax.xml.namespace.QName;
-
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.config.Constraint;
-import com.marklogic.client.config.ValueConstraint;
-import com.marklogic.client.config.impl.ValueConstraintImpl;
 import com.marklogic.client.io.QueryOptionsHandle;
+import com.marklogic.client.io.StringHandle;
 
 /**
  * QueryOptions illustrates writing, reading, and deleting query options.
@@ -62,11 +59,19 @@ public class QueryOptions {
 		// create a manager for writing, reading, and deleting query options
 		QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
 
-		// create and initialize a handle with query options
-		QueryOptionsHandle writeHandle = new QueryOptionsHandle();
-		ValueConstraint constraint = new ValueConstraintImpl("industry");
-		constraint.addElementIndex(new QName("industry"));
-		writeHandle.add(constraint);
+		// create the query options
+		StringBuilder builder = new StringBuilder();
+		builder.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+		builder.append("<options xmlns=\"http://marklogic.com/appservices/search\">\n");
+		builder.append("  <constraint name=\"industry\">\n");
+		builder.append("    <value>\n");
+		builder.append("      <element ns=\"\" name=\"industry\"/>\n");
+		builder.append("    </value>\n");
+		builder.append("  </constraint>\n");
+		builder.append("</options>\n");
+
+		// initialize a handle with the query options
+		StringHandle writeHandle = new StringHandle(builder.toString());
 
 		// write the query options to the database
 		optionsMgr.writeOptions(optionsName, writeHandle);

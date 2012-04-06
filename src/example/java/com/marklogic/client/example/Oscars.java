@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Attr;
@@ -35,11 +34,9 @@ import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.config.MatchDocumentSummary;
 import com.marklogic.client.config.StringQueryDefinition;
-import com.marklogic.client.config.ValueConstraint;
-import com.marklogic.client.config.impl.ValueConstraintImpl;
 import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.io.StringHandle;
 
 /**
  * The Oscars example illustrates creating query options that define constraints,
@@ -78,37 +75,35 @@ public class Oscars {
 		// create a manager for writing query options
 		QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
 
-		// create a handle with query options
-		QueryOptionsHandle writeHandle = new QueryOptionsHandle();
+		// create the query options
+		StringBuilder builder = new StringBuilder();
+		builder.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+		builder.append("<options xmlns=\"http://marklogic.com/appservices/search\">\n");
+		builder.append("  <constraint name=\"year\">\n");
+		builder.append("    <value>\n");
+		builder.append("      <attribute ns=\"\" name=\"year\"/>\n");
+		builder.append("      <element ns=\"http://marklogic.com/wikipedia\" name=\"oscar\"/>\n");
+		builder.append("    </value>\n");
+		builder.append("  </constraint>\n");
+		builder.append("  <constraint name=\"award\">\n");
+		builder.append("    <value>\n");
+		builder.append("      <attribute ns=\"\" name=\"year\"/>\n");
+		builder.append("      <element ns=\"http://marklogic.com/wikipedia\" name=\"award\"/>\n");
+		builder.append("    </value>\n");
+		builder.append("  </constraint>\n");
+		builder.append("  <constraint name=\"winner\">\n");
+		builder.append("    <value>\n");
+		builder.append("      <attribute ns=\"\" name=\"winner\"/>\n");
+		builder.append("      <element ns=\"http://marklogic.com/wikipedia\" name=\"award\"/>\n");
+		builder.append("    </value>\n");
+		builder.append("  </constraint>\n");
+		builder.append("  <return-metrics>true</return-metrics>\n");
+		builder.append("  <return-facets>true</return-facets>\n");
+		builder.append("  <return-results>true</return-results>\n");
+		builder.append("</options>\n");
 
-		ValueConstraint constraint = null;
-
-		// add a constraint for the year index
-		constraint = new ValueConstraintImpl("year");
-		constraint.addElementAttributeIndex(
-				new QName("http://marklogic.com/wikipedia","oscar"),
-				new QName("year")
-				);
-		writeHandle.add(constraint);
-
-		// add a constraint for the award index
-		constraint = new ValueConstraintImpl("award");
-		constraint.addElementAttributeIndex(
-				new QName("http://marklogic.com/wikipedia","oscar"),
-				new QName("award")
-				);
-		writeHandle.add(constraint);
-
-		// add a constraint for the winner index
-		constraint = new ValueConstraintImpl("winner");
-		constraint.addElementAttributeIndex(
-				new QName("http://marklogic.com/wikipedia","oscar"),
-				new QName("winner")
-				);
-		writeHandle.add(constraint);
-
-		writeHandle.setReturnResults(false);
-		writeHandle.setReturnFacets(false);
+		// initialize a handle with the query options
+		StringHandle writeHandle = new StringHandle(builder.toString());
 
 		// write the query options to the database
 		optionsMgr.writeOptions(OPTIONS_NAME, writeHandle);
