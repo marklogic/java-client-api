@@ -15,17 +15,15 @@
  */
 package com.marklogic.client.test;
 
-import com.marklogic.client.QueryManager;
-import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.config.FacetResult;
-import com.marklogic.client.config.MatchDocumentSummary;
-import com.marklogic.client.config.MatchLocation;
-import com.marklogic.client.config.QueryOptions;
-import com.marklogic.client.config.StringQueryDefinition;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.QueryOptionsHandle;
-import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.io.StringHandle;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.IOException;
+import java.io.StringReader;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -33,17 +31,13 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.StringReader;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import com.marklogic.client.Format;
+import com.marklogic.client.QueryManager;
+import com.marklogic.client.QueryOptionsManager;
+import com.marklogic.client.config.FacetResult;
+import com.marklogic.client.config.StringQueryDefinition;
+import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.SearchHandle;
 
 public class SearchFacetTest {
     private static String options =
@@ -145,7 +139,7 @@ public class SearchFacetTest {
         Document document = builder.parse(new InputSource(new StringReader(options)));
 
         mgr = Common.client.newQueryOptionsManager();
-        mgr.writeOptions("photos", new DOMHandle(document));
+        mgr.writeOptions("photos", new DOMHandle(document), Format.XML);
 
         QueryManager queryMgr = Common.client.newQueryManager();
 

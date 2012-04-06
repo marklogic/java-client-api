@@ -34,9 +34,9 @@ import org.w3c.dom.Element;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.config.BoundQueryOption;
 import com.marklogic.client.config.Constraint;
 import com.marklogic.client.config.Grammar;
-import com.marklogic.client.config.BoundQueryOption;
 import com.marklogic.client.config.MarkLogicBindingException;
 import com.marklogic.client.config.Operator;
 import com.marklogic.client.config.QueryOptions;
@@ -47,11 +47,11 @@ import com.marklogic.client.config.impl.JAXBHelper;
 import com.marklogic.client.config.search.jaxb.AdditionalQuery;
 import com.marklogic.client.config.search.jaxb.Options;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
-import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
 public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
-		QueryOptionsWriteHandle<OutputStreamSender>, QueryOptions,
+		QueryOptions,
 		OutputStreamSender {
+	
 	@SuppressWarnings("unused")
 	static final private Logger logger = LoggerFactory
 			.getLogger(QueryOptionsHandle.class);

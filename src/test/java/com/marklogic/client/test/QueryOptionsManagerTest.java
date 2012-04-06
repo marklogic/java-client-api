@@ -15,9 +15,10 @@
  */
 package com.marklogic.client.test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 
 import javax.xml.bind.JAXBException;
@@ -33,9 +34,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.xml.sax.SAXException;
 
+import com.marklogic.client.Format;
 import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.config.QueryOptions;
 import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
 
@@ -57,33 +59,22 @@ public class QueryOptionsManagerTest {
 
 
 	@Test
-	public void testOptionsManager() throws JAXBException {
+	public void testQueryOptionsManager() throws JAXBException {
 		QueryOptionsManager mgr = Common.client.newQueryOptionsManager();
 		assertNotNull("Client could not create query options manager", mgr);
 
-		QueryOptions options = mgr.newOptions();
-        mgr.writeOptions("testempty", new QueryOptionsHandle().on(options));
+		//QueryOptions options = mgr.newOptions();
+        //QueryOptions options = new QueryOptionsHandle();
+		//mgr.writeOptions("testempty", new QueryOptionsHandle().on(options), Format.XML);
         
-        String optionsResult = mgr.readOptions("testempty", new StringHandle()).get();
-        assertTrue("Empty options result not empty",optionsResult.contains("<options xml:lang=\"en\" xmlns=\"http://marklogic.com/appservices/search\"/>"));
+        //String optionsResult = mgr.readOptions("testempty", new StringHandle()).get();
+        //assertTrue("Empty options result not empty",optionsResult.contains("<options xml:lang=\"en\" xmlns=\"http://marklogic.com/appservices/search\"/>"));
 		
-		mgr.deleteOptions("testempty");
+		//mgr.deleteOptions("testempty");
 		
 		
 	};
 	
-	/*
-	 * commenting out pending figuring out blocking problem
-	@Test(expected=MarkLogicIOException.class)
-	public void testNotFoundOptions() {
-		QueryOptionsManager mgr = Common.client.newQueryOptionsManager();
-
-		mgr.deleteOptions("testempty");
-		
-		//mgr.readOptions("testempty");
-		
-	}
-	*/
 
 	@Test
 	public void testXMLDocsAsSearchOptions() throws ParserConfigurationException, SAXException, IOException {
@@ -99,7 +90,7 @@ public class QueryOptionsManagerTest {
 
 		QueryOptionsManager queryOptionsMgr = Common.client.newQueryOptionsManager();
 		
-		queryOptionsMgr.writeOptions(optionsName, new DOMHandle(domDocument));
+		queryOptionsMgr.writeOptions(optionsName, new DOMHandle(domDocument), Format.XML);
 
 		String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
 				.getDOMImplementation()).createLSSerializer().writeToString(domDocument);
@@ -116,4 +107,24 @@ public class QueryOptionsManagerTest {
 		// assertXMLEqual("Failed to read XML document as DOM",domDocument,readDoc);
 
 	}
+	
+
+
+	@Test
+	public void testJSONOptions() throws JAXBException {
+		QueryOptionsManager mgr = Common.client.newQueryOptionsManager();
+		assertNotNull("Client could not create query options manager", mgr);
+
+		
+		mgr.writeOptions("jsonoptions", new FileHandle(new File("src/test/resources/json-config.json")), Format.JSON);
+	
+		QueryOptionsHandle options = mgr.readOptions("jsonoptions", new QueryOptionsHandle());
+		
+		assertEquals("JSON options came back incorrectly", options.getConstraints().get(0).getName(), "decade");
+		
+		mgr.deleteOptions("jsonoptions");
+		
+		
+	};
+	
 }
