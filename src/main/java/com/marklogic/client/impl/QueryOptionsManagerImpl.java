@@ -56,8 +56,8 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 			throw new IllegalArgumentException(
 					"Cannot read options for null name");
 
-		searchOptionsHandle.receiveContent(services.getValue(null,
-				QUERY_OPTIONS_BASE, name, "application/xml",
+		searchOptionsHandle.receiveContent(services.getValue(requestLogger,
+				QUERY_OPTIONS_BASE, name, searchOptionsHandle.getFormat().getDefaultMimetype(),
 				searchOptionsHandle.receiveAs()));
 		return searchOptionsHandle;
 	}

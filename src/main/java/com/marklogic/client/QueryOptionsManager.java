@@ -42,7 +42,7 @@ public interface QueryOptionsManager {
      * @param format TODO
      * @param options
      */
-    public void writeOptions(String name, QueryOptionsWriteHandle searchOptionsHandle, Format format);
+    public void writeOptions(String name, QueryOptionsWriteHandle searchOptionsHandle);
     
     /**
      * Remove a search configuration from the REST server.

@@ -139,7 +139,7 @@ public class SearchFacetTest {
         Document document = builder.parse(new InputSource(new StringReader(options)));
 
         mgr = Common.client.newQueryOptionsManager();
-        mgr.writeOptions("photos", new DOMHandle(document), Format.XML);
+        mgr.writeOptions("photos", new DOMHandle(document));
 
         QueryManager queryMgr = Common.client.newQueryManager();
 

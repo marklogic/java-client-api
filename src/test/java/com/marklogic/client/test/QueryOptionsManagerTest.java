@@ -17,6 +17,7 @@ package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -90,7 +91,7 @@ public class QueryOptionsManagerTest {
 
 		QueryOptionsManager queryOptionsMgr = Common.client.newQueryOptionsManager();
 		
-		queryOptionsMgr.writeOptions(optionsName, new DOMHandle(domDocument), Format.XML);
+		queryOptionsMgr.writeOptions(optionsName, new DOMHandle(domDocument));
 
 		String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
 				.getDOMImplementation()).createLSSerializer().writeToString(domDocument);
@@ -121,6 +122,12 @@ public class QueryOptionsManagerTest {
 		QueryOptionsHandle options = mgr.readOptions("jsonoptions", new QueryOptionsHandle());
 		
 		assertEquals("JSON options came back incorrectly", options.getConstraints().get(0).getName(), "decade");
+		
+		
+		StringHandle jsonStringHandle = new StringHandle();
+		jsonStringHandle.setFormat(Format.JSON);
+		mgr.readOptions("jsonoptions", jsonStringHandle);
+		assertTrue("JSON String from QueryManager must start with json options", jsonStringHandle.get().startsWith("{\"options\":"));
 		
 		mgr.deleteOptions("jsonoptions");
 		
