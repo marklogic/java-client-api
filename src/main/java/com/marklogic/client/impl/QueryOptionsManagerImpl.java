@@ -64,8 +64,8 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 
 	@Override
 	public void writeOptions(String name,
-			QueryOptionsWriteHandle queryOptionsHandle, Format format) {
+			QueryOptionsWriteHandle queryOptionsHandle) {
 		services.putValue(requestLogger, QUERY_OPTIONS_BASE, name,
-				format.getDefaultMimetype(), queryOptionsHandle.sendContent());
+				queryOptionsHandle.getFormat().getDefaultMimetype(), queryOptionsHandle.sendContent());
 	}
 }

@@ -49,8 +49,7 @@ import com.marklogic.client.config.search.jaxb.Options;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 
 public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
-		QueryOptions,
-		OutputStreamSender {
+		QueryOptions {
 	
 	@SuppressWarnings("unused")
 	static final private Logger logger = LoggerFactory
@@ -255,9 +254,11 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 		}
 	};
 
+	/*
 	public OutputStreamSender sendContent() {
 		return this;
 	};
+	*/
 
 	public void set(QueryOptions options) {
 		this.jaxbOptions = (Options) options.asJAXB();
@@ -371,6 +372,7 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 		JAXBHelper.setOneByClassName(this, transformResults);
 	}
 
+	
 	public String toString() {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
@@ -381,8 +383,8 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 		}
 		return baos.toString();
 	}
-
-	@Override
+	
+	
 	public void write(OutputStream out) throws IOException {
 		try {
 			jc = JAXBContext
@@ -396,9 +398,8 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 		} catch (JAXBException e) {
 			throw new MarkLogicBindingException(e);
 		}
-
 	}
-
+	
 	@Override
 	public void addQueryAnnotation(Element annotation) {
 		
