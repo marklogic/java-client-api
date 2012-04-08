@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.Reader;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -111,6 +112,16 @@ public class JerseyServices implements RESTServices {
 		if (context != null)
 			// TODO: confirm that verifier can be null or supply default verifier that returns true
 			config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(verifier, context));
+
+		// TODO: remove temporary hack when Maven build merge multipart before core in service definition
+		Collections.addAll(
+				config.getClasses(),
+				com.sun.jersey.multipart.impl.MultiPartReaderClientSide.class,
+				// com.sun.jersey.multipart.impl.MultiPartReaderServerSide
+				com.sun.jersey.multipart.impl.MultiPartWriter.class,
+				com.sun.jersey.multipart.impl.MultiPartConfigProvider.class
+				// com.sun.jersey.multipart.impl.FormDataMultiPartDispatchProvider.class
+		);
 
 		ApacheHttpClientState state = config.getState();
 		state.setCredentials(null, host, port, user, password);
