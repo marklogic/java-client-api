@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- For more detail, please see
+  http://docs.marklogic.com/5.0doc/docapp.xqy#display.xqy?fname=http://pubs/5.0doc/xml/search-dev-guide/search-api.xml%2312693
+  -->
+<options xmlns="http://marklogic.com/appservices/search">
+  <!-- uncomment to improve performance when indexes fully determine the result set  
+  <search-option>unfiltered</search-option>
+    -->
+  <page-length>10</page-length>
+  <!-- uncomment and edit to provide a collection query
+  <additional-query>
+    <cts:collection-query xmlns:cts="http://marklogic.com/cts">
+      <cts:uri>YOUR_COLLECTION_NAME_HERE</cts:uri>
+    </cts:collection-query>
+  </additional-query>
+    -->
+  <term>
+    <!-- uncomment to get all results for empty criteria  
+    <empty apply="all-results"/>
+      -->
+    <term-option>punctuation-insensitive</term-option>
+  </term>
+  <!-- uncomment for a facet constraint based on a string range index on an element
+  <constraint name="YOUR_CONSTRAINT_NAME_HERE">
+    <range type="xs:string" collation="http://marklogic.com/collation/" facet="true">
+      <element ns="YOUR_ELEMENT_NAMESPACE_HERE" name="YOUR_ELEMENT_NAME_HERE"/>
+    </range>
+  </constraint>
+    -->
+  <!-- uncomment for a unfacetted constraint based on a integer range index on a field
+  <constraint name="YOUR_CONSTRAINT_NAME_HERE">
+    <range type="xs:int" facet="false">
+      <field name="YOUR_FIELD_NAME_HERE"/>
+    </range>
+  </constraint>
+    -->
+  <!-- uncomment for a simple constraint based on any word within an element
+  <constraint name="YOUR_CONSTRAINT_NAME_HERE">
+    <word>
+      <element ns="YOUR_ELEMENT_NAMESPACE_HERE" name="YOUR_ELEMENT_NAME_HERE"/>
+      <weight>2.0</weight>
+    </word>
+  </constraint>
+    -->
+  <!-- uncomment for a simple constraint based on the value of an attribute
+  <constraint name="YOUR_CONSTRAINT_NAME_HERE">
+    <value>
+      <element ns="YOUR_ELEMENT_NAMESPACE_HERE" name="YOUR_ELEMENT_NAME_HERE"/>
+      <attribute ns="YOUR_ELEMENT_NAMESPACE_HERE" name="YOUR_ATTRIBUTE_NAME_HERE"/>
+    </value>
+  </constraint>
+    -->
+  <!-- uncomment for warnings and other debug information
+  <debug>true</debug>
+    -->
+  <!-- uncomment to control the construction of the snippet
+  <transform-results apply="snippet">
+    <max-matches>1</max-matches>
+    <max-snippet-chars>150</max-snippet-chars>
+    <per-match-tokens>20</per-match-tokens>
+  </transform-results>
+    -->
+  <return-metrics>true</return-metrics>
+  <return-facets>true</return-facets>
+  <return-results>true</return-results>
+</options>

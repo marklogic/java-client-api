@@ -34,7 +34,8 @@ Notes:
 At this time, the QueryOptions class provides a representation for query options
 read from the database but cannot be used to write query options to the database.
 Instead, create query options as an XML or JSON structure.  Please see the 
-QueryOptions and StringOptionsSearch cookbook examples.
+QueryOptions and StringOptionsSearch cookbook examples as well as the
+query-options-template.xml template file.
 
 ===================================================================
 MarkLogic Corp, http://marklogic.com

@@ -29,6 +29,11 @@
     </fileSets>
     <files>
         <file>
+            <source>src/main/resources/query-options-template.xml</source>
+            <outputDirectory>/</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
             <source>Readme.txt</source>
             <outputDirectory>/</outputDirectory>
             <filtered>true</filtered>
