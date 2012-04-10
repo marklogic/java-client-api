@@ -41,6 +41,17 @@
             <source>NOTICE.txt</source>
             <outputDirectory>/</outputDirectory>
         </file>
+        <file>
+            <source>ASL-v2_0.txt</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+        <file>
+            <source>CDDL-v1_1.txt</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+        <file>
+            <source>EPL-v1_0.txt</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
     </files>
 </assembly>
-
