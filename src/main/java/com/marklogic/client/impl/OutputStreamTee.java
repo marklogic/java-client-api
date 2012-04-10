@@ -88,7 +88,7 @@ public class OutputStreamTee extends OutputStream {
 	@Override
 	public void flush() throws IOException {
 		if (out == null)
-			throw new IOException("Output Stream closed");
+			return;
 
 		out.flush();
 
@@ -99,7 +99,7 @@ public class OutputStreamTee extends OutputStream {
 	@Override
 	public void close() throws IOException {
 		if (out == null)
-			throw new IOException("Output Stream closed");
+			return;
 
 		out.close();
 		out = null;

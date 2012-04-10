@@ -37,7 +37,7 @@ public class ReaderTee extends Reader {
 	@Override
 	public int read() throws IOException {
 		if (in == null)
-			throw new IOException("Reader closed");
+			return -1;
 
 		if (sent >= max)
 			return in.read();
@@ -64,7 +64,7 @@ public class ReaderTee extends Reader {
 	@Override
 	public int read(char[] cbuf) throws IOException {
 		if (in == null)
-			throw new IOException("Reader closed");
+			return -1;
 
 		if (sent >= max)
 			return in.read(cbuf);
@@ -81,7 +81,7 @@ public class ReaderTee extends Reader {
 	@Override
 	public int read(char[] cbuf, int off, int len) throws IOException {
 		if (in == null)
-			throw new IOException("Reader closed");
+			return -1;
 
 		if (sent >= max)
 			return in.read(cbuf, off, len);
@@ -98,7 +98,7 @@ public class ReaderTee extends Reader {
 	@Override
 	public int read(CharBuffer target) throws IOException {
 		if (in == null)
-			throw new IOException("Reader closed");
+			return -1;
 
 		if (sent >= max)
 			return in.read(target);
@@ -140,7 +140,7 @@ public class ReaderTee extends Reader {
 	@Override
 	public void close() throws IOException {
 		if (in == null)
-			throw new IOException("Reader closed");
+			return;
 
 		in.close();
 		in = null;
@@ -151,7 +151,7 @@ public class ReaderTee extends Reader {
 	@Override
 	public boolean ready() throws IOException {
 		if (in == null)
-			throw new IOException("Reader closed");
+			return true;
 
 		return in.ready();
 	}
@@ -165,7 +165,7 @@ public class ReaderTee extends Reader {
 	@Override
 	public void mark(int readAheadLimit) throws IOException {
 		if (in == null)
-			throw new IOException("Reader closed");
+			return;
 
 		in.mark(readAheadLimit);
 	}

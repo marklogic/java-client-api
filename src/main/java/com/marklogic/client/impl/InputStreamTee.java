@@ -35,7 +35,7 @@ public class InputStreamTee extends InputStream {
 	@Override
 	public int read() throws IOException {
 		if (in == null)
-			throw new IOException("Input Stream closed");
+			return -1;
 
 		if (sent >= max)
 			return in.read();
@@ -62,7 +62,7 @@ public class InputStreamTee extends InputStream {
 	@Override
 	public int read(byte[] b) throws IOException {
 		if (in == null)
-			throw new IOException("Input Stream closed");
+			return -1;
 
 		if (sent >= max)
 			return in.read(b);
@@ -72,7 +72,7 @@ public class InputStreamTee extends InputStream {
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
 		if (in == null)
-			throw new IOException("Input Stream closed");
+			return -1;
 
 		if (sent >= max)
 			return in.read(b, off, len);
@@ -110,7 +110,7 @@ public class InputStreamTee extends InputStream {
 	@Override
 	public void close() throws IOException {
 		if (in == null)
-			throw new IOException("Input Stream closed");
+			return;
 
 		in.close();
 		in = null;
@@ -121,7 +121,7 @@ public class InputStreamTee extends InputStream {
 	@Override
 	public int available() throws IOException {
 		if (in == null)
-			throw new IOException("Input Stream closed");
+			return 0;
 
 		return in.available();
 	}
