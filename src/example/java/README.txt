@@ -8,7 +8,8 @@ for common tasks using the MarkLogic Java API.
 
 Before using the examples, please perform the following actions:
 
-1.  Set up a new REST API instance for your database.
+1.  Set up a new REST API instance for your database.  You can use the AppServices web UI
+    or the bash shell script provided with the REST API examples.
 
 2.  Edit Example.properties to specify the connection parameters for the REST API instance.
     You must identify users for the rest-writer and rest-admin roles.
