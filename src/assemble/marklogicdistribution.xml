@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <assembly>
-    <id>ml</id>
+    <id>with-dependencies</id>
     <formats>
         <format>zip</format>
     </formats>
@@ -19,47 +19,51 @@
             <includes/>
         </fileSet>
         <fileSet>
-            <directory>src/example/java</directory>
+            <directory>src/main/java</directory>
             <outputDirectory>/example</outputDirectory>
-            <includes/>
-            <excludes>
-                <exclude>**/Oscars.java</exclude>
-            </excludes>
+            <includes>
+                <include>Example.properties</include>
+                <include>data/*</include>
+                <include>com/marklogic/client/example/cookbook/*.java</include>
+                <include>com/marklogic/client/example/handle/*.java</include>
+            </includes>
         </fileSet>
     </fileSets>
     <files>
         <file>
+            <source>src/main/resources/example/README.txt</source>
+            <outputDirectory>/example</outputDirectory>
+        </file>
+        <file>
             <source>src/main/resources/query-options-template.xml</source>
             <outputDirectory>/</outputDirectory>
-            <filtered>true</filtered>
         </file>
         <file>
-            <source>Readme.txt</source>
-            <outputDirectory>/</outputDirectory>
-            <filtered>true</filtered>
-        </file>
-        <file>
-            <source>LICENSE.txt</source>
+            <source>src/main/resources/Readme.txt</source>
             <outputDirectory>/</outputDirectory>
         </file>
         <file>
-            <source>NOTICE.txt</source>
+            <source>src/main/resources/LICENSE.txt</source>
             <outputDirectory>/</outputDirectory>
         </file>
         <file>
-            <source>ASL-v2_0.txt</source>
+            <source>src/main/resources/NOTICE.txt</source>
             <outputDirectory>/</outputDirectory>
         </file>
         <file>
-            <source>CDDL-v1_1.txt</source>
+            <source>src/main/resources/ASL-v2_0.txt</source>
             <outputDirectory>/</outputDirectory>
         </file>
         <file>
-            <source>EPL-v1_0.txt</source>
+            <source>src/main/resources/CDDL-v1_1.txt</source>
             <outputDirectory>/</outputDirectory>
         </file>
         <file>
-            <source>MIT-X11.txt</source>
+            <source>src/main/resources/EPL-v1_0.txt</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+        <file>
+            <source>src/main/resources/MIT-X11.txt</source>
             <outputDirectory>/</outputDirectory>
         </file>
     </files>

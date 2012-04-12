@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<assembly>
+    <id>with-dependencies</id>
+    <formats>
+        <format>jar</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>/</outputDirectory>
+            <useProjectArtifact>true</useProjectArtifact>
+            <unpack>true</unpack>
+            <scope>runtime</scope>
+        </dependencySet>
+    </dependencySets>
+    <files>
+        <file>
+            <source>src/main/resources/LICENSE.txt</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+        <file>
+            <source>src/main/resources/NOTICE.txt</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+        <file>
+            <source>src/main/resources/ASL-v2_0.txt</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+        <file>
+            <source>src/main/resources/CDDL-v1_1.txt</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+        <file>
+            <source>src/main/resources/EPL-v1_0.txt</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+    </files>
+</assembly>
