@@ -18,6 +18,7 @@ package com.marklogic.client.impl;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +31,20 @@ import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.auth.params.AuthPNames;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.params.AuthPolicy;
+import org.apache.http.client.params.ClientPNames;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,10 +70,9 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.api.client.filter.HTTPDigestAuthFilter;
-import com.sun.jersey.client.apache.ApacheHttpClient;
-import com.sun.jersey.client.apache.config.ApacheHttpClientConfig;
-import com.sun.jersey.client.apache.config.ApacheHttpClientState;
-import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
+import com.sun.jersey.client.apache4.ApacheHttpClient4;
+import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
+import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
 import com.sun.jersey.client.urlconnection.HTTPSProperties;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import com.sun.jersey.multipart.BodyPart;
@@ -69,8 +83,9 @@ import com.sun.jersey.multipart.MultiPartMediaTypes;
 public class JerseyServices implements RESTServices {
 	static final private Logger logger = LoggerFactory.getLogger(JerseyServices.class);
 
-	private ApacheHttpClient client;
-	private WebResource      connection;
+	private ApacheHttpClient4 client;
+	private WebResource       connection;
+	private boolean           isFirstRequest = true;
 
 	public JerseyServices() {
 	}
@@ -87,10 +102,11 @@ public class JerseyServices implements RESTServices {
 		if (password == null)
 			throw new IllegalArgumentException("No password provided");
 		if (type == null) {
-			if (context != null)
+			if (context != null) {
 				type = Authentication.BASIC;
-			else
+			} else {
 				throw new IllegalArgumentException("No authentication type provided");
+			}
 		}
 
 		if (connection != null)
@@ -105,10 +121,46 @@ public class JerseyServices implements RESTServices {
 		System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire.header", "warn");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "warn");
 
-		// ClientConfig config = new DefaultClientConfig();
-		// see also DefaultApacheHttpClient4Config()
-		DefaultApacheHttpClientConfig config = new DefaultApacheHttpClientConfig();
-		config.getProperties().put(ApacheHttpClientConfig.PROPERTY_PREEMPTIVE_AUTHENTICATION, true);
+		SchemeRegistry schemeRegistry = new SchemeRegistry();
+		schemeRegistry.register(
+				new Scheme(
+						(context != null) ? "https" : "http",
+						port,
+						PlainSocketFactory.getSocketFactory()
+						));
+
+		ThreadSafeClientConnManager connMgr = new ThreadSafeClientConnManager(schemeRegistry);
+		connMgr.setDefaultMaxPerRoute(100);
+
+		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+		credentialsProvider.setCredentials(
+			new AuthScope(host, port),
+		    new UsernamePasswordCredentials(user, password)
+			);
+
+		List<String> authpref = new ArrayList<String>();
+		if (type == Authentication.BASIC)
+			authpref.add(AuthPolicy.BASIC);
+		else if (type == Authentication.DIGEST)
+			authpref.add(AuthPolicy.DIGEST);
+		else
+			throw new MarkLogicInternalException(
+					"Internal error - unknown authentication type: "
+							+ type.name());
+
+		HttpParams httpParams = new BasicHttpParams();
+		httpParams.setParameter(AuthPNames.PROXY_AUTH_PREF,           authpref);
+		// note that setting PROPERTY_FOLLOW_REDIRECTS below doesn't seem to work
+		httpParams.setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, false);
+
+		DefaultApacheHttpClient4Config config = new DefaultApacheHttpClient4Config();
+		Map<String, Object> configProps = config.getProperties();
+//		configProps.put(ApacheHttpClient4Config.PROPERTY_PREEMPTIVE_BASIC_AUTHENTICATION, true);
+		configProps.put(ApacheHttpClient4Config.PROPERTY_CONNECTION_MANAGER,    connMgr);
+//		configProps.put(ApacheHttpClient4Config.PROPERTY_FOLLOW_REDIRECTS,      false);
+//		configProps.put(ApacheHttpClient4Config.PROPERTY_CREDENTIALS_PROVIDER,  credentialsProvider);
+		configProps.put(ApacheHttpClient4Config.PROPERTY_HTTP_PARAMS,           httpParams);
+//		configProps.put(ApacheHttpClient4Config.PROPERTY_CHUNKED_ENCODING_SIZE, 0);
 		if (context != null)
 			// TODO: confirm that verifier can be null or supply default verifier that returns true
 			config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(verifier, context));
@@ -123,11 +175,30 @@ public class JerseyServices implements RESTServices {
 				// com.sun.jersey.multipart.impl.FormDataMultiPartDispatchProvider.class
 		);
 
+/* approach in Apache HTTP Client 3
 		ApacheHttpClientState state = config.getState();
 		state.setCredentials(null, host, port, user, password);
+  */
 
-//		client = ApacheHttpClient4.create(config);
-		client = ApacheHttpClient.create(config);
+		client = ApacheHttpClient4.create(config);
+
+		HttpClient httpClient = client.getClientHandler().getHttpClient();
+/*
+		// preemptive digest authentication
+        AuthCache authCache = new BasicAuthCache();
+        DigestScheme digestAuth = new DigestScheme();
+//		digestAuth.overrideParamter("realm", "some realm");
+//		digestAuth.overrideParamter("nonce", "whatever");
+        authCache.put(
+        		new HttpHost(
+        				host,
+        				port,
+        				(context != null) ? "https" : "http"),
+        		digestAuth);
+        BasicHttpContext localcontext = new BasicHttpContext();
+        localcontext.setAttribute(ClientContext.AUTH_CACHE, authCache);
+ */
+
 		if (type == Authentication.BASIC)
 			client.addFilter(new HTTPBasicAuthFilter(user, password));
 		else if (type == Authentication.DIGEST)
@@ -136,16 +207,28 @@ public class JerseyServices implements RESTServices {
 			throw new MarkLogicInternalException(
 					"Internal error - unknown authentication type: "
 							+ type.name());
-		connection = client.resource("http://" + host + ":" + port + "/v1/");
 
-// NOTE:  can get Apache HTTPClient object with client getClientHandler().getHttpClient() 
+		connection = client.resource("http://" + host + ":" + port + "/v1/");
 	}
 
 	public void release() {
+		if (client == null)
+			return;
+
 		logger.info("Releasing connection");
 
 		connection = null;
+//		client.getClientHandler().getHttpClient().getConnectionManager().shutdown();
 		client.destroy();
+		client = null;
+
+		isFirstRequest = true;
+	}
+	private void makeFirstRequest(boolean sendingStream) {
+		if (sendingStream)
+			connection.path("current/datetime").head();
+
+		isFirstRequest = false;
 	}
 
 	public void deleteDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories)
@@ -158,6 +241,8 @@ public class JerseyServices implements RESTServices {
 			throw new IllegalArgumentException("Document delete for document identifier without uri");
 
 		logger.info("Deleting {} in transaction {}", uri, transactionId);
+
+		if (isFirstRequest) makeFirstRequest(false);
 
 		ClientResponse response = makeDocumentResource(
 				makeDocumentParams(uri, categories, transactionId, null)).delete(
@@ -194,6 +279,8 @@ public class JerseyServices implements RESTServices {
 				).accept(mimetype);
 		if (extraParams != null && extraParams.containsKey("range"))
 			resource = resource.header("range", extraParams.get("range"));
+
+		if (isFirstRequest) makeFirstRequest(false);
 
 		ClientResponse response = resource.get(ClientResponse.class);
 
@@ -252,6 +339,8 @@ public class JerseyServices implements RESTServices {
 			docParams.add("format",
 					mimetypes[0].substring("application/".length()));
 		}
+
+		if (isFirstRequest) makeFirstRequest(false);
 
 		ClientResponse response = makeDocumentResource(docParams).accept(
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE))
@@ -366,13 +455,19 @@ public class JerseyServices implements RESTServices {
 		WebResource.Builder builder = webResource.type(
 			(mimetype != null) ? mimetype : MediaType.WILDCARD
 			);
+
 		ClientResponse response = null;
-		if (value instanceof OutputStreamSender)
+		if (value instanceof OutputStreamSender) {
+			if (isFirstRequest) makeFirstRequest(true);
 			response = builder.put(ClientResponse.class, new StreamingOutputImpl((OutputStreamSender) value, reqlog));
-		else if (reqlog != null)
-			response = builder.put(ClientResponse.class, reqlog.copyContent(value));
-		else
-			response = builder.put(ClientResponse.class, value);
+		} else {
+			if (isFirstRequest) makeFirstRequest(value instanceof InputStream || value instanceof Reader);
+
+			if (reqlog != null)
+				response = builder.put(ClientResponse.class, reqlog.copyContent(value));
+			else
+				response = builder.put(ClientResponse.class, value);
+		}
 
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
@@ -411,6 +506,8 @@ public class JerseyServices implements RESTServices {
 				stringJoin(categories, ", ", "no")
 				);
 
+		boolean hasStreamingPart = false;
+
 		MultiPart multiPart = new MultiPart();
 		multiPart.setMediaType(new MediaType("multipart", "mixed"));
 		for (int i = 0; i < mimetypes.length; i++) {
@@ -422,18 +519,26 @@ public class JerseyServices implements RESTServices {
 					MediaType.WILDCARD_TYPE;
 
 			BodyPart bodyPart = null;
-			if (values[i] instanceof OutputStreamSender)
+			if (values[i] instanceof OutputStreamSender) {
+				hasStreamingPart = true;
 				bodyPart = new BodyPart(new StreamingOutputImpl((OutputStreamSender) values[i], reqlog), typePart);
-			else if (reqlog != null)
-				bodyPart = new BodyPart(reqlog.copyContent(values[i]), typePart);
-			else
-				bodyPart = new BodyPart(values[i], typePart);
+			} else {
+				if (values[i] instanceof InputStream || values[i] instanceof Reader)
+					hasStreamingPart = true;
+
+				if (reqlog != null)
+					bodyPart = new BodyPart(reqlog.copyContent(values[i]), typePart);
+				else
+					bodyPart = new BodyPart(values[i], typePart);
+			}
 
 			multiPart = multiPart.bodyPart(bodyPart);
 		}
 
 		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
 				categories, transactionId, extraParams, true);
+
+		if (isFirstRequest) makeFirstRequest(hasStreamingPart);
 
 		ClientResponse response = makeDocumentResource(docParams).type(
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE))
@@ -456,8 +561,9 @@ public class JerseyServices implements RESTServices {
 		MultivaluedMap<String, String> transParams = new MultivaluedMapImpl();
 		transParams.add("name", "java-client-" + new Random().nextLong());
 
-		ClientResponse response = connection.path("transactions")
-				.queryParams(transParams).post(ClientResponse.class);
+		if (isFirstRequest) makeFirstRequest(false);
+
+		ClientResponse response = connection.path("transactions").queryParams(transParams).post(ClientResponse.class);
 
 		ClientResponse.Status status = response.getClientResponseStatus();
 		if (status == ClientResponse.Status.FORBIDDEN) {
@@ -487,6 +593,8 @@ public class JerseyServices implements RESTServices {
 		if (transactionId == null)
 			throw new MarkLogicInternalException("Committing transaction without id");
 
+		if (isFirstRequest) makeFirstRequest(false);
+
 		ClientResponse response = connection.path(
 				"transactions/" + transactionId).put(ClientResponse.class);
 
@@ -503,6 +611,8 @@ public class JerseyServices implements RESTServices {
 
 		if (transactionId == null)
 			throw new MarkLogicInternalException("Rolling back transaction without id");
+
+		if (isFirstRequest) makeFirstRequest(false);
 
 		ClientResponse response = connection.path(
 				"transactions/" + transactionId).delete(ClientResponse.class);
@@ -596,7 +706,10 @@ public class JerseyServices implements RESTServices {
             logger.info("Searching for {} in transaction {}", text, transactionId);
 
             docParams.add("q", text);
-            response = connection.path("search").queryParams(docParams).accept(mimetype).get(ClientResponse.class);
+
+    		if (isFirstRequest) makeFirstRequest(false);
+
+    		response = connection.path("search").queryParams(docParams).accept(mimetype).get(ClientResponse.class);
         } else if (queryDef instanceof KeyValueQueryDefinition) {
             Map<ValueLocator, String> pairs = ((KeyValueQueryDefinition) queryDef);
             logger.info("Searching for keys/values in transaction {}", transactionId);
@@ -613,10 +726,16 @@ public class JerseyServices implements RESTServices {
                 }
                 docParams.add("value", pairs.get(loc));
             }
-            response = connection.path("keyvalue").queryParams(docParams).accept(mimetype).get(ClientResponse.class);
+
+    		if (isFirstRequest) makeFirstRequest(false);
+
+    		response = connection.path("keyvalue").queryParams(docParams).accept(mimetype).get(ClientResponse.class);
         } else if (queryDef instanceof StructuredQueryDefinition) {
             String structure = ((StructuredQueryDefinition) queryDef).serialize();
-            response = connection.path("search").type("application/xml").post(ClientResponse.class, structure);
+
+    		if (isFirstRequest) makeFirstRequest(false);
+
+    		response = connection.path("search").type("application/xml").post(ClientResponse.class, structure);
         } else {
             throw new UnsupportedOperationException("Cannot search with " + queryDef.getClass().getName());
         }
@@ -643,6 +762,8 @@ public class JerseyServices implements RESTServices {
 	public <T> T getValue(RequestLogger reqlog, String type, String key, String mimetype, Class<T> as)
 	throws ForbiddenUserException, FailedRequestException {
 		logger.info("Getting {}/{}", type, key);
+
+		if (isFirstRequest) makeFirstRequest(false);
 
 		ClientResponse response = connection.path(type+"/"+key).accept(mimetype).get(ClientResponse.class);
 
@@ -672,6 +793,8 @@ public class JerseyServices implements RESTServices {
 	public <T> T getValues(RequestLogger reqlog, String type, String mimetype, Class<T> as)
 	throws ForbiddenUserException, FailedRequestException {
 		logger.info("Getting {}", type);
+
+		if (isFirstRequest) makeFirstRequest(false);
 
 		ClientResponse response = connection.path(type).accept(mimetype).get(ClientResponse.class);
 
@@ -713,20 +836,32 @@ public class JerseyServices implements RESTServices {
 				(mimetype != null) ? mimetype : null
 				);
 
+		boolean hasStreamingPart = false;
+
 		Object sentValue = null;
-		if (value instanceof OutputStreamSender)
+		if (value instanceof OutputStreamSender) {
+			hasStreamingPart = true;
 			sentValue = new StreamingOutputImpl((OutputStreamSender) value, reqlog);
-		else if (reqlog != null)
-			sentValue = reqlog.copyContent(value);
-		else
-			sentValue = value;
+		} else {
+			if (value instanceof InputStream || value instanceof Reader)
+				hasStreamingPart = true;
+
+			if (reqlog != null)
+				sentValue = reqlog.copyContent(value);
+			else
+				sentValue = value;
+		}
 
 		ClientResponse response = null;
 		ClientResponse.Status expectedStatus = null;
 		if ("put".equals(method)) {
+			if (isFirstRequest) makeFirstRequest(hasStreamingPart);
+
 			response = connection.path(type+"/"+key).type(mimetype).put(ClientResponse.class, sentValue);
 			expectedStatus = ClientResponse.Status.NO_CONTENT;
 		} else if ("post".equals(method)) {
+			if (isFirstRequest) makeFirstRequest(hasStreamingPart);
+
 			response = connection.path(type).type(mimetype).post(ClientResponse.class, sentValue);
 			expectedStatus = ClientResponse.Status.CREATED;
 		} else {
@@ -744,6 +879,8 @@ public class JerseyServices implements RESTServices {
 	}
 	public void deleteValue(RequestLogger reqlog, String type, String key) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		logger.info("Deleting {}/{}", type, key);
+
+		if (isFirstRequest) makeFirstRequest(false);
 
 		ClientResponse response = connection.path(type+"/"+key).delete(ClientResponse.class);
 
@@ -763,6 +900,8 @@ public class JerseyServices implements RESTServices {
 	}
 	public void deleteValues(RequestLogger reqlog, String type) throws ForbiddenUserException, FailedRequestException {
 		logger.info("Deleting {}", type);
+
+		if (isFirstRequest) makeFirstRequest(false);
 
 		ClientResponse response = connection.path(type).delete(ClientResponse.class);
 
