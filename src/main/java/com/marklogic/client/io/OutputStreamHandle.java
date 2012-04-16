@@ -22,7 +22,7 @@ import com.marklogic.client.Format;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
 import com.marklogic.client.io.marker.GenericWriteHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
+import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
@@ -42,17 +42,17 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  *
  */
 public class OutputStreamHandle
+	extends BaseHandle<OperationNotSupported, OutputStreamSender>
     implements
-	    BinaryWriteHandle<OutputStreamSender>,
-        GenericWriteHandle<OutputStreamSender>,
-        JSONWriteHandle<OutputStreamSender>, 
-        TextWriteHandle<OutputStreamSender>,
-        XMLWriteHandle<OutputStreamSender>,
-        StructureWriteHandle<OutputStreamSender>
+	    BinaryWriteHandle,
+        GenericWriteHandle,
+        JSONWriteHandle, 
+        TextWriteHandle,
+        XMLWriteHandle,
+        StructureWriteHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(OutputStreamHandle.class);
 
-	private Format             format = Format.XML;
 	private OutputStreamSender sender;
 
 	public OutputStreamHandle() {
@@ -63,12 +63,6 @@ public class OutputStreamHandle
 		set(sender);
 	}
 
-	public Format getFormat() {
-		return format;
-	}
-	public void setFormat(Format format) {
-		this.format = format;
-	}
 	public OutputStreamHandle withFormat(Format format) {
 		setFormat(format);
 		return this;
@@ -86,7 +80,7 @@ public class OutputStreamHandle
 	}
 
 	@Override
-	public OutputStreamSender sendContent() {
+	protected OutputStreamSender sendContent() {
 		if (sender == null) {
 			throw new IllegalStateException("No sender for writing to output stream");
 		}

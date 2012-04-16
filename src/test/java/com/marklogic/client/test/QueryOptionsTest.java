@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,6 +79,7 @@ import com.marklogic.client.config.impl.SortOrderImpl;
 import com.marklogic.client.config.impl.SuggestionSourceImpl;
 import com.marklogic.client.config.impl.ValueConstraintImpl;
 import com.marklogic.client.config.impl.WordConstraintImpl;
+import com.marklogic.client.io.HandleHelper;
 import com.marklogic.client.io.QueryOptionsHandle;
 
 public class QueryOptionsTest {
@@ -111,13 +113,15 @@ public class QueryOptionsTest {
 		//testOptions = new QueryOptionsHandle();
 		testOptions = new QueryOptionsHandle();
 		QueryOptionsHandle impl = (QueryOptionsHandle) testOptions;
-		impl.receiveContent(new FileInputStream(new File(
+		((HandleHelper<InputStream,?>) HandleHelper.newHelper(impl)
+			).receiveContent(new FileInputStream(new File(
 				"src/test/resources/search-config.xml")));
 		
 		//geoOptions = new QueryOptionsHandle();
 		geoOptions = new QueryOptionsHandle();
 		impl = (QueryOptionsHandle) geoOptions;
-		impl.receiveContent(new FileInputStream(new File(
+		((HandleHelper<InputStream,?>) HandleHelper.newHelper(impl)
+			).receiveContent(new FileInputStream(new File(
 				"src/test/resources/search-config-geo.xml")));
 	}
 
@@ -138,7 +142,8 @@ public class QueryOptionsTest {
 			JAXBException {
 		QueryOptions options = new QueryOptionsHandle();
 		QueryOptionsHandle impl = (QueryOptionsHandle) options;
-		impl.receiveContent(new FileInputStream(new File(
+		((HandleHelper<InputStream,?>) HandleHelper.newHelper(impl)
+			).receiveContent(new FileInputStream(new File(
 				"src/test/resources/search-config.xml")));
 
 		List<Object> optionList = options.getJAXBChildren();
@@ -384,7 +389,8 @@ public class QueryOptionsTest {
 		String optionsString = "<options xmlns=\"http://marklogic.com/appservices/search\"><constraint name=\"sample\"><element-query name=\"title\" ns=\"http://my/namespace\" /></constraint></options>";
 		QueryOptions options = new QueryOptionsHandle();
 		QueryOptionsHandle impl = (QueryOptionsHandle) options;
-		impl.receiveContent(new ByteArrayInputStream(optionsString.getBytes()));
+		((HandleHelper<InputStream,?>) HandleHelper.newHelper(impl)
+			).receiveContent(new ByteArrayInputStream(optionsString.getBytes()));
 		List<Constraint> l = options.getConstraints();
 		ElementQueryConstraintImpl eqc = (ElementQueryConstraintImpl) l.get(0);
 
@@ -399,7 +405,8 @@ public class QueryOptionsTest {
 		String optionsString = "<options xmlns=\"http://marklogic.com/appservices/search\"><constraint name=\"custom\"><custom facet=\"true\"><parse apply=\"parse\" ns=\"http://my/namespace\" at=\"/my/parse.xqy\" /><start-facet apply=\"start\" ns=\"http://my/namespace\" at=\"/my/start.xqy\" /><finish-facet apply=\"finish\" ns=\"http://my/namespace\" at=\"/my/finish.xqy\" /></custom></constraint></options>";
 		QueryOptions options = new QueryOptionsHandle();
 		QueryOptionsHandle impl = (QueryOptionsHandle) options;
-		impl.receiveContent(new ByteArrayInputStream(optionsString.getBytes()));
+		((HandleHelper<InputStream,?>) HandleHelper.newHelper(impl)
+			).receiveContent(new ByteArrayInputStream(optionsString.getBytes()));
 		List<Constraint> l = options.getConstraints();
 		CustomConstraint cc = (CustomConstraint) l.get(0);
 
@@ -442,7 +449,8 @@ public class QueryOptionsTest {
 		ByteArrayInputStream bais = new ByteArrayInputStream(
 				optionsString.getBytes());
 		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.receiveContent(bais);
+		((HandleHelper<InputStream,?>) HandleHelper.newHelper(options)
+			).receiveContent(bais);
 
 		Element e = options.getAdditionalQuery();
 		assertEquals("QueryString wrong after serializing AdditionalQuery", e
@@ -463,7 +471,8 @@ public class QueryOptionsTest {
 			FileNotFoundException {
 		QueryOptions options = this.testOptions;
 		QueryOptionsHandle impl = (QueryOptionsHandle) options;
-		impl.receiveContent(new FileInputStream(new File(
+		((HandleHelper<InputStream,?>) HandleHelper.newHelper(impl)
+			).receiveContent(new FileInputStream(new File(
 				"src/test/resources/search-config.xml")));
 
 		// find the annotation.

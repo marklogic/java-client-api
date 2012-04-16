@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
 
@@ -38,7 +39,8 @@ import com.marklogic.client.io.marker.XMLReadHandle;
  * the response.
  */
 public class XMLEventReaderHandle
-	implements XMLReadHandle<InputStream>, StructureReadHandle<InputStream>
+	extends BaseHandle<InputStream, OperationNotSupported>
+	implements XMLReadHandle, StructureReadHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(XMLEventReaderHandle.class);
 
@@ -47,6 +49,8 @@ public class XMLEventReaderHandle
 	private XMLInputFactory factory;
 
 	public XMLEventReaderHandle() {
+		super();
+		super.setFormat(Format.XML);
 	}
 
 	public DBResolver getResolver() {
@@ -69,9 +73,6 @@ public class XMLEventReaderHandle
 		return content;
 	}
 
-	public Format getFormat() {
-		return Format.XML;
-	}
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			new IllegalArgumentException("XMLEventReaderHandle supports the XML format only");
@@ -97,10 +98,12 @@ public class XMLEventReaderHandle
 		return factory;
 	}
 
-	public Class<InputStream> receiveAs() {
+	@Override
+	protected Class<InputStream> receiveAs() {
 		return InputStream.class;
 	}
-	public void receiveContent(InputStream content) {
+	@Override
+	protected void receiveContent(InputStream content) {
 		if (content == null) {
 			this.content = null;
 			return;

@@ -30,6 +30,8 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.Format;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.io.BaseHandle;
+import com.marklogic.client.io.HandleHelper;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
@@ -121,13 +123,23 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 	public <T extends R> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction, Map<String,String> extraParams) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
 		logger.info("Reading metadata and content for {}", docId.getUri());
 
+		if (!HandleHelper.isHandle(metadataHandle)) 
+			throw new IllegalArgumentException(
+					"metadata handle does not extend BaseHandle: "+metadataHandle.getClass().getName());
+		HandleHelper metadataHand = HandleHelper.newHelper(metadataHandle);
+
+		if (!HandleHelper.isHandle(contentHandle)) 
+			throw new IllegalArgumentException(
+					"content handle does not extend BaseHandle: "+contentHandle.getClass().getName());
+		HandleHelper contentHand = HandleHelper.newHelper(contentHandle);
+
 		String metadataMimetype = null;
 		Set<Metadata> metadata = null;
-		if (metadataHandle != null) {
-			Format metadataFormat = metadataHandle.getFormat();
+		if (metadataHand != null) {
+			Format metadataFormat = metadataHand.getFormat();
 			if (metadataFormat == null || (metadataFormat != Format.JSON && metadataFormat != Format.XML)) {
 				logger.warn("Unsupported metadata format {}, using XML",metadataFormat.name());
-				metadataHandle.setFormat(Format.XML);
+				metadataHand.setFormat(Format.XML);
 				metadataFormat = Format.XML;
 			}
 
@@ -137,16 +149,16 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		}
 
 		String contentMimetype = null;
-		if (contentHandle != null) {
+		if (contentHand != null) {
 			contentMimetype = docId.getMimetype();
 			if (contentFormat != null && contentFormat != Format.UNKNOWN) {
-				contentHandle.setFormat(contentFormat);
+				contentHand.setFormat(contentFormat);
 				if (contentMimetype == null)
 					contentMimetype = contentFormat.getDefaultMimetype();
 			}
 		}
 
-		if (metadataHandle != null && contentHandle != null) {
+		if (metadataHand != null && contentHand != null) {
 			Object[] values = services.getDocument(
 					requestLogger,
 					docId, 
@@ -154,12 +166,12 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 					metadata,
 					extraParams,
 					new String[]{metadataMimetype, contentMimetype},
-					new Class[]{metadataHandle.receiveAs(), contentHandle.receiveAs()}
+					new Class[]{metadataHand.receiveAs(), contentHand.receiveAs()}
 					);
-			metadataHandle.receiveContent(values[0]);
-			contentHandle.receiveContent(values[1]);
-		} else if (metadataHandle != null) {
-			metadataHandle.receiveContent(
+			metadataHand.receiveContent(values[0]);
+			contentHand.receiveContent(values[1]);
+		} else if (metadataHand != null) {
+			metadataHand.receiveContent(
 					services.getDocument(
 							requestLogger,
 							docId,
@@ -167,11 +179,11 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 							metadata,
 							extraParams,
 							metadataMimetype,
-							metadataHandle.receiveAs()
+							metadataHand.receiveAs()
 							)
 					);
-		} else if (contentHandle != null) {
-			contentHandle.receiveContent(
+		} else if (contentHand != null) {
+			contentHand.receiveContent(
 				services.getDocument(
 						requestLogger,
 						docId,
@@ -179,12 +191,15 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 						null,
 						extraParams,
 						contentMimetype,
-						contentHandle.receiveAs()
+						contentHand.receiveAs()
 						)
 				);
 		}
 
 		// TODO: after response, reset metadata and set flag
+
+		HandleHelper.release(metadataHand);
+		HandleHelper.release(contentHand);
 
 		return contentHandle;
 	}
@@ -208,13 +223,23 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 	public void write(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction, Map<String,String> extraParams) throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
 		logger.info("Writing content for {}",docId.getUri());
 
+		if (!HandleHelper.isHandle(metadataHandle)) 
+			throw new IllegalArgumentException(
+					"metadata handle does not extend BaseHandle: "+metadataHandle.getClass().getName());
+		HandleHelper metadataHand = HandleHelper.newHelper(metadataHandle);
+
+		if (!HandleHelper.isHandle(contentHandle)) 
+			throw new IllegalArgumentException(
+					"content handle does not extend BaseHandle: "+contentHandle.getClass().getName());
+		HandleHelper contentHand = HandleHelper.newHelper(contentHandle);
+
 		String metadataMimetype = null;
 		Set<Metadata> metadata = null;
-		if (metadataHandle != null) {
-			Format metadataFormat = metadataHandle.getFormat();
+		if (metadataHand != null) {
+			Format metadataFormat = metadataHand.getFormat();
 			if (metadataFormat == null || (metadataFormat != Format.JSON && metadataFormat != Format.XML)) {
 				logger.warn("Unsupported metadata format {}, using XML",metadataFormat.name());
-				metadataHandle.setFormat(Format.XML);
+				metadataHand.setFormat(Format.XML);
 				metadataFormat = Format.XML;
 			}
 
@@ -224,16 +249,16 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 		}
 
 		String contentMimetype = null;
-		if (contentHandle != null) {
+		if (contentHand != null) {
 			contentMimetype = docId.getMimetype();
 			if (contentFormat != null && contentFormat != Format.UNKNOWN) {
-				contentHandle.setFormat(contentFormat);
+				contentHand.setFormat(contentFormat);
 				if (contentMimetype == null)
 					contentMimetype = contentFormat.getDefaultMimetype();
 			}
 		}
 
-		if (metadataHandle != null && contentHandle != null) {
+		if (metadataHand != null && contentHand != null) {
 			services.putDocument(
 					requestLogger,
 					docId,
@@ -241,9 +266,9 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 					metadata,
 					extraParams,
 					new String[]{metadataMimetype, contentMimetype},
-					new Object[] {metadataHandle.sendContent(), contentHandle.sendContent()}
+					new Object[] {metadataHand.sendContent(), contentHand.sendContent()}
 					);
-		} else if (metadataHandle != null) {
+		} else if (metadataHand != null) {
 			services.putDocument(
 					requestLogger,
 					docId,
@@ -251,9 +276,9 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 					metadata,
 					extraParams,
 					metadataMimetype,
-					metadataHandle.sendContent()
+					metadataHand.sendContent()
 					);
-		} else if (contentHandle != null) {
+		} else if (contentHand != null) {
 			services.putDocument(
 					requestLogger,
 					docId,
@@ -261,9 +286,12 @@ abstract class AbstractDocumentImpl<R extends AbstractReadHandle, W extends Abst
 					null,
 					extraParams,
 					contentMimetype,
-					contentHandle.sendContent()
+					contentHand.sendContent()
 					);
 		}
+
+		HandleHelper.release(metadataHand);
+		HandleHelper.release(contentHand);
 	}
 
 	@Override

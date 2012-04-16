@@ -43,9 +43,10 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * A DOM Handle represents XML content as a DOM document for reading or writing.
  */
 public class DOMHandle
+	extends BaseHandle<InputStream, OutputStreamSender>
 	implements OutputStreamSender,
-		XMLReadHandle<InputStream>, XMLWriteHandle<OutputStreamSender>,
-		StructureReadHandle<InputStream>, StructureWriteHandle<OutputStreamSender>
+		XMLReadHandle, XMLWriteHandle,
+		StructureReadHandle, StructureWriteHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
 
@@ -55,6 +56,7 @@ public class DOMHandle
 
 	public DOMHandle() {
 		super();
+		super.setFormat(Format.XML);
 	}
 	public DOMHandle(Document content) {
 		this();
@@ -79,9 +81,6 @@ public class DOMHandle
     	return this;
     }
 
-	public Format getFormat() {
-		return Format.XML;
-	}
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			new IllegalArgumentException("DOMHandle supports the XML format only");
@@ -108,10 +107,12 @@ public class DOMHandle
 		return factory;
 	}
 
-	public Class<InputStream> receiveAs() {
+	@Override
+	protected Class<InputStream> receiveAs() {
 		return InputStream.class;
 	}
-	public void receiveContent(InputStream content) {
+	@Override
+	protected void receiveContent(InputStream content) {
 		if (content == null) {
 			this.content = null;
 			return;
@@ -142,7 +143,8 @@ public class DOMHandle
 			throw new MarkLogicInternalException(e);
 		}
 	}
-	public OutputStreamSender sendContent() {
+	@Override
+	protected OutputStreamSender sendContent() {
 		if (content == null) {
 			throw new IllegalStateException("No document to write");
 		}

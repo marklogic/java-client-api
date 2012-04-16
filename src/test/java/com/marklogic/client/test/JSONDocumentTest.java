@@ -56,9 +56,9 @@ public class JSONDocumentTest {
 		DocumentIdentifier docId = Common.client.newDocId(uri);
 
 		String content = "{\n"+
-		"\"stringKey\":\"string value\",\n"+
-		"\"numberKey\":7,\n"+
-		"\"objectKey\":{\"childObjectKey\":\"child object value\"},\n"+
+		"\"stringKey\":\"string value\", \n"+
+		"\"numberKey\":7, \n"+
+		"\"objectKey\":{\"childObjectKey\":\"child object value\"}, \n"+
 		"\"arrayKey\":[\"item value\",3,{\"itemObjectKey\":\"item object value\"}]\n"+
 		"}\n";
 

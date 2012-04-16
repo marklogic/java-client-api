@@ -18,8 +18,6 @@ package com.marklogic.client.io;
 import com.marklogic.client.Format;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.QueryOptionsReadHandle;
-import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
@@ -31,14 +29,14 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * A String Handle represents document content as a string for reading or writing.
  */
 public class StringHandle
+	extends BaseHandle<String, String>
 	implements
-		JSONReadHandle<String>, JSONWriteHandle<String>, 
-		TextReadHandle<String>, TextWriteHandle<String>,
-		XMLReadHandle<String>, XMLWriteHandle<String>,
-		StructureReadHandle<String>, StructureWriteHandle<String>
+		JSONReadHandle, JSONWriteHandle, 
+		TextReadHandle, TextWriteHandle,
+		XMLReadHandle, XMLWriteHandle,
+		StructureReadHandle, StructureWriteHandle
 {
 	private String content;
-	private Format format = Format.XML;
 
 	public StringHandle() {
 		super();
@@ -59,24 +57,21 @@ public class StringHandle
 		return this;
 	}
 
-	public Format getFormat() {
-		return format;
-	}
-	public void setFormat(Format format) {
-		this.format = format;
-	}
 	public StringHandle withFormat(Format format) {
 		setFormat(format);
 		return this;
 	}
 
-	public Class<String> receiveAs() {
+	@Override
+	protected Class<String> receiveAs() {
 		return String.class;
 	}
-	public void receiveContent(String content) {
+	@Override
+	protected void receiveContent(String content) {
 		this.content = content;
 	}
-	public String sendContent() {
+	@Override
+	protected String sendContent() {
 		if (content == null) {
 			throw new IllegalStateException("No string to write");
 		}

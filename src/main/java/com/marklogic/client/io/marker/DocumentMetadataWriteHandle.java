@@ -16,9 +16,8 @@
 package com.marklogic.client.io.marker;
 
 /**
- * A Metadata Write Handle can represent metadata written to the database.
+ * A Document Metadata Write Handle can represent document metadata written to the database.
  *
- * @param <C>
  */
-public interface DocumentMetadataWriteHandle<C> extends AbstractWriteHandle<C> {
+public interface DocumentMetadataWriteHandle extends AbstractWriteHandle {
 }

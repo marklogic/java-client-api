@@ -31,6 +31,8 @@ import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.StringQueryDefinition;
 import com.marklogic.client.config.StructuredQueryBuilder;
 import com.marklogic.client.config.search.jaxb.Response;
+import com.marklogic.client.io.BaseHandle;
+import com.marklogic.client.io.HandleHelper;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
 
@@ -89,20 +91,25 @@ public class QueryManagerImpl implements QueryManager {
     }
 
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction) {
-        if (searchHandle instanceof SearchHandle) {
-            ((SearchHandle) searchHandle).setQueryCriteria(querydef);
+		if (!HandleHelper.isHandle(searchHandle)) 
+			throw new IllegalArgumentException(
+					"search handle does not extend BaseHandle: "+searchHandle.getClass().getName());
+		HandleHelper searchHand = HandleHelper.newHelper(searchHandle);
+
+        if (searchHand.get() instanceof SearchHandle) {
+            ((SearchHandle) searchHand.get()).setQueryCriteria(querydef);
         }
         String mimetype = null;
-        if (searchHandle.getFormat() == Format.XML) {
+        if (searchHand.getFormat() == Format.XML) {
             mimetype = "application/xml";            
-        } else if (searchHandle.getFormat() == Format.JSON) {
+        } else if (searchHand.getFormat() == Format.JSON) {
             mimetype = "application/json";
         } else {
             throw new UnsupportedOperationException("Only XML and JSON search results are possible.");
         }
 
         String tid = transaction == null ? null : transaction.getTransactionId();
-        searchHandle.receiveContent(services.search(searchHandle.receiveAs(), querydef, mimetype, start, tid));
+        searchHand.receiveContent(services.search(searchHand.receiveAs(), querydef, mimetype, start, tid));
         return searchHandle;
     }
 

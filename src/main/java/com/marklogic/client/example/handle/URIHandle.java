@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
 import com.marklogic.client.io.marker.GenericReadHandle;
@@ -47,12 +48,13 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * receives written database content from a URI.
  */
 public class URIHandle
-implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
-    GenericReadHandle<InputStream>, GenericWriteHandle<InputStream>,
-    JSONReadHandle<InputStream>, JSONWriteHandle<InputStream>, 
-    TextReadHandle<InputStream>, TextWriteHandle<InputStream>,
-    XMLReadHandle<InputStream>, XMLWriteHandle<InputStream>,
-	StructureReadHandle<InputStream>, StructureWriteHandle<InputStream>
+	extends BaseHandle<InputStream, InputStream>
+	implements BinaryReadHandle, BinaryWriteHandle,
+    	GenericReadHandle, GenericWriteHandle,
+    	JSONReadHandle, JSONWriteHandle, 
+    	TextReadHandle, TextWriteHandle,
+    	XMLReadHandle, XMLWriteHandle,
+    	StructureReadHandle, StructureWriteHandle
 {
     /**
      * A ConnectionMaker creates and configures a connection (for instance,
@@ -68,7 +70,6 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 	static final private int BUFFER_SIZE = 1024;
 
 	private URI             uri;
-	private Format          format = Format.XML;
 	private ConnectionMaker connectionMaker;
 
 	public URIHandle() {
@@ -90,12 +91,6 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 		return this;
 	}
 
-	public Format getFormat() {
-		return format;
-	}
-	public void setFormat(Format format) {
-		this.format = format;
-	}
 	public URIHandle withFormat(Format format) {
 		setFormat(format);
 		return this;
@@ -108,10 +103,12 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 		this.connectionMaker = connectionMaker;
 	}
 
-	public Class<InputStream> receiveAs() {
+	@Override
+	protected Class<InputStream> receiveAs() {
 		return InputStream.class;
 	}
-	public void receiveContent(InputStream content) {
+	@Override
+	protected void receiveContent(InputStream content) {
 		if (content == null) {
 			return;
 		}
@@ -155,7 +152,8 @@ implements BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
 			throw new MarkLogicIOException(e);
 		}
 	}
-	public InputStream sendContent() {
+	@Override
+	protected InputStream sendContent() {
 		try {
 			logger.info("Retrieving content from URI to write to database");
 

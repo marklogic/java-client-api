@@ -16,6 +16,6 @@
 package com.marklogic.client.io.marker;
 
 
-public interface QueryOptionsWriteHandle<C> extends AbstractWriteHandle<C> {
+public interface QueryOptionsWriteHandle extends AbstractWriteHandle {
 
 }

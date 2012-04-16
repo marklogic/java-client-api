@@ -41,8 +41,9 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * have been registered.
  */
 public class JAXBHandle
+	extends BaseHandle<InputStream, OutputStreamSender>
     implements OutputStreamSender,
-        XMLReadHandle<InputStream>, XMLWriteHandle<OutputStreamSender>
+        XMLReadHandle, XMLWriteHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(JAXBHandle.class);
 
@@ -51,6 +52,7 @@ public class JAXBHandle
 
 	public JAXBHandle(JAXBContext context) {
 		super();
+		super.setFormat(Format.XML);
 		this.context = context;
 	}
 
@@ -65,9 +67,6 @@ public class JAXBHandle
     	return this;
     }
 
-	public Format getFormat() {
-		return Format.XML;
-	}
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			new IllegalArgumentException("JAXBHandle supports the XML format only");
@@ -77,10 +76,12 @@ public class JAXBHandle
 		return this;
 	}
 
-    public Class<InputStream> receiveAs() {
+	@Override
+	protected Class<InputStream> receiveAs() {
     	return InputStream.class;
     }
-    public void receiveContent(InputStream content) {
+    @Override
+	protected void receiveContent(InputStream content) {
 		try {
 			Unmarshaller unmarshaller = context.createUnmarshaller();
 			this.content = unmarshaller.unmarshal(content);
@@ -89,7 +90,8 @@ public class JAXBHandle
 			throw new MarkLogicIOException(e);
 		}
 	}
-	public JAXBHandle sendContent() {
+    @Override
+	protected OutputStreamSender sendContent() {
 		if (content == null) {
 			throw new IllegalStateException("No object to write");
 		}

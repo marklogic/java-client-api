@@ -48,8 +48,10 @@ import com.marklogic.client.config.search.jaxb.AdditionalQuery;
 import com.marklogic.client.config.search.jaxb.Options;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 
-public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
-		QueryOptions {
+public class QueryOptionsHandle
+	extends BaseHandle<InputStream, OutputStreamSender>
+	implements OutputStreamSender, QueryOptionsReadHandle, QueryOptions
+{
 	
 	@SuppressWarnings("unused")
 	static final private Logger logger = LoggerFactory
@@ -61,6 +63,7 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 	private com.marklogic.client.config.search.jaxb.AdditionalQuery additionalQuery;
 
 	public QueryOptionsHandle() {
+		super();
 		this.jaxbOptions = new Options();
 		additionalQuery = new com.marklogic.client.config.search.jaxb.AdditionalQuery();
 	}
@@ -224,19 +227,19 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 		return JAXBHelper.getOneByClassName(this, TransformResults.class);
 	};
 
-	public QueryOptionsHandle on(QueryOptions options) {
+	public QueryOptionsHandle with(QueryOptions options) {
 		set(options);
 		return this;
 	};
 
 	@Override
-	public Class<InputStream> receiveAs() {
+	protected Class<InputStream> receiveAs() {
 		return InputStream.class;
 	};
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void receiveContent(InputStream content) {
+	protected void receiveContent(InputStream content) {
 		try {
 			jc = JAXBContext
 					.newInstance("com.marklogic.client.config.search.jaxb");
@@ -254,11 +257,10 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 		}
 	};
 
-	/*
-	public OutputStreamSender sendContent() {
+	@Override
+	protected OutputStreamSender sendContent() {
 		return this;
 	};
-	*/
 
 	public void set(QueryOptions options) {
 		this.jaxbOptions = (Options) options.asJAXB();
@@ -373,6 +375,7 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 	}
 
 	
+	@Override
 	public String toString() {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
@@ -385,6 +388,7 @@ public class QueryOptionsHandle implements QueryOptionsReadHandle<InputStream>,
 	}
 	
 	
+	@Override
 	public void write(OutputStream out) throws IOException {
 		try {
 			jc = JAXBContext

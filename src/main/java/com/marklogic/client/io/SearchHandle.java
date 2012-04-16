@@ -15,6 +15,21 @@
  */
 package com.marklogic.client.io;
 
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+import java.util.Vector;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicIOException;
@@ -27,28 +42,18 @@ import com.marklogic.client.config.MatchSnippet;
 import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.SearchMetrics;
 import com.marklogic.client.config.SearchResults;
-import com.marklogic.client.config.search.jaxb.Facet;
 import com.marklogic.client.config.search.jaxb.Match;
 import com.marklogic.client.config.search.jaxb.Metrics;
 import com.marklogic.client.config.search.jaxb.Response;
 import com.marklogic.client.config.search.jaxb.Result;
 import com.marklogic.client.config.search.jaxb.Snippet;
+import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.SearchReadHandle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-import java.util.Vector;
-
-public class SearchHandle implements SearchReadHandle<InputStream>, SearchResults {
+public class SearchHandle
+	extends BaseHandle<InputStream, OperationNotSupported>
+	implements SearchReadHandle, SearchResults
+{
     static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
     protected JAXBContext jc = null;
     protected Unmarshaller unmarshaller = null;
@@ -60,9 +65,9 @@ public class SearchHandle implements SearchReadHandle<InputStream>, SearchResult
     FacetResult[] facets = null;
     String[] facetNames = null;
 
-    @Override
-    public Format getFormat() {
-        return Format.XML;
+    public SearchHandle() {
+    	super();
+    	super.setFormat(Format.XML);
     }
 
     @Override
@@ -70,19 +75,17 @@ public class SearchHandle implements SearchReadHandle<InputStream>, SearchResult
         if (format != Format.XML)
             new IllegalArgumentException("SearchHandle supports the XML format only");
     }
-
 	public SearchHandle withFormat(Format format) {
 		setFormat(format);
 		return this;
 	}
 
 	@Override
-    public Class<InputStream> receiveAs() {
+	protected Class<InputStream> receiveAs() {
         return InputStream.class;
     }
-
-    @Override
-    public void receiveContent(InputStream content) {
+	@Override
+	protected void receiveContent(InputStream content) {
         try {
             jc = JAXBContext.newInstance("com.marklogic.client.config.search.jaxb");
             unmarshaller = jc.createUnmarshaller();

@@ -43,16 +43,16 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * creating the Reader.
  */
 public class FileHandle
+	extends BaseHandle<File, File>
 	implements
-		BinaryReadHandle<File>, BinaryWriteHandle<File>,
-		GenericReadHandle<File>, GenericWriteHandle<File>,
-		JSONReadHandle<File>, JSONWriteHandle<File>, 
-		TextReadHandle<File>, TextWriteHandle<File>,
-		XMLReadHandle<File>, XMLWriteHandle<File>,
-		StructureReadHandle<File>, StructureWriteHandle<File>
+		BinaryReadHandle, BinaryWriteHandle,
+		GenericReadHandle, GenericWriteHandle,
+		JSONReadHandle, JSONWriteHandle, 
+		TextReadHandle, TextWriteHandle,
+		XMLReadHandle, XMLWriteHandle,
+		StructureReadHandle, StructureWriteHandle
 {
-	private File   content;
-	private Format format = Format.XML;
+	private File content;
 
 	public FileHandle() {
 		super();
@@ -73,24 +73,21 @@ public class FileHandle
     	return this;
 	}
 
-	public Format getFormat() {
-		return format;
-	}
-	public void setFormat(Format format) {
-		this.format = format;
-	}
 	public FileHandle withFormat(Format format) {
 		setFormat(format);
 		return this;
 	}
 
-	public Class<File> receiveAs() {
+	@Override
+	protected Class<File> receiveAs() {
 		return File.class;
 	}
-	public void receiveContent(File content) {
+	@Override
+	protected void receiveContent(File content) {
 		this.content = content;
 	}
-	public File sendContent() {
+	@Override
+	protected File sendContent() {
 		if (content == null) {
 			throw new IllegalStateException("No file to write");
 		}

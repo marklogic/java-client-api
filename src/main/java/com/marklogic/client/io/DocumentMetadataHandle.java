@@ -50,11 +50,10 @@ import com.marklogic.client.impl.BasicXMLSerializer;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
-// import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
-
 public class DocumentMetadataHandle
+	extends BaseHandle<InputStream, OutputStreamSender>
     implements OutputStreamSender,
-    	DocumentMetadataReadHandle<InputStream>, DocumentMetadataWriteHandle<OutputStreamSender>
+    	DocumentMetadataReadHandle, DocumentMetadataWriteHandle
 {
 	final static private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
 
@@ -282,22 +281,17 @@ public class DocumentMetadataHandle
 		this.quality = quality;
 	}
 
-	public Format getFormat() {
-		return Format.XML;
-	}
-	public void setFormat(Format format) {
-		if (format != Format.XML)
-			new IllegalArgumentException("MetadataHandle supports the XML format only");
-	}
 	public DocumentMetadataHandle withFormat(Format format) {
 		setFormat(format);
 		return this;
 	}
 
-	public Class<InputStream> receiveAs() {
+	@Override
+	protected Class<InputStream> receiveAs() {
 		return InputStream.class;
 	}
-	public void receiveContent(InputStream content) {
+	@Override
+	protected void receiveContent(InputStream content) {
 		try {
 			logger.info("Parsing metadata structure from input stream");
 
@@ -323,7 +317,8 @@ public class DocumentMetadataHandle
 			throw new MarkLogicInternalException(e);
 		}
 	}
-	public OutputStreamSender sendContent() {
+	@Override
+	protected OutputStreamSender sendContent() {
 		return this;
 	}
 	public void write(OutputStream out) throws IOException {

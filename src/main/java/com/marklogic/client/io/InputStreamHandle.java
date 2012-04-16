@@ -43,16 +43,16 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * creating the Reader.
  */
 public class InputStreamHandle
+	extends BaseHandle<InputStream, InputStream>
 	implements
-		BinaryReadHandle<InputStream>, BinaryWriteHandle<InputStream>,
-		GenericReadHandle<InputStream>, GenericWriteHandle<InputStream>,
-		JSONReadHandle<InputStream>, JSONWriteHandle<InputStream>, 
-		TextReadHandle<InputStream>, TextWriteHandle<InputStream>,
-		XMLReadHandle<InputStream>, XMLWriteHandle<InputStream>,
-		StructureReadHandle<InputStream>, StructureWriteHandle<InputStream>
+		BinaryReadHandle, BinaryWriteHandle,
+		GenericReadHandle, GenericWriteHandle,
+		JSONReadHandle, JSONWriteHandle, 
+		TextReadHandle, TextWriteHandle,
+		XMLReadHandle, XMLWriteHandle,
+		StructureReadHandle, StructureWriteHandle
 {
 	private InputStream content;
-	private Format      format = Format.XML;
 
 	public InputStreamHandle() {
 		super();
@@ -81,24 +81,21 @@ public class InputStreamHandle
 		return this;
 	}
 
-	public Format getFormat() {
-		return format;
-	}
-	public void setFormat(Format format) {
-		this.format = format;
-	}
 	public InputStreamHandle withFormat(Format format) {
 		setFormat(format);
 		return this;
 	}
 
-	public Class<InputStream> receiveAs() {
+	@Override
+	protected Class<InputStream> receiveAs() {
 		return InputStream.class;
 	}
-	public void receiveContent(InputStream content) {
+	@Override
+	protected void receiveContent(InputStream content) {
 		this.content = content;
 	}
-	public InputStream sendContent() {
+	@Override
+	protected InputStream sendContent() {
 		if (content == null) {
 			throw new IllegalStateException("No stream to write");
 		}

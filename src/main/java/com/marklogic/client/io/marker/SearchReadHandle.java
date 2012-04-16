@@ -15,5 +15,5 @@
  */
 package com.marklogic.client.io.marker;
 
-public interface SearchReadHandle<C> extends AbstractReadHandle<C> {
+public interface SearchReadHandle extends AbstractReadHandle {
 }

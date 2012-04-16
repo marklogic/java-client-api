@@ -26,6 +26,7 @@ import nu.xom.Serializer;
 import nu.xom.ValidityException;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
@@ -36,15 +37,17 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * A XOM Handle represents XML content as a XOM document for reading or writing.
  */
 public class XOMHandle
+	extends BaseHandle<InputStream, OutputStreamSender>
     implements OutputStreamSender,
-    	XMLReadHandle<InputStream>, XMLWriteHandle<OutputStreamSender>,
-    	StructureReadHandle<InputStream>, StructureWriteHandle<OutputStreamSender>
+    	XMLReadHandle, XMLWriteHandle,
+    	StructureReadHandle, StructureWriteHandle
 {
 	private Document content;
 	private Builder  builder;
 
 	public XOMHandle() {
 		super();
+		super.setFormat(Format.XML);
 	}
 	public XOMHandle(Document content) {
 		this();
@@ -78,9 +81,6 @@ public class XOMHandle
     	return this;
     }
 
-    public Format getFormat() {
-		return Format.XML;
-	}
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			new IllegalArgumentException("XOMHandle supports the XML format only");
@@ -91,11 +91,11 @@ public class XOMHandle
 	}
 
 	@Override
-	public Class<InputStream> receiveAs() {
+	protected Class<InputStream> receiveAs() {
 		return InputStream.class;
 	}
 	@Override
-	public void receiveContent(InputStream content) {
+	protected void receiveContent(InputStream content) {
 		if (content == null)
 			return;
 
@@ -111,7 +111,7 @@ public class XOMHandle
 	}
 
 	@Override
-	public OutputStreamSender sendContent() {
+	protected OutputStreamSender sendContent() {
 		if (content == null) {
 			throw new IllegalStateException("No document to write");
 		}

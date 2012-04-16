@@ -42,9 +42,10 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * or transforms a source into a result for writing.
  */
 public class SourceHandle
+	extends BaseHandle<InputStream, OutputStreamSender>
 	implements OutputStreamSender,
-	    XMLReadHandle<InputStream>, XMLWriteHandle<OutputStreamSender>, 
-	    StructureReadHandle<InputStream>, StructureWriteHandle<OutputStreamSender>
+	    XMLReadHandle, XMLWriteHandle, 
+	    StructureReadHandle, StructureWriteHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(SourceHandle.class);
 
@@ -52,6 +53,8 @@ public class SourceHandle
 	private Source      content;
 
 	public SourceHandle() {
+		super();
+		super.setFormat(Format.XML);
 	}
 
 	public Transformer getTransformer() {
@@ -97,9 +100,6 @@ public class SourceHandle
 		}
 	}
 
-	public Format getFormat() {
-		return Format.XML;
-	}
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			new IllegalArgumentException("SourceHandle supports the XML format only");
@@ -109,10 +109,12 @@ public class SourceHandle
 		return this;
 	}
 
-	public Class<InputStream> receiveAs() {
+	@Override
+	protected Class<InputStream> receiveAs() {
 		return InputStream.class;
 	}
-	public void receiveContent(InputStream content) {
+	@Override
+	protected void receiveContent(InputStream content) {
 		if (content == null) {
 			this.content = null;
 			return;
@@ -120,7 +122,8 @@ public class SourceHandle
 
 		this.content = new StreamSource(content);
 	}
-	public OutputStreamSender sendContent() {
+	@Override
+	protected OutputStreamSender sendContent() {
 		if (content == null) {
 			throw new IllegalStateException("No source to transform to result for writing");
 		}

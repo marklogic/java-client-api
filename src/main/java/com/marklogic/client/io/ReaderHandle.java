@@ -40,16 +40,16 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * When finished with the reader, close the reader to release the resources.
  */
 public class ReaderHandle
+	extends BaseHandle<Reader, OutputStreamSender>
 	implements OutputStreamSender,
-		JSONReadHandle<Reader>, JSONWriteHandle<OutputStreamSender>, 
-		TextReadHandle<Reader>, TextWriteHandle<OutputStreamSender>,
-		XMLReadHandle<Reader>, XMLWriteHandle<OutputStreamSender>,
-		StructureReadHandle<Reader>, StructureWriteHandle<OutputStreamSender>
+		JSONReadHandle, JSONWriteHandle, 
+		TextReadHandle, TextWriteHandle,
+		XMLReadHandle, XMLWriteHandle,
+		StructureReadHandle, StructureWriteHandle
 {
 	final static private int BUFFER_SIZE = 1024;
 
     private Reader content;
-	private Format format = Format.XML;
 
     public ReaderHandle() {
     }
@@ -73,24 +73,21 @@ public class ReaderHandle
 		return this;
 	}
 
-	public Format getFormat() {
-		return format;
-	}
-	public void setFormat(Format format) {
-		this.format = format;
-	}
 	public ReaderHandle withFormat(Format format) {
 		setFormat(format);
 		return this;
 	}
 
-	public Class<Reader> receiveAs() {
+	@Override
+	protected Class<Reader> receiveAs() {
 		return Reader.class;
 	}
-	public void receiveContent(Reader content) {
+	@Override
+	protected void receiveContent(Reader content) {
 		this.content = content;
 	}
-	public ReaderHandle sendContent() {
+	@Override
+	protected ReaderHandle sendContent() {
 		if (content == null) {
 			throw new IllegalStateException("No character stream to write");
 		}

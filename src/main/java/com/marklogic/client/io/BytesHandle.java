@@ -38,16 +38,16 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * creating the String.
  */
 public class BytesHandle
+	extends BaseHandle<byte[], byte[]>
 	implements
-		BinaryReadHandle<byte[]>, BinaryWriteHandle<byte[]>,
-		GenericReadHandle<byte[]>, GenericWriteHandle<byte[]>,
-		JSONReadHandle<byte[]>, JSONWriteHandle<byte[]>, 
-		TextReadHandle<byte[]>, TextWriteHandle<byte[]>,
-		XMLReadHandle<byte[]>, XMLWriteHandle<byte[]>,
-		StructureReadHandle<byte[]>, StructureWriteHandle<byte[]>
+		BinaryReadHandle, BinaryWriteHandle,
+		GenericReadHandle, GenericWriteHandle,
+		JSONReadHandle, JSONWriteHandle, 
+		TextReadHandle, TextWriteHandle,
+		XMLReadHandle, XMLWriteHandle,
+		StructureReadHandle, StructureWriteHandle
 {
 	private byte[] content;
-	private Format format = Format.XML;
 
 	public BytesHandle() {
 		super();
@@ -68,24 +68,18 @@ public class BytesHandle
 		return this;
 	}
 
-	public Format getFormat() {
-		return format;
-	}
-	public void setFormat(Format format) {
-		this.format = format;
-	}
 	public BytesHandle withFormat(Format format) {
 		setFormat(format);
 		return this;
 	}
 
-	public Class<byte[]> receiveAs() {
+	protected Class<byte[]> receiveAs() {
 		return byte[].class;
 	}
-	public void receiveContent(byte[] content) {
+	protected void receiveContent(byte[] content) {
 		this.content = content;
 	}
-	public byte[] sendContent() {
+	protected byte[] sendContent() {
 		if (content == null || content.length == 0) {
 			throw new IllegalStateException("No bytes to write");
 		}

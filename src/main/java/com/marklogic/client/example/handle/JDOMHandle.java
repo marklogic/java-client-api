@@ -25,6 +25,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
@@ -35,9 +36,10 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * A JDOM Handle represents XML content as a JDOM document for reading or writing.
  */
 public class JDOMHandle
-    implements OutputStreamSender,
-    	XMLReadHandle<InputStream>, XMLWriteHandle<OutputStreamSender>,
-    	StructureReadHandle<InputStream>, StructureWriteHandle<OutputStreamSender>
+	extends BaseHandle<InputStream, OutputStreamSender>
+	implements OutputStreamSender,
+    	XMLReadHandle, XMLWriteHandle,
+    	StructureReadHandle, StructureWriteHandle
 {
 	private Document     content;
 	private SAXBuilder   builder;
@@ -45,6 +47,7 @@ public class JDOMHandle
 
 	public JDOMHandle() {
 		super();
+		super.setFormat(Format.XML);
 	}
 	public JDOMHandle(Document content) {
 		this();
@@ -86,9 +89,6 @@ public class JDOMHandle
     	return this;
     }
 
-    public Format getFormat() {
-		return Format.XML;
-	}
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			new IllegalArgumentException("JDOMHandle supports the XML format only");
@@ -99,11 +99,11 @@ public class JDOMHandle
 	}
 
 	@Override
-	public Class<InputStream> receiveAs() {
+	protected Class<InputStream> receiveAs() {
 		return InputStream.class;
 	}
 	@Override
-	public void receiveContent(InputStream content) {
+	protected void receiveContent(InputStream content) {
 		if (content == null)
 			return;
 
@@ -117,7 +117,7 @@ public class JDOMHandle
 	}
 
 	@Override
-	public OutputStreamSender sendContent() {
+	protected OutputStreamSender sendContent() {
 		if (content == null) {
 			throw new IllegalStateException("No document to write");
 		}

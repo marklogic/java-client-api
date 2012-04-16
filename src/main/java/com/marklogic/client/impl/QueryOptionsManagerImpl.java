@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory;
 import com.marklogic.client.Format;
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.config.QueryOptions;
+import com.marklogic.client.io.BaseHandle;
+import com.marklogic.client.io.HandleHelper;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
@@ -51,21 +53,33 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 
 	@Override
 	public <T extends QueryOptionsReadHandle> T readOptions(String name,
-			T searchOptionsHandle) {
+			T queryOptionsHandle) {
 		if (name == null)
 			throw new IllegalArgumentException(
 					"Cannot read options for null name");
 
-		searchOptionsHandle.receiveContent(services.getValue(requestLogger,
-				QUERY_OPTIONS_BASE, name, searchOptionsHandle.getFormat().getDefaultMimetype(),
-				searchOptionsHandle.receiveAs()));
-		return searchOptionsHandle;
+		if (!HandleHelper.isHandle(queryOptionsHandle)) 
+			throw new IllegalArgumentException(
+					"query options handle does not extend BaseHandle: "+
+					queryOptionsHandle.getClass().getName());
+		HandleHelper queryOptionsHand = HandleHelper.newHelper(queryOptionsHandle);
+
+		queryOptionsHand.receiveContent(services.getValue(requestLogger,
+				QUERY_OPTIONS_BASE, name, queryOptionsHand.getFormat().getDefaultMimetype(),
+				queryOptionsHand.receiveAs()));
+		return queryOptionsHandle;
 	}
 
 	@Override
 	public void writeOptions(String name,
 			QueryOptionsWriteHandle queryOptionsHandle) {
+		if (!HandleHelper.isHandle(queryOptionsHandle)) 
+			throw new IllegalArgumentException(
+					"query options handle does not extend BaseHandle: "+
+					queryOptionsHandle.getClass().getName());
+		HandleHelper queryOptionsHand = HandleHelper.newHelper(queryOptionsHandle);
+
 		services.putValue(requestLogger, QUERY_OPTIONS_BASE, name,
-				queryOptionsHandle.getFormat().getDefaultMimetype(), queryOptionsHandle.sendContent());
+				queryOptionsHand.getFormat().getDefaultMimetype(), queryOptionsHand.sendContent());
 	}
 }
