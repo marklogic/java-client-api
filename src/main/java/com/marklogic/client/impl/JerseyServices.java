@@ -224,11 +224,8 @@ public class JerseyServices implements RESTServices {
 
 		isFirstRequest = true;
 	}
-	private void makeFirstRequest(boolean sendingStream) {
-		if (sendingStream)
-			connection.path("current/datetime").head();
-
-		isFirstRequest = false;
+	private void makeFirstRequest() {
+		connection.path("current/datetime").head();
 	}
 
 	public void deleteDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories)
@@ -242,11 +239,11 @@ public class JerseyServices implements RESTServices {
 
 		logger.info("Deleting {} in transaction {}", uri, transactionId);
 
-		if (isFirstRequest) makeFirstRequest(false);
-
 		ClientResponse response = makeDocumentResource(
 				makeDocumentParams(uri, categories, transactionId, null)).delete(
 				ClientResponse.class);
+
+		if (isFirstRequest) isFirstRequest = false;
 
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
@@ -280,9 +277,9 @@ public class JerseyServices implements RESTServices {
 		if (extraParams != null && extraParams.containsKey("range"))
 			resource = resource.header("range", extraParams.get("range"));
 
-		if (isFirstRequest) makeFirstRequest(false);
-
 		ClientResponse response = resource.get(ClientResponse.class);
+
+		if (isFirstRequest) isFirstRequest = false;
 
 		ClientResponse.Status status = response.getClientResponseStatus();
 		if (status == ClientResponse.Status.NOT_FOUND) {
@@ -340,11 +337,11 @@ public class JerseyServices implements RESTServices {
 					mimetypes[0].substring("application/".length()));
 		}
 
-		if (isFirstRequest) makeFirstRequest(false);
-
 		ClientResponse response = makeDocumentResource(docParams).accept(
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE))
 				.get(ClientResponse.class);
+
+		if (isFirstRequest) isFirstRequest = false;
 
 		ClientResponse.Status status = response.getClientResponseStatus();
 		if (status == ClientResponse.Status.NOT_FOUND) {
@@ -458,15 +455,19 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		if (value instanceof OutputStreamSender) {
-			if (isFirstRequest) makeFirstRequest(true);
+			if (isFirstRequest) makeFirstRequest();
 			response = builder.put(ClientResponse.class, new StreamingOutputImpl((OutputStreamSender) value, reqlog));
+			if (isFirstRequest) isFirstRequest = false;
 		} else {
-			if (isFirstRequest) makeFirstRequest(value instanceof InputStream || value instanceof Reader);
+			if (isFirstRequest && (value instanceof InputStream || value instanceof Reader))
+				makeFirstRequest();
 
 			if (reqlog != null)
 				response = builder.put(ClientResponse.class, reqlog.copyContent(value));
 			else
 				response = builder.put(ClientResponse.class, value);
+
+			if (isFirstRequest) isFirstRequest = false;
 		}
 
 		ClientResponse.Status status = response.getClientResponseStatus();
@@ -538,11 +539,13 @@ public class JerseyServices implements RESTServices {
 		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
 				categories, transactionId, extraParams, true);
 
-		if (isFirstRequest) makeFirstRequest(hasStreamingPart);
+		if (isFirstRequest && hasStreamingPart) makeFirstRequest();
 
 		ClientResponse response = makeDocumentResource(docParams).type(
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE))
 				.put(ClientResponse.class, multiPart);
+
+		if (isFirstRequest) isFirstRequest = false;
 
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
@@ -561,9 +564,9 @@ public class JerseyServices implements RESTServices {
 		MultivaluedMap<String, String> transParams = new MultivaluedMapImpl();
 		transParams.add("name", "java-client-" + new Random().nextLong());
 
-		if (isFirstRequest) makeFirstRequest(false);
-
 		ClientResponse response = connection.path("transactions").queryParams(transParams).post(ClientResponse.class);
+
+		if (isFirstRequest) isFirstRequest = false;
 
 		ClientResponse.Status status = response.getClientResponseStatus();
 		if (status == ClientResponse.Status.FORBIDDEN) {
@@ -593,10 +596,10 @@ public class JerseyServices implements RESTServices {
 		if (transactionId == null)
 			throw new MarkLogicInternalException("Committing transaction without id");
 
-		if (isFirstRequest) makeFirstRequest(false);
-
 		ClientResponse response = connection.path(
 				"transactions/" + transactionId).put(ClientResponse.class);
+
+		if (isFirstRequest) isFirstRequest = false;
 
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
@@ -612,10 +615,11 @@ public class JerseyServices implements RESTServices {
 		if (transactionId == null)
 			throw new MarkLogicInternalException("Rolling back transaction without id");
 
-		if (isFirstRequest) makeFirstRequest(false);
-
 		ClientResponse response = connection.path(
 				"transactions/" + transactionId).delete(ClientResponse.class);
+
+		if (isFirstRequest) isFirstRequest = false;
+
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
 		if (status == ClientResponse.Status.FORBIDDEN)
@@ -707,9 +711,9 @@ public class JerseyServices implements RESTServices {
 
             docParams.add("q", text);
 
-    		if (isFirstRequest) makeFirstRequest(false);
-
     		response = connection.path("search").queryParams(docParams).accept(mimetype).get(ClientResponse.class);
+
+    		if (isFirstRequest) isFirstRequest = false;
         } else if (queryDef instanceof KeyValueQueryDefinition) {
             Map<ValueLocator, String> pairs = ((KeyValueQueryDefinition) queryDef);
             logger.info("Searching for keys/values in transaction {}", transactionId);
@@ -727,15 +731,15 @@ public class JerseyServices implements RESTServices {
                 docParams.add("value", pairs.get(loc));
             }
 
-    		if (isFirstRequest) makeFirstRequest(false);
-
     		response = connection.path("keyvalue").queryParams(docParams).accept(mimetype).get(ClientResponse.class);
+
+    		if (isFirstRequest) isFirstRequest = false;
         } else if (queryDef instanceof StructuredQueryDefinition) {
             String structure = ((StructuredQueryDefinition) queryDef).serialize();
 
-    		if (isFirstRequest) makeFirstRequest(false);
-
     		response = connection.path("search").type("application/xml").post(ClientResponse.class, structure);
+
+    		if (isFirstRequest) isFirstRequest = false;
         } else {
             throw new UnsupportedOperationException("Cannot search with " + queryDef.getClass().getName());
         }
@@ -763,9 +767,9 @@ public class JerseyServices implements RESTServices {
 	throws ForbiddenUserException, FailedRequestException {
 		logger.info("Getting {}/{}", type, key);
 
-		if (isFirstRequest) makeFirstRequest(false);
-
 		ClientResponse response = connection.path(type+"/"+key).accept(mimetype).get(ClientResponse.class);
+
+		if (isFirstRequest) isFirstRequest = false;
 
 		ClientResponse.Status status = response.getClientResponseStatus();
 		if (status != ClientResponse.Status.OK) {
@@ -794,9 +798,9 @@ public class JerseyServices implements RESTServices {
 	throws ForbiddenUserException, FailedRequestException {
 		logger.info("Getting {}", type);
 
-		if (isFirstRequest) makeFirstRequest(false);
-
 		ClientResponse response = connection.path(type).accept(mimetype).get(ClientResponse.class);
+
+		if (isFirstRequest) isFirstRequest = false;
 
 		ClientResponse.Status status = response.getClientResponseStatus();
 		if (status == ClientResponse.Status.FORBIDDEN) {
@@ -855,14 +859,20 @@ public class JerseyServices implements RESTServices {
 		ClientResponse response = null;
 		ClientResponse.Status expectedStatus = null;
 		if ("put".equals(method)) {
-			if (isFirstRequest) makeFirstRequest(hasStreamingPart);
+			if (isFirstRequest && hasStreamingPart) makeFirstRequest();
 
 			response = connection.path(type+"/"+key).type(mimetype).put(ClientResponse.class, sentValue);
+
+			if (isFirstRequest) isFirstRequest = false;
+
 			expectedStatus = ClientResponse.Status.NO_CONTENT;
 		} else if ("post".equals(method)) {
-			if (isFirstRequest) makeFirstRequest(hasStreamingPart);
+			if (isFirstRequest && hasStreamingPart) makeFirstRequest();
 
 			response = connection.path(type).type(mimetype).post(ClientResponse.class, sentValue);
+
+			if (isFirstRequest) isFirstRequest = false;
+
 			expectedStatus = ClientResponse.Status.CREATED;
 		} else {
 			throw new MarkLogicInternalException("unknown method type " + method);
@@ -880,9 +890,9 @@ public class JerseyServices implements RESTServices {
 	public void deleteValue(RequestLogger reqlog, String type, String key) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		logger.info("Deleting {}/{}", type, key);
 
-		if (isFirstRequest) makeFirstRequest(false);
-
 		ClientResponse response = connection.path(type+"/"+key).delete(ClientResponse.class);
+
+		if (isFirstRequest) isFirstRequest = false;
 
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
@@ -901,9 +911,9 @@ public class JerseyServices implements RESTServices {
 	public void deleteValues(RequestLogger reqlog, String type) throws ForbiddenUserException, FailedRequestException {
 		logger.info("Deleting {}", type);
 
-		if (isFirstRequest) makeFirstRequest(false);
-
 		ClientResponse response = connection.path(type).delete(ClientResponse.class);
+
+		if (isFirstRequest) isFirstRequest = false;
 
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
