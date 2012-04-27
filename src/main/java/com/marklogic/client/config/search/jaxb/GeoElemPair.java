@@ -96,7 +96,7 @@ public class GeoElemPair {
      * {@link JAXBElement }{@code <}{@link String }{@code >}
      * {@link HeatmapImpl }
      * {@link Lat }
-     * {@link Parent }
+     * {@link QNamePOJO }
      * 
      * 
      */

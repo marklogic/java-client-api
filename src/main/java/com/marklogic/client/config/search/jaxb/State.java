@@ -109,7 +109,7 @@ public class State {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Annotation }
+     * {@link QueryAnnotation }
      * {@link JAXBElement }{@code <}{@link Boolean }{@code >}
      * {@link TransformResults }
      * {@link JAXBElement }{@code <}{@link Long }{@code >}

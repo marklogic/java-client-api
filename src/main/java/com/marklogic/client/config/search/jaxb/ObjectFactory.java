@@ -152,7 +152,7 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Annotation }
+     * Create an instance of {@link QueryAnnotation }
      * 
      */
     public Annotation createAnnotation() {
@@ -264,7 +264,7 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Parent }
+     * Create an instance of {@link QNamePOJO }
      * 
      */
     public Parent createParent() {
@@ -448,11 +448,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Options }
+     * Create an instance of {@link OptionsFromJAXB }
      * 
      */
-    public Options createOptions() {
-        return new Options();
+    public OptionsFromJAXB createOptions() {
+        return new OptionsFromJAXB();
     }
 
     /**
@@ -852,12 +852,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Options }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link OptionsFromJAXB }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "http://marklogic.com/appservices/search", name = "options")
-    public JAXBElement<Options> createOptions(Options value) {
-        return new JAXBElement<Options>(_Options_QNAME, Options.class, null, value);
+    public JAXBElement<OptionsFromJAXB> createOptions(OptionsFromJAXB value) {
+        return new JAXBElement<OptionsFromJAXB>(_Options_QNAME, OptionsFromJAXB.class, null, value);
     }
 
     /**

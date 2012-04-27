@@ -106,7 +106,7 @@ public class GeoElem {
      * {@link JAXBElement }{@code <}{@link String }{@code >}
      * {@link JAXBElement }{@code <}{@link GeoElem.Element }{@code >}
      * {@link HeatmapImpl }
-     * {@link Parent }
+     * {@link QNamePOJO }
      * 
      * 
      */

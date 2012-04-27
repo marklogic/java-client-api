@@ -45,12 +45,17 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 		services.deleteValue(null, QUERY_OPTIONS_BASE, name);
 	}
 
-	/*
-	 * @Override public QueryOptions newOptions() {
-	 * 
-	 * QueryOptionsHandle handle = new QueryOptionsHandle(); return handle; }
-	 */
+	@Override
+	public QueryOptionsHandle newOptions() {
+		return new QueryOptionsHandle();
+	}
 
+
+	@Override
+	public QueryOptionsHandle readOptions(String name) {
+		return readOptions(name, new QueryOptionsHandle());
+	}
+	
 	@Override
 	public <T extends QueryOptionsReadHandle> T readOptions(String name,
 			T queryOptionsHandle) {
@@ -58,28 +63,31 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 			throw new IllegalArgumentException(
 					"Cannot read options for null name");
 
-		if (!HandleHelper.isHandle(queryOptionsHandle)) 
+		if (!HandleHelper.isHandle(queryOptionsHandle))
 			throw new IllegalArgumentException(
-					"query options handle does not extend BaseHandle: "+
-					queryOptionsHandle.getClass().getName());
-		HandleHelper queryOptionsHand = HandleHelper.newHelper(queryOptionsHandle);
+					"query options handle does not extend BaseHandle: "
+							+ queryOptionsHandle.getClass().getName());
+		HandleHelper queryOptionsHand = HandleHelper
+				.newHelper(queryOptionsHandle);
 
 		queryOptionsHand.receiveContent(services.getValue(requestLogger,
-				QUERY_OPTIONS_BASE, name, queryOptionsHand.getFormat().getDefaultMimetype(),
-				queryOptionsHand.receiveAs()));
+				QUERY_OPTIONS_BASE, name, queryOptionsHand.getFormat()
+						.getDefaultMimetype(), queryOptionsHand.receiveAs()));
 		return queryOptionsHandle;
 	}
 
 	@Override
 	public void writeOptions(String name,
 			QueryOptionsWriteHandle queryOptionsHandle) {
-		if (!HandleHelper.isHandle(queryOptionsHandle)) 
+		if (!HandleHelper.isHandle(queryOptionsHandle))
 			throw new IllegalArgumentException(
-					"query options handle does not extend BaseHandle: "+
-					queryOptionsHandle.getClass().getName());
-		HandleHelper queryOptionsHand = HandleHelper.newHelper(queryOptionsHandle);
+					"query options handle does not extend BaseHandle: "
+							+ queryOptionsHandle.getClass().getName());
+		HandleHelper queryOptionsHand = HandleHelper
+				.newHelper(queryOptionsHandle);
 
 		services.putValue(requestLogger, QUERY_OPTIONS_BASE, name,
-				queryOptionsHand.getFormat().getDefaultMimetype(), queryOptionsHand.sendContent());
+				queryOptionsHand.getFormat().getDefaultMimetype(),
+				queryOptionsHand.sendContent());
 	}
 }

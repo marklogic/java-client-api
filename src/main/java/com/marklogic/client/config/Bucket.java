@@ -17,7 +17,7 @@ package com.marklogic.client.config;
 
 /**
  * A Bucket represents a particular range of data
- * to a RangeConstraint.
+ * to a Range.
  */
 public interface Bucket extends BoundQueryOption {
 

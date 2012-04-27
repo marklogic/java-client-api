@@ -15,17 +15,26 @@
  */
 package com.marklogic.client;
 
+import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
 public interface QueryOptionsManager {
 	
-	/*
-	 * Generate a new, empty QueryOptions configuration.
-	 * This method is suppressed for EA-1
-	 * @return an empty QueryOptions object.
+	
+	/**
+	 * Generate a new, empty QueryOptionsHandle configuration.
+	 * @return an empty QueryOptionsHandle .
 	 */
-	// public QueryOptions newOptions();
+	public QueryOptionsHandle newOptions();
+	
+	/**
+	 * Create a new QueryOptionsHandle by reading a named option
+	 * from the REST server by name
+	 * @param string
+	 * @return
+	 */
+	public QueryOptionsHandle readOptions(String name);
 	
 	/**
 	 * Create a QueryOptions configuration by reading it
@@ -35,6 +44,7 @@ public interface QueryOptionsManager {
 	 */
     public <T extends QueryOptionsReadHandle> T readOptions(String name, T searchOptionsHandle);
     
+	
     /**
      * Write a QueryOptions configuration to the REST
      * server using a specific name.
@@ -49,5 +59,6 @@ public interface QueryOptionsManager {
      * @param name
      */
     public void deleteOptions(String name);
+
 
 }

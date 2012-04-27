@@ -24,8 +24,6 @@ public interface QueryOptions extends BoundQueryOption, StateOrTopLevel {
 
 	public void setReturnFacets(Boolean returnFacets);
 
-	public void add(BoundQueryOption boundQueryOption);
-
 	public Boolean getReturnConstraints();
 
 	public void setReturnConstraints(Boolean returnConstraints);
@@ -60,7 +58,7 @@ public interface QueryOptions extends BoundQueryOption, StateOrTopLevel {
 
 	public List<String> getSearchOptions();
 
-	public List<Constraint> getConstraints();
+	public List<com.marklogic.client.configpojos.Constraint> getConstraints();
 
 	public Term getTerm();
 

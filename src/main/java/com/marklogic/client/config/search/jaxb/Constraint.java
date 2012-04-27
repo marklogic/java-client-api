@@ -81,7 +81,7 @@ public class Constraint {
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link JAXBElement }{@code <}{@link Object }{@code >}
-     * {@link Annotation }
+     * {@link QueryAnnotation }
      * {@link JAXBElement }{@code <}{@link Properties }{@code >}
      * {@link JAXBElement }{@code <}{@link GeoElem }{@code >}
      * {@link JAXBElement }{@code <}{@link ElementQuery }{@code >}

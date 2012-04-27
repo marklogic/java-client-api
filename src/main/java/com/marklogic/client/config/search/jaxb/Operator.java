@@ -92,7 +92,7 @@ public class Operator {
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link State }
-     * {@link Annotation }
+     * {@link QueryAnnotation }
      * 
      * 
      */

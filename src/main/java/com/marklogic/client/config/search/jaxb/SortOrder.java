@@ -117,7 +117,7 @@ public class SortOrder {
      * {@link Attribute }
      * {@link Field }
      * {@link Score }
-     * {@link Annotation }
+     * {@link QueryAnnotation }
      * 
      * 
      */

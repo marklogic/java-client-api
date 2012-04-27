@@ -104,7 +104,7 @@ public class Custom {
      * {@link JAXBElement }{@code <}{@link String }{@code >}
      * {@link StartFacet }
      * {@link JAXBElement }{@code <}{@link String }{@code >}
-     * {@link Annotation }
+     * {@link QueryAnnotation }
      * {@link FinishFacet }
      * 
      * 

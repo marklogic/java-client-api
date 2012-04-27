@@ -16,7 +16,8 @@
                         {"lt":"2000","ge":"1990","name":"1990s","label":"1990s"},
                         {"ge":"2000","name":"2000s","label":"2000s"}
                         ],
-                     "index" : { "attribute": "year", "element":"wiki:nominee"}
+                      "attribute": {"ns":"","name":"year"}, 
+                      "element":{"ns":"http://marklogic.com/wikipedia","name":"nominee"}
                     }
                 }
         }}

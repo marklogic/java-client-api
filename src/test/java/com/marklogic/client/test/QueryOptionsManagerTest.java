@@ -58,20 +58,21 @@ public class QueryOptionsManagerTest {
 	}
 	
 
-
+	
 	@Test
 	public void testQueryOptionsManager() throws JAXBException {
 		QueryOptionsManager mgr = Common.client.newQueryOptionsManager();
 		assertNotNull("Client could not create query options manager", mgr);
 
-		//QueryOptions options = mgr.newOptions();
-        //QueryOptions options = new QueryOptionsHandle();
-		//mgr.writeOptions("testempty", new QueryOptionsHandle().on(options), Format.XML);
+        QueryOptionsHandle options = new QueryOptionsHandle();
+		mgr.writeOptions("testempty", new QueryOptionsHandle().with(options));
         
-        //String optionsResult = mgr.readOptions("testempty", new StringHandle()).get();
-        //assertTrue("Empty options result not empty",optionsResult.contains("<options xml:lang=\"en\" xmlns=\"http://marklogic.com/appservices/search\"/>"));
+        String optionsResult = mgr.readOptions("testempty", new StringHandle()).get();
+        logger.debug("Empty options from server {}", optionsResult);
+        assertTrue("Empty options result not empty",optionsResult.contains("options xml:lang=\"en\""));
+        assertTrue("Empty options result not empty",optionsResult.contains("\"http://marklogic.com/appservices/search\"/>"));
 		
-		//mgr.deleteOptions("testempty");
+		mgr.deleteOptions("testempty");
 		
 		
 	};
@@ -119,7 +120,7 @@ public class QueryOptionsManagerTest {
 		FileHandle jsonHandle = new FileHandle(new File("src/test/resources/json-config.json"));
 		jsonHandle.setFormat(Format.JSON);
 		mgr.writeOptions("jsonoptions", jsonHandle);
-		QueryOptionsHandle options = mgr.readOptions("jsonoptions", new QueryOptionsHandle());
+		QueryOptionsHandle options = mgr.readOptions("jsonoptions");
 		
 		assertEquals("JSON options came back incorrectly", options.getConstraints().get(0).getName(), "decade");
 		

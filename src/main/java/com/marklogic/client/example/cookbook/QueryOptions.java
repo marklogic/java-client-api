@@ -24,7 +24,8 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.config.Constraint;
+import com.marklogic.client.configpojos.Constraint;
+import com.marklogic.client.configpojos.Value;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
 
@@ -60,6 +61,11 @@ public class QueryOptions {
 		QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
 
 		// create the query options
+		QueryOptionsHandle options = optionsMgr.newOptions()
+				.withConstraintDefinition(new Value()
+					.withElement("industry")
+					.inside(new Constraint("industry")));
+		
 		StringBuilder builder = new StringBuilder();
 		builder.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
 		builder.append("<options xmlns=\"http://marklogic.com/appservices/search\">\n");

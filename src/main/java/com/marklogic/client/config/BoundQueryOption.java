@@ -20,7 +20,7 @@ import java.util.List;
 
 
 /**
- * This interface binds the hierarchy of Config Options classes 
+ * This interface binds the hierarchy of Config OptionsFromJAXB classes 
  * to an implementation backed by a JAXB facade.
  * TODO -- replace with a DOM-based implementation.
  * @author cgreer

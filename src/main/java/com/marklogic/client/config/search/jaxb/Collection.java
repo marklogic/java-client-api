@@ -34,6 +34,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
+import com.marklogic.client.configpojos.Options;
+
 
 /**
  * <p>Java class for anonymous complex type.
@@ -63,7 +65,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class Collection {
 
-    @XmlElement(name = "facet-option")
+    @XmlElement(namespace=Options.SEARCH_NS, name = "facet-option")
     protected List<String> facetOption = new Vector<String>();
     @XmlAttribute(name = "prefix")
     @XmlSchemaType(name = "anySimpleType")
