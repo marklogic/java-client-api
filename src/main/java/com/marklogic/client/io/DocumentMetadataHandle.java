@@ -32,21 +32,28 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Attr;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSOutput;
-import org.w3c.dom.ls.LSSerializer;
+import org.w3c.dom.ProcessingInstruction;
+import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.impl.BasicXMLSerializer;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
@@ -478,121 +485,204 @@ public class DocumentMetadataHandle
 	// TODO: select the metadata sent
 	private void sendMetadataImpl(OutputStream out) {
 		try {
-			// org.apache.xml.serialize.XMLSerializer
-			BasicXMLSerializer serializer = new BasicXMLSerializer();
-			serializer.writeXMLProlog(out);
-			serializer.writeContainerOpenStart(out, "rapi:metadata");
-			serializer.writeNamespace(out, "rapi", REST_API_NS);
-			serializer.writeNamespace(out, "prop", PROPERTY_API_NS);
-			serializer.writeNamespace(out, "xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
-			serializer.writeNamespace(out, "xs",   XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			serializer.writeOpenEnd(out);
+			XMLOutputFactory factory = XMLOutputFactory.newFactory();
+			factory.setProperty("javax.xml.stream.isRepairingNamespaces", new Boolean(true));
 
-			sendCollectionsImpl(serializer, out);
-			sendPermissionsImpl(serializer, out);
-			sendPropertiesImpl(serializer, out);
-			sendQualityImpl(serializer, out);
+			XMLStreamWriter serializer = factory.createXMLStreamWriter(out);
 
-			serializer.writeClose(out, "rapi:metadata");
-		} catch (IOException e) {
+			serializer.setPrefix("rapi", REST_API_NS);
+			serializer.setPrefix("prop", PROPERTY_API_NS);
+			serializer.setPrefix("xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+			serializer.setPrefix("xs",   XMLConstants.W3C_XML_SCHEMA_NS_URI);
+
+			serializer.writeStartDocument("utf-8", "1.0");
+
+			serializer.writeStartElement("rapi", "metadata", REST_API_NS);
+
+			sendCollectionsImpl(serializer);
+			sendPermissionsImpl(serializer);
+			sendPropertiesImpl(serializer);
+			sendQualityImpl(serializer);
+
+			serializer.writeEndElement();
+			serializer.writeEndDocument();
+		} catch (XMLStreamException e) {
+			throw new MarkLogicInternalException("Failed to serialize metadata", e);
+		} catch (TransformerFactoryConfigurationError e) {
+			throw new MarkLogicInternalException("Failed to serialize metadata", e);
+		} catch (TransformerException e) {
 			throw new MarkLogicInternalException("Failed to serialize metadata", e);
 		}
 	}
-	private void sendCollectionsImpl(BasicXMLSerializer serializer, OutputStream out) throws IOException {
-		serializer.writeContainerOpen(out, "rapi:collections");
+	private void sendCollectionsImpl(XMLStreamWriter serializer) throws XMLStreamException {
+		serializer.writeStartElement("rapi", "collections", REST_API_NS);
 
 		for (String collection: getCollections()) {
-			serializer.writeOpen(out, "rapi:collection");
-			serializer.writeText(out, collection);
-			serializer.writeClose(out, "rapi:collection");
+			serializer.writeStartElement("rapi", "collection", REST_API_NS);
+			serializer.writeCharacters(collection);
+			serializer.writeEndElement();
 		}
 
-		serializer.writeClose(out, "rapi:collections");
+		serializer.writeEndElement();
 	}
-	private void sendPermissionsImpl(BasicXMLSerializer serializer, OutputStream out) throws IOException {
-		serializer.writeContainerOpen(out, "rapi:permissions");
+	private void sendPermissionsImpl(XMLStreamWriter serializer) throws XMLStreamException {
+		serializer.writeStartElement("rapi", "permissions", REST_API_NS);
 
 		for (Map.Entry<String, Set<Capability>> permission: getPermissions().entrySet()) {
-			serializer.writeContainerOpen(out, "rapi:permission");
+			serializer.writeStartElement("rapi", "permission", REST_API_NS);
 
-			serializer.writeOpen(out, "rapi:role-name");
-			serializer.writeText(out, permission.getKey());
-			serializer.writeClose(out, "rapi:role-name");
+			serializer.writeStartElement("rapi", "role-name", REST_API_NS);
+			serializer.writeCharacters(permission.getKey());
+			serializer.writeEndElement();
 
 			for (Capability capability: permission.getValue()) {
-				serializer.writeOpen(out, "rapi:capability");
-				serializer.writeText(out, capability.name().toLowerCase());
-				serializer.writeClose(out, "rapi:capability");
+				serializer.writeStartElement("rapi", "capability", REST_API_NS);
+				serializer.writeCharacters(capability.name().toLowerCase());
+				serializer.writeEndElement();
 			}
 
-			serializer.writeClose(out, "rapi:permission");
+			serializer.writeEndElement();
 		}
 
-		serializer.writeClose(out, "rapi:permissions");
+		serializer.writeEndElement();
 	}
-	private void sendPropertiesImpl(BasicXMLSerializer serializer, OutputStream out) throws IOException {
-		serializer.writeContainerOpen(out, "prop:properties");
+	private void sendPropertiesImpl(XMLStreamWriter serializer) throws XMLStreamException, TransformerFactoryConfigurationError, TransformerException {
+		serializer.writeStartElement("prop", "properties", PROPERTY_API_NS);
 
-		LSOutput     domOutput     = null;
-		LSSerializer domSerializer = null;
 		for (Map.Entry<QName, Object> property: getProperties().entrySet()) {
-				QName  propertyName = property.getKey();
-				Object value        = property.getValue();
+			QName  propertyName = property.getKey();
+			Object value        = property.getValue();
 
-				boolean hasNodeValue = value instanceof NodeList;
+			boolean hasNodeValue = value instanceof NodeList;
 
-				String namespaceURI = propertyName.getNamespaceURI();
-				String prefix       = null;
-				String localPart    = propertyName.getLocalPart();
-				if (namespaceURI != null && namespaceURI.length() > 0) {
-					if (PROPERTY_API_NS.equals(namespaceURI))
-						continue;
+			String namespaceURI = propertyName.getNamespaceURI();
+			String prefix       = null;
+			String localPart    = propertyName.getLocalPart();
+			if (namespaceURI != null && namespaceURI.length() > 0) {
+				if (PROPERTY_API_NS.equals(namespaceURI))
+					continue;
 
-					prefix = propertyName.getPrefix();
+				prefix = propertyName.getPrefix();
 
-					serializer.writeOpenStart(out, prefix, localPart);
-					serializer.writeNamespace(out, prefix, namespaceURI);
-				} else {
-					serializer.writeOpenStart(out, localPart);
-				}
+				serializer.writeStartElement(prefix, localPart, namespaceURI);
+			} else {
+				serializer.writeStartElement(localPart);
+			}
 
-				if (!hasNodeValue) {
-					serializer.writeEscapedAttribute(out, "xsi:type", convertedJavaType(value));
-				}
+			if (!hasNodeValue) {
+				serializer.writeAttribute(
+						"xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type",
+						convertedJavaType(value));
+			}
 
-				serializer.writeOpenEnd(out);
+			if (!hasNodeValue) {
+				serializer.writeCharacters(convertJavaValue(value));
+			} else {
+				serializeNodeList((NodeList) value, serializer);
+			}
 
-				if (!hasNodeValue) {
-					serializer.writeText(out, convertJavaValue(value));
-				} else {
-					NodeList children = (NodeList) value;
-					for (int i=0; i < children.getLength(); i++) {
-						Node node = children.item(i);
-
-						if (domOutput == null || domSerializer == null) {
-							Document document = (node instanceof Document) ? (Document) node : node.getOwnerDocument();
-
-							DOMImplementationLS domImpl = (DOMImplementationLS) document.getImplementation();
-
-							domOutput = domImpl.createLSOutput();
-							domOutput.setByteStream(out);
-							domSerializer = domImpl.createLSSerializer();
-							domSerializer.getDomConfig().setParameter("xml-declaration", false);
-						}
-
-						domSerializer.write(node, domOutput);
-					}
-				}
-
-				serializer.writeClose(out, prefix, localPart);
+			serializer.writeEndElement();
 		}
 
-		serializer.writeClose(out, "prop:properties");
+		serializer.writeEndElement();
 	}
-	private void sendQualityImpl(BasicXMLSerializer serializer, OutputStream out) throws IOException {
-		serializer.writeOpen(out, "rapi:quality");
-		serializer.writeText(out, String.valueOf(getQuality()));
-		serializer.writeClose(out, "rapi:quality");
+	private void sendQualityImpl(XMLStreamWriter serializer) throws XMLStreamException {
+		serializer.writeStartElement("rapi", "quality", REST_API_NS);
+		serializer.writeCharacters(String.valueOf(getQuality()));
+		serializer.writeEndElement();
+	}
+
+	// TODO: move to utility class
+	private void serializeNodeList(NodeList list, XMLStreamWriter serializer) throws XMLStreamException {
+		for (int i=0; i < list.getLength(); i++) {
+			serializeNode(list.item(i), serializer);
+		}
+	}
+	private void serializeNode(Node node, XMLStreamWriter serializer) throws XMLStreamException {
+		switch (node.getNodeType()) {
+		case Node.ELEMENT_NODE:
+			serializeElement((Element) node, serializer);
+			break;
+		case Node.CDATA_SECTION_NODE:
+			serializeCDATASection((CDATASection) node, serializer);
+			break;
+		case Node.TEXT_NODE:
+			serializeText((Text) node, serializer);
+			break;
+		case Node.PROCESSING_INSTRUCTION_NODE:
+			serializeProcessingInstruction((ProcessingInstruction) node, serializer);
+			break;
+		case Node.COMMENT_NODE:
+			serializeComment((Comment) node, serializer);
+			break;
+		default:
+			throw new MarkLogicInternalException(
+					"Cannot process node type of: "+node.getClass().getName()
+					);
+		}
+	}
+	private void serializeElement(Element element, XMLStreamWriter serializer) throws XMLStreamException {
+		String namespaceURI = element.getNamespaceURI();
+		String prefix       = (namespaceURI != null) ? element.getPrefix() : null;
+		String localName    = (namespaceURI != null) ? element.getLocalName() : element.getTagName();
+		if (element.hasChildNodes()) {
+			if (prefix != null) {
+				serializer.writeStartElement(prefix, localName, namespaceURI);
+			} else if (namespaceURI != null) {
+				serializer.writeStartElement(localName, namespaceURI);
+			} else {
+				serializer.writeStartElement(localName);
+			}
+			if (element.hasAttributes()) {
+				serializeAttributes(element.getAttributes(), serializer);
+			}
+			serializeNodeList(element.getChildNodes(), serializer);
+			serializer.writeEndElement();
+		} else {
+			if (prefix != null) {
+				serializer.writeEmptyElement(prefix, localName, namespaceURI);
+			} else if (namespaceURI != null) {
+				serializer.writeEmptyElement(localName, namespaceURI);
+			} else {
+				serializer.writeEmptyElement(localName);
+			}
+			if (element.hasAttributes()) {
+				serializeAttributes(element.getAttributes(), serializer);
+			}
+		}
+	}
+	private void serializeAttributes(NamedNodeMap attributes, XMLStreamWriter serializer) throws XMLStreamException {
+		for (int i=0; i < attributes.getLength(); i++) {
+			Attr attribute = (Attr) attributes.item(i);
+			String namespaceURI = attribute.getNamespaceURI();
+			String prefix       = (namespaceURI != null) ? attribute.getPrefix() : null;
+			String localName    = (namespaceURI != null) ? attribute.getLocalName() : attribute.getName();
+			String value        = attribute.getValue();
+			if (prefix != null) {
+				serializer.writeAttribute(prefix, localName, namespaceURI, value);
+			} else if (namespaceURI != null) {
+				serializer.writeAttribute(localName, namespaceURI, value);
+			} else {
+				serializer.writeAttribute(localName, value);
+			}
+		}
+	}
+	private void serializeText(Text text, XMLStreamWriter serializer) throws XMLStreamException {
+		serializer.writeCharacters(text.getData());
+	}
+	private void serializeCDATASection(CDATASection cdata, XMLStreamWriter serializer) throws XMLStreamException {
+		serializer.writeCData(cdata.getData());
+	}
+	private void serializeComment(Comment comment, XMLStreamWriter serializer) throws XMLStreamException {
+		serializer.writeComment(comment.getData());
+	}
+	private void serializeProcessingInstruction(ProcessingInstruction pi, XMLStreamWriter serializer) throws XMLStreamException {
+		String target = pi.getTarget();
+		String data   = pi.getData();
+		if (data != null)
+			serializer.writeProcessingInstruction(target, data);
+		else
+			serializer.writeProcessingInstruction(target);
 	}
 
 	// TODO: move to utility class
