@@ -50,6 +50,7 @@ public class AllExamples {
 		DocumentMetadataRead.run(  host, port, writer_user, writer_password, authType );
 		DocumentDelete.run(        host, port, writer_user, writer_password, authType );
 		DocumentFormats.run(       host, port, writer_user, writer_password, authType );
+		DocumentOutputStream.run(  host, port, writer_user, writer_password, authType );
 		JAXBDocument.run(          host, port, writer_user, writer_password, authType );
 		KeyValueSearch.run(        host, port, writer_user, writer_password, authType );
 		QueryOptions.run(          host, port, admin_user,  admin_password,  authType );
