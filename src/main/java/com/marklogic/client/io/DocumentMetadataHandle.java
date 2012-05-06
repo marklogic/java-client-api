@@ -40,20 +40,15 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Attr;
-import org.w3c.dom.CDATASection;
-import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.ProcessingInstruction;
-import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.impl.DOMWriter;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
@@ -488,7 +483,7 @@ public class DocumentMetadataHandle
 			XMLOutputFactory factory = XMLOutputFactory.newFactory();
 			factory.setProperty("javax.xml.stream.isRepairingNamespaces", new Boolean(true));
 
-			XMLStreamWriter serializer = factory.createXMLStreamWriter(out);
+			XMLStreamWriter serializer = factory.createXMLStreamWriter(out, "utf-8");
 
 			serializer.setPrefix("rapi", REST_API_NS);
 			serializer.setPrefix("prop", PROPERTY_API_NS);
@@ -578,7 +573,7 @@ public class DocumentMetadataHandle
 			if (!hasNodeValue) {
 				serializer.writeCharacters(convertJavaValue(value));
 			} else {
-				serializeNodeList((NodeList) value, serializer);
+				new DOMWriter(serializer).serializeNodeList((NodeList) value);
 			}
 
 			serializer.writeEndElement();
@@ -590,99 +585,6 @@ public class DocumentMetadataHandle
 		serializer.writeStartElement("rapi", "quality", REST_API_NS);
 		serializer.writeCharacters(String.valueOf(getQuality()));
 		serializer.writeEndElement();
-	}
-
-	// TODO: move to utility class
-	private void serializeNodeList(NodeList list, XMLStreamWriter serializer) throws XMLStreamException {
-		for (int i=0; i < list.getLength(); i++) {
-			serializeNode(list.item(i), serializer);
-		}
-	}
-	private void serializeNode(Node node, XMLStreamWriter serializer) throws XMLStreamException {
-		switch (node.getNodeType()) {
-		case Node.ELEMENT_NODE:
-			serializeElement((Element) node, serializer);
-			break;
-		case Node.CDATA_SECTION_NODE:
-			serializeCDATASection((CDATASection) node, serializer);
-			break;
-		case Node.TEXT_NODE:
-			serializeText((Text) node, serializer);
-			break;
-		case Node.PROCESSING_INSTRUCTION_NODE:
-			serializeProcessingInstruction((ProcessingInstruction) node, serializer);
-			break;
-		case Node.COMMENT_NODE:
-			serializeComment((Comment) node, serializer);
-			break;
-		default:
-			throw new MarkLogicInternalException(
-					"Cannot process node type of: "+node.getClass().getName()
-					);
-		}
-	}
-	private void serializeElement(Element element, XMLStreamWriter serializer) throws XMLStreamException {
-		String namespaceURI = element.getNamespaceURI();
-		String prefix       = (namespaceURI != null) ? element.getPrefix() : null;
-		String localName    = (namespaceURI != null) ? element.getLocalName() : element.getTagName();
-		if (element.hasChildNodes()) {
-			if (prefix != null) {
-				serializer.writeStartElement(prefix, localName, namespaceURI);
-			} else if (namespaceURI != null) {
-				serializer.writeStartElement(localName, namespaceURI);
-			} else {
-				serializer.writeStartElement(localName);
-			}
-			if (element.hasAttributes()) {
-				serializeAttributes(element.getAttributes(), serializer);
-			}
-			serializeNodeList(element.getChildNodes(), serializer);
-			serializer.writeEndElement();
-		} else {
-			if (prefix != null) {
-				serializer.writeEmptyElement(prefix, localName, namespaceURI);
-			} else if (namespaceURI != null) {
-				serializer.writeEmptyElement(localName, namespaceURI);
-			} else {
-				serializer.writeEmptyElement(localName);
-			}
-			if (element.hasAttributes()) {
-				serializeAttributes(element.getAttributes(), serializer);
-			}
-		}
-	}
-	private void serializeAttributes(NamedNodeMap attributes, XMLStreamWriter serializer) throws XMLStreamException {
-		for (int i=0; i < attributes.getLength(); i++) {
-			Attr attribute = (Attr) attributes.item(i);
-			String namespaceURI = attribute.getNamespaceURI();
-			String prefix       = (namespaceURI != null) ? attribute.getPrefix() : null;
-			String localName    = (namespaceURI != null) ? attribute.getLocalName() : attribute.getName();
-			String value        = attribute.getValue();
-			if (prefix != null) {
-				serializer.writeAttribute(prefix, localName, namespaceURI, value);
-			} else if (namespaceURI != null) {
-				serializer.writeAttribute(localName, namespaceURI, value);
-			} else {
-				serializer.writeAttribute(localName, value);
-			}
-		}
-	}
-	private void serializeText(Text text, XMLStreamWriter serializer) throws XMLStreamException {
-		serializer.writeCharacters(text.getData());
-	}
-	private void serializeCDATASection(CDATASection cdata, XMLStreamWriter serializer) throws XMLStreamException {
-		serializer.writeCData(cdata.getData());
-	}
-	private void serializeComment(Comment comment, XMLStreamWriter serializer) throws XMLStreamException {
-		serializer.writeComment(comment.getData());
-	}
-	private void serializeProcessingInstruction(ProcessingInstruction pi, XMLStreamWriter serializer) throws XMLStreamException {
-		String target = pi.getTarget();
-		String data   = pi.getData();
-		if (data != null)
-			serializer.writeProcessingInstruction(target, data);
-		else
-			serializer.writeProcessingInstruction(target);
 	}
 
 	// TODO: move to utility class
