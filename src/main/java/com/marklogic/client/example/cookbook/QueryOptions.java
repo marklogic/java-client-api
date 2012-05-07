@@ -66,21 +66,21 @@ public class QueryOptions {
 					.withElement("industry")
 					.inside(new Constraint("industry")));
 		
-		StringBuilder builder = new StringBuilder();
-		builder.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-		builder.append("<options xmlns=\"http://marklogic.com/appservices/search\">\n");
-		builder.append("  <constraint name=\"industry\">\n");
-		builder.append("    <value>\n");
-		builder.append("      <element ns=\"\" name=\"industry\"/>\n");
-		builder.append("    </value>\n");
-		builder.append("  </constraint>\n");
-		builder.append("</options>\n");
+//		StringBuilder builder = new StringBuilder();
+//		builder.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+//		builder.append("<options xmlns=\"http://marklogic.com/appservices/search\">\n");
+//		builder.append("  <constraint name=\"industry\">\n");
+//		builder.append("    <value>\n");
+//		builder.append("      <element ns=\"\" name=\"industry\"/>\n");
+//		builder.append("    </value>\n");
+//		builder.append("  </constraint>\n");
+//		builder.append("</options>\n");
 
 		// initialize a handle with the query options
-		StringHandle writeHandle = new StringHandle(builder.toString());
+		//StringHandle writeHandle = new StringHandle(builder.toString());
 
 		// write the query options to the database
-		optionsMgr.writeOptions(optionsName, writeHandle);
+		optionsMgr.writeOptions(optionsName, options);
 
 		// create a handle to receive the query options
 		QueryOptionsHandle readHandle = new QueryOptionsHandle();

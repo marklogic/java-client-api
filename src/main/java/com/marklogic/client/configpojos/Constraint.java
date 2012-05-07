@@ -132,7 +132,6 @@ public class Constraint   {
 			return (T) geoElemPair.inside(this);
 		}
 		return null;
-
 	}
 
 	public String getName() {
@@ -141,6 +140,11 @@ public class Constraint   {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public Constraint withConstraintDefinition(ConstraintDefinition constraintDefinition) {
+		this.setImplementation(constraintDefinition);
+		return this;
 	}
 
 	

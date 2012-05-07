@@ -28,7 +28,7 @@ import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.io.InputStreamHandle;
 
 /**
- * DocumentDeleter illustrates how to delete a database document.
+ * DocumentDelete illustrates how to delete a database document.
  */
 public class DocumentDelete {
 

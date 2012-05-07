@@ -344,7 +344,7 @@ public final class QueryOptionsHandle extends
 		return this;
 	}
 
-	public <T extends ConstraintDefinition<T>> List<T> getConstraintTypesByClassName(
+	public <T extends ConstraintDefinition<T>> List<T> getConstraintDefinitionsByClassName(
 			Class<T> class1) {
 		List<T> options = new ArrayList<T>();
 		for (Constraint constraint : optionsHolder.getConstraints()) {
@@ -399,6 +399,11 @@ public final class QueryOptionsHandle extends
 
 	public QueryOptionsHandle withGrammar(Grammar g) {
 		optionsHolder.setGrammar(g);
+		return this;
+	}
+
+	public QueryOptionsHandle withTerm(Term term) {
+		optionsHolder.setTerm(term);
 		return this;
 	}
 

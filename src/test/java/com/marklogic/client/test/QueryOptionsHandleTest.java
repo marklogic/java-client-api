@@ -182,12 +182,12 @@ public class QueryOptionsHandleTest {
 			logger.debug("Testing constraint named {} with class {}",
 					c.getName(), c.getClass().getName());
 		}
-		Range r = options.getConstraintTypesByClassName(Range.class).get(0);
+		Range r = options.getConstraintDefinitionsByClassName(Range.class).get(0);
 		assertEquals(r.getConstraintName(), "award");
 		assertEquals("index from range constraint", "award", r.getAttribute()
 				.getLocalPart());
 
-		Word v = options.getConstraintTypesByClassName(Word.class).get(0);
+		Word v = options.getConstraintDefinitionsByClassName(Word.class).get(0);
 		assertNotNull(v);
 		assertEquals("index from value constraint", "name", v.getElement()
 				.getLocalPart());
@@ -238,6 +238,16 @@ public class QueryOptionsHandleTest {
 
 	}
 
+	@Test 
+	public void buildTerm() {
+	    QueryOptionsHandle options = new QueryOptionsHandle()
+	    	.withTerm(new Term()
+	    		.withEmptyApply(TermApply.ALL_RESULTS)
+	    		.withConstraintDefinition(new Word()
+				.withElement("nation")));
+		
+		assertEquals("Term constraint definition", "nation", options.getTerm().getConstraintDefinition().getElement().getLocalPart());
+	}
 	@Test
 	public void buildTransformResults() {
 		TransformResults t = new TransformResults().withApply("snippet");
@@ -300,17 +310,16 @@ public class QueryOptionsHandleTest {
 
 		range.withType(new QName("xs:gYear"));
 
-		range.addBucket("2000s", "2000s", null, null);
-		range.addBucket("1990s", "1990s", "1990", "2000");
-		range.addBucket("1980s", "1980s", "1980", "1990");
-		range.addBucket("1970s", "1970s", "1970", "1980");
-		range.addBucket("1960s", "1960s", "1960", "1970");
-		range.addBucket("1950s", "1950s", "1950", "1960");
-		range.addBucket("1940s", "1940s", "1940", "1950");
-		range.addBucket("1930s", "1930s", "1930", "1940");
-		range.addBucket("1920s", "1920s", "1920", "1930");
-
-		range.withFacetOption("limit=10");
+		range.withBucket("2000s", "2000s", null, null)
+			.withBucket("1990s", "1990s", "1990", "2000")
+			.withBucket("1980s", "1980s", "1980", "1990")
+			.withBucket("1970s", "1970s", "1970", "1980")
+			.withBucket("1960s", "1960s", "1960", "1970")
+			.withBucket("1950s", "1950s", "1950", "1960")
+			.withBucket("1940s", "1940s", "1940", "1950")
+			.withBucket("1930s", "1930s", "1930", "1940")
+			.withBucket("1920s", "1920s", "1920", "1930")
+			.withFacetOption("limit=10");
 
 		String optionsString = options.toString();
 
@@ -331,7 +340,7 @@ public class QueryOptionsHandleTest {
 
 		ComputedBucket c = new ComputedBucket();
 		c.setAnchor(AnchorValue.NOW);
-		range.addBucket(c);
+		range.withBucket(c);
 
 		List<ComputedBucket> computedBuckets = range.getComputedBuckets();
 		assertEquals("Size of computed buckets", 1, computedBuckets.size());
@@ -339,7 +348,24 @@ public class QueryOptionsHandleTest {
 
 		assertEquals("Computed bucket anchor", AnchorValue.NOW,
 				computedBucket.getAnchorValue());
-
+	}
+	
+	@Test
+	public void testConstraintFluentSetter() {
+		Constraint awardConstraint = new Constraint("award")
+			.withConstraintDefinition(new Range()
+				.withBucket("2000s", "2000s", null, null)
+				.withBucket("1990s", "1990s", "1990", "2000")
+				.withBucket("1980s", "1980s", "1980", "1990")
+				.withBucket("1970s", "1970s", "1970", "1980")
+				.withBucket("1960s", "1960s", "1960", "1970")
+				.withBucket("1950s", "1950s", "1950", "1960")
+				.withBucket("1940s", "1940s", "1940", "1950")
+				.withBucket("1930s", "1930s", "1930", "1940")
+				.withBucket("1920s", "1920s", "1920", "1930")
+				.withFacetOption("limit=10"));
+		
+		assertEquals("Getting to bucket from constraint", "1990", ((Range) awardConstraint.getConstraintDefinition()).getBuckets().get(1).getGe());
 	}
 
 	@Test
@@ -544,14 +570,14 @@ public class QueryOptionsHandleTest {
 		for (QueryOptionsHandle handle : optionsPOJOs) {
 			logger.debug("testing unmarshall of {} ", handle.toString());
 			List<Range> ranges = handle
-					.getConstraintTypesByClassName(Range.class);
+					.getConstraintDefinitionsByClassName(Range.class);
 			assertNotNull("List of any options type should be a List", ranges);
 			if (ranges.size() > 0) {
 				Range range = ranges.get(0);
 				assertNotNull("Range should not be null", range);
 			}
 			List<Collection> collections = handle
-					.getConstraintTypesByClassName(Collection.class);
+					.getConstraintDefinitionsByClassName(Collection.class);
 			assertNotNull("List of any options type should be a List",
 					collections);
 			if (collections.size() > 0) {
@@ -559,20 +585,20 @@ public class QueryOptionsHandleTest {
 				assertNotNull("Range should not be null", range);
 			}
 			List<Value> values = handle
-					.getConstraintTypesByClassName(Value.class);
+					.getConstraintDefinitionsByClassName(Value.class);
 			assertNotNull("List of any options type should be a List", values);
 			if (values.size() > 0) {
 				Value range = values.get(0);
 				assertNotNull("Range should not be null", range);
 			}
-			List<Word> words = handle.getConstraintTypesByClassName(Word.class);
+			List<Word> words = handle.getConstraintDefinitionsByClassName(Word.class);
 			assertNotNull("List of any options type should be a List", words);
 			if (words.size() > 0) {
 				Word range = words.get(0);
 				assertNotNull("Range should not be null", range);
 			}
 			List<ElementQuery> elementQueries = handle
-					.getConstraintTypesByClassName(ElementQuery.class);
+					.getConstraintDefinitionsByClassName(ElementQuery.class);
 			assertNotNull("List of any options type should be a List",
 					elementQueries);
 			if (elementQueries.size() > 0) {
@@ -580,7 +606,7 @@ public class QueryOptionsHandleTest {
 				assertNotNull("Range should not be null", range);
 			}
 			List<Properties> properties = handle
-					.getConstraintTypesByClassName(Properties.class);
+					.getConstraintDefinitionsByClassName(Properties.class);
 			assertNotNull("List of any options type should be a List",
 					properties);
 			if (properties.size() > 0) {
@@ -588,7 +614,7 @@ public class QueryOptionsHandleTest {
 				assertNotNull("Range should not be null", range);
 			}
 			List<Custom> customs = handle
-					.getConstraintTypesByClassName(Custom.class);
+					.getConstraintDefinitionsByClassName(Custom.class);
 			assertNotNull("List of any options type should be a List", customs);
 			if (customs.size() > 0) {
 				Custom range = customs.get(0);

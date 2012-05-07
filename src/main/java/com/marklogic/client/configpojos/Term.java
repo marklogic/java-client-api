@@ -37,10 +37,19 @@ public class Term extends XQueryFunctionLocator  {
 	}
 	
 	public Term withEmptyApply(TermApply termApply) {
+		empty = new XQueryFunctionLocator();
 		empty.setApply(termApply.toXmlString());
 		return this;
 	}
 	
+	public Term withConstraintDefinition(ConstraintDefinition constraintDefinition) {
+		defaultConstraint = constraintDefinition;
+		return this;
+	}
+	
+	public ConstraintDefinition getConstraintDefinition() {
+		return defaultConstraint;
+	}
 
 	//TODO annotations
 }

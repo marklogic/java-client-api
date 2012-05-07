@@ -34,7 +34,10 @@ import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.config.MatchDocumentSummary;
 import com.marklogic.client.config.StringQueryDefinition;
+import com.marklogic.client.configpojos.Constraint;
+import com.marklogic.client.configpojos.Value;
 import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 
@@ -75,38 +78,28 @@ public class Oscars {
 		// create a manager for writing query options
 		QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
 
+		
 		// create the query options
-		StringBuilder builder = new StringBuilder();
-		builder.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-		builder.append("<options xmlns=\"http://marklogic.com/appservices/search\">\n");
-		builder.append("  <constraint name=\"year\">\n");
-		builder.append("    <value>\n");
-		builder.append("      <attribute ns=\"\" name=\"year\"/>\n");
-		builder.append("      <element ns=\"http://marklogic.com/wikipedia\" name=\"oscar\"/>\n");
-		builder.append("    </value>\n");
-		builder.append("  </constraint>\n");
-		builder.append("  <constraint name=\"award\">\n");
-		builder.append("    <value>\n");
-		builder.append("      <attribute ns=\"\" name=\"year\"/>\n");
-		builder.append("      <element ns=\"http://marklogic.com/wikipedia\" name=\"award\"/>\n");
-		builder.append("    </value>\n");
-		builder.append("  </constraint>\n");
-		builder.append("  <constraint name=\"winner\">\n");
-		builder.append("    <value>\n");
-		builder.append("      <attribute ns=\"\" name=\"winner\"/>\n");
-		builder.append("      <element ns=\"http://marklogic.com/wikipedia\" name=\"award\"/>\n");
-		builder.append("    </value>\n");
-		builder.append("  </constraint>\n");
-		builder.append("  <return-metrics>true</return-metrics>\n");
-		builder.append("  <return-facets>true</return-facets>\n");
-		builder.append("  <return-results>true</return-results>\n");
-		builder.append("</options>\n");
-
-		// initialize a handle with the query options
-		StringHandle writeHandle = new StringHandle(builder.toString());
+		QueryOptionsHandle options = new QueryOptionsHandle()
+				.withConstraintDefinition(new Value()
+					.withAttribute("year")
+					.withElement("http://marklogic.com/wikipedia", "oscar")
+					.inside(new Constraint("year")))
+				.withConstraintDefinition(new Value()
+					.withAttribute("year")
+					.withElement("http://marklogic.com/wikipedia", "award")
+					.inside(new Constraint("award")))
+				.withConstraintDefinition(new Value()
+					.withAttribute("winner")
+					.withElement("http://marklogic.com/wikipedia", "award")
+					.inside(new Constraint("winner")))
+				.withReturnFacets(true)
+				.withReturnMetrics(true)
+				.withReturnResults(true);
+					
 
 		// write the query options to the database
-		optionsMgr.writeOptions(OPTIONS_NAME, writeHandle);
+		optionsMgr.writeOptions(OPTIONS_NAME, options);
 
 		// release the client
 		client.release();

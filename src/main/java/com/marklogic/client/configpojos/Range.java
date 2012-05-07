@@ -29,13 +29,14 @@ public final class Range  extends FacetableConstraintDefinition<Range>{
 	}
 
 
-	public void addBucket(String name, String label, String ge, String lt) {
+	public Range withBucket(String name, String label, String ge, String lt) {
 		Bucket bucket = new Bucket();
 		bucket.setName(name);
 		bucket.setContent(label);
 		bucket.setGe(ge);
 		bucket.setLt(lt);
 		buckets.add(bucket);
+		return this;
 	}
 
 	public List<ComputedBucket> getComputedBuckets() {
@@ -43,8 +44,9 @@ public final class Range  extends FacetableConstraintDefinition<Range>{
 	}
 
 
-	public void addBucket(ComputedBucket computedBucket) {
+	public Range withBucket(ComputedBucket computedBucket) {
 		this.computedBuckets.add(computedBucket);
+		return this;
 	}
 
 
