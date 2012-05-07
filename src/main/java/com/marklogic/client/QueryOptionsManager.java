@@ -23,12 +23,6 @@ public interface QueryOptionsManager {
 	
 	
 	/**
-	 * Generate a new, empty QueryOptionsHandle configuration.
-	 * @return an empty QueryOptionsHandle .
-	 */
-	public QueryOptionsHandle newOptions();
-	
-	/**
 	 * Create a new QueryOptionsHandle by reading a named option
 	 * from the REST server by name
 	 * @param string

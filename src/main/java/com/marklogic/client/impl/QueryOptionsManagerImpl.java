@@ -46,12 +46,6 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 	}
 
 	@Override
-	public QueryOptionsHandle newOptions() {
-		return new QueryOptionsHandle();
-	}
-
-
-	@Override
 	public QueryOptionsHandle readOptions(String name) {
 		return readOptions(name, new QueryOptionsHandle());
 	}

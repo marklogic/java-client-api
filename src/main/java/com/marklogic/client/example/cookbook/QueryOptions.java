@@ -61,7 +61,7 @@ public class QueryOptions {
 		QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
 
 		// create the query options
-		QueryOptionsHandle options = optionsMgr.newOptions()
+		QueryOptionsHandle options = new QueryOptionsHandle()
 				.withConstraintDefinition(new Value()
 					.withElement("industry")
 					.inside(new Constraint("industry")));

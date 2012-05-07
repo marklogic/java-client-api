@@ -106,7 +106,7 @@ public class QueryOptionsHandleTest {
 
 		for (String option : testOptionsCorpus) {
 
-			QueryOptionsHandle handle = mgr.newOptions();
+			QueryOptionsHandle handle = new QueryOptionsHandle();
 			handle.receiveContent(new FileInputStream(new File(
 					"src/test/resources/" + option)));
 			optionsPOJOs.add(handle);
@@ -118,12 +118,12 @@ public class QueryOptionsHandleTest {
 	public void createTestOptions() throws JAXBException, FileNotFoundException {
 		assertNotNull("Client could not create query options manager", mgr);
 
-		testOptions = mgr.newOptions();
+		testOptions = new QueryOptionsHandle();
 		QueryOptionsHandle impl = (QueryOptionsHandle) testOptions;
 		impl.receiveContent(new FileInputStream(new File(
 				"src/test/resources/search-config.xml")));
 
-		geoOptions = mgr.newOptions();
+		geoOptions = new QueryOptionsHandle();
 		impl = (QueryOptionsHandle) geoOptions;
 		impl.receiveContent(new FileInputStream(new File(
 				"src/test/resources/search-config-geo.xml")));
@@ -131,7 +131,7 @@ public class QueryOptionsHandleTest {
 
 	@Test
 	public void testEmptyQueryOptions() throws JAXBException {
-		QueryOptionsHandle options = mgr.newOptions();
+		QueryOptionsHandle options = new QueryOptionsHandle();
 
 		String optionsResult = options.toString();
 
@@ -145,7 +145,7 @@ public class QueryOptionsHandleTest {
 	@Test
 	public void marshallAndExamine() throws FileNotFoundException,
 			JAXBException {
-		QueryOptionsHandle options = mgr.newOptions();
+		QueryOptionsHandle options = new QueryOptionsHandle();
 		options.receiveContent(new FileInputStream(new File(
 				"src/test/resources/search-config.xml")));
 
@@ -155,7 +155,7 @@ public class QueryOptionsHandleTest {
 
 	@Test
 	public void setReturnFacets() {
-		QueryOptionsHandle options = mgr.newOptions();
+		QueryOptionsHandle options = new QueryOptionsHandle();
 		options.withReturnFacets(true);
 		logger.debug("here is return facets: " + options.isReturnFacets());
 		assertTrue(options.isReturnFacets());
@@ -166,7 +166,7 @@ public class QueryOptionsHandleTest {
 
 	@Test
 	public void setFragmentScope() {
-		QueryOptionsHandle options = mgr.newOptions();
+		QueryOptionsHandle options = new QueryOptionsHandle();
 		options.withFragmentScope("Properties");
 		logger.debug("here is fragment-scope: " + options.getFragmentScope());
 		assertEquals(options.getFragmentScope(), "Properties");
@@ -255,7 +255,7 @@ public class QueryOptionsHandleTest {
 	@Test
 	public void buildGrammar() {
 		Grammar g = new Grammar();
-		QueryOptionsHandle options = mgr.newOptions();
+		QueryOptionsHandle options = new QueryOptionsHandle();
 		options.withGrammar(g);
 
 		g.withStarter(new Starter(")").withStrength(30).withApply("grouping")
@@ -284,7 +284,7 @@ public class QueryOptionsHandleTest {
 
 	@Test
 	public void buildRangeConstraintTest() {
-		QueryOptionsHandle options = mgr.newOptions();
+		QueryOptionsHandle options = new QueryOptionsHandle();
 		Range range = new Range().inside(new Constraint("decade"));
 		options.withConstraintDefinition(range);
 
@@ -344,7 +344,7 @@ public class QueryOptionsHandleTest {
 
 	@Test
 	public void buildValueConstraintTest() {
-		QueryOptionsHandle options = mgr.newOptions();
+		QueryOptionsHandle options = new QueryOptionsHandle();
 		Value vc = new Value().inside(new Constraint("sumlev")).withElement(
 				"sumlev");
 		options.withConstraintDefinition(vc);
@@ -362,7 +362,7 @@ public class QueryOptionsHandleTest {
 
 	@Test
 	public void buildWordConstraintTest() {
-		QueryOptionsHandle options = mgr.newOptions();
+		QueryOptionsHandle options = new QueryOptionsHandle();
 		Word wc = new Word().inside(new Constraint("intitle")).withField(
 				"titleField");
 		options.withConstraintDefinition(wc);
@@ -380,7 +380,7 @@ public class QueryOptionsHandleTest {
 
 	@Test
 	public void buildSuggestionSources() {
-		QueryOptionsHandle options = mgr.newOptions();
+		QueryOptionsHandle options = new QueryOptionsHandle();
 		DefaultSuggestionSource dss = (DefaultSuggestionSource) new DefaultSuggestionSource()
 				.withWordLexicon();
 		Range range = new Range()
@@ -411,7 +411,7 @@ public class QueryOptionsHandleTest {
 
 	@Test
 	public void buildCollectionConstraint() {
-		QueryOptionsHandle options = mgr.newOptions();
+		QueryOptionsHandle options = new QueryOptionsHandle();
 		Collection c = new Collection().inside(new Constraint()).doFacets(true)
 				.withFacetOption("limit=10").withPrefix("http://myprefix");
 		options.withConstraintDefinition(c);
@@ -429,7 +429,7 @@ public class QueryOptionsHandleTest {
 	@Test
 	public void serializeAndStoreElementQueryConstraint() throws JAXBException {
 		String optionsString = "<options xmlns=\"http://marklogic.com/appservices/search\"><constraint name=\"sample\"><element-query name=\"title\" ns=\"http://my/namespace\" /></constraint></options>";
-		QueryOptionsHandle options = mgr.newOptions();
+		QueryOptionsHandle options = new QueryOptionsHandle();
 		QueryOptionsHandle impl = (QueryOptionsHandle) options;
 		impl.receiveContent(new ByteArrayInputStream(optionsString.getBytes()));
 		List<Constraint> l = options.getConstraints();
@@ -446,7 +446,7 @@ public class QueryOptionsHandleTest {
 	@Test
 	public void serializeAndStoreCustomConstraint() throws JAXBException {
 		String optionsString = "<options xmlns=\"http://marklogic.com/appservices/search\"><constraint name=\"custom\"><custom facet=\"true\"><parse apply=\"parse\" ns=\"http://my/namespace\" at=\"/my/parse.xqy\" /><start-facet apply=\"start\" ns=\"http://my/namespace\" at=\"/my/start.xqy\" /><finish-facet apply=\"finish\" ns=\"http://my/namespace\" at=\"/my/finish.xqy\" /></custom></constraint></options>";
-		QueryOptionsHandle options = mgr.newOptions();
+		QueryOptionsHandle options = new QueryOptionsHandle();
 		QueryOptionsHandle impl = (QueryOptionsHandle) options;
 		impl.receiveContent(new ByteArrayInputStream(optionsString.getBytes()));
 		List<Constraint> l = options.getConstraints();
@@ -468,7 +468,7 @@ public class QueryOptionsHandleTest {
 
 	@Test
 	public void parseAndBuildPropertiesConstraint() {
-		QueryOptionsHandle options = mgr.newOptions();
+		QueryOptionsHandle options = new QueryOptionsHandle();
 
 		options.withConstraintDefinition(new Properties().inside(new Constraint(
 				"props")));
@@ -478,7 +478,7 @@ public class QueryOptionsHandleTest {
 		mgr.writeOptions("props", options);
 
 		QueryOptionsHandle options2 = mgr
-				.readOptions("props", mgr.newOptions());
+				.readOptions("props", new QueryOptionsHandle());
 		assertEquals("Unexpected class from JAXB unmarshalling", options2
 				.getConstraints().get(0).getConstraintDefinition().getClass()
 				.getName(), Properties.class.getName());
@@ -490,7 +490,7 @@ public class QueryOptionsHandleTest {
 		String optionsString = "<options xmlns=\"http://marklogic.com/appservices/search\"><additional-query><directory-query xmlns=\"http://marklogic.com/cts\"><uri>/oscars/</uri></directory-query></additional-query></options>";
 		ByteArrayInputStream bais = new ByteArrayInputStream(
 				optionsString.getBytes());
-		QueryOptionsHandle options = mgr.newOptions();
+		QueryOptionsHandle options = new QueryOptionsHandle();
 		options.receiveContent(bais);
 
 		Element e = options.getAdditionalQuery();
