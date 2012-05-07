@@ -60,6 +60,8 @@ public interface RESTServices {
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public <T> T getValues(RequestLogger logger, String type, String mimetype, Class<T> as)
 		throws ForbiddenUserException, FailedRequestException;
+	public void postValues(RequestLogger logger, String type, String mimetype, Object value)
+	throws ForbiddenUserException, FailedRequestException;
 	public void postValue(RequestLogger logger, String type, String key, String mimetype, Object value)
 		throws ForbiddenUserException, FailedRequestException;
 	public void putValue(RequestLogger logger, String type, String key, String mimetype, Object value)

@@ -90,6 +90,7 @@ public class JerseyServices implements RESTServices {
 	public JerseyServices() {
 	}
 
+	@Override
 	public void connect(String host, int port, String user, String password, Authentication type, SSLContext context, HostnameVerifier verifier) {
 		if (logger.isInfoEnabled())
 			logger.info("Connecting to {} at {} as {}", new Object[] { host,
@@ -155,9 +156,9 @@ public class JerseyServices implements RESTServices {
 
 		DefaultApacheHttpClient4Config config = new DefaultApacheHttpClient4Config();
 		Map<String, Object> configProps = config.getProperties();
-//		configProps.put(ApacheHttpClient4Config.PROPERTY_PREEMPTIVE_BASIC_AUTHENTICATION, true);
+		configProps.put(ApacheHttpClient4Config.PROPERTY_PREEMPTIVE_BASIC_AUTHENTICATION, false);
 		configProps.put(ApacheHttpClient4Config.PROPERTY_CONNECTION_MANAGER,    connMgr);
-//		configProps.put(ApacheHttpClient4Config.PROPERTY_FOLLOW_REDIRECTS,      false);
+		configProps.put(ApacheHttpClient4Config.PROPERTY_FOLLOW_REDIRECTS,      false);
 //		configProps.put(ApacheHttpClient4Config.PROPERTY_CREDENTIALS_PROVIDER,  credentialsProvider);
 		configProps.put(ApacheHttpClient4Config.PROPERTY_HTTP_PARAMS,           httpParams);
 //		configProps.put(ApacheHttpClient4Config.PROPERTY_CHUNKED_ENCODING_SIZE, 0);
@@ -211,6 +212,7 @@ public class JerseyServices implements RESTServices {
 		connection = client.resource("http://" + host + ":" + port + "/v1/");
 	}
 
+	@Override
 	public void release() {
 		if (client == null)
 			return;
@@ -228,6 +230,7 @@ public class JerseyServices implements RESTServices {
 		connection.path("current/datetime").head();
 	}
 
+	@Override
 	public void deleteDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (docId == null)
@@ -260,6 +263,7 @@ public class JerseyServices implements RESTServices {
 	// TODO: does an Input Stream or Reader handle need to cache the response so
 	// it can close the response?
 
+	@Override
 	public <T> T getDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Class<T> as)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (docId == null)
@@ -311,6 +315,7 @@ public class JerseyServices implements RESTServices {
 		return (reqlog != null) ? reqlog.copyContent(entity) : entity;
 	}
 
+	@Override
 	public Object[] getDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Class[] as)
 	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (docId == null)
@@ -391,6 +396,7 @@ public class JerseyServices implements RESTServices {
 		return parts;
 	}
 
+	@Override
 	public boolean head(RequestLogger reqlog, DocumentIdentifier docId, String transactionId) throws ForbiddenUserException, FailedRequestException {
 		if (docId == null)
 			throw new IllegalArgumentException("Existence check with null document identifier");
@@ -425,6 +431,7 @@ public class JerseyServices implements RESTServices {
 
 		return true;
 	}
+	@Override
 	public void putDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Object value)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (docId == null)
@@ -480,6 +487,7 @@ public class JerseyServices implements RESTServices {
 				&& status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("write failed: "+status.getReasonPhrase());
 	}
+	@Override
 	public void putDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Object[] values)
 	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (docId == null)
@@ -558,6 +566,7 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException("write failed: "+status.getReasonPhrase());
 	}
 
+	@Override
 	public String openTransaction() throws ForbiddenUserException, FailedRequestException {
 		logger.info("Opening transaction");
 
@@ -590,6 +599,7 @@ public class JerseyServices implements RESTServices {
 		return location.substring(location.lastIndexOf("/") + 1);
 	}
 
+	@Override
 	public void commitTransaction(String transactionId) throws ForbiddenUserException, FailedRequestException {
 		logger.info("Committing transaction {}", transactionId);
 
@@ -609,6 +619,7 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException("transaction commit failed: " + status.getReasonPhrase());
 	}
 
+	@Override
 	public void rollbackTransaction(String transactionId) throws ForbiddenUserException, FailedRequestException {
 		logger.info("Rolling back transaction {}", transactionId);
 
@@ -690,7 +701,7 @@ public class JerseyServices implements RESTServices {
 		}
 	}
 
-    // FIXME: is this even close to reasonable?
+	@Override
     public <T> T search(Class<T> as, QueryDefinition queryDef, String mimetype, long start, String transactionId)
     throws ForbiddenUserException, FailedRequestException {
         MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
@@ -763,6 +774,7 @@ public class JerseyServices implements RESTServices {
 
 
 	// namespaces, search options etc.
+	@Override
 	public <T> T getValue(RequestLogger reqlog, String type, String key, String mimetype, Class<T> as)
 	throws ForbiddenUserException, FailedRequestException {
 		logger.info("Getting {}/{}", type, key);
@@ -794,6 +806,7 @@ public class JerseyServices implements RESTServices {
 
 		return (reqlog != null) ? reqlog.copyContent(entity) : entity;
 	}
+	@Override
 	public <T> T getValues(RequestLogger reqlog, String type, String mimetype, Class<T> as)
 	throws ForbiddenUserException, FailedRequestException {
 		logger.info("Getting {}", type);
@@ -823,22 +836,42 @@ public class JerseyServices implements RESTServices {
 
 		return (reqlog != null) ? reqlog.copyContent(entity) : entity;
 	}
+	@Override
+	public void postValues(RequestLogger reqlog, String type, String mimetype, Object value)
+	throws ForbiddenUserException, FailedRequestException {
+		logger.info("Posting {}", type);
+
+		putPostValueImpl(reqlog, "post", type, null, mimetype, value, ClientResponse.Status.NO_CONTENT);
+	}
+	@Override
 	public void postValue(RequestLogger reqlog, String type, String key, String mimetype, Object value)
 	throws ForbiddenUserException, FailedRequestException {
-		putPostValueImpl(reqlog, "post", type, key, mimetype, value);
+		logger.info("Posting {}/{}", type, key);
+
+		putPostValueImpl(reqlog, "post", type, key, mimetype, value, ClientResponse.Status.CREATED);
 	}
+	@Override
 	public void putValue(RequestLogger reqlog, String type, String key, String mimetype, Object value)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		putPostValueImpl(reqlog, "put", type, key, mimetype, value);
-	}
-	private void putPostValueImpl(RequestLogger reqlog, String method, String type, String key, String mimetype, Object value) {
 		logger.info("Putting {}/{}", type, key);
 
-		logRequest(reqlog, "writing %s value with %s key and %s mime type",
-				type,
-				key,
-				(mimetype != null) ? mimetype : null
-				);
+		putPostValueImpl(reqlog, "put", type, key, mimetype, value, ClientResponse.Status.NO_CONTENT);
+	}
+	private void putPostValueImpl(
+		RequestLogger reqlog, String method, String type, String key, String mimetype, Object value, ClientResponse.Status expectedStatus
+	) {
+		if (key != null) {
+			logRequest(reqlog, "writing %s value with %s key and %s mime type",
+					type,
+					key,
+					(mimetype != null) ? mimetype : null
+					);
+		} else {
+			logRequest(reqlog, "writing %s values with %s mime type",
+					type,
+					(mimetype != null) ? mimetype : null
+					);
+		}
 
 		boolean hasStreamingPart = false;
 
@@ -857,23 +890,20 @@ public class JerseyServices implements RESTServices {
 		}
 
 		ClientResponse response = null;
-		ClientResponse.Status expectedStatus = null;
 		if ("put".equals(method)) {
 			if (isFirstRequest && hasStreamingPart) makeFirstRequest();
 
-			response = connection.path(type+"/"+key).type(mimetype).put(ClientResponse.class, sentValue);
+			String connectPath = (key != null) ? type+"/"+key : type;
+
+			response = connection.path(connectPath).type(mimetype).put(ClientResponse.class, sentValue);
 
 			if (isFirstRequest) isFirstRequest = false;
-
-			expectedStatus = ClientResponse.Status.NO_CONTENT;
 		} else if ("post".equals(method)) {
 			if (isFirstRequest && hasStreamingPart) makeFirstRequest();
 
 			response = connection.path(type).type(mimetype).post(ClientResponse.class, sentValue);
 
 			if (isFirstRequest) isFirstRequest = false;
-
-			expectedStatus = ClientResponse.Status.CREATED;
 		} else {
 			throw new MarkLogicInternalException("unknown method type " + method);
 		}
@@ -887,6 +917,7 @@ public class JerseyServices implements RESTServices {
 		if (status != expectedStatus)
 			throw new FailedRequestException(type+" write failed: " + status.getReasonPhrase());
 	}
+	@Override
 	public void deleteValue(RequestLogger reqlog, String type, String key) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		logger.info("Deleting {}/{}", type, key);
 
@@ -908,6 +939,7 @@ public class JerseyServices implements RESTServices {
 				key
 				);
 	}
+	@Override
 	public void deleteValues(RequestLogger reqlog, String type) throws ForbiddenUserException, FailedRequestException {
 		logger.info("Deleting {}", type);
 

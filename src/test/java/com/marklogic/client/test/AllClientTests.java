@@ -26,20 +26,29 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
 	DatabaseClientFactoryTest.class,
 	DatabaseClientTest.class,
+    ServerConfigurationManagerTest.class,
+    RequestLoggerTest.class,
+
 	GenericDocumentTest.class,
 	BinaryDocumentTest.class,
 	JSONDocumentTest.class,
 	TextDocumentTest.class,
 	XMLDocumentTest.class,
 	DocumentMetadataHandleTest.class,
-    KeyValueSearchTest.class,
-    StringSearchTest.class,
+
+	StringSearchTest.class,
+	KeyValueSearchTest.class,
     DOMSearchResultTest.class,
     StructuredQueryBuilderTest.class,
     StructuredSearchTest.class,
-    RequestLoggerTest.class,
-// works when run independently but throws JUnit error in suite
+    SearchFacetTest.class,
+
+    QueryOptionsHandleTest.class,
+    QueryOptionsManagerTest.class,
+
+	// works when run independently but throws JUnit error in suite
 //  JAXBHandle.class,
+
     NamespacesManagerTest.class
 	})
 public class AllClientTests {

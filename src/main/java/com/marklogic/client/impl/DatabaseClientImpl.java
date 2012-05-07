@@ -31,6 +31,7 @@ import com.marklogic.client.NamespacesManager;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.RequestLogger;
+import com.marklogic.client.ServerConfigurationManager;
 import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.XMLDocumentManager;
@@ -44,46 +45,63 @@ public class DatabaseClientImpl implements DatabaseClient {
 		this.services = services;
 	}
 
+	@Override
 	public Transaction openTransaction() throws ForbiddenUserException, FailedRequestException {
 		return new TransactionImpl(services, services.openTransaction());
 	}
 
+	@Override
 	public DocumentIdentifier newDocId(String uri) {
 		return new DocumentIdentifierImpl(uri);
 	}
 
+	@Override
 	public GenericDocumentManager newDocumentManager() {
 		return new GenericDocumentImpl(services);
 	}
+	@Override
 	public BinaryDocumentManager newBinaryDocumentManager() {
 		return new BinaryDocumentImpl(services);
 	}
+	@Override
 	public JSONDocumentManager newJSONDocumentManager() {
 		return new JSONDocumentImpl(services);
 	}
+	@Override
 	public TextDocumentManager newTextDocumentManager() {
 		return new TextDocumentImpl(services);
 	}
+	@Override
 	public XMLDocumentManager newXMLDocumentManager() {
 		return new XMLDocumentImpl(services);
 	}
 
+	@Override
 	public RequestLogger newLogger(OutputStream out) {
 		return new RequestLoggerImpl(out);
 	}
 
+	@Override
 	public QueryManager newQueryManager() {
         return new QueryManagerImpl(services);
 	}
 
+	@Override
 	public QueryOptionsManager newQueryOptionsManager() {
 		return new QueryOptionsManagerImpl(services);
 	}
 
+	@Override
     public NamespacesManager newNamespacesManager() {
     	return new NamespacesManagerImpl(services);
     }
 
+	@Override
+	public ServerConfigurationManager newServerConfigurationManager() {
+		return new ServerConfigurationManagerImpl(services);
+	}
+
+	@Override
 	public void release() {
 		logger.info("Releasing connection");
 
