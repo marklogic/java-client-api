@@ -17,12 +17,18 @@ package com.marklogic.client.test;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 
 import javax.xml.XMLConstants;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -53,38 +59,51 @@ public class JSONDocumentTest {
 	public void testReadWrite() throws IOException {
 		String uri = "/test/testWrite1.json";
 
+		ObjectMapper mapper = new ObjectMapper();
+
 		DocumentIdentifier docId = Common.client.newDocId(uri);
 
-		String content = "{\n"+
-		"\"stringKey\":\"string value\", \n"+
-		"\"numberKey\":7, \n"+
-		"\"objectKey\":{\"childObjectKey\":\"child object value\"}, \n"+
-		"\"arrayKey\":[\"item value\",3,{\"itemObjectKey\":\"item object value\"}]\n"+
-		"}\n";
+		ObjectNode sourceNode = mapper.createObjectNode();
+		sourceNode.put("stringKey", "string value");
+		sourceNode.put("numberKey", 7);
+		ObjectNode childNode = mapper.createObjectNode();
+		childNode.put("childObjectKey", "child object value");
+		sourceNode.put("objectKey", childNode);
+		ArrayNode childArray = mapper.createArrayNode();
+		childArray.add("item value");
+		childArray.add(3);
+		childNode = mapper.createObjectNode();
+		childNode.put("itemObjectKey", "item object value");
+		childArray.add(childNode);
+		sourceNode.put("arrayKey", childArray);
+		String content = mapper.writeValueAsString(sourceNode);
 
 		JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
 		docMgr.write(docId, new StringHandle().with(content));
 
-		String testText = content.replace("\n", "");
 		String docText = docMgr.read(docId, new StringHandle()).get();
 		assertNotNull("Read null string for JSON content",docText);
-		assertEquals("Failed to read JSON document as String", testText, docText);
 
+		JsonNode readNode = mapper.readTree(docText);
+		assertTrue("Failed to read JSON document as String", sourceNode.equals(readNode));
+		
 		BytesHandle bytesHandle = new BytesHandle();
 		docMgr.read(docId, bytesHandle);
-		assertEquals("JSON document mismatch reading bytes", bytesHandle.get().length,testText.length());
+		readNode = mapper.readTree(bytesHandle.get());
+		assertTrue("JSON document mismatch reading bytes", sourceNode.equals(readNode));
 
 		InputStreamHandle inputStreamHandle = new InputStreamHandle();
 		docMgr.read(docId, inputStreamHandle);
-		byte[] b = Common.streamToBytes(inputStreamHandle.get());
-		assertEquals("JSON document mismatch reading input stream",new String(b),testText);
+		readNode = mapper.readTree(inputStreamHandle.get());
+		assertTrue("JSON document mismatch reading input stream", sourceNode.equals(readNode));
 
 		Reader reader = docMgr.read(docId, new ReaderHandle()).get();
-		String s = Common.readerToString(reader);
-		assertEquals("JSON document mismatch with reader",s,testText);
+		readNode = mapper.readTree(reader);
+		assertTrue("JSON document mismatch with reader", sourceNode.equals(readNode));
 
 		File file = docMgr.read(docId, new FileHandle()).get();
-		assertEquals("JSON document mismatch with file",testText.length(),file.length());
+		readNode = mapper.readTree(file);
+		assertTrue("JSON document mismatch with file", sourceNode.equals(readNode));
 
 		String lang = "fr-CA";
 		docMgr.setLanguage(lang);
