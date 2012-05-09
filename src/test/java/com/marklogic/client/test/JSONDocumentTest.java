@@ -76,14 +76,13 @@ public class JSONDocumentTest {
 		childNode.put("itemObjectKey", "item object value");
 		childArray.add(childNode);
 		sourceNode.put("arrayKey", childArray);
-		String content = mapper.writeValueAsString(sourceNode);
 
+		String content = mapper.writeValueAsString(sourceNode);
 		JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
 		docMgr.write(docId, new StringHandle().with(content));
 
 		String docText = docMgr.read(docId, new StringHandle()).get();
 		assertNotNull("Read null string for JSON content",docText);
-
 		JsonNode readNode = mapper.readTree(docText);
 		assertTrue("Failed to read JSON document as String", sourceNode.equals(readNode));
 		
