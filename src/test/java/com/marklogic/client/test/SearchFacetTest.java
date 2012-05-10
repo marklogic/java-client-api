@@ -149,8 +149,6 @@ public class SearchFacetTest {
         SearchHandle results = queryMgr.search(qdef, new SearchHandle());
         assertNotNull(results);
 
-        System.err.println(results.getTotalResults());
-
         FacetResult[] facets = results.getFacetResults();
 
         assertNotNull(facets);

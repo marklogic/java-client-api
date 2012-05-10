@@ -16,6 +16,7 @@
 package com.marklogic.client.config;
 
 import com.marklogic.client.DocumentIdentifier;
+import org.w3c.dom.Document;
 
 public interface MatchDocumentSummary extends DocumentIdentifier {
     public String getUri();
@@ -24,4 +25,5 @@ public interface MatchDocumentSummary extends DocumentIdentifier {
     public double getFitness();
     public String getPath();
     public MatchLocation[] getMatchLocations();
+    public Document[] getSnippets();
 }
