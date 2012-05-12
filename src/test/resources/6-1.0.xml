@@ -51,6 +51,5 @@
     <constraint name="tagshort">
         <collection prefix="http://marklogic.com/" />
     </constraint>
-</options>;
 </options>
 

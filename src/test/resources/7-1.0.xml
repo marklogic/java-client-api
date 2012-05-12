@@ -24,12 +24,16 @@
         <preferred-elements/>
     </transform-results>
     <searchable-expression>fn:collection()</searchable-expression>
-    <term apply="term">
-        <empty apply="all-results"/>
+    <term>
+        <default>
+            <word>
+                <weight>2.0</weight>
+            </word>
+        </default>
     </term>
     <grammar>
         <quotation>"</quotation>
-        <implicit><cts:and-query strength="20"/></implicit>
+        <implicit><cts:and-query xmlns:cts="http://marklogic.com/cts" strength="20"/></implicit>
         <starter strength="30" apply="grouping" delimiter=")">(</starter>
         <starter strength="40" apply="prefix" element="cts:not-query">-</starter>
         <joiner  strength="10" apply="infix" element="cts:or-query" tokenize="word">OR</joiner>

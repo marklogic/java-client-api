@@ -24,7 +24,7 @@ public class StructuredQueryBuilder {
         ORDERED, UNORDERED;
     }
     
-    public enum Operator {
+	public enum Operator {
         LT, LE, GT, GE, EQ, NE
     }
     

@@ -24,10 +24,9 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.configpojos.Constraint;
-import com.marklogic.client.configpojos.Value;
+import com.marklogic.client.config.QueryOptionsBuilder;
+import com.marklogic.client.config.QueryOptionsBuilder.QueryConstraint;
 import com.marklogic.client.io.QueryOptionsHandle;
-import com.marklogic.client.io.StringHandle;
 
 /**
  * QueryOptions illustrates writing, reading, and deleting query options.
@@ -57,28 +56,18 @@ public class QueryOptions {
 		// connect the client
 		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
 
+		// Create a builder for constructing query configurations.
+		QueryOptionsBuilder cb = new QueryOptionsBuilder();
+		
 		// create a manager for writing, reading, and deleting query options
 		QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
 
 		// create the query options
-		QueryOptionsHandle options = new QueryOptionsHandle()
-				.withConstraintDefinition(new Value()
-					.withElement("industry")
-					.inside(new Constraint("industry")));
+		QueryOptionsHandle options = new QueryOptionsHandle();
+		options.build(cb.constraint("industry",
+								cb.value(
+										cb.element("industry"))));
 		
-//		StringBuilder builder = new StringBuilder();
-//		builder.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-//		builder.append("<options xmlns=\"http://marklogic.com/appservices/search\">\n");
-//		builder.append("  <constraint name=\"industry\">\n");
-//		builder.append("    <value>\n");
-//		builder.append("      <element ns=\"\" name=\"industry\"/>\n");
-//		builder.append("    </value>\n");
-//		builder.append("  </constraint>\n");
-//		builder.append("</options>\n");
-
-		// initialize a handle with the query options
-		//StringHandle writeHandle = new StringHandle(builder.toString());
-
 		// write the query options to the database
 		optionsMgr.writeOptions(optionsName, options);
 
@@ -89,7 +78,7 @@ public class QueryOptions {
 		optionsMgr.readOptions(optionsName, readHandle);
 
 		// access the query options
-		List<Constraint> readConstraints = readHandle.getConstraints();
+		List<QueryConstraint> readConstraints = readHandle.getConstraints();
 
 		String constraintName = readConstraints.get(0).getName();
 		optionsMgr.deleteOptions(optionsName);

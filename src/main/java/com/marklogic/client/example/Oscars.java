@@ -33,13 +33,11 @@ import com.marklogic.client.QueryManager;
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.config.MatchDocumentSummary;
+import com.marklogic.client.config.QueryOptionsBuilder;
 import com.marklogic.client.config.StringQueryDefinition;
-import com.marklogic.client.configpojos.Constraint;
-import com.marklogic.client.configpojos.Value;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.io.StringHandle;
 
 /**
  * The Oscars example illustrates creating query options that define constraints,
@@ -78,27 +76,27 @@ public class Oscars {
 		// create a manager for writing query options
 		QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
 
+		// Create a QueryOptionsBuilder
+		QueryOptionsBuilder cb = new QueryOptionsBuilder();
 		
 		// create the query options
 		QueryOptionsHandle options = new QueryOptionsHandle()
-				.withConstraintDefinition(new Value()
-					.withAttribute("year")
-					.withElement("http://marklogic.com/wikipedia", "oscar")
-					.inside(new Constraint("year")))
-				.withConstraintDefinition(new Value()
-					.withAttribute("year")
-					.withElement("http://marklogic.com/wikipedia", "award")
-					.inside(new Constraint("award")))
-				.withConstraintDefinition(new Value()
-					.withAttribute("winner")
-					.withElement("http://marklogic.com/wikipedia", "award")
-					.inside(new Constraint("winner")))
-				.withReturnFacets(true)
-				.withReturnMetrics(true)
-				.withReturnResults(true);
-					
-
-		// write the query options to the database
+		        .build(
+						cb.constraint("year",
+								cb.value(
+										cb.attribute("year"),
+										cb.element("http://marklogic.com/wikipedia", "oscar"))),
+						cb.constraint("award",
+									cb.value(
+											cb.element("http://marklogic.com/wikipedia", "award"))),
+						cb.constraint("winner",
+								cb.value(
+										cb.attribute("winner"),
+										cb.element("http://marklogic.com/wikipedia", "award"))),
+						cb.returnFacets(true),
+						cb.returnMetrics(true),
+						cb.returnResults(true));
+				// write the query options to the database
 		optionsMgr.writeOptions(OPTIONS_NAME, options);
 
 		// release the client

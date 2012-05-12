@@ -30,7 +30,6 @@ import com.marklogic.client.config.MatchDocumentSummary;
 import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.StringQueryDefinition;
 import com.marklogic.client.config.StructuredQueryBuilder;
-import com.marklogic.client.config.search.jaxb.Response;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.HandleHelper;
 import com.marklogic.client.io.SearchHandle;
@@ -40,7 +39,6 @@ public class QueryManagerImpl implements QueryManager {
     protected JAXBContext jc = null;
     protected Unmarshaller unmarshaller = null;
     protected Marshaller m = null;
-    private Response jaxbResponse = null;
     private RESTServices services = null;
 
     public QueryManagerImpl(RESTServices services) {

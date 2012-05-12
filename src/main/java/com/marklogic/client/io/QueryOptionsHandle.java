@@ -15,11 +15,9 @@
  */
 package com.marklogic.client.io;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -34,19 +32,18 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import com.marklogic.client.Format;
-import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.config.MarkLogicBindingException;
-import com.marklogic.client.configpojos.Constraint;
-import com.marklogic.client.configpojos.ConstraintDefinition;
-import com.marklogic.client.configpojos.DefaultSuggestionSource;
-import com.marklogic.client.configpojos.Grammar;
-import com.marklogic.client.configpojos.Operator;
-import com.marklogic.client.configpojos.Options;
-import com.marklogic.client.configpojos.Range;
-import com.marklogic.client.configpojos.SortOrder;
-import com.marklogic.client.configpojos.SuggestionSource;
-import com.marklogic.client.configpojos.Term;
-import com.marklogic.client.configpojos.TransformResults;
+import com.marklogic.client.config.QueryOptionsBuilder;
+import com.marklogic.client.config.QueryOptionsBuilder.FragmentScope;
+import com.marklogic.client.config.QueryOptionsBuilder.QueryConstraint;
+import com.marklogic.client.config.QueryOptionsBuilder.QueryGrammar;
+import com.marklogic.client.config.QueryOptionsBuilder.QueryOperator;
+import com.marklogic.client.config.QueryOptionsBuilder.QueryOptions;
+import com.marklogic.client.config.QueryOptionsBuilder.QuerySortOrder;
+import com.marklogic.client.config.QueryOptionsBuilder.QuerySuggestionSource;
+import com.marklogic.client.config.QueryOptionsBuilder.QueryTerm;
+import com.marklogic.client.config.QueryOptionsBuilder.QueryTransformResults;
+import com.marklogic.client.config.marker.QueryOptionsItem;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
@@ -58,7 +55,8 @@ public final class QueryOptionsHandle extends
 	static final private Logger logger = LoggerFactory
 			.getLogger(QueryOptionsHandle.class);
 
-	private Options optionsHolder;
+	private QueryOptions optionsHolder;
+	private QueryOptionsBuilder optionsBuilder;
 	private JAXBContext jc;
 	private Marshaller marshaller;
 	private Unmarshaller unmarshaller;
@@ -74,9 +72,9 @@ public final class QueryOptionsHandle extends
 	};
 
 	@Override
-	public void receiveContent(InputStream content) {
+	protected void receiveContent(InputStream content) {
 		try {
-			optionsHolder = (Options) unmarshaller.unmarshal(content);
+			optionsHolder = (QueryOptions) unmarshaller.unmarshal(content);
 		} catch (JAXBException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -84,9 +82,9 @@ public final class QueryOptionsHandle extends
 	};
 
 	public void write(OutputStream out) throws IOException {
-		JAXBElement<Options> jaxbElement = new JAXBElement<Options>(new QName(
-				"http://marklogic.com/appservices/search", "options"),
-				Options.class, optionsHolder);
+		JAXBElement<QueryOptions> jaxbElement = new JAXBElement<QueryOptions>(
+				new QName("http://marklogic.com/appservices/search", "options"),
+				QueryOptions.class, optionsHolder);
 		try {
 			marshaller.marshal(jaxbElement, out);
 		} catch (JAXBException e) {
@@ -95,7 +93,7 @@ public final class QueryOptionsHandle extends
 		}
 	}
 
-	public OutputStreamSender sendContent() {
+	protected OutputStreamSender sendContent() {
 		return this;
 	};
 
@@ -110,51 +108,51 @@ public final class QueryOptionsHandle extends
 	/*
 	 * Getters
 	 */
-	public Boolean isReturnFacets() {
-		return returnWithDefault(optionsHolder.isReturnFacets(), true);
+	public Boolean getReturnFacets() {
+		return returnWithDefault(optionsHolder.getReturnFacets(), true);
 	}
 
-	public Boolean isReturnMetrics() {
-		return returnWithDefault(optionsHolder.isReturnMetrics(), true);
+	public Boolean getReturnMetrics() {
+		return returnWithDefault(optionsHolder.getReturnMetrics(), true);
 	}
 
-	public Boolean isReturnQtext() {
-		return returnWithDefault(optionsHolder.isReturnQtext(), false);
+	public Boolean getReturnQtext() {
+		return returnWithDefault(optionsHolder.getReturnQtext(), false);
 	}
 
-	public Boolean isReturnQuery() {
-		return returnWithDefault(optionsHolder.isReturnQuery(), false);
+	public Boolean getReturnQuery() {
+		return returnWithDefault(optionsHolder.getReturnQuery(), false);
 	}
 
-	public Boolean isReturnResults() {
-		return returnWithDefault(optionsHolder.isReturnResults(), true);
+	public Boolean getReturnResults() {
+		return returnWithDefault(optionsHolder.getReturnResults(), true);
 	}
 
-	public Boolean isReturnSimilar() {
-		return returnWithDefault(optionsHolder.isReturnSimilar(), false);
+	public Boolean getReturnSimilar() {
+		return returnWithDefault(optionsHolder.getReturnSimilar(), false);
 	}
 
-	public Boolean isDebug() {
-		return returnWithDefault(optionsHolder.isDebug(), false);
+	public Boolean getDebug() {
+		return returnWithDefault(optionsHolder.getDebug(), false);
 	}
 
-	public Boolean isReturnConstraints() {
-		return returnWithDefault(optionsHolder.isReturnConstraints(), false);
+	public Boolean getReturnConstraints() {
+		return returnWithDefault(optionsHolder.getReturnConstraints(), false);
 	}
 
-	public Boolean isReturnPlan() {
-		return returnWithDefault(optionsHolder.isReturnPlan(), false);
+	public Boolean getReturnPlan() {
+		return returnWithDefault(optionsHolder.getReturnPlan(), false);
 	}
 
 	public String getSearchableExpression() {
 		return optionsHolder.getSearchableExpression();
 	}
 
-	public Term getTerm() {
+	public QueryTerm getTerm() {
 		return optionsHolder.getTerm();
 	}
 
-	public TransformResults getTransformResults() {
+	public QueryTransformResults getTransformResults() {
 		return optionsHolder.getTransformResults();
 	}
 
@@ -182,15 +180,15 @@ public final class QueryOptionsHandle extends
 		return optionsHolder.getSearchOptions();
 	}
 
-	public List<Operator> getOperators() {
-		return optionsHolder.getOperators();
+	public List<QueryOperator> getOperators() {
+		return optionsHolder.getQueryOperators();
 	}
 
-	public List<SortOrder> getSortOrders() {
+	public List<QuerySortOrder> getSortOrders() {
 		return optionsHolder.getSortOrders();
 	}
 
-	public List<SuggestionSource> getSuggestionSources() {
+	public List<QuerySuggestionSource> getSuggestionSources() {
 		return optionsHolder.getSuggestionSources();
 	}
 
@@ -198,8 +196,96 @@ public final class QueryOptionsHandle extends
 		return optionsHolder.getAdditionalQuery();
 	}
 
-	public Grammar getGrammar() {
+	public QueryGrammar getGrammar() {
 		return optionsHolder.getGrammar();
+	}
+
+	/*
+	 * Bean Setters
+	 */
+	public void setAdditionalQuery(Element ctsQuery) {
+		optionsHolder.setAdditionalQuery(ctsQuery);
+
+	};
+
+	public void setConcurrencyLevel(Integer concurrencyLevel) {
+		optionsHolder.setConcurrencyLevel(concurrencyLevel);
+
+	}
+
+	public void setDebug(Boolean debug) {
+		optionsHolder.setDebug(debug);
+
+	}
+
+	public void setForests(List<Long> forests) {
+		optionsHolder.setForests(forests);
+
+	}
+
+	public void setFragmentScope(FragmentScope fragmentScope) {
+		optionsHolder.setFragmentScope(fragmentScope);
+
+	}
+
+	public void setPageLength(Long pageLength) {
+		optionsHolder.setPageLength(pageLength);
+
+	}
+
+	public void setQualityWeight(Double qualityWeight) {
+		optionsHolder.setQualityWeight(qualityWeight);
+
+	}
+
+	public void setReturnConstraints(Boolean returnConstraints) {
+		optionsHolder.setReturnConstraints(returnConstraints);
+
+	}
+
+	public void setReturnFacets(Boolean returnFacets) {
+		optionsHolder.setReturnFacets(returnFacets);
+
+	}
+
+	public void setReturnMetrics(Boolean returnMetrics) {
+		optionsHolder.setReturnMetrics(returnMetrics);
+
+	}
+
+	public void setReturnPlan(Boolean returnPlan) {
+		optionsHolder.setReturnPlan(returnPlan);
+
+	}
+
+	public void setReturnQueryText(Boolean returnQueryText) {
+		optionsHolder.setReturnQtext(returnQueryText);
+
+	}
+
+	public void setReturnResults(Boolean returnResults) {
+		optionsHolder.setReturnResults(returnResults);
+
+	}
+
+	public void setReturnSimilar(Boolean returnSimilar) {
+		optionsHolder.setReturnSimilar(returnSimilar);
+
+	}
+
+	public void setSearchableExpression(String searchableExpression) {
+		optionsHolder.setSearchableExpression(searchableExpression);
+
+	}
+
+	public void setSearchOptions(List<String> searchOptions) {
+		optionsHolder.setSearchOptions(searchOptions);
+
+	}
+
+	public void setTransformResults(QueryTransformResults transformResultsOption) {
+		optionsHolder.setTransformResults(transformResultsOption);
+
 	}
 
 	/*
@@ -225,10 +311,9 @@ public final class QueryOptionsHandle extends
 		return this;
 	}
 
-	public QueryOptionsHandle withForest(Long forest) {
-		List<Long> forests = new ArrayList<Long>();
-		forests.add(forest);
-		optionsHolder.setForests(forests);
+	// TODO change to be additive, and name to help indicate that.
+	public QueryOptionsHandle withAdditionalForest(Long forest) {
+		optionsHolder.getForests().add(forest);
 		return this;
 	}
 
@@ -237,11 +322,6 @@ public final class QueryOptionsHandle extends
 		if (format != Format.XML)
 			new RuntimeException(
 					"QueryOptionsHandle supports the XML format only");
-	}
-
-	public QueryOptionsHandle withFragmentScope(String fragmentScope) {
-		optionsHolder.setFragmentScope(fragmentScope);
-		return this;
 	}
 
 	public QueryOptionsHandle withPageLength(Long pageLength) {
@@ -296,34 +376,13 @@ public final class QueryOptionsHandle extends
 		return this;
 	}
 
-	public QueryOptionsHandle withSearchOptions(List<String> searchOptions) {
-		optionsHolder.setSearchOptions(searchOptions);
-		return this;
-	}
-
-	public QueryOptionsHandle withTransformResults(
-			TransformResults transformResults) {
-		optionsHolder.setTransformResults(transformResults);
-		return this;
-	}
-
-	public String toString() {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		try {
-			write(baos);
-		} catch (IOException e) {
-			throw new MarkLogicIOException(
-					"Failed to make String representation of QueryOptionsHandle",
-					e);
-		}
-		return baos.toString();
-	}
-
 	public QueryOptionsHandle() {
-		optionsHolder = new Options();
+		// FIXME make static?
+		optionsBuilder = new QueryOptionsBuilder();
+		optionsHolder = optionsBuilder.options();
 
 		try {
-			jc = JAXBContext.newInstance(Options.class);
+			jc = JAXBContext.newInstance(QueryOptions.class);
 			marshaller = jc.createMarshaller();
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 			unmarshaller = jc.createUnmarshaller();
@@ -335,75 +394,32 @@ public final class QueryOptionsHandle extends
 
 	}
 
-	public Options getOptions() {
+	public QueryOptions getOptions() {
 		return optionsHolder;
 	}
 
-	public QueryOptionsHandle with(QueryOptionsHandle options) {
-		this.optionsHolder = options.optionsHolder;
-		return this;
+	public List<QueryConstraint> getConstraints() {
+		return optionsHolder.getQueryConstraints();
 	}
 
-	public <T extends ConstraintDefinition<T>> List<T> getConstraintDefinitionsByClassName(
-			Class<T> class1) {
-		List<T> options = new ArrayList<T>();
-		for (Constraint constraint : optionsHolder.getConstraints()) {
-			T impl = constraint.getConstraintDefinition();
-			if (impl != null && impl.getClass() == class1) {
-				options.add(impl);
+	public QueryConstraint getConstraint(String constraintName) {
+		for (QueryConstraint constraintOption : getConstraints()) {
+			if (constraintOption.getName().equals(constraintName)) {
+				return constraintOption;
 			}
 		}
-		return options;
+		return null;
 	}
-
-	public List<Constraint> getConstraints() {
-		return optionsHolder.getConstraints();
-	}
-
-	public QueryOptionsHandle withConstraint(Constraint constraint) {
-		optionsHolder.getConstraints().add(constraint);
-		return this;
-	}
-
-	public QueryOptionsHandle withSuggestionSource(SuggestionSource ss) {
-		optionsHolder.getSuggestionSources().add(ss);
-		return this;
-	}
-
-	public QueryOptionsHandle withDefaultSuggestionSource(DefaultSuggestionSource dss) {
-		optionsHolder.setDefaultSuggestionSource(dss);
-		return this;
-	}
-
+	
 	/**
-	 * Convenience method for adding children of constraints, with a constraint
-	 * that has been embedded in the ConstraintDefinition object.
-	 * 
-	 * @param range
+	 * Add more QueryOptionsItems to a QueryOptionsHandle using a QueryOptionsBuilder
+	 * @param options 0 or more QueryOptionsItems
+	 * @return the resulting updated QueryOptionsHandle
 	 */
-	// TODO review this handling of way constrain
-	// TODO t
-	public QueryOptionsHandle withConstraintDefinition(ConstraintDefinition constraintDefinition) {
-		if (constraintDefinition.getConstraint() != null) {
-			this.withConstraint(constraintDefinition.getConstraint());
-		}if (constraintDefinition.getSuggestionSource() != null) {
-			this.withSuggestionSource(constraintDefinition.getSuggestionSource());
+	public QueryOptionsHandle build(QueryOptionsItem... options) {
+		for (QueryOptionsItem option : options) {
+			option.build(optionsHolder);
 		}
-		return this;
-	}
-
-	public QueryOptionsHandle withOperator(Operator operator) {
-		optionsHolder.getOperators().add(operator);
-		return this;
-	}
-
-	public QueryOptionsHandle withGrammar(Grammar g) {
-		optionsHolder.setGrammar(g);
-		return this;
-	}
-
-	public QueryOptionsHandle withTerm(Term term) {
-		optionsHolder.setTerm(term);
 		return this;
 	}
 

@@ -37,7 +37,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
         ALL, COLLECTIONS, PERMISSIONS, PROPERTIES, QUALITY;
     }
 
-	// whether all permissions and properties are replaced or only named permissions and properties
+	// whether all permissions and propertiesOption are replaced or only named permissions and propertiesOption
     public enum MetadataUpdate {
         REPLACE_ALL, REPLACE_NAMED;
     }

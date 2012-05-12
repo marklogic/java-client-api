@@ -23,14 +23,6 @@ public interface QueryOptionsManager {
 	
 	
 	/**
-	 * Create a new QueryOptionsHandle by reading a named option
-	 * from the REST server by name
-	 * @param string
-	 * @return
-	 */
-	public QueryOptionsHandle readOptions(String name);
-	
-	/**
 	 * Create a QueryOptions configuration by reading it
 	 * from the REST Server by name.
 	 * @param name

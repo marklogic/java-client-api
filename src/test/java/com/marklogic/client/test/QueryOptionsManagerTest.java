@@ -65,7 +65,7 @@ public class QueryOptionsManagerTest {
 		assertNotNull("Client could not create query options manager", mgr);
 
         QueryOptionsHandle options = new QueryOptionsHandle();
-		mgr.writeOptions("testempty", new QueryOptionsHandle().with(options));
+		mgr.writeOptions("testempty", new QueryOptionsHandle());
         
         String optionsResult = mgr.readOptions("testempty", new StringHandle()).get();
         logger.debug("Empty options from server {}", optionsResult);
@@ -120,7 +120,7 @@ public class QueryOptionsManagerTest {
 		FileHandle jsonHandle = new FileHandle(new File("src/test/resources/json-config.json"));
 		jsonHandle.setFormat(Format.JSON);
 		mgr.writeOptions("jsonoptions", jsonHandle);
-		QueryOptionsHandle options = mgr.readOptions("jsonoptions");
+		QueryOptionsHandle options = mgr.readOptions("jsonoptions", new QueryOptionsHandle());
 		
 		assertEquals("JSON options came back incorrectly", options.getConstraints().get(0).getName(), "decade");
 		

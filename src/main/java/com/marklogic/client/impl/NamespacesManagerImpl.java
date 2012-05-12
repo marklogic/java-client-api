@@ -45,7 +45,7 @@ class NamespacesManagerImpl
 	static final private Logger logger = LoggerFactory.getLogger(NamespacesManagerImpl.class);
 
 	static final private Pattern NAMESPACE_PATTERN = Pattern.compile(
-		"<([^: >]+:)?namespace-uri(\\s[^>]+)?>([^<>]+)</([^: >]+:)?namespace-uri>"
+		"<([^: >]+:)?uri(\\s[^>]+)?>([^<>]+)</([^: >]+:)?uri>"
 		);
 
 	private RESTServices services;
@@ -87,7 +87,7 @@ class NamespacesManagerImpl
 
 			Document document = factory.newDocumentBuilder().parse(stream);
 			NodeList bindings =
-				document.getElementsByTagNameNS("http://marklogic.com/xdmp/group", "namespace");
+				document.getElementsByTagNameNS("http://marklogic.com/rest-api", "namespace");
 			if (bindings == null)
 				return null;
 	
@@ -112,7 +112,7 @@ class NamespacesManagerImpl
 					Element element = (Element) child;
 					if ("prefix".equals(element.getLocalName()))
 						prefix = element.getTextContent();
-					else if ("namespace-uri".equals(element.getLocalName()))
+					else if ("uri".equals(element.getLocalName()))
 						namespaceUri = element.getTextContent();
 				}
 				if (prefix == null || namespaceUri == null)
@@ -142,10 +142,12 @@ class NamespacesManagerImpl
 
 		String structure =
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"+
-			"<namespace xmlns=\"http://marklogic.com/xdmp/group\">\n"+
+			"<namespace-bindings xmlns=\"http://marklogic.com/rest-api\">" +
+			"<namespace>\n"+
 			"    <prefix>"+prefix+"</prefix>\n"+
-			"    <namespace-uri>"+namespaceUri+"</namespace-uri>\n"+
-			"</namespace>\n";
+			"    <uri>"+namespaceUri+"</uri>\n"+
+			"</namespace>\n"+
+			"</namespace-bindings>";
 
 		services.postValue(requestLogger, "config/namespaces", prefix, "application/xml", structure);
 	}
@@ -158,9 +160,9 @@ class NamespacesManagerImpl
 
 		String structure =
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"+
-			"<namespace xmlns=\"http://marklogic.com/xdmp/group\">\n"+
+			"<namespace xmlns=\"http://marklogic.com/rest-api\">\n"+
 			"    <prefix>"+prefix+"</prefix>\n"+
-			"    <namespace-uri>"+namespaceUri+"</namespace-uri>\n"+
+			"    <uri>"+namespaceUri+"</uri>\n"+
 			"</namespace>\n";
 
 		services.putValue(requestLogger, "config/namespaces", prefix, "application/xml", structure);

@@ -18,12 +18,8 @@ package com.marklogic.client.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.Format;
 import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.config.QueryOptions;
-import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.HandleHelper;
-import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
@@ -43,11 +39,6 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 	@Override
 	public void deleteOptions(String name) {
 		services.deleteValue(null, QUERY_OPTIONS_BASE, name);
-	}
-
-	@Override
-	public QueryOptionsHandle readOptions(String name) {
-		return readOptions(name, new QueryOptionsHandle());
 	}
 	
 	@Override
