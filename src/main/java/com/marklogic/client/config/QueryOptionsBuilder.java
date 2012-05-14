@@ -100,6 +100,7 @@ public final class QueryOptionsBuilder {
 		private Boolean debug;
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "searchable-expression")
 		private String searchableExpression;
+		@SuppressWarnings("rawtypes")
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "term")
 		private QueryTerm termConfig;
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "transform-results")
@@ -129,7 +130,7 @@ public final class QueryOptionsBuilder {
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "grammar")
 		private QueryGrammar grammarOption;
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "default-suggestion-source")
-		private QueryDefaultSuggestionSource queryDefaultSuggestionSource;
+		private QueryDefaultSuggestionSource defaultSuggestionSource;
 
 		public QueryOptions() {
 			// options that can have more than one cardinality
@@ -248,10 +249,12 @@ public final class QueryOptionsBuilder {
 			this.searchableExpression = searchableExpression;
 		}
 
+		@SuppressWarnings("rawtypes")
 		public QueryTerm getTerm() {
 			return termConfig;
 		}
 
+		@SuppressWarnings("rawtypes")
 		public void setTerm(QueryTerm termConfig) {
 			this.termConfig = termConfig;
 		}
@@ -372,7 +375,7 @@ public final class QueryOptionsBuilder {
 		}
 
 		public void setDefaultSuggestionSource(QueryDefaultSuggestionSource dss) {
-			this.queryDefaultSuggestionSource = dss;
+			this.defaultSuggestionSource = dss;
 		}
 
 		@Override
@@ -561,6 +564,8 @@ public final class QueryOptionsBuilder {
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "word")
 		private QueryWord word;
 
+		
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		public <T extends BaseConstraintItem> T getConstraintConfiguration() {
 			if (collection != null) {
 				return (T) collection;
@@ -586,6 +591,7 @@ public final class QueryOptionsBuilder {
 			return null;
 		}
 
+		@SuppressWarnings("rawtypes")
 		public <T extends BaseConstraintItem> void setImplementation(
 				T constraintDefinition) {
 			if (constraintDefinition.getClass() == QueryCollection.class) {
@@ -2514,6 +2520,7 @@ public final class QueryOptionsBuilder {
 		return collectionOption;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public QueryConstraint constraint(String name,
 			BaseConstraintItem constraintPart) {
 		QueryConstraint constraintOption = new QueryConstraint(name);
@@ -2978,6 +2985,7 @@ public final class QueryOptionsBuilder {
 	/**
 	 * Build a term configuration object.
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public QueryTerm term(QueryTermItem... termOptions) {
 		QueryTerm term = new QueryTerm();
 		for (QueryTermItem option : termOptions) {
