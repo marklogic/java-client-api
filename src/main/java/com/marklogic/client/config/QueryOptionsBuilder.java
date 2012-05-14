@@ -48,18 +48,6 @@ import com.marklogic.client.config.QueryOptionsBuilder.QueryGrammar.Tokenize;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryRange.Bucket;
 import com.marklogic.client.config.QueryOptionsBuilder.QuerySortOrder.Direction;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryTerm.TermApply;
-import com.marklogic.client.config.marker.GrammarItem;
-import com.marklogic.client.config.marker.IndexReference;
-import com.marklogic.client.config.marker.Indexable;
-import com.marklogic.client.config.marker.QueryAnnotations;
-import com.marklogic.client.config.marker.QueryConstraintItem;
-import com.marklogic.client.config.marker.QueryOptionsItem;
-import com.marklogic.client.config.marker.QueryRangeItem;
-import com.marklogic.client.config.marker.QuerySortOrderItem;
-import com.marklogic.client.config.marker.QuerySuggestionSourceItem;
-import com.marklogic.client.config.marker.QueryTermItem;
-import com.marklogic.client.config.marker.QueryValueItem;
-import com.marklogic.client.config.marker.QueryWordItem;
 
 /**
  * Builder of QueryOptions objects, which are used to configure MarkLogic
@@ -3081,4 +3069,65 @@ public final class QueryOptionsBuilder {
 		return factory;
 	}
 
+public interface GrammarItem {
+
+}
+
+public interface IndexReference extends QueryWordItem, QueryRangeItem, QueryValueItem, QuerySortOrderItem {
+
+
+}
+public interface Indexable {
+
+	/**
+	 * Add a reference to an element to this ConstraintBase
+	 */
+	public void setElement(Element element);
+
+	public void setAttribute(Attribute attribute);
+
+	public QName getAttribute();
+
+	public QName getElement();
+
+	public String getFieldName();
+
+	public void setField(Field field);
+}
+public interface QueryAnnotations {
+
+
+	public List<QueryAnnotation> getAnnotations();
+    public void addElementAsAnnotation(org.w3c.dom.Element element);
+    public void deleteAnnotations();
+
+}
+
+public interface QueryConstraintItem extends QueryTermItem {
+
+}
+public interface QueryOptionsItem {
+
+	public void build(QueryOptions options);
+}
+public interface QueryRangeItem {
+
+}
+public interface QuerySortOrderItem {
+
+}
+public interface QueryWordItem {
+
+}
+public interface QueryValueItem {
+
+}
+public interface QueryTermItem {
+
+}
+public interface QuerySuggestionSourceItem {
+
+	void build(QuerySuggestionSource suggestionSource);
+
+}
 }

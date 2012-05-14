@@ -39,11 +39,11 @@ import com.marklogic.client.config.QueryOptionsBuilder.QueryConstraint;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryGrammar;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryOperator;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryOptions;
+import com.marklogic.client.config.QueryOptionsBuilder.QueryOptionsItem;
 import com.marklogic.client.config.QueryOptionsBuilder.QuerySortOrder;
 import com.marklogic.client.config.QueryOptionsBuilder.QuerySuggestionSource;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryTerm;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryTransformResults;
-import com.marklogic.client.config.marker.QueryOptionsItem;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
