@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.io;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.config.MarkLogicBindingException;
 import com.marklogic.client.config.QueryOptionsBuilder;
 import com.marklogic.client.config.QueryOptionsBuilder.FragmentScope;
@@ -288,34 +291,6 @@ public final class QueryOptionsHandle extends
 
 	}
 
-	/*
-	 * Fluent setters
-	 */
-	public QueryOptionsHandle withAdditionalQuery(Element ctsQuery) {
-		optionsHolder.setAdditionalQuery(ctsQuery);
-		return this;
-	};
-
-	public QueryOptionsHandle withConcurrencyLevel(Integer concurrencyLevel) {
-		optionsHolder.setConcurrencyLevel(concurrencyLevel);
-		return this;
-	}
-
-	public QueryOptionsHandle withDebug(Boolean debug) {
-		optionsHolder.setDebug(debug);
-		return this;
-	}
-
-	public QueryOptionsHandle withForests(List<Long> forests) {
-		optionsHolder.setForests(forests);
-		return this;
-	}
-
-	// TODO change to be additive, and name to help indicate that.
-	public QueryOptionsHandle withAdditionalForest(Long forest) {
-		optionsHolder.getForests().add(forest);
-		return this;
-	}
 
 	@Override
 	public void setFormat(Format format) {
@@ -324,57 +299,6 @@ public final class QueryOptionsHandle extends
 					"QueryOptionsHandle supports the XML format only");
 	}
 
-	public QueryOptionsHandle withPageLength(Long pageLength) {
-		optionsHolder.setPageLength(pageLength);
-		return this;
-	}
-
-	public QueryOptionsHandle withQualityWeight(Double qualityWeight) {
-		optionsHolder.setQualityWeight(qualityWeight);
-		return this;
-	}
-
-	public QueryOptionsHandle withReturnConstraints(Boolean returnConstraints) {
-		optionsHolder.setReturnConstraints(returnConstraints);
-		return this;
-	}
-
-	public QueryOptionsHandle withReturnFacets(Boolean returnFacets) {
-		optionsHolder.setReturnFacets(returnFacets);
-		return this;
-	}
-
-	public QueryOptionsHandle withReturnMetrics(Boolean returnMetrics) {
-		optionsHolder.setReturnMetrics(returnMetrics);
-		return this;
-	}
-
-	public QueryOptionsHandle withReturnPlan(Boolean returnPlan) {
-		optionsHolder.setReturnPlan(returnPlan);
-		return this;
-	}
-
-	public QueryOptionsHandle withReturnQueryText(Boolean returnQueryText) {
-		optionsHolder.setReturnQtext(returnQueryText);
-		return this;
-	}
-
-	public QueryOptionsHandle withReturnResults(Boolean returnResults) {
-		optionsHolder.setReturnResults(returnResults);
-		return this;
-	}
-
-	public QueryOptionsHandle withReturnSimilar(Boolean returnSimilar) {
-		optionsHolder.setReturnSimilar(returnSimilar);
-		return this;
-
-	}
-
-	public QueryOptionsHandle withSearchableExpression(
-			String searchableExpression) {
-		optionsHolder.setSearchableExpression(searchableExpression);
-		return this;
-	}
 
 	public QueryOptionsHandle() {
 		// FIXME make static?
@@ -398,6 +322,17 @@ public final class QueryOptionsHandle extends
 		return optionsHolder;
 	}
 
+	public String toXMLString() {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try {
+			this.write(baos);
+		} catch (IOException e) {
+			throw new MarkLogicIOException(e);
+		}
+		return baos.toString();
+	}
+	
+	
 	public List<QueryConstraint> getConstraints() {
 		return optionsHolder.getQueryConstraints();
 	}

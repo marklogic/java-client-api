@@ -69,7 +69,7 @@ public class QueryOptionsManagerTest {
         
         String optionsResult = mgr.readOptions("testempty", new StringHandle()).get();
         logger.debug("Empty options from server {}", optionsResult);
-        assertTrue("Empty options result not empty",optionsResult.contains("options xml:lang=\"en\""));
+        assertTrue("Empty options result not empty",optionsResult.contains("options"));
         assertTrue("Empty options result not empty",optionsResult.contains("\"http://marklogic.com/appservices/search\"/>"));
 		
 		mgr.deleteOptions("testempty");

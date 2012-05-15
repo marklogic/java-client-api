@@ -41,6 +41,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.QueryOptionsManager;
+import com.marklogic.client.ServerConfigurationManager;
 import com.marklogic.client.config.QueryOptionsBuilder;
 import com.marklogic.client.config.QueryOptionsBuilder.FragmentScope;
 import com.marklogic.client.config.QueryOptionsBuilder.GeoAttrPair;
@@ -79,13 +80,15 @@ import com.marklogic.client.config.QueryOptionsBuilder.XQueryExtension;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.test.util.QueryOptionsUtilities;
 
 public class QueryOptionsHandleTest {
 
 	private static QueryOptionsManager mgr;
 	private static QueryOptionsHandle testOptions;
 	private static QueryOptionsHandle geoOptions;
+	private static ServerConfigurationManager serverConfig;
+	private static Boolean initialConfig;
+	
 	private static QueryOptionsBuilder cb;
 
 	private static final Logger logger = (Logger) LoggerFactory
@@ -110,12 +113,22 @@ public class QueryOptionsHandleTest {
 	@BeforeClass
 	public static void setupTestOptions() throws FileNotFoundException {
 		Common.connectAdmin();
+		serverConfig = Common.client.newServerConfigurationManager();
+
+		serverConfig.readConfiguration();
+		initialConfig = serverConfig.getQueryOptionValidation();
+
+		serverConfig.setQueryOptionValidation(false);
+		serverConfig.writeConfiguration();
+
 		mgr = Common.client.newQueryOptionsManager();
+	
 		optionsPOJOs = new ArrayList<QueryOptionsHandle>();
 
 		for (String option : testOptionsCorpus) {
 			FileHandle f = new FileHandle(new File("src/test/resources/"
 					+ option));
+			logger.debug(option);
 			mgr.writeOptions("tmp", f);
 			QueryOptionsHandle handle = mgr.readOptions("tmp",
 					new QueryOptionsHandle());
@@ -128,6 +141,12 @@ public class QueryOptionsHandleTest {
 
 		cb = new QueryOptionsBuilder();
 	}
+	
+	@AfterClass
+	public static void resetOptionsValidation() {
+		serverConfig.setQueryOptionValidation(initialConfig);
+		serverConfig.writeConfiguration();
+	}
 
 	@Test
 	public void buildCollectionConstraint() {
@@ -137,7 +156,7 @@ public class QueryOptionsHandleTest {
 				cb.collection(true, "http://myprefix",
 						cb.facetOption("limit=10"))));
 
-		String optionsString = QueryOptionsUtilities.toXMLString(mgr, options);
+		String optionsString = options.toXMLString();
 		QueryCollection c = options.getConstraints().get(0)
 				.getConstraintConfiguration();
 		logger.debug(optionsString);
@@ -245,7 +264,7 @@ public class QueryOptionsHandleTest {
 				"http://marklogic.com/wikipedia", "nominee"));
 		assertEquals(range.getAttribute(), new QName("year"));
 
-		String optionsString = QueryOptionsUtilities.toXMLString(mgr, options);
+		String optionsString = options.toXMLString();
 
 		logger.debug(optionsString);
 		// namespace prefixes make these comparisons tricky.
@@ -294,7 +313,7 @@ public class QueryOptionsHandleTest {
 
 		mgr.writeOptions("tmp", options);
 		QueryOptionsHandle options2 = mgr.readOptions("tmp", new QueryOptionsHandle());
-		String optionsString = QueryOptionsUtilities.toXMLString(mgr, options2);
+		String optionsString = options.toXMLString();
 		logger.debug(optionsString);
 
 		assertEquals(
@@ -351,7 +370,7 @@ public class QueryOptionsHandleTest {
 
 		assertEquals(vc.getElement(), new QName("sumlev"));
 
-		String optionsString = QueryOptionsUtilities.toXMLString(mgr, options);
+		String optionsString = options.toXMLString();
 		logger.debug(optionsString);
 
 		assertTrue(
@@ -370,7 +389,7 @@ public class QueryOptionsHandleTest {
 				.getConstraintConfiguration();
 		assertEquals(wc.getFieldName(), "titlefield");
 
-		String optionsString = QueryOptionsUtilities.toXMLString(mgr, options);
+		String optionsString = options.toXMLString();
 		logger.debug(optionsString);
 
 		assertTrue(
@@ -392,8 +411,8 @@ public class QueryOptionsHandleTest {
 
 		Element uri = (Element) e.getFirstChild();
 		uri.setTextContent("/oscars2/");
-		options.withAdditionalQuery(e);
-		optionsString = QueryOptionsUtilities.toXMLString(mgr, options);
+		options.build(cb.additionalQuery(e));
+		optionsString = options.toXMLString();
 
 		logger.debug(optionsString);
 		assertTrue("Updated Option not updated from AdditionalQuery",
@@ -420,11 +439,11 @@ public class QueryOptionsHandleTest {
 
 		options.build(cb.operator("sortcolor", cb.state("pantone", so)));
 
-		String optionsString = QueryOptionsUtilities.toXMLString(mgr, options);
+		String optionsString = options.toXMLString();
 
 		logger.debug("Sort order found from test config {}", optionsString);
 		assertTrue("Sort order should contain empty score element",
-				optionsString.contains("<search:score/>"));
+				optionsString.contains("<search:score></search:score>"));
 		assertTrue("Sort order should contain element index def",
 				optionsString.contains("name=\"green\""));
 
@@ -594,10 +613,10 @@ public class QueryOptionsHandleTest {
 	@Test
 	public void setReturnFacets() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.withReturnFacets(true);
+		options.build(cb.returnFacets(true));
 		logger.debug("here is return facets: " + options.getReturnFacets());
 		assertTrue(options.getReturnFacets());
-		options.withReturnFacets(false);
+		options.build(cb.returnFacets(false));
 		logger.debug("here is return facets: " + options.getReturnFacets());
 		assertTrue(!options.getReturnFacets());
 	}
@@ -655,8 +674,7 @@ public class QueryOptionsHandleTest {
 			ParserConfigurationException {
 		for (QueryOptionsHandle option : optionsPOJOs) {
 
-			Document document = QueryOptionsUtilities.toDocument(mgr, option);
-			Element rootElement = document.getDocumentElement();
+			Element rootElement = domElement(option);
 			assertEquals(
 					"QName of root element incorrect",
 					new QName("http://marklogic.com/appservices/search",
@@ -679,6 +697,10 @@ public class QueryOptionsHandleTest {
 				logger.debug("Text {} found for return-facets.", text);
 			}
 		}
+	}
+
+	private Element domElement(QueryOptionsHandle option) {
+		return cb.domElement(option.toXMLString());
 	}
 
 	@Test

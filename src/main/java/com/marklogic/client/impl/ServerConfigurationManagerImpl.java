@@ -85,7 +85,7 @@ class ServerConfigurationManagerImpl
 	public void writeConfiguration() {
 		logger.info("Writing server configuration");
 
-		services.postValues(null, "config/properties", "application/xml", this);
+		services.putValue(null, "config/properties", null, "application/xml", this);
 	}
 	@Override
 	public void write(OutputStream out) throws IOException {
@@ -95,7 +95,7 @@ class ServerConfigurationManagerImpl
 
 			XMLStreamWriter serializer = factory.createXMLStreamWriter(out, "utf-8");
 
-//			serializer.writeStartElement("properties");
+			serializer.writeStartElement("properties");
 
 			if (validatingQueryOptions != null) {
 				serializer.writeStartElement("validate-options");

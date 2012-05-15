@@ -393,7 +393,7 @@ public final class QueryOptionsBuilder {
 	 * @see com.marklogic.client.configpojos.QueryGrammar
 	 */
 	@XmlAccessorType(XmlAccessType.FIELD)
-	public static class AnyElement {
+	public static class AnyElement implements QueryOptionsItem {
 
 		@XmlAnyElement
 		private org.w3c.dom.Element element;
@@ -407,6 +407,11 @@ public final class QueryOptionsBuilder {
 
 		public org.w3c.dom.Element getValue() {
 			return element;
+		}
+
+		@Override
+		public void build(QueryOptions options) {
+			options.setAdditionalQuery(element);
 		}
 
 	}
@@ -2468,7 +2473,7 @@ public final class QueryOptionsBuilder {
 	}
 
 	public Attribute attribute(String name) {
-		return new Attribute(null, name);
+		return new Attribute("", name);
 	}
 
 	public Attribute attribute(String ns, String name) {
@@ -2578,7 +2583,7 @@ public final class QueryOptionsBuilder {
 	 *            XML for an element.
 	 * @return w3c.dom.Element representation of this XML String.
 	 */
-	public static org.w3c.dom.Element domElement(String xmlString) {
+	public  org.w3c.dom.Element domElement(String xmlString) {
 		org.w3c.dom.Element element = null;
 		try {
 			ByteArrayInputStream bais = new ByteArrayInputStream(
@@ -2638,6 +2643,9 @@ public final class QueryOptionsBuilder {
 		return new Field(name);
 	}
 
+	public AnyElement additionalQuery(org.w3c.dom.Element element) {
+		return new AnyElement(element);
+	}
 
 	/**
 	 * Construct a new GrammarOption

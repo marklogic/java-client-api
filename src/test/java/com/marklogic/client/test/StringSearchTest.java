@@ -27,6 +27,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.QueryManager;
@@ -34,13 +36,16 @@ import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.config.MatchDocumentSummary;
 import com.marklogic.client.config.MatchLocation;
 import com.marklogic.client.config.QueryOptionsBuilder;
-import com.marklogic.client.config.StringQueryDefinition;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryRange;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryTransformResults;
+import com.marklogic.client.config.StringQueryDefinition;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.SearchHandle;
 
 public class StringSearchTest {
+	private static final Logger logger = (Logger) LoggerFactory
+			.getLogger(QueryOptionsHandleTest.class);
+	
     @BeforeClass
     public static void beforeClass() {
         Common.connectAdmin();
@@ -58,7 +63,7 @@ public class StringSearchTest {
         // Get back facets...
         QueryOptionsHandle options = new QueryOptionsHandle();
         QueryOptionsBuilder builder = new QueryOptionsBuilder();
-        options.withReturnFacets(true);
+        options.build(builder.returnFacets(true));
         options.build(
         		builder.constraint("decade", 
         				builder.range(true, new QName("xs:gYear"),
@@ -84,8 +89,11 @@ public class StringSearchTest {
         QueryTransformResults tresults = builder.transformResults("raw");
         options.build(tresults);
 
+        
         QueryOptionsManager queryOptionsMgr = Common.client.newQueryOptionsManager();
 
+        logger.error(options.toXMLString());
+        
         queryOptionsMgr.writeOptions(optionsName, options);
 
         QueryManager queryMgr = Common.client.newQueryManager();
