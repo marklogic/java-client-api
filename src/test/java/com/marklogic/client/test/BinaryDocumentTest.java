@@ -21,22 +21,21 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import javax.xml.bind.DatatypeConverter;
+
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
-import javax.xml.bind.DatatypeConverter;
-
-import com.marklogic.client.BinaryDocumentManager;
 import com.marklogic.client.AbstractDocumentManager.Metadata;
+import com.marklogic.client.BinaryDocumentManager;
 import com.marklogic.client.BinaryDocumentManager.MetadataExtraction;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.StringHandle;
 
 public class BinaryDocumentTest {
 	@BeforeClass
