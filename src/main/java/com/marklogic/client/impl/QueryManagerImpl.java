@@ -30,7 +30,6 @@ import com.marklogic.client.config.MatchDocumentSummary;
 import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.StringQueryDefinition;
 import com.marklogic.client.config.StructuredQueryBuilder;
-import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.HandleHelper;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;

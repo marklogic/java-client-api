@@ -108,23 +108,30 @@ docMgr.write(docId, handle);
 </p>
 <h2>Working with the Query Options Manager</h2>
 <p>
-	To search in a database, you create indexes on the fields and elements
-	of documents and define constraints that specify how to search on these
-	indexes.  Use {@link com.marklogic.client.QueryOptionsManager} to write,
-	read, and delete query options. 
+    To prepare a database for search applications, you will have created
+    indexes on the fields and elements of documents.  A QueryOptionsHandle
+    object provides hooks for configuring search and query applications' use of
+    indexes.  Use {@link com.marklogic.client.QueryOptionsManager} to write,
+    read, and delete query options.   Use {@link
+    com.marklogic.client.io.QueryOptionsHandle} to manipulate QueryOptions
+    configurations.  Use {@link
+    com.marklogic.client.config.QueryOptionsBuilder} to build new
+    configurations or add to existing ones.
 </p>
 <p>
-	The following example writes new query options named "shipments" with a single constraint.
-	The constraint names the "port" location within documents for queries that use the
-	"shipments" query options.
+    The following example writes new query options named "shipments" with a
+    single constraint.  The constraint, of type "value" names the "port"
+    location within documents for queries that use the "shipments" query
+    options.
 </p>
 <pre>
 QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
 
 QueryOptionsHandle handle = new QueryOptionsHandle();
-ValueConstraint constraint = new ValueConstraintImpl("port");
-constraint.addElementIndex(new QName("port"));
-handle.add(constraint);
+QueryOptionsBuilder builder = new QueryOptionsBuilder();
+handle.build(
+    builder.value("port"),
+        builder.element("port"));
 
 optionsMgr.writeOptions("shipments", handle);
 </pre>

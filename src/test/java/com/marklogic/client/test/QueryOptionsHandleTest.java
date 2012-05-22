@@ -35,48 +35,48 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.ServerConfigurationManager;
+import com.marklogic.client.config.QueryOptions;
+import com.marklogic.client.config.QueryOptions.FragmentScope;
+import com.marklogic.client.config.QueryOptions.Heatmap;
+import com.marklogic.client.config.QueryOptions.QueryAnnotation;
+import com.marklogic.client.config.QueryOptions.QueryCollection;
+import com.marklogic.client.config.QueryOptions.QueryConstraint;
+import com.marklogic.client.config.QueryOptions.QueryCustom;
+import com.marklogic.client.config.QueryOptions.QueryDefaultSuggestionSource;
+import com.marklogic.client.config.QueryOptions.QueryElementQuery;
+import com.marklogic.client.config.QueryOptions.QueryGeospatialAttributePair;
+import com.marklogic.client.config.QueryOptions.QueryGeospatialElement;
+import com.marklogic.client.config.QueryOptions.QueryGeospatialElementPair;
+import com.marklogic.client.config.QueryOptions.QueryGrammar;
+import com.marklogic.client.config.QueryOptions.QueryGrammar.QueryJoiner;
+import com.marklogic.client.config.QueryOptions.QueryGrammar.QueryJoiner.Comparator;
+import com.marklogic.client.config.QueryOptions.QueryGrammar.QueryJoiner.JoinerApply;
+import com.marklogic.client.config.QueryOptions.QueryGrammar.QueryStarter;
+import com.marklogic.client.config.QueryOptions.QueryGrammar.Tokenize;
+import com.marklogic.client.config.QueryOptions.QueryOperator;
+import com.marklogic.client.config.QueryOptions.QueryProperties;
+import com.marklogic.client.config.QueryOptions.QueryRange;
+import com.marklogic.client.config.QueryOptions.QueryRange.Bucket;
+import com.marklogic.client.config.QueryOptions.QueryRange.ComputedBucket;
+import com.marklogic.client.config.QueryOptions.QueryRange.ComputedBucket.AnchorValue;
+import com.marklogic.client.config.QueryOptions.QuerySortOrder;
+import com.marklogic.client.config.QueryOptions.QuerySortOrder.Direction;
+import com.marklogic.client.config.QueryOptions.QueryState;
+import com.marklogic.client.config.QueryOptions.QuerySuggestionSource;
+import com.marklogic.client.config.QueryOptions.QueryTerm;
+import com.marklogic.client.config.QueryOptions.QueryTerm.TermApply;
+import com.marklogic.client.config.QueryOptions.QueryTransformResults;
+import com.marklogic.client.config.QueryOptions.QueryValue;
+import com.marklogic.client.config.QueryOptions.QueryValues;
+import com.marklogic.client.config.QueryOptions.QueryWord;
+import com.marklogic.client.config.QueryOptions.XQueryExtension;
 import com.marklogic.client.config.QueryOptionsBuilder;
-import com.marklogic.client.config.QueryOptionsBuilder.FragmentScope;
-import com.marklogic.client.config.QueryOptionsBuilder.GeoAttrPair;
-import com.marklogic.client.config.QueryOptionsBuilder.GeoElement;
-import com.marklogic.client.config.QueryOptionsBuilder.GeoElementPair;
-import com.marklogic.client.config.QueryOptionsBuilder.Heatmap;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryAnnotation;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryCollection;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryConstraint;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryCustom;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryDefaultSuggestionSource;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryElementQuery;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryGrammar;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryGrammar.QueryJoiner;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryGrammar.QueryJoiner.Comparator;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryGrammar.QueryJoiner.JoinerApply;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryGrammar.QueryStarter;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryGrammar.Tokenize;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryOperator;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryOptions;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryProperties;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryRange;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryRange.Bucket;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryRange.QueryComputedBucket;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryRange.QueryComputedBucket.AnchorValue;
-import com.marklogic.client.config.QueryOptionsBuilder.QuerySortOrder;
-import com.marklogic.client.config.QueryOptionsBuilder.QuerySortOrder.Direction;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryState;
-import com.marklogic.client.config.QueryOptionsBuilder.QuerySuggestionSource;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryTerm;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryTerm.TermApply;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryTransformResults;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryValue;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryWord;
-import com.marklogic.client.config.QueryOptionsBuilder.XQueryExtension;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
@@ -158,7 +158,7 @@ public class QueryOptionsHandleTest {
 
 		String optionsString = options.toXMLString();
 		QueryCollection c = options.getConstraints().get(0)
-				.getConstraintConfiguration();
+				.getSource();
 		logger.debug(optionsString);
 		assertTrue(
 				"Serialized CollectionConstraintImpl should contain facet option",
@@ -171,14 +171,17 @@ public class QueryOptionsHandleTest {
 	@Test
 	public void buildCustomConstraint() {
 		QueryConstraint constraintOption = cb.constraint("queryCustom", cb
-				.customFacet(cb.extension("parse", "http://my/namespace",
-						"/my/parse.xqy"), cb.extension("start",
-						"http://my/namespace", "/my/start.xqy"), cb.extension(
-						"finish", "http://my/namespace", "/my/finish.xqy")));
+				.customFacet(
+						cb.parse("parse", "http://my/namespace","/my/parse.xqy"), 
+						cb.startFacet("start", "http://my/namespace", "/my/start.xqy"), 
+						cb.finishFacet("finish", "http://my/namespace", "/my/finish.xqy"),
+						cb.facetOption("limit=10"),
+						cb.termOption("punctuation-insensitive"),
+						cb.annotation("<a>annotation</a>")));
 
 		QueryOptionsHandle options = new QueryOptionsHandle();
 		options.build(constraintOption);
-		QueryCustom queryCustom = constraintOption.getConstraintConfiguration();
+		QueryCustom queryCustom = (QueryCustom) constraintOption.getSource();
 		assertEquals("queryCustom constraint builder", "parse", queryCustom
 				.getParse().getApply());
 		assertEquals("queryCustom constraint builder", "/my/finish.xqy",
@@ -192,7 +195,7 @@ public class QueryOptionsHandleTest {
 
 		options = mgr.readOptions("tmp", new QueryOptionsHandle());
 		List<QueryConstraint> l = options.getConstraints();
-		QueryCustom cc = (QueryCustom) l.get(0).getConstraintConfiguration();
+		QueryCustom cc = (QueryCustom) l.get(0).getSource();
 
 		logger.debug(options.toString());
 
@@ -207,13 +210,15 @@ public class QueryOptionsHandleTest {
 		assertEquals("Name for queryCustom constratin", l.get(0).getName(),
 				"queryCustom");
 
+		options = new QueryOptionsHandle();
+		options.build(cb.constraint("customParse", cb.customParse(cb.extension("myfunc", "http:/my/namespace", "/my/at.xqy"))));
 	}
 
 	@Test
 	public void buildGrammar() {
 		QueryGrammar g = cb
 				.grammar(
-						cb.quotation("\""),
+						"\"",
 						cb.domElement("<cts:and-query strength=\"20\" xmlns:cts=\"http://marklogic.com/cts\"/>"),
 						cb.starterGrouping("(", 30, ")"), cb.starterPrefix("-",
 								40, new QName("cts:not-query)")), cb.joiner(
@@ -245,7 +250,7 @@ public class QueryOptionsHandleTest {
 	public void buildRangeConstraintTest() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
 
-		QueryRange range = cb.range(cb.facet(true), cb.type("xs:gYear"),
+		QueryRange range = cb.range(true, cb.type("xs:gYear"),
 				cb.element("http://marklogic.com/wikipedia", "nominee"),
 				cb.attribute("year"), cb.bucket("2000s", "2000s", null, null),
 				cb.bucket("1990s", "1990s", "1990", "2000"),
@@ -282,17 +287,28 @@ public class QueryOptionsHandleTest {
 		assertEquals("Bucket valueOption should be as expected. ", b.getLt(),
 				"2000");
 
-		QueryComputedBucket c = new QueryComputedBucket();
-		c.setAnchor(AnchorValue.NOW);
-		range.deleteBuckets();
-		range.addComputedBucket(c);
-
-		List<QueryComputedBucket> computedBuckets = range.getComputedBuckets();
-		assertEquals("Size of computed buckets", 1, computedBuckets.size());
-		QueryComputedBucket computedBucket = computedBuckets.get(0);
+		QueryOptionsHandle options2 = new QueryOptionsHandle();
+		options2.build(cb.constraint("date", cb.range(false, new QName("xs:dateTime"),
+				cb.computedBucket("older", "Older than 1 years", null, "-P365D", AnchorValue.NOW),
+				cb.computedBucket("year", "1 month to 1 year ago", "-P30D", "-P365D", AnchorValue.NOW),
+				cb.computedBucket("month", "7 to 30 days ago", "-P30D", "-P7D", AnchorValue.NOW),
+				cb.computedBucket("week", "1 to 7 days ago", "-P7D", "-P1D", AnchorValue.NOW),
+				cb.computedBucket("today", "Today", "-P1D", "P0D", AnchorValue.NOW),
+				cb.computedBucket("future", "Future", "P0D", null, AnchorValue.NOW),
+				cb.facetOption("limit=10"),
+				cb.facetOption("descending"),
+				cb.element("http://purl.org/dc/elements/1.1/", "date"))));
+		
+		
+		List<ComputedBucket> computedBuckets = ((QueryRange) options2.getConstraint("date").getSource()).getComputedBuckets();
+		assertEquals("Size of computed buckets", 6, computedBuckets.size());
+		ComputedBucket computedBucket = computedBuckets.get(0);
 
 		assertEquals("Computed bucket anchor", AnchorValue.NOW,
 				computedBucket.getAnchorValue());
+		assertNull("Computed bucket ge value", computedBucket.getGe());
+		assertEquals("Computed bucket lt value", "-P365D", computedBucket.getLt());
+		
 	}
 
 	@Test
@@ -306,7 +322,7 @@ public class QueryOptionsHandleTest {
 						cb.range(false, new QName("gs:year"),
 								cb.element("http://marklogic.com/wikipedia", "nominee"),
 								cb.attribute("year")),
-						cb.suggestionSource("suggestionOption"),
+						cb.suggestionSourceOption("suggestionOption"),
 						cb.wordLexicon("http://marklogic.com/collation", FragmentScope.DOCUMENTS)));
 				
 		options.build(dss);
@@ -326,6 +342,16 @@ public class QueryOptionsHandleTest {
 				options2.getSuggestionSources().get(0).getWordLexicon().getFragmentScope());
 
 		assertEquals("Suggestion Option", "suggestionOption", options.getSuggestionSources().get(0).getSuggestionOptions().get(0));
+		
+		// Suggestion Source with ref.
+		options = new QueryOptionsHandle();
+		options.build(
+				cb.constraint("nominee",
+						cb.range(false, new QName("gs:year"),
+								cb.element("http://marklogic.com/wikipedia", "nominee"),
+								cb.attribute("year"))),
+			     cb.suggestionSource("nominee"));
+				
 	}
 
 	@Test
@@ -363,9 +389,13 @@ public class QueryOptionsHandleTest {
 	public void buildValueConstraintTest() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
 		QueryConstraint constraint = cb.constraint("sumlev",
-				cb.value(cb.element("sumlev")));
+				cb.value(cb.element("sumlev"),
+						cb.fragmentScope(FragmentScope.DOCUMENTS),
+						cb.termOption("punctuation-insensitive"),
+						cb.weight(4.3)
+						));
 
-		QueryValue vc = constraint.getConstraintConfiguration();
+		QueryValue vc = constraint.getSource();
 		options.build(constraint);
 
 		assertEquals(vc.getElement(), new QName("sumlev"));
@@ -383,11 +413,16 @@ public class QueryOptionsHandleTest {
 	public void buildWordConstraintTest() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
 		options.build(cb.constraint("intitle",
-				cb.word(cb.field("titlefield"))));
+				cb.word(cb.field("titlefield"),
+						cb.termOption("punctuation-insensitive"),
+						cb.weight(2.3)
+						)));
 
 		QueryWord wc = options.getConstraint("intitle")
-				.getConstraintConfiguration();
-		assertEquals(wc.getFieldName(), "titlefield");
+				.getSource();
+		assertEquals("titlefield", wc.getFieldName());
+		assertEquals(new Double(2.3), wc.getWeight());
+		assertEquals("punctuation-insensitive", wc.getTermOptions().get(0));
 
 		String optionsString = options.toXMLString();
 		logger.debug(optionsString);
@@ -421,7 +456,7 @@ public class QueryOptionsHandleTest {
 	}
 
 	@Test
-	public void parseAndBuildOperator() throws FileNotFoundException,
+	public void buildOperator() throws FileNotFoundException,
 			JAXBException {
 		QueryOptionsHandle options = testOptions;
 
@@ -447,8 +482,7 @@ public class QueryOptionsHandleTest {
 		assertTrue("Sort order should contain element index def",
 				optionsString.contains("name=\"green\""));
 
-		// TODO unset score
-		//
+		
 	}
 
 	@Test
@@ -464,7 +498,7 @@ public class QueryOptionsHandleTest {
 		QueryOptionsHandle options2 = mgr.readOptions("props",
 				new QueryOptionsHandle());
 		assertEquals("Unexpected class from JAXB unmarshalling", options2
-				.getConstraints().get(0).getConstraintConfiguration()
+				.getConstraints().get(0).getSource()
 				.getClass().getName(), QueryProperties.class.getName());
 
 	}
@@ -478,12 +512,12 @@ public class QueryOptionsHandleTest {
 					c.getName(), c.getClass().getName());
 		}
 		QueryRange r = options.getConstraint("award")
-				.getConstraintConfiguration();
+				.getSource();
 		assertEquals("index from range constraint", "award", r.getAttribute()
 				.getLocalPart());
 
 		QueryWord v = options.getConstraint("inname")
-				.getConstraintConfiguration();
+				.getSource();
 		assertNotNull(v);
 		assertEquals("index from valueOption constraint", "name", v
 				.getElement().getLocalPart());
@@ -526,49 +560,80 @@ public class QueryOptionsHandleTest {
 				.getTransformResults();
 		assertEquals("Apply attribute for transform-results",
 				transformResultsOption.getApply(), "snippet");
-		// MarkLogicQName element =
-		// transformResults.getPreferredElements().get(0);
-		// //TODO MarkLogicQName or ElementLocator
-		// assertEquals("Element name from transform-results", "p", element
-		// .getElement().getLocalPart());
+		QueryOptions.Element element = transformResultsOption.getPreferredElements().get(0);
+		assertEquals("preferred element from transform-results", "p", element.getName());
 		// assertEquals("Max Matches from transform-results", 1,
 		// transformResults.getMaxMatches());
 
 	}
 
 	@Test
-	public void parseGeoOptions() {
+	public void buildGeoOptions() {
+		
 		QueryOptionsHandle options = geoOptions;
 		List<QueryConstraint> constraintOptions = options.getConstraints();
 
-		GeoElement gec = (GeoElement) constraintOptions.get(0)
-				.getConstraintConfiguration();
-		GeoAttrPair gapc = (GeoAttrPair) constraintOptions.get(1)
-				.getConstraintConfiguration();
-		GeoElementPair gepc = (GeoElementPair) constraintOptions.get(2)
-				.getConstraintConfiguration();
+		QueryGeospatialElement gec = (QueryGeospatialElement) constraintOptions.get(0)
+				.getSource();
+		QueryGeospatialAttributePair gapc = (QueryGeospatialAttributePair) constraintOptions.get(1)
+				.getSource();
+		QueryGeospatialElementPair gepc = (QueryGeospatialElementPair) constraintOptions.get(2)
+				.getSource();
 
 		Heatmap h = gapc.getHeatmap();
 		assertEquals("Heatmap attribute check", "-118.2",
 				Double.toString(h.getE()));
+		
+		// build test
+		options = new QueryOptionsHandle();
+		options.build(cb.constraint("geoelem", 
+				cb.geospatialElement(
+						cb.element("ns1", "elementwithcoords"),
+						cb.geoOption("type=long-lat-point")
+				)));
+		options.build(cb.constraint("geoattr",
+				cb.geospatialAttributePair(
+						cb.element("sf1"),
+						cb.attribute("intptlat"),
+						cb.attribute("intptlon"),
+						cb.facetOption("limit=10"),
+						cb.heatmap(23.2, -118.3, 23.3, -118.2, 4, 4))));
+		options.build(cb.constraint("geoElemPair",
+				cb.geospatialElementPair(
+						cb.element("sf1"),
+						cb.element("intptlat"),
+						cb.element("intptlon"))));
+		
+		QueryGeospatialElement geoElem =  options.getConstraint("geoelem").getSource();
+		assertEquals("GeoConstraint latitude", "ns1", geoElem.getElement().getNamespaceURI());
+		
+		
+		
+		mgr.writeOptions("tmp", options);
+		
+		options = mgr.readOptions("tmp", new QueryOptionsHandle());
+		
 	}
 
 	@Test
-	public void serializeAndStoreElementQueryConstraint() throws JAXBException {
-		String optionsString = "<options xmlns=\"http://marklogic.com/appservices/search\"><constraint name=\"sample\"><element-query name=\"title\" ns=\"http://my/namespace\" /></constraint></options>";
-		mgr.writeOptions("tmp", new StringHandle(optionsString));
-		QueryOptionsHandle options = mgr.readOptions("tmp",
+	public void buildQueryElementQuery() throws JAXBException {
+		QueryOptionsHandle options = new QueryOptionsHandle();
+		options.build(cb.constraint("elementQuery", 
+				cb.elementQuery("http://marklogic.com/wikipedia", "title")));
+		
+		mgr.writeOptions("tmp", options);
+		QueryOptionsHandle options2 = mgr.readOptions("tmp",
 				new QueryOptionsHandle());
-		List<QueryConstraint> l = options.getConstraints();
+		List<QueryConstraint> l = options2.getConstraints();
 		QueryElementQuery eqc = (QueryElementQuery) l.get(0)
-				.getConstraintConfiguration();
+				.getSource();
 
-		logger.debug(options.toString());
+		logger.debug(options2.toString());
 
 		assertEquals("Name attribute doesn't match expected.", "title",
 				eqc.getName());
 		assertEquals("Namespace attribute doesn't match expected.",
-				eqc.getNs(), "http://my/namespace");
+				eqc.getNs(), "http://marklogic.com/wikipedia");
 	}
 
 	@Test
@@ -578,8 +643,8 @@ public class QueryOptionsHandleTest {
 		options.build(
 				cb.returnFacets(true),
 				cb.returnMetrics(false),
-//TODO implement these:				cb.searchableExpression("/sf1"), 
-//				cb.additionalQuery("<cts:"),
+				cb.additionalQuery("<cts:query xmlns:cts=\"http://marklogic.com/cts\" />"),
+				cb.searchableExpression("<e>/sf1</e>"), 
 				cb.annotation("<a:note xmlns:a=\"http://marklogic.com/note\">note</a:note>"),
 				cb.concurrencyLevel(2),
 				cb.debug(true),
@@ -602,14 +667,35 @@ public class QueryOptionsHandleTest {
 		
 		assertEquals("builders for facets options", true, options.getReturnFacets());
 		assertEquals("builders for metrics options", false, options.getReturnMetrics());
+		org.w3c.dom.Element se = options.getSearchableExpression();
+		assertEquals("/sf1", se.getTextContent());
 		
-				
 		logger.debug("here is fragment-scope: " + options.getFragmentScope());
 		assertEquals(options.getFragmentScope(), "properties");
 		options.setFragmentScope(FragmentScope.DOCUMENTS);
 		assertEquals(options.getFragmentScope(), "documents");
 	}
 
+	@Test
+	public void buildValues() {
+		QueryOptionsHandle options = new QueryOptionsHandle();
+		options.build(
+				cb.values("uri", cb.uri(), cb.valuesOption("limit=10")),
+				cb.values("coll", cb.collection(false, "prefix"), cb.valuesOption("limit=10")),
+				cb.values("persona", cb.range(true, new QName("xs:string"), cb.element("element-test"), cb.attribute("attribute-test"))),
+				cb.values("fieldrange", cb.range(false, new QName("xs:string"), cb.field("range")),
+						cb.aggregate("median")),
+				cb.values("field", cb.field("fieldname")));
+				
+						
+		assertEquals("uri", options.getQueryValues("uri").getName());
+		QueryValues collectionValues = options.getQueryValues("coll");
+		assertTrue(collectionValues.getValuesOptions().get(0).equals("limit=10"));
+		
+		assertEquals("element-test", options.getQueryValues("persona").getSource().getElement().getLocalPart());
+		
+		
+	}
 	@Test
 	public void setReturnFacets() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
@@ -622,7 +708,7 @@ public class QueryOptionsHandleTest {
 	}
 
 	@Test
-	public void testConstraintFluentSetter() {
+	public void testRangeConstraint() {
 		QueryConstraint awardConstraint = cb.constraint("award", cb
 				.range(false, new QName("xs:string"), DEFAULT_COLLATION,
 						cb.bucket("2000s", "2000s", null, null),
@@ -637,10 +723,11 @@ public class QueryOptionsHandleTest {
 						cb.facetOption("limit=10")));
 
 		assertEquals("Getting to bucket from constraint", "1990",
-				((QueryRange) awardConstraint.getConstraintConfiguration())
+				((QueryRange) awardConstraint.getSource())
 						.getBuckets().get(1).getGe());
 	}
 
+	
 	@Test
 	public void testEmptyListAccessors() throws JAXBException {
 		QueryOptionsHandle options = new QueryOptionsHandle();

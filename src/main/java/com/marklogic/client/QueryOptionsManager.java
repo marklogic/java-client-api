@@ -15,34 +15,41 @@
  */
 package com.marklogic.client;
 
-import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
+/**
+ * A QueryOptionsManager support database operations on QueryOptionsHandle instances.
+ * 
+ */
 public interface QueryOptionsManager {
 	
 	
 	/**
-	 * Create a QueryOptions configuration by reading it
-	 * from the REST Server by name.
-	 * @param name
-	 * @return the QueryOptions holding the search configuration
+	 * Fetch a query options configuration from the the REST Server by name.
+	 * <p>
+	 * Use a QueryOptionsHandle object for access to the configuration with Java.
+	 * 
+	 * @param name Name of options configuration stored on MarkLogic REST instance.
+	 * @param queryOptionsHandle, an object into which to fetch the query options.
+	 * @param <T> A set of classes able to read query configurations from the database.
+	 * @return A an object holding the query configurations
+	 *
 	 */
-    public <T extends QueryOptionsReadHandle> T readOptions(String name, T searchOptionsHandle);
+    public <T extends QueryOptionsReadHandle> T readOptions(String name, T queryOptionsHandle);
     
 	
     /**
-     * Write a QueryOptions configuration to the REST
-     * server using a specific name.
-     * @param name
-     * @param format TODO
-     * @param options
+     * Write a named QueryOptions configuration to the REST server.
+     * @param name name given to the QueryOptions for use in runtime queries.
+     * @param queryOptionsHandle an object able to serialize a QueryOptions configuration.
+	 * @param <T> A set of classes able to write query configurations to the database.
      */
-    public void writeOptions(String name, QueryOptionsWriteHandle searchOptionsHandle);
+    public void writeOptions(String name, QueryOptionsWriteHandle queryOptionsHandle);
     
     /**
      * Remove a search configuration from the REST server.
-     * @param name
+     * @param name name of query options to remove from the REST server.
      */
     public void deleteOptions(String name);
 

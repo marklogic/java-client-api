@@ -30,7 +30,6 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.Format;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
-import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.HandleHelper;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;

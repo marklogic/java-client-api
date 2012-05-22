@@ -100,14 +100,10 @@ public class QueryOptionsManagerTest {
 		String optionsString = queryOptionsMgr.readOptions(optionsName, new StringHandle()).get();
 		assertNotNull("Read null string for XML content",optionsString);
 		logger.debug("Two XML Strings {} and {}", domString, optionsString);
-		//TODO  xml assertions too stringent.
-		// assertXMLEqual("Failed to read XML document as String", domString, optionsString);
-
+		
 		Document readDoc = queryOptionsMgr.readOptions(optionsName, new DOMHandle()).get();
 		assertNotNull("Read null document for XML content",readDoc);
-		//TODO xml assertions too stringent
-		// assertXMLEqual("Failed to read XML document as DOM",domDocument,readDoc);
-
+		
 	}
 	
 

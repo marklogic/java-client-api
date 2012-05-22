@@ -15,7 +15,6 @@
  */
 package com.marklogic.client.io;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,17 +35,18 @@ import org.w3c.dom.Element;
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.config.MarkLogicBindingException;
+import com.marklogic.client.config.QueryOptions;
+import com.marklogic.client.config.QueryOptions.FragmentScope;
+import com.marklogic.client.config.QueryOptions.QueryConstraint;
+import com.marklogic.client.config.QueryOptions.QueryGrammar;
+import com.marklogic.client.config.QueryOptions.QueryOperator;
+import com.marklogic.client.config.QueryOptions.QuerySortOrder;
+import com.marklogic.client.config.QueryOptions.QuerySuggestionSource;
+import com.marklogic.client.config.QueryOptions.QueryTerm;
+import com.marklogic.client.config.QueryOptions.QueryTransformResults;
+import com.marklogic.client.config.QueryOptions.QueryValues;
 import com.marklogic.client.config.QueryOptionsBuilder;
-import com.marklogic.client.config.QueryOptionsBuilder.FragmentScope;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryConstraint;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryGrammar;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryOperator;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryOptions;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryOptionsItem;
-import com.marklogic.client.config.QueryOptionsBuilder.QuerySortOrder;
-import com.marklogic.client.config.QueryOptionsBuilder.QuerySuggestionSource;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryTerm;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryTransformResults;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
@@ -54,7 +54,6 @@ public final class QueryOptionsHandle extends
 		BaseHandle<InputStream, OutputStreamSender> implements
 		OutputStreamSender, QueryOptionsReadHandle, QueryOptionsWriteHandle {
 
-	@SuppressWarnings("unused")
 	static final private Logger logger = LoggerFactory
 			.getLogger(QueryOptionsHandle.class);
 
@@ -79,8 +78,8 @@ public final class QueryOptionsHandle extends
 		try {
 			optionsHolder = (QueryOptions) unmarshaller.unmarshal(content);
 		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			
+			throw new MarkLogicBindingException(e);
 		}
 	};
 
@@ -91,8 +90,7 @@ public final class QueryOptionsHandle extends
 		try {
 			marshaller.marshal(jaxbElement, out);
 		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new MarkLogicBindingException(e);
 		}
 	}
 
@@ -147,7 +145,7 @@ public final class QueryOptionsHandle extends
 		return returnWithDefault(optionsHolder.getReturnPlan(), false);
 	}
 
-	public String getSearchableExpression() {
+	public org.w3c.dom.Element getSearchableExpression() {
 		return optionsHolder.getSearchableExpression();
 	}
 
@@ -276,7 +274,7 @@ public final class QueryOptionsHandle extends
 
 	}
 
-	public void setSearchableExpression(String searchableExpression) {
+	public void setSearchableExpression(org.w3c.dom.Element searchableExpression) {
 		optionsHolder.setSearchableExpression(searchableExpression);
 
 	}
@@ -303,15 +301,13 @@ public final class QueryOptionsHandle extends
 	public QueryOptionsHandle() {
 		// FIXME make static?
 		optionsBuilder = new QueryOptionsBuilder();
-		optionsHolder = optionsBuilder.options();
+		optionsHolder = new QueryOptions();
 
 		try {
 			jc = JAXBContext.newInstance(QueryOptions.class);
 			marshaller = jc.createMarshaller();
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 			unmarshaller = jc.createUnmarshaller();
-			marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper",
-					new SearchPrefixMapper());
 		} catch (JAXBException e) {
 			throw new MarkLogicBindingException(e);
 		}
@@ -353,9 +349,23 @@ public final class QueryOptionsHandle extends
 	 */
 	public QueryOptionsHandle build(QueryOptionsItem... options) {
 		for (QueryOptionsItem option : options) {
+			logger.debug(option.getClass().getName());
 			option.build(optionsHolder);
 		}
 		return this;
+	}
+
+	public QueryValues getQueryValues(String valuesName) {
+		for (QueryValues values : getQueryValues()) {
+			if (values.getName().equals(valuesName)) {
+				return values;
+			}
+		}
+		return null;
+	}
+	
+	public List<QueryValues> getQueryValues() {
+		return optionsHolder.getQueryValues();
 	}
 
 }

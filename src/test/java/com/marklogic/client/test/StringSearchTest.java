@@ -35,9 +35,9 @@ import com.marklogic.client.QueryManager;
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.config.MatchDocumentSummary;
 import com.marklogic.client.config.MatchLocation;
+import com.marklogic.client.config.QueryOptions.QueryRange;
+import com.marklogic.client.config.QueryOptions.QueryTransformResults;
 import com.marklogic.client.config.QueryOptionsBuilder;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryRange;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryTransformResults;
 import com.marklogic.client.config.StringQueryDefinition;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.SearchHandle;
@@ -80,7 +80,7 @@ public class StringSearchTest {
         		                builder.bucket("1920s", "1920s", "1920", "1930"),
         		                builder.facetOption("limit=10"))));
         						
-        QueryRange range = options.getConstraint("decade").getConstraintConfiguration();
+        QueryRange range = options.getConstraint("decade").getSource();
         assertEquals(range.getElement(), new QName(
                 "http://marklogic.com/wikipedia", "nominee"));
         assertEquals(range.getAttribute(), new QName("year"));

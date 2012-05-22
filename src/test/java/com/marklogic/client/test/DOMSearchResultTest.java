@@ -1,26 +1,19 @@
 package com.marklogic.client.test;
 
-import com.marklogic.client.QueryManager;
-import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.config.MatchDocumentSummary;
-import com.marklogic.client.config.MatchLocation;
-import com.marklogic.client.config.StringQueryDefinition;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.io.StringHandle;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.IOException;
+
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import com.marklogic.client.QueryManager;
+import com.marklogic.client.config.StringQueryDefinition;
+import com.marklogic.client.io.DOMHandle;
 
 public class DOMSearchResultTest {
     @BeforeClass
