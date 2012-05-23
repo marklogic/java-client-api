@@ -15,9 +15,6 @@
  */
 package com.marklogic.client.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.io.HandleHelper;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
@@ -26,8 +23,6 @@ import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 		QueryOptionsManager {
 
-	static final private Logger logger = LoggerFactory
-			.getLogger(AbstractDocumentImpl.class);
 
 	private String QUERY_OPTIONS_BASE = "/config/query";
 	private RESTServices services;

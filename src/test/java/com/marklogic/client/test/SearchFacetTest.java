@@ -31,7 +31,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.Format;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.config.FacetResult;

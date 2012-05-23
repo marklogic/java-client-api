@@ -89,12 +89,11 @@ public class QueryOptionsHandleTest {
 	private static ServerConfigurationManager serverConfig;
 	private static Boolean initialConfig;
 	
-	private static QueryOptionsBuilder cb;
+	private static QueryOptionsBuilder builder;
 
 	private static final Logger logger = (Logger) LoggerFactory
 			.getLogger(QueryOptionsHandleTest.class);
-	private static final String Collation = null;
-	private static final String DEFAULT_COLLATION = null;
+	private static final String DEFAULT_COLLATION = "http://marklogic.com/collation/";
 
 	private static String[] testOptionsCorpus = new String[] {
 			"search-config-empty.xml", "search-config-simple.xml",
@@ -139,7 +138,7 @@ public class QueryOptionsHandleTest {
 
 		geoOptions = optionsPOJOs.get(geoIndex);
 
-		cb = new QueryOptionsBuilder();
+		builder = new QueryOptionsBuilder();
 	}
 	
 	@AfterClass
@@ -151,10 +150,10 @@ public class QueryOptionsHandleTest {
 	@Test
 	public void buildCollectionConstraint() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.build(cb.constraint(
+		options.build(builder.constraint(
 				null,
-				cb.collection(true, "http://myprefix",
-						cb.facetOption("limit=10"))));
+				builder.collection(true, "http://myprefix",
+						builder.facetOption("limit=10"))));
 
 		String optionsString = options.toXMLString();
 		QueryCollection c = options.getConstraints().get(0)
@@ -170,14 +169,14 @@ public class QueryOptionsHandleTest {
 
 	@Test
 	public void buildCustomConstraint() {
-		QueryConstraint constraintOption = cb.constraint("queryCustom", cb
+		QueryConstraint constraintOption = builder.constraint("queryCustom", builder
 				.customFacet(
-						cb.parse("parse", "http://my/namespace","/my/parse.xqy"), 
-						cb.startFacet("start", "http://my/namespace", "/my/start.xqy"), 
-						cb.finishFacet("finish", "http://my/namespace", "/my/finish.xqy"),
-						cb.facetOption("limit=10"),
-						cb.termOption("punctuation-insensitive"),
-						cb.annotation("<a>annotation</a>")));
+						builder.parse("parse", "http://my/namespace","/my/parse.xqy"), 
+						builder.startFacet("start", "http://my/namespace", "/my/start.xqy"), 
+						builder.finishFacet("finish", "http://my/namespace", "/my/finish.xqy"),
+						builder.facetOption("limit=10"),
+						builder.termOption("punctuation-insensitive"),
+						builder.annotation("<a>annotation</a>")));
 
 		QueryOptionsHandle options = new QueryOptionsHandle();
 		options.build(constraintOption);
@@ -211,26 +210,26 @@ public class QueryOptionsHandleTest {
 				"queryCustom");
 
 		options = new QueryOptionsHandle();
-		options.build(cb.constraint("customParse", cb.customParse(cb.extension("myfunc", "http:/my/namespace", "/my/at.xqy"))));
+		options.build(builder.constraint("customParse", builder.customParse(builder.extension("myfunc", "http:/my/namespace", "/my/at.xqy"))));
 	}
 
 	@Test
 	public void buildGrammar() {
-		QueryGrammar g = cb
+		QueryGrammar g = builder
 				.grammar(
 						"\"",
-						cb.domElement("<cts:and-query strength=\"20\" xmlns:cts=\"http://marklogic.com/cts\"/>"),
-						cb.starterGrouping("(", 30, ")"), cb.starterPrefix("-",
-								40, new QName("cts:not-query)")), cb.joiner(
+						builder.domElement("<cts:and-query strength=\"20\" xmlns:cts=\"http://marklogic.com/cts\"/>"),
+						builder.starterGrouping("(", 30, ")"), builder.starterPrefix("-",
+								40, new QName("cts:not-query)")), builder.joiner(
 								"AND", 20, JoinerApply.PREFIX, new QName(
-										"cts:and-query"), Tokenize.WORD), cb
+										"cts:and-query"), Tokenize.WORD), builder
 								.joiner("OR", 10, JoinerApply.INFIX, new QName(
-										"cts:or-query"), Tokenize.WORD), cb
+										"cts:or-query"), Tokenize.WORD), builder
 								.joiner("NEAR", 30, JoinerApply.INFIX,
 										new QName("cts:near-query"),
-										Tokenize.WORD), cb.joiner("NEAR/", 30,
+										Tokenize.WORD), builder.joiner("NEAR/", 30,
 								JoinerApply.NEAR2, new QName("cts:near-query"),
-								null, 2), cb.joiner("LT", 50,
+								null, 2), builder.joiner("LT", 50,
 								JoinerApply.CONSTRAINT, Comparator.LT,
 								Tokenize.WORD));
 
@@ -250,20 +249,20 @@ public class QueryOptionsHandleTest {
 	public void buildRangeConstraintTest() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
 
-		QueryRange range = cb.range(true, cb.type("xs:gYear"),
-				cb.element("http://marklogic.com/wikipedia", "nominee"),
-				cb.attribute("year"), cb.bucket("2000s", "2000s", null, null),
-				cb.bucket("1990s", "1990s", "1990", "2000"),
-				cb.bucket("1980s", "1980s", "1980", "1990"),
-				cb.bucket("1970s", "1970s", "1970", "1980"),
-				cb.bucket("1960s", "1960s", "1960", "1970"),
-				cb.bucket("1950s", "1950s", "1950", "1960"),
-				cb.bucket("1940s", "1940s", "1940", "1950"),
-				cb.bucket("1930s", "1930s", "1930", "1940"),
-				cb.bucket("1920s", "1920s", "1920", "1930"),
-				cb.facetOption("limit=10"));
+		QueryRange range = builder.range(true, builder.type("xs:gYear"),
+				builder.element("http://marklogic.com/wikipedia", "nominee"),
+				builder.attribute("year"), builder.bucket("2000s", "2000s", null, null),
+				builder.bucket("1990s", "1990s", "1990", "2000"),
+				builder.bucket("1980s", "1980s", "1980", "1990"),
+				builder.bucket("1970s", "1970s", "1970", "1980"),
+				builder.bucket("1960s", "1960s", "1960", "1970"),
+				builder.bucket("1950s", "1950s", "1950", "1960"),
+				builder.bucket("1940s", "1940s", "1940", "1950"),
+				builder.bucket("1930s", "1930s", "1930", "1940"),
+				builder.bucket("1920s", "1920s", "1920", "1930"),
+				builder.facetOption("limit=10"));
 
-		options.build(cb.constraint("decade", range));
+		options.build(builder.constraint("decade", range));
 
 		assertEquals(range.getElement(), new QName(
 				"http://marklogic.com/wikipedia", "nominee"));
@@ -288,16 +287,16 @@ public class QueryOptionsHandleTest {
 				"2000");
 
 		QueryOptionsHandle options2 = new QueryOptionsHandle();
-		options2.build(cb.constraint("date", cb.range(false, new QName("xs:dateTime"),
-				cb.computedBucket("older", "Older than 1 years", null, "-P365D", AnchorValue.NOW),
-				cb.computedBucket("year", "1 month to 1 year ago", "-P30D", "-P365D", AnchorValue.NOW),
-				cb.computedBucket("month", "7 to 30 days ago", "-P30D", "-P7D", AnchorValue.NOW),
-				cb.computedBucket("week", "1 to 7 days ago", "-P7D", "-P1D", AnchorValue.NOW),
-				cb.computedBucket("today", "Today", "-P1D", "P0D", AnchorValue.NOW),
-				cb.computedBucket("future", "Future", "P0D", null, AnchorValue.NOW),
-				cb.facetOption("limit=10"),
-				cb.facetOption("descending"),
-				cb.element("http://purl.org/dc/elements/1.1/", "date"))));
+		options2.build(builder.constraint("date", builder.range(false, new QName("xs:dateTime"),
+				builder.computedBucket("older", "Older than 1 years", null, "-P365D", AnchorValue.NOW),
+				builder.computedBucket("year", "1 month to 1 year ago", "-P30D", "-P365D", AnchorValue.NOW),
+				builder.computedBucket("month", "7 to 30 days ago", "-P30D", "-P7D", AnchorValue.NOW),
+				builder.computedBucket("week", "1 to 7 days ago", "-P7D", "-P1D", AnchorValue.NOW),
+				builder.computedBucket("today", "Today", "-P1D", "P0D", AnchorValue.NOW),
+				builder.computedBucket("future", "Future", "P0D", null, AnchorValue.NOW),
+				builder.facetOption("limit=10"),
+				builder.facetOption("descending"),
+				builder.element("http://purl.org/dc/elements/1.1/", "date"))));
 		
 		
 		List<ComputedBucket> computedBuckets = ((QueryRange) options2.getConstraint("date").getSource()).getComputedBuckets();
@@ -314,16 +313,16 @@ public class QueryOptionsHandleTest {
 	@Test
 	public void buildSuggestionSources() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
-		QueryDefaultSuggestionSource dss = cb.defaultSuggestionSource(
-				cb.wordLexicon());
+		QueryDefaultSuggestionSource dss = builder.defaultSuggestionSource(
+				builder.wordLexicon());
 		
 		options.build(
-				cb.suggestionSource(
-						cb.range(false, new QName("gs:year"),
-								cb.element("http://marklogic.com/wikipedia", "nominee"),
-								cb.attribute("year")),
-						cb.suggestionSourceOption("suggestionOption"),
-						cb.wordLexicon("http://marklogic.com/collation", FragmentScope.DOCUMENTS)));
+				builder.suggestionSource(
+						builder.range(false, new QName("gs:year"),
+								builder.element("http://marklogic.com/wikipedia", "nominee"),
+								builder.attribute("year")),
+						builder.suggestionSourceOption("suggestionOption"),
+						builder.wordLexicon("http://marklogic.com/collation", FragmentScope.DOCUMENTS)));
 				
 		options.build(dss);
 
@@ -346,18 +345,18 @@ public class QueryOptionsHandleTest {
 		// Suggestion Source with ref.
 		options = new QueryOptionsHandle();
 		options.build(
-				cb.constraint("nominee",
-						cb.range(false, new QName("gs:year"),
-								cb.element("http://marklogic.com/wikipedia", "nominee"),
-								cb.attribute("year"))),
-			     cb.suggestionSource("nominee"));
+				builder.constraint("nominee",
+						builder.range(false, new QName("gs:year"),
+								builder.element("http://marklogic.com/wikipedia", "nominee"),
+								builder.attribute("year"))),
+			     builder.suggestionSource("nominee"));
 				
 	}
 
 	@Test
 	public void buildTerm() {
-		QueryOptionsHandle options = new QueryOptionsHandle().build(cb.term(
-				TermApply.ALL_RESULTS, cb.word(cb.element("nation"))));
+		QueryOptionsHandle options = new QueryOptionsHandle().build(builder.term(
+				TermApply.ALL_RESULTS, builder.word(builder.element("nation"))));
 
 		QueryWord word = (QueryWord) options.getTerm()
 				.getConstraintConfiguration();
@@ -373,11 +372,11 @@ public class QueryOptionsHandleTest {
 
 	@Test
 	public void buildTransformResults() {
-		QueryTransformResults t = cb.transformResults("snippet");
+		QueryTransformResults t = builder.transformResults("snippet");
 		assertEquals("Apply attribute for transform-results", t.getApply(),
 				"snippet");
 
-		t = cb.transformResultsOption(cb.extension("function", "ns", "aplace"));
+		t = builder.transformResultsOption(builder.extension("function", "ns", "aplace"));
 
 		assertEquals("ns", t.getNs());
 		assertEquals("function", t.getApply());
@@ -388,11 +387,11 @@ public class QueryOptionsHandleTest {
 	@Test
 	public void buildValueConstraintTest() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
-		QueryConstraint constraint = cb.constraint("sumlev",
-				cb.value(cb.element("sumlev"),
-						cb.fragmentScope(FragmentScope.DOCUMENTS),
-						cb.termOption("punctuation-insensitive"),
-						cb.weight(4.3)
+		QueryConstraint constraint = builder.constraint("sumlev",
+				builder.value(builder.element("sumlev"),
+						builder.fragmentScope(FragmentScope.DOCUMENTS),
+						builder.termOption("punctuation-insensitive"),
+						builder.weight(4.3)
 						));
 
 		QueryValue vc = constraint.getSource();
@@ -412,10 +411,10 @@ public class QueryOptionsHandleTest {
 	@Test
 	public void buildWordConstraintTest() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.build(cb.constraint("intitle",
-				cb.word(cb.field("titlefield"),
-						cb.termOption("punctuation-insensitive"),
-						cb.weight(2.3)
+		options.build(builder.constraint("intitle",
+				builder.word(builder.field("titlefield"),
+						builder.termOption("punctuation-insensitive"),
+						builder.weight(2.3)
 						)));
 
 		QueryWord wc = options.getConstraint("intitle")
@@ -446,7 +445,7 @@ public class QueryOptionsHandleTest {
 
 		Element uri = (Element) e.getFirstChild();
 		uri.setTextContent("/oscars2/");
-		options.build(cb.additionalQuery(e));
+		options.build(builder.additionalQuery(e));
 		optionsString = options.toXMLString();
 
 		logger.debug(optionsString);
@@ -467,12 +466,12 @@ public class QueryOptionsHandleTest {
 
 		assertEquals("State from operator", "relevance", s.getName());
 
-		QuerySortOrder so = cb.sortOrder("xs:string",
+		QuerySortOrder so = builder.sortOrder("xs:string",
 				"http://marklogic.com/collation", Direction.ASCENDING,
-				cb.element("http://my/namespace", "green"),
-				cb.attribute("http://my/namespace", "pantone"), cb.score());
+				builder.element("http://my/namespace", "green"),
+				builder.attribute("http://my/namespace", "pantone"), builder.score());
 
-		options.build(cb.operator("sortcolor", cb.state("pantone", so)));
+		options.build(builder.operator("sortcolor", builder.state("pantone", so)));
 
 		String optionsString = options.toXMLString();
 
@@ -489,7 +488,7 @@ public class QueryOptionsHandleTest {
 	public void parseAndBuildPropertiesConstraint() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
 
-		options.build(cb.constraint("props", cb.properties()));
+		options.build(builder.constraint("props", builder.properties()));
 
 		logger.debug(options.toString());
 
@@ -555,7 +554,7 @@ public class QueryOptionsHandleTest {
 		List<QueryState> states = o.getStates();
 		QueryState state1 = states.get(0);
 		QuerySortOrder so1 = state1.getSortOrders().get(0);
-
+		
 		QueryTransformResults transformResultsOption = options
 				.getTransformResults();
 		assertEquals("Apply attribute for transform-results",
@@ -580,29 +579,32 @@ public class QueryOptionsHandleTest {
 		QueryGeospatialElementPair gepc = (QueryGeospatialElementPair) constraintOptions.get(2)
 				.getSource();
 
+		assertEquals("sf1", gec.getParent().getName());
+		assertEquals("intptlat", gapc.getLatitude().getName());
+		assertEquals("intptlon", gepc.getLongitude().getName());
 		Heatmap h = gapc.getHeatmap();
 		assertEquals("Heatmap attribute check", "-118.2",
 				Double.toString(h.getE()));
 		
 		// build test
 		options = new QueryOptionsHandle();
-		options.build(cb.constraint("geoelem", 
-				cb.geospatialElement(
-						cb.element("ns1", "elementwithcoords"),
-						cb.geoOption("type=long-lat-point")
+		options.build(builder.constraint("geoelem", 
+				builder.geospatialElement(
+						builder.element("ns1", "elementwithcoords"),
+						builder.geoOption("type=long-lat-point")
 				)));
-		options.build(cb.constraint("geoattr",
-				cb.geospatialAttributePair(
-						cb.element("sf1"),
-						cb.attribute("intptlat"),
-						cb.attribute("intptlon"),
-						cb.facetOption("limit=10"),
-						cb.heatmap(23.2, -118.3, 23.3, -118.2, 4, 4))));
-		options.build(cb.constraint("geoElemPair",
-				cb.geospatialElementPair(
-						cb.element("sf1"),
-						cb.element("intptlat"),
-						cb.element("intptlon"))));
+		options.build(builder.constraint("geoattr",
+				builder.geospatialAttributePair(
+						builder.element("sf1"),
+						builder.attribute("intptlat"),
+						builder.attribute("intptlon"),
+						builder.facetOption("limit=10"),
+						builder.heatmap(23.2, -118.3, 23.3, -118.2, 4, 4))));
+		options.build(builder.constraint("geoElemPair",
+				builder.geospatialElementPair(
+						builder.element("sf1"),
+						builder.element("intptlat"),
+						builder.element("intptlon"))));
 		
 		QueryGeospatialElement geoElem =  options.getConstraint("geoelem").getSource();
 		assertEquals("GeoConstraint latitude", "ns1", geoElem.getElement().getNamespaceURI());
@@ -618,8 +620,8 @@ public class QueryOptionsHandleTest {
 	@Test
 	public void buildQueryElementQuery() throws JAXBException {
 		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.build(cb.constraint("elementQuery", 
-				cb.elementQuery("http://marklogic.com/wikipedia", "title")));
+		options.build(builder.constraint("elementQuery", 
+				builder.elementQuery("http://marklogic.com/wikipedia", "title")));
 		
 		mgr.writeOptions("tmp", options);
 		QueryOptionsHandle options2 = mgr.readOptions("tmp",
@@ -641,29 +643,29 @@ public class QueryOptionsHandleTest {
 		QueryOptionsHandle options = new QueryOptionsHandle();
 		
 		options.build(
-				cb.returnFacets(true),
-				cb.returnMetrics(false),
-				cb.additionalQuery("<cts:query xmlns:cts=\"http://marklogic.com/cts\" />"),
-				cb.searchableExpression("<e>/sf1</e>"), 
-				cb.annotation("<a:note xmlns:a=\"http://marklogic.com/note\">note</a:note>"),
-				cb.concurrencyLevel(2),
-				cb.debug(true),
-				cb.fragmentScope(FragmentScope.PROPERTIES),
-				cb.forest(123L),
-				cb.forest(235L),
-				cb.pageLength(10L),
-				cb.qualityWeight(3.4),
-				cb.returnAggregates(true),
-				cb.returnConstraints(true),
-				cb.returnFrequencies(true),
-				cb.returnPlan(true),
-				cb.returnQtext(true),
-				cb.returnQuery(true),
-				cb.returnResults(false),
-				cb.returnSimilar(true),
-				cb.returnValues(false),
-				cb.searchOption("limit=10"),
-				cb.transformResults("raw"));
+				builder.returnFacets(true),
+				builder.returnMetrics(false),
+				builder.additionalQuery("<cts:query xmlns:cts=\"http://marklogic.com/cts\" />"),
+				builder.searchableExpression("<e>/sf1</e>"), 
+				builder.annotation("<a:note xmlns:a=\"http://marklogic.com/note\">note</a:note>"),
+				builder.concurrencyLevel(2),
+				builder.debug(true),
+				builder.fragmentScope(FragmentScope.PROPERTIES),
+				builder.forest(123L),
+				builder.forest(235L),
+				builder.pageLength(10L),
+				builder.qualityWeight(3.4),
+				builder.returnAggregates(true),
+				builder.returnConstraints(true),
+				builder.returnFrequencies(true),
+				builder.returnPlan(true),
+				builder.returnQtext(true),
+				builder.returnQuery(true),
+				builder.returnResults(false),
+				builder.returnSimilar(true),
+				builder.returnValues(false),
+				builder.searchOption("limit=10"),
+				builder.transformResults("raw"));
 		
 		assertEquals("builders for facets options", true, options.getReturnFacets());
 		assertEquals("builders for metrics options", false, options.getReturnMetrics());
@@ -680,12 +682,12 @@ public class QueryOptionsHandleTest {
 	public void buildValues() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
 		options.build(
-				cb.values("uri", cb.uri(), cb.valuesOption("limit=10")),
-				cb.values("coll", cb.collection(false, "prefix"), cb.valuesOption("limit=10")),
-				cb.values("persona", cb.range(true, new QName("xs:string"), cb.element("element-test"), cb.attribute("attribute-test"))),
-				cb.values("fieldrange", cb.range(false, new QName("xs:string"), cb.field("range")),
-						cb.aggregate("median")),
-				cb.values("field", cb.field("fieldname")));
+				builder.values("uri", builder.uri(), builder.valuesOption("limit=10")),
+				builder.values("coll", builder.collection(false, "prefix"), builder.valuesOption("limit=10")),
+				builder.values("persona", builder.range(true, new QName("xs:string"), builder.element("element-test"), builder.attribute("attribute-test"))),
+				builder.values("fieldrange", builder.range(false, new QName("xs:string"), builder.field("range")),
+						builder.aggregate("median")),
+				builder.values("field", builder.field("fieldname")));
 				
 						
 		assertEquals("uri", options.getQueryValues("uri").getName());
@@ -699,28 +701,28 @@ public class QueryOptionsHandleTest {
 	@Test
 	public void setReturnFacets() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.build(cb.returnFacets(true));
+		options.build(builder.returnFacets(true));
 		logger.debug("here is return facets: " + options.getReturnFacets());
 		assertTrue(options.getReturnFacets());
-		options.build(cb.returnFacets(false));
+		options.build(builder.returnFacets(false));
 		logger.debug("here is return facets: " + options.getReturnFacets());
 		assertTrue(!options.getReturnFacets());
 	}
 
 	@Test
 	public void testRangeConstraint() {
-		QueryConstraint awardConstraint = cb.constraint("award", cb
+		QueryConstraint awardConstraint = builder.constraint("award", builder
 				.range(false, new QName("xs:string"), DEFAULT_COLLATION,
-						cb.bucket("2000s", "2000s", null, null),
-						cb.bucket("1990s", "1990s", "1990", "2000"),
-						cb.bucket("1980s", "1980s", "1980", "1990"),
-						cb.bucket("1970s", "1970s", "1970", "1980"),
-						cb.bucket("1960s", "1960s", "1960", "1970"),
-						cb.bucket("1950s", "1950s", "1950", "1960"),
-						cb.bucket("1940s", "1940s", "1940", "1950"),
-						cb.bucket("1930s", "1930s", "1930", "1940"),
-						cb.bucket("1920s", "1920s", "1920", "1930"),
-						cb.facetOption("limit=10")));
+						builder.bucket("2000s", "2000s", null, null),
+						builder.bucket("1990s", "1990s", "1990", "2000"),
+						builder.bucket("1980s", "1980s", "1980", "1990"),
+						builder.bucket("1970s", "1970s", "1970", "1980"),
+						builder.bucket("1960s", "1960s", "1960", "1970"),
+						builder.bucket("1950s", "1950s", "1950", "1960"),
+						builder.bucket("1940s", "1940s", "1940", "1950"),
+						builder.bucket("1930s", "1930s", "1930", "1940"),
+						builder.bucket("1920s", "1920s", "1920", "1930"),
+						builder.facetOption("limit=10")));
 
 		assertEquals("Getting to bucket from constraint", "1990",
 				((QueryRange) awardConstraint.getSource())
@@ -787,7 +789,7 @@ public class QueryOptionsHandleTest {
 	}
 
 	private Element domElement(QueryOptionsHandle option) {
-		return cb.domElement(option.toXMLString());
+		return builder.domElement(option.toXMLString());
 	}
 
 	@Test
@@ -814,7 +816,7 @@ public class QueryOptionsHandleTest {
 				"This is an annotation in the x namespace",
 				annotationElement.getTextContent());
 
-		annotatedOptions.build(cb.annotation("<a:note xmlns:a=\"http://marklogic.com/note\">note</a:note>"));
+		annotatedOptions.build(builder.annotation("<a:note xmlns:a=\"http://marklogic.com/note\">note</a:note>"));
 		
 	}
 }

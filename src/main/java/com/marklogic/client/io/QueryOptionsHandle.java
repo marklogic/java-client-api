@@ -38,6 +38,7 @@ import com.marklogic.client.config.MarkLogicBindingException;
 import com.marklogic.client.config.QueryOptions;
 import com.marklogic.client.config.QueryOptions.FragmentScope;
 import com.marklogic.client.config.QueryOptions.QueryConstraint;
+import com.marklogic.client.config.QueryOptions.QueryDefaultSuggestionSource;
 import com.marklogic.client.config.QueryOptions.QueryGrammar;
 import com.marklogic.client.config.QueryOptions.QueryOperator;
 import com.marklogic.client.config.QueryOptions.QuerySortOrder;
@@ -45,7 +46,6 @@ import com.marklogic.client.config.QueryOptions.QuerySuggestionSource;
 import com.marklogic.client.config.QueryOptions.QueryTerm;
 import com.marklogic.client.config.QueryOptions.QueryTransformResults;
 import com.marklogic.client.config.QueryOptions.QueryValues;
-import com.marklogic.client.config.QueryOptionsBuilder;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryOptionsItem;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
@@ -58,7 +58,6 @@ public final class QueryOptionsHandle extends
 			.getLogger(QueryOptionsHandle.class);
 
 	private QueryOptions optionsHolder;
-	private QueryOptionsBuilder optionsBuilder;
 	private JAXBContext jc;
 	private Marshaller marshaller;
 	private Unmarshaller unmarshaller;
@@ -192,7 +191,13 @@ public final class QueryOptionsHandle extends
 	public List<QuerySuggestionSource> getSuggestionSources() {
 		return optionsHolder.getSuggestionSources();
 	}
-
+	
+	public void setDefaultSuggestionSource(QueryDefaultSuggestionSource defaultSuggestionSource) {
+		optionsHolder.setDefaultSuggestionSource(defaultSuggestionSource);
+	}
+	public QueryDefaultSuggestionSource getDefaultSuggestionSource() {
+		return optionsHolder.getDefaultSuggestionSource();
+	}
 	public Element getAdditionalQuery() {
 		return optionsHolder.getAdditionalQuery();
 	}
@@ -299,8 +304,6 @@ public final class QueryOptionsHandle extends
 
 
 	public QueryOptionsHandle() {
-		// FIXME make static?
-		optionsBuilder = new QueryOptionsBuilder();
 		optionsHolder = new QueryOptions();
 
 		try {

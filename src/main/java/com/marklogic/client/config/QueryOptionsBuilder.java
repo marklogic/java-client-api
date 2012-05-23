@@ -86,20 +86,6 @@ import com.marklogic.client.config.QueryOptions.XQueryExtension;
  */
 public final class QueryOptionsBuilder {
 
-	public ValuesOption valuesOption(String valuesOption) {
-		ValuesOption vo = new ValuesOption();
-		vo.setValue(valuesOption);
-		return vo;
-	}
-
-	/**
-	 * Marks classes that comprise QueryCustom sources.
-	 */
-	public interface QueryCustomItem {
-		public void build(QueryCustom custom);
-	}
-
-	
 	/**
 	 * An option passed to a query configuration affect faceting behavior.
 	 */
@@ -107,10 +93,6 @@ public final class QueryOptionsBuilder {
 			QueryRangeItem, QueryCustomItem, QueryGeospatialItem {
 
 		@Override
-		public void build(QueryRange range) {
-			range.addFacetOption(this.getValue());
-		}
-
 		public void build(QueryCustom custom) {
 			custom.addFacetOption(this.getValue());
 		}
@@ -118,6 +100,11 @@ public final class QueryOptionsBuilder {
 		@Override
 		public void build(QueryGeospatial geospatial) {
 			geospatial.addFacetOption(this.getValue());
+		}
+
+		@Override
+		public void build(QueryRange range) {
+			range.addFacetOption(this.getValue());
 		}
 
 	}
@@ -128,9 +115,40 @@ public final class QueryOptionsBuilder {
 	public class GeospatialOption extends TextOption<String> implements
 			QueryGeospatialItem {
 
+		@Override
 		public void build(QueryGeospatial geospatial) {
 			geospatial.addGeoOption(this.getValue());
 		}
+	}
+
+	
+	/**
+	 * Marks classes that can be annotated with XML elements.
+	 */
+	public interface QueryAnnotations {
+
+		public void addElementAsAnnotation(org.w3c.dom.Element element);
+
+		public void deleteAnnotations();
+
+		public List<QueryAnnotation> getAnnotations();
+
+		void addAnnotation(QueryAnnotation queryAnnotation);
+
+	}
+
+	/**
+	 * Marks objects that comprise QueryConstraints
+	 */
+	public interface QueryConstraintItem extends QueryTermItem {
+
+	}
+
+	/**
+	 * Marks classes that comprise QueryCustom sources.
+	 */
+	public interface QueryCustomItem {
+		public void build(QueryCustom custom);
 	}
 
 	/**
@@ -141,10 +159,84 @@ public final class QueryOptionsBuilder {
 	}
 
 	/**
+	 * Marks objects that comprise QueryGrammar configurations.
+	 */
+	public interface QueryGrammarItem {
+
+	}
+
+	
+	/**
+	 * Marks classes that comprise the top level QueryOptions configuration.
+	 */
+	public interface QueryOptionsItem {
+
+		public void build(QueryOptions options);
+	}
+
+	/**
+	 * Marks classes that comprise QueryRange configurations. 
+	 */
+	public interface QueryRangeItem {
+
+		public void build(QueryRange range);
+
+	}
+
+	/**
+	 * Marks classes that comprise QuerySortOrder configurations.
+	 */
+	public interface QuerySortOrderItem {
+
+		public void build(QuerySortOrder sortOrder);
+	}
+
+	/**
 	 * Marks objects that comprise QueryState configurations.
 	 */
 	public interface QueryStateItem {
 
+	}
+
+	/**
+	 * Tags classes that comprise QuerySuggestionSource configurations.
+	 */
+	public interface QuerySuggestionSourceItem {
+
+		void build(QuerySuggestionSource suggestionSource);
+
+	}
+
+	/**
+	 * Marks classes that comprise QueryTerm configurations
+	 */
+	public interface QueryTermItem {
+
+	}
+
+	/**
+	 * Configuration Items that build to make {@link QueryValue} objects.
+	 */
+	public interface QueryValueItem {
+
+		public void build(QueryValue value);
+
+	}
+
+	/**
+	 * Marks components that configure QueryValues objects.
+	 */
+	public interface QueryValuesItem {
+		public void build(QueryValues values);
+	}
+
+	/**
+	 * Marks classes that comprise QueryWord configurations.
+	 *
+	 */
+	public interface QueryWordItem {
+
+		public void build(QueryWord word);
 	}
 
 	/**
@@ -160,29 +252,18 @@ public final class QueryOptionsBuilder {
 
 	}
 
-	
-	private abstract class TextOption<T extends Object> {
-
-		private T value;
-
-		public TextOption() {
-		}
-
-		public T getValue() {
-			return value;
-		}
-
-		public void setValue(T value) {
-			this.value = value;
-		}
-	}
-
 	/**
 	 * An option passed to query configurations to affect term queries.
 	 */
 	public class TermOption extends TextOption<String> implements
 			QueryTermItem, QueryWordItem, QueryValueItem, QueryCustomItem {
 
+		@Override
+		public void build(QueryCustom custom) {
+			custom.addTermOption(this.getValue());
+		}
+
+		@Override
 		public void build(QueryValue value) {
 			value.addTermOption(this.getValue());
 		}
@@ -190,11 +271,6 @@ public final class QueryOptionsBuilder {
 		@Override
 		public void build(QueryWord word) {
 			word.addTermOption(this.getValue());
-		}
-
-		@Override
-		public void build(QueryCustom custom) {
-			custom.addTermOption(this.getValue());
 		}
 	}
 
@@ -209,13 +285,6 @@ public final class QueryOptionsBuilder {
 			values.addValuesOption(this.getValue());
 		}
 
-	}
-
-	/**
-	 * Marks components that configure QueryValues objects.
-	 */
-	public interface QueryValuesItem {
-		public void build(QueryValues values);
 	}
 
 	/**
@@ -236,10 +305,169 @@ public final class QueryOptionsBuilder {
 
 	}
 
+	private class QueryOptionsTextItem<T extends Object> implements
+			QueryOptionsItem, QueryWordItem, QueryValueItem {
+
+		private String methodName;
+		private T state;
+
+		public QueryOptionsTextItem(String methodName, T value) {
+			this.state = value;
+			this.methodName = methodName;
+		}
+
+		@Override
+		public void build(QueryOptions options) {
+			this.innerBuild(options);
+		}
+
+		@Override
+		public void build(QueryValue value) {
+			this.innerBuild(value);
+		}
+
+		@Override
+		public void build(QueryWord word) {
+			this.innerBuild(word);
+		}
+
+		private void innerBuild(BaseQueryOptionConfiguration anyOption) {
+			try {
+				Method method = anyOption.getClass().getMethod(this.methodName,
+						state.getClass());
+				method.invoke(anyOption, this.state);
+			} catch (SecurityException e) {
+				throw new MarkLogicInternalException(
+						"Introspection problem building QueryOptions", e);
+			} catch (NoSuchMethodException e) {
+				throw new MarkLogicInternalException(
+						"Introspection problem building QueryOptions", e);
+			} catch (IllegalArgumentException e) {
+				throw new MarkLogicInternalException(
+						"Introspection problem building QueryOptions", e);
+			} catch (IllegalAccessException e) {
+				throw new MarkLogicInternalException(
+						"Introspection problem building QueryOptions", e);
+			} catch (InvocationTargetException e) {
+				throw new MarkLogicInternalException(
+						"Introspection problem building QueryOptions", e);
+			}
+		}
+
+		private void innerBuild(QueryOptions anyOption) {
+			try {
+				Method method = anyOption.getClass().getMethod(this.methodName,
+						state.getClass());
+				method.invoke(anyOption, this.state);
+			} catch (SecurityException e) {
+				throw new MarkLogicInternalException(
+						"Introspection problem building QueryOptions", e);
+			} catch (NoSuchMethodException e) {
+				throw new MarkLogicInternalException(
+						"Introspection problem building QueryOptions", e);
+			} catch (IllegalArgumentException e) {
+				throw new MarkLogicInternalException(
+						"Introspection problem building QueryOptions", e);
+			} catch (IllegalAccessException e) {
+				throw new MarkLogicInternalException(
+						"Introspection problem building QueryOptions", e);
+			} catch (InvocationTargetException e) {
+				throw new MarkLogicInternalException(
+						"Introspection problem building QueryOptions", e);
+			}
+		}
+	}
+
+	private abstract class TextOption<T extends Object> {
+
+		private T value;
+
+		public TextOption() {
+		}
+
+		public T getValue() {
+			return value;
+		}
+
+		public void setValue(T value) {
+			this.value = value;
+		}
+	}
+
+	interface Indexable {
+
+		public QName getAttribute();
+
+		public QName getElement();
+
+		public String getFieldName();
+
+		public void setAttribute(Attribute attribute);
+
+		/**
+		 * Add a reference to an element to this ConstraintBase
+		 */
+		public void setElement(Element element);
+
+		public void setField(Field field);
+	}
+
+	/**
+	 * Tags classes that define index references.
+	 */
+	interface IndexReference extends QueryWordItem, QueryRangeItem,
+			QueryValueItem, QuerySortOrderItem {
+
+	}
+
+	private static DocumentBuilderFactory factory;
+
 	private static final Logger logger = LoggerFactory
 			.getLogger(QueryOptionsBuilder.class);
 
-	private static DocumentBuilderFactory factory;
+	private static DocumentBuilderFactory getFactory()
+			throws ParserConfigurationException {
+		if (factory == null)
+			factory = makeDocumentBuilderFactory();
+		return factory;
+	}
+
+	private static DocumentBuilderFactory makeDocumentBuilderFactory()
+			throws ParserConfigurationException {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setNamespaceAware(true);
+		factory.setValidating(false);
+		return factory;
+	}
+
+	/**
+	 * Construct an additional query to be used in Search expression.
+	 * 
+	 * @param element
+	 *            A DOM element of a MarkLogic >cts:query/>
+	 * @return A component for use in a QueryOptionsBuilder expression.
+	 */
+	public AnyElement additionalQuery(org.w3c.dom.Element element) {
+		return new AnyElement(element);
+	}
+
+	/**
+	 * Construct an additional query to be used in Search expression.
+	 * 
+	 * @param xmlString
+	 *            An XML string representing a MarkLogic <cts:query/>
+	 * @return A component for use in a QueryOptionsBuilder expression.
+	 */
+	public AnyElement additionalQuery(String xmlString) {
+		org.w3c.dom.Element element = domElement(xmlString);
+		return new AnyElement(element);
+	}
+
+	public Aggregate aggregate(String aggregate) {
+		Aggregate a = new Aggregate();
+		a.setApply(aggregate);
+		return a;
+	}
 
 	/**
 	 * Build an annoatation from a valid XML string
@@ -251,7 +479,6 @@ public final class QueryOptionsBuilder {
 		annotation.add(domElement(xmlString));
 		return annotation;
 	}
-
 	/**
 	 * Build an Attribute object with no namespace declaration.
 	 * @param name local name for attribute.
@@ -294,6 +521,24 @@ public final class QueryOptionsBuilder {
 	}
 
 	/**
+	 * Builds a QueryCollection object to use the Collection URIs as source of constraint values.
+	 * @param facets Setting to true configures Search API to do facets on this source.
+	 * @param prefix This value will be trimmed from the start of collection URIs to provide more readable facet labels.
+	 * @param facetOptions A list of facet options to configure the collection constraint.
+	 * @return A QueryCollection object for use in building QueryOptions configurations.
+	 */
+	public QueryCollection collection(boolean facets, String prefix,
+			FacetOption... facetOptions) {
+		QueryCollection collectionOption = new QueryCollection();
+		collectionOption.doFacets(facets);
+		collectionOption.setPrefix(prefix);
+		for (FacetOption option : facetOptions) {
+			collectionOption.addFacetOption(option.getValue());
+		}
+		return collectionOption;
+	}
+
+	/**
 	 * 
 	 * @param name
 	 * @param label
@@ -328,22 +573,10 @@ public final class QueryOptionsBuilder {
 		return bucket;
 	}
 
-	/**
-	 * Builds a QueryCollection object to use the Collection URIs as source of constraint values.
-	 * @param facets Setting to true configures Search API to do facets on this source.
-	 * @param prefix This value will be trimmed from the start of collection URIs to provide more readable facet labels.
-	 * @param facetOptions A list of facet options to configure the collection constraint.
-	 * @return A QueryCollection object for use in building QueryOptions configurations.
-	 */
-	public QueryCollection collection(boolean facets, String prefix,
-			FacetOption... facetOptions) {
-		QueryCollection collectionOption = new QueryCollection();
-		collectionOption.doFacets(facets);
-		collectionOption.setPrefix(prefix);
-		for (FacetOption option : facetOptions) {
-			collectionOption.addFacetOption(option.getValue());
-		}
-		return collectionOption;
+	public QueryOptionsTextItem<Integer> concurrencyLevel(
+			Integer concurrencyLevel) {
+		return new QueryOptionsTextItem<Integer>("setConcurrencyLevel",
+				concurrencyLevel);
 	}
 
 	/**
@@ -352,7 +585,6 @@ public final class QueryOptionsBuilder {
 	 * @param constraintSource Source of data for the constraint.
 	 * @return A QueryConstraint object for use in building QueryOptions configurations
 	 */
-	@SuppressWarnings("rawtypes")
 	public QueryConstraint constraint(String name,
 			BaseConstraintItem constraintSource, QueryAnnotation... annotations) {
 		QueryConstraint constraintOption = new QueryConstraint(name);
@@ -394,6 +626,10 @@ public final class QueryOptionsBuilder {
 		QueryCustom custom = new QueryCustom(false);
 		custom.setParse(parse);
 		return custom;
+	}
+
+	public QueryOptionsTextItem<Boolean> debug(Boolean debug) {
+		return new QueryOptionsTextItem<Boolean>("setDebug", debug);
 	}
 
 	/**
@@ -468,6 +704,7 @@ public final class QueryOptionsBuilder {
 		return new Element(ns, name);
 	}
 
+	
 	/**
 	 * Builds a QueryElementQuery object for use in constraining QueryOptions configuration to a particular element.
 	 * @param ns Namespace of the element for restricting QueryOptions.
@@ -508,37 +745,6 @@ public final class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Builds an XQueryExtension to be used in a custom constraint to locate where facets start.
-	 * @param apply Name of function to apply.
-	 * @param ns Namespace of module in which to locate the function.
-	 * @param at Location on the modules search path at which to find the function.
-	 * @return A StartFacet object for use in building QueryCustom objects.
-	 */
-	public StartFacet startFacet(String apply, String ns, String at) {
-		return new StartFacet(apply, ns, at);
-	}
-
-	/** Builds an XQueryExtension to be used in a custom constraint to parse values into buckets.
-	 * @param apply Name of function to apply.
-	 * @param ns Namespace of module in which to locate the function.
-	 * @param at Location on the modules search path at which to find the function.
-	 * @return A Parse object for use in building QueryCustom objects.
-	 */
-	public Parse parse(String apply, String ns, String at) {
-		return new Parse(apply, ns, at);
-	}
-	/**
-	 * Builds an XQueryExtension to be used in a custom constraint to locate where facets end.
-	 * @param apply Name of function to apply.
-	 * @param ns Namespace of module in which to locate the function.
-	 * @param at Location on the modules search path at which to find the function.
-	 * @return A FinishFacet object for use in building QueryCustom objects.
-	 */
-	public FinishFacet finishFacet(String apply, String ns, String at) {
-		return new FinishFacet(apply, ns, at);
-	}
-
-	/**
 	 * Build a FacetOption for use in facetable constraints.
 	 * @param facetOption
 	 * @return A FacetOption object for use in modifying facetable constraint sources.
@@ -560,26 +766,103 @@ public final class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Construct an additional query to be used in Search expression.
-	 * 
-	 * @param xmlString
-	 *            An XML string representing a MarkLogic <cts:query/>
-	 * @return A component for use in a QueryOptionsBuilder expression.
+	 * Builds an XQueryExtension to be used in a custom constraint to locate where facets end.
+	 * @param apply Name of function to apply.
+	 * @param ns Namespace of module in which to locate the function.
+	 * @param at Location on the modules search path at which to find the function.
+	 * @return A FinishFacet object for use in building QueryCustom objects.
 	 */
-	public AnyElement additionalQuery(String xmlString) {
-		org.w3c.dom.Element element = domElement(xmlString);
-		return new AnyElement(element);
+	public FinishFacet finishFacet(String apply, String ns, String at) {
+		return new FinishFacet(apply, ns, at);
+	}
+
+	public QueryOptionsTextItem<Long> forest(Long forest) {
+		return new QueryOptionsTextItem<Long>("addForest", forest);
+	}
+
+	public QueryOptionsTextItem<FragmentScope> fragmentScope(FragmentScope scope) {
+		return new QueryOptionsTextItem<FragmentScope>("setFragmentScope",
+				scope);
+	}
+
+	public GeospatialOption geoOption(String geoOption) {
+		GeospatialOption go = new GeospatialOption();
+		go.setValue(geoOption);
+		return go;
 	}
 
 	/**
-	 * Construct an additional query to be used in Search expression.
+	 * Build a configuration to use a Geospatial attribute Pair Index.
 	 * 
-	 * @param element
-	 *            A DOM element of a MarkLogic >cts:query/>
+	 * @param parent
+	 *            Element that is parent to both the latitude and longitude
+	 *            elements
+	 * @param latitudeAttribute
+	 *            the attribute holding latitude values
+	 * @param longitudeAttribute
+	 *            the attribute holding longitude values
+	 * @param options
+	 *            Optional GeoOptions, FacetOptions a Heatmap.
 	 * @return A component for use in a QueryOptionsBuilder expression.
 	 */
-	public AnyElement additionalQuery(org.w3c.dom.Element element) {
-		return new AnyElement(element);
+	public QueryGeospatialAttributePair geospatialAttributePair(Element parent,
+			Attribute latitudeAttribute, Attribute longitudeAttribute,
+			QueryGeospatialItem... options) {
+		QueryGeospatialAttributePair qga = new QueryGeospatialAttributePair();
+		qga.setParent(parent);
+		qga.setLatitude(latitudeAttribute);
+		qga.setLongitude(longitudeAttribute);
+		for (QueryGeospatialItem option : options) {
+			option.build(qga);
+		}
+		return qga;
+	}
+
+	/**
+	 * Build a configuration to use a Geospatial Element Index.
+	 * 
+	 * @param geoSpatialIndexElement
+	 *            Builder Expression for an element that has latitude and
+	 *            longitude values.
+	 * @param options
+	 *            Optional GeoOptions, FacetOptions a Heatmap.
+	 * @return A component for use in a QueryOptionsBuilder expression.
+	 */
+	public QueryGeospatialElement geospatialElement(
+			Element geoSpatialIndexElement, GeospatialOption... options) {
+		QueryGeospatialElement qge = new QueryGeospatialElement();
+		qge.setElement(geoSpatialIndexElement);
+		for (GeospatialOption option : options) {
+			option.build(qge);
+		}
+		return qge;
+	}
+
+	/**
+	 * Build a configuration to use a Geospatial attribute Pair Index.
+	 * 
+	 * @param parent
+	 *            Element that is parent to both the latitude and longitude
+	 *            elements
+	 * @param latitudeElement
+	 *            the element holding latitude values
+	 * @param longitudeElement
+	 *            the element holding longitude values
+	 * @param options
+	 *            Optional GeoOptions, FacetOptions a Heatmap.
+	 * @return A component for use in a QueryOptionsBuilder expression.
+	 */
+	public QueryGeospatialElementPair geospatialElementPair(Element parent,
+			Element latitudeElement, Element longitudeElement,
+			QueryGeospatialItem... options) {
+		QueryGeospatialElementPair qga = new QueryGeospatialElementPair();
+		qga.setParent(parent);
+		qga.setLatitude(latitudeElement);
+		qga.setLongitude(longitudeElement);
+		for (QueryGeospatialItem option : options) {
+			option.build(qga);
+		}
+		return qga;
 	}
 
 	/**
@@ -731,12 +1014,31 @@ public final class QueryOptionsBuilder {
 		return operator;
 	}
 
+	public QueryOptionsTextItem<Long> pageLength(Long pageLength) {
+		return new QueryOptionsTextItem<Long>("setPageLength", pageLength);
+	}
+
+	/** Builds an XQueryExtension to be used in a custom constraint to parse values into buckets.
+	 * @param apply Name of function to apply.
+	 * @param ns Namespace of module in which to locate the function.
+	 * @param at Location on the modules search path at which to find the function.
+	 * @return A Parse object for use in building QueryCustom objects.
+	 */
+	public Parse parse(String apply, String ns, String at) {
+		return new Parse(apply, ns, at);
+	}
+
 	/**
 	 * Build a new QueryProperties, which restricts a named constraint to data stored in the properties fragment.
 	 * @return a QueryProperties object for use in building a QueryConstraint configuration.
 	 */
 	public QueryProperties properties() {
 		return new QueryProperties();
+	}
+
+	public QueryOptionsTextItem<Double> qualityWeight(Double qualityWeight) {
+		return new QueryOptionsTextItem<Double>("setQualityWeight",
+				qualityWeight);
 	}
 
 	/**
@@ -750,7 +1052,6 @@ public final class QueryOptionsBuilder {
 		return range(hasFacets, type, null, options);
 	}
 
-	
 	public QueryRange range(Boolean hasFacets, QName type, String collation,
 			QueryRangeItem... options) {
 		QueryRange rangeOption = new QueryRange();
@@ -763,108 +1064,10 @@ public final class QueryOptionsBuilder {
 		return rangeOption;
 	}
 
-	public QuerySortOrderItem score() {
-		return QuerySortOrder.Score.YES;
-	}
-
-	public QueryOptionsTextItem<Boolean> returnFacets(Boolean returnFacets) {
-		return new QueryOptionsTextItem<Boolean>("setReturnFacets",
-				returnFacets);
-	}
-
-	public QueryOptionsTextItem<Boolean> returnMetrics(Boolean returnFacets) {
-		return new QueryOptionsTextItem<Boolean>("setReturnMetrics",
-				returnFacets);
-	}
-
-	public QueryOptionsTextItem<Boolean> returnResults(Boolean returnFacets) {
-		return new QueryOptionsTextItem<Boolean>("setReturnResults",
-				returnFacets);
-	}
-
-	public QueryOptionsTextItem<FragmentScope> fragmentScope(FragmentScope scope) {
-		return new QueryOptionsTextItem<FragmentScope>("setFragmentScope",
-				scope);
-	}
-
-	public GeospatialOption geoOption(String geoOption) {
-		GeospatialOption go = new GeospatialOption();
-		go.setValue(geoOption);
-		return go;
-	}
-
-	/**
-	 * Build a configuration to use a Geospatial Element Index.
-	 * 
-	 * @param geoSpatialIndexElement
-	 *            Builder Expression for an element that has latitude and
-	 *            longitude values.
-	 * @param options
-	 *            Optional GeoOptions, FacetOptions a Heatmap.
-	 * @return A component for use in a QueryOptionsBuilder expression.
-	 */
-	public QueryGeospatialElement geospatialElement(
-			Element geoSpatialIndexElement, GeospatialOption... options) {
-		QueryGeospatialElement qge = new QueryGeospatialElement();
-		qge.setElement(geoSpatialIndexElement);
-		for (GeospatialOption option : options) {
-			option.build(qge);
-		}
-		return qge;
-	}
-
-	/**
-	 * Build a configuration to use a Geospatial attribute Pair Index.
-	 * 
-	 * @param parent
-	 *            Element that is parent to both the latitude and longitude
-	 *            elements
-	 * @param latitudeElement
-	 *            the element holding latitude values
-	 * @param longitudeElement
-	 *            the element holding longitude values
-	 * @param options
-	 *            Optional GeoOptions, FacetOptions a Heatmap.
-	 * @return A component for use in a QueryOptionsBuilder expression.
-	 */
-	public QueryGeospatialElementPair geospatialElementPair(Element parent,
-			Element latitudeElement, Element longitudeElement,
-			QueryGeospatialItem... options) {
-		QueryGeospatialElementPair qga = new QueryGeospatialElementPair();
-		qga.setParent(parent);
-		qga.setLatitude(latitudeElement);
-		qga.setLongitude(longitudeElement);
-		for (QueryGeospatialItem option : options) {
-			option.build(qga);
-		}
-		return qga;
-	}
-
-	/**
-	 * Build a configuration to use a Geospatial attribute Pair Index.
-	 * 
-	 * @param parent
-	 *            Element that is parent to both the latitude and longitude
-	 *            elements
-	 * @param latitudeAttribute
-	 *            the attribute holding latitude values
-	 * @param longitudeAttribute
-	 *            the attribute holding longitude values
-	 * @param options
-	 *            Optional GeoOptions, FacetOptions a Heatmap.
-	 * @return A component for use in a QueryOptionsBuilder expression.
-	 */
-	public QueryGeospatialAttributePair geospatialAttributePair(Element parent,
-			Attribute latitudeAttribute, Attribute longitudeAttribute,
-			QueryGeospatialItem... options) {
-		QueryGeospatialAttributePair qga = new QueryGeospatialAttributePair();
-		qga.setParent(parent);
-		qga.setLatitude(latitudeAttribute);
-		qga.setLongitude(longitudeAttribute);
-		for (QueryGeospatialItem option : options) {
-			option.build(qga);
-		}
-		return qga;
+	public QueryOptionsTextItem<Boolean> returnAggregates(
+			Boolean returnAggregates) {
+		return new QueryOptionsTextItem<Boolean>("setReturnAggregates",
+				returnAggregates);
 	}
 
 	public QueryOptionsTextItem<Boolean> returnConstraints(
@@ -873,19 +1076,9 @@ public final class QueryOptionsBuilder {
 				returnConstraints);
 	}
 
-	public QueryOptionsTextItem<Boolean> returnAggregates(
-			Boolean returnAggregates) {
-		return new QueryOptionsTextItem<Boolean>("setReturnAggregates",
-				returnAggregates);
-	}
-
-	public QueryOptionsTextItem<Boolean> returnValues(Boolean returnValues) {
-		return new QueryOptionsTextItem<Boolean>("setReturnValues",
-				returnValues);
-	}
-
-	public QueryOptionsTextItem<Boolean> returnQtext(Boolean returnQtext) {
-		return new QueryOptionsTextItem<Boolean>("setReturnQtext", returnQtext);
+	public QueryOptionsTextItem<Boolean> returnFacets(Boolean returnFacets) {
+		return new QueryOptionsTextItem<Boolean>("setReturnFacets",
+				returnFacets);
 	}
 
 	public QueryOptionsTextItem<Boolean> returnFrequencies(
@@ -894,12 +1087,26 @@ public final class QueryOptionsBuilder {
 				returnFrequencies);
 	}
 
+	public QueryOptionsTextItem<Boolean> returnMetrics(Boolean returnFacets) {
+		return new QueryOptionsTextItem<Boolean>("setReturnMetrics",
+				returnFacets);
+	}
+
 	public QueryOptionsTextItem<Boolean> returnPlan(Boolean returnPlan) {
 		return new QueryOptionsTextItem<Boolean>("setReturnPlan", returnPlan);
 	}
 
+	public QueryOptionsTextItem<Boolean> returnQtext(Boolean returnQtext) {
+		return new QueryOptionsTextItem<Boolean>("setReturnQtext", returnQtext);
+	}
+
 	public QueryOptionsTextItem<Boolean> returnQuery(Boolean returnQuery) {
 		return new QueryOptionsTextItem<Boolean>("setReturnQuery", returnQuery);
+	}
+
+	public QueryOptionsTextItem<Boolean> returnResults(Boolean returnFacets) {
+		return new QueryOptionsTextItem<Boolean>("setReturnResults",
+				returnFacets);
 	}
 
 	public QueryOptionsTextItem<Boolean> returnSimilar(Boolean returnSimilar) {
@@ -907,8 +1114,13 @@ public final class QueryOptionsBuilder {
 				returnSimilar);
 	}
 
-	public QueryOptionsTextItem<Boolean> debug(Boolean debug) {
-		return new QueryOptionsTextItem<Boolean>("setDebug", debug);
+	public QueryOptionsTextItem<Boolean> returnValues(Boolean returnValues) {
+		return new QueryOptionsTextItem<Boolean>("setReturnValues",
+				returnValues);
+	}
+
+	public QuerySortOrderItem score() {
+		return QuerySortOrder.Score.YES;
 	}
 
 	/**
@@ -933,100 +1145,8 @@ public final class QueryOptionsBuilder {
 		return new AnyElement(targetElement);
 	}
 
-	public QueryOptionsTextItem<Integer> concurrencyLevel(
-			Integer concurrencyLevel) {
-		return new QueryOptionsTextItem<Integer>("setConcurrencyLevel",
-				concurrencyLevel);
-	}
-
 	public QueryOptionsTextItem<String> searchOption(String searchOption) {
 		return new QueryOptionsTextItem<String>("addSearchOption", searchOption);
-	}
-
-	public QueryOptionsTextItem<Long> forest(Long forest) {
-		return new QueryOptionsTextItem<Long>("addForest", forest);
-	}
-
-	public QueryOptionsTextItem<Long> pageLength(Long pageLength) {
-		return new QueryOptionsTextItem<Long>("setPageLength", pageLength);
-	}
-
-	public QueryOptionsTextItem<Double> qualityWeight(Double qualityWeight) {
-		return new QueryOptionsTextItem<Double>("setQualityWeight",
-				qualityWeight);
-	}
-
-	private class QueryOptionsTextItem<T extends Object> implements
-			QueryOptionsItem, QueryWordItem, QueryValueItem {
-
-		private T state;
-		private String methodName;
-
-		public QueryOptionsTextItem(String methodName, T value) {
-			this.state = (T) value;
-			this.methodName = methodName;
-		}
-
-		private void innerBuild(BaseQueryOptionConfiguration anyOption) {
-			try {
-				Method method = anyOption.getClass().getMethod(this.methodName,
-						state.getClass());
-				method.invoke(anyOption, this.state);
-			} catch (SecurityException e) {
-				throw new MarkLogicInternalException(
-						"Introspection problem building QueryOptions", e);
-			} catch (NoSuchMethodException e) {
-				throw new MarkLogicInternalException(
-						"Introspection problem building QueryOptions", e);
-			} catch (IllegalArgumentException e) {
-				throw new MarkLogicInternalException(
-						"Introspection problem building QueryOptions", e);
-			} catch (IllegalAccessException e) {
-				throw new MarkLogicInternalException(
-						"Introspection problem building QueryOptions", e);
-			} catch (InvocationTargetException e) {
-				throw new MarkLogicInternalException(
-						"Introspection problem building QueryOptions", e);
-			}
-		}
-
-		private void innerBuild(QueryOptions anyOption) {
-			try {
-				Method method = anyOption.getClass().getMethod(this.methodName,
-						state.getClass());
-				method.invoke(anyOption, this.state);
-			} catch (SecurityException e) {
-				throw new MarkLogicInternalException(
-						"Introspection problem building QueryOptions", e);
-			} catch (NoSuchMethodException e) {
-				throw new MarkLogicInternalException(
-						"Introspection problem building QueryOptions", e);
-			} catch (IllegalArgumentException e) {
-				throw new MarkLogicInternalException(
-						"Introspection problem building QueryOptions", e);
-			} catch (IllegalAccessException e) {
-				throw new MarkLogicInternalException(
-						"Introspection problem building QueryOptions", e);
-			} catch (InvocationTargetException e) {
-				throw new MarkLogicInternalException(
-						"Introspection problem building QueryOptions", e);
-			}
-		}
-
-		@Override
-		public void build(QueryOptions options) {
-			this.innerBuild(options);
-		}
-
-		@Override
-		public void build(QueryValue value) {
-			this.innerBuild(value);
-		}
-
-		@Override
-		public void build(QueryWord word) {
-			this.innerBuild(word);
-		}
 	}
 
 	public QuerySortOrder sortOrder(String type, String collation,
@@ -1037,14 +1157,7 @@ public final class QueryOptionsBuilder {
 
 		for (QuerySortOrderItem option : options) {
 			option.build(so);
-			//
-			// if (option instanceof IndexReference) {
-			// addIndexElement(so, (IndexReference) option);
-			// } else if (option instanceof QuerySortOrder.Score) {
-			// so.setScore();
-			// } else if (option instanceof Direction) {
-			// so.setDirection((Direction) option);
-			// }
+			
 		}
 		return so;
 	}
@@ -1068,6 +1181,17 @@ public final class QueryOptionsBuilder {
 		return starter;
 	}
 
+	/**
+	 * Builds an XQueryExtension to be used in a custom constraint to locate where facets start.
+	 * @param apply Name of function to apply.
+	 * @param ns Namespace of module in which to locate the function.
+	 * @param at Location on the modules search path at which to find the function.
+	 * @return A StartFacet object for use in building QueryCustom objects.
+	 */
+	public StartFacet startFacet(String apply, String ns, String at) {
+		return new StartFacet(apply, ns, at);
+	}
+
 	public QueryState state(String stateName, QueryStateItem... options) {
 		QueryState state = new QueryState();
 		state.setName(stateName);
@@ -1076,12 +1200,6 @@ public final class QueryOptionsBuilder {
 		}
 		return state;
 
-	}
-
-	public SuggestionSourceOption suggestionSourceOption(String suggestionOption) {
-		SuggestionSourceOption so = new SuggestionSourceOption();
-		so.setValue(suggestionOption);
-		return so;
 	}
 
 	/**
@@ -1121,6 +1239,12 @@ public final class QueryOptionsBuilder {
 		return suggestionSource;
 	}
 
+	public SuggestionSourceOption suggestionSourceOption(String suggestionOption) {
+		SuggestionSourceOption so = new SuggestionSourceOption();
+		so.setValue(suggestionOption);
+		return so;
+	}
+
 	/**
 	 * Build a term configuration object.
 	 */
@@ -1143,10 +1267,6 @@ public final class QueryOptionsBuilder {
 		return to;
 	}
 
-	public QName type(String type) {
-		return new QName(type);
-	}
-
 	public QueryTransformResults transformResults(String apply) {
 		QueryTransformResults t = new QueryTransformResults();
 		t.setApply(apply);
@@ -1159,6 +1279,14 @@ public final class QueryOptionsBuilder {
 		t.setNs(extension.getNs());
 		t.setAt(extension.getAt());
 		return t;
+	}
+
+	public QName type(String type) {
+		return new QName(type);
+	}
+
+	public QueryUri uri() {
+		return QueryUri.YES;
 	}
 
 	public QueryValue value(QueryValueItem... valueOptions) {
@@ -1179,14 +1307,24 @@ public final class QueryOptionsBuilder {
 		return v;
 	}
 
-	public QueryUri uri() {
-		return QueryUri.YES;
+	public ValuesOption valuesOption(String valuesOption) {
+		ValuesOption vo = new ValuesOption();
+		vo.setValue(valuesOption);
+		return vo;
 	}
 
-	public Aggregate aggregate(String aggregate) {
-		Aggregate a = new Aggregate();
-		a.setApply(aggregate);
-		return a;
+	public Weight weight(Double weight) {
+		Weight w = new Weight();
+		w.setValue(weight);
+		return w;
+	}
+
+	public QueryWord word(QueryWordItem... wordOptions) {
+		QueryWord wo = new QueryWord();
+		for (QueryWordItem option : wordOptions) {
+			option.build(wo);
+		}
+		return wo;
 	}
 
 	public WordLexicon wordLexicon() {
@@ -1204,148 +1342,5 @@ public final class QueryOptionsBuilder {
 		lex.setCollation(collation);
 		lex.setFragmentScope(scope);
 		return lex;
-	}
-
-	public Weight weight(Double weight) {
-		Weight w = new Weight();
-		w.setValue(weight);
-		return w;
-	}
-
-	public QueryWord word(QueryWordItem... wordOptions) {
-		QueryWord wo = new QueryWord();
-		for (QueryWordItem option : wordOptions) {
-			option.build(wo);
-		}
-		return wo;
-	}
-
-	private static DocumentBuilderFactory getFactory()
-			throws ParserConfigurationException {
-		if (factory == null)
-			factory = makeDocumentBuilderFactory();
-		return factory;
-	}
-
-	private static DocumentBuilderFactory makeDocumentBuilderFactory()
-			throws ParserConfigurationException {
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		factory.setNamespaceAware(true);
-		factory.setValidating(false);
-		return factory;
-	}
-
-	/**
-	 * Marks objects that comprise QueryGrammar configurations.
-	 */
-	public interface QueryGrammarItem {
-
-	}
-
-	/**
-	 * Tags classes that define index references.
-	 */
-	interface IndexReference extends QueryWordItem, QueryRangeItem,
-			QueryValueItem, QuerySortOrderItem {
-
-	}
-
-	interface Indexable {
-
-		/**
-		 * Add a reference to an element to this ConstraintBase
-		 */
-		public void setElement(Element element);
-
-		public void setAttribute(Attribute attribute);
-
-		public QName getAttribute();
-
-		public QName getElement();
-
-		public String getFieldName();
-
-		public void setField(Field field);
-	}
-
-	/**
-	 * Marks classes that can be annotated with XML elements.
-	 */
-	public interface QueryAnnotations {
-
-		public List<QueryAnnotation> getAnnotations();
-
-		void addAnnotation(QueryAnnotation queryAnnotation);
-
-		public void addElementAsAnnotation(org.w3c.dom.Element element);
-
-		public void deleteAnnotations();
-
-	}
-
-	/**
-	 * Marks objects that comprise QueryConstraints
-	 */
-	public interface QueryConstraintItem extends QueryTermItem {
-
-	}
-
-	/**
-	 * Marks classes that comprise the top level QueryOptions configuration.
-	 */
-	public interface QueryOptionsItem {
-
-		public void build(QueryOptions options);
-	}
-
-	/**
-	 * Marks classes that comprise QueryRange configurations. 
-	 */
-	public interface QueryRangeItem {
-
-		public void build(QueryRange range);
-
-	}
-
-	/**
-	 * Marks classes that comprise QuerySortOrder configurations.
-	 */
-	public interface QuerySortOrderItem {
-
-		public void build(QuerySortOrder sortOrder);
-	}
-
-	/**
-	 * Marks classes that comprise QueryWord configurations.
-	 *
-	 */
-	public interface QueryWordItem {
-
-		public void build(QueryWord word);
-	}
-
-	/**
-	 * Configuration Items that build to make {@link QueryValue} objects.
-	 */
-	public interface QueryValueItem {
-
-		public void build(QueryValue value);
-
-	}
-
-	/**
-	 * Marks classes that comprise QueryTerm configurations
-	 */
-	public interface QueryTermItem {
-
-	}
-
-	/**
-	 * Tags classes that comprise QuerySuggestionSource configurations.
-	 */
-	public interface QuerySuggestionSourceItem {
-
-		void build(QuerySuggestionSource suggestionSource);
-
 	}
 }
