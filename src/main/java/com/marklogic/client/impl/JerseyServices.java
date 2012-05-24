@@ -58,6 +58,8 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.KeyLocator;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.RequestLogger;
+import com.marklogic.client.RequestParameters;
+import com.marklogic.client.RequestParametersAccessor;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ValueLocator;
 import com.marklogic.client.config.KeyValueQueryDefinition;
@@ -264,7 +266,7 @@ public class JerseyServices implements RESTServices {
 	// it can close the response?
 
 	@Override
-	public <T> T getDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Class<T> as)
+	public <T> T getDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, RequestParameters extraParams, String mimetype, Class<T> as)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (docId == null)
 			throw new IllegalArgumentException("Document read with null document identifier");
@@ -279,7 +281,7 @@ public class JerseyServices implements RESTServices {
 				makeDocumentParams(uri, categories, transactionId, extraParams)
 				).accept(mimetype);
 		if (extraParams != null && extraParams.containsKey("range"))
-			resource = resource.header("range", extraParams.get("range"));
+			resource = resource.header("range", extraParams.get("range").get(0));
 
 		ClientResponse response = resource.get(ClientResponse.class);
 
@@ -316,7 +318,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public Object[] getDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Class[] as)
+	public Object[] getDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, RequestParameters extraParams, String[] mimetypes, Class[] as)
 	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (docId == null)
 			throw new IllegalArgumentException("Document read with null document identifier");
@@ -432,7 +434,7 @@ public class JerseyServices implements RESTServices {
 		return true;
 	}
 	@Override
-	public void putDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String mimetype, Object value)
+	public void putDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, RequestParameters extraParams, String mimetype, Object value)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (docId == null)
 			throw new IllegalArgumentException("Document write with null document identifier");
@@ -488,7 +490,7 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException("write failed: "+status.getReasonPhrase());
 	}
 	@Override
-	public void putDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, Map<String,String> extraParams, String[] mimetypes, Object[] values)
+	public void putDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, RequestParameters extraParams, String[] mimetypes, Object[] values)
 	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (docId == null)
 			throw new IllegalArgumentException("Document write with null document identifier");
@@ -520,8 +522,11 @@ public class JerseyServices implements RESTServices {
 		MultiPart multiPart = new MultiPart();
 		multiPart.setMediaType(new MediaType("multipart", "mixed"));
 		for (int i = 0; i < mimetypes.length; i++) {
-			String[] typeParts = mimetypes[i].contains("/") ? mimetypes[i]
-					.split("/", 2) : null;
+			if (mimetypes[i] == null)
+				throw new IllegalArgumentException("null mimetype: "+i);
+
+			String[] typeParts = mimetypes[i].contains("/") ?
+					mimetypes[i].split("/", 2) : null;
 
 			MediaType typePart = (typeParts != null) ?
 					new MediaType(typeParts[0], typeParts[1]) :
@@ -639,18 +644,18 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException("transaction rollback failed: " + status.getReasonPhrase());
 	}
 
-	private MultivaluedMap<String, String> makeDocumentParams(String uri, Set<Metadata> categories, String transactionId, Map<String,String> extraParams) {
+	private MultivaluedMap<String, String> makeDocumentParams(String uri, Set<Metadata> categories, String transactionId, RequestParameters extraParams) {
 		return makeDocumentParams(uri, categories, transactionId, extraParams, false);
 	}
 
-	private MultivaluedMap<String, String> makeDocumentParams(String uri,
-			Set<Metadata> categories, String transactionId, Map<String, String> extraParams, boolean withContent) {
+	private MultivaluedMap<String, String> makeDocumentParams(String uri, Set<Metadata> categories,
+			String transactionId, RequestParameters extraParams, boolean withContent) {
 		MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
 		if (extraParams != null && extraParams.size() > 0) {
-			for (Map.Entry<String, String> entry: extraParams.entrySet()) {
+			for (Map.Entry<String, List<String>> entry: extraParams.entrySet()) {
 				String extraKey = entry.getKey();
 				if (!"range".equalsIgnoreCase(extraKey))
-					docParams.putSingle(extraKey, entry.getValue());
+					docParams.put(extraKey, entry.getValue());
 			}
 		}
 		docParams.add("uri", uri);
@@ -837,28 +842,42 @@ public class JerseyServices implements RESTServices {
 		return (reqlog != null) ? reqlog.copyContent(entity) : entity;
 	}
 	@Override
+	public void putValues(RequestLogger reqlog, String type, String mimetype, Object value)
+	throws ForbiddenUserException, FailedRequestException {
+		logger.info("Posting {}", type);
+
+		putPostValueImpl(reqlog, "put", type, null, null, mimetype, value, ClientResponse.Status.NO_CONTENT);
+	}
+	@Override
 	public void postValues(RequestLogger reqlog, String type, String mimetype, Object value)
 	throws ForbiddenUserException, FailedRequestException {
 		logger.info("Posting {}", type);
 
-		putPostValueImpl(reqlog, "post", type, null, mimetype, value, ClientResponse.Status.NO_CONTENT);
+		putPostValueImpl(reqlog, "post", type, null, null, mimetype, value, ClientResponse.Status.NO_CONTENT);
 	}
 	@Override
 	public void postValue(RequestLogger reqlog, String type, String key, String mimetype, Object value)
 	throws ForbiddenUserException, FailedRequestException {
 		logger.info("Posting {}/{}", type, key);
 
-		putPostValueImpl(reqlog, "post", type, key, mimetype, value, ClientResponse.Status.CREATED);
+		putPostValueImpl(reqlog, "post", type, key, null, mimetype, value, ClientResponse.Status.CREATED);
 	}
 	@Override
 	public void putValue(RequestLogger reqlog, String type, String key, String mimetype, Object value)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		logger.info("Putting {}/{}", type, key);
 
-		putPostValueImpl(reqlog, "put", type, key, mimetype, value, ClientResponse.Status.NO_CONTENT);
+		putPostValueImpl(reqlog, "put", type, key, null, mimetype, value, ClientResponse.Status.NO_CONTENT);
+	}
+	@Override
+	public void putValue(RequestLogger reqlog, String type, String key, RequestParameters extraParams, String mimetype, Object value)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		logger.info("Putting {}/{}", type, key);
+
+		putPostValueImpl(reqlog, "put", type, key, extraParams, mimetype, value, ClientResponse.Status.NO_CONTENT);
 	}
 	private void putPostValueImpl(
-		RequestLogger reqlog, String method, String type, String key, String mimetype, Object value, ClientResponse.Status expectedStatus
+		RequestLogger reqlog, String method, String type, String key, RequestParameters extraParams, String mimetype, Object value, ClientResponse.Status expectedStatus
 	) {
 		if (key != null) {
 			logRequest(reqlog, "writing %s value with %s key and %s mime type",
@@ -889,19 +908,29 @@ public class JerseyServices implements RESTServices {
 				sentValue = value;
 		}
 
+		MultivaluedMap<String, String> requestParams = convertParams(extraParams);
+
 		ClientResponse response = null;
 		if ("put".equals(method)) {
 			if (isFirstRequest && hasStreamingPart) makeFirstRequest();
 
 			String connectPath = (key != null) ? type+"/"+key : type;
 
-			response = connection.path(connectPath).type(mimetype).put(ClientResponse.class, sentValue);
+			WebResource resource = (requestParams == null) ?
+				connection.path(connectPath) :
+				connection.path(connectPath).queryParams(requestParams);
+
+			response = resource.type(mimetype).put(ClientResponse.class, sentValue);
 
 			if (isFirstRequest) isFirstRequest = false;
 		} else if ("post".equals(method)) {
 			if (isFirstRequest && hasStreamingPart) makeFirstRequest();
 
-			response = connection.path(type).type(mimetype).post(ClientResponse.class, sentValue);
+			WebResource resource = (requestParams == null) ?
+				connection.path(type) :
+				connection.path(type).queryParams(requestParams);
+
+			response = resource.type(mimetype).post(ClientResponse.class, sentValue);
 
 			if (isFirstRequest) isFirstRequest = false;
 		} else {
@@ -957,6 +986,360 @@ public class JerseyServices implements RESTServices {
 		logRequest(reqlog, "deleted %s values",
 				type
 				);
+	}
+
+	@Override
+	public <T> T getResource(RequestLogger reqlog, String path, RequestParameters params, String mimetype, Class<T> as)
+	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		ClientResponse response = doGet(path, params, mimetype);
+
+		checkStatus(response, "read", "resource", path,
+				(as != null) ? ResponseStatus.OK : ResponseStatus.NO_CONTENT);
+
+		return makeResult(reqlog, "read", "resource", response, as);
+	}
+	@Override
+	public Object[] getResource(RequestLogger reqlog, String path, RequestParameters params, String[] mimetypes, Class[] as)
+	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		ClientResponse response =
+			doGet(path, params, Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
+
+		checkStatus(response, "read", "resource", path,
+				(as != null && as.length > 0) ? ResponseStatus.OK : ResponseStatus.NO_CONTENT);
+
+		return makeResults(reqlog, "read", "resource", response, as);
+	}
+
+	@Override
+	public <T> T putResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Object value, String outputMimetype, Class<T> as)
+	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		ClientResponse response = doPut(reqlog, path, params, inputMimetype, value, outputMimetype);
+
+		checkStatus(response, "write", "resource", path,
+				(as != null) ? ResponseStatus.OK : ResponseStatus.CREATED_OR_NO_CONTENT);
+
+		return makeResult(reqlog, "write", "resource", response, as);
+	}
+	@Override
+	public <T> T putResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, String outputMimetype, Class<T> as)
+	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		ClientResponse response = doPut(reqlog, path, params, inputMimetypes, values, outputMimetype);
+
+		checkStatus(response, "write", "resource", path,
+				(as != null) ? ResponseStatus.OK : ResponseStatus.CREATED_OR_NO_CONTENT);
+
+		return makeResult(reqlog, "write", "resource", response, as);
+	}
+
+	@Override
+	public Object postResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Object value, String outputMimetype, Class as)
+	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		ClientResponse response = doPost(reqlog, path, params, inputMimetype, value, outputMimetype);
+
+		checkStatus(response, "apply", "resource", path,
+				(as != null) ? ResponseStatus.OK : ResponseStatus.CREATED_OR_NO_CONTENT);
+
+		return makeResult(reqlog, "apply", "resource", response, as);
+	}
+	@Override
+	public Object postResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, String outputMimetype, Class as)
+	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		ClientResponse response = doPost(reqlog, path, params, inputMimetypes, values, outputMimetype);
+
+		checkStatus(response, "apply", "resource", path,
+				(as != null) ? ResponseStatus.OK : ResponseStatus.CREATED_OR_NO_CONTENT);
+
+		return makeResult(reqlog, "apply", "resource", response, as);
+	}
+	@Override
+	public Object[] postResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Object value, String[] outputMimetypes, Class[] as)
+	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		ClientResponse response = doPost(reqlog, path, params, inputMimetype, value, Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
+
+		checkStatus(response, "apply", "resource", path,
+				(as != null && as.length > 0) ? ResponseStatus.OK : ResponseStatus.CREATED_OR_NO_CONTENT);
+
+		return makeResults(reqlog, "apply", "resource", response, as);
+	}
+	@Override
+	public Object[] postResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, String[] outputMimetypes, Class[] as)
+	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		ClientResponse response = doPost(reqlog, path, params, inputMimetypes, values, Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
+
+		checkStatus(response, "apply", "resource", path,
+				(as != null && as.length > 0) ? ResponseStatus.OK : ResponseStatus.CREATED_OR_NO_CONTENT);
+
+		return makeResults(reqlog, "apply", "resource", response, as);
+	}
+
+	@Override
+	public <T> T deleteResource(RequestLogger reqlog, String path, RequestParameters params, String outputMimetype, Class<T> as)
+	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		ClientResponse response = doDelete(reqlog, path, params, outputMimetype);
+
+		checkStatus(response, "delete", "resource", path,
+				(as != null) ? ResponseStatus.OK : ResponseStatus.NO_CONTENT);
+
+		return makeResult(reqlog, "delete", "resource", response, as);
+	}
+
+	private ClientResponse doGet(String path, RequestParameters params, Object mimetype) {
+		if (path == null)
+			throw new IllegalArgumentException("Read with null path");
+
+		WebResource.Builder builder = makeBuilder(path, RequestParametersAccessor.getMap(params), null, mimetype);
+
+		logger.info("Getting {}", path);
+
+		ClientResponse response = builder.get(ClientResponse.class);
+
+		if (isFirstRequest) isFirstRequest = false;
+
+		return response;
+	}
+	private ClientResponse doPut(RequestLogger reqlog, String path, RequestParameters params, Object inputMimetype, Object value, String outputMimetype) {
+		if (path == null)
+			throw new IllegalArgumentException("Write with null path");
+
+		WebResource.Builder builder = makeBuilder(path, RequestParametersAccessor.getMap(params), inputMimetype, outputMimetype);
+
+		logger.info("Putting {}", path);
+
+		ClientResponse response = null;
+		if (value instanceof OutputStreamSender) {
+			if (isFirstRequest) makeFirstRequest();
+
+			response = builder.put(ClientResponse.class, new StreamingOutputImpl((OutputStreamSender) value, reqlog));
+		} else {
+			if (isFirstRequest && (value instanceof InputStream || value instanceof Reader))
+				makeFirstRequest();
+
+			if (reqlog != null)
+				response = builder.put(ClientResponse.class, reqlog.copyContent(value));
+			else
+				response = builder.put(ClientResponse.class, value);
+		}
+
+		if (isFirstRequest) isFirstRequest = false;
+
+		return response;
+	}
+	private ClientResponse doPut(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, String outputMimetype) {
+		if (path == null)
+			throw new IllegalArgumentException("Write with null path");
+
+		MultiPart multiPart = new MultiPart();
+		boolean hasStreamingPart = addParts(reqlog, multiPart, inputMimetypes, values);
+
+		WebResource.Builder builder = makeBuilder(path, RequestParametersAccessor.getMap(params), 
+				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE), outputMimetype);
+
+		logger.info("Putting multipart for {}", path);
+
+		if (isFirstRequest && hasStreamingPart) makeFirstRequest();
+
+		ClientResponse response = builder.put(ClientResponse.class, multiPart);
+
+		if (isFirstRequest) isFirstRequest = false;
+
+		return response;
+	}
+	private ClientResponse doPost(RequestLogger reqlog, String path, RequestParameters params, Object inputMimetype, Object value, Object outputMimetype) {
+		if (path == null)
+			throw new IllegalArgumentException("Apply with null path");
+
+		WebResource.Builder builder = makeBuilder(path, RequestParametersAccessor.getMap(params), inputMimetype, outputMimetype);
+
+		logger.info("Posting {}", path);
+
+		ClientResponse response = null;
+		if (value instanceof OutputStreamSender) {
+			if (isFirstRequest) makeFirstRequest();
+
+			response = builder.post(ClientResponse.class, new StreamingOutputImpl((OutputStreamSender) value, reqlog));
+		} else {
+			if (isFirstRequest && (value instanceof InputStream || value instanceof Reader))
+				makeFirstRequest();
+
+			if (reqlog != null)
+				response = builder.post(ClientResponse.class, reqlog.copyContent(value));
+			else
+				response = builder.post(ClientResponse.class, value);
+		}
+
+		if (isFirstRequest) isFirstRequest = false;
+
+		return response;
+	}
+	private ClientResponse doPost(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, Object outputMimetype) {
+		if (path == null)
+			throw new IllegalArgumentException("Apply with null path");
+
+		MultiPart multiPart = new MultiPart();
+		boolean hasStreamingPart = addParts(reqlog, multiPart, inputMimetypes, values);
+
+		WebResource.Builder builder = makeBuilder(path, RequestParametersAccessor.getMap(params), 
+				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE), outputMimetype);
+
+		logger.info("Posting multipart for {}", path);
+
+		if (isFirstRequest && hasStreamingPart) makeFirstRequest();
+
+		ClientResponse response = builder.post(ClientResponse.class, multiPart);
+
+		if (isFirstRequest) isFirstRequest = false;
+
+		return response;
+	}
+	private ClientResponse doDelete(RequestLogger reqlog, String path, RequestParameters params, String mimetype) {
+		if (path == null)
+			throw new IllegalArgumentException("Delete with null path");
+
+		WebResource.Builder builder = makeBuilder(path, RequestParametersAccessor.getMap(params), null, mimetype);
+
+		logger.info("Deleting {}", path);
+
+		ClientResponse response = builder.delete(ClientResponse.class);
+
+		if (isFirstRequest) isFirstRequest = false;
+
+		return response;
+	}
+
+	private MultivaluedMap<String, String> convertParams(RequestParameters params) {
+		if (params == null || params.size() == 0)
+			return null;
+
+		MultivaluedMap<String, String> requestParams = new MultivaluedMapImpl();
+		requestParams.putAll(params);
+		return requestParams;
+	}
+	private boolean addParts(RequestLogger reqlog, MultiPart multiPart, String[] mimetypes, Object[] values) {
+		if (mimetypes == null || mimetypes.length == 0)
+			throw new IllegalArgumentException("mime types not specified for multipart");
+
+		if (values == null || values.length == 0)
+			throw new IllegalArgumentException("values not specified for multipart");
+
+		if (mimetypes.length != values.length)
+			throw new IllegalArgumentException("mistmatch between mime types and values for multipart");
+
+		multiPart.setMediaType(new MediaType("multipart", "mixed"));
+
+		boolean hasStreamingPart = false;
+		for (int i = 0; i < mimetypes.length; i++) {
+			if (mimetypes[i] == null)
+				throw new IllegalArgumentException("null mimetype: "+i);
+
+			String[] typeParts = mimetypes[i].contains("/") ?
+					mimetypes[i].split("/", 2) : null;
+
+			MediaType typePart = (typeParts != null) ?
+					new MediaType(typeParts[0], typeParts[1]) :
+					MediaType.WILDCARD_TYPE;
+
+			BodyPart bodyPart = null;
+			if (values[i] instanceof OutputStreamSender) {
+				hasStreamingPart = true;
+				bodyPart = new BodyPart(new StreamingOutputImpl((OutputStreamSender) values[i], reqlog), typePart);
+			} else {
+				if (values[i] instanceof InputStream || values[i] instanceof Reader)
+					hasStreamingPart = true;
+
+				if (reqlog != null)
+					bodyPart = new BodyPart(reqlog.copyContent(values[i]), typePart);
+				else
+					bodyPart = new BodyPart(values[i], typePart);
+			}
+
+			multiPart = multiPart.bodyPart(bodyPart);
+		}
+
+		return hasStreamingPart;
+	}
+	private WebResource.Builder makeBuilder(String path, MultivaluedMap<String, String> params, Object inputMimetype, Object outputMimetype) {
+		WebResource resource = (params == null) ?
+				connection.path(path) :
+				connection.path(path).queryParams(params);
+
+		WebResource.Builder builder = resource.getRequestBuilder();
+
+		if (inputMimetype == null) {
+		} else if (inputMimetype instanceof String) {
+			builder = builder.type((String) inputMimetype);
+		} else if (inputMimetype instanceof MediaType) {
+			builder = builder.type((MediaType) inputMimetype);
+		} else {
+			throw new IllegalArgumentException("Unknown input mimetype specifier "+inputMimetype.getClass().getName());
+		}
+
+		if (outputMimetype == null) {
+		} else if (outputMimetype instanceof String) {
+			builder = builder.accept((String) outputMimetype);
+		} else if (outputMimetype instanceof MediaType) {
+			builder = builder.accept((MediaType) outputMimetype);
+		} else {
+			throw new IllegalArgumentException("Unknown output mimetype specifier "+outputMimetype.getClass().getName());
+		}
+
+		return builder;
+	}
+	private void checkStatus(ClientResponse response, String operation, String entityType, String path, ResponseStatus expected) {
+		ClientResponse.Status status = response.getClientResponseStatus();
+		if (! expected.isExpected(status))
+		{
+			response.close();
+			if (status == ClientResponse.Status.NOT_FOUND) {
+				throw new ResourceNotFoundException("Could not "+operation+" "+entityType+" at "+path);
+			}
+			if (status == ClientResponse.Status.FORBIDDEN) {
+				throw new ForbiddenUserException("User is not allowed to "+operation+" "+entityType+" at "+path);
+			}
+			throw new FailedRequestException("failed to "+operation+" "+entityType+" at "+path+": "+status.getReasonPhrase());
+		}
+	}
+	private <T> T makeResult(RequestLogger reqlog, String operation, String entityType, ClientResponse response, Class<T> as) {
+		if (as == null)
+			return null;
+
+		logRequest(reqlog, "%s for %s", operation, entityType);
+
+		T entity = response.getEntity(as);
+		if (as != InputStream.class && as != Reader.class)
+			response.close();
+
+		return (reqlog != null) ? reqlog.copyContent(entity) : entity;
+	}
+	private Object[] makeResults(RequestLogger reqlog, String operation, String entityType, ClientResponse response, Class[] as) {
+		if (as == null || as.length == 0)
+			return null;
+
+		logRequest(reqlog, "%s for %s", operation, entityType);
+
+		MultiPart entity = response.getEntity(MultiPart.class);
+		if (entity == null)
+			return null;
+
+		List<BodyPart> partList = entity.getBodyParts();
+		if (partList == null)
+			return null;
+
+		int partCount = partList.size();
+		if (partCount == 0)
+			return null;
+		if (partCount != as.length)
+			throw new FailedRequestException("read expected " + as.length
+					+ " parts but got " + partCount + " parts");
+
+		Object[] parts = new Object[partCount];
+		for (int i = 0; i < partCount; i++) {
+			Object part = partList.get(i).getEntityAs(as[i]);
+			parts[i] = (reqlog != null) ? reqlog.copyContent(part) : part;
+		}
+
+		response.close();
+
+		return parts;
 	}
 
 	private void logRequest(RequestLogger reqlog, String message, Object... params) {

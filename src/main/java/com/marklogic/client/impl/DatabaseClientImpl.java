@@ -31,6 +31,9 @@ import com.marklogic.client.NamespacesManager;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.RequestLogger;
+import com.marklogic.client.ResourceAccessor;
+import com.marklogic.client.ResourceManager;
+import com.marklogic.client.ResourceServices;
 import com.marklogic.client.ServerConfigurationManager;
 import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.Transaction;
@@ -99,6 +102,23 @@ public class DatabaseClientImpl implements DatabaseClient {
 	@Override
 	public ServerConfigurationManager newServerConfigurationManager() {
 		return new ServerConfigurationManagerImpl(services);
+	}
+
+	@Override
+    public <T extends ResourceManager> T init(String resourceName, T resourceManager) {
+		if (resourceManager == null)
+			throw new IllegalArgumentException("Cannot initialize null resource manager");
+		if (resourceName == null)
+			throw new IllegalArgumentException("Cannot initialize resource manager with null resource name");
+		if (resourceName.length() == 0)
+			throw new IllegalArgumentException("Cannot initialize resource manager with empty resource name");
+
+		ResourceAccessor.init(
+				resourceManager,
+				new ResourceServicesImpl(services,resourceName)
+				);
+
+		return resourceManager;
 	}
 
 	@Override

@@ -41,4 +41,7 @@ public interface ServerConfigurationManager {
 
 	public String getDefaultDocumentWriteTransform(String name);
 	public void   setDefaultDocumentWriteTransform(String name);
+
+	public ResourceExtensionsManager  newResourceExtensionsManager();
+	public TransformExtensionsManager newTransformExtensionsManager();
 }

@@ -16,7 +16,7 @@
 package com.marklogic.client.impl;
 
 import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.io.HandleHelper;
+import com.marklogic.client.io.HandleAccessor;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
@@ -43,31 +43,21 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 			throw new IllegalArgumentException(
 					"Cannot read options for null name");
 
-		if (!HandleHelper.isHandle(queryOptionsHandle))
-			throw new IllegalArgumentException(
-					"query options handle does not extend BaseHandle: "
-							+ queryOptionsHandle.getClass().getName());
-		HandleHelper queryOptionsHand = HandleHelper
-				.newHelper(queryOptionsHandle);
+		HandleAccessor.checkHandle(queryOptionsHandle, "query options");
 
-		queryOptionsHand.receiveContent(services.getValue(requestLogger,
-				QUERY_OPTIONS_BASE, name, queryOptionsHand.getFormat()
-						.getDefaultMimetype(), queryOptionsHand.receiveAs()));
+		HandleAccessor.receiveContent(queryOptionsHandle, services.getValue(requestLogger,
+				QUERY_OPTIONS_BASE, name, HandleAccessor.getFormat(queryOptionsHandle)
+						.getDefaultMimetype(), HandleAccessor.receiveAs(queryOptionsHandle)));
 		return queryOptionsHandle;
 	}
 
 	@Override
 	public void writeOptions(String name,
 			QueryOptionsWriteHandle queryOptionsHandle) {
-		if (!HandleHelper.isHandle(queryOptionsHandle))
-			throw new IllegalArgumentException(
-					"query options handle does not extend BaseHandle: "
-							+ queryOptionsHandle.getClass().getName());
-		HandleHelper queryOptionsHand = HandleHelper
-				.newHelper(queryOptionsHandle);
+		HandleAccessor.checkHandle(queryOptionsHandle, "query options");
 
 		services.putValue(requestLogger, QUERY_OPTIONS_BASE, name,
-				queryOptionsHand.getFormat().getDefaultMimetype(),
-				queryOptionsHand.sendContent());
+				HandleAccessor.getFormat(queryOptionsHandle).getDefaultMimetype(),
+				HandleAccessor.sendContent(queryOptionsHandle));
 	}
 }

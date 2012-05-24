@@ -15,11 +15,9 @@
  */
 package com.marklogic.client.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.RequestParameters;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.io.DBResolver;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -42,11 +40,11 @@ class XMLDocumentImpl
 		repair = policy;
 	}
 
-	protected Map<String,String> getWriteParams() {
+	protected RequestParameters getWriteParams() {
 		if (repair == null)
 			return null;
 
-		HashMap<String,String> params = new HashMap<String,String>();
+		RequestParameters params = new RequestParameters();
 		if (repair == DocumentRepair.FULL)
 			params.put("repair", "full");
 		else if (repair == DocumentRepair.NONE)

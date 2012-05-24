@@ -15,9 +15,6 @@
  */
 package com.marklogic.client.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +22,8 @@ import com.marklogic.client.BinaryDocumentManager;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.RequestParameters;
+import com.marklogic.client.ServerTransform;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
@@ -42,26 +41,46 @@ class BinaryDocumentImpl
 		super(services, Format.BINARY);
 	}
 
+	@Override
 	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, T contentHandle, long start, long length) {
-		return read(docId, null, contentHandle, start, length, null);
+		return read(docId, null, contentHandle, null, start, length, null);
 	}
+	@Override
+	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, T contentHandle, ServerTransform transform, long start, long length) {
+		return read(docId, null, contentHandle, transform, start, length, null);
+	}
+	@Override
 	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length) {
-		return read(docId, metadataHandle, contentHandle, start, length, null);
+		return read(docId, metadataHandle, contentHandle, null, start, length, null);
 	}
+	@Override
+	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length) {
+		return read(docId, metadataHandle, contentHandle, transform, start, length, null);
+	}
+	@Override
 	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, T contentHandle, long start, long length, Transaction transaction) {
-		return read(docId, null, contentHandle, start, length, transaction);
+		return read(docId, null, contentHandle, null, start, length, transaction);
 	}
+	@Override
+	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction) {
+		return read(docId, null, contentHandle, transform, start, length, transaction);
+	}
+	@Override
 	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction) {
+		return read(docId, metadataHandle, contentHandle, null, start, length, transaction);
+	}
+	@Override
+	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction) {
 		String uri = docId.getUri();
 		logger.info("Reading range of binary content for {}",uri);
 
-		HashMap<String,String> extraParams = new HashMap<String,String>();
+		RequestParameters extraParams = new RequestParameters();
 		if (length > 0)
 			extraParams.put("range", "bytes="+start+"-"+(start + length));
 		else
 			extraParams.put("range", "bytes="+String.valueOf(start));
 
-		return read(docId, metadataHandle, contentHandle, transaction, extraParams);
+		return read(docId, metadataHandle, contentHandle, transform, transaction, extraParams);
 	}
 
 	public MetadataExtraction getMetadataExtraction() {
@@ -71,11 +90,11 @@ class BinaryDocumentImpl
 		metadataExtraction = policy;	
 	}
 
-	protected Map<String,String> getWriteParams() {
+	protected RequestParameters getWriteParams() {
 		if (metadataExtraction == null || metadataExtraction == MetadataExtraction.NONE)
 			return null;
 
-		HashMap<String,String> params = new HashMap<String,String>();
+		RequestParameters params = new RequestParameters();
 		if (metadataExtraction == MetadataExtraction.PROPERTIES)
 			params.put("extract", "properties");
 		else if (metadataExtraction == MetadataExtraction.DOCUMENT)

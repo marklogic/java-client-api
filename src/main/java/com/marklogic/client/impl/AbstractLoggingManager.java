@@ -43,7 +43,7 @@ abstract class AbstractLoggingManager {
 
 		return false;
 	}
-	protected PrintStream getLogger() {
+	protected PrintStream getPrintLogger() {
 		if (requestLogger == null)
 			return null;
 

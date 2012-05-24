@@ -29,7 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.ResourceExtensionsManager;
 import com.marklogic.client.ServerConfigurationManager;
+import com.marklogic.client.TransformExtensionsManager;
 import com.marklogic.client.io.OutputStreamSender;
 
 class ServerConfigurationManagerImpl
@@ -137,5 +139,14 @@ class ServerConfigurationManagerImpl
 	@Override
 	public void setDefaultDocumentWriteTransform(String name) {
 		defaultDocumentWriteTransform = name;
+	}
+
+	@Override
+	public ResourceExtensionsManager newResourceExtensionsManager() {
+		return new ResourceExtensionsImpl(services);
+	}
+	@Override
+	public TransformExtensionsManager newTransformExtensionsManager() {
+		return new TransformExtensionsImpl(services);
 	}
 }

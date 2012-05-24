@@ -49,6 +49,7 @@ import org.xml.sax.SAXException;
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.impl.DOMWriter;
+import com.marklogic.client.impl.ValueConverter;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
@@ -244,6 +245,7 @@ public class DocumentMetadataHandle
     private DocumentPermissions permissions;
 	private DocumentProperties  properties;
 	private int                 quality = 0;
+	private ValueConverter      converter;
 
 	public DocumentMetadataHandle() {
 		super();
@@ -439,7 +441,9 @@ public class DocumentMetadataHandle
 					XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type")) {
 				String type = property.getAttributeNS(
 						XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type");
-				properties.put(propertyName, convertXMLValue(type, value));
+				if (converter == null)
+					converter = new ValueConverter();
+				properties.put(propertyName, converter.convertXMLValue(type, value));
 				continue;
 			} else {
 				properties.put(propertyName, value);
@@ -565,13 +569,12 @@ public class DocumentMetadataHandle
 			}
 
 			if (!hasNodeValue) {
+				if (converter == null)
+					converter = new ValueConverter();
 				serializer.writeAttribute(
 						"xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type",
-						convertedJavaType(value));
-			}
-
-			if (!hasNodeValue) {
-				serializer.writeCharacters(convertJavaValue(value));
+						converter.convertedJavaType(value));
+				serializer.writeCharacters(converter.convertJavaValue(value));
 			} else {
 				new DOMWriter(serializer).serializeNodeList((NodeList) value);
 			}
@@ -585,111 +588,5 @@ public class DocumentMetadataHandle
 		serializer.writeStartElement("rapi", "quality", REST_API_NS);
 		serializer.writeCharacters(String.valueOf(getQuality()));
 		serializer.writeEndElement();
-	}
-
-	// TODO: move to utility class
-	private Object convertXMLValue(String type, String value) {
-		// TODO: supplement JAXB conversion with javax.xml.datatype.*
-		if ("xs:anySimpleType".equals(type))
-			return javax.xml.bind.DatatypeConverter.parseAnySimpleType(value);
-		if ("xs:base64Binary".equals(type))
-			return javax.xml.bind.DatatypeConverter.parseBase64Binary(value);
-		if ("xs:boolean".equals(type))
-			return javax.xml.bind.DatatypeConverter.parseBoolean(value);
-		if ("xs:byte".equals(type))
-			return javax.xml.bind.DatatypeConverter.parseByte(value);
-		if ("xs:date".equals(type))
-			return javax.xml.bind.DatatypeConverter.parseDate(value);
-		if ("xs:decimal".equals(type))
-			return javax.xml.bind.DatatypeConverter.parseDecimal(value);
-		if ("xs:double".equals(type))
-			return javax.xml.bind.DatatypeConverter.parseDouble(value);
-		if ("xs:float".equals(type))
-			return javax.xml.bind.DatatypeConverter.parseFloat(value);
-		if ("xs:hexBinary".equals(type))
-			return javax.xml.bind.DatatypeConverter.parseHexBinary(value);
-		if ("xs:int".equals(type))
-			return javax.xml.bind.DatatypeConverter.parseInt(value);
-		if ("xs:integer".equals(type))
-			return javax.xml.bind.DatatypeConverter.parseInteger(value);
-		if ("xs:long".equals(type))
-			return javax.xml.bind.DatatypeConverter.parseLong(value);
-		// TODO: QName
-		if ("xs:short".equals(type))
-			return javax.xml.bind.DatatypeConverter.parseShort(value);
-		if ("xs:string".equals(type))
-			return javax.xml.bind.DatatypeConverter.parseString(value);
-		if ("xs:time".equals(type))
-			return javax.xml.bind.DatatypeConverter.parseTime(value);
-		if ("xs:unsignedInt".equals(type))
-			return javax.xml.bind.DatatypeConverter.parseUnsignedInt(value);
-		if ("xs:unsignedLong".equals(type))
-			// JAXB doesn't provide parseUnsignedLong()
-			return javax.xml.bind.DatatypeConverter.parseInteger(value);
-		if ("xs:unsignedShort".equals(type))
-			return javax.xml.bind.DatatypeConverter.parseUnsignedShort(value);
-		return value;
-	}
-	private String convertedJavaType(Object value) {
-		// maintain in parallel with convertJavaValue()
-		if (value instanceof byte[])
-			return "xs:base64Binary";
-		if (value instanceof Boolean)
-			return "xs:boolean";
-		if (value instanceof Byte)
-			return "xs:byte";
-		if (value instanceof Calendar)
-			return "xs:datetime";
-		if (value instanceof BigDecimal)
-			return "xs:decimal";
-		if (value instanceof Double)
-			return "xs:double";
-		if (value instanceof Float)
-			return "xs:float";
-		if (value instanceof Integer)
-			return "xs:int";
-		if (value instanceof BigInteger)
-			return "xs:integer";
-		if (value instanceof Long)
-			return "xs:long";
-		if (value instanceof Short)
-			return "xs:short";
-		if (value instanceof String)
-			return "xs:string";
-		return "xs:string";
-	}
-	private String convertJavaValue(Object value) {
-		// TODO: supplement JAXB conversion with javax.xml.datatype.*
-		// TODO: distinguish base64Binary from hexBinary
-		if (value instanceof byte[])
-			return javax.xml.bind.DatatypeConverter.printBase64Binary((byte[]) value);
-		if (value instanceof Boolean)
-			return javax.xml.bind.DatatypeConverter.printBoolean((Boolean) value);
-		if (value instanceof Byte)
-			return javax.xml.bind.DatatypeConverter.printByte((Byte) value);
-		// TODO: support Date, distinguish datetime, date, and time Calendars
-		if (value instanceof Calendar)
-			return javax.xml.bind.DatatypeConverter.printDateTime((Calendar) value);
-		if (value instanceof BigDecimal)
-			return javax.xml.bind.DatatypeConverter.printDecimal((BigDecimal) value);
-		if (value instanceof Double)
-			return javax.xml.bind.DatatypeConverter.printDouble((Double) value);
-		if (value instanceof Float)
-			return javax.xml.bind.DatatypeConverter.printFloat((Float) value);
-		// TODO: distinguish unsigned short from integer
-		if (value instanceof Integer)
-			return javax.xml.bind.DatatypeConverter.printInt((Integer) value);
-		// TODO: distinguish integer from unsigned long
-		if (value instanceof BigInteger)
-			return javax.xml.bind.DatatypeConverter.printInteger((BigInteger) value);
-		// TODO: distinguish long from unsigned int
-		if (value instanceof Long)
-			return javax.xml.bind.DatatypeConverter.printLong((Long) value);
-		// TODO: QName
-		if (value instanceof Short)
-			return javax.xml.bind.DatatypeConverter.printShort((Short) value);
-		if (value instanceof String)
-			return javax.xml.bind.DatatypeConverter.printString((String) value);
-		return value.toString();
 	}
 }

@@ -54,6 +54,8 @@ public interface DatabaseClient {
 
     public ServerConfigurationManager newServerConfigurationManager();
 
+    public <T extends ResourceManager> T init(String resourceName, T resourceManager);
+
     /**
      * Closes a database connection.  After the connection is closed,
      * document and query managers can no longer access the database.

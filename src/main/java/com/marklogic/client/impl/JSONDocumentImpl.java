@@ -15,11 +15,9 @@
  */
 package com.marklogic.client.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.marklogic.client.Format;
 import com.marklogic.client.JSONDocumentManager;
+import com.marklogic.client.RequestParameters;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
@@ -40,11 +38,11 @@ public class JSONDocumentImpl
 		this.language = language;
 	}
 
-	protected Map<String,String> getWriteParams() {
+	protected RequestParameters getWriteParams() {
 		if (language == null)
 			return null;
 
-		HashMap<String,String> params = new HashMap<String,String>();
+		RequestParameters params = new RequestParameters();
 		params.put("lang", language);
 
 		return params;

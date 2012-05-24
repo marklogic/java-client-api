@@ -18,6 +18,7 @@ package com.marklogic.client.test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 
@@ -69,6 +70,19 @@ public class Common {
 		while (((len=r.read(cbuf)) != -1)) {
 			w.write(cbuf, 0, len);
 		}
-		return w.toString();
+		r.close();
+		String result = w.toString();
+		w.close();
+		return result;
+	}
+	// the testFile*() methods get a file in the src/test/resources directory
+	static String testFileToString(String filename) throws IOException {
+		return readerToString(testFileToReader(filename));
+	}
+	static Reader testFileToReader(String filename) {
+		return new InputStreamReader(testFileToStream(filename));
+	}
+	static InputStream testFileToStream(String filename) {
+		return ResourceExtensionsTest.class.getClassLoader().getResourceAsStream(filename);
 	}
 }

@@ -46,7 +46,12 @@ import org.junit.runners.Suite;
     QueryOptionsHandleTest.class,
     QueryOptionsManagerTest.class,
 
-	// works when run independently but throws JUnit error in suite
+    ResourceExtensionsTest.class,
+    ResourceServicesTest.class,
+    TransformExtensionsTest.class,
+    TransformTest.class,
+
+    // works when run independently but throws JUnit error in suite
 //  JAXBHandle.class,
 
     NamespacesManagerTest.class

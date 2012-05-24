@@ -30,7 +30,7 @@ import com.marklogic.client.config.MatchDocumentSummary;
 import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.StringQueryDefinition;
 import com.marklogic.client.config.StructuredQueryBuilder;
-import com.marklogic.client.io.HandleHelper;
+import com.marklogic.client.io.HandleAccessor;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
 
@@ -88,25 +88,23 @@ public class QueryManagerImpl implements QueryManager {
     }
 
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction) {
-		if (!HandleHelper.isHandle(searchHandle)) 
-			throw new IllegalArgumentException(
-					"search handle does not extend BaseHandle: "+searchHandle.getClass().getName());
-		HandleHelper searchHand = HandleHelper.newHelper(searchHandle);
+		HandleAccessor.checkHandle(searchHandle, "search");
 
-        if (searchHand.get() instanceof SearchHandle) {
-            ((SearchHandle) searchHand.get()).setQueryCriteria(querydef);
+        if (searchHandle instanceof SearchHandle) {
+            ((SearchHandle) searchHandle).setQueryCriteria(querydef);
         }
         String mimetype = null;
-        if (searchHand.getFormat() == Format.XML) {
+        Format searchFormat = HandleAccessor.getFormat(searchHandle);
+        if (searchFormat == Format.XML) {
             mimetype = "application/xml";            
-        } else if (searchHand.getFormat() == Format.JSON) {
+        } else if (searchFormat == Format.JSON) {
             mimetype = "application/json";
         } else {
             throw new UnsupportedOperationException("Only XML and JSON search results are possible.");
         }
 
         String tid = transaction == null ? null : transaction.getTransactionId();
-        searchHand.receiveContent(services.search(searchHand.receiveAs(), querydef, mimetype, start, tid));
+        HandleAccessor.receiveContent(searchHandle, services.search(HandleAccessor.receiveAs(searchHandle), querydef, mimetype, start, tid));
         return searchHandle;
     }
 
