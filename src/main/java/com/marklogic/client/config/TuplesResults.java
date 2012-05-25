@@ -15,18 +15,11 @@
  */
 package com.marklogic.client.config;
 
-import org.w3c.dom.Document;
+public interface TuplesResults {
+    public ValuesDefinition getQueryCriteria();
 
-public interface SearchResults {
-    public QueryDefinition getQueryCriteria();
-    public long getTotalResults();
-
-    public SearchMetrics          getMetrics();
-    public MatchDocumentSummary[] getMatchResults();
-    public Document getMetadata();
-
-    public FacetResult[]          getFacetResults();
-    public FacetResult            getFacetResult(String name);
-    public String[]               getFacetNames();
+    public String[] getConstraintNames();
+    public Class[] getConstraintTypes();
+    public Tuple[] getTuples();
 }
 

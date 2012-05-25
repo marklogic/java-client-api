@@ -26,11 +26,13 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.QueryManager;
 import com.marklogic.client.RequestLogger;
 import com.marklogic.client.RequestParameters;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.config.QueryDefinition;
 import com.sun.jersey.api.client.ClientResponse;
+import com.marklogic.client.config.ValuesDefinition;
 
 public interface RESTServices {
 	public void connect(String host, int port, String user, String password, Authentication type,
@@ -56,7 +58,7 @@ public interface RESTServices {
 		throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     public <T> T search(Class <T> as, QueryDefinition queryDef, String mimetype, long start,
-    		String transactionId)
+                        long len, QueryManager.ResponseViews views, String transactionId)
     	throws ForbiddenUserException, FailedRequestException;
 
 	public String openTransaction(String name, int timeLimit)
@@ -65,6 +67,9 @@ public interface RESTServices {
 		throws ForbiddenUserException, FailedRequestException;
 	public void rollbackTransaction(String transactionId)
 		throws ForbiddenUserException, FailedRequestException;
+
+    public <T> T values(Class <T> as, ValuesDefinition valdef, String mimetype, String transactionId)
+        throws ForbiddenUserException, FailedRequestException;
 
 	// namespaces, etc.
 	public <T> T getValue(RequestLogger logger, String type, String key, String mimetype, Class<T> as)

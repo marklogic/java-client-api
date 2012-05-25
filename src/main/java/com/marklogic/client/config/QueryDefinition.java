@@ -18,5 +18,11 @@ package com.marklogic.client.config;
 public interface QueryDefinition {
     public String getOptionsName();
     public void setOptionsName(String name);
+
+    public String[] getCollections();
+    public void setCollections(String... collections);
+
+    public String getDirectory();
+    public void setDirectory(String directory);
 }
 

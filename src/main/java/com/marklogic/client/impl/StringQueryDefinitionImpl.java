@@ -17,14 +17,13 @@ package com.marklogic.client.impl;
 
 import com.marklogic.client.config.StringQueryDefinition;
 
-public class StringQueryDefinitionImpl implements StringQueryDefinition {
-    private String criteria = null;
-    private String optionsUri = null;
-    
+public class StringQueryDefinitionImpl extends AbstractQueryDefinition implements StringQueryDefinition {
+    protected String criteria = null;
+
     public StringQueryDefinitionImpl(String uri) {
         optionsUri = uri;
     }
-    
+
     @Override
     public String getCriteria() {
         return criteria;
@@ -34,16 +33,5 @@ public class StringQueryDefinitionImpl implements StringQueryDefinition {
     public void setCriteria(String criteria) {
         // FIXME: check for null?
         this.criteria = criteria;
-    }
-
-    @Override
-    public String getOptionsName() {
-        return optionsUri;
-    }
-
-    @Override
-    public void setOptionsName(String uri) {
-        // FIXME: check for null?
-        optionsUri = uri;
     }
 }

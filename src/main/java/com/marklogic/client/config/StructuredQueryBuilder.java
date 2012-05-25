@@ -17,9 +17,9 @@ package com.marklogic.client.config;
 
 // TODO: Implement the rest of the query types
 
-public class StructuredQueryBuilder {
-    private String optionsName = null;
+import com.marklogic.client.impl.AbstractQueryDefinition;
 
+public class StructuredQueryBuilder extends AbstractQueryDefinition {
     public enum Ordering {
         ORDERED, UNORDERED;
     }
@@ -29,7 +29,7 @@ public class StructuredQueryBuilder {
     }
     
     public StructuredQueryBuilder(String optionsName) {
-        this.optionsName = optionsName;
+        optionsUri = optionsName;
     }
 
     public OrQuery or(StructuredQueryDefinition... queries) {
@@ -150,12 +150,12 @@ public class StructuredQueryBuilder {
 
     /* ************************************************************************************* */
 
-    private abstract class AbstractStructuredQuery implements StructuredQueryDefinition {
+    private abstract class AbstractStructuredQuery extends AbstractQueryDefinition implements StructuredQueryDefinition {
         String uri = null;
 
         public String serialize() {
             if (uri == null) {
-                setOptionsName(optionsName);
+                setOptionsName(optionsUri);
             }
             return "<query xmlns='http://marklogic.com/appservices/search'>" + innerSerialize() + "</query>";
         }

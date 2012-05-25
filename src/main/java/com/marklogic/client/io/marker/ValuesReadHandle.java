@@ -13,20 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.config;
+package com.marklogic.client.io.marker;
 
-import org.w3c.dom.Document;
-
-public interface SearchResults {
-    public QueryDefinition getQueryCriteria();
-    public long getTotalResults();
-
-    public SearchMetrics          getMetrics();
-    public MatchDocumentSummary[] getMatchResults();
-    public Document getMetadata();
-
-    public FacetResult[]          getFacetResults();
-    public FacetResult            getFacetResult(String name);
-    public String[]               getFacetNames();
+public interface ValuesReadHandle extends AbstractReadHandle {
 }
-

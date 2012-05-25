@@ -17,6 +17,7 @@ package com.marklogic.client.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import com.marklogic.client.MarkLogicInternalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +56,8 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -80,6 +84,7 @@ public class SearchHandle
     private String[] facetNames = null;
     private long totalResults = -1;
     private boolean alwaysDomSnippets = false;
+    private Document metadata = null;
 
     public SearchHandle() {
     	super();
@@ -160,6 +165,11 @@ public class SearchHandle
     }
 
     @Override
+    public Document getMetadata() {
+        return metadata;
+    }
+
+    @Override
     public FacetResult[] getFacetResults() {
         return facets;
     }
@@ -185,12 +195,14 @@ public class SearchHandle
         long qrTime = -1;
         long frTime = -1;
         long srTime = -1;
+        long mrTime = -1;
         long totalTime = -1;
 
-        public SearchMetricsImpl(long qrTime, long frTime, long srTime, long totalTime) {
+        public SearchMetricsImpl(long qrTime, long frTime, long srTime, long mrTime, long totalTime) {
             this.qrTime = qrTime;
             this.frTime = frTime;
             this.srTime = srTime;
+            this.mrTime = mrTime;
             this.totalTime = totalTime;
         }
 
@@ -207,6 +219,11 @@ public class SearchHandle
         @Override
         public long getSnippetResolutionTime() {
             return srTime;
+        }
+
+        @Override
+        public long getMetadataResolutionTime() {
+            return mrTime;
         }
 
         @Override
@@ -511,6 +528,7 @@ public class SearchHandle
         long frTime = -1;
         long srTime = -1;
         long tTime  = -1;
+        long mrTime = -1;
 
         public SearchResponse() {
         }
@@ -554,6 +572,7 @@ public class SearchHandle
             if ("response".equals(localName))           { handleResponse(uri, localName, attributes);
             } else if ("result".equals(localName))      { handleResult(uri, localName, attributes);
             } else if ("snippet".equals(localName))     { handleSnippet();
+            } else if ("meta".equals(localName))        { handleMetadata();
             } else if ("match".equals(localName))       { handleMatch(uri, localName, attributes);
             } else if ("highlight".equals(localName))   { inHighlight = true;
             } else if ("facet".equals(localName))       { handleFacet(attributes);
@@ -563,7 +582,8 @@ public class SearchHandle
             } else if ("qtext".equals(localName))       { // nop
             } else if ("metrics".equals(localName))     { handleMetrics();
             } else if ("query-resolution-time".equals(localName) || "facet-resolution-time".equals(localName)
-                        || "snippet-resolution-time".equals(localName) || "total-time".equals(localName)) {
+                        || "snippet-resolution-time".equals(localName) || "total-time".equals(localName)
+                        || "metadata-resolution-time".equals(localName)) {
                 inTime = inMetrics;
             } else {
                 throw new UnsupportedOperationException("Unexpected element in search results: " + localName);
@@ -617,6 +637,35 @@ public class SearchHandle
                 stack.clear();
             }
         }
+
+        private void handleMetadata() {
+            buildDOM = true;
+
+            if (stack == null) {
+                try {
+                    builder = bfactory.newDocumentBuilder();
+                    domImpl = builder.getDOMImplementation();
+                    stack = new Stack<Node>();
+                    preceding = new ArrayList<WSorChar>();
+                } catch (ParserConfigurationException pce) {
+                    throw new MarkLogicIOException("Failed to create document builder", pce);
+                }
+            } else {
+                stack.clear();
+            }
+
+            // Make sure there's a wrapper
+            handleDOM("http://marklogic.com/appservices/search", "metadata", "search:metadata", null);
+        }
+
+        /* This is a convenience for debugging, leave it hear to save myself from having to rewrite it
+        private void dumpDOM(Document dom) {
+            DOMImplementationLS domImpl = (DOMImplementationLS) builder.getDOMImplementation();
+            LSOutput domOutput = domImpl.createLSOutput();
+            domOutput.setByteStream(System.err);
+            domImpl.createLSSerializer().write(dom, domOutput);
+        }
+        */
 
         private void handleMatch(String uri, String localName, Attributes attributes) {
             MatchLocation loc = new MatchLocationImpl(attributes.getValue("", "path"));
@@ -681,9 +730,11 @@ public class SearchHandle
                 Element root = dom.getDocumentElement();
                 setNamespaces(root, uri);
 
-                for (int pos = 0; pos < attributes.getLength(); pos++) {
-                    Attr attr = dom.createAttributeNS(attributes.getURI(pos), attributes.getQName(pos));
-                    attr.setValue(attributes.getValue(pos));
+                if (attributes != null) {
+                    for (int pos = 0; pos < attributes.getLength(); pos++) {
+                        Attr attr = dom.createAttributeNS(attributes.getURI(pos), attributes.getQName(pos));
+                        attr.setValue(attributes.getValue(pos));
+                    }
                 }
 
                 /* TODO: This doesn't seem to be possible in the DOM...
@@ -745,8 +796,11 @@ public class SearchHandle
 
         @Override
         public void endElement(String uri, String localName, String qName) throws SAXException {
-            if (buildDOM && !stack.isEmpty()) {
-                stack.pop();
+            if (buildDOM) {
+                handleCharacters();
+                if (!stack.isEmpty()) {
+                    stack.pop();
+                }
             }
 
             if (!"http://marklogic.com/appservices/search".equals(uri)) {
@@ -759,6 +813,12 @@ public class SearchHandle
                     buildDOM = false;
                     ((MatchDocumentSummaryImpl) matchSummaries[matchSlot]).addSnippet(dom);
                 }
+                characters = null;
+                return;
+            }
+
+            if ("meta".equals(localName)) {
+                metadata = dom;
                 characters = null;
                 return;
             }
@@ -806,7 +866,7 @@ public class SearchHandle
 
             if ("metrics".equals(localName)) {
                 inMetrics = false;
-                metrics = new SearchMetricsImpl(qrTime, frTime, srTime, tTime);
+                metrics = new SearchMetricsImpl(qrTime, frTime, srTime, mrTime, tTime);
                 characters = null;
                 return;
             }
@@ -824,10 +884,11 @@ public class SearchHandle
             }
 
             if (inTime) {
-                if ("query-resolution-time".equals(localName))   { qrTime = parseTime(characters); }
-                if ("facet-resolution-time".equals(localName))   { frTime = parseTime(characters); }
-                if ("snippet-resolution-time".equals(localName)) { srTime = parseTime(characters); }
-                if ("total-time".equals(localName))              { tTime = parseTime(characters); }
+                if ("query-resolution-time".equals(localName))    { qrTime = parseTime(characters); }
+                if ("facet-resolution-time".equals(localName))    { frTime = parseTime(characters); }
+                if ("snippet-resolution-time".equals(localName))  { srTime = parseTime(characters); }
+                if ("metadata-resolution-time".equals(localName)) { mrTime = parseTime(characters); }
+                if ("total-time".equals(localName))               { tTime = parseTime(characters); }
                 inTime = false;
                 characters = null;
                 return;

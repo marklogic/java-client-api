@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.config;
 
+import com.marklogic.client.impl.AbstractQueryDefinition;
+
 public interface StructuredQueryDefinition extends QueryDefinition {
     public String serialize();
 }

@@ -23,8 +23,7 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
-public class KeyValueQueryDefinitionImpl implements KeyValueQueryDefinition {
-    String optionsUri = null;
+public class KeyValueQueryDefinitionImpl extends AbstractQueryDefinition implements KeyValueQueryDefinition {
     Map<ValueLocator, String> defs = new Hashtable<ValueLocator, String> ();
     
     protected KeyValueQueryDefinitionImpl(String uri) {
@@ -89,15 +88,5 @@ public class KeyValueQueryDefinitionImpl implements KeyValueQueryDefinition {
     @Override
     public Set<Entry<ValueLocator, String>> entrySet() {
         return defs.entrySet();
-    }
-
-    @Override
-    public String getOptionsName() {
-        return optionsUri;
-    }
-
-    @Override
-    public void setOptionsName(String uri) {
-        optionsUri = uri;
     }
 }

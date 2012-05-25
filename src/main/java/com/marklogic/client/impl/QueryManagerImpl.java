@@ -15,9 +15,6 @@
  */
 package com.marklogic.client.impl;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 
 import com.marklogic.client.ElementLocator;
@@ -31,19 +28,48 @@ import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.StringQueryDefinition;
 import com.marklogic.client.config.StructuredQueryBuilder;
 import com.marklogic.client.io.HandleAccessor;
+import com.marklogic.client.config.ValuesDefinition;
 import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.io.ValuesHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
+import com.marklogic.client.io.marker.ValuesReadHandle;
 
-public class QueryManagerImpl implements QueryManager {
-    protected JAXBContext jc = null;
-    protected Unmarshaller unmarshaller = null;
-    protected Marshaller m = null;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+
+public class QueryManagerImpl extends AbstractLoggingManager implements QueryManager {
     private RESTServices services = null;
+    private long pageLen = -1;
+    private ResponseViews views = new ResponseViewsImpl();
 
     public QueryManagerImpl(RESTServices services) {
         this.services = services;
     }
-    
+
+    public long getPageLength() {
+        return pageLen;
+    }
+
+    public void setPageLength(long length) {
+        pageLen = length;
+    }
+
+    public ResponseViews getViews() {
+        return views;
+    }
+
+    public void setViews(ResponseViews views) {
+        this.views = views;
+    }
+
+    public void setViews(QueryView... views) {
+        this.views = new ResponseViewsImpl();
+        for (QueryView view : views) {
+            this.views.add(view);
+        }
+    }
+
     public StringQueryDefinition newStringDefinition(String optionsName) {
         return new StringQueryDefinitionImpl(optionsName);
     }
@@ -70,6 +96,11 @@ public class QueryManagerImpl implements QueryManager {
     @Override
     public KeyLocator newKeyLocator(String key) {
         return new KeyLocatorImpl(key);
+    }
+
+    @Override
+    public ValuesDefinition newValuesDefinition(String optionsName) {
+        return new ValuesDefinitionImpl(optionsName);
     }
 
     @Override
@@ -104,8 +135,33 @@ public class QueryManagerImpl implements QueryManager {
         }
 
         String tid = transaction == null ? null : transaction.getTransactionId();
-        HandleAccessor.receiveContent(searchHandle, services.search(HandleAccessor.receiveAs(searchHandle), querydef, mimetype, start, tid));
+        HandleAccessor.receiveContent(searchHandle, services.search(HandleAccessor.receiveAs(searchHandle), querydef, mimetype, start, pageLen, views, tid));
         return searchHandle;
+    }
+
+    @Override
+    public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle) {
+        return values(valdef, valueHandle, null);
+    }
+
+    @Override
+    public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valuesHandle, Transaction transaction) {
+        HandleAccessor.checkHandle(valuesHandle, "values");
+
+        if (valuesHandle instanceof ValuesHandle) {
+            ((ValuesHandle) valuesHandle).setQueryCriteria(valdef);
+        }
+        String mimetype = null;
+        if (HandleAccessor.getFormat(valuesHandle) == Format.XML) {
+            mimetype = "application/xml";
+        } else {
+            throw new UnsupportedOperationException("Only XML values results are possible.");
+        }
+
+        String tid = transaction == null ? null : transaction.getTransactionId();
+        HandleAccessor.receiveContent(valuesHandle, services.values(HandleAccessor.receiveAs(valuesHandle), valdef, mimetype, tid));
+        return valuesHandle;
+
     }
 
     @Override
@@ -127,6 +183,79 @@ public class QueryManagerImpl implements QueryManager {
             return summaries[0];
         } else {
             return null;
+        }
+    }
+
+    private class ResponseViewsImpl implements ResponseViews {
+        private ArrayList<QueryView> views = new ArrayList<QueryView>();
+
+        @Override
+        public int size() {
+            return views.size();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return views.isEmpty();
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            return views.contains(o);
+        }
+
+        @Override
+        public Iterator<QueryView> iterator() {
+            return views.iterator();
+        }
+
+        @Override
+        public Object[] toArray() {
+            return views.toArray(new QueryView[0]);
+        }
+
+        @Override
+        public <T> T[] toArray(T[] ts) {
+            return (T[]) views.toArray(new QueryView[0]);
+        }
+
+        @Override
+        public boolean add(QueryView queryView) {
+            if (!contains(queryView)) {
+                return views.add(queryView);
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            return views.remove(o);
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> objects) {
+            return views.containsAll(objects);
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends QueryView> queryViews) {
+            return views.addAll(queryViews);
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> objects) {
+            return views.retainAll(objects);
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> objects) {
+            return views.removeAll(objects);
+        }
+
+        @Override
+        public void clear() {
+            views.clear();
         }
     }
 }

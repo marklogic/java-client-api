@@ -31,6 +31,8 @@ import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
+import com.marklogic.client.QueryManager;
+import com.marklogic.client.config.ValuesDefinition;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.auth.params.AuthPNames;
@@ -717,13 +719,39 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-    public <T> T search(Class<T> as, QueryDefinition queryDef, String mimetype, long start, String transactionId)
+    public <T> T search(Class<T> as, QueryDefinition queryDef, String mimetype, long start, long len, QueryManager.ResponseViews views, String transactionId)
     throws ForbiddenUserException, FailedRequestException {
         MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
         ClientResponse response = null;
         
         if (start > 1) {
             docParams.add("start", ""+start);
+        }
+
+        if (len > 0) {
+            docParams.add("pageLength", ""+len);
+        }
+
+        for (QueryManager.QueryView view : views) {
+            if (view == QueryManager.QueryView.SEARCH) {
+                docParams.add("view", "search");
+            } else if (view == QueryManager.QueryView.FACETS) {
+                docParams.add("view", "facets");
+            } else if (view == QueryManager.QueryView.METRICS) {
+                docParams.add("view", "metrics");
+            }
+        }
+
+        if (queryDef.getDirectory() != null) {
+            docParams.add("directory", queryDef.getDirectory());
+        }
+
+        for (String collection : queryDef.getCollections()) {
+            docParams.add("collection", collection);
+        }
+
+        if (transactionId != null) {
+            docParams.add("txid", transactionId);
         }
 
         String optionsName = queryDef.getOptionsName();
@@ -787,8 +815,75 @@ public class JerseyServices implements RESTServices {
 		return entity;
     }
 
+    @Override
+    public <T> T values(Class <T> as, ValuesDefinition valDef, String mimetype, String transactionId)
+            throws ForbiddenUserException, FailedRequestException {
+        MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
+        ClientResponse response = null;
 
-	// namespaces, search options etc.
+        String optionsName = valDef.getOptionsName();
+        if (optionsName != null && optionsName.length() > 0) {
+            docParams.add("options", optionsName);
+        }
+
+        if (valDef.getAggregate() != null) {
+            docParams.add("aggregate", valDef.getAggregate());
+        }
+
+        if (valDef.getAggregatePath() != null) {
+            docParams.add("aggregatePath", valDef.getAggregatePath());
+        }
+
+        if (valDef.getView() != null) {
+            docParams.add("view", valDef.getView());
+        }
+
+        if (valDef.getDirection() != null) {
+            if (valDef.getDirection() == ValuesDefinition.Direction.ASCENDING) {
+                docParams.add("direction", "ascending");
+            } else {
+                docParams.add("direction", "descending");
+            }
+        }
+
+        if (valDef.getFrequency() != null) {
+            if (valDef.getFrequency() == ValuesDefinition.Frequency.FRAGMENT) {
+                docParams.add("frequency", "fragment");
+            } else {
+                docParams.add("frequency", "item");
+            }
+        }
+
+        if (transactionId != null) {
+            docParams.add("txid", transactionId);
+        }
+
+        String uri = "values";
+        if (valDef.getName() != null) {
+            uri += "/" + valDef.getName();
+        }
+
+        response = connection.path(uri).queryParams(docParams).accept(mimetype).get(ClientResponse.class);
+        isFirstRequest = false;
+
+        ClientResponse.Status status = response.getClientResponseStatus();
+        if (status == ClientResponse.Status.FORBIDDEN) {
+            response.close();
+            throw new ForbiddenUserException("User is not allowed to search");
+        }
+        if (status != ClientResponse.Status.OK) {
+            response.close();
+            throw new FailedRequestException("search failed: "+status.getReasonPhrase());
+        }
+
+        T entity = response.getEntity(as);
+        if (as != InputStream.class && as != Reader.class)
+            response.close();
+
+        return entity;
+    }
+
+    // namespaces, search options etc.
 	@Override
 	public <T> T getValue(RequestLogger reqlog, String type, String key, String mimetype, Class<T> as)
 	throws ForbiddenUserException, FailedRequestException {

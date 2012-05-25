@@ -19,5 +19,6 @@ public interface SearchMetrics {
     public long getQueryResolutionTime();
     public long getFacetResolutionTime();
     public long getSnippetResolutionTime();
+    public long getMetadataResolutionTime();
     public long getTotalTime();
 }
