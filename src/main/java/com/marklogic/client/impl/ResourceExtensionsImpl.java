@@ -15,7 +15,7 @@ import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
 
-public class ResourceExtensionsImpl
+class ResourceExtensionsImpl
 	extends AbstractLoggingManager
 	implements ResourceExtensionsManager
 {
@@ -23,7 +23,7 @@ public class ResourceExtensionsImpl
 
 	private RESTServices services;
 
-	public ResourceExtensionsImpl(RESTServices services) {
+	ResourceExtensionsImpl(RESTServices services) {
 		super();
 		this.services = services;
 	}

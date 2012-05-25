@@ -24,6 +24,9 @@ import org.junit.Test;
 import com.marklogic.client.BinaryDocumentManager;
 import com.marklogic.client.GenericDocumentManager;
 import com.marklogic.client.JSONDocumentManager;
+import com.marklogic.client.QueryManager;
+import com.marklogic.client.QueryOptionsManager;
+import com.marklogic.client.RequestLogger;
 import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.XMLDocumentManager;
 
@@ -36,13 +39,6 @@ public class DatabaseClientTest {
 	public static void afterClass() {
 		Common.release();
 	}
-
-/*
-	@Test
-	public void testOpenTransaction() {
-		fail("Not yet implemented");
-	}
- */
 
 	@Test
 	public void testNewDocument() {
@@ -74,20 +70,21 @@ public class DatabaseClientTest {
 		assertNotNull("Client could not create XML document", doc);
 	}
 
-/*
 	@Test
 	public void testNewLogger() {
-		fail("Not yet implemented");
+		RequestLogger logger = Common.client.newLogger(System.out);
+		assertNotNull("Client could not create request logger", logger);
 	}
 
 	@Test
 	public void testNewQueryManager() {
-		fail("Not yet implemented");
+		QueryManager mgr = Common.client.newQueryManager();
+		assertNotNull("Client could not create query manager", mgr);
 	}
 
 	@Test
 	public void testNewQueryOptionsManager() {
-		fail("Not yet implemented");
+		QueryOptionsManager mgr = Common.client.newQueryOptionsManager();
+		assertNotNull("Client could not create query options manager", mgr);
 	}
- */
 }

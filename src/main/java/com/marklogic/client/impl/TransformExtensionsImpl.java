@@ -18,7 +18,7 @@ import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
-public class TransformExtensionsImpl
+class TransformExtensionsImpl
 	extends AbstractLoggingManager
 	implements TransformExtensionsManager
 {
@@ -26,7 +26,7 @@ public class TransformExtensionsImpl
 
 	private RESTServices services;
 
-	public TransformExtensionsImpl(RESTServices services) {
+	TransformExtensionsImpl(RESTServices services) {
 		super();
 		this.services = services;
 	}

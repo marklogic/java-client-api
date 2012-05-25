@@ -15,6 +15,8 @@
  */
 package com.marklogic.client;
 
+import com.marklogic.client.io.marker.StructureReadHandle;
+
 /**
  * Identifies and provides methods to complete a transaction.
  * 
@@ -22,6 +24,8 @@ package com.marklogic.client;
  */
 public interface Transaction {
 	public String getTransactionId();
+
+	public <T extends StructureReadHandle> T readStatus(T handle) throws ForbiddenUserException, FailedRequestException;
 
 	/**
 	 * Completes the transaction, making writes and deletes visible to other database clients.

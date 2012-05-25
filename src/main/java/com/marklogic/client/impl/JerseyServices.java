@@ -572,13 +572,23 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public String openTransaction() throws ForbiddenUserException, FailedRequestException {
+	public String openTransaction(String name, int timeLimit) throws ForbiddenUserException, FailedRequestException {
 		logger.info("Opening transaction");
 
-		MultivaluedMap<String, String> transParams = new MultivaluedMapImpl();
-		transParams.add("name", "java-client-" + new Random().nextLong());
+		MultivaluedMap<String, String> transParams = null;
+		if (name != null || timeLimit > 0) {
+			transParams = new MultivaluedMapImpl();
+			if (name != null)
+				transParams.add("name", name);
+			if (timeLimit > 0)
+				transParams.add("timeLimit", String.valueOf(timeLimit));
+		}
 
-		ClientResponse response = connection.path("transactions").queryParams(transParams).post(ClientResponse.class);
+		WebResource resource = (transParams != null) ?
+				connection.path("transactions").queryParams(transParams) :
+				connection.path("transactions");
+
+		ClientResponse response = resource.post(ClientResponse.class);
 
 		if (isFirstRequest) isFirstRequest = false;
 

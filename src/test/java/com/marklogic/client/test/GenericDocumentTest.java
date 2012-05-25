@@ -15,11 +15,13 @@
  */
 package com.marklogic.client.test;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathExists;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Random;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
@@ -162,7 +164,7 @@ public class GenericDocumentTest {
 	}
 
 	@Test
-	public void testCommit() {
+	public void testCommit() throws XpathException {
 		String uri1 = "/test/testExists1.txt";
 		String uri2 = "/test/testExists2.txt";
 
@@ -172,10 +174,18 @@ public class GenericDocumentTest {
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
 		docMgr.write(docId1,new StringHandle().with("A simple text document"));
 
-		Transaction transaction = Common.client.openTransaction();
+		String transactionName = "java-client-" + new Random().nextLong();
+
+		Transaction transaction = Common.client.openTransaction(transactionName);
 		StringHandle docHandle = docMgr.read(docId1, new StringHandle(), transaction);
 		docMgr.write(docId2, docHandle, transaction);
 		docMgr.delete(docId1, transaction);
+
+		Document status = transaction.readStatus(new DOMHandle()).get();
+		assertXpathExists("//*[local-name() = 'transaction-name' and "+
+				"string(.) = '"+transactionName+"']", status);
+
+
 		transaction.commit();
 
 		assertTrue("Document 1 exists",        !docMgr.exists(docId1));

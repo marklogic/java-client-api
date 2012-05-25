@@ -17,9 +17,15 @@ package com.marklogic.client.impl;
 
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.RequestLogger;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.io.HandleAccessor;
+import com.marklogic.client.io.marker.SearchReadHandle;
+import com.marklogic.client.io.marker.StructureReadHandle;
 
 class TransactionImpl implements Transaction {
+	final static int DEFAULT_TIMELIMIT = -1;
+
 	private RESTServices services;
 	private String       transactionId;
 
@@ -35,10 +41,30 @@ class TransactionImpl implements Transaction {
 		this.transactionId = transactionId;
 	}
 
+	@Override
+	public <T extends StructureReadHandle> T readStatus(T handle) throws ForbiddenUserException, FailedRequestException {
+		HandleAccessor.checkHandle(handle, "structure");
+
+		HandleAccessor.receiveContent(
+				handle,
+				services.getValue(
+						null,
+						"transactions",
+						getTransactionId(),
+						HandleAccessor.getFormat(handle).getDefaultMimetype(),
+						HandleAccessor.receiveAs(handle)
+						)
+				);
+
+		return handle;
+	}
+
+	@Override
 	public void commit() throws ForbiddenUserException, FailedRequestException {
 		services.commitTransaction(getTransactionId());
 	}
 
+	@Override
 	public void rollback() throws ForbiddenUserException, FailedRequestException {
 		services.rollbackTransaction(getTransactionId());
 	}

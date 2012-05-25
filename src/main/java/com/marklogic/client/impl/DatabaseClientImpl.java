@@ -50,7 +50,17 @@ public class DatabaseClientImpl implements DatabaseClient {
 
 	@Override
 	public Transaction openTransaction() throws ForbiddenUserException, FailedRequestException {
-		return new TransactionImpl(services, services.openTransaction());
+		return new TransactionImpl(services, services.openTransaction(null, TransactionImpl.DEFAULT_TIMELIMIT));
+	}
+
+	@Override
+	public Transaction openTransaction(String name) throws ForbiddenUserException, FailedRequestException {
+		return new TransactionImpl(services, services.openTransaction(name, TransactionImpl.DEFAULT_TIMELIMIT));
+	}
+
+	@Override
+	public Transaction openTransaction(String name, int timeLimit) throws ForbiddenUserException, FailedRequestException{
+		return new TransactionImpl(services, services.openTransaction(name, timeLimit));
 	}
 
 	@Override

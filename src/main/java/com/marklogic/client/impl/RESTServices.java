@@ -59,7 +59,7 @@ public interface RESTServices {
     		String transactionId)
     	throws ForbiddenUserException, FailedRequestException;
 
-	public String openTransaction()
+	public String openTransaction(String name, int timeLimit)
 		throws ForbiddenUserException, FailedRequestException;
 	public void commitTransaction(String transactionId)
 		throws ForbiddenUserException, FailedRequestException;
