@@ -690,11 +690,11 @@ public class QueryOptionsHandleTest {
 				builder.values("field", builder.field("fieldname")));
 				
 						
-		assertEquals("uri", options.getQueryValues("uri").getName());
-		QueryValues collectionValues = options.getQueryValues("coll");
+		assertEquals("uri", options.getValues("uri").getName());
+		QueryValues collectionValues = options.getValues("coll");
 		assertTrue(collectionValues.getValuesOptions().get(0).equals("limit=10"));
 		
-		assertEquals("element-test", options.getQueryValues("persona").getSource().getElement().getLocalPart());
+		assertEquals("element-test", options.getValues("persona").getSource().getElement().getLocalPart());
 		
 		
 	}

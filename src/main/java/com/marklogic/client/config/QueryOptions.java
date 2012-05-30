@@ -2678,7 +2678,7 @@ public final class QueryOptions implements QueryAnnotations {
 	private QueryGrammar grammarOption;
 
 	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "operator")
-	private List<QueryOperator> operatorOptions;
+	private List<QueryOperator> operators;
 
 	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "page-length")
 	private Long pageLength;
@@ -2736,7 +2736,7 @@ public final class QueryOptions implements QueryAnnotations {
 	private List<QuerySortOrder> sortOrders;
 
 	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "suggestion-source")
-	private List<QuerySuggestionSource> suggestionSourceOptions;
+	private List<QuerySuggestionSource> suggestionSources;
 
 	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "term")
 	private QueryTerm termConfig;
@@ -2748,9 +2748,9 @@ public final class QueryOptions implements QueryAnnotations {
 		// options that can have more than one cardinality
 		// are in lists.
 		queryConstraints = new ArrayList<QueryConstraint>();
-		operatorOptions = new ArrayList<QueryOperator>();
+		operators = new ArrayList<QueryOperator>();
 		sortOrders = new ArrayList<QuerySortOrder>();
-		suggestionSourceOptions = new ArrayList<QuerySuggestionSource>();
+		suggestionSources = new ArrayList<QuerySuggestionSource>();
 		forests = new ArrayList<Long>();
 		searchOptions = new ArrayList<String>();
 		annotations = new ArrayList<QueryAnnotation>();
@@ -2833,7 +2833,7 @@ public final class QueryOptions implements QueryAnnotations {
 	}
 
 	public List<QueryOperator> getQueryOperators() {
-		return operatorOptions;
+		return operators;
 	}
 
 	public List<QueryValues> getQueryValues() {
@@ -2897,7 +2897,7 @@ public final class QueryOptions implements QueryAnnotations {
 	}
 
 	public List<QuerySuggestionSource> getSuggestionSources() {
-		return suggestionSourceOptions;
+		return suggestionSources;
 	}
 
 	public QueryTerm getTerm() {
@@ -2937,7 +2937,7 @@ public final class QueryOptions implements QueryAnnotations {
 	}
 
 	public void setOperators(List<QueryOperator> operatorOptions) {
-		this.operatorOptions = operatorOptions;
+		this.operators = operatorOptions;
 	}
 
 	public void setPageLength(Long pageLength) {
@@ -2946,6 +2946,10 @@ public final class QueryOptions implements QueryAnnotations {
 
 	public void setQualityWeight(Double qualityWeight) {
 		this.qualityWeight = qualityWeight;
+	}
+	
+	public void setQueryValues(List<QueryValues> values) {
+		this.queryValues = values;
 	}
 
 	public void setReturnAggregates(Boolean returnAggregates) {
@@ -3006,7 +3010,7 @@ public final class QueryOptions implements QueryAnnotations {
 
 	public void setSuggestionSources(
 			List<QuerySuggestionSource> suggestionSourceOptions) {
-		this.suggestionSourceOptions = suggestionSourceOptions;
+		this.suggestionSources = suggestionSourceOptions;
 	}
 
 	public void setTerm(QueryTerm termConfig) {

@@ -37,6 +37,7 @@ import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.config.MarkLogicBindingException;
 import com.marklogic.client.config.QueryOptions;
 import com.marklogic.client.config.QueryOptions.FragmentScope;
+import com.marklogic.client.config.QueryOptions.QueryAnnotation;
 import com.marklogic.client.config.QueryOptions.QueryConstraint;
 import com.marklogic.client.config.QueryOptions.QueryDefaultSuggestionSource;
 import com.marklogic.client.config.QueryOptions.QueryGrammar;
@@ -47,6 +48,7 @@ import com.marklogic.client.config.QueryOptions.QueryTerm;
 import com.marklogic.client.config.QueryOptions.QueryTransformResults;
 import com.marklogic.client.config.QueryOptions.QueryValues;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryOptionsItem;
+import com.marklogic.client.config.QueryOptionsBuilder.QuerySuggestionSourceItem;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
@@ -57,63 +59,159 @@ public final class QueryOptionsHandle extends
 	static final private Logger logger = LoggerFactory
 			.getLogger(QueryOptionsHandle.class);
 
-	private QueryOptions optionsHolder;
 	private JAXBContext jc;
 	private Marshaller marshaller;
+	private QueryOptions optionsHolder;
 	private Unmarshaller unmarshaller;
+
+	public QueryOptionsHandle() {
+		optionsHolder = new QueryOptions();
+
+		try {
+			jc = JAXBContext.newInstance(QueryOptions.class);
+			marshaller = jc.createMarshaller();
+			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			unmarshaller = jc.createUnmarshaller();
+		} catch (JAXBException e) {
+			throw new MarkLogicBindingException(e);
+		}
+
+	}
+
+	/*
+	 * Adders
+	 */
+	public void addAnnotation(QueryAnnotation queryAnnotation) {
+		optionsHolder.addAnnotation(queryAnnotation);
+	};
+
+	public void addConstraint(QueryConstraint constraint) {
+		optionsHolder.getQueryConstraints().add(constraint);
+	};
+
+	public void addForest(Long forest) {
+		optionsHolder.getForests().add(forest);
+	}
+
+	public void addOperator(QueryOperator operator) {
+		optionsHolder.getQueryOperators().add(operator);
+	};
+
+	public void addSearchOption(String searchOption) {
+		optionsHolder.getSearchOptions().add(searchOption);
+	}
+	
+	public void addSuggestionSource(QuerySuggestionSource suggestionSource) {
+		optionsHolder.getSuggestionSources().add(suggestionSource);
+	}
+	public void addValues(QueryValues values) {
+		optionsHolder.getQueryValues().add(values);
+	}
+	/**
+	 * Add more QueryOptionsItems to a QueryOptionsHandle using a QueryOptionsBuilder
+	 * @param options 0 or more QueryOptionsItems
+	 * @return the resulting updated QueryOptionsHandle
+	 */
+	public QueryOptionsHandle build(QueryOptionsItem... options) {
+		for (QueryOptionsItem option : options) {
+			logger.debug(option.getClass().getName());
+			option.build(optionsHolder);
+		}
+		return this;
+	}
+	public Element getAdditionalQuery() {
+		return optionsHolder.getAdditionalQuery();
+	}
+	public int getConcurrencyLevel() {
+		return optionsHolder.getConcurrencyLevel();
+	}
+	public QueryConstraint getConstraint(String constraintName) {
+		for (QueryConstraint constraintOption : getConstraints()) {
+			if (constraintOption.getName().equals(constraintName)) {
+				return constraintOption;
+			}
+		}
+		return null;
+	}
+	public List<QueryConstraint> getConstraints() {
+		return optionsHolder.getQueryConstraints();
+	}
+
+	
+	/*
+	 * Getters
+	 */
+	public List<QueryAnnotation> getAnnotations() {
+		return optionsHolder.getAnnotations();
+	}
+	public Boolean getDebug() {
+		return returnWithDefault(optionsHolder.getDebug(), false);
+	}
+
+	public QueryDefaultSuggestionSource getDefaultSuggestionSource() {
+		return optionsHolder.getDefaultSuggestionSource();
+	}
+
+	public List<Long> getForests() {
+		return optionsHolder.getForests();
+	}
 
 	@Override
 	public Format getFormat() {
 		return Format.XML;
 	}
 
-	@Override
-	protected Class<InputStream> receiveAs() {
-		return InputStream.class;
-	};
-
-	@Override
-	protected void receiveContent(InputStream content) {
-		try {
-			optionsHolder = (QueryOptions) unmarshaller.unmarshal(content);
-		} catch (JAXBException e) {
-			
-			throw new MarkLogicBindingException(e);
-		}
-	};
-
-	public void write(OutputStream out) throws IOException {
-		JAXBElement<QueryOptions> jaxbElement = new JAXBElement<QueryOptions>(
-				new QName("http://marklogic.com/appservices/search", "options"),
-				QueryOptions.class, optionsHolder);
-		try {
-			marshaller.marshal(jaxbElement, out);
-		} catch (JAXBException e) {
-			throw new MarkLogicBindingException(e);
-		}
+	public String getFragmentScope() {
+		return optionsHolder.getFragmentScope();
 	}
 
-	protected OutputStreamSender sendContent() {
-		return this;
-	};
-
-	private Boolean returnWithDefault(Boolean returnValue, Boolean defaultValue) {
-		if (returnValue == null) {
-			return defaultValue;
-		} else {
-			return returnValue;
-		}
+	public QueryGrammar getGrammar() {
+		return optionsHolder.getGrammar();
 	}
 
-	/*
-	 * Getters
-	 */
+	public List<QueryOperator> getOperators() {
+		return optionsHolder.getQueryOperators();
+	}
+
+	public QueryOptions getOptions() {
+		return optionsHolder;
+	}
+
+	public long getPageLength() {
+		return optionsHolder.getPageLength();
+	}
+
+	public double getQualityWeight() {
+		return optionsHolder.getQualityWeight();
+	}
+
+	public List<QueryValues> getValues() {
+		return optionsHolder.getQueryValues();
+	}
+
+	public QueryValues getValues(String valuesName) {
+		for (QueryValues values : getValues()) {
+			if (values.getName().equals(valuesName)) {
+				return values;
+			}
+		}
+		return null;
+	}
+
+	public Boolean getReturnConstraints() {
+		return returnWithDefault(optionsHolder.getReturnConstraints(), false);
+	}
+
 	public Boolean getReturnFacets() {
 		return returnWithDefault(optionsHolder.getReturnFacets(), true);
 	}
 
 	public Boolean getReturnMetrics() {
 		return returnWithDefault(optionsHolder.getReturnMetrics(), true);
+	}
+
+	public Boolean getReturnPlan() {
+		return returnWithDefault(optionsHolder.getReturnPlan(), false);
 	}
 
 	public Boolean getReturnQtext() {
@@ -132,20 +230,18 @@ public final class QueryOptionsHandle extends
 		return returnWithDefault(optionsHolder.getReturnSimilar(), false);
 	}
 
-	public Boolean getDebug() {
-		return returnWithDefault(optionsHolder.getDebug(), false);
-	}
-
-	public Boolean getReturnConstraints() {
-		return returnWithDefault(optionsHolder.getReturnConstraints(), false);
-	}
-
-	public Boolean getReturnPlan() {
-		return returnWithDefault(optionsHolder.getReturnPlan(), false);
-	}
-
 	public org.w3c.dom.Element getSearchableExpression() {
 		return optionsHolder.getSearchableExpression();
+	}
+	
+	public List<String> getSearchOptions() {
+		return optionsHolder.getSearchOptions();
+	}
+	public List<QuerySortOrder> getSortOrders() {
+		return optionsHolder.getSortOrders();
+	}
+	public List<QuerySuggestionSource> getSuggestionSources() {
+		return optionsHolder.getSuggestionSources();
 	}
 
 	public QueryTerm getTerm() {
@@ -154,57 +250,7 @@ public final class QueryOptionsHandle extends
 
 	public QueryTransformResults getTransformResults() {
 		return optionsHolder.getTransformResults();
-	}
-
-	public String getFragmentScope() {
-		return optionsHolder.getFragmentScope();
-	}
-
-	public int getConcurrencyLevel() {
-		return optionsHolder.getConcurrencyLevel();
-	}
-
-	public long getPageLength() {
-		return optionsHolder.getPageLength();
-	}
-
-	public double getQualityWeight() {
-		return optionsHolder.getQualityWeight();
-	}
-
-	public List<Long> getForests() {
-		return optionsHolder.getForests();
-	}
-
-	public List<String> getSearchOptions() {
-		return optionsHolder.getSearchOptions();
-	}
-
-	public List<QueryOperator> getOperators() {
-		return optionsHolder.getQueryOperators();
-	}
-
-	public List<QuerySortOrder> getSortOrders() {
-		return optionsHolder.getSortOrders();
-	}
-
-	public List<QuerySuggestionSource> getSuggestionSources() {
-		return optionsHolder.getSuggestionSources();
-	}
-	
-	public void setDefaultSuggestionSource(QueryDefaultSuggestionSource defaultSuggestionSource) {
-		optionsHolder.setDefaultSuggestionSource(defaultSuggestionSource);
-	}
-	public QueryDefaultSuggestionSource getDefaultSuggestionSource() {
-		return optionsHolder.getDefaultSuggestionSource();
-	}
-	public Element getAdditionalQuery() {
-		return optionsHolder.getAdditionalQuery();
-	}
-
-	public QueryGrammar getGrammar() {
-		return optionsHolder.getGrammar();
-	}
+	};
 
 	/*
 	 * Bean Setters
@@ -212,7 +258,7 @@ public final class QueryOptionsHandle extends
 	public void setAdditionalQuery(Element ctsQuery) {
 		optionsHolder.setAdditionalQuery(ctsQuery);
 
-	};
+	}
 
 	public void setConcurrencyLevel(Integer concurrencyLevel) {
 		optionsHolder.setConcurrencyLevel(concurrencyLevel);
@@ -224,14 +270,32 @@ public final class QueryOptionsHandle extends
 
 	}
 
+	public void setDefaultSuggestionSource(QueryDefaultSuggestionSource defaultSuggestionSource) {
+		optionsHolder.setDefaultSuggestionSource(defaultSuggestionSource);
+	}
+	
 	public void setForests(List<Long> forests) {
 		optionsHolder.setForests(forests);
+	}
 
+	@Override
+	public void setFormat(Format format) {
+		if (format != Format.XML)
+			new RuntimeException(
+					"QueryOptionsHandle supports the XML format only");
 	}
 
 	public void setFragmentScope(FragmentScope fragmentScope) {
 		optionsHolder.setFragmentScope(fragmentScope);
 
+	}
+
+	public void setGrammar(QueryGrammar grammar) {
+		optionsHolder.setGrammar(grammar);
+	}
+
+	public void setOperators(List<QueryOperator> operatorOptions) {
+		optionsHolder.setOperators(operatorOptions);
 	}
 
 	public void setPageLength(Long pageLength) {
@@ -244,6 +308,10 @@ public final class QueryOptionsHandle extends
 
 	}
 
+	public void setQueryValues(List<QueryValues> values) {
+		optionsHolder.setQueryValues(values);
+	}
+	
 	public void setReturnConstraints(Boolean returnConstraints) {
 		optionsHolder.setReturnConstraints(returnConstraints);
 
@@ -258,6 +326,10 @@ public final class QueryOptionsHandle extends
 		optionsHolder.setReturnMetrics(returnMetrics);
 
 	}
+	public void setReturnQuery(Boolean returnQuery) {
+		optionsHolder.setReturnQuery(returnQuery);
+	}
+	
 
 	public void setReturnPlan(Boolean returnPlan) {
 		optionsHolder.setReturnPlan(returnPlan);
@@ -279,46 +351,37 @@ public final class QueryOptionsHandle extends
 
 	}
 
+
 	public void setSearchableExpression(org.w3c.dom.Element searchableExpression) {
 		optionsHolder.setSearchableExpression(searchableExpression);
 
 	}
+
 
 	public void setSearchOptions(List<String> searchOptions) {
 		optionsHolder.setSearchOptions(searchOptions);
 
 	}
 
+
+	public void setSortOrders(List<QuerySortOrder> sortOrders) {
+		optionsHolder.setSortOrders(sortOrders);
+	}
+	
+
+	public void setSuggestionSources(
+			List<QuerySuggestionSource> suggestionSourceOptions) {
+		optionsHolder.setSuggestionSources(suggestionSourceOptions);
+	}
+	
+
+	public void setTerm(QueryTerm termConfig) {
+		optionsHolder.setTerm(termConfig);
+	}
+	
 	public void setTransformResults(QueryTransformResults transformResultsOption) {
 		optionsHolder.setTransformResults(transformResultsOption);
 
-	}
-
-
-	@Override
-	public void setFormat(Format format) {
-		if (format != Format.XML)
-			new RuntimeException(
-					"QueryOptionsHandle supports the XML format only");
-	}
-
-
-	public QueryOptionsHandle() {
-		optionsHolder = new QueryOptions();
-
-		try {
-			jc = JAXBContext.newInstance(QueryOptions.class);
-			marshaller = jc.createMarshaller();
-			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			unmarshaller = jc.createUnmarshaller();
-		} catch (JAXBException e) {
-			throw new MarkLogicBindingException(e);
-		}
-
-	}
-
-	public QueryOptions getOptions() {
-		return optionsHolder;
 	}
 
 	public String toXMLString() {
@@ -332,43 +395,42 @@ public final class QueryOptionsHandle extends
 	}
 	
 	
-	public List<QueryConstraint> getConstraints() {
-		return optionsHolder.getQueryConstraints();
+	public void write(OutputStream out) throws IOException {
+		JAXBElement<QueryOptions> jaxbElement = new JAXBElement<QueryOptions>(
+				new QName("http://marklogic.com/appservices/search", "options"),
+				QueryOptions.class, optionsHolder);
+		try {
+			marshaller.marshal(jaxbElement, out);
+		} catch (JAXBException e) {
+			throw new MarkLogicBindingException(e);
+		}
 	}
 
-	public QueryConstraint getConstraint(String constraintName) {
-		for (QueryConstraint constraintOption : getConstraints()) {
-			if (constraintOption.getName().equals(constraintName)) {
-				return constraintOption;
-			}
+	private Boolean returnWithDefault(Boolean returnValue, Boolean defaultValue) {
+		if (returnValue == null) {
+			return defaultValue;
+		} else {
+			return returnValue;
 		}
-		return null;
 	}
 	
-	/**
-	 * Add more QueryOptionsItems to a QueryOptionsHandle using a QueryOptionsBuilder
-	 * @param options 0 or more QueryOptionsItems
-	 * @return the resulting updated QueryOptionsHandle
-	 */
-	public QueryOptionsHandle build(QueryOptionsItem... options) {
-		for (QueryOptionsItem option : options) {
-			logger.debug(option.getClass().getName());
-			option.build(optionsHolder);
+	@Override
+	protected Class<InputStream> receiveAs() {
+		return InputStream.class;
+	}
+
+	@Override
+	protected void receiveContent(InputStream content) {
+		try {
+			optionsHolder = (QueryOptions) unmarshaller.unmarshal(content);
+		} catch (JAXBException e) {
+			
+			throw new MarkLogicBindingException(e);
 		}
+	}
+	
+	protected OutputStreamSender sendContent() {
 		return this;
-	}
-
-	public QueryValues getQueryValues(String valuesName) {
-		for (QueryValues values : getQueryValues()) {
-			if (values.getName().equals(valuesName)) {
-				return values;
-			}
-		}
-		return null;
-	}
-	
-	public List<QueryValues> getQueryValues() {
-		return optionsHolder.getQueryValues();
 	}
 
 }
