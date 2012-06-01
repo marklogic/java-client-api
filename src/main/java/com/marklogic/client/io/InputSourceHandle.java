@@ -24,6 +24,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -44,7 +45,7 @@ public class InputSourceHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(InputSourceHandle.class);
 
-	private DBResolver       resolver;
+	private EntityResolver   resolver;
 	private InputSource      content;
 	private SAXParserFactory factory;
 
@@ -53,10 +54,10 @@ public class InputSourceHandle
 		super.setFormat(Format.XML);
 	}
 
-	public DBResolver getResolver() {
+	public EntityResolver getResolver() {
 		return resolver;
 	}
-	public void setResolver(DBResolver resolver) {
+	public void setResolver(EntityResolver resolver) {
 		this.resolver = resolver;
 	}
 

@@ -15,7 +15,6 @@
  */
 package com.marklogic.client;
 
-import com.marklogic.client.io.DBResolver;
 import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
@@ -26,8 +25,6 @@ public interface XMLDocumentManager extends AbstractDocumentManager<XMLReadHandl
     public enum DocumentRepair {
         FULL, NONE;
     }
-
-    public DBResolver newDBResolver();
 
     public DocumentRepair getDocumentRepair();
     public void setDocumentRepair(DocumentRepair policy);

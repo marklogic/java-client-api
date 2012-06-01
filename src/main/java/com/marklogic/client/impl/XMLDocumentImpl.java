@@ -19,7 +19,6 @@ import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.RequestParameters;
 import com.marklogic.client.XMLDocumentManager;
-import com.marklogic.client.io.DBResolver;
 import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
@@ -53,9 +52,5 @@ class XMLDocumentImpl
 			throw new MarkLogicInternalException("Internal error - unknown repair policy: "+repair.name());
 
 		return params;
-	}
-
-	public DBResolver newDBResolver() {
-		return new DBResolverImpl(getServices());
 	}
 }

@@ -20,6 +20,7 @@ import java.io.InputStream;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
 
 import org.slf4j.Logger;
@@ -44,7 +45,7 @@ public class XMLEventReaderHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(XMLEventReaderHandle.class);
 
-	private DBResolver      resolver;
+	private XMLResolver     resolver;
 	private XMLEventReader  content;
 	private XMLInputFactory factory;
 
@@ -53,10 +54,10 @@ public class XMLEventReaderHandle
 		super.setFormat(Format.XML);
 	}
 
-	public DBResolver getResolver() {
+	public XMLResolver getResolver() {
 		return resolver;
 	}
-	public void setResolver(DBResolver resolver) {
+	public void setResolver(XMLResolver resolver) {
 		this.resolver = resolver;
 	}
 

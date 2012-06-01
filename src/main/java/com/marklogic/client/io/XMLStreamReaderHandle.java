@@ -19,6 +19,7 @@ import java.io.InputStream;
 
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
@@ -44,7 +45,7 @@ public class XMLStreamReaderHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(XMLStreamReaderHandle.class);
 
-	private DBResolver      resolver;
+	private XMLResolver      resolver;
 	private XMLStreamReader content;
 	private XMLInputFactory factory;
 
@@ -53,10 +54,10 @@ public class XMLStreamReaderHandle
 		super.setFormat(Format.XML);
 	}
 
-	public DBResolver getResolver() {
+	public XMLResolver getResolver() {
 		return resolver;
 	}
-	public void setResolver(DBResolver resolver) {
+	public void setResolver(XMLResolver resolver) {
 		this.resolver = resolver;
 	}
 

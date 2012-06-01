@@ -30,6 +30,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSException;
 import org.w3c.dom.ls.LSOutput;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.Format;
@@ -50,7 +51,7 @@ public class DOMHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
 
-	private DBResolver             resolver;
+	private EntityResolver         resolver;
 	private Document               content;
 	private DocumentBuilderFactory factory;
 
@@ -63,10 +64,10 @@ public class DOMHandle
 		set(content);
 	}
 
-	public DBResolver getResolver() {
+	public EntityResolver getResolver() {
 		return resolver;
 	}
-	public void setResolver(DBResolver resolver) {
+	public void setResolver(EntityResolver resolver) {
 		this.resolver = resolver;
 	}
 
