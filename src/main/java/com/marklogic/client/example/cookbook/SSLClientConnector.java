@@ -29,7 +29,7 @@ import javax.net.ssl.X509TrustManager;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DatabaseClientFactory.HostVerificationPolicy;
+import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
@@ -79,8 +79,8 @@ public class SSLClientConnector {
 		sslContext.init(null, new TrustManager[] { naiveTrustMgr }, null);
 
 		// connect the client
-		// (note: a real application should use common or strict hostname verification or supply a hostname verifier)
-		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, Authentication.BASIC, sslContext, HostVerificationPolicy.ANY);
+		// (note: a real application should use a COMMON, STRICT, or implemented hostname verifier)
+		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, Authentication.DIGEST, sslContext, SSLHostnameVerifier.ANY);
 
 		// make use of the client connection
 		TextDocumentManager docMgr = client.newTextDocumentManager();

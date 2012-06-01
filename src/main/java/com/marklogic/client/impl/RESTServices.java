@@ -22,7 +22,6 @@ import javax.net.ssl.SSLContext;
 import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.BadRequestException;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DatabaseClientFactory.HostVerificationPolicy;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.FailedRequestException;
@@ -36,8 +35,6 @@ import com.marklogic.client.config.ValuesDefinition;
 import com.sun.jersey.api.client.ClientResponse;
 
 public interface RESTServices {
-	public void connect(String host, int port, String user, String password, Authentication type,
-			SSLContext context, HostVerificationPolicy policy);
 	public void connect(String host, int port, String user, String password, Authentication type,
 			SSLContext context, SSLHostnameVerifier verifier);
 	public void release();

@@ -34,11 +34,26 @@ public class DatabaseClientFactory {
 	public enum Authentication {
 	    BASIC, DIGEST, NONE;
 	}
-	public enum HostVerificationPolicy {
-	    ANY, COMMON, STRICT;
-	}
 	public interface SSLHostnameVerifier {
+		final static public Builtin ANY    = new Builtin("ANY");
+		final static public Builtin COMMON = new Builtin("COMMON");
+		final static public Builtin STRICT = new Builtin("STRICT");
+
 		public void verify(String hostname, String[] cns, String[] subjectAlts) throws SSLException;
+
+		public class Builtin implements SSLHostnameVerifier {
+			String name;
+			private Builtin(String name) {
+				super();
+				this.name = name;
+			}
+			@Override
+			public void verify(String hostname, String[] cns, String[] subjectAlts) throws SSLException {
+				throw new MarkLogicInternalException(
+						"SSLHostnameVerifier.Builtin called directly instead of passed as parameter");
+			}
+			
+		}
 	}
 
 	private DatabaseClientFactory() {
@@ -55,16 +70,10 @@ public class DatabaseClientFactory {
 	 * @return
 	 */
 	static public DatabaseClient connect(String host, int port, String user, String password, Authentication type) {
-		return connect(host, port, user, password, type, null, (SSLHostnameVerifier) null);		
+		return connect(host, port, user, password, type, null, null);
 	}
 	static public DatabaseClient connect(String host, int port, String user, String password, Authentication type, SSLContext context) {
-		return connect(host, port, user, password, type, context, HostVerificationPolicy.COMMON);
-	}
-	static public DatabaseClient connect(String host, int port, String user, String password, Authentication type, SSLContext context, HostVerificationPolicy policy) {
-		RESTServices services = new JerseyServices();
-		services.connect(host, port, user, password, type, context, policy);
-
-		return new DatabaseClientImpl(services);		
+		return connect(host, port, user, password, type, context, SSLHostnameVerifier.COMMON);
 	}
 	static public DatabaseClient connect(String host, int port, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
 		RESTServices services = new JerseyServices();

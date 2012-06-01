@@ -15,11 +15,9 @@
  */
 package com.marklogic.client.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.Reader;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,21 +25,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
-import com.marklogic.client.QueryManager;
-import com.marklogic.client.config.ValuesDefinition;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.auth.params.AuthPNames;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.conn.scheme.PlainSocketFactory;
@@ -49,7 +41,6 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.scheme.SchemeSocketFactory;
 import org.apache.http.conn.ssl.AbstractVerifier;
-import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.impl.client.BasicCredentialsProvider;
@@ -62,7 +53,6 @@ import org.slf4j.LoggerFactory;
 import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.BadRequestException;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DatabaseClientFactory.HostVerificationPolicy;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.ElementLocator;
@@ -70,6 +60,7 @@ import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.KeyLocator;
 import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.QueryManager;
 import com.marklogic.client.RequestLogger;
 import com.marklogic.client.RequestParameters;
 import com.marklogic.client.RequestParametersAccessor;
@@ -79,6 +70,7 @@ import com.marklogic.client.config.KeyValueQueryDefinition;
 import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.StringQueryDefinition;
 import com.marklogic.client.config.StructuredQueryDefinition;
+import com.marklogic.client.config.ValuesDefinition;
 import com.marklogic.client.io.OutputStreamSender;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -88,7 +80,6 @@ import com.sun.jersey.api.client.filter.HTTPDigestAuthFilter;
 import com.sun.jersey.client.apache4.ApacheHttpClient4;
 import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
 import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
-import com.sun.jersey.client.urlconnection.HTTPSProperties;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import com.sun.jersey.multipart.BodyPart;
 import com.sun.jersey.multipart.Boundary;
@@ -98,6 +89,18 @@ import com.sun.jersey.multipart.MultiPartMediaTypes;
 public class JerseyServices implements RESTServices {
 	static final private Logger logger = LoggerFactory.getLogger(JerseyServices.class);
 
+	protected class HostnameVerifierAdapter extends AbstractVerifier {
+		private SSLHostnameVerifier verifier;
+		protected HostnameVerifierAdapter(SSLHostnameVerifier verifier) {
+			super();
+			this.verifier = verifier;
+		}
+		@Override
+		public void verify(String hostname, String[] cns, String[] subjectAlts) throws SSLException {
+			verifier.verify(hostname, cns, subjectAlts);
+		}
+	}
+
 	private ApacheHttpClient4 client;
 	private WebResource       connection;
 	private boolean           isFirstRequest = true;
@@ -106,36 +109,18 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public void connect(String host, int port, String user, String password, Authentication type,
-			SSLContext context, HostVerificationPolicy policy) {
-		X509HostnameVerifier verifier = null;
-		switch(policy) {
-		case ANY:
-			verifier = SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
-			break;
-		case COMMON:
-			verifier = SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER;
-			break;
-		case STRICT:
-			verifier = SSLSocketFactory.STRICT_HOSTNAME_VERIFIER;
-			break;
-		default:
-			throw new MarkLogicInternalException(
-					"unknown hostname verification policy: "+policy.name());
-		}
-
-		connect(host, port, user, password, type, context, verifier);
-	}
-	@Override
-	public void connect(String host, int port, String user, String password, Authentication type, SSLContext context, final SSLHostnameVerifier verifier) {
+	public void connect(String host, int port, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
 		X509HostnameVerifier x509Verifier = null;
-		if (context != null && verifier != null)
-			x509Verifier = new AbstractVerifier() {
-				@Override
-				public void verify(String hostname, String[] cns, String[] subjectAlts) throws SSLException {
-					verifier.verify(hostname, cns, subjectAlts);
-				}
-			};
+		if (verifier == null)
+			;
+		else if (verifier == SSLHostnameVerifier.ANY)
+			x509Verifier = SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
+		else if (verifier == SSLHostnameVerifier.COMMON)
+			x509Verifier = SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER;
+		else if (verifier == SSLHostnameVerifier.STRICT)
+			x509Verifier = SSLSocketFactory.STRICT_HOSTNAME_VERIFIER;
+		else if (context != null && verifier != null)
+			x509Verifier = new HostnameVerifierAdapter(verifier);
 		else if (context != null)
 			x509Verifier = SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER;
 		else if (verifier != null)
