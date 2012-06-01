@@ -15,8 +15,8 @@
  */
 package com.marklogic.client;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +34,12 @@ public class DatabaseClientFactory {
 	public enum Authentication {
 	    BASIC, DIGEST, NONE;
 	}
+	public enum HostVerificationPolicy {
+	    ANY, COMMON, STRICT;
+	}
+	public interface SSLHostnameVerifier {
+		public void verify(String hostname, String[] cns, String[] subjectAlts) throws SSLException;
+	}
 
 	private DatabaseClientFactory() {
 	}
@@ -49,12 +55,18 @@ public class DatabaseClientFactory {
 	 * @return
 	 */
 	static public DatabaseClient connect(String host, int port, String user, String password, Authentication type) {
-		return connect(host, port, user, password, type, null);		
+		return connect(host, port, user, password, type, null, (SSLHostnameVerifier) null);		
 	}
 	static public DatabaseClient connect(String host, int port, String user, String password, Authentication type, SSLContext context) {
-		return connect(host, port, user, password, type, context, null);		
+		return connect(host, port, user, password, type, context, HostVerificationPolicy.COMMON);
 	}
-	static public DatabaseClient connect(String host, int port, String user, String password, Authentication type, SSLContext context, HostnameVerifier verifier) {
+	static public DatabaseClient connect(String host, int port, String user, String password, Authentication type, SSLContext context, HostVerificationPolicy policy) {
+		RESTServices services = new JerseyServices();
+		services.connect(host, port, user, password, type, context, policy);
+
+		return new DatabaseClientImpl(services);		
+	}
+	static public DatabaseClient connect(String host, int port, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
 		RESTServices services = new JerseyServices();
 		services.connect(host, port, user, password, type, context, verifier);
 

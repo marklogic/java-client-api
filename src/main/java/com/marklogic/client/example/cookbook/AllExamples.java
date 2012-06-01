@@ -43,7 +43,7 @@ public class AllExamples {
 				);
 
 		// execute the examples
-		ClientConnect.run(         host, port, writer_user, writer_password, authType );
+		ClientConnector.run(         host, port, writer_user, writer_password, authType );
 		DocumentWrite.run(         host, port, writer_user, writer_password, authType );
 		DocumentRead.run(          host, port, writer_user, writer_password, authType );
 		DocumentMetadataWrite.run( host, port, writer_user, writer_password, authType );
@@ -54,10 +54,13 @@ public class AllExamples {
 		JAXBDocument.run(          host, port, writer_user, writer_password, authType );
 		KeyValueSearch.run(        host, port, writer_user, writer_password, authType );
 		QueryOptions.run(          host, port, admin_user,  admin_password,  authType );
-		StringOptionsSearch.run(
+		StringSearch.run(
 				host, port, admin_user, admin_password, writer_user, writer_password, authType);
 		MultiStatementTransaction.run(
 				host, port, writer_user, writer_password, authType);
+		// SSLClientConnector is not included in this list because it requires a change
+		//     to the REST server that invalidates all of the other examples.  See
+		//     the comments in SSLClientConnector.
 	}
 
 	// get the configuration for the examples

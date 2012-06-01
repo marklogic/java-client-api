@@ -15,19 +15,23 @@
  */
 package com.marklogic.client.impl;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
-import javax.net.ssl.HostnameVerifier;
+import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -43,6 +47,11 @@ import org.apache.http.client.params.ClientPNames;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.scheme.SchemeSocketFactory;
+import org.apache.http.conn.ssl.AbstractVerifier;
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
@@ -53,6 +62,8 @@ import org.slf4j.LoggerFactory;
 import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.BadRequestException;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.HostVerificationPolicy;
+import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.ElementLocator;
 import com.marklogic.client.FailedRequestException;
@@ -95,7 +106,45 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public void connect(String host, int port, String user, String password, Authentication type, SSLContext context, HostnameVerifier verifier) {
+	public void connect(String host, int port, String user, String password, Authentication type,
+			SSLContext context, HostVerificationPolicy policy) {
+		X509HostnameVerifier verifier = null;
+		switch(policy) {
+		case ANY:
+			verifier = SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
+			break;
+		case COMMON:
+			verifier = SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER;
+			break;
+		case STRICT:
+			verifier = SSLSocketFactory.STRICT_HOSTNAME_VERIFIER;
+			break;
+		default:
+			throw new MarkLogicInternalException(
+					"unknown hostname verification policy: "+policy.name());
+		}
+
+		connect(host, port, user, password, type, context, verifier);
+	}
+	@Override
+	public void connect(String host, int port, String user, String password, Authentication type, SSLContext context, final SSLHostnameVerifier verifier) {
+		X509HostnameVerifier x509Verifier = null;
+		if (context != null && verifier != null)
+			x509Verifier = new AbstractVerifier() {
+				@Override
+				public void verify(String hostname, String[] cns, String[] subjectAlts) throws SSLException {
+					verifier.verify(hostname, cns, subjectAlts);
+				}
+			};
+		else if (context != null)
+			x509Verifier = SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER;
+		else if (verifier != null)
+			throw new IllegalArgumentException(
+					"Null SSLContent but non-null SSLHostnameVerifier for client");
+
+		connect(host, port, user, password, type, context, x509Verifier);
+	}
+	private void connect(String host, int port, String user, String password, Authentication type, SSLContext context, X509HostnameVerifier verifier) {
 		if (logger.isInfoEnabled())
 			logger.info("Connecting to {} at {} as {}", new Object[] { host,
 					port, user });
@@ -126,13 +175,16 @@ public class JerseyServices implements RESTServices {
 		System.setProperty("org.apache.commons.logging.simplelog.log.httpclient.wire.header", "warn");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient", "warn");
 
+		Scheme scheme = null;
+		if (context == null) {
+			SchemeSocketFactory socketFactory = PlainSocketFactory.getSocketFactory();
+			scheme = new Scheme("http", port, socketFactory);
+		} else {
+			SSLSocketFactory socketFactory = new SSLSocketFactory(context, verifier);
+			scheme = new Scheme("https", port, socketFactory);
+		}
 		SchemeRegistry schemeRegistry = new SchemeRegistry();
-		schemeRegistry.register(
-				new Scheme(
-						(context != null) ? "https" : "http",
-						port,
-						PlainSocketFactory.getSocketFactory()
-						));
+		schemeRegistry.register(scheme);
 
 		ThreadSafeClientConnManager connMgr = new ThreadSafeClientConnManager(schemeRegistry);
 		connMgr.setDefaultMaxPerRoute(100);
@@ -166,9 +218,6 @@ public class JerseyServices implements RESTServices {
 //		configProps.put(ApacheHttpClient4Config.PROPERTY_CREDENTIALS_PROVIDER,  credentialsProvider);
 		configProps.put(ApacheHttpClient4Config.PROPERTY_HTTP_PARAMS,           httpParams);
 //		configProps.put(ApacheHttpClient4Config.PROPERTY_CHUNKED_ENCODING_SIZE, 0);
-		if (context != null)
-			// TODO: confirm that verifier can be null or supply default verifier that returns true
-			config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(verifier, context));
 
 		// TODO: remove temporary hack when Maven build merge multipart before core in service definition
 		Collections.addAll(
@@ -180,29 +229,9 @@ public class JerseyServices implements RESTServices {
 				// com.sun.jersey.multipart.impl.FormDataMultiPartDispatchProvider.class
 		);
 
-/* approach in Apache HTTP Client 3
-		ApacheHttpClientState state = config.getState();
-		state.setCredentials(null, host, port, user, password);
-  */
-
 		client = ApacheHttpClient4.create(config);
 
-		HttpClient httpClient = client.getClientHandler().getHttpClient();
-/*
-		// preemptive digest authentication
-        AuthCache authCache = new BasicAuthCache();
-        DigestScheme digestAuth = new DigestScheme();
-//		digestAuth.overrideParamter("realm", "some realm");
-//		digestAuth.overrideParamter("nonce", "whatever");
-        authCache.put(
-        		new HttpHost(
-        				host,
-        				port,
-        				(context != null) ? "https" : "http"),
-        		digestAuth);
-        BasicHttpContext localcontext = new BasicHttpContext();
-        localcontext.setAttribute(ClientContext.AUTH_CACHE, authCache);
- */
+		// System.setProperty("javax.net.debug", "ssl");
 
 		if (type == Authentication.BASIC)
 			client.addFilter(new HTTPBasicAuthFilter(user, password));
@@ -213,7 +242,9 @@ public class JerseyServices implements RESTServices {
 					"Internal error - unknown authentication type: "
 							+ type.name());
 
-		connection = client.resource("http://" + host + ":" + port + "/v1/");
+		connection = client.resource(
+				((context == null) ? "http" : "https") +
+				"://" + host + ":" + port + "/v1/");
 	}
 
 	@Override

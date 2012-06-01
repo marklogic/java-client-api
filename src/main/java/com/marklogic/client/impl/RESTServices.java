@@ -17,12 +17,13 @@ package com.marklogic.client.impl;
 
 import java.util.Set;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
 import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.BadRequestException;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.HostVerificationPolicy;
+import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
@@ -31,12 +32,14 @@ import com.marklogic.client.RequestLogger;
 import com.marklogic.client.RequestParameters;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.config.QueryDefinition;
-import com.sun.jersey.api.client.ClientResponse;
 import com.marklogic.client.config.ValuesDefinition;
+import com.sun.jersey.api.client.ClientResponse;
 
 public interface RESTServices {
 	public void connect(String host, int port, String user, String password, Authentication type,
-			SSLContext context, HostnameVerifier verifier);
+			SSLContext context, HostVerificationPolicy policy);
+	public void connect(String host, int port, String user, String password, Authentication type,
+			SSLContext context, SSLHostnameVerifier verifier);
 	public void release();
 
 	public void deleteDocument(RequestLogger logger, DocumentIdentifier docId, String transactionId,

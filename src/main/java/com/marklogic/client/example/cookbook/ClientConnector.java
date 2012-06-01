@@ -15,7 +15,6 @@
  */
 package com.marklogic.client.example.cookbook;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -23,16 +22,14 @@ import java.util.Properties;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DocumentIdentifier;
-import com.marklogic.client.Transaction;
-import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.StringHandle;
 
 /**
- * MultiStatementTransaction illustrates how to open a transaction, execute
- * multiple statements under the transaction, and commit the transaction.
+ * ClientConnector illustrates how to connect to a database.
  */
-public class MultiStatementTransaction {
+public class ClientConnector {
 
 	public static void main(String[] args) throws IOException {
 		Properties props = loadProperties();
@@ -50,67 +47,25 @@ public class MultiStatementTransaction {
 	}
 
 	public static void run(String host, int port, String user, String password, Authentication authType) {
-		System.out.println("example: "+MultiStatementTransaction.class.getName());
-
-		String beforeFilename = "flipper.xml";
-		String afterFilename  = "flapped.xml";
+		System.out.println("example: "+ClientConnector.class.getName());
 
 		// connect the client
 		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
 
-		// create a manager for XML documents
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+		// make use of the client connection
+		TextDocumentManager docMgr = client.newTextDocumentManager();
+		DocumentIdentifier docId = client.newDocId("/example/text.txt");
+		StringHandle handle = new StringHandle();
+		handle.set("A simple text document");
+		docMgr.write(docId, handle);
 
-		// create an identifier for the document before the move
-		DocumentIdentifier beforeDocId = client.newDocId("/example/"+beforeFilename);
+		System.out.println("Connected to "+host+":"+port+" as "+user);
 
-		// create an identifier for the document after the move
-		DocumentIdentifier afterDocId = client.newDocId("/example/"+afterFilename);
-
-		setUpExample(docMgr, beforeDocId, beforeFilename);
-
-		// start the transaction
-		Transaction transaction = client.openTransaction();
-
-		// create a handle to receive the document content
-		InputStreamHandle handle = new InputStreamHandle();
-
-		// read the document with the old id
-		docMgr.read(beforeDocId, handle, transaction);
-
-		// write the document with the new id
-		docMgr.write(afterDocId, handle, transaction);
-
-		// delete the document with the old id
-		docMgr.delete(beforeDocId, transaction);
-
-		// commit the transaction for the move operation
-		transaction.commit();
-
-		System.out.println("Moved document from "+beforeFilename+" to "+afterFilename);
-
-		tearDownExample(docMgr, afterDocId);
+		// clean up the written document
+		docMgr.delete(docId);
 
 		// release the client
 		client.release();
-	}
-
-	// set up by writing document content for the example to read
-	public static void setUpExample(XMLDocumentManager docMgr, DocumentIdentifier docId, String filename) {
-		InputStream docStream = DocumentRead.class.getClassLoader().getResourceAsStream(
-				"data"+File.separator+filename);
-		if (docStream == null)
-			throw new RuntimeException("Could not read document example");
-
-		InputStreamHandle handle = new InputStreamHandle(docStream);
-		handle.set(docStream);
-
-		docMgr.write(docId, handle);
-	}
-
-	// clean up by deleting the document read by the example
-	public static void tearDownExample(XMLDocumentManager docMgr, DocumentIdentifier docId) {
-		docMgr.delete(docId);
 	}
 
 	// get the configuration for the example
