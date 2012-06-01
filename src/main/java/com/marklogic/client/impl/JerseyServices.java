@@ -204,7 +204,7 @@ public class JerseyServices implements RESTServices {
 		configProps.put(ApacheHttpClient4Config.PROPERTY_HTTP_PARAMS,           httpParams);
 //		configProps.put(ApacheHttpClient4Config.PROPERTY_CHUNKED_ENCODING_SIZE, 0);
 
-		// TODO: remove temporary hack when Maven build merge multipart before core in service definition
+// TODO: remove temporary hack when Maven build merge multipart before core in service definition
 		Collections.addAll(
 				config.getClasses(),
 				com.sun.jersey.multipart.impl.MultiPartReaderClientSide.class,
@@ -216,7 +216,7 @@ public class JerseyServices implements RESTServices {
 
 		client = ApacheHttpClient4.create(config);
 
-		// System.setProperty("javax.net.debug", "ssl");
+//		System.setProperty("javax.net.debug", "all"); // all or ssl
 
 		if (type == Authentication.BASIC)
 			client.addFilter(new HTTPBasicAuthFilter(user, password));
@@ -247,7 +247,7 @@ public class JerseyServices implements RESTServices {
 		isFirstRequest = true;
 	}
 	private void makeFirstRequest() {
-		connection.path("current/datetime").head();
+		connection.path("ping").head();
 	}
 
 	@Override
