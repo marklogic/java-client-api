@@ -39,9 +39,10 @@ class ServerConfigurationManagerImpl
 {
 	static final private Logger logger = LoggerFactory.getLogger(ServerConfigurationManagerImpl.class);
 
+	static final private String REST_API_NS = "http://marklogic.com/rest-api";
+
 	private Boolean validatingQueryOptions;
 	private String  defaultDocumentReadTransform;
-	private String  defaultDocumentWriteTransform;
 
 	private RESTServices services;
 
@@ -72,6 +73,8 @@ class ServerConfigurationManagerImpl
 				if ("validate-options".equals(localName)) {
 					String value = reader.getElementText();
 					validatingQueryOptions = new Boolean("true".equals(value));
+				} else if ("document-transform-out".equals(localName)) {
+					defaultDocumentReadTransform = reader.getElementText();
 				}
 				// TODO: other properties
 			}
@@ -97,16 +100,22 @@ class ServerConfigurationManagerImpl
 
 			XMLStreamWriter serializer = factory.createXMLStreamWriter(out, "utf-8");
 
-			serializer.writeStartElement("properties");
+			serializer.writeStartElement(REST_API_NS, "properties");
 
 			if (validatingQueryOptions != null) {
-				serializer.writeStartElement("validate-options");
+				serializer.writeStartElement(REST_API_NS, "validate-options");
 				serializer.writeCharacters(validatingQueryOptions.toString());
+				serializer.writeEndElement();
+			}
+			if (defaultDocumentReadTransform != null) {
+				serializer.writeStartElement(REST_API_NS, "document-transform-out");
+				serializer.writeCharacters(defaultDocumentReadTransform);
 				serializer.writeEndElement();
 			}
 			// TODO: other properties
 
 //			serializer.writeEndElement();
+
 			serializer.writeEndDocument();
 		} catch (XMLStreamException e) {
 			logger.error("Failed to write server configuration stream",e);
@@ -130,15 +139,6 @@ class ServerConfigurationManagerImpl
 	@Override
 	public void setDefaultDocumentReadTransform(String name) {
 		defaultDocumentReadTransform = name;
-	}
-
-	@Override
-	public String getDefaultDocumentWriteTransform(String name) {
-		return defaultDocumentWriteTransform;
-	}
-	@Override
-	public void setDefaultDocumentWriteTransform(String name) {
-		defaultDocumentWriteTransform = name;
 	}
 
 	@Override
