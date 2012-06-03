@@ -24,5 +24,10 @@ public interface QueryDefinition {
 
     public String getDirectory();
     public void setDirectory(String directory);
+
+    /*
+    public String getTransform();
+    public void setTransform(String transform);
+    */
 }
 

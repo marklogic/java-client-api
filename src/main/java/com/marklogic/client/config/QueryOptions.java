@@ -36,7 +36,7 @@ import com.marklogic.client.config.QueryOptionsBuilder.QueryWordItem;
 /**
  * Models MarkLogic Search API Configurations.
  * <p>
- * Use a {@link com.marklogic.client.io.SearchOptionsHandle} as the top-level
+ * Use a {@link com.marklogic.client.io.QueryOptionsHandle} as the top-level
  * interface to QueryOptions. The classes contained within QueryOptions
  * implement the low-level XML binding to the MarkLogic Search API, along with
  * accessor methods to all configurable options.
@@ -87,8 +87,6 @@ public final class QueryOptions implements QueryAnnotations {
 	/**
 	 * Wraps any element, for those places in the Search API schema where any
 	 * XML element may be used.
-	 * 
-	 * @see com.marklogic.client.configpojos.QueryGrammar
 	 */
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class AnyElement implements QueryOptionsItem {
@@ -169,7 +167,7 @@ public final class QueryOptions implements QueryAnnotations {
 		private List<String> termOptions;
 
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "weight")
-		private double weight;
+		private Double weight = null;
 
 		public BaseConstraintItem() {
 			this.termOptions = new ArrayList<String>();
@@ -1521,9 +1519,7 @@ public final class QueryOptions implements QueryAnnotations {
 		/**
 		 * Models a bucket on a range constraint whose values are anchored to
 		 * time, and computed based on the current time.
-		 * 
-		 * @see com.marklogic.client.configpojos.Range
-		 * 
+		 *
 		 */
 		@XmlAccessorType(XmlAccessType.FIELD)
 		public static class ComputedBucket implements
@@ -1531,9 +1527,7 @@ public final class QueryOptions implements QueryAnnotations {
 
 			/**
 			 * Defines values for use in computed buckets anchored to time.
-			 * 
-			 * @see com.marklogic.client.configpojos.ComputedBucket
-			 * 
+			 *
 			 */
 			public static enum AnchorValue {
 
@@ -1551,8 +1545,7 @@ public final class QueryOptions implements QueryAnnotations {
 
 			/**
 			 * A value for anchoring this computed bucket.
-			 * 
-			 * @see com.marklogic.client.configpojos.AnchorValue
+
 			 */
 			@XmlAttribute(name = "anchor")
 			private String anchor;
@@ -1567,8 +1560,6 @@ public final class QueryOptions implements QueryAnnotations {
 			/**
 			 * A value for anchoring the "greate than or equal" value for this
 			 * computed bucket.
-			 * 
-			 * @see com.marklogic.client.configpojos.AnchorValue
 			 */
 			@XmlAttribute(name = "ge-anchor")
 			private String geAnchor;
@@ -1588,8 +1579,6 @@ public final class QueryOptions implements QueryAnnotations {
 			/**
 			 * A value for anchoring the "less than" value for this computed
 			 * bucket.
-			 * 
-			 * @see com.marklogic.client.configpojos.AnchorValue
 			 */
 			@XmlAttribute(name = "lt-anchor")
 			private String ltAnchor;
@@ -2294,8 +2283,7 @@ public final class QueryOptions implements QueryAnnotations {
 	}
 
 	@XmlAccessorType(XmlAccessType.FIELD)
-	// TODO examine schema for this -- not sufficient for all the use cases we
-	// have.
+	// TODO examine schema for this -- not sufficient for all the use cases we have.
 	public static class QueryTransformResults implements QueryOptionsItem {
 
 		@XmlAttribute
@@ -2502,9 +2490,6 @@ public final class QueryOptions implements QueryAnnotations {
 	/**
 	 * Models elements that locate XQuery functions with use of "ns", "apply"
 	 * and "at" attributes.
-	 * 
-	 * @see com.marklogic.client.configpojos.QueryCustom
-	 * @see com.marklogic.client.configpojos.TermConfig
 	 */
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class XQueryExtension {

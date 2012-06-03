@@ -30,6 +30,8 @@ import javax.net.ssl.SSLException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
+import com.marklogic.client.QueryManager;
+import com.marklogic.client.config.ValuesDefinition;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.auth.params.AuthPNames;
@@ -737,51 +739,51 @@ public class JerseyServices implements RESTServices {
 	@Override
     public <T> T search(Class<T> as, QueryDefinition queryDef, String mimetype, long start, long len, QueryManager.ResponseViews views, String transactionId)
     throws ForbiddenUserException, FailedRequestException {
-        MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
+        RequestParameters params = new RequestParameters();
         ClientResponse response = null;
         
         if (start > 1) {
-            docParams.add("start", ""+start);
+            params.put("start", ""+start);
         }
 
         if (len > 0) {
-            docParams.add("pageLength", ""+len);
+            params.put("pageLength", ""+len);
         }
 
         for (QueryManager.QueryView view : views) {
             if (view == QueryManager.QueryView.SEARCH) {
-                docParams.add("view", "search");
+                params.put("view", "search");
             } else if (view == QueryManager.QueryView.FACETS) {
-                docParams.add("view", "facets");
+                params.put("view", "facets");
             } else if (view == QueryManager.QueryView.METRICS) {
-                docParams.add("view", "metrics");
+                params.put("view", "metrics");
             }
         }
 
         if (queryDef.getDirectory() != null) {
-            docParams.add("directory", queryDef.getDirectory());
+            params.put("directory", queryDef.getDirectory());
         }
 
         for (String collection : queryDef.getCollections()) {
-            docParams.add("collection", collection);
+            params.put("collection", collection);
         }
 
         if (transactionId != null) {
-            docParams.add("txid", transactionId);
+            params.put("txid", transactionId);
         }
 
         String optionsName = queryDef.getOptionsName();
         if (optionsName != null && optionsName.length() > 0) {
-            docParams.add("options", optionsName);
+            params.put("options", optionsName);
         }
         
         if (queryDef instanceof StringQueryDefinition) {
             String text = ((StringQueryDefinition) queryDef).getCriteria();
             logger.info("Searching for {} in transaction {}", text, transactionId);
 
-            docParams.add("q", text);
+            params.put("q", text);
 
-    		response = connection.path("search").queryParams(docParams).accept(mimetype).get(ClientResponse.class);
+    		response = connection.path("search").queryParams(RequestParametersAccessor.getMap(params)).accept(mimetype).get(ClientResponse.class);
 
     		if (isFirstRequest) isFirstRequest = false;
         } else if (queryDef instanceof KeyValueQueryDefinition) {
@@ -790,18 +792,18 @@ public class JerseyServices implements RESTServices {
 
             for (ValueLocator loc : pairs.keySet()) {
                 if (loc instanceof KeyLocator) {
-                    docParams.add("key", ((KeyLocator) loc).getKey());
+                    params.put("key", ((KeyLocator) loc).getKey());
                 } else {
                     ElementLocator eloc = (ElementLocator) loc;
-                    docParams.add("element", eloc.getElement().toString());
+                    params.put("element", eloc.getElement().toString());
                     if (eloc.getAttribute() != null) {
-                        docParams.add("attribute", eloc.getAttribute().toString());
+                        params.put("attribute", eloc.getAttribute().toString());
                     }
                 }
-                docParams.add("value", pairs.get(loc));
+                params.put("value", pairs.get(loc));
             }
 
-    		response = connection.path("keyvalue").queryParams(docParams).accept(mimetype).get(ClientResponse.class);
+    		response = connection.path("keyvalue").queryParams(RequestParametersAccessor.getMap(params)).accept(mimetype).get(ClientResponse.class);
 
     		if (isFirstRequest) isFirstRequest = false;
         } else if (queryDef instanceof StructuredQueryDefinition) {

@@ -16,6 +16,7 @@ public abstract class AbstractQueryDefinition implements QueryDefinition {
     protected String optionsUri = null;
     protected HashSet<String> collections = new HashSet<String>();
     protected String directory = null;
+    protected String transform = null;
 
     @Override
     public String getOptionsName() {
@@ -28,6 +29,17 @@ public abstract class AbstractQueryDefinition implements QueryDefinition {
         optionsUri = uri;
     }
 
+    /*
+    @Override
+    public String getTransform() {
+        return transform;
+    }
+
+    @Override
+    public void setTransform(String transform) {
+        this.transform = transform;
+    }
+    */
 
     @Override
     public String[] getCollections() {

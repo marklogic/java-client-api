@@ -85,15 +85,13 @@ public class StringSearchTest {
                 "http://marklogic.com/wikipedia", "nominee"));
         assertEquals(range.getAttribute(), new QName("year"));
 
-        
         QueryTransformResults tresults = builder.transformResults("raw");
         options.build(tresults);
 
-        
         QueryOptionsManager queryOptionsMgr = Common.client.newQueryOptionsManager();
 
         logger.error(options.toXMLString());
-        
+
         queryOptionsMgr.writeOptions(optionsName, options);
 
         QueryManager queryMgr = Common.client.newQueryManager();

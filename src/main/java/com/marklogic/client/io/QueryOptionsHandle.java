@@ -67,16 +67,15 @@ public final class QueryOptionsHandle extends
 	public QueryOptionsHandle() {
 		optionsHolder = new QueryOptions();
 
-		try {
-			jc = JAXBContext.newInstance(QueryOptions.class);
-			marshaller = jc.createMarshaller();
-			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			unmarshaller = jc.createUnmarshaller();
-		} catch (JAXBException e) {
-			throw new MarkLogicBindingException(e);
-		}
-
-	}
+        try {
+            jc = JAXBContext.newInstance(QueryOptions.class);
+            marshaller = jc.createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            unmarshaller = jc.createUnmarshaller();
+        } catch (JAXBException e) {
+            throw new MarkLogicBindingException(e);
+        }
+    }
 
 	/*
 	 * Adders
@@ -89,7 +88,7 @@ public final class QueryOptionsHandle extends
 		optionsHolder.getQueryConstraints().add(constraint);
 	};
 
-	public void addForest(Long forest) {
+	public void addForest(long forest) {
 		optionsHolder.getForests().add(forest);
 	}
 
@@ -250,7 +249,7 @@ public final class QueryOptionsHandle extends
 
 	public QueryTransformResults getTransformResults() {
 		return optionsHolder.getTransformResults();
-	};
+	}
 
 	/*
 	 * Bean Setters
@@ -280,9 +279,9 @@ public final class QueryOptionsHandle extends
 
 	@Override
 	public void setFormat(Format format) {
-		if (format != Format.XML)
-			new RuntimeException(
-					"QueryOptionsHandle supports the XML format only");
+		if (format != Format.XML) {
+            new RuntimeException("QueryOptionsHandle supports the XML format only");
+        }
 	}
 
 	public void setFragmentScope(FragmentScope fragmentScope) {

@@ -23,7 +23,6 @@ import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 		QueryOptionsManager {
 
-
 	private String QUERY_OPTIONS_BASE = "/config/query";
 	private RESTServices services;
 
@@ -37,11 +36,10 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 	}
 	
 	@Override
-	public <T extends QueryOptionsReadHandle> T readOptions(String name,
-			T queryOptionsHandle) {
-		if (name == null)
-			throw new IllegalArgumentException(
-					"Cannot read options for null name");
+	public <T extends QueryOptionsReadHandle> T readOptions(String name, T queryOptionsHandle) {
+		if (name == null) {
+			throw new IllegalArgumentException("Cannot read options for null name");
+        }
 
 		HandleAccessor.checkHandle(queryOptionsHandle, "query options");
 
@@ -52,8 +50,7 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 	}
 
 	@Override
-	public void writeOptions(String name,
-			QueryOptionsWriteHandle queryOptionsHandle) {
+	public void writeOptions(String name, QueryOptionsWriteHandle queryOptionsHandle) {
 		HandleAccessor.checkHandle(queryOptionsHandle, "query options");
 
 		services.putValue(requestLogger, QUERY_OPTIONS_BASE, name,

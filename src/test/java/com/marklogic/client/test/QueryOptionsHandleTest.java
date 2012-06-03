@@ -24,17 +24,26 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathException;
 
+import org.custommonkey.xmlunit.SimpleNamespaceContext;
+import org.custommonkey.xmlunit.XMLAssert;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.custommonkey.xmlunit.XpathEngine;
+import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -88,7 +97,8 @@ public class QueryOptionsHandleTest {
 	private static QueryOptionsHandle geoOptions;
 	private static ServerConfigurationManager serverConfig;
 	private static Boolean initialConfig;
-	
+    private static XpathEngine xpathEngine;
+
 	private static QueryOptionsBuilder builder;
 
 	private static final Logger logger = (Logger) LoggerFactory
@@ -139,7 +149,21 @@ public class QueryOptionsHandleTest {
 		geoOptions = optionsPOJOs.get(geoIndex);
 
 		builder = new QueryOptionsBuilder();
-	}
+
+        HashMap<String,String> xpathNS = new HashMap<String, String>();
+        xpathNS.put("search", "http://marklogic.com/appservices/search");
+        SimpleNamespaceContext xpathNsContext = new SimpleNamespaceContext(xpathNS);
+
+        XMLUnit.setIgnoreAttributeOrder(true);
+        XMLUnit.setIgnoreWhitespace(true);
+        XMLUnit.setNormalize(true);
+        XMLUnit.setNormalizeWhitespace(true);
+        XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
+
+        xpathEngine = XMLUnit.newXpathEngine();
+        xpathEngine.setNamespaceContext(xpathNsContext);
+
+    }
 	
 	@AfterClass
 	public static void resetOptionsValidation() {
@@ -147,8 +171,35 @@ public class QueryOptionsHandleTest {
 		serverConfig.writeConfiguration();
 	}
 
-	@Test
-	public void buildCollectionConstraint() {
+    @Test
+    public void emptyOptions() throws IOException, SAXException {
+        String correct = "<search:options xmlns:search='http://marklogic.com/appservices/search'/>";
+        QueryOptionsHandle options = new QueryOptionsHandle();
+        String result = options.toXMLString();
+
+        Document cd = XMLUnit.buildControlDocument(correct);
+        Document rd = XMLUnit.buildControlDocument(result);
+
+        XMLAssert.assertXMLEqual(cd, rd);
+    }
+
+    @Test
+    public void addForest() throws IOException, SAXException {
+        String correct = "<options xmlns='http://marklogic.com/appservices/search'>"
+                + "<forest>1234</forest>"
+                + "</options>";
+        QueryOptionsHandle options = new QueryOptionsHandle();
+        options.addForest(1234);
+        String result = options.toXMLString();
+
+        Document cd = XMLUnit.buildControlDocument(correct);
+        Document rd = XMLUnit.buildControlDocument(result);
+
+        XMLAssert.assertXMLEqual(cd, rd);
+    }
+
+    @Test
+	public void buildCollectionConstraint() throws IOException, SAXException, XpathException {
 		QueryOptionsHandle options = new QueryOptionsHandle();
 		options.build(builder.constraint(
 				null,
@@ -159,13 +210,19 @@ public class QueryOptionsHandleTest {
 		QueryCollection c = options.getConstraints().get(0)
 				.getSource();
 		logger.debug(optionsString);
-		assertTrue(
-				"Serialized CollectionConstraintImpl should contain facet option",
-				optionsString.contains("<search:facet-option>limit=10"));
-		assertEquals("CollectionOption prefix is wrong", "http://myprefix",
-				c.getPrefix());
 
-	}
+        Document doc = XMLUnit.buildControlDocument(optionsString);
+
+        String value = xpathEngine.evaluate("/search:options/search:constraint/search:collection/search:facet-option", doc);
+
+        assertTrue(
+				"Serialized CollectionConstraintImpl should contain facet option", "limit=10".equals(value));
+
+        value = xpathEngine.evaluate("/search:options/search:constraint/search:collection/@prefix", doc);
+
+        assertEquals("CollectionOption prefix is wrong", "http://myprefix", value);
+        assertEquals("CollectionOption prefix is wrong", "http://myprefix", c.getPrefix());
+    }
 
 	@Test
 	public void buildCustomConstraint() {
@@ -409,7 +466,7 @@ public class QueryOptionsHandleTest {
 	}
 
 	@Test
-	public void buildWordConstraintTest() {
+	public void buildWordConstraintTest() throws SAXException, IOException, XpathException {
 		QueryOptionsHandle options = new QueryOptionsHandle();
 		options.build(builder.constraint("intitle",
 				builder.word(builder.field("titlefield"),
@@ -426,11 +483,46 @@ public class QueryOptionsHandleTest {
 		String optionsString = options.toXMLString();
 		logger.debug(optionsString);
 
-		assertTrue(
-				"Serialized ValueOption AbstractQueryOption should contain this string",
-				optionsString.contains("<search:field name=\"titlefield\""));
+        Document doc = XMLUnit.buildControlDocument(optionsString);
 
+        String name = xpathEngine.evaluate("/search:options/search:constraint[@name='intitle']/search:word/search:field/@name", doc);
+
+        assertTrue("Serialized ValueOption AbstractQueryOption should contain this string", "titlefield".equals(name));
 	}
+
+    @Test
+    public void rangesHaveNoWeight() throws IOException, SAXException, XpathException {
+        QueryOptionsHandle options = new QueryOptionsHandle();
+        QueryOptionsBuilder builder = new QueryOptionsBuilder();
+        options.build(builder.returnFacets(true));
+        options.build(
+                builder.constraint("decade",
+                        builder.range(true, new QName("xs:gYear"),
+                                builder.element("http://marklogic.com/wikipedia", "nominee"),
+                                builder.attribute("year"),
+                                builder.bucket("2000s", "2000s", null, null),
+                                builder.bucket("1990s", "1990s", "1990", "2000"),
+                                builder.bucket("1980s", "1980s", "1980", "1990"),
+                                builder.bucket("1970s", "1970s", "1970", "1980"),
+                                builder.bucket("1960s", "1960s", "1960", "1970"),
+                                builder.bucket("1950s", "1950s", "1950", "1960"),
+                                builder.bucket("1940s", "1940s", "1940", "1950"),
+                                builder.bucket("1930s", "1930s", "1930", "1940"),
+                                builder.bucket("1920s", "1920s", "1920", "1930"),
+                                builder.facetOption("limit=10"))));
+
+        QueryRange range = options.getConstraint("decade").getSource();
+        assertEquals(range.getElement(), new QName(
+                "http://marklogic.com/wikipedia", "nominee"));
+        assertEquals(range.getAttribute(), new QName("year"));
+
+        String optionsString = options.toXMLString();
+        Document doc = XMLUnit.buildControlDocument(optionsString);
+        NodeList nl = xpathEngine.getMatchingNodes("//search:range/search:weight", doc);
+
+        // Ranges do not have weights
+        assertTrue("Range must not contain a weight", nl.getLength() == 0);
+    }
 
 	@Test
 	public void parseAndBuildAdditionalQuery() throws JAXBException {
@@ -455,7 +547,7 @@ public class QueryOptionsHandleTest {
 	}
 
 	@Test
-	public void buildOperator() throws FileNotFoundException,
+	public void buildOperator() throws FileNotFoundException, IOException, SAXException, XpathException,
 			JAXBException {
 		QueryOptionsHandle options = testOptions;
 
@@ -475,13 +567,15 @@ public class QueryOptionsHandleTest {
 
 		String optionsString = options.toXMLString();
 
-		logger.debug("Sort order found from test config {}", optionsString);
-		assertTrue("Sort order should contain empty score element",
-				optionsString.contains("<search:score></search:score>"));
-		assertTrue("Sort order should contain element index def",
-				optionsString.contains("name=\"green\""));
+        Document doc = XMLUnit.buildControlDocument(optionsString);
+        NodeList nl = xpathEngine.getMatchingNodes("//search:sort-order/search:score[. = '' and not(*)]", doc);
 
-		
+		logger.debug("Sort order found from test config {}", optionsString);
+		assertTrue("Sort order should contain 3 empty score elements", nl.getLength() == 3);
+
+        String name = xpathEngine.evaluate("//search:operator[@name='sortcolor']/search:state[@name='pantone']/search:sort-order/search:element/@name", doc);
+
+		assertTrue("Sort order should contain element index def", "green".equals(name));
 	}
 
 	@Test
