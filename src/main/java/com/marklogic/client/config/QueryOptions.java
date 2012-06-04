@@ -15,17 +15,12 @@ import javax.xml.namespace.QName;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
 
 import com.marklogic.client.config.QueryOptionsBuilder.IndexReference;
-import com.marklogic.client.config.QueryOptionsBuilder.Indexable;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryAnnotations;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryConstraintItem;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryCustomItem;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryGeospatialItem;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryGrammarItem;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryOptionsItem;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryRangeItem;
-import com.marklogic.client.config.QueryOptionsBuilder.QuerySortOrderItem;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryStateItem;
 import com.marklogic.client.config.QueryOptionsBuilder.QuerySuggestionSourceItem;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryTermItem;
@@ -97,6 +92,13 @@ public final class QueryOptions implements QueryAnnotations {
 		public AnyElement() {
 		}
 
+		public AnyElement(String wrapperName, org.w3c.dom.Element ctsQuery) {
+			org.w3c.dom.Element wrapperElement = QueryOptionsBuilder.domElement("<search:"+wrapperName+" xmlns:search=\"http://marklogic.com/appservices/search\"/>");
+			Node n = wrapperElement.getOwnerDocument().importNode(ctsQuery,  true);
+			wrapperElement.appendChild(n);
+			element = wrapperElement;
+		}
+
 		public AnyElement(org.w3c.dom.Element ctsQuery) {
 			element = ctsQuery;
 		}
@@ -106,7 +108,7 @@ public final class QueryOptions implements QueryAnnotations {
 			if (element.getLocalName().equals("searchable-expression")) {
 				options.setSearchableExpression(element);
 			} else if (element.getLocalName().equals("additional-query")) {
-				options.setAdditionalQuery(element);
+				options.setAdditionalQuery((org.w3c.dom.Element) element.getFirstChild());
 			} else {
 				logger.error(
 						"Unhandled element caught while building options: {}",
@@ -1519,7 +1521,7 @@ public final class QueryOptions implements QueryAnnotations {
 		/**
 		 * Models a bucket on a range constraint whose values are anchored to
 		 * time, and computed based on the current time.
-		 *
+		 * 
 		 */
 		@XmlAccessorType(XmlAccessType.FIELD)
 		public static class ComputedBucket implements
@@ -1527,7 +1529,7 @@ public final class QueryOptions implements QueryAnnotations {
 
 			/**
 			 * Defines values for use in computed buckets anchored to time.
-			 *
+			 * 
 			 */
 			public static enum AnchorValue {
 
@@ -1545,7 +1547,6 @@ public final class QueryOptions implements QueryAnnotations {
 
 			/**
 			 * A value for anchoring this computed bucket.
-
 			 */
 			@XmlAttribute(name = "anchor")
 			private String anchor;
@@ -2283,7 +2284,8 @@ public final class QueryOptions implements QueryAnnotations {
 	}
 
 	@XmlAccessorType(XmlAccessType.FIELD)
-	// TODO examine schema for this -- not sufficient for all the use cases we have.
+	// TODO examine schema for this -- not sufficient for all the use cases we
+	// have.
 	public static class QueryTransformResults implements QueryOptionsItem {
 
 		@XmlAttribute
@@ -2769,7 +2771,8 @@ public final class QueryOptions implements QueryAnnotations {
 	}
 
 	public org.w3c.dom.Element getAdditionalQuery() {
-		return additionalQuery.getValue();
+		org.w3c.dom.Element e = additionalQuery.getValue();
+		return (org.w3c.dom.Element) e.getFirstChild();
 	}
 
 	@Override
@@ -2894,7 +2897,8 @@ public final class QueryOptions implements QueryAnnotations {
 	}
 
 	public void setAdditionalQuery(org.w3c.dom.Element additionalQuery) {
-		this.additionalQuery = new AnyElement(additionalQuery);
+		this.additionalQuery = new AnyElement("additional-query",
+				additionalQuery);
 	}
 
 	public void setConcurrencyLevel(Integer concurrencyLevel) {
@@ -2932,7 +2936,7 @@ public final class QueryOptions implements QueryAnnotations {
 	public void setQualityWeight(Double qualityWeight) {
 		this.qualityWeight = qualityWeight;
 	}
-	
+
 	public void setQueryValues(List<QueryValues> values) {
 		this.queryValues = values;
 	}

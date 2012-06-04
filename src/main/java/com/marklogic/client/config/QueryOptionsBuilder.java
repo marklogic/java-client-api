@@ -460,7 +460,7 @@ public final class QueryOptionsBuilder {
 	 */
 	public AnyElement additionalQuery(String xmlString) {
 		org.w3c.dom.Element element = domElement(xmlString);
-		return new AnyElement(element);
+		return new AnyElement("additional-query", element);
 	}
 
 	public Aggregate aggregate(String aggregate) {
@@ -666,7 +666,7 @@ public final class QueryOptionsBuilder {
 	 *            XML for an element.
 	 * @return w3c.dom.Element representation the provided XML.
 	 */
-	public org.w3c.dom.Element domElement(String xmlString) {
+	public static org.w3c.dom.Element domElement(String xmlString) {
 		org.w3c.dom.Element element = null;
 		try {
 			ByteArrayInputStream bais = new ByteArrayInputStream(

@@ -48,7 +48,6 @@ import com.marklogic.client.config.QueryOptions.QueryTerm;
 import com.marklogic.client.config.QueryOptions.QueryTransformResults;
 import com.marklogic.client.config.QueryOptions.QueryValues;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryOptionsItem;
-import com.marklogic.client.config.QueryOptionsBuilder.QuerySuggestionSourceItem;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
@@ -160,8 +159,8 @@ public final class QueryOptionsHandle extends
 		return Format.XML;
 	}
 
-	public String getFragmentScope() {
-		return optionsHolder.getFragmentScope();
+	public FragmentScope getFragmentScope() {
+		return FragmentScope.valueOf(optionsHolder.getFragmentScope().toUpperCase());
 	}
 
 	public QueryGrammar getGrammar() {
@@ -197,12 +196,20 @@ public final class QueryOptionsHandle extends
 		return null;
 	}
 
+	public Boolean getReturnAggregates() {
+		return returnWithDefault(optionsHolder.getReturnAggregates(), false);
+	}
+	
 	public Boolean getReturnConstraints() {
 		return returnWithDefault(optionsHolder.getReturnConstraints(), false);
 	}
 
 	public Boolean getReturnFacets() {
 		return returnWithDefault(optionsHolder.getReturnFacets(), true);
+	}
+
+	public Boolean getReturnFrequencies() {
+		return returnWithDefault(optionsHolder.getReturnFrequencies(), true);
 	}
 
 	public Boolean getReturnMetrics() {
@@ -227,6 +234,10 @@ public final class QueryOptionsHandle extends
 
 	public Boolean getReturnSimilar() {
 		return returnWithDefault(optionsHolder.getReturnSimilar(), false);
+	}
+
+	public Boolean getReturnValues() {
+		return returnWithDefault(optionsHolder.getReturnValues(), true);
 	}
 
 	public org.w3c.dom.Element getSearchableExpression() {
@@ -311,6 +322,10 @@ public final class QueryOptionsHandle extends
 		optionsHolder.setQueryValues(values);
 	}
 	
+	public void setReturnAggregates(Boolean returnAggregates) {
+		optionsHolder.setReturnAggregates(returnAggregates);
+	}
+	
 	public void setReturnConstraints(Boolean returnConstraints) {
 		optionsHolder.setReturnConstraints(returnConstraints);
 
@@ -318,9 +333,12 @@ public final class QueryOptionsHandle extends
 
 	public void setReturnFacets(Boolean returnFacets) {
 		optionsHolder.setReturnFacets(returnFacets);
-
 	}
 
+	public void setReturnFrequencies(Boolean returnFrequencies) {
+		optionsHolder.setReturnFrequencies(returnFrequencies);
+	}
+	
 	public void setReturnMetrics(Boolean returnMetrics) {
 		optionsHolder.setReturnMetrics(returnMetrics);
 
@@ -335,8 +353,8 @@ public final class QueryOptionsHandle extends
 
 	}
 
-	public void setReturnQueryText(Boolean returnQueryText) {
-		optionsHolder.setReturnQtext(returnQueryText);
+	public void setReturnQtext(Boolean returnQtext) {
+		optionsHolder.setReturnQtext(returnQtext);
 
 	}
 
@@ -350,6 +368,9 @@ public final class QueryOptionsHandle extends
 
 	}
 
+	public void setReturnValues(Boolean returnValues) {
+		optionsHolder.setReturnValues(returnValues);
+	}
 
 	public void setSearchableExpression(org.w3c.dom.Element searchableExpression) {
 		optionsHolder.setSearchableExpression(searchableExpression);
