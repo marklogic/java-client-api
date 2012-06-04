@@ -28,10 +28,7 @@ import com.marklogic.client.config.ValuesDefinition;
 import com.marklogic.client.config.ValuesListDefinition;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
-<<<<<<< Updated upstream
 import com.marklogic.client.io.marker.ValuesListReadHandle;
-=======
->>>>>>> Stashed changes
 import com.marklogic.client.io.marker.ValuesReadHandle;
 
 public interface QueryManager {
