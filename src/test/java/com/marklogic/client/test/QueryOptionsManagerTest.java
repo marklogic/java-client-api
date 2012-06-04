@@ -64,7 +64,7 @@ public class QueryOptionsManagerTest {
 		QueryOptionsManager mgr = Common.client.newQueryOptionsManager();
 		assertNotNull("Client could not create query options manager", mgr);
 
-		mgr.writeOptions("testempty", new QueryOptionsHandle());
+														mgr.writeOptions("testempty", new QueryOptionsHandle());
         
         String optionsResult = mgr.readOptions("testempty", new StringHandle()).get();
         logger.debug("Empty options from server {}", optionsResult);

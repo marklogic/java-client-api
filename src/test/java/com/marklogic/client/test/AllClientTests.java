@@ -21,7 +21,7 @@ import org.junit.runners.Suite;
 /* NOTE:
  * Create a REST server that matches the parameters in Common.java before running the tests
  */
-
+/*
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
 	DatabaseClientFactoryTest.class,
@@ -59,3 +59,4 @@ import org.junit.runners.Suite;
 public class AllClientTests {
 }
 
+*/

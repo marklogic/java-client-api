@@ -15,22 +15,21 @@
  */
 package com.marklogic.client;
 
+import java.util.Set;
+
+import javax.xml.namespace.QName;
+
 import com.marklogic.client.config.KeyValueQueryDefinition;
 import com.marklogic.client.config.MatchDocumentSummary;
 import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.StringQueryDefinition;
 import com.marklogic.client.config.StructuredQueryBuilder;
-import com.marklogic.client.config.StructuredQueryDefinition;
 import com.marklogic.client.config.ValuesDefinition;
 import com.marklogic.client.config.ValuesListDefinition;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.ValuesListReadHandle;
 import com.marklogic.client.io.marker.ValuesReadHandle;
-
-import javax.xml.namespace.QName;
-import java.util.Set;
 
 public interface QueryManager {
     // constants that can be used as values for pagination

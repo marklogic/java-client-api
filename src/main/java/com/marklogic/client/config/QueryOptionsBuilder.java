@@ -573,6 +573,12 @@ public final class QueryOptionsBuilder {
 		return bucket;
 	}
 
+	/**
+	 * Set the maximum number of threads used to resolve facets. The default is 8, which specifies that at most 8 threads will be used concurrently to resolve facets. 
+	 * 
+	 * @param concurrencyLevel integer to set concurrency level.
+	 * @return A QueryOptionsTextItem for use in building QueryOptions configurations.
+	 */
 	public QueryOptionsTextItem<Integer> concurrencyLevel(
 			Integer concurrencyLevel) {
 		return new QueryOptionsTextItem<Integer>("setConcurrencyLevel",
