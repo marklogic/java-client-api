@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -42,6 +43,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -105,6 +107,13 @@ public class XMLDocumentTest {
 		assertNotNull("Read null document for transform result",readDoc);
 		assertXMLEqual("Transform result not equivalent to source",domDocument,readDoc);
 
+		InputSourceHandle saxHandle = new InputSourceHandle();
+		saxHandle.set(new InputSource(new StringReader(docText)));
+		docMgr.write(docId, saxHandle);
+		readDoc = docMgr.read(docId, new DOMHandle()).get();
+		assertNotNull("Read null document for SAX writer",readDoc);
+		assertXMLEqual("Failed to read XML document as DOM",domDocument,readDoc);
+
 		final HashMap<String,Integer> counter = new HashMap<String,Integer>(); 
 		counter.put("elementCount",0);
 		counter.put("attributeCount",0);
@@ -118,7 +127,7 @@ public class XMLDocumentTest {
 				}
 			}
 		};
-		docMgr.read(docId, new InputSourceHandle()).process(handler);
+		docMgr.read(docId, saxHandle).process(handler);
 		assertTrue("Failed to process XML document with SAX",
 				counter.get("elementCount") == 2 && counter.get("attributeCount") == 2);
 

@@ -17,9 +17,14 @@ package com.marklogic.client.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,18 +35,22 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.StructureReadHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
- * An Input Source Handle represents XML content as an input source for reading,
- * potentially with processing by a SAX content handler.
+ * An Input Source Handle represents XML content as an input source for reading or writing.
+ * When reading, the XML may be processed by a SAX content handler.
  */
 public class InputSourceHandle
-	extends BaseHandle<InputStream, OperationNotSupported>
-	implements XMLReadHandle, StructureReadHandle
+	extends BaseHandle<InputStream, OutputStreamSender>
+	implements OutputStreamSender,
+	    XMLReadHandle, XMLWriteHandle,
+	    StructureReadHandle, StructureWriteHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(InputSourceHandle.class);
 
@@ -64,26 +73,24 @@ public class InputSourceHandle
 	public InputSource get() {
     	return content;
     }
+	public void set(InputSource content) {
+    	this.content = content;
+    }
+	public InputSourceHandle with(InputSource content) {
+    	set(content);
+    	return this;
+    }
+
 	public void process(ContentHandler handler) {
 		try {
 			logger.info("Processing input source with SAX content handler");
 
-			SAXParserFactory factory = getFactory();
-			if (factory == null) {
-				throw new MarkLogicInternalException("Failed to make SAX parser factory");
-			}
-
-			XMLReader reader = factory.newSAXParser().getXMLReader();
-			if (resolver != null)
-				reader.setEntityResolver(resolver);
+			XMLReader reader = makeReader();
 
 			reader.setContentHandler(handler);
 
 			reader.parse(content);
 		} catch (SAXException e) {
-			logger.error("Failed to process input source with SAX content handler",e);
-			throw new MarkLogicInternalException(e);
-		} catch (ParserConfigurationException e) {
 			logger.error("Failed to process input source with SAX content handler",e);
 			throw new MarkLogicInternalException(e);
 		} catch (IOException e) {
@@ -117,6 +124,26 @@ public class InputSourceHandle
 
 		return factory;
 	}
+	protected XMLReader makeReader() {
+		try {
+			SAXParserFactory factory = getFactory();
+			if (factory == null) {
+				throw new MarkLogicInternalException("Failed to make SAX parser factory");
+			}
+
+			XMLReader reader = factory.newSAXParser().getXMLReader();
+			if (resolver != null)
+				reader.setEntityResolver(resolver);
+
+			return reader;
+		} catch (SAXException e) {
+			logger.error("Failed to process input source with SAX content handler",e);
+			throw new MarkLogicInternalException(e);
+		} catch (ParserConfigurationException e) {
+			logger.error("Failed to process input source with SAX content handler",e);
+			throw new MarkLogicInternalException(e);
+		}
+	}
 
 	@Override
 	protected Class<InputStream> receiveAs() {
@@ -130,5 +157,25 @@ public class InputSourceHandle
 		}
 
 		this.content = new InputSource(content);
+	}
+	@Override
+	protected OutputStreamSender sendContent() {
+		if (content == null) {
+			throw new IllegalStateException("No input source to write");
+		}
+
+		return this;
+	}
+	@Override
+	public void write(OutputStream out) throws IOException {
+		try {
+			TransformerFactory.newInstance().newTransformer().transform(
+					new SAXSource(makeReader(), content),
+					new StreamResult(out)
+					);
+		} catch (TransformerException e) {
+			logger.error("Failed to transform input source into result",e);
+			throw new MarkLogicIOException(e);
+		}
 	}
 }
