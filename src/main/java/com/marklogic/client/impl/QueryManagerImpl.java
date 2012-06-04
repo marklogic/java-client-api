@@ -27,11 +27,15 @@ import com.marklogic.client.config.MatchDocumentSummary;
 import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.StringQueryDefinition;
 import com.marklogic.client.config.StructuredQueryBuilder;
+import com.marklogic.client.config.ValuesListDefinition;
 import com.marklogic.client.io.HandleAccessor;
 import com.marklogic.client.config.ValuesDefinition;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.ValuesHandle;
+import com.marklogic.client.io.ValuesListHandle;
+import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
+import com.marklogic.client.io.marker.ValuesListReadHandle;
 import com.marklogic.client.io.marker.ValuesReadHandle;
 
 import java.util.ArrayList;
@@ -104,6 +108,11 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     }
 
     @Override
+    public ValuesListDefinition newValuesListDefinition(String optionsName) {
+        return new ValuesListDefinitionImpl(optionsName);
+    }
+
+    @Override
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle) {
         return search(querydef, searchHandle, 1, null);
     }
@@ -161,7 +170,48 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         String tid = transaction == null ? null : transaction.getTransactionId();
         HandleAccessor.receiveContent(valuesHandle, services.values(HandleAccessor.receiveAs(valuesHandle), valdef, mimetype, tid));
         return valuesHandle;
+    }
 
+    @Override
+    public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valueHandle) {
+        return valuesList(valdef, valueHandle, null);
+    }
+
+    @Override
+    public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valuesHandle, Transaction transaction) {
+        HandleAccessor.checkHandle(valuesHandle, "valueslist");
+
+        String mimetype = null;
+        if (HandleAccessor.getFormat(valuesHandle) == Format.XML) {
+            mimetype = "application/xml";
+        } else {
+            throw new UnsupportedOperationException("Only XML values list results are possible.");
+        }
+
+        String tid = transaction == null ? null : transaction.getTransactionId();
+        HandleAccessor.receiveContent(valuesHandle, services.valuesList(HandleAccessor.receiveAs(valuesHandle), valdef, mimetype, tid));
+        return valuesHandle;
+    }
+
+    @Override
+    public <T extends QueryOptionsListReadHandle> T optionsList(T optionsHandle) {
+        return optionsList(optionsHandle, null);
+    }
+
+    @Override
+    public <T extends QueryOptionsListReadHandle> T optionsList(T optionsHandle, Transaction transaction) {
+        HandleAccessor.checkHandle(optionsHandle, "optionslist");
+
+        String mimetype = null;
+        if (HandleAccessor.getFormat(optionsHandle) == Format.XML) {
+            mimetype = "application/xml";
+        } else {
+            throw new UnsupportedOperationException("Only XML values list results are possible.");
+        }
+
+        String tid = transaction == null ? null : transaction.getTransactionId();
+        HandleAccessor.receiveContent(optionsHandle, services.optionsList(HandleAccessor.receiveAs(optionsHandle), mimetype, tid));
+        return optionsHandle;
     }
 
     @Override

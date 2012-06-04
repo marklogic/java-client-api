@@ -22,8 +22,11 @@ import com.marklogic.client.config.StringQueryDefinition;
 import com.marklogic.client.config.StructuredQueryBuilder;
 import com.marklogic.client.config.StructuredQueryDefinition;
 import com.marklogic.client.config.ValuesDefinition;
+import com.marklogic.client.config.ValuesListDefinition;
+import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
+import com.marklogic.client.io.marker.ValuesListReadHandle;
 import com.marklogic.client.io.marker.ValuesReadHandle;
 
 import javax.xml.namespace.QName;
@@ -53,6 +56,7 @@ public interface QueryManager {
     public StructuredQueryBuilder newStructuredQueryBuilder(String optionsName);
 
     public ValuesDefinition newValuesDefinition(String optionsName);
+    public ValuesListDefinition newValuesListDefinition(String optionsName);
 
     public ElementLocator newElementLocator(QName element);
     public ElementLocator newElementLocator(QName element, QName attribute);
@@ -65,6 +69,12 @@ public interface QueryManager {
 
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle);
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, Transaction transaction);
+
+    public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valueHandle);
+    public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valueHandle, Transaction transaction);
+
+    public <T extends QueryOptionsListReadHandle> T optionsList(T valueHandle);
+    public <T extends QueryOptionsListReadHandle> T optionsList(T valueHandle, Transaction transaction);
 
     public MatchDocumentSummary findOne(QueryDefinition querydef);
     public MatchDocumentSummary findOne(QueryDefinition querydef, Transaction transaction);

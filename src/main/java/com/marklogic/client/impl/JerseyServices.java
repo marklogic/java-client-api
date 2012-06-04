@@ -32,6 +32,7 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.config.ValuesDefinition;
+import com.marklogic.client.config.ValuesListDefinition;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.auth.params.AuthPNames;
@@ -880,6 +881,75 @@ public class JerseyServices implements RESTServices {
         if (valDef.getName() != null) {
             uri += "/" + valDef.getName();
         }
+
+        response = connection.path(uri).queryParams(docParams).accept(mimetype).get(ClientResponse.class);
+        isFirstRequest = false;
+
+        ClientResponse.Status status = response.getClientResponseStatus();
+        if (status == ClientResponse.Status.FORBIDDEN) {
+            response.close();
+            throw new ForbiddenUserException("User is not allowed to search");
+        }
+        if (status != ClientResponse.Status.OK) {
+            response.close();
+            throw new FailedRequestException("search failed: "+status.getReasonPhrase());
+        }
+
+        T entity = response.getEntity(as);
+        if (as != InputStream.class && as != Reader.class)
+            response.close();
+
+        return entity;
+    }
+
+    @Override
+    public <T> T valuesList(Class <T> as, ValuesListDefinition valDef, String mimetype, String transactionId)
+            throws ForbiddenUserException, FailedRequestException {
+        MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
+        ClientResponse response = null;
+
+        String optionsName = valDef.getOptionsName();
+        if (optionsName != null && optionsName.length() > 0) {
+            docParams.add("options", optionsName);
+        }
+
+        if (transactionId != null) {
+            docParams.add("txid", transactionId);
+        }
+
+        String uri = "values";
+
+        response = connection.path(uri).queryParams(docParams).accept(mimetype).get(ClientResponse.class);
+        isFirstRequest = false;
+
+        ClientResponse.Status status = response.getClientResponseStatus();
+        if (status == ClientResponse.Status.FORBIDDEN) {
+            response.close();
+            throw new ForbiddenUserException("User is not allowed to search");
+        }
+        if (status != ClientResponse.Status.OK) {
+            response.close();
+            throw new FailedRequestException("search failed: "+status.getReasonPhrase());
+        }
+
+        T entity = response.getEntity(as);
+        if (as != InputStream.class && as != Reader.class)
+            response.close();
+
+        return entity;
+    }
+
+    @Override
+    public <T> T optionsList(Class <T> as, String mimetype, String transactionId)
+            throws ForbiddenUserException, FailedRequestException {
+        MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
+        ClientResponse response = null;
+
+        if (transactionId != null) {
+            docParams.add("txid", transactionId);
+        }
+
+        String uri = "config/query";
 
         response = connection.path(uri).queryParams(docParams).accept(mimetype).get(ClientResponse.class);
         isFirstRequest = false;

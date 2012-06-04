@@ -1,3 +1,18 @@
+/*
+ * Copyright 2012 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.marklogic.client.impl;
 
 import com.marklogic.client.config.QueryDefinition;
@@ -5,13 +20,6 @@ import com.marklogic.client.config.QueryDefinition;
 import java.util.HashMap;
 import java.util.HashSet;
 
-/**
- * Created with IntelliJ IDEA.
- * User: ndw
- * Date: 5/24/12
- * Time: 7:09 AM
- * To change this template use File | Settings | File Templates.
- */
 public abstract class AbstractQueryDefinition implements QueryDefinition {
     protected String optionsUri = null;
     protected HashSet<String> collections = new HashSet<String>();

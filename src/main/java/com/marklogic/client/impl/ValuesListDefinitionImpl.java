@@ -13,23 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.config;
+package com.marklogic.client.impl;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlValue;
+import com.marklogic.client.config.QueryDefinition;
+import com.marklogic.client.config.ValuesDefinition;
+import com.marklogic.client.config.ValuesListDefinition;
 
-public class TypedDistinctValue {
-    @XmlAttribute(namespace = "http://www.w3.org/2001/XMLSchema-instance", name = "type")
-    String type;
+public class ValuesListDefinitionImpl implements ValuesListDefinition {
+    private String options = null;
 
-    @XmlValue
-    String value;
-
-    public String getType() {
-        return type;
+    public ValuesListDefinitionImpl(String optionsName) {
+        options = optionsName;
     }
 
-    public <T> T get(Class<T> as) {
-        return DistinctValue.getValue(value, as);
+    @Override
+    public String getOptionsName() {
+        return options;
+    }
+
+    @Override
+    public void setOptionsName(String optname) {
+        options = optname;
     }
 }

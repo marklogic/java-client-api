@@ -32,6 +32,7 @@ import com.marklogic.client.RequestParameters;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.ValuesDefinition;
+import com.marklogic.client.config.ValuesListDefinition;
 import com.sun.jersey.api.client.ClientResponse;
 
 public interface RESTServices {
@@ -69,9 +70,15 @@ public interface RESTServices {
 		throws ForbiddenUserException, FailedRequestException;
 
     public <T> T values(Class <T> as, ValuesDefinition valdef, String mimetype, String transactionId)
-        throws ForbiddenUserException, FailedRequestException;
+            throws ForbiddenUserException, FailedRequestException;
 
-	// namespaces, etc.
+    public <T> T valuesList(Class <T> as, ValuesListDefinition valdef, String mimetype, String transactionId)
+            throws ForbiddenUserException, FailedRequestException;
+
+    public <T> T optionsList(Class <T> as, String mimetype, String transactionId)
+            throws ForbiddenUserException, FailedRequestException;
+
+    // namespaces, etc.
 	public <T> T getValue(RequestLogger logger, String type, String key, String mimetype, Class<T> as)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public <T> T getValues(RequestLogger logger, String type, String mimetype, Class<T> as)

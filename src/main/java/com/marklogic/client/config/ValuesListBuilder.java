@@ -20,39 +20,45 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlValue;
 import java.util.ArrayList;
+import java.util.HashMap;
 
-public final class ValuesBuilder {
+public final class ValuesListBuilder {
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlRootElement(namespace = Values.VALUES_NS, name = "values-response")
+    @XmlRootElement(namespace = ValuesList.VALUES_LIST_NS, name = "values-list")
 
-    public static final class Values  {
-        public static final String VALUES_NS = "http://marklogic.com/appservices/search";
+    public static final class ValuesList {
+        public static final String VALUES_LIST_NS = "http://marklogic.com/rest-api";
 
-        @XmlAttribute(name = "name")
-        private String name;
+        @XmlElement(namespace = ValuesList.VALUES_LIST_NS, name = "values")
+        private ArrayList<Values> values;
 
-        @XmlAttribute(name = "type")
-        private String type;
-
-        @XmlElement(namespace = Values.VALUES_NS, name = "distinct-value")
-        private ArrayList<CountedDistinctValue> distinctValues;
-
-        public Values() {
-            distinctValues = new ArrayList<CountedDistinctValue>();
+        public ValuesList() {
+            values = new ArrayList<Values>();
         }
+
+        public HashMap<String, String> getValuesMap() {
+            HashMap<String,String> map = new HashMap<String, String>();
+            for (Values value : values) {
+                map.put(value.getName(), value.getUri());
+            }
+            return map;
+        }
+    }
+
+    private static final class Values {
+        @XmlElement(namespace = ValuesList.VALUES_LIST_NS, name = "name")
+        String name;
+
+        @XmlElement(namespace = ValuesList.VALUES_LIST_NS, name = "uri")
+        String uri;
 
         public String getName() {
             return name;
         }
 
-        public String getType() {
-            return type;
-        }
-
-        public CountedDistinctValue[] getValues() {
-            return distinctValues.toArray(new CountedDistinctValue[0]);
+        public String getUri() {
+            return uri;
         }
     }
 }

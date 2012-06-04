@@ -13,23 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.config;
+package com.marklogic.client.io.marker;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlValue;
-
-public class TypedDistinctValue {
-    @XmlAttribute(namespace = "http://www.w3.org/2001/XMLSchema-instance", name = "type")
-    String type;
-
-    @XmlValue
-    String value;
-
-    public String getType() {
-        return type;
-    }
-
-    public <T> T get(Class<T> as) {
-        return DistinctValue.getValue(value, as);
-    }
+public interface ValuesListReadHandle extends AbstractReadHandle {
 }

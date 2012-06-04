@@ -15,21 +15,8 @@
  */
 package com.marklogic.client.config;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlValue;
-
-public class TypedDistinctValue {
-    @XmlAttribute(namespace = "http://www.w3.org/2001/XMLSchema-instance", name = "type")
-    String type;
-
-    @XmlValue
-    String value;
-
-    public String getType() {
-        return type;
-    }
-
-    public <T> T get(Class<T> as) {
-        return DistinctValue.getValue(value, as);
-    }
+public interface ValuesListDefinition {
+    public String getOptionsName();
+    public void setOptionsName(String optname);
 }
+
