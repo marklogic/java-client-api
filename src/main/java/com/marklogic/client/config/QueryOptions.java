@@ -2721,8 +2721,8 @@ public final class QueryOptions implements QueryAnnotations {
 	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "return-values")
 	private Boolean returnValues;
 
-	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "searchable-expression")
-	private AnyElement searchableExpression;
+	@XmlAnyElement
+	private org.w3c.dom.Element searchableExpression;
 
 	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "search-option")
 	private List<String> searchOptions;
@@ -2881,7 +2881,7 @@ public final class QueryOptions implements QueryAnnotations {
 	}
 
 	public org.w3c.dom.Element getSearchableExpression() {
-		return searchableExpression.getValue();
+		return searchableExpression;
 	}
 
 	public List<String> getSearchOptions() {
@@ -2994,7 +2994,7 @@ public final class QueryOptions implements QueryAnnotations {
 	}
 
 	public void setSearchableExpression(org.w3c.dom.Element searchableExpression) {
-		this.searchableExpression = new AnyElement(searchableExpression);
+		this.searchableExpression = searchableExpression;
 	}
 
 	public void setSearchOptions(List<String> searchOptions) {
