@@ -1,7 +1,6 @@
 package com.marklogic.client.test;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
@@ -11,8 +10,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
+import com.marklogic.client.Format;
 import com.marklogic.client.RequestParameters;
 import com.marklogic.client.ResourceExtensionsManager;
 import com.marklogic.client.ResourceManager;
@@ -41,7 +40,7 @@ public class ResourceServicesTest {
 
 		extensionMgr.writeServices(
 				ResourceExtensionsTest.RESOURCE_NAME,
-				new StringHandle().with(resourceServices),
+				new StringHandle().withFormat(Format.XML).with(resourceServices),
 				ResourceExtensionsTest.makeMetadata(),
 				ResourceExtensionsTest.makeParameters()
 				);
@@ -68,7 +67,8 @@ public class ResourceServicesTest {
 		assertNotNull("Failed to get resource service with multiple documents", result);
 		assertXpathEvaluatesTo("true", "/read-multi-doc/multi-param", result);
 
-		StringHandle writeHandle = new StringHandle().with("<input-doc>true</input-doc>");
+		StringHandle writeHandle =
+			new StringHandle().withFormat(Format.XML).with("<input-doc>true</input-doc>");
 
 		result = resourceMgr.getResourceServices().put(params, writeHandle, new DOMHandle()).get();
 		assertNotNull("Failed to put resource service with a single document", result);
@@ -76,8 +76,8 @@ public class ResourceServicesTest {
 		assertXpathEvaluatesTo("true", "/wrote-doc/input-doc", result);
 
 		StringHandle[] writeHandles = new StringHandle[2];
-		writeHandles[0] = new StringHandle().with("<input-doc>true</input-doc>");
-		writeHandles[1] = new StringHandle().with("<multi-input-doc>true</multi-input-doc>");
+		writeHandles[0] = new StringHandle().withFormat(Format.XML).with("<input-doc>true</input-doc>");
+		writeHandles[1] = new StringHandle().withFormat(Format.XML).with("<multi-input-doc>true</multi-input-doc>");
 
 		result = resourceMgr.getResourceServices().put(params, writeHandles, new DOMHandle()).get();
 		assertNotNull("Failed to put resource service with multiple documents", result);
