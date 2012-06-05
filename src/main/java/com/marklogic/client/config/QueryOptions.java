@@ -1114,8 +1114,8 @@ public final class QueryOptions implements QueryAnnotations {
 				this.joinerText = joinerText;
 			}
 
-			public String getApply() {
-				return apply;
+			public JoinerApply getApply() {
+				return JoinerApply.valueOf(apply.toUpperCase());
 			};
 
 			public Comparator getComparator() {
@@ -1146,8 +1146,8 @@ public final class QueryOptions implements QueryAnnotations {
 				return strength;
 			}
 
-			public String getTokenize() {
-				return tokenize;
+			public Tokenize getTokenize() {
+				return Tokenize.valueOf(tokenize.toUpperCase());
 			}
 
 			public void setApply(JoinerApply apply) {
@@ -1282,16 +1282,6 @@ public final class QueryOptions implements QueryAnnotations {
 				this.tokenize = tokenize;
 			}
 
-			public QueryStarter withDelimiter(String delimiter) {
-				this.delimiter = delimiter;
-				return this;
-			}
-
-			public QueryStarter withStrength(int strength) {
-				this.strength = strength;
-				return this;
-			}
-
 		}
 
 		public enum Tokenize {
@@ -1421,6 +1411,15 @@ public final class QueryOptions implements QueryAnnotations {
 
 		public void setName(String name) {
 			this.name = name;
+		}
+
+		public QueryState getState(String name) {
+			for (QueryState state : getStates()) {
+				if (state.getName().equals(name)) {
+					return state;
+				}
+			}
+			return null;
 		}
 	}
 
@@ -1835,10 +1834,19 @@ public final class QueryOptions implements QueryAnnotations {
 		public void setScore() {
 			score = "";
 		}
+		
+		public Score getScore() {
+			return (this.score != null && this.score.equals("")) ? Score.YES : null;
+		}
+		
+		public void unsetScore() {
+			score = null;
+		}
 
 		public void setType(QName type) {
 			this.type = type;
 		}
+		
 
 	}
 

@@ -530,11 +530,9 @@ public class QueryOptionsHandleTest {
 				new QueryOptionsHandle());
 
 		Element e = options.getAdditionalQuery();
-		assertEquals("QueryString wrong after serializing AdditionalQuery", e
-				.getFirstChild().getNodeName(), "uri");
+		assertEquals("QueryString wrong after serializing AdditionalQuery", "uri", e.getNodeName());
 
-		Element uri = (Element) e.getFirstChild();
-		uri.setTextContent("/oscars2/");
+		e.setTextContent("/oscars2/");
 		options.build(builder.additionalQuery(e));
 		optionsString = options.toXMLString();
 
@@ -632,7 +630,7 @@ public class QueryOptionsHandleTest {
 				.getImplicit().getLocalName());
 		List<QueryJoiner> joiners = grammar.getJoiners();
 		assertEquals("joiner attribute incorrect", joiners.get(0).getApply(),
-				"infix");
+				JoinerApply.INFIX);
 		List<QueryStarter> starters = grammar.getStarters();
 		assertNull("starter attribute should be null", starters.get(1)
 				.getDelimiter());
@@ -738,7 +736,7 @@ public class QueryOptionsHandleTest {
 				builder.returnFacets(true),
 				builder.returnMetrics(false),
 				builder.additionalQuery("<cts:query xmlns:cts=\"http://marklogic.com/cts\" />"),
-				builder.searchableExpression("<e>/sf1</e>"), 
+				builder.searchableExpression("<searchable-expression xmlns=\"http://marklogic.com/appservices/search\">/sf1</searchable-expression>"), 
 				builder.annotation("<a:note xmlns:a=\"http://marklogic.com/note\">note</a:note>"),
 				builder.concurrencyLevel(2),
 				builder.debug(true),
@@ -765,9 +763,9 @@ public class QueryOptionsHandleTest {
 		assertEquals("/sf1", se.getTextContent());
 		
 		logger.debug("here is fragment-scope: " + options.getFragmentScope());
-		assertEquals(options.getFragmentScope(), "properties");
+		assertEquals(options.getFragmentScope(), FragmentScope.PROPERTIES);
 		options.setFragmentScope(FragmentScope.DOCUMENTS);
-		assertEquals(options.getFragmentScope(), "documents");
+		assertEquals(options.getFragmentScope(), FragmentScope.DOCUMENTS);
 	}
 
 	@Test

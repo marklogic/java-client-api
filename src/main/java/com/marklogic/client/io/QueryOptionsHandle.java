@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
+import javax.swing.SortOrder;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -452,6 +453,15 @@ public final class QueryOptionsHandle extends
 	
 	protected OutputStreamSender sendContent() {
 		return this;
+	}
+
+	public QueryOperator getOperator(String name) {
+		for (QueryOperator operator : optionsHolder.getQueryOperators()) {
+			if (operator.getName().equals(name)) {
+				return operator;
+			}
+		}
+		return null;
 	}
 
 }

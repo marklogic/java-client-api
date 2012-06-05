@@ -877,7 +877,7 @@ public final class QueryOptionsBuilder {
 	 * @param quotation
 	 *            optional string to qualify quotations in the search grammar.
 	 * @param implicit
-	 *            optional cts:element to wrap all searches implicitly.
+	 *            optional cts:element to wrap all searches implicitly.  Set to null for no implicit query.
 	 * @param grammarItems
 	 *            0..* QueryStarters and/or 0..* QueryJoiners to refine the
 	 *            search grammar.
@@ -1145,10 +1145,11 @@ public final class QueryOptionsBuilder {
 	 * @return Component for use in a QueryOptionsBuilder expression.
 	 */
 	public AnyElement searchableExpression(String searchableExpression) {
-		org.w3c.dom.Element targetElement = domElement("<search:searchable-expression xmlns:search=\"http://marklogic.com/appservices/search\" />");
 		org.w3c.dom.Element expression = domElement(searchableExpression);
-		targetElement.setTextContent(expression.getTextContent());
-		return new AnyElement(targetElement);
+		if (! expression.getLocalName().equals("searchable-expression")) {
+			throw new MarkLogicBindingException("Element name must be 'searchable-expression'");
+		}
+		return new AnyElement(expression);
 	}
 
 	public QueryOptionsTextItem<String> searchOption(String searchOption) {
