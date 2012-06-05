@@ -32,7 +32,6 @@ import org.w3c.dom.Document;
 import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.BinaryDocumentManager;
 import com.marklogic.client.BinaryDocumentManager.MetadataExtraction;
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputStreamHandle;
@@ -54,14 +53,12 @@ public class BinaryDocumentTest {
 
 	@Test
 	public void testReadWrite() throws IOException, XpathException {
-		String uri = "/test/binary-sample.png";
-
-		DocumentIdentifier docId = Common.client.newDocId(uri);
-		docId.setMimetype("image/png");
+		String docId = "/test/binary-sample.png";
+		String mimetype = "image/png";
 
 		BinaryDocumentManager docMgr = Common.client.newBinaryDocumentManager();
 		docMgr.setMetadataExtraction(MetadataExtraction.PROPERTIES);
-		docMgr.write(docId, new BytesHandle().with(BYTES_BINARY));
+		docMgr.write(docId, new BytesHandle().with(BYTES_BINARY).withMimetype(mimetype));
 
 		byte[] buf = docMgr.read(docId, new BytesHandle()).get();
 		assertEquals("Binary document read wrong number of bytes", BYTES_BINARY.length, buf.length);

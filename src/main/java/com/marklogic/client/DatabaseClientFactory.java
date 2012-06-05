@@ -60,7 +60,7 @@ public class DatabaseClientFactory {
 	}
 
 	/**
-	 * Connects to a database, creating a client to access the database.
+	 * Creates a client to access the database.
 	 * 
 	 * @param host
 	 * @param port
@@ -69,13 +69,13 @@ public class DatabaseClientFactory {
 	 * @param type
 	 * @return
 	 */
-	static public DatabaseClient connect(String host, int port, String user, String password, Authentication type) {
-		return connect(host, port, user, password, type, null, null);
+	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type) {
+		return newClient(host, port, user, password, type, null, null);
 	}
-	static public DatabaseClient connect(String host, int port, String user, String password, Authentication type, SSLContext context) {
-		return connect(host, port, user, password, type, context, SSLHostnameVerifier.COMMON);
+	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context) {
+		return newClient(host, port, user, password, type, context, SSLHostnameVerifier.COMMON);
 	}
-	static public DatabaseClient connect(String host, int port, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
+	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
 		RESTServices services = new JerseyServices();
 		services.connect(host, port, user, password, type, context, verifier);
 

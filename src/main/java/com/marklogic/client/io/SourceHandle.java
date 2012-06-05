@@ -104,8 +104,8 @@ public class SourceHandle
 		if (format != Format.XML)
 			new IllegalArgumentException("SourceHandle supports the XML format only");
 	}
-	public SourceHandle withFormat(Format format) {
-		setFormat(format);
+	public SourceHandle withMimetype(String mimetype) {
+		setMimetype(mimetype);
 		return this;
 	}
 

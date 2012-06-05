@@ -25,7 +25,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.FileHandle;
@@ -45,10 +44,8 @@ public class TextDocumentTest {
 
 	@Test
 	public void testReadWrite() throws IOException {
-		String uri = "/test/testWrite1.txt";
-		String text = "A simple text document";
-
-		DocumentIdentifier docId = Common.client.newDocId(uri);
+		String docId = "/test/testWrite1.txt";
+		String text  = "A simple text document";
 
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
 		docMgr.write(docId, new StringHandle().with(text));

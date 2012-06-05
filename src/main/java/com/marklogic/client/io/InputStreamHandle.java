@@ -85,6 +85,10 @@ public class InputStreamHandle
 		setFormat(format);
 		return this;
 	}
+	public InputStreamHandle withMimetype(String mimetype) {
+		setMimetype(mimetype);
+		return this;
+	}
 
 	@Override
 	protected Class<InputStream> receiveAs() {

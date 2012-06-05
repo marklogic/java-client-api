@@ -23,7 +23,6 @@ import java.util.Properties;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.GenericDocumentManager;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.InputStreamHandle;
@@ -60,7 +59,7 @@ public class DocumentFormats {
 				};
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// iterate over the files
 		for (String[] fileEntry: fileEntries) {
@@ -85,7 +84,7 @@ public class DocumentFormats {
 			throw new RuntimeException("Could not read document example");
 
 		// create an identifier for the document
-		DocumentIdentifier docId = client.newDocId("/example/"+filename);
+		String docId = "/example/"+filename;
 
 		// create a handle for the document
 		InputStreamHandle writeHandle = new InputStreamHandle(docStream);

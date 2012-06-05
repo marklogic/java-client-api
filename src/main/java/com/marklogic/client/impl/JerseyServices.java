@@ -30,8 +30,6 @@ import javax.net.ssl.SSLException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
-import com.marklogic.client.QueryManager;
-import com.marklogic.client.config.ValuesDefinition;
 import com.marklogic.client.config.ValuesListDefinition;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -55,12 +53,14 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.BadRequestException;
+import com.marklogic.client.ContentDescriptor;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
-import com.marklogic.client.DocumentIdentifier;
+import com.marklogic.client.DocumentDescriptor;
 import com.marklogic.client.ElementLocator;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.Format;
 import com.marklogic.client.KeyLocator;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.QueryManager;
@@ -74,7 +74,11 @@ import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.StringQueryDefinition;
 import com.marklogic.client.config.StructuredQueryDefinition;
 import com.marklogic.client.config.ValuesDefinition;
+import com.marklogic.client.io.BaseHandle;
+import com.marklogic.client.io.HandleAccessor;
 import com.marklogic.client.io.OutputStreamSender;
+import com.marklogic.client.io.marker.AbstractReadHandle;
+import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -254,12 +258,8 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public void deleteDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories)
+	public void deleteDocument(RequestLogger reqlog, String uri, String transactionId, Set<Metadata> categories)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		if (docId == null)
-			throw new IllegalArgumentException("Document delete with null document identifier");
-
-		String uri = docId.getUri();
 		if (uri == null)
 			throw new IllegalArgumentException("Document delete for document identifier without uri");
 
@@ -283,16 +283,62 @@ public class JerseyServices implements RESTServices {
 		logRequest(reqlog, "deleted %s document", uri);
 	}
 
-	// TODO: does an Input Stream or Reader handle need to cache the response so
-	// it can close the response?
-
 	@Override
-	public <T> T getDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, RequestParameters extraParams, String mimetype, Class<T> as)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		if (docId == null)
-			throw new IllegalArgumentException("Document read with null document identifier");
+	public void getDocument(RequestLogger reqlog, String uri, String transactionId,
+			Set<Metadata> categories, RequestParameters extraParams,
+			DocumentMetadataReadHandle metadataHandle, AbstractReadHandle contentHandle)
+	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
 
-		String uri = docId.getUri();
+		BaseHandle metadataBase = HandleAccessor.checkHandle(metadataHandle, "metadata");
+		BaseHandle contentBase  = HandleAccessor.checkHandle(contentHandle,  "content");
+
+		String metadataFormat   = null;
+		String metadataMimetype = null;
+		if (metadataBase != null) {
+			metadataFormat   = metadataBase.getFormat().toString().toLowerCase();
+			metadataMimetype = metadataBase.getMimetype();
+		}
+
+		String contentMimetype = null;
+		if (contentBase != null) {
+			contentMimetype = contentBase.getFormat().getDefaultMimetype();
+		}
+
+		if (metadataBase != null && contentBase != null) {
+			getDocumentImpl(
+					reqlog,
+					uri, 
+					transactionId,
+					categories,
+					extraParams,
+					metadataFormat,
+					metadataHandle, contentHandle
+					);
+		} else if (metadataBase != null) {
+			getDocumentImpl(
+					reqlog,
+					uri,
+					transactionId,
+					categories,
+					extraParams,
+					metadataMimetype,
+					metadataHandle
+					);
+		} else if (contentBase != null) {
+			getDocumentImpl(
+				reqlog,
+				uri,
+				transactionId,
+				null,
+				extraParams,
+				contentMimetype,
+				contentHandle
+				);
+		}
+	}
+
+	private void getDocumentImpl(RequestLogger reqlog, String uri, String transactionId, Set<Metadata> categories, RequestParameters extraParams, String mimetype, AbstractReadHandle handle)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (uri == null)
 			throw new IllegalArgumentException("Document read for document identifier without uri");
 
@@ -329,41 +375,32 @@ public class JerseyServices implements RESTServices {
 				stringJoin(categories, ", ", "no")
 				);
 
-		updateDocumentIdentifier(docId, response.getHeaders());
+		BaseHandle handleBase = HandleAccessor.as(handle);
+		updateDescriptor(handleBase, response.getHeaders());
 
-		T entity = response.getEntity(as);
+		Class as = HandleAccessor.receiveAs(handle);
+		Object entity = response.getEntity(as);
 		if (as != InputStream.class && as != Reader.class)
 			response.close();
 
-		return (reqlog != null) ? reqlog.copyContent(entity) : entity;
+		HandleAccessor.receiveContent(
+				handle,
+				(reqlog != null) ? reqlog.copyContent(entity) : entity
+				);
 	}
 
-	@Override
-	public Object[] getDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, RequestParameters extraParams, String[] mimetypes, Class[] as)
+	private void getDocumentImpl(RequestLogger reqlog, String uri, String transactionId,
+			Set<Metadata> categories, RequestParameters extraParams,
+			String metadataFormat, DocumentMetadataReadHandle metadataHandle, AbstractReadHandle contentHandle)
 	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		if (docId == null)
-			throw new IllegalArgumentException("Document read with null document identifier");
-
-		String uri = docId.getUri();
 		if (uri == null)
 			throw new IllegalArgumentException("Document read for document identifier without uri");
 
 		logger.info("Getting multipart for {} in transaction {}", uri, transactionId);
 
-		if (mimetypes == null || mimetypes.length == 0)
-			throw new BadRequestException("mime types not specified for read");
-		if (as == null || as.length == 0)
-			throw new BadRequestException("handle classes not specified for read");
-		if (mimetypes.length != as.length)
-			throw new BadRequestException(
-					"mistmatch between mime types and handle classes for read");
-
 		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
 				categories, transactionId, extraParams, true);
-		if (mimetypes[0].startsWith("application/")) {
-			docParams.add("format",
-					mimetypes[0].substring("application/".length()));
-		}
+		docParams.add("format",metadataFormat);
 
 		ClientResponse response = makeDocumentResource(docParams).accept(
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE))
@@ -391,40 +428,39 @@ public class JerseyServices implements RESTServices {
 				stringJoin(categories, ", ", "no")
 				);
 
-		updateDocumentIdentifier(docId, response.getHeaders());
-
 		MultiPart entity = response.getEntity(MultiPart.class);
 		if (entity == null)
-			return null;
+			return;
 
 		List<BodyPart> partList = entity.getBodyParts();
 		if (partList == null)
-			return null;
+			return;
 
 		int partCount = partList.size();
 		if (partCount == 0)
-			return null;
-		if (partCount != as.length)
-			throw new FailedRequestException("read expected " + as.length
-					+ " parts but got " + partCount + " parts");
+			return;
+		if (partCount != 2)
+			throw new FailedRequestException("read expected 2 parts but got " + partCount + " parts");
 
-		Object[] parts = new Object[partCount];
-		for (int i = 0; i < partCount; i++) {
-			Object part = partList.get(i).getEntityAs(as[i]);
-			parts[i] = (reqlog != null) ? reqlog.copyContent(part) : part;
-		}
+		BaseHandle contentBase = HandleAccessor.as(contentHandle);
+		updateDescriptor(contentBase, response.getHeaders());
+
+		HandleAccessor.receiveContent(
+				metadataHandle,
+				partList.get(0).getEntityAs(HandleAccessor.receiveAs(metadataHandle))
+				);
+
+		Object contentPart = partList.get(1).getEntityAs(HandleAccessor.receiveAs(contentHandle));
+		HandleAccessor.receiveContent(
+				contentHandle,
+				(reqlog != null) ? reqlog.copyContent(contentPart) : contentPart
+				);
 
 		response.close();
-
-		return parts;
 	}
 
 	@Override
-	public boolean head(RequestLogger reqlog, DocumentIdentifier docId, String transactionId) throws ForbiddenUserException, FailedRequestException {
-		if (docId == null)
-			throw new IllegalArgumentException("Existence check with null document identifier");
-
-		String uri = docId.getUri();
+	public DocumentDescriptor head(RequestLogger reqlog, String uri, String transactionId) throws ForbiddenUserException, FailedRequestException {
 		if (uri == null)
 			throw new IllegalArgumentException("Existence check for document identifier without uri");
 
@@ -439,7 +475,7 @@ public class JerseyServices implements RESTServices {
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
 		if (status == ClientResponse.Status.NOT_FOUND)
-			return false;
+			return null;
 		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException("User is not allowed to check the existence of documents");
 		if (status != ClientResponse.Status.OK)
@@ -450,17 +486,14 @@ public class JerseyServices implements RESTServices {
 				(transactionId != null) ? transactionId : "no"
 				);
 
-		updateDocumentIdentifier(docId, headers);
+		DocumentIdentifierImpl identifier = new DocumentIdentifierImpl(uri);
+		updateDescriptor(identifier, headers);
 
-		return true;
+		return identifier;
 	}
 	@Override
-	public void putDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, RequestParameters extraParams, String mimetype, Object value)
+	public void putDocument(RequestLogger reqlog, String uri, String transactionId, Set<Metadata> categories, RequestParameters extraParams, String mimetype, Object value)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		if (docId == null)
-			throw new IllegalArgumentException("Document write with null document identifier");
-
-		String uri = docId.getUri();
 		if (uri == null)
 			throw new IllegalArgumentException("Document write for document identifier without uri");
 
@@ -511,12 +544,8 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException("write failed: "+status.getReasonPhrase());
 	}
 	@Override
-	public void putDocument(RequestLogger reqlog, DocumentIdentifier docId, String transactionId, Set<Metadata> categories, RequestParameters extraParams, String[] mimetypes, Object[] values)
+	public void putDocument(RequestLogger reqlog, String uri, String transactionId, Set<Metadata> categories, RequestParameters extraParams, String[] mimetypes, Object[] values)
 	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		if (docId == null)
-			throw new IllegalArgumentException("Document write with null document identifier");
-
-		String uri = docId.getUri();
 		if (uri == null)
 			throw new IllegalArgumentException("Document write for document identifier without uri");
 
@@ -714,15 +743,24 @@ public class JerseyServices implements RESTServices {
 		return connection.path("documents").queryParams(queryParams);
 	}
 
-	private void updateDocumentIdentifier(DocumentIdentifier docId, MultivaluedMap<String, String> headers) {
+	private void updateDescriptor(ContentDescriptor descriptor, MultivaluedMap<String, String> headers) {
 		if (headers == null) return;
 
 		List<String> values = null;
-		if (docId.getMimetype() == null && headers.containsKey("Content-Type")) {
+		if (descriptor.getFormat() == null && headers.containsKey("vnd.marklogic.document-format")) {
+			values = headers.get("vnd.marklogic.document-format");
+			if (values != null) {
+				Format format = Format.valueOf(values.get(0).toUpperCase());
+				if (format != null) {
+					descriptor.setFormat(format);
+				}
+			}
+		}
+		if (descriptor.getMimetype() == null && headers.containsKey("Content-Type")) {
 			values = headers.get("Content-Type");
 			if (values != null) {
 				String type = values.get(0);
-				docId.setMimetype(
+				descriptor.setMimetype(
 						type.contains(";") ? type.substring(0, type.indexOf(";")) : type
 						);
 			}
@@ -730,7 +768,7 @@ public class JerseyServices implements RESTServices {
 		if (headers.containsKey("Content-Length")) {
 			values = headers.get("Content-Length");
 			if (values != null) {
-				docId.setByteLength(
+				descriptor.setByteLength(
 						Integer.valueOf(values.get(0))
 						);
 			}

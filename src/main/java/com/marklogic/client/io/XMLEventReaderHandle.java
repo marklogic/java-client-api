@@ -78,8 +78,8 @@ public class XMLEventReaderHandle
 		if (format != Format.XML)
 			new IllegalArgumentException("XMLEventReaderHandle supports the XML format only");
 	}
-	public XMLEventReaderHandle withFormat(Format format) {
-		setFormat(format);
+	public XMLEventReaderHandle withMimetype(String mimetype) {
+		setMimetype(mimetype);
 		return this;
 	}
 

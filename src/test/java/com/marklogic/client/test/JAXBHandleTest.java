@@ -29,7 +29,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.io.JAXBHandle;
 import com.marklogic.client.test.util.Referred;
@@ -47,7 +46,7 @@ public class JAXBHandleTest {
 
 	@Test
 	public void testReadWriteJAXB() throws JAXBException {
-		String uri = "/test/jaxbWrite1.xml";
+		String docId = "/test/jaxbWrite1.xml";
 
 		HashMap<String,Integer> map = new HashMap<String,Integer>();
 		map.put("alpha", 1);
@@ -61,8 +60,6 @@ public class JAXBHandleTest {
 		refers.child = new Referred();
 		refers.map   = map;
 		refers.list  = list;
-
-		DocumentIdentifier docId = Common.client.newDocId(uri);
 
 		JAXBContext context      = JAXBContext.newInstance(Refers.class);
 		JAXBHandle  objectHandle = new JAXBHandle(context);

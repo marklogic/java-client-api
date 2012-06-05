@@ -25,7 +25,6 @@ import org.w3c.dom.Document;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputStreamHandle;
@@ -56,13 +55,13 @@ public class DocumentRead {
 		String filename = "flipper.xml";
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// create a manager for XML documents
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
 		// create an identifier for the document
-		DocumentIdentifier docId = client.newDocId("/example/"+filename);
+		String docId = "/example/"+filename;
 
 		setUpExample(docMgr, docId, filename);
 
@@ -85,7 +84,7 @@ public class DocumentRead {
 	}
 
 	// set up by writing document content for the example to read
-	public static void setUpExample(XMLDocumentManager docMgr, DocumentIdentifier docId, String filename) {
+	public static void setUpExample(XMLDocumentManager docMgr, String docId, String filename) {
 		InputStream docStream = DocumentRead.class.getClassLoader().getResourceAsStream(
 				"data"+File.separator+filename);
 		if (docStream == null)
@@ -98,7 +97,7 @@ public class DocumentRead {
 	}
 
 	// clean up by deleting the document read by the example
-	public static void tearDownExample(XMLDocumentManager docMgr, DocumentIdentifier docId) {
+	public static void tearDownExample(XMLDocumentManager docMgr, String docId) {
 		docMgr.delete(docId);
 	}
 

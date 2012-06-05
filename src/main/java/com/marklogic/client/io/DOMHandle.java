@@ -82,12 +82,13 @@ public class DOMHandle
     	return this;
     }
 
+    @Override
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			new IllegalArgumentException("DOMHandle supports the XML format only");
 	}
-	public DOMHandle withFormat(Format format) {
-		setFormat(format);
+	public DOMHandle withMimetype(String mimetype) {
+		setMimetype(mimetype);
 		return this;
 	}
 

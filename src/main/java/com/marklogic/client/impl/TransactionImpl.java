@@ -19,6 +19,7 @@ import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.RequestLogger;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.HandleAccessor;
 import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
@@ -43,7 +44,10 @@ class TransactionImpl implements Transaction {
 
 	@Override
 	public <T extends StructureReadHandle> T readStatus(T handle) throws ForbiddenUserException, FailedRequestException {
-		HandleAccessor.checkHandle(handle, "structure");
+		if (handle == null)
+			throw new IllegalArgumentException("reading transaction status with null handle");
+
+		BaseHandle handleBase = HandleAccessor.checkHandle(handle, "structure");
 
 		HandleAccessor.receiveContent(
 				handle,
@@ -51,7 +55,7 @@ class TransactionImpl implements Transaction {
 						null,
 						"transactions",
 						getTransactionId(),
-						HandleAccessor.getFormat(handle).getDefaultMimetype(),
+						handleBase.getMimetype(),
 						HandleAccessor.receiveAs(handle)
 						)
 				);

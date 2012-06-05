@@ -15,45 +15,54 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.DocumentIdentifier;
+import com.marklogic.client.DocumentDescriptor;
+import com.marklogic.client.Format;
 
-public class DocumentIdentifierImpl implements DocumentIdentifier {
+public class DocumentIdentifierImpl implements DocumentDescriptor {
 	private String uri;
-	private long   byteLength = UNKNOWN_LENGTH;
+	private Format format;
 	private String mimetype;
+	private long   byteLength = UNKNOWN_LENGTH;
 
 	public DocumentIdentifierImpl(String uri) {
 		super();
 		setUri(uri);
 	}
 
+	@Override
 	public String getUri() {
 		return uri;
 	}
+	@Override
 	public void setUri(String uri) {
 		this.uri = uri;
 		if (byteLength != UNKNOWN_LENGTH)
 			byteLength = UNKNOWN_LENGTH;
 	}
-	public DocumentIdentifier withUri(String uri) {
-		setUri(uri);
-		return this;
+
+	@Override
+	public Format getFormat() {
+		return format;
+	}
+	@Override
+	public void setFormat(Format format) {
+		this.format = format;
 	}
 
+	@Override
 	public String getMimetype() {
 		return mimetype;
 	}
+	@Override
 	public void setMimetype(String mimetype) {
 		this.mimetype = mimetype;
 	}
-	public DocumentIdentifier withMimetype(String mimetype) {
-		setMimetype(mimetype);
-		return this;
-	}
 
+	@Override
 	public long getByteLength() {
     	return byteLength;
     }
+	@Override
 	public void setByteLength(long length) {
     	byteLength = length;
     }

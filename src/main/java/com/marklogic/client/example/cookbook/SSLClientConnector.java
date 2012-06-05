@@ -30,7 +30,6 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
 
@@ -80,11 +79,11 @@ public class SSLClientConnector {
 
 		// connect the client
 		// (note: a real application should use a COMMON, STRICT, or implemented hostname verifier)
-		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, Authentication.DIGEST, sslContext, SSLHostnameVerifier.ANY);
+		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST, sslContext, SSLHostnameVerifier.ANY);
 
 		// make use of the client connection
 		TextDocumentManager docMgr = client.newTextDocumentManager();
-		DocumentIdentifier docId = client.newDocId("/example/text.txt");
+		String docId = "/example/text.txt";
 		StringHandle handle = new StringHandle();
 		handle.set("A simple text document");
 		docMgr.write(docId, handle);

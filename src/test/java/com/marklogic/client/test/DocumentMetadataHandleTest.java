@@ -35,7 +35,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.AbstractDocumentManager.Metadata;
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
@@ -56,14 +55,12 @@ public class DocumentMetadataHandleTest {
 
 	@Test
 	public void testReadWriteMetadata() throws SAXException, IOException, XpathException, ParserConfigurationException {
-		String uri = "/test/testMetadataXML1.xml";
+		String docId   = "/test/testMetadataXML1.xml";
 		String content = "<?xml version='1.0' encoding='UTF-8'?>\n"+
 			"<root mode='mixed' xml:lang='en'>\n"+
 			"<child mode='basic'>value</child>\n"+
 			"A simple XML document\n"+
 			"</root>\n";
-
-		DocumentIdentifier docId = Common.client.newDocId(uri);
 
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		docMgr.write(docId, new StringHandle().with(content));

@@ -23,7 +23,7 @@ import com.marklogic.client.AbstractDocumentManager.Metadata;
 import com.marklogic.client.BadRequestException;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
-import com.marklogic.client.DocumentIdentifier;
+import com.marklogic.client.DocumentDescriptor;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.QueryManager;
@@ -33,6 +33,8 @@ import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.ValuesDefinition;
 import com.marklogic.client.config.ValuesListDefinition;
+import com.marklogic.client.io.marker.AbstractReadHandle;
+import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.sun.jersey.api.client.ClientResponse;
 
 public interface RESTServices {
@@ -40,21 +42,22 @@ public interface RESTServices {
 			SSLContext context, SSLHostnameVerifier verifier);
 	public void release();
 
-	public void deleteDocument(RequestLogger logger, DocumentIdentifier docId, String transactionId,
+	public void deleteDocument(RequestLogger logger, String uri, String transactionId,
 			Set<Metadata> categories)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public <T> T getDocument(RequestLogger logger, DocumentIdentifier docId, String transactionId,
-			Set<Metadata> categories, RequestParameters extraParams, String mimetype, Class<T> as)
-		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public Object[] getDocument(RequestLogger logger, DocumentIdentifier docId, String transactionId,
-			Set<Metadata> categories, RequestParameters extraParams, String[] mimetypes, Class[] as)
-		throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public boolean head(RequestLogger logger, DocumentIdentifier docId, String transactionId)
+
+	public void getDocument(RequestLogger logger, String uri, String transactionId,
+			Set<Metadata> categories, RequestParameters extraParams,
+			DocumentMetadataReadHandle metadataHandle, AbstractReadHandle contentHandle)
+		throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+
+	public DocumentDescriptor head(RequestLogger logger, String uri, String transactionId)
 		throws ForbiddenUserException, FailedRequestException;
-	public void putDocument(RequestLogger logger, DocumentIdentifier docId, String transactionId,
+
+	public void putDocument(RequestLogger logger, String uri, String transactionId,
 			Set<Metadata> categories, RequestParameters extraParams, String mimetype, Object value)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public void putDocument(RequestLogger logger, DocumentIdentifier docId, String transactionId,
+	public void putDocument(RequestLogger logger, String uri, String transactionId,
 			Set<Metadata> categories, RequestParameters extraParams, String[] mimetypes, Object[] values)
 		throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 

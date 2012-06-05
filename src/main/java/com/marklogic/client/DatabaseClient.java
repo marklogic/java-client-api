@@ -40,8 +40,6 @@ public interface DatabaseClient {
 
 	public Transaction openTransaction(String name, int timeLimit) throws ForbiddenUserException, FailedRequestException;
 
-	public DocumentIdentifier newDocId(String uri);
-
     // factory methods for document managers
     public GenericDocumentManager newDocumentManager();
     public BinaryDocumentManager  newBinaryDocumentManager();

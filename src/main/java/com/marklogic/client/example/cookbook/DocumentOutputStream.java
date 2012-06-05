@@ -24,7 +24,6 @@ import java.util.Properties;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.io.OutputStreamHandle;
 import com.marklogic.client.io.OutputStreamSender;
@@ -58,13 +57,13 @@ public class DocumentOutputStream {
 		final String FILENAME = "flipper.xml";
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// create a manager for XML documents
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
 		// create an identifier for the document
-		DocumentIdentifier docId = client.newDocId("/example/"+FILENAME);
+		String docId = "/example/"+FILENAME;
 
 		// create an anonymous class with a callback method
 		OutputStreamSender sender = new OutputStreamSender() {
@@ -100,7 +99,7 @@ public class DocumentOutputStream {
 	}
 
 	// clean up by deleting the document that the example wrote
-	public static void tearDownExample(XMLDocumentManager docMgr, DocumentIdentifier docId) {
+	public static void tearDownExample(XMLDocumentManager docMgr, String docId) {
 		docMgr.delete(docId);
 	}
 

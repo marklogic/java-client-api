@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.BinaryDocumentManager;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.GenericDocumentManager;
@@ -61,11 +60,6 @@ public class DatabaseClientImpl implements DatabaseClient {
 	@Override
 	public Transaction openTransaction(String name, int timeLimit) throws ForbiddenUserException, FailedRequestException{
 		return new TransactionImpl(services, services.openTransaction(name, timeLimit));
-	}
-
-	@Override
-	public DocumentIdentifier newDocId(String uri) {
-		return new DocumentIdentifierImpl(uri);
 	}
 
 	@Override

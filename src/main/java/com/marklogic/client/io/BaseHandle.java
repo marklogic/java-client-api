@@ -1,19 +1,47 @@
 package com.marklogic.client.io;
 
+import com.marklogic.client.ContentDescriptor;
 import com.marklogic.client.Format;
 
-public abstract class BaseHandle<R,W> {
-	private Format format = Format.XML;
+public abstract class BaseHandle<R,W>
+    implements ContentDescriptor
+{
+	private Format format = Format.UNKNOWN;
+	private String mimetype;
+	private long length = UNKNOWN_LENGTH;
 
 	public BaseHandle() {
 		super();
 	}
 
+	@Override
 	public Format getFormat() {
 		return format;
 	}
+	@Override
 	public void setFormat(Format format) {
 		this.format = format;
+	}
+
+	@Override
+	public String getMimetype() {
+		if (mimetype == null && format != null)
+			return format.getDefaultMimetype();
+
+		return mimetype;
+	}
+	@Override
+	public void setMimetype(String mimetype) {
+		this.mimetype = mimetype;
+	}
+
+	@Override
+	public long getByteLength() {
+		return length;
+	}
+	@Override
+	public void setByteLength(long length) {
+		this.length = length;
 	}
 
 	/**

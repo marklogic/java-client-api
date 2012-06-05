@@ -31,7 +31,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.AbstractDocumentManager.Metadata;
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.Format;
 import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.Transaction;
@@ -51,22 +50,18 @@ public class GenericDocumentTest {
 
 	@Test
 	public void testExists() {
-		String uri = "/test/testExists1.txt";
-
-		DocumentIdentifier docId = Common.client.newDocId(uri);
+		String docId = "/test/testExists1.txt";
 
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
-		assertTrue("Non-existent document appears to exist", !docMgr.exists(docId));
+		assertTrue("Non-existent document appears to exist", docMgr.exists(docId)==null);
 		docMgr.write(docId,new StringHandle().with("A simple text document"));
-		assertTrue("Existent document doesn't appear to exist", docMgr.exists(docId));
+		assertTrue("Existent document doesn't appear to exist", docMgr.exists(docId)!=null);
 		docMgr.delete(docId);
 	}
 
 	@Test
 	public void testDelete() {
-		String uri = "/test/testDelete1.txt";
-
-		DocumentIdentifier docId = Common.client.newDocId(uri);
+		String docId = "/test/testDelete1.txt";
 
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
 		docMgr.write(docId, new StringHandle().with("A simple text document"));
@@ -112,9 +107,7 @@ public class GenericDocumentTest {
 
 	@Test
 	public void testReadWriteMetadata() throws SAXException, IOException, XpathException {
-		String uri = "/test/testMetadataXML1.xml";
-
-		DocumentIdentifier docId = Common.client.newDocId(uri);
+		String docId = "/test/testMetadataXML1.xml";
 
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		docMgr.write(docId, new StringHandle().with(content));
@@ -143,8 +136,7 @@ public class GenericDocumentTest {
 		assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",stringMetadata);
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='3'])",stringMetadata);
 
-		String uri2 = "/test/testMetadataXML2.xml";
-		docId.setUri(uri2);
+		docId = "/test/testMetadataXML2.xml";
 		docMgr.write(docId, new StringHandle().with(metadata), new StringHandle().with(content));
 		docText = docMgr.read(docId, xmlStringHandle, new StringHandle()).get();
 		stringMetadata = xmlStringHandle.get();
@@ -165,11 +157,8 @@ public class GenericDocumentTest {
 
 	@Test
 	public void testCommit() throws XpathException {
-		String uri1 = "/test/testExists1.txt";
-		String uri2 = "/test/testExists2.txt";
-
-		DocumentIdentifier docId1 = Common.client.newDocId(uri1);
-		DocumentIdentifier docId2 = Common.client.newDocId(uri2);
+		String docId1 = "/test/testExists1.txt";
+		String docId2 = "/test/testExists2.txt";
 
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
 		docMgr.write(docId1,new StringHandle().with("A simple text document"));
@@ -188,19 +177,16 @@ public class GenericDocumentTest {
 
 		transaction.commit();
 
-		assertTrue("Document 1 exists",        !docMgr.exists(docId1));
-		assertTrue("Document 2 doesn't exist",  docMgr.exists(docId2));
+		assertTrue("Document 1 exists",        docMgr.exists(docId1)==null);
+		assertTrue("Document 2 doesn't exist", docMgr.exists(docId2)!=null);
 
 		docMgr.delete(docId2);
 	}
 
 	@Test
 	public void testRollback() {
-		String uri1 = "/test/testExists1.txt";
-		String uri2 = "/test/testExists2.txt";
-
-		DocumentIdentifier docId1 = Common.client.newDocId(uri1);
-		DocumentIdentifier docId2 = Common.client.newDocId(uri2);
+		String docId1 = "/test/testExists1.txt";
+		String docId2 = "/test/testExists2.txt";
 
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
 		docMgr.write(docId1,new StringHandle().with("A simple text document"));
@@ -211,8 +197,8 @@ public class GenericDocumentTest {
 		docMgr.delete(docId1, transaction);
 		transaction.rollback();
 
-		assertTrue("Document 1 doesn't exist",  docMgr.exists(docId1));
-		assertTrue("Document 2 exists",        !docMgr.exists(docId2));
+		assertTrue("Document 1 doesn't exist", docMgr.exists(docId1)!=null);
+		assertTrue("Document 2 exists",        docMgr.exists(docId2)==null);
 
 		docMgr.delete(docId1);
 	}

@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.io;
 
-import com.marklogic.client.DocumentIdentifier;
+import com.marklogic.client.DocumentDescriptor;
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.config.CountedDistinctValue;

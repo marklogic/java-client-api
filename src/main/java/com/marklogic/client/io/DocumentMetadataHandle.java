@@ -249,6 +249,7 @@ public class DocumentMetadataHandle
 
 	public DocumentMetadataHandle() {
 		super();
+		super.setFormat(Format.XML);
 	}
 
 	public DocumentCollections getCollections() {
@@ -285,9 +286,10 @@ public class DocumentMetadataHandle
 		this.quality = quality;
 	}
 
-	public DocumentMetadataHandle withFormat(Format format) {
-		setFormat(format);
-		return this;
+    @Override
+	public void setFormat(Format format) {
+		if (format != Format.XML)
+			new IllegalArgumentException("DocumentMetadataHandle supports the XML format only");
 	}
 
 	@Override

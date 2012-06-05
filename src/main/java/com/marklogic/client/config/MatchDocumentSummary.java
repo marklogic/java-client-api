@@ -15,10 +15,9 @@
  */
 package com.marklogic.client.config;
 
-import com.marklogic.client.DocumentIdentifier;
 import org.w3c.dom.Document;
 
-public interface MatchDocumentSummary extends DocumentIdentifier {
+public interface MatchDocumentSummary {
     public String getUri();
     public int    getScore();
     public double getConfidence();

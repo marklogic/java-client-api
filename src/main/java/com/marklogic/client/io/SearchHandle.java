@@ -37,7 +37,6 @@ import com.marklogic.client.MarkLogicInternalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.config.FacetHeatmapValue;
@@ -290,46 +289,6 @@ public class SearchHandle
             }
 
             return locations;
-        }
-
-        @Override
-        public void setUri(String uri) {
-            throw new UnsupportedOperationException("Cannot set URI on MatchDocumentSummary");
-        }
-
-        @Override
-        public DocumentIdentifier withUri(String uri) {
-            if (uri != null && uri.equals(this.uri)) {
-                return this;
-            } else {
-                throw new UnsupportedOperationException("Cannot set URI on MatchDocumentSummary");
-            }
-        }
-
-        @Override
-        public String getMimetype() {
-            return mimetype;
-        }
-
-        @Override
-        public void setMimetype(String mimetype) {
-            this.mimetype = mimetype;
-        }
-
-        @Override
-        public DocumentIdentifier withMimetype(String mimetype) {
-            setMimetype(mimetype);
-            return this;
-        }
-
-        @Override
-        public long getByteLength() {
-            return byteLength;
-        }
-
-        @Override
-        public void setByteLength(long length) {
-            byteLength = length;
         }
 
         public void addLocation(MatchLocation loc) {

@@ -61,6 +61,10 @@ public class StringHandle
 		setFormat(format);
 		return this;
 	}
+	public StringHandle withMimetype(String mimetype) {
+		setMimetype(mimetype);
+		return this;
+	}
 
 	@Override
 	protected Class<String> receiveAs() {

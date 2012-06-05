@@ -30,6 +30,7 @@ import com.marklogic.client.config.StructuredQueryBuilder;
 import com.marklogic.client.config.ValuesListDefinition;
 import com.marklogic.client.io.HandleAccessor;
 import com.marklogic.client.config.ValuesDefinition;
+import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.ValuesHandle;
 import com.marklogic.client.io.ValuesListHandle;
@@ -128,20 +129,25 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     }
 
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction) {
-		HandleAccessor.checkHandle(searchHandle, "search");
+		BaseHandle searchBase = HandleAccessor.checkHandle(searchHandle, "search");
 
         if (searchHandle instanceof SearchHandle) {
             ((SearchHandle) searchHandle).setQueryCriteria(querydef);
         }
-        String mimetype = null;
-        Format searchFormat = HandleAccessor.getFormat(searchHandle);
-        if (searchFormat == Format.XML) {
-            mimetype = "application/xml";            
-        } else if (searchFormat == Format.JSON) {
-            mimetype = "application/json";
-        } else {
+
+        Format searchFormat = searchBase.getFormat();
+        switch(searchFormat) {
+        case UNKNOWN:
+        	searchFormat = Format.XML;
+        	break;
+        case JSON:
+        case XML:
+        	break;
+        default:
             throw new UnsupportedOperationException("Only XML and JSON search results are possible.");
         }
+
+        String mimetype = searchFormat.getDefaultMimetype();
 
         String tid = transaction == null ? null : transaction.getTransactionId();
         HandleAccessor.receiveContent(searchHandle, services.search(HandleAccessor.receiveAs(searchHandle), querydef, mimetype, start, pageLen, views, tid));
@@ -155,17 +161,24 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 
     @Override
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valuesHandle, Transaction transaction) {
-        HandleAccessor.checkHandle(valuesHandle, "values");
+    	BaseHandle valuesBase = HandleAccessor.checkHandle(valuesHandle, "values");
 
         if (valuesHandle instanceof ValuesHandle) {
             ((ValuesHandle) valuesHandle).setQueryCriteria(valdef);
         }
-        String mimetype = null;
-        if (HandleAccessor.getFormat(valuesHandle) == Format.XML) {
-            mimetype = "application/xml";
-        } else {
+
+        Format valuesFormat = valuesBase.getFormat();
+        switch(valuesFormat) {
+        case UNKNOWN:
+        	valuesFormat = Format.XML;
+        	break;
+        case XML:
+        	break;
+        default:
             throw new UnsupportedOperationException("Only XML values results are possible.");
         }
+
+        String mimetype = valuesFormat.getDefaultMimetype();
 
         String tid = transaction == null ? null : transaction.getTransactionId();
         HandleAccessor.receiveContent(valuesHandle, services.values(HandleAccessor.receiveAs(valuesHandle), valdef, mimetype, tid));
@@ -179,14 +192,20 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 
     @Override
     public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valuesHandle, Transaction transaction) {
-        HandleAccessor.checkHandle(valuesHandle, "valueslist");
+    	BaseHandle valuesBase = HandleAccessor.checkHandle(valuesHandle, "valueslist");
 
-        String mimetype = null;
-        if (HandleAccessor.getFormat(valuesHandle) == Format.XML) {
-            mimetype = "application/xml";
-        } else {
+        Format valuesFormat = valuesBase.getFormat();
+        switch(valuesFormat) {
+        case UNKNOWN:
+        	valuesFormat = Format.XML;
+        	break;
+        case XML:
+        	break;
+        default:
             throw new UnsupportedOperationException("Only XML values list results are possible.");
         }
+
+        String mimetype = valuesFormat.getDefaultMimetype();
 
         String tid = transaction == null ? null : transaction.getTransactionId();
         HandleAccessor.receiveContent(valuesHandle, services.valuesList(HandleAccessor.receiveAs(valuesHandle), valdef, mimetype, tid));
@@ -200,14 +219,20 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 
     @Override
     public <T extends QueryOptionsListReadHandle> T optionsList(T optionsHandle, Transaction transaction) {
-        HandleAccessor.checkHandle(optionsHandle, "optionslist");
+    	BaseHandle optionsBase = HandleAccessor.checkHandle(optionsHandle, "optionslist");
 
-        String mimetype = null;
-        if (HandleAccessor.getFormat(optionsHandle) == Format.XML) {
-            mimetype = "application/xml";
-        } else {
-            throw new UnsupportedOperationException("Only XML values list results are possible.");
+        Format optionsFormat = optionsBase.getFormat();
+        switch(optionsFormat) {
+        case UNKNOWN:
+        	optionsFormat = Format.XML;
+        	break;
+        case XML:
+        	break;
+        default:
+            throw new UnsupportedOperationException("Only XML options list results are possible.");
         }
+
+        String mimetype = optionsFormat.getDefaultMimetype();
 
         String tid = transaction == null ? null : transaction.getTransactionId();
         HandleAccessor.receiveContent(optionsHandle, services.optionsList(HandleAccessor.receiveAs(optionsHandle), mimetype, tid));

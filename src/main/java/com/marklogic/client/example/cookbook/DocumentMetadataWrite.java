@@ -23,7 +23,6 @@ import java.util.Properties;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.InputStreamHandle;
@@ -56,7 +55,7 @@ public class DocumentMetadataWrite {
 		String filename = "flipper.xml";
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// acquire the content
 		InputStream docStream = DocumentMetadataWrite.class.getClassLoader().getResourceAsStream(
@@ -68,7 +67,7 @@ public class DocumentMetadataWrite {
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
 		// create an identifier for the document
-		DocumentIdentifier docId = client.newDocId("/example/"+filename);
+		String docId = "/example/"+filename;
 
 		// create and initialize a handle on the metadata
 		DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
@@ -93,7 +92,7 @@ public class DocumentMetadataWrite {
 	}
 
 	// clean up by deleting the document that the example wrote
-	public static void tearDownExample(XMLDocumentManager docMgr, DocumentIdentifier docId) {
+	public static void tearDownExample(XMLDocumentManager docMgr, String docId) {
 		docMgr.delete(docId);
 	}
 

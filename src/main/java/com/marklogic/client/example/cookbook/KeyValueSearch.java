@@ -25,7 +25,6 @@ import javax.xml.namespace.QName;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.config.KeyValueQueryDefinition;
@@ -61,7 +60,7 @@ public class KeyValueSearch {
 		System.out.println("example: "+KeyValueSearch.class.getName());
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		setUpExample(client);
 
@@ -115,8 +114,6 @@ public class KeyValueSearch {
 	public static void setUpExample(DatabaseClient client) {
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		DocumentIdentifier docId = client.newDocId(null);
-
 		InputStreamHandle contentHandle = new InputStreamHandle();
 
 		for (String filename: filenames) {
@@ -125,11 +122,9 @@ public class KeyValueSearch {
 			if (docStream == null)
 				throw new RuntimeException("Could not read document example");
 
-			docId.setUri("/example/"+filename);
-
 			contentHandle.set(docStream);
 
-			docMgr.write(docId, contentHandle);
+			docMgr.write("/example/"+filename, contentHandle);
 		}
 	}
 
@@ -137,12 +132,8 @@ public class KeyValueSearch {
 	public static void tearDownExample(DatabaseClient client) {
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		DocumentIdentifier docId = client.newDocId(null);
-
 		for (String filename: filenames) {
-			docId.setUri("/example/"+filename);
-
-			docMgr.delete(docId);
+			docMgr.delete("/example/"+filename);
 		}
 	}
 

@@ -21,7 +21,6 @@ import java.util.Properties;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.StringHandle;
@@ -50,11 +49,11 @@ public class ClientConnector {
 		System.out.println("example: "+ClientConnector.class.getName());
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// make use of the client connection
 		TextDocumentManager docMgr = client.newTextDocumentManager();
-		DocumentIdentifier docId = client.newDocId("/example/text.txt");
+		String docId = "/example/text.txt";
 		StringHandle handle = new StringHandle();
 		handle.set("A simple text document");
 		docMgr.write(docId, handle);

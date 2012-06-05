@@ -67,6 +67,10 @@ public class OutputStreamHandle
 		setFormat(format);
 		return this;
 	}
+	public OutputStreamHandle withMimetype(String mimetype) {
+		setMimetype(mimetype);
+		return this;
+	}
 
 	public OutputStreamSender get() {
 		return sender;

@@ -54,7 +54,7 @@ public class AllExamples {
 		JAXBDocument.run(          host, port, writer_user, writer_password, authType );
 		KeyValueSearch.run(        host, port, writer_user, writer_password, authType );
 		QueryOptions.run(          host, port, admin_user,  admin_password,  authType );
-		StringSearch.run(
+ 		StringSearch.run(
 				host, port, admin_user, admin_password, writer_user, writer_password, authType);
 		MultiStatementTransaction.run(
 				host, port, writer_user, writer_password, authType);

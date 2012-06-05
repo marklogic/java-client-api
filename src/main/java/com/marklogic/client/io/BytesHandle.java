@@ -72,6 +72,10 @@ public class BytesHandle
 		setFormat(format);
 		return this;
 	}
+	public BytesHandle withMimetype(String mimetype) {
+		setMimetype(mimetype);
+		return this;
+	}
 
 	protected Class<byte[]> receiveAs() {
 		return byte[].class;

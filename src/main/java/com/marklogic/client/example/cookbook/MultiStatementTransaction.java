@@ -22,7 +22,6 @@ import java.util.Properties;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -56,16 +55,16 @@ public class MultiStatementTransaction {
 		String afterFilename  = "flapped.xml";
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// create a manager for XML documents
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
 		// create an identifier for the document before the move
-		DocumentIdentifier beforeDocId = client.newDocId("/example/"+beforeFilename);
+		String beforeDocId = "/example/"+beforeFilename;
 
 		// create an identifier for the document after the move
-		DocumentIdentifier afterDocId = client.newDocId("/example/"+afterFilename);
+		String afterDocId = "/example/"+afterFilename;
 
 		setUpExample(docMgr, beforeDocId, beforeFilename);
 
@@ -96,7 +95,7 @@ public class MultiStatementTransaction {
 	}
 
 	// set up by writing document content for the example to read
-	public static void setUpExample(XMLDocumentManager docMgr, DocumentIdentifier docId, String filename) {
+	public static void setUpExample(XMLDocumentManager docMgr, String docId, String filename) {
 		InputStream docStream = DocumentRead.class.getClassLoader().getResourceAsStream(
 				"data"+File.separator+filename);
 		if (docStream == null)
@@ -109,7 +108,7 @@ public class MultiStatementTransaction {
 	}
 
 	// clean up by deleting the document read by the example
-	public static void tearDownExample(XMLDocumentManager docMgr, DocumentIdentifier docId) {
+	public static void tearDownExample(XMLDocumentManager docMgr, String docId) {
 		docMgr.delete(docId);
 	}
 

@@ -15,7 +15,6 @@
  */
 package com.marklogic.client.test;
 
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.GenericDocumentManager;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.TextDocumentManager;
@@ -78,7 +77,7 @@ public class StructuredSearchTest {
         MatchDocumentSummary summary = queryMgr.findOne(t);
         if (summary != null) {
             GenericDocumentManager docMgr = Common.client.newDocumentManager();
-            assertTrue("Document exists", docMgr.exists(summary));
+            assertTrue("Document exists", docMgr.exists(summary.getUri())!=null);
         }
     }
 }

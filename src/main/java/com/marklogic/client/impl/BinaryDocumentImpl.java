@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.BinaryDocumentManager;
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.RequestParameters;
@@ -42,36 +41,35 @@ class BinaryDocumentImpl
 	}
 
 	@Override
-	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, T contentHandle, long start, long length) {
-		return read(docId, null, contentHandle, null, start, length, null);
+	public <T extends BinaryReadHandle> T read(String uri, T contentHandle, long start, long length) {
+		return read(uri, null, contentHandle, null, start, length, null);
 	}
 	@Override
-	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, T contentHandle, ServerTransform transform, long start, long length) {
-		return read(docId, null, contentHandle, transform, start, length, null);
+	public <T extends BinaryReadHandle> T read(String uri, T contentHandle, ServerTransform transform, long start, long length) {
+		return read(uri, null, contentHandle, transform, start, length, null);
 	}
 	@Override
-	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length) {
-		return read(docId, metadataHandle, contentHandle, null, start, length, null);
+	public <T extends BinaryReadHandle> T read(String uri, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length) {
+		return read(uri, metadataHandle, contentHandle, null, start, length, null);
 	}
 	@Override
-	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length) {
-		return read(docId, metadataHandle, contentHandle, transform, start, length, null);
+	public <T extends BinaryReadHandle> T read(String uri, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length) {
+		return read(uri, metadataHandle, contentHandle, transform, start, length, null);
 	}
 	@Override
-	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, T contentHandle, long start, long length, Transaction transaction) {
-		return read(docId, null, contentHandle, null, start, length, transaction);
+	public <T extends BinaryReadHandle> T read(String uri, T contentHandle, long start, long length, Transaction transaction) {
+		return read(uri, null, contentHandle, null, start, length, transaction);
 	}
 	@Override
-	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction) {
-		return read(docId, null, contentHandle, transform, start, length, transaction);
+	public <T extends BinaryReadHandle> T read(String uri, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction) {
+		return read(uri, null, contentHandle, transform, start, length, transaction);
 	}
 	@Override
-	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction) {
-		return read(docId, metadataHandle, contentHandle, null, start, length, transaction);
+	public <T extends BinaryReadHandle> T read(String uri, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction) {
+		return read(uri, metadataHandle, contentHandle, null, start, length, transaction);
 	}
 	@Override
-	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction) {
-		String uri = docId.getUri();
+	public <T extends BinaryReadHandle> T read(String uri, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction) {
 		logger.info("Reading range of binary content for {}",uri);
 
 		RequestParameters extraParams = new RequestParameters();
@@ -80,7 +78,7 @@ class BinaryDocumentImpl
 		else
 			extraParams.put("range", "bytes="+String.valueOf(start));
 
-		return read(docId, metadataHandle, contentHandle, transform, transaction, extraParams);
+		return read(uri, metadataHandle, contentHandle, transform, transaction, extraParams);
 	}
 
 	public MetadataExtraction getMetadataExtraction() {

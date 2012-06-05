@@ -7,8 +7,10 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.ExtensionMetadata;
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.RequestParameters;
 import com.marklogic.client.TransformExtensionsManager;
+import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.HandleAccessor;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
@@ -33,11 +35,14 @@ class TransformExtensionsImpl
 
 	@Override
 	public <T extends StructureReadHandle> T listTransforms(T listHandle) {
+		if (listHandle == null)
+			throw new IllegalArgumentException("Reading transform list with null handle");
+
 		logger.info("Reading transform list");
 
-		HandleAccessor.checkHandle(listHandle, "transform");
+		BaseHandle listBase = HandleAccessor.checkHandle(listHandle, "transform");
 
-		Format listFormat = HandleAccessor.getFormat(listHandle);
+		Format listFormat = listBase.getFormat();
 		if (!(Format.JSON == listFormat || Format.XML == listFormat))
 			throw new IllegalArgumentException(
 					"list handle for unsupported format: "+listFormat.getClass().getName());
@@ -78,56 +83,61 @@ class TransformExtensionsImpl
 
 	@Override
 	public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle) {
-		writeTransform(transformName, sourceHandle, null, null);
+		writeXQueryTransform(transformName, sourceHandle, null, null);
 	}
 	@Override
 	public void writeXQueryTransform(
 		String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata
 	) {
-		writeTransform(transformName, sourceHandle, metadata, null);
+		writeXQueryTransform(transformName, sourceHandle, metadata, null);
 	}
 	@Override
 	public void writeXQueryTransform(
 		String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String, String> paramTypes
 	) {
-		writeTransform(transformName, sourceHandle, metadata, paramTypes);
+		writeTransform(transformName, "application/xquery", sourceHandle, metadata, paramTypes);
 	}
 	@Override
 	public void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle) {
-		writeTransform(transformName, sourceHandle, null, null);
+		writeXSLTransform(transformName, sourceHandle, null, null);
 	}
 	@Override
 	public void writeXSLTransform(
 		String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata
 	) {
-		writeTransform(transformName, sourceHandle, metadata, null);
+		writeXSLTransform(transformName, sourceHandle, metadata, null);
 	}
 	@Override
 	public void writeXSLTransform(
 		String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String, String> paramTypes
 	) {
-		writeTransform(transformName, sourceHandle, metadata, paramTypes);
+		writeTransform(transformName, "application/xslt+xml", sourceHandle, metadata, paramTypes);
 	}
 	private void writeTransform(
-		String transformName, AbstractWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String, String> paramTypes
+		String transformName, String sourceMimetype, AbstractWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String, String> paramTypes
 	) {
 		if (transformName == null)
 			throw new IllegalArgumentException("Writing transform with null name");
+		if (sourceHandle == null)
+			throw new IllegalArgumentException("Writing transform source with null handle");
 
 		logger.info("Writing transform source for {}", transformName);
 
-		HandleAccessor.checkHandle(sourceHandle, "transform");
+		BaseHandle sourceBase = HandleAccessor.checkHandle(sourceHandle, "transform");
 
-		Format sourceFormat = HandleAccessor.getFormat(sourceHandle);
-		String sourceMimetype = null;
-		if (sourceFormat.TEXT == sourceFormat) {
-			sourceMimetype = "application/xquery";
-		} else if (sourceFormat.XML == sourceFormat) {
-			sourceMimetype = "application/xslt+xml";
+		Format sourceFormat = sourceBase.getFormat();
+		if ("application/xquery".equals(sourceMimetype)) {
+			if (Format.TEXT != sourceFormat)
+				sourceBase.setFormat(Format.TEXT);
+		} else if ("application/xslt+xml".equals(sourceMimetype)) {
+			if (Format.XML != sourceFormat)
+				sourceBase.setFormat(Format.XML);
 		} else {
-			throw new IllegalArgumentException(
-				"source handle for unsupported format: "+sourceFormat.getClass().getName());
+			throw new MarkLogicInternalException(
+				"Unsupported mimetype for source: "+sourceMimetype);
 		}
+		if (!sourceMimetype.equals(sourceBase.getMimetype()))
+			sourceBase.setMimetype(sourceMimetype);
 
 		RequestParameters extraParams = (metadata != null) ? metadata.asParameters() : null;
 		if (paramTypes != null) {

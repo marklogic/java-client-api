@@ -28,7 +28,6 @@ import nu.xom.ValidityException;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.XMLDocumentManager;
 
 /**
@@ -60,7 +59,7 @@ public class XOMHandleExample {
 		String filename = "flipper.xml";
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// create a manager for documents of any format
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -74,7 +73,7 @@ public class XOMHandleExample {
 		Document writeDocument = new Builder(false).build(docStream);
 
 		// create an identifier for the document
-		DocumentIdentifier docId = client.newDocId("/example/"+filename);
+		String docId = "/example/"+filename;
 
 		// create a handle for the document
 		XOMHandle writeHandle = new XOMHandle();

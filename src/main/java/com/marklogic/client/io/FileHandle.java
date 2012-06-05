@@ -77,6 +77,10 @@ public class FileHandle
 		setFormat(format);
 		return this;
 	}
+	public FileHandle withMimetype(String mimetype) {
+		setMimetype(mimetype);
+		return this;
+	}
 
 	@Override
 	protected Class<File> receiveAs() {

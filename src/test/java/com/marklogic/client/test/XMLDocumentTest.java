@@ -47,7 +47,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.XMLDocumentManager.DocumentRepair;
 import com.marklogic.client.io.DOMHandle;
@@ -69,9 +68,7 @@ public class XMLDocumentTest {
 
 	@Test
 	public void testReadWrite() throws ParserConfigurationException, SAXException, IOException, TransformerConfigurationException, TransformerFactoryConfigurationError, XMLStreamException {
-		String uri = "/test/testWrite1.xml";
-
-		DocumentIdentifier docId = Common.client.newDocId(uri);
+		String docId = "/test/testWrite1.xml";
 
 		Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		Element root = domDocument.createElement("root");
@@ -95,9 +92,7 @@ public class XMLDocumentTest {
 		assertNotNull("Read null document for XML content",readDoc);
 		assertXMLEqual("Failed to read XML document as DOM",domDocument,readDoc);
 
-		String uri2 = "/test/testWrite2.xml";
-
-		DocumentIdentifier docId2 = Common.client.newDocId(uri2);
+		String docId2 = "/test/testWrite2.xml";
 
 		Transformer transformer = TransformerFactory.newInstance().newTransformer();
 		SourceHandle sourceHandle = new SourceHandle();

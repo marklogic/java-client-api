@@ -26,7 +26,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.io.JAXBHandle;
 import com.marklogic.client.io.StringHandle;
@@ -84,7 +83,7 @@ public class JAXBDocument {
 		System.out.println("example: "+JAXBDocument.class.getName());
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		JAXBContext context = JAXBContext.newInstance(Product.class);
 
@@ -98,7 +97,7 @@ public class JAXBDocument {
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
 		// create an identifier for the document
-		DocumentIdentifier docId = client.newDocId("/example/"+product.getName()+".xml");
+		String docId = "/example/"+product.getName()+".xml";
 
 		// create a handle for the JAXB object
 		JAXBHandle writeHandle = new JAXBHandle(context);

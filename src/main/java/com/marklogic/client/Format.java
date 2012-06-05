@@ -21,16 +21,20 @@ package com.marklogic.client;
 public enum Format {
     BINARY, JSON, TEXT, XML, UNKNOWN;
     public String getDefaultMimetype() {
-    	if (this == BINARY)
-    		// TODO: or possibly "application/x-unknown-content-type" or null
+    	switch(this) {
+    	case UNKNOWN:
+        	// if UNKNOWN, assume BINARY to be safe
+    	case BINARY:
+    		// TODO: or possibly "application/x-unknown-content-type"
     		return "application/octet-stream";
-    	else if (this == JSON)
+    	case JSON:
     		return "application/json";
-    	else if (this == TEXT)
+    	case TEXT:
     		return "text/plain";
-    	else if (this == XML)
+    	case XML:
     		return "application/xml";
-    	else
-    		return null;
+    	default:
+        	throw new MarkLogicInternalException("Unknown format "+this.toString());
+    	}
     }
 }

@@ -77,6 +77,10 @@ public class ReaderHandle
 		setFormat(format);
 		return this;
 	}
+	public ReaderHandle withMimetype(String mimetype) {
+		setMimetype(mimetype);
+		return this;
+	}
 
 	@Override
 	protected Class<Reader> receiveAs() {

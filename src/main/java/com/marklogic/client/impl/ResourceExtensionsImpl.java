@@ -10,6 +10,7 @@ import com.marklogic.client.ExtensionMetadata;
 import com.marklogic.client.Format;
 import com.marklogic.client.RequestParameters;
 import com.marklogic.client.ResourceExtensionsManager;
+import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.HandleAccessor;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
@@ -30,11 +31,14 @@ class ResourceExtensionsImpl
 
 	@Override
 	public <T extends StructureReadHandle> T listServices(T listHandle) {
+		if (listHandle == null)
+			throw new IllegalArgumentException("null handle for listing resource services");
+
 		logger.info("Reading resource services list");
 
-		HandleAccessor.checkHandle(listHandle, "resource");
+		BaseHandle listBase = HandleAccessor.checkHandle(listHandle, "resource");
 
-		Format listFormat = HandleAccessor.getFormat(listHandle);
+		Format listFormat = listBase.getFormat();
 		if (!(Format.JSON == listFormat || Format.XML == listFormat))
 			throw new IllegalArgumentException(
 					"list handle for unsupported format: "+listFormat.getClass().getName());

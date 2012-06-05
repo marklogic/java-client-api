@@ -9,7 +9,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.Format;
 import com.marklogic.client.ServerTransform;
 import com.marklogic.client.TransformExtensionsManager;
@@ -73,8 +72,7 @@ public class TransformTest {
 		ServerTransform transform = new ServerTransform(transformName);
 		transform.put("value", "true");
 
-		DocumentIdentifier docId =
-			Common.client.newDocId("/test/testTransformable1.xml");
+		String docId = "/test/testTransformable1.xml";
 
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		docMgr.write(docId, new StringHandle().with("<document/>"));
@@ -84,7 +82,7 @@ public class TransformTest {
 
 		docMgr.delete(docId);
 
-		docId.setUri("/test/testTransformable2.xml");
+		docId = "/test/testTransformable2.xml";
 		docMgr.write(docId, new StringHandle().with("<document/>"), transform);
 		result = docMgr.read(docId, new DOMHandle()).get();
 		value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");

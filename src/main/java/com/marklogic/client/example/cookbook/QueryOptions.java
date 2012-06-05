@@ -54,7 +54,7 @@ public class QueryOptions {
 		String optionsName = "products";
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// Create a builder for constructing query configurations.
 		QueryOptionsBuilder cb = new QueryOptionsBuilder();

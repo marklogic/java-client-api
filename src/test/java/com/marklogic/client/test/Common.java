@@ -32,7 +32,7 @@ public class Common {
 	final public static String ADMIN_USERNAME = "rest-admin";
 	final public static String ADMIN_PASSWORD = "x";
 	final public static String HOST     = "localhost";
-	final public static int    PORT     = 8010;
+	final public static int    PORT     = 8011;
 
 	static DatabaseClient client;
 	static void connect() {
@@ -40,13 +40,13 @@ public class Common {
 			client.release();
 			client = null;
 		}
-		client = DatabaseClientFactory.connect(
+		client = DatabaseClientFactory.newClient(
 			Common.HOST, Common.PORT, Common.USERNAME, Common.PASSWORD, Authentication.DIGEST
 			);
 	}
 
 	static void connectAdmin() {
-		client = DatabaseClientFactory.connect(
+		client = DatabaseClientFactory.newClient(
 				Common.HOST, Common.PORT, Common.ADMIN_USERNAME, Common.ADMIN_PASSWORD, Authentication.DIGEST
 				);
 	}

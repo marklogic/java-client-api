@@ -78,8 +78,8 @@ public class XMLStreamReaderHandle
 		if (format != Format.XML)
 			new IllegalArgumentException("XMLStreamReaderHandle supports the XML format only");
 	}
-	public XMLStreamReaderHandle withFormat(Format format) {
-		setFormat(format);
+	public XMLStreamReaderHandle withMimetype(String mimetype) {
+		setMimetype(mimetype);
 		return this;
 	}
 

@@ -103,8 +103,8 @@ public class InputSourceHandle
 		if (format != Format.XML)
 			new IllegalArgumentException("InputSourceHandle supports the XML format only");
 	}
-	public InputSourceHandle withFormat(Format format) {
-		setFormat(format);
+	public InputSourceHandle withMimetype(String mimetype) {
+		setMimetype(mimetype);
 		return this;
 	}
 

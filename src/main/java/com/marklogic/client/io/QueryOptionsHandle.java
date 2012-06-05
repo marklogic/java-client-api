@@ -64,6 +64,7 @@ public final class QueryOptionsHandle extends
 	private Unmarshaller unmarshaller;
 
 	public QueryOptionsHandle() {
+		super.setFormat(Format.XML);
 		optionsHolder = new QueryOptions();
 
         try {

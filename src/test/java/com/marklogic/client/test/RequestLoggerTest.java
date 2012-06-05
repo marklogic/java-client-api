@@ -36,7 +36,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.RequestLogger;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.impl.OutputStreamTee;
@@ -99,9 +98,7 @@ public class RequestLoggerTest {
 
 	@Test
 	public void testWriteReadLog() throws IOException, ParserConfigurationException {
-		String uri = "/test/testWrite1.xml";
-
-		DocumentIdentifier docId = Common.client.newDocId(uri);
+		String docId = "/test/testWrite1.xml";
 
 		Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		Element root = domDocument.createElement("root");
@@ -144,9 +141,11 @@ public class RequestLoggerTest {
 		logger.setContentMax(RequestLogger.ALL_CONTENT);
 		docMgr.startLogging(logger);
 
-		boolean isDoc = docMgr.exists(docId);
+		docMgr.exists(docId);
 		outString = new String(out.toByteArray());
-		assertTrue("Exists failed to log output", outString != null && outString.length() > 0);
+		assertTrue("Exists logged null output",  outString != null);
+		if (outString != null)
+			assertTrue("Exists logged empty output", outString.length() > 0);
 
 		out = new ByteArrayOutputStream();
 		logger = Common.client.newLogger(out);

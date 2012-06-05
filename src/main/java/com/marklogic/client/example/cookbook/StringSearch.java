@@ -23,7 +23,6 @@ import java.util.Properties;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.XMLDocumentManager;
@@ -72,7 +71,7 @@ public class StringSearch {
 
 	public static void configure(String host, int port, String user, String password, Authentication authType) {
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// create a manager for writing query options
 		QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
@@ -100,7 +99,7 @@ public class StringSearch {
 
 	public static void search(String host, int port, String user, String password, Authentication authType) {
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		setUpExample(client);
 
@@ -154,8 +153,6 @@ public class StringSearch {
 	public static void setUpExample(DatabaseClient client) {
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		DocumentIdentifier docId = client.newDocId(null);
-
 		InputStreamHandle contentHandle = new InputStreamHandle();
 
 		for (String filename: filenames) {
@@ -164,27 +161,21 @@ public class StringSearch {
 			if (docStream == null)
 				throw new RuntimeException("Could not read document example");
 
-			docId.setUri("/example/"+filename);
-
 			contentHandle.set(docStream);
 
-			docMgr.write(docId, contentHandle);
+			docMgr.write("/example/"+filename, contentHandle);
 		}
 	}
 
 	// clean up by deleting the documents and query options used in the example query
 	public static void tearDownExample(
 			String host, int port, String user, String password, Authentication authType) {
-		DatabaseClient client = DatabaseClientFactory.connect(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		DocumentIdentifier docId = client.newDocId(null);
-
 		for (String filename: filenames) {
-			docId.setUri("/example/"+filename);
-
-			docMgr.delete(docId);
+			docMgr.delete("/example/"+filename);
 		}
 
 		QueryOptionsManager optionsMgr = client.newQueryOptionsManager();

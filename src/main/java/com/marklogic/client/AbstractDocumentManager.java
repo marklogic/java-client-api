@@ -49,7 +49,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param docId
      * @return
      */
-    public boolean exists(DocumentIdentifier docId)
+    public DocumentDescriptor exists(String docId)
     	throws ForbiddenUserException, FailedRequestException;
     /**
      * Checks whether a document exists in an open transaction and gets its length and format
@@ -60,7 +60,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param transaction
      * @return
      */
-    public boolean exists(DocumentIdentifier docId, Transaction transaction)
+    public DocumentDescriptor exists(String docId, Transaction transaction)
     	throws ForbiddenUserException, FailedRequestException;
  
     /**
@@ -73,10 +73,10 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param contentHandle
      * @return
      */
-    public <T extends R> T read(DocumentIdentifier docId, T contentHandle)
+    public <T extends R> T read(String docId, T contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
-    public <T extends R> T read(DocumentIdentifier docId, T contentHandle, ServerTransform transform)
+    public <T extends R> T read(String docId, T contentHandle, ServerTransform transform)
     	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
     /**
@@ -90,10 +90,10 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param contentHandle
      * @return
      */
-    public <T extends R> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle)
+    public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
-    public <T extends R> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform)
+    public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform)
     	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
     /**
@@ -107,10 +107,10 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param transaction
      * @return
      */
-    public <T extends R> T read(DocumentIdentifier docId, T contentHandle, Transaction transaction)
+    public <T extends R> T read(String docId, T contentHandle, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
-    public <T extends R> T read(DocumentIdentifier docId, T contentHandle, ServerTransform transform, Transaction transaction)
+    public <T extends R> T read(String docId, T contentHandle, ServerTransform transform, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
     /**
@@ -125,10 +125,10 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param transaction
      * @return
      */
-    public <T extends R> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction)
+    public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
-    public <T extends R> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction)
+    public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
     /**
@@ -139,10 +139,10 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param docId
      * @param contentHandle
      */
-    public void write(DocumentIdentifier docId, W contentHandle)
+    public void write(String docId, W contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
-    public void write(DocumentIdentifier docId, W contentHandle, ServerTransform transform)
+    public void write(String docId, W contentHandle, ServerTransform transform)
 		throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
     /**
@@ -154,10 +154,10 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param metadata
      * @param contentHandle
      */
-    public void write(DocumentIdentifier docId, DocumentMetadataWriteHandle metadata, W contentHandle)
+    public void write(String docId, DocumentMetadataWriteHandle metadata, W contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
-    public void write(DocumentIdentifier docId, DocumentMetadataWriteHandle metadata, W contentHandle, ServerTransform transform)
+    public void write(String docId, DocumentMetadataWriteHandle metadata, W contentHandle, ServerTransform transform)
     	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
     /**
@@ -169,10 +169,10 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param contentHandle
      * @param transaction
      */
-    public void write(DocumentIdentifier docId, W contentHandle, Transaction transaction)
+    public void write(String docId, W contentHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
-    public void write(DocumentIdentifier docId, W contentHandle, ServerTransform transform, Transaction transaction)
+    public void write(String docId, W contentHandle, ServerTransform transform, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
     /**
@@ -185,10 +185,10 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param contentHandle
      * @param transaction
      */
-    public void write(DocumentIdentifier docId, DocumentMetadataWriteHandle metadata, W contentHandle, Transaction transaction)
+    public void write(String docId, DocumentMetadataWriteHandle metadata, W contentHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
-    public void write(DocumentIdentifier docId, DocumentMetadataWriteHandle metadata, W contentHandle, ServerTransform transform, Transaction transaction)
+    public void write(String docId, DocumentMetadataWriteHandle metadata, W contentHandle, ServerTransform transform, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
     /**
@@ -198,7 +198,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * 
      * @param docId
      */
-    public void delete(DocumentIdentifier docId)
+    public void delete(String docId)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Deletes the document metadata and content from an open database transaction
@@ -208,7 +208,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param docId
      * @param transaction
      */
-    public void delete(DocumentIdentifier docId, Transaction transaction)
+    public void delete(String docId, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
@@ -221,7 +221,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param metadataHandle
      * @return
      */
-    public <T extends DocumentMetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle)
+    public <T extends DocumentMetadataReadHandle> T readMetadata(String docId, T metadataHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Reads the document metadata from an open database transaction in the representation provided by the handle
@@ -234,7 +234,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param transaction
      * @return
      */
-    public <T extends DocumentMetadataReadHandle> T readMetadata(DocumentIdentifier docId, T metadataHandle, Transaction transaction)
+    public <T extends DocumentMetadataReadHandle> T readMetadata(String docId, T metadataHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
@@ -245,7 +245,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param docId
      * @param metadataHandle
      */
-    public void writeMetadata(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle)
+    public void writeMetadata(String docId, DocumentMetadataWriteHandle metadataHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document metadata to an open database transaction from the representation provided by the handle
@@ -256,7 +256,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param metadataHandle
      * @param transaction
      */
-    public void writeMetadata(DocumentIdentifier docId, DocumentMetadataWriteHandle metadataHandle, Transaction transaction)
+    public void writeMetadata(String docId, DocumentMetadataWriteHandle metadataHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
@@ -266,7 +266,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * 
      * @param docId
      */
-    public void writeDefaultMetadata(DocumentIdentifier docId)
+    public void writeDefaultMetadata(String docId)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Reverts the document metadata in an open database transaction to the defaults
@@ -276,7 +276,7 @@ public interface AbstractDocumentManager<R extends AbstractReadHandle, W extends
      * @param docId
      * @param transaction
      */
-    public void writeDefaultMetadata(DocumentIdentifier docId, Transaction transaction)
+    public void writeDefaultMetadata(String docId, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**

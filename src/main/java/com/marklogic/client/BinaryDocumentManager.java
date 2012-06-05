@@ -39,9 +39,9 @@ public interface BinaryDocumentManager extends AbstractDocumentManager<BinaryRea
      * @param length
      * @return
      */
-	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, T contentHandle, long start, long length);
+	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, long start, long length);
 
-	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, T contentHandle, ServerTransform transform, long start, long length);
+	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, ServerTransform transform, long start, long length);
 
 	/**
      * Reads metadata and a range of bytes from the content of a binary database document in the representations provided by the handles
@@ -56,9 +56,9 @@ public interface BinaryDocumentManager extends AbstractDocumentManager<BinaryRea
      * @param length
      * @return
      */
-	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length);
+	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length);
 
-	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length);
+	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length);
 
 	/**
      * Reads a range of bytes from the content of a binary document for an open database transaction in the representation provided by the handle
@@ -73,9 +73,9 @@ public interface BinaryDocumentManager extends AbstractDocumentManager<BinaryRea
      * @param transaction
      * @return
      */
-	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, T contentHandle, long start, long length, Transaction transaction);
+	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, long start, long length, Transaction transaction);
 
-	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction);
+	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction);
 
 	/**
      * Reads metadata and a range of bytes from the content of a binary document for an open database transaction in the representations provided by the handles
@@ -91,9 +91,9 @@ public interface BinaryDocumentManager extends AbstractDocumentManager<BinaryRea
      * @param transaction
      * @return
      */
-	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction);
+	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction);
 
-	public <T extends BinaryReadHandle> T read(DocumentIdentifier docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction);
+	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction);
 
 	public MetadataExtraction getMetadataExtraction();
 	public void setMetadataExtraction(MetadataExtraction policy);

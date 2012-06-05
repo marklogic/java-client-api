@@ -35,7 +35,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
-import com.marklogic.client.DocumentIdentifier;
 import com.marklogic.client.JSONDocumentManager;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.io.BytesHandle;
@@ -57,11 +56,9 @@ public class JSONDocumentTest {
 
 	@Test
 	public void testReadWrite() throws IOException {
-		String uri = "/test/testWrite1.json";
+		String docId = "/test/testWrite1.json";
 
 		ObjectMapper mapper = new ObjectMapper();
-
-		DocumentIdentifier docId = Common.client.newDocId(uri);
 
 		ObjectNode sourceNode = mapper.createObjectNode();
 		sourceNode.put("stringKey", "string value");
@@ -109,7 +106,6 @@ public class JSONDocumentTest {
 		docMgr.write(docId, new StringHandle().with(content));
 
 		XMLDocumentManager xmlMgr = Common.client.newXMLDocumentManager();
-		docId.setMimetype(null);  // set to application/json by read
 		Document document = xmlMgr.read(docId, new DOMHandle()).get();
 		assertEquals("Failed to set language attribute on JSON", lang,
 				document.getDocumentElement().getAttributeNS(XMLConstants.XML_NS_URI, "lang"));
