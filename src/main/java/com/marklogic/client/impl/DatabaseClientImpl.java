@@ -94,7 +94,7 @@ public class DatabaseClientImpl implements DatabaseClient {
 	}
 
 	@Override
-	public ServerConfigurationManager newServerConfigurationManager() {
+	public ServerConfigurationManager newServerConfigManager() {
 		return new ServerConfigurationManagerImpl(services);
 	}
 

@@ -59,7 +59,7 @@ public class ResourceExtensionsTest {
 	@Test
 	public void testResourceServiceExtension() throws XpathException {
 		ResourceExtensionsManager extensionMgr =
-			Common.client.newServerConfigurationManager().newResourceExtensionsManager();
+			Common.client.newServerConfigManager().newResourceExtensionsManager();
 
 		StringHandle handle = new StringHandle();
 

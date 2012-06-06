@@ -38,7 +38,7 @@ public class ServerConfigurationManagerTest {
 
 	@Test
 	public void testSetGet() throws IOException {
-		ServerConfigurationManager serverConfig = Common.client.newServerConfigurationManager();
+		ServerConfigurationManager serverConfig = Common.client.newServerConfigManager();
 
 		assertNull("Initial query option validation not null", serverConfig.getQueryOptionValidation());
 
@@ -47,16 +47,16 @@ public class ServerConfigurationManagerTest {
 
 		Boolean modifiedValue = initialValue ? false : true;
 
-		serverConfig = Common.client.newServerConfigurationManager();
+		serverConfig = Common.client.newServerConfigManager();
 		serverConfig.setQueryOptionValidation(modifiedValue);
 		serverConfig.writeConfiguration();
 
-		serverConfig = Common.client.newServerConfigurationManager();
+		serverConfig = Common.client.newServerConfigManager();
 		serverConfig.readConfiguration();
 		assertEquals("Failed to change query options validation",
 				modifiedValue, serverConfig.getQueryOptionValidation());
 		
-		serverConfig = Common.client.newServerConfigurationManager();
+		serverConfig = Common.client.newServerConfigManager();
 		serverConfig.setQueryOptionValidation(initialValue);
 		serverConfig.writeConfiguration();
 	}

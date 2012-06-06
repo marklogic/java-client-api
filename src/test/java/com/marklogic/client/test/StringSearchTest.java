@@ -89,7 +89,7 @@ public class StringSearchTest {
         options.build(tresults);
 
         QueryOptionsManager queryOptionsMgr =
-        	Common.client.newServerConfigurationManager().newQueryOptionsManager();
+        	Common.client.newServerConfigManager().newQueryOptionsManager();
 
         logger.error(options.toXMLString());
 

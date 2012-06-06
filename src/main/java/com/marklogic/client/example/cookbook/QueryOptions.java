@@ -60,7 +60,7 @@ public class QueryOptions {
 		QueryOptionsBuilder cb = new QueryOptionsBuilder();
 		
 		// create a manager for writing, reading, and deleting query options
-		QueryOptionsManager optionsMgr = client.newServerConfigurationManager().newQueryOptionsManager();
+		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
 		// create the query options
 		QueryOptionsHandle options = new QueryOptionsHandle();

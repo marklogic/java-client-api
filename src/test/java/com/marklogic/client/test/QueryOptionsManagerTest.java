@@ -62,7 +62,7 @@ public class QueryOptionsManagerTest {
 	@Test
 	public void testQueryOptionsManager() throws JAXBException {
 		QueryOptionsManager mgr =
-			Common.client.newServerConfigurationManager().newQueryOptionsManager();
+			Common.client.newServerConfigManager().newQueryOptionsManager();
 		assertNotNull("Client could not create query options manager", mgr);
 
 														mgr.writeOptions("testempty", new QueryOptionsHandle());
@@ -91,7 +91,7 @@ public class QueryOptionsManagerTest {
 		domDocument.appendChild(root);
 
 		QueryOptionsManager queryOptionsMgr =
-			Common.client.newServerConfigurationManager().newQueryOptionsManager();
+			Common.client.newServerConfigManager().newQueryOptionsManager();
 		
 		queryOptionsMgr.writeOptions(optionsName, new DOMHandle(domDocument));
 
@@ -112,7 +112,7 @@ public class QueryOptionsManagerTest {
 	@Test
 	public void testJSONOptions() throws JAXBException {
 		QueryOptionsManager mgr =
-			Common.client.newServerConfigurationManager().newQueryOptionsManager();
+			Common.client.newServerConfigManager().newQueryOptionsManager();
 		assertNotNull("Client could not create query options manager", mgr);
 
 		FileHandle jsonHandle = new FileHandle(new File("src/test/resources/json-config.json"));

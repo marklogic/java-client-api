@@ -84,7 +84,7 @@ public class DatabaseClientTest {
 
 	@Test
 	public void testNewQueryOptionsManager() {
-		QueryOptionsManager mgr = Common.client.newServerConfigurationManager().newQueryOptionsManager();
+		QueryOptionsManager mgr = Common.client.newServerConfigManager().newQueryOptionsManager();
 		assertNotNull("Client could not create query options manager", mgr);
 	}
 }

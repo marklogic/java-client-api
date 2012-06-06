@@ -52,7 +52,7 @@ public class MetadataSearchTest {
         String optionsName = "metadata";
 
         QueryOptionsManager queryOptionsMgr =
-        	Common.client.newServerConfigurationManager().newQueryOptionsManager();
+        	Common.client.newServerConfigManager().newQueryOptionsManager();
         QueryManager queryMgr = Common.client.newQueryManager();
         StringQueryDefinition qdef = queryMgr.newStringDefinition(optionsName);
         qdef.setCriteria("hamlet");

@@ -70,7 +70,7 @@ public class TransformExtensionsTest {
 	@Test
 	public void testTransformExtensions() throws XpathException {
 		TransformExtensionsManager extensionMgr =
-			Common.client.newServerConfigurationManager().newTransformExtensionsManager();
+			Common.client.newServerConfigManager().newTransformExtensionsManager();
 
 		StringHandle handle = new StringHandle();
 		handle.setFormat(Format.TEXT);

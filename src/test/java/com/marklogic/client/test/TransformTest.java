@@ -39,7 +39,7 @@ public class TransformTest {
 	@Test
 	public void testXQueryTransform() {
 		TransformExtensionsManager extensionMgr =
-			Common.client.newServerConfigurationManager().newTransformExtensionsManager();
+			Common.client.newServerConfigManager().newTransformExtensionsManager();
 
 		extensionMgr.writeXQueryTransform(
 				TransformExtensionsTest.XQUERY_NAME,
@@ -55,7 +55,7 @@ public class TransformTest {
 	@Test
 	public void testXSLTransform() {
 		TransformExtensionsManager extensionMgr =
-			Common.client.newServerConfigurationManager().newTransformExtensionsManager();
+			Common.client.newServerConfigManager().newTransformExtensionsManager();
 
 		extensionMgr.writeXSLTransform(
 				TransformExtensionsTest.XSLT_NAME,

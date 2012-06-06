@@ -51,7 +51,7 @@ public interface DatabaseClient {
  
     public QueryManager newQueryManager();
 
-    public ServerConfigurationManager newServerConfigurationManager();
+    public ServerConfigurationManager newServerConfigManager();
 
     public <T extends ResourceManager> T init(String resourceName, T resourceManager);
 

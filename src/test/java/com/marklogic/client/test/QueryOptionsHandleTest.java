@@ -122,7 +122,7 @@ public class QueryOptionsHandleTest {
 	@BeforeClass
 	public static void setupTestOptions() throws FileNotFoundException {
 		Common.connectAdmin();
-		serverConfig = Common.client.newServerConfigurationManager();
+		serverConfig = Common.client.newServerConfigManager();
 
 		serverConfig.readConfiguration();
 		initialConfig = serverConfig.getQueryOptionValidation();
@@ -130,7 +130,7 @@ public class QueryOptionsHandleTest {
 		serverConfig.setQueryOptionValidation(false);
 		serverConfig.writeConfiguration();
 
-		mgr = Common.client.newServerConfigurationManager().newQueryOptionsManager();
+		mgr = Common.client.newServerConfigManager().newQueryOptionsManager();
 	
 		optionsPOJOs = new ArrayList<QueryOptionsHandle>();
 
@@ -887,7 +887,7 @@ public class QueryOptionsHandleTest {
         // create a manager for writing query options
 
         QueryOptionsManager optionsMgr =
-        	client.newServerConfigurationManager().newQueryOptionsManager();
+        	client.newServerConfigManager().newQueryOptionsManager();
 
         // create the query options
         StringBuilder builder = new StringBuilder();

@@ -36,7 +36,7 @@ public class ResourceServicesTest {
 	@Test
 	public void testResourceServices() throws XpathException {
 		ResourceExtensionsManager extensionMgr =
-			Common.client.newServerConfigurationManager().newResourceExtensionsManager();
+			Common.client.newServerConfigManager().newResourceExtensionsManager();
 
 		extensionMgr.writeServices(
 				ResourceExtensionsTest.RESOURCE_NAME,
