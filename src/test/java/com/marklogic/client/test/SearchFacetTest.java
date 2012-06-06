@@ -137,7 +137,7 @@ public class SearchFacetTest {
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document document = builder.parse(new InputSource(new StringReader(options)));
 
-        mgr = Common.client.newQueryOptionsManager();
+        mgr = Common.client.newServerConfigurationManager().newQueryOptionsManager();
         mgr.writeOptions("photos", new DOMHandle(document));
 
         QueryManager queryMgr = Common.client.newQueryManager();

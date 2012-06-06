@@ -39,6 +39,8 @@ public interface ServerConfigurationManager {
 	public String getDefaultDocumentReadTransform(String name);
 	public void   setDefaultDocumentReadTransform(String name);
 
+    public QueryOptionsManager        newQueryOptionsManager();
+    public NamespacesManager          newNamespacesManager();
 	public ResourceExtensionsManager  newResourceExtensionsManager();
 	public TransformExtensionsManager newTransformExtensionsManager();
 }

@@ -37,7 +37,8 @@ public class NamespacesManagerTest {
 
 	@Test
 	public void testWriteReadPrefix() {
-		NamespacesManager nsMgr = Common.client.newNamespacesManager();
+		NamespacesManager nsMgr =
+			Common.client.newServerConfigurationManager().newNamespacesManager();
 		
 		nsMgr.addPrefix("dc", "http://purl.org/dc/terms/");
 

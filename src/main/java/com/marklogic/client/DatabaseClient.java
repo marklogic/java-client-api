@@ -49,10 +49,7 @@ public interface DatabaseClient {
  
     public RequestLogger newLogger(OutputStream out);
  
-    public QueryManager        newQueryManager();
-    public QueryOptionsManager newQueryOptionsManager();
-
-    public NamespacesManager newNamespacesManager();
+    public QueryManager newQueryManager();
 
     public ServerConfigurationManager newServerConfigurationManager();
 

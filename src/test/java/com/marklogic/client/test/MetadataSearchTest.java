@@ -51,7 +51,8 @@ public class MetadataSearchTest {
     public void testStringSearch() throws IOException, ParserConfigurationException, SAXException {
         String optionsName = "metadata";
 
-        QueryOptionsManager queryOptionsMgr = Common.client.newQueryOptionsManager();
+        QueryOptionsManager queryOptionsMgr =
+        	Common.client.newServerConfigurationManager().newQueryOptionsManager();
         QueryManager queryMgr = Common.client.newQueryManager();
         StringQueryDefinition qdef = queryMgr.newStringDefinition(optionsName);
         qdef.setCriteria("hamlet");

@@ -61,7 +61,8 @@ public class QueryOptionsManagerTest {
 	
 	@Test
 	public void testQueryOptionsManager() throws JAXBException {
-		QueryOptionsManager mgr = Common.client.newQueryOptionsManager();
+		QueryOptionsManager mgr =
+			Common.client.newServerConfigurationManager().newQueryOptionsManager();
 		assertNotNull("Client could not create query options manager", mgr);
 
 														mgr.writeOptions("testempty", new QueryOptionsHandle());
@@ -89,7 +90,8 @@ public class QueryOptionsManagerTest {
 		root.setAttributeNS("http://www.w3.org/XML/1998/namespace", "lang", "en");  // MarkLogic adds this if I don't
 		domDocument.appendChild(root);
 
-		QueryOptionsManager queryOptionsMgr = Common.client.newQueryOptionsManager();
+		QueryOptionsManager queryOptionsMgr =
+			Common.client.newServerConfigurationManager().newQueryOptionsManager();
 		
 		queryOptionsMgr.writeOptions(optionsName, new DOMHandle(domDocument));
 
@@ -109,7 +111,8 @@ public class QueryOptionsManagerTest {
 
 	@Test
 	public void testJSONOptions() throws JAXBException {
-		QueryOptionsManager mgr = Common.client.newQueryOptionsManager();
+		QueryOptionsManager mgr =
+			Common.client.newServerConfigurationManager().newQueryOptionsManager();
 		assertNotNull("Client could not create query options manager", mgr);
 
 		FileHandle jsonHandle = new FileHandle(new File("src/test/resources/json-config.json"));

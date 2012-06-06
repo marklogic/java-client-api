@@ -94,16 +94,6 @@ public class DatabaseClientImpl implements DatabaseClient {
 	}
 
 	@Override
-	public QueryOptionsManager newQueryOptionsManager() {
-		return new QueryOptionsManagerImpl(services);
-	}
-
-	@Override
-    public NamespacesManager newNamespacesManager() {
-    	return new NamespacesManagerImpl(services);
-    }
-
-	@Override
 	public ServerConfigurationManager newServerConfigurationManager() {
 		return new ServerConfigurationManagerImpl(services);
 	}

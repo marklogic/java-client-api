@@ -148,7 +148,8 @@ public class QOPathIndexTest {
 
         InputStream in = new ByteArrayInputStream(xml.getBytes("utf-8"));
 
-        QueryOptionsManager mgr = Common.client.newQueryOptionsManager();
+        QueryOptionsManager mgr =
+        	Common.client.newServerConfigurationManager().newQueryOptionsManager();
 
         QueryOptionsHandle handle = new QueryOptionsHandle();
 

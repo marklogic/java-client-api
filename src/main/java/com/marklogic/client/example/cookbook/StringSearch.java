@@ -74,7 +74,7 @@ public class StringSearch {
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// create a manager for writing query options
-		QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
+		QueryOptionsManager optionsMgr = client.newServerConfigurationManager().newQueryOptionsManager();
 
 		// create the query options
 		StringBuilder builder = new StringBuilder();
@@ -178,7 +178,7 @@ public class StringSearch {
 			docMgr.delete("/example/"+filename);
 		}
 
-		QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
+		QueryOptionsManager optionsMgr = client.newServerConfigurationManager().newQueryOptionsManager();
 
 		optionsMgr.deleteOptions(OPTIONS_NAME);
 

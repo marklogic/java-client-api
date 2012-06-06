@@ -29,6 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.NamespacesManager;
+import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.ResourceExtensionsManager;
 import com.marklogic.client.ServerConfigurationManager;
 import com.marklogic.client.TransformExtensionsManager;
@@ -141,6 +143,14 @@ class ServerConfigurationManagerImpl
 		defaultDocumentReadTransform = name;
 	}
 
+	@Override
+	public QueryOptionsManager newQueryOptionsManager() {
+		return new QueryOptionsManagerImpl(services);
+	}
+	@Override
+    public NamespacesManager newNamespacesManager() {
+    	return new NamespacesManagerImpl(services);
+    }
 	@Override
 	public ResourceExtensionsManager newResourceExtensionsManager() {
 		return new ResourceExtensionsImpl(services);

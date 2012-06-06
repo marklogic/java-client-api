@@ -88,7 +88,8 @@ public class StringSearchTest {
         QueryTransformResults tresults = builder.transformResults("raw");
         options.build(tresults);
 
-        QueryOptionsManager queryOptionsMgr = Common.client.newQueryOptionsManager();
+        QueryOptionsManager queryOptionsMgr =
+        	Common.client.newServerConfigurationManager().newQueryOptionsManager();
 
         logger.error(options.toXMLString());
 

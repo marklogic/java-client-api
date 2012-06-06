@@ -130,7 +130,7 @@ public class QueryOptionsHandleTest {
 		serverConfig.setQueryOptionValidation(false);
 		serverConfig.writeConfiguration();
 
-		mgr = Common.client.newQueryOptionsManager();
+		mgr = Common.client.newServerConfigurationManager().newQueryOptionsManager();
 	
 		optionsPOJOs = new ArrayList<QueryOptionsHandle>();
 
@@ -886,7 +886,8 @@ public class QueryOptionsHandleTest {
         DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8010, "rest-admin", "x", DatabaseClientFactory.Authentication.DIGEST);
         // create a manager for writing query options
 
-        QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
+        QueryOptionsManager optionsMgr =
+        	client.newServerConfigurationManager().newQueryOptionsManager();
 
         // create the query options
         StringBuilder builder = new StringBuilder();
