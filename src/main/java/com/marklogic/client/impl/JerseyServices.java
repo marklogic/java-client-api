@@ -1088,13 +1088,15 @@ public class JerseyServices implements RESTServices {
 
 		putPostValueImpl(reqlog, "post", type, key, null, mimetype, value, ClientResponse.Status.CREATED);
 	}
+
 	@Override
 	public void putValue(RequestLogger reqlog, String type, String key, String mimetype, Object value)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		logger.info("Putting {}/{}", type, key);
 
-		putPostValueImpl(reqlog, "put", type, key, null, mimetype, value, ClientResponse.Status.NO_CONTENT);
+		putPostValueImpl(reqlog, "put", type, key, null, mimetype, value, ClientResponse.Status.NO_CONTENT, ClientResponse.Status.CREATED);
 	}
+
 	@Override
 	public void putValue(RequestLogger reqlog, String type, String key, RequestParameters extraParams, String mimetype, Object value)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
@@ -1103,7 +1105,8 @@ public class JerseyServices implements RESTServices {
 		putPostValueImpl(reqlog, "put", type, key, extraParams, mimetype, value, ClientResponse.Status.NO_CONTENT);
 	}
 	private void putPostValueImpl(
-		RequestLogger reqlog, String method, String type, String key, RequestParameters extraParams, String mimetype, Object value, ClientResponse.Status expectedStatus
+		RequestLogger reqlog, String method, String type, String key, RequestParameters extraParams, String mimetype, Object value,
+        ClientResponse.Status... expectedStatuses
 	) {
 		if (key != null) {
 			logRequest(reqlog, "writing %s value with %s key and %s mime type",
@@ -1169,8 +1172,16 @@ public class JerseyServices implements RESTServices {
 			throw new ForbiddenUserException("User is not allowed to write "+type);
 		if (status == ClientResponse.Status.NOT_FOUND)
 			throw new ResourceNotFoundException(type+" not found for write");
-		if (status != expectedStatus)
+
+        boolean statusOk = false;
+        for (ClientResponse.Status expectedStatus : expectedStatuses) {
+            statusOk = statusOk || (status == expectedStatus);
+            if (statusOk) { break; }
+        }
+
+		if (!statusOk) {
 			throw new FailedRequestException(type+" write failed: " + status.getReasonPhrase());
+        }
 	}
 	@Override
 	public void deleteValue(RequestLogger reqlog, String type, String key) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {

@@ -31,6 +31,8 @@ import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
@@ -878,6 +880,47 @@ public class QueryOptionsHandleTest {
 			}
 		}
 	}
+
+    @Test
+    public void bug17240() {
+        DatabaseClient client = DatabaseClientFactory.connect("localhost", 8010, "rest-admin", "x", DatabaseClientFactory.Authentication.DIGEST);
+        // create a manager for writing query options
+
+        QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
+
+        // create the query options
+        StringBuilder builder = new StringBuilder();
+        builder.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+        builder.append("<options xmlns=\"http://marklogic.com/appservices/search\">\n");
+        builder.append(" <constraint name=\"industry\">\n");
+        builder.append(" <value>\n");
+        builder.append(" <element ns=\"\" name=\"industry\"/>\n");
+        builder.append(" </value>\n");
+        builder.append(" </constraint>\n");
+        builder.append(" <constraint name=\"description\">\n");
+        builder.append(" <word>\n");
+        builder.append(" <element ns=\"\" name=\"heatmap\"/>\n");
+        builder.append(" </word>\n");
+        builder.append(" </constraint>\n");
+        builder.append(" <constraint name=\"duration\">\n");
+        builder.append(" <range type=\"xs:string\" facet=\"true\">\n");
+        builder.append(" <element ns=\"\" name=\"duration\"/>\n");
+        builder.append(" </range>\n");
+        builder.append(" </constraint>\n");
+        builder.append("</options>\n");
+
+        // initialize a handle with the query options
+        StringHandle writeHandle = new StringHandle(builder.toString());
+
+        // Delete it
+        optionsMgr.deleteOptions("searchOptions1");
+
+        // create the query
+        optionsMgr.writeOptions("searchOptions1", writeHandle);
+
+        // write the query
+        optionsMgr.writeOptions("searchOptions1", writeHandle);
+    }
 
 	private Element domElement(QueryOptionsHandle option) {
 		return builder.domElement(option.toXMLString());
