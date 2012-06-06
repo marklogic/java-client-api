@@ -883,7 +883,7 @@ public class QueryOptionsHandleTest {
 
     @Test
     public void bug17240() {
-        DatabaseClient client = DatabaseClientFactory.connect("localhost", 8010, "rest-admin", "x", DatabaseClientFactory.Authentication.DIGEST);
+        DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8010, "rest-admin", "x", DatabaseClientFactory.Authentication.DIGEST);
         // create a manager for writing query options
 
         QueryOptionsManager optionsMgr = client.newQueryOptionsManager();

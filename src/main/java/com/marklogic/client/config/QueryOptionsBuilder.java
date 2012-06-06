@@ -37,6 +37,7 @@ import com.marklogic.client.config.QueryOptions.Attribute;
 import com.marklogic.client.config.QueryOptions.BaseConstraintItem;
 import com.marklogic.client.config.QueryOptions.BaseQueryOptionConfiguration;
 import com.marklogic.client.config.QueryOptions.Element;
+import com.marklogic.client.config.QueryOptions.PathIndex;
 import com.marklogic.client.config.QueryOptions.Field;
 import com.marklogic.client.config.QueryOptions.FragmentScope;
 import com.marklogic.client.config.QueryOptions.Heatmap;
@@ -410,6 +411,8 @@ public final class QueryOptionsBuilder {
 		public void setElement(Element element);
 
 		public void setField(Field field);
+
+        public void setPath(PathIndex path);
 	}
 
 	/**
@@ -419,6 +422,24 @@ public final class QueryOptionsBuilder {
 			QueryValueItem, QuerySortOrderItem {
 
 	}
+
+    public class NamespaceBinding {
+        String prefix = null;
+        String uri = null;
+
+        public NamespaceBinding(String prefix, String uri) {
+            this.prefix = prefix;
+            this.uri = uri;
+        }
+
+        public String getPrefix() {
+            return prefix;
+        }
+
+        public String getNamespaceUri() {
+            return uri;
+        }
+    }
 
 	private static DocumentBuilderFactory factory;
 
@@ -623,7 +644,7 @@ public final class QueryOptionsBuilder {
 	 * Build a QueryCustom source for constraining queries.
 	 * <p>
 	 * This function is for constructing non-faceted custom constraints.
-	 * @param options One argument must supply a parse XQueryFunctionExtensions.
+	 * @param extension One argument must supply a parse XQueryFunctionExtensions.
 	 * @return a QueryCustom object for use in building a QueryConstraint
 	 */
 	public QueryCustom customParse(XQueryExtension extension) {
@@ -662,7 +683,7 @@ public final class QueryOptionsBuilder {
 	/**
 	 * Construct a dom Element from a string.  A utility function for creating DOM elements when needed for other builder functions.
 	 * 
-	 * @param string
+	 * @param xmlString
 	 *            XML for an element.
 	 * @return w3c.dom.Element representation the provided XML.
 	 */
@@ -710,8 +731,21 @@ public final class QueryOptionsBuilder {
 		return new Element(ns, name);
 	}
 
-	
-	/**
+    /**
+     * Build a new PathIndex object
+     */
+    public PathIndex pathIndex(String text) {
+        return new PathIndex(text);
+    }
+
+    /**
+     * Build a new PathIndex object
+     */
+    public PathIndex pathIndex(String text, String... nsbindings) {
+        return new PathIndex(text);
+    }
+
+    /**
 	 * Builds a QueryElementQuery object for use in constraining QueryOptions configuration to a particular element.
 	 * @param ns Namespace of the element for restricting QueryOptions.
 	 * @param name Local name of the element for restricting QueryOptions.
@@ -969,7 +1003,7 @@ public final class QueryOptionsBuilder {
 	 * @param strength Strength of this joiner relative to others.
 	 * @param apply Enum to specify how the joiner fits into the Search grammar.
 	 * @param element QName of a cts query.  This joiner encapsulates the cts query.
-	 * @param tokenize Enum to specify how the joiner tokenizes the search string.
+	 * @param token Enum to specify how the joiner tokenizes the search string.
 	 * @return An object for use in constructing QueryGrammar configurations.
 	 */
 	public QueryGrammarItem joiner(String joinerText, int strength,
@@ -997,11 +1031,11 @@ public final class QueryOptionsBuilder {
 		if (tokenize != null) {
 			joiner.setTokenize(tokenize);
 		}
-		;
+
 		if (consume != null) {
 			joiner.setConsume(consume);
 		}
-		;
+
 		return joiner;
 	}
 
@@ -1144,13 +1178,22 @@ public final class QueryOptionsBuilder {
 	 *            namespaces declared in an arbitrary element wrapper.
 	 * @return Component for use in a QueryOptionsBuilder expression.
 	 */
-	public AnyElement searchableExpression(String searchableExpression) {
-		org.w3c.dom.Element expression = domElement(searchableExpression);
-		if (! expression.getLocalName().equals("searchable-expression")) {
-			throw new MarkLogicBindingException("Element name must be 'searchable-expression'");
-		}
+	public AnyElement searchableExpression(String searchableExpression, NamespaceBinding... bindings) {
+        String xml = "<searchable-expression xmlns='http://marklogic.com/appservices/search'";
+        for (NamespaceBinding binding : bindings) {
+            String ns = binding.getNamespaceUri();
+            ns = ns.replace("'", "&apos;");
+            xml += " " + binding.getPrefix() + "='" + ns + "'";
+        }
+        xml += ">" + searchableExpression + "</searchable-expression>";
+
+		org.w3c.dom.Element expression = domElement(xml);
 		return new AnyElement(expression);
 	}
+
+    public NamespaceBinding namespace(String prefix, String uri) {
+        return new NamespaceBinding(prefix, uri);
+    }
 
 	public QueryOptionsTextItem<String> searchOption(String searchOption) {
 		return new QueryOptionsTextItem<String>("addSearchOption", searchOption);
@@ -1213,7 +1256,7 @@ public final class QueryOptionsBuilder {
 	 * Build a QuerySuggestionSource to provide suggestions for type-ahead in
 	 * search applications.
 	 * 
-	 * @param List
+	 * @param options
 	 *            of items that can comprise a QuerySuggestionSource
 	 * @return a {@link QuerySuggestionSource} for use in building
 	 *         {@link QueryOptions}

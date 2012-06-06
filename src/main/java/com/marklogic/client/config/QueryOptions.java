@@ -162,6 +162,9 @@ public final class QueryOptions implements QueryAnnotations {
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "field")
 		private Field fieldReference;
 
+        @XmlElement(namespace = QueryOptions.SEARCH_NS, name = "path-index")
+        private PathIndex pathIndexReference;
+
 		@XmlElement(name = "fragment-scope")
 		private FragmentScope fragmentScope;
 
@@ -196,6 +199,10 @@ public final class QueryOptions implements QueryAnnotations {
 			return elementReference.asQName();
 		}
 
+        public String getPath() {
+            return pathIndexReference.getPath();
+        }
+
 		public String getFieldName() {
 			return this.fieldReference.getName();
 		}
@@ -226,6 +233,10 @@ public final class QueryOptions implements QueryAnnotations {
 		public void setField(Field field) {
 			this.fieldReference = field;
 		}
+
+        public void setPath(PathIndex pathIndex) {
+            this.pathIndexReference = pathIndex;
+        }
 
 		public void setFragmentScope(FragmentScope fragmentScope) {
 			this.fragmentScope = fragmentScope;
@@ -266,9 +277,7 @@ public final class QueryOptions implements QueryAnnotations {
 	}
 
 	public static class Element extends MarkLogicQName {
-
 		public Element() {
-
 		}
 
 		public Element(String ns, String name) {
@@ -281,6 +290,40 @@ public final class QueryOptions implements QueryAnnotations {
 		}
 
 	}
+
+    @XmlAccessorType(XmlAccessType.FIELD)
+    public static class PathIndex implements QueryRangeItem {
+        private static String[] bindings = null;
+
+        @XmlValue
+        private String path = null;
+
+        public PathIndex() {
+
+        }
+
+        public PathIndex(String path) {
+            this.path = path;
+        }
+
+        public PathIndex(String path, String... bindings) {
+            this.path = path;
+            this.bindings = bindings;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public String[] getBindings() {
+            return bindings;
+        }
+
+        @Override
+        public void build(QueryRange range) {
+            range.setPath(this);
+        }
+    }
 
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public abstract static class FacetableConstraintConfiguration extends
@@ -424,13 +467,11 @@ public final class QueryOptions implements QueryAnnotations {
 
 	}
 
-	public enum FragmentScope {
+    public enum FragmentScope {
+        DOCUMENTS, PROPERTIES;
+    }
 
-		DOCUMENTS, PROPERTIES;
-
-	}
-
-	@XmlAccessorType(XmlAccessType.FIELD)
+    @XmlAccessorType(XmlAccessType.FIELD)
 	public static class Heatmap implements
 			QueryOptionsBuilder.QueryGeospatialItem {
 
@@ -1438,10 +1479,6 @@ public final class QueryOptions implements QueryAnnotations {
 	}
 
 	@XmlAccessorType(XmlAccessType.FIELD)
-	/**
-	 * 
-	 *
-	 */
 	public final static class QueryRange extends
 			FacetableConstraintConfiguration implements
 			QueryOptionsBuilder.Indexable,
@@ -1831,7 +1868,13 @@ public final class QueryOptions implements QueryAnnotations {
 			this.fieldReference = field;
 		}
 
-		public void setScore() {
+        @Override
+        public void setPath(PathIndex pathIndex) {
+            // TODO: Is this the right thing to do?
+            throw new UnsupportedOperationException("Path indexes are not part of sort orders");
+        }
+
+        public void setScore() {
 			score = "";
 		}
 		
