@@ -17,11 +17,9 @@ package com.marklogic.client.impl;
 
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.RequestLogger;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.HandleAccessor;
-import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 
 class TransactionImpl implements Transaction {

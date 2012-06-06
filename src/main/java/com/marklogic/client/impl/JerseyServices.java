@@ -665,43 +665,38 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public void commitTransaction(String transactionId) throws ForbiddenUserException, FailedRequestException {
-		logger.info("Committing transaction {}", transactionId);
-
-		if (transactionId == null)
-			throw new MarkLogicInternalException("Committing transaction without id");
-
-		ClientResponse response = connection.path(
-				"transactions/" + transactionId).put(ClientResponse.class);
-
-		if (isFirstRequest) isFirstRequest = false;
-
-		ClientResponse.Status status = response.getClientResponseStatus();
-		response.close();
-		if (status == ClientResponse.Status.FORBIDDEN)
-			throw new ForbiddenUserException("User is not allowed to commit transactions");
-		if (status != ClientResponse.Status.NO_CONTENT)
-			throw new FailedRequestException("transaction commit failed: " + status.getReasonPhrase());
+	public void commitTransaction(String transactionId)
+	throws ForbiddenUserException, FailedRequestException {
+		completeTransaction(transactionId, "commit");
 	}
-
 	@Override
-	public void rollbackTransaction(String transactionId) throws ForbiddenUserException, FailedRequestException {
-		logger.info("Rolling back transaction {}", transactionId);
-
+	public void rollbackTransaction(String transactionId)
+	throws ForbiddenUserException, FailedRequestException {
+		completeTransaction(transactionId, "rollback");
+	}
+	private void completeTransaction(String transactionId, String result)
+	throws ForbiddenUserException, FailedRequestException {
+		if (result == null)
+			throw new MarkLogicInternalException("transaction completion without operation");
 		if (transactionId == null)
-			throw new MarkLogicInternalException("Rolling back transaction without id");
+			throw new MarkLogicInternalException("transaction completion without id: "+result);
+
+		logger.info("Completing transaction {} with {}", transactionId, result);
+
+		MultivaluedMap<String, String> transParams = new MultivaluedMapImpl();
+		transParams.add("result", result);
 
 		ClientResponse response = connection.path(
-				"transactions/" + transactionId).delete(ClientResponse.class);
+				"transactions/" + transactionId).queryParams(transParams).post(ClientResponse.class);
 
 		if (isFirstRequest) isFirstRequest = false;
 
 		ClientResponse.Status status = response.getClientResponseStatus();
 		response.close();
 		if (status == ClientResponse.Status.FORBIDDEN)
-			throw new ForbiddenUserException("User is not allowed to rollback transactions");
+			throw new ForbiddenUserException("User is not allowed to complete transaction with "+result);
 		if (status != ClientResponse.Status.NO_CONTENT)
-			throw new FailedRequestException("transaction rollback failed: " + status.getReasonPhrase());
+			throw new FailedRequestException("transaction "+result+" failed: " + status.getReasonPhrase());
 	}
 
 	private MultivaluedMap<String, String> makeDocumentParams(String uri, Set<Metadata> categories, String transactionId, RequestParameters extraParams) {
