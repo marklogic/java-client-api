@@ -881,7 +881,7 @@ public class QueryOptionsHandleTest {
 		}
 	}
 
-    @Test
+//    @Test
     public void bug17240() {
         DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8010, "rest-admin", "x", DatabaseClientFactory.Authentication.DIGEST);
         // create a manager for writing query options

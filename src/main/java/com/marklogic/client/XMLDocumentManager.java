@@ -21,7 +21,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
 /**
  * A XML Document Manager supports database operations on XML documents.
  */
-public interface XMLDocumentManager extends AbstractDocumentManager<XMLReadHandle, XMLWriteHandle> {
+public interface XMLDocumentManager extends DocumentManager<XMLReadHandle, XMLWriteHandle> {
     public enum DocumentRepair {
         FULL, NONE;
     }

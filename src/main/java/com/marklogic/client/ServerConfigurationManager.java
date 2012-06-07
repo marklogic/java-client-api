@@ -20,6 +20,10 @@ package com.marklogic.client;
  * of the server.
  */
 public interface ServerConfigurationManager {
+	public enum Policy {
+		REQUIRED, OPTIONAL, NONE;
+	}
+
 	/**
 	 * Reads the values of the properties from the server into this object.
 	 */
@@ -39,7 +43,15 @@ public interface ServerConfigurationManager {
 	public String getDefaultDocumentReadTransform(String name);
 	public void   setDefaultDocumentReadTransform(String name);
 
-    public QueryOptionsManager        newQueryOptionsManager();
+	// for debug logging on the server side
+	public Boolean getServerRequestLogging();
+	public void setServerRequestLogging(Boolean on);
+
+	// conditional requests based on the version
+	public Policy getContentVersionRequests();
+	public void setContentVersionRequests(Policy policy);
+
+	public QueryOptionsManager        newQueryOptionsManager();
     public NamespacesManager          newNamespacesManager();
 	public ResourceExtensionsManager  newResourceExtensionsManager();
 	public TransformExtensionsManager newTransformExtensionsManager();

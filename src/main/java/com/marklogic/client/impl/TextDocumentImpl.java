@@ -21,7 +21,7 @@ import com.marklogic.client.io.marker.TextReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
 
 class TextDocumentImpl
-	extends AbstractDocumentImpl<TextReadHandle, TextWriteHandle>
+	extends DocumentManagerImpl<TextReadHandle, TextWriteHandle>
 	implements TextDocumentManager
 {
 	TextDocumentImpl(RESTServices services) {

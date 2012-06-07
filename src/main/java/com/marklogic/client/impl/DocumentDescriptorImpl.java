@@ -18,15 +18,18 @@ package com.marklogic.client.impl;
 import com.marklogic.client.DocumentDescriptor;
 import com.marklogic.client.Format;
 
-public class DocumentIdentifierImpl implements DocumentDescriptor {
-	private String uri;
-	private Format format;
-	private String mimetype;
-	private long   byteLength = UNKNOWN_LENGTH;
+public class DocumentDescriptorImpl implements DocumentDescriptor {
+	private String  uri;
+	private Format  format;
+	private String  mimetype;
+	private long    byteLength = UNKNOWN_LENGTH;
+	private long    version    = UNKNOWN_VERSION;
+	private boolean isInternal = false;
 
-	public DocumentIdentifierImpl(String uri) {
+	public DocumentDescriptorImpl(String uri, boolean isInternal) {
 		super();
 		setUri(uri);
+		setInternal(isInternal);
 	}
 
 	@Override
@@ -66,4 +69,20 @@ public class DocumentIdentifierImpl implements DocumentDescriptor {
 	public void setByteLength(long length) {
     	byteLength = length;
     }
+
+	@Override
+	public void setVersion(long version) {
+		this.version = version;
+	}
+	@Override
+	public long getVersion() {
+		return version;
+	}
+
+	protected void setInternal(boolean isInternal) {
+		this.isInternal = isInternal;
+	}
+	protected boolean isInternal() {
+		return isInternal;
+	}
 }

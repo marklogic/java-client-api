@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.AbstractDocumentManager.Metadata;
+import com.marklogic.client.DocumentManager.Metadata;
 import com.marklogic.client.Format;
 import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.Transaction;
@@ -173,7 +173,6 @@ public class GenericDocumentTest {
 		Document status = transaction.readStatus(new DOMHandle()).get();
 		assertXpathExists("//*[local-name() = 'transaction-name' and "+
 				"string(.) = '"+transactionName+"']", status);
-
 
 		transaction.commit();
 

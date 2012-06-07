@@ -22,7 +22,7 @@ import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 /**
  * A Binary Document Manager provides database operations on binary documents.
  */
-public interface BinaryDocumentManager extends AbstractDocumentManager<BinaryReadHandle, BinaryWriteHandle> {
+public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle, BinaryWriteHandle> {
 	public enum MetadataExtraction {
 		PROPERTIES, DOCUMENT, NONE;
 	}
@@ -39,9 +39,17 @@ public interface BinaryDocumentManager extends AbstractDocumentManager<BinaryRea
      * @param length
      * @return
      */
-	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, long start, long length);
+	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, long start, long length)
+	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
-	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, ServerTransform transform, long start, long length);
+	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, ServerTransform transform, long start, long length)
+	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+
+	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, long start, long length)
+	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+
+	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, long start, long length)
+	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
 	/**
      * Reads metadata and a range of bytes from the content of a binary database document in the representations provided by the handles
@@ -56,9 +64,17 @@ public interface BinaryDocumentManager extends AbstractDocumentManager<BinaryRea
      * @param length
      * @return
      */
-	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length);
+	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length)
+	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
-	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length);
+	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length)
+	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+
+	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length)
+	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+
+	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length)
+	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
 	/**
      * Reads a range of bytes from the content of a binary document for an open database transaction in the representation provided by the handle
@@ -73,9 +89,17 @@ public interface BinaryDocumentManager extends AbstractDocumentManager<BinaryRea
      * @param transaction
      * @return
      */
-	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, long start, long length, Transaction transaction);
+	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, long start, long length, Transaction transaction)
+	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
-	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction);
+	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction)
+	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+
+	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, long start, long length, Transaction transaction)
+	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+
+	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction)
+	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
 	/**
      * Reads metadata and a range of bytes from the content of a binary document for an open database transaction in the representations provided by the handles
@@ -91,9 +115,17 @@ public interface BinaryDocumentManager extends AbstractDocumentManager<BinaryRea
      * @param transaction
      * @return
      */
-	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction);
+	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction)
+	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
-	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction);
+	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction)
+	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+
+	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction)
+	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+
+	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction)
+	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
 
 	public MetadataExtraction getMetadataExtraction();
 	public void setMetadataExtraction(MetadataExtraction policy);

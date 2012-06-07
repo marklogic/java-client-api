@@ -51,7 +51,7 @@ import org.apache.http.params.HttpParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.AbstractDocumentManager.Metadata;
+import com.marklogic.client.DocumentManager.Metadata;
 import com.marklogic.client.BadRequestException;
 import com.marklogic.client.ContentDescriptor;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -78,9 +78,12 @@ import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.HandleAccessor;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.AbstractReadHandle;
+import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
+import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.RequestBuilder;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.api.client.filter.HTTPDigestAuthFilter;
@@ -258,16 +261,21 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public void deleteDocument(RequestLogger reqlog, String uri, String transactionId, Set<Metadata> categories)
+	public void deleteDocument(RequestLogger reqlog, DocumentDescriptor desc, String transactionId, Set<Metadata> categories)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		String uri = desc.getUri();
 		if (uri == null)
 			throw new IllegalArgumentException("Document delete for document identifier without uri");
 
 		logger.info("Deleting {} in transaction {}", uri, transactionId);
 
-		ClientResponse response = makeDocumentResource(
-				makeDocumentParams(uri, categories, transactionId, null)).delete(
-				ClientResponse.class);
+		WebResource webResource = makeDocumentResource(
+				makeDocumentParams(uri, categories, transactionId, null)
+				);
+
+		addVersionHeader(desc, webResource, "If-Match");
+
+		ClientResponse response = webResource.delete(ClientResponse.class);
 
 		if (isFirstRequest) isFirstRequest = false;
 
@@ -284,7 +292,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public void getDocument(RequestLogger reqlog, String uri, String transactionId,
+	public void getDocument(RequestLogger reqlog, DocumentDescriptor desc, String transactionId,
 			Set<Metadata> categories, RequestParameters extraParams,
 			DocumentMetadataReadHandle metadataHandle, AbstractReadHandle contentHandle)
 	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
@@ -301,13 +309,13 @@ public class JerseyServices implements RESTServices {
 
 		String contentMimetype = null;
 		if (contentBase != null) {
-			contentMimetype = contentBase.getFormat().getDefaultMimetype();
+			contentMimetype = contentBase.getMimetype();
 		}
 
 		if (metadataBase != null && contentBase != null) {
 			getDocumentImpl(
 					reqlog,
-					uri, 
+					desc, 
 					transactionId,
 					categories,
 					extraParams,
@@ -317,7 +325,7 @@ public class JerseyServices implements RESTServices {
 		} else if (metadataBase != null) {
 			getDocumentImpl(
 					reqlog,
-					uri,
+					desc,
 					transactionId,
 					categories,
 					extraParams,
@@ -327,7 +335,7 @@ public class JerseyServices implements RESTServices {
 		} else if (contentBase != null) {
 			getDocumentImpl(
 				reqlog,
-				uri,
+				desc,
 				transactionId,
 				null,
 				extraParams,
@@ -336,21 +344,24 @@ public class JerseyServices implements RESTServices {
 				);
 		}
 	}
-
-	private void getDocumentImpl(RequestLogger reqlog, String uri, String transactionId, Set<Metadata> categories, RequestParameters extraParams, String mimetype, AbstractReadHandle handle)
+	private void getDocumentImpl(RequestLogger reqlog, DocumentDescriptor desc, String transactionId, Set<Metadata> categories, RequestParameters extraParams, String mimetype, AbstractReadHandle handle)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		String uri = desc.getUri();
 		if (uri == null)
 			throw new IllegalArgumentException("Document read for document identifier without uri");
 
 		logger.info("Getting {} in transaction {}", uri, transactionId);
 
-		WebResource.Builder resource = makeDocumentResource(
+		WebResource.Builder builder = makeDocumentResource(
 				makeDocumentParams(uri, categories, transactionId, extraParams)
 				).accept(mimetype);
-		if (extraParams != null && extraParams.containsKey("range"))
-			resource = resource.header("range", extraParams.get("range").get(0));
 
-		ClientResponse response = resource.get(ClientResponse.class);
+		if (extraParams != null && extraParams.containsKey("range"))
+			builder = builder.header("range", extraParams.get("range").get(0));
+
+		addVersionHeader(desc, builder, "If-None-Match");
+
+		ClientResponse response = builder.get(ClientResponse.class);
 
 		if (isFirstRequest) isFirstRequest = false;
 
@@ -376,7 +387,7 @@ public class JerseyServices implements RESTServices {
 				);
 
 		BaseHandle handleBase = HandleAccessor.as(handle);
-		updateDescriptor(handleBase, response.getHeaders());
+		updateDescriptor(desc, handleBase, response);
 
 		Class as = HandleAccessor.receiveAs(handle);
 		Object entity = response.getEntity(as);
@@ -388,11 +399,11 @@ public class JerseyServices implements RESTServices {
 				(reqlog != null) ? reqlog.copyContent(entity) : entity
 				);
 	}
-
-	private void getDocumentImpl(RequestLogger reqlog, String uri, String transactionId,
+	private void getDocumentImpl(RequestLogger reqlog, DocumentDescriptor desc, String transactionId,
 			Set<Metadata> categories, RequestParameters extraParams,
 			String metadataFormat, DocumentMetadataReadHandle metadataHandle, AbstractReadHandle contentHandle)
 	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		String uri = desc.getUri();
 		if (uri == null)
 			throw new IllegalArgumentException("Document read for document identifier without uri");
 
@@ -402,9 +413,13 @@ public class JerseyServices implements RESTServices {
 				categories, transactionId, extraParams, true);
 		docParams.add("format",metadataFormat);
 
-		ClientResponse response = makeDocumentResource(docParams).accept(
-				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE))
-				.get(ClientResponse.class);
+		WebResource.Builder builder = makeDocumentResource(docParams).accept(
+				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE)
+				);
+
+		addVersionHeader(desc, builder, "If-None-Match");
+
+		ClientResponse response = builder.get(ClientResponse.class);
 
 		if (isFirstRequest) isFirstRequest = false;
 
@@ -443,7 +458,7 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException("read expected 2 parts but got " + partCount + " parts");
 
 		BaseHandle contentBase = HandleAccessor.as(contentHandle);
-		updateDescriptor(contentBase, response.getHeaders());
+		updateDescriptor(desc, contentBase, response);
 
 		HandleAccessor.receiveContent(
 				metadataHandle,
@@ -467,8 +482,11 @@ public class JerseyServices implements RESTServices {
 		logger.info("Requesting head for {} in transaction {}", uri,
 				transactionId);
 
-		ClientResponse response = makeDocumentResource(
-				makeDocumentParams(uri, null, transactionId, null)).head();
+		WebResource webResource = makeDocumentResource(
+				makeDocumentParams(uri, null, transactionId, null)
+				);
+
+		ClientResponse response = webResource.head();
 
 		MultivaluedMap<String, String> headers = response.getHeaders();
 
@@ -486,17 +504,79 @@ public class JerseyServices implements RESTServices {
 				(transactionId != null) ? transactionId : "no"
 				);
 
-		DocumentIdentifierImpl identifier = new DocumentIdentifierImpl(uri);
+		DocumentDescriptorImpl identifier = new DocumentDescriptorImpl(uri, false);
 		updateDescriptor(identifier, headers);
 
 		return identifier;
 	}
+
 	@Override
-	public void putDocument(RequestLogger reqlog, String uri, String transactionId, Set<Metadata> categories, RequestParameters extraParams, String mimetype, Object value)
+	public void putDocument(RequestLogger reqlog, DocumentDescriptor desc, String transactionId,
+			Set<Metadata> categories, RequestParameters extraParams,
+			DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		BaseHandle metadataBase = HandleAccessor.checkHandle(metadataHandle, "metadata");
+		BaseHandle contentBase  = HandleAccessor.checkHandle(contentHandle,  "content");
+
+		String metadataMimetype = null;
+		if (metadataBase != null) {
+			metadataMimetype = metadataBase.getMimetype();
+		}
+
+		Format descFormat      = desc.getFormat();
+		String contentMimetype = 
+			(descFormat != null && descFormat != Format.UNKNOWN) ?
+			desc.getMimetype() : null;
+		if (contentMimetype == null && contentBase != null) {
+			Format contentFormat = contentBase.getFormat();
+			if (descFormat != null && descFormat != contentFormat) {
+				contentMimetype = descFormat.getDefaultMimetype();
+			} else if (contentFormat != null && contentFormat != Format.UNKNOWN) {
+				contentMimetype = contentBase.getMimetype();
+			}
+		}
+
+		if (metadataBase != null && contentBase != null) {
+			putDocumentImpl(
+					reqlog,
+					desc,
+					transactionId,
+					categories,
+					extraParams,
+					metadataMimetype,
+					metadataHandle,
+					contentMimetype,
+					contentHandle
+					);
+		} else if (metadataBase != null) {
+			putDocumentImpl(
+					reqlog,
+					desc,
+					transactionId,
+					categories,
+					extraParams,
+					metadataMimetype,
+					metadataHandle
+					);
+		} else if (contentBase != null) {
+			putDocumentImpl(
+					reqlog,
+					desc,
+					transactionId,
+					null,
+					extraParams,
+					contentMimetype,
+					contentHandle
+					);
+		}
+	}
+	private void putDocumentImpl(RequestLogger reqlog, DocumentDescriptor desc, String transactionId, Set<Metadata> categories, RequestParameters extraParams, String mimetype, AbstractWriteHandle handle)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		String uri = desc.getUri();
 		if (uri == null)
 			throw new IllegalArgumentException("Document write for document identifier without uri");
 
+		Object value = HandleAccessor.sendContent(handle);
 		if (value == null)
 			throw new IllegalArgumentException("Document write with null value for "+uri);
 
@@ -515,6 +595,8 @@ public class JerseyServices implements RESTServices {
 		WebResource.Builder builder = webResource.type(
 			(mimetype != null) ? mimetype : MediaType.WILDCARD
 			);
+
+		addVersionHeader(desc, builder, "If-Match");
 
 		ClientResponse response = null;
 		if (value instanceof OutputStreamSender) {
@@ -543,21 +625,14 @@ public class JerseyServices implements RESTServices {
 				&& status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("write failed: "+status.getReasonPhrase());
 	}
-	@Override
-	public void putDocument(RequestLogger reqlog, String uri, String transactionId, Set<Metadata> categories, RequestParameters extraParams, String[] mimetypes, Object[] values)
+	private void putDocumentImpl(RequestLogger reqlog, DocumentDescriptor desc,
+			String transactionId, Set<Metadata> categories, RequestParameters extraParams,
+			String metadataMimetype, DocumentMetadataWriteHandle metadataHandle,
+			String contentMimetype, AbstractWriteHandle contentHandle)
 	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		String uri = desc.getUri();
 		if (uri == null)
 			throw new IllegalArgumentException("Document write for document identifier without uri");
-
-		if (mimetypes == null || mimetypes.length == 0)
-			throw new IllegalArgumentException("mime types not specified for write");
-
-		if (values == null || values.length == 0)
-			throw new IllegalArgumentException("values not specified for write");
-
-		if (mimetypes.length != values.length)
-			throw new IllegalArgumentException(
-					"mistmatch between mime types and values for write");
 
 		logger.info("Putting multipart for {} in transaction {}", uri, transactionId);
 
@@ -571,29 +646,37 @@ public class JerseyServices implements RESTServices {
 
 		MultiPart multiPart = new MultiPart();
 		multiPart.setMediaType(new MediaType("multipart", "mixed"));
-		for (int i = 0; i < mimetypes.length; i++) {
-			if (mimetypes[i] == null)
-				throw new IllegalArgumentException("null mimetype: "+i);
 
-			String[] typeParts = mimetypes[i].contains("/") ?
-					mimetypes[i].split("/", 2) : null;
+		for (int i = 0; i < 2; i++) {
+			String mimetype = null;
+			Object value = null;
+			if (i == 0) {
+				mimetype = metadataMimetype;
+				value = HandleAccessor.sendContent(metadataHandle);
+			} else {
+				mimetype = contentMimetype;
+				value = HandleAccessor.sendContent(contentHandle);
+			}
+
+			String[] typeParts = mimetype.contains("/") ?
+					mimetype.split("/", 2) : null;
 
 			MediaType typePart = (typeParts != null) ?
 					new MediaType(typeParts[0], typeParts[1]) :
 					MediaType.WILDCARD_TYPE;
 
 			BodyPart bodyPart = null;
-			if (values[i] instanceof OutputStreamSender) {
+			if (value instanceof OutputStreamSender) {
 				hasStreamingPart = true;
-				bodyPart = new BodyPart(new StreamingOutputImpl((OutputStreamSender) values[i], reqlog), typePart);
+				bodyPart = new BodyPart(new StreamingOutputImpl((OutputStreamSender) value, reqlog), typePart);
 			} else {
-				if (values[i] instanceof InputStream || values[i] instanceof Reader)
+				if (value instanceof InputStream || value instanceof Reader)
 					hasStreamingPart = true;
 
 				if (reqlog != null)
-					bodyPart = new BodyPart(reqlog.copyContent(values[i]), typePart);
+					bodyPart = new BodyPart(reqlog.copyContent(value), typePart);
 				else
-					bodyPart = new BodyPart(values[i], typePart);
+					bodyPart = new BodyPart(value, typePart);
 			}
 
 			multiPart = multiPart.bodyPart(bodyPart);
@@ -604,9 +687,12 @@ public class JerseyServices implements RESTServices {
 
 		if (isFirstRequest && hasStreamingPart) makeFirstRequest();
 
-		ClientResponse response = makeDocumentResource(docParams).type(
-				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE))
-				.put(ClientResponse.class, multiPart);
+		WebResource.Builder builder = makeDocumentResource(docParams).type(
+				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE)
+				);
+		addVersionHeader(desc, builder, "If-Match");
+
+		ClientResponse response = builder.put(ClientResponse.class, multiPart);
 
 		if (isFirstRequest) isFirstRequest = false;
 
@@ -738,11 +824,24 @@ public class JerseyServices implements RESTServices {
 		return connection.path("documents").queryParams(queryParams);
 	}
 
+	private void updateDescriptor(DocumentDescriptor desc, BaseHandle handleBase, ClientResponse response) {
+		if (desc != null && desc instanceof DocumentDescriptorImpl &&
+				!((DocumentDescriptorImpl) desc).isInternal()) {
+			updateDescriptor(desc, response.getHeaders());
+			handleBase.setFormat(desc.getFormat());
+			handleBase.setMimetype(desc.getMimetype());
+			handleBase.setByteLength(desc.getByteLength());
+		} else {
+			updateDescriptor(handleBase, response.getHeaders());
+		}
+
+	}
 	private void updateDescriptor(ContentDescriptor descriptor, MultivaluedMap<String, String> headers) {
-		if (headers == null) return;
+		if (descriptor == null || headers == null) return;
 
 		List<String> values = null;
-		if (descriptor.getFormat() == null && headers.containsKey("vnd.marklogic.document-format")) {
+
+		if (headers.containsKey("vnd.marklogic.document-format")) {
 			values = headers.get("vnd.marklogic.document-format");
 			if (values != null) {
 				Format format = Format.valueOf(values.get(0).toUpperCase());
@@ -751,21 +850,46 @@ public class JerseyServices implements RESTServices {
 				}
 			}
 		}
-		if (descriptor.getMimetype() == null && headers.containsKey("Content-Type")) {
+
+		if (headers.containsKey("Content-Type")) {
 			values = headers.get("Content-Type");
 			if (values != null) {
-				String type = values.get(0);
-				descriptor.setMimetype(
-						type.contains(";") ? type.substring(0, type.indexOf(";")) : type
-						);
+				String contentType = values.get(0);
+				String mimetype    = contentType.contains(";") ?
+					contentType.substring(0, contentType.indexOf(";")) : contentType;
+				if (mimetype != null && mimetype.length() > 0) {
+					descriptor.setMimetype(contentType);
+				}
 			}
 		}
+
+		long length = ContentDescriptor.UNKNOWN_LENGTH;
 		if (headers.containsKey("Content-Length")) {
 			values = headers.get("Content-Length");
 			if (values != null) {
-				descriptor.setByteLength(
-						Integer.valueOf(values.get(0))
-						);
+				length = Long.valueOf(values.get(0));
+			}
+		}
+		descriptor.setByteLength(length);
+
+		if (descriptor instanceof DocumentDescriptor) {
+			long version = DocumentDescriptor.UNKNOWN_VERSION;
+			if (headers.containsKey("ETag")) {
+				values = headers.get("Tag");
+				if (values != null) {
+					version = Long.valueOf(values.get(0));
+				}
+			}
+			((DocumentDescriptor) descriptor).setVersion(version);
+		}
+	}
+
+	private void addVersionHeader(DocumentDescriptor desc, RequestBuilder builder, String name) {
+		if (desc != null && desc instanceof DocumentDescriptorImpl &&
+				!((DocumentDescriptorImpl) desc).isInternal()) {
+			long version = desc.getVersion();
+			if (version != DocumentDescriptor.UNKNOWN_VERSION) {
+				builder.header(name, String.valueOf(version));
 			}
 		}
 	}

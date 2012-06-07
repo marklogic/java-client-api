@@ -22,7 +22,7 @@ import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
 public class JSONDocumentImpl
-    extends AbstractDocumentImpl<JSONReadHandle, JSONWriteHandle> 
+    extends DocumentManagerImpl<JSONReadHandle, JSONWriteHandle> 
     implements JSONDocumentManager
 {
 	private String language;

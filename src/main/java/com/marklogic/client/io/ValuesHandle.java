@@ -15,64 +15,25 @@
  */
 package com.marklogic.client.io;
 
-import com.marklogic.client.DocumentDescriptor;
-import com.marklogic.client.Format;
-import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.config.CountedDistinctValue;
-import com.marklogic.client.config.DistinctValue;
-import com.marklogic.client.config.FacetHeatmapValue;
-import com.marklogic.client.config.FacetResult;
-import com.marklogic.client.config.FacetValue;
-import com.marklogic.client.config.MarkLogicBindingException;
-import com.marklogic.client.config.MatchDocumentSummary;
-import com.marklogic.client.config.MatchLocation;
-import com.marklogic.client.config.MatchSnippet;
-import com.marklogic.client.config.QueryDefinition;
-import com.marklogic.client.config.QueryOptionsBuilder;
-import com.marklogic.client.config.SearchMetrics;
-import com.marklogic.client.config.SearchResults;
-import com.marklogic.client.config.ValuesBuilder;
-import com.marklogic.client.config.ValuesDefinition;
-import com.marklogic.client.config.ValuesResults;
-import com.marklogic.client.io.marker.OperationNotSupported;
-import com.marklogic.client.io.marker.SearchReadHandle;
-import com.marklogic.client.io.marker.ValuesReadHandle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Attr;
-import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
+import java.io.InputStream;
 
-import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Time;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Stack;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.marklogic.client.Format;
+import com.marklogic.client.config.CountedDistinctValue;
+import com.marklogic.client.config.DistinctValue;
+import com.marklogic.client.config.MarkLogicBindingException;
+import com.marklogic.client.config.ValuesBuilder;
+import com.marklogic.client.config.ValuesDefinition;
+import com.marklogic.client.config.ValuesResults;
+import com.marklogic.client.io.marker.OperationNotSupported;
+import com.marklogic.client.io.marker.ValuesReadHandle;
 
 public class ValuesHandle
 	extends BaseHandle<InputStream, OperationNotSupported>

@@ -23,7 +23,7 @@ import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
 class XMLDocumentImpl
-    extends AbstractDocumentImpl<XMLReadHandle, XMLWriteHandle>
+    extends DocumentManagerImpl<XMLReadHandle, XMLWriteHandle>
     implements XMLDocumentManager
 {
 	private DocumentRepair repair;

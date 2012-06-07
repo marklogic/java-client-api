@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.BinaryDocumentManager;
+import com.marklogic.client.DocumentDescriptor;
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.RequestParameters;
@@ -29,7 +30,7 @@ import com.marklogic.client.io.marker.BinaryWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 
 class BinaryDocumentImpl
-	extends AbstractDocumentImpl<BinaryReadHandle, BinaryWriteHandle>
+	extends DocumentManagerImpl<BinaryReadHandle, BinaryWriteHandle>
 	implements BinaryDocumentManager
 {
 	static final private Logger logger = LoggerFactory.getLogger(BinaryDocumentImpl.class);
@@ -70,7 +71,40 @@ class BinaryDocumentImpl
 	}
 	@Override
 	public <T extends BinaryReadHandle> T read(String uri, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction) {
-		logger.info("Reading range of binary content for {}",uri);
+		return read(new DocumentDescriptorImpl(uri, true), metadataHandle, contentHandle, transform, start, length, transaction);
+	}
+
+	@Override
+	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, long start, long length) {
+		return read(desc, null, contentHandle, null, start, length, null);
+	}
+	@Override
+	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, long start, long length) {
+		return read(desc, null, contentHandle, transform, start, length, null);
+	}
+	@Override
+	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length) {
+		return read(desc, metadataHandle, contentHandle, null, start, length, null);
+	}
+	@Override
+	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length) {
+		return read(desc, metadataHandle, contentHandle, transform, start, length, null);
+	}
+	@Override
+	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, long start, long length, Transaction transaction) {
+		return read(desc, null, contentHandle, null, start, length, transaction);
+	}
+	@Override
+	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction) {
+		return read(desc, null, contentHandle, transform, start, length, transaction);
+	}
+	@Override
+	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction) {
+		return read(desc, metadataHandle, contentHandle, null, start, length, transaction);
+	}
+	@Override
+	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction) {
+		logger.info("Reading range of binary content for {}",desc.getUri());
 
 		RequestParameters extraParams = new RequestParameters();
 		if (length > 0)
@@ -78,7 +112,7 @@ class BinaryDocumentImpl
 		else
 			extraParams.put("range", "bytes="+String.valueOf(start));
 
-		return read(uri, metadataHandle, contentHandle, transform, transaction, extraParams);
+		return read(desc, metadataHandle, contentHandle, transform, transaction, extraParams);
 	}
 
 	public MetadataExtraction getMetadataExtraction() {

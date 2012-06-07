@@ -19,6 +19,11 @@ package com.marklogic.client;
  * A Document Descriptor identifies a database document.
  */
 public interface DocumentDescriptor extends ContentDescriptor {
+	static final public long UNKNOWN_VERSION = -1;
+
 	public String getUri();
 	public void setUri(String uri);
+
+	public long getVersion();
+	public void setVersion(long version);
 }

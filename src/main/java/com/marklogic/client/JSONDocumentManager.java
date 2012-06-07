@@ -21,7 +21,7 @@ import com.marklogic.client.io.marker.JSONWriteHandle;
 /**
  * A JSON Document Manager supports database operations on JSON documents.
  */
-public interface JSONDocumentManager extends AbstractDocumentManager<JSONReadHandle, JSONWriteHandle> {
+public interface JSONDocumentManager extends DocumentManager<JSONReadHandle, JSONWriteHandle> {
 	public String getLanguage();
     public void setLanguage(String language);
 }

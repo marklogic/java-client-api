@@ -45,6 +45,8 @@ class ServerConfigurationManagerImpl
 
 	private Boolean validatingQueryOptions;
 	private String  defaultDocumentReadTransform;
+	private Boolean serverRequestLogging;
+	private Policy  contentVersions;
 
 	private RESTServices services;
 
@@ -67,18 +69,26 @@ class ServerConfigurationManagerImpl
 			factory.setProperty("javax.xml.stream.isValidating",     new Boolean(false));
 
 			XMLStreamReader reader = factory.createXMLStreamReader(stream);
+
+			validatingQueryOptions       = null;
+			defaultDocumentReadTransform = null;
+			serverRequestLogging         = null;
+			contentVersions              = null;
+
 			while (reader.hasNext()) {
 				if (reader.next() != XMLStreamReader.START_ELEMENT)
 					continue;
 
 				String localName = reader.getLocalName();
 				if ("validate-options".equals(localName)) {
-					String value = reader.getElementText();
-					validatingQueryOptions = new Boolean("true".equals(value));
+					validatingQueryOptions = Boolean.valueOf(reader.getElementText());
 				} else if ("document-transform-out".equals(localName)) {
 					defaultDocumentReadTransform = reader.getElementText();
+				} else if ("debug".equals(localName)) {
+					serverRequestLogging = Boolean.valueOf(reader.getElementText());
+				} else if ("content-versions".equals(localName)) {
+					contentVersions = Enum.valueOf(Policy.class, reader.getElementText().toUpperCase());
 				}
-				// TODO: other properties
 			}
 
 			reader.close();
@@ -114,7 +124,16 @@ class ServerConfigurationManagerImpl
 				serializer.writeCharacters(defaultDocumentReadTransform);
 				serializer.writeEndElement();
 			}
-			// TODO: other properties
+			if (serverRequestLogging != null) {
+				serializer.writeStartElement(REST_API_NS, "debug");
+				serializer.writeCharacters(serverRequestLogging.toString());
+				serializer.writeEndElement();
+			}
+			if (contentVersions != null) {
+				serializer.writeStartElement(REST_API_NS, "content-versions");
+				serializer.writeCharacters(contentVersions.name().toLowerCase());
+				serializer.writeEndElement();
+			}
 
 //			serializer.writeEndElement();
 
@@ -141,6 +160,24 @@ class ServerConfigurationManagerImpl
 	@Override
 	public void setDefaultDocumentReadTransform(String name) {
 		defaultDocumentReadTransform = name;
+	}
+
+	@Override
+	public Boolean getServerRequestLogging() {
+		return serverRequestLogging;
+	}
+	@Override
+	public void setServerRequestLogging(Boolean on) {
+		serverRequestLogging = on;
+	}
+
+	@Override
+	public Policy getContentVersionRequests() {
+		return contentVersions;
+	}
+	@Override
+	public void setContentVersionRequests(Policy policy) {
+		contentVersions = policy;
 	}
 
 	@Override
