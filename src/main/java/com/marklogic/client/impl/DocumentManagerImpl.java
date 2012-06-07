@@ -208,7 +208,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 
 		checkContentFormat(contentHandle);
 
-		services.getDocument(
+		boolean wasModified = services.getDocument(
 				requestLogger,
 				desc, 
 				(transaction != null) ? transaction.getTransactionId() : null,
@@ -220,7 +220,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 
 		// TODO: after response, reset metadata and set flag
 
-		return contentHandle;
+		return wasModified ? contentHandle : null;
 	}
 
 	@Override

@@ -283,8 +283,13 @@ public class JerseyServices implements RESTServices {
 		response.close();
 		if (status == ClientResponse.Status.NOT_FOUND)
 			throw new ResourceNotFoundException("Could not delete non-existent document");
-		if (status == ClientResponse.Status.FORBIDDEN)
+		if (status == ClientResponse.Status.FORBIDDEN) {
+			if ("No Content Version".equals(status.getReasonPhrase()))
+				throw new FailedRequestException("Content version required to delete document");
 			throw new ForbiddenUserException("User is not allowed to delete documents");
+		}
+		if (status == ClientResponse.Status.PRECONDITION_FAILED)
+			throw new FailedRequestException("Content version must match to delete document");
 		if (status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("delete failed: "+status.getReasonPhrase());
 
@@ -292,7 +297,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public void getDocument(RequestLogger reqlog, DocumentDescriptor desc, String transactionId,
+	public boolean getDocument(RequestLogger reqlog, DocumentDescriptor desc, String transactionId,
 			Set<Metadata> categories, RequestParameters extraParams,
 			DocumentMetadataReadHandle metadataHandle, AbstractReadHandle contentHandle)
 	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
@@ -313,7 +318,7 @@ public class JerseyServices implements RESTServices {
 		}
 
 		if (metadataBase != null && contentBase != null) {
-			getDocumentImpl(
+			return getDocumentImpl(
 					reqlog,
 					desc, 
 					transactionId,
@@ -323,7 +328,7 @@ public class JerseyServices implements RESTServices {
 					metadataHandle, contentHandle
 					);
 		} else if (metadataBase != null) {
-			getDocumentImpl(
+			return getDocumentImpl(
 					reqlog,
 					desc,
 					transactionId,
@@ -333,7 +338,7 @@ public class JerseyServices implements RESTServices {
 					metadataHandle
 					);
 		} else if (contentBase != null) {
-			getDocumentImpl(
+			return getDocumentImpl(
 				reqlog,
 				desc,
 				transactionId,
@@ -343,8 +348,10 @@ public class JerseyServices implements RESTServices {
 				contentHandle
 				);
 		}
+
+		return false;
 	}
-	private void getDocumentImpl(RequestLogger reqlog, DocumentDescriptor desc, String transactionId, Set<Metadata> categories, RequestParameters extraParams, String mimetype, AbstractReadHandle handle)
+	private boolean getDocumentImpl(RequestLogger reqlog, DocumentDescriptor desc, String transactionId, Set<Metadata> categories, RequestParameters extraParams, String mimetype, AbstractReadHandle handle)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		String uri = desc.getUri();
 		if (uri == null)
@@ -374,6 +381,10 @@ public class JerseyServices implements RESTServices {
 			response.close();
 			throw new ForbiddenUserException("User is not allowed to read documents");
 		}
+		if (status == ClientResponse.Status.NOT_MODIFIED) {
+			response.close();
+			return false;
+		}
 		if (status != ClientResponse.Status.OK) {
 			response.close();
 			throw new FailedRequestException("read failed: "+status.getReasonPhrase());
@@ -398,8 +409,10 @@ public class JerseyServices implements RESTServices {
 				handle,
 				(reqlog != null) ? reqlog.copyContent(entity) : entity
 				);
+
+		return true;
 	}
-	private void getDocumentImpl(RequestLogger reqlog, DocumentDescriptor desc, String transactionId,
+	private boolean getDocumentImpl(RequestLogger reqlog, DocumentDescriptor desc, String transactionId,
 			Set<Metadata> categories, RequestParameters extraParams,
 			String metadataFormat, DocumentMetadataReadHandle metadataHandle, AbstractReadHandle contentHandle)
 	throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
@@ -432,6 +445,10 @@ public class JerseyServices implements RESTServices {
 			response.close();
 			throw new ForbiddenUserException("User is not allowed to read documents");
 		}
+		if (status == ClientResponse.Status.NOT_MODIFIED) {
+			response.close();
+			return false;
+		}
 		if (status != ClientResponse.Status.OK) {
 			response.close();
 			throw new FailedRequestException("read failed: "+status.getReasonPhrase());
@@ -445,15 +462,15 @@ public class JerseyServices implements RESTServices {
 
 		MultiPart entity = response.getEntity(MultiPart.class);
 		if (entity == null)
-			return;
+			return false;
 
 		List<BodyPart> partList = entity.getBodyParts();
 		if (partList == null)
-			return;
+			return false;
 
 		int partCount = partList.size();
 		if (partCount == 0)
-			return;
+			return false;
 		if (partCount != 2)
 			throw new FailedRequestException("read expected 2 parts but got " + partCount + " parts");
 
@@ -472,6 +489,8 @@ public class JerseyServices implements RESTServices {
 				);
 
 		response.close();
+
+		return true;
 	}
 
 	@Override
@@ -619,8 +638,13 @@ public class JerseyServices implements RESTServices {
 		response.close();
 		if (status == ClientResponse.Status.NOT_FOUND)
 			throw new ResourceNotFoundException("Could not write non-existent document");
-		if (status == ClientResponse.Status.FORBIDDEN)
+		if (status == ClientResponse.Status.FORBIDDEN) {
+			if ("No Content Version".equals(status.getReasonPhrase()))
+				throw new FailedRequestException("Content version required to write document");
 			throw new ForbiddenUserException("User is not allowed to write documents");
+		}
+		if (status == ClientResponse.Status.PRECONDITION_FAILED)
+			throw new FailedRequestException("Content version must match to write document");
 		if (status != ClientResponse.Status.CREATED
 				&& status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("write failed: "+status.getReasonPhrase());
@@ -700,8 +724,13 @@ public class JerseyServices implements RESTServices {
 		response.close();
 		if (status == ClientResponse.Status.NOT_FOUND)
 			throw new ResourceNotFoundException("Could not write non-existent document");
-		if (status == ClientResponse.Status.FORBIDDEN)
+		if (status == ClientResponse.Status.FORBIDDEN) {
+			if ("No Content Version".equals(status.getReasonPhrase()))
+				throw new FailedRequestException("Content version required to write document");
 			throw new ForbiddenUserException("User is not allowed to write documents");
+		}
+		if (status == ClientResponse.Status.PRECONDITION_FAILED)
+			throw new FailedRequestException("Content version must match to write document");
 		if (status != ClientResponse.Status.CREATED
 				&& status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("write failed: "+status.getReasonPhrase());

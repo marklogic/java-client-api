@@ -48,7 +48,7 @@ public interface RESTServices {
 			Set<Metadata> categories)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-	public void getDocument(RequestLogger logger, DocumentDescriptor desc, String transactionId,
+	public boolean getDocument(RequestLogger logger, DocumentDescriptor desc, String transactionId,
 			Set<Metadata> categories, RequestParameters extraParams,
 			DocumentMetadataReadHandle metadataHandle, AbstractReadHandle contentHandle)
 		throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
