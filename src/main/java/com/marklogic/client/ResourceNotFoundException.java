@@ -15,18 +15,16 @@
  */
 package com.marklogic.client;
 
-public class ResourceNotFoundException extends RuntimeException {
-	public ResourceNotFoundException() {
-		super();
-	}
+import com.marklogic.client.impl.FailedRequest;
+
+public class ResourceNotFoundException extends MarkLogicServerException {
+
 	public ResourceNotFoundException(String message) {
 		super(message);
 	}
-	public ResourceNotFoundException(Throwable cause) {
-		super(cause);
-	}
-	public ResourceNotFoundException(String message, Throwable cause) {
-		super(message, cause);
+	public ResourceNotFoundException(String localMessage,
+			FailedRequest failedRequest) {
+		super(localMessage, failedRequest);
 	}
 
 }

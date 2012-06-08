@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
-import javax.swing.SortOrder;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -445,7 +444,7 @@ public final class QueryOptionsHandle extends
 	protected void receiveContent(InputStream content) {
 		try {
 			optionsHolder = (QueryOptions) unmarshaller.unmarshal(content);
-		} catch (JAXBException e) {
+		}  catch (JAXBException e) {
 			
 			throw new MarkLogicBindingException(e);
 		}

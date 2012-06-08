@@ -74,16 +74,16 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return
      */
     public <T extends R> T read(String docId, T contentHandle)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public <T extends R> T read(String docId, T contentHandle, ServerTransform transform)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     /**
      * Reads the document metadata and content from the database in the representations provided by the handles
@@ -97,16 +97,16 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return
      */
     public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     /**
      * Reads the document content from an open database transaction in the representation provided by the handle
@@ -120,16 +120,16 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return
      */
     public <T extends R> T read(String docId, T contentHandle, Transaction transaction)
-		throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public <T extends R> T read(String docId, T contentHandle, ServerTransform transform, Transaction transaction)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle, Transaction transaction)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, Transaction transaction)
-		throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     /**
      * Reads the document metadata and content from an open database transaction in the representations provided by the handles
@@ -144,16 +144,16 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return
      */
     public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction)
-		throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction)
-		throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     /**
      * Writes the document content to the database from the representation provided by the handle
@@ -164,16 +164,16 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle
      */
     public void write(String docId, W contentHandle)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public void write(String docId, W contentHandle, ServerTransform transform)
-		throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public void write(DocumentDescriptor desc, W contentHandle)
-		throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public void write(DocumentDescriptor desc, W contentHandle, ServerTransform transform)
-		throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     /**
      * Writes the document metadata and content to the database from the representations provided by the handles
@@ -185,16 +185,16 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle
      */
     public void write(String docId, DocumentMetadataWriteHandle metadata, W contentHandle)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public void write(String docId, DocumentMetadataWriteHandle metadata, W contentHandle, ServerTransform transform)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadata, W contentHandle)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadata, W contentHandle, ServerTransform transform)
-		throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     /**
      * Writes the document content to an open database transaction from the representation provided by the handle
@@ -206,16 +206,16 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction
      */
     public void write(String docId, W contentHandle, Transaction transaction)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public void write(String docId, W contentHandle, ServerTransform transform, Transaction transaction)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public void write(DocumentDescriptor desc, W contentHandle, Transaction transaction)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public void write(DocumentDescriptor desc, W contentHandle, ServerTransform transform, Transaction transaction)
-		throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     /**
      * Writes the document metadata and content to an open database transaction from the representations provided by the handles
@@ -228,16 +228,16 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction
      */
     public void write(String docId, DocumentMetadataWriteHandle metadata, W contentHandle, Transaction transaction)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public void write(String docId, DocumentMetadataWriteHandle metadata, W contentHandle, ServerTransform transform, Transaction transaction)
-    	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadata, W contentHandle, Transaction transaction)
-		throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadata, W contentHandle, ServerTransform transform, Transaction transaction)
-		throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     /**
      * Deletes the document metadata and content from the database

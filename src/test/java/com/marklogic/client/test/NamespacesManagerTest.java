@@ -40,13 +40,13 @@ public class NamespacesManagerTest {
 		NamespacesManager nsMgr =
 			Common.client.newServerConfigManager().newNamespacesManager();
 		
-		nsMgr.addPrefix("dc", "http://purl.org/dc/terms/");
+		nsMgr.updatePrefix("dc", "http://purl.org/dc/terms/");
 
 		String nsUri = nsMgr.readPrefix("dc");
 		assertEquals("Could not read namespace", nsUri, "http://purl.org/dc/terms/");
 
-		nsMgr.addPrefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-		nsMgr.addPrefix("skos", "http://www.w3.org/2004/02/skos/core#");
+		nsMgr.updatePrefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+		nsMgr.updatePrefix("skos", "http://www.w3.org/2004/02/skos/core#");
 
 		EditableNamespaceContext context = nsMgr.readAll();
 

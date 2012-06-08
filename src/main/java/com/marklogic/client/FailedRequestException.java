@@ -15,18 +15,19 @@
  */
 package com.marklogic.client;
 
-public class FailedRequestException extends RuntimeException {
-	public FailedRequestException() {
-		super();
-	}
+import com.marklogic.client.impl.FailedRequest;
+
+/**
+ * A FailedRequestException is used to capture and report on problems
+ * from the REST API.
+ */
+public class FailedRequestException extends MarkLogicServerException {
+	
 	public FailedRequestException(String message) {
 		super(message);
 	}
-	public FailedRequestException(Throwable cause) {
-		super(cause);
+	
+	public FailedRequestException(String localMessage, FailedRequest failedRequest) {
+		super(localMessage, failedRequest);
 	}
-	public FailedRequestException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
 }

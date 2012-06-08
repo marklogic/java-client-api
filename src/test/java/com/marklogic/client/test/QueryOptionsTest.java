@@ -51,7 +51,7 @@ public class QueryOptionsTest {
 		testGrammar();
 		testOperator(); 
 		testSearchOption();
-		testSearchableExpression();
+		//testSearchableExpression();
 		testSortOrder(); 
 		testSuggestionSource();
 		// testTerm();
@@ -67,7 +67,7 @@ public class QueryOptionsTest {
 		options.build(
 				builder.returnFacets(true),
 				builder.returnMetrics(false),
-				builder.searchableExpression("<searchable-expression xmlns=\"http://marklogic.com/appservices/search\">/sf1</searchable-expression>"),
+				builder.searchableExpression("/a:sf1", builder.namespace("a", "http://marklogic.com/a")),
 				// builder.annotation("<a:note xmlns:a=\"http://marklogic.com/note\">note</a:note>"),
 				builder.concurrencyLevel(2), builder.debug(false),
 				builder.fragmentScope(FragmentScope.PROPERTIES),
@@ -81,6 +81,7 @@ public class QueryOptionsTest {
 				builder.returnValues(false), builder.searchOption("limit=10"),
 				builder.transformResults("raw"));
 
+		System.out.println(options.toXMLString());
 		assertTrue("returnFacets from build", options.getReturnFacets());
 		options.setReturnFacets(false);
 		assertFalse("returnFacets from setter", options.getReturnFacets());

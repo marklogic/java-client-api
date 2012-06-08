@@ -1183,7 +1183,12 @@ public final class QueryOptionsBuilder {
         for (NamespaceBinding binding : bindings) {
             String ns = binding.getNamespaceUri();
             ns = ns.replace("'", "&apos;");
-            xml += " " + binding.getPrefix() + "='" + ns + "'";
+            if (binding.getPrefix().equals("")) {
+            	xml += " xmlns='" + ns + "'";                    	
+            }
+            else {
+            	xml += " xmlns:" + binding.getPrefix() + "='" + ns + "'";
+            }
         }
         xml += ">" + searchableExpression + "</searchable-expression>";
 

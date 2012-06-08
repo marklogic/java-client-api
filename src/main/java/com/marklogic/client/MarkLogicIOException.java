@@ -15,33 +15,21 @@
  */
 package com.marklogic.client;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
-
-@SuppressWarnings("serial")
 public class MarkLogicIOException extends RuntimeException {
 
-	static final private Logger logger = LoggerFactory
-			.getLogger(MarkLogicIOException.class);
-	
-	Exception thrown;
-	
-	public MarkLogicIOException(Exception e) {
-		thrown = e;
-		logger.error(e.getMessage());
-		e.printStackTrace();
-	}
-	public MarkLogicIOException(String string, Exception e) {
-		thrown = e;
-		logger.error(string);
-		logger.error(e.getMessage());
-		e.printStackTrace();
+
+	public MarkLogicIOException(String message) {
+		super(message);
 	}
 
-	public MarkLogicIOException(String string) {
-		logger.error(string);
+	public MarkLogicIOException(Throwable cause) {
+		super(cause);
+	}
+
+	public MarkLogicIOException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
 }

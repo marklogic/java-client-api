@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.DocumentManager;
-import com.marklogic.client.BadRequestException;
 import com.marklogic.client.DocumentDescriptor;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
@@ -104,94 +103,94 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 
 	@Override
 	public <T extends R> T read(String uri, T contentHandle)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		return read(uri, null, contentHandle, null, null, getReadParams());
 	}
 	@Override
 	public <T extends R> T read(String uri, T contentHandle, ServerTransform transform)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		return read(uri, null, contentHandle, transform, null, getReadParams());
 	}
 	@Override
 	public <T extends R> T read(String uri, DocumentMetadataReadHandle metadataHandle, T contentHandle)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		return read(uri, metadataHandle, contentHandle, null, null, getReadParams());
 	}
 	@Override
 	public <T extends R> T read(String uri, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		return read(uri, metadataHandle, contentHandle, transform, null, getReadParams());
 	}
 	@Override
 	public <T extends R> T read(String uri, T contentHandle, Transaction transaction)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		return read(uri, null, contentHandle, null, transaction, getReadParams());
 	}
 	@Override
 	public <T extends R> T read(String uri, T contentHandle, ServerTransform transform, Transaction transaction)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		return read(uri, null, contentHandle, transform, transaction, getReadParams());
 	}
 	@Override
 	public <T extends R> T read(String uri, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		return read(uri, metadataHandle, contentHandle, null, transaction, getReadParams());
 	}
 	@Override
 	public <T extends R> T read(String uri, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		return read(uri, metadataHandle, contentHandle, transform, transaction, getReadParams());
 	}
 
     public <T extends R> T read(String uri, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction, RequestParameters extraParams)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		return read(new DocumentDescriptorImpl(uri, true), metadataHandle, contentHandle, transform, transaction, getReadParams());
 	}
 
 	@Override
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		return read(desc, null, contentHandle, null, null, getReadParams());
 	}
 
 	@Override
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		return read(desc, null, contentHandle, transform, null, getReadParams());
 	}
 	@Override
 	public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		return read(desc, metadataHandle, contentHandle, null, null, getReadParams());
 	}
 	@Override
 	public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		return read(desc, metadataHandle, contentHandle, transform, null, getReadParams());
 	}
 	@Override
 	public <T extends R> T read(DocumentDescriptor desc, T contentHandle, Transaction transaction)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		return read(desc, null, contentHandle, null, transaction, getReadParams());
 	}
 	@Override
 	public <T extends R> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, Transaction transaction)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		return read(desc, null, contentHandle, transform, transaction, getReadParams());
 	}
 	@Override
 	public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		return read(desc, metadataHandle, contentHandle, null, transaction, getReadParams());
 	}
 	@Override
 	public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		return read(desc, metadataHandle, contentHandle, transform, transaction, getReadParams());
 	}
 
     public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction, RequestParameters extraParams)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		if (desc == null)
 			throw new IllegalArgumentException("Reading document with null identifier");
 
@@ -228,93 +227,93 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 
 	@Override
 	public void write(String uri, W contentHandle)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		write(uri, null, contentHandle, null, null, getWriteParams());
 	}
 	@Override
 	public void write(String uri, W contentHandle, ServerTransform transform)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		write(uri, null, contentHandle, transform, null, getWriteParams());
 	}
 	@Override
 	public void write(String uri, DocumentMetadataWriteHandle metadata, W contentHandle)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		write(uri, metadata, contentHandle, null, null, getWriteParams());
 	}
 	@Override
 	public void write(String uri, DocumentMetadataWriteHandle metadata, W contentHandle, ServerTransform transform)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		write(uri, metadata, contentHandle, transform, null, getWriteParams());
 	}
 	@Override
 	public void write(String uri, W contentHandle, Transaction transaction)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		write(uri, null, contentHandle, null, transaction, getWriteParams());
 	}
 	@Override
 	public void write(String uri, W contentHandle, ServerTransform transform, Transaction transaction)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		write(uri, null, contentHandle, transform, transaction, getWriteParams());
 	}
 	@Override
 	public void write(String uri, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		write(uri, metadataHandle, contentHandle, null, transaction, getWriteParams());
 	}
 	@Override
 	public void write(String uri, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform, Transaction transaction)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		write(uri, metadataHandle, contentHandle, transform, transaction, getWriteParams());
 	}
 
 	public void write(String uri, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform, Transaction transaction, RequestParameters extraParams)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		write(new DocumentDescriptorImpl(uri, true), metadataHandle, contentHandle, transform, transaction, getWriteParams());
 	}
 
 	@Override
 	public void write(DocumentDescriptor desc, W contentHandle)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		write(desc, null, contentHandle, null, null, getWriteParams());
 	}
 	@Override
 	public void write(DocumentDescriptor desc, W contentHandle, ServerTransform transform)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		write(desc, null, contentHandle, transform, null, getWriteParams());
 	}
 	@Override
 	public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadata, W contentHandle)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		write(desc, metadata, contentHandle, null, null, getWriteParams());
 	}
 	@Override
 	public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadata, W contentHandle, ServerTransform transform)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		write(desc, metadata, contentHandle, transform, null, getWriteParams());
 	}
 	@Override
 	public void write(DocumentDescriptor desc, W contentHandle, Transaction transaction)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		write(desc, null, contentHandle, null, transaction, getWriteParams());
 	}
 	@Override
 	public void write(DocumentDescriptor desc, W contentHandle, ServerTransform transform, Transaction transaction)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		write(desc, null, contentHandle, transform, transaction, getWriteParams());
 	}
 	@Override
 	public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		write(desc, metadataHandle, contentHandle, null, transaction, getWriteParams());
 	}
 	@Override
 	public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform, Transaction transaction)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		write(desc, metadataHandle, contentHandle, transform, transaction, getWriteParams());
 	}
 
 	public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform, Transaction transaction, RequestParameters extraParams)
-	throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		if (desc == null)
 			throw new IllegalArgumentException("Writing document with null identifier");
 

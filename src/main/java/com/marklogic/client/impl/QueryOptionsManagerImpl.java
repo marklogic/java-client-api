@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Format;
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.io.BaseHandle;
@@ -37,58 +38,65 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 	public void deleteOptions(String name) {
 		services.deleteValue(null, QUERY_OPTIONS_BASE, name);
 	}
-	
+
 	@Override
-	public <T extends QueryOptionsReadHandle> T readOptions(String name, T queryOptionsHandle) {
+	public <T extends QueryOptionsReadHandle> T readOptions(String name,
+			T queryOptionsHandle) {
 		if (name == null) {
-			throw new IllegalArgumentException("Cannot read options for null name");
-        }
+			throw new IllegalArgumentException(
+					"Cannot read options for null name");
+		}
 
-		BaseHandle queryOptionsBase = HandleAccessor.checkHandle(queryOptionsHandle, "query options");
+		BaseHandle queryOptionsBase = HandleAccessor.checkHandle(
+				queryOptionsHandle, "query options");
 
-        Format queryOptionsFormat = queryOptionsBase.getFormat();
-        switch(queryOptionsFormat) {
-        case UNKNOWN:
-        	queryOptionsFormat = Format.XML;
-        	break;
-        case JSON:
-        case XML:
-        	break;
-        default:
-            throw new UnsupportedOperationException("Only JSON and XML query options are possible.");
-        }
+		Format queryOptionsFormat = queryOptionsBase.getFormat();
+		switch (queryOptionsFormat) {
+		case UNKNOWN:
+			queryOptionsFormat = Format.XML;
+			break;
+		case JSON:
+		case XML:
+			break;
+		default:
+			throw new UnsupportedOperationException(
+					"Only JSON and XML query options are possible.");
+		}
 
-        String mimetype = queryOptionsFormat.getDefaultMimetype();
+		String mimetype = queryOptionsFormat.getDefaultMimetype();
+		HandleAccessor.receiveContent(queryOptionsHandle, services.getValue(
+				requestLogger, QUERY_OPTIONS_BASE, name, mimetype,
+				HandleAccessor.receiveAs(queryOptionsHandle)));
 
-        HandleAccessor.receiveContent(queryOptionsHandle, services.getValue(requestLogger,
-				QUERY_OPTIONS_BASE, name, mimetype, 
-						HandleAccessor.receiveAs(queryOptionsHandle)));
 		return queryOptionsHandle;
 	}
 
 	@Override
-	public void writeOptions(String name, QueryOptionsWriteHandle queryOptionsHandle) {
-		BaseHandle queryOptionsBase = HandleAccessor.checkHandle(queryOptionsHandle, "query options");
+	public void writeOptions(String name,
+			QueryOptionsWriteHandle queryOptionsHandle) {
+		BaseHandle queryOptionsBase = HandleAccessor.checkHandle(
+				queryOptionsHandle, "query options");
 
 		if (queryOptionsBase == null)
-			throw new IllegalArgumentException("Could not write null options: "+name);
+			throw new IllegalArgumentException("Could not write null options: "
+					+ name);
 
-        Format queryOptionsFormat = queryOptionsBase.getFormat();
-        switch(queryOptionsFormat) {
-        case UNKNOWN:
-        	queryOptionsFormat = Format.XML;
-        	break;
-        case JSON:
-        case XML:
-        	break;
-        default:
-            throw new UnsupportedOperationException("Only JSON and XML query options are possible.");
-        }
+		Format queryOptionsFormat = queryOptionsBase.getFormat();
+		switch (queryOptionsFormat) {
+		case UNKNOWN:
+			queryOptionsFormat = Format.XML;
+			break;
+		case JSON:
+		case XML:
+			break;
+		default:
+			throw new UnsupportedOperationException(
+					"Only JSON and XML query options are possible.");
+		}
 
-        String mimetype = queryOptionsFormat.getDefaultMimetype();
+		String mimetype = queryOptionsFormat.getDefaultMimetype();
 
-		services.putValue(requestLogger, QUERY_OPTIONS_BASE, name,
-				mimetype,
+		services.putValue(requestLogger, QUERY_OPTIONS_BASE, name, mimetype,
 				HandleAccessor.sendContent(queryOptionsHandle));
 	}
 }

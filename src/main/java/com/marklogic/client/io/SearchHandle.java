@@ -539,6 +539,8 @@ public class SearchHandle
             } else if ("boxes".equals(localName))       { handleGeoFacet(attributes);
             } else if ("box".equals(localName))         { handleGeoFacetValue(attributes);
             } else if ("qtext".equals(localName))       { // nop
+            } else if ("query".equals(localName))       { // nop
+            } else if ("report".equals(localName))       { // nop
             } else if ("metrics".equals(localName))     { handleMetrics();
             } else if ("query-resolution-time".equals(localName) || "facet-resolution-time".equals(localName)
                         || "snippet-resolution-time".equals(localName) || "total-time".equals(localName)

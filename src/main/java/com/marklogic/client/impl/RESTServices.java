@@ -20,7 +20,6 @@ import java.util.Set;
 import javax.net.ssl.SSLContext;
 
 import com.marklogic.client.DocumentManager.Metadata;
-import com.marklogic.client.BadRequestException;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DocumentDescriptor;
@@ -51,7 +50,7 @@ public interface RESTServices {
 	public boolean getDocument(RequestLogger logger, DocumentDescriptor desc, String transactionId,
 			Set<Metadata> categories, RequestParameters extraParams,
 			DocumentMetadataReadHandle metadataHandle, AbstractReadHandle contentHandle)
-		throws ResourceNotFoundException, ForbiddenUserException, BadRequestException, FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
 	public DocumentDescriptor head(RequestLogger logger, String uri, String transactionId)
 		throws ForbiddenUserException, FailedRequestException;
@@ -103,27 +102,27 @@ public interface RESTServices {
 		throws ForbiddenUserException, FailedRequestException;
 
 	public <T> T getResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Class<T> as)
-		throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public Object[] getResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Class[] as)
-		throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	public <T> T putResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Object value, String outputMimetype, Class<T> as)
-		throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public <T> T putResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, String outputMimetype, Class<T> as)
-		throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	public Object postResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Object value, String outputMimetype, Class as)
-		throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public Object postResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, String outputMimetype, Class as)
-		throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public Object[] postResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Object value, String[] outputMimetypes, Class[] as)
-		throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public Object[] postResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, String[] outputMimetypes, Class[] as)
-		throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	public <T> T deleteResource(RequestLogger reqlog, String path, RequestParameters params,
 			String mimetype, Class<T> as)
-		throws BadRequestException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	public enum ResponseStatus {
 		OK() {
