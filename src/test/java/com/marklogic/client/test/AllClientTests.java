@@ -44,7 +44,7 @@ import org.junit.runners.Suite;
     SearchFacetTest.class,
 
     QueryOptionsHandleTest.class,
-    QueryOptionsManagerTest.class,
+    QueryOptionsManagerTest.class /*,
 
     ResourceExtensionsTest.class,
     ResourceServicesTest.class,
@@ -54,7 +54,7 @@ import org.junit.runners.Suite;
     // works when run independently but throws JUnit error in suite
 //  JAXBHandle.class,
 
-    NamespacesManagerTest.class
+    NamespacesManagerTest.class */
 	})
 public class AllClientTests {
 }
