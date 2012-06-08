@@ -358,9 +358,11 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      */
     public void setMetadataCategories(Metadata... categories);
 
+    // this manager's default transform when reading
     public ServerTransform getReadTransform();
     public void setReadTransform(ServerTransform transform);
  
+    // this manager's default transform when writing
     public ServerTransform getWriteTransform();
     public void setWriteTransform(ServerTransform transform);
  

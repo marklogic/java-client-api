@@ -78,13 +78,13 @@ public class GenericDocumentTest {
 		assertTrue("Could not delete document", text == null && hadException);
 	}
 
-	final String content = "<?xml version='1.0' encoding='UTF-8'?>\n"+
+	final static String content = "<?xml version='1.0' encoding='UTF-8'?>\n"+
 	"<root mode='mixed' xml:lang='en'>\n"+
 	"<child mode='basic'>value</child>\n"+
 	"A simple XML document\n"+
 	"</root>\n";
 
-	final String metadata =
+	final static String metadata =
 	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
 	"<rapi:metadata uri=\"/test/testMetadataXML1.xml\" xsi:schemaLocation=\"http://marklogic.com/rest-api/database dbmeta.xsd\" xmlns:rapi=\"http://marklogic.com/rest-api\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"+
 	"  <rapi:collections>\n"+

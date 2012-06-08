@@ -34,6 +34,7 @@ import org.junit.runners.Suite;
 	TextDocumentTest.class,
 	XMLDocumentTest.class,
 	DocumentMetadataHandleTest.class,
+	ConditionalDocumentTest.class,
 
 	StringSearchTest.class,
 	KeyValueSearchTest.class,

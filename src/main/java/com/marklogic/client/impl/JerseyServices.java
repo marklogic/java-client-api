@@ -273,9 +273,9 @@ public class JerseyServices implements RESTServices {
 				makeDocumentParams(uri, categories, transactionId, null)
 				);
 
-		addVersionHeader(desc, webResource, "If-Match");
+		WebResource.Builder builder = addVersionHeader(desc, webResource.getRequestBuilder(), "If-Match");
 
-		ClientResponse response = webResource.delete(ClientResponse.class);
+		ClientResponse response = builder.delete(ClientResponse.class);
 
 		if (isFirstRequest) isFirstRequest = false;
 
@@ -284,7 +284,9 @@ public class JerseyServices implements RESTServices {
 		if (status == ClientResponse.Status.NOT_FOUND)
 			throw new ResourceNotFoundException("Could not delete non-existent document");
 		if (status == ClientResponse.Status.FORBIDDEN) {
-			if ("No Content Version".equals(status.getReasonPhrase()))
+			// TODO: inspect response structure to distinguish from insufficient privilege
+			if (desc instanceof DocumentDescriptorImpl && ((DocumentDescriptorImpl) desc).isInternal() == false &&
+					desc.getVersion() == DocumentDescriptor.UNKNOWN_VERSION)
 				throw new FailedRequestException("Content version required to delete document");
 			throw new ForbiddenUserException("User is not allowed to delete documents");
 		}
@@ -366,7 +368,7 @@ public class JerseyServices implements RESTServices {
 		if (extraParams != null && extraParams.containsKey("range"))
 			builder = builder.header("range", extraParams.get("range").get(0));
 
-		addVersionHeader(desc, builder, "If-None-Match");
+		builder = addVersionHeader(desc, builder, "If-None-Match");
 
 		ClientResponse response = builder.get(ClientResponse.class);
 
@@ -430,7 +432,7 @@ public class JerseyServices implements RESTServices {
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE)
 				);
 
-		addVersionHeader(desc, builder, "If-None-Match");
+		builder = addVersionHeader(desc, builder, "If-None-Match");
 
 		ClientResponse response = builder.get(ClientResponse.class);
 
@@ -615,7 +617,7 @@ public class JerseyServices implements RESTServices {
 			(mimetype != null) ? mimetype : MediaType.WILDCARD
 			);
 
-		addVersionHeader(desc, builder, "If-Match");
+		builder = addVersionHeader(desc, builder, "If-Match");
 
 		ClientResponse response = null;
 		if (value instanceof OutputStreamSender) {
@@ -639,7 +641,9 @@ public class JerseyServices implements RESTServices {
 		if (status == ClientResponse.Status.NOT_FOUND)
 			throw new ResourceNotFoundException("Could not write non-existent document");
 		if (status == ClientResponse.Status.FORBIDDEN) {
-			if ("No Content Version".equals(status.getReasonPhrase()))
+			// TODO: inspect response structure to distinguish from insufficient privilege
+			if (desc instanceof DocumentDescriptorImpl && ((DocumentDescriptorImpl) desc).isInternal() == false &&
+					desc.getVersion() == DocumentDescriptor.UNKNOWN_VERSION)
 				throw new FailedRequestException("Content version required to write document");
 			throw new ForbiddenUserException("User is not allowed to write documents");
 		}
@@ -714,7 +718,7 @@ public class JerseyServices implements RESTServices {
 		WebResource.Builder builder = makeDocumentResource(docParams).type(
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE)
 				);
-		addVersionHeader(desc, builder, "If-Match");
+		builder = addVersionHeader(desc, builder, "If-Match");
 
 		ClientResponse response = builder.put(ClientResponse.class, multiPart);
 
@@ -725,7 +729,9 @@ public class JerseyServices implements RESTServices {
 		if (status == ClientResponse.Status.NOT_FOUND)
 			throw new ResourceNotFoundException("Could not write non-existent document");
 		if (status == ClientResponse.Status.FORBIDDEN) {
-			if ("No Content Version".equals(status.getReasonPhrase()))
+			// TODO: inspect response structure to distinguish from insufficient privilege
+			if (desc instanceof DocumentDescriptorImpl && ((DocumentDescriptorImpl) desc).isInternal() == false &&
+					desc.getVersion() == DocumentDescriptor.UNKNOWN_VERSION)
 				throw new FailedRequestException("Content version required to write document");
 			throw new ForbiddenUserException("User is not allowed to write documents");
 		}
@@ -904,7 +910,7 @@ public class JerseyServices implements RESTServices {
 		if (descriptor instanceof DocumentDescriptor) {
 			long version = DocumentDescriptor.UNKNOWN_VERSION;
 			if (headers.containsKey("ETag")) {
-				values = headers.get("Tag");
+				values = headers.get("ETag");
 				if (values != null) {
 					version = Long.valueOf(values.get(0));
 				}
@@ -913,14 +919,15 @@ public class JerseyServices implements RESTServices {
 		}
 	}
 
-	private void addVersionHeader(DocumentDescriptor desc, RequestBuilder builder, String name) {
+	private WebResource.Builder addVersionHeader(DocumentDescriptor desc, WebResource.Builder builder, String name) {
 		if (desc != null && desc instanceof DocumentDescriptorImpl &&
 				!((DocumentDescriptorImpl) desc).isInternal()) {
 			long version = desc.getVersion();
 			if (version != DocumentDescriptor.UNKNOWN_VERSION) {
-				builder.header(name, String.valueOf(version));
+				return builder.header(name, String.valueOf(version));
 			}
 		}
+		return builder;
 	}
 
 	@Override

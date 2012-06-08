@@ -213,7 +213,10 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 				desc, 
 				(transaction != null) ? transaction.getTransactionId() : null,
 				(metadataHandle != null) ? processedMetadata : null,
-				mergeTransformParameters(transform, extraParams),
+				mergeTransformParameters(
+						(transform != null) ? transform : getReadTransform(),
+						extraParams
+						),
 				metadataHandle,
 				contentHandle
 				);
@@ -333,7 +336,10 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 				desc,
 				(transaction == null) ? null : transaction.getTransactionId(),
 				(metadataHandle != null) ? processedMetadata : null,
-				mergeTransformParameters(transform, extraParams),
+				mergeTransformParameters(
+						(transform != null) ? transform : getWriteTransform(),
+						extraParams
+						),
 				metadataHandle,
 				contentHandle
 				);
