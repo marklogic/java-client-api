@@ -1,6 +1,7 @@
 package com.marklogic.client.config;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -11,8 +12,10 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlValue;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 
+import com.marklogic.client.EditableNamespaceContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
@@ -162,6 +165,9 @@ public final class QueryOptions implements QueryAnnotations {
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "field")
 		private Field fieldReference;
 
+        @XmlElement(namespace = QueryOptions.SEARCH_NS, name = "namespace-bindings")
+        private ExpressionNamespaceBindings pathIndexBindings;
+
         @XmlElement(namespace = QueryOptions.SEARCH_NS, name = "path-index")
         private PathIndex pathIndexReference;
 
@@ -203,7 +209,30 @@ public final class QueryOptions implements QueryAnnotations {
             return pathIndexReference.getPath();
         }
 
-		public String getFieldName() {
+        public NamespaceContext getPathNamespaceBindings() {
+            EditableNamespaceContext context = new EditableNamespaceContext();
+            for (ExpressionNamespaceBinding binding : pathIndexBindings.bindings) {
+                String prefix = binding.getPrefix();
+                String uri = binding.getNamespaceURI();
+                if ("".equals(prefix)) {
+                    context.setDefaultNamespaceURI(uri);
+                } else {
+                    context.setNamespaceURI(prefix, uri);
+                }
+            }
+
+            return context;
+        }
+
+        protected void setPathIndexNamespaceBindings(ExpressionNamespaceBindings bindings) {
+            pathIndexBindings = bindings;
+        }
+
+        protected PathIndex getPathIndex() {
+            return pathIndexReference;
+        }
+
+        public String getFieldName() {
 			return this.fieldReference.getName();
 		}
 
@@ -293,20 +322,20 @@ public final class QueryOptions implements QueryAnnotations {
 
     @XmlAccessorType(XmlAccessType.FIELD)
     public static class PathIndex implements QueryRangeItem {
-        private static String[] bindings = null;
+        @XmlTransient
+        private QueryOptionsBuilder.NamespaceBinding[] bindings = null;
 
         @XmlValue
         private String path = null;
 
         public PathIndex() {
-
         }
 
         public PathIndex(String path) {
             this.path = path;
         }
 
-        public PathIndex(String path, String... bindings) {
+        public PathIndex(String path, QueryOptionsBuilder.NamespaceBinding... bindings) {
             this.path = path;
             this.bindings = bindings;
         }
@@ -315,7 +344,7 @@ public final class QueryOptions implements QueryAnnotations {
             return path;
         }
 
-        public String[] getBindings() {
+        public QueryOptionsBuilder.NamespaceBinding[] getBindings() {
             return bindings;
         }
 
@@ -1914,7 +1943,10 @@ public final class QueryOptions implements QueryAnnotations {
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "quality-weight")
 		private Double qualityWeight;
 
-		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "searchable-expression")
+        @XmlElement(namespace = QueryOptions.SEARCH_NS, name = "namespace-bindings")
+        private ExpressionNamespaceBindings searchableExpressionBindings;
+
+        @XmlElement(namespace = QueryOptions.SEARCH_NS, name = "searchable-expression")
 		private String searchableExpression;
 
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "search-option")
@@ -2003,6 +2035,21 @@ public final class QueryOptions implements QueryAnnotations {
 		public String getSearchableExpression() {
 			return searchableExpression;
 		}
+
+        public NamespaceContext getSearchableExpressionNamespaceBindings() {
+            EditableNamespaceContext context = new EditableNamespaceContext();
+            for (ExpressionNamespaceBinding binding : searchableExpressionBindings.bindings) {
+                String prefix = binding.getPrefix();
+                String uri = binding.getNamespaceURI();
+                if ("".equals(prefix)) {
+                    context.setDefaultNamespaceURI(uri);
+                } else {
+                    context.setNamespaceURI(prefix, uri);
+                }
+            }
+
+            return context;
+        }
 
 		public List<String> getSearchOptions() {
 			return searchOptions;
@@ -2687,12 +2734,51 @@ public final class QueryOptions implements QueryAnnotations {
 
 	}
 
-	public static final String SEARCH_NS = "http://marklogic.com/appservices/search";
+    @XmlAccessorType(XmlAccessType.FIELD)
+    public static class ExpressionNamespaceBindings {
+        @XmlElement(namespace = QueryOptions.SEARCH_NS, name = "binding")
+        private List<ExpressionNamespaceBinding> bindings;
+
+        public ExpressionNamespaceBindings() {
+            bindings = new ArrayList<ExpressionNamespaceBinding>();
+        }
+
+        protected void addBinding(String prefix, String uri) {
+            bindings.add(new ExpressionNamespaceBinding(prefix, uri));
+        }
+    }
+
+    @XmlAccessorType(XmlAccessType.FIELD)
+    public static class ExpressionNamespaceBinding {
+        @XmlAttribute(name = "prefix")
+        String prefix;
+
+        @XmlAttribute(name = "namespace-uri")
+        String uri;
+
+        public ExpressionNamespaceBinding() {
+        }
+
+        protected ExpressionNamespaceBinding(String prefix, String uri) {
+            this.prefix = prefix;
+            this.uri = uri;
+        }
+
+        public String getPrefix() {
+            return prefix;
+        }
+
+        public String getNamespaceURI() {
+            return uri;
+        }
+    }
+
+    public static final String SEARCH_NS = "http://marklogic.com/appservices/search";
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(QueryOptionsBuilder.class);
 
-	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "additional-query")
+    @XmlElement(namespace = QueryOptions.SEARCH_NS, name = "additional-query")
 	private AnyElement additionalQuery;
 
 	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
@@ -2764,7 +2850,10 @@ public final class QueryOptions implements QueryAnnotations {
 	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "return-values")
 	private Boolean returnValues;
 
-	@XmlAnyElement
+    @XmlElement(namespace = QueryOptions.SEARCH_NS, name = "namespace-bindings")
+    private ExpressionNamespaceBindings searchableExpressionBindings;
+
+    @XmlAnyElement
 	private org.w3c.dom.Element searchableExpression;
 
 	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "search-option")
@@ -2923,8 +3012,25 @@ public final class QueryOptions implements QueryAnnotations {
 		return returnValues;
 	}
 
-	public org.w3c.dom.Element getSearchableExpression() {
-		return searchableExpression;
+    public EditableNamespaceContext getSearchableExpressionNamespaceContext() {
+        EditableNamespaceContext context = new EditableNamespaceContext();
+        if (searchableExpressionBindings != null && searchableExpressionBindings.bindings != null) {
+            for (ExpressionNamespaceBinding binding : searchableExpressionBindings.bindings) {
+                String prefix = binding.getPrefix();
+                String uri = binding.getNamespaceURI();
+                if ("".equals(prefix)) {
+                    context.setDefaultNamespaceURI(uri);
+                } else {
+                    context.setNamespaceURI(prefix, uri);
+                }
+            }
+        }
+
+        return context;
+    }
+
+	public String getSearchableExpression() {
+		return searchableExpression.getTextContent();
 	}
 
 	public List<String> getSearchOptions() {
@@ -3040,6 +3146,15 @@ public final class QueryOptions implements QueryAnnotations {
 		this.searchableExpression = searchableExpression;
 	}
 
+    public void setSearchableExpressionNamespaceContext(EditableNamespaceContext context) {
+        ExpressionNamespaceBindings bindings = new ExpressionNamespaceBindings();
+        for (String pfx : context.getAllPrefixes()) {
+            String uri = context.getNamespaceURI(pfx);
+            bindings.addBinding(pfx, uri);
+        }
+        searchableExpressionBindings = bindings;
+    }
+
 	public void setSearchOptions(List<String> searchOptions) {
 		this.searchOptions = searchOptions;
 	}
@@ -3060,5 +3175,24 @@ public final class QueryOptions implements QueryAnnotations {
 	public void setTransformResults(QueryTransformResults transformResultsOption) {
 		this.transformResultsOption = transformResultsOption;
 	}
+
+    /* Patch the POJO so that the QueryOptionsTransformInjectNS transform will insert the
+     * proper bindings into the XML during serialization.
+     */
+    public void patchBindings() {
+        for (QueryConstraint constraint : queryConstraints) {
+            if (constraint.range != null) {
+                QueryRange range = constraint.range;
+                PathIndex index = range.getPathIndex();
+                if (index != null && index.bindings != null) {
+                    ExpressionNamespaceBindings bindings = new ExpressionNamespaceBindings();
+                    for (QueryOptionsBuilder.NamespaceBinding binding : index.bindings) {
+                        bindings.addBinding(binding.getPrefix(), binding.getNamespaceUri());
+                    }
+                    range.setPathIndexNamespaceBindings(bindings);
+                }
+            }
+        }
+    }
 
 }

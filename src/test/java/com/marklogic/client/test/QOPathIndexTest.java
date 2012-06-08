@@ -17,6 +17,7 @@ package com.marklogic.client.test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.EditableNamespaceContext;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.ServerConfigurationManager;
@@ -56,6 +57,8 @@ import com.marklogic.client.config.QueryOptions.QueryValues;
 import com.marklogic.client.config.QueryOptions.QueryWord;
 import com.marklogic.client.config.QueryOptions.XQueryExtension;
 import com.marklogic.client.config.QueryOptionsBuilder;
+import com.marklogic.client.impl.QueryOptionsTransformExtractNS;
+import com.marklogic.client.impl.QueryOptionsTransformInjectNS;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.HandleAccessor;
 import com.marklogic.client.io.QueryOptionsHandle;
@@ -75,12 +78,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -88,6 +109,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -102,11 +124,27 @@ public class QOPathIndexTest {
             .getLogger(QOPathIndexTest.class);
 
     private static QueryOptionsBuilder builder;
+    private static XpathEngine xpathEngine;
 
     @BeforeClass
     public static void beforeClass() {
         Common.connectAdmin();
         builder = new QueryOptionsBuilder();
+
+        HashMap<String,String> xpathNS = new HashMap<String, String>();
+        xpathNS.put("search", "http://marklogic.com/appservices/search");
+        xpathNS.put("foo", "testing");
+        xpathNS.put("x", "ab'c'");
+        SimpleNamespaceContext xpathNsContext = new SimpleNamespaceContext(xpathNS);
+
+        XMLUnit.setIgnoreAttributeOrder(true);
+        XMLUnit.setIgnoreWhitespace(true);
+        XMLUnit.setNormalize(true);
+        XMLUnit.setNormalizeWhitespace(true);
+        XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
+
+        xpathEngine = XMLUnit.newXpathEngine();
+        xpathEngine.setNamespaceContext(xpathNsContext);
     }
 
     @AfterClass
@@ -115,32 +153,92 @@ public class QOPathIndexTest {
     }
 
     @Test
-    public void pathIndexNoNS() throws IOException, ParserConfigurationException, SAXException {
-        /*
-        <options xmlns="http://marklogic.com/appservices/search">
-          <constraint name="t">
-            <range type="xs:string" facet="true">
-              <path-index>/doc/para/title</path-index>
-            </range>
-        </constraint>
-         */
-
+    public void pathIndexNoNS() throws IOException, ParserConfigurationException, SAXException, XpathException {
         QueryOptionsHandle options = new QueryOptionsHandle();
-        options.build(builder.searchableExpression("/x:path/to/test", builder.namespace("x", "ab'c'")),
+        options.build(builder.searchableExpression("/path/to/test"),
                 builder.constraint("t",
                     builder.range(true, builder.type("xs:string"),
-                    builder.pathIndex("/x:doc/para/title")))
+                    builder.pathIndex("/doc/para/title")))
                 );
 
-        System.err.println(options.toXMLString());
+        String xml = options.toXMLString();
+
+        Document doc = XMLUnit.buildControlDocument(xml);
+
+        String value = xpathEngine.evaluate("/search:options/search:constraint/search:range/search:path-index", doc);
+
+        assertEquals("Path index is correct", "/doc/para/title", value);
+
+        value = xpathEngine.evaluate("/search:options/search:searchable-expression", doc);
+
+        assertEquals("Searchable expression is correct", "/path/to/test", value);
     }
 
     @Test
-    public void roundTrip() throws IOException, ParserConfigurationException, SAXException {
+    public void pathIndexNS() throws IOException, ParserConfigurationException, SAXException, XpathException {
+        QueryOptionsHandle options = new QueryOptionsHandle();
+        options.build(builder.searchableExpression("/x:path/to/test", builder.namespace("x", "ab'c'")),
+                builder.constraint("t",
+                        builder.range(true, builder.type("xs:string"),
+                                builder.pathIndex("/y:doc/para/title", builder.namespace("y", "testing"))))
+        );
+
+        String xml = options.toXMLString();
+
+        Document doc = XMLUnit.buildControlDocument(xml);
+
+        String value = xpathEngine.evaluate("/search:options/search:constraint/search:range/search:path-index", doc);
+
+        assertEquals("Path index is correct", "/y:doc/para/title", value);
+
+        value = xpathEngine.evaluate("/search:options/search:searchable-expression", doc);
+
+        assertEquals("Searchable expression is correct", "/x:path/to/test", value);
+
+        value = xpathEngine.evaluate("/search:options/search:constraint/search:range/search:path-index/namespace::y", doc);
+
+        assertEquals("Namespace y is in scope", "testing", value);
+
+        value = xpathEngine.evaluate("/search:options/search:searchable-expression/namespace::x", doc);
+
+        assertEquals("Namespace x is in scope", "ab'c'", value);
+    }
+
+    @Test
+    public void setSE() throws IOException, ParserConfigurationException, SAXException, XpathException {
+        QueryOptionsHandle options = new QueryOptionsHandle();
+        options.build(builder.searchableExpression("/x:path/to/test", builder.namespace("x", "ab'c'")),
+                builder.constraint("t",
+                        builder.range(true, builder.type("xs:string"),
+                                builder.pathIndex("/y:doc/para/title", builder.namespace("y", "testing"))))
+        );
+
+        options.setSearchableExpression("//my:elements");
+
+        EditableNamespaceContext context = new EditableNamespaceContext();
+        context.setNamespaceURI("my", "http://example.com");
+
+        options.setSearchableExpressionNamespaceContext(context);
+
+        String xml = options.toXMLString();
+
+        Document doc = XMLUnit.buildControlDocument(xml);
+
+        String value = xpathEngine.evaluate("/search:options/search:searchable-expression", doc);
+
+        assertEquals("Searchable expression is correct", "//my:elements", value);
+
+        value = xpathEngine.evaluate("/search:options/search:searchable-expression/namespace::my", doc);
+
+        assertEquals("Namespace my is in scope", "http://example.com", value);
+    }
+
+    @Test
+    public void roundTrip() throws IOException, ParserConfigurationException, SAXException, XpathException {
         String xml = "<ns2:options xmlns:ns2=\"http://marklogic.com/appservices/search\">\n" +
                 "    <ns2:constraint name=\"t\">\n" +
                 "        <ns2:range type=\"xs:string\" facet=\"true\">\n" +
-                "            <ns2:path-index>/doc/para/title</ns2:path-index>\n" +
+                "            <ns2:path-index xmlns:foo='testing'>/doc/foo:para/title</ns2:path-index>\n" +
                 "        </ns2:range>\n" +
                 "    </ns2:constraint>\n" +
                 "    <ns2:searchable-expression xmlns=\"http://marklogic.com/appservices/search\" xmlns:x=\"ab'c'\">/x:path/to/test</ns2:searchable-expression>\n" +
@@ -155,7 +253,21 @@ public class QOPathIndexTest {
 
         HandleAccessor.receiveContent(handle, in);
 
-        //System.err.println(handle.toXMLString());
-  }
+        String expression = handle.getSearchableExpression();
+        NamespaceContext nscontext = handle.getSearchableExpressionNamespaceContext();
 
+        assertEquals("Correct namespace binding for searchable-expression", nscontext.getNamespaceURI("x"), "ab'c'");
+        assertEquals("Correct searchable-expression", expression, "/x:path/to/test");
+
+        String resultxml = handle.toXMLString();
+        Document doc = XMLUnit.buildControlDocument(resultxml);
+
+        String value = xpathEngine.evaluate("/search:options/search:constraint/search:range/search:path-index/namespace::foo", doc);
+
+        assertEquals("Namespace foo is in scope", "testing", value);
+
+        value = xpathEngine.evaluate("/search:options/search:searchable-expression/namespace::x", doc);
+
+        assertEquals("Namespace x is in scope", "ab'c'", value);
+  }
 }

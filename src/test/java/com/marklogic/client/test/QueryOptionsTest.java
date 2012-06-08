@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 
 import org.junit.Before;
@@ -392,15 +393,16 @@ public class QueryOptionsTest {
 		options.build(builder
 				.searchableExpression("<searchable-expression xmlns:p=\"http://my.namespace\">/p:sf1</searchable-expression>"));
 
-		Element se = options.getSearchableExpression();
-		assertEquals("/p:sf1", se.getTextContent());
-		assertEquals("searchable-expression", se.getLocalName());
-		assertEquals("http://my.namespace", se.lookupNamespaceURI("p"));
+		String se = options.getSearchableExpression();
+		assertEquals("/p:sf1", se);
 
-		se.setTextContent("/p:sf2");
+        NamespaceContext nscontext = options.getSearchableExpressionNamespaceContext();
+
+		assertEquals("http://my.namespace", nscontext.getNamespaceURI("p"));
+
+		se = "/p:sf2";
 		options.setSearchableExpression(se);
-		assertEquals("/p:sf2", options.getSearchableExpression()
-				.getTextContent());
+		assertEquals("/p:sf2", options.getSearchableExpression());
 
 		//TODO alternate pattern.
 	};

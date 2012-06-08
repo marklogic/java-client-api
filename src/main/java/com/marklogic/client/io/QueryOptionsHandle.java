@@ -15,10 +15,13 @@
  */
 package com.marklogic.client.io;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -26,8 +29,25 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stream.StreamResult;
 
+import com.marklogic.client.EditableNamespaceContext;
+import com.marklogic.client.config.QueryOptionsBuilder;
+import com.marklogic.client.impl.QueryOptionsTransformExtractNS;
+import com.marklogic.client.impl.QueryOptionsTransformInjectNS;
+import com.sun.xml.internal.fastinfoset.tools.StAX2SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -50,6 +70,9 @@ import com.marklogic.client.config.QueryOptions.QueryValues;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryOptionsItem;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 public final class QueryOptionsHandle extends
 		BaseHandle<InputStream, OutputStreamSender> implements
@@ -58,21 +81,39 @@ public final class QueryOptionsHandle extends
 	static final private Logger logger = LoggerFactory
 			.getLogger(QueryOptionsHandle.class);
 
-	private JAXBContext jc;
+    private static SAXParserFactory pfactory = SAXParserFactory.newInstance();
+    private static TransformerFactory tfactory = TransformerFactory.newInstance();
+
+    static {
+        pfactory.setValidating(false);
+        pfactory.setNamespaceAware(true);
+    }
+
+    private JAXBContext jc;
 	private Marshaller marshaller;
 	private QueryOptions optionsHolder;
 	private Unmarshaller unmarshaller;
 
-	public QueryOptionsHandle() {
+    public QueryOptionsHandle() {
 		super.setFormat(Format.XML);
 		optionsHolder = new QueryOptions();
 
         try {
+            SAXParser parser = pfactory.newSAXParser();
+            XMLReader reader = parser.getXMLReader();
+
+            QueryOptionsTransformExtractNS transform = new QueryOptionsTransformExtractNS();
+            transform.setParent(reader);
+
             jc = JAXBContext.newInstance(QueryOptions.class);
             marshaller = jc.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             unmarshaller = jc.createUnmarshaller();
         } catch (JAXBException e) {
+            throw new MarkLogicBindingException(e);
+        } catch (SAXException e) {
+            throw new MarkLogicBindingException(e);
+        } catch (ParserConfigurationException e) {
             throw new MarkLogicBindingException(e);
         }
     }
@@ -241,7 +282,11 @@ public final class QueryOptionsHandle extends
 		return returnWithDefault(optionsHolder.getReturnValues(), true);
 	}
 
-	public org.w3c.dom.Element getSearchableExpression() {
+    public NamespaceContext getSearchableExpressionNamespaceContext() {
+        return optionsHolder.getSearchableExpressionNamespaceContext();
+    }
+
+	public String getSearchableExpression() {
 		return optionsHolder.getSearchableExpression();
 	}
 	
@@ -373,11 +418,27 @@ public final class QueryOptionsHandle extends
 		optionsHolder.setReturnValues(returnValues);
 	}
 
-	public void setSearchableExpression(org.w3c.dom.Element searchableExpression) {
-		optionsHolder.setSearchableExpression(searchableExpression);
-
+	public void setSearchableExpression(String searchableExpression) {
+        String sexml = "<searchable-expression xmlns=\"http://marklogic.com/appservices/search\"";
+        EditableNamespaceContext context = optionsHolder.getSearchableExpressionNamespaceContext();
+        for (String prefix : context.getAllPrefixes()) {
+            if (!"".equals(prefix)) {
+                sexml += " xmlns:" + prefix + "=\"" + context.getNamespaceURI(prefix) + "\"";
+            }
+        }
+        sexml += "/>";
+        org.w3c.dom.Element se = QueryOptionsBuilder.domElement(sexml);
+        se.setTextContent(searchableExpression);
+        optionsHolder.setSearchableExpression(se);
 	}
 
+    public void setSearchableExpressionNamespaceContext(EditableNamespaceContext context) {
+        optionsHolder.setSearchableExpressionNamespaceContext(context);
+        String expr = optionsHolder.getSearchableExpression();
+        if (expr != null) {
+            setSearchableExpression(expr);
+        }
+    }
 
 	public void setSearchOptions(List<String> searchOptions) {
 		optionsHolder.setSearchOptions(searchOptions);
@@ -417,14 +478,46 @@ public final class QueryOptionsHandle extends
 	
 	
 	public void write(OutputStream out) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
 		JAXBElement<QueryOptions> jaxbElement = new JAXBElement<QueryOptions>(
 				new QName("http://marklogic.com/appservices/search", "options"),
 				QueryOptions.class, optionsHolder);
 		try {
-			marshaller.marshal(jaxbElement, out);
-		} catch (JAXBException e) {
-			throw new MarkLogicBindingException(e);
-		}
+            optionsHolder.patchBindings();
+
+			marshaller.marshal(jaxbElement, baos);
+
+            QueryOptionsTransformInjectNS itransform = new QueryOptionsTransformInjectNS();
+
+            String xml = baos.toString();
+            InputStream in = new ByteArrayInputStream(xml.getBytes("utf-8"));
+            InputSource source = new InputSource(in);
+
+            SAXParser parser = pfactory.newSAXParser();
+            XMLReader reader = parser.getXMLReader();
+
+            itransform.setParent(reader);
+
+            Transformer transformer = tfactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            transformer.setOutputProperty(OutputKeys.INDENT, "no");
+
+            StreamResult result = new StreamResult(out);
+
+            SAXSource saxSource = new SAXSource(itransform, source);
+            transformer.transform(saxSource, result);
+        } catch (JAXBException e) {
+            throw new MarkLogicBindingException(e);
+        } catch (ParserConfigurationException e) {
+            throw new MarkLogicBindingException(e);
+        } catch (TransformerConfigurationException e) {
+            throw new MarkLogicBindingException(e);
+        } catch (TransformerException e) {
+            throw new MarkLogicBindingException(e);
+        } catch (SAXException e) {
+            throw new MarkLogicBindingException(e);
+        }
 	}
 
 	private Boolean returnWithDefault(Boolean returnValue, Boolean defaultValue) {
@@ -443,11 +536,40 @@ public final class QueryOptionsHandle extends
 	@Override
 	protected void receiveContent(InputStream content) {
 		try {
-			optionsHolder = (QueryOptions) unmarshaller.unmarshal(content);
-		}  catch (JAXBException e) {
-			
-			throw new MarkLogicBindingException(e);
-		}
+            SAXParser parser = pfactory.newSAXParser();
+            XMLReader reader = parser.getXMLReader();
+
+            Transformer transformer = tfactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            transformer.setOutputProperty(OutputKeys.INDENT, "no");
+
+            // This is kind of gross; TODO: investigate how to do this as a single filter
+
+            QueryOptionsTransformExtractNS transform = new QueryOptionsTransformExtractNS();
+            transform.setParent(reader);
+
+            StringWriter sw = new StringWriter();
+            StreamResult result = new StreamResult(sw);
+            InputSource source = new InputSource(content);
+            SAXSource saxSource = new SAXSource(transform, source);
+            transformer.transform(saxSource, result);
+            String xmlResult = sw.toString();
+            InputStream in = new ByteArrayInputStream(xmlResult.getBytes("UTF-8"));
+            optionsHolder = (QueryOptions) unmarshaller.unmarshal(in);
+        } catch (JAXBException e) {
+            throw new MarkLogicBindingException(e);
+        } catch (ParserConfigurationException e) {
+            throw new MarkLogicBindingException(e);
+        } catch (TransformerConfigurationException e) {
+            throw new MarkLogicBindingException(e);
+        } catch (TransformerException e) {
+            throw new MarkLogicBindingException(e);
+        } catch (SAXException e) {
+            throw new MarkLogicBindingException(e);
+        } catch (UnsupportedEncodingException e) {
+            // This can't actually happen...stupid checked exceptions
+            throw new MarkLogicBindingException(e);
+        }
 	}
 	
 	protected OutputStreamSender sendContent() {

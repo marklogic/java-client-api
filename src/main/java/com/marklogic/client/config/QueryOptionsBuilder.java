@@ -741,8 +741,8 @@ public final class QueryOptionsBuilder {
     /**
      * Build a new PathIndex object
      */
-    public PathIndex pathIndex(String text, String... nsbindings) {
-        return new PathIndex(text);
+    public PathIndex pathIndex(String text, NamespaceBinding... nsbindings) {
+        return new PathIndex(text, nsbindings);
     }
 
     /**
@@ -1183,11 +1183,12 @@ public final class QueryOptionsBuilder {
         for (NamespaceBinding binding : bindings) {
             String ns = binding.getNamespaceUri();
             ns = ns.replace("'", "&apos;");
-            if (binding.getPrefix().equals("")) {
-            	xml += " xmlns='" + ns + "'";                    	
-            }
-            else {
-            	xml += " xmlns:" + binding.getPrefix() + "='" + ns + "'";
+            if (binding.getPrefix() == null || "".equals(binding.getPrefix())) {
+                // Actually, this will fail.
+                // TODO: Fix this code so that it finds a unique prefix for the search: namespace
+                xml += " xmlns='" + ns + "'";
+            } else {
+                xml += " xmlns:" + binding.getPrefix() + "='" + ns + "'";
             }
         }
         xml += ">" + searchableExpression + "</searchable-expression>";

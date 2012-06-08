@@ -79,6 +79,10 @@ public class EditableNamespaceContext
     	bindings.put(prefix, namespaceURI);
     }
 
+    public Collection<String> getAllPrefixes() {
+        return bindings.keySet();
+    }
+
     @Override
     public String getPrefix(String namespaceURI) {
     	// per javax.xml.namespace.NamespaceContext doc

@@ -762,8 +762,8 @@ public class QueryOptionsHandleTest {
 		assertEquals("builders for facets options", true, options.getReturnFacets());
 		assertEquals("builders for metrics options", false, options.getReturnMetrics());
 		logger.debug(options.toXMLString());
-		org.w3c.dom.Element se = options.getSearchableExpression();
-		assertEquals("/sf1", se.getTextContent());
+		String se = options.getSearchableExpression();
+		assertEquals("/sf1", se);
 		
 		logger.debug("here is fragment-scope: " + options.getFragmentScope());
 		assertEquals(options.getFragmentScope(), FragmentScope.PROPERTIES);
