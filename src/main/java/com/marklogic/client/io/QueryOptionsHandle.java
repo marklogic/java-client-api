@@ -39,19 +39,17 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
-import com.marklogic.client.EditableNamespaceContext;
-import com.marklogic.client.config.QueryOptionsBuilder;
-import com.marklogic.client.impl.QueryOptionsTransformExtractNS;
-import com.marklogic.client.impl.QueryOptionsTransformInjectNS;
-import com.sun.xml.internal.fastinfoset.tools.StAX2SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
+import com.marklogic.client.EditableNamespaceContext;
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.config.MarkLogicBindingException;
@@ -67,12 +65,12 @@ import com.marklogic.client.config.QueryOptions.QuerySuggestionSource;
 import com.marklogic.client.config.QueryOptions.QueryTerm;
 import com.marklogic.client.config.QueryOptions.QueryTransformResults;
 import com.marklogic.client.config.QueryOptions.QueryValues;
+import com.marklogic.client.config.QueryOptionsBuilder;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryOptionsItem;
+import com.marklogic.client.impl.QueryOptionsTransformExtractNS;
+import com.marklogic.client.impl.QueryOptionsTransformInjectNS;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 public final class QueryOptionsHandle extends
 		BaseHandle<InputStream, OutputStreamSender> implements
