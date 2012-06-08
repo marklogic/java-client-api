@@ -18,6 +18,10 @@ package com.marklogic.client.io;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 
+/**
+ * HandleAccessor is used internally.  Applications will not ordinarily need to use it.
+ *
+ */
 public class HandleAccessor {
 	static public BaseHandle checkHandle(Object object, String type) {
 		if (!isHandle(object))

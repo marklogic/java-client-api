@@ -15,6 +15,10 @@
  */
 package com.marklogic.client;
 
+/**
+ * ResourceAccessor is used internally.  Applications will not ordinarily need to use it.
+ *
+ */
 public class ResourceAccessor {
 	static public void init(ResourceManager manager, ResourceServices services) {
 		manager.init(services);

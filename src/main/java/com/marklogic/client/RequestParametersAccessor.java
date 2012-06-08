@@ -17,6 +17,10 @@ package com.marklogic.client;
 
 import javax.ws.rs.core.MultivaluedMap;
 
+/**
+ * RequestParametersAccessor is used internally.  Applications will not ordinarily need to use it.
+ *
+ */
 public class RequestParametersAccessor {
 	static public MultivaluedMap<String, String> getMap(RequestParameters params) {
 		return params.getMap();
