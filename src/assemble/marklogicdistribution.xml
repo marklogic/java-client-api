@@ -30,6 +30,7 @@
             <includes>
                 <include>Example.properties</include>
                 <include>data/*</include>
+                <include>scripts/*</include>
                 <include>com/marklogic/client/example/cookbook/*.java</include>
                 <include>com/marklogic/client/example/handle/*.java</include>
             </includes>

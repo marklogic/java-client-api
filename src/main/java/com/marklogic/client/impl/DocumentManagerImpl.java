@@ -453,7 +453,8 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 			Format currFormat = contentBase.getFormat();
 			if (currFormat != contentFormat) {
 				contentBase.setFormat(contentFormat);
-				contentBase.setMimetype(contentFormat.getDefaultMimetype());
+				if (currFormat != Format.UNKNOWN)
+					contentBase.setMimetype(contentFormat.getDefaultMimetype());
 			}
 		}
 	}

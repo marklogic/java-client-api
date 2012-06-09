@@ -587,8 +587,8 @@ public class JerseyServices implements RESTServices {
 		}
 
 		Format descFormat = desc.getFormat();
-		String contentMimetype = (descFormat != null && descFormat != Format.UNKNOWN) ? desc
-				.getMimetype() : null;
+		String contentMimetype = (descFormat != null && descFormat != Format.UNKNOWN) ?
+				desc.getMimetype() : null;
 		if (contentMimetype == null && contentBase != null) {
 			Format contentFormat = contentBase.getFormat();
 			if (descFormat != null && descFormat != contentFormat) {

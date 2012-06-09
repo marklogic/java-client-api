@@ -23,7 +23,7 @@ public enum Format {
     public String getDefaultMimetype() {
     	switch(this) {
     	case UNKNOWN:
-        	// if UNKNOWN, assume BINARY to be safe
+    		return null;
     	case BINARY:
     		// TODO: or possibly "application/x-unknown-content-type"
     		return "application/octet-stream";
