@@ -16,7 +16,7 @@
 </p>
 <h2>Creating a Database Client</h2>
 <p>
-	Use {@link com.marklogic.client.DatabaseClientFactory}.connect()
+	Use {@link com.marklogic.client.DatabaseClientFactory}.newClient()
 	to create a client for a database.  You can then use the
 	{@link com.marklogic.client.DatabaseClient} factory methods
 	(which begin with "new") to create document, configuration,
@@ -35,8 +35,7 @@
 	with different formats.  
 </p>
 <p>
-	To identify a document in the database, you create a
-	{@link com.marklogic.client.DocumentIdentifier} with the document URI.
+	To identify a document in the database, you use a String with the document URI.
 </p>
 <p>
 	To access document content, you create a <em>handle</em> object that supports
@@ -59,15 +58,15 @@
 	for content in a representation.
 </p>
 <p>
-	To read document content from the database, pass the 
-	{@link com.marklogic.client.DocumentIdentifier} and handle to the read() method 
+	To read document content from the database, pass the document URI string
+	and a handle to the read() method 
 	of the document manager. Then use the methods of the handle to get the content.  
 	The following example reads the content of the <code>/db/path/to/myDoc.xml</code>
 	database document into a DOM document:
 </p>
 <pre>
 XMLDocumentManager docMgr = client.newXMLDocumentManager();
-DocumentIdentifier docId = client.newDocId("/db/path/to/myDoc.xml");
+String docId = "/db/path/to/myDoc.xml";
 DOMHandle handle = new DOMHandle();
 
 docMgr.read(docId, handle);
@@ -76,7 +75,7 @@ org.w3c.dom.Document document = handle.get();
 </pre>
 <p>
 	To write content to a document in the database, set the content in a handle and then pass the 
-	{@link com.marklogic.client.DocumentIdentifier} and	content handle to the write() method
+	document URI string and the content handle to the write() method
 	of the document manager. The following example write the content of the 
 	<code>/db/path/to/myDoc.xml</code> database document from a DOM document:
 </p>
@@ -84,7 +83,7 @@ org.w3c.dom.Document document = handle.get();
 org.w3c.dom.Document document = ... <em>create or modify the document</em> ...;
 
 XMLDocumentManager docMgr = client.newXMLDocumentManager();
-DocumentIdentifier docId = client.newDocId("/db/path/to/myDoc.xml");
+String docId = "/db/path/to/myDoc.xml";
 DOMHandle handle = new DOMHandle();
 handle.set(document);
 
