@@ -101,6 +101,13 @@ public class JSONDocumentTest {
 		readNode = mapper.readTree(file);
 		assertTrue("JSON document mismatch with file", sourceNode.equals(readNode));
 
+		docMgr.write(docId, new StringHandle().with(GenericDocumentTest.metadata),
+				new StringHandle().with(content));
+		docText = docMgr.read(docId, new StringHandle()).get();
+		assertNotNull("Read null string for JSON content",docText);
+		readNode = mapper.readTree(docText);
+		assertTrue("Failed to read JSON document as String", sourceNode.equals(readNode));
+
 		String lang = "fr-CA";
 		docMgr.setLanguage(lang);
 		docMgr.write(docId, new StringHandle().with(content));
