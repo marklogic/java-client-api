@@ -249,16 +249,6 @@ public class JerseyServices implements RESTServices {
 		// configProps.put(ApacheHttpClient4Config.PROPERTY_CHUNKED_ENCODING_SIZE,
 		// 0);
 
-		// TODO: remove temporary hack when Maven build merge multipart before
-		// core in service definition
-		Collections.addAll(config.getClasses(),
-				com.sun.jersey.multipart.impl.MultiPartReaderClientSide.class,
-				// com.sun.jersey.multipart.impl.MultiPartReaderServerSide
-				com.sun.jersey.multipart.impl.MultiPartWriter.class,
-				com.sun.jersey.multipart.impl.MultiPartConfigProvider.class
-		// com.sun.jersey.multipart.impl.FormDataMultiPartDispatchProvider.class
-				);
-
 		client = ApacheHttpClient4.create(config);
 
 		// System.setProperty("javax.net.debug", "all"); // all or ssl
