@@ -32,7 +32,7 @@ public abstract class RequestParametersImplementation {
 	protected Map<String,List<String>> getMap() {
 		return map;
 	}
-	MultivaluedMap<String, String> getMapImpl() {
+	final MultivaluedMap<String, String> getMapImpl() {
 		return map;
 	}
 }

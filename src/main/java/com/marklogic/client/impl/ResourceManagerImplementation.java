@@ -23,7 +23,7 @@ public abstract class ResourceManagerImplementation {
 	protected ResourceManagerImplementation() {
 		super();
 	}
-	protected void init(ResourceServices services) {
+	final void init(ResourceServices services) {
 		this.services = services;
 	}
 	protected ResourceServices getServices() {
