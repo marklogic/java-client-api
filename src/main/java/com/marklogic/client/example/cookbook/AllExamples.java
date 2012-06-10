@@ -58,6 +58,8 @@ public class AllExamples {
 				host, port, admin_user, admin_password, writer_user, writer_password, authType);
 		MultiStatementTransaction.run(
 				host, port, writer_user, writer_password, authType);
+ 		DocumentReadTransform.run(
+				host, port, admin_user, admin_password, writer_user, writer_password, authType);
  		DocumentWriteTransform.run(
 				host, port, admin_user, admin_password, writer_user, writer_password, authType);
 		// SSLClientConnector is not included in this list because it requires a change

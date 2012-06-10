@@ -32,12 +32,11 @@ import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
 
 /**
- * DocumentWriteTransform installs a server transform for converting HTML documents
- * to XHTML documents so HTML documents can be written to the database, indexed,
- * and easily modified.
+ * DocumentReadTransform installs a server transform for converting XML documents
+ * with a known vocabulary to HTML documents for presentation.
  */
-public class DocumentWriteTransform {
-	static final private String TRANSFORM_NAME = "html2xhtml";
+public class DocumentReadTransform {
+	static final private String TRANSFORM_NAME = "xml2html";
 
 	public static void main(String[] args) throws IOException {
 		Properties props = loadProperties();
@@ -56,13 +55,13 @@ public class DocumentWriteTransform {
 		run(host, port, admin_user, admin_password, writer_user, writer_password, authType);
 	}
 
-	// install the transform and then write a transformed document 
+	// install the transform and then read a transformed document 
 	public static void run(String host, int port, String admin_user, String admin_password, String writer_user, String writer_password, Authentication authType) {
-		System.out.println("example: "+DocumentWriteTransform.class.getName());
+		System.out.println("example: "+DocumentReadTransform.class.getName());
 
 		installTransform( host, port, admin_user,  admin_password,  authType );
 
-		writeDocument(    host, port, writer_user, writer_password, authType );
+		readDocument(     host, port, writer_user, writer_password, authType );
 
 		tearDownExample(host, port, admin_user, admin_password, authType);
 	}
@@ -76,14 +75,14 @@ public class DocumentWriteTransform {
 
 		// specify metadata about the transform extension
 		ExtensionMetadata metadata = new ExtensionMetadata();
-		metadata.setTitle("HTML-TO-XHTML XQuery Transform");
-		metadata.setDescription("This plugin transforms an HTML document to XHTML");
+		metadata.setTitle("XML-TO-HTML XSLT Transform");
+		metadata.setDescription("This plugin transforms an XML document with a known vocabulary to HTML");
 		metadata.setProvider("MarkLogic");
 		metadata.setVersion("0.1");
 
 		// acquire the transform source code
 		InputStream transStream = DocumentWrite.class.getClassLoader().getResourceAsStream(
-			"scripts"+File.separator+TRANSFORM_NAME+".xqy");
+			"scripts"+File.separator+TRANSFORM_NAME+".xsl");
 		if (transStream == null)
 			throw new RuntimeException("Could not read example transform");
 
@@ -92,7 +91,7 @@ public class DocumentWriteTransform {
 		handle.set(transStream);
 
 		// write the transform extension to the database
-		transMgr.writeXQueryTransform(TRANSFORM_NAME, handle, metadata);
+		transMgr.writeXSLTransform(TRANSFORM_NAME, handle, metadata);
 
 		System.out.println("Installed the "+TRANSFORM_NAME+" transform");
 
@@ -100,64 +99,62 @@ public class DocumentWriteTransform {
 		client.release();
 	}
 
-	public static void writeDocument(String host, int port, String user, String password, Authentication authType) {
-		String filename = "sentiment.html";
+	public static void readDocument(String host, int port, String user, String password, Authentication authType) {
+		String filename = "flipper.xml";
 
 		// connect the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
-		// acquire the content
-		InputStream docStream = DocumentWrite.class.getClassLoader().getResourceAsStream(
-			"data"+File.separator+filename);
-		if (docStream == null)
-			throw new RuntimeException("Could not read document example");
-
-		// create a manager for writing text documents
-		TextDocumentManager writeMgr = client.newTextDocumentManager();
-
 		// create an identifier for the document
 		String docId = "/example/"+filename;
 
+		setUpExample(client, docId, filename);
+
+		// create a manager for text documents
+		TextDocumentManager docMgr = client.newTextDocumentManager();
+
 		// create a handle on the content
-		InputStreamHandle writeHandle = new InputStreamHandle(docStream);
-		writeHandle.set(docStream);
+		StringHandle readHandle = new StringHandle();
 
 		// specify the mime type for the content
-		writeHandle.setMimetype("text/html");
+		readHandle.setMimetype("text/html");
 
-		// specify the transform and its parameters
+		// specify the transform
 		ServerTransform transform = new ServerTransform(TRANSFORM_NAME);
-		transform.put("drop-font-tags",              "yes");
-		transform.put("drop-proprietary-attributes", "yes");
-		transform.put("enclose-block-text",          "yes");
-		transform.put("enclose-text",                "yes");
-		transform.put("logical-emphasis",            "yes");
 
-		// write the HTML content as XHTML by transforming in the database
-		writeMgr.write(docId, writeHandle, transform);
+		// read the XML content as HTML by transforming in the database
+		docMgr.read(docId, readHandle, transform);
 
-		System.out.println("Wrote "+docId+" with transform");
-
-		// read back the transformed XHTML document
-		XMLDocumentManager readMgr = client.newXMLDocumentManager();
-
-		StringHandle readHandle = new StringHandle();
-		readMgr.read(docId, readHandle);
-
+		System.out.println("Read "+docId+" with transform");
 		System.out.println(readHandle.get());
 
 		// release the client
 		client.release();
 	}
 
-	// clean up by deleting the written document and the example transform
+	// set up by writing document content for the example to read
+	public static void setUpExample(DatabaseClient client, String docId, String filename) {
+		InputStream docStream = DocumentRead.class.getClassLoader().getResourceAsStream(
+				"data"+File.separator+filename);
+		if (docStream == null)
+			throw new RuntimeException("Could not read document example");
+
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+
+		InputStreamHandle handle = new InputStreamHandle(docStream);
+		handle.set(docStream);
+
+		docMgr.write(docId, handle);
+	}
+
+	// clean up by deleting the read document and the example transform
 	public static void tearDownExample(
 			String host, int port, String user, String password, Authentication authType) {
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
-		TextDocumentManager docMgr = client.newTextDocumentManager();
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		docMgr.delete("/example/sentiment.html");
+		docMgr.delete("/example/flipper.xml");
 
 		TransformExtensionsManager transMgr =
 			client.newServerConfigManager().newTransformExtensionsManager();
@@ -171,7 +168,7 @@ public class DocumentWriteTransform {
 	public static Properties loadProperties() throws IOException {
 		String propsName = "Example.properties";
 		InputStream propsStream =
-			DocumentWriteTransform.class.getClassLoader().getResourceAsStream(propsName);
+			DocumentReadTransform.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
 			throw new RuntimeException("Could not read example properties");
 
