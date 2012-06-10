@@ -76,6 +76,7 @@ public class OptimisticLocking {
 		configMgr.readConfiguration();
 
 		// require content versions for updates and deletes
+		// use Policy.OPTIONAL to allow but not require versions
 		configMgr.setContentVersionRequests(Policy.REQUIRED);
 
 		// write the server configuration to the database
@@ -109,7 +110,8 @@ public class OptimisticLocking {
 		InputStreamHandle createHandle = new InputStreamHandle(docStream);
 		createHandle.set(docStream);
 
-		// write a new document without a version
+		// write a new document without a version (and so, without a descriptor)
+		// if the document exists, write() throws an exception
 		docMgr.write(docId, createHandle);
 
 		// create a descriptor for versions of the document
@@ -128,6 +130,7 @@ public class OptimisticLocking {
 		document.getDocumentElement().setAttribute("modified", "true");
 
 		// update the document, specifying the current version with the descriptor
+		// if the document changed after reading, write() throws an exception
 		docMgr.write(desc, updateHandle);
 
 		// get the updated version without getting the content
@@ -136,6 +139,7 @@ public class OptimisticLocking {
 		System.out.println("updated "+docId+" as version "+desc.getVersion());
 
 		// delete the document, specifying the current version with the descriptor
+		// if the document changed after exists(), delete() throws an exception
 		docMgr.delete(desc);
 
 		// release the client
