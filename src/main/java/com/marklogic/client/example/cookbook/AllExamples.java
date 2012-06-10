@@ -62,6 +62,8 @@ public class AllExamples {
 				host, port, admin_user, admin_password, writer_user, writer_password, authType);
  		DocumentWriteTransform.run(
 				host, port, admin_user, admin_password, writer_user, writer_password, authType);
+ 		OptimisticLocking.run(
+				host, port, admin_user, admin_password, writer_user, writer_password, authType);
 		// SSLClientConnector is not included in this list because it requires a change
 		//     to the REST server that invalidates all of the other examples.  See
 		//     the comments in SSLClientConnector.
