@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.io;
+package com.marklogic.client.impl;
 
+import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 
@@ -23,12 +24,12 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
  *
  */
 public class HandleAccessor {
-	static public BaseHandle checkHandle(Object object, String type) {
+	static public HandleImplementation checkHandle(Object object, String type) {
 		if (!isHandle(object))
 			throw new IllegalArgumentException(
 					type+" handle does not extend BaseHandle: "+object.getClass().getName()
 					);
-		return ((BaseHandle) object);
+		return ((HandleImplementation) object);
 	}
 	static public boolean isHandle(Object object) {
 		return object == null || object instanceof BaseHandle;
@@ -37,19 +38,19 @@ public class HandleAccessor {
 	static public <R extends AbstractReadHandle> Class<R> receiveAs(R handle) {
 		if (handle == null)
 			return null;
-		return ((BaseHandle) handle).receiveAs();
+		return ((HandleImplementation) handle).receiveAs();
 	}
 	static public <R extends AbstractReadHandle> void receiveContent(R handle, Object content) {
 		if (handle == null)
 			return;
-		((BaseHandle) handle).receiveContent(content);
+		((HandleImplementation) handle).receiveContent(content);
 	}
 	static public <W extends AbstractWriteHandle> Object sendContent(W handle) {
 		if (handle == null)
 			return null;
-		return ((BaseHandle) handle).sendContent();
+		return ((HandleImplementation) handle).sendContent();
 	}
-	static public BaseHandle as(Object handle) {
-		return ((BaseHandle) handle);
+	static public HandleImplementation as(Object handle) {
+		return ((HandleImplementation) handle);
 	}
 }

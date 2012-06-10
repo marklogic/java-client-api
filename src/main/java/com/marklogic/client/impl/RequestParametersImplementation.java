@@ -13,14 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client;
+package com.marklogic.client.impl;
 
-/**
- * ResourceAccessor is used internally.  Applications will not ordinarily need to use it.
- *
- */
-public class ResourceAccessor {
-	static public void init(ResourceManager manager, ResourceServices services) {
-		manager.init(services);
+import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.core.MultivaluedMap;
+
+import com.sun.jersey.core.util.MultivaluedMapImpl;
+
+public abstract class RequestParametersImplementation {
+	private MultivaluedMap<String, String> map = new MultivaluedMapImpl();
+
+	protected RequestParametersImplementation() {
+		super();
+	}
+
+	protected Map<String,List<String>> getMap() {
+		return map;
+	}
+	MultivaluedMap<String, String> getMapImpl() {
+		return map;
 	}
 }

@@ -28,9 +28,7 @@ import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.StringQueryDefinition;
 import com.marklogic.client.config.StructuredQueryBuilder;
 import com.marklogic.client.config.ValuesListDefinition;
-import com.marklogic.client.io.HandleAccessor;
 import com.marklogic.client.config.ValuesDefinition;
-import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.ValuesHandle;
 import com.marklogic.client.io.ValuesListHandle;
@@ -129,7 +127,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     }
 
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction) {
-		BaseHandle searchBase = HandleAccessor.checkHandle(searchHandle, "search");
+		HandleImplementation searchBase = HandleAccessor.checkHandle(searchHandle, "search");
 
         if (searchHandle instanceof SearchHandle) {
             ((SearchHandle) searchHandle).setQueryCriteria(querydef);
@@ -150,7 +148,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         String mimetype = searchFormat.getDefaultMimetype();
 
         String tid = transaction == null ? null : transaction.getTransactionId();
-        HandleAccessor.receiveContent(searchHandle, services.search(HandleAccessor.receiveAs(searchHandle), querydef, mimetype, start, pageLen, views, tid));
+        searchBase.receiveContent(services.search(searchBase.receiveAs(), querydef, mimetype, start, pageLen, views, tid));
         return searchHandle;
     }
 
@@ -161,7 +159,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 
     @Override
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valuesHandle, Transaction transaction) {
-    	BaseHandle valuesBase = HandleAccessor.checkHandle(valuesHandle, "values");
+    	HandleImplementation valuesBase = HandleAccessor.checkHandle(valuesHandle, "values");
 
         if (valuesHandle instanceof ValuesHandle) {
             ((ValuesHandle) valuesHandle).setQueryCriteria(valdef);
@@ -181,7 +179,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         String mimetype = valuesFormat.getDefaultMimetype();
 
         String tid = transaction == null ? null : transaction.getTransactionId();
-        HandleAccessor.receiveContent(valuesHandle, services.values(HandleAccessor.receiveAs(valuesHandle), valdef, mimetype, tid));
+        valuesBase.receiveContent(services.values(valuesBase.receiveAs(), valdef, mimetype, tid));
         return valuesHandle;
     }
 
@@ -192,7 +190,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 
     @Override
     public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valuesHandle, Transaction transaction) {
-    	BaseHandle valuesBase = HandleAccessor.checkHandle(valuesHandle, "valueslist");
+    	HandleImplementation valuesBase = HandleAccessor.checkHandle(valuesHandle, "valueslist");
 
         Format valuesFormat = valuesBase.getFormat();
         switch(valuesFormat) {
@@ -208,7 +206,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         String mimetype = valuesFormat.getDefaultMimetype();
 
         String tid = transaction == null ? null : transaction.getTransactionId();
-        HandleAccessor.receiveContent(valuesHandle, services.valuesList(HandleAccessor.receiveAs(valuesHandle), valdef, mimetype, tid));
+        valuesBase.receiveContent(services.valuesList(valuesBase.receiveAs(), valdef, mimetype, tid));
         return valuesHandle;
     }
 
@@ -219,7 +217,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 
     @Override
     public <T extends QueryOptionsListReadHandle> T optionsList(T optionsHandle, Transaction transaction) {
-    	BaseHandle optionsBase = HandleAccessor.checkHandle(optionsHandle, "optionslist");
+    	HandleImplementation optionsBase = HandleAccessor.checkHandle(optionsHandle, "optionslist");
 
         Format optionsFormat = optionsBase.getFormat();
         switch(optionsFormat) {
@@ -235,7 +233,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         String mimetype = optionsFormat.getDefaultMimetype();
 
         String tid = transaction == null ? null : transaction.getTransactionId();
-        HandleAccessor.receiveContent(optionsHandle, services.optionsList(HandleAccessor.receiveAs(optionsHandle), mimetype, tid));
+        optionsBase.receiveContent(services.optionsList(optionsBase.receiveAs(), mimetype, tid));
         return optionsHandle;
     }
 

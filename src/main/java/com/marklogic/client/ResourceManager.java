@@ -15,25 +15,25 @@
  */
 package com.marklogic.client;
 
-abstract public class ResourceManager {
-	private ResourceServices services;
+import com.marklogic.client.impl.ResourceManagerImplementation;
+
+abstract public class ResourceManager
+    extends ResourceManagerImplementation
+{
 	protected ResourceManager() {
 		super();
 	}
-	protected void init(ResourceServices services) {
-		this.services = services;
-	}
-	protected ResourceServices getServices() {
-		return services;
-	}
 	public String getName() {
+		ResourceServices services = getServices();
 		return (services != null) ? services.getResourceName() : null;
 	}
     public void startLogging(RequestLogger logger) {
+		ResourceServices services = getServices();
     	if (services != null)
     		services.startLogging(logger);
     }
     public void stopLogging() {
+		ResourceServices services = getServices();
     	if (services != null)
     		services.stopLogging();
     }

@@ -20,8 +20,6 @@ import com.marklogic.client.RequestLogger;
 import com.marklogic.client.RequestParameters;
 import com.marklogic.client.ResourceServices;
 import com.marklogic.client.Transaction;
-import com.marklogic.client.io.BaseHandle;
-import com.marklogic.client.io.HandleAccessor;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 
@@ -168,11 +166,10 @@ class ResourceServicesImpl
 	}
 
 	private <R extends AbstractReadHandle> Object execMethod(MethodType method, RequestParameters params, R output) {
-		BaseHandle outputBase = HandleAccessor.checkHandle(output, "read");
+		HandleImplementation outputBase = HandleAccessor.checkHandle(output, "read");
 
-		// TODO: handle must have mimetype
-		String outputMimetype = (outputBase != null) ? outputBase.getMimetype() : null;
-		Class  as             = HandleAccessor.receiveAs(output);
+		String outputMimetype = outputBase.getMimetype();
+		Class  as             = outputBase.receiveAs();
 
 		switch (method) {
 		case GET:
@@ -192,10 +189,9 @@ class ResourceServicesImpl
 			as             = new Class[outputSize];
 			for (int i=0; i < outputSize; i++) {
 				AbstractReadHandle handle = output[i];
-				BaseHandle handleBase = HandleAccessor.checkHandle(handle, "read");
-				// TODO: handle must have mimetype
-				outputMimetype[i] = (handleBase != null) ? handleBase.getMimetype() : null;
-				as[i]             = HandleAccessor.receiveAs(handle);
+				HandleImplementation handleBase = HandleAccessor.checkHandle(handle, "read");
+				outputMimetype[i] = handleBase.getMimetype();
+				as[i]             = handleBase.receiveAs();
 			}
 		}
 
@@ -207,14 +203,13 @@ class ResourceServicesImpl
 		}
 	}
 	private <R extends AbstractReadHandle> Object execMethod(MethodType method, RequestParameters params, AbstractWriteHandle input, R output) {
-		BaseHandle inputBase  = HandleAccessor.checkHandle(input,  "write");
-		BaseHandle outputBase = HandleAccessor.checkHandle(output, "read");
+		HandleImplementation inputBase  = HandleAccessor.checkHandle(input,  "write");
+		HandleImplementation outputBase = HandleAccessor.checkHandle(output, "read");
 
-		Object value          = HandleAccessor.sendContent(input);
-		// TODO: handle must have mimetype
-		String inputMimetype  = (inputBase != null)  ? inputBase.getMimetype()  : null;
-		String outputMimetype = (outputBase != null) ? outputBase.getMimetype() : null;
-		Class  as             = HandleAccessor.receiveAs(output);
+		Object value          = inputBase.sendContent();
+		String inputMimetype  = inputBase.getMimetype();
+		String outputMimetype = outputBase.getMimetype();
+		Class  as             = outputBase.receiveAs();
 
 		switch (method) {
 		case PUT:
@@ -226,7 +221,7 @@ class ResourceServicesImpl
 		}
 	}
 	private <R extends AbstractReadHandle, W extends AbstractWriteHandle> Object execMethod(MethodType method, RequestParameters params, W[] input, R output) {
-		BaseHandle outputBase = HandleAccessor.checkHandle(output, "read");
+		HandleImplementation outputBase = HandleAccessor.checkHandle(output, "read");
 
 		Object[] value         = null;
 		String[] inputMimetype = null;
@@ -236,16 +231,14 @@ class ResourceServicesImpl
 			inputMimetype = new String[inputSize];
 			for (int i=0; i < inputSize; i++) {
 				AbstractWriteHandle handle = input[i];
-				BaseHandle handleBase = HandleAccessor.checkHandle(handle, "write");
-				value[i]              = HandleAccessor.sendContent(handle);
-				// TODO: handle must have mimetype
-				inputMimetype[i] = (handleBase != null) ? handleBase.getMimetype() : null;
+				HandleImplementation handleBase = HandleAccessor.checkHandle(handle, "write");
+				value[i]         = handleBase.sendContent();
+				inputMimetype[i] = handleBase.getMimetype();
 			}
 		}
 
-		// TODO: handle must have mimetype
-		String outputMimetype = (outputBase != null) ? outputBase.getMimetype() : null;
-		Class  as             = HandleAccessor.receiveAs(output);
+		String outputMimetype = outputBase.getMimetype();
+		Class  as             = outputBase.receiveAs();
 
 		switch (method) {
 		case PUT:
@@ -257,11 +250,10 @@ class ResourceServicesImpl
 		}
 	}
 	private <R extends AbstractReadHandle> Object[] execMethod(MethodType method, RequestParameters params, AbstractWriteHandle input, R[] output) {
-		BaseHandle inputBase = HandleAccessor.checkHandle(input,  "write");
+		HandleImplementation inputBase = HandleAccessor.checkHandle(input,  "write");
 
-		Object value         = HandleAccessor.sendContent(input);
-		// TODO: handle must have mimetype
-		String inputMimetype = (inputBase != null) ? inputBase.getMimetype() : null;
+		Object value         = inputBase.sendContent();
+		String inputMimetype = inputBase.getMimetype();
 
 		String[] outputMimetype = null;
 		Class[]  as             = null;
@@ -271,10 +263,9 @@ class ResourceServicesImpl
 			as             = new Class[outputSize];
 			for (int i=0; i < outputSize; i++) {
 				AbstractReadHandle handle = output[i];
-				BaseHandle handleBase = HandleAccessor.checkHandle(handle, "read");
-				// TODO: handle must have mimetype
-				outputMimetype[i] = (handleBase != null) ? handleBase.getMimetype() : null;
-				as[i]             = HandleAccessor.receiveAs(handle);
+				HandleImplementation handleBase = HandleAccessor.checkHandle(handle, "read");
+				outputMimetype[i] = handleBase.getMimetype();
+				as[i]             = handleBase.receiveAs();
 			}
 		}
 
@@ -294,10 +285,9 @@ class ResourceServicesImpl
 			inputMimetype = new String[inputSize];
 			for (int i=0; i < inputSize; i++) {
 				AbstractWriteHandle handle = input[i];
-				BaseHandle handleBase = HandleAccessor.checkHandle(handle, "write");
-				value[i]         = HandleAccessor.sendContent(handle);
-				// TODO: handle must have mimetype
-				inputMimetype[i] = (handleBase != null) ? handleBase.getMimetype() : null;
+				HandleImplementation handleBase = HandleAccessor.checkHandle(handle, "write");
+				value[i]         = handleBase.sendContent();
+				inputMimetype[i] = handleBase.getMimetype();
 			}
 		}
 
@@ -309,10 +299,9 @@ class ResourceServicesImpl
 			as             = new Class[outputSize];
 			for (int i=0; i < outputSize; i++) {
 				AbstractReadHandle handle = output[i];
-				BaseHandle handleBase = HandleAccessor.checkHandle(handle, "read");
-				// TODO: handle must have mimetype
-				outputMimetype[i] = (handleBase != null) ? handleBase.getMimetype() : null;
-				as[i]             = HandleAccessor.receiveAs(handle);
+				HandleImplementation handleBase = HandleAccessor.checkHandle(handle, "read");
+				outputMimetype[i] = handleBase.getMimetype();
+				as[i]             = handleBase.receiveAs();
 			}
 		}
 
@@ -326,7 +315,7 @@ class ResourceServicesImpl
 
 	private <R extends AbstractReadHandle> R makeResult(Object response, R output) {
 		if (response != null) {
-			HandleAccessor.receiveContent(output, response);
+			HandleAccessor.as(output).receiveContent(response);
 		}
 
 		return output;
@@ -334,7 +323,7 @@ class ResourceServicesImpl
 	private <R extends AbstractReadHandle> R[] makeResult(Object[] response, R[] output) {
 		if (response != null) {
 			for (int i=0; i < response.length; i++) {
-				HandleAccessor.receiveContent(output[i], response[i]);
+				HandleAccessor.as(output[i]).receiveContent(response[i]);
 			}
 		}
 

@@ -18,8 +18,6 @@ package com.marklogic.client.impl;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Format;
 import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.io.BaseHandle;
-import com.marklogic.client.io.HandleAccessor;
 import com.marklogic.client.io.ValuesHandle;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
@@ -47,7 +45,7 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 					"Cannot read options for null name");
 		}
 
-		BaseHandle queryOptionsBase = HandleAccessor.checkHandle(
+		HandleImplementation queryOptionsBase = HandleAccessor.checkHandle(
 				queryOptionsHandle, "query options");
 
 		Format queryOptionsFormat = queryOptionsBase.getFormat();
@@ -64,9 +62,9 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 		}
 
 		String mimetype = queryOptionsFormat.getDefaultMimetype();
-		HandleAccessor.receiveContent(queryOptionsHandle, services.getValue(
+		queryOptionsBase.receiveContent(services.getValue(
 				requestLogger, QUERY_OPTIONS_BASE, name, mimetype,
-				HandleAccessor.receiveAs(queryOptionsHandle)));
+				queryOptionsBase.receiveAs()));
 
 		return queryOptionsHandle;
 	}
@@ -74,7 +72,7 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 	@Override
 	public void writeOptions(String name,
 			QueryOptionsWriteHandle queryOptionsHandle) {
-		BaseHandle queryOptionsBase = HandleAccessor.checkHandle(
+		HandleImplementation queryOptionsBase = HandleAccessor.checkHandle(
 				queryOptionsHandle, "query options");
 
 		if (queryOptionsBase == null)
@@ -97,6 +95,6 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 		String mimetype = queryOptionsFormat.getDefaultMimetype();
 
 		services.putValue(requestLogger, QUERY_OPTIONS_BASE, name, mimetype,
-				HandleAccessor.sendContent(queryOptionsHandle));
+				queryOptionsBase.sendContent());
 	}
 }

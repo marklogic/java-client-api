@@ -26,13 +26,9 @@ import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.GenericDocumentManager;
 import com.marklogic.client.JSONDocumentManager;
-import com.marklogic.client.NamespacesManager;
 import com.marklogic.client.QueryManager;
-import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.RequestLogger;
-import com.marklogic.client.ResourceAccessor;
 import com.marklogic.client.ResourceManager;
-import com.marklogic.client.ResourceServices;
 import com.marklogic.client.ServerConfigurationManager;
 import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.Transaction;
@@ -107,8 +103,7 @@ public class DatabaseClientImpl implements DatabaseClient {
 		if (resourceName.length() == 0)
 			throw new IllegalArgumentException("Cannot initialize resource manager with empty resource name");
 
-		ResourceAccessor.init(
-				resourceManager,
+		((ResourceManagerImplementation) resourceManager).init(
 				new ResourceServicesImpl(services,resourceName)
 				);
 

@@ -30,8 +30,6 @@ import com.marklogic.client.RequestParameters;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ServerTransform;
 import com.marklogic.client.Transaction;
-import com.marklogic.client.io.BaseHandle;
-import com.marklogic.client.io.HandleAccessor;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
@@ -197,7 +195,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		logger.info("Reading metadata and content for {}", desc.getUri());
 
 		if (metadataHandle != null) {
-			BaseHandle metadataBase = HandleAccessor.checkHandle(metadataHandle, "metadata");
+			HandleImplementation metadataBase = HandleAccessor.checkHandle(metadataHandle, "metadata");
 			Format metadataFormat = metadataBase.getFormat();
 			if (metadataFormat == null || (metadataFormat != Format.JSON && metadataFormat != Format.XML)) {
 				logger.warn("Unsupported metadata format {}, using XML",metadataFormat.name());
@@ -320,7 +318,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		logger.info("Writing content for {}",desc.getUri());
 
 		if (metadataHandle != null) {
-			BaseHandle metadataBase = HandleAccessor.checkHandle(metadataHandle, "metadata");
+			HandleImplementation metadataBase = HandleAccessor.checkHandle(metadataHandle, "metadata");
 			Format metadataFormat = metadataBase.getFormat();
 			if (metadataFormat == null || (metadataFormat != Format.JSON && metadataFormat != Format.XML)) {
 				logger.warn("Unsupported metadata format {}, using XML",metadataFormat.name());
@@ -445,7 +443,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 	private void checkContentFormat(Object contentHandle) {
 		checkContentFormat(HandleAccessor.checkHandle(contentHandle, "content"));
 	}
-	private void checkContentFormat(BaseHandle contentBase) {
+	private void checkContentFormat(HandleImplementation contentBase) {
 		if (contentBase == null)
 			return;
 

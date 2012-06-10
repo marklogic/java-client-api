@@ -20,7 +20,6 @@ import java.io.PrintStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,7 +63,6 @@ import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.RequestLogger;
 import com.marklogic.client.RequestParameters;
-import com.marklogic.client.RequestParametersAccessor;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ValueLocator;
 import com.marklogic.client.config.KeyValueQueryDefinition;
@@ -73,8 +71,6 @@ import com.marklogic.client.config.StringQueryDefinition;
 import com.marklogic.client.config.StructuredQueryDefinition;
 import com.marklogic.client.config.ValuesDefinition;
 import com.marklogic.client.config.ValuesListDefinition;
-import com.marklogic.client.io.BaseHandle;
-import com.marklogic.client.io.HandleAccessor;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
@@ -337,10 +333,10 @@ public class JerseyServices implements RESTServices {
 			AbstractReadHandle contentHandle) throws ResourceNotFoundException,
 			ForbiddenUserException,  FailedRequestException {
 
-		BaseHandle metadataBase = HandleAccessor.checkHandle(metadataHandle,
-				"metadata");
-		BaseHandle contentBase = HandleAccessor.checkHandle(contentHandle,
-				"content");
+		HandleImplementation metadataBase = HandleAccessor.checkHandle(
+				metadataHandle, "metadata");
+		HandleImplementation contentBase = HandleAccessor.checkHandle(
+				contentHandle, "content");
 
 		String metadataFormat = null;
 		String metadataMimetype = null;
@@ -422,15 +418,15 @@ public class JerseyServices implements RESTServices {
 				(mimetype != null) ? mimetype : "no",
 				stringJoin(categories, ", ", "no"));
 
-		BaseHandle handleBase = HandleAccessor.as(handle);
+		HandleImplementation handleBase = HandleAccessor.as(handle);
 		updateDescriptor(desc, handleBase, response);
 
-		Class as = HandleAccessor.receiveAs(handle);
+		Class as = handleBase.receiveAs();
 		Object entity = response.getEntity(as);
 		if (as != InputStream.class && as != Reader.class)
 			response.close();
 
-		HandleAccessor.receiveContent(handle,
+		handleBase.receiveContent(
 				(reqlog != null) ? reqlog.copyContent(entity) : entity);
 
 		return true;
@@ -506,17 +502,18 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException("read expected 2 parts but got "
 					+ partCount + " parts");
 
-		BaseHandle contentBase = HandleAccessor.as(contentHandle);
+		HandleImplementation metadataBase = HandleAccessor.as(metadataHandle);
+		HandleImplementation contentBase  = HandleAccessor.as(contentHandle);
 		updateDescriptor(desc, contentBase, response);
 
-		HandleAccessor.receiveContent(metadataHandle, partList.get(0)
-				.getEntityAs(HandleAccessor.receiveAs(metadataHandle)));
+		metadataBase.receiveContent(
+				partList.get(0).getEntityAs(metadataBase.receiveAs())
+				);
 
 		Object contentPart = partList.get(1).getEntityAs(
-				HandleAccessor.receiveAs(contentHandle));
-		HandleAccessor.receiveContent(contentHandle,
-				(reqlog != null) ? reqlog.copyContent(contentPart)
-						: contentPart);
+				contentBase.receiveAs());
+		contentBase.receiveContent(
+				(reqlog != null) ? reqlog.copyContent(contentPart) : contentPart);
 
 		response.close();
 
@@ -576,10 +573,10 @@ public class JerseyServices implements RESTServices {
 			AbstractWriteHandle contentHandle)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
-		BaseHandle metadataBase = HandleAccessor.checkHandle(metadataHandle,
-				"metadata");
-		BaseHandle contentBase = HandleAccessor.checkHandle(contentHandle,
-				"content");
+		HandleImplementation metadataBase = HandleAccessor.checkHandle(
+				metadataHandle, "metadata");
+		HandleImplementation contentBase = HandleAccessor.checkHandle(
+				contentHandle, "content");
 
 		String metadataMimetype = null;
 		if (metadataBase != null) {
@@ -621,7 +618,7 @@ public class JerseyServices implements RESTServices {
 			throw new IllegalArgumentException(
 					"Document write for document identifier without uri");
 
-		Object value = HandleAccessor.sendContent(handle);
+		Object value = HandleAccessor.as(handle).sendContent();
 		if (value == null)
 			throw new IllegalArgumentException(
 					"Document write with null value for " + uri);
@@ -720,10 +717,10 @@ public class JerseyServices implements RESTServices {
 			Object value = null;
 			if (i == 0) {
 				mimetype = metadataMimetype;
-				value = HandleAccessor.sendContent(metadataHandle);
+				value = HandleAccessor.as(metadataHandle).sendContent();
 			} else {
 				mimetype = contentMimetype;
-				value = HandleAccessor.sendContent(contentHandle);
+				value = HandleAccessor.as(contentHandle).sendContent();
 			}
 
 			String[] typeParts = mimetype.contains("/") ? mimetype
@@ -924,7 +921,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	private void updateDescriptor(DocumentDescriptor desc,
-			BaseHandle handleBase, ClientResponse response) {
+			HandleImplementation handleBase, ClientResponse response) {
 		if (desc != null && desc instanceof DocumentDescriptorImpl
 				&& !((DocumentDescriptorImpl) desc).isInternal()) {
 			updateDescriptor(desc, response.getHeaders());
@@ -1049,7 +1046,7 @@ public class JerseyServices implements RESTServices {
 			params.put("q", text);
 
 			response = connection.path("search")
-					.queryParams(RequestParametersAccessor.getMap(params))
+					.queryParams(((RequestParametersImplementation) params).getMapImpl())
 					.accept(mimetype).get(ClientResponse.class);
 
 			if (isFirstRequest)
@@ -1073,7 +1070,7 @@ public class JerseyServices implements RESTServices {
 			}
 
 			response = connection.path("keyvalue")
-					.queryParams(RequestParametersAccessor.getMap(params))
+					.queryParams(((RequestParametersImplementation) params).getMapImpl())
 					.accept(mimetype).get(ClientResponse.class);
 
 			if (isFirstRequest)
@@ -1650,7 +1647,7 @@ public class JerseyServices implements RESTServices {
 			throw new IllegalArgumentException("Read with null path");
 
 		WebResource.Builder builder = makeBuilder(path,
-				RequestParametersAccessor.getMap(params), null, mimetype);
+				((RequestParametersImplementation) params).getMapImpl(), null, mimetype);
 
 		logger.info("Getting {}", path);
 
@@ -1669,7 +1666,7 @@ public class JerseyServices implements RESTServices {
 			throw new IllegalArgumentException("Write with null path");
 
 		WebResource.Builder builder = makeBuilder(path,
-				RequestParametersAccessor.getMap(params), inputMimetype,
+				((RequestParametersImplementation) params).getMapImpl(), inputMimetype,
 				outputMimetype);
 
 		logger.info("Putting {}", path);
@@ -1711,7 +1708,7 @@ public class JerseyServices implements RESTServices {
 				values);
 
 		WebResource.Builder builder = makeBuilder(path,
-				RequestParametersAccessor.getMap(params),
+				((RequestParametersImplementation) params).getMapImpl(),
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE),
 				outputMimetype);
 
@@ -1735,7 +1732,7 @@ public class JerseyServices implements RESTServices {
 			throw new IllegalArgumentException("Apply with null path");
 
 		WebResource.Builder builder = makeBuilder(path,
-				RequestParametersAccessor.getMap(params), inputMimetype,
+				((RequestParametersImplementation) params).getMapImpl(), inputMimetype,
 				outputMimetype);
 
 		logger.info("Posting {}", path);
@@ -1777,7 +1774,7 @@ public class JerseyServices implements RESTServices {
 				values);
 
 		WebResource.Builder builder = makeBuilder(path,
-				RequestParametersAccessor.getMap(params),
+				((RequestParametersImplementation) params).getMapImpl(),
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE),
 				outputMimetype);
 
@@ -1800,7 +1797,7 @@ public class JerseyServices implements RESTServices {
 			throw new IllegalArgumentException("Delete with null path");
 
 		WebResource.Builder builder = makeBuilder(path,
-				RequestParametersAccessor.getMap(params), null, mimetype);
+				((RequestParametersImplementation) params).getMapImpl(), null, mimetype);
 
 		logger.info("Deleting {}", path);
 

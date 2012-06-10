@@ -48,6 +48,8 @@ import org.xml.sax.SAXException;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.NameMap;
+import com.marklogic.client.NameMapBase;
 import com.marklogic.client.impl.DOMWriter;
 import com.marklogic.client.impl.ValueConverter;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
@@ -102,17 +104,7 @@ public class DocumentMetadataHandle
 	public enum Capability {
 	    EXECUTE, INSERT, READ, UPDATE;
 	}
-	public interface DocumentProperties extends Map<QName,Object> {
-		public NamespaceContext getNamespaceContext();
-		public void setNamespaceContext(NamespaceContext context);
-
-		public boolean containsKey(String key);
-
-		public Object get(String key);
-
-		public <T> T get(QName name, Class<T> as);
-		public <T> T get(String name, Class<T> as);
-
+	public interface DocumentProperties extends NameMap<Object> {
 		public Object put(QName name, BigDecimal value);
 		public Object put(QName name, BigInteger value);
 		public Object put(QName name, Boolean    value);
@@ -126,64 +118,10 @@ public class DocumentMetadataHandle
 		public Object put(QName name, NodeList   value);
 		public Object put(QName name, Short      value);
 		public Object put(QName name, String     value);
-
-		public Object put(String name, Object value);
-
-		public Object remove(String key);
 	}
-	private class PropertiesImpl extends HashMap<QName,Object> implements DocumentProperties {
-		private NamespaceContext context;
-		public NamespaceContext getNamespaceContext() {
-			return context;
-		}
-		public void setNamespaceContext(NamespaceContext context) {
-			this.context = context;
-		}
-
-		private QName makeQName(String name) {
-			if (name == null) return null;
-
-			if (name.contains(":")) {
-				if (context == null)
-					throw new IllegalStateException("No namespace context for resolving key with prefix: "+name);
-				String[] parts = name.split(":", 2);
-				String prefix = parts[0];
-				if (prefix == null)
-					throw new IllegalArgumentException("Empty prefix in key: "+name);
-				String localPart = parts[1];
-				if (localPart == null)
-					throw new IllegalArgumentException("Empty local part in key: "+name);
-				String uri = context.getNamespaceURI(prefix);
-				if (uri == null || XMLConstants.NULL_NS_URI.equals(uri))
-					throw new IllegalStateException("No namespace uri defined in context for prefix "+prefix+" of key: "+name);
-				return new QName(uri,localPart, prefix);
-			} else if (context != null) {
-				String uri = context.getNamespaceURI(XMLConstants.DEFAULT_NS_PREFIX);
-				if (uri != null && !XMLConstants.NULL_NS_URI.equals(uri))
-					return new QName(uri,name);
-			}
-
-			return new QName(name);
-		}
-
-		public boolean containsKey(String name) {
-			return super.containsKey(makeQName(name));
-		}
-
-		public Object get(String name) {
-			return super.get(makeQName(name));
-		}
-
-		public <T> T get(QName name, Class<T> as) {
-			Object value = get(name);
-			if (value == null)
-				return null;
-			if (value.getClass() == as)
-				return (T) value;
-			throw new IllegalArgumentException("Cannot get value of "+value.getClass().getName()+" as "+as.getName());
-		}
-		public <T> T get(String name, Class<T> as) {
-			return get(makeQName(name), as);
+	private class PropertiesImpl extends NameMapBase<Object> implements DocumentProperties {
+		private PropertiesImpl() {
+			super();
 		}
 
 		public Object put(QName name, BigDecimal value) {
@@ -225,19 +163,12 @@ public class DocumentMetadataHandle
 		public Object put(QName name, String value) {
 			return super.put(name, value);
 		}
+		@Override
 		public Object put(QName name, Object value) {
 			if (value instanceof Number || value instanceof Boolean || value instanceof Byte || value instanceof byte[] ||
 					value instanceof Calendar || value instanceof NodeList || value instanceof String)
 				return super.put(name, value);
 			throw new IllegalArgumentException("Invalid value for metadata property "+value.getClass().getName());
-		}
-
-		public Object put(String name, Object value) {
-			return put(makeQName(name), value);
-		}
-
-		public Object remove(String name) {
-			return super.remove(makeQName(name));
 		}
 	}
 

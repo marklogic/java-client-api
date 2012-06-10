@@ -15,14 +15,22 @@
  */
 package com.marklogic.client;
 
-import javax.ws.rs.core.MultivaluedMap;
+import java.util.Map;
 
-/**
- * RequestParametersAccessor is used internally.  Applications will not ordinarily need to use it.
- *
- */
-public class RequestParametersAccessor {
-	static public MultivaluedMap<String, String> getMap(RequestParameters params) {
-		return params.getMap();
-	}
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.namespace.QName;
+
+public interface NameMap<V> extends Map<QName,V> {
+	public NamespaceContext getNamespaceContext();
+	public void setNamespaceContext(NamespaceContext context);
+
+	public boolean containsKey(String name);
+
+	public V get(String name);
+	public <T> T get(QName name, Class<T> as);
+	public <T> T get(String name, Class<T> as);
+
+	public V put(String name, V value);
+
+	public V remove(String name);
 }

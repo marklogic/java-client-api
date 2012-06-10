@@ -22,13 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ws.rs.core.MultivaluedMap;
+import com.marklogic.client.impl.RequestParametersImplementation;
 
-import com.sun.jersey.core.util.MultivaluedMapImpl;
-
-public class RequestParameters implements Map<String,List<String>> {
-	private MultivaluedMap<String, String> map = new MultivaluedMapImpl();
-
+public class RequestParameters
+    extends RequestParametersImplementation
+    implements Map<String,List<String>>
+{
 	public RequestParameters() {
 		super();
 	}
@@ -36,10 +35,10 @@ public class RequestParameters implements Map<String,List<String>> {
 	public void put(String name, String value) {
 		List<String> list = new ArrayList<String>();
 		list.add(value);
-		map.put(name, list);
+		getMap().put(name, list);
 	}
 	public void put(String name, String... values) {
-		map.put(name, Arrays.asList(values));
+		getMap().put(name, Arrays.asList(values));
 	}
 	public void add(String name, String value) {
 		if (containsKey(name)) {
@@ -61,62 +60,62 @@ public class RequestParameters implements Map<String,List<String>> {
 
 	@Override
 	public int size() {
-		return map.size();
+		return getMap().size();
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return map.isEmpty();
+		return getMap().isEmpty();
 	}
 
 	@Override
 	public boolean containsKey(Object key) {
-		return map.containsKey(key);
+		return getMap().containsKey(key);
 	}
 
 	@Override
 	public boolean containsValue(Object value) {
-		return map.containsValue(value);
+		return getMap().containsValue(value);
 	}
 
 	@Override
 	public List<String> get(Object key) {
-		return map.get(key);
+		return getMap().get(key);
 	}
 
 	@Override
 	public List<String> put(String key, List<String> value) {
-		return map.put(key, value);
+		return getMap().put(key, value);
 	}
 
 	@Override
 	public List<String> remove(Object key) {
-		return map.remove(key);
+		return getMap().remove(key);
 	}
 
 	@Override
 	public void putAll(Map<? extends String, ? extends List<String>> m) {
-		map.putAll(m);
+		getMap().putAll(m);
 	}
 
 	@Override
 	public void clear() {
-		map.clear();
+		getMap().clear();
 	}
 
 	@Override
 	public Set<String> keySet() {
-		return map.keySet();
+		return getMap().keySet();
 	}
 
 	@Override
 	public Collection<List<String>> values() {
-		return map.values();
+		return getMap().values();
 	}
 
 	@Override
 	public Set<Map.Entry<String, List<String>>> entrySet() {
-		return map.entrySet();
+		return getMap().entrySet();
 	}
 
 	public RequestParameters copy(String prefix) {
@@ -128,9 +127,5 @@ public class RequestParameters implements Map<String,List<String>> {
 		}
 
 		return copy;
-	}
-
-	MultivaluedMap<String, String> getMap() {
-		return map;
 	}
 }

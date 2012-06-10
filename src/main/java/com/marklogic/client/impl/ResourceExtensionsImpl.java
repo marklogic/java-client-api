@@ -25,8 +25,6 @@ import com.marklogic.client.ExtensionMetadata;
 import com.marklogic.client.Format;
 import com.marklogic.client.RequestParameters;
 import com.marklogic.client.ResourceExtensionsManager;
-import com.marklogic.client.io.BaseHandle;
-import com.marklogic.client.io.HandleAccessor;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
@@ -51,16 +49,15 @@ class ResourceExtensionsImpl
 
 		logger.info("Reading resource services list");
 
-		BaseHandle listBase = HandleAccessor.checkHandle(listHandle, "resource");
+		HandleImplementation listBase = HandleAccessor.checkHandle(listHandle, "resource");
 
 		Format listFormat = listBase.getFormat();
 		if (!(Format.JSON == listFormat || Format.XML == listFormat))
 			throw new IllegalArgumentException(
 					"list handle for unsupported format: "+listFormat.getClass().getName());
 
-		HandleAccessor.receiveContent(
-				listHandle,
-				services.getValues(requestLogger, "config/resources", listFormat.getDefaultMimetype(), HandleAccessor.receiveAs(listHandle))
+		listBase.receiveContent(
+				services.getValues(requestLogger, "config/resources", listFormat.getDefaultMimetype(), listBase.receiveAs())
 				);
 
 		return listHandle;
@@ -73,11 +70,11 @@ class ResourceExtensionsImpl
 
 		logger.info("Reading resource services source for {}", resourceName);
 
-		HandleAccessor.checkHandle(sourceHandle, "resource");
+		HandleImplementation sourceBase =
+			HandleAccessor.checkHandle(sourceHandle, "resource");
 
-		HandleAccessor.receiveContent(
-				sourceHandle,
-				services.getValue(requestLogger, "config/resources", resourceName, "application/xquery", HandleAccessor.receiveAs(sourceHandle))
+		sourceBase.receiveContent(
+				services.getValue(requestLogger, "config/resources", resourceName, "application/xquery", sourceBase.receiveAs())
 				);
 
 		return sourceHandle;
@@ -102,7 +99,8 @@ class ResourceExtensionsImpl
 
 		logger.info("Writing resource services source for {}", resourceName);
 
-		HandleAccessor.checkHandle(sourceHandle, "resource");
+		HandleImplementation sourceBase =
+			HandleAccessor.checkHandle(sourceHandle, "resource");
 
 		RequestParameters extraParams = (metadata != null) ? metadata.asParameters() : null;
 		if (methodParams != null) {
@@ -118,7 +116,7 @@ class ResourceExtensionsImpl
 			}
 		}
 
-		services.putValue(requestLogger, "config/resources", resourceName, extraParams, "application/xquery", HandleAccessor.sendContent(sourceHandle));
+		services.putValue(requestLogger, "config/resources", resourceName, extraParams, "application/xquery", sourceBase.sendContent());
 	}
 
 	@Override

@@ -25,8 +25,6 @@ import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.RequestParameters;
 import com.marklogic.client.TransformExtensionsManager;
-import com.marklogic.client.io.BaseHandle;
-import com.marklogic.client.io.HandleAccessor;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
@@ -55,16 +53,15 @@ class TransformExtensionsImpl
 
 		logger.info("Reading transform list");
 
-		BaseHandle listBase = HandleAccessor.checkHandle(listHandle, "transform");
+		HandleImplementation listBase = HandleAccessor.checkHandle(listHandle, "transform");
 
 		Format listFormat = listBase.getFormat();
 		if (!(Format.JSON == listFormat || Format.XML == listFormat))
 			throw new IllegalArgumentException(
 					"list handle for unsupported format: "+listFormat.getClass().getName());
 
-		HandleAccessor.receiveContent(
-				listHandle,
-				services.getValues(requestLogger, "config/transforms", listFormat.getDefaultMimetype(), HandleAccessor.receiveAs(listHandle))
+		listBase.receiveContent(
+				services.getValues(requestLogger, "config/transforms", listFormat.getDefaultMimetype(), listBase.receiveAs())
 				);
 
 		return listHandle;
@@ -86,11 +83,11 @@ class TransformExtensionsImpl
 
 		logger.info("Reading transform source for {}", transformName);
 
-		HandleAccessor.checkHandle(sourceHandle, "transform");
+		HandleImplementation sourceBase =
+			HandleAccessor.checkHandle(sourceHandle, "transform");
 
-		HandleAccessor.receiveContent(
-				sourceHandle,
-				services.getValue(requestLogger, "config/transforms", transformName, sourceMimetype, HandleAccessor.receiveAs(sourceHandle))
+		sourceBase.receiveContent(
+				services.getValue(requestLogger, "config/transforms", transformName, sourceMimetype, sourceBase.receiveAs())
 				);
 
 		return sourceHandle;
@@ -138,7 +135,7 @@ class TransformExtensionsImpl
 
 		logger.info("Writing transform source for {}", transformName);
 
-		BaseHandle sourceBase = HandleAccessor.checkHandle(sourceHandle, "transform");
+		HandleImplementation sourceBase = HandleAccessor.checkHandle(sourceHandle, "transform");
 
 		Format sourceFormat = sourceBase.getFormat();
 		if ("application/xquery".equals(sourceMimetype)) {
@@ -163,7 +160,7 @@ class TransformExtensionsImpl
 			}
 		}
 
-		services.putValue(requestLogger, "config/transforms", transformName, extraParams, sourceMimetype, HandleAccessor.sendContent(sourceHandle));
+		services.putValue(requestLogger, "config/transforms", transformName, extraParams, sourceMimetype, sourceBase.sendContent());
 	}
 
 	@Override
