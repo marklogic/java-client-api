@@ -604,7 +604,11 @@ public final class QueryOptions implements QueryAnnotations {
 		}
 
 		public MarkLogicQName(String ns, String name) {
-			this.ns = ns;
+            if (ns == null) {
+			    this.ns = "";
+            } else {
+                this.ns = ns;
+            }
 			this.name = name;
 		}
 
