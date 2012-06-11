@@ -61,4 +61,25 @@ public class KeyValueSearchTest {
         
         assertNotNull(summaries);
     }
+
+    @Test
+    public void testJsonSearch() throws IOException {
+        QueryManager queryMgr = Common.client.newQueryManager();
+        KeyValueQueryDefinition qdef = queryMgr.newKeyValueDefinition(null);
+
+        qdef.put(queryMgr.newKeyLocator("firstKey"), "first value");
+        SearchHandle results = queryMgr.search(qdef, new SearchHandle());
+        assertNotNull(results);
+        assertFalse(results.getMetrics().getTotalTime() == -1);
+
+        MatchDocumentSummary[] summaries = results.getMatchResults();
+        for (MatchDocumentSummary summary : summaries) {
+            MatchLocation[] locations = summary.getMatchLocations();
+            for (MatchLocation location : locations) {
+                assertNotNull(location.getAllSnippetText());
+            }
+        }
+
+        assertNotNull(summaries);
+    }
 }
