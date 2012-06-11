@@ -37,18 +37,6 @@ public abstract class AbstractQueryDefinition implements QueryDefinition {
         optionsUri = uri;
     }
 
-    /*
-    @Override
-    public String getTransform() {
-        return transform;
-    }
-
-    @Override
-    public void setTransform(String transform) {
-        this.transform = transform;
-    }
-    */
-
     @Override
     public String[] getCollections() {
         return collections.toArray(new String[0]);

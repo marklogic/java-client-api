@@ -19,6 +19,7 @@ import java.util.Set;
 
 import javax.xml.namespace.QName;
 
+import com.marklogic.client.config.DeleteQueryDefinition;
 import com.marklogic.client.config.KeyValueQueryDefinition;
 import com.marklogic.client.config.MatchDocumentSummary;
 import com.marklogic.client.config.QueryDefinition;
@@ -53,6 +54,7 @@ public interface QueryManager {
     public StringQueryDefinition newStringDefinition(String optionsName);
     public KeyValueQueryDefinition newKeyValueDefinition(String optionsName);
     public StructuredQueryBuilder newStructuredQueryBuilder(String optionsName);
+    public DeleteQueryDefinition newDeleteDefinition();
 
     public ValuesDefinition newValuesDefinition(String optionsName);
     public ValuesListDefinition newValuesListDefinition(String optionsName);
@@ -65,6 +67,9 @@ public interface QueryManager {
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start);
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction);
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction);
+
+    public void delete(DeleteQueryDefinition querydef);
+    public void delete(DeleteQueryDefinition querydef, Transaction transaction);
 
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle);
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, Transaction transaction);

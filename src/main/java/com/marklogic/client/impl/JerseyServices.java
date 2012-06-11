@@ -29,6 +29,7 @@ import javax.net.ssl.SSLException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
+import com.marklogic.client.config.DeleteQueryDefinition;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.auth.params.AuthPNames;
@@ -1043,7 +1044,9 @@ public class JerseyServices implements RESTServices {
 			logger.info("Searching for {} in transaction {}", text,
 					transactionId);
 
-			params.put("q", text);
+            if (text != null) {
+			    params.put("q", text);
+            }
 
 			response = connection.path("search")
 					.queryParams(((RequestParametersImplementation) params).getMapImpl())
@@ -1084,7 +1087,14 @@ public class JerseyServices implements RESTServices {
 
 			if (isFirstRequest)
 				isFirstRequest = false;
-		} else {
+        } else if (queryDef instanceof DeleteQueryDefinition) {
+            logger.info("Searching for deletes in transaction {}", transactionId);
+            response = connection.path("search")
+                    .queryParams(((RequestParametersImplementation) params).getMapImpl())
+                    .accept(mimetype).get(ClientResponse.class);
+
+            isFirstRequest = false;
+        } else {
 			throw new UnsupportedOperationException("Cannot search with "
 					+ queryDef.getClass().getName());
 		}
@@ -1106,7 +1116,44 @@ public class JerseyServices implements RESTServices {
 		return entity;
 	}
 
-	@Override
+    @Override
+    public void deleteSearch(DeleteQueryDefinition queryDef, String transactionId) throws ForbiddenUserException,
+            FailedRequestException {
+        RequestParameters params = new RequestParameters();
+        ClientResponse response = null;
+
+        if (queryDef.getDirectory() != null) {
+            params.put("directory", queryDef.getDirectory());
+        }
+
+        for (String collection : queryDef.getCollections()) {
+            params.put("collection", collection);
+        }
+
+        if (transactionId != null) {
+            params.put("txid", transactionId);
+        }
+
+        response = connection.path("search")
+                    .queryParams(((RequestParametersImplementation) params).getMapImpl())
+                    .delete(ClientResponse.class);
+
+        isFirstRequest = false;
+
+        ClientResponse.Status status = response.getClientResponseStatus();
+
+        if (status == ClientResponse.Status.FORBIDDEN) {
+            throw new ForbiddenUserException("User is not allowed to delete",
+                    extractErrorFields(response));
+        }
+
+        if (status != ClientResponse.Status.NO_CONTENT) {
+            throw new FailedRequestException("delete failed: "
+                    + status.getReasonPhrase(), extractErrorFields(response));
+        }
+    }
+
+    @Override
 	public <T> T values(Class<T> as, ValuesDefinition valDef, String mimetype,
 			String transactionId) throws ForbiddenUserException,
 			FailedRequestException {

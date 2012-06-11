@@ -22,6 +22,7 @@ import com.marklogic.client.Format;
 import com.marklogic.client.KeyLocator;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.config.DeleteQueryDefinition;
 import com.marklogic.client.config.KeyValueQueryDefinition;
 import com.marklogic.client.config.MatchDocumentSummary;
 import com.marklogic.client.config.QueryDefinition;
@@ -73,6 +74,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         }
     }
 
+    @Override
     public StringQueryDefinition newStringDefinition(String optionsName) {
         return new StringQueryDefinitionImpl(optionsName);
     }
@@ -82,10 +84,16 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         return new KeyValueQueryDefinitionImpl(optionsName);
     }
 
+    @Override
     public StructuredQueryBuilder newStructuredQueryBuilder(String optionsName) {
         return new StructuredQueryBuilder(optionsName);
     }
-    
+
+    @Override
+    public DeleteQueryDefinition newDeleteDefinition() {
+        return new DeleteQueryDefinitionImpl();
+    }
+
     @Override
     public ElementLocator newElementLocator(QName element) {
         return new ElementLocatorImpl(element);
@@ -126,6 +134,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         return search(querydef, searchHandle, 1, transaction);
     }
 
+    @Override
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction) {
 		HandleImplementation searchBase = HandleAccessor.checkHandle(searchHandle, "search");
 
@@ -150,6 +159,17 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         String tid = transaction == null ? null : transaction.getTransactionId();
         searchBase.receiveContent(services.search(searchBase.receiveAs(), querydef, mimetype, start, pageLen, views, tid));
         return searchHandle;
+    }
+
+    @Override
+    public void delete(DeleteQueryDefinition querydef) {
+        delete(querydef, null);
+    }
+
+    @Override
+    public void delete(DeleteQueryDefinition querydef, Transaction transaction) {
+        String tid = transaction == null ? null : transaction.getTransactionId();
+        services.deleteSearch(querydef, tid);
     }
 
     @Override

@@ -13,16 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.config;
+package com.marklogic.client.impl;
 
-public interface QueryDefinition {
-    public String getOptionsName();
-    public void setOptionsName(String name);
+import com.marklogic.client.config.DeleteQueryDefinition;
 
-    public String[] getCollections();
-    public void setCollections(String... collections);
+public class DeleteQueryDefinitionImpl extends AbstractQueryDefinition implements DeleteQueryDefinition {
+    public DeleteQueryDefinitionImpl() {
+    }
 
-    public String getDirectory();
-    public void setDirectory(String directory);
+    @Override
+    public String getOptionsName() {
+        return null;
+    }
+
+    @Override
+    public void setOptionsName(String uri) {
+        throw new UnsupportedOperationException("Options name has no meaning on a DeleteQueryDefinition");
+    }
 }
-

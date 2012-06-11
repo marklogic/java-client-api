@@ -29,6 +29,7 @@ import com.marklogic.client.QueryManager;
 import com.marklogic.client.RequestLogger;
 import com.marklogic.client.RequestParameters;
 import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.config.DeleteQueryDefinition;
 import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.ValuesDefinition;
 import com.marklogic.client.config.ValuesListDefinition;
@@ -64,7 +65,10 @@ public interface RESTServices {
                         long len, QueryManager.ResponseViews views, String transactionId)
     	throws ForbiddenUserException, FailedRequestException;
 
-	public String openTransaction(String name, int timeLimit)
+    public void deleteSearch(DeleteQueryDefinition queryDef, String transactionId)
+            throws ForbiddenUserException, FailedRequestException;
+
+    public String openTransaction(String name, int timeLimit)
 		throws ForbiddenUserException, FailedRequestException;
 	public void commitTransaction(String transactionId)
 		throws ForbiddenUserException, FailedRequestException;
