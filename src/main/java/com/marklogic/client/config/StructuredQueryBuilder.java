@@ -19,7 +19,7 @@ package com.marklogic.client.config;
 
 import com.marklogic.client.impl.AbstractQueryDefinition;
 
-public class StructuredQueryBuilder extends AbstractQueryDefinition {
+public class StructuredQueryBuilder {
     private String builderOptionsURI = null;
 
     public enum Ordering {
@@ -31,7 +31,6 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
     }
     
     public StructuredQueryBuilder(String optionsName) {
-        optionsUri = optionsName;
         builderOptionsURI = optionsName;
     }
 
