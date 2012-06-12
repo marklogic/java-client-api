@@ -84,6 +84,9 @@ public class SearchHandle
     private long totalResults = -1;
     private boolean alwaysDomSnippets = false;
     private Document metadata = null;
+    private Document plan = null;
+    private ArrayList<Warning> warnings = null;
+    private ArrayList<Report> reports = null;
 
     public SearchHandle() {
     	super();
@@ -188,6 +191,21 @@ public class SearchHandle
     @Override
     public String[] getFacetNames() {
         return facetNames;
+    }
+
+    @Override
+    public Document getPlan() {
+        return plan;
+    }
+
+    @Override
+    public Warning[] getWarnings() {
+        return (warnings == null) ? null : warnings.toArray(new Warning[0]);
+    }
+
+    @Override
+    public Report[] getReports() {
+        return (reports == null) ? null  : reports.toArray(new Report[0]);
     }
 
     private class SearchMetricsImpl implements SearchMetrics {
@@ -532,6 +550,7 @@ public class SearchHandle
             } else if ("result".equals(localName))      { handleResult(uri, localName, attributes);
             } else if ("snippet".equals(localName))     { handleSnippet();
             } else if ("meta".equals(localName))        { handleMetadata();
+            } else if ("plan".equals(localName))        { handlePlan();
             } else if ("match".equals(localName))       { handleMatch(uri, localName, attributes);
             } else if ("highlight".equals(localName))   { inHighlight = true;
             } else if ("facet".equals(localName))       { handleFacet(attributes);
@@ -540,7 +559,8 @@ public class SearchHandle
             } else if ("box".equals(localName))         { handleGeoFacetValue(attributes);
             } else if ("qtext".equals(localName))       { // nop
             } else if ("query".equals(localName))       { // nop
-            } else if ("report".equals(localName))       { // nop
+            } else if ("warning".equals(localName))     { handleWarning(attributes);
+            } else if ("report".equals(localName))      { handleReport(attributes);
             } else if ("metrics".equals(localName))     { handleMetrics();
             } else if ("query-resolution-time".equals(localName) || "facet-resolution-time".equals(localName)
                         || "snippet-resolution-time".equals(localName) || "total-time".equals(localName)
@@ -619,6 +639,26 @@ public class SearchHandle
             handleDOM("http://marklogic.com/appservices/search", "metadata", "search:metadata", null);
         }
 
+        private void handlePlan() {
+            buildDOM = true;
+
+            if (stack == null) {
+                try {
+                    builder = bfactory.newDocumentBuilder();
+                    domImpl = builder.getDOMImplementation();
+                    stack = new Stack<Node>();
+                    preceding = new ArrayList<WSorChar>();
+                } catch (ParserConfigurationException pce) {
+                    throw new MarkLogicIOException("Failed to create document builder", pce);
+                }
+            } else {
+                stack.clear();
+            }
+
+            // Make sure there's a wrapper
+            handleDOM("http://marklogic.com/appservices/search", "plan", "search:plan", null);
+        }
+
         /* This is a convenience for debugging, leave it hear to save myself from having to rewrite it
         private void dumpDOM(Document dom) {
             DOMImplementationLS domImpl = (DOMImplementationLS) builder.getDOMImplementation();
@@ -681,6 +721,28 @@ public class SearchHandle
                     throw new MarkLogicIOException("Cannot instantiate datatypeFactory", dce);
                 }
             }
+        }
+
+        private void handleWarning(Attributes attributes) {
+            if (warnings == null) {
+                warnings = new ArrayList<Warning>();
+            }
+
+            Warning warning = new Warning();
+            warning.setId(attributes.getValue("id"));
+            warnings.add(warning);
+        }
+
+        private void handleReport(Attributes attributes) {
+            if (reports == null) {
+                reports = new ArrayList<Report>();
+            }
+
+            Report report = new Report();
+            report.setId(attributes.getValue("id"));
+            report.setName(attributes.getValue("name"));
+            report.setType(attributes.getValue("type"));
+            reports.add(report);
         }
 
         private void handleDOM(String uri, String localName, String qName, Attributes attributes) {
@@ -780,6 +842,28 @@ public class SearchHandle
 
             if ("meta".equals(localName)) {
                 metadata = dom;
+                characters = null;
+                buildDOM = false;
+                return;
+            }
+
+            if ("plan".equals(localName)) {
+                plan = dom;
+                characters = null;
+                buildDOM = false;
+                return;
+            }
+
+            if ("warning".equals(localName)) {
+                Warning warning = warnings.get(warnings.size()-1);
+                warning.setMessage(characters);
+                characters = null;
+                return;
+            }
+
+            if ("report".equals(localName)) {
+                Report report = reports.get(reports.size()-1);
+                report.setMessage(characters);
                 characters = null;
                 return;
             }
@@ -954,6 +1038,69 @@ public class SearchHandle
             public boolean isChars() {
                 return chars != null;
             }
+        }
+    }
+
+    public class Warning {
+        private String id = null;
+        private String text = null;
+
+        protected Warning() {
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+        public String getMessage() {
+            return text;
+        }
+        public void setMessage(String msg) {
+            text = msg;
+        }
+    }
+
+    public class Report {
+        private String id = null;
+        private String name = null;
+        private String type = null;
+        private String text = null;
+
+        protected Report() {
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getMessage() {
+            return text;
+        }
+        public void setMessage(String msg) {
+            text = msg;
         }
     }
 }

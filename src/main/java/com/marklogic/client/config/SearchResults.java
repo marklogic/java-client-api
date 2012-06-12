@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.config;
 
+import com.marklogic.client.io.SearchHandle;
 import org.w3c.dom.Document;
 
 public interface SearchResults {
@@ -28,5 +29,10 @@ public interface SearchResults {
     public FacetResult[]          getFacetResults();
     public FacetResult            getFacetResult(String name);
     public String[]               getFacetNames();
+
+    public Document               getPlan();
+    public SearchHandle.Warning[] getWarnings();
+    public SearchHandle.Report[]  getReports();
+
 }
 
