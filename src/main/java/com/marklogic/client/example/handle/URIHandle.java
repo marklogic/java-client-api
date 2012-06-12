@@ -75,20 +75,21 @@ public class URIHandle
 {
 	private HttpClient  client;
 	private HttpContext context;
-	private URI         uri;
+	private URI         baseUri;
+	private URI         currentUri;
 	private boolean     usePut = true;
 
 	public URIHandle(HttpClient httpclient) {
 		super();
 		setClient(client);
 	}
-	public URIHandle(HttpClient client, URI uri) {
+	public URIHandle(HttpClient client, URI baseUri) {
 		this(client);
-		set(uri);
+		setBaseUri(baseUri);
 	}
-	public URIHandle(HttpClient client, String uri) {
+	public URIHandle(HttpClient client, String baseUri) {
 		this(client);
-		set(uri);
+		setBaseUri(baseUri);
 	}
 	public URIHandle(String host, int port, String user, String password, Authentication authType) {
 		super();
@@ -123,13 +124,13 @@ public class URIHandle
 	}
 
 	public URI get() {
-		return uri;
+		return currentUri;
 	}
 	public void set(URI uri) {
-		this.uri = uri;
+		this.currentUri = makeUri(uri);
 	}
 	public void set(String uri) {
-		this.uri = makeUri(uri);
+		this.currentUri = makeUri(uri);
 	}
 	public URIHandle with(URI uri) {
 		set(uri);
@@ -138,6 +139,16 @@ public class URIHandle
 	public URIHandle with(String uri) {
 		set(uri);
 		return this;
+	}
+
+	public URI getBaseUri() {
+		return baseUri;
+	}
+	public void setBaseUri(URI baseUri) {
+		this.baseUri = baseUri;
+	}
+	public void setBaseUri(String uri) {
+		setBaseUri(makeUri(uri));
 	}
 
 	public URIHandle withFormat(Format format) {
@@ -169,12 +180,15 @@ public class URIHandle
 	}
 
 	public boolean check() {
-		return check(uri);
+		return checkImpl(currentUri);
 	}
 	public boolean check(String uri) {
-		return check(makeUri(uri));
+		return checkImpl(makeUri(uri));
 	}
 	public boolean check(URI uri) {
+		return checkImpl(makeUri(uri));
+	}
+	private boolean checkImpl(URI uri) {
 		try {
 			HttpHead method = new HttpHead(uri);
 
@@ -267,9 +281,12 @@ public class URIHandle
 		}
 	}
 
+	private URI makeUri(URI uri) {
+		return (baseUri != null) ? baseUri.resolve(uri) : uri;
+	}
 	private URI makeUri(String uri) {
 		try {
-			return new URI(uri);
+			return (baseUri != null) ? baseUri.resolve(uri) : new URI(uri);
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}

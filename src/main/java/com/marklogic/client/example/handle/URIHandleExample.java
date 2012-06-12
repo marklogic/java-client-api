@@ -71,16 +71,16 @@ public class URIHandleExample {
 
 		// identify the base URI for all content at the web service
 		// for convenience, the example uses the base URI for the database REST server
-		String webserviceBase = "http://"+host+":"+port+"/v1/documents?uri=";
+		handle.setBaseUri("http://"+host+":"+port+"/v1/");
 
 		// for digest authentication, either configure the HTTP client to buffer or
 		// make an initial request that is repeatable; here the repeatable request
 		// checks the existence of some content at the web service
-		handle.check(webserviceBase+docId);
+		handle.check("documents?uri="+docId);
 
 		// identify the target URI for the content written to the web service
 		String webserviceId = "/webservice/"+filename;
-		handle.set(webserviceBase+webserviceId);
+		handle.set("documents?uri="+webserviceId);
 
 		// read the content from the database and write to the web service target
 		docMgr.read(docId, handle);
