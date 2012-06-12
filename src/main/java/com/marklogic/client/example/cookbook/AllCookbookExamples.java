@@ -27,7 +27,7 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
  * AllExamples executes all examples.  Please set up a REST server and configure Example.properties
  * before running any example.
  */
-public class AllExamples {
+public class AllCookbookExamples {
 	public static void main(String[] args) throws IOException, JAXBException {
 		Properties props = loadProperties();
 
@@ -43,7 +43,7 @@ public class AllExamples {
 				);
 
 		// execute the examples
-		ClientConnector.run(         host, port, writer_user, writer_password, authType );
+		ClientCreator.run(         host, port, writer_user, writer_password, authType );
 		DocumentWrite.run(         host, port, writer_user, writer_password, authType );
 		DocumentRead.run(          host, port, writer_user, writer_password, authType );
 		DocumentMetadataWrite.run( host, port, writer_user, writer_password, authType );
@@ -73,7 +73,7 @@ public class AllExamples {
 	public static Properties loadProperties() throws IOException {
 		String propsName = "Example.properties";
 		InputStream propsStream =
-			AllExamples.class.getClassLoader().getResourceAsStream(propsName);
+			AllCookbookExamples.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
 			throw new RuntimeException("Could not read example properties");
 

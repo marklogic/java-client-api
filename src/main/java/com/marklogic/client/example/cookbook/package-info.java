@@ -2,7 +2,7 @@
  * The package provides examples for common actions in working with the database.
  * Edit the Example.properties file in the distribution to specify the connection
  * parameters for your server.
- * Look at the source code for {@link com.marklogic.client.example.cookbook.AllExamples} for a suggested
+ * Look at the source code for {@link com.marklogic.client.example.cookbook.AllCookbookExamples} for a suggested
  * order for viewing the examples
  */
 /*

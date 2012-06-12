@@ -116,7 +116,7 @@ public class MultiStatementTransaction {
 	public static Properties loadProperties() throws IOException {
 		String propsName = "Example.properties";
 		InputStream propsStream =
-			ClientConnector.class.getClassLoader().getResourceAsStream(propsName);
+			ClientCreator.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
 			throw new RuntimeException("Could not read example properties");
 

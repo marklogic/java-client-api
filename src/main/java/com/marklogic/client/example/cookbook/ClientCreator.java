@@ -17,30 +17,20 @@ package com.marklogic.client.example.cookbook;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
 import java.util.Properties;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.TextDocumentManager;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.StringHandle;
 
 /**
- * SSLClientConnector illustrates the basic approach for an SSL connection to a database.
- * 
- * Note:  to run this example, you must modify the REST server by specifying a SSL certificate template.
+ * ClientCreator illustrates how to create a database client.
  */
-public class SSLClientConnector {
+public class ClientCreator {
 
-	public static void main(String[] args) throws IOException, KeyManagementException, NoSuchAlgorithmException {
+	public static void main(String[] args) throws IOException {
 		Properties props = loadProperties();
 
 		// connection parameters for writer user
@@ -55,31 +45,11 @@ public class SSLClientConnector {
 		run(host, port, writer_user, writer_password, authType);
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType) throws NoSuchAlgorithmException, KeyManagementException {
-		System.out.println("example: "+SSLClientConnector.class.getName());
-
-		// create a trust manager
-		// (note: a real application should verify certificates)
-		TrustManager naiveTrustMgr = new X509TrustManager() {
-			@Override
-			public void checkClientTrusted(X509Certificate[] chain, String authType) {
-			}
-			@Override
-			public void checkServerTrusted(X509Certificate[] chain, String authType) {
-			}
-			@Override
-			public X509Certificate[] getAcceptedIssuers() {
-				return new X509Certificate[0];
-			}
-		};
-
-		// create an SSL context
-		SSLContext sslContext = SSLContext.getInstance("SSLv3");
-		sslContext.init(null, new TrustManager[] { naiveTrustMgr }, null);
+	public static void run(String host, int port, String user, String password, Authentication authType) {
+		System.out.println("example: "+ClientCreator.class.getName());
 
 		// create the client
-		// (note: a real application should use a COMMON, STRICT, or implemented hostname verifier)
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST, sslContext, SSLHostnameVerifier.ANY);
+		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// make use of the client connection
 		TextDocumentManager docMgr = client.newTextDocumentManager();
@@ -88,7 +58,7 @@ public class SSLClientConnector {
 		handle.set("A simple text document");
 		docMgr.write(docId, handle);
 
-		System.out.println("Connected by SSL to "+host+":"+port+" as "+user);
+		System.out.println("Connected to "+host+":"+port+" as "+user);
 
 		// clean up the written document
 		docMgr.delete(docId);
@@ -101,7 +71,7 @@ public class SSLClientConnector {
 	public static Properties loadProperties() throws IOException {
 		String propsName = "Example.properties";
 		InputStream propsStream =
-			SSLClientConnector.class.getClassLoader().getResourceAsStream(propsName);
+			ClientCreator.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
 			throw new RuntimeException("Could not read example properties");
 
