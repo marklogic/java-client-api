@@ -20,6 +20,8 @@ package com.marklogic.client.config;
 import com.marklogic.client.impl.AbstractQueryDefinition;
 
 public class StructuredQueryBuilder extends AbstractQueryDefinition {
+    private String builderOptionsURI = null;
+
     public enum Ordering {
         ORDERED, UNORDERED;
     }
@@ -30,6 +32,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
     
     public StructuredQueryBuilder(String optionsName) {
         optionsUri = optionsName;
+        builderOptionsURI = optionsName;
     }
 
     public OrQuery or(StructuredQueryDefinition... queries) {
@@ -151,21 +154,23 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
     /* ************************************************************************************* */
 
     private abstract class AbstractStructuredQuery extends AbstractQueryDefinition implements StructuredQueryDefinition {
-        String uri = null;
+        public AbstractStructuredQuery() {
+            optionsUri = builderOptionsURI;
+        }
 
         public String serialize() {
-            if (uri == null) {
+            if (optionsUri != null) {
                 setOptionsName(optionsUri);
             }
             return "<query xmlns='http://marklogic.com/appservices/search'>" + innerSerialize() + "</query>";
         }
 
         public String getOptionsName() {
-            return uri;
+            return optionsUri;
         }
 
         public void setOptionsName(String uri) {
-            this.uri = uri;
+            optionsUri = uri;
         }
 
         protected abstract String innerSerialize();
@@ -175,6 +180,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         StructuredQueryDefinition queries[] = null;
 
         public AndQuery(StructuredQueryDefinition... queries) {
+            super();
             this.queries = queries;
         }
 
@@ -191,6 +197,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         StructuredQueryDefinition queries[] = null;
 
         public OrQuery(StructuredQueryDefinition... queries) {
+            super();
             this.queries = queries;
         }
 
@@ -207,6 +214,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         StructuredQueryDefinition query = null;
 
         public NotQuery(StructuredQueryDefinition query) {
+            super();
             this.query = query;
         }
 
@@ -220,6 +228,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         StructuredQueryDefinition negative = null;
 
         public AndNotQuery(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
+            super();
             this.positive = positive;
             this.negative = negative;
         }
@@ -235,6 +244,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         private String uri = null;
 
         public DocumentQuery(String uri) {
+            super();
             this.uri = uri;
         }
 
@@ -248,6 +258,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         private double weight = 0.0;
 
         public TermQuery(double weight, String... terms) {
+            super();
             this.weight = weight;
             this.terms = terms;
         }
@@ -271,6 +282,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         private StructuredQueryDefinition queries[] = null;
 
         public NearQuery(StructuredQueryDefinition... queries) {
+            super();
             this.queries = queries;
         }
 
@@ -303,6 +315,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         private String uris[] = null;
 
         public CollectionQuery(String... uris) {
+            super();
             this.uris = uris;
         }
 
@@ -322,6 +335,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         private boolean infinite = false;
 
         public DirectoryQuery(boolean isInfinite, String... uris) {
+            super();
             infinite = isInfinite;
             this.uris = uris;
         }
@@ -342,6 +356,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         StructuredQueryDefinition query = null;
 
         public DocumentFragmentQuery(StructuredQueryDefinition query) {
+            super();
             this.query = query;
         }
 
@@ -356,6 +371,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         StructuredQueryDefinition query = null;
 
         public PropertiesQuery(StructuredQueryDefinition query) {
+            super();
             this.query = query;
         }
 
@@ -370,6 +386,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         StructuredQueryDefinition query = null;
 
         public LocksQuery(StructuredQueryDefinition query) {
+            super();
             this.query = query;
         }
 
@@ -385,6 +402,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         StructuredQueryDefinition query = null;
 
         public ElementConstraintQuery(String constraintName, StructuredQueryDefinition query) {
+            super();
             name = constraintName;
             this.query = query;
         }
@@ -402,6 +420,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         StructuredQueryDefinition query = null;
 
         public PropertiesConstraintQuery(String constraintName, StructuredQueryDefinition query) {
+            super();
             name = constraintName;
             this.query = query;
         }
@@ -419,6 +438,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         String[] uris = null;
 
         public CollectionConstraintQuery(String constraintName, String... uris) {
+            super();
             name = constraintName;
             this.uris = uris;
         }
@@ -441,6 +461,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         double weight = -1.0;
 
         public ValueConstraintQuery(String constraintName, String... values) {
+            super();
             name = constraintName;
             this.values = values;
         }
@@ -473,6 +494,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         double weight = -1.0;
 
         public WordConstraintQuery(String constraintName, String... words) {
+            super();
             name = constraintName;
             this.words = words;
         }
@@ -505,6 +527,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         Operator operator = null;
 
         public RangeConstraintQuery(String constraintName, Operator operator, String... values) {
+            super();
             name = constraintName;
             this.values = values;
             this.operator = operator;
@@ -529,6 +552,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         Region[] regions = null;
 
         public GeospatialConstraintQuery(String constraintName, Region... regions) {
+            super();
             name = constraintName;
             this.regions = regions;
         }
@@ -550,6 +574,7 @@ public class StructuredQueryBuilder extends AbstractQueryDefinition {
         private String name = null;
 
         public CustomConstraintQuery(String constraintName, String... terms) {
+            super();
             name = constraintName;
             this.terms = terms;
         }

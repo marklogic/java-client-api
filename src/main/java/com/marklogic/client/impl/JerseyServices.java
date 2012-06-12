@@ -1082,11 +1082,11 @@ public class JerseyServices implements RESTServices {
 			String structure = ((StructuredQueryDefinition) queryDef)
 					.serialize();
 
-			response = connection.path("search").type("application/xml")
-					.post(ClientResponse.class, structure);
+            response = connection.path("search").queryParams(((RequestParametersImplementation) params).getMapImpl())
+                    .type("application/xml")
+                    .post(ClientResponse.class, structure);
 
-			if (isFirstRequest)
-				isFirstRequest = false;
+		    isFirstRequest = false;
         } else if (queryDef instanceof DeleteQueryDefinition) {
             logger.info("Searching for deletes in transaction {}", transactionId);
             response = connection.path("search")
