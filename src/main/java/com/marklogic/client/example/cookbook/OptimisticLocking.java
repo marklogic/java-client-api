@@ -66,7 +66,7 @@ public class OptimisticLocking {
 	}
 
 	public static void requireOptimisticLocking(String host, int port, String user, String password, Authentication authType) {
-		// connect the client
+		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// create a manager for the server configuration
@@ -91,7 +91,7 @@ public class OptimisticLocking {
 	public static void modifyDatabase(String host, int port, String user, String password, Authentication authType) {
 		String filename = "flipper.xml";
 
-		// connect the client
+		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// acquire the content

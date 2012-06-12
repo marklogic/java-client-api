@@ -48,7 +48,7 @@ public class ClientConnector {
 	public static void run(String host, int port, String user, String password, Authentication authType) {
 		System.out.println("example: "+ClientConnector.class.getName());
 
-		// connect the client
+		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// make use of the client connection

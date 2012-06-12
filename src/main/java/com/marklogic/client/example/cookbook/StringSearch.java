@@ -70,7 +70,7 @@ public class StringSearch {
 	}
 
 	public static void configure(String host, int port, String user, String password, Authentication authType) {
-		// connect the client
+		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// create a manager for writing query options
@@ -98,7 +98,7 @@ public class StringSearch {
 	}
 
 	public static void search(String host, int port, String user, String password, Authentication authType) {
-		// connect the client
+		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		setUpExample(client);

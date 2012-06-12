@@ -58,7 +58,7 @@ public class DocumentFormats {
 				{"flipper.xml",     "XML"}
 				};
 
-		// connect the client
+		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// iterate over the files

@@ -56,7 +56,7 @@ public class DocumentOutputStream {
 		final int    MAX_BUF  = 1024;
 		final String FILENAME = "flipper.xml";
 
-		// connect the client
+		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// create a manager for XML documents

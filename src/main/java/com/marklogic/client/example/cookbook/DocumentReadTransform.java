@@ -67,7 +67,7 @@ public class DocumentReadTransform {
 	}
 
 	public static void installTransform(String host, int port, String user, String password, Authentication authType) {
-		// connect the client
+		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// create a manager for transform extensions
@@ -102,7 +102,7 @@ public class DocumentReadTransform {
 	public static void readDocument(String host, int port, String user, String password, Authentication authType) {
 		String filename = "flipper.xml";
 
-		// connect the client
+		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// create an identifier for the document

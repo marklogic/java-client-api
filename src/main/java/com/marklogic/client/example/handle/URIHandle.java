@@ -15,20 +15,39 @@
  */
 package com.marklogic.client.example.handle;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.auth.params.AuthPNames;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.params.AuthPolicy;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 
+import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.Format;
-import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
@@ -36,8 +55,6 @@ import com.marklogic.client.io.marker.GenericReadHandle;
 import com.marklogic.client.io.marker.GenericWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -49,35 +66,60 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class URIHandle
 	extends BaseHandle<InputStream, InputStream>
-	implements BinaryReadHandle, BinaryWriteHandle,
+	implements
+		BinaryReadHandle, BinaryWriteHandle,
     	GenericReadHandle, GenericWriteHandle,
     	JSONReadHandle, JSONWriteHandle, 
     	TextReadHandle, TextWriteHandle,
-    	XMLReadHandle, XMLWriteHandle,
-    	StructureReadHandle, StructureWriteHandle
+    	XMLReadHandle, XMLWriteHandle
 {
-    /**
-     * A ConnectionMaker creates and configures a connection (for instance,
-     * providing authentication) for reading input or writing output.
-     */
-	public interface ConnectionMaker {
-    	public URLConnection makeInputConnection(URI uri);
-    	public URLConnection makeOutputConnection(URI uri);
-    }
+	private HttpClient  client;
+	private HttpContext context;
+	private URI         uri;
+	private boolean     usePut = true;
 
-    static final private Logger logger = LoggerFactory.getLogger(URIHandle.class);
-
-	static final private int BUFFER_SIZE = 1024;
-
-	private URI             uri;
-	private ConnectionMaker connectionMaker;
-
-	public URIHandle() {
+	public URIHandle(HttpClient httpclient) {
 		super();
+		setClient(client);
 	}
-	public URIHandle(URI uri) {
-		this();
+	public URIHandle(HttpClient client, URI uri) {
+		this(client);
 		set(uri);
+	}
+	public URIHandle(HttpClient client, String uri) {
+		this(client);
+		set(uri);
+	}
+	public URIHandle(String host, int port, String user, String password, Authentication authType) {
+		super();
+
+		SchemeRegistry schemeRegistry = new SchemeRegistry();
+		schemeRegistry.register(
+				new Scheme("http", port, PlainSocketFactory.getSocketFactory())
+				);
+
+		ThreadSafeClientConnManager connMgr = new ThreadSafeClientConnManager(
+				schemeRegistry);
+		connMgr.setDefaultMaxPerRoute(100);
+
+		DefaultHttpClient defaultClient = new DefaultHttpClient(connMgr);
+
+		List<String> prefList = new ArrayList<String>();
+		if (authType == Authentication.BASIC)
+			prefList.add(AuthPolicy.BASIC);
+		else if (authType == Authentication.DIGEST)
+			prefList.add(AuthPolicy.DIGEST);
+		else
+			throw new RuntimeException("Unknown authentication type "+authType.name());
+
+		defaultClient.getParams().setParameter(AuthPNames.PROXY_AUTH_PREF, prefList);
+
+		defaultClient.getCredentialsProvider().setCredentials(
+		        new AuthScope(host, port), 
+		        new UsernamePasswordCredentials(user, password)
+		        );
+
+		setClient(defaultClient);
 	}
 
 	public URI get() {
@@ -86,7 +128,14 @@ public class URIHandle
 	public void set(URI uri) {
 		this.uri = uri;
 	}
+	public void set(String uri) {
+		this.uri = makeUri(uri);
+	}
 	public URIHandle with(URI uri) {
+		set(uri);
+		return this;
+	}
+	public URIHandle with(String uri) {
 		set(uri);
 		return this;
 	}
@@ -96,11 +145,49 @@ public class URIHandle
 		return this;
 	}
 
-	public ConnectionMaker getConnectionMaker() {
-		return connectionMaker;
+	public HttpClient getClient() {
+		return client;
 	}
-	public void setConnectionMaker(ConnectionMaker connectionMaker) {
-		this.connectionMaker = connectionMaker;
+	public void setClient(HttpClient client) {
+		this.client = client;
+	}
+
+	public HttpContext getContext() {
+		if (context == null)
+			context = new BasicHttpContext();
+		return context;
+	}
+	public void setContext(HttpContext context) {
+		this.context = context;
+	}
+
+	public boolean isUsePut() {
+		return usePut;
+	}
+	public void setUsePut(boolean usePut) {
+		this.usePut = usePut;
+	}
+
+	public boolean check() {
+		return check(uri);
+	}
+	public boolean check(String uri) {
+		return check(makeUri(uri));
+	}
+	public boolean check(URI uri) {
+		try {
+			HttpHead method = new HttpHead(uri);
+
+			HttpResponse response = client.execute(method, getContext());
+
+			StatusLine status = response.getStatusLine();
+
+			return status.getStatusCode() == 200;
+		} catch(ClientProtocolException e) {
+			throw new RuntimeException(e);
+		} catch(IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
@@ -114,81 +201,77 @@ public class URIHandle
 		}
 
 		try {
-			logger.info("Updating URI with content read from database");
-
 			URI uri = get();
 			if (uri == null) {
 				throw new IllegalStateException("No uri for output");
 			}
 
-			URLConnection connection = null;
-			if (connectionMaker != null) {
-				connection = connectionMaker.makeOutputConnection(uri);
+			HttpUriRequest method = null;
+			HttpEntityEnclosingRequestBase receiver = null;
+			if (isUsePut()) {
+				HttpPut putter = new HttpPut(uri);
+				method         = putter;
+				receiver       = putter;
 			} else {
-				URL url = uri.toURL();
-				if (url == null) {
-					throw new MarkLogicIOException("Could not create URL for output to "+uri.toString());
-				}
-
-				connection = url.openConnection();
-			}
-			if (connection == null) {
-				throw new MarkLogicIOException("Could not open connection to write for "+uri.toString());
+				HttpPost poster = new HttpPost(uri);
+				method          = poster;
+				receiver        = poster;
 			}
 
-			OutputStream out = new BufferedOutputStream(connection.getOutputStream());
-			byte[] buf = new byte[BUFFER_SIZE];
-			int len = 0;
-			while ((len = content.read(buf, 0, BUFFER_SIZE)) != -1) {
-				out.write(buf, 0, len);
+			InputStreamEntity entity = new InputStreamEntity(content, -1);
+
+			receiver.setEntity(entity);
+
+			HttpResponse response = client.execute(method, getContext());
+
+			StatusLine status = response.getStatusLine();
+			if (status.getStatusCode() >= 300) {
+				throw new RuntimeException("Could not write to "+uri.toString()+": "+status.getReasonPhrase());
 			}
+
 			content.close();
-			out.close();
-		} catch (MalformedURLException e) {
-			logger.error("Failed to update URI with content read from database",e);
-			throw new IllegalStateException(e);
 		} catch (IOException e) {
-			logger.error("Failed to update URI with content read from database",e);
-			throw new MarkLogicIOException(e);
+			throw new RuntimeException(e);
 		}
 	}
 	@Override
 	protected InputStream sendContent() {
 		try {
-			logger.info("Retrieving content from URI to write to database");
-
 			URI uri = get();
 			if (uri == null) {
 				throw new IllegalStateException("No uri for input");
 			}
 
-			URLConnection connection = null;
-			if (connectionMaker != null) {
-				connection = connectionMaker.makeInputConnection(uri);
-			} else {
-				URL url = uri.toURL();
-				if (url == null) {
-					throw new MarkLogicIOException("Could not create URL for input from "+uri.toString());
-				}
+			HttpGet method = new HttpGet(uri);
 
-				connection = url.openConnection();
-			}
-			if (connection == null) {
-				throw new MarkLogicIOException("Could not open connection to write for "+uri.toString());
+			HttpResponse response = client.execute(method, getContext());
+
+			StatusLine status = response.getStatusLine();
+			if (status.getStatusCode() >= 300) {
+				throw new RuntimeException("Could not read from "+uri.toString()+": "+status.getReasonPhrase());
 			}
 
-			InputStream stream = connection.getInputStream();
+			HttpEntity entity = response.getEntity();
+			if (entity == null) {
+				throw new RuntimeException("Received empty response to write for "+uri.toString());
+			}
+
+			InputStream stream = entity.getContent();
 			if (stream == null) {
-				throw new MarkLogicIOException("Could not get stream to write for "+uri.toString());
+				throw new RuntimeException("Could not get stream to write for "+uri.toString());
 			}
 
 			return stream;
-		} catch (MalformedURLException e) {
-			logger.error("Failed to retrieving content from URI to write to database",e);
-			throw new IllegalStateException(e);
 		} catch (IOException e) {
-			logger.error("Failed to retrieving content from URI to write to database",e);
-			throw new MarkLogicIOException(e);
+			throw new RuntimeException(e);
+		}
+	}
+
+	private URI makeUri(String uri) {
+		try {
+			return new URI(uri);
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
 		}
 	}
 }

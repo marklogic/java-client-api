@@ -54,7 +54,7 @@ public class MultiStatementTransaction {
 		String beforeFilename = "flipper.xml";
 		String afterFilename  = "flapped.xml";
 
-		// connect the client
+		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// create a manager for XML documents

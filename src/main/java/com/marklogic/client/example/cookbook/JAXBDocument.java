@@ -82,7 +82,7 @@ public class JAXBDocument {
 	throws JAXBException {
 		System.out.println("example: "+JAXBDocument.class.getName());
 
-		// connect the client
+		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		JAXBContext context = JAXBContext.newInstance(Product.class);

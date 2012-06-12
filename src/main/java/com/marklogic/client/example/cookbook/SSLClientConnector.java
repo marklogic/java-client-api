@@ -77,7 +77,7 @@ public class SSLClientConnector {
 		SSLContext sslContext = SSLContext.getInstance("SSLv3");
 		sslContext.init(null, new TrustManager[] { naiveTrustMgr }, null);
 
-		// connect the client
+		// create the client
 		// (note: a real application should use a COMMON, STRICT, or implemented hostname verifier)
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST, sslContext, SSLHostnameVerifier.ANY);
 

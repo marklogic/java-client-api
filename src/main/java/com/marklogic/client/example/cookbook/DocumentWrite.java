@@ -51,7 +51,7 @@ public class DocumentWrite {
 
 		String filename = "flipper.xml";
 
-		// connect the client
+		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// acquire the content
