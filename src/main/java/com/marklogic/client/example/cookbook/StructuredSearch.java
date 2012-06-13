@@ -15,6 +15,11 @@
  */
 package com.marklogic.client.example.cookbook;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -24,21 +29,16 @@ import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.config.MatchDocumentSummary;
 import com.marklogic.client.config.MatchLocation;
 import com.marklogic.client.config.MatchSnippet;
-import com.marklogic.client.config.StringQueryDefinition;
+import com.marklogic.client.config.QueryOptionsBuilder;
 import com.marklogic.client.config.StructuredQueryBuilder;
 import com.marklogic.client.config.StructuredQueryDefinition;
 import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.io.StringHandle;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 /**
- * StringOptionsSearch illustrates searching for documents and iterating over results
- * with string criteria referencing a constraint defined by options.
+ * StructuredSearch illustrates searching for documents and iterating over results
+ * with structured criteria referencing a constraint defined by options.
  */
 public class StructuredSearch {
 	static final private String OPTIONS_NAME = "products";
@@ -78,22 +78,18 @@ public class StructuredSearch {
 		// create a manager for writing query options
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create the query options
-		StringBuilder builder = new StringBuilder();
-		builder.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-		builder.append("<options xmlns=\"http://marklogic.com/appservices/search\">\n");
-		builder.append("  <constraint name=\"industry\">\n");
-		builder.append("    <value>\n");
-		builder.append("      <element ns=\"\" name=\"industry\"/>\n");
-		builder.append("    </value>\n");
-		builder.append("  </constraint>\n");
-		builder.append("</options>\n");
+		// Create a builder for constructing query configurations.
+		QueryOptionsBuilder qob = new QueryOptionsBuilder();
 
-		// initialize a handle with the query options
-		StringHandle writeHandle = new StringHandle(builder.toString());
+		// create the query options
+		QueryOptionsHandle queryOptions = new QueryOptionsHandle();
+		queryOptions.build(
+				qob.constraint("industry",
+						qob.value(
+								qob.element("industry"))));
 
 		// write the query options to the database
-		optionsMgr.writeOptions(OPTIONS_NAME, writeHandle);
+		optionsMgr.writeOptions(OPTIONS_NAME, queryOptions);
 
 		// release the client
 		client.release();
@@ -108,8 +104,10 @@ public class StructuredSearch {
 		// create a manager for searching
 		QueryManager queryMgr = client.newQueryManager();
 
-		// create a query builder
+		// create a query builder for the query options
         StructuredQueryBuilder qb = new StructuredQueryBuilder(OPTIONS_NAME);
+
+        // build a search definition
         StructuredQueryDefinition querydef
                 = qb.and(qb.term("neighborhood"), qb.valueConstraint("industry", "Real Estate"));
 

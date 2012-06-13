@@ -56,20 +56,21 @@ public class QueryOptions {
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
-		// Create a builder for constructing query configurations.
-		QueryOptionsBuilder cb = new QueryOptionsBuilder();
-		
 		// create a manager for writing, reading, and deleting query options
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
+		// Create a builder for constructing query configurations.
+		QueryOptionsBuilder qob = new QueryOptionsBuilder();
+
 		// create the query options
-		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.build(cb.constraint("industry",
-								cb.value(
-										cb.element("industry"))));
-		
+		QueryOptionsHandle writeHandle = new QueryOptionsHandle();
+		writeHandle.build(
+				qob.constraint("industry",
+						qob.value(
+								qob.element("industry"))));
+
 		// write the query options to the database
-		optionsMgr.writeOptions(optionsName, options);
+		optionsMgr.writeOptions(optionsName, writeHandle);
 
 		// create a handle to receive the query options
 		QueryOptionsHandle readHandle = new QueryOptionsHandle();

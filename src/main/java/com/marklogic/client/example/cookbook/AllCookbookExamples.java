@@ -56,6 +56,8 @@ public class AllCookbookExamples {
 		QueryOptions.run(          host, port, admin_user,  admin_password,  authType );
  		StringSearch.run(
 				host, port, admin_user, admin_password, writer_user, writer_password, authType);
+ 		StructuredSearch.run(
+				host, port, admin_user, admin_password, writer_user, writer_password, authType);
 		MultiStatementTransaction.run(
 				host, port, writer_user, writer_password, authType);
  		DocumentReadTransform.run(
