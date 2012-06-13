@@ -25,6 +25,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.ServerConfigurationManager;
+import com.marklogic.client.ServerConfigurationManager.Policy;
 
 public class ServerConfigurationManagerTest {
 	@BeforeClass
@@ -43,21 +44,40 @@ public class ServerConfigurationManagerTest {
 		assertNull("Initial query option validation not null", serverConfig.getQueryOptionValidation());
 
 		serverConfig.readConfiguration();
-		Boolean initialValue = serverConfig.getQueryOptionValidation();
+		Boolean initialOptionValid = serverConfig.getQueryOptionValidation();
+		String  initialReadTrans   = serverConfig.getDefaultDocumentReadTransform();
+		Boolean initialRequestLog  = serverConfig.getServerRequestLogging();
+		Policy  initialVersionReq  = serverConfig.getContentVersionRequests();
 
-		Boolean modifiedValue = initialValue ? false : true;
+		Boolean modOptionValid = initialOptionValid ? false : true;
+		String  modReadTrans   = "modifiedReadTransform";
+		Boolean modRequestLog  = initialOptionValid ? false : true;
+		Policy  modVersionReq  = (initialVersionReq == Policy.OPTIONAL) ?
+			Policy.REQUIRED : Policy.OPTIONAL;
 
 		serverConfig = Common.client.newServerConfigManager();
-		serverConfig.setQueryOptionValidation(modifiedValue);
+		serverConfig.setQueryOptionValidation(modOptionValid);
+		serverConfig.setDefaultDocumentReadTransform(modReadTrans);
+		serverConfig.setServerRequestLogging(modRequestLog);
+		serverConfig.setContentVersionRequests(modVersionReq);
 		serverConfig.writeConfiguration();
 
 		serverConfig = Common.client.newServerConfigManager();
 		serverConfig.readConfiguration();
 		assertEquals("Failed to change query options validation",
-				modifiedValue, serverConfig.getQueryOptionValidation());
+				modOptionValid, serverConfig.getQueryOptionValidation());
+		assertEquals("Failed to change document read transform",
+				modReadTrans,   serverConfig.getDefaultDocumentReadTransform());
+		assertEquals("Failed to change server request logging",
+				modRequestLog,  serverConfig.getServerRequestLogging());
+		assertEquals("Failed to change content version requests",
+				modVersionReq, serverConfig.getContentVersionRequests());
 		
 		serverConfig = Common.client.newServerConfigManager();
-		serverConfig.setQueryOptionValidation(initialValue);
+		serverConfig.setQueryOptionValidation(initialOptionValid);
+		serverConfig.setDefaultDocumentReadTransform(initialReadTrans);
+		serverConfig.setServerRequestLogging(initialRequestLog);
+		serverConfig.setContentVersionRequests(initialVersionReq);
 		serverConfig.writeConfiguration();
 	}
 

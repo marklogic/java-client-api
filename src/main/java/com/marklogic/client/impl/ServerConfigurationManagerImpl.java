@@ -154,7 +154,7 @@ class ServerConfigurationManagerImpl
 	}
 
 	@Override
-	public String getDefaultDocumentReadTransform(String name) {
+	public String getDefaultDocumentReadTransform() {
 		return defaultDocumentReadTransform;
 	}
 	@Override

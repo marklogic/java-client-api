@@ -40,7 +40,7 @@ public interface ServerConfigurationManager {
 	 */
 	public void setQueryOptionValidation(Boolean on);
 
-	public String getDefaultDocumentReadTransform(String name);
+	public String getDefaultDocumentReadTransform();
 	public void   setDefaultDocumentReadTransform(String name);
 
 	// for debug logging on the server side
