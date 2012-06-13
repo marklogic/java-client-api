@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.xml.XMLConstants;
-import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -55,6 +54,10 @@ import com.marklogic.client.impl.ValueConverter;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
+/**
+ * A DocumentMetadataHandle represents the metadata for a database document
+ * as a POJO (Plain Old Java Object).  
+ */
 public class DocumentMetadataHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
     implements OutputStreamSender,
@@ -65,6 +68,10 @@ public class DocumentMetadataHandle
 	final static private String REST_API_NS     = "http://marklogic.com/rest-api";
 	final static private String PROPERTY_API_NS = "http://marklogic.com/xdmp/property";
 
+	/**
+	 * A DocumentCollections represents the collections for a database document
+	 * as a POJO (Plain Old Java Object).  
+	 */
 	public interface DocumentCollections extends Set<String> {
 		public void addAll(String... collections);
 	}
@@ -77,6 +84,11 @@ public class DocumentMetadataHandle
 				add(collection);
 		}
 	}
+
+	/**
+	 * A DocumentPermissions represents the permissions for a database document
+	 * as a POJO (Plain Old Java Object).  
+	 */
 	public interface DocumentPermissions extends Map<String,Set<Capability>> {
 	    public void add(String role, Capability... capabilities);
 	}
@@ -104,6 +116,11 @@ public class DocumentMetadataHandle
 	public enum Capability {
 	    EXECUTE, INSERT, READ, UPDATE;
 	}
+
+	/**
+	 * A DocumentProperties represents the properties for a database document
+	 * as a POJO (Plain Old Java Object).  
+	 */
 	public interface DocumentProperties extends NameMap<Object> {
 		public Object put(QName name, BigDecimal value);
 		public Object put(QName name, BigInteger value);

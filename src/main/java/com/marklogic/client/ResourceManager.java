@@ -17,6 +17,17 @@ package com.marklogic.client;
 
 import com.marklogic.client.impl.ResourceManagerImplementation;
 
+/**
+ * ResourceManager is the base class for a client interface
+ * to resource services.  Resource Service extensions can be
+ * installed on the server using {@link com.marklogic.client.ResourceExtensionsManager}.
+ * Initialize a ResourceManager object by passing it to the
+ * {@link com.marklogic.client.DatabaseClient}.init() method.
+ * Internally, a ResourceManager calls the Resource Services
+ * on the server using the methods of the 
+ * {@link com.marklogic.client.ResourceServices} object provided
+ * by the init() method of the DatabaseClient. 
+ */
 abstract public class ResourceManager
     extends ResourceManagerImplementation
 {

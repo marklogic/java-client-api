@@ -19,6 +19,13 @@ import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
 
+/**
+ * A Resource Extensions Manager supports writing, reading, and deleting
+ * a Resource Services extension as well as listing the installed
+ * Resource Services extensions.  A Resource Services extension implements
+ * server operations on a kind of database resource not supported
+ * by default.
+ */
 public interface ResourceExtensionsManager {
     public <T extends StructureReadHandle> T listServices(T listHandle);
 
@@ -33,6 +40,10 @@ public interface ResourceExtensionsManager {
     public void startLogging(RequestLogger logger);
     public void stopLogging();
 
+    /**
+     * Method Parameters declare the parameters accepted
+     * by the Resource Services extension.
+     */
     public class MethodParameters extends RequestParameters {
         private MethodType method;
 

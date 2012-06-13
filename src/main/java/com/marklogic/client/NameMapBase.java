@@ -21,6 +21,12 @@ import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 
+/**
+ * NameMapBase provides a base class for maps where the key is
+ * a QName (a name qualified by a URI for global uniqueness or
+ * for association with a domain).
+ * @param <V>
+ */
 public class NameMapBase<V>
     extends HashMap<QName,V>
     implements NameMap<V>

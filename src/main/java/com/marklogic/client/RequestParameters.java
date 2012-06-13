@@ -24,6 +24,11 @@ import java.util.Set;
 
 import com.marklogic.client.impl.RequestParametersImplementation;
 
+/**
+ * RequestParameters supports a map with a string as the key and
+ * a list of strings as the value, which can represent parameters
+ * of an operation including parameters transported over HTTP.
+ */
 public class RequestParameters
     extends RequestParametersImplementation
     implements Map<String,List<String>>

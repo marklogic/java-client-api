@@ -15,6 +15,10 @@
  */
 package com.marklogic.client;
 
+/**
+ * A Content Descriptor identifies the properties
+ * of some content.
+ */
 public interface ContentDescriptor {
 	final static public long UNKNOWN_LENGTH = -1;
 

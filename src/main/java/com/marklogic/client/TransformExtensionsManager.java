@@ -23,6 +23,14 @@ import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
+/**
+ * A Transform Extensions Manager supports writing, reading, and deleting
+ * a Transform extension as well as listing the installed
+ * Transform extensions.  A Transform extension implements conversion
+ * of content on the server.  For instance, a Transform extension can
+ * convert HTML documents to XHTML documents on write or XML documents
+ * to HTML documents on read.
+ */
 public interface TransformExtensionsManager {
 	public <T extends StructureReadHandle> T listTransforms(T listHandle);
 

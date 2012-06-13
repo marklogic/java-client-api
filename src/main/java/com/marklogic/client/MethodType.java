@@ -15,6 +15,12 @@
  */
 package com.marklogic.client;
 
+/**
+ * The Method Type enumerates a kind of operation
+ * as GET (read), PUT (write), DELETE (remove), or
+ * POST (apply, a catch-all for operations that
+ * don't fit in another method).
+ */
 public enum MethodType {
     GET, PUT, POST, DELETE;
 }

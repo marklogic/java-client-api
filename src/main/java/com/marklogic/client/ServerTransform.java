@@ -18,6 +18,11 @@ package com.marklogic.client;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * ServerTransform specifies the invocation of a transform on the server
+ * including both the name of the transform and the parameters passed
+ * to the transform.
+ */
 public class ServerTransform extends RequestParameters {
 	private String name;
 

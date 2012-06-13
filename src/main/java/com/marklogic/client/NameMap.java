@@ -20,6 +20,12 @@ import java.util.Map;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 
+/**
+ * A NameMap defines the interface for maps where the key is
+ * a QName (a name qualified by a URI for global uniqueness or
+ * for association with a domain).
+ * @param <V>
+ */
 public interface NameMap<V> extends Map<QName,V> {
 	public NamespaceContext getNamespaceContext();
 	public void setNamespaceContext(NamespaceContext context);

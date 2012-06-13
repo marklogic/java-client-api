@@ -18,6 +18,20 @@ package com.marklogic.client.io;
 import com.marklogic.client.Format;
 import com.marklogic.client.impl.HandleImplementation;
 
+/**
+ * BaseHandle is the base class for content representations
+ * such as byte arrays, strings, input streams, character readers,
+ * files, POJO (Plain Old Java Object) structures and so on.
+ * Content representations are used for query options, search results, values results,
+ * document metadata, and documents in binary, JSON, text, and XML formats.
+ * Read handles receive content from the server and must implement the receiveAs() and
+ * receiveContent() methods.
+ * Write handles send content to the server and must implement the sendContent() method.
+ * A handle can support both read and write operations.
+ *
+ * @param <R>
+ * @param <W>
+ */
 public abstract class BaseHandle<R,W>
     extends HandleImplementation<R,W>
 {

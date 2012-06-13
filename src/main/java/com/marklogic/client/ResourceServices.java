@@ -18,6 +18,15 @@ package com.marklogic.client;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 
+/**
+ * A ResourceServices object supports calling the services for a resource.
+ * The Resource Services extension must have been installed on the server
+ * previously, which can be done with 
+ * {@link com.marklogic.client.ResourceExtensionsManager}.
+ * A {@link com.marklogic.client.ResourceManager} object
+ * receives a ResourceServices object when it is initialized by the
+ * {@link com.marklogic.client.DatabaseClient}.init() method.
+ */
 public interface ResourceServices {
 	public String getResourceName();
 
