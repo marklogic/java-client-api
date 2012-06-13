@@ -59,7 +59,7 @@ public class JacksonHandleExample {
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
-		// create a manager for documents of any format
+		// create a manager for JSON documents
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 
 		// parse the example file into a JDOM structure

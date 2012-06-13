@@ -36,9 +36,12 @@ import com.marklogic.client.io.marker.StructureWriteHandle;
  * writing.
  * 
  */
-public class JacksonHandle extends BaseHandle<InputStream, OutputStreamSender>
-		implements OutputStreamSender, JSONReadHandle, JSONWriteHandle,
-		StructureReadHandle, StructureWriteHandle {
+public class JacksonHandle
+		extends BaseHandle<InputStream, OutputStreamSender>
+		implements OutputStreamSender,
+			JSONReadHandle, JSONWriteHandle,
+			StructureReadHandle, StructureWriteHandle
+{
 	private JsonNode content;
 	private ObjectMapper mapper;
 
@@ -116,5 +119,4 @@ public class JacksonHandle extends BaseHandle<InputStream, OutputStreamSender>
 	public void write(OutputStream out) throws IOException {
 		getMapper().writeValue(out, content);
 	}
-
 }
