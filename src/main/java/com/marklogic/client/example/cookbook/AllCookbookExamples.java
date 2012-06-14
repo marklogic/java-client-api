@@ -66,9 +66,9 @@ public class AllCookbookExamples {
 				host, port, admin_user, admin_password, writer_user, writer_password, authType);
  		OptimisticLocking.run(
 				host, port, admin_user, admin_password, writer_user, writer_password, authType);
-		// SSLClientConnector is not included in this list because it requires a change
+		// SSLClientCreator is not included in this list because it requires a change
 		//     to the REST server that invalidates all of the other examples.  See
-		//     the comments in SSLClientConnector.
+		//     the comments in SSLClientCreator.
 	}
 
 	// get the configuration for the examples
