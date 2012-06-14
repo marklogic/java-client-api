@@ -2,6 +2,16 @@ xquery version "1.0-ml";
 
 (: Copyright 2011-2012 MarkLogic Corporation.  All Rights Reserved. :)
 
+(: An XQuery transform must follow some conventions rigorously:
+   *  The transform must be an XQuery library module
+   *  The namespace must be http://marklogic.com/rest-api/transform/TRANSFORM_NAME
+   *  The namespace prefix must be TRANSFORM_NAME
+   *  The library module must have a function with the local name "transform"
+      that takes two maps and a document as input and returns a document as output
+      The $context map provides environment information including the input type
+          and the output type (which may be modified)
+      The $params map provides any parameters for the transform
+ :)
 module namespace html2xhtml = "http://marklogic.com/rest-api/transform/html2xhtml";
 
 import module namespace plugin = "http://marklogic.com/extension/plugin"
