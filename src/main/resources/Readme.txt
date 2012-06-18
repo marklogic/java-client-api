@@ -25,8 +25,14 @@ You are also encouraged to join the MarkLogic developer mailing list:
 
 		http://community.marklogic.com/discuss/
 
-Note:  In this Early Access release, Resource Extensions are read-only and
-do not support updates.
+Known Issues for the Early Access release:
+
+*  Transform Extensions that do no follow the required conventions or have 
+   syntax errors cannot be updated deleted.  To remove the transform, clear
+   the Extensions database and restart the server.
+
+*  Resource Extensions do not support updates.  You can create extensions only
+   to read database resources.
 
 ===================================================================
 MarkLogic Corp, http://marklogic.com
