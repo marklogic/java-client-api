@@ -25,5 +25,8 @@ You are also encouraged to join the MarkLogic developer mailing list:
 
 		http://community.marklogic.com/discuss/
 
+Note:  In this Early Access release, Resource Extensions are read-only and
+do not support updates.
+
 ===================================================================
 MarkLogic Corp, http://marklogic.com
