@@ -17,6 +17,11 @@ package com.marklogic.client;
 
 import com.marklogic.client.impl.FailedRequest;
 
+/**
+ * Exception thrown when the server responds with HTTP status code 404.
+ * Access the failed request payload using getFailedRequest()
+ *
+ */
 public class ResourceNotFoundException extends MarkLogicServerException {
 
 	public ResourceNotFoundException(String message) {

@@ -16,7 +16,7 @@
 package com.marklogic.client.io;
 
 import com.marklogic.client.Format;
-import com.marklogic.client.config.MarkLogicBindingException;
+import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.Tuple;
 import com.marklogic.client.config.TuplesBuilder;

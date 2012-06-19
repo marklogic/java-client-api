@@ -433,7 +433,7 @@ public class QueryOptionsHandleTest {
 		assertEquals("Apply attribute for transform-results", t.getApply(),
 				"snippet");
 
-		t = builder.transformResultsOption(builder.extension("function", "ns", "aplace"));
+		t = builder.transformResults(builder.extension("function", "ns", "aplace"));
 
 		assertEquals("ns", t.getNs());
 		assertEquals("function", t.getApply());

@@ -30,6 +30,16 @@ import com.marklogic.client.FailedRequestException;
 /**
  * Encapsulate data passed in an error response from a REST server instance
  *
+ * This class wraps the following kind of XML structure, which is the standard error
+ * payload for error conditions from the server:
+ * 
+ * &lt;rapi:error&gt;
+ *   &lt;rapi:status-code&gt;404&lt;/rapi:status-code&gt;
+ *   &lt;rapi:status&gt;NOT FOUND&lt;/rapi:status&gt;
+ *   &lt;rapi:message-code&gt;RESTAPI-NODOCUMENT&lt;/rapi:message-code&gt;
+ *   &lt;rapi:message&gt;RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: options message: Options configuration &#39;photosd&#39; not found&lt;/rapi:message&gt;
+ * &lt;/rapi:error&gt;
+ * 
  */
 public class FailedRequest {
 

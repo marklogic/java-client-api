@@ -17,9 +17,22 @@ package com.marklogic.client;
 
 import com.marklogic.client.impl.FailedRequest;
 
+/**
+ * Abstract class that implements functionality for errors returned from a MarkLogic REST API instance.
+ * A REST instance wraps error messages into an XML or JSON structure that can be parsed and turned into
+ * the FailedRequest Java object.  The MarkLogicServerException contains the FailedRequest object which
+ * is incorporated into getMessage() or can be examined via getFailedRequest()
+ * 
+ * @see FailedRequest
+ *
+ */
 public abstract class MarkLogicServerException extends RuntimeException {
 	private FailedRequest failedRequest;
 	
+	/**
+	 * @param localMessage
+	 * @param failedRequest
+	 */
 	public MarkLogicServerException(String localMessage, FailedRequest failedRequest) {
 		super(localMessage);
 		this.failedRequest = failedRequest;

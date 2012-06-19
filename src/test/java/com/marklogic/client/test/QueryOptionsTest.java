@@ -30,6 +30,7 @@ import org.w3c.dom.Element;
 
 import com.marklogic.client.config.QueryOptions.FragmentScope;
 import com.marklogic.client.config.QueryOptions.QueryDefaultSuggestionSource;
+import com.marklogic.client.config.QueryOptions.QueryExtractMetadata;
 import com.marklogic.client.config.QueryOptions.QueryGrammar;
 import com.marklogic.client.config.QueryOptions.QueryGrammar.QueryJoiner;
 import com.marklogic.client.config.QueryOptions.QueryGrammar.QueryJoiner.Comparator;
@@ -40,6 +41,7 @@ import com.marklogic.client.config.QueryOptions.QueryRange;
 import com.marklogic.client.config.QueryOptions.QuerySortOrder;
 import com.marklogic.client.config.QueryOptions.QuerySortOrder.Direction;
 import com.marklogic.client.config.QueryOptions.QuerySortOrder.Score;
+import com.marklogic.client.config.QueryOptions.QueryTransformResults;
 import com.marklogic.client.config.QueryOptions.QueryValues;
 import com.marklogic.client.config.QueryOptionsBuilder;
 import com.marklogic.client.io.QueryOptionsHandle;
@@ -59,19 +61,19 @@ public class QueryOptionsTest {
 		testAdditionalQuery();
 
 		testAnnotations();
-		//testConstraints();
+		// testConstraints();
 		testValues();
 		testDefaultSuggestionSource();
-		//testExtractMetadata(); 
+		testExtractMetadata();
 		testGrammar();
-		testOperator(); 
+		testOperator();
 		testSearchOption();
-		//testSearchableExpression();
-		testSortOrder(); 
+		testSearchableExpression();
+		testSortOrder();
 		testSuggestionSource();
 		// testTerm();
-		// testTransformResults();
-		
+		testTransformResults();
+
 		testAtomicOptions();
 	}
 
@@ -82,7 +84,8 @@ public class QueryOptionsTest {
 		options.build(
 				builder.returnFacets(true),
 				builder.returnMetrics(false),
-				builder.searchableExpression("/a:sf1", builder.namespace("a", "http://marklogic.com/a")),
+				builder.searchableExpression("/a:sf1",
+						builder.namespace("a", "http://marklogic.com/a")),
 				// builder.annotation("<a:note xmlns:a=\"http://marklogic.com/note\">note</a:note>"),
 				builder.concurrencyLevel(2), builder.debug(false),
 				builder.fragmentScope(FragmentScope.PROPERTIES),
@@ -213,8 +216,8 @@ public class QueryOptionsTest {
 	};
 
 	/*
-	 * This method tests all types of constraints, including
-	 * the list of constraint definition types.
+	 * This method tests all types of constraints, including the list of
+	 * constraint definition types.
 	 */
 	private void testConstraints() {
 		testCollectionConstraint();
@@ -288,118 +291,123 @@ public class QueryOptionsTest {
 
 	/*
 	 * this test targets default Suggestion Source and wordLexicon
-	 * testSuggestionSource targets comprehensive definition
-	 * of default-suggestion-source and suggestion-source children.
+	 * testSuggestionSource targets comprehensive definition of
+	 * default-suggestion-source and suggestion-source children.
 	 */
 	private void testDefaultSuggestionSource() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
-				
-		options.build( builder.defaultSuggestionSource(
-				builder.wordLexicon("http://marklogic.com/collation/", FragmentScope.DOCUMENTS
-						)));
-		
+
+		options.build(builder.defaultSuggestionSource(builder.wordLexicon(
+				"http://marklogic.com/collation/", FragmentScope.DOCUMENTS)));
+
 		QueryDefaultSuggestionSource dss = options.getDefaultSuggestionSource();
-		assertEquals("http://marklogic.com/collation/", dss.getWordLexicon().getCollation());
-		assertEquals(FragmentScope.DOCUMENTS, dss.getWordLexicon().getFragmentScope());
-		
+		assertEquals("http://marklogic.com/collation/", dss.getWordLexicon()
+				.getCollation());
+		assertEquals(FragmentScope.DOCUMENTS, dss.getWordLexicon()
+				.getFragmentScope());
+
 		dss.getWordLexicon().setFragmentScope(FragmentScope.PROPERTIES);
-		assertEquals(FragmentScope.PROPERTIES, options.getDefaultSuggestionSource().getWordLexicon().getFragmentScope());
-		
-		
+		assertEquals(FragmentScope.PROPERTIES, options
+				.getDefaultSuggestionSource().getWordLexicon()
+				.getFragmentScope());
+
 	};
 
 	private void testExtractMetadata() {
-		fail("Not implemented");
+		QueryOptionsHandle options = new QueryOptionsHandle();
+		options.build(builder.extractMetadata(
+				builder.constraintValue("constraint-ref"),
+				builder.qname("elem-ns", "elem-name", null, null),	
+				builder.jsonkey("json-key")
+				));
+		
+		QueryExtractMetadata metadata = options.getExtractMetadata();
+		assertEquals("constraint-ref", metadata.getConstraintValues().get(0).getRef());
+		assertEquals("elem-ns", metadata.getQNames().get(0).getElemNs());
+		assertEquals("json-key", metadata.getJsonKeys().get(0).getName());
+
 	};
 
 	private void testGrammar() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.build(builder
-				.grammar(
-						"\"",
-						builder.domElement("<cts:and-query strength=\"20\" xmlns:cts=\"http://marklogic.com/cts\"/>"),
-						builder.starterGrouping("(", 30, ")"), 
-						builder.starterPrefix("-",
-								40, 
-								new QName("cts:not-query")), 
-						builder.joiner(
-								"AND", 20, JoinerApply.PREFIX, new QName(
-										"cts:and-query"), Tokenize.WORD), 
-						builder.joiner("OR", 10, JoinerApply.INFIX, new QName(
-										"cts:or-query"), Tokenize.WORD), 
-						builder.joiner("NEAR", 30, JoinerApply.INFIX,
-										new QName("cts:near-query"),
-										Tokenize.WORD), 
-						builder.joiner("NEAR/", 30,
-								JoinerApply.NEAR2, new QName("cts:near-query"),
-								null, 2), 
-						builder.joiner("LT", 50,
-								JoinerApply.CONSTRAINT, Comparator.LT,
-								Tokenize.WORD)));
+		options.build(builder.grammar(
+				"\"",
+				builder.domElement("<cts:and-query strength=\"20\" xmlns:cts=\"http://marklogic.com/cts\"/>"),
+				builder.starterGrouping("(", 30, ")"), builder.starterPrefix(
+						"-", 40, new QName("cts:not-query")), builder.joiner(
+						"AND", 20, JoinerApply.PREFIX, new QName(
+								"cts:and-query"), Tokenize.WORD), builder
+						.joiner("OR", 10, JoinerApply.INFIX, new QName(
+								"cts:or-query"), Tokenize.WORD), builder
+						.joiner("NEAR", 30, JoinerApply.INFIX, new QName(
+								"cts:near-query"), Tokenize.WORD), builder
+						.joiner("NEAR/", 30, JoinerApply.NEAR2, new QName(
+								"cts:near-query"), null, 2), builder.joiner(
+						"LT", 50, JoinerApply.CONSTRAINT, Comparator.LT,
+						Tokenize.WORD)));
 
 		QueryGrammar g = options.getGrammar();
 		assertEquals("Number of starters", 2, g.getStarters().size());
 		assertEquals("Number of joiners", 5, g.getJoiners().size());
-		assertEquals("DomElement on grammar", "and-query", g.getImplicit().getLocalName());
-		
-        QueryStarter s1 = g.getStarters().get(0);
-        assertEquals("(", s1.getStarterText());
-        assertEquals(30, s1.getStrength());
-        assertEquals(")", s1.getDelimiter());
-        s1.setText(")");
-        s1.setStrength(40);
-        s1.setDelimiter("(");
-        assertEquals(")", s1.getStarterText());
-        assertEquals(40, s1.getStrength());
-        assertEquals("(", s1.getDelimiter());
+		assertEquals("DomElement on grammar", "and-query", g.getImplicit()
+				.getLocalName());
 
-        QueryStarter s2 = g.getStarters().get(1);
-        assertEquals("-", s2.getStarterText());
-        assertEquals(new QName("cts:not-query"), s2.getElement());
-        s2.setElement(new QName("cts:and-query"));
-        assertEquals(new QName("cts:and-query"), s2.getElement());
+		QueryStarter s1 = g.getStarters().get(0);
+		assertEquals("(", s1.getStarterText());
+		assertEquals(30, s1.getStrength());
+		assertEquals(")", s1.getDelimiter());
+		s1.setText(")");
+		s1.setStrength(40);
+		s1.setDelimiter("(");
+		assertEquals(")", s1.getStarterText());
+		assertEquals(40, s1.getStrength());
+		assertEquals("(", s1.getDelimiter());
 
-        QueryJoiner j1 = g.getJoiners().get(0);
-        assertEquals("AND", j1.getJoinerText());
-        assertEquals(20, j1.getStrength());
-        assertEquals(JoinerApply.PREFIX, j1.getApply());
-        assertEquals(new QName("cts:and-query"), j1.getElement());
-        assertEquals(Tokenize.WORD, j1.getTokenize());
+		QueryStarter s2 = g.getStarters().get(1);
+		assertEquals("-", s2.getStarterText());
+		assertEquals(new QName("cts:not-query"), s2.getElement());
+		s2.setElement(new QName("cts:and-query"));
+		assertEquals(new QName("cts:and-query"), s2.getElement());
 
+		QueryJoiner j1 = g.getJoiners().get(0);
+		assertEquals("AND", j1.getJoinerText());
+		assertEquals(20, j1.getStrength());
+		assertEquals(JoinerApply.PREFIX, j1.getApply());
+		assertEquals(new QName("cts:and-query"), j1.getElement());
+		assertEquals(Tokenize.WORD, j1.getTokenize());
 
 	};
 
 	private void testOperator() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.build(builder.operator("sortcolor", 
-				builder.state("pantone", 
-						builder.sortOrder("xs:string",
-									"http://marklogic.com/collation", 
-									Direction.ASCENDING,
-									builder.element("http://my/namespace", "green"),
-									builder.attribute("http://my/namespace", "pantone"),
-									builder.score()))));
-		
-		QuerySortOrder so = options.getOperator("sortcolor").getState("pantone").getSortOrders().get(0);
+		options.build(builder.operator("sortcolor", builder.state("pantone",
+				builder.sortOrder("xs:string",
+						"http://marklogic.com/collation", Direction.ASCENDING,
+						builder.element("http://my/namespace", "green"),
+						builder.attribute("http://my/namespace", "pantone"),
+						builder.score()))));
+
+		QuerySortOrder so = options.getOperator("sortcolor")
+				.getState("pantone").getSortOrders().get(0);
 		assertEquals(new QName("xs:string"), so.getType());
 		assertEquals("http://marklogic.com/collation", so.getCollation());
 		assertEquals(Direction.ASCENDING, so.getDirection());
 		assertEquals(Score.YES, so.getScore());
-		
+
 		so.unsetScore();
 		assertNull(so.getScore());
-		
+
 	};
 
 	private void testSearchOption() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
 		options.build(builder.searchOption("limit=10"),
 				builder.searchOption("option1"));
-		
+
 		assertTrue(options.getSearchOptions().get(0).equals("limit=10"));
 		options.getSearchOptions().add("newoption");
 		assertTrue(options.getSearchOptions().get(2).equals("newoption"));
-		
+
 	};
 
 	private void testSearchableExpression() {
@@ -410,7 +418,8 @@ public class QueryOptionsTest {
 		String se = options.getSearchableExpression();
 		assertEquals("/p:sf1", se);
 
-        NamespaceContext nscontext = options.getSearchableExpressionNamespaceContext();
+		NamespaceContext nscontext = options
+				.getSearchableExpressionNamespaceContext();
 
 		assertEquals("http://my.namespace", nscontext.getNamespaceURI("p"));
 
@@ -418,42 +427,41 @@ public class QueryOptionsTest {
 		options.setSearchableExpression(se);
 		assertEquals("/p:sf2", options.getSearchableExpression());
 
-		//TODO alternate pattern.
+		// TODO alternate pattern.
 	};
 
 	private void testSortOrder() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
-	options.build(builder.sortOrder("xs:string",
-								"http://marklogic.com/collation", 
-								Direction.ASCENDING,
-								builder.element("http://my/namespace", "green"),
-								builder.attribute("http://my/namespace", "pantone"),
-								builder.score()));
-	
-	QuerySortOrder so = options.getSortOrders().get(0);
-	assertEquals(new QName("xs:string"), so.getType());
-	assertEquals("http://marklogic.com/collation", so.getCollation());
-	assertEquals(Direction.ASCENDING, so.getDirection());
-	assertEquals(Score.YES, so.getScore());
-	
-	so.unsetScore();
-	assertNull(so.getScore());
-	
+		options.build(builder.sortOrder("xs:string",
+				"http://marklogic.com/collation", Direction.ASCENDING,
+				builder.element("http://my/namespace", "green"),
+				builder.attribute("http://my/namespace", "pantone"),
+				builder.score()));
+
+		QuerySortOrder so = options.getSortOrders().get(0);
+		assertEquals(new QName("xs:string"), so.getType());
+		assertEquals("http://marklogic.com/collation", so.getCollation());
+		assertEquals(Direction.ASCENDING, so.getDirection());
+		assertEquals(Score.YES, so.getScore());
+
+		so.unsetScore();
+		assertNull(so.getScore());
+
 	};
 
 	private void testSuggestionSource() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
-		
-		options.build(
-				builder.suggestionSource(
-						builder.range(false, new QName("gs:year"),
-								builder.element("http://marklogic.com/wikipedia", "nominee"),
-								builder.attribute("year")),
-						builder.suggestionSourceOption("suggestionOption"),
-						builder.suggestionSourceOption("suggestionOption2")),
-				builder.suggestionSource("ref"));
-		
-		assertEquals(new QName("gs:year"), ((QueryRange) options.getSuggestionSources().get(0).getConstraintConfiguration()).getType());
+
+		options.build(builder.suggestionSource(builder.range(false, new QName(
+				"gs:year"), builder.element("http://marklogic.com/wikipedia",
+				"nominee"), builder.attribute("year")), builder
+				.suggestionSourceOption("suggestionOption"), builder
+				.suggestionSourceOption("suggestionOption2")), builder
+				.suggestionSource("ref"));
+
+		assertEquals(new QName("gs:year"),
+				((QueryRange) options.getSuggestionSources().get(0)
+						.getConstraintConfiguration()).getType());
 	};
 
 	private void testTerm() {
@@ -461,7 +469,27 @@ public class QueryOptionsTest {
 	};
 
 	private void testTransformResults() {
-		fail("Not implemented");
-	};
+
+		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		QueryOptionsHandle handle = new QueryOptionsHandle();
+		handle.build(builder.returnMetrics(false), 
+				builder.returnQtext(false),
+				builder.debug(true), 
+				builder.transformResults("raw"),
+				builder.constraint("id", 
+						builder.value(builder.element("id"))));
+		
+		assertEquals("raw", handle.getTransformResults().getApply());
+		assertEquals("id", handle.getConstraint("id").getName());
+		
+		QueryTransformResults tr = handle.getTransformResults();
+		tr.setAt("x");
+		tr.setNs("http://namespace");
+		assertEquals("x", handle.getTransformResults().getAt());
+		assertEquals("http://namespace", handle.getTransformResults().getNs());
+		
+		
+
+	}
 
 }

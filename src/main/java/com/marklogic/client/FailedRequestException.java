@@ -19,7 +19,8 @@ import com.marklogic.client.impl.FailedRequest;
 
 /**
  * A FailedRequestException is used to capture and report on problems
- * from the REST API.
+ * from the REST API.  This class is a semantically thin one, meaning that it is used as
+ * catch-all for various things that can go wrong on the REST server.
  */
 public class FailedRequestException extends MarkLogicServerException {
 	

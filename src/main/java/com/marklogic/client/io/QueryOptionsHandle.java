@@ -51,13 +51,14 @@ import org.xml.sax.XMLReader;
 
 import com.marklogic.client.EditableNamespaceContext;
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.config.MarkLogicBindingException;
 import com.marklogic.client.config.QueryOptions;
 import com.marklogic.client.config.QueryOptions.FragmentScope;
 import com.marklogic.client.config.QueryOptions.QueryAnnotation;
 import com.marklogic.client.config.QueryOptions.QueryConstraint;
 import com.marklogic.client.config.QueryOptions.QueryDefaultSuggestionSource;
+import com.marklogic.client.config.QueryOptions.QueryExtractMetadata;
 import com.marklogic.client.config.QueryOptions.QueryGrammar;
 import com.marklogic.client.config.QueryOptions.QueryOperator;
 import com.marklogic.client.config.QueryOptions.QuerySortOrder;
@@ -72,6 +73,28 @@ import com.marklogic.client.impl.QueryOptionsTransformInjectNS;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
+/**
+ * 
+ * A QueryOptionsHandle is used to configure query configurations.
+ * 
+ * Use a QueryOptionsHandle if you want to use Java to configure and manage
+ * MarkLogic query configurations, for search, value lookups, and facets.
+ * 
+ * Read an options node from MarkLogic with 
+ * 
+ * QueryOptionsHandle handle = QueryOptionsManager.readOptions(name, new QueryOptionsHandle());
+ * 
+ * or construct a fresh empty one (which is not a valid configuration without further building)
+ * 
+ * QueryOptionsHandle handle = new QueryOptionsHandle();
+ *  
+ * Build up options to a handle using 
+ * 
+ * handle.build()
+ * 
+ * and constructed items from QueryOptionsBuilder.
+ * 
+ */
 public final class QueryOptionsHandle extends
 		BaseHandle<InputStream, OutputStreamSender> implements
 		OutputStreamSender, QueryOptionsReadHandle, QueryOptionsWriteHandle {
@@ -92,6 +115,9 @@ public final class QueryOptionsHandle extends
 	private QueryOptions optionsHolder;
 	private Unmarshaller unmarshaller;
 
+	/**
+	 * Construct a new empty QueryOptionsHandle object.
+	 */
     public QueryOptionsHandle() {
 		super.setFormat(Format.XML);
 		optionsHolder = new QueryOptions();
@@ -116,9 +142,6 @@ public final class QueryOptionsHandle extends
         }
     }
 
-	/*
-	 * Adders
-	 */
 	public void addAnnotation(QueryAnnotation queryAnnotation) {
 		optionsHolder.addAnnotation(queryAnnotation);
 	};
@@ -145,8 +168,10 @@ public final class QueryOptionsHandle extends
 	public void addValues(QueryValues values) {
 		optionsHolder.getQueryValues().add(values);
 	}
+	
 	/**
-	 * Add more QueryOptionsItems to a QueryOptionsHandle using a QueryOptionsBuilder
+	 * Add more QueryOptionsItems to a QueryOptionsHandle using a QueryOptionsBuilder.
+	 * 
 	 * @param options 0 or more QueryOptionsItems
 	 * @return the resulting updated QueryOptionsHandle
 	 */
@@ -176,9 +201,6 @@ public final class QueryOptionsHandle extends
 	}
 
 	
-	/*
-	 * Getters
-	 */
 	public List<QueryAnnotation> getAnnotations() {
 		return optionsHolder.getAnnotations();
 	}
@@ -450,8 +472,8 @@ public final class QueryOptionsHandle extends
 	
 
 	public void setSuggestionSources(
-			List<QuerySuggestionSource> suggestionSourceOptions) {
-		optionsHolder.setSuggestionSources(suggestionSourceOptions);
+			List<QuerySuggestionSource> suggestionSources) {
+		optionsHolder.setSuggestionSources(suggestionSources);
 	}
 	
 
@@ -459,8 +481,8 @@ public final class QueryOptionsHandle extends
 		optionsHolder.setTerm(termConfig);
 	}
 	
-	public void setTransformResults(QueryTransformResults transformResultsOption) {
-		optionsHolder.setTransformResults(transformResultsOption);
+	public void setTransformResults(QueryTransformResults transformResults) {
+		optionsHolder.setTransformResults(transformResults);
 
 	}
 
@@ -583,4 +605,11 @@ public final class QueryOptionsHandle extends
 		return null;
 	}
 
+	public QueryExtractMetadata getExtractMetadata() {
+		return optionsHolder.getExtractMetadata();
+	}
+
+	public void setExtractMetadata(QueryExtractMetadata extractMetadata) {
+		optionsHolder.setExtractMetadata(extractMetadata);
+	}
 }

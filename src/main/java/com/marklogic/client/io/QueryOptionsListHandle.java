@@ -16,7 +16,7 @@
 package com.marklogic.client.io;
 
 import com.marklogic.client.Format;
-import com.marklogic.client.config.MarkLogicBindingException;
+import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.config.QueryOptionsListBuilder;
 import com.marklogic.client.config.QueryOptionsListResults;
 import com.marklogic.client.config.ValuesListBuilder;
@@ -32,6 +32,9 @@ import javax.xml.bind.Unmarshaller;
 import java.io.InputStream;
 import java.util.HashMap;
 
+/**
+ * 
+ */
 public class QueryOptionsListHandle
 	extends BaseHandle<InputStream, OperationNotSupported>
 	implements QueryOptionsListReadHandle, QueryOptionsListResults

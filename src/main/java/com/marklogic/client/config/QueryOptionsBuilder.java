@@ -36,11 +36,14 @@ import com.marklogic.client.config.QueryOptions.AnyElement;
 import com.marklogic.client.config.QueryOptions.Attribute;
 import com.marklogic.client.config.QueryOptions.BaseConstraintItem;
 import com.marklogic.client.config.QueryOptions.BaseQueryOptionConfiguration;
+import com.marklogic.client.config.QueryOptions.ConstraintValue;
 import com.marklogic.client.config.QueryOptions.Element;
-import com.marklogic.client.config.QueryOptions.PathIndex;
 import com.marklogic.client.config.QueryOptions.Field;
 import com.marklogic.client.config.QueryOptions.FragmentScope;
 import com.marklogic.client.config.QueryOptions.Heatmap;
+import com.marklogic.client.config.QueryOptions.JsonKey;
+import com.marklogic.client.config.QueryOptions.PathIndex;
+import com.marklogic.client.config.QueryOptions.QNameExtractor;
 import com.marklogic.client.config.QueryOptions.QueryAnnotation;
 import com.marklogic.client.config.QueryOptions.QueryCollection;
 import com.marklogic.client.config.QueryOptions.QueryConstraint;
@@ -50,6 +53,7 @@ import com.marklogic.client.config.QueryOptions.QueryCustom.Parse;
 import com.marklogic.client.config.QueryOptions.QueryCustom.StartFacet;
 import com.marklogic.client.config.QueryOptions.QueryDefaultSuggestionSource;
 import com.marklogic.client.config.QueryOptions.QueryElementQuery;
+import com.marklogic.client.config.QueryOptions.QueryExtractMetadata;
 import com.marklogic.client.config.QueryOptions.QueryGeospatial;
 import com.marklogic.client.config.QueryOptions.QueryGeospatialAttributePair;
 import com.marklogic.client.config.QueryOptions.QueryGeospatialElement;
@@ -109,6 +113,7 @@ public final class QueryOptionsBuilder {
 		}
 
 	}
+	
 
 	/**
 	 * An option passed to a query configuration to affect geospatial searches.
@@ -152,6 +157,12 @@ public final class QueryOptionsBuilder {
 		public void build(QueryCustom custom);
 	}
 
+	/**
+	 * Marks objects that comprise QueryExtractMetadata configurations.
+	 */
+	public interface QueryExtractMetadataItem {
+		public void build(QueryExtractMetadata extractMetadata);
+	}
 	/**
 	 * Marks objects that comprise QueryGeospatial configurations.
 	 */
@@ -379,6 +390,20 @@ public final class QueryOptionsBuilder {
 		}
 	}
 
+
+	public class QueryCollation extends TextOption<String> implements QueryRangeItem {
+
+		public QueryCollation(String collationValue) {
+			this.setValue(collationValue);
+		}
+		
+		@Override
+		public void build(QueryRange range) {
+			range.setCollation(this.getValue());
+		}
+
+	}
+	
 	private abstract class TextOption<T extends Object> {
 
 		private T value;
@@ -405,14 +430,13 @@ public final class QueryOptionsBuilder {
 
 		public void setAttribute(Attribute attribute);
 
-		/**
-		 * Add a reference to an element to this ConstraintBase
-		 */
 		public void setElement(Element element);
 
 		public void setField(Field field);
 
         public void setPath(PathIndex path);
+
+		public void setJsonKey(JsonKey jsonKey);
 	}
 
 	/**
@@ -542,6 +566,14 @@ public final class QueryOptionsBuilder {
 	}
 
 	/**
+	 * Builds a default collation object for use in Range index definitions.
+	 * 
+	 */
+	public QueryRangeItem collation(String collationName) {
+		return new QueryCollation(collationName);
+	}
+	
+	/**
 	 * Builds a QueryCollection object to use the Collection URIs as source of constraint values.
 	 * @param facets Setting to true configures Search API to do facets on this source.
 	 * @param prefix This value will be trimmed from the start of collection URIs to provide more readable facet labels.
@@ -559,15 +591,6 @@ public final class QueryOptionsBuilder {
 		return collectionOption;
 	}
 
-	/**
-	 * 
-	 * @param name
-	 * @param label
-	 * @param ge
-	 * @param lt
-	 * @param anchor
-	 * @return
-	 */
 	/**
 	 * Build a new bucket for use in a RangeOption
 	 * 
@@ -1179,7 +1202,7 @@ public final class QueryOptionsBuilder {
 	 * @return Component for use in a QueryOptionsBuilder expression.
 	 */
 	public AnyElement searchableExpression(String searchableExpression, NamespaceBinding... bindings) {
-        String xml = "<searchable-expression xmlns='http://marklogic.com/appservices/search'";
+        String xml = "<search:searchable-expression xmlns:search='http://marklogic.com/appservices/search'";
         for (NamespaceBinding binding : bindings) {
             String ns = binding.getNamespaceUri();
             ns = ns.replace("'", "&apos;");
@@ -1191,7 +1214,7 @@ public final class QueryOptionsBuilder {
                 xml += " xmlns:" + binding.getPrefix() + "='" + ns + "'";
             }
         }
-        xml += ">" + searchableExpression + "</searchable-expression>";
+        xml += ">" + searchableExpression + "</search:searchable-expression>";
 
 		org.w3c.dom.Element expression = domElement(xml);
 		return new AnyElement(expression);
@@ -1329,7 +1352,7 @@ public final class QueryOptionsBuilder {
 		return t;
 	}
 
-	public QueryTransformResults transformResultsOption(XQueryExtension extension) {
+	public QueryTransformResults transformResults(XQueryExtension extension) {
 		QueryTransformResults t = new QueryTransformResults();
 		t.setApply(extension.getApply());
 		t.setNs(extension.getNs());
@@ -1398,5 +1421,30 @@ public final class QueryOptionsBuilder {
 		lex.setCollation(collation);
 		lex.setFragmentScope(scope);
 		return lex;
+	}
+
+	public ConstraintValue constraintValue(String constraintReference) {
+		return new ConstraintValue(constraintReference);
+	}
+
+	public JsonKey jsonkey(String name) {
+		return new JsonKey(name);
+	}
+
+	public QNameExtractor qname(String elemNs, String elemName, String attrNs, String attrName) {
+		QNameExtractor qname = new QNameExtractor();
+		qname.setAttrName(attrName);
+		qname.setAttrNs(attrNs);
+		qname.setElemName(elemName);
+		qname.setElemNs(elemNs);
+		return qname;
+	}
+
+	public QueryOptionsItem extractMetadata(QueryExtractMetadataItem... extractMetadataItems) {
+		QueryExtractMetadata extractMetadata = new QueryExtractMetadata();
+		for (QueryExtractMetadataItem item : extractMetadataItems) {
+			item.build(extractMetadata);
+		}
+		return extractMetadata;
 	}
 }
