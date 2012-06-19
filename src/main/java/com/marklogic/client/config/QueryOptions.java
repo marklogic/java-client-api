@@ -35,6 +35,7 @@ import org.w3c.dom.Node;
 
 import com.marklogic.client.EditableNamespaceContext;
 import com.marklogic.client.config.QueryOptionsBuilder.IndexReference;
+import com.marklogic.client.config.QueryOptionsBuilder.NamespaceBinding;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryAnnotations;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryExtractMetadataItem;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryOptionsItem;
@@ -58,6 +59,43 @@ import com.marklogic.client.config.QueryOptionsBuilder.QueryWordItem;
 @XmlRootElement(namespace = QueryOptions.SEARCH_NS, name = "options")
 public final class QueryOptions implements QueryAnnotations {
 
+
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class QuerySearchableExpression implements QueryOptionsItem {
+		
+		@XmlTransient
+		private QueryOptionsBuilder.NamespaceBinding[] bindings = null;
+
+		@XmlValue
+		private String path = null;
+
+		public QuerySearchableExpression() {
+		}
+
+		public QuerySearchableExpression(String path) {
+			this.path = path;
+		}
+
+		public QuerySearchableExpression(String path,
+				QueryOptionsBuilder.NamespaceBinding... bindings) {
+			this.path = path;
+			this.bindings = bindings;
+		}
+
+		public String getPath() {
+			return path;
+		}
+
+		public QueryOptionsBuilder.NamespaceBinding[] getBindings() {
+			return bindings;
+		}
+
+		@Override
+		public void build(QueryOptions options) {
+			options.setSearchableExpression(this);
+			options.setSearchableExpressionNamespaceContext(bindings);
+		}
+	}
 
 	/**
 	 * Corresponds to aggregate element in Search API configuration. Configures
@@ -128,9 +166,7 @@ public final class QueryOptions implements QueryAnnotations {
 
 		@Override
 		public void build(QueryOptions options) {
-			if (element.getLocalName().equals("searchable-expression")) {
-				options.setSearchableExpression(element);
-			} else if (element.getLocalName().equals("additional-query")) {
+			if (element.getLocalName().equals("additional-query")) {
 				options.setAdditionalQuery((org.w3c.dom.Element) element
 						.getFirstChild());
 			} else {
@@ -482,6 +518,10 @@ public final class QueryOptions implements QueryAnnotations {
 		@XmlValue
 		private String name;
 		
+		public JsonKey() {
+			
+		}
+		
 		public JsonKey(String name) {
 			this.name = name;
 		}
@@ -721,6 +761,11 @@ public final class QueryOptions implements QueryAnnotations {
 
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class ConstraintValue implements QueryExtractMetadataItem {
+		
+		public ConstraintValue() {
+			
+		}
+		
 		public ConstraintValue(String constraintReference) {
 			this.ref = constraintReference;
 		}
@@ -957,13 +1002,13 @@ public final class QueryOptions implements QueryAnnotations {
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "element-query")
 		private QueryElementQuery elementQuery;
 
-		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-attrName-pair")
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-attr-pair")
 		private QueryGeospatialAttributePair geoAttrPair;
 
-		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-elemName")
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-elem")
 		private QueryGeospatialElement geoElem;
 
-		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-elemName-pair")
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-elem-pair")
 		private QueryGeospatialElementPair geoElemPair;
 
 		@XmlAttribute
@@ -3080,8 +3125,8 @@ public final class QueryOptions implements QueryAnnotations {
 	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "namespace-bindings")
 	private ExpressionNamespaceBindings searchableExpressionBindings;
 
-	@XmlAnyElement
-	private org.w3c.dom.Element searchableExpression;
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name="searchable-expression")
+	private QuerySearchableExpression searchableExpression;
 
 	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "search-option")
 	private List<String> searchOptions;
@@ -3113,6 +3158,15 @@ public final class QueryOptions implements QueryAnnotations {
 		annotations = new ArrayList<QueryAnnotation>();
 		queryValues = new ArrayList<QueryValues>();
 
+	}
+
+	public void setSearchableExpressionNamespaceContext(
+			NamespaceBinding[] bindingsArray) {
+		ExpressionNamespaceBindings bindings = new ExpressionNamespaceBindings();
+		for (NamespaceBinding binding : bindingsArray) {
+			bindings.addBinding(binding.getPrefix(), binding.getNamespaceUri());
+		}
+		searchableExpressionBindings = bindings;
 	}
 
 	@Override
@@ -3265,7 +3319,7 @@ public final class QueryOptions implements QueryAnnotations {
 	}
 
 	public String getSearchableExpression() {
-		return searchableExpression.getTextContent();
+		return searchableExpression.getPath();
 	}
 
 	public List<String> getSearchOptions() {
@@ -3381,7 +3435,7 @@ public final class QueryOptions implements QueryAnnotations {
 		this.returnValues = returnValues;
 	}
 
-	public void setSearchableExpression(org.w3c.dom.Element searchableExpression) {
+	public void setSearchableExpression(QuerySearchableExpression searchableExpression) {
 		this.searchableExpression = searchableExpression;
 	}
 

@@ -48,6 +48,7 @@ import com.marklogic.client.config.QueryOptions.QueryAnnotation;
 import com.marklogic.client.config.QueryOptions.QueryCollection;
 import com.marklogic.client.config.QueryOptions.QueryConstraint;
 import com.marklogic.client.config.QueryOptions.QueryCustom;
+import com.marklogic.client.config.QueryOptions.QuerySearchableExpression;
 import com.marklogic.client.config.QueryOptions.QueryCustom.FinishFacet;
 import com.marklogic.client.config.QueryOptions.QueryCustom.Parse;
 import com.marklogic.client.config.QueryOptions.QueryCustom.StartFacet;
@@ -113,7 +114,6 @@ public final class QueryOptionsBuilder {
 		}
 
 	}
-	
 
 	/**
 	 * An option passed to a query configuration to affect geospatial searches.
@@ -127,7 +127,6 @@ public final class QueryOptionsBuilder {
 		}
 	}
 
-	
 	/**
 	 * Marks classes that can be annotated with XML elements.
 	 */
@@ -163,6 +162,7 @@ public final class QueryOptionsBuilder {
 	public interface QueryExtractMetadataItem {
 		public void build(QueryExtractMetadata extractMetadata);
 	}
+
 	/**
 	 * Marks objects that comprise QueryGeospatial configurations.
 	 */
@@ -177,7 +177,6 @@ public final class QueryOptionsBuilder {
 
 	}
 
-	
 	/**
 	 * Marks classes that comprise the top level QueryOptions configuration.
 	 */
@@ -187,7 +186,7 @@ public final class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Marks classes that comprise QueryRange configurations. 
+	 * Marks classes that comprise QueryRange configurations.
 	 */
 	public interface QueryRangeItem {
 
@@ -244,7 +243,7 @@ public final class QueryOptionsBuilder {
 
 	/**
 	 * Marks classes that comprise QueryWord configurations.
-	 *
+	 * 
 	 */
 	public interface QueryWordItem {
 
@@ -254,8 +253,8 @@ public final class QueryOptionsBuilder {
 	/**
 	 * An option passed to query configurations to affect suggestion sources.
 	 */
-	public class SuggestionSourceOption extends TextOption<String>
-			implements QuerySuggestionSourceItem {
+	public class SuggestionSourceOption extends TextOption<String> implements
+			QuerySuggestionSourceItem {
 
 		@Override
 		public void build(QuerySuggestionSource suggestionSource) {
@@ -287,7 +286,8 @@ public final class QueryOptionsBuilder {
 	}
 
 	/**
-	 * An option passed to a query configuration to affect values configurations.
+	 * An option passed to a query configuration to affect values
+	 * configurations.
 	 */
 	public class ValuesOption extends TextOption<String> implements
 			QueryValuesItem {
@@ -300,7 +300,8 @@ public final class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Wraps a value given to weight search configurations relative to each other.
+	 * Wraps a value given to weight search configurations relative to each
+	 * other.
 	 */
 	public class Weight extends TextOption<Double> implements QueryTermItem,
 			QueryWordItem, QueryValueItem {
@@ -390,20 +391,20 @@ public final class QueryOptionsBuilder {
 		}
 	}
 
-
-	public class QueryCollation extends TextOption<String> implements QueryRangeItem {
+	public class QueryCollation extends TextOption<String> implements
+			QueryRangeItem {
 
 		public QueryCollation(String collationValue) {
 			this.setValue(collationValue);
 		}
-		
+
 		@Override
 		public void build(QueryRange range) {
 			range.setCollation(this.getValue());
 		}
 
 	}
-	
+
 	private abstract class TextOption<T extends Object> {
 
 		private T value;
@@ -434,7 +435,7 @@ public final class QueryOptionsBuilder {
 
 		public void setField(Field field);
 
-        public void setPath(PathIndex path);
+		public void setPath(PathIndex path);
 
 		public void setJsonKey(JsonKey jsonKey);
 	}
@@ -447,23 +448,23 @@ public final class QueryOptionsBuilder {
 
 	}
 
-    public class NamespaceBinding {
-        String prefix = null;
-        String uri = null;
+	public static class NamespaceBinding {
+		String prefix = null;
+		String uri = null;
 
-        public NamespaceBinding(String prefix, String uri) {
-            this.prefix = prefix;
-            this.uri = uri;
-        }
+		public NamespaceBinding(String prefix, String uri) {
+			this.prefix = prefix;
+			this.uri = uri;
+		}
 
-        public String getPrefix() {
-            return prefix;
-        }
+		public String getPrefix() {
+			return prefix;
+		}
 
-        public String getNamespaceUri() {
-            return uri;
-        }
-    }
+		public String getNamespaceUri() {
+			return uri;
+		}
+	}
 
 	private static DocumentBuilderFactory factory;
 
@@ -516,17 +517,23 @@ public final class QueryOptionsBuilder {
 
 	/**
 	 * Build an annoatation from a valid XML string
-	 * @param xmlString A valid XML string containing an annotation.
-	 * @return A QueryAnnotation object for use in constructing query configurations.
+	 * 
+	 * @param xmlString
+	 *            A valid XML string containing an annotation.
+	 * @return A QueryAnnotation object for use in constructing query
+	 *         configurations.
 	 */
 	public QueryAnnotation annotation(String xmlString) {
 		QueryAnnotation annotation = new QueryAnnotation();
 		annotation.add(domElement(xmlString));
 		return annotation;
 	}
+
 	/**
 	 * Build an Attribute object with no namespace declaration.
-	 * @param name local name for attribute.
+	 * 
+	 * @param name
+	 *            local name for attribute.
 	 * @return Attribute object for building query configurations.
 	 */
 	public Attribute attribute(String name) {
@@ -535,8 +542,11 @@ public final class QueryOptionsBuilder {
 
 	/**
 	 * Build an Attribute object with a namepsace declaration.
-	 * @param ns namespace of the attribute.
-	 * @param name local name of the attribute.
+	 * 
+	 * @param ns
+	 *            namespace of the attribute.
+	 * @param name
+	 *            local name of the attribute.
 	 * @return Attribute object for building query configurations.
 	 */
 	public Attribute attribute(String ns, String name) {
@@ -572,13 +582,22 @@ public final class QueryOptionsBuilder {
 	public QueryRangeItem collation(String collationName) {
 		return new QueryCollation(collationName);
 	}
-	
+
 	/**
-	 * Builds a QueryCollection object to use the Collection URIs as source of constraint values.
-	 * @param facets Setting to true configures Search API to do facets on this source.
-	 * @param prefix This value will be trimmed from the start of collection URIs to provide more readable facet labels.
-	 * @param facetOptions A list of facet options to configure the collection constraint.
-	 * @return A QueryCollection object for use in building QueryOptions configurations.
+	 * Builds a QueryCollection object to use the Collection URIs as source of
+	 * constraint values.
+	 * 
+	 * @param facets
+	 *            Setting to true configures Search API to do facets on this
+	 *            source.
+	 * @param prefix
+	 *            This value will be trimmed from the start of collection URIs
+	 *            to provide more readable facet labels.
+	 * @param facetOptions
+	 *            A list of facet options to configure the collection
+	 *            constraint.
+	 * @return A QueryCollection object for use in building QueryOptions
+	 *         configurations.
 	 */
 	public QueryCollection collection(boolean facets, String prefix,
 			FacetOption... facetOptions) {
@@ -602,12 +621,13 @@ public final class QueryOptionsBuilder {
 	 *            Upper bound of bucket, relative to anchor.
 	 * @param lt
 	 *            Lower bound of bucket, relative to anchor.
-	 * @param anchor Value to provide anchor for relative terms used in ge and lt.
+	 * @param anchor
+	 *            Value to provide anchor for relative terms used in ge and lt.
 	 * @return a new ComputedBucket for use in building QueryRange objects.
 	 */
-	
-	public ComputedBucket computedBucket(String name, String label,
-			String ge, String lt, AnchorValue anchor) {
+
+	public ComputedBucket computedBucket(String name, String label, String ge,
+			String lt, AnchorValue anchor) {
 		ComputedBucket bucket = new ComputedBucket();
 		bucket.setName(name);
 		bucket.setLabel(label);
@@ -618,10 +638,14 @@ public final class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Set the maximum number of threads used to resolve facets. The default is 8, which specifies that at most 8 threads will be used concurrently to resolve facets. 
+	 * Set the maximum number of threads used to resolve facets. The default is
+	 * 8, which specifies that at most 8 threads will be used concurrently to
+	 * resolve facets.
 	 * 
-	 * @param concurrencyLevel integer to set concurrency level.
-	 * @return A QueryOptionsTextItem for use in building QueryOptions configurations.
+	 * @param concurrencyLevel
+	 *            integer to set concurrency level.
+	 * @return A QueryOptionsTextItem for use in building QueryOptions
+	 *         configurations.
 	 */
 	public QueryOptionsTextItem<Integer> concurrencyLevel(
 			Integer concurrencyLevel) {
@@ -631,9 +655,13 @@ public final class QueryOptionsBuilder {
 
 	/**
 	 * Builds a constraint object with the supplied name and source.
-	 * @param name Name of the constraint, to be used in search strings.
-	 * @param constraintSource Source of data for the constraint.
-	 * @return A QueryConstraint object for use in building QueryOptions configurations
+	 * 
+	 * @param name
+	 *            Name of the constraint, to be used in search strings.
+	 * @param constraintSource
+	 *            Source of data for the constraint.
+	 * @return A QueryConstraint object for use in building QueryOptions
+	 *         configurations
 	 */
 	public QueryConstraint constraint(String name,
 			BaseConstraintItem constraintSource, QueryAnnotation... annotations) {
@@ -648,9 +676,13 @@ public final class QueryOptionsBuilder {
 	/**
 	 * Build a QueryCustom source for constraining queries.
 	 * <p>
-	 * This function is for constructing faceted custom constraints, and will need three three XQuery function extensions.
-	 * @param options Three of these parameters must provide a parse, startFacet, and finishFacet XQueryFunctionExtension.  
-	 * Additionally, QueryAnnotations can be added to this builder function.
+	 * This function is for constructing faceted custom constraints, and will
+	 * need three three XQuery function extensions.
+	 * 
+	 * @param options
+	 *            Three of these parameters must provide a parse, startFacet,
+	 *            and finishFacet XQueryFunctionExtension. Additionally,
+	 *            QueryAnnotations can be added to this builder function.
 	 * @return a QueryCustom object for use in building a QueryConstraint
 	 */
 	public QueryCustom customFacet(QueryCustomItem... options) {
@@ -667,7 +699,9 @@ public final class QueryOptionsBuilder {
 	 * Build a QueryCustom source for constraining queries.
 	 * <p>
 	 * This function is for constructing non-faceted custom constraints.
-	 * @param extension One argument must supply a parse XQueryFunctionExtensions.
+	 * 
+	 * @param extension
+	 *            One argument must supply a parse XQueryFunctionExtensions.
 	 * @return a QueryCustom object for use in building a QueryConstraint
 	 */
 	public QueryCustom customParse(XQueryExtension extension) {
@@ -684,8 +718,10 @@ public final class QueryOptionsBuilder {
 
 	/**
 	 * Build a default location to find suggestion sources
+	 * 
 	 * @param options
-	 * @return a {@link QueryDefaultSuggestionSource} object for constructing QueryOptions configurations.
+	 * @return a {@link QueryDefaultSuggestionSource} object for constructing
+	 *         QueryOptions configurations.
 	 */
 	public QueryDefaultSuggestionSource defaultSuggestionSource(
 			QuerySuggestionSourceItem... options) {
@@ -704,7 +740,8 @@ public final class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Construct a dom Element from a string.  A utility function for creating DOM elements when needed for other builder functions.
+	 * Construct a dom Element from a string. A utility function for creating
+	 * DOM elements when needed for other builder functions.
 	 * 
 	 * @param xmlString
 	 *            XML for an element.
@@ -734,44 +771,57 @@ public final class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Build a new Element object for use in Index definitions (sources for constraints, terms, and suggestion sources)
-	 * This builder function builds Element objects with no namespace declataration.
-	 * @param name local name of an element specification.
-	 * @return an Element object for use in constructing IndexReferences (and in a few other places).
+	 * Build a new Element object for use in Index definitions (sources for
+	 * constraints, terms, and suggestion sources) This builder function builds
+	 * Element objects with no namespace declataration.
+	 * 
+	 * @param name
+	 *            local name of an element specification.
+	 * @return an Element object for use in constructing IndexReferences (and in
+	 *         a few other places).
 	 */
 	public Element element(String name) {
 		return new Element(null, name);
 	}
 
 	/**
-	 * Build a new Element object for use in Index definitions (sources for constraints, terms, and suggestion sources)
-	 * This builder function builds Element objects with a namespace declataration.
-	 * @param ns Namespace URI for this element specification.
-	 * @param name local name of an element specification.
-	 * @return an Element object for use in constructing IndexReferences (and in a few other places).
+	 * Build a new Element object for use in Index definitions (sources for
+	 * constraints, terms, and suggestion sources) This builder function builds
+	 * Element objects with a namespace declataration.
+	 * 
+	 * @param ns
+	 *            Namespace URI for this element specification.
+	 * @param name
+	 *            local name of an element specification.
+	 * @return an Element object for use in constructing IndexReferences (and in
+	 *         a few other places).
 	 */
 	public Element element(String ns, String name) {
 		return new Element(ns, name);
 	}
 
-    /**
-     * Build a new PathIndex object
-     */
-    public PathIndex pathIndex(String text) {
-        return new PathIndex(text);
-    }
+	/**
+	 * Build a new PathIndex object
+	 */
+	public PathIndex pathIndex(String text) {
+		return new PathIndex(text);
+	}
 
-    /**
-     * Build a new PathIndex object
-     */
-    public PathIndex pathIndex(String text, NamespaceBinding... nsbindings) {
-        return new PathIndex(text, nsbindings);
-    }
+	/**
+	 * Build a new PathIndex object
+	 */
+	public PathIndex pathIndex(String text, NamespaceBinding... nsbindings) {
+		return new PathIndex(text, nsbindings);
+	}
 
-    /**
-	 * Builds a QueryElementQuery object for use in constraining QueryOptions configuration to a particular element.
-	 * @param ns Namespace of the element for restricting QueryOptions.
-	 * @param name Local name of the element for restricting QueryOptions.
+	/**
+	 * Builds a QueryElementQuery object for use in constraining QueryOptions
+	 * configuration to a particular element.
+	 * 
+	 * @param ns
+	 *            Namespace of the element for restricting QueryOptions.
+	 * @param name
+	 *            Local name of the element for restricting QueryOptions.
 	 * @return a QueryElementQuery object used for building a QueryConstraint
 	 */
 	public QueryElementQuery elementQuery(String ns, String name) {
@@ -782,8 +832,13 @@ public final class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Builds a flag for how to interpret an empty search string.  Used in QueryTerm configurations.
-	 * @param termApply TermApply.ALL_RESULTS means an empty search retrieves everything.  TermApply.NO_RESULTS means an empty search string returns nothing.
+	 * Builds a flag for how to interpret an empty search string. Used in
+	 * QueryTerm configurations.
+	 * 
+	 * @param termApply
+	 *            TermApply.ALL_RESULTS means an empty search retrieves
+	 *            everything. TermApply.NO_RESULTS means an empty search string
+	 *            returns nothing.
 	 * @return A TermApply object for use in building QueryTerm configurations.
 	 */
 	public TermApply empty(TermApply termApply) {
@@ -793,11 +848,19 @@ public final class QueryOptionsBuilder {
 	/**
 	 * Builds a reference to an XQuery extension point.
 	 * <p>
-	 * To locate XQuery extensions , you need three values.  Generally these values are to be provided by a MarkLogic administrator who has installed the modules.
-	 * @param apply Name of function to apply.
-	 * @param ns Namespace of module in which to locate the function.
-	 * @param at Location on the modules search path at which to find the function.
-	 * @return an XQueryExtension object used to build custom contraints or result transformations.
+	 * To locate XQuery extensions , you need three values. Generally these
+	 * values are to be provided by a MarkLogic administrator who has installed
+	 * the modules.
+	 * 
+	 * @param apply
+	 *            Name of function to apply.
+	 * @param ns
+	 *            Namespace of module in which to locate the function.
+	 * @param at
+	 *            Location on the modules search path at which to find the
+	 *            function.
+	 * @return an XQueryExtension object used to build custom contraints or
+	 *         result transformations.
 	 */
 	public XQueryExtension extension(String apply, String ns, String at) {
 		XQueryExtension locator = new XQueryExtension();
@@ -809,8 +872,10 @@ public final class QueryOptionsBuilder {
 
 	/**
 	 * Build a FacetOption for use in facetable constraints.
+	 * 
 	 * @param facetOption
-	 * @return A FacetOption object for use in modifying facetable constraint sources.
+	 * @return A FacetOption object for use in modifying facetable constraint
+	 *         sources.
 	 */
 	public FacetOption facetOption(String facetOption) {
 		FacetOption fo = new FacetOption();
@@ -820,8 +885,11 @@ public final class QueryOptionsBuilder {
 
 	/**
 	 * Builds a field specification with the given name.
-	 * <p>Field with given name must exist on the REST server to be used.
-	 * @param name Name of a field from the REST server
+	 * <p>
+	 * Field with given name must exist on the REST server to be used.
+	 * 
+	 * @param name
+	 *            Name of a field from the REST server
 	 * @return Field object for use in building constraint or value sources.
 	 */
 	public Field field(String name) {
@@ -829,10 +897,16 @@ public final class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Builds an XQueryExtension to be used in a custom constraint to locate where facets end.
-	 * @param apply Name of function to apply.
-	 * @param ns Namespace of module in which to locate the function.
-	 * @param at Location on the modules search path at which to find the function.
+	 * Builds an XQueryExtension to be used in a custom constraint to locate
+	 * where facets end.
+	 * 
+	 * @param apply
+	 *            Name of function to apply.
+	 * @param ns
+	 *            Namespace of module in which to locate the function.
+	 * @param at
+	 *            Location on the modules search path at which to find the
+	 *            function.
 	 * @return A FinishFacet object for use in building QueryCustom objects.
 	 */
 	public FinishFacet finishFacet(String apply, String ns, String at) {
@@ -934,7 +1008,8 @@ public final class QueryOptionsBuilder {
 	 * @param quotation
 	 *            optional string to qualify quotations in the search grammar.
 	 * @param implicit
-	 *            optional cts:element to wrap all searches implicitly.  Set to null for no implicit query.
+	 *            optional cts:element to wrap all searches implicitly. Set to
+	 *            null for no implicit query.
 	 * @param grammarItems
 	 *            0..* QueryStarters and/or 0..* QueryJoiners to refine the
 	 *            search grammar.
@@ -1005,11 +1080,17 @@ public final class QueryOptionsBuilder {
 
 	/**
 	 * Build a joiner for use in a Search API QueryGrammar
-	 * @param joinerText Text of the joiner.
-	 * @param strength Strength of this joiner relative to others.
-	 * @param apply Enum to specify how the joiner fits into the Search grammar.
-	 * @param comparator Enum to define semantics of the joiner
-	 * @param tokenize Enum to specify how the joiner tokenizes the search string.
+	 * 
+	 * @param joinerText
+	 *            Text of the joiner.
+	 * @param strength
+	 *            Strength of this joiner relative to others.
+	 * @param apply
+	 *            Enum to specify how the joiner fits into the Search grammar.
+	 * @param comparator
+	 *            Enum to define semantics of the joiner
+	 * @param tokenize
+	 *            Enum to specify how the joiner tokenizes the search string.
 	 * @return An object for use in constructing QueryGrammar configurations.
 	 */
 	public QueryGrammarItem joiner(String joinerText, int strength,
@@ -1022,11 +1103,17 @@ public final class QueryOptionsBuilder {
 
 	/**
 	 * Build a joiner for use in a Search API QueryGrammar
-	 * @param joinerText Text of the joiner.
-	 * @param strength Strength of this joiner relative to others.
-	 * @param apply Enum to specify how the joiner fits into the Search grammar.
-	 * @param element QName of a cts query.  This joiner encapsulates the cts query.
-	 * @param token Enum to specify how the joiner tokenizes the search string.
+	 * 
+	 * @param joinerText
+	 *            Text of the joiner.
+	 * @param strength
+	 *            Strength of this joiner relative to others.
+	 * @param apply
+	 *            Enum to specify how the joiner fits into the Search grammar.
+	 * @param element
+	 *            QName of a cts query. This joiner encapsulates the cts query.
+	 * @param token
+	 *            Enum to specify how the joiner tokenizes the search string.
 	 * @return An object for use in constructing QueryGrammar configurations.
 	 */
 	public QueryGrammarItem joiner(String joinerText, int strength,
@@ -1035,14 +1122,22 @@ public final class QueryOptionsBuilder {
 	}
 
 	/**
-	 * A third method for creating joiners.  This method includes 'consume' which specifies how far
-	 * to extend the scope of a cts:near-query query.
-	 * @param joinerText Text of the joiner.
-	 * @param strength Strength of this joiner relative to others.
-	 * @param apply Enum to specify how the joiner fits into the Search grammar.
-	 * @param element QName of a cts query.  This builder function requires "cts:near-query".
-	 * @param tokenize Enum to specify how the joiner tokenizes the search string.
-	 * @param consume How many tokens to consume for evaluating the near-query
+	 * A third method for creating joiners. This method includes 'consume' which
+	 * specifies how far to extend the scope of a cts:near-query query.
+	 * 
+	 * @param joinerText
+	 *            Text of the joiner.
+	 * @param strength
+	 *            Strength of this joiner relative to others.
+	 * @param apply
+	 *            Enum to specify how the joiner fits into the Search grammar.
+	 * @param element
+	 *            QName of a cts query. This builder function requires
+	 *            "cts:near-query".
+	 * @param tokenize
+	 *            Enum to specify how the joiner tokenizes the search string.
+	 * @param consume
+	 *            How many tokens to consume for evaluating the near-query
 	 * @return An object for use in constructing QueryGrammar configurations.
 	 */
 	public QueryJoiner joiner(String joinerText, int strength,
@@ -1063,10 +1158,15 @@ public final class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Build an operator for use in a  QueryGrammar configuration.
-	 * @param name Name of the operator.  Used in search strings by end-users of the Search application.
-	 * @param states A number of states applied when using this operator.
-	 * @return a QueryOperator object for use in building QueryGrammar configurations.
+	 * Build an operator for use in a QueryGrammar configuration.
+	 * 
+	 * @param name
+	 *            Name of the operator. Used in search strings by end-users of
+	 *            the Search application.
+	 * @param states
+	 *            A number of states applied when using this operator.
+	 * @return a QueryOperator object for use in building QueryGrammar
+	 *         configurations.
 	 */
 	public QueryOperator operator(String name, QueryState... states) {
 		QueryOperator operator = new QueryOperator();
@@ -1081,10 +1181,17 @@ public final class QueryOptionsBuilder {
 		return new QueryOptionsTextItem<Long>("setPageLength", pageLength);
 	}
 
-	/** Builds an XQueryExtension to be used in a custom constraint to parse values into buckets.
-	 * @param apply Name of function to apply.
-	 * @param ns Namespace of module in which to locate the function.
-	 * @param at Location on the modules search path at which to find the function.
+	/**
+	 * Builds an XQueryExtension to be used in a custom constraint to parse
+	 * values into buckets.
+	 * 
+	 * @param apply
+	 *            Name of function to apply.
+	 * @param ns
+	 *            Namespace of module in which to locate the function.
+	 * @param at
+	 *            Location on the modules search path at which to find the
+	 *            function.
 	 * @return A Parse object for use in building QueryCustom objects.
 	 */
 	public Parse parse(String apply, String ns, String at) {
@@ -1092,8 +1199,11 @@ public final class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Build a new QueryProperties, which restricts a named constraint to data stored in the properties fragment.
-	 * @return a QueryProperties object for use in building a QueryConstraint configuration.
+	 * Build a new QueryProperties, which restricts a named constraint to data
+	 * stored in the properties fragment.
+	 * 
+	 * @return a QueryProperties object for use in building a QueryConstraint
+	 *         configuration.
 	 */
 	public QueryProperties properties() {
 		return new QueryProperties();
@@ -1201,28 +1311,14 @@ public final class QueryOptionsBuilder {
 	 *            namespaces declared in an arbitrary element wrapper.
 	 * @return Component for use in a QueryOptionsBuilder expression.
 	 */
-	public AnyElement searchableExpression(String searchableExpression, NamespaceBinding... bindings) {
-        String xml = "<search:searchable-expression xmlns:search='http://marklogic.com/appservices/search'";
-        for (NamespaceBinding binding : bindings) {
-            String ns = binding.getNamespaceUri();
-            ns = ns.replace("'", "&apos;");
-            if (binding.getPrefix() == null || "".equals(binding.getPrefix())) {
-                // Actually, this will fail.
-                // TODO: Fix this code so that it finds a unique prefix for the search: namespace
-                xml += " xmlns='" + ns + "'";
-            } else {
-                xml += " xmlns:" + binding.getPrefix() + "='" + ns + "'";
-            }
-        }
-        xml += ">" + searchableExpression + "</search:searchable-expression>";
-
-		org.w3c.dom.Element expression = domElement(xml);
-		return new AnyElement(expression);
+	public QuerySearchableExpression searchableExpression(
+			String searchableExpression, NamespaceBinding... bindings) {
+		return new QueryOptions.QuerySearchableExpression(searchableExpression, bindings);
 	}
 
-    public NamespaceBinding namespace(String prefix, String uri) {
-        return new NamespaceBinding(prefix, uri);
-    }
+	public NamespaceBinding namespace(String prefix, String uri) {
+		return new NamespaceBinding(prefix, uri);
+	}
 
 	public QueryOptionsTextItem<String> searchOption(String searchOption) {
 		return new QueryOptionsTextItem<String>("addSearchOption", searchOption);
@@ -1236,7 +1332,7 @@ public final class QueryOptionsBuilder {
 
 		for (QuerySortOrderItem option : options) {
 			option.build(so);
-			
+
 		}
 		return so;
 	}
@@ -1261,10 +1357,16 @@ public final class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Builds an XQueryExtension to be used in a custom constraint to locate where facets start.
-	 * @param apply Name of function to apply.
-	 * @param ns Namespace of module in which to locate the function.
-	 * @param at Location on the modules search path at which to find the function.
+	 * Builds an XQueryExtension to be used in a custom constraint to locate
+	 * where facets start.
+	 * 
+	 * @param apply
+	 *            Name of function to apply.
+	 * @param ns
+	 *            Namespace of module in which to locate the function.
+	 * @param at
+	 *            Location on the modules search path at which to find the
+	 *            function.
 	 * @return A StartFacet object for use in building QueryCustom objects.
 	 */
 	public StartFacet startFacet(String apply, String ns, String at) {
@@ -1376,8 +1478,7 @@ public final class QueryOptionsBuilder {
 		return vo;
 	}
 
-	public QueryValues values(String name,
-			QueryValuesItem... valueOptions) {
+	public QueryValues values(String name, QueryValuesItem... valueOptions) {
 		QueryValues v = new QueryValues();
 		v.setName(name);
 		for (QueryValuesItem option : valueOptions) {
@@ -1431,7 +1532,8 @@ public final class QueryOptionsBuilder {
 		return new JsonKey(name);
 	}
 
-	public QNameExtractor qname(String elemNs, String elemName, String attrNs, String attrName) {
+	public QNameExtractor qname(String elemNs, String elemName, String attrNs,
+			String attrName) {
 		QNameExtractor qname = new QNameExtractor();
 		qname.setAttrName(attrName);
 		qname.setAttrNs(attrNs);
@@ -1440,7 +1542,8 @@ public final class QueryOptionsBuilder {
 		return qname;
 	}
 
-	public QueryOptionsItem extractMetadata(QueryExtractMetadataItem... extractMetadataItems) {
+	public QueryOptionsItem extractMetadata(
+			QueryExtractMetadataItem... extractMetadataItems) {
 		QueryExtractMetadata extractMetadata = new QueryExtractMetadata();
 		for (QueryExtractMetadataItem item : extractMetadataItems) {
 			item.build(extractMetadata);

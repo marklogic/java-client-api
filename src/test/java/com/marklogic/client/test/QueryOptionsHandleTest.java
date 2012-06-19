@@ -738,7 +738,7 @@ public class QueryOptionsHandleTest {
 				builder.returnFacets(true),
 				builder.returnMetrics(false),
 				builder.additionalQuery("<cts:query xmlns:cts=\"http://marklogic.com/cts\" />"),
-				builder.searchableExpression("<searchable-expression xmlns=\"http://marklogic.com/appservices/search\">/sf1</searchable-expression>"), 
+				builder.searchableExpression("/sf1"), 
 				builder.annotation("<a:note xmlns:a=\"http://marklogic.com/note\">note</a:note>"),
 				builder.concurrencyLevel(2),
 				builder.debug(true),

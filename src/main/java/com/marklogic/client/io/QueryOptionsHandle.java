@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -61,12 +62,13 @@ import com.marklogic.client.config.QueryOptions.QueryDefaultSuggestionSource;
 import com.marklogic.client.config.QueryOptions.QueryExtractMetadata;
 import com.marklogic.client.config.QueryOptions.QueryGrammar;
 import com.marklogic.client.config.QueryOptions.QueryOperator;
+import com.marklogic.client.config.QueryOptions.QuerySearchableExpression;
 import com.marklogic.client.config.QueryOptions.QuerySortOrder;
 import com.marklogic.client.config.QueryOptions.QuerySuggestionSource;
 import com.marklogic.client.config.QueryOptions.QueryTerm;
 import com.marklogic.client.config.QueryOptions.QueryTransformResults;
 import com.marklogic.client.config.QueryOptions.QueryValues;
-import com.marklogic.client.config.QueryOptionsBuilder;
+import com.marklogic.client.config.QueryOptionsBuilder.NamespaceBinding;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryOptionsItem;
 import com.marklogic.client.impl.QueryOptionsTransformExtractNS;
 import com.marklogic.client.impl.QueryOptionsTransformInjectNS;
@@ -439,17 +441,20 @@ public final class QueryOptionsHandle extends
 	}
 
 	public void setSearchableExpression(String searchableExpression) {
-        String sexml = "<searchable-expression xmlns=\"http://marklogic.com/appservices/search\"";
+        //String sexml = "<searchable-expression xmlns=\"http://marklogic.com/appservices/search\"";
         EditableNamespaceContext context = optionsHolder.getSearchableExpressionNamespaceContext();
+        List<NamespaceBinding> bindings = new ArrayList<NamespaceBinding>();
         for (String prefix : context.getAllPrefixes()) {
             if (!"".equals(prefix)) {
-                sexml += " xmlns:" + prefix + "=\"" + context.getNamespaceURI(prefix) + "\"";
+            	bindings.add(new NamespaceBinding(prefix, context.getNamespaceURI(prefix)));
+                //sexml += " xmlns:" + prefix + "=\"" + context.getNamespaceURI(prefix) + "\"";
             }
         }
-        sexml += "/>";
-        org.w3c.dom.Element se = QueryOptionsBuilder.domElement(sexml);
-        se.setTextContent(searchableExpression);
-        optionsHolder.setSearchableExpression(se);
+        //sexml += "/>";
+        //org.w3c.dom.Element se = QueryOptionsBuilder.domElement(sexml);
+        //se.setTextContent(searchableExpression);
+        NamespaceBinding[] bindingsArray = (NamespaceBinding[]) bindings.toArray(new NamespaceBinding[] {});
+        optionsHolder.setSearchableExpression(new QuerySearchableExpression(searchableExpression, bindingsArray));
 	}
 
     public void setSearchableExpressionNamespaceContext(EditableNamespaceContext context) {

@@ -413,7 +413,7 @@ public class QueryOptionsTest {
 	private void testSearchableExpression() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
 		options.build(builder
-				.searchableExpression("<searchable-expression xmlns:p=\"http://my.namespace\">/p:sf1</searchable-expression>"));
+				.searchableExpression("/p:sf1", builder.namespace("p", "http://my.namespace")));
 
 		String se = options.getSearchableExpression();
 		assertEquals("/p:sf1", se);
