@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.test;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathExists;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.custommonkey.xmlunit.SimpleNamespaceContext;
+import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -48,6 +50,20 @@ public class TransformExtensionsTest {
 	@BeforeClass
 	public static void beforeClass() throws IOException {
 		Common.connectAdmin();
+
+		HashMap<String,String> namespaces = new HashMap<String, String>();
+		namespaces.put("xsl",  "http://www.w3.org/1999/XSL/Transform");
+		namespaces.put("rapi", "http://marklogic.com/rest-api");
+
+        SimpleNamespaceContext namespaceContext = new SimpleNamespaceContext(namespaces);
+
+        XMLUnit.setIgnoreAttributeOrder(true);
+        XMLUnit.setIgnoreWhitespace(true);
+        XMLUnit.setNormalize(true);
+        XMLUnit.setNormalizeWhitespace(true);
+        XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
+
+        XMLUnit.setXpathNamespaceContext(namespaceContext);
 		xqueryTransform = Common.testFileToString(XQUERY_FILE);
 		xslTransform    = Common.testFileToString(XSLT_FILE);
 	}
@@ -99,17 +115,12 @@ public class TransformExtensionsTest {
 
 		Document result = extensionMgr.readXSLTransform(XSLT_NAME, new DOMHandle()).get();
 		assertNotNull("Failed to retrieve XSLT transform", result);
-		assertXpathEvaluatesTo("1", "count(/*[local-name(.) = 'stylesheet'])", result);
+		assertXpathExists("/xsl:stylesheet", result);
 
 		result = extensionMgr.listTransforms(new DOMHandle()).get();
 		assertNotNull("Failed to retrieve transforms list", result);
-		assertXpathEvaluatesTo("2", "count(" +
-				"/*[local-name(.) = 'transforms']/" +
-				"*[local-name(.) = 'transform']/" +
-				"*[local-name(.) = 'transform-parameters']/" +
-				"*[local-name(.) = 'parameter']/" +
-				"*[local-name(.) = 'parameter-name']" +
-				")", result);
+		assertXpathExists("/rapi:transforms/rapi:transform/rapi:name[string(.) = 'testxqy']", result);
+		assertXpathExists("/rapi:transforms/rapi:transform/rapi:name[string(.) = 'testxsl']", result);
 
         extensionMgr.deleteTransform(XQUERY_NAME);
 		extensionMgr.readXQueryTransform(XQUERY_NAME, handle);
