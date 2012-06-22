@@ -15,13 +15,16 @@
  */
 package com.marklogic.client.test;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathExists;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
+import java.util.HashMap;
 
+import org.custommonkey.xmlunit.SimpleNamespaceContext;
+import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -29,9 +32,9 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 
 import com.marklogic.client.ExtensionMetadata;
+import com.marklogic.client.MethodType;
 import com.marklogic.client.ResourceExtensionsManager;
 import com.marklogic.client.ResourceExtensionsManager.MethodParameters;
-import com.marklogic.client.MethodType;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.StringHandle;
 
@@ -39,12 +42,25 @@ public class ResourceExtensionsTest {
 	final static String RESOURCE_NAME = "testresource";
 	final static String XQUERY_FILE   = RESOURCE_NAME + ".xqy"; 
 
-	static private String resourceServices;
+	static private String      resourceServices;
 
 	@BeforeClass
 	public static void beforeClass() throws IOException {
 		Common.connectAdmin();
 		resourceServices = Common.testFileToString(XQUERY_FILE);
+
+        HashMap<String,String> namespaces = new HashMap<String, String>();
+        namespaces.put("rapi", "http://marklogic.com/rest-api");
+
+        SimpleNamespaceContext namespaceContext = new SimpleNamespaceContext(namespaces);
+
+        XMLUnit.setIgnoreAttributeOrder(true);
+        XMLUnit.setIgnoreWhitespace(true);
+        XMLUnit.setNormalize(true);
+        XMLUnit.setNormalizeWhitespace(true);
+        XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
+
+        XMLUnit.setXpathNamespaceContext(namespaceContext);
 	}
 	@AfterClass
 	public static void afterClass() {
@@ -89,7 +105,9 @@ public class ResourceExtensionsTest {
 
 		Document result = extensionMgr.listServices(new DOMHandle()).get();
 		assertNotNull("Failed to retrieve resource services list", result);
-		assertXpathEvaluatesTo("1", "count(/*[local-name(.) = 'resources']/*[local-name(.) = 'resource']/*[local-name(.) = 'name'])", result);
+		assertXpathExists(
+				"/rapi:resources/rapi:resource/rapi:name[string(.) = 'testresource']",
+				result);
 
 		extensionMgr.deleteServices(RESOURCE_NAME);
 		extensionMgr.readServices(RESOURCE_NAME, handle);
