@@ -35,6 +35,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
+import com.marklogic.client.Format;
 import com.marklogic.client.JSONDocumentManager;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.io.BytesHandle;
@@ -101,7 +102,8 @@ public class JSONDocumentTest {
 		readNode = mapper.readTree(file);
 		assertTrue("JSON document mismatch with file", sourceNode.equals(readNode));
 
-		docMgr.write(docId, new StringHandle().with(GenericDocumentTest.metadata),
+		docMgr.write(docId,
+				new StringHandle().with(GenericDocumentTest.metadata).withFormat(Format.XML),
 				new StringHandle().with(content));
 		docText = docMgr.read(docId, new StringHandle()).get();
 		assertNotNull("Read null string for JSON content",docText);

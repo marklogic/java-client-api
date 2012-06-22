@@ -18,6 +18,7 @@ package com.marklogic.client.test;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathExists;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -36,7 +37,9 @@ import com.marklogic.client.TextDocumentManager;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 
 public class GenericDocumentTest {
 	@BeforeClass
@@ -200,5 +203,53 @@ public class GenericDocumentTest {
 		assertTrue("Document 2 exists",        docMgr.exists(docId2)==null);
 
 		docMgr.delete(docId1);
+	}
+
+	@Test
+	public void testMultiple() throws XpathException {
+		int docMax        = 3;
+		int collectionMax = 2;
+
+		String[] docIds = new String[docMax];
+		for (int i=1; i <= docMax; i++) {
+			docIds[i - 1] = "/test/testMulti"+i+".txt";
+		}
+
+		String[] collections = new String[collectionMax];
+		for (int i=1; i <= collectionMax; i++) {
+			collections[i - 1] = "/document/collection"+i;
+		}
+
+		DocumentMetadataHandle metaWriteHandle = new DocumentMetadataHandle();
+		metaWriteHandle.getCollections().addAll(collections);
+
+		Transaction transaction = Common.client.openTransaction();
+
+		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+		docMgr.setMetadataCategories(Metadata.COLLECTIONS);
+
+		for (String docId: docIds) {
+			docMgr.write(
+				docId,
+				metaWriteHandle,
+				new StringHandle().with("<document>"+docId+"</document>"),
+				transaction);
+		}
+
+		transaction.commit();
+
+		for (String docId: docIds) {
+			assertTrue("Document doesn't exist "+docId, docMgr.exists(docId)!=null);
+
+			DocumentMetadataHandle metaReadHandle = docMgr.readMetadata(docId, new DocumentMetadataHandle());
+			assertTrue("Could not get document metadata as a structure", metaReadHandle != null);
+
+			DocumentCollections readCollections = metaReadHandle.getCollections();
+			assertEquals("Collection with wrong size", collectionMax, readCollections.size());
+		}
+
+		for (String docId: docIds) {
+			docMgr.delete(docId);
+		}
 	}
 }
