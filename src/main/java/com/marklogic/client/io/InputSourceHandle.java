@@ -83,7 +83,8 @@ public class InputSourceHandle
 
 	public void process(ContentHandler handler) {
 		try {
-			logger.info("Processing input source with SAX content handler");
+			if (logger.isInfoEnabled())
+				logger.info("Processing input source with SAX content handler");
 
 			XMLReader reader = makeReader();
 

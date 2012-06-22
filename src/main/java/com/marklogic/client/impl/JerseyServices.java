@@ -268,7 +268,8 @@ public class JerseyServices implements RESTServices {
 		if (client == null)
 			return;
 
-		logger.info("Releasing connection");
+		if (logger.isInfoEnabled())
+			logger.info("Releasing connection");
 
 		connection = null;
 		// client.getClientHandler().getHttpClient().getConnectionManager().shutdown();
@@ -292,7 +293,8 @@ public class JerseyServices implements RESTServices {
 			throw new IllegalArgumentException(
 					"Document delete for document identifier without uri");
 
-		logger.info("Deleting {} in transaction {}", uri, transactionId);
+		if (logger.isInfoEnabled())
+			logger.info("Deleting {} in transaction {}", uri, transactionId);
 
 		WebResource webResource = makeDocumentResource(makeDocumentParams(uri,
 				categories, transactionId, null));
@@ -376,7 +378,8 @@ public class JerseyServices implements RESTServices {
 			throw new IllegalArgumentException(
 					"Document read for document identifier without uri");
 
-		logger.info("Getting {} in transaction {}", uri, transactionId);
+		if (logger.isInfoEnabled())
+			logger.info("Getting {} in transaction {}", uri, transactionId);
 
 		WebResource.Builder builder = makeDocumentResource(
 				makeDocumentParams(uri, categories, transactionId, extraParams))
@@ -445,7 +448,8 @@ public class JerseyServices implements RESTServices {
 			throw new IllegalArgumentException(
 					"Document read for document identifier without uri");
 
-		logger.info("Getting multipart for {} in transaction {}", uri,
+		if (logger.isInfoEnabled())
+			logger.info("Getting multipart for {} in transaction {}", uri,
 				transactionId);
 
 		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
@@ -529,7 +533,8 @@ public class JerseyServices implements RESTServices {
 			throw new IllegalArgumentException(
 					"Existence check for document identifier without uri");
 
-		logger.info("Requesting head for {} in transaction {}", uri,
+		if (logger.isInfoEnabled())
+			logger.info("Requesting head for {} in transaction {}", uri,
 				transactionId);
 
 		WebResource webResource = makeDocumentResource(makeDocumentParams(uri,
@@ -624,7 +629,8 @@ public class JerseyServices implements RESTServices {
 			throw new IllegalArgumentException(
 					"Document write with null value for " + uri);
 
-		logger.info("Putting {} in transaction {}", uri, transactionId);
+		if (logger.isInfoEnabled())
+			logger.info("Putting {} in transaction {}", uri, transactionId);
 
 		logRequest(
 				reqlog,
@@ -699,7 +705,8 @@ public class JerseyServices implements RESTServices {
 			throw new IllegalArgumentException(
 					"Document write for document identifier without uri");
 
-		logger.info("Putting multipart for {} in transaction {}", uri,
+		if (logger.isInfoEnabled())
+			logger.info("Putting multipart for {} in transaction {}", uri,
 				transactionId);
 
 		logRequest(
@@ -789,7 +796,8 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public String openTransaction(String name, int timeLimit)
 			throws ForbiddenUserException, FailedRequestException {
-		logger.info("Opening transaction");
+		if (logger.isInfoEnabled())
+			logger.info("Opening transaction");
 
 		MultivaluedMap<String, String> transParams = null;
 		if (name != null || timeLimit > 0) {
@@ -853,7 +861,8 @@ public class JerseyServices implements RESTServices {
 			throw new MarkLogicInternalException(
 					"transaction completion without id: " + result);
 
-		logger.info("Completing transaction {} with {}", transactionId, result);
+		if (logger.isInfoEnabled())
+			logger.info("Completing transaction {} with {}", transactionId, result);
 
 		MultivaluedMap<String, String> transParams = new MultivaluedMapImpl();
 		transParams.add("result", result);
@@ -1041,7 +1050,8 @@ public class JerseyServices implements RESTServices {
 
 		if (queryDef instanceof StringQueryDefinition) {
 			String text = ((StringQueryDefinition) queryDef).getCriteria();
-			logger.info("Searching for {} in transaction {}", text,
+			if (logger.isInfoEnabled())
+				logger.info("Searching for {} in transaction {}", text,
 					transactionId);
 
             if (text != null) {
@@ -1056,7 +1066,8 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 		} else if (queryDef instanceof KeyValueQueryDefinition) {
 			Map<ValueLocator, String> pairs = ((KeyValueQueryDefinition) queryDef);
-			logger.info("Searching for keys/values in transaction {}",
+			if (logger.isInfoEnabled())
+				logger.info("Searching for keys/values in transaction {}",
 					transactionId);
 
 			for (ValueLocator loc : pairs.keySet()) {
@@ -1088,7 +1099,8 @@ public class JerseyServices implements RESTServices {
 
 		    isFirstRequest = false;
         } else if (queryDef instanceof DeleteQueryDefinition) {
-            logger.info("Searching for deletes in transaction {}", transactionId);
+        	if (logger.isInfoEnabled())
+        		logger.info("Searching for deletes in transaction {}", transactionId);
             response = connection.path("search")
                     .queryParams(((RequestParametersImplementation) params).getMapImpl())
                     .accept(mimetype).get(ClientResponse.class);
@@ -1300,7 +1312,8 @@ public class JerseyServices implements RESTServices {
 	public <T> T getValue(RequestLogger reqlog, String type, String key,
 			String mimetype, Class<T> as) throws ForbiddenUserException,
 			FailedRequestException {
-		logger.info("Getting {}/{}", type, key);
+		if (logger.isInfoEnabled())
+			logger.info("Getting {}/{}", type, key);
 
 		ClientResponse response = connection.path(type + "/" + key)
 				.accept(mimetype).get(ClientResponse.class);
@@ -1335,7 +1348,8 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public <T> T getValues(RequestLogger reqlog, String type, String mimetype,
 			Class<T> as) throws ForbiddenUserException, FailedRequestException {
-		logger.info("Getting {}", type);
+		if (logger.isInfoEnabled())
+			logger.info("Getting {}", type);
 
 		ClientResponse response = connection.path(type).accept(mimetype)
 				.get(ClientResponse.class);
@@ -1366,7 +1380,8 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public void putValues(RequestLogger reqlog, String type, String mimetype,
 			Object value) throws ForbiddenUserException, FailedRequestException {
-		logger.info("Posting {}", type);
+		if (logger.isInfoEnabled())
+			logger.info("Posting {}", type);
 
 		putPostValueImpl(reqlog, "put", type, null, null, mimetype, value,
 				ClientResponse.Status.NO_CONTENT);
@@ -1375,7 +1390,8 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public void postValues(RequestLogger reqlog, String type, String mimetype,
 			Object value) throws ForbiddenUserException, FailedRequestException {
-		logger.info("Posting {}", type);
+		if (logger.isInfoEnabled())
+			logger.info("Posting {}", type);
 
 		putPostValueImpl(reqlog, "post", type, null, null, mimetype, value,
 				ClientResponse.Status.NO_CONTENT);
@@ -1385,7 +1401,8 @@ public class JerseyServices implements RESTServices {
 	public void postValue(RequestLogger reqlog, String type, String key,
 			String mimetype, Object value) throws ForbiddenUserException,
 			FailedRequestException {
-		logger.info("Posting {}/{}", type, key);
+		if (logger.isInfoEnabled())
+			logger.info("Posting {}/{}", type, key);
 
 		putPostValueImpl(reqlog, "post", type, key, null, mimetype, value,
 				ClientResponse.Status.CREATED);
@@ -1395,7 +1412,8 @@ public class JerseyServices implements RESTServices {
 	public void putValue(RequestLogger reqlog, String type, String key,
 			String mimetype, Object value) throws ResourceNotFoundException,
 			ForbiddenUserException, FailedRequestException {
-		logger.info("Putting {}/{}", type, key);
+		if (logger.isInfoEnabled())
+			logger.info("Putting {}/{}", type, key);
 
 		putPostValueImpl(reqlog, "put", type, key, null, mimetype, value,
 				ClientResponse.Status.NO_CONTENT, ClientResponse.Status.CREATED);
@@ -1406,7 +1424,8 @@ public class JerseyServices implements RESTServices {
 			RequestParameters extraParams, String mimetype, Object value)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
-		logger.info("Putting {}/{}", type, key);
+		if (logger.isInfoEnabled())
+			logger.info("Putting {}/{}", type, key);
 
 		putPostValueImpl(reqlog, "put", type, key, extraParams, mimetype,
 				value, ClientResponse.Status.NO_CONTENT);
@@ -1504,7 +1523,8 @@ public class JerseyServices implements RESTServices {
 	public void deleteValue(RequestLogger reqlog, String type, String key)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
-		logger.info("Deleting {}/{}", type, key);
+		if (logger.isInfoEnabled())
+			logger.info("Deleting {}/{}", type, key);
 
 		ClientResponse response = connection.path(type + "/" + key).delete(
 				ClientResponse.class);
@@ -1531,7 +1551,8 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public void deleteValues(RequestLogger reqlog, String type)
 			throws ForbiddenUserException, FailedRequestException {
-		logger.info("Deleting {}", type);
+		if (logger.isInfoEnabled())
+			logger.info("Deleting {}", type);
 
 		ClientResponse response = connection.path(type).delete(
 				ClientResponse.class);
@@ -1696,7 +1717,8 @@ public class JerseyServices implements RESTServices {
 		WebResource.Builder builder = makeBuilder(path,
 				((RequestParametersImplementation) params).getMapImpl(), null, mimetype);
 
-		logger.info("Getting {}", path);
+		if (logger.isInfoEnabled())
+			logger.info("Getting {}", path);
 
 		ClientResponse response = builder.get(ClientResponse.class);
 
@@ -1716,7 +1738,8 @@ public class JerseyServices implements RESTServices {
 				((RequestParametersImplementation) params).getMapImpl(), inputMimetype,
 				outputMimetype);
 
-		logger.info("Putting {}", path);
+		if (logger.isInfoEnabled())
+			logger.info("Putting {}", path);
 
 		ClientResponse response = null;
 		if (value instanceof OutputStreamSender) {
@@ -1759,7 +1782,8 @@ public class JerseyServices implements RESTServices {
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE),
 				outputMimetype);
 
-		logger.info("Putting multipart for {}", path);
+		if (logger.isInfoEnabled())
+			logger.info("Putting multipart for {}", path);
 
 		if (isFirstRequest && hasStreamingPart)
 			makeFirstRequest();
@@ -1782,7 +1806,8 @@ public class JerseyServices implements RESTServices {
 				((RequestParametersImplementation) params).getMapImpl(), inputMimetype,
 				outputMimetype);
 
-		logger.info("Posting {}", path);
+		if (logger.isInfoEnabled())
+			logger.info("Posting {}", path);
 
 		ClientResponse response = null;
 		if (value instanceof OutputStreamSender) {
@@ -1825,7 +1850,8 @@ public class JerseyServices implements RESTServices {
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE),
 				outputMimetype);
 
-		logger.info("Posting multipart for {}", path);
+		if (logger.isInfoEnabled())
+			logger.info("Posting multipart for {}", path);
 
 		if (isFirstRequest && hasStreamingPart)
 			makeFirstRequest();
@@ -1846,7 +1872,8 @@ public class JerseyServices implements RESTServices {
 		WebResource.Builder builder = makeBuilder(path,
 				((RequestParametersImplementation) params).getMapImpl(), null, mimetype);
 
-		logger.info("Deleting {}", path);
+		if (logger.isInfoEnabled())
+			logger.info("Deleting {}", path);
 
 		ClientResponse response = builder.delete(ClientResponse.class);
 

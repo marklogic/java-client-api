@@ -15,23 +15,24 @@
  */
 package com.marklogic.client.io;
 
+import java.io.InputStream;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicBindingException;
-import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.Tuple;
 import com.marklogic.client.config.TuplesBuilder;
 import com.marklogic.client.config.TuplesResults;
 import com.marklogic.client.config.ValuesDefinition;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.TuplesReadHandle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import java.io.InputStream;
 
 public class TuplesHandle
 	extends BaseHandle<InputStream, OperationNotSupported>

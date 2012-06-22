@@ -112,7 +112,8 @@ public class DatabaseClientImpl implements DatabaseClient {
 
 	@Override
 	public void release() {
-		logger.info("Releasing connection");
+		if (logger.isInfoEnabled())
+			logger.info("Releasing connection");
 
 		if (services != null)
 			services.release();

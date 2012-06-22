@@ -247,7 +247,8 @@ public class DocumentMetadataHandle
 	@Override
 	protected void receiveContent(InputStream content) {
 		try {
-			logger.info("Parsing metadata structure from input stream");
+			if (logger.isInfoEnabled())
+				logger.info("Parsing metadata structure from input stream");
 
 			Document document = null;
 			if (content != null) {
@@ -320,12 +321,13 @@ public class DocumentMetadataHandle
 					roleName = element.getTextContent();
 				else if ("capability".equals(element.getLocalName()))
 					caps.add(Capability.valueOf(element.getTextContent().toUpperCase()));
-				else
+				else if (logger.isWarnEnabled())
 					logger.warn("Skipping unknown permission element", element.getTagName());
 			}
 
 			if (roleName == null || caps.size() == 0) {
-				logger.warn("Could not parse permission");
+				if (logger.isWarnEnabled())
+					logger.warn("Could not parse permission");
 				continue;
 			}
 
@@ -425,7 +427,8 @@ public class DocumentMetadataHandle
 			qualityNum = Integer.parseInt(qualityText);
 			
 		} catch(NumberFormatException ex) {
-			logger.warn("Could not parse quality integer from", qualityText);
+			if (logger.isWarnEnabled())
+				logger.warn("Could not parse quality integer from", qualityText);
 		}
 
 		setQuality(qualityNum);

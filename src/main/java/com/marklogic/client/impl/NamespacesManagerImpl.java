@@ -66,7 +66,8 @@ class NamespacesManagerImpl
 
 		Matcher matcher = NAMESPACE_PATTERN.matcher(binding);
 		if (!matcher.find()) {
-			logger.warn("Failed to extract namespace from {}", binding);
+			if (logger.isWarnEnabled())
+				logger.warn("Failed to extract namespace from {}", binding);
 			return null;
 		}
 

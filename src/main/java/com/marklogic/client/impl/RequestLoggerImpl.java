@@ -110,7 +110,8 @@ class RequestLoggerImpl implements RequestLogger {
 			return content;
 		}
 
-		logger.warn("Unknown {} class for content", content.getClass().getName());
+		if (logger.isWarnEnabled())
+			logger.warn("Unknown {} class for content", content.getClass().getName());
 		return content;
 	}
 

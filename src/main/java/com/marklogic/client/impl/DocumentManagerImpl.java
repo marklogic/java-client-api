@@ -192,13 +192,15 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		if (desc == null)
 			throw new IllegalArgumentException("Reading document with null identifier");
 
-		logger.info("Reading metadata and content for {}", desc.getUri());
+		if (logger.isInfoEnabled())
+			logger.info("Reading metadata and content for {}", desc.getUri());
 
 		if (metadataHandle != null) {
 			HandleImplementation metadataBase = HandleAccessor.checkHandle(metadataHandle, "metadata");
 			Format metadataFormat = metadataBase.getFormat();
 			if (metadataFormat == null || (metadataFormat != Format.JSON && metadataFormat != Format.XML)) {
-				logger.warn("Unsupported metadata format {}, using XML",metadataFormat.name());
+				if (logger.isWarnEnabled())
+					logger.warn("Unsupported metadata format {}, using XML",metadataFormat.name());
 				metadataBase.setFormat(Format.XML);
 			}
 		}
@@ -315,13 +317,15 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		if (desc == null)
 			throw new IllegalArgumentException("Writing document with null identifier");
 
-		logger.info("Writing content for {}",desc.getUri());
+		if (logger.isInfoEnabled())
+			logger.info("Writing content for {}",desc.getUri());
 
 		if (metadataHandle != null) {
 			HandleImplementation metadataBase = HandleAccessor.checkHandle(metadataHandle, "metadata");
 			Format metadataFormat = metadataBase.getFormat();
 			if (metadataFormat == null || (metadataFormat != Format.JSON && metadataFormat != Format.XML)) {
-				logger.warn("Unsupported metadata format {}, using XML",metadataFormat.name());
+				if (logger.isWarnEnabled())
+					logger.warn("Unsupported metadata format {}, using XML",metadataFormat.name());
 				metadataBase.setFormat(Format.XML);
 			}
 		}
@@ -360,7 +364,8 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		if (desc == null)
 			throw new IllegalArgumentException("Deleting document with null identifier");
 
-		logger.info("Deleting {}",desc.getUri());
+		if (logger.isInfoEnabled())
+			logger.info("Deleting {}",desc.getUri());
 
 		services.deleteDocument(requestLogger, desc, (transaction == null) ? null : transaction.getTransactionId(), null);
     }
@@ -394,7 +399,8 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		if (uri == null)
 			throw new IllegalArgumentException("Resetting document metadata with null identifier");
 
-		logger.info("Resetting metadata for {}",uri);
+		if (logger.isInfoEnabled())
+			logger.info("Resetting metadata for {}",uri);
 
 		services.deleteDocument(requestLogger, new DocumentDescriptorImpl(uri, true), (transaction == null) ? null : transaction.getTransactionId(), processedMetadata);
     }

@@ -58,7 +58,8 @@ class ServerConfigurationManagerImpl
 	@Override
 	public void readConfiguration() {
 		try {
-			logger.info("Reading server configuration");
+			if (logger.isInfoEnabled())
+				logger.info("Reading server configuration");
 
 			InputStream stream = services.getValues(null, "config/properties", "application/xml", InputStream.class);
 			if (stream == null)
@@ -100,7 +101,8 @@ class ServerConfigurationManagerImpl
 
 	@Override
 	public void writeConfiguration() {
-		logger.info("Writing server configuration");
+		if (logger.isInfoEnabled())
+			logger.info("Writing server configuration");
 
 		services.putValue(null, "config/properties", null, "application/xml", this);
 	}

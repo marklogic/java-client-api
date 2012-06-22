@@ -17,7 +17,6 @@ package com.marklogic.client.io;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -33,9 +32,19 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import com.marklogic.client.MarkLogicInternalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicIOException;
@@ -50,19 +59,6 @@ import com.marklogic.client.config.SearchMetrics;
 import com.marklogic.client.config.SearchResults;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.SearchReadHandle;
-import org.w3c.dom.Attr;
-import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSOutput;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 public class SearchHandle
 	extends BaseHandle<InputStream, OperationNotSupported>
@@ -71,7 +67,7 @@ public class SearchHandle
 
     // FIXME: put namespaces on constructed elements?
 
-    static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
+    static final private Logger logger = LoggerFactory.getLogger(SearchHandle.class);
     static private DocumentBuilderFactory bfactory = DocumentBuilderFactory.newInstance();
     static private SAXParserFactory pfactory = SAXParserFactory.newInstance();
 

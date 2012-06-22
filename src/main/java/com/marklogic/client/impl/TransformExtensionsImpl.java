@@ -51,7 +51,8 @@ class TransformExtensionsImpl
 		if (listHandle == null)
 			throw new IllegalArgumentException("Reading transform list with null handle");
 
-		logger.info("Reading transform list");
+		if (logger.isInfoEnabled())
+			logger.info("Reading transform list");
 
 		HandleImplementation listBase = HandleAccessor.checkHandle(listHandle, "transform");
 
@@ -81,7 +82,8 @@ class TransformExtensionsImpl
 		if (transformName == null)
 			throw new IllegalArgumentException("Reading transform with null name");
 
-		logger.info("Reading transform source for {}", transformName);
+		if (logger.isInfoEnabled())
+			logger.info("Reading transform source for {}", transformName);
 
 		HandleImplementation sourceBase =
 			HandleAccessor.checkHandle(sourceHandle, "transform");
@@ -133,7 +135,8 @@ class TransformExtensionsImpl
 		if (sourceHandle == null)
 			throw new IllegalArgumentException("Writing transform source with null handle");
 
-		logger.info("Writing transform source for {}", transformName);
+		if (logger.isInfoEnabled())
+			logger.info("Writing transform source for {}", transformName);
 
 		HandleImplementation sourceBase = HandleAccessor.checkHandle(sourceHandle, "transform");
 
@@ -168,7 +171,8 @@ class TransformExtensionsImpl
 		if (transformName == null)
 			throw new IllegalArgumentException("Deleting transform with null name");
 
-		logger.info("Deleting transform for {}", transformName);
+		if (logger.isInfoEnabled())
+			logger.info("Deleting transform for {}", transformName);
 
 		services.deleteValue(requestLogger, "config/transforms", transformName);
 	}

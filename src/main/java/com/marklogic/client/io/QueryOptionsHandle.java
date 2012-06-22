@@ -179,7 +179,8 @@ public final class QueryOptionsHandle extends
 	 */
 	public QueryOptionsHandle build(QueryOptionsItem... options) {
 		for (QueryOptionsItem option : options) {
-			logger.debug(option.getClass().getName());
+			if (logger.isDebugEnabled())
+				logger.debug(option.getClass().getName());
 			option.build(optionsHolder);
 		}
 		return this;

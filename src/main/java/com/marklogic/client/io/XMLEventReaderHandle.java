@@ -111,7 +111,8 @@ public class XMLEventReaderHandle
 		}
 
 		try {
-			logger.info("Parsing StAX events from input stream");
+			if (logger.isInfoEnabled())
+				logger.info("Parsing StAX events from input stream");
 
 			XMLInputFactory factory = getFactory();
 			if (factory == null) {

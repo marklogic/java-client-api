@@ -111,7 +111,8 @@ public class XMLStreamReaderHandle
 		}
 
 		try {
-			logger.info("Parsing StAX stream from input stream");
+			if (logger.isInfoEnabled())
+				logger.info("Parsing StAX stream from input stream");
 
 			XMLInputFactory factory = getFactory();
 			if (factory == null) {

@@ -104,7 +104,8 @@ class BinaryDocumentImpl
 	}
 	@Override
 	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction) {
-		logger.info("Reading range of binary content for {}",desc.getUri());
+		if (logger.isInfoEnabled())
+			logger.info("Reading range of binary content for {}",desc.getUri());
 
 		RequestParameters extraParams = new RequestParameters();
 		if (length > 0)

@@ -47,7 +47,8 @@ class ResourceExtensionsImpl
 		if (listHandle == null)
 			throw new IllegalArgumentException("null handle for listing resource services");
 
-		logger.info("Reading resource services list");
+		if (logger.isInfoEnabled())
+			logger.info("Reading resource services list");
 
 		HandleImplementation listBase = HandleAccessor.checkHandle(listHandle, "resource");
 
@@ -68,7 +69,8 @@ class ResourceExtensionsImpl
 		if (resourceName == null)
 			throw new IllegalArgumentException("Reading resource services source with null name");
 
-		logger.info("Reading resource services source for {}", resourceName);
+		if (logger.isInfoEnabled())
+			logger.info("Reading resource services source for {}", resourceName);
 
 		HandleImplementation sourceBase =
 			HandleAccessor.checkHandle(sourceHandle, "resource");
@@ -97,7 +99,8 @@ class ResourceExtensionsImpl
 		if (resourceName == null)
 			throw new IllegalArgumentException("Writing resource services with null name");
 
-		logger.info("Writing resource services source for {}", resourceName);
+		if (logger.isInfoEnabled())
+			logger.info("Writing resource services source for {}", resourceName);
 
 		HandleImplementation sourceBase =
 			HandleAccessor.checkHandle(sourceHandle, "resource");
@@ -124,7 +127,8 @@ class ResourceExtensionsImpl
 		if (resourceName == null)
 			throw new IllegalArgumentException("Deleting resource services with null name");
 
-		logger.info("Deleting resource services for {}", resourceName);
+		if (logger.isInfoEnabled())
+			logger.info("Deleting resource services for {}", resourceName);
 
 		services.deleteValue(requestLogger, "config/resources", resourceName);
 	}

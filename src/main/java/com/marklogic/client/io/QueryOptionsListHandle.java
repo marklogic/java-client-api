@@ -15,22 +15,23 @@
  */
 package com.marklogic.client.io;
 
-import com.marklogic.client.Format;
-import com.marklogic.client.MarkLogicBindingException;
-import com.marklogic.client.config.QueryOptionsListBuilder;
-import com.marklogic.client.config.QueryOptionsListResults;
-import com.marklogic.client.config.ValuesListBuilder;
-import com.marklogic.client.io.marker.OperationNotSupported;
-import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.InputStream;
+import java.util.HashMap;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import java.io.InputStream;
-import java.util.HashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicBindingException;
+import com.marklogic.client.config.QueryOptionsListBuilder;
+import com.marklogic.client.config.QueryOptionsListResults;
+import com.marklogic.client.io.marker.OperationNotSupported;
+import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 
 /**
  * 

@@ -79,7 +79,8 @@ public class SourceHandle
 		return this;
 	}
 	public void transform(Result result) {
-		logger.info("Transforming source into result");
+		if (logger.isInfoEnabled())
+			logger.info("Transforming source into result");
 		try {
 			if (content == null) {
 				throw new IllegalStateException("No source to transform");
@@ -89,7 +90,8 @@ public class SourceHandle
 			if (this.transformer != null) {
 				transformer = getTransformer();
 			} else {
-				logger.warn("No transformer, so using identity transform");
+				if (logger.isWarnEnabled())
+					logger.warn("No transformer, so using identity transform");
 				transformer = TransformerFactory.newInstance().newTransformer();
 			}
 
