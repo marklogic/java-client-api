@@ -212,7 +212,7 @@ public class ResourceExtension {
 		metadata.setVersion("0.1");
 
 		// acquire the resource extension source code
-		InputStream sourceStream = DocumentWrite.class.getClassLoader().getResourceAsStream(
+		InputStream sourceStream = ResourceExtension.class.getClassLoader().getResourceAsStream(
 			"scripts"+File.separator+DictionaryManager.NAME+".xqy");
 		if (sourceStream == null)
 			throw new RuntimeException("Could not read example resource extension");
@@ -288,7 +288,7 @@ public class ResourceExtension {
 	public static Properties loadProperties() throws IOException {
 		String propsName = "Example.properties";
 		InputStream propsStream =
-			DocumentWriteTransform.class.getClassLoader().getResourceAsStream(propsName);
+			ResourceExtension.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
 			throw new RuntimeException("Could not read example properties");
 

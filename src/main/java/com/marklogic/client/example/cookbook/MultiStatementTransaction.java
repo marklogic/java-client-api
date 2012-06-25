@@ -96,7 +96,7 @@ public class MultiStatementTransaction {
 
 	// set up by writing document content for the example to read
 	public static void setUpExample(XMLDocumentManager docMgr, String docId, String filename) {
-		InputStream docStream = DocumentRead.class.getClassLoader().getResourceAsStream(
+		InputStream docStream = MultiStatementTransaction.class.getClassLoader().getResourceAsStream(
 				"data"+File.separator+filename);
 		if (docStream == null)
 			throw new RuntimeException("Could not read document example");
@@ -116,7 +116,7 @@ public class MultiStatementTransaction {
 	public static Properties loadProperties() throws IOException {
 		String propsName = "Example.properties";
 		InputStream propsStream =
-			ClientCreator.class.getClassLoader().getResourceAsStream(propsName);
+			MultiStatementTransaction.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
 			throw new RuntimeException("Could not read example properties");
 

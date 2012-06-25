@@ -95,7 +95,7 @@ public class OptimisticLocking {
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// acquire the content
-		InputStream docStream = DocumentWrite.class.getClassLoader().getResourceAsStream(
+		InputStream docStream = OptimisticLocking.class.getClassLoader().getResourceAsStream(
 			"data"+File.separator+filename);
 		if (docStream == null)
 			throw new RuntimeException("Could not read document example");

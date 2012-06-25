@@ -81,7 +81,7 @@ public class DocumentReadTransform {
 		metadata.setVersion("0.1");
 
 		// acquire the transform source code
-		InputStream transStream = DocumentWrite.class.getClassLoader().getResourceAsStream(
+		InputStream transStream = DocumentReadTransform.class.getClassLoader().getResourceAsStream(
 			"scripts"+File.separator+TRANSFORM_NAME+".xsl");
 		if (transStream == null)
 			throw new RuntimeException("Could not read example transform");
@@ -134,7 +134,7 @@ public class DocumentReadTransform {
 
 	// set up by writing document content for the example to read
 	public static void setUpExample(DatabaseClient client, String docId, String filename) {
-		InputStream docStream = DocumentRead.class.getClassLoader().getResourceAsStream(
+		InputStream docStream = DocumentReadTransform.class.getClassLoader().getResourceAsStream(
 				"data"+File.separator+filename);
 		if (docStream == null)
 			throw new RuntimeException("Could not read document example");

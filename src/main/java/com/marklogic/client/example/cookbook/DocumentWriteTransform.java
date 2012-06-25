@@ -82,7 +82,7 @@ public class DocumentWriteTransform {
 		metadata.setVersion("0.1");
 
 		// acquire the transform source code
-		InputStream transStream = DocumentWrite.class.getClassLoader().getResourceAsStream(
+		InputStream transStream = DocumentWriteTransform.class.getClassLoader().getResourceAsStream(
 			"scripts"+File.separator+TRANSFORM_NAME+".xqy");
 		if (transStream == null)
 			throw new RuntimeException("Could not read example transform");
@@ -107,7 +107,7 @@ public class DocumentWriteTransform {
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// acquire the content
-		InputStream docStream = DocumentWrite.class.getClassLoader().getResourceAsStream(
+		InputStream docStream = DocumentWriteTransform.class.getClassLoader().getResourceAsStream(
 			"data"+File.separator+filename);
 		if (docStream == null)
 			throw new RuntimeException("Could not read document example");
