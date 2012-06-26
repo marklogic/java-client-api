@@ -19,6 +19,7 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXpathExists;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 
 import com.marklogic.client.ExtensionMetadata;
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Format;
 import com.marklogic.client.TransformExtensionsManager;
 import com.marklogic.client.io.DOMHandle;
@@ -123,12 +125,23 @@ public class TransformExtensionsTest {
 		assertXpathExists("/rapi:transforms/rapi:transform/rapi:name[string(.) = 'testxsl']", result);
 
         extensionMgr.deleteTransform(XQUERY_NAME);
-		extensionMgr.readXQueryTransform(XQUERY_NAME, handle);
-		assertNull("Failed to delete XQuery transform", handle.get());
+        boolean transformDeleted = true;
+		try {
+			handle = new StringHandle();
+			extensionMgr.readXQueryTransform(XQUERY_NAME, handle);
+			transformDeleted = (handle.get() == null);
+		} catch(FailedRequestException ex) {
+		}
+		assertTrue("Failed to delete XQuery transform", transformDeleted);
 
 		extensionMgr.deleteTransform(XSLT_NAME);
-		extensionMgr.readXSLTransform(XSLT_NAME, handle);
-		assertNull("Failed to delete XSLT transform", handle.get());
+		try {
+			handle = new StringHandle();
+			extensionMgr.readXSLTransform(XSLT_NAME, handle);
+			transformDeleted = (handle.get() == null);
+		} catch(FailedRequestException ex) {
+		}
+		assertTrue("Failed to delete XSLT transform", transformDeleted);
 	}
 	public void writeXQueryTransform(TransformExtensionsManager extensionMgr) {
 		extensionMgr.writeXQueryTransform(
