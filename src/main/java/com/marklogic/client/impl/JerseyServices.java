@@ -307,9 +307,11 @@ public class JerseyServices implements RESTServices {
 			isFirstRequest = false;
 
 		ClientResponse.Status status = response.getClientResponseStatus();
-		if (status == ClientResponse.Status.NOT_FOUND)
+		if (status == ClientResponse.Status.NOT_FOUND) {
+			response.close();
 			throw new ResourceNotFoundException(
 					"Could not delete non-existent document");
+		}
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			// TODO: inspect response structure to distinguish from insufficient privilege
 			if (desc instanceof DocumentDescriptorImpl && ((DocumentDescriptorImpl) desc).isInternal() == false &&
@@ -317,9 +319,11 @@ public class JerseyServices implements RESTServices {
 				throw new FailedRequestException("Content version required to delete document", extractErrorFields(response));
 			throw new ForbiddenUserException("User is not allowed to delete documents",extractErrorFields(response));
 		}
-		if (status == ClientResponse.Status.PRECONDITION_FAILED)
+		if (status == ClientResponse.Status.PRECONDITION_FAILED) {
+			response.close();
 			throw new FailedRequestException(
 					"Content version must match to delete document");
+		}
 		if (status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("delete failed: "
 					+ status.getReasonPhrase(), extractErrorFields(response));
@@ -396,24 +400,21 @@ public class JerseyServices implements RESTServices {
 			isFirstRequest = false;
 
 		ClientResponse.Status status = response.getClientResponseStatus();
-		if (status == ClientResponse.Status.NOT_FOUND) {
+		if (status == ClientResponse.Status.NOT_FOUND)
 			throw new ResourceNotFoundException(
 					"Could not read non-existent document",
 					extractErrorFields(response));
-		}
-		if (status == ClientResponse.Status.FORBIDDEN) {
+		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException(
 					"User is not allowed to read documents",
 					extractErrorFields(response));
-		}
 		if (status == ClientResponse.Status.NOT_MODIFIED) {
 			response.close();
 			return false;
 		}
-		if (status != ClientResponse.Status.OK) {
+		if (status != ClientResponse.Status.OK)
 			throw new FailedRequestException("read failed: "
 					+ status.getReasonPhrase(), extractErrorFields(response));
-		}
 
 		logRequest(
 				reqlog,
@@ -423,7 +424,15 @@ public class JerseyServices implements RESTServices {
 				stringJoin(categories, ", ", "no"));
 
 		HandleImplementation handleBase = HandleAccessor.as(handle);
-		updateDescriptor(desc, handleBase, response);
+
+		MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+		if (isExternalDescriptor(desc)) {
+			updateVersion(desc, responseHeaders);
+			updateDescriptor(desc, responseHeaders);
+			copyDescriptor(desc, handleBase);
+		} else {
+			updateDescriptor(handleBase, responseHeaders);
+		}
 
 		Class as = handleBase.receiveAs();
 		Object entity = response.getEntity(as);
@@ -467,24 +476,21 @@ public class JerseyServices implements RESTServices {
 			isFirstRequest = false;
 
 		ClientResponse.Status status = response.getClientResponseStatus();
-		if (status == ClientResponse.Status.NOT_FOUND) {
+		if (status == ClientResponse.Status.NOT_FOUND)
 			throw new ResourceNotFoundException(
 					"Could not read non-existent document",
 					extractErrorFields(response));
-		}
-		if (status == ClientResponse.Status.FORBIDDEN) {
+		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException(
 					"User is not allowed to read documents",
 					extractErrorFields(response));
-		}
 		if (status == ClientResponse.Status.NOT_MODIFIED) {
 			response.close();
 			return false;
 		}
-		if (status != ClientResponse.Status.OK) {
+		if (status != ClientResponse.Status.OK)
 			throw new FailedRequestException("read failed: "
 					+ status.getReasonPhrase(), extractErrorFields(response));
-		}
 
 		logRequest(
 				reqlog,
@@ -509,16 +515,31 @@ public class JerseyServices implements RESTServices {
 
 		HandleImplementation metadataBase = HandleAccessor.as(metadataHandle);
 		HandleImplementation contentBase  = HandleAccessor.as(contentHandle);
-		updateDescriptor(desc, contentBase, response);
+
+		BodyPart contentPart = partList.get(1);
+
+		MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+		MultivaluedMap<String, String> contentHeaders  = contentPart.getHeaders();
+		if (isExternalDescriptor(desc)) {
+			updateVersion(desc, responseHeaders);
+			updateFormat(desc, responseHeaders);
+			updateMimetype(desc, contentHeaders);
+			desc.setByteLength(ContentDescriptor.UNKNOWN_LENGTH);
+			copyDescriptor(desc, contentBase);
+		} else if (contentBase != null) {
+			updateFormat(contentBase, responseHeaders);
+			updateMimetype(contentBase, contentHeaders);
+			contentBase.setByteLength(ContentDescriptor.UNKNOWN_LENGTH);
+		}
 
 		metadataBase.receiveContent(
 				partList.get(0).getEntityAs(metadataBase.receiveAs())
 				);
 
-		Object contentPart = partList.get(1).getEntityAs(
+		Object contentEntity = contentPart.getEntityAs(
 				contentBase.receiveAs());
 		contentBase.receiveContent(
-				(reqlog != null) ? reqlog.copyContent(contentPart) : contentPart);
+				(reqlog != null) ? reqlog.copyContent(contentEntity) : contentEntity);
 
 		response.close();
 
@@ -542,7 +563,7 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = webResource.head();
 
-		MultivaluedMap<String, String> headers = response.getHeaders();
+		MultivaluedMap<String, String> responseHeaders = response.getHeaders();
 
 		ClientResponse.Status status = response.getClientResponseStatus();
 		if (status != ClientResponse.Status.OK) {
@@ -564,11 +585,13 @@ public class JerseyServices implements RESTServices {
 		logRequest(reqlog, "checked %s document from %s transaction", uri,
 				(transactionId != null) ? transactionId : "no");
 
-		DocumentDescriptorImpl identifier = new DocumentDescriptorImpl(uri,
-				false);
-		updateDescriptor(identifier, headers);
+		DocumentDescriptorImpl desc =
+			new DocumentDescriptorImpl(uri,false);
 
-		return identifier;
+		updateVersion(desc,responseHeaders);
+		updateDescriptor(desc, responseHeaders);
+
+		return desc;
 	}
 
 	@Override
@@ -689,8 +712,8 @@ public class JerseyServices implements RESTServices {
 				&& status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("write failed: "
 					+ status.getReasonPhrase(), extractErrorFields(response));
-		response.close();
 
+		response.close();
 	}
 
 	private void putDocumentImpl(RequestLogger reqlog, DocumentDescriptor desc,
@@ -772,9 +795,11 @@ public class JerseyServices implements RESTServices {
 			isFirstRequest = false;
 
 		ClientResponse.Status status = response.getClientResponseStatus();
-		if (status == ClientResponse.Status.NOT_FOUND)
+		if (status == ClientResponse.Status.NOT_FOUND) {
+			response.close();
 			throw new ResourceNotFoundException(
 					"Could not write non-existent document");
+		}
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			// TODO: inspect response structure to distinguish from insufficient privilege
 			if (desc instanceof DocumentDescriptorImpl && ((DocumentDescriptorImpl) desc).isInternal() == false &&
@@ -782,9 +807,11 @@ public class JerseyServices implements RESTServices {
 				throw new FailedRequestException("Content version required to write document", extractErrorFields(response));
 			throw new ForbiddenUserException("User is not allowed to write documents", extractErrorFields(response));
 		}
-		if (status == ClientResponse.Status.PRECONDITION_FAILED)
+		if (status == ClientResponse.Status.PRECONDITION_FAILED) {
+			response.close();
 			throw new FailedRequestException(
 					"Content version must match to write document");
+		}
 		if (status != ClientResponse.Status.CREATED
 				&& status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("write failed: "
@@ -818,15 +845,13 @@ public class JerseyServices implements RESTServices {
 			isFirstRequest = false;
 
 		ClientResponse.Status status = response.getClientResponseStatus();
-		if (status == ClientResponse.Status.FORBIDDEN) {
+		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException(
 					"User is not allowed to open transactions",
 					extractErrorFields(response));
-		}
-		if (status != ClientResponse.Status.SEE_OTHER) {
+		if (status != ClientResponse.Status.SEE_OTHER)
 			throw new FailedRequestException("transaction open failed: "
 					+ status.getReasonPhrase(), extractErrorFields(response));
-		}
 
 		String location = response.getHeaders().getFirst("Location");
 		response.close();
@@ -883,8 +908,8 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException("transaction " + result
 					+ " failed: " + status.getReasonPhrase(),
 					extractErrorFields(response));
-		response.close();
 
+		response.close();
 	}
 
 	private MultivaluedMap<String, String> makeDocumentParams(String uri,
@@ -930,29 +955,32 @@ public class JerseyServices implements RESTServices {
 		return connection.path("documents").queryParams(queryParams);
 	}
 
-	private void updateDescriptor(DocumentDescriptor desc,
-			HandleImplementation handleBase, ClientResponse response) {
-		if (desc != null && desc instanceof DocumentDescriptorImpl
-				&& !((DocumentDescriptorImpl) desc).isInternal()) {
-			updateDescriptor(desc, response.getHeaders());
-			handleBase.setFormat(desc.getFormat());
-			handleBase.setMimetype(desc.getMimetype());
-			handleBase.setByteLength(desc.getByteLength());
-		} else {
-			updateDescriptor(handleBase, response.getHeaders());
-		}
-
+	private boolean isExternalDescriptor(ContentDescriptor desc) {
+		return desc != null && desc instanceof DocumentDescriptorImpl
+			&& !((DocumentDescriptorImpl) desc).isInternal();
 	}
-
-	private void updateDescriptor(ContentDescriptor descriptor,
+	private void updateDescriptor(ContentDescriptor desc,
 			MultivaluedMap<String, String> headers) {
-		if (descriptor == null || headers == null)
+		if (desc == null || headers == null)
 			return;
 
-		List<String> values = null;
-
+		updateFormat(desc, headers);
+		updateMimetype(desc, headers);
+		updateLength(desc, headers);
+	}
+	private void copyDescriptor(DocumentDescriptor desc,
+			HandleImplementation handleBase) {
+		if (handleBase == null)
+			return;
+		
+		handleBase.setFormat(desc.getFormat());
+		handleBase.setMimetype(desc.getMimetype());
+		handleBase.setByteLength(desc.getByteLength());
+	}
+	private void updateFormat(ContentDescriptor descriptor,
+			MultivaluedMap<String, String> headers) {
 		if (headers.containsKey("vnd.marklogic.document-format")) {
-			values = headers.get("vnd.marklogic.document-format");
+			List<String> values = headers.get("vnd.marklogic.document-format");
 			if (values != null) {
 				Format format = Format.valueOf(values.get(0).toUpperCase());
 				if (format != null) {
@@ -960,38 +988,43 @@ public class JerseyServices implements RESTServices {
 				}
 			}
 		}
-
+	}
+	private void updateMimetype(ContentDescriptor descriptor,
+			MultivaluedMap<String, String> headers) {
 		if (headers.containsKey("Content-Type")) {
-			values = headers.get("Content-Type");
+			List<String> values = headers.get("Content-Type");
 			if (values != null) {
 				String contentType = values.get(0);
 				String mimetype = contentType.contains(";") ? contentType
 						.substring(0, contentType.indexOf(";")) : contentType;
+// TODO: if "; charset=foo" set character set
 				if (mimetype != null && mimetype.length() > 0) {
-					descriptor.setMimetype(contentType);
+					descriptor.setMimetype(mimetype);
 				}
 			}
 		}
-
+	}
+	private void updateLength(ContentDescriptor descriptor,
+			MultivaluedMap<String, String> headers) {
 		long length = ContentDescriptor.UNKNOWN_LENGTH;
 		if (headers.containsKey("Content-Length")) {
-			values = headers.get("Content-Length");
+			List<String> values = headers.get("Content-Length");
 			if (values != null) {
 				length = Long.valueOf(values.get(0));
 			}
 		}
 		descriptor.setByteLength(length);
-
-		if (descriptor instanceof DocumentDescriptor) {
-			long version = DocumentDescriptor.UNKNOWN_VERSION;
-			if (headers.containsKey("ETag")) {
-				values = headers.get("ETag");
-				if (values != null) {
-					version = Long.valueOf(values.get(0));
-				}
+	}
+	private void updateVersion(DocumentDescriptor descriptor,
+			MultivaluedMap<String, String> headers) {
+		long version = DocumentDescriptor.UNKNOWN_VERSION;
+		if (headers.containsKey("ETag")) {
+			List<String> values = headers.get("ETag");
+			if (values != null) {
+				version = Long.valueOf(values.get(0));
 			}
-			((DocumentDescriptor) descriptor).setVersion(version);
 		}
+		descriptor.setVersion(version);
 	}
 
 	private WebResource.Builder addVersionHeader(DocumentDescriptor desc, WebResource.Builder builder, String name) {
