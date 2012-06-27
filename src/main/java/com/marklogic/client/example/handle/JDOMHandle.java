@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.example.handle;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,6 +29,7 @@ import org.jdom.output.XMLOutputter;
 import com.marklogic.client.Format;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.OutputStreamSender;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -37,7 +40,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class JDOMHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
-	implements OutputStreamSender,
+	implements OutputStreamSender, BufferableHandle,
     	XMLReadHandle, XMLWriteHandle,
     	StructureReadHandle, StructureWriteHandle
 {
@@ -96,6 +99,28 @@ public class JDOMHandle
 	public JDOMHandle withFormat(Format format) {
 		setFormat(format);
 		return this;
+	}
+
+	@Override
+	public void fromBuffer(byte[] buffer) {
+		if (buffer == null || buffer.length == 0)
+			content = null;
+		else
+			receiveContent(new ByteArrayInputStream(buffer));
+	}
+	@Override
+	public byte[] toBuffer() {
+		try {
+			if (content == null)
+				return null;
+
+			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+			write(buffer);
+
+			return buffer.toByteArray();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

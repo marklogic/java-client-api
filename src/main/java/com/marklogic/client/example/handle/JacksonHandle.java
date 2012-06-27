@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.example.handle;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -26,6 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.Format;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.OutputStreamSender;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
@@ -38,7 +41,7 @@ import com.marklogic.client.io.marker.StructureWriteHandle;
  */
 public class JacksonHandle
 		extends BaseHandle<InputStream, OutputStreamSender>
-		implements OutputStreamSender,
+		implements OutputStreamSender, BufferableHandle,
 			JSONReadHandle, JSONWriteHandle,
 			StructureReadHandle, StructureWriteHandle
 {
@@ -86,10 +89,31 @@ public class JacksonHandle
 	}
 
 	@Override
+	public void fromBuffer(byte[] buffer) {
+		if (buffer == null || buffer.length == 0)
+			content = null;
+		else
+			receiveContent(new ByteArrayInputStream(buffer));
+	}
+	@Override
+	public byte[] toBuffer() {
+		try {
+			if (content == null)
+				return null;
+
+			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+			write(buffer);
+
+			return buffer.toByteArray();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
 	protected Class<InputStream> receiveAs() {
 		return InputStream.class;
 	}
-
 	@Override
 	protected void receiveContent(InputStream content) {
 		if (content == null)
@@ -106,7 +130,6 @@ public class JacksonHandle
 		}
 
 	}
-
 	@Override
 	protected OutputStreamSender sendContent() {
 		if (content == null) {
@@ -114,7 +137,6 @@ public class JacksonHandle
 		}
 		return this;
 	}
-
 	@Override
 	public void write(OutputStream out) throws IOException {
 		getMapper().writeValue(out, content);
