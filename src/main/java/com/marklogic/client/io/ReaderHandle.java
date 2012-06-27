@@ -15,7 +15,10 @@
  */
 package com.marklogic.client.io;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.ByteBuffer;
@@ -25,6 +28,7 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
@@ -41,7 +45,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class ReaderHandle
 	extends BaseHandle<Reader, OutputStreamSender>
-	implements OutputStreamSender,
+	implements OutputStreamSender, BufferableHandle,
 		JSONReadHandle, JSONWriteHandle, 
 		TextReadHandle, TextWriteHandle,
 		XMLReadHandle, XMLWriteHandle,
@@ -80,6 +84,36 @@ public class ReaderHandle
 	public ReaderHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;
+	}
+
+	@Override
+	public void fromBuffer(byte[] buffer) {
+		if (buffer == null || buffer.length == 0)
+			content = null;
+		else
+			receiveContent(
+				new InputStreamReader(
+						new ByteArrayInputStream(buffer),
+						Charset.forName("UTF-8")
+						)
+				);
+	}
+	@Override
+	public byte[] toBuffer() {
+		try {
+			if (content == null)
+				return null;
+
+			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+			write(buffer);
+
+			byte[] b = buffer.toByteArray();
+			fromBuffer(b);
+
+			return b;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

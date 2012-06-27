@@ -18,6 +18,7 @@ package com.marklogic.client.io;
 import com.marklogic.client.Format;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.GenericReadHandle;
 import com.marklogic.client.io.marker.GenericWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -39,7 +40,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class BytesHandle
 	extends BaseHandle<byte[], byte[]>
-	implements
+	implements BufferableHandle,
 		BinaryReadHandle, BinaryWriteHandle,
 		GenericReadHandle, GenericWriteHandle,
 		JSONReadHandle, JSONWriteHandle, 
@@ -75,6 +76,15 @@ public class BytesHandle
 	public BytesHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;
+	}
+
+	@Override
+	public void fromBuffer(byte[] buffer) {
+		content = buffer;
+	}
+	@Override
+	public byte[] toBuffer() {
+		return content;
 	}
 
 	protected Class<byte[]> receiveAs() {

@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.io;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,6 +39,7 @@ import org.xml.sax.XMLReader;
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -48,7 +51,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class InputSourceHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
-	implements OutputStreamSender,
+	implements OutputStreamSender, BufferableHandle,
 	    XMLReadHandle, XMLWriteHandle,
 	    StructureReadHandle, StructureWriteHandle
 {
@@ -107,6 +110,31 @@ public class InputSourceHandle
 	public InputSourceHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;
+	}
+
+	@Override
+	public void fromBuffer(byte[] buffer) {
+		if (buffer == null || buffer.length == 0)
+			content = null;
+		else
+			receiveContent(new ByteArrayInputStream(buffer));
+	}
+	@Override
+	public byte[] toBuffer() {
+		try {
+			if (content == null)
+				return null;
+
+			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+			write(buffer);
+
+			byte[] b = buffer.toByteArray();
+			fromBuffer(b);
+
+			return b;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public SAXParserFactory getFactory() throws SAXException, ParserConfigurationException {

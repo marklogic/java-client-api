@@ -72,6 +72,7 @@ import com.marklogic.client.config.QueryOptionsBuilder.NamespaceBinding;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryOptionsItem;
 import com.marklogic.client.impl.QueryOptionsTransformExtractNS;
 import com.marklogic.client.impl.QueryOptionsTransformInjectNS;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
@@ -97,9 +98,11 @@ import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
  * and constructed items from QueryOptionsBuilder.
  * 
  */
-public final class QueryOptionsHandle extends
-		BaseHandle<InputStream, OutputStreamSender> implements
-		OutputStreamSender, QueryOptionsReadHandle, QueryOptionsWriteHandle {
+public final class QueryOptionsHandle
+	extends BaseHandle<InputStream, OutputStreamSender>
+	implements OutputStreamSender, BufferableHandle,
+		QueryOptionsReadHandle, QueryOptionsWriteHandle
+{
 
 	static final private Logger logger = LoggerFactory
 			.getLogger(QueryOptionsHandle.class);
@@ -554,11 +557,31 @@ public final class QueryOptionsHandle extends
 		}
 	}
 	
+	/**
+     * fromBuffer() populates QueryOptionsHandle from a byte array
+     * buffer.  The buffer must store query options in XML format
+     * in the UTF-8 encoding.
+	 */
+	@Override
+	public void fromBuffer(byte[] buffer) {
+		receiveContent(new ByteArrayInputStream(buffer));
+	}
+	@Override
+	public byte[] toBuffer() {
+		try {
+			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+			write(buffer);
+
+			return buffer.toByteArray();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	@Override
 	protected Class<InputStream> receiveAs() {
 		return InputStream.class;
 	}
-
 	@Override
 	protected void receiveContent(InputStream content) {
 		try {

@@ -15,7 +15,10 @@
  */
 package com.marklogic.client.io;
 
+import java.nio.charset.Charset;
+
 import com.marklogic.client.Format;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
@@ -30,7 +33,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class StringHandle
 	extends BaseHandle<String, String>
-	implements
+	implements BufferableHandle,
 		JSONReadHandle, JSONWriteHandle, 
 		TextReadHandle, TextWriteHandle,
 		XMLReadHandle, XMLWriteHandle,
@@ -64,6 +67,21 @@ public class StringHandle
 	public StringHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;
+	}
+
+	@Override
+	public void fromBuffer(byte[] buffer) {
+		if (buffer == null || buffer.length == 0)
+			content = null;
+		else
+			content = new String(buffer, Charset.forName("UTF-8"));
+	}
+	@Override
+	public byte[] toBuffer() {
+		if (content == null)
+			return null;
+
+		return content.getBytes(Charset.forName("UTF-8"));
 	}
 
 	@Override

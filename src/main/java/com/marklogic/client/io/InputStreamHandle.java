@@ -15,11 +15,15 @@
  */
 package com.marklogic.client.io;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.GenericReadHandle;
 import com.marklogic.client.io.marker.GenericWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -44,7 +48,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class InputStreamHandle
 	extends BaseHandle<InputStream, InputStream>
-	implements
+	implements BufferableHandle,
 		BinaryReadHandle, BinaryWriteHandle,
 		GenericReadHandle, GenericWriteHandle,
 		JSONReadHandle, JSONWriteHandle, 
@@ -88,6 +92,37 @@ public class InputStreamHandle
 	public InputStreamHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;
+	}
+
+	@Override
+	public void fromBuffer(byte[] buffer) {
+		if (buffer == null || buffer.length == 0)
+			content = null;
+		else
+			receiveContent(new ByteArrayInputStream(buffer));
+	}
+	@Override
+	public byte[] toBuffer() {
+		try {
+			if (content == null)
+				return null;
+
+			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+			byte[] b = new byte[1024];
+			int len = 0;
+			while ((len = content.read(b)) != -1) {
+				buffer.write(b, 0, len);
+			}
+			content.close();
+
+			b = buffer.toByteArray();
+			fromBuffer(b);
+
+			return b;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

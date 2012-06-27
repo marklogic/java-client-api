@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.io;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -51,6 +53,7 @@ import com.marklogic.client.NameMap;
 import com.marklogic.client.NameMapBase;
 import com.marklogic.client.impl.DOMWriter;
 import com.marklogic.client.impl.ValueConverter;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
@@ -60,7 +63,7 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  */
 public class DocumentMetadataHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
-    implements OutputStreamSender,
+    implements OutputStreamSender, BufferableHandle,
     	DocumentMetadataReadHandle, DocumentMetadataWriteHandle
 {
 	final static private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
@@ -238,6 +241,30 @@ public class DocumentMetadataHandle
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			throw new IllegalArgumentException("DocumentMetadataHandle supports the XML format only");
+	}
+
+	/**
+     * fromBuffer() populates DocumentMetadataHandle from a byte array
+     * buffer.  The buffer must store document metadata in XML format
+     * in the UTF-8 encoding.
+	 */
+	@Override
+	public void fromBuffer(byte[] buffer) {
+		if (buffer == null || buffer.length == 0)
+			receiveContent(null);
+		else
+			receiveContent(new ByteArrayInputStream(buffer));
+	}
+	@Override
+	public byte[] toBuffer() {
+		try {
+			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+			write(buffer);
+
+			return buffer.toByteArray();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

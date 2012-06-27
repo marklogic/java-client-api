@@ -15,11 +15,17 @@
  */
 package com.marklogic.client.io;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
 
@@ -28,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.io.marker.OperationNotSupported;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
 
@@ -40,8 +46,9 @@ import com.marklogic.client.io.marker.XMLReadHandle;
  * the response.
  */
 public class XMLEventReaderHandle
-	extends BaseHandle<InputStream, OperationNotSupported>
-	implements XMLReadHandle, StructureReadHandle
+	extends BaseHandle<InputStream, OutputStreamSender>
+	implements OutputStreamSender, BufferableHandle,
+		XMLReadHandle, StructureReadHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(XMLEventReaderHandle.class);
 
@@ -81,6 +88,31 @@ public class XMLEventReaderHandle
 	public XMLEventReaderHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;
+	}
+
+	@Override
+	public void fromBuffer(byte[] buffer) {
+		if (buffer == null || buffer.length == 0)
+			content = null;
+		else
+			receiveContent(new ByteArrayInputStream(buffer));
+	}
+	@Override
+	public byte[] toBuffer() {
+		try {
+			if (content == null)
+				return null;
+
+			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+			write(buffer);
+
+			byte[] b = buffer.toByteArray();
+			fromBuffer(b);
+
+			return b;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public XMLInputFactory getFactory() {
@@ -127,6 +159,30 @@ public class XMLEventReaderHandle
 			logger.error("Failed to parse StAX events from input stream",e);
 			throw new MarkLogicInternalException(e);
 		} catch (FactoryConfigurationError e) {
+			logger.error("Failed to parse StAX events from input stream",e);
+			throw new MarkLogicInternalException(e);
+		}
+	}
+	@Override
+	protected OutputStreamSender sendContent() {
+		if (content == null) {
+			throw new IllegalStateException("No input source to write");
+		}
+
+		return this;
+	}
+	@Override
+	public void write(OutputStream out) throws IOException {
+		try {
+			XMLOutputFactory factory = XMLOutputFactory.newFactory();
+			XMLEventWriter   writer  = factory.createXMLEventWriter(out);
+
+			writer.add(content);
+			writer.flush();
+			writer.close();
+
+			content.close();
+		} catch (XMLStreamException e) {
 			logger.error("Failed to parse StAX events from input stream",e);
 			throw new MarkLogicInternalException(e);
 		}
