@@ -76,7 +76,7 @@ public class XMLEventReaderHandle
 
 	public void setFormat(Format format) {
 		if (format != Format.XML)
-			new IllegalArgumentException("XMLEventReaderHandle supports the XML format only");
+			throw new IllegalArgumentException("XMLEventReaderHandle supports the XML format only");
 	}
 	public XMLEventReaderHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);

@@ -76,7 +76,7 @@ public class XMLStreamReaderHandle
 
 	public void setFormat(Format format) {
 		if (format != Format.XML)
-			new IllegalArgumentException("XMLStreamReaderHandle supports the XML format only");
+			throw new IllegalArgumentException("XMLStreamReaderHandle supports the XML format only");
 	}
 	public XMLStreamReaderHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);

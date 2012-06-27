@@ -91,7 +91,7 @@ public class JDOMHandle
 
 	public void setFormat(Format format) {
 		if (format != Format.XML)
-			new IllegalArgumentException("JDOMHandle supports the XML format only");
+			throw new IllegalArgumentException("JDOMHandle supports the XML format only");
 	}
 	public JDOMHandle withFormat(Format format) {
 		setFormat(format);

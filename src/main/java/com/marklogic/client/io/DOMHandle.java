@@ -85,7 +85,7 @@ public class DOMHandle
     @Override
 	public void setFormat(Format format) {
 		if (format != Format.XML)
-			new IllegalArgumentException("DOMHandle supports the XML format only");
+			throw new IllegalArgumentException("DOMHandle supports the XML format only");
 	}
 	public DOMHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);

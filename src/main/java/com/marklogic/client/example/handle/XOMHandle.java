@@ -83,7 +83,7 @@ public class XOMHandle
 
 	public void setFormat(Format format) {
 		if (format != Format.XML)
-			new IllegalArgumentException("XOMHandle supports the XML format only");
+			throw new IllegalArgumentException("XOMHandle supports the XML format only");
 	}
 	public XOMHandle withFormat(Format format) {
 		setFormat(format);

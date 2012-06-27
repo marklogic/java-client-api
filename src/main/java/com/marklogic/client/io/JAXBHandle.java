@@ -69,7 +69,7 @@ public class JAXBHandle
 
 	public void setFormat(Format format) {
 		if (format != Format.XML)
-			new IllegalArgumentException("JAXBHandle supports the XML format only");
+			throw new IllegalArgumentException("JAXBHandle supports the XML format only");
 	}
 	public JAXBHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);

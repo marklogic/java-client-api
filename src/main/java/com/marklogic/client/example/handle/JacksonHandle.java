@@ -76,7 +76,7 @@ public class JacksonHandle
 
 	public void setFormat(Format format) {
 		if (format != Format.JSON)
-			new IllegalArgumentException(
+			throw new IllegalArgumentException(
 					"JacksonHandle supports the JSON format only");
 	}
 

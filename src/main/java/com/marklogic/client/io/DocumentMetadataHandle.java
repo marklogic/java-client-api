@@ -237,7 +237,7 @@ public class DocumentMetadataHandle
     @Override
 	public void setFormat(Format format) {
 		if (format != Format.XML)
-			new IllegalArgumentException("DocumentMetadataHandle supports the XML format only");
+			throw new IllegalArgumentException("DocumentMetadataHandle supports the XML format only");
 	}
 
 	@Override
