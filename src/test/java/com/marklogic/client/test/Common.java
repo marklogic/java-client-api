@@ -20,7 +20,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.StringWriter;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSException;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
@@ -84,5 +95,32 @@ public class Common {
 	}
 	static InputStream testFileToStream(String filename) {
 		return ResourceExtensionsTest.class.getClassLoader().getResourceAsStream(filename);
+	}
+	static String testDocumentToString(Document document) {
+		try {
+			return ((DOMImplementationLS) DocumentBuilderFactory
+					.newInstance()
+					.newDocumentBuilder()
+					.getDOMImplementation()
+					).createLSSerializer().writeToString(document);
+		} catch (DOMException e) {
+			throw new RuntimeException(e);
+		} catch (LSException e) {
+			throw new RuntimeException(e);
+		} catch (ParserConfigurationException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	static Document testStringToDocument(String document) {
+		try {
+			return DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+					new InputSource(new StringReader(document)));
+		} catch (SAXException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (ParserConfigurationException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

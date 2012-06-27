@@ -65,29 +65,29 @@ public class DocumentMetadataHandleTest {
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		docMgr.write(docId, new StringHandle().with(content));
 
-		String metadataText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
-		"<rapi:metadata uri=\"/test/testMetadataXML1.xml\" xsi:schemaLocation=\"http://marklogic.com/rest-api/database dbmeta.xsd\" xmlns:rapi=\"http://marklogic.com/rest-api\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"+
-		"  <rapi:collections>\n"+
-		"    <rapi:collection>/document/collection1</rapi:collection>\n"+
-		"    <rapi:collection>/document/collection2</rapi:collection>\n"+
-		"  </rapi:collections>\n"+
-		"  <rapi:permissions>\n"+
-		"    <rapi:permission>\n"+
-		"      <rapi:role-name>app-user</rapi:role-name>\n"+
-		"      <rapi:capability>update</rapi:capability>\n"+
-		"      <rapi:capability>read</rapi:capability>\n"+
-		"    </rapi:permission>\n"+
-		"  </rapi:permissions>\n"+
-		"  <prop:properties xmlns:prop=\"http://marklogic.com/xdmp/property\">\n"+
-		"    <first>value one</first>\n"+
-		"    <second>2</second>\n"+
-		"    <third>\n"+
-		"        <third.first>value third one</third.first>\n"+
-		"        <third.second>3.2</third.second>\n"+
-		"    </third>\n"+
-		"  </prop:properties>\n"+
-		"  <rapi:quality>3</rapi:quality>\n"+
-		"</rapi:metadata>\n";
+		String metadataText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+
+		"<rapi:metadata uri=\"/test/testMetadataXML1.xml\" xsi:schemaLocation=\"http://marklogic.com/rest-api/database dbmeta.xsd\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:rapi=\"http://marklogic.com/rest-api\" xmlns:prop=\"http://marklogic.com/xdmp/property\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"+
+		  "<rapi:collections>"+
+		    "<rapi:collection>/document/collection1</rapi:collection>"+
+		    "<rapi:collection>/document/collection2</rapi:collection>"+
+		  "</rapi:collections>"+
+		  "<rapi:permissions>"+
+		    "<rapi:permission>"+
+		      "<rapi:role-name>app-user</rapi:role-name>"+
+		      "<rapi:capability>read</rapi:capability>"+
+		      "<rapi:capability>update</rapi:capability>"+
+		    "</rapi:permission>"+
+		  "</rapi:permissions>"+
+		  "<prop:properties>"+
+		    "<first xsi:type=\"xs:string\">value one</first>"+
+		    "<second xsi:type=\"xs:string\">2</second>"+
+		    "<third>"+
+		      "<third.first>value third one</third.first>"+
+		      "<third.second>3.2</third.second>"+
+		    "</third>"+
+		  "</prop:properties>"+
+		  "<rapi:quality>3</rapi:quality>"+
+		"</rapi:metadata>";
 
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);

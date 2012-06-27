@@ -15,27 +15,28 @@
  */
 package com.marklogic.client.test;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathExists;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.HashMap;
 
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.custommonkey.xmlunit.XpathEngine;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import com.marklogic.client.ExtensionMetadata;
+import com.marklogic.client.Format;
 import com.marklogic.client.MethodType;
 import com.marklogic.client.ResourceExtensionsManager;
 import com.marklogic.client.ResourceExtensionsManager.MethodParameters;
-import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.StringHandle;
 
 public class ResourceExtensionsTest {
@@ -43,16 +44,12 @@ public class ResourceExtensionsTest {
 	final static String XQUERY_FILE   = RESOURCE_NAME + ".xqy"; 
 
 	static private String      resourceServices;
+	static private XpathEngine xpather;
 
 	@BeforeClass
 	public static void beforeClass() throws IOException {
 		Common.connectAdmin();
 		resourceServices = Common.testFileToString(XQUERY_FILE);
-
-        HashMap<String,String> namespaces = new HashMap<String, String>();
-        namespaces.put("rapi", "http://marklogic.com/rest-api");
-
-        SimpleNamespaceContext namespaceContext = new SimpleNamespaceContext(namespaces);
 
         XMLUnit.setIgnoreAttributeOrder(true);
         XMLUnit.setIgnoreWhitespace(true);
@@ -60,7 +57,13 @@ public class ResourceExtensionsTest {
         XMLUnit.setNormalizeWhitespace(true);
         XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
 
-        XMLUnit.setXpathNamespaceContext(namespaceContext);
+        HashMap<String,String> namespaces = new HashMap<String, String>();
+        namespaces.put("rapi", "http://marklogic.com/rest-api");
+
+        SimpleNamespaceContext namespaceContext = new SimpleNamespaceContext(namespaces);
+
+        xpather = XMLUnit.newXpathEngine();
+        xpather.setNamespaceContext(namespaceContext);
 	}
 	@AfterClass
 	public static void afterClass() {
@@ -88,7 +91,7 @@ public class ResourceExtensionsTest {
 	}
 
 	@Test
-	public void testResourceServiceExtension() throws XpathException {
+	public void testResourceServiceExtension() throws XpathException, SAXException, IOException {
 		ResourceExtensionsManager extensionMgr =
 			Common.client.newServerConfigManager().newResourceExtensionsManager();
 
@@ -103,11 +106,12 @@ public class ResourceExtensionsTest {
 		extensionMgr.readServices(RESOURCE_NAME, handle);
 		assertEquals("Failed to retrieve resource services", resourceServices, handle.get());
 
-		Document result = extensionMgr.listServices(new DOMHandle()).get();
+		String result = extensionMgr.listServices(new StringHandle().withFormat(Format.XML)).get();
 		assertNotNull("Failed to retrieve resource services list", result);
-		assertXpathExists(
+		assertTrue("List without resource", xpather.getMatchingNodes(
 				"/rapi:resources/rapi:resource/rapi:name[string(.) = 'testresource']",
-				result);
+				XMLUnit.buildControlDocument(result)
+				).getLength() == 1);
 
 		extensionMgr.deleteServices(RESOURCE_NAME);
 		extensionMgr.readServices(RESOURCE_NAME, handle);

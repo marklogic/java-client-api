@@ -15,10 +15,8 @@
  */
 package com.marklogic.client.test;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathExists;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -27,17 +25,17 @@ import java.util.Map;
 
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.custommonkey.xmlunit.XpathEngine;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import com.marklogic.client.ExtensionMetadata;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Format;
 import com.marklogic.client.TransformExtensionsManager;
-import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.StringHandle;
 
 public class TransformExtensionsTest {
@@ -46,18 +44,13 @@ public class TransformExtensionsTest {
 	final static String XQUERY_FILE = XQUERY_NAME + ".xqy"; 
 	final static String XSLT_FILE   = XSLT_NAME + ".xsl"; 
 
-	static private String xqueryTransform;
-	static private String xslTransform;
+	static private String      xqueryTransform;
+	static private String      xslTransform;
+	static private XpathEngine xpather;
 
 	@BeforeClass
 	public static void beforeClass() throws IOException {
 		Common.connectAdmin();
-
-		HashMap<String,String> namespaces = new HashMap<String, String>();
-		namespaces.put("xsl",  "http://www.w3.org/1999/XSL/Transform");
-		namespaces.put("rapi", "http://marklogic.com/rest-api");
-
-        SimpleNamespaceContext namespaceContext = new SimpleNamespaceContext(namespaces);
 
         XMLUnit.setIgnoreAttributeOrder(true);
         XMLUnit.setIgnoreWhitespace(true);
@@ -65,7 +58,15 @@ public class TransformExtensionsTest {
         XMLUnit.setNormalizeWhitespace(true);
         XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
 
-        XMLUnit.setXpathNamespaceContext(namespaceContext);
+		HashMap<String,String> namespaces = new HashMap<String, String>();
+		namespaces.put("xsl",  "http://www.w3.org/1999/XSL/Transform");
+		namespaces.put("rapi", "http://marklogic.com/rest-api");
+
+        SimpleNamespaceContext namespaceContext = new SimpleNamespaceContext(namespaces);
+
+        xpather = XMLUnit.newXpathEngine();
+        xpather.setNamespaceContext(namespaceContext);
+
 		xqueryTransform = Common.testFileToString(XQUERY_FILE);
 		xslTransform    = Common.testFileToString(XSLT_FILE);
 	}
@@ -101,7 +102,7 @@ public class TransformExtensionsTest {
 	}
 
 	@Test
-	public void testTransformExtensions() throws XpathException {
+	public void testTransformExtensions() throws XpathException, SAXException, IOException {
 		TransformExtensionsManager extensionMgr =
 			Common.client.newServerConfigManager().newTransformExtensionsManager();
 
@@ -115,14 +116,23 @@ public class TransformExtensionsTest {
 		extensionMgr.readXQueryTransform(XQUERY_NAME, handle);
 		assertEquals("Failed to retrieve XQuery transform", xqueryTransform, handle.get());
 
-		Document result = extensionMgr.readXSLTransform(XSLT_NAME, new DOMHandle()).get();
+		String result = extensionMgr.readXSLTransform(XSLT_NAME, new StringHandle()).get();
 		assertNotNull("Failed to retrieve XSLT transform", result);
-		assertXpathExists("/xsl:stylesheet", result);
+		assertTrue("Did not recognize XSLT transform", xpather.getMatchingNodes(
+				"/xsl:stylesheet",
+				XMLUnit.buildControlDocument(result)
+				).getLength() == 1);
 
-		result = extensionMgr.listTransforms(new DOMHandle()).get();
+		result = extensionMgr.listTransforms(new StringHandle().withFormat(Format.XML)).get();
 		assertNotNull("Failed to retrieve transforms list", result);
-		assertXpathExists("/rapi:transforms/rapi:transform/rapi:name[string(.) = 'testxqy']", result);
-		assertXpathExists("/rapi:transforms/rapi:transform/rapi:name[string(.) = 'testxsl']", result);
+		assertTrue("List without XQuery transform", xpather.getMatchingNodes(
+				"/rapi:transforms/rapi:transform/rapi:name[string(.) = 'testxqy']",
+				XMLUnit.buildControlDocument(result)
+				).getLength() == 1);
+		assertTrue("List without XSLT transform", xpather.getMatchingNodes(
+				"/rapi:transforms/rapi:transform/rapi:name[string(.) = 'testxsl']",
+				XMLUnit.buildControlDocument(result)
+				).getLength() == 1);
 
         extensionMgr.deleteTransform(XQUERY_NAME);
         boolean transformDeleted = true;

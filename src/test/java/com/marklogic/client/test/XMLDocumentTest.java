@@ -41,7 +41,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.ls.DOMImplementationLS;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -78,19 +77,18 @@ public class XMLDocumentTest {
 		root.appendChild(domDocument.createTextNode("mixed"));
 		domDocument.appendChild(root);
 
-		String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
-				.getDOMImplementation()).createLSSerializer().writeToString(domDocument);
+		String domString = Common.testDocumentToString(domDocument);
 
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		docMgr.write(docId, new DOMHandle().with(domDocument));
 
 		String docText = docMgr.read(docId, new StringHandle()).get();
 		assertNotNull("Read null string for XML content",docText);
-		assertXMLEqual("Failed to read XML document as String", docText, domString);
+		assertXMLEqual("Failed to read XML document as String",domString,docText);
 
 		Document readDoc = docMgr.read(docId, new DOMHandle()).get();
 		assertNotNull("Read null document for XML content",readDoc);
-		assertXMLEqual("Failed to read XML document as DOM",domDocument,readDoc);
+		assertXMLEqual("Failed to read XML document as DOM",Common.testDocumentToString(readDoc),domString);
 
 		String docId2 = "/test/testWrite2.xml";
 
@@ -98,16 +96,16 @@ public class XMLDocumentTest {
 		SourceHandle sourceHandle = new SourceHandle();
 		sourceHandle.setTransformer(transformer);
 		docMgr.write(docId2, docMgr.read(docId, sourceHandle));
-		readDoc = docMgr.read(docId2, new DOMHandle()).get();
-		assertNotNull("Read null document for transform result",readDoc);
-		assertXMLEqual("Transform result not equivalent to source",domDocument,readDoc);
+		docText = docMgr.read(docId2, new StringHandle()).get();
+		assertNotNull("Read null document for transform result",docText);
+		assertXMLEqual("Transform result not equivalent to source",domString,docText);
 
 		InputSourceHandle saxHandle = new InputSourceHandle();
-		saxHandle.set(new InputSource(new StringReader(docText)));
+		saxHandle.set(new InputSource(new StringReader(domString)));
 		docMgr.write(docId, saxHandle);
-		readDoc = docMgr.read(docId, new DOMHandle()).get();
-		assertNotNull("Read null document for SAX writer",readDoc);
-		assertXMLEqual("Failed to read XML document as DOM",domDocument,readDoc);
+		docText = docMgr.read(docId2, new StringHandle()).get();
+		assertNotNull("Read null document for SAX writer",docText);
+		assertXMLEqual("Failed to read XML document as DOM",domString,docText);
 
 		final HashMap<String,Integer> counter = new HashMap<String,Integer>(); 
 		counter.put("elementCount",0);
