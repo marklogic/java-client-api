@@ -1022,7 +1022,9 @@ public class JerseyServices implements RESTServices {
 		if (headers.containsKey("ETag")) {
 			List<String> values = headers.get("ETag");
 			if (values != null) {
-				version = Long.valueOf(values.get(0));
+				// trim the double quotes
+				String value = values.get(0);
+				version = Long.valueOf(value.substring(1, value.length() - 1));
 			}
 		}
 		descriptor.setVersion(version);
@@ -1033,7 +1035,7 @@ public class JerseyServices implements RESTServices {
 				!((DocumentDescriptorImpl) desc).isInternal()) {
 			long version = desc.getVersion();
 			if (version != DocumentDescriptor.UNKNOWN_VERSION) {
-				return builder.header(name, String.valueOf(version));
+				return builder.header(name, "\""+String.valueOf(version)+"\"");
 			}
 		}
 		return builder;
