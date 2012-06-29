@@ -412,7 +412,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 			return false;
 		}
-		if (status != ClientResponse.Status.OK)
+		if (status != ClientResponse.Status.OK && status != ClientResponse.Status.PARTIAL_CONTENT)
 			throw new FailedRequestException("read failed: "
 					+ status.getReasonPhrase(), extractErrorFields(response));
 
