@@ -754,11 +754,12 @@ public class JerseyServices implements RESTServices {
 				value = HandleAccessor.as(contentHandle).sendContent();
 			}
 
-			String[] typeParts = mimetype.contains("/") ? mimetype
-					.split("/", 2) : null;
+			String[] typeParts = (mimetype != null && mimetype.contains("/")) ?
+					mimetype.split("/", 2) : null;
 
-			MediaType typePart = (typeParts != null) ? new MediaType(
-					typeParts[0], typeParts[1]) : MediaType.WILDCARD_TYPE;
+			MediaType typePart = (typeParts != null) ?
+					new MediaType(typeParts[0], typeParts[1]) :
+						MediaType.WILDCARD_TYPE;
 
 			BodyPart bodyPart = null;
 			if (value instanceof OutputStreamSender) {
