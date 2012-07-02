@@ -48,7 +48,6 @@ import com.marklogic.client.config.QueryOptions.QueryAnnotation;
 import com.marklogic.client.config.QueryOptions.QueryCollection;
 import com.marklogic.client.config.QueryOptions.QueryConstraint;
 import com.marklogic.client.config.QueryOptions.QueryCustom;
-import com.marklogic.client.config.QueryOptions.QuerySearchableExpression;
 import com.marklogic.client.config.QueryOptions.QueryCustom.FinishFacet;
 import com.marklogic.client.config.QueryOptions.QueryCustom.Parse;
 import com.marklogic.client.config.QueryOptions.QueryCustom.StartFacet;
@@ -72,13 +71,14 @@ import com.marklogic.client.config.QueryOptions.QueryRange;
 import com.marklogic.client.config.QueryOptions.QueryRange.Bucket;
 import com.marklogic.client.config.QueryOptions.QueryRange.ComputedBucket;
 import com.marklogic.client.config.QueryOptions.QueryRange.ComputedBucket.AnchorValue;
+import com.marklogic.client.config.QueryOptions.QuerySearchableExpression;
 import com.marklogic.client.config.QueryOptions.QuerySortOrder;
 import com.marklogic.client.config.QueryOptions.QueryState;
 import com.marklogic.client.config.QueryOptions.QuerySuggestionSource;
 import com.marklogic.client.config.QueryOptions.QueryTerm;
 import com.marklogic.client.config.QueryOptions.QueryTerm.TermApply;
 import com.marklogic.client.config.QueryOptions.QueryTransformResults;
-import com.marklogic.client.config.QueryOptions.QueryUri;
+import com.marklogic.client.config.QueryOptions.QueryTuples;
 import com.marklogic.client.config.QueryOptions.QueryValue;
 import com.marklogic.client.config.QueryOptions.QueryValues;
 import com.marklogic.client.config.QueryOptions.QueryWord;
@@ -126,6 +126,29 @@ public final class QueryOptionsBuilder {
 			geospatial.addGeoOption(this.getValue());
 		}
 	}
+	
+
+	public enum QueryUri implements QueryValuesItem {
+
+		YES;
+
+		@Override
+		public void build(QueryValues values) {
+			values.setUri();
+		}
+		
+		@Override
+		public String toString() {
+			return "";
+		}
+
+		@Override
+		public void build(QueryTuples tuples) {
+			tuples.setUri();
+		}
+
+	}
+
 
 	/**
 	 * Marks classes that can be annotated with XML elements.
@@ -175,6 +198,7 @@ public final class QueryOptionsBuilder {
 	 */
 	public interface QueryGrammarItem {
 
+		public void build(QueryGrammar grammar);
 	}
 
 	/**
@@ -239,6 +263,7 @@ public final class QueryOptionsBuilder {
 	 */
 	public interface QueryValuesItem {
 		public void build(QueryValues values);
+		public void build(QueryTuples tuples);
 	}
 
 	/**
@@ -296,6 +321,12 @@ public final class QueryOptionsBuilder {
 		public void build(QueryValues values) {
 			values.addValuesOption(this.getValue());
 		}
+
+		@Override
+		public void build(QueryTuples tuples) {
+			tuples.addValuesOption(this.getValue());
+		}
+		
 
 	}
 
@@ -405,6 +436,15 @@ public final class QueryOptionsBuilder {
 
 	}
 
+	public class Quotation extends TextOption<String> implements QueryGrammarItem {
+
+		@Override
+		public void build(QueryGrammar grammar) {
+			grammar.setQuotation(this.getValue());
+		}
+		
+	}
+	
 	private abstract class TextOption<T extends Object> {
 
 		private T value;
@@ -506,7 +546,7 @@ public final class QueryOptionsBuilder {
 	 */
 	public AnyElement additionalQuery(String xmlString) {
 		org.w3c.dom.Element element = domElement(xmlString);
-		return new AnyElement("additional-query", element);
+		return new AnyElement(element);
 	}
 
 	public Aggregate aggregate(String aggregate) {
@@ -1005,8 +1045,6 @@ public final class QueryOptionsBuilder {
 	/**
 	 * Construct a new GrammarOption
 	 * 
-	 * @param quotation
-	 *            optional string to qualify quotations in the search grammar.
 	 * @param implicit
 	 *            optional cts:element to wrap all searches implicitly. Set to
 	 *            null for no implicit query.
@@ -1015,19 +1053,12 @@ public final class QueryOptionsBuilder {
 	 *            search grammar.
 	 * @return A component for use in a QueryOptionsBuilder expression.
 	 */
-	public QueryGrammar grammar(String quotation, org.w3c.dom.Element implicit,
+	public QueryGrammar grammar(org.w3c.dom.Element implicit,
 			QueryGrammarItem... grammarItems) {
 		QueryGrammar grammar = new QueryGrammar();
-		grammar.setQuotation(quotation);
 		grammar.setImplicit(implicit);
 		for (QueryGrammarItem queryGrammarItem : grammarItems) {
-			if (queryGrammarItem instanceof QueryStarter) {
-				QueryStarter starter = (QueryStarter) queryGrammarItem;
-				grammar.addStarter(starter);
-			} else if (queryGrammarItem instanceof QueryJoiner) {
-				QueryJoiner joiner = (QueryJoiner) queryGrammarItem;
-				grammar.addJoiner(joiner);
-			}
+			queryGrammarItem.build(grammar);		
 		}
 		return grammar;
 	}
@@ -1436,7 +1467,7 @@ public final class QueryOptionsBuilder {
 				term.setEmptyApply((TermApply) option);
 			}
 			if (option instanceof BaseConstraintItem) {
-				term.setConstraintItem((BaseConstraintItem) option);
+				term.setSource((BaseConstraintItem) option);
 			}
 		}
 		return term;
@@ -1462,6 +1493,14 @@ public final class QueryOptionsBuilder {
 		return t;
 	}
 
+	public QueryOptionsItem tuples(String name, QueryValuesItem... tupleOptions) {
+		QueryTuples tuples = new QueryTuples();
+		tuples.setName(name);
+		for (QueryValuesItem option : tupleOptions) {
+			option.build(tuples);
+		}
+		return tuples;
+	}
 	public QName type(String type) {
 		return new QName(type);
 	}
@@ -1550,4 +1589,16 @@ public final class QueryOptionsBuilder {
 		}
 		return extractMetadata;
 	}
+
+	public QueryGrammarItem quotation(String quotation) {
+		Quotation q =  new Quotation();
+		q.setValue(quotation);
+		return q;
+	}
+
+	public org.w3c.dom.Element implicit(String xmlString) {
+		return domElement(xmlString);
+	}
+
+	
 }

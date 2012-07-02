@@ -29,7 +29,6 @@ import javax.net.ssl.SSLException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
-import com.marklogic.client.config.DeleteQueryDefinition;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.auth.params.AuthPNames;
@@ -66,6 +65,7 @@ import com.marklogic.client.RequestLogger;
 import com.marklogic.client.RequestParameters;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ValueLocator;
+import com.marklogic.client.config.DeleteQueryDefinition;
 import com.marklogic.client.config.KeyValueQueryDefinition;
 import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.StringQueryDefinition;
@@ -121,7 +121,7 @@ public class JerseyServices implements RESTServices {
 	private FailedRequest extractErrorFields(ClientResponse response) {
 		InputStream is = response.getEntityInputStream();
 		try {
-			FailedRequest handler = new FailedRequest(is);
+			FailedRequest handler = new FailedRequest(response.getStatus(), is);
 			return handler;
 		} catch (RuntimeException e) {
 			throw (e);

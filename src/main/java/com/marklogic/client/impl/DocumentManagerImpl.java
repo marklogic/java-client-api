@@ -21,8 +21,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.DocumentManager;
 import com.marklogic.client.DocumentDescriptor;
+import com.marklogic.client.DocumentManager;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.Format;

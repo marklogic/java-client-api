@@ -274,8 +274,8 @@ public class QueryOptionsHandleTest {
 	public void buildGrammar() {
 		QueryGrammar g = builder
 				.grammar(
-						"\"",
-						builder.domElement("<cts:and-query strength=\"20\" xmlns:cts=\"http://marklogic.com/cts\"/>"),
+						builder.implicit("<cts:and-query strength=\"20\" xmlns:cts=\"http://marklogic.com/cts\"/>"),
+						builder.quotation("\""),
 						builder.starterGrouping("(", 30, ")"), builder.starterPrefix("-",
 								40, new QName("cts:not-query)")), builder.joiner(
 								"AND", 20, JoinerApply.PREFIX, new QName(
@@ -416,14 +416,14 @@ public class QueryOptionsHandleTest {
 				TermApply.ALL_RESULTS, builder.word(builder.element("nation"))));
 
 		QueryWord word = (QueryWord) options.getTerm()
-				.getConstraintConfiguration();
+				.getSource();
 		assertEquals("TermConfig constraint definition", "nation", word
 				.getElement().getLocalPart());
 		mgr.writeOptions("tmp", options);
 		QueryOptionsHandle options2 = mgr.readOptions("tmp",
 				new QueryOptionsHandle());
 		assertEquals("TermConfig after storing", "nation", options2.getTerm()
-				.getConstraintConfiguration().getElement().getLocalPart());
+				.getSource().getElement().getLocalPart());
 
 	}
 
@@ -531,15 +531,17 @@ public class QueryOptionsHandleTest {
 		QueryOptionsHandle options = mgr.readOptions("tmp",
 				new QueryOptionsHandle());
 
+		logger.debug(options.toXMLString());
+		
 		Element e = options.getAdditionalQuery();
-		assertEquals("QueryString wrong after serializing AdditionalQuery", "uri", e.getNodeName());
+		assertEquals("QueryString wrong after serializing QueryAdditionalQuery", "directory-query", e.getNodeName());
 
 		e.setTextContent("/oscars2/");
-		options.build(builder.additionalQuery(e));
+		options.setAdditionalQuery(e);
 		optionsString = options.toXMLString();
 
 		logger.debug(optionsString);
-		assertTrue("Updated Option not updated from AdditionalQuery",
+		assertTrue("Updated Option not updated from QueryAdditionalQuery",
 				optionsString.contains("/oscars2/"));
 
 	}
@@ -787,7 +789,7 @@ public class QueryOptionsHandleTest {
 		QueryValues collectionValues = options.getValues("coll");
 		assertTrue(collectionValues.getValuesOptions().get(0).equals("limit=10"));
 		
-		assertEquals("element-test", options.getValues("persona").getSource().getElement().getLocalPart());
+		assertEquals("element-test", options.getValues("persona").getRange().getElement().getLocalPart());
 		
 		
 	}

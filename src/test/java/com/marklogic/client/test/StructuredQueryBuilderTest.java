@@ -15,16 +15,14 @@
  */
 package com.marklogic.client.test;
 
-import com.marklogic.client.config.StructuredQueryBuilder;
-import com.marklogic.client.config.StructuredQueryDefinition;
-
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
+
+import com.marklogic.client.config.StructuredQueryBuilder;
+import com.marklogic.client.config.StructuredQueryDefinition;
 
 public class StructuredQueryBuilderTest {
     @Test

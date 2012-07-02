@@ -15,13 +15,13 @@
  */
 package com.marklogic.client.config;
 
+import java.util.ArrayList;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlValue;
-import java.util.ArrayList;
 
 public final class ValuesBuilder {
     @XmlAccessorType(XmlAccessType.FIELD)

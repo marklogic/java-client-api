@@ -15,10 +15,9 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.config.QueryDefinition;
-
-import java.util.HashMap;
 import java.util.HashSet;
+
+import com.marklogic.client.config.QueryDefinition;
 
 public abstract class AbstractQueryDefinition implements QueryDefinition {
     protected String optionsUri = null;

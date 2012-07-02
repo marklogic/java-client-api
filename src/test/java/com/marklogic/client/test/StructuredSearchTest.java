@@ -15,26 +15,23 @@
  */
 package com.marklogic.client.test;
 
-import com.marklogic.client.GenericDocumentManager;
-import com.marklogic.client.QueryManager;
-import com.marklogic.client.TextDocumentManager;
-import com.marklogic.client.config.MatchDocumentSummary;
-import com.marklogic.client.config.MatchLocation;
-import com.marklogic.client.config.StringQueryDefinition;
-import com.marklogic.client.config.StructuredQueryBuilder;
-import com.marklogic.client.config.StructuredQueryDefinition;
-import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.io.StringHandle;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.IOException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.GenericDocumentManager;
+import com.marklogic.client.QueryManager;
+import com.marklogic.client.config.MatchDocumentSummary;
+import com.marklogic.client.config.MatchLocation;
+import com.marklogic.client.config.StructuredQueryBuilder;
+import com.marklogic.client.config.StructuredQueryDefinition;
+import com.marklogic.client.io.SearchHandle;
 
 public class StructuredSearchTest {
     @BeforeClass

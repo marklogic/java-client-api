@@ -15,10 +15,8 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Format;
 import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.io.ValuesHandle;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 

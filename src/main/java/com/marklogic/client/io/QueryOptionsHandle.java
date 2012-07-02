@@ -67,6 +67,7 @@ import com.marklogic.client.config.QueryOptions.QuerySortOrder;
 import com.marklogic.client.config.QueryOptions.QuerySuggestionSource;
 import com.marklogic.client.config.QueryOptions.QueryTerm;
 import com.marklogic.client.config.QueryOptions.QueryTransformResults;
+import com.marklogic.client.config.QueryOptions.QueryTuples;
 import com.marklogic.client.config.QueryOptions.QueryValues;
 import com.marklogic.client.config.QueryOptionsBuilder.NamespaceBinding;
 import com.marklogic.client.config.QueryOptionsBuilder.QueryOptionsItem;
@@ -263,6 +264,19 @@ public final class QueryOptionsHandle
 		}
 		return null;
 	}
+	
+	public List<QueryTuples> getTuples() {
+		return optionsHolder.getQueryTuples();
+	}
+
+	public QueryTuples getTuples(String tuplesName) {
+		for (QueryTuples values : getTuples()) {
+			if (values.getName().equals(tuplesName)) {
+				return values;
+			}
+		}
+		return null;
+	}
 
 	public Boolean getReturnAggregates() {
 		return returnWithDefault(optionsHolder.getReturnAggregates(), false);
@@ -390,6 +404,9 @@ public final class QueryOptionsHandle
 
 	}
 
+	public void setQueryTuples(List<QueryTuples> values) {
+		optionsHolder.setQueryTuples(values);
+	}
 	public void setQueryValues(List<QueryValues> values) {
 		optionsHolder.setQueryValues(values);
 	}
@@ -641,4 +658,5 @@ public final class QueryOptionsHandle
 	public void setExtractMetadata(QueryExtractMetadata extractMetadata) {
 		optionsHolder.setExtractMetadata(extractMetadata);
 	}
+
 }

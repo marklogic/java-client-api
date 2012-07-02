@@ -45,7 +45,7 @@ public abstract class MarkLogicServerException extends RuntimeException {
 	@Override
 	public String getMessage() {
 		if (super.getMessage() != null && failedRequest != null) {
-			return "Local message: " + super.getMessage() + "Server Message: " + failedRequest.getMessage();
+			return "Local message: " + super.getMessage() + ". Server Message: " + failedRequest.getMessage();
 		}
 		else if (failedRequest != null) {
 			return failedRequest.getMessage();

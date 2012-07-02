@@ -15,6 +15,10 @@
  */
 package com.marklogic.client.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+
 import javax.xml.namespace.QName;
 
 import com.marklogic.client.ElementLocator;
@@ -28,19 +32,14 @@ import com.marklogic.client.config.MatchDocumentSummary;
 import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.StringQueryDefinition;
 import com.marklogic.client.config.StructuredQueryBuilder;
-import com.marklogic.client.config.ValuesListDefinition;
 import com.marklogic.client.config.ValuesDefinition;
+import com.marklogic.client.config.ValuesListDefinition;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.ValuesHandle;
-import com.marklogic.client.io.ValuesListHandle;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.marker.ValuesListReadHandle;
 import com.marklogic.client.io.marker.ValuesReadHandle;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 
 public class QueryManagerImpl extends AbstractLoggingManager implements QueryManager {
     private RESTServices services = null;

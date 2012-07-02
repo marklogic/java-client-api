@@ -17,38 +17,60 @@ package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
+import com.marklogic.client.QueryOptionsManager;
+import com.marklogic.client.ServerConfigurationManager;
 import com.marklogic.client.config.QueryOptions.FragmentScope;
+import com.marklogic.client.config.QueryOptions.QueryCollection;
+import com.marklogic.client.config.QueryOptions.QueryCustom;
 import com.marklogic.client.config.QueryOptions.QueryDefaultSuggestionSource;
+import com.marklogic.client.config.QueryOptions.QueryElementQuery;
 import com.marklogic.client.config.QueryOptions.QueryExtractMetadata;
+import com.marklogic.client.config.QueryOptions.QueryGeospatialElement;
 import com.marklogic.client.config.QueryOptions.QueryGrammar;
 import com.marklogic.client.config.QueryOptions.QueryGrammar.QueryJoiner;
 import com.marklogic.client.config.QueryOptions.QueryGrammar.QueryJoiner.Comparator;
 import com.marklogic.client.config.QueryOptions.QueryGrammar.QueryJoiner.JoinerApply;
 import com.marklogic.client.config.QueryOptions.QueryGrammar.QueryStarter;
 import com.marklogic.client.config.QueryOptions.QueryGrammar.Tokenize;
+import com.marklogic.client.config.QueryOptions.QueryProperties;
 import com.marklogic.client.config.QueryOptions.QueryRange;
+import com.marklogic.client.config.QueryOptions.QueryRange.ComputedBucket.AnchorValue;
 import com.marklogic.client.config.QueryOptions.QuerySortOrder;
 import com.marklogic.client.config.QueryOptions.QuerySortOrder.Direction;
 import com.marklogic.client.config.QueryOptions.QuerySortOrder.Score;
+import com.marklogic.client.config.QueryOptions.QueryTerm.TermApply;
 import com.marklogic.client.config.QueryOptions.QueryTransformResults;
+import com.marklogic.client.config.QueryOptions.QueryTuples;
+import com.marklogic.client.config.QueryOptions.QueryValue;
 import com.marklogic.client.config.QueryOptions.QueryValues;
+import com.marklogic.client.config.QueryOptions.QueryWord;
 import com.marklogic.client.config.QueryOptionsBuilder;
 import com.marklogic.client.io.QueryOptionsHandle;
 
+/* 
+ * This test targets the QueryOptionsBuilder.
+ * testRootOptions is the entry point for the test, which parallels the 
+ * schema search.rnc.
+ */
 public class QueryOptionsTest {
 
 	QueryOptionsBuilder builder;
+
+	private static final Logger logger = (Logger) LoggerFactory
+			.getLogger(QueryOptionsTest.class);
 
 	@Before
 	public void before() {
@@ -61,8 +83,8 @@ public class QueryOptionsTest {
 		testAdditionalQuery();
 
 		testAnnotations();
-		// testConstraints();
-		testValues();
+		testConstraints();
+		testValuesAndTuples();
 		testDefaultSuggestionSource();
 		testExtractMetadata();
 		testGrammar();
@@ -71,7 +93,7 @@ public class QueryOptionsTest {
 		testSearchableExpression();
 		testSortOrder();
 		testSuggestionSource();
-		// testTerm();
+		testTerm();
 		testTransformResults();
 
 		testAtomicOptions();
@@ -96,7 +118,7 @@ public class QueryOptionsTest {
 				builder.returnFrequencies(true), builder.returnPlan(true),
 				builder.returnQtext(true), builder.returnQuery(true),
 				builder.returnResults(false), builder.returnSimilar(true),
-				builder.returnValues(false), builder.searchOption("limit=10"),
+				builder.returnValues(false), builder.searchOption("checked"),
 				builder.transformResults("raw"));
 
 		System.out.println(options.toXMLString());
@@ -124,6 +146,10 @@ public class QueryOptionsTest {
 		options.addForest(662L);
 		assertEquals("forest from setter", new Long(662), options.getForests()
 				.get(2));
+		options.getForests().remove(123L);
+		options.getForests().remove(662L);
+		options.getForests().remove(235L);
+		
 		assertEquals("PageLength from build", 10L, options.getPageLength());
 		options.setPageLength(15L);
 		assertEquals("PageLength(); from setter", 15, options.getPageLength());
@@ -168,15 +194,38 @@ public class QueryOptionsTest {
 				options.getReturnValues());
 		options.setReturnValues(true);
 		assertTrue("ReturnValues(); from setter", options.getReturnValues());
-		assertEquals("SearchOption from build", "limit=10", options
+		assertEquals("SearchOption from build", "checked", options
 				.getSearchOptions().get(0));
-		options.getSearchOptions().set(0, "limit=1000");
+		options.getSearchOptions().set(0, "unchecked");
 		assertTrue("SearchOption() from setter", options.getSearchOptions()
-				.get(0).equals("limit=1000"));
-		// ? assertEquals("TransformResults from build", "raw",
-		// options.getTransformResults()); options.setTransformResults("none");
-		// assertEquals("TransformResults(); from setter", "none",
-		// options.getTransformResults());
+				.get(0).equals("unchecked"));
+		
+		
+		options = exercise(options);
+		assertFalse("returnFacets from setter", options.getReturnFacets());
+		assertTrue("returnMetrics from setter", options.getReturnMetrics());
+		assertEquals("concurrencyLevel from setter", 16,
+				options.getConcurrencyLevel());
+		assertTrue("Debug(); from setter", options.getDebug());
+		assertEquals("FragmentScope(); from setter", FragmentScope.DOCUMENTS,
+				options.getFragmentScope());
+		assertEquals("PageLength(); from server", 15, options.getPageLength());
+		assertEquals("QualityWeight(); from server", 5.6,
+				options.getQualityWeight(), 0.0);
+		assertFalse("ReturnAggregates(); from server",
+				options.getReturnAggregates());
+		assertFalse("ReturnConstraints(); from server",
+				options.getReturnConstraints());
+		assertFalse("ReturnFrequencies(); from server",
+				options.getReturnFrequencies());
+		assertFalse("ReturnPlan(); from server", options.getReturnPlan());
+		assertFalse("ReturnQtext(); from server", options.getReturnQtext());
+		assertFalse("ReturnQuery(); from server", options.getReturnQuery());
+		assertTrue("ReturnResults(); from server", options.getReturnResults());
+		assertFalse("ReturnSimilar(); from server", options.getReturnSimilar());
+		assertTrue("ReturnValues(); from server", options.getReturnValues());
+		assertTrue("SearchOption() from server", options.getSearchOptions()
+				.get(0).equals("unchecked"));
 	}
 
 	private void testAdditionalQuery() {
@@ -193,7 +242,13 @@ public class QueryOptionsTest {
 		options.setAdditionalQuery(aq);
 		assertTrue(options.getAdditionalQuery().getTextContent()
 				.equals("some arbitrary query string"));
+		logger.debug(options.toXMLString());
+		options = exercise(options);
 
+		aq = options.getAdditionalQuery();
+		assertEquals("query", aq.getLocalName());
+		assertEquals("http://marklogic.com/cts", aq.getNamespaceURI());
+		aq.setTextContent("some arbitrary query string");
 	};
 
 	private void testAnnotations() {
@@ -213,6 +268,11 @@ public class QueryOptionsTest {
 		assertEquals("changed the note", options.getAnnotations().get(0).get(0)
 				.getTextContent());
 
+		options = exercise(options);
+		annotation = options.getAnnotations().get(0).get(0);
+
+		assertEquals("changed the note", options.getAnnotations().get(0).get(0)
+				.getTextContent());
 	};
 
 	/*
@@ -228,67 +288,288 @@ public class QueryOptionsTest {
 		testPropertiesConstraint();
 		testCustomConstraint();
 		testGeospatialConstraint();
-		fail("complete implementation");
 	};
 
 	private void testCollectionConstraint() {
+		QueryOptionsHandle options = new QueryOptionsHandle();
+		options.build(builder.constraint(
+				"collectionConstraint",
+				builder.collection(false, "prefix",
+						builder.facetOption("limit=10"),
+						builder.facetOption("descending"))));
+
+		QueryCollection coll = options.getConstraint("collectionConstraint")
+				.getSource();
+		assertEquals("prefix", coll.getPrefix());
+		assertEquals("limit=10", coll.getFacetOptions().get(0));
+
+		coll.getFacetOptions().add("unchecked");
+		assertEquals("unchecked", coll.getFacetOptions().get(2));
+
+		options = exercise(options);
+		coll = options.getConstraint("collectionConstraint").getSource();
+		assertEquals("prefix", coll.getPrefix());
+		assertEquals("limit=10", coll.getFacetOptions().get(0));
+
 	};
 
+	/*
+	 * This function writes options to the REST server instance in order to
+	 * check validation and round-tripping.
+	 */
+	private QueryOptionsHandle exercise(QueryOptionsHandle options) {
+		Common.connectAdmin();
+		ServerConfigurationManager serverConfig = Common.client
+				.newServerConfigManager();
+
+		serverConfig.readConfiguration();
+
+		serverConfig.setQueryOptionValidation(true);
+		serverConfig.writeConfiguration();
+
+		QueryOptionsManager mgr = Common.client.newServerConfigManager()
+				.newQueryOptionsManager();
+		mgr.writeOptions("tmp", options);
+		return mgr.readOptions("tmp", new QueryOptionsHandle());
+
+	}
+
 	private void testValueConstraint() {
+		QueryOptionsHandle options = new QueryOptionsHandle();
+		options.build(builder.constraint("value",
+				builder.value(builder.element("", "value"))));
+
+		QueryValue v = options.getConstraint("value").getSource();
+		assertEquals("value", v.getElement().getLocalPart());
+
+		v.setFragmentScope(FragmentScope.DOCUMENTS);
 	};
 
 	private void testRangeConstraint() {
+		QueryOptionsHandle options = new QueryOptionsHandle();
+
+		options.build(builder.constraint("decade", builder.range(true,
+				builder.type("xs:gYear"),
+				builder.element("http://marklogic.com/wikipedia", "nominee"),
+				builder.attribute("year"),
+				builder.bucket("2000s", "2000s", null, null),
+				builder.bucket("1990s", "1990s", "1990", "2000"),
+				builder.bucket("1980s", "1980s", "1980", "1990"),
+				builder.bucket("1970s", "1970s", "1970", "1980"),
+				builder.bucket("1960s", "1960s", "1960", "1970"),
+				builder.bucket("1950s", "1950s", "1950", "1960"),
+				builder.bucket("1940s", "1940s", "1940", "1950"),
+				builder.bucket("1930s", "1930s", "1930", "1940"),
+				builder.bucket("1920s", "1920s", "1920", "1930"),
+				builder.facetOption("limit=10"))));
+
+		options = exercise(options);
+
+		assertEquals("2000s", ((QueryRange) options.getConstraint("decade")
+				.getSource()).getBuckets().get(0).getContent());
+
+		options = new QueryOptionsHandle();
+		options.build(builder.constraint("date", builder.range(false,
+				new QName("xs:dateTime"), builder.computedBucket("older",
+						"Older than 1 years", null, "-P365D", AnchorValue.NOW),
+				builder.computedBucket("year", "1 month to 1 year ago",
+						"-P365D", "-P30D", AnchorValue.NOW), builder
+						.computedBucket("month", "7 to 30 days ago", "-P30D",
+								"-P7D", AnchorValue.NOW), builder
+						.computedBucket("week", "1 to 7 days ago", "-P7D",
+								"-P1D", AnchorValue.NOW), builder
+						.computedBucket("today", "Today", "-P1D", "P0D",
+								AnchorValue.NOW), builder.computedBucket(
+						"future", "Future", "P0D", null, AnchorValue.NOW),
+				builder.facetOption("limit=10"), builder
+						.facetOption("descending"), builder.element(
+						"http://purl.org/dc/elements/1.1/", "date"))));
+
+		logger.debug(options.toXMLString());
+		options = exercise(options);
+
+		assertEquals(AnchorValue.NOW,
+				((QueryRange) options.getConstraint("date").getSource())
+						.getComputedBuckets().get(0).getAnchorValue());
+
 	};
 
 	private void testWordConstraint() {
+		QueryOptionsHandle options = new QueryOptionsHandle();
+
+		options.build(builder.constraint("word",
+				builder.word(builder.field("summary"))));
+
+		options = exercise(options);
+
+		QueryWord qw = options.getConstraint("word").getSource();
+
+		assertEquals("summary", qw.getFieldName());
+
 	};
 
 	private void testElementQueryConstraint() {
+
+		QueryOptionsHandle options = new QueryOptionsHandle();
+
+		options.build(builder.constraint("eq", builder.elementQuery(
+				"http://purl.org/dc/elements/1.1/", "date")));
+
+		options = exercise(options);
+
+		QueryElementQuery qw = options.getConstraint("eq").getSource();
+
+		assertEquals("date", qw.getName());
 	};
 
 	private void testPropertiesConstraint() {
+		QueryOptionsHandle options = new QueryOptionsHandle();
+
+		options.build(builder.constraint("props", builder.properties()));
+
+		options = exercise(options);
+
+		QueryProperties props = options.getConstraint("props").getSource();
+
+		assertTrue(props != null);
 	};
 
 	private void testCustomConstraint() {
+		QueryOptionsHandle options = new QueryOptionsHandle();
+
+		options.build(builder.constraint("queryCustom", builder.customFacet(
+				builder.parse("parse", "http://my/namespace", "/my/parse.xqy"),
+				builder.startFacet("start", "http://my/namespace",
+						"/my/start.xqy"), builder.finishFacet("finish",
+						"http://my/namespace", "/my/finish.xqy"), builder
+						.facetOption("limit=10"), builder
+						.termOption("punctuation-insensitive"), builder
+						.annotation("<a>annotation</a>"))));
+
+		QueryCustom queryCustom = (QueryCustom) options.getConstraint(
+				"queryCustom").getSource();
+		assertEquals("queryCustom constraint builder", "parse", queryCustom
+				.getParse().getApply());
+		assertEquals("queryCustom constraint builder", "/my/finish.xqy",
+				queryCustom.getFinishFacet().getAt());
+		assertEquals("queryCustom constraint builder", "http://my/namespace",
+				queryCustom.getStartFacet().getNs());
+
+		options = exercise(options);
+
+		assertEquals("queryCustom constraint builder", "parse", queryCustom
+				.getParse().getApply());
+		assertEquals("queryCustom constraint builder", "/my/finish.xqy",
+				queryCustom.getFinishFacet().getAt());
+		assertEquals("queryCustom constraint builder", "http://my/namespace",
+				queryCustom.getStartFacet().getNs());
+
 	};
 
 	private void testGeospatialConstraint() {
+		
+		QueryOptionsHandle options = new QueryOptionsHandle();
+		options.build(builder.constraint(
+				"geoelem",
+				builder.geospatialElement(
+						builder.element("ns1", "elementwithcoords"),
+						builder.geoOption("type=long-lat-point"))));
+		options.build(builder.constraint(
+				"geoattr",
+				builder.geospatialAttributePair(builder.element("sf1"),
+						builder.attribute("intptlat"),
+						builder.attribute("intptlon"),
+						builder.facetOption("limit=10"),
+						builder.heatmap(23.2, -118.3, 23.3, -118.2, 4, 4))));
+		options.build(builder.constraint(
+				"geoElemPair",
+				builder.geospatialElementPair(builder.element("sf1"),
+						builder.element("intptlat"),
+						builder.element("intptlon"))));
+
+		QueryGeospatialElement geoElem = options.getConstraint("geoelem")
+				.getSource();
+		assertEquals("GeoConstraint latitude", "ns1", geoElem.getElement()
+				.getNamespaceURI());
+
+		options = exercise(options);
+		geoElem = options.getConstraint("geoelem")
+				.getSource();
+		assertEquals("GeoConstraint latitude", "ns1", geoElem.getElement()
+				.getNamespaceURI());
+		
 	};
 
 	/*
 	 * scatter test of various values nodes. see constraint methods for
-	 * compehensive coverage of range, value, etc. This method is comprehensive
+	 * comprehensive coverage of range, value, etc. This method is comprehensive
 	 * for values-specific methods
 	 */
-	private void testValues() {
+	private void testValuesAndTuples() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
 		options.build(builder.values("uri", builder.uri(),
-				builder.valuesOption("limit=10")), builder.values("coll",
-				builder.collection(false, "prefix"),
-				builder.valuesOption("limit=10")), builder.values(
-				"persona",
-				builder.range(true, new QName("xs:string"),
-						builder.element("element-test"),
-						builder.attribute("attribute-test"))), builder.values(
-				"fieldrange",
-				builder.range(false, new QName("xs:string"),
-						builder.field("range")), builder.aggregate("median")),
-				builder.values("field", builder.field("fieldname")));
+							builder.valuesOption("limit=10")),
+						builder.values("coll",
+							builder.collection(false, "prefix"),
+							builder.valuesOption("limit=10")), 
+						builder.tuples("persona",
+							builder.range(true, new QName("xs:string"),
+								builder.element("element-test"),
+								builder.attribute("attribute-test")
+								),
+							builder.range(false, new QName("xs:string"), builder.element("element-test"))), 
+						builder.tuples("cttuple", 
+							builder.uri(),
+							builder.collection(false, "c")),
+						builder.tuples("fields",
+							builder.field("int1"),
+							builder.field("int2")),
+						builder.values(
+								"fieldrange",
+								builder.range(false, new QName("xs:int"),
+								builder.field("int1")), builder.aggregate("median")),  // field must exist to pass with an aggregate -- search-impl.xqy 3080 bug?
+						
+						builder.values("field", builder.field("fieldname")));
 
-		assertEquals(5, options.getValues().size());
+		logger.debug(options.toXMLString());
+		
+		assertEquals(4, options.getValues().size());
 		assertEquals("uri", options.getValues("uri").getName());
 		QueryValues collectionValues = options.getValues("coll");
 		assertTrue(collectionValues.getValuesOptions().get(0)
 				.equals("limit=10"));
-		assertEquals("element-test", options.getValues("persona").getSource()
+		
+		assertEquals(3, options.getTuples().size());
+		QueryTuples tuples = options.getTuples("persona");
+		assertEquals("attribute-test", tuples.getRange().get(0)
+				.getAttribute().getLocalPart());
+		assertEquals("element-test", tuples.getRange().get(1)
 				.getElement().getLocalPart());
+		assertNotNull(options.getTuples("cttuple").getCollection());
+		assertNotNull(options.getTuples("cttuple").getUri());
+		assertEquals("int1", options.getTuples("fields").getField().get(0).getName());
+		assertEquals("int2", options.getTuples("fields").getField().get(1).getName());
+		
+		options = exercise(options);
+		assertEquals(3, options.getTuples().size());
+		
+		tuples = options.getTuples("persona");
+		assertEquals("attribute-test", tuples.getRange().get(0)
+				.getAttribute().getLocalPart());
+		assertEquals("element-test", tuples.getRange().get(1)
+				.getElement().getLocalPart());
+		assertNotNull(options.getTuples("cttuple").getCollection());
+		assertNotNull(options.getTuples("cttuple").getUri());
+		assertEquals("int1", options.getTuples("fields").getField().get(0).getName());
+		assertEquals("int2", options.getTuples("fields").getField().get(1).getName());
 
-		collectionValues.setName("coll2");
+		collectionValues.setName("coll3");
 		options.addValues(collectionValues);
-		assertEquals(6, options.getValues().size());
+		assertEquals(5, options.getValues().size());
 
 	};
 
+	
 	/*
 	 * this test targets default Suggestion Source and wordLexicon
 	 * testSuggestionSource targets comprehensive definition of
@@ -313,16 +594,19 @@ public class QueryOptionsTest {
 
 	};
 
+	/**
+	 * Set configuration for extracting metadata from search results.
+	 */
 	private void testExtractMetadata() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
 		options.build(builder.extractMetadata(
 				builder.constraintValue("constraint-ref"),
-				builder.qname("elem-ns", "elem-name", null, null),	
-				builder.jsonkey("json-key")
-				));
-		
+				builder.qname("elem-ns", "elem-name", null, null),
+				builder.jsonkey("json-key")));
+
 		QueryExtractMetadata metadata = options.getExtractMetadata();
-		assertEquals("constraint-ref", metadata.getConstraintValues().get(0).getRef());
+		assertEquals("constraint-ref", metadata.getConstraintValues().get(0)
+				.getRef());
 		assertEquals("elem-ns", metadata.getQNames().get(0).getElemNs());
 		assertEquals("json-key", metadata.getJsonKeys().get(0).getName());
 
@@ -331,8 +615,8 @@ public class QueryOptionsTest {
 	private void testGrammar() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
 		options.build(builder.grammar(
-				"\"",
-				builder.domElement("<cts:and-query strength=\"20\" xmlns:cts=\"http://marklogic.com/cts\"/>"),
+				builder.implicit("<cts:and-query strength=\"20\" xmlns:cts=\"http://marklogic.com/cts\"/>"),
+				builder.quotation("\""),
 				builder.starterGrouping("(", 30, ")"), builder.starterPrefix(
 						"-", 40, new QName("cts:not-query")), builder.joiner(
 						"AND", 20, JoinerApply.PREFIX, new QName(
@@ -412,8 +696,8 @@ public class QueryOptionsTest {
 
 	private void testSearchableExpression() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.build(builder
-				.searchableExpression("/p:sf1", builder.namespace("p", "http://my.namespace")));
+		options.build(builder.searchableExpression("/p:sf1",
+				builder.namespace("p", "http://my.namespace")));
 
 		String se = options.getSearchableExpression();
 		assertEquals("/p:sf1", se);
@@ -427,7 +711,6 @@ public class QueryOptionsTest {
 		options.setSearchableExpression(se);
 		assertEquals("/p:sf2", options.getSearchableExpression());
 
-		// TODO alternate pattern.
 	};
 
 	private void testSortOrder() {
@@ -465,30 +748,36 @@ public class QueryOptionsTest {
 	};
 
 	private void testTerm() {
-		fail("Not implemented");
+
+		QueryOptionsHandle options = new QueryOptionsHandle().build(builder
+				.term(TermApply.ALL_RESULTS,
+						builder.word(builder.element("nation"))));
+
+		QueryWord word = (QueryWord) options.getTerm().getSource();
+		assertEquals("nation", word.getElement().getLocalPart());
+
+		options = exercise(options);
+
+		assertEquals("TermConfig after storing", "nation", options.getTerm()
+				.getSource().getElement().getLocalPart());
+
 	};
 
 	private void testTransformResults() {
 
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
 		QueryOptionsHandle handle = new QueryOptionsHandle();
-		handle.build(builder.returnMetrics(false), 
-				builder.returnQtext(false),
-				builder.debug(true), 
-				builder.transformResults("raw"),
-				builder.constraint("id", 
-						builder.value(builder.element("id"))));
-		
+		handle.build(builder.returnMetrics(false), builder.returnQtext(false),
+				builder.debug(true), builder.transformResults("raw"),
+				builder.constraint("id", builder.value(builder.element("id"))));
+
 		assertEquals("raw", handle.getTransformResults().getApply());
 		assertEquals("id", handle.getConstraint("id").getName());
-		
+
 		QueryTransformResults tr = handle.getTransformResults();
 		tr.setAt("x");
 		tr.setNs("http://namespace");
 		assertEquals("x", handle.getTransformResults().getAt());
 		assertEquals("http://namespace", handle.getTransformResults().getNs());
-		
-		
 
 	}
 

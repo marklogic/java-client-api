@@ -31,7 +31,7 @@ public interface QueryOptionsManager {
 	 * Use a QueryOptionsHandle object for access to the configuration with Java.
 	 * 
 	 * @param name Name of options configuration stored on MarkLogic REST instance.
-	 * @param queryOptionsHandle, an object into which to fetch the query options.
+	 * @param queryOptionsHandle an object into which to fetch the query options.
 	 * @param <T> A set of classes able to read query configurations from the database.
 	 * @return A an object holding the query configurations
 	 *

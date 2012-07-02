@@ -20,9 +20,10 @@ import org.junit.runners.Suite;
 
 /* NOTE:
  * Create a REST server that matches the parameters in Common.java before running the tests
- 
+ */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+	
 	DatabaseClientFactoryTest.class,
 	DatabaseClientTest.class,
     ServerConfigurationManagerTest.class,
@@ -45,7 +46,8 @@ import org.junit.runners.Suite;
 
     QueryOptionsHandleTest.class,
     QueryOptionsManagerTest.class,
-
+    QueryOptionsTest.class,
+    
     ResourceExtensionsTest.class,
     ResourceServicesTest.class,
     TransformExtensionsTest.class,
@@ -56,6 +58,6 @@ import org.junit.runners.Suite;
 
     NamespacesManagerTest.class
 	})
-	*/
+	
 public class AllClientTests {
 }
