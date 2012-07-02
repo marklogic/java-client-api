@@ -37,7 +37,7 @@ public class FailedRequestTest {
 			mgr.writeOptions("testempty", new QueryOptionsHandle());
 		} catch (ForbiddenUserException e) {
 			assertEquals(
-					"Local message: User is not allowed to write /config/queryServer Message: You do not have permission to this method and URL",
+					"Local message: User is not allowed to write /config/query. Server Message: You do not have permission to this method and URL",
 					e.getMessage());
 			assertEquals(403, e.getFailedRequest().getStatusCode());
 			assertEquals("Forbidden", e.getFailedRequest().getStatus());
@@ -58,7 +58,7 @@ public class FailedRequestTest {
 			mgr.writeOptions("testempty", handle);
 		} catch (FailedRequestException e) {
 			assertEquals(
-					"Local message: /config/query write failed: Bad RequestServer Message: RESTAPI-INVALIDCONTENT: (err:FOER0000) Invalid content: Operation results in invalid Options: Operator or constraint name \"blah\" is used more than once (must be unique).",
+					"Local message: /config/query write failed: Bad Request. Server Message: RESTAPI-INVALIDCONTENT: (err:FOER0000) Invalid content: Operation results in invalid Options: Operator or constraint name \"blah\" is used more than once (must be unique).",
 					e.getMessage());
 			assertEquals(400, e.getFailedRequest().getStatusCode());
 			assertEquals("Bad Request", e.getFailedRequest().getStatus());
