@@ -467,7 +467,7 @@ public class DocumentMetadataHandle
 			XMLOutputFactory factory = XMLOutputFactory.newFactory();
 			factory.setProperty("javax.xml.stream.isRepairingNamespaces", new Boolean(true));
 
-			XMLStreamWriter serializer = factory.createXMLStreamWriter(out, "utf-8");
+			XMLStreamWriter serializer = factory.createXMLStreamWriter(out, "UTF-8");
 
 			serializer.setPrefix("rapi", REST_API_NS);
 			serializer.setPrefix("prop", PROPERTY_API_NS);

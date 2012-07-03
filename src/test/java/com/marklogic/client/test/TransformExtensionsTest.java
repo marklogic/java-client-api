@@ -67,8 +67,8 @@ public class TransformExtensionsTest {
         xpather = XMLUnit.newXpathEngine();
         xpather.setNamespaceContext(namespaceContext);
 
-		xqueryTransform = Common.testFileToString(XQUERY_FILE);
-		xslTransform    = Common.testFileToString(XSLT_FILE);
+		xqueryTransform = Common.testFileToString(XQUERY_FILE, "UTF-8");
+		xslTransform    = Common.testFileToString(XSLT_FILE, "UTF-8");
 	}
 	@AfterClass
 	public static void afterClass() {
@@ -164,7 +164,7 @@ public class TransformExtensionsTest {
 	public void writeXSLTransform(TransformExtensionsManager extensionMgr) {
 		extensionMgr.writeXSLTransform(
 				XSLT_NAME,
-				new StringHandle().with(xslTransform),
+				new StringHandle().withFormat(Format.XML).withMimetype("application/xslt+xml").with(xslTransform),
 				makeXSLTMetadata(),
 				makeParameters()
 				);

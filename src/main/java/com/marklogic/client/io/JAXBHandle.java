@@ -106,6 +106,13 @@ public class JAXBHandle
 		}
 	}
 
+	protected Marshaller makeMarshaller(JAXBContext context) throws JAXBException {
+		Marshaller marshaller = context.createMarshaller();
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+		marshaller.setProperty(Marshaller.JAXB_ENCODING,         "UTF-8");
+		return marshaller;
+	}
+
 	@Override
 	protected Class<InputStream> receiveAs() {
     	return InputStream.class;
@@ -132,8 +139,7 @@ public class JAXBHandle
 	@Override
 	public void write(OutputStream out) throws IOException {
 		try {
-			Marshaller marshaller = context.createMarshaller();
-			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+			Marshaller marshaller = makeMarshaller(context);
 			marshaller.marshal(content, out);
 		} catch (JAXBException e) {
 			logger.error("Failed to marshall object for writing to database document",e);

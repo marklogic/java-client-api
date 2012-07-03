@@ -53,7 +53,7 @@ public class DocumentOutputStream {
 	public static void run(String host, int port, String user, String password, Authentication authType) {
 		System.out.println("example: "+DocumentOutputStream.class.getName());
 
-		final int    MAX_BUF  = 1024;
+		final int    MAX_BUF  = 8192;
 		final String FILENAME = "flipper.xml";
 
 		// create the client

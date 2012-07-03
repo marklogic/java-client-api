@@ -185,7 +185,7 @@ public class XMLStreamReaderHandle
 
         	XMLOutputFactory outputFactory = XMLOutputFactory.newFactory();
 			XMLEventWriter   writer        =
-				outputFactory.createXMLEventWriter(out);
+				outputFactory.createXMLEventWriter(out, "UTF-8");
 
 			writer.add(reader);
 			writer.flush();

@@ -15,11 +15,13 @@
  */
 package com.marklogic.client.example.handle;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 
 import org.jdom.Document;
 import org.jdom.JDOMException;
@@ -151,7 +153,10 @@ public class JDOMHandle
 	}
 	@Override
 	public void write(OutputStream out) throws IOException {
-		getOutputter().output(content, out);
+		getOutputter().output(
+				content,
+				new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))
+				);
 	}
 
 }

@@ -15,11 +15,13 @@
  */
 package com.marklogic.client.io;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
@@ -200,7 +202,7 @@ public class InputSourceHandle
 		try {
 			TransformerFactory.newInstance().newTransformer().transform(
 					new SAXSource(makeReader(), content),
-					new StreamResult(out)
+					new StreamResult(new BufferedWriter(new OutputStreamWriter(out, "UTF-8")))
 					);
 		} catch (TransformerException e) {
 			logger.error("Failed to transform input source into result",e);

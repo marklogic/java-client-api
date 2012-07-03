@@ -58,6 +58,8 @@ public class InputStreamHandle
 {
 	private InputStream content;
 
+	final static private int BUFFER_SIZE = 8192;
+
 	public InputStreamHandle() {
 		super();
 	}
@@ -109,7 +111,7 @@ public class InputStreamHandle
 
 			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-			byte[] b = new byte[1024];
+			byte[] b = new byte[BUFFER_SIZE];
 			int len = 0;
 			while ((len = content.read(b)) != -1) {
 				buffer.write(b, 0, len);

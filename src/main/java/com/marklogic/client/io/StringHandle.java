@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.io;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 
 import com.marklogic.client.Format;
@@ -32,8 +34,8 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * A String Handle represents document content as a string for reading or writing.
  */
 public class StringHandle
-	extends BaseHandle<String, String>
-	implements BufferableHandle,
+	extends BaseHandle<String, OutputStreamSender>
+	implements OutputStreamSender, BufferableHandle,
 		JSONReadHandle, JSONWriteHandle, 
 		TextReadHandle, TextWriteHandle,
 		XMLReadHandle, XMLWriteHandle,
@@ -93,11 +95,14 @@ public class StringHandle
 		this.content = content;
 	}
 	@Override
-	protected String sendContent() {
+	protected OutputStreamSender sendContent() {
 		if (content == null) {
 			throw new IllegalStateException("No string to write");
 		}
 
-		return content;
+		return this;
+	}
+	public void write(OutputStream out) throws IOException {
+		out.write(toBuffer());
 	}
 }

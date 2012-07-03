@@ -51,7 +51,7 @@ public class ReaderHandle
 		XMLReadHandle, XMLWriteHandle,
 		StructureReadHandle, StructureWriteHandle
 {
-	final static private int BUFFER_SIZE = 1024;
+	final static private int BUFFER_SIZE = 8192;
 
     private Reader content;
 

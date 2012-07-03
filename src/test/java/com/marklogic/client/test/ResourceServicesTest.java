@@ -40,7 +40,7 @@ public class ResourceServicesTest {
 	@BeforeClass
 	public static void beforeClass() throws IOException {
 		Common.connectAdmin();
-		resourceServices = Common.testFileToString(ResourceExtensionsTest.XQUERY_FILE);
+		resourceServices = Common.testFileToString(ResourceExtensionsTest.XQUERY_FILE, "UTF-8");
 	}
 	@AfterClass
 	public static void afterClass() {
@@ -55,7 +55,7 @@ public class ResourceServicesTest {
 
 		extensionMgr.writeServices(
 				ResourceExtensionsTest.RESOURCE_NAME,
-				new StringHandle().withFormat(Format.XML).with(resourceServices),
+				new StringHandle().withFormat(Format.TEXT).with(resourceServices),
 				ResourceExtensionsTest.makeMetadata(),
 				ResourceExtensionsTest.makeParameters()
 				);

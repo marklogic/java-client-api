@@ -175,7 +175,7 @@ public class XMLEventReaderHandle
 	public void write(OutputStream out) throws IOException {
 		try {
 			XMLOutputFactory factory = XMLOutputFactory.newFactory();
-			XMLEventWriter   writer  = factory.createXMLEventWriter(out);
+			XMLEventWriter   writer  = factory.createXMLEventWriter(out, "UTF-8");
 
 			writer.add(content);
 			writer.flush();

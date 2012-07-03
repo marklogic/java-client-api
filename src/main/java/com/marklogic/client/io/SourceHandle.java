@@ -15,11 +15,13 @@
  */
 package com.marklogic.client.io;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -161,6 +163,6 @@ public class SourceHandle
 		return this;
 	}
 	public void write(OutputStream out) throws IOException {
-		transform(new StreamResult(out));
+		transform(new StreamResult(new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))));
 	}
 }

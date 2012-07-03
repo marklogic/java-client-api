@@ -191,6 +191,7 @@ public class DOMHandle
 
 			DOMImplementationLS domImpl = (DOMImplementationLS) factory.newDocumentBuilder().getDOMImplementation();
 			LSOutput domOutput = domImpl.createLSOutput();
+			domOutput.setEncoding("UTF-8");
 			domOutput.setByteStream(out);
 			domImpl.createLSSerializer().write(content, domOutput);
 		} catch (DOMException e) {

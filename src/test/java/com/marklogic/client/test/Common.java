@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -88,10 +89,22 @@ public class Common {
 	}
 	// the testFile*() methods get a file in the src/test/resources directory
 	static String testFileToString(String filename) throws IOException {
-		return readerToString(testFileToReader(filename));
+		return testFileToString(filename, null);
+	}
+	static String testFileToString(String filename, String encoding) throws IOException {
+		return readerToString(testFileToReader(filename, encoding));
 	}
 	static Reader testFileToReader(String filename) {
-		return new InputStreamReader(testFileToStream(filename));
+		return testFileToReader(filename, null);
+	}
+	static Reader testFileToReader(String filename, String encoding) {
+		try {
+			return (encoding != null) ?
+					new InputStreamReader(testFileToStream(filename), encoding) :
+					new InputStreamReader(testFileToStream(filename));
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	static InputStream testFileToStream(String filename) {
 		return ResourceExtensionsTest.class.getClassLoader().getResourceAsStream(filename);

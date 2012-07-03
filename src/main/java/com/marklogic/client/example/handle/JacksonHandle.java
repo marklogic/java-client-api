@@ -15,11 +15,13 @@
  */
 package com.marklogic.client.example.handle;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -139,6 +141,9 @@ public class JacksonHandle
 	}
 	@Override
 	public void write(OutputStream out) throws IOException {
-		getMapper().writeValue(out, content);
+		getMapper().writeValue(
+				new BufferedWriter(new OutputStreamWriter(out, "UTF-8")),
+				content
+				);
 	}
 }

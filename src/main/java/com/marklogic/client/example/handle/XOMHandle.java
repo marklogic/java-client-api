@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
 import nu.xom.Builder;
 import nu.xom.Document;
@@ -69,8 +70,8 @@ public class XOMHandle
 		return new Builder(false);
 	}
 
-	protected Serializer makeSerializer(OutputStream out) {
-		return new Serializer(out);
+	protected Serializer makeSerializer(OutputStream out) throws UnsupportedEncodingException {
+		return new Serializer(out, "UTF-8");
 	}
 
 	public Document get() {
