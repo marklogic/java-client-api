@@ -1753,7 +1753,7 @@ public class JerseyServices implements RESTServices {
 		WebResource.Builder builder = makeBuilder(path,
 				((RequestParametersImplementation) params).getMapImpl(), null, mimetype);
 
-		if (logger.isInfoEnabled() || true)
+		if (logger.isInfoEnabled())
 			logger.info(String.format("Getting %s as %s", path, mimetype));
 
 		ClientResponse response = builder.get(ClientResponse.class);
