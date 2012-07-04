@@ -15,9 +15,9 @@
  */
 package com.marklogic.client.test;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathExists;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathExists;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -38,8 +38,8 @@ import com.marklogic.client.Transaction;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
+import com.marklogic.client.io.StringHandle;
 
 public class GenericDocumentTest {
 	@BeforeClass
@@ -56,6 +56,10 @@ public class GenericDocumentTest {
 		String docId = "/test/testExists1.txt";
 
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
+
+		// guarantee that a previous run didn't leave the document
+		docMgr.delete(docId);
+
 		assertTrue("Non-existent document appears to exist", docMgr.exists(docId)==null);
 		docMgr.write(docId,new StringHandle().with("A simple text document"));
 		assertTrue("Existent document doesn't appear to exist", docMgr.exists(docId)!=null);
