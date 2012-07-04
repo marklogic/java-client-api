@@ -22,10 +22,23 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * A XML Document Manager supports database operations on XML documents.
  */
 public interface XMLDocumentManager extends DocumentManager<XMLReadHandle, XMLWriteHandle> {
+    /**
+     * The DocumentRepair enumeration specifies whether an XML document is repaired as much as possible or not at all.
+     */
     public enum DocumentRepair {
         FULL, NONE;
     }
 
+	/**
+	 * Returns the repair policy for XML documents written by the manager.
+	 * 
+	 * @return	the repair policy for written documents
+	 */
     public DocumentRepair getDocumentRepair();
+    /**
+	 * Specifies whether poorly formed XML documents written by the manager should be repaired on the server.
+	 * 
+     * @param policy	the repair policy for written documents
+     */
     public void setDocumentRepair(DocumentRepair policy);
 }
