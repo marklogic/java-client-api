@@ -48,7 +48,6 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 	private ServerTransform readTransform;
 	private ServerTransform writeTransform;
     private String          forestName;
-	private MetadataUpdate  metadataUpdatePolicy;
 
 	DocumentManagerImpl(RESTServices services, Format contentFormat) {
 		super();
@@ -430,15 +429,6 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 	@Override
     public void setForestName(String forestName) {
     	this.forestName = forestName;
-    }
-
-	@Override
-    public MetadataUpdate getMetadataUpdatePolicy() {
-    	return metadataUpdatePolicy;
-    }
-	@Override
-    public void SetMetadataUpdatePolicy(MetadataUpdate policy) {
-    	metadataUpdatePolicy = policy;
     }
 
 	@Override

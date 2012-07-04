@@ -36,29 +36,34 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
         ALL, COLLECTIONS, PERMISSIONS, PROPERTIES, QUALITY;
     }
 
-	// whether all permissions and propertiesOption are replaced or only named permissions and propertiesOption
-    public enum MetadataUpdate {
-        REPLACE_ALL, REPLACE_NAMED;
-    }
+	/**
+	 * Creates a document descriptor for identifying the uri of a document,
+	 * its format and mimetype, and its version.
+	 * 
+	 * @param uri	the identifier for the document
+     * @return	a descriptor for the document
+	 */
+    public DocumentDescriptor newDescriptor(String uri);
 
     /**
-     * Checks whether a document exists and gets its length and format
+     * Checks whether a document exists and gets its format and mimetype
      * 
      * To call exists(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
      * 
-     * @param docId
-     * @return
+     * @param docId the URI identifier for the document
+     * @return	a descriptor for the document
      */
     public DocumentDescriptor exists(String docId)
     	throws ForbiddenUserException, FailedRequestException;
+
     /**
      * Checks whether a document exists in an open transaction and gets its length and format
      * 
      * To call exists(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
      * 
-     * @param docId
-     * @param transaction
-     * @return
+     * @param docId	the URI identifier for the document
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     * @return	a descriptor for the document
      */
     public DocumentDescriptor exists(String docId, Transaction transaction)
     	throws ForbiddenUserException, FailedRequestException;
@@ -68,20 +73,45 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
      * 
-     * @param <T>
-     * @param docId
-     * @param contentHandle
-     * @return
+     * @param docId	the URI identifier for the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(String docId, T contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Reads the document content from the database as transformed on the server.
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transform	a server transform to modify the document content
+     * @return	the content handle populated with the content of the document in the database
+     */
     public <T extends R> T read(String docId, T contentHandle, ServerTransform transform)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Reads the document content from the database in the representations provided by the handles
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @return	the content handle populated with the content of the document in the database
+     */
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Reads the document content from the database as transformed on the server.
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transform	a server transform to modify the document content
+     * @return	the content handle populated with the content of the document in the database
+     */
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
@@ -90,21 +120,49 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
      * 
-     * @param <T>
-     * @param docId
-     * @param metadataHandle
-     * @param contentHandle
-     * @return
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Reads the document metadata and content from the database as transformed on the server.
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transform	a server transform to modify the document content
+     * @return	the content handle populated with the content of the document in the database
+     */
     public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Reads the document metadata and content from the database in the representations provided by the handles
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @return	the content handle populated with the content of the document in the database
+     */
     public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Reads the document metadata and content from the database as transformed on the server.
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transform	a server transform to modify the document content
+     * @return	the content handle populated with the content of the document in the database
+     */
     public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
@@ -113,21 +171,49 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
      * 
-     * @param <T>
-     * @param docId
-     * @param contentHandle
-     * @param transaction
-     * @return
+     * @param docId	the URI identifier for the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(String docId, T contentHandle, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Reads the document content from an open database transaction  as transformed on the server.
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transform	a server transform to modify the document content
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     * @return	the content handle populated with the content of the document in the database
+     */
     public <T extends R> T read(String docId, T contentHandle, ServerTransform transform, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Reads the document content from an open database transaction in the representation provided by the handle
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     * @return	the content handle populated with the content of the document in the database
+     */
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Reads the document content from an open database transaction as transformed on the server.
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transform	a server transform to modify the document content
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     * @return	the content handle populated with the content of the document in the database
+     */
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
@@ -136,22 +222,53 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
      * 
-     * @param <T>
-     * @param docId
-     * @param metadataHandle
-     * @param contentHandle
-     * @param transaction
-     * @return
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Reads the document metadata and content from an open database transaction as transformed on the server.
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transform	a server transform to modify the document content
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     * @return	the content handle populated with the content of the document in the database
+     */
     public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Reads the document metadata and content from an open database transaction in the representations provided by the handles
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     * @return	the content handle populated with the content of the document in the database
+     */
     public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Reads the document metadata and content from an open database transaction as transformed on the server.
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transform	a server transform to modify the document content
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     * @return	the content handle populated with the content of the document in the database
+     */
     public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
@@ -160,18 +277,41 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * To call write(), an application must authenticate as rest-writer or rest-admin.
      * 
-     * @param docId
-     * @param contentHandle
+     * @param docId	the URI identifier for the document
+     * @param contentHandle	a handle for writing the content of the document
      */
     public void write(String docId, W contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Writes the document content to the database as transformed on the server.
+     * 
+     * To call write(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param contentHandle	a handle for writing the content of the document
+     * @param transform	a server transform to modify the document content
+     */
     public void write(String docId, W contentHandle, ServerTransform transform)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Writes the document content to the database from the representation provided by the handle
+     * 
+     * To call write(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param contentHandle	a handle for writing the content of the document
+     */
     public void write(DocumentDescriptor desc, W contentHandle)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Writes the document content to the database as transformed on the server.
+     * 
+     * To call write(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param contentHandle	a handle for writing the content of the document
+     * @param transform	a server transform to modify the document content
+     */
     public void write(DocumentDescriptor desc, W contentHandle, ServerTransform transform)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
@@ -180,20 +320,46 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * To call write(), an application must authenticate as rest-writer or rest-admin.
      * 
-     * @param docId
-     * @param metadata
-     * @param contentHandle
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param contentHandle	a handle for writing the content of the document
      */
-    public void write(String docId, DocumentMetadataWriteHandle metadata, W contentHandle)
+    public void write(String docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
-    public void write(String docId, DocumentMetadataWriteHandle metadata, W contentHandle, ServerTransform transform)
+    /**
+     * Writes the document metadata and content to the database as transformed on the server.
+     * 
+     * To call write(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param contentHandle	a handle for writing the content of the document
+     * @param transform	a server transform to modify the document content
+     */
+    public void write(String docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
-    public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadata, W contentHandle)
+    /**
+     * Writes the document metadata and content to the database from the representations provided by the handles
+     * 
+     * To call write(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param contentHandle	a handle for writing the content of the document
+     */
+    public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, W contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
-    public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadata, W contentHandle, ServerTransform transform)
+    /**
+     * Writes the document metadata and content to the database as transformed on the server.
+     * 
+     * To call write(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param contentHandle	a handle for writing the content of the document
+     * @param transform	a server transform to modify the document content
+     */
+    public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     /**
@@ -201,19 +367,45 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * To call write(), an application must authenticate as rest-writer or rest-admin.
      * 
-     * @param docId
-     * @param contentHandle
-     * @param transaction
+     * @param docId	the URI identifier for the document
+     * @param contentHandle	a handle for writing the content of the document
+     * @param transaction	a open transaction under which the document may have been created or deleted
      */
     public void write(String docId, W contentHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Writes the document content to an open database transaction as transformed on the server.
+     * 
+     * To call write(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param contentHandle	a handle for writing the content of the document
+     * @param transform	a server transform to modify the document content
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     */
     public void write(String docId, W contentHandle, ServerTransform transform, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Writes the document content to an open database transaction from the representation provided by the handle
+     * 
+     * To call write(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param contentHandle	a handle for writing the content of the document
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     */
     public void write(DocumentDescriptor desc, W contentHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Writes the document content to an open database transaction as transformed on the server.
+     * 
+     * To call write(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param contentHandle	a handle for writing the content of the document
+     * @param transform	a server transform to modify the document content
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     */
     public void write(DocumentDescriptor desc, W contentHandle, ServerTransform transform, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
@@ -222,21 +414,50 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * To call write(), an application must authenticate as rest-writer or rest-admin.
      * 
-     * @param docId
-     * @param metadata
-     * @param contentHandle
-     * @param transaction
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param contentHandle	a handle for writing the content of the document
+     * @param transaction	a open transaction under which the document may have been created or deleted
      */
-    public void write(String docId, DocumentMetadataWriteHandle metadata, W contentHandle, Transaction transaction)
+    public void write(String docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
-    public void write(String docId, DocumentMetadataWriteHandle metadata, W contentHandle, ServerTransform transform, Transaction transaction)
+    /**
+     * Writes the document metadata and content to an open database transaction as transformed on the server.
+     * 
+     * To call write(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param contentHandle	a handle for writing the content of the document
+     * @param transform	a server transform to modify the document content
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     */
+    public void write(String docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
-    public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadata, W contentHandle, Transaction transaction)
+    /**
+     * Writes the document metadata and content to an open database transaction from the representations provided by the handles
+     * 
+     * To call write(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param contentHandle	a handle for writing the content of the document
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     */
+    public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
-    public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadata, W contentHandle, ServerTransform transform, Transaction transaction)
+    /**
+     * Writes the document metadata and content to an open database transaction as transformed on the server.
+     * 
+     * To call write(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param contentHandle	a handle for writing the content of the document
+     * @param transform	a server transform to modify the document content
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     */
+    public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     /**
@@ -244,7 +465,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * To call delete(), an application must authenticate as rest-writer or rest-admin.
      * 
-     * @param docId
+     * @param docId	the URI identifier for the document
      */
     public void delete(String docId)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -253,14 +474,28 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * To call delete(), an application must authenticate as rest-writer or rest-admin.
      * 
-     * @param docId
-     * @param transaction
+     * @param docId	the URI identifier for the document
+     * @param transaction	a open transaction under which the document may have been created or deleted
      */
     public void delete(String docId, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-
+    /**
+     * Deletes the document metadata and content from the database
+     * 
+     * To call delete(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     */
     public void delete(DocumentDescriptor desc)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    /**
+     * Deletes the document metadata and content from an open database transaction
+     * 
+     * To call delete(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     */
     public void delete(DocumentDescriptor desc, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
@@ -269,10 +504,9 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * To call readMetadata(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
      * 
-     * @param <T>
-     * @param docId
-     * @param metadataHandle
-     * @return
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @return	the metadata handle populated with the metadata for the document in the database
      */
     public <T extends DocumentMetadataReadHandle> T readMetadata(String docId, T metadataHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -281,11 +515,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * To call readMetadata(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
      * 
-     * @param <T>
-     * @param docId
-     * @param metadataHandle
-     * @param transaction
-     * @return
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     * @return	the metadata handle populated with the metadata for the document in the database
      */
     public <T extends DocumentMetadataReadHandle> T readMetadata(String docId, T metadataHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -295,8 +528,8 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * To call writeMetadata(), an application must authenticate as rest-writer or rest-admin.
      * 
-     * @param docId
-     * @param metadataHandle
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for writing the metadata of the document
      */
     public void writeMetadata(String docId, DocumentMetadataWriteHandle metadataHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -305,9 +538,9 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * To call writeMetadata(), an application must authenticate as rest-writer or rest-admin.
      * 
-     * @param docId
-     * @param metadataHandle
-     * @param transaction
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param transaction	a open transaction under which the document may have been created or deleted
      */
     public void writeMetadata(String docId, DocumentMetadataWriteHandle metadataHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -317,7 +550,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * To call writeDefaultMetadata(), an application must authenticate as rest-writer or rest-admin.
      * 
-     * @param docId
+     * @param docId	the URI identifier for the document
      */
     public void writeDefaultMetadata(String docId)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -326,8 +559,8 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * To call writeDefaultMetadata(), an application must authenticate as rest-writer or rest-admin.
      * 
-     * @param docId
-     * @param transaction
+     * @param docId	the URI identifier for the document
+     * @param transaction	a open transaction under which the document may have been created or deleted
      */
     public void writeDefaultMetadata(String docId, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -335,46 +568,71 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
     /**
      * Gets the format of the managed documents
      * 
-     * @return
+     * @return	the format for documents supported by this document manager
      */
     public Format getContentFormat();
 
     /**
      * Returns the categories of metadata to read or write
      * 
-     * @return
+     * @return	the set of metadata categories for reading or writing
      */
     public Set<Metadata> getMetadataCategories();
     /**
      * Specifies the categories of metadata to read or write
-     * 
-     * @param categories
      */
     public void setMetadataCategories(Set<Metadata> categories);
     /**
      * Specifies the categories of metadata to read or write
-     * 
-     * @param categories
      */
     public void setMetadataCategories(Metadata... categories);
 
-    // this manager's default transform when reading
+    /**
+     * Returns the transform for read requests that don't specify a transform
+     * @return	the name of the transform
+     */
     public ServerTransform getReadTransform();
+    /**
+     * Specifies a read transform for read requests that don't specify a transform
+     * 
+     * @param transform	the name of the transform
+     */
     public void setReadTransform(ServerTransform transform);
  
-    // this manager's default transform when writing
+    /**
+     * Returns the transform for read requests that don't specify a transform
+     * @return	the name of the transform
+     */
     public ServerTransform getWriteTransform();
+    /**
+     * Specifies a read transform for read requests that don't specify a transform
+     * 
+     * @param transform	the name of the transform
+     */
     public void setWriteTransform(ServerTransform transform);
- 
+
+    /**
+     * Returns the name of the forest that should store written documents.
+     * @return	the name of the forest
+     */
     public String getForestName();
+    /**
+     * Specifies the name of the forest that should store written documents. You
+     * can leave this name null to let the server select a forest.
+     * 
+     * @param forestName	the name of the forest
+     */
     public void setForestName(String forestName);
 
-    public MetadataUpdate getMetadataUpdatePolicy();
-    public void SetMetadataUpdatePolicy(MetadataUpdate policy);
-
-    public DocumentDescriptor newDescriptor(String uri);
-
-    // for debugging client requests
+    /**
+     * Starts debugging client requests. You can suspend and resume debugging output
+     * using the methods of the logger.
+     * 
+     * @param logger	the logger that receives debugging output
+     */
     public void startLogging(RequestLogger logger);
+    /**
+     *  Stops debugging client requests.
+     */
     public void stopLogging();
 }
