@@ -23,6 +23,10 @@ import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
  * A Binary Document Manager provides database operations on binary documents.
  */
 public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle, BinaryWriteHandle> {
+	/**
+	 * The MetadataExtraction enumeration identifies whether properties are extracted from binary documents
+	 * to metadata properties on the binary document, to a separate XHTML document, or not at all.
+	 */
 	public enum MetadataExtraction {
 		PROPERTIES, DOCUMENT, NONE;
 	}
@@ -32,22 +36,53 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * 
      * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
      * 
-     * @param <T>
-     * @param docId
-     * @param contentHandle
-     * @param start
-     * @param length
-     * @return
+     * @param docId	the URI identifier for the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param start	the zero-based index of the first byte in the range
+     * @param length	the number of bytes in the range
+     * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, long start, long length)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Reads a range of bytes from the content of a binary database document as transformed on the server.
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transform	a server transform to modify the document content
+     * @param start	the zero-based index of the first byte in the range
+     * @param length	the number of bytes in the range
+     * @return	the range of bytes
+     */
 	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, ServerTransform transform, long start, long length)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Reads a range of bytes from the content of a binary database document in the representation provided by the handle
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param start	the zero-based index of the first byte in the range
+     * @param length	the number of bytes in the range
+     * @return	the range of bytes
+     */
 	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, long start, long length)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+    /**
+     * Reads a range of bytes from the content of a binary database document as transformed on the server.
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transform	a server transform to modify the document content
+     * @param start	the zero-based index of the first byte in the range
+     * @param length	the number of bytes in the range
+     * @return	the range of bytes
+     */
 	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, long start, long length)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
@@ -56,23 +91,57 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * 
      * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
      * 
-     * @param <T>
-     * @param docId
-     * @param metadataHandle
-     * @param contentHandle
-     * @param start
-     * @param length
-     * @return
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param start	the zero-based index of the first byte in the range
+     * @param length	the number of bytes in the range
+     * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+	/**
+     * Reads metadata and a range of bytes from the content of a binary database document as transformed on the server.
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transform	a server transform to modify the document content
+     * @param start	the zero-based index of the first byte in the range
+     * @param length	the number of bytes in the range
+     * @return	the range of bytes
+     */
 	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+	/**
+     * Reads metadata and a range of bytes from the content of a binary database document in the representations provided by the handles
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param start	the zero-based index of the first byte in the range
+     * @param length	the number of bytes in the range
+     * @return	the range of bytes
+     */
 	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+	/**
+     * Reads metadata and a range of bytes from the content of a binary database document as transformed on the server.
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transform	a server transform to modify the document content
+     * @param start	the zero-based index of the first byte in the range
+     * @param length	the number of bytes in the range
+     * @return	the range of bytes
+     */
 	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
@@ -81,23 +150,57 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * 
      * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
      * 
-     * @param <T>
-     * @param docId
-     * @param contentHandle
-     * @param start
-     * @param length
-     * @param transaction
-     * @return
+     * @param docId	the URI identifier for the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param start	the zero-based index of the first byte in the range
+     * @param length	the number of bytes in the range
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, long start, long length, Transaction transaction)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+	/**
+     * Reads a range of bytes from the content of a binary document for an open database transaction as transformed on the server.
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transform	a server transform to modify the document content
+     * @param start	the zero-based index of the first byte in the range
+     * @param length	the number of bytes in the range
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     * @return	the range of bytes
+     */
 	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+	/**
+     * Reads a range of bytes from the content of a binary document for an open database transaction in the representation provided by the handle
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param start	the zero-based index of the first byte in the range
+     * @param length	the number of bytes in the range
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     * @return	the range of bytes
+     */
 	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, long start, long length, Transaction transaction)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+	/**
+     * Reads a range of bytes from the content of a binary document for an open database transaction as transformed on the server.
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transform	a server transform to modify the document content
+     * @param start	the zero-based index of the first byte in the range
+     * @param length	the number of bytes in the range
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     * @return	the range of bytes
+     */
 	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
@@ -106,27 +209,72 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * 
      * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
      * 
-     * @param <T>
-     * @param docId
-     * @param metadataHandle
-     * @param contentHandle
-     * @param start
-     * @param length
-     * @param transaction
-     * @return
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param start	the zero-based index of the first byte in the range
+     * @param length	the number of bytes in the range
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+	/**
+     * Reads metadata and a range of bytes from the content of a binary document for an open database transaction as transformed on the server.
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transform	a server transform to modify the document content
+     * @param start	the zero-based index of the first byte in the range
+     * @param length	the number of bytes in the range
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     * @return	the range of bytes
+     */
 	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+	/**
+     * Reads metadata and a range of bytes from the content of a binary document for an open database transaction in the representations provided by the handles
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param start	the zero-based index of the first byte in the range
+     * @param length	the number of bytes in the range
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     * @return	the range of bytes
+     */
 	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-
+	/**
+     * Reads metadata and a range of bytes from the content of a binary document for an open database transaction as transformed on the server.
+     * 
+     * To call read(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param contentHandle	a handle for reading the content of the document
+     * @param transform	a server transform to modify the document content
+     * @param start	the zero-based index of the first byte in the range
+     * @param length	the number of bytes in the range
+     * @param transaction	a open transaction under which the document may have been created or deleted
+     * @return	the range of bytes
+     */
 	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
+	/**
+	 * Returns the metadata extraction policy.
+	 * @return	the policy for extracting metadata
+	 */
 	public MetadataExtraction getMetadataExtraction();
+	/**
+	 * Specifies the metadata extraction policy for binary documents.
+	 * @param policy	the policy for extracting metadata
+	 */
 	public void setMetadataExtraction(MetadataExtraction policy);
 }
