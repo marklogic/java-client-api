@@ -524,12 +524,12 @@ public class JerseyServices implements RESTServices {
 			updateVersion(desc, responseHeaders);
 			updateFormat(desc, responseHeaders);
 			updateMimetype(desc, contentHeaders);
-			desc.setByteLength(ContentDescriptor.UNKNOWN_LENGTH);
+			updateLength(desc, contentHeaders);
 			copyDescriptor(desc, contentBase);
 		} else if (contentBase != null) {
 			updateFormat(contentBase, responseHeaders);
 			updateMimetype(contentBase, contentHeaders);
-			contentBase.setByteLength(ContentDescriptor.UNKNOWN_LENGTH);
+			updateLength(contentBase, contentHeaders);
 		}
 
 		metadataBase.receiveContent(

@@ -29,6 +29,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
+import com.marklogic.client.DocumentDescriptor;
 import com.marklogic.client.DocumentManager.Metadata;
 import com.marklogic.client.BinaryDocumentManager;
 import com.marklogic.client.BinaryDocumentManager.MetadataExtraction;
@@ -60,14 +61,21 @@ public class BinaryDocumentTest {
 		docMgr.setMetadataExtraction(MetadataExtraction.PROPERTIES);
 		docMgr.write(docId, new BytesHandle().with(BYTES_BINARY).withMimetype(mimetype));
 
+		DocumentDescriptor desc = docMgr.exists(docId);
+		assertTrue("Binary exists did not get number of bytes",
+				desc.getByteLength() != DocumentDescriptor.UNKNOWN_LENGTH);
+		assertEquals("Binary exists got wrong number of bytes", BYTES_BINARY.length, desc.getByteLength());
+
 		byte[] buf = docMgr.read(docId, new BytesHandle()).get();
 		assertEquals("Binary document read wrong number of bytes", BYTES_BINARY.length, buf.length);
 
 		buf = Common.streamToBytes(docMgr.read(docId, new InputStreamHandle()).get());
 		assertTrue("Binary document read binary empty input stream",buf.length > 0);
 
-		buf = docMgr.read(docId, new BytesHandle(), 9, 10).get();
+		BytesHandle handle = new BytesHandle();
+		buf = docMgr.read(docId, handle, 9, 10).get();
 		assertEquals("Binary range read wrong number of bytes", 10, buf.length);
+		assertEquals("Binary range did not set length in handle", 10, handle.getByteLength());
 
 		docMgr.setMetadataCategories(Metadata.PROPERTIES);
 		Document metadataDocument = docMgr.readMetadata(docId, new DOMHandle()).get();
