@@ -17,6 +17,7 @@ package com.marklogic.client.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -118,7 +119,7 @@ public class SearchHandle
             SAXParser parser = pfactory.newSAXParser();
             XMLReader reader = parser.getXMLReader();
             reader.setContentHandler(searchResponse);
-            reader.parse(new InputSource(content));
+            reader.parse(new InputSource(new InputStreamReader(content, "UTF-8")));
         } catch (SAXException se) {
             throw new MarkLogicIOException("Could not construct search results: parser error", se);
         } catch (ParserConfigurationException pce) {

@@ -18,6 +18,7 @@ package com.marklogic.client.example.handle;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -68,7 +69,8 @@ public class JacksonHandleExample {
 		if (docStream == null)
 			throw new RuntimeException("Could not read document example");
 
-		JsonNode writeDocument = new ObjectMapper().readValue(docStream, JsonNode.class);
+		JsonNode writeDocument = new ObjectMapper().readValue(
+				new InputStreamReader(docStream, "UTF-8"), JsonNode.class);
 
 		// create an identifier for the document
 		String docId = "/example/"+filename;

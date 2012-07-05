@@ -18,9 +18,11 @@ package com.marklogic.client.io;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -28,6 +30,7 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
@@ -44,7 +47,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * When finished with the reader, close the reader to release the resources.
  */
 public class ReaderHandle
-	extends BaseHandle<Reader, OutputStreamSender>
+	extends BaseHandle<InputStream, OutputStreamSender>
 	implements OutputStreamSender, BufferableHandle,
 		JSONReadHandle, JSONWriteHandle, 
 		TextReadHandle, TextWriteHandle,
@@ -91,12 +94,7 @@ public class ReaderHandle
 		if (buffer == null || buffer.length == 0)
 			content = null;
 		else
-			receiveContent(
-				new InputStreamReader(
-						new ByteArrayInputStream(buffer),
-						Charset.forName("UTF-8")
-						)
-				);
+			receiveContent(new ByteArrayInputStream(buffer));
 	}
 	@Override
 	public byte[] toBuffer() {
@@ -117,12 +115,16 @@ public class ReaderHandle
 	}
 
 	@Override
-	protected Class<Reader> receiveAs() {
-		return Reader.class;
+	protected Class<InputStream> receiveAs() {
+		return InputStream.class;
 	}
 	@Override
-	protected void receiveContent(Reader content) {
-		this.content = content;
+	protected void receiveContent(InputStream content) {
+		try {
+			this.content = new InputStreamReader(content, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new MarkLogicIOException(e);
+		}
 	}
 	@Override
 	protected ReaderHandle sendContent() {

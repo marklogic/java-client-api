@@ -17,9 +17,11 @@ package com.marklogic.client.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
@@ -34,7 +36,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * A String Handle represents document content as a string for reading or writing.
  */
 public class StringHandle
-	extends BaseHandle<String, OutputStreamSender>
+	extends BaseHandle<byte[], OutputStreamSender>
 	implements OutputStreamSender, BufferableHandle,
 		JSONReadHandle, JSONWriteHandle, 
 		TextReadHandle, TextWriteHandle,
@@ -87,12 +89,21 @@ public class StringHandle
 	}
 
 	@Override
-	protected Class<String> receiveAs() {
-		return String.class;
+	protected Class<byte[]> receiveAs() {
+		return byte[].class;
 	}
 	@Override
-	protected void receiveContent(String content) {
-		this.content = content;
+	protected void receiveContent(byte[] content) {
+		try {
+			if (content == null) {
+				this.content = null;
+				return;
+			}
+
+			this.content = new String(content, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new MarkLogicIOException(e);
+		}
 	}
 	@Override
 	protected OutputStreamSender sendContent() {

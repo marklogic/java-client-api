@@ -16,6 +16,8 @@
 package com.marklogic.client.io;
 
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 
 import javax.xml.bind.JAXBContext;
@@ -28,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicBindingException;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.config.QueryOptionsListBuilder;
 import com.marklogic.client.config.QueryOptionsListResults;
 import com.marklogic.client.io.marker.OperationNotSupported;
@@ -93,10 +96,15 @@ public class QueryOptionsListHandle
     @Override
     protected void receiveContent(InputStream content) {
         try {
-            optionsHolder = (QueryOptionsListBuilder.OptionsList) unmarshaller.unmarshal(content);
+            optionsHolder = (QueryOptionsListBuilder.OptionsList) unmarshaller.unmarshal(
+            		new InputStreamReader(content, "UTF-8")
+            		);
+		} catch (UnsupportedEncodingException e) {
+			logger.error("Failed to unmarshall query options list",e);
+			throw new MarkLogicIOException(e);
         } catch (JAXBException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+			logger.error("Failed to unmarshall query options list",e);
+			throw new MarkLogicIOException(e);
         }
     }
 

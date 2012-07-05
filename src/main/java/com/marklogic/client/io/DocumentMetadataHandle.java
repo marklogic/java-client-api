@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -45,6 +46,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.Format;
@@ -283,7 +285,7 @@ public class DocumentMetadataHandle
 				factory.setNamespaceAware(true);
 				factory.setValidating(false);
 				DocumentBuilder builder = factory.newDocumentBuilder();
-				document = builder.parse(content);
+				document = builder.parse(new InputSource(new InputStreamReader(content, "UTF-8")));
 				content.close();
 			}
 

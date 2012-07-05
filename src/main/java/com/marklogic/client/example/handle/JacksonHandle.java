@@ -15,11 +15,11 @@
  */
 package com.marklogic.client.example.handle;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.BufferableHandle;
@@ -108,7 +109,7 @@ public class JacksonHandle
 
 			return buffer.toByteArray();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		}
 	}
 
@@ -122,13 +123,15 @@ public class JacksonHandle
 			return;
 
 		try {
-			this.content = getMapper().readValue(content, JsonNode.class);
+			this.content = getMapper().readValue(
+					new InputStreamReader(content, "UTF-8"), JsonNode.class
+					);
 		} catch (JsonParseException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		} catch (JsonMappingException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		}
 
 	}
@@ -141,9 +144,6 @@ public class JacksonHandle
 	}
 	@Override
 	public void write(OutputStream out) throws IOException {
-		getMapper().writeValue(
-				new BufferedWriter(new OutputStreamWriter(out, "UTF-8")),
-				content
-				);
+		getMapper().writeValue(new OutputStreamWriter(out, "UTF-8"), content);
 	}
 }

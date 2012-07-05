@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -31,9 +30,10 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSException;
+import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSOutput;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.SAXException;
+import org.w3c.dom.ls.LSParser;
+import org.w3c.dom.ls.LSResourceResolver;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicInternalException;
@@ -54,7 +54,7 @@ public class DOMHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
 
-	private EntityResolver         resolver;
+	private LSResourceResolver     resolver;
 	private Document               content;
 	private DocumentBuilderFactory factory;
 
@@ -67,10 +67,10 @@ public class DOMHandle
 		set(content);
 	}
 
-	public EntityResolver getResolver() {
+	public LSResourceResolver getResolver() {
 		return resolver;
 	}
-	public void setResolver(EntityResolver resolver) {
+	public void setResolver(LSResourceResolver resolver) {
 		this.resolver = resolver;
 	}
 
@@ -154,15 +154,19 @@ public class DOMHandle
 				throw new MarkLogicInternalException("Failed to make DOM document builder factory");
 			}
 
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			if (resolver != null)
-				builder.setEntityResolver(resolver);
+			DOMImplementationLS domImpl = (DOMImplementationLS) factory.newDocumentBuilder().getDOMImplementation();
 
-			this.content = builder.parse(content);
+			LSParser parser = domImpl.createLSParser(DOMImplementationLS.MODE_SYNCHRONOUS, null);
+			if (resolver != null) {
+				parser.getDomConfig().setParameter("resource-resolver", resolver);
+			}
+
+			LSInput domInput = domImpl.createLSInput();
+			domInput.setEncoding("UTF-8");
+			domInput.setByteStream(content);
+
+			this.content = parser.parse(domInput);
 			content.close();
-		} catch (SAXException e) {
-			logger.error("Failed to parse DOM document from input stream",e);
-			throw new MarkLogicInternalException(e);
 		} catch (IOException e) {
 			logger.error("Failed to parse DOM document from input stream",e);
 			throw new MarkLogicInternalException(e);

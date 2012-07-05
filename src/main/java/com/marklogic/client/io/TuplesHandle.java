@@ -16,10 +16,11 @@
 package com.marklogic.client.io;
 
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.slf4j.Logger;
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicBindingException;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.config.Tuple;
 import com.marklogic.client.config.TuplesBuilder;
 import com.marklogic.client.config.TuplesResults;
@@ -41,9 +43,7 @@ public class TuplesHandle
     static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
 
     private TuplesBuilder.Tuples tuplesHolder;
-    private TuplesBuilder tuplesBuilder;
     private JAXBContext jc;
-    private Marshaller marshaller;
     private Unmarshaller unmarshaller;
 
     private ValuesDefinition valdef = null;
@@ -52,12 +52,8 @@ public class TuplesHandle
     	super();
     	super.setFormat(Format.XML);
 
-        tuplesBuilder = new TuplesBuilder();
-
         try {
             jc = JAXBContext.newInstance(TuplesBuilder.Tuples.class);
-            marshaller = jc.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             unmarshaller = jc.createUnmarshaller();
         } catch (JAXBException e) {
             throw new MarkLogicBindingException(e);
@@ -83,10 +79,15 @@ public class TuplesHandle
     @Override
     protected void receiveContent(InputStream content) {
         try {
-            tuplesHolder = (TuplesBuilder.Tuples) unmarshaller.unmarshal(content);
+            tuplesHolder = (TuplesBuilder.Tuples) unmarshaller.unmarshal(
+            		new InputStreamReader(content, "UTF-8")
+            		);
+		} catch (UnsupportedEncodingException e) {
+			logger.error("Failed to unmarshall tuples",e);
+			throw new MarkLogicIOException(e);
         } catch (JAXBException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+			logger.error("Failed to unmarshall tuples",e);
+			throw new MarkLogicIOException(e);
         }
     }
 

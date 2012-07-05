@@ -19,7 +19,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -121,8 +123,11 @@ public class JAXBHandle
 	protected void receiveContent(InputStream content) {
 		try {
 			Unmarshaller unmarshaller = context.createUnmarshaller();
-			this.content = unmarshaller.unmarshal(content);
+			this.content = unmarshaller.unmarshal(new InputStreamReader(content, "UTF-8"));
 		} catch (JAXBException e) {
+			logger.error("Failed to unmarshall object read from database document",e);
+			throw new MarkLogicIOException(e);
+		} catch (UnsupportedEncodingException e) {
 			logger.error("Failed to unmarshall object read from database document",e);
 			throw new MarkLogicIOException(e);
 		}

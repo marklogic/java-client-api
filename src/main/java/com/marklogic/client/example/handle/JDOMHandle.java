@@ -15,11 +15,11 @@
  */
 package com.marklogic.client.example.handle;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
@@ -29,6 +29,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.BufferableHandle;
@@ -121,7 +122,7 @@ public class JDOMHandle
 
 			return buffer.toByteArray();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		}
 	}
 
@@ -135,11 +136,13 @@ public class JDOMHandle
 			return;
 
 		try {
-			this.content = getBuilder().build(content);
+			this.content = getBuilder().build(
+					new InputStreamReader(content, "UTF-8")
+					);
 		} catch (JDOMException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		}
 	}
 
@@ -155,7 +158,7 @@ public class JDOMHandle
 	public void write(OutputStream out) throws IOException {
 		getOutputter().output(
 				content,
-				new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))
+				new OutputStreamWriter(out, "UTF-8")
 				);
 	}
 

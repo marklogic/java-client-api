@@ -81,6 +81,13 @@ public class XMLStreamReaderHandle
 	public XMLStreamReader get() {
 		return content;
 	}
+	public void set(XMLStreamReader content) {
+		this.content = content;
+	}
+	public XMLStreamReaderHandle with(XMLStreamReader content) {
+		set(content);
+		return this;
+	}
 
 	public void setFormat(Format format) {
 		if (format != Format.XML)
@@ -155,7 +162,7 @@ public class XMLStreamReaderHandle
 			if (resolver != null)
 				factory.setXMLResolver(resolver);
 
-			this.content = factory.createXMLStreamReader(content);
+			this.content = factory.createXMLStreamReader(content, "UTF-8");
 		} catch (XMLStreamException e) {
 			logger.error("Failed to parse StAX stream from input stream",e);
 			throw new MarkLogicInternalException(e);

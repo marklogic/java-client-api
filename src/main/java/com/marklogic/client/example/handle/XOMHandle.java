@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
@@ -29,6 +30,7 @@ import nu.xom.Serializer;
 import nu.xom.ValidityException;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.BufferableHandle;
@@ -112,7 +114,7 @@ public class XOMHandle
 
 			return buffer.toByteArray();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		}
 	}
 
@@ -126,13 +128,15 @@ public class XOMHandle
 			return;
 
 		try {
-			this.content = getBuilder().build(content);
+			this.content = getBuilder().build(
+					new InputStreamReader(content, "UTF-8")
+					);
 		} catch (ValidityException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		} catch (ParsingException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		}
 	}
 

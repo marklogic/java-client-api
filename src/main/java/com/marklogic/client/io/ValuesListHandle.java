@@ -15,27 +15,25 @@
  */
 package com.marklogic.client.io;
 
-import com.marklogic.client.Format;
-import com.marklogic.client.MarkLogicBindingException;
-import com.marklogic.client.config.CountedDistinctValue;
-import com.marklogic.client.config.DistinctValue;
-import com.marklogic.client.config.ValuesBuilder;
-import com.marklogic.client.config.ValuesDefinition;
-import com.marklogic.client.config.ValuesListBuilder;
-import com.marklogic.client.config.ValuesListResults;
-import com.marklogic.client.config.ValuesResults;
-import com.marklogic.client.io.marker.OperationNotSupported;
-import com.marklogic.client.io.marker.ValuesListReadHandle;
-import com.marklogic.client.io.marker.ValuesReadHandle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import java.io.InputStream;
-import java.util.HashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicBindingException;
+import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.config.ValuesListBuilder;
+import com.marklogic.client.config.ValuesListResults;
+import com.marklogic.client.io.marker.OperationNotSupported;
+import com.marklogic.client.io.marker.ValuesListReadHandle;
 
 public class ValuesListHandle
 	extends BaseHandle<InputStream, OperationNotSupported>
@@ -44,9 +42,7 @@ public class ValuesListHandle
     static final private Logger logger = LoggerFactory.getLogger(ValuesListHandle.class);
 
     private ValuesListBuilder.ValuesList valuesHolder;
-    private ValuesListBuilder valuesBuilder;
     private JAXBContext jc;
-    private Marshaller marshaller;
     private Unmarshaller unmarshaller;
 
     String optionsName = null;
@@ -55,12 +51,8 @@ public class ValuesListHandle
     	super();
     	super.setFormat(Format.XML);
 
-        valuesBuilder = new ValuesListBuilder();
-
         try {
             jc = JAXBContext.newInstance(ValuesListBuilder.ValuesList.class);
-            marshaller = jc.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             unmarshaller = jc.createUnmarshaller();
         } catch (JAXBException e) {
             throw new MarkLogicBindingException(e);
@@ -94,10 +86,15 @@ public class ValuesListHandle
     @Override
     protected void receiveContent(InputStream content) {
         try {
-            valuesHolder = (ValuesListBuilder.ValuesList) unmarshaller.unmarshal(content);
+            valuesHolder = (ValuesListBuilder.ValuesList) unmarshaller.unmarshal(
+            		new InputStreamReader(content, "UTF-8")
+            		);
+		} catch (UnsupportedEncodingException e) {
+			logger.error("Failed to unmarshall values list",e);
+			throw new MarkLogicIOException(e);
         } catch (JAXBException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+			logger.error("Failed to unmarshall values list",e);
+			throw new MarkLogicIOException(e);
         }
     }
 

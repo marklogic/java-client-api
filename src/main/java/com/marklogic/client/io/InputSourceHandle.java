@@ -15,13 +15,14 @@
  */
 package com.marklogic.client.io;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
@@ -182,12 +183,17 @@ public class InputSourceHandle
 	}
 	@Override
 	protected void receiveContent(InputStream content) {
-		if (content == null) {
-			this.content = null;
-			return;
-		}
+		try {
+			if (content == null) {
+				this.content = null;
+				return;
+			}
 
-		this.content = new InputSource(content);
+			this.content = new InputSource(new InputStreamReader(content, "UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			logger.error("Failed to read input stream as input source",e);
+			throw new MarkLogicIOException(e);
+		}
 	}
 	@Override
 	protected OutputStreamSender sendContent() {
@@ -202,7 +208,7 @@ public class InputSourceHandle
 		try {
 			TransformerFactory.newInstance().newTransformer().transform(
 					new SAXSource(makeReader(), content),
-					new StreamResult(new BufferedWriter(new OutputStreamWriter(out, "UTF-8")))
+					new StreamResult(new OutputStreamWriter(out, "UTF-8"))
 					);
 		} catch (TransformerException e) {
 			logger.error("Failed to transform input source into result",e);

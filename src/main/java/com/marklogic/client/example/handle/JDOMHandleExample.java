@@ -18,6 +18,7 @@ package com.marklogic.client.example.handle;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Properties;
 
 import org.jdom.Document;
@@ -68,7 +69,7 @@ public class JDOMHandleExample {
 		if (docStream == null)
 			throw new RuntimeException("Could not read document example");
 
-		Document writeDocument = new SAXBuilder(false).build(docStream);
+		Document writeDocument = new SAXBuilder(false).build(new InputStreamReader(docStream, "UTF-8"));
 
 		// create an identifier for the document
 		String docId = "/example/"+filename;

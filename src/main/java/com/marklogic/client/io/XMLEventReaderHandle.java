@@ -80,6 +80,13 @@ public class XMLEventReaderHandle
 	public XMLEventReader get() {
 		return content;
 	}
+	public void set(XMLEventReader content) {
+		this.content = content;
+	}
+	public XMLEventReaderHandle with(XMLEventReader content) {
+		set(content);
+		return this;
+	}
 
 	public void setFormat(Format format) {
 		if (format != Format.XML)
@@ -154,7 +161,7 @@ public class XMLEventReaderHandle
 			if (resolver != null)
 				factory.setXMLResolver(resolver);
 
-			this.content = factory.createXMLEventReader(content);
+			this.content = factory.createXMLEventReader(content, "UTF-8");
 		} catch (XMLStreamException e) {
 			logger.error("Failed to parse StAX events from input stream",e);
 			throw new MarkLogicInternalException(e);

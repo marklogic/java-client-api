@@ -16,10 +16,11 @@
 package com.marklogic.client.io;
 
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.slf4j.Logger;
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicBindingException;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.config.CountedDistinctValue;
 import com.marklogic.client.config.DistinctValue;
 import com.marklogic.client.config.ValuesBuilder;
@@ -42,9 +44,7 @@ public class ValuesHandle
     static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
 
     private ValuesBuilder.Values valuesHolder;
-    private ValuesBuilder valuesBuilder;
     private JAXBContext jc;
-    private Marshaller marshaller;
     private Unmarshaller unmarshaller;
 
     private ValuesDefinition valuesdef = null;
@@ -53,12 +53,8 @@ public class ValuesHandle
     	super();
     	super.setFormat(Format.XML);
 
-        valuesBuilder = new ValuesBuilder();
-
         try {
             jc = JAXBContext.newInstance(ValuesBuilder.Values.class);
-            marshaller = jc.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             unmarshaller = jc.createUnmarshaller();
         } catch (JAXBException e) {
             throw new MarkLogicBindingException(e);
@@ -84,10 +80,15 @@ public class ValuesHandle
     @Override
     protected void receiveContent(InputStream content) {
         try {
-            valuesHolder = (ValuesBuilder.Values) unmarshaller.unmarshal(content);
+            valuesHolder = (ValuesBuilder.Values) unmarshaller.unmarshal(
+            		new InputStreamReader(content, "UTF-8")
+            		);
+		} catch (UnsupportedEncodingException e) {
+			logger.error("Failed to unmarshall values",e);
+			throw new MarkLogicIOException(e);
         } catch (JAXBException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+			logger.error("Failed to unmarshall values",e);
+			throw new MarkLogicIOException(e);
         }
     }
 

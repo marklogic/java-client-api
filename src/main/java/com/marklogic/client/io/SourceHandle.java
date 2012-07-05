@@ -15,13 +15,14 @@
  */
 package com.marklogic.client.io;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -147,12 +148,16 @@ public class SourceHandle
 	}
 	@Override
 	protected void receiveContent(InputStream content) {
-		if (content == null) {
-			this.content = null;
-			return;
-		}
+		try {
+			if (content == null) {
+				this.content = null;
+				return;
+			}
 
-		this.content = new StreamSource(content);
+			this.content = new StreamSource(new InputStreamReader(content, "UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			throw new MarkLogicIOException(e);
+		}
 	}
 	@Override
 	protected OutputStreamSender sendContent() {
@@ -163,6 +168,6 @@ public class SourceHandle
 		return this;
 	}
 	public void write(OutputStream out) throws IOException {
-		transform(new StreamResult(new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))));
+		transform(new StreamResult(new OutputStreamWriter(out, "UTF-8")));
 	}
 }
