@@ -32,6 +32,7 @@ import com.marklogic.client.Format;
 import com.marklogic.client.ServerConfigurationManager;
 import com.marklogic.client.ServerConfigurationManager.Policy;
 import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.impl.FailedRequest;
 import com.marklogic.client.io.StringHandle;
 
 public class ConditionalDocumentTest {
@@ -77,12 +78,17 @@ public class ConditionalDocumentTest {
 		StringHandle contentHandle = new StringHandle().with(GenericDocumentTest.content);
 
 		Exception ex = null;
+		int statusCode = 0;
 		try {
 			docMgr.write(desc, contentHandle);
 		} catch (FailedRequestException e) {
+			FailedRequest failreq = e.getFailedRequest();
+			if (failreq != null)
+				statusCode = failreq.getStatusCode();
 			ex = e;
 		}
 		assertTrue("Write with bad version succeeded", ex != null);
+		assertTrue("Write with bad version had wrong error", statusCode == 412);
 
 		desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
 		docMgr.write(desc, contentHandle);
@@ -100,21 +106,35 @@ public class ConditionalDocumentTest {
 		assertTrue("Read with good version did not skip content",
 				docMgr.read(desc, new StringHandle()) == null);
 
+		ex = null;
+		statusCode = 0;
 		try {
 			desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
 			docMgr.write(desc, contentHandle);
 		} catch (FailedRequestException e) {
+			FailedRequest failreq = e.getFailedRequest();
+			if (failreq != null)
+				statusCode = failreq.getStatusCode();
+System.out.println(e.getFailedRequest().getStatusCode()+" "+e.getMessage());
 			ex = e;
 		}
 		assertTrue("Overwrite without version succeeded", ex != null);
+		assertTrue("Write with bad version had wrong error", statusCode == 403);
 
+		ex = null;
+		statusCode = 0;
 		try {
 			desc.setVersion(badVersion);
 			docMgr.write(desc, contentHandle);
 		} catch (FailedRequestException e) {
+			FailedRequest failreq = e.getFailedRequest();
+			if (failreq != null)
+				statusCode = failreq.getStatusCode();
+System.out.println(e.getFailedRequest().getStatusCode()+" "+e.getMessage());
 			ex = e;
 		}
 		assertTrue("Overwrite with bad version succeeded", ex != null);
+		assertTrue("Write with bad version had wrong error", statusCode == 412);
 
 		desc.setVersion(goodVersion);
 		docMgr.write(desc, contentHandle);
@@ -124,14 +144,23 @@ public class ConditionalDocumentTest {
 		assertTrue("Overwrite did not change version", goodVersion != desc.getVersion());
 		goodVersion = desc.getVersion();
 
+		ex = null;
+		statusCode = 0;
 		try {
 			desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
 			docMgr.delete(desc);
 		} catch (FailedRequestException e) {
+			FailedRequest failreq = e.getFailedRequest();
+			if (failreq != null)
+				statusCode = failreq.getStatusCode();
+System.out.println(e.getFailedRequest().getStatusCode()+" "+e.getMessage());
 			ex = e;
 		}
 		assertTrue("Delete without version succeeded", ex != null);
+		assertTrue("Write with bad version had wrong error", statusCode == 403);
 
+		ex = null;
+		// TODO: statusCode
 		try {
 			desc.setVersion(badVersion);
 			docMgr.delete(desc);
