@@ -17,8 +17,10 @@ package com.marklogic.client.test;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
@@ -31,6 +33,7 @@ import com.marklogic.client.RequestParameters;
 import com.marklogic.client.ResourceExtensionsManager;
 import com.marklogic.client.ResourceManager;
 import com.marklogic.client.ResourceServices;
+import com.marklogic.client.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.StringHandle;
 
@@ -70,16 +73,27 @@ public class ResourceServicesTest {
 		assertNotNull("Failed to get resource service with single document", result);
 		assertXpathEvaluatesTo("true", "/read-doc/param", result);
 
-		DOMHandle[] readHandles = new DOMHandle[2];
-		readHandles[0] = new DOMHandle();
-		readHandles[1] = new DOMHandle();
+		String[] mimetypes = {"application/xml", "application/xml"};
 
-		resourceMgr.getResourceServices().get(params, readHandles);
-		result = readHandles[0].get();
-		assertNotNull("Failed to get resource service with multiple documents", result);
+		ServiceResultIterator resultItr = resourceMgr.getResourceServices().get(params, mimetypes);
+
+		ArrayList<Document> resultDocuments = new ArrayList<Document>();
+		DOMHandle readHandle = new DOMHandle();
+		while (resultItr.hasNext()) {
+			resultDocuments.add(
+					resultItr.next().getContent(readHandle).get()
+					);
+		}
+
+		resultItr.close();
+
+		int size = resultDocuments.size();
+		assertTrue("Failed to get resource service with two documents", size == 2);
+		result = resultDocuments.get(0);
+		assertNotNull("Failed to get resource service with first document", result);
 		assertXpathEvaluatesTo("true", "/read-doc/param", result);
-		result = readHandles[1].get();
-		assertNotNull("Failed to get resource service with multiple documents", result);
+		result = resultDocuments.get(1);
+		assertNotNull("Failed to get resource service with second document", result);
 		assertXpathEvaluatesTo("true", "/read-multi-doc/multi-param", result);
 
 		StringHandle writeHandle =
@@ -105,12 +119,25 @@ public class ResourceServicesTest {
 		assertXpathEvaluatesTo("true", "/applied-doc/param", result);
 		assertXpathEvaluatesTo("true", "/applied-doc/input-doc", result);
 
-		resourceMgr.getResourceServices().post(params, writeHandles, readHandles);
-		result = readHandles[0].get();
-		assertNotNull("Failed to post resource service with multiple documents", result);
+		resultItr = resourceMgr.getResourceServices().post(params, writeHandles, mimetypes);
+
+		resultDocuments = new ArrayList<Document>();
+		readHandle = new DOMHandle();
+		while (resultItr.hasNext()) {
+			resultDocuments.add(
+					resultItr.next().getContent(readHandle).get()
+					);
+		}
+
+		resultItr.close();
+
+		size = resultDocuments.size();
+		assertTrue("Failed to post resource service with two documents", size == 2);
+		result = resultDocuments.get(0);
+		assertNotNull("Failed to post resource service with first document", result);
 		assertXpathEvaluatesTo("true", "/applied-doc/param", result);
-		result = readHandles[1].get();
-		assertNotNull("Failed to post resource service with multiple documents", result);
+		result = resultDocuments.get(1);
+		assertNotNull("Failed to post resource service with second document", result);
 		assertXpathEvaluatesTo("true", "/applied-multi-doc/multi-param", result);
 
 		result = resourceMgr.getResourceServices().delete(params, new DOMHandle()).get();
