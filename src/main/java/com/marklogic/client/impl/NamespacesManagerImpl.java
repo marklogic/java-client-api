@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -74,7 +75,7 @@ class NamespacesManagerImpl
 		return matcher.toMatchResult().group(3);
 	}
 	@Override
-	public EditableNamespaceContext readAll() throws ForbiddenUserException, FailedRequestException {
+	public NamespaceContext readAll() throws ForbiddenUserException, FailedRequestException {
 		EditableNamespaceContext context = new EditableNamespaceContext();
 
 		try {

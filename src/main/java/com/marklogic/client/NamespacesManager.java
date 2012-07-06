@@ -15,6 +15,8 @@
  */
 package com.marklogic.client;
 
+import javax.xml.namespace.NamespaceContext;
+
 /**
  * The NamespacesManager provides access and editing for the namespaces defined on the server.
  * 
@@ -22,7 +24,7 @@ package com.marklogic.client;
  */
 public interface NamespacesManager {
     public String readPrefix(String prefix) throws ForbiddenUserException, FailedRequestException;
-    public EditableNamespaceContext readAll() throws ForbiddenUserException, FailedRequestException;
+    public NamespaceContext readAll() throws ForbiddenUserException, FailedRequestException;
     public void addPrefix(String prefix, String namespaceURI) throws ForbiddenUserException, FailedRequestException;
     public void updatePrefix(String prefix, String namespaceURI) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     public void deletePrefix(String prefix) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;

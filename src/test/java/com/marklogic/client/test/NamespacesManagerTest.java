@@ -48,7 +48,7 @@ public class NamespacesManagerTest {
 		nsMgr.updatePrefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 		nsMgr.updatePrefix("skos", "http://www.w3.org/2004/02/skos/core#");
 
-		EditableNamespaceContext context = nsMgr.readAll();
+		EditableNamespaceContext context = (EditableNamespaceContext) nsMgr.readAll();
 
 		int initialSize = context.size();
 		assertTrue("Failed to retrieve three namespaces", initialSize >= 3);
@@ -68,12 +68,12 @@ public class NamespacesManagerTest {
 		assertEquals("Could not read namespace", nsUri, "http://diverted/category/");
 
 		nsMgr.deletePrefix("dc");
-		context = nsMgr.readAll();
+		context = (EditableNamespaceContext) nsMgr.readAll();
 		// assumes no concurrent deletes
 		assertEquals("Failed to delete namespace", initialSize - 1, context.size());
 
 		nsMgr.deleteAll();
-		context = nsMgr.readAll();
+		context = (EditableNamespaceContext) nsMgr.readAll();
 		assertTrue("Failed to delete all namespaces",
 				context == null || context.size() == 0);
 	}
