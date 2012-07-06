@@ -64,6 +64,8 @@ import com.marklogic.client.QueryManager;
 import com.marklogic.client.RequestLogger;
 import com.marklogic.client.RequestParameters;
 import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceServices.ServiceResult;
+import com.marklogic.client.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.ValueLocator;
 import com.marklogic.client.config.DeleteQueryDefinition;
 import com.marklogic.client.config.KeyValueQueryDefinition;
@@ -980,18 +982,32 @@ public class JerseyServices implements RESTServices {
 	}
 	private void updateFormat(ContentDescriptor descriptor,
 			MultivaluedMap<String, String> headers) {
+		updateFormat(descriptor, getHeaderFormat(headers));
+	}
+	private void updateFormat(ContentDescriptor descriptor, Format format) {
+		if (format != null) {
+			descriptor.setFormat(format);
+		}
+	}
+	private Format getHeaderFormat(MultivaluedMap<String, String> headers) {
 		if (headers.containsKey("vnd.marklogic.document-format")) {
 			List<String> values = headers.get("vnd.marklogic.document-format");
 			if (values != null) {
-				Format format = Format.valueOf(values.get(0).toUpperCase());
-				if (format != null) {
-					descriptor.setFormat(format);
-				}
+				return Format.valueOf(values.get(0).toUpperCase());
 			}
 		}
+		return null;
 	}
 	private void updateMimetype(ContentDescriptor descriptor,
 			MultivaluedMap<String, String> headers) {
+		updateMimetype(descriptor, getHeaderMimetype(headers));
+	}
+	private void updateMimetype(ContentDescriptor descriptor, String mimetype) {
+		if (mimetype != null) {
+			descriptor.setMimetype(mimetype);
+		}
+	}
+	private String getHeaderMimetype(MultivaluedMap<String, String> headers) {
 		if (headers.containsKey("Content-Type")) {
 			List<String> values = headers.get("Content-Type");
 			if (values != null) {
@@ -1000,21 +1016,27 @@ public class JerseyServices implements RESTServices {
 						.substring(0, contentType.indexOf(";")) : contentType;
 // TODO: if "; charset=foo" set character set
 				if (mimetype != null && mimetype.length() > 0) {
-					descriptor.setMimetype(mimetype);
+					return mimetype;
 				}
 			}
 		}
+		return null;
 	}
 	private void updateLength(ContentDescriptor descriptor,
 			MultivaluedMap<String, String> headers) {
-		long length = ContentDescriptor.UNKNOWN_LENGTH;
+		updateLength(descriptor, getHeaderLength(headers));
+	}
+	private void updateLength(ContentDescriptor descriptor, long length) {
+		descriptor.setByteLength(length);
+	}
+	private long getHeaderLength(MultivaluedMap<String, String> headers) {
 		if (headers.containsKey("Content-Length")) {
 			List<String> values = headers.get("Content-Length");
 			if (values != null) {
-				length = Long.valueOf(values.get(0));
+				return Long.valueOf(values.get(0));
 			}
 		}
-		descriptor.setByteLength(length);
+		return ContentDescriptor.UNKNOWN_LENGTH;
 	}
 	private void updateVersion(DocumentDescriptor descriptor,
 			MultivaluedMap<String, String> headers) {
@@ -1622,18 +1644,18 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public Object[] getResource(RequestLogger reqlog, String path,
-			RequestParameters params, String[] mimetypes, Class[] as)
+	public ServiceResultIterator getResource(RequestLogger reqlog, String path,
+			RequestParameters params, String[] mimetypes)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
 		ClientResponse response = doGet(path, params,
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
 
 		checkStatus(response, "read", "resource", path,
-				(as != null && as.length > 0) ? ResponseStatus.OK
-						: ResponseStatus.NO_CONTENT);
+				(mimetypes != null && mimetypes.length > 0) ?
+						ResponseStatus.OK : ResponseStatus.NO_CONTENT);
 
-		return makeResults(reqlog, "read", "resource", response, as);
+		return makeResults(reqlog, "read", "resource", response);
 	}
 
 	@Override
@@ -1669,9 +1691,9 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public Object postResource(RequestLogger reqlog, String path,
+	public <T> T postResource(RequestLogger reqlog, String path,
 			RequestParameters params, String inputMimetype, Object value,
-			String outputMimetype, Class as) throws ResourceNotFoundException,
+			String outputMimetype, Class<T> as) throws ResourceNotFoundException,
 			ForbiddenUserException, FailedRequestException {
 		ClientResponse response = doPost(reqlog, path, params, inputMimetype,
 				value, outputMimetype);
@@ -1684,9 +1706,9 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public Object postResource(RequestLogger reqlog, String path,
+	public <T> T postResource(RequestLogger reqlog, String path,
 			RequestParameters params, String[] inputMimetypes, Object[] values,
-			String outputMimetype, Class as) throws ResourceNotFoundException,
+			String outputMimetype, Class<T> as) throws ResourceNotFoundException,
 			ForbiddenUserException, FailedRequestException {
 		ClientResponse response = doPost(reqlog, path, params, inputMimetypes,
 				values, outputMimetype);
@@ -1699,9 +1721,9 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public Object[] postResource(RequestLogger reqlog, String path,
+	public ServiceResultIterator postResource(RequestLogger reqlog, String path,
 			RequestParameters params, String inputMimetype, Object value,
-			String[] outputMimetypes, Class[] as)
+			String[] outputMimetypes)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
 		ClientResponse response = doPost(reqlog, path, params, inputMimetype,
@@ -1709,16 +1731,16 @@ public class JerseyServices implements RESTServices {
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
 
 		checkStatus(response, "apply", "resource", path,
-				(as != null && as.length > 0) ? ResponseStatus.OK
-						: ResponseStatus.CREATED_OR_NO_CONTENT);
+				(outputMimetypes != null && outputMimetypes.length > 0) ?
+						ResponseStatus.OK : ResponseStatus.CREATED_OR_NO_CONTENT);
 
-		return makeResults(reqlog, "apply", "resource", response, as);
+		return makeResults(reqlog, "apply", "resource", response);
 	}
 
 	@Override
-	public Object[] postResource(RequestLogger reqlog, String path,
+	public ServiceResultIterator postResource(RequestLogger reqlog, String path,
 			RequestParameters params, String[] inputMimetypes, Object[] values,
-			String[] outputMimetypes, Class[] as)
+			String[] outputMimetypes)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
 		ClientResponse response = doPost(reqlog, path, params, inputMimetypes,
@@ -1726,10 +1748,10 @@ public class JerseyServices implements RESTServices {
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
 
 		checkStatus(response, "apply", "resource", path,
-				(as != null && as.length > 0) ? ResponseStatus.OK
-						: ResponseStatus.CREATED_OR_NO_CONTENT);
+				(outputMimetypes != null && outputMimetypes.length > 0) ?
+						ResponseStatus.OK : ResponseStatus.CREATED_OR_NO_CONTENT);
 
-		return makeResults(reqlog, "apply", "resource", response, as);
+		return makeResults(reqlog, "apply", "resource", response);
 	}
 
 	@Override
@@ -2047,11 +2069,8 @@ public class JerseyServices implements RESTServices {
 		return (reqlog != null) ? reqlog.copyContent(entity) : entity;
 	}
 
-	private Object[] makeResults(RequestLogger reqlog, String operation,
-			String entityType, ClientResponse response, Class[] as) {
-		if (as == null || as.length == 0)
-			return null;
-
+	private ServiceResultIterator makeResults(RequestLogger reqlog, String operation,
+			String entityType, ClientResponse response) {
 		logRequest(reqlog, "%s for %s", operation, entityType);
 
 		MultiPart entity = response.getEntity(MultiPart.class);
@@ -2059,25 +2078,12 @@ public class JerseyServices implements RESTServices {
 			return null;
 
 		List<BodyPart> partList = entity.getBodyParts();
-		if (partList == null)
+		if (partList == null || partList.size() == 0) {
+			response.close();
 			return null;
-
-		int partCount = partList.size();
-		if (partCount == 0)
-			return null;
-		if (partCount != as.length)
-			throw new FailedRequestException("read expected " + as.length
-					+ " parts but got " + partCount + " parts");
-
-		Object[] parts = new Object[partCount];
-		for (int i = 0; i < partCount; i++) {
-			Object part = partList.get(i).getEntityAs(as[i]);
-			parts[i] = (reqlog != null) ? reqlog.copyContent(part) : part;
 		}
 
-		response.close();
-
-		return parts;
+		return new JerseyResultIterator(reqlog, response, partList);
 	}
 
 	private void logRequest(RequestLogger reqlog, String message,
@@ -2115,12 +2121,126 @@ public class JerseyServices implements RESTServices {
 		return (builder != null) ? builder.toString() : null;
 	}
 
-	// backdoors for testing
-	public Client getClient() {
-		return client;
+	public class JerseyResult implements ServiceResult {
+		private RequestLogger reqlog;
+		private BodyPart      part;
+		private boolean       extractedHeaders = false;
+		private Format        format;
+		private String        mimetype;
+		private long          length;
+		public JerseyResult(RequestLogger reqlog, BodyPart part) {
+			super();
+			this.reqlog = reqlog;
+			this.part   = part;
+		}
+		@Override
+		public <R extends AbstractReadHandle> R getContent(R handle) {
+			if (part == null)
+				throw new IllegalStateException("Content already retrieved");
+
+			HandleImplementation handleBase = HandleAccessor.as(handle);
+
+			extractHeaders();
+			updateFormat(handleBase,   format);
+			updateMimetype(handleBase, mimetype);
+			updateLength(handleBase,   length);
+
+			Object contentEntity = part.getEntityAs(handleBase.receiveAs());
+			handleBase.receiveContent( (reqlog != null) ?
+					reqlog.copyContent(contentEntity) : contentEntity);
+
+			part   = null;
+			reqlog = null;
+
+			return handle;
+		}
+		@Override
+		public Format getFormat() {
+			extractHeaders();
+			return format;
+		}
+		@Override
+		public String getMimetype() {
+			extractHeaders();
+			return mimetype;
+		}
+		@Override
+		public long getLength() {
+			extractHeaders();
+			return length;
+		}
+		private void extractHeaders() {
+			if (part == null || extractedHeaders)
+				return;
+			MultivaluedMap<String, String> headers = part.getHeaders();
+			format   = getHeaderFormat(headers);
+			mimetype = getHeaderMimetype(headers);
+			length   = getHeaderLength(headers);
+			extractedHeaders = true;
+		}
+	}
+// TODO: threadsafe iteration
+	public class JerseyResultIterator implements ServiceResultIterator {
+		private RequestLogger reqlog;
+		private ClientResponse response;
+		private List<BodyPart> partList;
+		private int nextIndex = -1;
+		public JerseyResultIterator(
+				RequestLogger reqlog, ClientResponse response, List<BodyPart> partList
+				) {
+			super();
+			if (response != null) {
+				if (partList != null && partList.size() > 0) {
+					this.reqlog   = reqlog;
+					this.response = response;
+					this.partList = partList;
+					nextIndex = 0;
+				} else {
+					response.close();
+				}
+			}
+		}
+		@Override
+		public boolean hasNext() {
+			return (nextIndex >= 0 && partList != null);
+		}
+		@Override
+		public ServiceResult next() {
+			if (nextIndex < 0 || partList == null)
+				return null;
+			ServiceResult result = new JerseyResult(reqlog, partList.get(nextIndex));
+			nextIndex++;
+			checkNext();
+			return result ;
+		}
+		@Override
+		public void remove() {
+			partList.remove(nextIndex);
+			checkNext();
+		}
+		@Override
+		public void close() {
+			if (response != null) {
+				response.close();
+				response = null;
+			}
+			reqlog    = null;
+			partList  = null;
+			nextIndex = -1;
+		}
+		@Override
+		protected void finalize() throws Throwable {
+			close();
+			super.finalize();
+		}
+		private void checkNext() {
+			if (nextIndex >= partList.size())
+				close();
+		}
 	}
 
-	public WebResource getConnection() {
-		return connection;
+	// backdoor for testing
+	public Client getClient() {
+		return client;
 	}
 }

@@ -19,16 +19,17 @@ import java.util.Set;
 
 import javax.net.ssl.SSLContext;
 
-import com.marklogic.client.DocumentManager.Metadata;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DocumentDescriptor;
+import com.marklogic.client.DocumentManager.Metadata;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.QueryManager;
 import com.marklogic.client.RequestLogger;
 import com.marklogic.client.RequestParameters;
 import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.config.DeleteQueryDefinition;
 import com.marklogic.client.config.QueryDefinition;
 import com.marklogic.client.config.ValuesDefinition;
@@ -107,7 +108,7 @@ public interface RESTServices {
 
 	public <T> T getResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Class<T> as)
 		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public Object[] getResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Class[] as)
+	public ServiceResultIterator getResource(RequestLogger reqlog, String path, RequestParameters params, String[] outputMimetypes)
 		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	public <T> T putResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Object value, String outputMimetype, Class<T> as)
@@ -115,13 +116,13 @@ public interface RESTServices {
 	public <T> T putResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, String outputMimetype, Class<T> as)
 		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-	public Object postResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Object value, String outputMimetype, Class as)
+	public <T> T postResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Object value, String outputMimetype, Class<T> as)
 		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public Object postResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, String outputMimetype, Class as)
+	public <T> T postResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, String outputMimetype, Class<T> as)
 		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public Object[] postResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Object value, String[] outputMimetypes, Class[] as)
+	public ServiceResultIterator postResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Object value, String[] outputMimetypes)
 		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public Object[] postResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, String[] outputMimetypes, Class[] as)
+	public ServiceResultIterator postResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, String[] outputMimetypes)
 		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	public <T> T deleteResource(RequestLogger reqlog, String path, RequestParameters params,

@@ -113,8 +113,8 @@ public class BatchExample {
 
 		// collect the request items
 		BatchManager.BatchRequest request = batchMgr.newBatchRequest();
-		request.withRead("/batch/read1.xml", new StringHandle().withFormat(Format.XML));
-		request.withRead("/batch/read2.xml", Metadata.COLLECTIONS, new StringHandle().withFormat(Format.XML));
+		request.withRead("/batch/read1.xml", "application/xml");
+		request.withRead("/batch/read2.xml", Metadata.COLLECTIONS, "application/xml");
 		request.withDelete("/batch/delete1.xml");
 		request.withWrite("/batch/write1.xml", new StringHandle().withFormat(Format.XML).with("<write1/>"));
 		DocumentMetadataHandle meta2 = new DocumentMetadataHandle();
@@ -136,7 +136,7 @@ public class BatchExample {
 
 				if (itemType == BatchManager.OperationType.READ) {
 					BatchManager.ReadOutput readItem = (BatchManager.ReadOutput) item;
-					StringHandle readHandle = (StringHandle) readItem.getContent();
+					StringHandle readHandle = readItem.getContent(new StringHandle());
 
 					// TODO: show metadata
 					if (readItem.getMetadata() != null) {

@@ -30,10 +30,13 @@ import org.w3c.dom.NodeList;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DocumentDescriptor;
 import com.marklogic.client.DocumentManager;
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.RequestParameters;
 import com.marklogic.client.ResourceManager;
+import com.marklogic.client.ResourceServices.ServiceResult;
+import com.marklogic.client.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
@@ -42,14 +45,13 @@ import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 
 /**
- * 
+ * BatchManager provides an extension for executing a batch of document requests.
  */
 public class BatchManager extends ResourceManager {
 	public class BatchRequest {
-		private LinkedHashMap<String,InputItem> items      =
-			new LinkedHashMap<String,InputItem>();
+		private LinkedHashMap<String,InputItem> items = new LinkedHashMap<String,InputItem>();
 
-		private BatchRequest() {
+		BatchRequest() {
 			super();
 		}
 
@@ -66,19 +68,19 @@ public class BatchManager extends ResourceManager {
 			return catSet;
 		}
 
-		// TODO: DocumentDescriptor overloads
+// TODO: DocumentDescriptor overloads
 		public BatchRequest withDelete(String uri) {
 			items.put(uri, new DeleteInput());
 			return this;
 		}
-		public BatchRequest withRead(String uri, AbstractReadHandle content) {
-			return withRead(uri, (Set<DocumentManager.Metadata>) null, content);
+		public BatchRequest withRead(String uri, String mimetype) {
+			return withRead(uri, (Set<DocumentManager.Metadata>) null, mimetype);
 		}
-		public BatchRequest withRead(String uri, DocumentManager.Metadata category, AbstractReadHandle content) {
-			return withRead(uri, listCategories(category), content);
+		public BatchRequest withRead(String uri, DocumentManager.Metadata category, String mimetype) {
+			return withRead(uri, listCategories(category), mimetype);
 		}
-		public BatchRequest withRead(String uri, Set<DocumentManager.Metadata> categories, AbstractReadHandle content) {
-			items.put(uri, new ReadInput().withMetadata(categories).withContent(content));
+		public BatchRequest withRead(String uri, Set<DocumentManager.Metadata> categories, String mimetype) {
+			items.put(uri, new ReadInput().withMetadata(categories).withMimetype(mimetype));
 			return this;
 		}
 		public BatchRequest withWrite(String uri, AbstractWriteHandle content) {
@@ -91,64 +93,81 @@ public class BatchManager extends ResourceManager {
 		}
 	}
 
+// TODO: concurrency
 	public class BatchResponse implements Iterator<OutputItem> {
-		private boolean success = false;
-		private Iterator<OutputItem> items;
-		private BatchResponse() {
+		boolean success = false;
+		Iterator<OutputItem> items;
+		ServiceResultIterator results;
+		BatchResponse() {
 			super();
 		}
 		public boolean getSuccess() {
 			return success;
 		}
-		public void setSuccess(boolean success) {
-			this.success = success;
-		}
 		@Override
 		public boolean hasNext() {
+			if (items == null)
+				return false;
 			return items.hasNext();
 		}
 		@Override
 		public OutputItem next() {
-			return items.next();
+			if (items == null)
+				return null;
+			OutputItem item = items.next();
+// TODO: an item with metadata or an exception should also consume results
+			if (item instanceof ReadOutput) {
+				ReadOutput ritem = (ReadOutput) item;
+				if (results == null || !results.hasNext())
+					throw new IllegalStateException("unable to get result for read request");
+				ritem.result = results.next();
+				if (!results.hasNext()) {
+					results.close();
+					results = null;
+				}
+			}
+			return item;
 		}
 		@Override
 		public void remove() {
 			throw new UnsupportedOperationException("cannot remove output item");
 		}
+		public void close() {
+			if (results != null) {
+				results.close();
+				results = null;
+			}
+			items = null;
+		}
+		@Override
+		protected void finalize() throws Throwable {
+			close();
+			super.finalize();
+		}
 	}
 
-	private class InputItem {
+	class InputItem {
 		DocumentDescriptor desc;
 		InputItem withDescriptor(DocumentDescriptor desc) {
 			this.desc = desc;
 			return this;
 		}
 	}
-	private class DeleteInput extends InputItem {
+	class DeleteInput extends InputItem {
 	}
-	private class ReadInput extends InputItem {
+	class ReadInput extends InputItem {
 		Set<DocumentManager.Metadata>  categories;
-		AbstractReadHandle content;
+		String mimetype;
 		ReadInput withMetadata(Set<DocumentManager.Metadata>  categories) {
 			this.categories = categories;
 			return this;
 		}
-		ReadInput withContent(AbstractReadHandle content) {
-			if (content == null)
-				return this;
-			if (!(content instanceof BaseHandle)) {
-				throw new MarkLogicIOException(
-						"Read handle does not extend base handle:"+
-						content.getClass().getName());
-			}
-			this.content = content;
+		ReadInput withMimetype(String mimetype) {
+			this.mimetype = mimetype;
 			return this;
 		}
-		String getContentMimetype() {
-			return ((BaseHandle) content).getMimetype();
-		}
 	}
-	private class WriteInput extends InputItem {
+	class WriteInput extends InputItem {
 		DocumentMetadataHandle metadata;
 		AbstractWriteHandle    content;
 		WriteInput withMetadata(DocumentMetadataHandle metadata) {
@@ -175,44 +194,32 @@ public class BatchManager extends ResourceManager {
 		DELETE, READ, WRITE;
 	}
 	abstract public class OutputItem {
-		private String uri;
-//		private DocumentDescriptor desc;
-		private boolean success = false;
-		private Element exception;
-		private OutputItem() {
+		String uri;
+//		DocumentDescriptor desc;
+		boolean success = false;
+		Element exception;
+		OutputItem() {
 			super();
 		}
 		abstract public OperationType getOperationType();
 		public String getUri() {
 			return uri;
 		}
-		public void setUri(String uri) {
-			this.uri = uri;
-		}
 /*
 		public DocumentDescriptor getDesc() {
 			return desc;
-		}
-		public void setDesc(DocumentDescriptor desc) {
-			this.desc = desc;
 		}
  */
 		public boolean getSuccess() {
 			return success;
 		}
-		public void setSuccess(boolean success) {
-			this.success = success;
-		}
 		// TODO: expose throwable exception
 		public Element getException() {
 			return exception;
 		}
-		public void setException(Element exception) {
-			this.exception = exception;
-		}
 	}
 	public class DeleteOutput extends OutputItem {
-		private DeleteOutput() {
+		DeleteOutput() {
 			super();
 		}
 		public OperationType getOperationType() {
@@ -220,30 +227,30 @@ public class BatchManager extends ResourceManager {
 		}
 	}
 	public class ReadOutput extends OutputItem {
-		private Element metadata;
-		private AbstractReadHandle content;
-		private ReadOutput() {
+		String        mimetype;
+		Element       metadata;
+		ServiceResult result;
+		ReadOutput() {
 			super();
 		}
 		public OperationType getOperationType() {
 			return OperationType.READ;
 		}
+		public String getMimetype() {
+			return mimetype;
+		}
 		// TODO: expose as DocumentMetadataHandle
 		public Element getMetadata() {
 			return metadata;
 		}
-		public void setMetadata(Element metadata) {
-			this.metadata = metadata;
-		}
-		public AbstractReadHandle getContent() {
-			return content;
-		}
-		public void setContent(AbstractReadHandle content) {
-			this.content = content;
+		public <R extends AbstractReadHandle> R getContent(R handle) {
+			if (result == null)
+				throw new IllegalStateException("could not get content for read result");
+			return result.getContent(handle);
 		}
 	}
 	public class WriteOutput extends OutputItem {
-		private WriteOutput() {
+		WriteOutput() {
 			super();
 		}
 		public OperationType getOperationType() {
@@ -265,18 +272,17 @@ public class BatchManager extends ResourceManager {
 			return null;
 
 		StringHandle requestManifest  = new StringHandle();
-		DOMHandle    responseManifest = new DOMHandle();
 
 		ArrayList<AbstractWriteHandle> requestHandles = new ArrayList<AbstractWriteHandle>();
 		requestHandles.add(requestManifest);
-
-		ArrayList<AbstractReadHandle> respondsHandles = new ArrayList<AbstractReadHandle>();
-		respondsHandles.add(responseManifest);
 
 		StringBuilder manifestBuilder = new StringBuilder();
 		manifestBuilder.append("<?xml version='1.0' encoding='UTF-8'?>\n");
 		manifestBuilder.append("<rapi:batch-requests xmlns:rapi='http://marklogic.com/rest-api'>\n");
 
+		ArrayList<String> readMimetypes = new ArrayList<String>();
+		// read the response manifest first
+		readMimetypes.add("application/xml");
 		for (Map.Entry<String,InputItem> entry: request.items.entrySet()) {
 			String    uri  = entry.getKey();
 			InputItem item = entry.getValue();
@@ -313,12 +319,12 @@ public class BatchManager extends ResourceManager {
 					manifestBuilder.append(categoryBuilder.toString());
 				}
 
-				if (ritem.content != null) {
-					manifestBuilder.append("<rapi:content-mimetype>");
-					manifestBuilder.append(ritem.getContentMimetype());
-					manifestBuilder.append("</rapi:content-mimetype>\n");
+				if (ritem.mimetype != null) {
+					readMimetypes.add(ritem.mimetype);
 
-					respondsHandles.add(ritem.content);
+					manifestBuilder.append("<rapi:content-mimetype>");
+					manifestBuilder.append(ritem.mimetype);
+					manifestBuilder.append("</rapi:content-mimetype>\n");
 				}
 				
 				manifestBuilder.append("</rapi:get-request>\n");
@@ -346,18 +352,22 @@ public class BatchManager extends ResourceManager {
 		requestManifest.set(manifestBuilder.toString());
 		requestManifest.setFormat(Format.XML);
 
-		int readCount = respondsHandles.size();
+		String[] requestMimetypes = new String[readMimetypes.size()];
 
-		AbstractReadHandle[] results = getServices().post(
+		ServiceResultIterator resultItr = getServices().post(
 				new RequestParameters(),
 				requestHandles.toArray(new AbstractWriteHandle[requestHandles.size()]),
-				respondsHandles.toArray(new AbstractReadHandle[readCount])
+				requestMimetypes
 				);
+
+		if (!resultItr.hasNext())
+			throw new FailedRequestException("Could not executed batch request");
+		
+		DOMHandle responseManifest = resultItr.next().getContent(new DOMHandle());
 
 		List<OutputItem> items = new ArrayList<OutputItem>();
 
 		boolean requestSuccess = true;
-		int     nextRead       = 1;        // skip the response manifest
 
 		NodeList responseItems = responseManifest.get().getDocumentElement().getChildNodes();
 		int      responseCount = responseItems.getLength();
@@ -403,43 +413,38 @@ public class BatchManager extends ResourceManager {
 			String responseName = responseItem.getLocalName();
 			if ("delete-response".equals(responseName)) {
 				DeleteOutput deleteOutput = new DeleteOutput();
-				deleteOutput.setUri(itemUri);
-				deleteOutput.setSuccess(itemSuccess);
+				deleteOutput.uri = itemUri;
+				deleteOutput.success = itemSuccess;
 				if (itemFailure != null)
-					deleteOutput.setException(itemFailure);
+					deleteOutput.exception = itemFailure;
 				items.add(deleteOutput);
 			} else if ("get-response".equals(responseName)) {
 				ReadOutput readOutput = new ReadOutput();
-				readOutput.setUri(itemUri);
-				readOutput.setSuccess(itemSuccess);
+				readOutput.uri = itemUri;
+				readOutput.success = itemSuccess;
 				if (itemMetadata != null)
-					readOutput.setMetadata(itemMetadata);
+					readOutput.metadata = itemMetadata;
 				if (itemMimetype != null) {
-					if (nextRead >= readCount)
-						throw new RuntimeException("read count mismatch");
-					AbstractReadHandle itemContent = respondsHandles.get(nextRead);
 					// TODO: set format
-					readOutput.setContent(itemContent);
-					nextRead++;
+					readOutput.mimetype = itemMimetype;
 				}
 				if (itemFailure != null)
-					readOutput.setException(itemFailure);
+					readOutput.exception = itemFailure;
 				items.add(readOutput);
 			} else if ("put-response".equals(responseName)) {
 				WriteOutput writeOutput = new WriteOutput();
-				writeOutput.setUri(itemUri);
-				writeOutput.setSuccess(itemSuccess);
+				writeOutput.uri = itemUri;
+				writeOutput.success = itemSuccess;
 				if (itemFailure != null)
-					writeOutput.setException(itemFailure);
+					writeOutput.exception = itemFailure;
 				items.add(writeOutput);
 			}
 		}
-		if (nextRead != readCount)
-			throw new RuntimeException("failed to read all content");
 
 		BatchResponse response = new BatchResponse();
-		response.setSuccess(requestSuccess);
-		response.items = items.iterator();
+		response.success = requestSuccess;
+		response.items   = items.iterator();
+		response.results = resultItr;
 
 		return response;
 	}

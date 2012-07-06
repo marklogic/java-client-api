@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.xml.XMLConstants;
@@ -36,6 +37,8 @@ import com.marklogic.client.MethodType;
 import com.marklogic.client.RequestParameters;
 import com.marklogic.client.ResourceExtensionsManager;
 import com.marklogic.client.ResourceExtensionsManager.MethodParameters;
+import com.marklogic.client.ResourceServices.ServiceResult;
+import com.marklogic.client.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.ResourceManager;
 import com.marklogic.client.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
@@ -113,17 +116,29 @@ public class ResourceExtension {
 			params.add("service", "check-dictionary");
 			params.add("uris",    uris);
 
-			DOMHandle[] readHandles = new DOMHandle[uris.length];
-
-			// call the service
-			getServices().get(params, readHandles);
-
-			Document[] documents = new Document[readHandles.length];
-			for (int i=0; i < readHandles.length; i++) {
-				documents[i] = readHandles[i].get();
+			String[] mimetypes = new String[uris.length];
+			for (int i=0; i < uris.length; i++) {
+				mimetypes[i] = "application/xml";
 			}
 
-			return documents;
+			// call the service
+			ServiceResultIterator resultItr = getServices().get(params, mimetypes);
+
+			// iterate over the results
+			List<Document> documents = new ArrayList<Document>();
+			DOMHandle readHandle = new DOMHandle();
+			while (resultItr.hasNext()) {
+				ServiceResult result = resultItr.next();
+
+				// get the result content
+				result.getContent(readHandle);
+				documents.add(readHandle.get());
+			}
+
+			// release the iterator resources
+			resultItr.close();
+
+			return documents.toArray(new Document[documents.size()]);
 		}
 		public boolean isCorrect(String word, String... uris) {
 			try {
@@ -250,9 +265,18 @@ public class ResourceExtension {
 
 		System.out.println("Created a dictionary on the server at "+uri);
 
-		String word = "biz";
+		// check the validity of the dictionary
+		Document[] list = dictionaryMgr.checkDictionaries(uri);
+		if (list == null || list.length == 0)
+			System.out.println("Could not check the validity of the dictionary at "+uri);
+		else
+			System.out.println(
+				"Checked the validity of the dictionary at "+uri+": "+
+				!"invalid".equals(list[0].getDocumentElement().getNodeName())
+				);
 
 		// use a resource service to check the correctness of a word
+		String word = "biz";
 		if (!dictionaryMgr.isCorrect(word, uri)) {
 			System.out.println("Confirmed that '"+word+"' is not in the dictionary at "+uri);
 

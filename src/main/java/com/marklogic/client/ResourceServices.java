@@ -15,6 +15,8 @@
  */
 package com.marklogic.client;
 
+import java.util.Iterator;
+
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 
@@ -32,8 +34,9 @@ public interface ResourceServices {
 
 	public <R extends AbstractReadHandle> R get(RequestParameters params, R output);
 	public <R extends AbstractReadHandle> R get(RequestParameters params, Transaction transaction, R output);
-	public <R extends AbstractReadHandle> R[] get(RequestParameters params, R[] output);
-	public <R extends AbstractReadHandle> R[] get(RequestParameters params, Transaction transaction, R[] output);
+
+	public ServiceResultIterator get(RequestParameters params, String... mimetypes);
+	public ServiceResultIterator get(RequestParameters params, Transaction transaction, String... mimetypes);
 
 	public <R extends AbstractReadHandle> R put(RequestParameters params, AbstractWriteHandle input, R output);
 	public <R extends AbstractReadHandle> R put(RequestParameters params, AbstractWriteHandle input, Transaction transaction, R output);
@@ -42,12 +45,13 @@ public interface ResourceServices {
 
 	public <R extends AbstractReadHandle> R post(RequestParameters params, AbstractWriteHandle input, R output);
 	public <R extends AbstractReadHandle> R post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, R output);
-	public <R extends AbstractReadHandle> R[] post(RequestParameters params, AbstractWriteHandle input, R[] output);
-	public <R extends AbstractReadHandle> R[] post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, R[] output);
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R post(RequestParameters params, W[] input, R output);
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R post(RequestParameters params, W[] input, Transaction transaction, R output);
-	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R[] post(RequestParameters params, W[] input, R[] output);
-	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R[] post(RequestParameters params, W[] input, Transaction transaction, R[] output);
+
+	public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, String... mimetypes);
+	public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, String... mimetypes);
+	public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, String... mimetypes);
+	public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, Transaction transaction, String... mimetypes);
 
 	public <R extends AbstractReadHandle> R delete(RequestParameters params, R output);
 	public <R extends AbstractReadHandle> R delete(RequestParameters params, Transaction transaction, R output);
@@ -56,4 +60,14 @@ public interface ResourceServices {
     public void startLogging(RequestLogger logger);
     public RequestLogger getRequestLogger();
     public void stopLogging();
+
+    public interface ServiceResult {
+		public abstract Format getFormat();
+		public abstract String getMimetype();
+		public abstract long   getLength();
+		public <R extends AbstractReadHandle> R getContent(R handle);
+	}
+	public interface ServiceResultIterator extends Iterator<ServiceResult> {
+		public void close();
+	}
 }
