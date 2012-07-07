@@ -35,7 +35,8 @@ import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
 
 /**
- * 
+ * BatchExample illustrates executing a batch of document read, write, or delete
+ * requests using the BatchManager example of a Resource Extension.
  */
 public class BatchExample {
 	public static void main(String[] args) throws IOException {
