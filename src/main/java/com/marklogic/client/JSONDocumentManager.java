@@ -22,6 +22,17 @@ import com.marklogic.client.io.marker.JSONWriteHandle;
  * A JSON Document Manager supports database operations on JSON documents.
  */
 public interface JSONDocumentManager extends DocumentManager<JSONReadHandle, JSONWriteHandle> {
+	/**
+	 * Returns the language code for JSON documents written by the manager.
+	 * @return	the language code assigned to documents
+	 */
 	public String getLanguage();
+	/**
+	 * Specifies the language code for JSON documents written by the manager.  The IANA codes
+	 * for specifying a language for JSON documents are the same as those used with
+	 * the <a href="http://www.w3.org/TR/REC-xml/#sec-lang-tag">xml:lang</a> attribute.
+	 * 
+	 * @param language	the language code assigned to documents
+	 */
     public void setLanguage(String language);
 }

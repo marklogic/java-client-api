@@ -18,9 +18,8 @@ package com.marklogic.client;
 import java.io.OutputStream;
 
 /**
- * A Database Client maintains a connection to a database and
- * instantiates document and query managers and other objects
- * that access the database using the connection.
+ * A Database Client instantiates document and query managers and other objects
+ * with shared access to a database.
  */
 public interface DatabaseClient {
     /**
