@@ -89,33 +89,35 @@ declare function docbatch:post(
         <rapi:batch-responses>{
             for $batch-request in $batch-requests
             let $uri-elem  := $batch-request/rapi:uri
-            let $result    := map:get($request-results,$uri-elem/string(.))
-            let $succeeded := subsequence($result,1,1)
+            let $succeeded := map:get($request-results,$uri-elem/string(.))
             return
                 if ($batch-request instance of element(rapi:put-request)) then
                     <rapi:put-response>{
                         $uri-elem,
                         <rapi:request-succeeded>{$succeeded}</rapi:request-succeeded>,
                         if ($succeeded) then ()
-                        else subsequence($result,2,1)
+                        else <rapi:error-mimetype>application/xml</rapi:error-mimetype>
                     }</rapi:put-response>
                 else if ($batch-request instance of element(rapi:get-request)) then
                     <rapi:get-response>{
                         $uri-elem,
                         <rapi:request-succeeded>{$succeeded}</rapi:request-succeeded>,
                         if ($succeeded) then (
-                            subsequence($result,2,1),
+                            if (empty($batch-request/rapi:metadata)) then ()
+                            else <rapi:metadata-mimetype>application/xml</rapi:metadata-mimetype>,
                             (: TODO: need format :)
                             $batch-request/rapi:content-mimetype
                             )
-                        else subsequence($result,2,1)
+                        else (
+                            <rapi:error-mimetype>application/xml</rapi:error-mimetype>
+                            )
                     }</rapi:get-response>
                 else if ($batch-request instance of element(rapi:delete-request)) then
                     <rapi:delete-response>{
                         $uri-elem,
                         <rapi:request-succeeded>{$succeeded}</rapi:request-succeeded>,
                         if ($succeeded) then ()
-                        else subsequence($result,2,1)
+                        else <rapi:error-mimetype>application/xml</rapi:error-mimetype>
                     }</rapi:delete-response>
                 else ()  
         }</rapi:batch-responses>
@@ -123,7 +125,10 @@ declare function docbatch:post(
         map:put($context, "output-boundary", "document-batch-"||xdmp:random()),
         map:put($context, "output-types", (
             "application/xml",
-            $batch-response/rapi:get-response/rapi:content-mimetype/string(.)
+            $batch-response /
+                * /
+                (rapi:exception-mimetype|rapi:metadata-mimetype|rapi:content-mimetype) /
+                string(.)
             )),
 
         document {$batch-response},
@@ -185,13 +190,15 @@ declare private function docbatch:apply-put(
                     }
     let $errors := $result/rapi:error
     return
-        if (exists($errors))
-        then map:put($request-results,$uri,(false(),
+        if (exists($errors)) then (
+            map:put($request-results,$uri,false()),
+            document {
                 <rapi:request-failure>
                     <rapi:uri>{$uri}</rapi:uri>
                     {$errors}
                 </rapi:request-failure>
-                ))
+                }
+            )
         else map:put($request-results,$uri,true())
 };
 
@@ -200,21 +207,21 @@ declare private function docbatch:apply-get(
     $metadata         as element(rapi:metadata)?,
     $content-mimetype as xs:string?,
     $request-results  as map:map
-) as document-node()?
+) as document-node()*
 {
     let $result :=
         for $i in 1 to 2
         return
-            if      ($i eq 1 and empty($content-mimetype)) then ()
-            else if ($i eq 2 and empty($metadata))         then ()
+            if      ($i eq 1 and empty($metadata))         then ()
+            else if ($i eq 2 and empty($content-mimetype)) then ()
             else
                 let $headers :=
                     let $map := map:map()
                     return (
                         map:put($map, "accept",
                             if ($i eq 1)
-                            then $content-mimetype
-                            else "application/xml"
+                            then "application/xml"
+                            else $content-mimetype
                             ),
                         $map
                         )
@@ -224,39 +231,33 @@ declare private function docbatch:apply-get(
                         map:put($map, "uri",        $uri),
                         map:put($map, "category",
                             if ($i eq 1)
-                            then "content"
-                            else $metadata/*/local-name(.)
+                            then $metadata/*/local-name(.)
+                            else "content"
                             ),
                         $map
                         )
                 return
                     try {
-                        docmod:get($headers,$params,())
+                        if ($i eq 1)
+(: TODO: document {} should be unneeded :)
+                        then document {docmod:get($headers,$params,())}
+                        else docmod:get($headers,$params,())
                     } catch($e) {
                         <rapi:error>{$e}</rapi:error>
                     }
     let $errors := $result/rapi:error
     return
-        if (exists($errors))
-        then map:put($request-results,$uri,(false(),
-                <rapi:request-failure>
-                    <rapi:uri>{$uri}</rapi:uri>
-                    {$errors}
-                </rapi:request-failure>
-                ))
-        else
-            let $content-result  :=
-                if (empty($content-mimetype)) then ()
-                else $result[1]
-            let $metadata-result :=
-                if (empty($metadata)) then ()
-                else if (count($result) eq 1)
-                then $result[1]
-                else $result[2]
-            return (
-                map:put($request-results,$uri,(true(),$metadata-result)),
-                $content-result
-                )
+        if (exists($errors)) then (
+            map:put($request-results,$uri,false()),
+            <rapi:request-failure>
+                <rapi:uri>{$uri}</rapi:uri>
+                {$errors}
+            </rapi:request-failure>
+            )
+        else (
+            map:put($request-results,$uri,true()),
+            $result
+            )
 };
 
 declare private function docbatch:apply-delete(
@@ -280,12 +281,12 @@ declare private function docbatch:apply-delete(
             }
     let $errors := $result/rapi:error
     return
-        if (exists($errors))
-        then map:put($request-results,$uri,(false(),
-                <rapi:request-failure>
-                    <rapi:uri>{$uri}</rapi:uri>
-                    {$errors}
-                </rapi:request-failure>
-                ))
+        if (exists($errors)) then (
+            map:put($request-results,$uri,false()),
+            <rapi:request-failure>
+                <rapi:uri>{$uri}</rapi:uri>
+                {$errors}
+            </rapi:request-failure>
+            )
         else map:put($request-results,$uri,true())
 };

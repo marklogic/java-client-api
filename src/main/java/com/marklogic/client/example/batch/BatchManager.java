@@ -43,6 +43,7 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
 
 /**
  * BatchManager provides an extension for executing a batch of document requests.
@@ -93,7 +94,7 @@ public class BatchManager extends ResourceManager {
 		}
 	}
 
-// TODO: concurrency
+// TODO: thread-safe
 	public class BatchResponse implements Iterator<OutputItem> {
 		boolean success = false;
 		Iterator<OutputItem> items;
@@ -115,16 +116,29 @@ public class BatchManager extends ResourceManager {
 			if (items == null)
 				return null;
 			OutputItem item = items.next();
-// TODO: an item with metadata or an exception should also consume results
-			if (item instanceof ReadOutput) {
-				ReadOutput ritem = (ReadOutput) item;
-				if (results == null || !results.hasNext())
-					throw new IllegalStateException("unable to get result for read request");
-				ritem.result = results.next();
-				if (!results.hasNext()) {
-					results.close();
-					results = null;
+			if (item.exceptionMimetype != null) {
+				if (results == null || !results.hasNext()) {
+					throw new IllegalStateException("unable to get exception for request");
 				}
+				item.exception = results.next();
+			} else if (item instanceof ReadOutput) {
+				ReadOutput ritem = (ReadOutput) item;
+				if (ritem.metadataMimetype != null) {
+					if (results == null || !results.hasNext()) {
+						throw new IllegalStateException("unable to get metadata for read request");
+					}
+					ritem.metadata = results.next();
+				}
+				if (ritem.contentMimetype != null) {
+					if (results == null || !results.hasNext()) {
+						throw new IllegalStateException("unable to get content for read request");
+					}
+					ritem.content = results.next();
+				}
+			}
+			if (results != null && !results.hasNext()) {
+				results.close();
+				results = null;
 			}
 			return item;
 		}
@@ -197,7 +211,8 @@ public class BatchManager extends ResourceManager {
 		String uri;
 //		DocumentDescriptor desc;
 		boolean success = false;
-		Element exception;
+		String exceptionMimetype;
+		ServiceResult exception;
 		OutputItem() {
 			super();
 		}
@@ -213,9 +228,14 @@ public class BatchManager extends ResourceManager {
 		public boolean getSuccess() {
 			return success;
 		}
+		public boolean hasException() {
+			return (exception != null);
+		}
 		// TODO: expose throwable exception
-		public Element getException() {
-			return exception;
+		public <R extends XMLReadHandle> R getException(R handle) {
+			if (exception == null)
+				throw new IllegalStateException("could not get exception for result");
+			return exception.getContent(handle);
 		}
 	}
 	public class DeleteOutput extends OutputItem {
@@ -227,26 +247,39 @@ public class BatchManager extends ResourceManager {
 		}
 	}
 	public class ReadOutput extends OutputItem {
-		String        mimetype;
-		Element       metadata;
-		ServiceResult result;
+		String        metadataMimetype;
+		ServiceResult metadata;
+		String        contentMimetype;
+		ServiceResult content;
 		ReadOutput() {
 			super();
 		}
 		public OperationType getOperationType() {
 			return OperationType.READ;
 		}
-		public String getMimetype() {
-			return mimetype;
+		public boolean hasMetadata() {
+			return (metadata != null);
 		}
-		// TODO: expose as DocumentMetadataHandle
-		public Element getMetadata() {
-			return metadata;
+		public DocumentMetadataHandle getMetadata() {
+			if (metadata == null)
+				throw new IllegalStateException("could not get metadata for result");
+			return metadata.getContent(new DocumentMetadataHandle());
+		}
+		public <R extends XMLReadHandle> R getMetadata(R handle) {
+			if (metadata == null)
+				throw new IllegalStateException("could not get metadata for result");
+			return metadata.getContent(handle);
+		}
+		public boolean hasContent() {
+			return (content != null);
+		}
+		public String getContentMimetype() {
+			return contentMimetype;
 		}
 		public <R extends AbstractReadHandle> R getContent(R handle) {
-			if (result == null)
-				throw new IllegalStateException("could not get content for read result");
-			return result.getContent(handle);
+			if (content == null)
+				throw new IllegalStateException("could not get content for result");
+			return content.getContent(handle);
 		}
 	}
 	public class WriteOutput extends OutputItem {
@@ -377,11 +410,11 @@ public class BatchManager extends ResourceManager {
 				continue;
 			Element responseItem = (Element) responseNode;
 
-			String  itemUri      = null;
-			boolean itemSuccess  = false;
-			Element itemMetadata = null;
-			String  itemMimetype = null;
-			Element itemFailure  = null;
+			String  itemUri       = null;
+			boolean itemSuccess   = false;
+			String  itemMetadata  = null;
+			String  itemContent   = null;
+			String  itemException = null;
 
 			NodeList fieldItems = responseItem.getChildNodes();
 			int      fieldCount = fieldItems.getLength();
@@ -393,15 +426,15 @@ public class BatchManager extends ResourceManager {
 				String  fieldName = fieldItem.getLocalName();
 
 				if ("uri".equals(fieldName)) {
-					itemUri = fieldItem.getTextContent();
+					itemUri       = fieldItem.getTextContent();
 				} else if ("request-succeeded".equals(fieldName)) {
-					itemSuccess = "true".equals(fieldItem.getTextContent());
-				} else if ("metadata".equals(fieldName)) {
-					itemMetadata = fieldItem;
+					itemSuccess   = "true".equals(fieldItem.getTextContent());
+				} else if ("metadata-mimetype".equals(fieldName)) {
+					itemMetadata  = fieldItem.getTextContent();
 				} else if ("content-mimetype".equals(fieldName)) {
-					itemMimetype = fieldItem.getTextContent();
+					itemContent   = fieldItem.getTextContent();
 				} else if ("request-failure".equals(fieldName)) {
-					itemFailure = fieldItem;
+					itemException = fieldItem.getTextContent();
 				} else {
 					// TODO: warn
 				}
@@ -415,28 +448,33 @@ public class BatchManager extends ResourceManager {
 				DeleteOutput deleteOutput = new DeleteOutput();
 				deleteOutput.uri = itemUri;
 				deleteOutput.success = itemSuccess;
-				if (itemFailure != null)
-					deleteOutput.exception = itemFailure;
+				if (itemException != null) {
+					deleteOutput.exceptionMimetype = itemException;
+				}
 				items.add(deleteOutput);
 			} else if ("get-response".equals(responseName)) {
 				ReadOutput readOutput = new ReadOutput();
 				readOutput.uri = itemUri;
 				readOutput.success = itemSuccess;
-				if (itemMetadata != null)
-					readOutput.metadata = itemMetadata;
-				if (itemMimetype != null) {
-					// TODO: set format
-					readOutput.mimetype = itemMimetype;
+				if (itemException != null) {
+					readOutput.exceptionMimetype = itemException;
+				} else {
+					if (itemMetadata != null) {
+						readOutput.metadataMimetype = itemMetadata;
+					}
+					if (itemContent != null) {
+						// TODO: set format
+						readOutput.contentMimetype = itemContent;
+					}
 				}
-				if (itemFailure != null)
-					readOutput.exception = itemFailure;
 				items.add(readOutput);
 			} else if ("put-response".equals(responseName)) {
 				WriteOutput writeOutput = new WriteOutput();
 				writeOutput.uri = itemUri;
 				writeOutput.success = itemSuccess;
-				if (itemFailure != null)
-					writeOutput.exception = itemFailure;
+				if (itemException != null) {
+					writeOutput.exceptionMimetype = itemException;
+				}
 				items.add(writeOutput);
 			}
 		}

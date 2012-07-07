@@ -116,15 +116,19 @@ public class BatchExample {
 		request.withRead("/batch/read1.xml", "application/xml");
 		request.withRead("/batch/read2.xml", Metadata.COLLECTIONS, "application/xml");
 		request.withDelete("/batch/delete1.xml");
-		request.withWrite("/batch/write1.xml", new StringHandle().withFormat(Format.XML).with("<write1/>"));
+		request.withWrite("/batch/write1.xml",
+				new StringHandle().withFormat(Format.XML).with("<write1/>"));
 		DocumentMetadataHandle meta2 = new DocumentMetadataHandle();
 		meta2.getCollections().add("/batch/collection2");
-		request.withWrite("/batch/write2.xml", meta2, new StringHandle().withFormat(Format.XML).with("<write2/>"));
+		request.withWrite("/batch/write2.xml",
+				meta2,
+				new StringHandle().withFormat(Format.XML).with("<write2/>"));
 
 		// apply the request
 		BatchManager.BatchResponse response = batchMgr.apply(request);
 
-		System.out.println("Applied the batch request with " + (response.getSuccess() ? "success" : "failure")+":");
+		System.out.println("Applied the batch request with " +
+				(response.getSuccess() ? "success" : "failure")+":");
 
 		// iterate over the response items
 		while (response.hasNext()) {
@@ -134,23 +138,29 @@ public class BatchExample {
 			if (item.getSuccess()) {
 				System.out.println(itemType.name().toLowerCase()+" on "+itemUri);
 
+				// inspect the response for a document read request
 				if (itemType == BatchManager.OperationType.READ) {
 					BatchManager.ReadOutput readItem = (BatchManager.ReadOutput) item;
-					StringHandle readHandle = readItem.getContent(new StringHandle());
 
-					// TODO: show metadata
-					if (readItem.getMetadata() != null) {
-						System.out.println("with metadata");
+					// show the document metadata read from the database
+					if (readItem.hasMetadata()) {
+						StringHandle metadataHandle = readItem.getMetadata(new StringHandle());
+						System.out.println("with metadata:\n"+metadataHandle.get());
 					}
-
-					System.out.println(readHandle.get());
+					// show the document content read from the database
+					if (readItem.hasContent()) {
+						StringHandle contentHandle = readItem.getContent(new StringHandle());
+						System.out.println("with content:\n"+contentHandle.get());
+					}
 				}
 			} else {
 				System.out.println(itemType.name().toLowerCase()+" failed on "+itemUri);
-				// TODO: item.getException()
+				if (item.hasException()) {
+					StringHandle exceptionHandle = item.getException(new StringHandle());
+					System.out.println("with exception:\n"+exceptionHandle.get());
+				}
 			}
 		}
-
 
 		// release the client
 		client.release();
