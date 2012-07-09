@@ -33,6 +33,9 @@ public class NameMapBase<V>
 {
 	private NamespaceContext context;
 
+	/**
+	 * Zero-argument constructor.
+	 */
 	public NameMapBase() {
 		super();
 	}

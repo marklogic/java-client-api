@@ -19,7 +19,14 @@ package com.marklogic.client;
  * The Format enumerates different kinds of document content.
  */
 public enum Format {
-    BINARY, JSON, TEXT, XML, UNKNOWN;
+    /**
+     * Identifies the binary document format.
+     */
+	BINARY,
+	/**
+	 * Identifies the JSON document format.
+	 */
+	JSON, TEXT, XML, UNKNOWN;
     public String getDefaultMimetype() {
     	switch(this) {
     	case UNKNOWN:

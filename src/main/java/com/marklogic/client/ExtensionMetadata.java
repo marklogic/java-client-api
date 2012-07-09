@@ -17,7 +17,8 @@ package com.marklogic.client;
 
 /**
  * Extension Metadata provides detail about a transform
- * or resource services extension.
+ * or resource services extension.  All of the detail
+ * is optional but recommended.
  */
 public class ExtensionMetadata {
 	private String title;
@@ -25,38 +26,80 @@ public class ExtensionMetadata {
 	private String provider;
 	private String version;
 
+	/**
+	 * Zero-argument constructor.
+	 */
 	public ExtensionMetadata() {
 		super();
 	}
 
+	/**
+	 * Returns the title of the extension.
+	 * @return	the extension title
+	 */
 	public String getTitle() {
     	return title;
     }
+	/**
+	 * Specifies the title of the extension.
+	 * @param title	the extension title
+	 */
     public void setTitle(String title) {
     	this.title = title;
     }
 
+    /**
+     * Returns the description of the extension.
+     * @return	the extension description
+     */
     public String getDescription() {
     	return description;
     }
+    /**
+     * Specifies the description of the extension.
+     * @param description	the extension description
+     */
     public void setDescription(String description) {
     	this.description = description;
     }
 
+    /**
+     * Returns the name of the organization providing the extension.
+     * @return	the provider name
+     */
     public String getProvider() {
     	return provider;
     }
+    /**
+     * Specifies the name of the organization providing the extension.
+     * @param provider	the provider name
+     */
     public void setProvider(String provider) {
     	this.provider = provider;
     }
 
+    /**
+     * Returns the version identifier for the extension implementation.
+     * @return	the version number or code
+     */
     public String getVersion() {
     	return version;
     }
+    /**
+     * Specifies the version identifier for the extension implementation.
+     * @param version	the version number or code
+     */
     public void setVersion(String version) {
     	this.version = version;
     }
 
+    /**
+     * Constructs request parameters expressing the extension metadata.
+     * 
+     * Ordinarily, this method is called internally during extension
+     * processing, but you can call this method directly if convenient.
+     * @return	the metadata as parameters
+     */
     public RequestParameters asParameters() {
     	RequestParameters params = new RequestParameters();
     	if (title != null)

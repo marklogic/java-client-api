@@ -26,31 +26,60 @@ import java.io.PrintStream;
  * the name of the file is logged.
  */
 public interface RequestLogger {
+	/**
+	 * Indicates that no content is copied to the log (the default).
+	 */
 	public final static long NO_CONTENT  = 0;
+	/**
+	 * Indicates that all content is copied to the log.
+	 */
 	public final static long ALL_CONTENT = Long.MAX_VALUE;
 
+	/**
+	 * Returns how much content is copied to the log.
+	 * @return	the limit on copying content
+	 */
 	public long getContentMax();
 	/**
 	 * Controls how much content is copied to the log (defaulting to NO_CONTENT).
+	 * @param length	the limit on copying content
 	 */
 	public void setContentMax(long length);
 
+	/**
+	 * Returns whether logging is active or suspended.
+	 * @return	the enablement of logging
+	 */
 	public boolean isEnabled();
 	/**
 	 * Suspend or resume logging.
+	 * @param enabled	the enablement of logging
 	 */
     public void setEnabled(boolean enabled);
 
+    /**
+     * Returns the underlying PrintStream used for logging.
+     * @return	the PrintStream for logging
+     */
 	public PrintStream getPrintStream();
 
 	/**
-	 * Copies the specified length of content to the log
-	 * during request processing.
-	 * @param content
-	 * @return
+	 * Copies content to the log during request processing 
+	 * up to the length limit specified for the logger.
+	 * 
+	 * Ordinarily, this method is called internally
+	 * during reading content from the database or writing
+	 * content to the database.  You may, however, use
+	 * this method directly if convenient.
+	 * 
+	 * @param content	the copied content
+	 * @return	the copied content
 	 */
     public <T> T copyContent(T content);
 
+    /**
+     * Send buffered output to the log destination.
+     */
     public void flush();
 	/**
 	 * Close the log.
