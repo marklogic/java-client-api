@@ -20,9 +20,11 @@ import java.io.PrintStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -2179,22 +2181,19 @@ public class JerseyServices implements RESTServices {
 			extractedHeaders = true;
 		}
 	}
-// TODO: threadsafe iteration
 	public class JerseyResultIterator implements ServiceResultIterator {
-		private RequestLogger reqlog;
-		private ClientResponse response;
-		private List<BodyPart> partList;
-		private int nextIndex = -1;
+		private RequestLogger      reqlog;
+		private ClientResponse     response;
+		private Iterator<BodyPart> partQueue;
 		public JerseyResultIterator(
 				RequestLogger reqlog, ClientResponse response, List<BodyPart> partList
 				) {
 			super();
 			if (response != null) {
 				if (partList != null && partList.size() > 0) {
-					this.reqlog   = reqlog;
-					this.response = response;
-					this.partList = partList;
-					nextIndex = 0;
+					this.reqlog    = reqlog;
+					this.response  = response;
+					this.partQueue = new ConcurrentLinkedQueue<BodyPart>(partList).iterator();
 				} else {
 					response.close();
 				}
@@ -2202,21 +2201,31 @@ public class JerseyServices implements RESTServices {
 		}
 		@Override
 		public boolean hasNext() {
-			return (nextIndex >= 0 && partList != null);
+			if (partQueue == null)
+				return false;
+			boolean hasNext = partQueue.hasNext();
+			if (!partQueue.hasNext())
+				close();
+			return hasNext;
 		}
 		@Override
 		public ServiceResult next() {
-			if (nextIndex < 0 || partList == null)
+			if (partQueue == null)
 				return null;
-			ServiceResult result = new JerseyResult(reqlog, partList.get(nextIndex));
-			nextIndex++;
-			checkNext();
-			return result ;
+
+			ServiceResult result = new JerseyResult(reqlog, partQueue.next());
+			if (!partQueue.hasNext())
+				close();
+
+			return result;
 		}
 		@Override
 		public void remove() {
-			partList.remove(nextIndex);
-			checkNext();
+			if (partQueue == null)
+				return;
+			partQueue.remove();
+			if (!partQueue.hasNext())
+				close();
 		}
 		@Override
 		public void close() {
@@ -2224,18 +2233,13 @@ public class JerseyServices implements RESTServices {
 				response.close();
 				response = null;
 			}
-			reqlog    = null;
-			partList  = null;
-			nextIndex = -1;
+			reqlog = null;
 		}
 		@Override
 		protected void finalize() throws Throwable {
 			close();
+			partQueue = null;
 			super.finalize();
-		}
-		private void checkNext() {
-			if (nextIndex >= partList.size())
-				close();
 		}
 	}
 
