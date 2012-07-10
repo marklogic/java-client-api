@@ -60,6 +60,8 @@ class NamespacesManagerImpl
 	public String readPrefix(String prefix) throws ForbiddenUserException, FailedRequestException {
 		if (prefix == null)
 			throw new IllegalArgumentException("Cannot read namespace for null prefix");
+		if (prefix.length() == 0)
+			throw new IllegalArgumentException("Server does not maintain a default namespace");
 
 		String binding = services.getValue(requestLogger, "config/namespaces", prefix, "application/xml", String.class);
 		if (binding == null)
@@ -139,6 +141,8 @@ class NamespacesManagerImpl
 	public void addPrefix(String prefix, String namespaceUri) throws ForbiddenUserException, FailedRequestException {
 		if (prefix == null)
 			throw new IllegalArgumentException("Cannot write binding for null prefix");
+		if (prefix.length() == 0)
+			throw new IllegalArgumentException("Cannot specify a default namespace");
 		if (namespaceUri == null)
 			throw new IllegalArgumentException("Cannot write binding for null namespaceUri");
 
@@ -157,6 +161,8 @@ class NamespacesManagerImpl
 	public void updatePrefix(String prefix, String namespaceUri) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (prefix == null)
 			throw new IllegalArgumentException("Cannot write binding for null prefix");
+		if (prefix.length() == 0)
+			throw new IllegalArgumentException("Cannot specify a default namespace");
 		if (namespaceUri == null)
 			throw new IllegalArgumentException("Cannot write binding for null namespaceUri");
 
@@ -173,6 +179,8 @@ class NamespacesManagerImpl
 	public void deletePrefix(String prefix) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (prefix == null)
 			throw new IllegalArgumentException("Cannot delete binding for null prefix");
+		if (prefix.length() == 0)
+			throw new IllegalArgumentException("Server does not maintain a default namespace");
 
 		services.deleteValue(requestLogger, "config/namespaces", prefix);
 	}

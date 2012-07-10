@@ -77,4 +77,26 @@ public class NamespacesManagerTest {
 		assertTrue("Failed to delete all namespaces",
 				context == null || context.size() == 0);
 	}
+
+	@Test
+	public void testExceptions() {
+		NamespacesManager nsMgr =
+			Common.client.newServerConfigManager().newNamespacesManager();
+
+		boolean illegalArgument = false;
+		try {
+			nsMgr.updatePrefix(javax.xml.XMLConstants.DEFAULT_NS_PREFIX, "http://invalid");
+		} catch (IllegalArgumentException e) {
+			illegalArgument = true;
+		}
+		assertTrue("Updating default prefix did not throw illegal argument exception", illegalArgument);
+		
+		illegalArgument = false;
+		try {
+			nsMgr.addPrefix(javax.xml.XMLConstants.DEFAULT_NS_PREFIX, "http://invalid");
+		} catch (IllegalArgumentException e) {
+			illegalArgument = true;
+		}
+		assertTrue("Adding default prefix did not throw illegal argument exception", illegalArgument);
+	}
 }
