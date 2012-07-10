@@ -27,17 +27,59 @@ import com.marklogic.client.io.marker.TextWriteHandle;
  * by default.
  */
 public interface ResourceExtensionsManager {
+	/**
+	 * Reads the list of resource service extensions installed on the server.
+	 * @param listHandle	a handle on a JSON or XML representation of the list
+	 * @return	the list handle
+	 */
     public <T extends StructureReadHandle> T listServices(T listHandle);
 
+    /**
+     * Reads the XQuery implementation of the services for a resource.
+     * @param resourceName	the name of the resource
+     * @param sourceHandle	a handle for reading the text of the XQuery implementation.
+     * @return	the XQuery source file
+     */
     public <T extends TextReadHandle> T readServices(String resourceName, T sourceHandle);
 
+    /**
+     * Installs the services that implement a resource.
+     * @param resourceName	the name of the resource
+     * @param sourceHandle	a handle on the source for the XQuery implementation
+     */
     public void writeServices(String resourceName, TextWriteHandle sourceHandle);
+    /**
+     * Installs the services that implement a resource.
+     * @param resourceName	the name of the resource
+     * @param sourceHandle	a handle on the source for the XQuery implementation
+     * @param metadata	the metadata about the resource services
+     */
     public void writeServices(String resourceName, TextWriteHandle sourceHandle, ExtensionMetadata metadata);
+    /**
+     * Installs the services that implement a resource.
+     * @param resourceName	the name of the resource
+     * @param sourceHandle	a handle on the source for the XQuery implementation
+     * @param metadata	the metadata about the resource services
+     * @param methodParams	a declaration of the parameters for the services
+     */
     public void writeServices(String resourceName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, MethodParameters... methodParams);
 
+    /**
+     * Uninstalls the services that implement a resource.
+     * @param resourceName	the name of the resource
+     */
     public void deleteServices(String resourceName);
 
+    /**
+     * Starts debugging client requests. You can suspend and resume debugging output
+     * using the methods of the logger.
+     * 
+     * @param logger	the logger that receives debugging output
+     */
     public void startLogging(RequestLogger logger);
+    /**
+     *  Stops debugging client requests.
+     */
     public void stopLogging();
 
     /**
@@ -47,19 +89,33 @@ public interface ResourceExtensionsManager {
     public class MethodParameters extends RequestParameters {
         private MethodType method;
 
+        /**
+         * Declares the parameters for a method the provides services for a resource.
+         * @param method	the method type
+         */
         public MethodParameters(MethodType method) {
         	super();
         	this.method = method;
         }
 
+        /**
+         * Returns the method for the parameters.
+         * @return	the method type
+         */
         public MethodType getMethod() {
         	return method;
         }
 
+        /**
+         * Returns the hash code for the method.
+         */
         @Override
 		public int hashCode() {
 			return getMethod().hashCode();
 		}
+        /**
+         * Returns whether the method declaration is the same.
+         */
 		@Override
 		public boolean equals(Object other) {
 			if (other == null)

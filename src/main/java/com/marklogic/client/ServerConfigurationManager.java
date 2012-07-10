@@ -20,8 +20,22 @@ package com.marklogic.client;
  * of the server.
  */
 public interface ServerConfigurationManager {
+	/**
+	 * Specifies the policy for use of a capability. 
+	 */
 	public enum Policy {
-		REQUIRED, OPTIONAL, NONE;
+		/**
+		 * Specifies that the capability must be used.
+		 */
+		REQUIRED,
+		/**
+		 * Specifies that the capability may be used.
+		 */
+		OPTIONAL,
+		/**
+		 * Specifies that the capability may not be used.
+		 */
+		NONE;
 	}
 
 	/**

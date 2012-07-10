@@ -28,7 +28,18 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
 	 * to metadata properties on the binary document, to a separate XHTML document, or not at all.
 	 */
 	public enum MetadataExtraction {
-		PROPERTIES, DOCUMENT, NONE;
+		/**
+		 * Specifies extraction of metadata to the document properties.
+		 */
+		PROPERTIES,
+		/**
+		 * Specifies extraction of metadata to a separate companion XHTML document.
+		 */
+		DOCUMENT,
+		/**
+		 * Specifies no extraction of metadata.
+		 */
+		NONE;
 	}
 
     /**

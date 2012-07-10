@@ -20,14 +20,30 @@ package com.marklogic.client;
  */
 public enum Format {
     /**
-     * Identifies the binary document format.
+     * Identifies the format of binary documents such as images.
      */
 	BINARY,
 	/**
-	 * Identifies the JSON document format.
+	 * Identifies the format of JSON documents.
 	 */
-	JSON, TEXT, XML, UNKNOWN;
-    public String getDefaultMimetype() {
+	JSON,
+	/**
+	 * Identifies the format of text documents such as plain text and HTML.
+	 */
+	TEXT,
+	/**
+	 * Identifies the format of XML documents such as XHTML.
+	 */
+	XML,
+	/**
+	 * Used for documents with unknown or multiple formats.
+	 */
+	UNKNOWN;
+    /**
+     * Returns the default mime type for the format.
+     * @return	the default mime type
+     */
+	public String getDefaultMimetype() {
     	switch(this) {
     	case UNKNOWN:
     		return null;

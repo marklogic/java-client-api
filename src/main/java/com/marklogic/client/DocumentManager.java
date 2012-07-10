@@ -33,7 +33,26 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * The Metadata enumeration specifies the categories of metadata read from or written to the database.
      */
 	public enum Metadata {
-        ALL, COLLECTIONS, PERMISSIONS, PROPERTIES, QUALITY;
+        /**
+         * Specifies all document metadata categories.
+         */
+		ALL,
+        /**
+         * Specifies document collections.
+         */
+		COLLECTIONS,
+        /**
+         * Specifies document permissions.
+         */
+		PERMISSIONS,
+        /**
+         * Specifies document properties.
+         */
+		PROPERTIES,
+        /**
+         * Specifies document search quality.
+         */
+		QUALITY;
     }
 
 	/**

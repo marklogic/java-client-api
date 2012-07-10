@@ -34,15 +34,29 @@ abstract public class ResourceManager
 	protected ResourceManager() {
 		super();
 	}
+	/**
+	 * Returns the name of the resource.
+	 * @return	the name of the resource
+	 */
 	public String getName() {
 		ResourceServices services = getServices();
 		return (services != null) ? services.getResourceName() : null;
 	}
-    public void startLogging(RequestLogger logger) {
+
+    /**
+     * Starts debugging client requests. You can suspend and resume debugging output
+     * using the methods of the logger.
+     * 
+     * @param logger	the logger that receives debugging output
+     */
+	public void startLogging(RequestLogger logger) {
 		ResourceServices services = getServices();
     	if (services != null)
     		services.startLogging(logger);
     }
+    /**
+     *  Stops debugging client requests.
+     */
     public void stopLogging() {
 		ResourceServices services = getServices();
     	if (services != null)

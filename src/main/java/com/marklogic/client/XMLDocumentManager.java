@@ -26,7 +26,16 @@ public interface XMLDocumentManager extends DocumentManager<XMLReadHandle, XMLWr
      * The DocumentRepair enumeration specifies whether an XML document is repaired as much as possible or not at all.
      */
     public enum DocumentRepair {
-        FULL, NONE;
+        /**
+         * Specifies that the server should try all methods for repairing
+         * the document when an invalid document is written.
+         */
+    	FULL,
+        /**
+         * Specifies that the server should not try to repair
+         * the document when an invalid document is written.
+         */
+    	NONE;
     }
 
 	/**
