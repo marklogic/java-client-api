@@ -23,17 +23,26 @@ import com.marklogic.client.io.marker.StructureReadHandle;
  * To use Transaction, an application must authenticate as rest-writer or rest-admin.
  */
 public interface Transaction {
+	/**
+	 * Returns the identifier for the transaction.  Ordinarily, you
+	 * don't need to get the transaction id.  Instead, you pass the
+	 * Transaction object to methods.
+	 * @return	the transaction identifier
+	 */
 	public String getTransactionId();
 
+	/**
+	 * Reads the status for the transaction including whether the transaction
+	 * has timed out.
+	 * @param handle	a JSON or XML handle on the content of the status report
+	 * @return	the status report handle
+	 */
 	public <T extends StructureReadHandle> T readStatus(T handle) throws ForbiddenUserException, FailedRequestException;
 
 	/**
 	 * Completes the transaction, making writes and deletes visible to other database clients.
 	 * 
      * To call commit(), an application must authenticate as rest-writer or rest-admin.
-     * 
-	 * @throws ForbiddenUserException
-	 * @throws FailedRequestException
 	 */
 	public void commit() throws ForbiddenUserException, FailedRequestException;
 	/**
@@ -41,9 +50,6 @@ public interface Transaction {
 	 * made in the transaction.
 	 * 
      * To call rollback(), an application must authenticate as rest-writer or rest-admin.
-     * 
-	 * @throws ForbiddenUserException
-	 * @throws FailedRequestException
 	 */
     public void rollback() throws ForbiddenUserException, FailedRequestException;
 }

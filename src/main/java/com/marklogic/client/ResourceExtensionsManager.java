@@ -38,7 +38,7 @@ public interface ResourceExtensionsManager {
      * Reads the XQuery implementation of the services for a resource.
      * @param resourceName	the name of the resource
      * @param sourceHandle	a handle for reading the text of the XQuery implementation.
-     * @return	the XQuery source file
+     * @return	the XQuery source code
      */
     public <T extends TextReadHandle> T readServices(String resourceName, T sourceHandle);
 

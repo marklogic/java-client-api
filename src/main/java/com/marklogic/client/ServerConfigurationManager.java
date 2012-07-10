@@ -47,6 +47,10 @@ public interface ServerConfigurationManager {
 	 */
 	public void writeConfiguration();
 
+	/**
+	 * Returns whether the server validates query options before storing them.
+	 * @return	true if query options are validated
+	 */
 	public Boolean getQueryOptionValidation();
 	/**
 	 * Specifies whether the server validates query options before storing them.
@@ -54,19 +58,64 @@ public interface ServerConfigurationManager {
 	 */
 	public void setQueryOptionValidation(Boolean on);
 
+	/**
+	 * Returns the name of the default transform for reading documents.
+	 * @return	the default transform name
+	 */
 	public String getDefaultDocumentReadTransform();
+	/**
+	 * Specifies the name of the default transform for reading documents.
+	 * The default transform is applied before any transform specified
+	 * on the read request.
+	 * @param name	the default transform name
+	 */
 	public void   setDefaultDocumentReadTransform(String name);
 
-	// for debug logging on the server side
+	/**
+	 * Returns whether the server logs requests to the error log on the server.
+	 * @return	true if the server logs requests
+	 */
 	public Boolean getServerRequestLogging();
+	/**
+	 * Specifies whether the server logs requests to the error log on the server.
+	 * @param on	true to log requests on the server
+	 */
 	public void setServerRequestLogging(Boolean on);
 
-	// conditional requests based on the version
+	/**
+	 * Returns whether the server requires, allows, or ignores document versionss
+	 * on document read, write, and delete requests.
+	 * @return	the policy as required, optional, or none
+	 */
 	public Policy getContentVersionRequests();
+	/**
+	 * Specifies whether the server requires, allows, or ignores document versionss
+	 * on document read, write, and delete requests.
+	 * @param policy	required, optional, or none for document versions
+	 */
 	public void setContentVersionRequests(Policy policy);
 
+	/**
+	 * Creates a manager for listing, reading, writing, and deleting query options.
+	 * @return	a new manager for query options
+	 */
 	public QueryOptionsManager        newQueryOptionsManager();
+	/**
+	 * Creates a manager for listing, reading, writing, and deleting
+	 * namespace bindings.
+	 * @return	a new manager for namespace bindings
+	 */
     public NamespacesManager          newNamespacesManager();
+	/**
+	 * Creates a manager for listing, reading, writing, and deleting
+	 * resource service extensions.
+	 * @return	a new manager for resource service extensions
+	 */
 	public ResourceExtensionsManager  newResourceExtensionsManager();
+	/**
+	 * Creates a manager for listing, reading, writing, and deleting
+	 * transform extensions.
+	 * @return	a new manager for transform extensions
+	 */
 	public TransformExtensionsManager newTransformExtensionsManager();
 }
