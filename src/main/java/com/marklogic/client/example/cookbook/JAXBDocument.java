@@ -49,7 +49,9 @@ public class JAXBDocument {
 		run(host, port, writer_user, writer_password, authType);
 	}
 
-	// A class with JAXB annotations
+	/**
+	 * Product provides an example of a class with JAXB annotations.
+	 */
 	@XmlRootElement
 	static public class Product {
 		private String name;

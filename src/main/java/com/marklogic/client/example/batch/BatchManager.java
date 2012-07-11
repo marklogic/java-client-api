@@ -94,7 +94,7 @@ public class BatchManager extends ResourceManager {
 		}
 	}
 
-// TODO: thread-safe
+// TODO: assemble a single thread-safe queue
 	public class BatchResponse implements Iterator<OutputItem> {
 		boolean success = false;
 		Iterator<OutputItem> items;
@@ -204,6 +204,9 @@ public class BatchManager extends ResourceManager {
 		}
 	}
 
+	/**
+	 * Enumerates the operations supported on a document in the batch.
+	 */
 	public enum OperationType {
 		DELETE, READ, WRITE;
 	}

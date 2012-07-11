@@ -11,6 +11,16 @@ package com.marklogic.client.io.marker;
  * Otherwise, the handle makes a copy into its own store from the byte array.
  */
 public interface BufferableHandle {
+	/**
+	 * Sets the content of the handle by copying from a byte array buffer
+	 * encoded in UTF-8.
+	 * @param buffer	the byte array
+	 */
 	public void fromBuffer(byte[] buffer);
+	/**
+	 * Copies the content of the handle to a byte array buffer
+	 * encoded in UTF-8.
+	 * @return	the byte array
+	 */
 	public byte[] toBuffer();
 }

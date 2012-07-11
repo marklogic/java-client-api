@@ -78,8 +78,11 @@ public class ResourceExtension {
 		tearDownExample(host, port, admin_user, admin_password, authType);
 	}
 
-	// implement a resource extension client with a method for each service;
-	//     more typically, this class would be a top-level class
+	/**
+	 * DictionaryManager provides an example of a class that implements
+	 * a resource extension client, exposing a method for each service.
+	 * Typically, this class would be a top-level class.
+	 */
 	static public class DictionaryManager extends ResourceManager {
 		static final public String NAME = "dictionary";
 		private XMLDocumentManager docMgr;
