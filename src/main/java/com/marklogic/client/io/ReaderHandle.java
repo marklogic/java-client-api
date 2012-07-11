@@ -42,7 +42,8 @@ import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
- * A Reader Handle represents a resource as a reader for reading or writing.
+ * A Reader Handle represents a character content as a reader
+ * for reading to or writing from the database.
  * 
  * When finished with the reader, close the reader to release the resources.
  */
@@ -58,32 +59,66 @@ public class ReaderHandle
 
     private Reader content;
 
+    /**
+     * Zero-argument constructor.
+     */
     public ReaderHandle() {
+    	super();
+    }
+	/**
+	 * Initializes the handle with a character reader for the content.
+	 * @param content	a character reader
+	 */
+    public ReaderHandle(Reader content) {
+    	this();
+    	set(content);
     }
 
     /**
-	 * Returns a reader for a resource read from the database.
+	 * Returns a character reader for reading content.
 	 * 
      * When finished with the reader, close the reader to release
-     * the response.
+     * the resource.
      * 
-     * @return
+     * @return	the character reader
      */
     public Reader get() {
     	return content;
     }
+	/**
+	 * Assigns an character reader as the content.
+	 * @param content	a reader
+	 */
 	public void set(Reader content) {
 		this.content = content;
 	}
+    /**
+	 * Assigns a character reader as the content and returns the handle
+	 * as a fluent convenience.
+	 * @param content	a reader
+	 * @return	this handle
+     */
 	public ReaderHandle with(Reader content) {
 		set(content);
 		return this;
 	}
 
+	/**
+	 * Specifies the format of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param format	the format of the content
+	 * @return	this handle
+	 */
 	public ReaderHandle withFormat(Format format) {
 		setFormat(format);
 		return this;
 	}
+	/**
+	 * Specifies the mime type of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param mimetype	the mime type of the content
+	 * @return	this handle
+	 */
 	public ReaderHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;

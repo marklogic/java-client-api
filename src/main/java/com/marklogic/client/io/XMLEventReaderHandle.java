@@ -56,14 +56,35 @@ public class XMLEventReaderHandle
 	private XMLEventReader  content;
 	private XMLInputFactory factory;
 
+	/**
+	 * Zero-argument constructor.
+	 */
 	public XMLEventReaderHandle() {
 		super();
 		super.setFormat(Format.XML);
 	}
+	/**
+	 * Initializes the handle with a StAX event reader for the content.
+	 * @param content	a StAX event reader
+	 */
+	public XMLEventReaderHandle(XMLEventReader content) {
+		this();
+		set(content);
+	}
 
+	/**
+	 * Returns the resolver for resolving references while parsing
+	 * the event reader source.
+	 * @return	the resolver
+	 */
 	public XMLResolver getResolver() {
 		return resolver;
 	}
+	/**
+	 * Specifies the resolver for resolving references while parsing
+	 * the event reader source.
+	 * @param resolver	the reference resolver
+	 */
 	public void setResolver(XMLResolver resolver) {
 		this.resolver = resolver;
 	}
@@ -75,23 +96,42 @@ public class XMLEventReaderHandle
      * When finished with the event reader, close the event reader to release
      * the response.
 	 * 
-	 * @return
+	 * @return	the XML event reader
 	 */
 	public XMLEventReader get() {
 		return content;
 	}
+	/**
+	 * Assigns the event reader for the content.
+	 * @param content	a StAX event reader
+	 */
 	public void set(XMLEventReader content) {
 		this.content = content;
 	}
+    /**
+	 * Assigns an event reader for the content and returns the handle
+	 * as a fluent convenience.
+	 * @param content	a StAX event reader
+	 * @return	this handle
+     */
 	public XMLEventReaderHandle with(XMLEventReader content) {
 		set(content);
 		return this;
 	}
 
+	/**
+	 * Restricts the format to XML.
+	 */
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			throw new IllegalArgumentException("XMLEventReaderHandle supports the XML format only");
 	}
+	/**
+	 * Specifies the mime type of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param mimetype	the mime type of the content
+	 * @return	this handle
+	 */
 	public XMLEventReaderHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;
@@ -122,11 +162,19 @@ public class XMLEventReaderHandle
 		}
 	}
 
+	/**
+	 * Returns the factory for parsing StAX events.
+	 * @return	the StAX factory
+	 */
 	public XMLInputFactory getFactory() {
 		if (factory == null)
 			factory = makeXMLInputFactory();
 		return factory;
 	}
+	/**
+	 * Specifies the factory for parsing StAX events.
+	 * @param factory	the StAX factory
+	 */
 	public void setFactory(XMLInputFactory factory) {
 		this.factory = factory;
 	}

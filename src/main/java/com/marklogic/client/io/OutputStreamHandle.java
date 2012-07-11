@@ -55,29 +55,64 @@ public class OutputStreamHandle
 
 	private OutputStreamSender sender;
 
+	/**
+	 * Zero-argument constructor.
+	 */
 	public OutputStreamHandle() {
 		super();
 	}
+	/**
+	 * Initializes the handle with an outputstream sender providing
+	 * the callback that writes content to the database via an output stream.
+	 * @param sender	the processor that sends content to the database
+	 */
 	public OutputStreamHandle(OutputStreamSender sender) {
 		this();
 		set(sender);
 	}
 
+	/**
+	 * Specifies the format of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param format	the format of the content
+	 * @return	this handle
+	 */
 	public OutputStreamHandle withFormat(Format format) {
 		setFormat(format);
 		return this;
 	}
+	/**
+	 * Specifies the mime type of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param mimetype	the mime type of the content
+	 * @return	this handle
+	 */
 	public OutputStreamHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;
 	}
 
+	/**
+	 * Returns the output stream sender that writes the content.
+	 * @return	the output stream sender
+	 */
 	public OutputStreamSender get() {
 		return sender;
 	}
+	/**
+	 * Assigns an output stream sender providing the callback that writes
+	 * content to the database via an output stream.
+	 * @param content	the output stream sender
+	 */
 	public void set(OutputStreamSender sender) {
 		this.sender = sender;
 	}
+    /**
+	 * Assigns an output stream sender providing the callback that writes
+	 * content to the database and returns the handle as a fluent convenience.
+	 * @param content	the output stream sender
+	 * @return	this handle
+     */
 	public OutputStreamHandle with(OutputStreamSender sender) {
 		set(sender);
 		return this;

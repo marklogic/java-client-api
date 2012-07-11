@@ -58,32 +58,79 @@ public class SourceHandle
 	private Transformer transformer;
 	private Source      content;
 
+	/**
+	 * Zero-argument constructor.
+	 */
 	public SourceHandle() {
 		super();
 		super.setFormat(Format.XML);
 	}
+	/**
+	 * Initializes the handle with a transform source for the content.
+	 * @param content	a transform source
+	 */
+	public SourceHandle(Source content) {
+		this();
+		set(content);
+	}
 
+	/**
+	 * Returns a transformer for modifying the content.
+	 * @return	the transformer
+	 */
 	public Transformer getTransformer() {
 		return transformer;
 	}
+	/**
+	 * Specifies a transformer for modifying the content.
+	 * @param transformer	the transformer
+	 */
 	public void setTransformer(Transformer transformer) {
 		this.transformer = transformer;
 	}
+    /**
+	 * Specifies a transformer for modifying the content and returns the handle
+	 * as a fluent convenience.
+	 * @param transformer	the transformer
+	 * @return	this handle
+     */
 	public SourceHandle withTransformer(Transformer transformer) {
 		setTransformer(transformer);
 		return this;
 	}
 
+	/**
+	 * Returns the transform source that produces the content.
+	 * @return	the transform source
+	 */
 	public Source get() {
 		return content;
 	}
+	/**
+	 * Assigns a transform source that produces the content.
+	 * @param content	the transform source
+	 */
 	public void set(Source content) {
 		this.content = content;
 	}
+    /**
+	 * Assigns a transform source that produces the content and returns
+	 * the handle as a fluent convenience.
+	 * @param content	the transform source
+	 * @return	this handle
+     */
 	public SourceHandle with(Source content) {
 		set(content);
 		return this;
 	}
+
+	/**
+	 * Transforms the source for the content output to the result.  If
+	 * the transformer is not specified, an identity transform sends
+	 * the source to the result.  When writing, the result is stored
+	 * in the database
+	 * @param result	the receiver of the transform output
+	 */
 	public void transform(Result result) {
 		if (logger.isInfoEnabled())
 			logger.info("Transforming source into result");
@@ -108,10 +155,19 @@ public class SourceHandle
 		}
 	}
 
+	/**
+	 * Restricts the format to XML.
+	 */
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			throw new IllegalArgumentException("SourceHandle supports the XML format only");
 	}
+	/**
+	 * Specifies the mime type of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param mimetype	the mime type of the content
+	 * @return	this handle
+	 */
 	public SourceHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;

@@ -60,9 +60,16 @@ public class InputStreamHandle
 
 	final static private int BUFFER_SIZE = 8192;
 
+	/**
+	 * Zero-argument constructor.
+	 */
 	public InputStreamHandle() {
 		super();
 	}
+	/**
+	 * Initializes the handle with an input stream for the content.
+	 * @param content	an input stream
+	 */
 	public InputStreamHandle(InputStream content) {
 		this();
 		set(content);
@@ -74,23 +81,45 @@ public class InputStreamHandle
      * When finished with the input stream, close the input stream to release
      * the response.
 	 * 
-	 * @return
+	 * @return	the input stream
 	 */
 	public InputStream get() {
 		return content;
 	}
+	/**
+	 * Assigns an input stream as the content.
+	 * @param content	an input stream
+	 */
 	public void set(InputStream content) {
 		this.content = content;
 	}
+    /**
+	 * Assigns an input stream as the content and returns the handle
+	 * as a fluent convenience.
+	 * @param content	an input stream
+	 * @return	this handle
+     */
 	public InputStreamHandle with(InputStream content) {
 		set(content);
 		return this;
 	}
 
+	/**
+	 * Specifies the format of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param format	the format of the content
+	 * @return	this handle
+	 */
 	public InputStreamHandle withFormat(Format format) {
 		setFormat(format);
 		return this;
 	}
+	/**
+	 * Specifies the mime type of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param mimetype	the mime type of the content
+	 * @return	this handle
+	 */
 	public InputStreamHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;

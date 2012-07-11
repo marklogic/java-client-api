@@ -64,29 +64,68 @@ public class InputSourceHandle
 	private InputSource      content;
 	private SAXParserFactory factory;
 
+	/**
+	 * Zero-argument constructor.
+	 */
 	public InputSourceHandle() {
 		super();
 		super.setFormat(Format.XML);
 	}
+	/**
+	 * Initializes the handle with a SAX input source for the content.
+	 * @param content	a SAX input source
+	 */
+	public InputSourceHandle(InputSource content) {
+		this();
+		set(content);
+	}
 
+	/**
+	 * Returns the resolver for resolving references while parsing
+	 * the input source.
+	 * @return	the resolver
+	 */
 	public EntityResolver getResolver() {
 		return resolver;
 	}
+	/**
+	 * Specifies the resolver for resolving references while parsing
+	 * the input source.
+	 * @param resolver	the reference resolver
+	 */
 	public void setResolver(EntityResolver resolver) {
 		this.resolver = resolver;
 	}
 
+	/**
+	 * Returns the input source for the content.
+	 * @return	the input source
+	 */
 	public InputSource get() {
     	return content;
     }
+	/**
+	 * Assigns an input source as the content.
+	 * @param content	an input source
+	 */
 	public void set(InputSource content) {
     	this.content = content;
     }
+    /**
+	 * Assigns an input source as the content and returns the handle
+	 * as a fluent convenience.
+	 * @param content	an input source
+	 * @return	this handle
+     */
 	public InputSourceHandle with(InputSource content) {
     	set(content);
     	return this;
     }
 
+	/**
+	 * Reads the input source, sending SAX events to the supplied content handler.
+	 * @param handler	the SAX content handler
+	 */
 	public void process(ContentHandler handler) {
 		try {
 			if (logger.isInfoEnabled())
@@ -106,10 +145,20 @@ public class InputSourceHandle
 		}
 	}
 
+	/**
+	 * Restricts the format to XML.
+	 */
+	@Override
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			throw new IllegalArgumentException("InputSourceHandle supports the XML format only");
 	}
+	/**
+	 * Specifies the mime type of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param mimetype	the mime type of the content
+	 * @return	this handle
+	 */
 	public InputSourceHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;
@@ -140,11 +189,19 @@ public class InputSourceHandle
 		}
 	}
 
+	/**
+	 * Returns the factory for parsing SAX events.
+	 * @return	the SAX factory
+	 */
 	public SAXParserFactory getFactory() throws SAXException, ParserConfigurationException {
 		if (factory == null)
 			factory = makeSAXParserFactory();
 		return factory;
 	}
+	/**
+	 * Specifies the factory for parsing SAX events.
+	 * @param factory	the SAX factory
+	 */
 	public void setFactory(SAXParserFactory factory) {
 		this.factory = factory;
 	}

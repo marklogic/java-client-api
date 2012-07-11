@@ -58,38 +58,79 @@ public class DOMHandle
 	private Document               content;
 	private DocumentBuilderFactory factory;
 
+	/**
+	 * Zero-argument constructor.
+	 */
 	public DOMHandle() {
 		super();
 		super.setFormat(Format.XML);
 	}
+	/**
+	 * Initializes the handle with a DOM document for the content.
+	 * @param content	a DOM document
+	 */
 	public DOMHandle(Document content) {
 		this();
 		set(content);
 	}
 
+	/**
+	 * Returns the resolver for resolving references while parsing the document.
+	 * @return	the resolver
+	 */
 	public LSResourceResolver getResolver() {
 		return resolver;
 	}
+	/**
+	 * Specifies the resolver for resolving references while parsing the document.
+	 * @param resolver	the reference resolver
+	 */
 	public void setResolver(LSResourceResolver resolver) {
 		this.resolver = resolver;
 	}
 
+	/**
+	 * Returns the DOM document for the content.
+	 * @return	the DOM document
+	 */
 	public Document get() {
 		return content;
 	}
+	/**
+	 * Assigns a DOM document as the content.
+	 * @param content	a DOM document
+	 */
     public void set(Document content) {
     	this.content = content;
     }
+    /**
+	 * Assigns a DOM document as the content and returns the handle
+	 * as a fluent convenience.
+	 * @param content	a DOM document
+	 * @return	this handle
+     */
     public DOMHandle with(Document content) {
     	set(content);
     	return this;
     }
 
+	/**
+	 * Specifies the format of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param format	the format of the content
+	 * @return	this handle
+	 */
     @Override
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			throw new IllegalArgumentException("DOMHandle supports the XML format only");
 	}
+	/**
+	 * Specifies the mime type of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param mimetype	the mime type of the content
+	 * @return	this handle
+	 */
 	public DOMHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;
@@ -117,11 +158,19 @@ public class DOMHandle
 		}
 	}
 
+	/**
+	 * Returns the factory for building DOM documents.
+	 * @return	the document factory
+	 */
 	public DocumentBuilderFactory getFactory() throws ParserConfigurationException {
 		if (factory == null)
 			factory = makeDocumentBuilderFactory();
 		return factory;
 	}
+	/**
+	 * Specifies the factory for building DOM documents.
+	 * @param factory	the document factory
+	 */
 	public void setFactory(DocumentBuilderFactory factory) {
 		this.factory = factory;
 	}
@@ -183,6 +232,7 @@ public class DOMHandle
 
 		return this;
 	}
+	@Override
 	public void write(OutputStream out) throws IOException {
 		try {
 			if (logger.isInfoEnabled())

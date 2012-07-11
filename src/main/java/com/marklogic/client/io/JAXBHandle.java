@@ -55,27 +55,56 @@ public class JAXBHandle
 	private JAXBContext context;
 	private Object      content;
 
+	/**
+	 * Initializes the JAXB handle with the JAXB context for the classes
+	 * of the marshalled or unmarshalled structure.
+	 * @param context	the JAXB context
+	 */
 	public JAXBHandle(JAXBContext context) {
 		super();
 		super.setFormat(Format.XML);
 		this.context = context;
 	}
 
+	/**
+	 * Returns the root object of the JAXB structure for the content.
+	 * @return	the root JAXB object
+	 */
 	public Object get() {
 		return content;
 	}
+	/**
+	 * Assigns the root object of the JAXB structure for the content.
+	 * @param content	the root JAXB object
+	 */
     public void set(Object content) {
     	this.content = content;
     }
+    /**
+	 * Assigns the root object of the JAXB structure for the content
+	 * and returns the handle as a fluent convenience.
+	 * @param content	the root JAXB object
+	 * @return	this handle
+     */
     public JAXBHandle with(Object content) {
     	set(content);
     	return this;
     }
 
-	public void setFormat(Format format) {
+	/**
+	 * Restricts the format to XML.
+	 */
+	@Override
+    public void setFormat(Format format) {
 		if (format != Format.XML)
 			throw new IllegalArgumentException("JAXBHandle supports the XML format only");
 	}
+	/**
+	 * Specifies the mime type of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param mimetype	the mime type of the content
+	 * @return	this handle
+	 */
 	public JAXBHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;

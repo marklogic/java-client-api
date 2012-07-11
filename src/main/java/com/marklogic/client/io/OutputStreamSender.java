@@ -29,9 +29,9 @@ import java.io.OutputStream;
  */
 public interface OutputStreamSender {
 	/**
-	 * Implements a callback to write content to the provided database.
-	 * @param out
-	 * @throws IOException
+	 * Implements a callback to write content to the provided output stream
+	 * for sending to the database server.
+	 * @param out	the output stream receiving the content
 	 */
 	public void write(OutputStream out) throws IOException;
 }

@@ -45,29 +45,62 @@ public class StringHandle
 {
 	private String content;
 
+	/**
+	 * Zero-argument constructor.
+	 */
 	public StringHandle() {
 		super();
 	}
+	/**
+	 * Initializes the handle with a string for the content.
+	 * @param content	a content string
+	 */
 	public StringHandle(String content) {
 		this();
 		set(content);
 	}
 
+	/**
+	 * Returns the string for the content.
+	 * @return	the string
+	 */
 	public String get() {
 		return content;
 	}
+	/**
+	 * Assigns an string as the content.
+	 * @param content	a string
+	 */
 	public void set(String content) {
 		this.content = content;
 	}
+    /**
+	 * Assigns a string as the content and returns the handle
+	 * as a fluent convenience.
+	 * @param content	a string
+	 * @return	this handle
+     */
 	public StringHandle with(String content) {
 		set(content);
 		return this;
 	}
 
+	/**
+	 * Specifies the format of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param format	the format of the content
+	 * @return	this handle
+	 */
 	public StringHandle withFormat(Format format) {
 		setFormat(format);
 		return this;
 	}
+	/**
+	 * Specifies the mime type of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param mimetype	the mime type of the content
+	 * @return	this handle
+	 */
 	public StringHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;
@@ -113,6 +146,7 @@ public class StringHandle
 
 		return this;
 	}
+	@Override
 	public void write(OutputStream out) throws IOException {
 		out.write(toBuffer());
 	}

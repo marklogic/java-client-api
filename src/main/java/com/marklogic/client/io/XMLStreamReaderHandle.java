@@ -57,14 +57,35 @@ public class XMLStreamReaderHandle
 	private XMLStreamReader content;
 	private XMLInputFactory factory;
 
+	/**
+	 * Zero-argument constructor.
+	 */
 	public XMLStreamReaderHandle() {
 		super();
 		super.setFormat(Format.XML);
 	}
+	/**
+	 * Initializes the handle with a StAX stream reader for the content.
+	 * @param content	a StAX stream reader
+	 */
+	public XMLStreamReaderHandle(XMLStreamReader content) {
+		this();
+		set(content);
+	}
 
+	/**
+	 * Returns the resolver for resolving references while parsing
+	 * the event reader source.
+	 * @return	the resolver
+	 */
 	public XMLResolver getResolver() {
 		return resolver;
 	}
+	/**
+	 * Specifies the resolver for resolving references while parsing
+	 * the event reader source.
+	 * @param resolver	the reference resolver
+	 */
 	public void setResolver(XMLResolver resolver) {
 		this.resolver = resolver;
 	}
@@ -76,23 +97,42 @@ public class XMLStreamReaderHandle
      * When finished with the stream reader, close the stream reader to release
      * the response.
 	 * 
-	 * @return
+	 * @return	the XML stream reader
 	 */
 	public XMLStreamReader get() {
 		return content;
 	}
+	/**
+	 * Assigns the stream reader for the content.
+	 * @param content	a StAX stream reader
+	 */
 	public void set(XMLStreamReader content) {
 		this.content = content;
 	}
+    /**
+	 * Assigns an stream reader for the content and returns the handle
+	 * as a fluent convenience.
+	 * @param content	a StAX stream reader
+	 * @return	this handle
+     */
 	public XMLStreamReaderHandle with(XMLStreamReader content) {
 		set(content);
 		return this;
 	}
 
+	/**
+	 * Restricts the format to XML.
+	 */
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			throw new IllegalArgumentException("XMLStreamReaderHandle supports the XML format only");
 	}
+	/**
+	 * Specifies the mime type of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param mimetype	the mime type of the content
+	 * @return	this handle
+	 */
 	public XMLStreamReaderHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;
@@ -123,11 +163,19 @@ public class XMLStreamReaderHandle
 		}
 	}
 
+	/**
+	 * Returns the factory for parsing StAX streams.
+	 * @return	the StAX factory
+	 */
 	public XMLInputFactory getFactory() {
 		if (factory == null)
 			factory = makeXMLInputFactory();
 		return factory;
 	}
+	/**
+	 * Specifies the factory for parsing StAX streams.
+	 * @param factory	the StAX factory
+	 */
 	public void setFactory(XMLInputFactory factory) {
 		this.factory = factory;
 	}
@@ -203,6 +251,5 @@ public class XMLStreamReaderHandle
 			logger.error("Failed to parse StAX events from input stream",e);
 			throw new MarkLogicInternalException(e);
 		}
-
 	}
 }

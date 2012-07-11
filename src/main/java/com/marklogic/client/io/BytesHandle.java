@@ -50,29 +50,62 @@ public class BytesHandle
 {
 	private byte[] content;
 
+	/**
+	 * Zero-argument constructor.
+	 */
 	public BytesHandle() {
 		super();
 	}
+	/**
+	 * Initializes the handle with a byte array for the content.
+	 * @param content	the byte array
+	 */
 	public BytesHandle(byte[] content) {
 		this();
 		set(content);
 	}
 
+	/**
+	 * Returns the byte array for the handle content.
+	 * @return	the byte array
+	 */
 	public byte[] get() {
 		return content;
 	}
+	/**
+	 * Assigns a byte array as the content.
+	 * @param content	the byte array
+	 */
 	public void set(byte[] content) {
 		this.content = content;
 	}
+	/**
+	 * Assigns a byte array as the content and returns the handle
+	 * as a fluent convenience.
+	 * @param content	the byte array
+	 * @return	this handle
+	 */
 	public BytesHandle with(byte[] content) {
 		set(content);
 		return this;
 	}
 
+	/**
+	 * Specifies the format of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param format	the format of the content
+	 * @return	this handle
+	 */
 	public BytesHandle withFormat(Format format) {
 		setFormat(format);
 		return this;
 	}
+	/**
+	 * Specifies the mime type of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param mimetype	the mime type of the content
+	 * @return	this handle
+	 */
 	public BytesHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;

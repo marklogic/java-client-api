@@ -54,29 +54,62 @@ public class FileHandle
 {
 	private File content;
 
+	/**
+	 * Zero-argument constructor.
+	 */
 	public FileHandle() {
 		super();
 	}
+	/**
+	 * Initializes the handle with a file containing the content.
+	 * @param content	the file
+	 */
 	public FileHandle(File content) {
 		this();
 		set(content);
 	}
 
+	/**
+	 * Returns the file for the handle content.
+	 * @return	the file
+	 */
 	public File get() {
 		return content;
 	}
+	/**
+	 * Assigns a file as the content.
+	 * @param content	the file
+	 */
 	public void set(File content) {
 		this.content = content;
 	}
+	/**
+	 * Assigns a file as the content and returns the handle
+	 * as a fluent convenience.
+	 * @param content	the file
+	 * @return	this handle
+	 */
 	public FileHandle with(File content) {
 		set(content);
     	return this;
 	}
 
+	/**
+	 * Specifies the format of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param format	the format of the content
+	 * @return	this handle
+	 */
 	public FileHandle withFormat(Format format) {
 		setFormat(format);
 		return this;
 	}
+	/**
+	 * Specifies the mime type of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param mimetype	the mime type of the content
+	 * @return	this handle
+	 */
 	public FileHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;
