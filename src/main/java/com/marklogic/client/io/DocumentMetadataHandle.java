@@ -209,8 +209,11 @@ public class DocumentMetadataHandle
 		}
 		@Override
 		public Object put(QName name, Object value) {
-			if (value instanceof Number || value instanceof Boolean || value instanceof Byte || value instanceof byte[] ||
-					value instanceof Calendar || value instanceof NodeList || value instanceof String)
+			// Number includes BigDecimal, BigInteger, Byte, Double, Float, Integer, Long, Short
+			if (value instanceof Boolean || value instanceof byte[] ||
+					value instanceof Calendar || value instanceof Duration ||
+					value instanceof NodeList || value instanceof Number ||
+					value instanceof String)
 				return super.put(name, value);
 			throw new IllegalArgumentException("Invalid value for metadata property "+value.getClass().getName());
 		}
