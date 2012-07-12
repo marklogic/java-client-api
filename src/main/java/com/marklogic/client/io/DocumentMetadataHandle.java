@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.xml.XMLConstants;
+import javax.xml.datatype.Duration;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -50,6 +51,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.NameMap;
 import com.marklogic.client.NameMapBase;
@@ -81,6 +83,7 @@ public class DocumentMetadataHandle
 		public void addAll(String... collections);
 	}
 	private class CollectionsImpl extends HashSet<String> implements DocumentCollections {
+		@Override
 	    public void addAll(String... collections) {
 	    	if (collections == null || collections.length < 1)
 	    		return;
@@ -98,6 +101,7 @@ public class DocumentMetadataHandle
 	    public void add(String role, Capability... capabilities);
 	}
 	private class PermissionsImpl extends HashMap<String,Set<Capability>> implements DocumentPermissions {
+		@Override
 		public void add(String role, Capability... capabilities) {
 			if (capabilities == null || capabilities.length < 1)
 				return;
@@ -134,6 +138,7 @@ public class DocumentMetadataHandle
 		public Object put(QName name, byte[]     value);
 		public Object put(QName name, Calendar   value);
 		public Object put(QName name, Double     value);
+		public Object put(QName name, Duration   value);
 		public Object put(QName name, Float      value);
 		public Object put(QName name, Integer    value);
 		public Object put(QName name, Long       value);
@@ -146,42 +151,59 @@ public class DocumentMetadataHandle
 			super();
 		}
 
+		@Override
 		public Object put(QName name, BigDecimal value) {
 			return super.put(name, value);
 		}
+		@Override
 		public Object put(QName name, BigInteger value) {
 			return super.put(name, value);
 		}
+		@Override
 		public Object put(QName name, Boolean value) {
 			return super.put(name, value);
 		}
+		@Override
 		public Object put(QName name, Byte value) {
 			return super.put(name, value);
 		}
+		@Override
 		public Object put(QName name, byte[] value) {
 			return super.put(name, value);
 		}
+		@Override
 		public Object put(QName name, Calendar value) {
 			return super.put(name, value);
 		}
+		@Override
 		public Object put(QName name, Double value) {
 			return super.put(name, value);
 		}
+		@Override
+		public Object put(QName name, Duration value) {
+			return super.put(name, value);
+		}
+		@Override
 		public Object put(QName name, Float value) {
 			return super.put(name, value);
 		}
+		@Override
 		public Object put(QName name, Integer value) {
 			return super.put(name, value);
 		}
+		@Override
 		public Object put(QName name, Long value) {
 			return super.put(name, value);
 		}
+		@Override
 		public Object put(QName name, NodeList value) {
 			return super.put(name, value);
 		}
+		@Override
 		public Object put(QName name, Short value) {
 			return super.put(name, value);
 		}
+		@Override
 		public Object put(QName name, String value) {
 			return super.put(name, value);
 		}
@@ -198,7 +220,7 @@ public class DocumentMetadataHandle
     private DocumentPermissions permissions;
 	private DocumentProperties  properties;
 	private int                 quality = 0;
-	private ValueConverter      converter;
+	private ValueSerializer     valueSerializer;
 
 	public DocumentMetadataHandle() {
 		super();
@@ -422,9 +444,7 @@ public class DocumentMetadataHandle
 					XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type")) {
 				String type = property.getAttributeNS(
 						XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type");
-				if (converter == null)
-					converter = new ValueConverter();
-				properties.put(propertyName, converter.convertXMLValue(type, value));
+				properties.put(propertyName, ValueConverter.convertToJava(type, value));
 				continue;
 			} else {
 				properties.put(propertyName, value);
@@ -469,6 +489,8 @@ public class DocumentMetadataHandle
 			XMLOutputFactory factory = XMLOutputFactory.newFactory();
 			factory.setProperty("javax.xml.stream.isRepairingNamespaces", new Boolean(true));
 
+			valueSerializer = null;
+
 			XMLStreamWriter serializer = factory.createXMLStreamWriter(out, "UTF-8");
 
 			serializer.setPrefix("rapi", REST_API_NS);
@@ -487,6 +509,8 @@ public class DocumentMetadataHandle
 
 			serializer.writeEndElement();
 			serializer.writeEndDocument();
+
+			valueSerializer = null;
 		} catch (XMLStreamException e) {
 			throw new MarkLogicInternalException("Failed to serialize metadata", e);
 		} catch (TransformerFactoryConfigurationError e) {
@@ -527,7 +551,7 @@ public class DocumentMetadataHandle
 
 		serializer.writeEndElement();
 	}
-	private void sendPropertiesImpl(XMLStreamWriter serializer) throws XMLStreamException, TransformerFactoryConfigurationError, TransformerException {
+	private void sendPropertiesImpl(final XMLStreamWriter serializer) throws XMLStreamException, TransformerFactoryConfigurationError, TransformerException {
 		serializer.writeStartElement("prop", "properties", PROPERTY_API_NS);
 
 		for (Map.Entry<QName, Object> property: getProperties().entrySet()) {
@@ -551,12 +575,10 @@ public class DocumentMetadataHandle
 			}
 
 			if (!hasNodeValue) {
-				if (converter == null)
-					converter = new ValueConverter();
-				serializer.writeAttribute(
-						"xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type",
-						converter.convertedJavaType(value));
-				serializer.writeCharacters(converter.convertJavaValue(value));
+				if (valueSerializer == null)
+					valueSerializer = new ValueSerializer(serializer);
+
+				ValueConverter.convertFromJava(value, valueSerializer);
 			} else {
 				new DOMWriter(serializer).serializeNodeList((NodeList) value);
 			}
@@ -570,5 +592,25 @@ public class DocumentMetadataHandle
 		serializer.writeStartElement("rapi", "quality", REST_API_NS);
 		serializer.writeCharacters(String.valueOf(getQuality()));
 		serializer.writeEndElement();
+	}
+	static private class ValueSerializer implements ValueConverter.ValueProcessor {
+		private XMLStreamWriter serializer;
+		public ValueSerializer(XMLStreamWriter serializer) {
+			super();
+			this.serializer = serializer;
+		}
+		@Override
+		public void process(Object original, String type, String value) {
+			if (original == null)
+				return;
+			try {
+				serializer.writeAttribute(
+					"xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type", type);
+				serializer.writeCharacters(value);
+			} catch(XMLStreamException e) {
+				throw new MarkLogicIOException(e);
+			}
+		}
+		
 	}
 }
