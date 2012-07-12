@@ -20,6 +20,9 @@ import javax.xml.bind.annotation.XmlElement;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A Tuple is a single tuple value taken from a tuple/value query.
+ */
 public class Tuple {
     @XmlAttribute(name = "frequency")
     private long frequency;
@@ -31,10 +34,18 @@ public class Tuple {
         distinctValues = new ArrayList<TypedDistinctValue>();
     }
 
+    /**
+     * Returns the frequency of this tuple in the database.
+     * @return The frequency.
+     */
     public long getCount() {
         return frequency;
     }
 
+    /**
+     * Returns an array of all the values in this tuple.
+     * @return The array of values.
+     */
     public TypedDistinctValue[] getValues() {
         return distinctValues.toArray(new TypedDistinctValue[0]);
     }

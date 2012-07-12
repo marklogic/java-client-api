@@ -24,6 +24,12 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * A TuplesBuilder parses a set of tuple results.
+ *
+ * The tuples builder class is public to satisfy constraints of JAXB.
+ * It is of no consequence to users of this API.
+ */
 public final class TuplesBuilder {
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlRootElement(namespace = Tuples.TUPLES_NS, name = "values-response")

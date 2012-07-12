@@ -15,7 +15,19 @@
  */
 package com.marklogic.client.config;
 
+/**
+ * A FacetResult represents a single facet as returned by a search.
+ */
 public interface FacetResult {
+    /**
+     * Returns the facet name.
+     * @return The facet name.
+     */
     public String getName();
+
+    /**
+     * Returns an array of the facet values.
+     * @return The facet values.
+     */
     public FacetValue[] getFacetValues();
 }

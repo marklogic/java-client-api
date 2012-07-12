@@ -15,5 +15,8 @@
  */
 package com.marklogic.client.config;
 
+/**
+ * A DeleteQueryDefinition is a query definition suitable for use in performing a delete query.
+ */
 public interface DeleteQueryDefinition extends QueryDefinition {
 }

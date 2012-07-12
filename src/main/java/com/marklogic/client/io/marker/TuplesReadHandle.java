@@ -15,5 +15,9 @@
  */
 package com.marklogic.client.io.marker;
 
+/**
+ * A TuplesReadHandle represents a set of tuples read from the database.
+ */
+
 public interface TuplesReadHandle extends AbstractReadHandle {
 }

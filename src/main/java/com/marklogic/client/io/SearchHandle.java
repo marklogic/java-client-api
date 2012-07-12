@@ -61,6 +61,18 @@ import com.marklogic.client.config.SearchResults;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.SearchReadHandle;
 
+/**
+ * A SearchHandle represents a set of search results returned by the server.
+ *
+ * <p>The precise nature of the results returned depends on the query options used for the
+ * search and on the configuration of this handle.</p>
+ *
+ * <p>Snippets, in particular, are returned in various ways. In the default case, snippets are
+ * returned as Java objects. For custom or raw snippets, DOM documents are returned. The
+ * <code>forceDOM</code> flag can be set to cause the handle to always return DOM documents,
+ * even in the default case.</p>
+ *
+ */
 public class SearchHandle
 	extends BaseHandle<InputStream, OperationNotSupported>
 	implements SearchReadHandle, SearchResults
@@ -92,17 +104,41 @@ public class SearchHandle
         pfactory.setNamespaceAware(true);
     }
 
+    /**
+     * Sets the format associated with this handle.
+     *
+     * This handle only supports XML.
+     *
+     * @param format The format, which must be Format.XML or an exception will be raised.
+     */
     @Override
     public void setFormat(Format format) {
         if (format != Format.XML)
             new IllegalArgumentException("SearchHandle supports the XML format only");
     }
 
-	public SearchHandle withFormat(Format format) {
+    /**
+     * Fluent setter for the format associated with this handle.
+     *
+     * This handle only supports XML.
+     *
+     * @param format The format, which must be Format.XML or an exception will be raised.
+     * @return The SearchHandle instance on which this method was called.
+     */
+    public SearchHandle withFormat(Format format) {
 		setFormat(format);
 		return this;
 	}
 
+    /**
+     * Sets the force DOM flag.
+     *
+     * If this flag is set to <code>true</code>, snippets will always be returned
+     * as DOM documents, even if the snippet format could be represented using Java
+     * objects.
+     *
+     * @param forceDOM The flag setting.
+     */
     public void setForceDOM(boolean forceDOM) {
         alwaysDomSnippets = forceDOM;
     }
@@ -129,9 +165,10 @@ public class SearchHandle
         }
     }
 
-    /** Sets the query definition used in the search.
+    /**
+     * Sets the query definition used in the search.
      *
-     * Calling this method always deletes any cached search results.
+     * <p>Calling this method always deletes any cached search results.</p>
      *
      * @param querydef The new QueryDefinition
      */
@@ -142,37 +179,69 @@ public class SearchHandle
         facets = null;
         facetNames = null;
     }
-    
+
+    /**
+     * Returns the query definition used for the search represented by this handle.
+     * @return The query definition.
+     */
     @Override
     public QueryDefinition getQueryCriteria() {
         return querydef;
     }
 
+    /**
+     * Returns the total number of results in this search.
+     * @return The number of results.
+     */
     @Override
     public long getTotalResults() {
         return totalResults;
     }
 
+    /**
+     * Returns the metrics associated with this search.
+     * @return The metrics.
+     */
     @Override
     public SearchMetrics getMetrics() {
         return metrics;
     }
 
+    /**
+     * Returns an array of summaries for the matched documents.
+     * @return The summary array.
+     */
     @Override
     public MatchDocumentSummary[] getMatchResults() {
         return summary;
     }
 
+    /**
+     * Returns metadata associated with this search.
+     *
+     * <p>Metadata is highly variable and is always returned as a DOM Document.</p>
+     *
+     * @return The metadata.
+     */
     @Override
     public Document getMetadata() {
         return metadata;
     }
 
+    /**
+     * Returns an array of facet results for this search.
+     * @return The facets array.
+     */
     @Override
     public FacetResult[] getFacetResults() {
         return facets;
     }
 
+    /**
+     * Returns the named facet results.
+     * @param name The name of the facet.
+     * @return Returns the results for the named facet or null if no such named facet exists.
+     */
     @Override
     public FacetResult getFacetResult(String name) {
         if (facets != null) {
@@ -185,21 +254,39 @@ public class SearchHandle
         return null;
     }
 
+    /**
+     * Returns a list of the facet names returned in this search.
+     * @return The array of names.
+     */
     @Override
     public String[] getFacetNames() {
         return facetNames;
     }
 
+    /**
+     * Returns the query plan associated with this search.
+     *
+     * <p>Query plans are highly variable and are always returned as a DOM Document.</p>
+     * @return
+     */
     @Override
     public Document getPlan() {
         return plan;
     }
 
+    /**
+     * Returns an array of any warnings associated with this search.
+     * @return The warnings array.
+     */
     @Override
     public Warning[] getWarnings() {
         return (warnings == null) ? null : warnings.toArray(new Warning[0]);
     }
 
+    /**
+     * Returns an array of any reports associated with this search.
+     * @return The reports array.
+     */
     @Override
     public Report[] getReports() {
         return (reports == null) ? null  : reports.toArray(new Report[0]);
@@ -319,7 +406,7 @@ public class SearchHandle
         }
     }
 
-    public class MatchLocationImpl implements MatchLocation {
+    private class MatchLocationImpl implements MatchLocation {
         private String path = null;
         private ArrayList<MatchSnippet> snips = new ArrayList<MatchSnippet>();
         private MatchSnippet[] snippets = null;
@@ -381,7 +468,7 @@ public class SearchHandle
         }
     }
 
-    public class FacetResultImpl implements FacetResult {
+    private class FacetResultImpl implements FacetResult {
         private String name = null;
         private FacetValue[] values = null;
 
@@ -401,7 +488,7 @@ public class SearchHandle
         }
     }
 
-    public class FacetValueImpl implements FacetValue {
+    private class FacetValueImpl implements FacetValue {
         private String name = null;
         private long count = 0;
         private String label = null;
@@ -431,7 +518,7 @@ public class SearchHandle
         }
     }
 
-    public class FacetHeatmapValueImpl implements FacetHeatmapValue {
+    private class FacetHeatmapValueImpl implements FacetHeatmapValue {
         private String name = null;
         private long count = 0;
         private String label = null;
@@ -1038,6 +1125,11 @@ public class SearchHandle
         }
     }
 
+    /**
+     * Represents a warning.
+     *
+     * <p>The Search API may return warnings, they are represented by objects in this class.</p>
+     */
     public class Warning {
         private String id = null;
         private String text = null;
@@ -1045,21 +1137,36 @@ public class SearchHandle
         protected Warning() {
         }
 
+        /**
+         * Returns the ID of the warning.
+         * @return The id.
+         */
         public String getId() {
             return id;
         }
 
-        public void setId(String id) {
+        protected void setId(String id) {
             this.id = id;
         }
+
+        /**
+         * Returns the text of the warning message.
+         * @return The message.
+         */
         public String getMessage() {
             return text;
         }
-        public void setMessage(String msg) {
+
+        protected void setMessage(String msg) {
             text = msg;
         }
     }
 
+    /**
+     * Represents a report message.
+     *
+     * <p>The Search API may return report messages, they are represented by objects in this class.</p>
+     */
     public class Report {
         private String id = null;
         private String name = null;
@@ -1069,34 +1176,51 @@ public class SearchHandle
         protected Report() {
         }
 
+        /**
+         * Returns the ID of the message.
+         * @return The id.
+         */
         public String getId() {
             return id;
         }
 
-        public void setId(String id) {
+        protected void setId(String id) {
             this.id = id;
         }
 
+        /**
+         * Returns the name of the message.
+         * @return The name.
+         */
         public String getName() {
             return name;
         }
 
-        public void setName(String name) {
+        protected void setName(String name) {
             this.name = name;
         }
 
+        /**
+         * Returns the type of the message.
+         * @return The type.
+         */
         public String getType() {
             return type;
         }
 
-        public void setType(String type) {
+        protected void setType(String type) {
             this.type = type;
         }
 
+        /**
+         * Returns the text of the message.
+         * @return The message.
+         */
         public String getMessage() {
             return text;
         }
-        public void setMessage(String msg) {
+
+        protected void setMessage(String msg) {
             text = msg;
         }
     }

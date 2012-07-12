@@ -15,7 +15,13 @@
  */
 package com.marklogic.client.config;
 
-
+/**
+ * A StructuredQueryDefinition represents the criteria associated with a structured query.
+ */
 public interface StructuredQueryDefinition extends QueryDefinition {
+    /**
+     * Returns the structured query definition as a serialized XML string.
+     * @return The serialized definition.
+     */
     public String serialize();
 }

@@ -18,11 +18,20 @@ package com.marklogic.client.config;
 import java.sql.Time;
 import java.util.Date;
 
-/* This class holds two static methods: getValue(), which converts a string to a value in a particular class
-   and getType() which returns a particular class for a give type string.
+/**
+ * The DistinctValue class holds two convenience methods used to convert between XML results and typed values.
  */
-
 public final class DistinctValue {
+    /**
+     * Attempts to cast the specified value into the requested type.
+     *
+     * <p>The following types are supported: Long, Boolean, Byte, Double, Float, Integer and String.</p>
+     *
+     * @param value The value to be converted.
+     * @param as The Class of the target type.
+     * @param <T> The target type.
+     * @return the value cast as requested or a runtime exception if the conversion isn't possible.
+     */
     public static <T> T getValue(String value, Class<T> as) {
         if (as == Long.class) {
             return (T) new Long(Long.parseLong(value));
@@ -55,9 +64,14 @@ public final class DistinctValue {
         // FIXME: Support Date.class
         // FIXME: Support Time.class
 
-        throw new UnsupportedOperationException("Unexpect class");
+        throw new UnsupportedOperationException("Unexpected class");
     }
 
+    /**
+     * Returns a type Class for a specified XML Schema type name.
+     * @param type The type name string, e.g. "xs:boolean" or "xs:date".
+     * @return The type Class or null if the type name is not recognized.
+     */
     public static Class getType(String type) {
         if ("xs:boolean".equals(type))
             return Boolean.class;

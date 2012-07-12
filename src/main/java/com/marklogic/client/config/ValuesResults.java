@@ -15,11 +15,32 @@
  */
 package com.marklogic.client.config;
 
+/**
+ * ValuesResults represents one set of values from a values query.
+ */
 public interface ValuesResults {
+    /**
+     * Return the query definition for this set of results.
+     * @return The query criteria.
+     */
     public ValuesDefinition getQueryCriteria();
 
+    /**
+     * Returns the name of the values.
+     * @return The name.
+     */
     public String getName();
+
+    /**
+     * Returns the type of the values.
+     * @return The type.
+     */
     public Class getType();
+
+    /**
+     * Returns an array of the values.
+     * @return The array of values.
+     */
     public CountedDistinctValue[] getValues();
 }
 

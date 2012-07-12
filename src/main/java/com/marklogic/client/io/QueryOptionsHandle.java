@@ -78,25 +78,24 @@ import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
 /**
- * 
  * A QueryOptionsHandle is used to configure query configurations.
  * 
- * Use a QueryOptionsHandle if you want to use Java to configure and manage
- * MarkLogic query configurations, for search, value lookups, and facets.
+ * <p>Use a QueryOptionsHandle if you want to use Java to configure and manage
+ * MarkLogic query configurations, for search, value lookups, and facets.</p>
  * 
- * Read an options node from MarkLogic with 
+ * <p>Read an options node from MarkLogic with</p>
  * 
- * QueryOptionsHandle handle = QueryOptionsManager.readOptions(name, new QueryOptionsHandle());
+ * <pre>QueryOptionsHandle handle = QueryOptionsManager.readOptions(name, new QueryOptionsHandle());</pre>
  * 
- * or construct a fresh empty one (which is not a valid configuration without further building)
+ * <p>or construct a fresh empty one (which is not a valid configuration without further building)</p>
  * 
- * QueryOptionsHandle handle = new QueryOptionsHandle();
+ * <pre>QueryOptionsHandle handle = new QueryOptionsHandle();</pre>
  *  
- * Build up options to a handle using 
+ * <p>Build up options to a handle using</p>
  * 
- * handle.build()
+ * <pre>handle.build()</pre>
  * 
- * and constructed items from QueryOptionsBuilder.
+ * <p>and constructed items from QueryOptionsBuilder.</p>
  * 
  */
 public final class QueryOptionsHandle
@@ -148,35 +147,64 @@ public final class QueryOptionsHandle
         }
     }
 
+    /**
+     * Add an annotation to the the query options.
+     * @param queryAnnotation The annotation.
+     */
 	public void addAnnotation(QueryAnnotation queryAnnotation) {
 		optionsHolder.addAnnotation(queryAnnotation);
-	};
+	}
 
+    /**
+     * Add a constraint to the query options.
+     * @param constraint The constraint.
+     */
 	public void addConstraint(QueryConstraint constraint) {
 		optionsHolder.getQueryConstraints().add(constraint);
-	};
+	}
 
+    /**
+     * Add a forest constraint to the operator state.
+     * @param forest The forest id number on the server.
+     */
 	public void addForest(long forest) {
 		optionsHolder.getForests().add(forest);
 	}
 
+    /**
+     * Add an operator to the query options.
+     * @param operator The operator.
+     */
 	public void addOperator(QueryOperator operator) {
 		optionsHolder.getQueryOperators().add(operator);
-	};
+	}
 
+    /**
+     * Add a search option to the query options.
+     * @param searchOption The option.
+     */
 	public void addSearchOption(String searchOption) {
 		optionsHolder.getSearchOptions().add(searchOption);
 	}
-	
+
+    /**
+     * Add a suggestion source to the query options.
+     * @param suggestionSource The source.
+     */
 	public void addSuggestionSource(QuerySuggestionSource suggestionSource) {
 		optionsHolder.getSuggestionSources().add(suggestionSource);
 	}
+
+    /**
+     * Add a values accessor to the query options.
+     * @param values The values accessor.
+     */
 	public void addValues(QueryValues values) {
 		optionsHolder.getQueryValues().add(values);
 	}
 	
 	/**
-	 * Add more QueryOptionsItems to a QueryOptionsHandle using a QueryOptionsBuilder.
+	 * Add more QueryOptions to a QueryOptionsHandle using a QueryOptionsBuilder.
 	 * 
 	 * @param options 0 or more QueryOptionsItems
 	 * @return the resulting updated QueryOptionsHandle
@@ -189,12 +217,28 @@ public final class QueryOptionsHandle
 		}
 		return this;
 	}
+
+    /**
+     * Returns the additional query from a query options configuration.
+     * @return The DOM representation of the additional query.
+     */
 	public Element getAdditionalQuery() {
 		return optionsHolder.getAdditionalQuery();
 	}
+
+    /**
+     * Returns the concurrency level from the query options configuration.
+     * @return The concurrency level.
+     */
 	public int getConcurrencyLevel() {
 		return optionsHolder.getConcurrencyLevel();
 	}
+
+    /**
+     * Return the named query constraint from the query options.
+     * @param constraintName The name of the constraint.
+     * @return The named QueryConstraint or null if no such constraint exists.
+     */
 	public QueryConstraint getConstraint(String constraintName) {
 		for (QueryConstraint constraintOption : getConstraints()) {
 			if (constraintOption.getName().equals(constraintName)) {
@@ -203,59 +247,117 @@ public final class QueryOptionsHandle
 		}
 		return null;
 	}
+
+    /**
+     * Returns a List of all the constraints in the query options.
+     * @return The constraint list.
+     */
 	public List<QueryConstraint> getConstraints() {
 		return optionsHolder.getQueryConstraints();
 	}
 
-	
+    /**
+     * Returns a List of all the annotations in the query options.
+      * @return The annotations list.
+     */
 	public List<QueryAnnotation> getAnnotations() {
 		return optionsHolder.getAnnotations();
 	}
+
+    /**
+     * Returns the state of the Debug flag in the query options.
+     * @return The state of the flag.
+     */
 	public Boolean getDebug() {
 		return returnWithDefault(optionsHolder.getDebug(), false);
 	}
 
+    /**
+     * Returns the default suggestion source in the query options.
+     * @return The suggestion source.
+     */
 	public QueryDefaultSuggestionSource getDefaultSuggestionSource() {
 		return optionsHolder.getDefaultSuggestionSource();
 	}
 
+    /**
+     * Returns a List of the forest constraints.
+     * @return A list of forest id numbers on the server.
+     */
 	public List<Long> getForests() {
 		return optionsHolder.getForests();
 	}
 
+    /**
+     * Returns the underlying format supported by the query options handle.
+     * @return Format.XML; no other format is supported by this handle.
+     */
 	@Override
 	public Format getFormat() {
 		return Format.XML;
 	}
 
+    /**
+     * Returns the fragment scope setting from the query options.
+     * @return The scope setting.
+     */
 	public FragmentScope getFragmentScope() {
 		return FragmentScope.valueOf(optionsHolder.getFragmentScope().toUpperCase());
 	}
 
+    /**
+     * Returns the search grammar specified in the query options.
+     * @return The grammar.
+     */
 	public QueryGrammar getGrammar() {
 		return optionsHolder.getGrammar();
 	}
 
+    /**
+     * Returns a List of the operators specified in the query options.
+     * @return The list of operators.
+     */
 	public List<QueryOperator> getOperators() {
 		return optionsHolder.getQueryOperators();
 	}
 
+    /**
+     * Returns the underlying QueryOptions representation of the query options.
+     * @return The query options.
+     */
 	public QueryOptions getOptions() {
 		return optionsHolder;
 	}
 
+    /**
+     * Returns the page length specified in the query options.
+     * @return The page length.
+     */
 	public long getPageLength() {
 		return optionsHolder.getPageLength();
 	}
 
+    /**
+     * Returns the quality weight specified in the query options.
+     * @return The quality weight.
+     */
 	public double getQualityWeight() {
 		return optionsHolder.getQualityWeight();
 	}
 
+    /**
+     * Returns a List of the values accessors in the query options.
+     * @return The list of value accessors.
+     */
 	public List<QueryValues> getValues() {
 		return optionsHolder.getQueryValues();
 	}
 
+    /**
+     * Returns the named values accessor.
+     * @param valuesName The name of a values accessor.
+     * @return The named accessor or null if no such accessor exists.
+     */
 	public QueryValues getValues(String valuesName) {
 		for (QueryValues values : getValues()) {
 			if (values.getName().equals(valuesName)) {
@@ -264,11 +366,20 @@ public final class QueryOptionsHandle
 		}
 		return null;
 	}
-	
+
+    /**
+     * Returns a List of the tuples accessors in the query options.
+     * @return The list of tuples acccessors.
+     */
 	public List<QueryTuples> getTuples() {
 		return optionsHolder.getQueryTuples();
 	}
 
+    /**
+     * Returns the named tuples accessor.
+     * @param tuplesName The name of a tuples accessor.
+     * @return The named accessor or null if no such accessor exists.
+     */
 	public QueryTuples getTuples(String tuplesName) {
 		for (QueryTuples values : getTuples()) {
 			if (values.getName().equals(tuplesName)) {
@@ -278,102 +389,204 @@ public final class QueryOptionsHandle
 		return null;
 	}
 
+    /**
+     * Returns the return aggregates option from the query options.
+     * @return The return aggregates option setting.
+     */
 	public Boolean getReturnAggregates() {
 		return returnWithDefault(optionsHolder.getReturnAggregates(), false);
 	}
-	
-	public Boolean getReturnConstraints() {
+
+    /**
+     * Returns the return constraints option from the query options.
+     * @return The return constraints option setting.
+     */
+    public Boolean getReturnConstraints() {
 		return returnWithDefault(optionsHolder.getReturnConstraints(), false);
 	}
 
-	public Boolean getReturnFacets() {
+    /**
+     * Returns the return facets option from the query options.
+     * @return The return facets option setting.
+     */
+    public Boolean getReturnFacets() {
 		return returnWithDefault(optionsHolder.getReturnFacets(), true);
 	}
 
-	public Boolean getReturnFrequencies() {
+    /**
+     * Returns the return frequencies option from the query options.
+     * @return The return frequencies option setting.
+     */
+    public Boolean getReturnFrequencies() {
 		return returnWithDefault(optionsHolder.getReturnFrequencies(), true);
 	}
 
-	public Boolean getReturnMetrics() {
+    /**
+     * Returns the return metrics option from the query options.
+     * @return The return metrics option setting.
+     */
+    public Boolean getReturnMetrics() {
 		return returnWithDefault(optionsHolder.getReturnMetrics(), true);
 	}
 
-	public Boolean getReturnPlan() {
+    /**
+     * Returns the return query plan option from the query options.
+     * @return The return query plan option setting.
+     */
+    public Boolean getReturnPlan() {
 		return returnWithDefault(optionsHolder.getReturnPlan(), false);
 	}
 
-	public Boolean getReturnQtext() {
+    /**
+     * Returns the return query text option from the query options.
+     * @return The return query text option setting.
+     */
+    public Boolean getReturnQtext() {
 		return returnWithDefault(optionsHolder.getReturnQtext(), false);
 	}
 
-	public Boolean getReturnQuery() {
+    /**
+     * Returns the return query option from the query options.
+     * @return The return query option setting.
+     */
+    public Boolean getReturnQuery() {
 		return returnWithDefault(optionsHolder.getReturnQuery(), false);
 	}
 
-	public Boolean getReturnResults() {
+    /**
+     * Returns the return results option from the query options.
+     * @return The return results option setting.
+     */
+    public Boolean getReturnResults() {
 		return returnWithDefault(optionsHolder.getReturnResults(), true);
 	}
 
-	public Boolean getReturnSimilar() {
+    /**
+     * Returns the return similar option from the query options.
+     * @return The return similar option setting.
+     */
+    public Boolean getReturnSimilar() {
 		return returnWithDefault(optionsHolder.getReturnSimilar(), false);
 	}
 
-	public Boolean getReturnValues() {
+    /**
+     * Returns the return values option from the query options.
+     * @return The return values option setting.
+     */
+    public Boolean getReturnValues() {
 		return returnWithDefault(optionsHolder.getReturnValues(), true);
 	}
 
+    /**
+     * Returns the namespace context associated with the searchable expression in the query options.
+     * @return The namespace context.
+     */
     public NamespaceContext getSearchableExpressionNamespaceContext() {
         return optionsHolder.getSearchableExpressionNamespaceContext();
     }
 
+    /**
+     * Returns the searchable expression in the query options.
+     *
+     * In order to evaluate the expression, you must also obtain the NamespaceContext associated
+     * with the expression, see getSearchableExpression().
+     *
+     * @return The expression.
+     */
 	public String getSearchableExpression() {
 		return optionsHolder.getSearchableExpression();
 	}
-	
+
+    /**
+     * Returns a List of the search options in the query options.
+     * @return The list of options.
+     */
 	public List<String> getSearchOptions() {
 		return optionsHolder.getSearchOptions();
 	}
+
+    /**
+     * Returns a List of the sort orders specified in the query options.
+     * @return The list of sort orders.
+     */
 	public List<QuerySortOrder> getSortOrders() {
 		return optionsHolder.getSortOrders();
 	}
+
+    /**
+     * Returns a List of the suggestion sources in the query options.
+     * @return The list of sources.
+     */
 	public List<QuerySuggestionSource> getSuggestionSources() {
 		return optionsHolder.getSuggestionSources();
 	}
 
+    /**
+     * Returns the term associated specified in the query options.
+     * @return The term.
+     */
 	public QueryTerm getTerm() {
 		return optionsHolder.getTerm();
 	}
 
+    /**
+     * Returns the transform results setting specified in the query options.
+     * @return The transform results.
+     */
 	public QueryTransformResults getTransformResults() {
 		return optionsHolder.getTransformResults();
 	}
 
-	/*
-	 * Bean Setters
-	 */
+    /**
+     * Sets the ctsQuery element in the query options.
+     * @param ctsQuery A DOM node representation of the cts:query.
+     */
 	public void setAdditionalQuery(Element ctsQuery) {
 		optionsHolder.setAdditionalQuery(ctsQuery);
 
 	}
 
+    /**
+     * Sets the concurrency level in the query options.
+     * @param concurrencyLevel The concurrency level.
+     */
 	public void setConcurrencyLevel(Integer concurrencyLevel) {
 		optionsHolder.setConcurrencyLevel(concurrencyLevel);
 
 	}
 
+    /**
+     * Sets the debug flag in the query options.
+     * @param debug The flag.
+     */
 	public void setDebug(Boolean debug) {
 		optionsHolder.setDebug(debug);
 
 	}
 
+    /**
+     * Sets the default suggestion source in the query options.
+     * @param defaultSuggestionSource The default source.
+     */
 	public void setDefaultSuggestionSource(QueryDefaultSuggestionSource defaultSuggestionSource) {
 		optionsHolder.setDefaultSuggestionSource(defaultSuggestionSource);
 	}
-	
+
+    /**
+     * Sets a List of forests constraints in the query options.
+     * @param forests A list of forest id numbers from the server.
+     */
 	public void setForests(List<Long> forests) {
 		optionsHolder.setForests(forests);
 	}
 
+    /**
+     * Set the format accepted by this handle.
+     *
+     * Only XML is accepted by this handle.
+     *
+     * @param format The format, which must Format.XML or an exception will be raised.
+     */
 	@Override
 	public void setFormat(Format format) {
 		if (format != Format.XML) {
@@ -381,103 +594,183 @@ public final class QueryOptionsHandle
         }
 	}
 
+    /**
+     * Sets the fragment scope in the query options.
+     * @param fragmentScope The scope.
+     */
 	public void setFragmentScope(FragmentScope fragmentScope) {
 		optionsHolder.setFragmentScope(fragmentScope);
 
 	}
 
+    /**
+     * Sets the grammar in the query options.
+     * @param grammar The grammar.
+     */
 	public void setGrammar(QueryGrammar grammar) {
 		optionsHolder.setGrammar(grammar);
 	}
 
+    /**
+     * Sets a List of operators in the query options.
+     * @param operatorOptions The list of operators.
+     */
 	public void setOperators(List<QueryOperator> operatorOptions) {
 		optionsHolder.setOperators(operatorOptions);
 	}
 
+    /**
+     * Sets the page length in the query options.
+     * @param pageLength The page length.
+     */
 	public void setPageLength(Long pageLength) {
 		optionsHolder.setPageLength(pageLength);
 
 	}
 
+    /**
+     * Sets the quality weight in the search options.
+     * @param qualityWeight The weight.
+     */
 	public void setQualityWeight(Double qualityWeight) {
 		optionsHolder.setQualityWeight(qualityWeight);
 
 	}
 
+    /**
+     * Sets a List of tuple accessors.
+     * @param values The list of tuple accessors.
+     */
 	public void setQueryTuples(List<QueryTuples> values) {
 		optionsHolder.setQueryTuples(values);
 	}
-	public void setQueryValues(List<QueryValues> values) {
+
+    /**
+     * Sets a List of value accessors.
+     * @param values The list of value accessors.
+     */
+    public void setQueryValues(List<QueryValues> values) {
 		optionsHolder.setQueryValues(values);
 	}
-	
+
+    /**
+     * Sets the return aggregates option in the query options.
+     * @param returnAggregates The return aggregates option.
+     */
 	public void setReturnAggregates(Boolean returnAggregates) {
 		optionsHolder.setReturnAggregates(returnAggregates);
 	}
-	
-	public void setReturnConstraints(Boolean returnConstraints) {
-		optionsHolder.setReturnConstraints(returnConstraints);
 
+    /**
+     * Sets the return constraints option in the query options.
+     * @param returnConstraints The return constraints option.
+     */
+    public void setReturnConstraints(Boolean returnConstraints) {
+		optionsHolder.setReturnConstraints(returnConstraints);
 	}
 
-	public void setReturnFacets(Boolean returnFacets) {
+    /**
+     * Sets the return facets option in the query options.
+     * @param returnFacets The return facets option.
+     */
+    public void setReturnFacets(Boolean returnFacets) {
 		optionsHolder.setReturnFacets(returnFacets);
 	}
 
-	public void setReturnFrequencies(Boolean returnFrequencies) {
+    /**
+     * Sets the return frequencies option in the query options.
+     * @param returnFrequencies The return frequencies option.
+     */
+    public void setReturnFrequencies(Boolean returnFrequencies) {
 		optionsHolder.setReturnFrequencies(returnFrequencies);
 	}
-	
-	public void setReturnMetrics(Boolean returnMetrics) {
+
+    /**
+     * Sets the return metric option in the query options.
+     * @param returnMetrics The return metrics option.
+     */
+    public void setReturnMetrics(Boolean returnMetrics) {
 		optionsHolder.setReturnMetrics(returnMetrics);
 
 	}
-	public void setReturnQuery(Boolean returnQuery) {
+
+    /**
+     * Sets the return query option in the query options.
+     * @param returnQuery The return query option.
+     */
+    public void setReturnQuery(Boolean returnQuery) {
 		optionsHolder.setReturnQuery(returnQuery);
 	}
-	
 
-	public void setReturnPlan(Boolean returnPlan) {
+    /**
+     * Sets the return query plan  option in the query options.
+     * @param returnPlan The return plan option.
+     */
+    public void setReturnPlan(Boolean returnPlan) {
 		optionsHolder.setReturnPlan(returnPlan);
 
 	}
 
-	public void setReturnQtext(Boolean returnQtext) {
+    /**
+     * Sets the return query text option in the query options.
+     * @param returnQtext The return query text option.
+     */
+    public void setReturnQtext(Boolean returnQtext) {
 		optionsHolder.setReturnQtext(returnQtext);
 
 	}
 
-	public void setReturnResults(Boolean returnResults) {
+    /**
+     * Sets the return results option in the query options.
+     * @param returnResults The return results option.
+     */
+    public void setReturnResults(Boolean returnResults) {
 		optionsHolder.setReturnResults(returnResults);
 
 	}
 
-	public void setReturnSimilar(Boolean returnSimilar) {
+    /**
+     * Sets the return similar option in the query options.
+     * @param returnSimilar The return similar option.
+     */
+    public void setReturnSimilar(Boolean returnSimilar) {
 		optionsHolder.setReturnSimilar(returnSimilar);
 
 	}
 
-	public void setReturnValues(Boolean returnValues) {
+    /**
+     * Sets the return values option in the query options.
+     * @param returnValues The return values option.
+     */
+    public void setReturnValues(Boolean returnValues) {
 		optionsHolder.setReturnValues(returnValues);
 	}
 
+    /**
+     * Sets the searchable expression in the query options.
+     *
+     * In order to be sure that the expression has the correct namespace bindings, you must always
+     * specify both the expression and the namespace context of that expression, see
+     * setSearchableExpressionNamespaceContext().
+     *
+     * @param searchableExpression The expression.
+     */
 	public void setSearchableExpression(String searchableExpression) {
-        //String sexml = "<searchable-expression xmlns=\"http://marklogic.com/appservices/search\"";
         EditableNamespaceContext context = optionsHolder.getSearchableExpressionNamespaceContext();
         List<NamespaceBinding> bindings = new ArrayList<NamespaceBinding>();
         for (String prefix : context.getAllPrefixes()) {
             if (!"".equals(prefix)) {
             	bindings.add(new NamespaceBinding(prefix, context.getNamespaceURI(prefix)));
-                //sexml += " xmlns:" + prefix + "=\"" + context.getNamespaceURI(prefix) + "\"";
             }
         }
-        //sexml += "/>";
-        //org.w3c.dom.Element se = QueryOptionsBuilder.domElement(sexml);
-        //se.setTextContent(searchableExpression);
         NamespaceBinding[] bindingsArray = (NamespaceBinding[]) bindings.toArray(new NamespaceBinding[] {});
         optionsHolder.setSearchableExpression(new QuerySearchableExpression(searchableExpression, bindingsArray));
 	}
 
+    /**
+     * Sets the namespace context to be associated with the searchable expression.
+     * @param context The namespace context.
+     */
     public void setSearchableExpressionNamespaceContext(EditableNamespaceContext context) {
         optionsHolder.setSearchableExpressionNamespaceContext(context);
         String expr = optionsHolder.getSearchableExpression();
@@ -486,32 +779,52 @@ public final class QueryOptionsHandle
         }
     }
 
+    /**
+     * Set a List of search options in the query options.
+     * @param searchOptions The list of options.
+     */
 	public void setSearchOptions(List<String> searchOptions) {
 		optionsHolder.setSearchOptions(searchOptions);
-
 	}
 
-
+    /**
+     * Set a List of sort orders in the query options.
+     * @param sortOrders The list of sort orders.
+     */
 	public void setSortOrders(List<QuerySortOrder> sortOrders) {
 		optionsHolder.setSortOrders(sortOrders);
 	}
-	
 
+    /**
+     * Set a List of suggestion sources in the query options.
+     * @param suggestionSources The list of sources.
+     */
 	public void setSuggestionSources(
 			List<QuerySuggestionSource> suggestionSources) {
 		optionsHolder.setSuggestionSources(suggestionSources);
 	}
-	
 
+    /**
+     * Set the term configuration in the query options.
+     * @param termConfig The term configuration.
+     */
 	public void setTerm(QueryTerm termConfig) {
 		optionsHolder.setTerm(termConfig);
 	}
-	
+
+    /**
+     * Set the transform results in the query options.
+     * @param transformResults The transform results.
+     */
 	public void setTransformResults(QueryTransformResults transformResults) {
 		optionsHolder.setTransformResults(transformResults);
 
 	}
 
+    /**
+     * Returns the query options node as an XML string.
+     * @return The XML string representation of the node.
+     */
 	public String toXMLString() {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
@@ -521,8 +834,12 @@ public final class QueryOptionsHandle
 		}
 		return baos.toString();
 	}
-	
-	
+
+    /**
+     * Writes the query options node (as XML) to the specified output stream.
+     * @param out the output stream receiving the node.
+     * @throws IOException if there is an I/O error writing to that stream.
+     */
 	public void write(OutputStream out) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -575,14 +892,20 @@ public final class QueryOptionsHandle
 	}
 	
 	/**
-     * fromBuffer() populates QueryOptionsHandle from a byte array
-     * buffer.  The buffer must store query options in XML format
-     * in the UTF-8 encoding.
+     * Loads a query options node from a byte array.
+     *
+     * The byte array must store the query options node in XML format in the UTF-8 encoding.
 	 */
 	@Override
 	public void fromBuffer(byte[] buffer) {
 		receiveContent(new ByteArrayInputStream(buffer));
 	}
+
+    /**
+     * Returns the query options node in a byte array.
+     *
+     * @return A byte array containing the node in XML format in the UTF-8 encoding.
+     */
 	@Override
 	public byte[] toBuffer() {
 		try {
@@ -599,6 +922,7 @@ public final class QueryOptionsHandle
 	protected Class<InputStream> receiveAs() {
 		return InputStream.class;
 	}
+
 	@Override
 	protected void receiveContent(InputStream content) {
 		try {
@@ -642,6 +966,11 @@ public final class QueryOptionsHandle
 		return this;
 	}
 
+    /**
+     * Returns the named query operator.
+     * @param name The name of the operator.
+     * @return The named operator or null if no suche operator exists.
+     */
 	public QueryOperator getOperator(String name) {
 		for (QueryOperator operator : optionsHolder.getQueryOperators()) {
 			if (operator.getName().equals(name)) {
@@ -651,10 +980,18 @@ public final class QueryOptionsHandle
 		return null;
 	}
 
+    /**
+     * Returns the extract metadata setting from the options node.
+     * @return The extract metadata setting.
+     */
 	public QueryExtractMetadata getExtractMetadata() {
 		return optionsHolder.getExtractMetadata();
 	}
 
+    /**
+     * Sets the extract metadata setting in the options node.
+     * @param extractMetadata The extract metadata setting.
+     */
 	public void setExtractMetadata(QueryExtractMetadata extractMetadata) {
 		optionsHolder.setExtractMetadata(extractMetadata);
 	}

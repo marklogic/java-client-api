@@ -23,6 +23,12 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * A ValuesBuilder parses a set of value results.
+ *
+ * The values builder class is public to satisfy constraints of JAXB.
+ * It is of no consequence to users of this API.
+ */
 public final class ValuesBuilder {
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlRootElement(namespace = Values.VALUES_NS, name = "values-response")

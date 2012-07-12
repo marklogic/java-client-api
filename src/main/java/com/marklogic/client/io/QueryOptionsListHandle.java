@@ -37,7 +37,7 @@ import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 
 /**
- * 
+ * A QueryOptionsListHandle is used to access the list of named query options that exist on the server.
  */
 public class QueryOptionsListHandle
 	extends BaseHandle<InputStream, OperationNotSupported>
@@ -50,8 +50,6 @@ public class QueryOptionsListHandle
     private JAXBContext jc;
     private Marshaller marshaller;
     private Unmarshaller unmarshaller;
-
-    String optionsName = null;
 
     public QueryOptionsListHandle() {
     	super();
@@ -69,23 +67,30 @@ public class QueryOptionsListHandle
         }
     }
 
+    /**
+     * Sets the format associated with this handle.
+     *
+     * This handle only supports XML.
+     *
+     * @param format The format, which must be Format.XML or an exception will be raised.
+     */
     @Override
     public void setFormat(Format format) {
         if (format != Format.XML)
-            new IllegalArgumentException("ValuesListHandle supports the XML format only");
+            new IllegalArgumentException("QueryOptionsListHandle supports the XML format only");
     }
 
+    /**
+     * Fluent setter for the format associated with this handle.
+     *
+     * This handle only supports XML.
+     *
+     * @param format The format, which must be Format.XML or an exception will be raised.
+     * @return The QueryOptionsListHandle instance on which this method was called.
+     */
     public QueryOptionsListHandle withFormat(Format format) {
         setFormat(format);
         return this;
-    }
-
-    public String getOptionsName() {
-        return optionsName;
-    }
-
-    public void setOptionsName(String name) {
-        optionsName = name;
     }
 
     @Override
@@ -108,6 +113,13 @@ public class QueryOptionsListHandle
         }
     }
 
+    /**
+     * Returns a HashMap of the named query options from the server.
+     *
+     * The keys are the names of the query options, the values are the corresponding URIs on the server.
+     *
+     * @return The map of names to URIs.
+     */
     @Override
     public HashMap<String, String> getValuesMap() {
         return optionsHolder.getOptionsMap();

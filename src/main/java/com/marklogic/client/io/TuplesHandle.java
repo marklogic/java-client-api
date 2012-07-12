@@ -36,6 +36,9 @@ import com.marklogic.client.config.ValuesDefinition;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.TuplesReadHandle;
 
+/**
+ * A TuplesHandle represents a set of tuples returned by a query on the server.
+ */
 public class TuplesHandle
 	extends BaseHandle<InputStream, OperationNotSupported>
 	implements TuplesReadHandle, TuplesResults
@@ -60,12 +63,27 @@ public class TuplesHandle
         }
     }
 
+    /**
+     * Sets the format associated with this handle.
+     *
+     * This handle only supports XML.
+     *
+     * @param format The format, which must be Format.XML or an exception will be raised.
+     */
     @Override
     public void setFormat(Format format) {
         if (format != Format.XML)
             new IllegalArgumentException("ValuesHandle supports the XML format only");
     }
 
+    /**
+     * Fluent setter for the format associated with this handle.
+     *
+     * This handle only supports XML.
+     *
+     * @param format The format, which must be Format.XML or an exception will be raised.
+     * @return The TuplesHandle instance on which this method was called.
+     */
     public TuplesHandle withFormat(Format format) {
         setFormat(format);
         return this;
@@ -91,21 +109,19 @@ public class TuplesHandle
         }
     }
 
+    /**
+     * Returns the tuples query definition used to identify this set of tuples.
+     * @return The query criteria.
+     */
     @Override
     public ValuesDefinition getQueryCriteria() {
         return valdef;
     }
 
-    @Override
-    public String[] getConstraintNames() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public Class[] getConstraintTypes() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
+    /**
+     * Returns an array of the Tuples returned by this query.
+     * @return The tuples array.
+     */
     @Override
     public Tuple[] getTuples() {
         return tuplesHolder.getTuples();

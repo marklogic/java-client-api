@@ -15,8 +15,29 @@
  */
 package com.marklogic.client.config;
 
+/**
+ * A MatchLocation represents a location in a document matched by a search.
+ */
 public interface MatchLocation {
+    /**
+     * Returns the path to the matching location in the document.
+     * @return The path.
+     */
     public String getPath();
+
+    /**
+     * Returns the entire text of the snippet.
+     * @return The snippet text.
+     */
+
     public String getAllSnippetText();
+
+    /**
+     * Returns the array of elements in the snippet.
+     *
+     * Some snippets are highlighted, others are not.
+     *
+     * @return The array of snippet elements.
+     */
     public MatchSnippet[] getSnippets();
 }

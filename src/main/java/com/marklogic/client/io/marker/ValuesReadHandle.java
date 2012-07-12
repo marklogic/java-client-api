@@ -15,5 +15,8 @@
  */
 package com.marklogic.client.io.marker;
 
+/**
+ * A ValuesReadHandle represents a set of values read from the database.
+ */
 public interface ValuesReadHandle extends AbstractReadHandle {
 }

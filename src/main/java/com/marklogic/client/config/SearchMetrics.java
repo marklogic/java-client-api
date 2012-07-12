@@ -15,10 +15,37 @@
  */
 package com.marklogic.client.config;
 
+/**
+ * A SearchMetrics object represents the query metrics returned by a search.
+ */
 public interface SearchMetrics {
+    /**
+     * Returns the query resolution time in milliseconds.
+     * @return The query resolution time.
+     */
     public long getQueryResolutionTime();
+
+    /**
+     * Returns the facet resolution time in milliseconds.
+     * @return The facet resolution time.
+     */
     public long getFacetResolutionTime();
+
+    /**
+     * Returns the snippet resolution time in milliseconds.
+     * @return The snippet resolution time.
+     */
     public long getSnippetResolutionTime();
+
+    /**
+     * Returns the metadata resolution time in milliseconds.
+     * @return The metadata resolution time.
+     */
     public long getMetadataResolutionTime();
+
+    /**
+     * Returns the total time taken by the query in milliseconds.
+     * @return The total time.
+     */
     public long getTotalTime();
 }

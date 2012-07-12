@@ -19,5 +19,8 @@ import com.marklogic.client.ValueLocator;
 
 import java.util.Map;
 
+/**
+ * A KeyValueQueryDefinition is a query definition suitable for use in performing a key/value query.
+ */
 public interface KeyValueQueryDefinition extends QueryDefinition, Map<ValueLocator,String> {
 }

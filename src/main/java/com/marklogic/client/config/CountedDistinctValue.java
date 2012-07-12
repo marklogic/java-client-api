@@ -18,6 +18,9 @@ package com.marklogic.client.config;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlValue;
 
+/**
+ * A CountedDistinctValue is a value that includes a frequency.
+ */
 public class CountedDistinctValue {
     @XmlAttribute(name = "frequency")
     long frequency;
@@ -25,10 +28,23 @@ public class CountedDistinctValue {
     @XmlValue
     String value;
 
+    /**
+     * Returns the frequency associated with this value.
+     * @return The frequency.
+     */
     public long getCount() {
         return frequency;
     }
 
+    /**
+     * Returns the value cast to the specified type.
+     *
+     * See DistinctValue.getValue() for a list of the supported types.
+     *
+     * @param as The class parameter
+     * @param <T> The class to cast to
+     * @return The value, cast to the specified type or
+     */
     public <T> T get(Class<T> as) {
         return DistinctValue.getValue(value, as);
     }

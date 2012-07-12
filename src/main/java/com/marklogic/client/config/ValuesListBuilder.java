@@ -23,6 +23,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * A ValuesListBuilder parses list of value results.
+ *
+ * The values list builder class is public to satisfy constraints of JAXB.
+ * It is of no consequence to users of this API.
+ */
 public final class ValuesListBuilder {
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlRootElement(namespace = ValuesList.VALUES_LIST_NS, name = "values-list")

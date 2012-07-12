@@ -15,11 +15,20 @@
  */
 package com.marklogic.client.config;
 
+/**
+ * TupleResults represent the values returned by a tuple values query.
+ */
 public interface TuplesResults {
+    /**
+     * Returns the query used to locate these tuples.
+     * @return The query definition.
+     */
     public ValuesDefinition getQueryCriteria();
 
-    public String[] getConstraintNames();
-    public Class[] getConstraintTypes();
+    /**
+     * Returns an array of Tuples.
+     * @return The array of tuples.
+     */
     public Tuple[] getTuples();
 }
 
