@@ -80,6 +80,11 @@ public class DocumentMetadataHandle
 	 * as a POJO (Plain Old Java Object).  
 	 */
 	public interface DocumentCollections extends Set<String> {
+		/**
+		 * Adds one or more collections to the metadata that can be written
+		 * for the document.
+		 * @param collections	the document collections
+		 */
 		public void addAll(String... collections);
 	}
 	private class CollectionsImpl extends HashSet<String> implements DocumentCollections {
@@ -98,7 +103,13 @@ public class DocumentMetadataHandle
 	 * as a POJO (Plain Old Java Object).  
 	 */
 	public interface DocumentPermissions extends Map<String,Set<Capability>> {
-	    public void add(String role, Capability... capabilities);
+	    /**
+	     * Adds a role with one or more capabilities to the metadata that can be written
+	     * for the document.
+	     * @param role	the role for users permitted to access the document
+	     * @param capabilities	the permissions to be granted to users with the role
+	     */
+		public void add(String role, Capability... capabilities);
 	}
 	private class PermissionsImpl extends HashMap<String,Set<Capability>> implements DocumentPermissions {
 		@Override
@@ -122,8 +133,26 @@ public class DocumentMetadataHandle
 			}
 		}
 	}
+	/**
+	 * A document operation restricted to users with a role. 
+	 */
 	public enum Capability {
-	    EXECUTE, INSERT, READ, UPDATE;
+	    /**
+	     * Permission to execute the document.
+	     */
+		EXECUTE,
+	    /**
+	     * Permission to create but not modify the document.
+	     */
+		INSERT,
+	    /**
+	     * Permission to read the document.
+	     */
+		READ,
+	    /**
+	     * Permission to create or modify the document.
+	     */
+		UPDATE;
 	}
 
 	/**
@@ -131,20 +160,107 @@ public class DocumentMetadataHandle
 	 * as a POJO (Plain Old Java Object).  
 	 */
 	public interface DocumentProperties extends NameMap<Object> {
+		/**
+		 * Sets a document property to a BigDecimal value.
+		 * @param name	the property name
+		 * @param value	the property value
+		 * @return	the previous value of the property (if any)
+		 */
 		public Object put(QName name, BigDecimal value);
+		/**
+		 * Sets a document property to a BigInteger value.
+		 * @param name	the property name
+		 * @param value	the property value
+		 * @return	the previous value of the property (if any)
+		 */
 		public Object put(QName name, BigInteger value);
-		public Object put(QName name, Boolean    value);
-		public Object put(QName name, Byte       value);
-		public Object put(QName name, byte[]     value);
-		public Object put(QName name, Calendar   value);
-		public Object put(QName name, Double     value);
-		public Object put(QName name, Duration   value);
-		public Object put(QName name, Float      value);
-		public Object put(QName name, Integer    value);
-		public Object put(QName name, Long       value);
-		public Object put(QName name, NodeList   value);
-		public Object put(QName name, Short      value);
-		public Object put(QName name, String     value);
+		/**
+		 * Sets a document property to a boolean value.
+		 * @param name	the property name
+		 * @param value	the property value
+		 * @return	the previous value of the property (if any)
+		 */
+		public Object put(QName name, Boolean value);
+		/**
+		 * Sets a document property to a byte value.
+		 * @param name	the property name
+		 * @param value	the property value
+		 * @return	the previous value of the property (if any)
+		 */
+		public Object put(QName name, Byte value);
+		/**
+		 * Sets a document property to a byte array value.
+		 * @param name	the property name
+		 * @param value	the property value
+		 * @return	the previous value of the property (if any)
+		 */
+		public Object put(QName name, byte[] value);
+		/**
+		 * Sets a document property to a Calendar value, which can
+		 * express a date, a time, or a datetime.
+		 * @param name	the property name
+		 * @param value	the property value
+		 * @return	the previous value of the property (if any)
+		 */
+		public Object put(QName name, Calendar value);
+		/**
+		 * Sets a document property to a double value.
+		 * @param name	the property name
+		 * @param value	the property value
+		 * @return	the previous value of the property (if any)
+		 */
+		public Object put(QName name, Double value);
+		/**
+		 * Sets a document property to a Duration value,
+		 * which can also express a year-month or day-millisecond duration.
+		 * @param name	the property name
+		 * @param value	the property value
+		 * @return	the previous value of the property (if any)
+		 */
+		public Object put(QName name, Duration value);
+		/**
+		 * Sets a document property to a float value.
+		 * @param name	the property name
+		 * @param value	the property value
+		 * @return	the previous value of the property (if any)
+		 */
+		public Object put(QName name, Float value);
+		/**
+		 * Sets a document property to an int value.
+		 * @param name	the property name
+		 * @param value	the property value
+		 * @return	the previous value of the property (if any)
+		 */
+		public Object put(QName name, Integer value);
+		/**
+		 * Sets a document property to a long value.
+		 * @param name	the property name
+		 * @param value	the property value
+		 * @return	the previous value of the property (if any)
+		 */
+		public Object put(QName name, Long value);
+		/**
+		 * Sets a document property to a NodeList value, which
+		 * can accommodate subelements or mixed content.
+		 * @param name	the property name
+		 * @param value	the property value
+		 * @return	the previous value of the property (if any)
+		 */
+		public Object put(QName name, NodeList value);
+		/**
+		 * Sets a document property to a short value.
+		 * @param name	the property name
+		 * @param value	the property value
+		 * @return	the previous value of the property (if any)
+		 */
+		public Object put(QName name, Short value);
+		/**
+		 * Sets a document property to a string value.
+		 * @param name	the property name
+		 * @param value	the property value
+		 * @return	the previous value of the property (if any)
+		 */
+		public Object put(QName name, String value);
 	}
 	private class PropertiesImpl extends NameMapBase<Object> implements DocumentProperties {
 		private PropertiesImpl() {
@@ -225,45 +341,92 @@ public class DocumentMetadataHandle
 	private int                 quality = 0;
 	private ValueSerializer     valueSerializer;
 
+	/**
+	 * Zero-argument constructor.
+	 */
 	public DocumentMetadataHandle() {
 		super();
 		super.setFormat(Format.XML);
 	}
 
+	/**
+	 * Returns a container for the collections for the document
+	 * as read from the server or modified locally.
+	 * @return	the document collections
+	 */
 	public DocumentCollections getCollections() {
 		if (collections == null)
 			collections = new CollectionsImpl();
 		return collections;
 	}
+	/**
+	 * Locally assigns a container with document collections.
+	 * Ordinarily, you never change the container but, instead,
+	 * modify the collections stored by the container.
+	 * @param collections	the document collections
+	 */
 	public void setCollections(DocumentCollections collections) {
 		this.collections = collections;
 	}
 
+	/**
+	 * Returns a container for the permissions on the document
+	 * as read from the server or modified locally.
+	 * @return	the document permissions
+	 */
 	public DocumentPermissions getPermissions() {
 		if (permissions == null)
 			permissions = new PermissionsImpl();
 		return permissions;
 	}
+	/**
+	 * Locally assigns a container with document permissions.
+	 * Ordinarily, you never change the container but, instead,
+	 * modify the permissions stored by the container.
+	 * @param permissions	the document permissions
+	 */
 	public void setPermissions(DocumentPermissions permissions) {
 		this.permissions = permissions;
 	}
 
+	/**
+	 * Returns a container for the properties of the document
+	 * as read from the server or modified locally.
+	 * @return	the document properties
+	 */
 	public DocumentProperties getProperties() {
 		if (properties == null)
 			properties = new PropertiesImpl();
 		return properties;
 	}
+	/**
+	 * Locally assigns a container with document properties.
+	 * Ordinarily, you never change the container but, instead,
+	 * modify the properties stored by the container.
+	 * @param properties	the document properties
+	 */
 	public void setProperties(DocumentProperties properties) {
 		this.properties = properties;
 	}
 
+	/**
+	 * Returns the quality of the document.
+	 * @return	the document quality
+	 */
 	public int getQuality() {
 		return quality;
 	}
+	/**
+	 * Specifies the quality of the document, which affects search weighting.
+	 * @param quality	the document quality
+	 */
 	public void setQuality(int quality) {
 		this.quality = quality;
 	}
 
+	/**
+	 * Restricts the format used parsing and serializing the metadata.
+	 */
     @Override
 	public void setFormat(Format format) {
 		if (format != Format.XML)
@@ -330,6 +493,7 @@ public class DocumentMetadataHandle
 	protected OutputStreamSender sendContent() {
 		return this;
 	}
+	@Override
 	public void write(OutputStream out) throws IOException {
 		sendMetadataImpl(out);
 	}

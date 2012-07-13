@@ -115,10 +115,7 @@ public class DOMHandle
     }
 
 	/**
-	 * Specifies the format of the content and returns the handle
-	 * as a fluent convenience.
-	 * @param format	the format of the content
-	 * @return	this handle
+	 * Restricts the format to XML.
 	 */
     @Override
 	public void setFormat(Format format) {
