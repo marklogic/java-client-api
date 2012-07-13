@@ -23,7 +23,6 @@ import java.util.Properties;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
@@ -63,19 +62,21 @@ public class DOM4JHandleExample {
 		// create a manager for documents of any format
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		// parse the example file into a dom4j structure
+		// read the example file
 		InputStream docStream = DOM4JHandleExample.class.getClassLoader().getResourceAsStream(
 				"data"+File.separator+filename);
 		if (docStream == null)
 			throw new RuntimeException("Could not read document example");
-
-		Document writeDocument = new SAXReader().read(new InputStreamReader(docStream, "UTF-8"));
 
 		// create an identifier for the document
 		String docId = "/example/"+filename;
 
 		// create a handle for the document
 		DOM4JHandle writeHandle = new DOM4JHandle();
+
+		//  parse the example file into a dom4j structure
+		Document writeDocument = writeHandle.getReader().read(
+				new InputStreamReader(docStream, "UTF-8"));
 		writeHandle.set(writeDocument);
 
 		// write the document

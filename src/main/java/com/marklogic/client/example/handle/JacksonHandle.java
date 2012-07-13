@@ -86,11 +86,6 @@ public class JacksonHandle
 					"JacksonHandle supports the JSON format only");
 	}
 
-	public JacksonHandle withFormat(Format format) {
-		setFormat(format);
-		return this;
-	}
-
 	@Override
 	public void fromBuffer(byte[] buffer) {
 		if (buffer == null || buffer.length == 0)

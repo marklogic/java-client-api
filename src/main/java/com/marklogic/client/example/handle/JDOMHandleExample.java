@@ -23,7 +23,6 @@ import java.util.Properties;
 
 import org.jdom.Document;
 import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
@@ -63,19 +62,21 @@ public class JDOMHandleExample {
 		// create a manager for documents of any format
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		// parse the example file into a JDOM structure
+		// read the example file
 		InputStream docStream = JDOMHandleExample.class.getClassLoader().getResourceAsStream(
 				"data"+File.separator+filename);
 		if (docStream == null)
 			throw new RuntimeException("Could not read document example");
-
-		Document writeDocument = new SAXBuilder(false).build(new InputStreamReader(docStream, "UTF-8"));
 
 		// create an identifier for the document
 		String docId = "/example/"+filename;
 
 		// create a handle for the document
 		JDOMHandle writeHandle = new JDOMHandle();
+
+		// parse the example file into a JDOM structure
+		Document writeDocument = writeHandle.getBuilder().build(
+				new InputStreamReader(docStream, "UTF-8"));
 		writeHandle.set(writeDocument);
 
 		// write the document

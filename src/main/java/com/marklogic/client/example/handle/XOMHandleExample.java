@@ -22,7 +22,6 @@ import java.io.InputStreamReader;
 import java.util.Properties;
 
 import nu.xom.Document;
-import nu.xom.Builder;
 import nu.xom.ParsingException;
 import nu.xom.ValidityException;
 
@@ -65,19 +64,21 @@ public class XOMHandleExample {
 		// create a manager for documents of any format
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		// parse the example file into a JDOM structure
+		// read the example file
 		InputStream docStream = XOMHandleExample.class.getClassLoader().getResourceAsStream(
 				"data"+File.separator+filename);
 		if (docStream == null)
 			throw new RuntimeException("Could not read document example");
-
-		Document writeDocument = new Builder(false).build(new InputStreamReader(docStream, "UTF-8"));
 
 		// create an identifier for the document
 		String docId = "/example/"+filename;
 
 		// create a handle for the document
 		XOMHandle writeHandle = new XOMHandle();
+
+		// parse the example file into a XOM structure
+		Document writeDocument = writeHandle.getBuilder().build(
+				new InputStreamReader(docStream, "UTF-8"));
 		writeHandle.set(writeDocument);
 
 		// write the document

@@ -91,10 +91,6 @@ public class XOMHandle
 		if (format != Format.XML)
 			throw new IllegalArgumentException("XOMHandle supports the XML format only");
 	}
-	public XOMHandle withFormat(Format format) {
-		setFormat(format);
-		return this;
-	}
 
 	@Override
 	public void fromBuffer(byte[] buffer) {

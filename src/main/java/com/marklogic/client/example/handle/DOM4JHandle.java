@@ -77,10 +77,6 @@ public class DOM4JHandle
 		if (format != Format.XML)
 			throw new IllegalArgumentException("JDOMHandle supports the XML format only");
 	}
-	public DOM4JHandle withFormat(Format format) {
-		setFormat(format);
-		return this;
-	}
 
 	public SAXReader getReader() {
 		if (reader == null)

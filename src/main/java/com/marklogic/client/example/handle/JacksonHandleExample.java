@@ -23,12 +23,10 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.JSONDocumentManager;
-
 
 /**
  * JacksonHandleExample illustrates writing and reading content as a JSON structure
@@ -63,20 +61,21 @@ public class JacksonHandleExample {
 		// create a manager for JSON documents
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 
-		// parse the example file into a JDOM structure
+		// read the example file
 		InputStream docStream = JacksonHandleExample.class.getClassLoader().getResourceAsStream(
 				"data"+File.separator+filename);
 		if (docStream == null)
 			throw new RuntimeException("Could not read document example");
-
-		JsonNode writeDocument = new ObjectMapper().readValue(
-				new InputStreamReader(docStream, "UTF-8"), JsonNode.class);
 
 		// create an identifier for the document
 		String docId = "/example/"+filename;
 
 		// create a handle for the document
 		JacksonHandle writeHandle = new JacksonHandle();
+
+		// parse the example file into a Jackson JSON structure
+		JsonNode writeDocument = writeHandle.getMapper().readValue(
+				new InputStreamReader(docStream, "UTF-8"), JsonNode.class);
 		writeHandle.set(writeDocument);
 
 		// write the document

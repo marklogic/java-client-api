@@ -99,10 +99,6 @@ public class JDOMHandle
 		if (format != Format.XML)
 			throw new IllegalArgumentException("JDOMHandle supports the XML format only");
 	}
-	public JDOMHandle withFormat(Format format) {
-		setFormat(format);
-		return this;
-	}
 
 	@Override
 	public void fromBuffer(byte[] buffer) {
