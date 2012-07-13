@@ -33,9 +33,12 @@ public interface ValuesResults {
 
     /**
      * Returns the type of the values.
+     *
+     * <p>The type is an XSD type, for example "xs:boolean" or "xs:integer".</p>
+     *
      * @return The type.
      */
-    public Class getType();
+    public String getType();
 
     /**
      * Returns an array of the values.

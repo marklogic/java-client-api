@@ -325,6 +325,9 @@ public class ValueConverter {
 			return getFactory().newDurationYearMonth(value);
 		return value;
 	}
+    static public <T> T convertToJava(String type, String value, Class<T> as) {
+        return (T) convertToJava(type, value);
+    }
 	static private DatatypeFactory getFactory() {
 		if (datatypeFactory == null) {
 		try {

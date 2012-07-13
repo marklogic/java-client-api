@@ -72,13 +72,13 @@ public class ValuesHandleTest {
         v.parseTestData(is);
 
         assertTrue("Name should be 'size'", "size".equals(v.getName()));
-        assertEquals("Type should be 'Long'", Long.class, v.getType());
+        assertEquals("Type should be 'xs:unsignedLong'", "xs:unsignedLong", v.getType());
 
         CountedDistinctValue dv[] = v.getValues();
 
         assertEquals("There should be 8 values", 8, dv.length);
         assertEquals("Frequency should be 1", 1, dv[0].getCount());
-        assertEquals("Value should be 815", (long) 815, (long) dv[0].get(Long.class));
+        assertEquals("Value should be 815", (long) 815, (long) dv[0].get(v.getType(), Long.class));
     }
 
     @Test

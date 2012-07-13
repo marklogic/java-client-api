@@ -30,7 +30,6 @@ import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.config.CountedDistinctValue;
-import com.marklogic.client.config.DistinctValue;
 import com.marklogic.client.config.ValuesBuilder;
 import com.marklogic.client.config.ValuesDefinition;
 import com.marklogic.client.config.ValuesResults;
@@ -107,8 +106,8 @@ public class ValuesHandle
     }
 
     @Override
-    public Class getType() {
-        return DistinctValue.getType(valuesHolder.getType());
+    public String getType() {
+        return valuesHolder.getType();
     }
 
     @Override

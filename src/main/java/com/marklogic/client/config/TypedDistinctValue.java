@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.config;
 
+import com.marklogic.client.impl.ValueConverter;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlValue;
 
@@ -41,11 +43,15 @@ public class TypedDistinctValue {
 
     /**
      * Returns the value as an instance of the specified class.
+     *
+     * This method converts the value according to its type and then casts it
+     * to the specified class.
+     *
      * @param as The instance class.
      * @param <T> The type.
      * @return The value cast to the specified type.
      */
     public <T> T get(Class<T> as) {
-        return DistinctValue.getValue(value, as);
+        return ValueConverter.convertToJava(type, value, as);
     }
 }
