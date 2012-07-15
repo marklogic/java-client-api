@@ -120,6 +120,13 @@ public class StringHandle
 
 		return content.getBytes(Charset.forName("UTF-8"));
 	}
+	/**
+	 * Returns the content.
+	 */
+	@Override
+	public String toString() {
+		return content;
+	}
 
 	@Override
 	protected Class<byte[]> receiveAs() {

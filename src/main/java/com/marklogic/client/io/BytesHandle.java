@@ -15,7 +15,10 @@
  */
 package com.marklogic.client.io;
 
+import java.io.UnsupportedEncodingException;
+
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
 import com.marklogic.client.io.marker.BufferableHandle;
@@ -118,6 +121,20 @@ public class BytesHandle
 	@Override
 	public byte[] toBuffer() {
 		return content;
+	}
+	/**
+	 * Returns a byte array as a string with the assumption
+	 * that the bytes are encoded in UTF-8. If the bytes
+	 * have a different encoding, instantiate a String
+	 * directly instead of calling this method.
+	 */
+	@Override
+	public String toString() {
+		try {
+			return new String(content,"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new MarkLogicIOException(e);
+		}
 	}
 
 	protected Class<byte[]> receiveAs() {

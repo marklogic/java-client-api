@@ -19,8 +19,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
 import com.marklogic.client.io.marker.BufferableHandle;
@@ -153,6 +155,20 @@ public class InputStreamHandle
 			return b;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		}
+	}
+	/**
+	 * Buffers the input stream and returns the buffer as a string
+	 * with the assumption that the stream is encoded in UTF-8. If
+	 * the stream has a different encoding, use InputStreamReader
+	 * instead of calling this method.
+	 */
+	@Override
+	public String toString() {
+		try {
+			return new String(toBuffer(),"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new MarkLogicIOException(e);
 		}
 	}
 

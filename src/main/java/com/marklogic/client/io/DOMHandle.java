@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -36,6 +37,7 @@ import org.w3c.dom.ls.LSParser;
 import org.w3c.dom.ls.LSResourceResolver;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
@@ -152,6 +154,17 @@ public class DOMHandle
 			return buffer.toByteArray();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		}
+	}
+	/**
+	 * Returns the DOM document as an XML string.
+	 */
+	@Override
+	public String toString() {
+		try {
+			return new String(toBuffer(),"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new MarkLogicIOException(e);
 		}
 	}
 

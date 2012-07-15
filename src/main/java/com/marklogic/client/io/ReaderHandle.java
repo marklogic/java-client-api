@@ -148,6 +148,17 @@ public class ReaderHandle
 			throw new RuntimeException(e);
 		}
 	}
+	/**
+	 * Buffers the character stream and returns the buffer as a string.
+	 */
+	@Override
+	public String toString() {
+		try {
+			return new String(toBuffer(),"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new MarkLogicIOException(e);
+		}
+	}
 
 	@Override
 	protected Class<InputStream> receiveAs() {

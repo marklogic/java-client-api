@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 
 import org.jdom.Document;
 import org.jdom.JDOMException;
@@ -118,6 +119,14 @@ public class JDOMHandle
 
 			return buffer.toByteArray();
 		} catch (IOException e) {
+			throw new MarkLogicIOException(e);
+		}
+	}
+	@Override
+	public String toString() {
+		try {
+			return new String(toBuffer(),"UTF-8");
+		} catch (UnsupportedEncodingException e) {
 			throw new MarkLogicIOException(e);
 		}
 	}

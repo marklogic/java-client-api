@@ -188,6 +188,18 @@ public class InputSourceHandle
 			throw new RuntimeException(e);
 		}
 	}
+	/**
+	 * Buffers the SAX input source and returns the buffer
+	 * as an XML string.
+	 */
+	@Override
+	public String toString() {
+		try {
+			return new String(toBuffer(),"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new MarkLogicIOException(e);
+		}
+	}
 
 	/**
 	 * Returns the factory for parsing SAX events.

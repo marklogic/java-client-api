@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Calendar;
@@ -454,6 +455,17 @@ public class DocumentMetadataHandle
 			return buffer.toByteArray();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		}
+	}
+	/**
+	 * Returns the document metadata as an XML string.
+	 */
+	@Override
+	public String toString() {
+		try {
+			return new String(toBuffer(),"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new MarkLogicIOException(e);
 		}
 	}
 

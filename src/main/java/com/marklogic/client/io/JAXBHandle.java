@@ -136,6 +136,17 @@ public class JAXBHandle
 			throw new RuntimeException(e);
 		}
 	}
+	/**
+	 * Returns the JAXB structure as an XML string.
+	 */
+	@Override
+	public String toString() {
+		try {
+			return new String(toBuffer(),"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new MarkLogicIOException(e);
+		}
+	}
 
 	protected Marshaller makeMarshaller(JAXBContext context) throws JAXBException {
 		Marshaller marshaller = context.createMarshaller();

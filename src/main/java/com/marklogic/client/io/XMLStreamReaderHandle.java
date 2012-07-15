@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLEventReader;
@@ -34,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.Format;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
@@ -160,6 +162,17 @@ public class XMLStreamReaderHandle
 			return b;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		}
+	}
+	/**
+	 * Buffers the StAX stream and returns the buffer as an XML string.
+	 */
+	@Override
+	public String toString() {
+		try {
+			return new String(toBuffer(),"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new MarkLogicIOException(e);
 		}
 	}
 

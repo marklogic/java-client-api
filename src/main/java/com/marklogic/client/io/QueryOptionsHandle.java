@@ -917,6 +917,17 @@ public final class QueryOptionsHandle
 			throw new RuntimeException(e);
 		}
 	}
+	/**
+	 * Returns the Query Options as an XML string.
+	 */
+	@Override
+	public String toString() {
+		try {
+			return new String(toBuffer(),"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new MarkLogicIOException(e);
+		}
+	}
 
 	@Override
 	protected Class<InputStream> receiveAs() {
