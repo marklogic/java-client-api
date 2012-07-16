@@ -46,7 +46,7 @@ import org.junit.runners.Suite;
 
     QueryOptionsHandleTest.class,
     QueryOptionsManagerTest.class,
-    QueryOptionsTest.class,
+    QueryOptionsBuilderTest.class,
     
     ResourceExtensionsTest.class,
     ResourceServicesTest.class,

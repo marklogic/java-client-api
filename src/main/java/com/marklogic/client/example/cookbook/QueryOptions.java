@@ -20,6 +20,8 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
+import javax.xml.namespace.QName;
+
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -63,11 +65,11 @@ public class QueryOptions {
 		QueryOptionsBuilder qob = new QueryOptionsBuilder();
 
 		// create the query options
-		QueryOptionsHandle writeHandle = new QueryOptionsHandle();
-		writeHandle.build(
+		QueryOptionsHandle writeHandle;
+		writeHandle = new QueryOptionsHandle().withConstraints(
 				qob.constraint("industry",
 						qob.value(
-								qob.element("industry"))));
+								qob.elementTermIndex(new QName("industry")))));
 
 		// write the query options to the database
 		optionsMgr.writeOptions(optionsName, writeHandle);

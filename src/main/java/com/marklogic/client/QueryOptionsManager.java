@@ -43,7 +43,6 @@ public interface QueryOptionsManager {
      * Write a named QueryOptions configuration to the REST server.
      * @param name name given to the QueryOptions for use in runtime queries.
      * @param queryOptionsHandle an object able to serialize a QueryOptions configuration.
-	 * @param <T> A set of classes able to write query configurations to the database.
      */
     public void writeOptions(String name, QueryOptionsWriteHandle queryOptionsHandle);
     

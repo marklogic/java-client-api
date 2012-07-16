@@ -22,6 +22,7 @@ import com.marklogic.client.QueryManager;
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.ServerConfigurationManager;
 import com.marklogic.client.config.QueryOptions;
+import com.marklogic.client.config.QueryOptions.Facets;
 import com.marklogic.client.config.QueryOptions.FragmentScope;
 import com.marklogic.client.config.QueryOptions.Heatmap;
 import com.marklogic.client.config.QueryOptions.QueryAnnotation;
@@ -154,12 +155,15 @@ public class QOPathIndexTest {
 
     @Test
     public void pathIndexNoNS() throws IOException, ParserConfigurationException, SAXException, XpathException {
-        QueryOptionsHandle options = new QueryOptionsHandle();
-        options.build(builder.searchableExpression("/path/to/test"),
-                builder.constraint("t",
-                    builder.range(true, builder.type("xs:string"),
-                    builder.pathIndex("/doc/para/title")))
-                );
+        QueryOptionsHandle options = new QueryOptionsHandle()
+        		.withConstraints(
+        				builder.constraint("t",
+        						builder.range(
+        								builder.pathIndex("/doc/para/title", 
+        										null, 
+        										builder.stringRangeType(QueryOptions.DEFAULT_COLLATION)))))
+        				.withSearchableExpression(
+        						builder.searchableExpression("/path/to/test"));
 
         String xml = options.toXMLString();
 
@@ -176,12 +180,16 @@ public class QOPathIndexTest {
 
     @Test
     public void pathIndexNS() throws IOException, ParserConfigurationException, SAXException, XpathException {
-        QueryOptionsHandle options = new QueryOptionsHandle();
-        options.build(builder.searchableExpression("/x:path/to/test", builder.namespace("x", "ab'c'")),
-                builder.constraint("t",
-                        builder.range(true, builder.type("xs:string"),
-                                builder.pathIndex("/y:doc/para/title", builder.namespace("y", "testing"))))
-        );
+    	QueryOptionsHandle options = new QueryOptionsHandle()
+				.withConstraints(builder.constraint("t",
+                        builder.range( 
+                        		builder.pathIndex("/y:doc/para/title", 
+                        				builder.namespaces(builder.ns("y", "testing")),
+                        				builder.stringRangeType(QueryOptions.DEFAULT_COLLATION)),
+                        				Facets.FACETED, FragmentScope.DOCUMENTS,
+                        				null)))
+                .withSearchableExpression(        				
+                        builder.searchableExpression("/x:path/to/test", builder.ns("x", "ab'c'")));
 
         String xml = options.toXMLString();
 
@@ -206,12 +214,14 @@ public class QOPathIndexTest {
 
     @Test
     public void setSE() throws IOException, ParserConfigurationException, SAXException, XpathException {
-        QueryOptionsHandle options = new QueryOptionsHandle();
-        options.build(builder.searchableExpression("/x:path/to/test", builder.namespace("x", "ab'c'")),
-                builder.constraint("t",
-                        builder.range(true, builder.type("xs:string"),
-                                builder.pathIndex("/y:doc/para/title", builder.namespace("y", "testing"))))
-        );
+    	QueryOptionsHandle options = new QueryOptionsHandle()
+		.withConstraints(builder.constraint("t",
+                        builder.range(
+                                builder.pathIndex("/y:doc/para/title", builder.namespaces(builder.ns("y", "testing")),
+                                builder.stringRangeType(QueryOptions.DEFAULT_COLLATION)),
+                                Facets.FACETED, null,
+                                null)))
+                 .withSearchableExpression(builder.searchableExpression("/x:path/to/test", builder.ns("x", "ab'c'")));
 
         options.setSearchableExpression("//my:elements");
 

@@ -35,6 +35,8 @@ import com.marklogic.client.QueryManager;
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.config.MatchDocumentSummary;
 import com.marklogic.client.config.MatchLocation;
+import com.marklogic.client.config.QueryOptions.Facets;
+import com.marklogic.client.config.QueryOptions.FragmentScope;
 import com.marklogic.client.config.QueryOptions.QueryRange;
 import com.marklogic.client.config.QueryOptions.QueryTransformResults;
 import com.marklogic.client.config.QueryOptionsBuilder;
@@ -61,32 +63,35 @@ public class StringSearchTest {
         String optionsName = "facets";
 
         // Get back facets...
-        QueryOptionsHandle options = new QueryOptionsHandle();
         QueryOptionsBuilder builder = new QueryOptionsBuilder();
-        options.build(builder.returnFacets(true));
-        options.build(
+        QueryOptionsHandle options = new QueryOptionsHandle()
+		.withConstraints(
         		builder.constraint("decade", 
-        				builder.range(true, new QName("xs:gYear"),
-        						builder.element("http://marklogic.com/wikipedia", "nominee"),
-        						builder.attribute("year"),
-        						builder.bucket("2000s", "2000s", null, null),
-        		                builder.bucket("1990s", "1990s", "1990", "2000"),
-        		                builder.bucket("1980s", "1980s", "1980", "1990"),
-        		                builder.bucket("1970s", "1970s", "1970", "1980"),
-        		                builder.bucket("1960s", "1960s", "1960", "1970"),
-        		                builder.bucket("1950s", "1950s", "1950", "1960"),
-        		                builder.bucket("1940s", "1940s", "1940", "1950"),
-        		                builder.bucket("1930s", "1930s", "1930", "1940"),
-        		                builder.bucket("1920s", "1920s", "1920", "1930"),
-        		                builder.facetOption("limit=10"))));
+        				builder.range(
+        						builder.elementAttributeRangeIndex(
+        								new QName("http://marklogic.com/wikipedia", "nominee"),
+                						new QName("year"), 
+                						builder.rangeType(new QName("xs:gYear"))),
+                						Facets.FACETED, FragmentScope.DOCUMENTS,
+                						builder.buckets(
+		        						builder.bucket("2000s", "2000s", null, null),
+		        		                builder.bucket("1990s", "1990s", "1990", "2000"),
+		        		                builder.bucket("1980s", "1980s", "1980", "1990"),
+		        		                builder.bucket("1970s", "1970s", "1970", "1980"),
+		        		                builder.bucket("1960s", "1960s", "1960", "1970"),
+		        		                builder.bucket("1950s", "1950s", "1950", "1960"),
+		        		                builder.bucket("1940s", "1940s", "1940", "1950"),
+		        		                builder.bucket("1930s", "1930s", "1930", "1940"),
+		        		                builder.bucket("1920s", "1920s", "1920", "1930")),
+        							"limit=10")));
         						
         QueryRange range = options.getConstraint("decade").getSource();
         assertEquals(range.getElement(), new QName(
                 "http://marklogic.com/wikipedia", "nominee"));
         assertEquals(range.getAttribute(), new QName("year"));
 
-        QueryTransformResults tresults = builder.transformResults("raw");
-        options.build(tresults);
+        QueryTransformResults tresults = builder.emptySnippets();
+        options.withTransformResults(tresults);
 
         QueryOptionsManager queryOptionsMgr =
         	Common.client.newServerConfigManager().newQueryOptionsManager();

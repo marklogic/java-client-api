@@ -51,7 +51,7 @@ public interface DatabaseClient {
 	public Transaction openTransaction(String name, int timeLimit) throws ForbiddenUserException, FailedRequestException;
 
     /**
-     * Creates a document manager for documents with unknown or heterogenous formats.
+     * Creates a document manager for documents with unknown or heterogeneous formats.
      * @return	a manager supporting generic operations on documents
      */
     public GenericDocumentManager newDocumentManager();

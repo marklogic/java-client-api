@@ -13,18 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.config;
-
-import java.util.List;
+package com.marklogic.client.config.support;
 
 
-public interface TermOptions {
 
-	public List<String> getTermOptions();
-	public void setTermOptions(List<String> termOptions);
-	
+public interface TermIndexed extends Indexed, TermOptions {
 
-	public Double getWeight();
-	public void setWeight(Double weight);
+
 	
 }

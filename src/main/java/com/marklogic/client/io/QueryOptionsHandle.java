@@ -22,7 +22,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -55,7 +55,10 @@ import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.config.QueryOptions;
+import com.marklogic.client.config.QueryOptions.ExpressionNamespaceBinding;
+import com.marklogic.client.config.QueryOptions.ExpressionNamespaceBindings;
 import com.marklogic.client.config.QueryOptions.FragmentScope;
+import com.marklogic.client.config.QueryOptions.QueryAdditionalQuery;
 import com.marklogic.client.config.QueryOptions.QueryAnnotation;
 import com.marklogic.client.config.QueryOptions.QueryConstraint;
 import com.marklogic.client.config.QueryOptions.QueryDefaultSuggestionSource;
@@ -69,8 +72,8 @@ import com.marklogic.client.config.QueryOptions.QueryTerm;
 import com.marklogic.client.config.QueryOptions.QueryTransformResults;
 import com.marklogic.client.config.QueryOptions.QueryTuples;
 import com.marklogic.client.config.QueryOptions.QueryValues;
-import com.marklogic.client.config.QueryOptionsBuilder.NamespaceBinding;
-import com.marklogic.client.config.QueryOptionsBuilder.QueryOptionsItem;
+import com.marklogic.client.config.support.Annotatable;
+import com.marklogic.client.config.support.QueryOptionsConfiguration;
 import com.marklogic.client.impl.QueryOptionsTransformExtractNS;
 import com.marklogic.client.impl.QueryOptionsTransformInjectNS;
 import com.marklogic.client.io.marker.BufferableHandle;
@@ -101,7 +104,7 @@ import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 public final class QueryOptionsHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
 	implements OutputStreamSender, BufferableHandle,
-		QueryOptionsReadHandle, QueryOptionsWriteHandle
+		QueryOptionsReadHandle, QueryOptionsWriteHandle, Annotatable<QueryOptionsHandle>
 {
 
 	static final private Logger logger = LoggerFactory
@@ -147,12 +150,14 @@ public final class QueryOptionsHandle
         }
     }
 
+	@Override
     /**
      * Add an annotation to the the query options.
-     * @param queryAnnotation The annotation.
+     * @param queryAnnotation The annotation, as an XML string
      */
-	public void addAnnotation(QueryAnnotation queryAnnotation) {
-		optionsHolder.addAnnotation(queryAnnotation);
+	public QueryOptionsHandle annotate(String queryAnnotation) {
+		optionsHolder.annotate(queryAnnotation);
+		return this;
 	}
 
     /**
@@ -203,21 +208,6 @@ public final class QueryOptionsHandle
 		optionsHolder.getQueryValues().add(values);
 	}
 	
-	/**
-	 * Add more QueryOptions to a QueryOptionsHandle using a QueryOptionsBuilder.
-	 * 
-	 * @param options 0 or more QueryOptionsItems
-	 * @return the resulting updated QueryOptionsHandle
-	 */
-	public QueryOptionsHandle build(QueryOptionsItem... options) {
-		for (QueryOptionsItem option : options) {
-			if (logger.isDebugEnabled())
-				logger.debug(option.getClass().getName());
-			option.build(optionsHolder);
-		}
-		return this;
-	}
-
     /**
      * Returns the additional query from a query options configuration.
      * @return The DOM representation of the additional query.
@@ -610,6 +600,18 @@ public final class QueryOptionsHandle
 	public void setGrammar(QueryGrammar grammar) {
 		optionsHolder.setGrammar(grammar);
 	}
+	
+    /**
+     * Sets the grammar in the query options.
+     * @param grammar The grammar.
+     * @return This modified QueryOptionsHandle, for further fluent setting.
+     */
+	public QueryOptionsHandle withGrammar(QueryGrammar grammar) {
+		optionsHolder.setGrammar(grammar);
+		return this;
+	}
+
+
 
     /**
      * Sets a List of operators in the query options.
@@ -625,8 +627,54 @@ public final class QueryOptionsHandle
      */
 	public void setPageLength(Long pageLength) {
 		optionsHolder.setPageLength(pageLength);
-
 	}
+
+    /**
+     * Sets a List of operators in the query options.
+     * @param queryOperator The list of operators.
+     * @return This modified QueryOptionsHandle, for further fluent setting.
+     */
+	public QueryOptionsHandle withOperators(QueryOperator... queryOperator) {
+		optionsHolder.setOperators(Arrays.asList(queryOperator));
+		return this;
+	}
+
+    /**
+     * Sets a List of tuples in the query options.
+     * @param tuples The list of tuples.
+     */
+	public void setTuples(List<QueryTuples> tuples) {
+		optionsHolder.setQueryTuples(tuples);
+	}
+    
+    /**
+     * Sets a List of tuples in the query options.
+     * @param tuples The list of tuples.
+     * @return This modified QueryOptionsHandle, for further fluent setting.
+     */
+	public QueryOptionsHandle withTuples(QueryTuples... tuples) {
+		optionsHolder.setQueryTuples(Arrays.asList(tuples));
+		return this;
+	}
+
+    /**
+     * Sets a List of values in the query options.
+     * @param values The list of values.
+     */
+	public void setValues(List<QueryValues> values) {
+		optionsHolder.setQueryValues(values);
+	}
+
+    /**
+     * Sets a List of values in the query options.
+     * @param values The list of values.
+     * @return This modified QueryOptionsHandle, for further fluent setting.
+     */
+	public QueryOptionsHandle withValues(QueryValues... values) {
+		optionsHolder.setQueryValues(Arrays.asList(values));
+		return this;
+	}
+	
 
     /**
      * Sets the quality weight in the search options.
@@ -634,23 +682,6 @@ public final class QueryOptionsHandle
      */
 	public void setQualityWeight(Double qualityWeight) {
 		optionsHolder.setQualityWeight(qualityWeight);
-
-	}
-
-    /**
-     * Sets a List of tuple accessors.
-     * @param values The list of tuple accessors.
-     */
-	public void setQueryTuples(List<QueryTuples> values) {
-		optionsHolder.setQueryTuples(values);
-	}
-
-    /**
-     * Sets a List of value accessors.
-     * @param values The list of value accessors.
-     */
-    public void setQueryValues(List<QueryValues> values) {
-		optionsHolder.setQueryValues(values);
 	}
 
     /**
@@ -691,7 +722,6 @@ public final class QueryOptionsHandle
      */
     public void setReturnMetrics(Boolean returnMetrics) {
 		optionsHolder.setReturnMetrics(returnMetrics);
-
 	}
 
     /**
@@ -708,7 +738,6 @@ public final class QueryOptionsHandle
      */
     public void setReturnPlan(Boolean returnPlan) {
 		optionsHolder.setReturnPlan(returnPlan);
-
 	}
 
     /**
@@ -717,7 +746,6 @@ public final class QueryOptionsHandle
      */
     public void setReturnQtext(Boolean returnQtext) {
 		optionsHolder.setReturnQtext(returnQtext);
-
 	}
 
     /**
@@ -726,7 +754,6 @@ public final class QueryOptionsHandle
      */
     public void setReturnResults(Boolean returnResults) {
 		optionsHolder.setReturnResults(returnResults);
-
 	}
 
     /**
@@ -735,7 +762,6 @@ public final class QueryOptionsHandle
      */
     public void setReturnSimilar(Boolean returnSimilar) {
 		optionsHolder.setReturnSimilar(returnSimilar);
-
 	}
 
     /**
@@ -757,13 +783,13 @@ public final class QueryOptionsHandle
      */
 	public void setSearchableExpression(String searchableExpression) {
         EditableNamespaceContext context = optionsHolder.getSearchableExpressionNamespaceContext();
-        List<NamespaceBinding> bindings = new ArrayList<NamespaceBinding>();
+        ExpressionNamespaceBindings bindings = new ExpressionNamespaceBindings();
         for (String prefix : context.getAllPrefixes()) {
             if (!"".equals(prefix)) {
-            	bindings.add(new NamespaceBinding(prefix, context.getNamespaceURI(prefix)));
+            	bindings.addBinding(prefix, context.getNamespaceURI(prefix));
             }
         }
-        NamespaceBinding[] bindingsArray = (NamespaceBinding[]) bindings.toArray(new NamespaceBinding[] {});
+        ExpressionNamespaceBinding[] bindingsArray = bindings.toArray();
         optionsHolder.setSearchableExpression(new QuerySearchableExpression(searchableExpression, bindingsArray));
 	}
 
@@ -805,6 +831,38 @@ public final class QueryOptionsHandle
 	}
 
     /**
+     * Sets the ctsQuery element in the query options.
+     * @param additionalQuery An object representation of the cts:query.  Build with QueryOptionsBuilder.additionalQuery
+     * @return this QueryOptionsHandle, for fluent setting.
+     */
+	public QueryOptionsHandle withAdditionalQuery(QueryAdditionalQuery additionalQuery) {
+		setAdditionalQuery(additionalQuery.getValue());
+		return this;
+	}
+
+
+    /**
+     * Sets the searchable expression in the query options.
+     *
+     * @param searchableExpression The searchableExpression, in an object together with namespace bindings.
+     * @return this QueryOptionsHandle, for fluent setting.
+     */
+    public QueryOptionsHandle withSearchableExpression(QuerySearchableExpression searchableExpression) {
+    	optionsHolder.setSearchableExpression(searchableExpression);
+    	return this;
+    }
+
+    /**
+     * Set a List of sort orders in the query options.
+     * @param sortOrders The list of sort orders.
+     * @return this QueryOptionsHandle, for fluent setting.
+     */
+	public QueryOptionsHandle withSortOrders(QuerySortOrder... sortOrders) {
+		optionsHolder.setSortOrders(Arrays.asList(sortOrders));
+		return this;
+    }
+
+    /**
      * Set the term configuration in the query options.
      * @param termConfig The term configuration.
      */
@@ -818,7 +876,28 @@ public final class QueryOptionsHandle
      */
 	public void setTransformResults(QueryTransformResults transformResults) {
 		optionsHolder.setTransformResults(transformResults);
+    }
 
+
+    /**
+     * Set the term configuration in the query options.
+     * @param term The term configuration.
+     * @return this QueryOptionsHandle, for fluent setting.
+     */
+	public QueryOptionsHandle withTerm (QueryTerm term) {
+		optionsHolder.setTerm(term);
+		return this;
+	}
+	
+
+    /**
+     * Set the transform results in the query options.
+     * @param transformResults The transform results.
+     * @return this QueryOptionsHandle, for fluent setting.
+     */
+	public QueryOptionsHandle withTransformResults(QueryTransformResults transformResults) {
+		optionsHolder.setTransformResults(transformResults);
+		return this;
 	}
 
     /**
@@ -980,7 +1059,7 @@ public final class QueryOptionsHandle
     /**
      * Returns the named query operator.
      * @param name The name of the operator.
-     * @return The named operator or null if no suche operator exists.
+     * @return The named operator or null if no such operator exists.
      */
 	public QueryOperator getOperator(String name) {
 		for (QueryOperator operator : optionsHolder.getQueryOperators()) {
@@ -1005,6 +1084,64 @@ public final class QueryOptionsHandle
      */
 	public void setExtractMetadata(QueryExtractMetadata extractMetadata) {
 		optionsHolder.setExtractMetadata(extractMetadata);
+    }
+
+    /**
+     * Sets the extract metadata setting in the options node.
+     * @param extractMetadata The extract metadata setting.
+     * @return this QueryOptionsHandle, for fluent setting.
+     */
+	public QueryOptionsHandle withExtractMetadata(QueryExtractMetadata extractMetadata) {
+		optionsHolder.setExtractMetadata(extractMetadata);
+		return this;
 	}
+
+    /**
+     * Set a List of constraints in the query options.
+     * @param constraints The list of constraints.
+     */
+	public void setConstraints(List<QueryConstraint> constraints) {
+		optionsHolder.setConstraints(constraints);
+	}
+
+    /**
+     * Set a List of constraints in the query options.
+     * @param constraints The list of constraints.
+     * @return this QueryOptionsHandle, for fluent setting.
+     */
+	public QueryOptionsHandle withConstraints(QueryConstraint... constraints) {
+		optionsHolder.setConstraints(Arrays.asList(constraints));
+		return this;
+	}
+
+    /**
+     * Set common configuration objects for this handle, fluently.
+     * @param configuration The configuration object containing common settings.
+     * @return this QueryOptionsHandle, for fluent setting.
+     */
+	public QueryOptionsHandle withConfiguration(QueryOptionsConfiguration configuration) {
+	    optionsHolder.setConcurrencyLevel(configuration.getConcurrencyLevel());
+        optionsHolder.setDebug(configuration.getDebug());
+        optionsHolder.setForests(configuration.getForests());
+        optionsHolder.setFragmentScope(configuration.getFragmentScope());
+        optionsHolder.setPageLength(configuration.getPageLength());
+        optionsHolder.setQualityWeight(configuration.getQualityWeight());
+        optionsHolder.setReturnAggregates(configuration.getReturnAggregates());
+        optionsHolder.setReturnConstraints(configuration.getReturnConstraints());
+        optionsHolder.setReturnFacets(configuration.getReturnFacets());
+        optionsHolder.setReturnFrequencies(configuration.getReturnFrequencies());
+        optionsHolder.setReturnMetrics(configuration.getReturnMetrics());
+        optionsHolder.setReturnPlan(configuration.getReturnPlan());
+        optionsHolder.setReturnQtext(configuration.getReturnQtext());
+        optionsHolder.setReturnQuery(configuration.getReturnQuery());
+        optionsHolder.setReturnResults(configuration.getReturnResults());
+        optionsHolder.setReturnSimilar(configuration.getReturnSimilar());
+        optionsHolder.setReturnValues(configuration.getReturnValues());
+        optionsHolder.setSearchOptions(configuration.getSearchOptions());
+		return this;
+	}
+
+	
+
 
 }

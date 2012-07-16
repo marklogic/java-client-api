@@ -115,7 +115,6 @@
             </search:sort-order>
             <search:sort-order>
                 <search:score/>
-
             </search:sort-order>
         </search:state>
         <search:annotation>

@@ -23,6 +23,7 @@ import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.config.QueryOptionsBuilder;
+import com.marklogic.client.config.QueryOptions.Facets;
 import com.marklogic.client.io.QueryOptionsHandle;
 
 public class FailedRequestTest {
@@ -47,12 +48,12 @@ public class FailedRequestTest {
 
 		Common.client.newServerConfigManager().setQueryOptionValidation(true);
 		
-		QueryOptionsHandle handle = new QueryOptionsHandle();
+		QueryOptionsHandle handle;
 		QueryOptionsBuilder builder = new QueryOptionsBuilder();
 		// make an invalid options node
-		handle.build(
-				builder.constraint("blah", builder.collection(false, "S")),
-				builder.constraint("blah", builder.collection(true, "D")));
+		handle = new QueryOptionsHandle().withConstraints(
+				builder.constraint("blah", builder.collection("S", Facets.UNFACETED)),
+				builder.constraint("blah", builder.collection("D", Facets.FACETED)));
 
 		try {
 			mgr.writeOptions("testempty", handle);

@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import javax.xml.namespace.QName;
+
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -81,12 +83,10 @@ public class StringSearch {
 		QueryOptionsBuilder qob = new QueryOptionsBuilder();
 
 		// create the query options
-		QueryOptionsHandle queryOptions = new QueryOptionsHandle();
-		queryOptions.build(
+		QueryOptionsHandle queryOptions = new QueryOptionsHandle().withConstraints(
 				qob.constraint("industry",
-						qob.value(
-								qob.element("industry"))));
-
+						qob.value(qob.elementTermIndex(new QName("industry")))));
+		
 		// write the query options to the database
 		optionsMgr.writeOptions(OPTIONS_NAME, queryOptions);
 

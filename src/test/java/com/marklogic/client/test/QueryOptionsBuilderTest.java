@@ -21,21 +21,33 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+import java.util.HashMap;
+
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 
+import org.custommonkey.xmlunit.SimpleNamespaceContext;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.custommonkey.xmlunit.XpathEngine;
+import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import com.marklogic.client.QueryOptionsManager;
 import com.marklogic.client.ServerConfigurationManager;
+import com.marklogic.client.config.QueryOptions;
+import com.marklogic.client.config.QueryOptions.Facets;
 import com.marklogic.client.config.QueryOptions.FragmentScope;
+import com.marklogic.client.config.QueryOptions.PathIndex;
 import com.marklogic.client.config.QueryOptions.QueryCollection;
 import com.marklogic.client.config.QueryOptions.QueryCustom;
-import com.marklogic.client.config.QueryOptions.QueryDefaultSuggestionSource;
 import com.marklogic.client.config.QueryOptions.QueryElementQuery;
 import com.marklogic.client.config.QueryOptions.QueryExtractMetadata;
 import com.marklogic.client.config.QueryOptions.QueryGeospatialElement;
@@ -50,7 +62,6 @@ import com.marklogic.client.config.QueryOptions.QueryRange;
 import com.marklogic.client.config.QueryOptions.QueryRange.ComputedBucket.AnchorValue;
 import com.marklogic.client.config.QueryOptions.QuerySortOrder;
 import com.marklogic.client.config.QueryOptions.QuerySortOrder.Direction;
-import com.marklogic.client.config.QueryOptions.QuerySortOrder.Score;
 import com.marklogic.client.config.QueryOptions.QueryTerm.TermApply;
 import com.marklogic.client.config.QueryOptions.QueryTransformResults;
 import com.marklogic.client.config.QueryOptions.QueryTuples;
@@ -58,6 +69,7 @@ import com.marklogic.client.config.QueryOptions.QueryValue;
 import com.marklogic.client.config.QueryOptions.QueryValues;
 import com.marklogic.client.config.QueryOptions.QueryWord;
 import com.marklogic.client.config.QueryOptionsBuilder;
+import com.marklogic.client.impl.Utilities;
 import com.marklogic.client.io.QueryOptionsHandle;
 
 /* 
@@ -65,63 +77,75 @@ import com.marklogic.client.io.QueryOptionsHandle;
  * testRootOptions is the entry point for the test, which parallels the 
  * schema search.rnc.
  */
-public class QueryOptionsTest {
+public class QueryOptionsBuilderTest {
 
-	QueryOptionsBuilder builder;
+	private QueryOptionsBuilder builder;
+	private static XpathEngine xpathEngine;
 
 	private static final Logger logger = (Logger) LoggerFactory
-			.getLogger(QueryOptionsTest.class);
+			.getLogger(QueryOptionsBuilderTest.class);
 
 	@Before
 	public void before() {
 		builder = new QueryOptionsBuilder();
+		HashMap<String, String> xpathNS = new HashMap<String, String>();
+		xpathNS.put("search", "http://marklogic.com/appservices/search");
+		SimpleNamespaceContext xpathNsContext = new SimpleNamespaceContext(
+				xpathNS);
+
+		XMLUnit.setIgnoreAttributeOrder(true);
+		XMLUnit.setIgnoreWhitespace(true);
+		XMLUnit.setNormalize(true);
+		XMLUnit.setNormalizeWhitespace(true);
+		XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
+
+		xpathEngine = XMLUnit.newXpathEngine();
+		xpathEngine.setNamespaceContext(xpathNsContext);
+
 	}
 
 	@Test
-	public void testRootOptions() {
-
-		testAdditionalQuery();
-
-		testAnnotations();
+	public void testRootOptions() throws XpathException, SAXException, IOException {
 		testConstraints();
 		testValuesAndTuples();
-		testDefaultSuggestionSource();
+		testOperator();
+		testTerm();
 		testExtractMetadata();
 		testGrammar();
-		testOperator();
-		testSearchOption();
 		testSearchableExpression();
 		testSortOrder();
-		testSuggestionSource();
-		testTerm();
 		testTransformResults();
-
-		testAtomicOptions();
+		testAdditionalQuery();
+		testConfiguration();
+		testAnnotations();
 	}
 
-	private void testAtomicOptions() {
+
+	private void testConfiguration() {
 
 		QueryOptionsHandle options = new QueryOptionsHandle();
+		options.withConfiguration(
+				builder.configure()
+				 .returnFacets(true)
+				 .returnMetrics(false)
+				 .concurrencyLevel(2)
+				 .debug(false)
+				 .fragmentScope(FragmentScope.PROPERTIES)
+				 .forests(123L, 235L)
+				.pageLength(10L)
+				.qualityWeight(3.4)
+				.returnAggregates(true)
+				.returnConstraints(true)
+				.returnFrequencies(true)
+				.returnPlan(true)
+				.returnQtext(true)
+				.returnQuery(true)
+				.returnResults(false)
+				.returnSimilar(true)
+				.returnValues(false)
+				.searchOptions("checked"));
 
-		options.build(
-				builder.returnFacets(true),
-				builder.returnMetrics(false),
-				builder.searchableExpression("/a:sf1",
-						builder.namespace("a", "http://marklogic.com/a")),
-				// builder.annotation("<a:note xmlns:a=\"http://marklogic.com/note\">note</a:note>"),
-				builder.concurrencyLevel(2), builder.debug(false),
-				builder.fragmentScope(FragmentScope.PROPERTIES),
-				builder.forest(123L), builder.forest(235L),
-				builder.pageLength(10L), builder.qualityWeight(3.4),
-				builder.returnAggregates(true),
-				builder.returnConstraints(true),
-				builder.returnFrequencies(true), builder.returnPlan(true),
-				builder.returnQtext(true), builder.returnQuery(true),
-				builder.returnResults(false), builder.returnSimilar(true),
-				builder.returnValues(false), builder.searchOption("checked"),
-				builder.transformResults("raw"));
-
-		System.out.println(options.toXMLString());
+		logger.debug(options.toXMLString());
 		assertTrue("returnFacets from build", options.getReturnFacets());
 		options.setReturnFacets(false);
 		assertFalse("returnFacets from setter", options.getReturnFacets());
@@ -229,9 +253,7 @@ public class QueryOptionsTest {
 	}
 
 	private void testAdditionalQuery() {
-		QueryOptionsHandle options = new QueryOptionsHandle();
-
-		options.build(builder
+		QueryOptionsHandle options = new QueryOptionsHandle().withAdditionalQuery(builder
 				.additionalQuery("<cts:query xmlns:cts=\"http://marklogic.com/cts\" />"));
 
 		Element aq = options.getAdditionalQuery();
@@ -242,7 +264,6 @@ public class QueryOptionsTest {
 		options.setAdditionalQuery(aq);
 		assertTrue(options.getAdditionalQuery().getTextContent()
 				.equals("some arbitrary query string"));
-		logger.debug(options.toXMLString());
 		options = exercise(options);
 
 		aq = options.getAdditionalQuery();
@@ -252,10 +273,7 @@ public class QueryOptionsTest {
 	};
 
 	private void testAnnotations() {
-		QueryOptionsHandle options = new QueryOptionsHandle();
-
-		options.build(builder
-				.annotation("<a:note xmlns:a=\"http://marklogic.com/note\">note</a:note>"));
+		QueryOptionsHandle options = new QueryOptionsHandle().annotate("<a:note xmlns:a=\"http://marklogic.com/note\">note</a:note>");
 
 		Element annotation = options.getAnnotations().get(0).get(0);
 
@@ -279,7 +297,7 @@ public class QueryOptionsTest {
 	 * This method tests all types of constraints, including the list of
 	 * constraint definition types.
 	 */
-	private void testConstraints() {
+	private void testConstraints() throws XpathException, SAXException, IOException {
 		testCollectionConstraint();
 		testValueConstraint();
 		testRangeConstraint();
@@ -292,11 +310,9 @@ public class QueryOptionsTest {
 
 	private void testCollectionConstraint() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.build(builder.constraint(
-				"collectionConstraint",
-				builder.collection(false, "prefix",
-						builder.facetOption("limit=10"),
-						builder.facetOption("descending"))));
+        options.withConstraints(builder.constraint(
+						"collectionConstraint",
+						builder.collection("prefix", Facets.UNFACETED, "limit=10", "descending")));
 
 		QueryCollection coll = options.getConstraint("collectionConstraint")
 				.getSource();
@@ -336,69 +352,121 @@ public class QueryOptionsTest {
 
 	private void testValueConstraint() {
 		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.build(builder.constraint("value",
-				builder.value(builder.element("", "value"))));
+        options.withConstraints(
+						builder.constraint("value",
+								builder.value(
+										builder.elementTermIndex(
+												new QName("value")))));
 
 		QueryValue v = options.getConstraint("value").getSource();
 		assertEquals("value", v.getElement().getLocalPart());
 
 		v.setFragmentScope(FragmentScope.DOCUMENTS);
+		
+		options = exercise(options);
+		v = options.getConstraint("value").getSource();
+		assertEquals("value", v.getElement().getLocalPart());
+		assertEquals(FragmentScope.DOCUMENTS, v.getFragmentScope());
+		
+		
+		
 	};
 
-	private void testRangeConstraint() {
+	private void testRangeConstraint() throws XpathException, SAXException, IOException {
 		QueryOptionsHandle options = new QueryOptionsHandle();
-
-		options.build(builder.constraint("decade", builder.range(true,
-				builder.type("xs:gYear"),
-				builder.element("http://marklogic.com/wikipedia", "nominee"),
-				builder.attribute("year"),
-				builder.bucket("2000s", "2000s", null, null),
-				builder.bucket("1990s", "1990s", "1990", "2000"),
-				builder.bucket("1980s", "1980s", "1980", "1990"),
-				builder.bucket("1970s", "1970s", "1970", "1980"),
-				builder.bucket("1960s", "1960s", "1960", "1970"),
-				builder.bucket("1950s", "1950s", "1950", "1960"),
-				builder.bucket("1940s", "1940s", "1940", "1950"),
-				builder.bucket("1930s", "1930s", "1930", "1940"),
-				builder.bucket("1920s", "1920s", "1920", "1930"),
-				builder.facetOption("limit=10"))));
-
+			options.withConstraints(
+					builder.constraint(
+							"decade", 
+							builder.range(builder.elementAttributeRangeIndex(
+									new QName("http://marklogic.com/wikipedia", "nominee"),
+									new QName("year"),
+									builder.rangeType(new QName("xs:gYear"))),
+									Facets.FACETED,
+									FragmentScope.DOCUMENTS,
+									builder.buckets(
+											builder.bucket("2000s", "2000s", null, null),
+											builder.bucket("1990s", "1990s", "1990", "2000"),
+											builder.bucket("1980s", "1980s", "1980", "1990"),
+											builder.bucket("1970s", "1970s", "1970", "1980"),
+											builder.bucket("1960s", "1960s", "1960", "1970"),
+											builder.bucket("1950s", "1950s", "1950", "1960"),
+											builder.bucket("1940s", "1940s", "1940", "1950"),
+											builder.bucket("1930s", "1930s", "1930", "1940"),
+											builder.bucket("1920s", "1920s", "1920", "1930")),
+									"limit=10")));
+		
+		
 		options = exercise(options);
 
 		assertEquals("2000s", ((QueryRange) options.getConstraint("decade")
 				.getSource()).getBuckets().get(0).getContent());
+		
+		String optionsString = options.toXMLString();
+        Document doc = XMLUnit.buildControlDocument(optionsString);
+        NodeList nl = xpathEngine.getMatchingNodes("//search:range/search:weight", doc);
 
+        // Ranges do not have weights
+        assertTrue("Range must not contain a weight", nl.getLength() == 0);
 		options = new QueryOptionsHandle();
-		options.build(builder.constraint("date", builder.range(false,
-				new QName("xs:dateTime"), builder.computedBucket("older",
-						"Older than 1 years", null, "-P365D", AnchorValue.NOW),
-				builder.computedBucket("year", "1 month to 1 year ago",
-						"-P365D", "-P30D", AnchorValue.NOW), builder
-						.computedBucket("month", "7 to 30 days ago", "-P30D",
-								"-P7D", AnchorValue.NOW), builder
-						.computedBucket("week", "1 to 7 days ago", "-P7D",
-								"-P1D", AnchorValue.NOW), builder
-						.computedBucket("today", "Today", "-P1D", "P0D",
-								AnchorValue.NOW), builder.computedBucket(
-						"future", "Future", "P0D", null, AnchorValue.NOW),
-				builder.facetOption("limit=10"), builder
-						.facetOption("descending"), builder.element(
-						"http://purl.org/dc/elements/1.1/", "date"))));
-
-		logger.debug(options.toXMLString());
+				options.withConstraints(builder.constraint(
+							"date", 
+							builder.range(
+									builder.elementRangeIndex(
+											new QName("http://purl.org/dc/elements/1.1/", "date"), 
+											
+											builder.rangeType(new QName("xs:dateTime"))),
+											Facets.FACETED,
+											FragmentScope.DOCUMENTS,
+											builder.buckets(
+													builder.computedBucket("older","Older than 1 years", null, "-P365D", AnchorValue.NOW),
+													builder.computedBucket("year", "1 month to 1 year ago","-P365D", "-P30D", AnchorValue.NOW), 
+													builder.computedBucket("month", "7 to 30 days ago", "-P30D","-P7D", AnchorValue.NOW), 
+													builder.computedBucket("week", "1 to 7 days ago", "-P7D","-P1D", AnchorValue.NOW), 
+													builder.computedBucket("today", "Today", "-P1D", "P0D",AnchorValue.NOW), 
+													builder.computedBucket("future", "Future", "P0D", null, AnchorValue.NOW)),
+											"limit=10","descending")));
+		
 		options = exercise(options);
 
 		assertEquals(AnchorValue.NOW,
 				((QueryRange) options.getConstraint("date").getSource())
 						.getComputedBuckets().get(0).getAnchorValue());
+		
+		// one more with a path index
+		options = new QueryOptionsHandle();
+        		options.withConstraints(
+        				builder.constraint("t",
+        						builder.range(
+        								builder.pathIndex("/doc/para/title", 
+        										null, 
+        										builder.stringRangeType(QueryOptions.DEFAULT_COLLATION)))))
+        				.withSearchableExpression(
+        						builder.searchableExpression("/path/to/test"));
+		
+		PathIndex pathIndex = options.getConstraint("t").getSource().getPathIndex();
+		assertEquals("/doc/para/title", pathIndex.getPath());
+		
+		
+        String xml = options.toXMLString();
+
+        doc = XMLUnit.buildControlDocument(xml);
+
+        String value = xpathEngine.evaluate("/search:options/search:constraint/search:range/search:path-index", doc);
+
+        assertEquals("Path index is correct", "/doc/para/title", value);
+
+        value = xpathEngine.evaluate("/search:options/search:searchable-expression", doc);
+
+        assertEquals("Searchable expression is correct", "/path/to/test", value);
+			
 
 	};
 
-	private void testWordConstraint() {
+	private void testWordConstraint() throws SAXException, IOException, XpathException {
 		QueryOptionsHandle options = new QueryOptionsHandle();
-
-		options.build(builder.constraint("word",
-				builder.word(builder.field("summary"))));
+        options.withConstraints(builder.constraint("word", 
+								builder.word(
+										builder.fieldTermIndex("summary"))));
 
 		options = exercise(options);
 
@@ -406,14 +474,20 @@ public class QueryOptionsTest {
 
 		assertEquals("summary", qw.getFieldName());
 
+		String optionsString = options.toXMLString();
+		
+        Document doc = XMLUnit.buildControlDocument(optionsString);
+
+        String name = xpathEngine.evaluate("/search:options/search:constraint[@name='word']/search:word/search:field/@name", doc);
+
+        assertTrue("Serialized WordConstraint should contain this string", "summary".equals(name));
 	};
 
 	private void testElementQueryConstraint() {
 
 		QueryOptionsHandle options = new QueryOptionsHandle();
-
-		options.build(builder.constraint("eq", builder.elementQuery(
-				"http://purl.org/dc/elements/1.1/", "date")));
+				options.withConstraints(builder.constraint("eq", 
+									builder.elementQuery(new QName("http://purl.org/dc/elements/1.1/", "date"))));
 
 		options = exercise(options);
 
@@ -423,9 +497,7 @@ public class QueryOptionsTest {
 	};
 
 	private void testPropertiesConstraint() {
-		QueryOptionsHandle options = new QueryOptionsHandle();
-
-		options.build(builder.constraint("props", builder.properties()));
+		QueryOptionsHandle options = new QueryOptionsHandle().withConstraints(builder.constraint("props", builder.properties()));
 
 		options = exercise(options);
 
@@ -435,16 +507,13 @@ public class QueryOptionsTest {
 	};
 
 	private void testCustomConstraint() {
-		QueryOptionsHandle options = new QueryOptionsHandle();
-
-		options.build(builder.constraint("queryCustom", builder.customFacet(
-				builder.parse("parse", "http://my/namespace", "/my/parse.xqy"),
-				builder.startFacet("start", "http://my/namespace",
-						"/my/start.xqy"), builder.finishFacet("finish",
-						"http://my/namespace", "/my/finish.xqy"), builder
-						.facetOption("limit=10"), builder
-						.termOption("punctuation-insensitive"), builder
-						.annotation("<a>annotation</a>"))));
+		QueryOptionsHandle options =new QueryOptionsHandle();
+				options.withConstraints(builder.constraint("queryCustom", builder.customFacet(
+										builder.extension("parse", "http://my/namespace", "/my/parse.xqy"),
+										builder.extension("start", "http://my/namespace", "/my/start.xqy"), 
+										builder.extension("finish","http://my/namespace", "/my/finish.xqy"), 
+										"limit=10"))
+										.annotate("<a>annotation</a>"));
 
 		QueryCustom queryCustom = (QueryCustom) options.getConstraint(
 				"queryCustom").getSource();
@@ -469,23 +538,27 @@ public class QueryOptionsTest {
 	private void testGeospatialConstraint() {
 		
 		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.build(builder.constraint(
-				"geoelem",
-				builder.geospatialElement(
-						builder.element("ns1", "elementwithcoords"),
-						builder.geoOption("type=long-lat-point"))));
-		options.build(builder.constraint(
-				"geoattr",
-				builder.geospatialAttributePair(builder.element("sf1"),
-						builder.attribute("intptlat"),
-						builder.attribute("intptlon"),
-						builder.facetOption("limit=10"),
-						builder.heatmap(23.2, -118.3, 23.3, -118.2, 4, 4))));
-		options.build(builder.constraint(
-				"geoElemPair",
-				builder.geospatialElementPair(builder.element("sf1"),
-						builder.element("intptlat"),
-						builder.element("intptlon"))));
+			options.withConstraints(
+				builder.constraint(
+						"geoelem",
+						builder.geospatial(
+								builder.elementGeospatialIndex(
+										new QName("ns1", "elementwithcoords")),
+								"type=long-lat-point")),
+				builder.constraint(
+						"geoattr",
+						builder.geospatial(
+								builder.attributePairGeospatialIndex(
+										new QName("sf1"),
+										new QName("intptlat"),
+										new QName("intptlon")),
+										builder.heatmap(23.2, -118.3, 23.3, -118.2, 4, 4, "limit=10"))),
+				builder.constraint(
+						"geoElemPair",
+						builder.geospatial(
+								builder.elementPairGeospatialIndex(new QName("sf1"),
+										new QName("intptlat"),
+										new QName("intptlon")))));
 
 		QueryGeospatialElement geoElem = options.getConstraint("geoelem")
 				.getSource();
@@ -506,36 +579,47 @@ public class QueryOptionsTest {
 	 * for values-specific methods
 	 */
 	private void testValuesAndTuples() {
-		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.build(builder.values("uri", builder.uri(),
-							builder.valuesOption("limit=10")),
+		QueryOptionsHandle options =
+				new QueryOptionsHandle().withValues(
+						builder.values("uri", 
+								builder.uri(),
+							"limit=10"),
 						builder.values("coll",
-							builder.collection(false, "prefix"),
-							builder.valuesOption("limit=10")), 
-						builder.tuples("persona",
-							builder.range(true, new QName("xs:string"),
-								builder.element("element-test"),
-								builder.attribute("attribute-test")
-								),
-							builder.range(false, new QName("xs:string"), builder.element("element-test"))), 
-						builder.tuples("cttuple", 
-							builder.uri(),
-							builder.collection(false, "c")),
-						builder.tuples("fields",
-							builder.field("int1"),
-							builder.field("int2")),
+							builder.collection("prefix"),
+							builder.aggregate("min"),
+							"limit=10"),
 						builder.values(
-								"fieldrange",
-								builder.range(false, new QName("xs:int"),
-								builder.field("int1")), builder.aggregate("median")),  // field must exist to pass with an aggregate -- search-impl.xqy 3080 bug?
+									"fieldrange",
+									builder.range(
+											builder.fieldRangeIndex("int1", builder.rangeType(new QName("xs:int")))),
+									builder.aggregate("stddev")),  // field must exist to pass with an aggregate -- search-impl.xqy 3080 bug? TODO log the bug
+						builder.values("field", 
+								builder.field("fieldname")))
+						.withTuples(
+							builder.tuples("persona",
+									builder.tupleSources(
+											builder.range(builder.elementAttributeRangeIndex(
+													new QName("element-test"), new QName("attribute-test"),
+													builder.stringRangeType(QueryOptions.DEFAULT_COLLATION))),
+											builder.range(
+													builder.elementRangeIndex(
+															new QName("element-test"), 
+															builder.stringRangeType(QueryOptions.DEFAULT_COLLATION))))),
+								builder.tuples("cttuple", 
+										builder.tupleSources(
+												builder.uri(),
+												builder.collection("c"))),
+								builder.tuples("fields",
+										builder.tupleSources(
+												builder.field("int1"),
+												builder.field("int2"))));
 						
-						builder.values("field", builder.field("fieldname")));
 
-		logger.debug(options.toXMLString());
 		
 		assertEquals(4, options.getValues().size());
 		assertEquals("uri", options.getValues("uri").getName());
 		QueryValues collectionValues = options.getValues("coll");
+		assertEquals("min", collectionValues.getAggregate().getApply());
 		assertTrue(collectionValues.getValuesOptions().get(0)
 				.equals("limit=10"));
 		
@@ -549,6 +633,8 @@ public class QueryOptionsTest {
 		assertNotNull(options.getTuples("cttuple").getUri());
 		assertEquals("int1", options.getTuples("fields").getField().get(0).getName());
 		assertEquals("int2", options.getTuples("fields").getField().get(1).getName());
+		
+		logger.debug(options.toXMLString());
 		
 		options = exercise(options);
 		assertEquals(3, options.getTuples().size());
@@ -570,39 +656,19 @@ public class QueryOptionsTest {
 	};
 
 	
-	/*
-	 * this test targets default Suggestion Source and wordLexicon
-	 * testSuggestionSource targets comprehensive definition of
-	 * default-suggestion-source and suggestion-source children.
-	 */
-	private void testDefaultSuggestionSource() {
-		QueryOptionsHandle options = new QueryOptionsHandle();
-
-		options.build(builder.defaultSuggestionSource(builder.wordLexicon(
-				"http://marklogic.com/collation/", FragmentScope.DOCUMENTS)));
-
-		QueryDefaultSuggestionSource dss = options.getDefaultSuggestionSource();
-		assertEquals("http://marklogic.com/collation/", dss.getWordLexicon()
-				.getCollation());
-		assertEquals(FragmentScope.DOCUMENTS, dss.getWordLexicon()
-				.getFragmentScope());
-
-		dss.getWordLexicon().setFragmentScope(FragmentScope.PROPERTIES);
-		assertEquals(FragmentScope.PROPERTIES, options
-				.getDefaultSuggestionSource().getWordLexicon()
-				.getFragmentScope());
-
-	};
+	
 
 	/**
 	 * Set configuration for extracting metadata from search results.
 	 */
 	private void testExtractMetadata() {
-		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.build(builder.extractMetadata(
-				builder.constraintValue("constraint-ref"),
-				builder.qname("elem-ns", "elem-name", null, null),
-				builder.jsonkey("json-key")));
+		QueryOptionsHandle options =  
+				new QueryOptionsHandle()
+				.withExtractMetadata(builder.extractMetadata(
+						builder.constraintValue("constraint-ref"),
+						builder.elementValue(
+								new QName("elem-ns", "elem-name")),
+						builder.jsonValue("json-key")));
 
 		QueryExtractMetadata metadata = options.getExtractMetadata();
 		assertEquals("constraint-ref", metadata.getConstraintValues().get(0)
@@ -613,34 +679,36 @@ public class QueryOptionsTest {
 	};
 
 	private void testGrammar() {
-		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.build(builder.grammar(
-				builder.implicit("<cts:and-query strength=\"20\" xmlns:cts=\"http://marklogic.com/cts\"/>"),
-				builder.quotation("\""),
-				builder.starterGrouping("(", 30, ")"), builder.starterPrefix(
-						"-", 40, new QName("cts:not-query")), builder.joiner(
-						"AND", 20, JoinerApply.PREFIX, new QName(
-								"cts:and-query"), Tokenize.WORD), builder
-						.joiner("OR", 10, JoinerApply.INFIX, new QName(
-								"cts:or-query"), Tokenize.WORD), builder
-						.joiner("NEAR", 30, JoinerApply.INFIX, new QName(
-								"cts:near-query"), Tokenize.WORD), builder
-						.joiner("NEAR/", 30, JoinerApply.NEAR2, new QName(
-								"cts:near-query"), null, 2), builder.joiner(
-						"LT", 50, JoinerApply.CONSTRAINT, Comparator.LT,
-						Tokenize.WORD)));
-
+		QueryOptionsHandle options = 
+				new QueryOptionsHandle()
+				.withGrammar(builder.grammar(
+                        builder.starters(
+                            builder.starterGrouping("(", 30, ")"), 
+                            builder.starterPrefix( "-", 40, new QName("cts:not-query"))), 
+                        builder.joiners(
+                            builder.joiner( "AND", 20, JoinerApply.PREFIX, new QName( "cts:and-query"), Tokenize.WORD), 
+                            builder.joiner("OR", 10, JoinerApply.INFIX, new QName("cts:or-query"), Tokenize.WORD), 
+                            builder.joiner("NEAR", 30, JoinerApply.INFIX, new QName("cts:near-query"), Tokenize.WORD), 
+                            builder.joiner("NEAR/", 30, JoinerApply.NEAR2, new QName("cts:near-query"), null, 2), 
+                            builder.joiner( "LT", 50, JoinerApply.CONSTRAINT, Comparator.LT, Tokenize.WORD)),
+						"\"",
+						Utilities.domElement("<cts:and-query strength=\"20\" xmlns:cts=\"http://marklogic.com/cts\"/>")));
+						
+		
 		QueryGrammar g = options.getGrammar();
 		assertEquals("Number of starters", 2, g.getStarters().size());
 		assertEquals("Number of joiners", 5, g.getJoiners().size());
 		assertEquals("DomElement on grammar", "and-query", g.getImplicit()
 				.getLocalName());
 
+		logger.debug(options.toXMLString());
+		options = exercise(options);
+
 		QueryStarter s1 = g.getStarters().get(0);
 		assertEquals("(", s1.getStarterText());
 		assertEquals(30, s1.getStrength());
 		assertEquals(")", s1.getDelimiter());
-		s1.setText(")");
+		s1.setStarterText(")");
 		s1.setStrength(40);
 		s1.setDelimiter("(");
 		assertEquals(")", s1.getStarterText());
@@ -659,45 +727,49 @@ public class QueryOptionsTest {
 		assertEquals(JoinerApply.PREFIX, j1.getApply());
 		assertEquals(new QName("cts:and-query"), j1.getElement());
 		assertEquals(Tokenize.WORD, j1.getTokenize());
-
+		
+		
 	};
 
 	private void testOperator() {
-		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.build(builder.operator("sortcolor", builder.state("pantone",
-				builder.sortOrder("xs:string",
-						"http://marklogic.com/collation", Direction.ASCENDING,
-						builder.element("http://my/namespace", "green"),
-						builder.attribute("http://my/namespace", "pantone"),
-						builder.score()))));
+		QueryOptionsHandle options = new QueryOptionsHandle()
+				.withOperators(builder.operator("sortcolor", 
+					builder.state("pantone").withSortOrders(
+						builder.sortOrder(
+							builder.elementAttributeRangeIndex(
+									new QName("http://my/namespace", "green"),
+									new QName("http://my/namespace", "pantone"),
+									builder.stringRangeType(QueryOptions.DEFAULT_COLLATION)),
+									Direction.ASCENDING)),
+					builder.state("outthere").withSearchableExpression(
+							builder.searchableExpression("/p:sf1",
+									builder.ns("p", "http://my.namespace")))));
+														
+														
 
 		QuerySortOrder so = options.getOperator("sortcolor")
 				.getState("pantone").getSortOrders().get(0);
 		assertEquals(new QName("xs:string"), so.getType());
-		assertEquals("http://marklogic.com/collation", so.getCollation());
+		assertEquals(QueryOptions.DEFAULT_COLLATION, so.getCollation());
 		assertEquals(Direction.ASCENDING, so.getDirection());
-		assertEquals(Score.YES, so.getScore());
 
 		so.unsetScore();
 		assertNull(so.getScore());
+		
+		options = new QueryOptionsHandle()
+				.withOperators(builder.operator("washington", 
+						builder.state("dc").withAdditionalQuery(
+								Utilities.domElement(
+										"<cts:directory-query xmlns:cts=\"http://marklogic.com/cts\">/washington</cts:directory-query>"))));
+		
 
 	};
 
-	private void testSearchOption() {
-		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.build(builder.searchOption("limit=10"),
-				builder.searchOption("option1"));
-
-		assertTrue(options.getSearchOptions().get(0).equals("limit=10"));
-		options.getSearchOptions().add("newoption");
-		assertTrue(options.getSearchOptions().get(2).equals("newoption"));
-
-	};
-
+	
 	private void testSearchableExpression() {
-		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.build(builder.searchableExpression("/p:sf1",
-				builder.namespace("p", "http://my.namespace")));
+		QueryOptionsHandle options = new QueryOptionsHandle().withSearchableExpression(
+				builder.searchableExpression("/p:sf1",
+				builder.ns("p", "http://my.namespace")));
 
 		String se = options.getSearchableExpression();
 		assertEquals("/p:sf1", se);
@@ -714,44 +786,36 @@ public class QueryOptionsTest {
 	};
 
 	private void testSortOrder() {
-		QueryOptionsHandle options = new QueryOptionsHandle();
-		options.build(builder.sortOrder("xs:string",
-				"http://marklogic.com/collation", Direction.ASCENDING,
-				builder.element("http://my/namespace", "green"),
-				builder.attribute("http://my/namespace", "pantone"),
-				builder.score()));
+		QueryOptionsHandle options = 
+				new QueryOptionsHandle()
+					.withSortOrders(
+							builder.sortOrder(
+									builder.elementAttributeRangeIndex(
+											new QName("http://my/namespace", "green"), 
+											new QName("http://my/namespace", "pantone"),
+											builder.stringRangeType(QueryOptions.DEFAULT_COLLATION)),
+											Direction.ASCENDING),
+							builder.sortByScore(Direction.ASCENDING));
 
 		QuerySortOrder so = options.getSortOrders().get(0);
 		assertEquals(new QName("xs:string"), so.getType());
-		assertEquals("http://marklogic.com/collation", so.getCollation());
+		assertEquals(QueryOptions.DEFAULT_COLLATION, so.getCollation());
 		assertEquals(Direction.ASCENDING, so.getDirection());
-		assertEquals(Score.YES, so.getScore());
 
 		so.unsetScore();
 		assertNull(so.getScore());
 
 	};
 
-	private void testSuggestionSource() {
-		QueryOptionsHandle options = new QueryOptionsHandle();
-
-		options.build(builder.suggestionSource(builder.range(false, new QName(
-				"gs:year"), builder.element("http://marklogic.com/wikipedia",
-				"nominee"), builder.attribute("year")), builder
-				.suggestionSourceOption("suggestionOption"), builder
-				.suggestionSourceOption("suggestionOption2")), builder
-				.suggestionSource("ref"));
-
-		assertEquals(new QName("gs:year"),
-				((QueryRange) options.getSuggestionSources().get(0)
-						.getConstraintConfiguration()).getType());
-	};
-
+		
 	private void testTerm() {
 
-		QueryOptionsHandle options = new QueryOptionsHandle().build(builder
-				.term(TermApply.ALL_RESULTS,
-						builder.word(builder.element("nation"))));
+		QueryOptionsHandle options = 
+				new QueryOptionsHandle()
+				.withTerm(
+						builder.term(TermApply.ALL_RESULTS,
+								builder.word(
+										builder.elementTermIndex(new QName("nation")))));
 
 		QueryWord word = (QueryWord) options.getTerm().getSource();
 		assertEquals("nation", word.getElement().getLocalPart());
@@ -760,25 +824,92 @@ public class QueryOptionsTest {
 
 		assertEquals("TermConfig after storing", "nation", options.getTerm()
 				.getSource().getElement().getLocalPart());
+		
+		 options = new QueryOptionsHandle();
+					options.withConstraints(builder.constraint("nameofconstraint", builder.value(builder.elementTermIndex(new QName("elem")))))
+					.withTerm(
+							builder.term(TermApply.ALL_RESULTS,
+									"nameofconstraint", "punctuation-insensitive"));
+		 
+		String constraintRef = options.getTerm().getRef();
+		assertEquals("nameofconstraint", constraintRef);
+
+		options = exercise(options);
+
+		assertEquals("TermConfig after storing", "nameofconstraint", options.getTerm().getRef());
 
 	};
 
 	private void testTransformResults() {
 
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-		handle.build(builder.returnMetrics(false), builder.returnQtext(false),
-				builder.debug(true), builder.transformResults("raw"),
-				builder.constraint("id", builder.value(builder.element("id"))));
+		QueryOptionsHandle options = new QueryOptionsHandle()
+				.withConfiguration(
+						builder.configure().returnMetrics(false)
+								.returnQtext(false).debug(true))
+				.withTransformResults(builder.rawResults())
+				.withConstraints(
+						builder.constraint("id", builder.value(builder
+								.elementTermIndex(new QName("id")))));
+ // build transform results from extension
+		
+		assertEquals("raw", options.getTransformResults().getApply());
+		assertEquals("id", options.getConstraint("id").getName());
 
-		assertEquals("raw", handle.getTransformResults().getApply());
-		assertEquals("id", handle.getConstraint("id").getName());
-
-		QueryTransformResults tr = handle.getTransformResults();
+		QueryTransformResults tr = options.getTransformResults();
 		tr.setAt("x");
 		tr.setNs("http://namespace");
-		assertEquals("x", handle.getTransformResults().getAt());
-		assertEquals("http://namespace", handle.getTransformResults().getNs());
+		assertEquals("x", options.getTransformResults().getAt());
+		assertEquals("http://namespace", options.getTransformResults().getNs());
 
+		options = exercise(options);
+
+		tr = options.getTransformResults();
+		assertEquals("x", options.getTransformResults().getAt());
+		assertEquals("http://namespace", options.getTransformResults().getNs());
+		
+		// snippet
+		options = new QueryOptionsHandle()
+				.withTransformResults(builder.snippetTransform(10, 20, 1000, new QName("ns", "elem")));
+		
+		assertEquals(10, options.getTransformResults().getPerMatchTokens().intValue());
+		assertEquals(20, options.getTransformResults().getMaxMatches().intValue());
+		assertEquals(1000, options.getTransformResults().getMaxSnippetChars().intValue());
+		assertEquals("elem", options.getTransformResults().getPreferredElements().get(0).getName());
+		
+		options = exercise(options);
+		
+		assertEquals(10, options.getTransformResults().getPerMatchTokens().intValue());
+		assertEquals(20, options.getTransformResults().getMaxMatches().intValue());
+		assertEquals(1000, options.getTransformResults().getMaxSnippetChars().intValue());
+		assertEquals("elem", options.getTransformResults().getPreferredElements().get(0).getName());
+		
+		// raw
+		options = new QueryOptionsHandle().withTransformResults(builder.rawResults());
+		assertEquals("raw", options.getTransformResults().getApply());
+		
+		options = exercise(options);
+		
+		assertEquals("raw", options.getTransformResults().getApply());
+		
+		// empty
+		options = new QueryOptionsHandle().withTransformResults(builder.emptySnippets());
+		assertEquals("empty-snippet", options.getTransformResults().getApply());
+		
+		options = exercise(options);
+		
+		assertEquals("empty-snippet", options.getTransformResults().getApply());
+	
+		// metadata snippet
+		options = new QueryOptionsHandle()
+				.withTransformResults(builder.metadataSnippetTransform(new QName("ns", "elem")));
+		
+		assertEquals("elem", options.getTransformResults().getPreferredElements().get(0).getName());
+		
+		options = exercise(options);
+		
+		assertEquals("elem", options.getTransformResults().getPreferredElements().get(0).getName());
+		
+	
 	}
 
 }
