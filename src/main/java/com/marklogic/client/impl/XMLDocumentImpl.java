@@ -15,10 +15,10 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.Format;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.RequestParameters;
-import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.util.RequestParameters;
+import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 

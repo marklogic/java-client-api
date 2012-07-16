@@ -30,7 +30,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
-import com.marklogic.client.TextDocumentManager;
+import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
 
 /**

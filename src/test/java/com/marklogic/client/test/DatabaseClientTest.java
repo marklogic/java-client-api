@@ -21,14 +21,14 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.marklogic.client.BinaryDocumentManager;
-import com.marklogic.client.GenericDocumentManager;
-import com.marklogic.client.JSONDocumentManager;
-import com.marklogic.client.QueryManager;
-import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.RequestLogger;
-import com.marklogic.client.TextDocumentManager;
-import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.document.BinaryDocumentManager;
+import com.marklogic.client.document.GenericDocumentManager;
+import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.util.RequestLogger;
+import com.marklogic.client.document.TextDocumentManager;
+import com.marklogic.client.document.XMLDocumentManager;
 
 public class DatabaseClientTest {
 	@BeforeClass

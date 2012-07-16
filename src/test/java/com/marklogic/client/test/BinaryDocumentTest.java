@@ -29,10 +29,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
-import com.marklogic.client.DocumentDescriptor;
-import com.marklogic.client.DocumentManager.Metadata;
-import com.marklogic.client.BinaryDocumentManager;
-import com.marklogic.client.BinaryDocumentManager.MetadataExtraction;
+import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.document.BinaryDocumentManager;
+import com.marklogic.client.document.BinaryDocumentManager.MetadataExtraction;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputStreamHandle;

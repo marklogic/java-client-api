@@ -24,10 +24,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
-import com.marklogic.client.Format;
-import com.marklogic.client.ServerTransform;
-import com.marklogic.client.TransformExtensionsManager;
-import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.document.ServerTransform;
+import com.marklogic.client.admin.TransformExtensionsManager;
+import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.StringHandle;
 

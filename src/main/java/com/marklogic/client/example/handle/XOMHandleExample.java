@@ -28,7 +28,7 @@ import nu.xom.ValidityException;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.document.XMLDocumentManager;
 
 /**
  * XOMHandleExample illustrates writing and reading content as a XOM structure

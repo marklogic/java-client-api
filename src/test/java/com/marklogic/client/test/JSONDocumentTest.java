@@ -35,9 +35,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
-import com.marklogic.client.Format;
-import com.marklogic.client.JSONDocumentManager;
-import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;

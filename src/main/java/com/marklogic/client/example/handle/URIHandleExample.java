@@ -23,7 +23,7 @@ import java.util.Properties;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.DocumentRead;
 import com.marklogic.client.io.InputStreamHandle;
 

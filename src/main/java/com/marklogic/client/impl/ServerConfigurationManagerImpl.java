@@ -29,11 +29,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.NamespacesManager;
-import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.ResourceExtensionsManager;
-import com.marklogic.client.ServerConfigurationManager;
-import com.marklogic.client.TransformExtensionsManager;
+import com.marklogic.client.admin.NamespacesManager;
+import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.admin.ResourceExtensionsManager;
+import com.marklogic.client.admin.ServerConfigurationManager;
+import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.io.OutputStreamSender;
 
 class ServerConfigurationManagerImpl

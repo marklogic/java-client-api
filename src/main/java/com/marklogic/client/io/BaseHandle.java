@@ -15,7 +15,6 @@
  */
 package com.marklogic.client.io;
 
-import com.marklogic.client.Format;
 import com.marklogic.client.impl.HandleImplementation;
 
 /**

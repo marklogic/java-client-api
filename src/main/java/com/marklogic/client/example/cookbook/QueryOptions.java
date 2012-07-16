@@ -25,9 +25,9 @@ import javax.xml.namespace.QName;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.config.QueryOptions.QueryConstraint;
-import com.marklogic.client.config.QueryOptionsBuilder;
+import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.admin.config.QueryOptions.QueryConstraint;
+import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.io.QueryOptionsHandle;
 
 /**

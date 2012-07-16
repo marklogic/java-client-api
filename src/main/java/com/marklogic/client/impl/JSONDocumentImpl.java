@@ -15,9 +15,9 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.Format;
-import com.marklogic.client.JSONDocumentManager;
-import com.marklogic.client.RequestParameters;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.util.RequestParameters;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 

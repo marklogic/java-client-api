@@ -316,11 +316,15 @@ public class ValueConverter {
 			return DatatypeConverter.parseTime(value);
 		if ("xs:unsignedInt".equals(type))
 			return DatatypeConverter.parseUnsignedInt(value);
-		if ("xs:unsignedLong".equals(type))
-			// DatatypeConverter doesn't provide parseUnsignedLong()
-			return DatatypeConverter.parseInteger(value);
-		if ("xs:unsignedShort".equals(type))
-			return DatatypeConverter.parseUnsignedShort(value);
+        if ("xs:unsignedLong".equals(type)) {
+            BigInteger bi = DatatypeConverter.parseInteger(value);
+            if (bi.compareTo(MAX_UNSIGNED_LONG) < 0) {
+                return bi.longValue();
+            } else {
+                return bi;
+            }
+        } if ("xs:unsignedShort".equals(type))
+            return DatatypeConverter.parseUnsignedShort(value);
 		if ("xs:yearMonthDuration".equals(type))
 			return getFactory().newDurationYearMonth(value);
 		return value;

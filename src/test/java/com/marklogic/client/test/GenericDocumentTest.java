@@ -31,11 +31,11 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.DocumentManager.Metadata;
-import com.marklogic.client.Format;
-import com.marklogic.client.TextDocumentManager;
+import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.Transaction;
-import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;

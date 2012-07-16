@@ -15,8 +15,8 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.config.QueryDefinition;
-import com.marklogic.client.config.ValuesDefinition;
+import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.ValuesDefinition;
 
 public class TuplesDefinitionImpl implements ValuesDefinition {
     private String name = null;

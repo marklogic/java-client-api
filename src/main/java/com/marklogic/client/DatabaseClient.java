@@ -15,6 +15,16 @@
  */
 package com.marklogic.client;
 
+import com.marklogic.client.admin.ServerConfigurationManager;
+import com.marklogic.client.document.BinaryDocumentManager;
+import com.marklogic.client.document.GenericDocumentManager;
+import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.document.TextDocumentManager;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.extensions.ResourceManager;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.util.RequestLogger;
+
 import java.io.OutputStream;
 
 /**
@@ -59,22 +69,22 @@ public interface DatabaseClient {
      * Creates a document manager for documents with a binary format such as images.
      * @return	a manager supporting operations on binary documents
      */
-    public BinaryDocumentManager  newBinaryDocumentManager();
+    public BinaryDocumentManager newBinaryDocumentManager();
     /**
      * Creates a document manager for documents containing a JSON structure.
      * @return	a manager supporting operations on JSON documents
      */
-    public JSONDocumentManager    newJSONDocumentManager();
+    public JSONDocumentManager newJSONDocumentManager();
     /**
      * Creates a document manager for documents containing unstructured text.
      * @return	a manager supporting operations on text documents
      */
-    public TextDocumentManager    newTextDocumentManager();
+    public TextDocumentManager newTextDocumentManager();
     /**
      * Creates a document manager for documents containing XML.
      * @return	a manager supporting operations on XMLdocuments
      */
-    public XMLDocumentManager     newXMLDocumentManager();
+    public XMLDocumentManager newXMLDocumentManager();
 
     /**
      * Creates a manager for querying the database.

@@ -47,7 +47,7 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.Format;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;

@@ -24,8 +24,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.marklogic.client.ServerConfigurationManager;
-import com.marklogic.client.ServerConfigurationManager.Policy;
+import com.marklogic.client.admin.ServerConfigurationManager;
+import com.marklogic.client.admin.ServerConfigurationManager.Policy;
 
 public class ServerConfigurationManagerTest {
 	@BeforeClass

@@ -15,8 +15,8 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.Format;
-import com.marklogic.client.TextDocumentManager;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.marker.TextReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
 

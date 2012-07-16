@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.JSONDocumentManager;
+import com.marklogic.client.document.JSONDocumentManager;
 
 /**
  * JacksonHandleExample illustrates writing and reading content as a JSON structure

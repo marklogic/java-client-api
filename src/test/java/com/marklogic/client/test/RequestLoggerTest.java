@@ -36,8 +36,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 
-import com.marklogic.client.RequestLogger;
-import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.util.RequestLogger;
+import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.impl.OutputStreamTee;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.StringHandle;

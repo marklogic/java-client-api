@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.ElementLocator;
+import com.marklogic.client.query.ElementLocator;
 
 import javax.xml.namespace.QName;
 

@@ -29,7 +29,7 @@ import nu.xom.ParsingException;
 import nu.xom.Serializer;
 import nu.xom.ValidityException;
 
-import com.marklogic.client.Format;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.OutputStreamSender;

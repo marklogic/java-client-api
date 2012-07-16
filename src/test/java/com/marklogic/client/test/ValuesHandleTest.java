@@ -20,17 +20,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import com.marklogic.client.QueryManager;
-import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.config.CountedDistinctValue;
-import com.marklogic.client.config.MatchDocumentSummary;
-import com.marklogic.client.config.MatchLocation;
-import com.marklogic.client.config.QueryOptions;
-import com.marklogic.client.config.QueryOptionsBuilder;
-import com.marklogic.client.config.StringQueryDefinition;
-import com.marklogic.client.config.ValuesListDefinition;
-import com.marklogic.client.io.QueryOptionsHandle;
-import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.CountedDistinctValue;
+import com.marklogic.client.query.ValuesListDefinition;
 import com.marklogic.client.io.ValuesHandle;
 import com.marklogic.client.io.ValuesListHandle;
 import org.junit.AfterClass;
@@ -40,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.FileInputStream;

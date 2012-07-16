@@ -17,7 +17,7 @@ package com.marklogic.client.impl;
 
 import java.io.PrintStream;
 
-import com.marklogic.client.RequestLogger;
+import com.marklogic.client.util.RequestLogger;
 
 abstract class AbstractLoggingManager {
 	protected RequestLogger requestLogger;

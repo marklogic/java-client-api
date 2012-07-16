@@ -31,16 +31,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.QueryManager;
-import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.config.MatchDocumentSummary;
-import com.marklogic.client.config.MatchLocation;
-import com.marklogic.client.config.QueryOptions.Facets;
-import com.marklogic.client.config.QueryOptions.FragmentScope;
-import com.marklogic.client.config.QueryOptions.QueryRange;
-import com.marklogic.client.config.QueryOptions.QueryTransformResults;
-import com.marklogic.client.config.QueryOptionsBuilder;
-import com.marklogic.client.config.StringQueryDefinition;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.query.MatchDocumentSummary;
+import com.marklogic.client.query.MatchLocation;
+import com.marklogic.client.admin.config.QueryOptions.Facets;
+import com.marklogic.client.admin.config.QueryOptions.FragmentScope;
+import com.marklogic.client.admin.config.QueryOptions.QueryRange;
+import com.marklogic.client.admin.config.QueryOptions.QueryTransformResults;
+import com.marklogic.client.admin.config.QueryOptionsBuilder;
+import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.SearchHandle;
 

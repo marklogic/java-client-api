@@ -27,11 +27,10 @@ import javax.xml.bind.Unmarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.config.ValuesListBuilder;
-import com.marklogic.client.config.ValuesListResults;
+import com.marklogic.client.impl.ValuesListBuilder;
+import com.marklogic.client.query.ValuesListResults;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.ValuesListReadHandle;
 

@@ -24,7 +24,7 @@ import java.io.Reader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.RequestLogger;
+import com.marklogic.client.util.RequestLogger;
 
 class RequestLoggerImpl implements RequestLogger {
 	static final private Logger logger = LoggerFactory.getLogger(RequestLoggerImpl.class);

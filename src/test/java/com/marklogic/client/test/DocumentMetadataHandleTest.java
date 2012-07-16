@@ -34,8 +34,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.DocumentManager.Metadata;
-import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;

@@ -15,10 +15,10 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.MethodType;
-import com.marklogic.client.RequestLogger;
-import com.marklogic.client.RequestParameters;
-import com.marklogic.client.ResourceServices;
+import com.marklogic.client.admin.MethodType;
+import com.marklogic.client.util.RequestLogger;
+import com.marklogic.client.util.RequestParameters;
+import com.marklogic.client.extensions.ResourceServices;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;

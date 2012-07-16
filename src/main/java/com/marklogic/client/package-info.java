@@ -3,8 +3,8 @@
  * Use {@link com.marklogic.client.DatabaseClientFactory}.newClient() to create
  * a {@link com.marklogic.client.DatabaseClient} object.  Use the
  * Client object to create document managers for reading, writing, and deleting documents,
- * {@link com.marklogic.client.QueryOptionsManager} to write configuration options for queries,
- * and {@link com.marklogic.client.QueryManager} to execute queries. 
+ * {@link com.marklogic.client.admin.QueryOptionsManager} to write configuration options for queries,
+ * and {@link com.marklogic.client.query.QueryManager} to execute queries.
  */
 /*
  * Copyright 2012 MarkLogic Corporation

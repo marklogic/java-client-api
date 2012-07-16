@@ -22,8 +22,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.marklogic.client.EditableNamespaceContext;
-import com.marklogic.client.NamespacesManager;
+import com.marklogic.client.util.EditableNamespaceContext;
+import com.marklogic.client.admin.NamespacesManager;
 
 public class NamespacesManagerTest {
 	@BeforeClass

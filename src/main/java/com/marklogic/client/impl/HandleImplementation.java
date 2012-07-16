@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.ContentDescriptor;
+import com.marklogic.client.document.ContentDescriptor;
 
 // exposes BaseHandle protected methods in implementation package
 public abstract class HandleImplementation<R,W>

@@ -20,7 +20,7 @@ import java.io.OutputStream;
 
 import javax.ws.rs.core.StreamingOutput;
 
-import com.marklogic.client.RequestLogger;
+import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.io.OutputStreamSender;
 
 class StreamingOutputImpl implements StreamingOutput {

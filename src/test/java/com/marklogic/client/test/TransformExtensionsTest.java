@@ -32,10 +32,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.ExtensionMetadata;
+import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.Format;
-import com.marklogic.client.TransformExtensionsManager;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.io.StringHandle;
 
 public class TransformExtensionsTest {

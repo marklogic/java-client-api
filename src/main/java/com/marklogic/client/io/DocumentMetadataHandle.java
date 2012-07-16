@@ -51,11 +51,10 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.NameMap;
-import com.marklogic.client.NameMapBase;
+import com.marklogic.client.util.NameMap;
+import com.marklogic.client.impl.NameMapBase;
 import com.marklogic.client.impl.DOMWriter;
 import com.marklogic.client.impl.ValueConverter;
 import com.marklogic.client.io.marker.BufferableHandle;

@@ -26,12 +26,12 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DocumentDescriptor;
+import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.Format;
-import com.marklogic.client.ServerConfigurationManager;
-import com.marklogic.client.ServerConfigurationManager.Policy;
-import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.admin.ServerConfigurationManager;
+import com.marklogic.client.admin.ServerConfigurationManager.Policy;
+import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.impl.FailedRequest;
 import com.marklogic.client.io.StringHandle;
 

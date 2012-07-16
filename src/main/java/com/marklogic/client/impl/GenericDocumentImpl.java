@@ -15,8 +15,8 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.Format;
-import com.marklogic.client.GenericDocumentManager;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.io.marker.GenericReadHandle;
 import com.marklogic.client.io.marker.GenericWriteHandle;
 

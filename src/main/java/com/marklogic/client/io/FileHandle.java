@@ -17,7 +17,6 @@ package com.marklogic.client.io;
 
 import java.io.File;
 
-import com.marklogic.client.Format;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
 import com.marklogic.client.io.marker.GenericReadHandle;

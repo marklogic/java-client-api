@@ -25,10 +25,10 @@ import org.w3c.dom.Document;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DocumentDescriptor;
-import com.marklogic.client.ServerConfigurationManager;
-import com.marklogic.client.ServerConfigurationManager.Policy;
-import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.admin.ServerConfigurationManager;
+import com.marklogic.client.admin.ServerConfigurationManager.Policy;
+import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputStreamHandle;
 

@@ -26,8 +26,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
-import com.marklogic.client.QueryManager;
-import com.marklogic.client.config.StringQueryDefinition;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.io.DOMHandle;
 
 public class DOMSearchResultTest {

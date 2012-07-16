@@ -21,10 +21,10 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.ExtensionMetadata;
-import com.marklogic.client.Format;
-import com.marklogic.client.RequestParameters;
-import com.marklogic.client.ResourceExtensionsManager;
+import com.marklogic.client.admin.ExtensionMetadata;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.util.RequestParameters;
+import com.marklogic.client.admin.ResourceExtensionsManager;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;

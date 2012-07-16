@@ -35,8 +35,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.Format;
-import com.marklogic.client.QueryOptionsManager;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.QueryOptionsHandle;

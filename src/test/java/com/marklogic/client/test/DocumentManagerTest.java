@@ -58,7 +58,7 @@ import org.w3c.dom.ls.LSOutput;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.DocumentManager;
+import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;

@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.config.DeleteQueryDefinition;
+import com.marklogic.client.query.DeleteQueryDefinition;
 
 public class DeleteQueryDefinitionImpl extends AbstractQueryDefinition implements DeleteQueryDefinition {
     public DeleteQueryDefinitionImpl() {

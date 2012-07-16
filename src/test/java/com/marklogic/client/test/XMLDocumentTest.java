@@ -46,8 +46,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.marklogic.client.XMLDocumentManager;
-import com.marklogic.client.XMLDocumentManager.DocumentRepair;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.document.XMLDocumentManager.DocumentRepair;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputSourceHandle;
 import com.marklogic.client.io.SourceHandle;

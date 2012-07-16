@@ -15,10 +15,8 @@
  */
 package com.marklogic.client.test;
 
-import com.marklogic.client.QueryManager;
-import com.marklogic.client.config.ValuesListDefinition;
+import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.io.QueryOptionsListHandle;
-import com.marklogic.client.io.ValuesListHandle;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;

@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.KeyLocator;
+import com.marklogic.client.query.KeyLocator;
 
 public class KeyLocatorImpl implements KeyLocator {
     String key = null;

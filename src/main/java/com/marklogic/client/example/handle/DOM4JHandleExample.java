@@ -27,7 +27,7 @@ import org.dom4j.DocumentException;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.document.XMLDocumentManager;
 
 /**
  * DOM4JHandleExample illustrates writing and reading content as a dom4j structure

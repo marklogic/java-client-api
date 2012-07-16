@@ -21,14 +21,13 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.Set;
 
-import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.ITagInfoProvider;
 import org.htmlcleaner.TagInfo;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.StringHandle;
 
 /**

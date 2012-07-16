@@ -17,7 +17,6 @@ package com.marklogic.client.io;
 
 import java.io.UnsupportedEncodingException;
 
-import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;

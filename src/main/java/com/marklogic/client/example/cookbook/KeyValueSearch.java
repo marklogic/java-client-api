@@ -25,12 +25,12 @@ import javax.xml.namespace.QName;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.QueryManager;
-import com.marklogic.client.XMLDocumentManager;
-import com.marklogic.client.config.KeyValueQueryDefinition;
-import com.marklogic.client.config.MatchDocumentSummary;
-import com.marklogic.client.config.MatchLocation;
-import com.marklogic.client.config.MatchSnippet;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.query.KeyValueQueryDefinition;
+import com.marklogic.client.query.MatchDocumentSummary;
+import com.marklogic.client.query.MatchLocation;
+import com.marklogic.client.query.MatchSnippet;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.SearchHandle;
 

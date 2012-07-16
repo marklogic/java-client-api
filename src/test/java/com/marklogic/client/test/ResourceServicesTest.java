@@ -28,12 +28,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
-import com.marklogic.client.Format;
-import com.marklogic.client.RequestParameters;
-import com.marklogic.client.ResourceExtensionsManager;
-import com.marklogic.client.ResourceManager;
-import com.marklogic.client.ResourceServices;
-import com.marklogic.client.ResourceServices.ServiceResultIterator;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.util.RequestParameters;
+import com.marklogic.client.admin.ResourceExtensionsManager;
+import com.marklogic.client.extensions.ResourceManager;
+import com.marklogic.client.extensions.ResourceServices;
+import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.StringHandle;
 

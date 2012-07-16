@@ -15,8 +15,8 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.DocumentDescriptor;
-import com.marklogic.client.Format;
+import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.io.Format;
 
 public class DocumentDescriptorImpl implements DocumentDescriptor {
 	private String  uri;

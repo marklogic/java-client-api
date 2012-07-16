@@ -47,17 +47,16 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.config.FacetHeatmapValue;
-import com.marklogic.client.config.FacetResult;
-import com.marklogic.client.config.FacetValue;
-import com.marklogic.client.config.MatchDocumentSummary;
-import com.marklogic.client.config.MatchLocation;
-import com.marklogic.client.config.MatchSnippet;
-import com.marklogic.client.config.QueryDefinition;
-import com.marklogic.client.config.SearchMetrics;
-import com.marklogic.client.config.SearchResults;
+import com.marklogic.client.query.FacetHeatmapValue;
+import com.marklogic.client.query.FacetResult;
+import com.marklogic.client.query.FacetValue;
+import com.marklogic.client.query.MatchDocumentSummary;
+import com.marklogic.client.query.MatchLocation;
+import com.marklogic.client.query.MatchSnippet;
+import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.SearchMetrics;
+import com.marklogic.client.query.SearchResults;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.SearchReadHandle;
 

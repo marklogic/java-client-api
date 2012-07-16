@@ -23,11 +23,11 @@ import java.util.Properties;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.ExtensionMetadata;
-import com.marklogic.client.ServerTransform;
-import com.marklogic.client.TransformExtensionsManager;
-import com.marklogic.client.TextDocumentManager;
-import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.admin.ExtensionMetadata;
+import com.marklogic.client.document.ServerTransform;
+import com.marklogic.client.admin.TransformExtensionsManager;
+import com.marklogic.client.document.TextDocumentManager;
+import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
 

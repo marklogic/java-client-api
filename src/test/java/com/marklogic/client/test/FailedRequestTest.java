@@ -21,9 +21,9 @@ import org.junit.Test;
 
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.config.QueryOptionsBuilder;
-import com.marklogic.client.config.QueryOptions.Facets;
+import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.admin.config.QueryOptionsBuilder;
+import com.marklogic.client.admin.config.QueryOptions.Facets;
 import com.marklogic.client.io.QueryOptionsHandle;
 
 public class FailedRequestTest {

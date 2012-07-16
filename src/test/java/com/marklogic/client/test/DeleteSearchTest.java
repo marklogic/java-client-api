@@ -15,10 +15,10 @@
  */
 package com.marklogic.client.test;
 
-import com.marklogic.client.QueryManager;
-import com.marklogic.client.XMLDocumentManager;
-import com.marklogic.client.config.DeleteQueryDefinition;
-import com.marklogic.client.config.StringQueryDefinition;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.SearchHandle;
 import org.junit.AfterClass;

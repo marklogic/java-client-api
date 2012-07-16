@@ -18,12 +18,12 @@ package com.marklogic.client.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.BinaryDocumentManager;
-import com.marklogic.client.DocumentDescriptor;
-import com.marklogic.client.Format;
+import com.marklogic.client.document.BinaryDocumentManager;
+import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.RequestParameters;
-import com.marklogic.client.ServerTransform;
+import com.marklogic.client.util.RequestParameters;
+import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;

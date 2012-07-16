@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.config.ValuesListDefinition;
+import com.marklogic.client.query.ValuesListDefinition;
 
 public class ValuesListDefinitionImpl implements ValuesListDefinition {
     private String options = null;

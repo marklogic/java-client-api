@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.config.StringQueryDefinition;
+import com.marklogic.client.query.StringQueryDefinition;
 
 public class StringQueryDefinitionImpl extends AbstractQueryDefinition implements StringQueryDefinition {
     protected String criteria = null;

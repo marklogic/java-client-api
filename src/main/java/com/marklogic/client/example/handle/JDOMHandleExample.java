@@ -27,7 +27,7 @@ import org.jdom.JDOMException;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.XMLDocumentManager;
+import com.marklogic.client.document.XMLDocumentManager;
 
 /**
  * JDOMHandleExample illustrates writing and reading content as a JDOM structure

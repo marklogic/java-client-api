@@ -28,11 +28,10 @@ import javax.xml.bind.Unmarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.config.QueryOptionsListBuilder;
-import com.marklogic.client.config.QueryOptionsListResults;
+import com.marklogic.client.query.QueryOptionsListBuilder;
+import com.marklogic.client.query.QueryOptionsListResults;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 

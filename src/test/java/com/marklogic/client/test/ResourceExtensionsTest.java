@@ -32,11 +32,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.ExtensionMetadata;
-import com.marklogic.client.Format;
-import com.marklogic.client.MethodType;
-import com.marklogic.client.ResourceExtensionsManager;
-import com.marklogic.client.ResourceExtensionsManager.MethodParameters;
+import com.marklogic.client.admin.ExtensionMetadata;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.admin.MethodType;
+import com.marklogic.client.admin.ResourceExtensionsManager;
+import com.marklogic.client.admin.ResourceExtensionsManager.MethodParameters;
 import com.marklogic.client.io.StringHandle;
 
 public class ResourceExtensionsTest {

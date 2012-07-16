@@ -26,13 +26,12 @@ import javax.xml.bind.Unmarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.config.Tuple;
-import com.marklogic.client.config.TuplesBuilder;
-import com.marklogic.client.config.TuplesResults;
-import com.marklogic.client.config.ValuesDefinition;
+import com.marklogic.client.query.Tuple;
+import com.marklogic.client.impl.TuplesBuilder;
+import com.marklogic.client.query.TuplesResults;
+import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.TuplesReadHandle;
 

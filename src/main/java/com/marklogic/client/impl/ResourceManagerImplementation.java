@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.ResourceServices;
+import com.marklogic.client.extensions.ResourceServices;
 
 // exposes protected method
 public abstract class ResourceManagerImplementation {

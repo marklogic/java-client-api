@@ -23,7 +23,7 @@ import java.util.Properties;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.GenericDocumentManager;
+import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.InputStreamHandle;
 

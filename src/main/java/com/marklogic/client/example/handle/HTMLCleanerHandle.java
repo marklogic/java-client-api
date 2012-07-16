@@ -29,7 +29,7 @@ import org.htmlcleaner.ITagInfoProvider;
 import org.htmlcleaner.TagNode;
 import org.htmlcleaner.XmlSerializer;
 
-import com.marklogic.client.Format;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.OperationNotSupported;

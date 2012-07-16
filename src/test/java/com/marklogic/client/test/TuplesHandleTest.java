@@ -18,8 +18,8 @@ package com.marklogic.client.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.marklogic.client.config.Tuple;
-import com.marklogic.client.config.TypedDistinctValue;
+import com.marklogic.client.query.Tuple;
+import com.marklogic.client.query.TypedDistinctValue;
 import com.marklogic.client.io.TuplesHandle;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

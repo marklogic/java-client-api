@@ -26,13 +26,12 @@ import javax.xml.bind.Unmarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.Format;
 import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.config.CountedDistinctValue;
-import com.marklogic.client.config.ValuesBuilder;
-import com.marklogic.client.config.ValuesDefinition;
-import com.marklogic.client.config.ValuesResults;
+import com.marklogic.client.query.CountedDistinctValue;
+import com.marklogic.client.impl.ValuesBuilder;
+import com.marklogic.client.query.ValuesDefinition;
+import com.marklogic.client.query.ValuesResults;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.ValuesReadHandle;
 

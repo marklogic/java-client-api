@@ -1,0 +1,3660 @@
+/*
+ * Copyright 2012 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.marklogic.client.admin.config;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAnyElement;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlValue;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.namespace.QName;
+
+import com.marklogic.client.util.EditableNamespaceContext;
+import com.marklogic.client.admin.config.support.Annotatable;
+import com.marklogic.client.admin.config.support.Buckets;
+import com.marklogic.client.admin.config.support.ConstraintSource;
+import com.marklogic.client.admin.config.support.Indexed;
+import com.marklogic.client.admin.config.support.MetadataExtract;
+import com.marklogic.client.admin.config.support.RangeIndexed;
+import com.marklogic.client.admin.config.support.TermIndexed;
+import com.marklogic.client.admin.config.support.TermOptions;
+import com.marklogic.client.admin.config.support.TermSource;
+import com.marklogic.client.admin.config.support.TupleSource;
+import com.marklogic.client.impl.Utilities;
+
+/**
+ * Models MarkLogic Search API Configurations.
+ * <p>
+ * Use a {@link com.marklogic.client.io.QueryOptionsHandle} as the entry point to QueryOptions. 
+ * The classes contained within QueryOptions
+ * implement the low-level XML binding to the MarkLogic Search API, along with
+ * accessor methods to all configurable options.
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(namespace = QueryOptions.SEARCH_NS, name = "options")
+public final class QueryOptions implements Annotatable<QueryOptions> {
+
+    /**
+     * Two possible states for faceting.  Used in range index definitions.
+     */
+	public static enum Facets { FACETED, UNFACETED };
+
+	public static final String DEFAULT_COLLATION = "http://marklogic.com/collation/";
+	
+	/**
+	 * Models a constraint node in Search API configuration.
+	 */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class QueryConstraint 
+			implements Annotatable<QueryConstraint> {
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
+		private List<QueryAnnotation> annotations;
+		
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "collection")
+		private QueryCollection collection;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "custom")
+		private QueryCustom custom;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "element-query")
+		private QueryElementQuery elementQuery;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-attr-pair")
+		private QueryGeospatialAttributePair geoAttrPair;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-elem")
+		private QueryGeospatialElement geoElem;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-elem-pair")
+		private QueryGeospatialElementPair geoElemPair;
+
+		@XmlAttribute
+		private String name;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "properties")
+		private QueryProperties properties;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "range")
+		private QueryRange range;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "value")
+		private QueryValue value;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "word")
+		private QueryWord word;
+
+		public QueryConstraint() {
+			super();
+		}
+
+		public QueryConstraint(String name) {
+			this();
+			annotations = new ArrayList<QueryAnnotation>();
+			setName(name);
+		}
+
+		public List<QueryAnnotation> getAnnotations() {
+			return this.annotations;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		@SuppressWarnings("unchecked")
+		public <T extends BaseConstraintItem> T getSource() {
+			if (collection != null) {
+				return (T) collection;
+			} else if (value != null) {
+				return (T) value;
+			} else if (range != null) {
+				return (T) range;
+			} else if (word != null) {
+				return (T) word;
+			} else if (elementQuery != null) {
+				return (T) elementQuery;
+			} else if (properties != null) {
+				return (T) properties;
+			} else if (custom != null) {
+				return (T) custom;
+			} else if (geoElem != null) {
+				return (T) geoElem;
+			} else if (geoAttrPair != null) {
+				return (T) geoAttrPair;
+			} else if (geoElemPair != null) {
+				return (T) geoElemPair;
+			}
+			return null;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public void setSource(ConstraintSource constraintDefinition) {
+			if (constraintDefinition instanceof QueryCollection) {
+				collection = (QueryCollection) constraintDefinition;
+			} else if (constraintDefinition.getClass() == QueryValue.class) {
+				value = (QueryValue) constraintDefinition;
+			} else if (constraintDefinition.getClass() == QueryWord.class) {
+				word = (QueryWord) constraintDefinition;
+			} else if (constraintDefinition.getClass() == QueryRange.class) {
+				range = (QueryRange) constraintDefinition;
+			} else if (constraintDefinition.getClass() == QueryElementQuery.class) {
+				elementQuery = (QueryElementQuery) constraintDefinition;
+			} else if (constraintDefinition.getClass() == QueryProperties.class) {
+				properties = (QueryProperties) constraintDefinition;
+			} else if (constraintDefinition.getClass() == QueryCustom.class) {
+				custom = (QueryCustom) constraintDefinition;
+			} else if (constraintDefinition.getClass() == QueryGeospatialElement.class) {
+				geoElem = (QueryGeospatialElement) constraintDefinition;
+			} else if (constraintDefinition.getClass() == QueryGeospatialAttributePair.class) {
+				geoAttrPair = (QueryGeospatialAttributePair) constraintDefinition;
+			} else if (constraintDefinition.getClass() == QueryGeospatialElementPair.class) {
+				geoElemPair = (QueryGeospatialElementPair) constraintDefinition;
+			}
+		}
+
+		public QueryConstraint annotate(String xmlAnnotation) {
+			QueryAnnotation annotation = new QueryAnnotation();
+			annotation.add(Utilities.domElement(xmlAnnotation));
+			annotations.add(annotation);
+			return this;
+		}
+
+	}
+
+	/**
+	 * Partial implementation of A ConstraintSource.
+	 * 
+	 * Each constraint in the MarkLogic Search API is of a certain type. This
+	 * class is the root of the class hierarchy of Range, Word,
+	 * Value, and so forth. Note: This partial implementation
+	 * contains convenience methods for helping with
+	 * index definitions, which are not applicable to all constraint types.
+	 * 
+	 */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static abstract class BaseConstraintItem {
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "attribute")
+		private MarkLogicQName attributeReference;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "element")
+		private MarkLogicQName elementReference;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "field")
+		private Field fieldReference;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "json-key")
+		private JsonKey jsonKey;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "namespace-bindings")
+		private ExpressionNamespaceBindings pathIndexBindings;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "path-index")
+		private PathIndex pathIndexReference;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "fragment-scope")
+		private String fragmentScope;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "term-option")
+		private List<String> termOptions;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "weight")
+		private Double weight = null;
+
+		/**
+		 * Construct a new BaseConstraintItem
+		 */
+		public BaseConstraintItem() {
+			this.termOptions = new ArrayList<String>();
+		}
+
+		/**
+		 * Adds a term option to this data source.
+		 * @param termOption A term option.
+		 */
+		public void addTermOption(String termOption) {
+			this.termOptions.add(termOption);
+		}
+
+		/**
+		 * Gets the XML QName referring to an attribute.
+		 * @return The attribute QName.  Returns null if this object does not contain an element-attribute index specification.
+		 */
+		public QName getAttribute() {
+			return attributeReference.asQName();
+		}
+
+		/**
+		 * Gets the XML QName referring to an element.
+		 * @return The element QName.  Returns null if this object does not contain an element-attribute or element index specification.
+		 */
+		public QName getElement() {
+			return elementReference.asQName();
+		}
+
+		/**
+		 * Gets the string representing a path index data source.
+		 * @return The XPath string.  Returns null if this object does not contain a path index specification.
+		 */
+		public String getPath() {
+			if (pathIndexReference != null)
+				return pathIndexReference.getPath();
+			else return null;
+		}
+
+		/**
+		 * Gets the namespace context in scope for a path index configuration.
+		 * @return The namespace context with bindings.  Returns null if this object does not contain a path index specification.
+		 */
+		public NamespaceContext getPathNamespaceBindings() {
+			if (pathIndexBindings == null) return null;
+			else {
+				EditableNamespaceContext context = new EditableNamespaceContext();
+				for (ExpressionNamespaceBinding binding : pathIndexBindings.bindings) {
+					String prefix = binding.getPrefix();
+					String uri = binding.getNamespaceURI();
+					if ("".equals(prefix)) {
+						context.setDefaultNamespaceURI(uri);
+					} else {
+						context.setNamespaceURI(prefix, uri);
+					}
+				}
+				return context;
+			}
+		}
+
+		/**
+		 * Sets the path index namespace bindings.
+		 * @param bindings The namespace bindings.
+		 */
+		protected void setPathIndexNamespaceBindings(
+				ExpressionNamespaceBindings bindings) {
+			pathIndexBindings = bindings;
+		}
+
+		/**
+		 * Gets the path index object that backs this data source.
+		 * @return A PathIndex object containing an XPath expression and namespace bindings.
+		 * Returns null if this object does not contain a path index specification.
+		 */
+		public PathIndex getPathIndex() {
+			return pathIndexReference;
+		}
+		
+		/**
+		 * Gets the name of a field that backs this constraint.
+		 * @return The field name.  Returns null if this is not a field-index-backed constraint.
+		 */
+		public String getFieldName() {
+			if (this.fieldReference != null)
+				return this.fieldReference.getName();
+			else return null;
+		}
+
+		/**
+		 * Gets the name of a json key that backs this constraint.
+		 * @return The field name.  Returns null if this is not a json-key-index-backed constraint.
+		 */
+		public String getJsonKeyName() {
+			return this.jsonKey.getName();
+		}
+
+		/**
+		 * Gets the FragmenScope of this constraint source.
+		 * @return The fragmentScope.  Returns null if this constraint source relies on system default.
+		 */
+		public FragmentScope getFragmentScope() {
+			if (fragmentScope != null) 
+				return FragmentScope.valueOf(fragmentScope.toUpperCase());
+			else return null;
+		}
+
+		/**
+		 * Gets the term options for this constraint source.
+		 * @return The list of term options.
+		 */
+		public List<String> getTermOptions() {
+			return termOptions;
+		}
+
+		/**
+		 * Gets the relative weight assigned to this constraint source.
+		 * @return The weight.  Returns null if not defined.  Undefined weights are interpreted as 1.0.
+		 */
+		public Double getWeight() {
+			return this.weight;
+		}
+
+		/**
+		 * Sets an attribute QName to partially find an element-attribute index.
+		 * @param attribute The attribute QName.  To be meaningful needs setElement to be called as well.
+		 */
+		public void setAttribute(MarkLogicQName attribute) {
+			this.attributeReference = attribute;
+		}
+
+		/**
+		 * Sets an element QName to reference an element.
+		 * @param element The element QName.
+		 */
+		public void setElement(MarkLogicQName element) {
+			this.elementReference = element;
+		}
+
+		/**
+		 * Sets a field to back this constraint source.
+		 * @param field The field object.
+		 */
+		public void setField(Field field) {
+			this.fieldReference = field;
+		}
+
+		/**
+		 * Sets a path index specification for this constraint source.
+		 * @param pathIndex The path index specification.
+		 */
+		public void setPath(PathIndex pathIndex) {
+			this.pathIndexReference = pathIndex;
+		}
+
+		/**
+		 * Sets a json key index specification for this constraint source.
+		 * @param jsonKey The json key.
+		 */
+		public void setJsonKey(JsonKey jsonKey) {
+			this.jsonKey = jsonKey;
+		}
+
+		/**
+		 * Sets a fragment scope for this constraint source.
+		 * @param fragmentScope the fragment scope.
+		 */
+		public void setFragmentScope(FragmentScope fragmentScope) {
+			if (fragmentScope != null) {
+				this.fragmentScope = fragmentScope.toString().toLowerCase();
+			}
+		}
+
+		/**
+		 * Sets the term options for this constraint source.
+		 * @param termOptions A list of term options.
+		 */
+		public void setTermOptions(List<String> termOptions) {
+			this.termOptions = new ArrayList<String>();
+			this.termOptions.addAll(termOptions);
+		}
+
+		/**
+		 * Sets the relative weight for this constraint source.
+		 * @param weight The weight.
+		 */
+		public void setWeight(Double weight) {
+			this.weight = weight;
+		}
+	}
+
+    /**
+     * Partial implemenation of constraint sources that can have facets
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public abstract static class FacetableConstraintConfiguration extends
+			BaseConstraintItem {
+
+		@XmlAttribute
+		private String collation;
+
+		@XmlAttribute(name = "facet")
+		private boolean doFacets;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "facet-option")
+		private List<String> facetOptions;
+
+		@XmlAttribute
+		private QName type;
+
+		public FacetableConstraintConfiguration() {
+			facetOptions = new ArrayList<String>();
+		}
+
+		/**
+		 * Add a facet option to this constraint type
+		 * 
+		 * @param facetOption
+		 */
+		public void addFacetOption(String facetOption) {
+			this.facetOptions.add(facetOption);
+		}
+
+		/**
+		 * Perform facets on this constraint.
+		 * 
+		 * @param doFacets
+		 *            set to true to configure facets, false otherwise.
+		 */
+		public void doFacets(boolean doFacets) {
+			this.doFacets = doFacets;
+		}
+
+		public String getCollation() {
+			return collation;
+		}
+
+		/**
+		 * @return true if this constraint is configured for facets. False
+		 *         otherwise.
+		 */
+		public boolean getDoFacets() {
+			return doFacets;
+		}
+
+		/**
+		 * get the list of facet options.
+		 * 
+		 * @return A list of the facet options for this facetable contstraint.
+		 */
+		public List<String> getFacetOptions() {
+			return facetOptions;
+		}
+
+		public QName getType() {
+			return type;
+		}
+
+		public void setCollation(String collation) {
+			this.collation = collation;
+		}
+
+		public void setDoFacets(boolean doFacets) {
+			this.doFacets = doFacets;
+		}
+
+		public void setFacetOptions(List<String> facetOptions) {
+			this.facetOptions = new ArrayList<String>();
+			for (String option : facetOptions) {
+				this.facetOptions.add(option);
+			}
+		}
+
+		public void setType(QName type) {
+			this.type = type;
+		}
+	}
+
+    /**
+     * Models a value constraint
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public final static class QueryValue extends BaseConstraintItem implements
+			ConstraintSource, TermIndexed, TermSource {
+	}
+
+    /**
+     * A custom constraint.  Custom constraints use XQuery extensions to implement parsing and faceting functionality.
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class QueryCustom extends FacetableConstraintConfiguration implements TermOptions, ConstraintSource, Annotatable<QueryCustom>
+			 {
+
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "finish-facet")
+		private XQueryExtension finishFacet;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "parse")
+		private XQueryExtension parse;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "start-facet")
+		private XQueryExtension startFacet;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
+		private List<QueryAnnotation> annotations;
+		
+		public List<QueryAnnotation> getAnnotations() {
+			return this.annotations;
+		}
+		
+		public QueryCustom annotate(String xmlString) {
+			this.annotations.add(new QueryAnnotation(xmlString));
+			return this;
+		}
+		
+		public QueryCustom(boolean doFacets) {
+			this.doFacets(doFacets);
+		}
+
+		public QueryCustom(boolean doFacets, XQueryExtension parseExtension) {
+			this.doFacets(doFacets);
+			this.parse = parseExtension;
+		}
+
+		QueryCustom() {
+			annotations = new ArrayList<QueryAnnotation>();
+		}
+
+		public XQueryExtension getFinishFacet() {
+			return finishFacet;
+		}
+
+		public XQueryExtension getParse() {
+			return parse;
+		}
+
+		public XQueryExtension getStartFacet() {
+			return startFacet;
+		}
+
+		public void setFinishFacet(XQueryExtension finishFacet) {
+			this.finishFacet = finishFacet;
+		}
+
+		public void setParse(XQueryExtension parse) {
+			this.parse = parse;
+		}
+
+		public void setStartFacet(XQueryExtension startFacet) {
+			this.startFacet = startFacet;
+		}
+
+	}
+
+    /**
+     * Models a range constraint source.
+     *
+     * A QueryRange is a child of a QueryConstraint and contains facet and index source configuration
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public final static class QueryRange extends
+			FacetableConstraintConfiguration implements TupleSource, ConstraintSource, RangeIndexed, TermSource {
+
+		/**
+		 * Configures a range, for use in grouping range index values in facets.
+		 */
+		@XmlAccessorType(XmlAccessType.FIELD)
+		public static class Bucket implements Buckets {
+
+			/**
+			 * The textual label for the bucket.
+			 */
+			@XmlValue
+			private String content;
+			/**
+			 * The low end of the bucket's range. Stands for
+			 * "greater than or equal to".
+			 */
+			@XmlAttribute
+			private String ge;
+			/**
+			 * The high end of the bucket's range. Stands for "less than"
+			 */
+			@XmlAttribute
+			private String lt;
+			/**
+			 * A unique name to reference this bucket.
+			 */
+			@XmlAttribute
+			private String name;
+
+			public String getContent() {
+				return content;
+			}
+
+			public String getGe() {
+				return ge;
+			}
+
+			public String getLt() {
+				return lt;
+			}
+
+			public String getName() {
+				return name;
+			}
+
+			public void setContent(String content) {
+				this.content = content;
+			}
+
+			public void setGe(String ge) {
+				this.ge = ge;
+			}
+
+			public void setLt(String lt) {
+				this.lt = lt;
+			}
+
+			public void setName(String name) {
+				this.name = name;
+			}
+		}
+
+		/**
+		 * Models a bucket on a range constraint whose values are anchored to
+		 * time, and computed based on the current time.
+		 * 
+		 */
+		@XmlAccessorType(XmlAccessType.FIELD)
+		public static class ComputedBucket implements
+				Buckets {
+
+			/**
+			 * Defines values for use in computed buckets anchored to time.
+			 * 
+			 */
+			public static enum AnchorValue {
+
+				NOW, START_OF_DAY, START_OF_MONTH, START_OF_YEAR;
+				static AnchorValue fromXmlString(String xmlString) {
+					return AnchorValue.valueOf(xmlString.toUpperCase().replace(
+							"-", "_"));
+				}
+
+				String toXmlString() {
+					return this.toString().toLowerCase().replace("_", "-");
+				}
+
+			}
+
+			/**
+			 * A value for anchoring this computed bucket.
+			 */
+			@XmlAttribute(name = "anchor")
+			private String anchor;
+
+			/**
+			 * The low end of the bucket's range. Stands for
+			 * "greater than or equal to".
+			 */
+			@XmlAttribute
+			private String ge;
+
+			/**
+			 * A value for anchoring the "greate than or equal" value for this
+			 * computed bucket.
+			 */
+			@XmlAttribute(name = "ge-anchor")
+			private String geAnchor;
+
+			/**
+			 * The textual label for the bucket.
+			 */
+			@XmlValue
+			private String label;
+
+			/**
+			 * The high end of the bucket's range. Stands for "less than"
+			 */
+			@XmlAttribute
+			private String lt;
+
+			/**
+			 * A value for anchoring the "less than" value for this computed
+			 * bucket.
+			 */
+			@XmlAttribute(name = "lt-anchor")
+			private String ltAnchor;
+
+			/**
+			 * A unique name to reference this bucket.
+			 */
+			@XmlAttribute
+			private String name;
+
+			
+			public String getAnchor() {
+				return anchor;
+			}
+
+			public AnchorValue getAnchorValue() {
+				return AnchorValue.fromXmlString(anchor);
+			}
+
+			public String getGe() {
+				return ge;
+			}
+
+			public String getGeAnchor() {
+				return geAnchor;
+			}
+
+			public String getLabel() {
+				return label;
+			}
+
+			public String getLt() {
+				return lt;
+			}
+
+			public String getLtAnchor() {
+				return ltAnchor;
+			}
+
+			public String getName() {
+				return name;
+			}
+
+			public void setAnchor(AnchorValue anchorValue) {
+				this.anchor = anchorValue.toXmlString();
+			}
+
+			public void setGe(String ge) {
+				this.ge = ge;
+			}
+
+			public void setLabel(String content) {
+				this.label = content;
+			}
+
+			public void setLt(String lt) {
+				this.lt = lt;
+			}
+
+			public void setName(String name) {
+				this.name = name;
+			}
+
+		}
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "bucket")
+		private List<Bucket> buckets;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "computed-bucket")
+		private List<ComputedBucket> computedBuckets;
+
+		public QueryRange() {
+			buckets = new ArrayList<Bucket>();
+			computedBuckets = new ArrayList<ComputedBucket>();
+		}
+
+		/**
+		 * Add a bucket to this RangeOption's buckets.
+		 * 
+		 * @param bucket
+		 *            a Bucket object for use with this RangeOption
+		 */
+		public void addBucket(Bucket bucket) {
+			buckets.add(bucket);
+		}
+
+		public QueryRange addComputedBucket(ComputedBucket computedBucket) {
+			this.computedBuckets.add(computedBucket);
+			return this;
+		}
+
+		/**
+		 * remove all computed and defined buckets from a RangeOption
+		 */
+		public void deleteBuckets() {
+			this.computedBuckets = new ArrayList<ComputedBucket>();
+			this.buckets = new ArrayList<Bucket>();
+		}
+
+		/**
+		 * @return the list of buckets for this RangeOption
+		 */
+		public List<Bucket> getBuckets() {
+			return buckets;
+		}
+
+		/**
+		 * @return this RangeOptions's List of ComputedBuckets
+		 */
+		public List<ComputedBucket> getComputedBuckets() {
+			return computedBuckets;
+		}
+
+		public void addBuckets(List<Buckets> buckets) {
+			if (buckets != null) {
+				for (Buckets b : buckets) {
+					if (buckets.get(0).getClass() == Bucket.class) {
+						addBucket((Bucket) b);
+
+					} else {
+						addComputedBucket((ComputedBucket) b);
+					}
+				}
+			}
+		}
+ 		
+ 		
+		public void build(QueryTuples tuples) {
+			tuples.addRange(this);
+		}
+
+		
+		public void build(QueryValues values) {
+			values.setRange(this);
+		}
+
+	}
+
+    /**
+     * Models a word constraint
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public final static class QueryWord extends BaseConstraintItem implements
+			TermSource, ConstraintSource, TermIndexed {
+
+	}
+
+	/**
+	 * Models a constraint on collection URIs.
+	 */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class QueryCollection extends
+			FacetableConstraintConfiguration implements
+			TupleSource, ConstraintSource {
+
+		/**
+		 * This value is removed from collectionOption URIs when creating facet
+		 * labels.
+		 */
+		@XmlAttribute
+		private String prefix;
+
+		/**
+		 * 
+		 * @return The prefix to be removed from collectionOption URIs in
+		 *         generating facet labels.
+		 */
+
+		public String getPrefix() {
+			return prefix;
+		}
+
+		/**
+		 * Set the collectionOption prefix, returning the modified
+		 * CollectionOption object.
+		 * 
+		 * @param prefix
+		 *            The prefix to be removed from collectionOption URIs in
+		 *            generating facet labels.
+		 */
+		public void setPrefix(String prefix) {
+			this.prefix = prefix;
+		}
+
+		
+		public void build(QueryTuples tuples) {
+			tuples.setCollection(this);
+		}
+
+		
+		public void build(QueryValues values) {
+			values.setCollection(this);
+		}
+
+	}
+
+	/**
+	 * Corresponds to the &lt;properties&gt; constraint type in the MarkLogic
+	 * Search API
+	 * 
+	 */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public final static class QueryProperties extends BaseConstraintItem implements ConstraintSource
+			 {
+
+		public QueryProperties() {
+		}
+
+	}
+
+    /**
+     * Models an Element Query constraint
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class QueryElementQuery extends BaseConstraintItem implements ConstraintSource {
+
+		@XmlAttribute
+		private String name;
+
+		@XmlAttribute
+		private String ns;
+
+		public String getName() {
+			return name;
+		}
+
+		public String getNs() {
+			return ns;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public void setNs(String ns) {
+			this.ns = ns;
+		}
+
+	}
+
+    /**
+     * Partial implementation of Geospatial constraint types
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	abstract static class QueryGeospatial extends BaseConstraintItem implements ConstraintSource {
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "facet-option")
+		private List<String> facetOptions;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-option")
+		private List<String> geoOptions;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "heatmap")
+		private Heatmap heatmap;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "lat")
+		private MarkLogicQName latitude;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "lon")
+		private MarkLogicQName longitude;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "parent")
+		private MarkLogicQName parent;
+
+		public QueryGeospatial() {
+			this.geoOptions = new ArrayList<String>();
+			this.facetOptions = new ArrayList<String>();
+
+		}
+
+		/**
+		 * Add a facet option to this constraint type
+		 * 
+		 * @param facetOption
+		 */
+		public void addFacetOption(String facetOption) {
+			this.facetOptions.add(facetOption);
+		}
+
+		public void addGeoOption(String geoOption) {
+			this.geoOptions.add(geoOption);
+		}
+
+		public List<String> getFacetOptions() {
+			return facetOptions;
+		}
+
+		public Heatmap getHeatmap() {
+			return heatmap;
+		}
+
+		public MarkLogicQName getLatitude() {
+			return latitude;
+		}
+
+		public MarkLogicQName getLongitude() {
+			return longitude;
+		}
+
+		public MarkLogicQName getParent() {
+			return parent;
+		}
+
+		public void setGeoOptions(List<String> geoOptions) {
+			this.geoOptions = geoOptions;
+		}
+
+		public void setHeatmap(Heatmap heatmap) {
+			this.heatmap = heatmap;
+		}
+
+		public void setLatitude(MarkLogicQName latitude) {
+			this.latitude = latitude;
+		}
+
+		public void setLongitude(MarkLogicQName longitude) {
+			this.longitude = longitude;
+		}
+
+		public void setParent(MarkLogicQName parent) {
+			this.parent = parent;
+		}
+
+	}
+    /**
+     * Models a geospatial index with coordinates stored in a pair of attributes
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class QueryGeospatialAttributePair extends QueryGeospatial {
+
+	}
+
+    /**
+     * Models a geospatial index with coordinates stored in a single element.
+     * 
+     * By default coordinates are stored as latitude,longitude points.  To reverse
+     * the coordinate order, add the geo-option "long-lat-points" to the 
+     * query options configuration.
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class QueryGeospatialElement extends QueryGeospatial {
+
+	}
+
+    /**
+     * Models a geospatial index with coordinates stored in a pair of elements.
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class QueryGeospatialElementPair extends QueryGeospatial {
+
+	}
+
+    /**
+     * Models a two-dimensional grid used to categorize data along two dimenstions.
+     * Use with geographic indexes
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class Heatmap {
+		@XmlAttribute
+		private double e;
+		@XmlAttribute
+		private int latdivs;
+		@XmlAttribute
+		private int londivs;
+		@XmlAttribute
+		private double n;
+		@XmlAttribute
+		private double s;
+		@XmlAttribute
+		private double w;
+
+		public double getE() {
+			return e;
+		}
+
+		public int getLatdivs() {
+			return latdivs;
+		}
+
+		public int getLondivs() {
+			return londivs;
+		}
+
+		public double getN() {
+			return n;
+		}
+
+		public double getS() {
+			return s;
+		}
+
+		public double getW() {
+			return w;
+		}
+
+		public Heatmap setE(double e) {
+			this.e = e;
+			return this;
+		}
+
+		public Heatmap setLatdivs(int latdivs) {
+			this.latdivs = latdivs;
+			return this;
+		}
+
+		public Heatmap setLondivs(int londivs) {
+			this.londivs = londivs;
+			return this;
+		}
+
+		public Heatmap setN(double n) {
+			this.n = n;
+			return this;
+		}
+
+		public Heatmap setS(double s) {
+			this.s = s;
+			return this;
+		}
+
+		public Heatmap setW(double w) {
+			this.w = w;
+			return this;
+		}
+	}
+
+
+
+    /**
+     * Models a searchable expression.  
+     * This expression controls the scope over which the search configuration is applied.  Default is an entire database.
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class QuerySearchableExpression {
+
+		@XmlTransient
+		private ExpressionNamespaceBinding[] bindings = null;
+
+		@XmlValue
+		private String path = null;
+
+		/**
+		 * Construct a QuerySearchableExpression
+		 * 
+		 */
+		public QuerySearchableExpression() {
+			
+		}
+		
+        /**
+         * Construct a QuerySearchableExpression.
+         * @param path The XPath expression.
+         * @param bindings Zero or more bindings of prefix to namespace URI, to support the prefixes in the XPath expression.
+         */
+		public QuerySearchableExpression(String path,
+				ExpressionNamespaceBinding... bindings) {
+			this.path = path;
+			this.bindings = bindings;
+		}
+
+        /**
+         * Gets the String xPath expression
+         * @return the XPath expression, as a string.
+         */
+		public String getPath() {
+			return path;
+		}
+
+        /** 
+         * Gets the array of namespace to prefix bindings
+         * @return the array of namespace bindings.
+         */
+		public ExpressionNamespaceBinding[] getBindings() {
+			return bindings;
+		}
+
+	}
+
+
+	/**
+	 * Wraps a cts:query element to be used in addition to other
+	 * query configuration options, as an ANDed query.
+	 */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class QueryAdditionalQuery {
+
+		@XmlAnyElement
+		private org.w3c.dom.Element element;
+
+		/**
+		 * Construct a QueryAdditionalQuery.
+		 */
+		public QueryAdditionalQuery() {
+		}
+
+		/**
+		 * Construct a QueryAdditionalQuery from an existing dom Element.
+		 * @param ctsQuery a dom element in the http://marklogic.com/cts namespace
+		 */
+		public QueryAdditionalQuery(org.w3c.dom.Element ctsQuery) {
+			element = ctsQuery;
+		}
+
+		/**
+		 * Get the element wrapped in this object, as a dom Element.
+		 * @return a dom Element representing the additional query.
+		 */
+		public org.w3c.dom.Element getValue() {
+			return element;
+		}
+
+	}
+
+
+    /**
+     * Models a Path Index specification.
+     *
+     * Path Indexes refer to nodes in the database using XPath expressions and a set of namespace bindings.
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class PathIndex {
+		@XmlTransient
+		private ExpressionNamespaceBinding[] bindings = null;
+
+		@XmlValue
+		private String path = null;
+
+		public PathIndex() {
+		}
+
+		public PathIndex(String path) {
+			this.path = path;
+		}
+
+		public PathIndex(String path,
+				ExpressionNamespaceBinding... bindings) {
+			this.path = path;
+			this.bindings = bindings;
+		}
+
+		public String getPath() {
+			return path;
+		}
+
+		public ExpressionNamespaceBinding[] getBindings() {
+			return bindings;
+		}
+
+	}
+
+
+    /**
+     * Models a JSON Key. 
+     *
+     * JSON keys refer to keys in JSON data structures by name.
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class JsonKey implements MetadataExtract {
+
+		@XmlValue
+		private String name;
+
+		public JsonKey() {
+
+		}
+
+		public JsonKey(String name) {
+			this.name = name;
+		}
+
+
+		public String getName() {
+			return name;
+		}
+
+		public void build(QueryExtractMetadata extractMetadata) {
+			extractMetadata.getJsonKeys().add(this);
+		}
+
+		public void build(QueryValues values) {
+			values.setJsonKey(this);
+		}
+
+		public void build(QueryTuples values) {
+			values.addJsonKey(this);
+		}
+
+
+	}
+
+    /**
+     * Models a field.
+     *
+     * Fields are a MarkLogic server-side object to refer to sets of elements and attributes.
+     * They are referenced by name.
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class Field implements TupleSource {
+
+		@XmlAttribute
+		private String name;
+
+		public Field() {
+
+		}
+
+		public Field(String name) {
+			this.name = name;
+		}
+
+
+		public void build(QueryTuples tuples) {
+			tuples.addField(this);
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public void build(Indexed indexable) {
+			indexable.setField(this);
+		}
+		
+		public void build(QueryValues values) {
+			values.setField(this);
+		}
+		
+	}
+
+    /**
+     * Enumeration of the two possibilities for Fragment scope.
+     */
+	public enum FragmentScope {
+        DOCUMENTS, PROPERTIES;
+	}
+
+	
+	@XmlAccessorType(XmlAccessType.FIELD)
+    /**
+     * Models specification for extracting document metadata in search results.
+     *
+     * Can contain ConstraintValue, AttributeValue, ElementValue, or JSonKey
+     */ 
+	public static class QueryExtractMetadata {
+
+		@XmlElement(namespace=SEARCH_NS, name="qname")
+		private List<AttributeOrElementValue> qnames;
+
+
+		@XmlElement(namespace=SEARCH_NS, name="constraint-value")
+		private List<ConstraintValue> constraintValues;
+
+
+		@XmlElement(namespace=SEARCH_NS, name="json-key")
+		private List<JsonKey> jsonKeys;
+
+
+		public QueryExtractMetadata() {
+			this.qnames = new ArrayList<AttributeOrElementValue>();
+			this.constraintValues = new ArrayList<ConstraintValue>();
+			this.jsonKeys = new ArrayList<JsonKey>();
+
+		}
+
+		public void addConstraintReference(ConstraintValue constraintValue) {
+			this.constraintValues.add(constraintValue);
+		}
+
+		public List<AttributeOrElementValue> getQNames() {
+			return this.qnames;
+		}
+
+		public List<ConstraintValue> getConstraintValues() {
+			return this.constraintValues;
+		}
+
+		public List<JsonKey> getJsonKeys() {
+			return this.jsonKeys;
+		}
+	}
+
+    /**
+     * Models a QName, as encoded with attributes for several parts of the Search API
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class MarkLogicQName {
+
+		@XmlAttribute
+		private String name;
+		@XmlAttribute
+		private String ns;
+
+		public MarkLogicQName() {
+
+		}
+
+		public MarkLogicQName(String ns, String name) {
+			if (ns == null) {
+				this.ns = "";
+			} else {
+				this.ns = ns;
+			}
+			this.name = name;
+		}
+
+		public QName asQName() {
+			return new QName(getNs(), getName());
+		}
+
+
+		public String getName() {
+			return name;
+		}
+
+		public String getNs() {
+			return ns;
+		}
+
+
+	}
+
+    /**
+     * Wraps access to attributes and elements in one superclass.
+     *
+     * Implements all of the fields and methods in the subclasses.
+     * Used with QueryExtractMetadata.
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class AttributeOrElementValue {
+
+		@XmlAttribute(name = "elem-ns")
+		private String elemNs;
+
+		@XmlAttribute(name = "attr-ns")
+		private String attrNs;
+
+		@XmlAttribute(name = "elem-name")
+		private String elemName;
+
+		@XmlAttribute(name = "attr-name")
+		private String attrName;
+
+		public String getElemNs() {
+			return elemNs;
+		}
+
+		public void setElemNs(String elem_ns) {
+			this.elemNs = elem_ns;
+		}
+
+		public String getAttrNs() {
+			return attrNs;
+		}
+
+		public void setAttrNs(String attr_ns) {
+			this.attrNs = attr_ns;
+		}
+
+		public String getElemName() {
+			return elemName;
+		}
+
+		public void setElemName(String elem) {
+			this.elemName = elem;
+		}
+
+		public String getAttrName() {
+			return this.attrName;
+		}
+
+		public void setAttrName(String attr) {
+			this.attrName = attr;
+		}
+
+		public void build(QueryExtractMetadata extractMetadata) {
+			extractMetadata.getQNames().add(this);
+		}
+	}
+
+    /**
+     * Models access to an element by QName for use in metadata extraction
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static final class ElementValue extends AttributeOrElementValue implements MetadataExtract {
+		
+	}
+	
+    /**
+     * Models access to an attribute by QName for use in metadata extraction
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class AttributeValue extends AttributeOrElementValue implements MetadataExtract {
+
+	}
+
+    /**
+     * Models access to values returned by a constraint, by constraint name.
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class ConstraintValue implements MetadataExtract {
+
+		public ConstraintValue() {
+
+		}
+
+		public ConstraintValue(String constraintReference) {
+			this.ref = constraintReference;
+		}
+
+		@XmlAttribute
+		private String ref;
+
+		
+		public void build(QueryExtractMetadata extractMetadata) {
+			extractMetadata.addConstraintReference(this);
+		}
+
+		public String getRef() {
+			return ref;
+		}
+
+		public void setRef(String ref) {
+			this.ref = ref;
+		}
+
+	}
+
+
+    /**
+     * Models annotations for search API documents
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class QueryAnnotation 
+			{
+
+		@XmlAnyElement
+		private List<org.w3c.dom.Element> annotations;
+
+		public QueryAnnotation() {
+			annotations = new ArrayList<org.w3c.dom.Element>();
+		}
+		
+		public QueryAnnotation(String xmlString) {
+			annotations = new ArrayList<org.w3c.dom.Element>();
+			annotations.add(Utilities.domElement(xmlString));
+		}
+		
+		public void add(org.w3c.dom.Element value) {
+			this.annotations.add(value);
+		}
+
+		public org.w3c.dom.Element get(int i) {
+			return annotations.get(i);
+		}
+
+		public List<org.w3c.dom.Element> getAll() {
+			return annotations;
+		}
+
+	}		
+
+
+
+
+
+    /**
+     * Models a source for calls to the search:suggest XQuery function.
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class QuerySuggestionSource implements Annotatable<QuerySuggestionSource>  {
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
+		private List<QueryAnnotation> annotations;
+		
+		public List<QueryAnnotation> getAnnotations() {
+			return this.annotations;
+		}
+		
+		public QuerySuggestionSource annotate(String xmlString) {
+			this.annotations.add(new QueryAnnotation(xmlString));
+			return this;
+		}
+
+		
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "collection")
+		private QueryCollection collection;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "custom")
+		private QueryCustom custom;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "element-query")
+		private QueryElementQuery elementQuery;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-attrName-pair")
+		private QueryGeospatialAttributePair geoAttrPair;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-elemName")
+		private QueryGeospatialElement geoElem;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-elemName-pair")
+		private QueryGeospatialElementPair geoElemPair;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "properties")
+		private QueryProperties properties;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "range")
+		private QueryRange range;
+
+		@XmlAttribute
+		private String ref;
+
+		@XmlElement(name = "suggestion-option")
+		private List<String> suggestionOptions;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "value")
+		private QueryValue value;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "word")
+		private QueryWord word;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "word-lexicon")
+		private WordLexicon wordLexicon;
+
+		public QuerySuggestionSource() {			
+			annotations = new ArrayList<QueryAnnotation>();
+			suggestionOptions = new ArrayList<String>();
+		}
+
+		
+		public void addSuggestionOption(String suggestionOption) {
+			this.suggestionOptions.add(suggestionOption);
+		}
+
+
+		public void deleteSuggestionOptions() {
+			suggestionOptions = new ArrayList<String>();
+		}
+
+		
+		@SuppressWarnings("unchecked")
+		public <T extends BaseConstraintItem> T getConstraintConfiguration() {
+			if (collection != null) {
+				return (T) collection;
+			} else if (value != null) {
+				return (T) value;
+			} else if (range != null) {
+				return (T) range;
+			} else if (word != null) {
+				return (T) word;
+			} else if (elementQuery != null) {
+				return (T) elementQuery;
+			} else if (properties != null) {
+				return (T) properties;
+			} else if (custom != null) {
+				return (T) custom;
+			} else if (geoElem != null) {
+				return (T) geoElem;
+			} else if (geoAttrPair != null) {
+				return (T) geoAttrPair;
+			} else if (geoElemPair != null) {
+				return (T) geoElemPair;
+			}
+			return null;
+		}
+
+		public String getRef() {
+			return this.ref;
+		}
+
+		public List<String> getSuggestionOptions() {
+			return suggestionOptions;
+		}
+
+		public WordLexicon getWordLexicon() {
+			return wordLexicon;
+		}
+
+		public <T extends BaseConstraintItem> void setImplementation(
+				T constraintDefinition) {
+			if (constraintDefinition.getClass() == QueryCollection.class) {
+				collection = (QueryCollection) constraintDefinition;
+			} else if (constraintDefinition.getClass() == QueryValue.class) {
+				value = (QueryValue) constraintDefinition;
+			} else if (constraintDefinition.getClass() == QueryWord.class) {
+				word = (QueryWord) constraintDefinition;
+			} else if (constraintDefinition.getClass() == QueryRange.class) {
+				range = (QueryRange) constraintDefinition;
+			} else if (constraintDefinition.getClass() == QueryElementQuery.class) {
+				elementQuery = (QueryElementQuery) constraintDefinition;
+			} else if (constraintDefinition.getClass() == QueryProperties.class) {
+				properties = (QueryProperties) constraintDefinition;
+			} else if (constraintDefinition.getClass() == QueryCustom.class) {
+				custom = (QueryCustom) constraintDefinition;
+			} else if (constraintDefinition.getClass() == QueryGeospatialElement.class) {
+				geoElem = (QueryGeospatialElement) constraintDefinition;
+			} else if (constraintDefinition.getClass() == QueryGeospatialAttributePair.class) {
+				geoAttrPair = (QueryGeospatialAttributePair) constraintDefinition;
+			} else if (constraintDefinition.getClass() == QueryGeospatialElementPair.class) {
+				geoElemPair = (QueryGeospatialElementPair) constraintDefinition;
+			}
+		}
+
+		public void setRef(String constraintReference) {
+			this.ref = constraintReference;
+		}
+
+		public void setWordLexicon(WordLexicon wordLexicon) {
+			this.wordLexicon = wordLexicon;
+		}
+	}
+    /**
+     * Models the default source for calls to the search:suggest XQuery function.
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public final static class QueryDefaultSuggestionSource extends
+			QuerySuggestionSource  {
+
+		public QueryDefaultSuggestionSource() {
+			super();
+		}
+	}
+
+    /**
+     * Models the word lexicon, as a source of tems for suggestions.
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class WordLexicon {
+
+		@XmlAttribute
+		private String collation;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "fragment-scope")
+		private FragmentScope fragmentScope;
+
+		public String getCollation() {
+			return collation;
+		}
+
+		public FragmentScope getFragmentScope() {
+			return fragmentScope;
+		}
+
+		public void setCollation(String collation) {
+			this.collation = collation;
+		}
+
+		public void setFragmentScope(FragmentScope fragmentScope) {
+			this.fragmentScope = fragmentScope;
+		}
+	}
+
+
+
+
+    /**
+     * Models an extension to the default grammar for search strings.
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static final class QueryGrammar {
+
+		@XmlAccessorType(XmlAccessType.FIELD)
+		public static final class QueryJoiner  {
+
+			public enum Comparator {
+				EQ, GE, GT, LE, LT, NE;
+			}
+
+			public enum JoinerApply {
+
+				CONSTRAINT, INFIX, NEAR2, PREFIX;
+
+				static JoinerApply fromXMLString(String xmlString) {
+					return JoinerApply.valueOf(xmlString.toUpperCase().replace(
+							"-", "_"));
+				}
+
+				String toXMLString() {
+					return this.toString().toLowerCase().replace("_", "-");
+				}
+			}
+
+			@XmlAttribute
+			private String apply;
+
+			@XmlAttribute
+			private String compare;
+
+			@XmlAttribute
+			private int consume;
+
+			@XmlAttribute
+			private String delimiter;
+			@XmlAttribute
+			private QName element;
+			@XmlValue
+			private String joinerText;
+			@XmlAttribute
+			private String options;
+			@XmlAttribute
+			private int strength;
+			@XmlAttribute
+			private String tokenize;
+
+			public QueryJoiner() {
+			}
+
+			public QueryJoiner(String joinerText) {
+				this.joinerText = joinerText;
+			}
+
+			public JoinerApply getApply() {
+				return JoinerApply.valueOf(apply.toUpperCase());
+			};
+
+			public Comparator getComparator() {
+				return Comparator.valueOf(this.compare);
+			}
+
+			public int getConsume() {
+				return consume;
+			}
+
+			public String getDelimiter() {
+				return delimiter;
+			}
+
+			public QName getElement() {
+				return element;
+			}
+
+			public String getJoinerText() {
+				return joinerText;
+			}
+
+			public String getOptions() {
+				return options;
+			}
+
+			public int getStrength() {
+				return strength;
+			}
+
+			public Tokenize getTokenize() {
+				return Tokenize.valueOf(tokenize.toUpperCase());
+			}
+
+			public void setApply(JoinerApply apply) {
+				this.apply = apply.toXMLString();
+			}
+
+			public void setApply(String apply) {
+				this.apply = apply;
+			}
+
+			public void setCompare(Comparator compare) {
+				this.compare = compare.toString();
+			}
+
+			public void setConsume(int consume) {
+				this.consume = consume;
+			}
+
+			public void setElement(QName qName) {
+				this.element = qName;
+			}
+
+			public void setStrength(int strength) {
+				this.strength = strength;
+			}
+
+			public void setTokenize(Tokenize tokenize) {
+				this.tokenize = tokenize.toXMLString();
+			}
+
+
+		}
+
+		@XmlAccessorType(XmlAccessType.FIELD)
+		public final static class QueryStarter 
+				 {
+
+			public enum StarterApply {
+
+				GROUPING, PREFIX;
+
+				static StarterApply fromXMLString(String xmlString) {
+					return StarterApply.valueOf(xmlString.toUpperCase()
+							.replace("-", "_"));
+				}
+
+				String toXMLString() {
+					return this.toString().toLowerCase().replace("_", "-");
+				}
+			}
+
+			@XmlAttribute
+			private String apply;
+			@XmlAttribute
+			private String delimiter;
+			@XmlAttribute
+			private QName element;
+			@XmlAttribute
+			private String options;
+			@XmlValue
+			private String starterText;
+			@XmlAttribute
+			private int strength;
+
+			@XmlAttribute
+			private String tokenize;
+
+			public QueryStarter() {
+
+			}
+
+			public QueryStarter(String starterText) {
+				this.starterText = starterText;
+			}
+
+			public StarterApply getApply() {
+				return StarterApply.fromXMLString(apply);
+			}
+
+			public String getDelimiter() {
+				return delimiter;
+			}
+
+			public QName getElement() {
+				return element;
+			}
+
+			public String getOptions() {
+				return options;
+			}
+
+			public String getStarterText() {
+				return starterText;
+			}
+
+			public int getStrength() {
+				return strength;
+			}
+
+			public Tokenize getTokenize() {
+				return Tokenize.fromXMLString(tokenize);
+			}
+
+			public void setApply(StarterApply apply) {
+				this.apply = apply.toXMLString();
+			}
+
+			public void setApply(String apply) {
+				this.apply = apply;
+			}
+
+			public void setDelimiter(String delimiter) {
+				this.delimiter = delimiter;
+			}
+
+			public void setElement(QName element) {
+				this.element = element;
+			}
+
+			public void setOptions(String options) {
+				this.options = options;
+			}
+
+			public void setStrength(int strength) {
+				this.strength = strength;
+			}
+
+			public void setStarterText(String starterText) {
+				this.starterText = starterText;
+			}
+
+			public void setTokenize(String tokenize) {
+				this.tokenize = tokenize;
+			}
+
+			
+		}
+
+		public enum Tokenize {
+
+			DEFAULT, WORD;
+
+			static Tokenize fromXMLString(String xmlString) {
+				return Tokenize.valueOf(xmlString.toUpperCase().replace("-",
+						"_"));
+			}
+
+			String toXMLString() {
+				return this.toString().toLowerCase().replace("_", "-");
+			}
+
+		}
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "implicit")
+		private QueryAdditionalQuery implicit;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "joiner")
+		private List<QueryJoiner> joiners;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "quotation")
+		private String quotation;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "starter")
+		private List<QueryStarter> starters;
+
+		public QueryGrammar() {
+			joiners = new ArrayList<QueryJoiner>();
+			starters = new ArrayList<QueryStarter>();
+		}
+
+		public void addJoiner(QueryJoiner joiner) {
+			this.joiners.add(joiner);
+		}
+
+		public void addStarter(QueryStarter starter) {
+			this.starters.add(starter);
+		}
+
+		public org.w3c.dom.Element getImplicit() {
+			return implicit.getValue();
+		}
+
+		public List<QueryJoiner> getJoiners() {
+			return joiners;
+		}
+		
+		public void setJoiners(List<QueryJoiner> joiners) {
+			this.joiners = joiners;
+		}
+
+		public String getQuotation() {
+			return quotation;
+		}
+
+		public void setStarters(List<QueryStarter> starters) {
+			this.starters = starters;
+		}
+		public List<QueryStarter> getStarters() {
+			return starters;
+		}
+
+		public void setImplicit(org.w3c.dom.Element implicit) {
+			this.implicit = new QueryAdditionalQuery(implicit);
+		}
+
+		public void setQuotation(String quotation) {
+			this.quotation = quotation;
+		}
+	}
+
+	/**
+	 * Represents how query terms are to be combined.
+	 */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class QueryOperator  implements Annotatable<QueryOperator> 
+			 {
+
+		@XmlAttribute
+		private String name;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "state")
+		private List<QueryState> states;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
+		private List<QueryAnnotation> annotations;
+		
+		public List<QueryAnnotation> getAnnotations() {
+			return this.annotations;
+		}
+		
+		public QueryOperator annotate(String xmlString) {
+			this.annotations.add(new QueryAnnotation(xmlString));
+			return this;
+		}
+		
+		public QueryOperator() {
+			annotations = new ArrayList<QueryAnnotation>();
+			states = new ArrayList<QueryState>();
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public List<QueryState> getStates() {
+			return states;
+		}
+
+		public void addState(QueryState state) {
+			states.add(state);
+		}
+		
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public QueryState getState(String name) {
+			for (QueryState state : getStates()) {
+				if (state.getName().equals(name)) {
+					return state;
+				}
+			}
+			return null;
+		}
+	}
+
+    /**
+     * Models a named state to be triggered by inclusion of this name in an operator search string
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public final static class QueryState 
+			 {
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "additional-query")
+		private QueryAdditionalQuery additionalQuery;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "debug")
+		private Boolean debug;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "forest")
+		private List<Long> forests;
+
+		@XmlAttribute(name = "name")
+		private String name;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "page-length")
+		private Long pageLength;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "quality-weight")
+		private Double qualityWeight;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "namespace-bindings")
+		private ExpressionNamespaceBindings searchableExpressionBindings;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "searchable-expression")
+		private QuerySearchableExpression searchableExpression;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "search-option")
+		private List<String> searchOptions;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "sort-order")
+		private List<QuerySortOrder> sortOrders;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "transform-results")
+		private QueryTransformResults transformResults;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
+		private List<QueryAnnotation> annotations;
+		
+		public List<QueryAnnotation> getAnnotations() {
+			return this.annotations;
+		}
+		
+		public QueryState annotate(String xmlString) {
+			this.annotations.add(new QueryAnnotation(xmlString));
+			return this;
+		}
+
+		public QueryState() {
+			sortOrders = new ArrayList<QuerySortOrder>();
+		}
+
+		public void addForest(Long forest) {
+			if (forests == null) {
+				forests = new ArrayList<Long>();
+			}
+			this.forests.add(forest);
+		}
+
+
+		public void addSortOrder(QuerySortOrder sortOrder) {
+			sortOrders.add(sortOrder);
+		}
+
+		public void deleteSortOrders() {
+			sortOrders = new ArrayList<QuerySortOrder>();
+		}
+
+		public org.w3c.dom.Element getAdditionalQuery() {
+			return additionalQuery.getValue();
+		}
+
+		public Boolean getDebug() {
+			return debug;
+		}
+
+		public List<Long> getForests() {
+			return forests;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public Long getPageLength() {
+			return pageLength;
+		}
+
+		public Double getQualityWeight() {
+			return qualityWeight;
+		}
+
+		public QuerySearchableExpression getSearchableExpression() {
+			return searchableExpression;
+		}
+
+		public NamespaceContext getSearchableExpressionNamespaceBindings() {
+			EditableNamespaceContext context = new EditableNamespaceContext();
+			for (ExpressionNamespaceBinding binding : searchableExpressionBindings.bindings) {
+				String prefix = binding.getPrefix();
+				String uri = binding.getNamespaceURI();
+				if ("".equals(prefix)) {
+					context.setDefaultNamespaceURI(uri);
+				} else {
+					context.setNamespaceURI(prefix, uri);
+				}
+			}
+
+			return context;
+		}
+
+		public List<String> getSearchOptions() {
+			return searchOptions;
+		}
+
+		public List<QuerySortOrder> getSortOrders() {
+			return sortOrders;
+		}
+
+		public QueryTransformResults getTransformResultsOption() {
+			return transformResults;
+		}
+
+		public QueryState withAdditionalQuery(QueryAdditionalQuery additionalQuery) {
+			this.additionalQuery = additionalQuery;
+			return this;
+		}
+
+		public QueryState withAdditionalQuery(org.w3c.dom.Element element) {
+			additionalQuery = new QueryAdditionalQuery(element);
+			return this;
+		}
+
+		public void setDebug(Boolean debug) {
+			this.debug = debug;
+		}
+
+		public QueryState withForests(List<Long> forests) {
+			this.forests = forests;
+			return this;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public QueryState withPageLength(Long pageLength) {
+			this.pageLength = pageLength;
+			return this;
+		}
+
+		public QueryState withQualityWeight(Double qualityWeight) {
+			this.qualityWeight = qualityWeight;
+			return this;
+		}
+
+		public QueryState withSearchableExpression(QuerySearchableExpression querySearchableExpression) {
+			this.searchableExpression = querySearchableExpression;
+			return this;
+		}
+
+		public QueryState withSearchOptions(List<String> searchOptions) {
+			this.searchOptions = searchOptions;
+			return this;
+		}
+
+		public QueryState withSortOrders(QuerySortOrder... sortOrders) {
+			this.sortOrders = Arrays.asList(sortOrders);
+			return this;
+		}
+
+		public QueryState withTransformResults(
+				QueryTransformResults transformResults) {
+			this.transformResults= transformResults;
+			return this;
+		}
+	}
+
+    /**
+     * Models criteria for sorting results.
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class QuerySortOrder  implements Indexed, Annotatable<QuerySortOrder> 
+			 {
+
+		public enum Direction  {
+
+			ASCENDING, DESCENDING;
+
+			static Direction fromXMLString(String xmlString) {
+				return Direction.valueOf(xmlString.toUpperCase().replace("-",
+						"_"));
+			}
+
+			String toXMLString() {
+				return this.toString().toLowerCase().replace("_", "-");
+			}
+		}
+
+		public enum Score  {
+			YES;
+
+		};
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "attribute")
+		private MarkLogicQName attributeReference;
+
+		@XmlAttribute
+		private String collation;
+
+		@XmlAttribute
+		private String direction;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "element")
+		private MarkLogicQName elementReference;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "field")
+		private Field fieldReference;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "json-key")
+		private JsonKey jsonKey;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "score")
+		private String score;
+
+		@XmlAttribute
+		private QName type;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
+		private List<QueryAnnotation> annotations;
+		
+		public QuerySortOrder() {
+			annotations = new ArrayList<QueryAnnotation>();
+		}
+		
+		public List<QueryAnnotation> getAnnotations() {
+			return this.annotations;
+		}
+		
+		public QuerySortOrder annotate(String xmlString) {
+			this.annotations.add(new QueryAnnotation(xmlString));
+			return this;
+		}
+
+		
+		public QName getAttribute() {
+			return attributeReference.asQName();
+		}
+
+		public String getCollation() {
+			return collation;
+		}
+
+		public Direction getDirection() {
+			return Direction.fromXMLString(direction);
+		}
+
+		public QName getElement() {
+			return elementReference.asQName();
+		}
+
+		public String getFieldName() {
+			return this.fieldReference.getName();
+		}
+
+		public String getJsonKey() {
+			return this.jsonKey.getName();
+		}
+
+		public QName getType() {
+			return type;
+		}
+
+		
+		public void setAttribute(MarkLogicQName attribute) {
+			this.attributeReference = attribute;
+		}
+
+		public void setCollation(String collation) {
+			this.collation = collation;
+		}
+
+		public void setDirection(Direction direction) {
+			this.direction = direction.toXMLString();
+		}
+
+		public void setElement(MarkLogicQName element) {
+			this.elementReference = element;
+		}
+
+		public void setField(Field field) {
+			this.fieldReference = field;
+		}
+
+		public void setPath(PathIndex pathIndex) {
+			// TODO: Is this the right thing to do?
+			throw new UnsupportedOperationException(
+					"Path indexes are not part of sort orders");
+		}
+
+		public void setScore() {
+			score = "";
+		}
+
+		public Score getScore() {
+			return (this.score != null && this.score.equals("")) ? Score.YES
+					: null;
+		}
+
+		public void unsetScore() {
+			score = null;
+		}
+
+		public void setType(QName type) {
+			this.type = type;
+		}
+
+		public void setJsonKey(JsonKey jsonKey) {
+			this.jsonKey = jsonKey;
+		}
+
+	}
+
+
+
+	/**
+	 * Models configuration for a search API term.
+	 * <p>
+	 * If a search term doesn't match a named constraint, it uses Term. You can
+	 * thus override default search behavior by changing a QueryOptions term
+	 * element.
+	 * 
+	 */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class QueryTerm  implements
+			TermOptions, Annotatable<QueryTerm> {
+
+		/**
+		 * The TermApply enumeration provides the special circumstances of an
+		 * empty search string.
+		 * 
+		 */
+		public enum TermApply {
+
+			ALL_RESULTS, NO_RESULTS;
+
+			public static TermApply fromXmlString(String xmlString) {
+				return TermApply.valueOf(xmlString.toUpperCase().replace("-",
+						"_"));
+			}
+
+			public String toXmlString() {
+				return this.toString().toLowerCase().replace("_", "-");
+			}
+
+		}
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "default")
+		private DefaultTermSource defaultConstraint;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "empty")
+		private XQueryExtension empty;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "term-option")
+		private List<String> termOptions;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "weight")
+		private double weight;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
+		private List<QueryAnnotation> annotations;
+		
+		public List<QueryAnnotation> getAnnotations() {
+			return this.annotations;
+		}
+		
+		public QueryTerm annotate(String xmlString) {
+			this.annotations.add(new QueryAnnotation(xmlString));
+			return this;
+		}
+		
+		private XQueryExtension xQueryExtension;
+
+		public QueryTerm() {
+			annotations = new ArrayList<QueryAnnotation>();
+			defaultConstraint = new DefaultTermSource();
+		}
+
+
+		public <T extends BaseConstraintItem> T getSource() {
+			return defaultConstraint.getSource();
+		}
+
+		public TermApply getEmptyApply() {
+			return TermApply.fromXmlString(empty.getApply());
+		}
+
+		public XQueryExtension getTermFunction() {
+			return xQueryExtension;
+		}
+		
+		public void setTermFunction(XQueryExtension extension) {
+			this.xQueryExtension = extension;
+		}
+
+		
+		public List<String> getTermOptions() {
+			return termOptions;
+		}
+
+		
+		public Double getWeight() {
+			return this.weight;
+		}
+
+		public void setSource(TermSource termSource) {
+			this.defaultConstraint.setSource(termSource);
+		}
+
+		public void setEmptyApply(TermApply termApply) {
+			empty = new XQueryExtension();
+			empty.setApply(termApply.toXmlString());
+		}
+
+		
+		public void setTermOptions(List<String> termOptions) {
+			this.termOptions = termOptions;
+		}
+
+		
+		public void setWeight(Double weight) {
+			this.weight = weight;
+		}
+
+		public void setRef(String defaultSourceName) {
+			defaultConstraint.setRef(defaultSourceName);
+		}
+
+
+		public String getRef() {
+			return defaultConstraint.getRef();
+		}
+	}
+
+    /**
+     * The source of data for a default term search.  Used in QueryTerm configurations.
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class DefaultTermSource implements Annotatable<DefaultTermSource>
+			 {
+	
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "range")
+		private QueryRange range;
+
+		@XmlAttribute(name="ref")
+		private String ref;
+		
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "value")
+		private QueryValue value;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "word")
+		private QueryWord word;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
+		private List<QueryAnnotation> annotations;
+		
+		public DefaultTermSource() {
+			annotations = new ArrayList<QueryAnnotation>();
+		}
+		public List<QueryAnnotation> getAnnotations() {
+			return this.annotations;
+		}
+		
+		public DefaultTermSource annotate(String xmlString) {
+			this.annotations.add(new QueryAnnotation(xmlString));
+			return this;
+		}
+		
+		@SuppressWarnings("unchecked")
+		public <T extends BaseConstraintItem> T getSource() {
+			if (value != null) {
+				return (T) value;
+			} else if (range != null) {
+				return (T) range;
+			} else if (word != null) {
+				return (T) word;
+			}
+			return null;
+		}
+
+		public void setSource(
+				TermSource constraintDefinition) {
+			if (constraintDefinition instanceof QueryValue) {
+				value = (QueryValue) constraintDefinition;
+			} else if (constraintDefinition instanceof QueryWord) {
+				word = (QueryWord) constraintDefinition;
+			} else if (constraintDefinition instanceof QueryRange) {
+				range = (QueryRange) constraintDefinition;
+			}
+		}
+
+		public void setRef(String defaultSourceName) {
+			this.ref = defaultSourceName;
+		}
+
+		public String getRef() {
+			return ref;
+		}
+	}
+    /**
+     * Models configurations that transform search results.
+     *
+     * Includes pre-configured methods to get raw results, empty results, and to 
+     * extract metadata from properties fragments.
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class QueryTransformResults  {
+
+		@XmlAttribute
+		private String apply;
+		@XmlAttribute
+		private String at;
+		@XmlAttribute
+		private String ns;
+		
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "per-match-tokens")
+		private Integer perMatchTokens;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "max-matches")
+		private Integer maxMatches;
+		
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "max-snippet-chars")
+		private Integer maxSnippetChars;
+		
+		
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "preferred-elements")
+		private PreferredElements preferredElements;
+
+		public Integer getPerMatchTokens() {
+			return perMatchTokens;
+		}
+
+		public void setPerMatchTokens(Integer perMatchTokens) {
+			this.perMatchTokens = perMatchTokens;
+		}
+
+		public Integer getMaxMatches() {
+			return maxMatches;
+		}
+
+		public void setMaxMatches(Integer maxMatches) {
+			this.maxMatches = maxMatches;
+		}
+
+		public Integer getMaxSnippetChars() {
+			return maxSnippetChars;
+		}
+
+		public void setMaxSnippetChars(Integer maxSnippetChars) {
+			this.maxSnippetChars = maxSnippetChars;
+		}
+
+		
+		public QueryTransformResults() {
+			preferredElements = new PreferredElements();
+		}
+
+		public void addPreferredElement(MarkLogicQName element) {
+			preferredElements.addElement(element);
+		}
+
+		public String getApply() {
+			return apply;
+		}
+
+		public String getAt() {
+			return at;
+		}
+
+		public String getNs() {
+			return ns;
+		}
+
+		public List<MarkLogicQName> getPreferredElements() {
+			return preferredElements.getElements();
+		}
+
+		public void setApply(String apply) {
+			this.apply = apply;
+		}
+
+		public void setAt(String at) {
+			this.at = at;
+		}
+
+		public void setNs(String ns) {
+			this.ns = ns;
+		}
+
+		public void setPreferredElements(List<MarkLogicQName> elements) {
+			this.preferredElements.setElements(elements);
+		}
+	}
+
+    /**
+     * Models preferred elements.  
+     *
+     * Used in snippet transforms to prefer inclusion of certain elements over others.
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public final static class PreferredElements {
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "element")
+		private List<MarkLogicQName> elements;
+
+		public PreferredElements() {
+			elements = new ArrayList<MarkLogicQName>();
+		}
+
+		public void addElement(MarkLogicQName element) {
+			this.elements.add(element);
+		}
+
+		public List<MarkLogicQName> getElements() {
+			return elements;
+		}
+
+		public void setElements(List<MarkLogicQName> elements) {
+			this.elements = elements;
+		}
+
+	}
+
+    /**
+     * Models configurations that extract co-occurring values from lexicons
+     *
+     * Use two or more sources to retrieve tuples from the database.
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class QueryTuples  implements Annotatable<QueryTuples>  {
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "aggregate")
+		private Aggregate aggregate;
+		@XmlAttribute
+		private String name;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "values-option")
+		private List<String> valuesOptions;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "field")
+		private List<Field> field;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "uri")
+		private String uri;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "json-key")
+		private List<JsonKey> jsonKey;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "collection")
+		private QueryCollection collection;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-attr-pair")
+		private List<QueryGeospatialAttributePair> geoAttrPair;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-elem")
+		private List<QueryGeospatialElement> geoElem;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-elem-pair")
+		private List<QueryGeospatialElementPair> geoElemPair;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "range")
+		private List<QueryRange> range;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
+		private List<QueryAnnotation> annotations;
+		
+		public List<QueryAnnotation> getAnnotations() {
+			return this.annotations;
+		}
+		
+		public QueryTuples annotate(String xmlString) {
+			this.annotations.add(new QueryAnnotation(xmlString));
+			return this;
+		}
+		
+		public QueryTuples() {
+			annotations = new ArrayList<QueryAnnotation>();
+			field = new ArrayList<Field>();
+			jsonKey = new ArrayList<JsonKey>();
+			geoAttrPair = new ArrayList<QueryGeospatialAttributePair>();
+			geoElem = new ArrayList<QueryGeospatialElement>();
+			geoElemPair = new ArrayList<QueryGeospatialElementPair>();
+			range = new ArrayList<QueryRange>();
+			valuesOptions = new ArrayList<String>();
+		}
+
+		public void addRange(QueryRange queryRange) {
+			this.range.add(queryRange);
+		}
+
+		public void setCollection(QueryCollection collection) {
+			this.collection = collection;
+		}
+
+		public List<JsonKey> getJsonKey() {
+			return jsonKey;
+		}
+
+		public QueryCollection getCollection() {
+			return collection;
+		}
+
+		public List<QueryGeospatialAttributePair> getGeoAttrPair() {
+			return geoAttrPair;
+		}
+
+		public List<QueryGeospatialElement> getGeoElem() {
+			return geoElem;
+		}
+
+		public List<QueryGeospatialElementPair> getGeoElemPair() {
+			return geoElemPair;
+		}
+
+		public List<QueryRange> getRange() {
+			return range;
+		}
+
+		public void addJsonKey(JsonKey jsonKey) {
+			this.jsonKey.add(jsonKey);
+		}
+
+		public void addValuesOption(String valuesOption) {
+			this.valuesOptions.add(valuesOption);
+		}
+
+		public Aggregate getAggregate() {
+			return aggregate;
+		}
+
+		public List<Field> getField() {
+			return field;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public boolean getUri() {
+			return uri != null && uri.equals("");
+		}
+
+		public List<String> getValuesOptions() {
+			return valuesOptions;
+		}
+
+		public void setAggregate(Aggregate aggregate) {
+			this.aggregate = aggregate;
+		}
+
+		public void addField(Field field) {
+			this.field.add(field);
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public void setUri() {
+			this.uri = "";
+		}
+
+		public void setValuesOptions(List<String> valuesOptions) {
+			this.valuesOptions = valuesOptions;
+		}
+	}
+
+
+    /**
+     * Models configurations that extract values from lexicons
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class QueryValues implements Annotatable<QueryValues>  {
+
+		public JsonKey getJsonKey() {
+			return jsonKey;
+		}
+
+		public void setRange(QueryRange queryRange) {
+			this.range = queryRange;
+		}
+
+		public void setCollection(QueryCollection collection) {
+			this.collection = collection;
+		}
+
+		public QueryCollection getCollection() {
+			return collection;
+		}
+
+		public QueryGeospatialAttributePair getGeoAttrPair() {
+			return geoAttrPair;
+		}
+
+		public QueryGeospatialElement getGeoElem() {
+			return geoElem;
+		}
+
+		public QueryGeospatialElementPair getGeoElemPair() {
+			return geoElemPair;
+		}
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "aggregate")
+		private Aggregate aggregate;
+		@XmlAttribute
+		private String name;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "values-option")
+		private List<String> valuesOptions;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "field")
+		private Field field;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "uri")
+		private String uri;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "json-key")
+		private JsonKey jsonKey;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "collection")
+		private QueryCollection collection;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-attr-pair")
+		private QueryGeospatialAttributePair geoAttrPair;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-elem")
+		private QueryGeospatialElement geoElem;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "geo-elem-pair")
+		private QueryGeospatialElementPair geoElemPair;
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "range")
+		private QueryRange range;
+
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
+		private List<QueryAnnotation> annotations;
+		
+		public List<QueryAnnotation> getAnnotations() {
+			return this.annotations;
+		}
+		
+		public QueryValues annotate(String xmlString) {
+			this.annotations.add(new QueryAnnotation(xmlString));
+			return this;
+		}
+		
+		public QueryValues() {
+			annotations = new ArrayList<QueryAnnotation>();
+			this.valuesOptions = new ArrayList<String>();
+		}
+
+		public void setJsonKey(JsonKey jsonKey) {
+			this.jsonKey = jsonKey;
+		}
+
+		public String getJsonKeyName() {
+			return this.jsonKey.getName();
+		}
+
+		public QueryValues(String name) {
+			this();
+			this.name = name;
+		}
+
+		public void addValuesOption(String valuesOption) {
+			this.valuesOptions.add(valuesOption);
+		}
+
+		public Aggregate getAggregate() {
+			return aggregate;
+		}
+
+		public Field getField() {
+			return field;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public String getUri() {
+			return uri;
+		}
+
+		public List<String> getValuesOptions() {
+			return valuesOptions;
+		}
+
+		public void setAggregate(Aggregate aggregate) {
+			this.aggregate = aggregate;
+		}
+
+		public void setField(Field field) {
+			this.field = field;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public void setUri() {
+			this.uri = "";
+		}
+
+		public void setValuesOptions(List<String> valuesOptions) {
+			this.valuesOptions = valuesOptions;
+		}
+
+		public QueryRange getRange() {
+			return range;
+		}
+
+	}
+
+	/**
+	 * Corresponds to aggregate element in Search API configuration. Configures
+	 * inclusion of aggregate function in call to a values endpoint.
+	 */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static final class Aggregate 
+			 {
+
+		@XmlAttribute
+		private String apply;
+		@XmlAttribute
+		private String udf;
+
+		/**
+		 * Gets the apply function.
+		 * @return A string corresponding to a built-in aggregate
+		 * function, or to a user-defined function.
+		 */
+		public String getApply() {
+			return apply;
+		}
+
+		/**
+		 * Gets a user-defined function plugin
+		 * @return The name of a user-defined plugin.  There is no guarantee that
+		 * this plugin actually exists.
+		 */
+		public String getUdf() {
+			return udf;
+		}
+
+		/**
+		 * Sets the aggregate function name.
+		 * @param apply The function name
+		 */
+		public void setApply(String apply) {
+			this.apply = apply;
+		}
+
+		/**
+		 * Sets the user-defined function plugin.
+		 * @param udf The UDF plugin name.
+		 */
+		public void setUdf(String udf) {
+			this.udf = udf;
+		}
+	}
+
+
+    /**
+     * A set of ExpressionNamespaceBindings
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class ExpressionNamespaceBindings {
+		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "binding")
+		private List<ExpressionNamespaceBinding> bindings;
+
+		public ExpressionNamespaceBindings() {
+			bindings = new ArrayList<ExpressionNamespaceBinding>();
+		}
+
+		public void addBinding(String prefix, String uri) {
+			bindings.add(new ExpressionNamespaceBinding(prefix, uri));
+		}
+
+		public ExpressionNamespaceBinding[] toArray() {
+			return bindings.toArray(new ExpressionNamespaceBinding[] {});
+		}
+	}
+
+    /**
+     * An encapsulation of a prefix and a namespace URI for use in xpath expression evaluation
+     */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class ExpressionNamespaceBinding {
+		@XmlAttribute(name = "prefix")
+		String prefix;
+
+		@XmlAttribute(name = "namespace-uri")
+		String uri;
+
+		public ExpressionNamespaceBinding() {
+		}
+
+		public ExpressionNamespaceBinding(String prefix, String uri) {
+			this.prefix = prefix;
+			this.uri = uri;
+		}
+
+		public String getPrefix() {
+			return prefix;
+		}
+
+		public String getNamespaceURI() {
+			return uri;
+		}
+	}
+
+	/**
+	 * Models a method to locate XQuery functions with use of "ns", "apply"
+	 * and "at" attributes.
+     *
+     * 'at' is the location of the module in the application server path.
+     * 'ns' is the namespace uri of the module
+     * 'apply' is the local name of the function to evaluate.
+	 */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class XQueryExtension {
+
+		/**
+		 * Denotes a function within the XQuery module specified by "ns" and
+		 * "at"
+		 */
+		@XmlAttribute
+		private String apply;
+		/**
+		 * Where to find the XQuery module on the filesystem.
+		 */
+		@XmlAttribute
+		private String at;
+		/**
+		 * The namespace URI of an XQuery module.
+		 */
+		@XmlAttribute
+		private String ns;
+
+		public XQueryExtension() {
+
+		}
+
+		public XQueryExtension(String apply, String ns, String at) {
+			this.setApply(apply);
+			this.setAt(at);
+			this.setNs(ns);
+		}
+
+		public String getApply() {
+			return apply;
+		}
+
+		public String getAt() {
+			return at;
+		}
+
+		public String getNs() {
+			return ns;
+		}
+
+		public void setApply(String apply) {
+			this.apply = apply;
+		}
+
+		public void setAt(String at) {
+			this.at = at;
+		}
+
+		public void setNs(String ns) {
+			this.ns = ns;
+		}
+
+	}
+
+	public static final String SEARCH_NS = "http://marklogic.com/appservices/search";
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "additional-query")
+	private QueryAdditionalQuery additionalQuery;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
+	private List<QueryAnnotation> annotations;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "concurrency-level")
+	private Integer concurrencyLevel;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "debug")
+	private Boolean debug;
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "default-suggestion-source")
+	private QueryDefaultSuggestionSource defaultSuggestionSource;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "forest")
+	private List<Long> forests;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "fragment-scope")
+	private String fragmentScope;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "grammar")
+	private QueryGrammar grammarOption;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "operator")
+	private List<QueryOperator> operators;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "page-length")
+	private Long pageLength;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "quality-weight")
+	private Double qualityWeight;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "constraint")
+	private List<QueryConstraint> queryConstraints;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "values")
+	private List<QueryValues> queryValues;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "tuples")
+	private List<QueryTuples> queryTuples;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "return-aggregates")
+	private Boolean returnAggregates;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "return-constraints")
+	private Boolean returnConstraints;
+
+	// Boolean options
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "return-facets")
+	private Boolean returnFacets;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "return-frequencies")
+	private Boolean returnFrequencies;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "return-metrics")
+	private Boolean returnMetrics;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "return-plan")
+	private Boolean returnPlan;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "return-qtext")
+	private Boolean returnQtext;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "return-query")
+	private Boolean returnQuery;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "return-results")
+	private Boolean returnResults;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "return-similar")
+	private Boolean returnSimilar;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "return-values")
+	private Boolean returnValues;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "namespace-bindings")
+	private ExpressionNamespaceBindings searchableExpressionBindings;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "searchable-expression")
+	private QuerySearchableExpression searchableExpression;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "search-option")
+	private List<String> searchOptions;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "sort-order")
+	private List<QuerySortOrder> sortOrders;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "suggestion-source")
+	private List<QuerySuggestionSource> suggestionSources;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "term")
+	private QueryTerm termConfig;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "transform-results")
+	private QueryTransformResults transformResultsOption;
+
+	@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "extract-metadata")
+	private QueryExtractMetadata extractMetadata;
+
+	public QueryOptions() {
+		// options that can have more than one cardinality
+		// are in lists.
+		queryConstraints = new ArrayList<QueryConstraint>();
+		operators = new ArrayList<QueryOperator>();
+		sortOrders = new ArrayList<QuerySortOrder>();
+		suggestionSources = new ArrayList<QuerySuggestionSource>();
+		forests = new ArrayList<Long>();
+		searchOptions = new ArrayList<String>();
+		annotations = new ArrayList<QueryAnnotation>();
+		queryValues = new ArrayList<QueryValues>();
+		queryTuples = new ArrayList<QueryTuples>();
+	}
+
+	public void setSearchableExpressionNamespaceContext(
+			ExpressionNamespaceBinding[] bindingsArray) {
+		ExpressionNamespaceBindings bindings = new ExpressionNamespaceBindings();
+		for (ExpressionNamespaceBinding binding : bindingsArray) {
+			bindings.addBinding(binding.getPrefix(), binding.getNamespaceURI());
+		}
+		searchableExpressionBindings = bindings;
+	}
+
+	public void addForest(Long forest) {
+		this.forests.add(forest);
+	}
+
+	public void addSearchOption(String searchOption) {
+		this.searchOptions.add(searchOption);
+	}
+
+	public org.w3c.dom.Element getAdditionalQuery() {
+		return additionalQuery.getValue();
+	}
+
+	
+	public List<QueryAnnotation> getAnnotations() {
+		return annotations;
+	}
+	
+	public QueryOptions annotate(String xmlAnnotation) {
+		annotations.add(new QueryAnnotation(xmlAnnotation));
+		return this;
+	}
+
+	public Integer getConcurrencyLevel() {
+		return concurrencyLevel;
+	}
+
+	public Boolean getDebug() {
+		return debug;
+	}
+
+	public QueryDefaultSuggestionSource getDefaultSuggestionSource() {
+		return defaultSuggestionSource;
+	}
+
+	public QueryExtractMetadata getExtractMetadata() {
+		return extractMetadata;
+	}
+
+	public List<Long> getForests() {
+		return forests;
+	}
+
+	public String getFragmentScope() {
+		return fragmentScope;
+	}
+
+	public QueryGrammar getGrammar() {
+		return grammarOption;
+	}
+
+	public Long getPageLength() {
+		return pageLength;
+	}
+
+	public Double getQualityWeight() {
+		return qualityWeight;
+	}
+
+	public List<QueryConstraint> getQueryConstraints() {
+		if (queryConstraints == null) {
+			return new ArrayList<QueryConstraint>();
+		} else {
+			return queryConstraints;
+		}
+	}
+
+	public List<QueryOperator> getQueryOperators() {
+		return operators;
+	}
+
+	public List<QueryValues> getQueryValues() {
+		return this.queryValues;
+	}
+
+	public List<QueryTuples> getQueryTuples() {
+		return this.queryTuples;
+	}
+
+	public Boolean getReturnAggregates() {
+		return returnAggregates;
+	}
+
+	public Boolean getReturnConstraints() {
+		return returnConstraints;
+	}
+
+	public Boolean getReturnFacets() {
+		return returnFacets;
+	}
+
+	public Boolean getReturnFrequencies() {
+		return returnFrequencies;
+	}
+
+	public Boolean getReturnMetrics() {
+		return returnMetrics;
+	}
+
+	public Boolean getReturnPlan() {
+		return returnPlan;
+	}
+
+	public Boolean getReturnQtext() {
+		return returnQtext;
+	}
+
+	public Boolean getReturnQuery() {
+		return returnQuery;
+	}
+
+	public Boolean getReturnResults() {
+		return returnResults;
+	}
+
+	public Boolean getReturnSimilar() {
+		return returnSimilar;
+	}
+
+	public Boolean getReturnValues() {
+		return returnValues;
+	}
+
+	public EditableNamespaceContext getSearchableExpressionNamespaceContext() {
+		EditableNamespaceContext context = new EditableNamespaceContext();
+		if (searchableExpressionBindings != null
+				&& searchableExpressionBindings.bindings != null) {
+			for (ExpressionNamespaceBinding binding : searchableExpressionBindings.bindings) {
+				String prefix = binding.getPrefix();
+				String uri = binding.getNamespaceURI();
+				if ("".equals(prefix)) {
+					context.setDefaultNamespaceURI(uri);
+				} else {
+					context.setNamespaceURI(prefix, uri);
+				}
+			}
+		}
+
+		return context;
+	}
+
+	public String getSearchableExpression() {
+		return searchableExpression.getPath();
+	}
+
+	public List<String> getSearchOptions() {
+		return searchOptions;
+	}
+
+	public List<QuerySortOrder> getSortOrders() {
+		return sortOrders;
+	}
+
+	public List<QuerySuggestionSource> getSuggestionSources() {
+		return suggestionSources;
+	}
+
+	public QueryTerm getTerm() {
+		return termConfig;
+	}
+
+	public QueryTransformResults getTransformResults() {
+		return transformResultsOption;
+	}
+
+	public void setAdditionalQuery(org.w3c.dom.Element additionalQuery) {
+		this.additionalQuery = new QueryAdditionalQuery(additionalQuery);
+	}
+
+	public void setConcurrencyLevel(Integer concurrencyLevel) {
+		this.concurrencyLevel = concurrencyLevel;
+	}
+
+	public void setDebug(Boolean debug) {
+		this.debug = debug;
+	}
+
+	public void setDefaultSuggestionSource(QueryDefaultSuggestionSource dss) {
+		this.defaultSuggestionSource = dss;
+	}
+
+	public void setExtractMetadata(QueryExtractMetadata extractMetadata) {
+		this.extractMetadata = extractMetadata;
+	}
+
+	public void setForests(List<Long> forests) {
+		this.forests = new ArrayList<Long>();
+		if (forests != null) this.forests.addAll(forests);
+	}
+
+	public void setFragmentScope(FragmentScope fragmentScope) {
+		if (fragmentScope == null) {
+			this.fragmentScope = null;
+		} else {
+
+			this.fragmentScope = fragmentScope.toString().toLowerCase();
+		}
+	}
+
+	public void setGrammar(QueryGrammar grammarOption) {
+		this.grammarOption = grammarOption;
+	}
+
+	public void setOperators(List<QueryOperator> operatorOptions) {
+		this.operators = operatorOptions;
+	}
+
+	public void setPageLength(Long pageLength) {
+		this.pageLength = pageLength;
+	}
+
+	public void setQualityWeight(Double qualityWeight) {
+		this.qualityWeight = qualityWeight;
+	}
+
+	public void setQueryValues(List<QueryValues> values) {
+		this.queryValues = values;
+	}
+
+	public void setQueryTuples(List<QueryTuples> tuples) {
+		this.queryTuples = tuples;
+	}
+
+	public void setReturnAggregates(Boolean returnAggregates) {
+		this.returnAggregates = returnAggregates;
+	}
+
+	public void setReturnConstraints(Boolean returnConstraints) {
+		this.returnConstraints = returnConstraints;
+	}
+
+	public void setReturnFacets(Boolean returnFacets) {
+		this.returnFacets = returnFacets;
+	}
+
+	public void setReturnFrequencies(Boolean returnFrequencies) {
+		this.returnFrequencies = returnFrequencies;
+	}
+
+	public void setReturnMetrics(Boolean returnMetrics) {
+		this.returnMetrics = returnMetrics;
+	}
+
+	public void setReturnPlan(Boolean returnPlan) {
+		this.returnPlan = returnPlan;
+	}
+
+	public void setReturnQtext(Boolean returnQtext) {
+		this.returnQtext = returnQtext;
+	}
+
+	public void setReturnQuery(Boolean returnQuery) {
+		this.returnQuery = returnQuery;
+	}
+
+	public void setReturnResults(Boolean returnResults) {
+		this.returnResults = returnResults;
+	}
+
+	public void setReturnSimilar(Boolean returnSimilar) {
+		this.returnSimilar = returnSimilar;
+	}
+
+	public void setReturnValues(Boolean returnValues) {
+		this.returnValues = returnValues;
+	}
+
+	public void setSearchableExpression(
+			QuerySearchableExpression searchableExpression) {
+		this.searchableExpression = searchableExpression;
+		setSearchableExpressionNamespaceContext(this.searchableExpression.getBindings());
+	}
+
+	public void setSearchableExpressionNamespaceContext(
+			EditableNamespaceContext context) {
+		ExpressionNamespaceBindings bindings = new ExpressionNamespaceBindings();
+		for (String pfx : context.getAllPrefixes()) {
+			String uri = context.getNamespaceURI(pfx);
+			bindings.addBinding(pfx, uri);
+		}
+		searchableExpressionBindings = bindings;
+	}
+
+	public void setSearchOptions(List<String> searchOptions) {
+		this.searchOptions = new ArrayList<String>();
+		if (searchOptions != null)		
+			this.searchOptions.addAll(searchOptions);
+	}
+
+	public void setSortOrders(List<QuerySortOrder> sortOrders) {
+		this.sortOrders = new ArrayList<QuerySortOrder>();
+		this.sortOrders.addAll(sortOrders);
+	}
+
+	public void setSuggestionSources(
+			List<QuerySuggestionSource> suggestionSourceOptions) {
+		this.suggestionSources = suggestionSourceOptions;
+	}
+
+	public void setTerm(QueryTerm termConfig) {
+		this.termConfig = termConfig;
+	}
+
+	public void setTransformResults(QueryTransformResults transformResultsOption) {
+		this.transformResultsOption = transformResultsOption;
+	}
+
+	/*
+	 * Patch the POJO so that the QueryOptionsTransformInjectNS transform will
+	 * insert the proper bindings into the XML during serialization.
+	 */
+	public void patchBindings() {
+		for (QueryConstraint constraint : queryConstraints) {
+			if (constraint.range != null) {
+				QueryRange range = constraint.range;
+				PathIndex index = range.getPathIndex();
+				if (index != null && index.bindings != null) {
+					ExpressionNamespaceBindings bindings = new ExpressionNamespaceBindings();
+					for (ExpressionNamespaceBinding binding : index.bindings) {
+						bindings.addBinding(binding.getPrefix(),
+								binding.getNamespaceURI());
+					}
+					range.setPathIndexNamespaceBindings(bindings);
+				}
+			}
+		}
+	}
+
+
+    /**
+     * Sets the list of constraints, replacing existing ones.
+     * @param constraints the constraints
+     */
+	public void setConstraints(List<QueryConstraint> constraints) {
+		this.queryConstraints = new ArrayList<QueryConstraint>();
+		this.queryConstraints.addAll(constraints);
+	}
+
+}
+

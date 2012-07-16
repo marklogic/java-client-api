@@ -32,11 +32,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.EditableNamespaceContext;
+import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.NamespacesManager;
+import com.marklogic.client.admin.NamespacesManager;
 import com.marklogic.client.ResourceNotFoundException;
 
 class NamespacesManagerImpl

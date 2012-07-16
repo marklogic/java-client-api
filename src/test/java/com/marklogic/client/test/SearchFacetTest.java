@@ -24,6 +24,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.marklogic.client.query.QueryManager;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -31,10 +32,9 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.QueryManager;
-import com.marklogic.client.QueryOptionsManager;
-import com.marklogic.client.config.FacetResult;
-import com.marklogic.client.config.StringQueryDefinition;
+import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.query.FacetResult;
+import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.SearchHandle;
 
