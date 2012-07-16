@@ -81,7 +81,6 @@ import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
-import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
@@ -942,9 +941,7 @@ public class JerseyServices implements RESTServices {
 			if (withContent)
 				docParams.add("category", "content");
 			if (categories.contains(Metadata.ALL)) {
-				for (String category : new String[] { "collections",
-						"permissions", "properties", "quality" })
-					docParams.add("category", category);
+				docParams.add("category", "metadata");
 			} else {
 				for (Metadata category : categories)
 					docParams.add("category", category.name().toLowerCase());
@@ -2243,8 +2240,11 @@ public class JerseyServices implements RESTServices {
 		}
 	}
 
-	// backdoor for testing
-	public Client getClient() {
-		return client;
+	// backdoor
+	@Override
+	public Object getClientImplementation() {
+		if (client == null)
+			return null;
+		return client.getClientHandler().getHttpClient();
 	}
 }
