@@ -133,6 +133,11 @@ public interface DatabaseClient {
      * as configuring communication with the server.  The client implementation object and
      * library may change without notice or be removed without replacement in a future release.
      * 
+     * In addition, your changes to the configuration of the client implementation object
+     * could impair the operation of the MarkLogic Java Client API.  In short, the client
+     * implementation object should be used only on an interim basis by experts who test
+     * thoroughly to avoid unwanted side effects.
+     * 
      * You can call the getClass().getName() and getClass().getPackage().getName() to discover
      * the class of the current implementation object.
      * @return	the object implementing communication with the server 
