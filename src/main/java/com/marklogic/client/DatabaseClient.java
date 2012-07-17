@@ -126,4 +126,16 @@ public interface DatabaseClient {
      * document and query managers can no longer access the database.
      */
     public void release();
+
+    /**
+     * Returns the client object from the library that implements communication with the
+     * server.  You should call this method only when you need short-term workarounds such
+     * as configuring communication with the server.  The client implementation object and
+     * library may change without notice or be removed without replacement in a future release.
+     * 
+     * You can call the getClass().getName() and getClass().getPackage().getName() to discover
+     * the class of the current implementation object.
+     * @return	the object implementing communication with the server 
+     */
+    public Object getClientImplementation();
 }

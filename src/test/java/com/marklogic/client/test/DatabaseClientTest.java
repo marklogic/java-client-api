@@ -16,19 +16,20 @@
 package com.marklogic.client.test;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.util.RequestLogger;
 
 public class DatabaseClientTest {
 	@BeforeClass
@@ -86,5 +87,12 @@ public class DatabaseClientTest {
 	public void testNewQueryOptionsManager() {
 		QueryOptionsManager mgr = Common.client.newServerConfigManager().newQueryOptionsManager();
 		assertNotNull("Client could not create query options manager", mgr);
+	}
+
+	@Test
+	public void testGetClientImplementationObject() {
+		Object impl = Common.client.getClientImplementation();
+		assertNotNull("Client could not get client implementation", impl);
+		assertTrue("", impl instanceof org.apache.http.client.HttpClient);
 	}
 }

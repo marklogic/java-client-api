@@ -125,7 +125,14 @@ public class DatabaseClientImpl implements DatabaseClient {
 		super.finalize();
 	}
 
-	// undocumented backdoor for testing
+	@Override
+	public Object getClientImplementation() {
+		if (services == null)
+			return null;
+		return services.getClientImplementation();
+	}
+
+	// undocumented backdoor access to JerseyServices
 	public RESTServices getService() {
 		return services;
 	}
