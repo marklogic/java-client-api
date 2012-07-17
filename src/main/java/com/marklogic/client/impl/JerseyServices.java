@@ -2240,7 +2240,6 @@ public class JerseyServices implements RESTServices {
 		}
 	}
 
-	// backdoor
 	@Override
 	public Object getClientImplementation() {
 		if (client == null)

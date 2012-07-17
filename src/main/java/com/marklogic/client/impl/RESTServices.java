@@ -129,6 +129,9 @@ public interface RESTServices {
 			String mimetype, Class<T> as)
 		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
+	// backdoor
+	public Object getClientImplementation();
+
 	public enum ResponseStatus {
 		OK() {
 			public boolean isExpected(ClientResponse.Status status) {
