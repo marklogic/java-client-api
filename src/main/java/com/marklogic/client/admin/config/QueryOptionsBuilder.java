@@ -95,22 +95,20 @@ import com.marklogic.client.impl.Utilities;
  * Entry points: <br>
  * 
  * 
- * QueryOptionsBuilder builder = new QueryOptionsBuilder(); QueryOptionsHandle
- * options = builder.build(); QueryOptionsHandle options =
- * builder.build(QueryConstraint... constraints) returns a new
- * QueryOptionsHandle object with the supplied constraints.
+ * QueryOptionsBuilder builder = new QueryOptionsBuilder(); 
+ * QueryOptionsHandle options = new QueryOptionsHandle();
  * 
  * With this newly created handle, use fluent setters to append/replace
  * different configuration options supplied by the builder methods below.
  * 
  * An example:
  * 
- * builder.build(QueryConstraint... constraints)
- * .withOperators(builder.operator( ... ), builder.operator( ... ))
- * .withTerm(builder.term( ... )) .withConfiguration(builder.configure()
- * .returnFacets(true) .returnResults(false));
- * 
- * <p>
+ * builder.withConstraints(QueryConstraint... constraints)
+ *    .withOperators(builder.operator( ... ), builder.operator( ... ))
+ *    .withTerm(builder.term( ... )) 
+ *    .withConfiguration(builder.configure()
+ *       .returnFacets(true) 
+ *       .returnResults(false));
  */
 public class QueryOptionsBuilder {
 
