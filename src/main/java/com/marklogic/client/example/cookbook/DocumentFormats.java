@@ -87,7 +87,7 @@ public class DocumentFormats {
 		String docId = "/example/"+filename;
 
 		// create a handle for the document
-		InputStreamHandle writeHandle = new InputStreamHandle(docStream);
+		InputStreamHandle writeHandle = new InputStreamHandle();
 		writeHandle.set(docStream);
 
 		// write the document

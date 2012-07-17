@@ -108,7 +108,7 @@ public class URIHandleExample {
 		if (docStream == null)
 			throw new RuntimeException("Could not read document example");
 
-		InputStreamHandle handle = new InputStreamHandle(docStream);
+		InputStreamHandle handle = new InputStreamHandle();
 		handle.set(docStream);
 
 		docMgr.write(docId, handle);

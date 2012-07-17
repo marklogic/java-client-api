@@ -87,7 +87,7 @@ public class DocumentReadTransform {
 			throw new RuntimeException("Could not read example transform");
 
 		// create a handle on the transform source code
-		InputStreamHandle handle = new InputStreamHandle(transStream);
+		InputStreamHandle handle = new InputStreamHandle();
 		handle.set(transStream);
 
 		// write the transform extension to the database
@@ -141,7 +141,7 @@ public class DocumentReadTransform {
 
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		InputStreamHandle handle = new InputStreamHandle(docStream);
+		InputStreamHandle handle = new InputStreamHandle();
 		handle.set(docStream);
 
 		docMgr.write(docId, handle);

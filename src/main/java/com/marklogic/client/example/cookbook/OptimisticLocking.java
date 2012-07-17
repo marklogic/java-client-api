@@ -107,7 +107,7 @@ public class OptimisticLocking {
 		String docId = "/example/"+filename;
 
 		// provide a handle for the initial content of the document
-		InputStreamHandle createHandle = new InputStreamHandle(docStream);
+		InputStreamHandle createHandle = new InputStreamHandle();
 		createHandle.set(docStream);
 
 		// write a new document without a version (and so, without a descriptor)

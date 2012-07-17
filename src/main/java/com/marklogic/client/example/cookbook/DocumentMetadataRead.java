@@ -108,7 +108,7 @@ public class DocumentMetadataRead {
 		metadataHandle.getProperties().put("reviewed", true);
 		metadataHandle.setQuality(1);
 
-		InputStreamHandle handle = new InputStreamHandle(docStream);
+		InputStreamHandle handle = new InputStreamHandle();
 		handle.set(docStream);
 
 		docMgr.write(docId, metadataHandle, handle);

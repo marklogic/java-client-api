@@ -236,7 +236,7 @@ public class ResourceExtension {
 			throw new RuntimeException("Could not read example resource extension");
 
 		// create a handle on the extension source code
-		InputStreamHandle handle = new InputStreamHandle(sourceStream);
+		InputStreamHandle handle = new InputStreamHandle();
 		handle.set(sourceStream);
 
 		// write the resource extension to the database

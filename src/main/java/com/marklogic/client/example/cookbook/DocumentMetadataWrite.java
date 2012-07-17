@@ -77,7 +77,7 @@ public class DocumentMetadataWrite {
 		metadataHandle.setQuality(1);
 
 		// create a handle on the content
-		InputStreamHandle contentHandle = new InputStreamHandle(docStream);
+		InputStreamHandle contentHandle = new InputStreamHandle();
 		contentHandle.set(docStream);
 
 		// write the document metadata and content

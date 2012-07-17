@@ -67,7 +67,7 @@ public class DocumentWrite {
 		String docId = "/example/"+filename;
 
 		// create a handle on the content
-		InputStreamHandle handle = new InputStreamHandle(docStream);
+		InputStreamHandle handle = new InputStreamHandle();
 		handle.set(docStream);
 
 		// write the document content

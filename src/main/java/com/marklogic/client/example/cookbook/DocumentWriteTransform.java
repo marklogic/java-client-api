@@ -88,7 +88,7 @@ public class DocumentWriteTransform {
 			throw new RuntimeException("Could not read example transform");
 
 		// create a handle on the transform source code
-		InputStreamHandle handle = new InputStreamHandle(transStream);
+		InputStreamHandle handle = new InputStreamHandle();
 		handle.set(transStream);
 
 		// write the transform extension to the database
@@ -119,7 +119,7 @@ public class DocumentWriteTransform {
 		String docId = "/example/"+filename;
 
 		// create a handle on the content
-		InputStreamHandle writeHandle = new InputStreamHandle(docStream);
+		InputStreamHandle writeHandle = new InputStreamHandle();
 		writeHandle.set(docStream);
 
 		// specify the mime type for the content
