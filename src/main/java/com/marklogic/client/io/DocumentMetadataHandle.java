@@ -686,15 +686,16 @@ public class DocumentMetadataHandle
 			sendQualityImpl(serializer);
 
 			serializer.writeEndElement();
-			serializer.writeEndDocument();
 
-			valueSerializer = null;
+			serializer.writeEndDocument();
 		} catch (XMLStreamException e) {
-			throw new MarkLogicInternalException("Failed to serialize metadata", e);
+			throw new MarkLogicIOException("Failed to serialize metadata", e);
 		} catch (TransformerFactoryConfigurationError e) {
-			throw new MarkLogicInternalException("Failed to serialize metadata", e);
+			throw new MarkLogicIOException("Failed to serialize metadata", e);
 		} catch (TransformerException e) {
-			throw new MarkLogicInternalException("Failed to serialize metadata", e);
+			throw new MarkLogicIOException("Failed to serialize metadata", e);
+		} finally {
+			valueSerializer = null;
 		}
 	}
 	private void sendCollectionsImpl(XMLStreamWriter serializer) throws XMLStreamException {
