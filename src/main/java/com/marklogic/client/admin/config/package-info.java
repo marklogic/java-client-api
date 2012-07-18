@@ -1,6 +1,6 @@
 /**
  * The package provides classes and interfaces that support query options and query operations
- * such as {com.marklogic.client.query.QueryManager}.search().
+ * such as {@link com.marklogic.client.query.QueryManager}.search().
  */
 /*
  * Copyright 2012 MarkLogic Corporation
