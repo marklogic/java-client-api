@@ -48,19 +48,6 @@ public interface ResourceExtensionsManager {
      * Installs the services that implement a resource.
      * @param resourceName	the name of the resource
      * @param sourceHandle	a handle on the source for the XQuery implementation
-     */
-    public void writeServices(String resourceName, TextWriteHandle sourceHandle);
-    /**
-     * Installs the services that implement a resource.
-     * @param resourceName	the name of the resource
-     * @param sourceHandle	a handle on the source for the XQuery implementation
-     * @param metadata	the metadata about the resource services
-     */
-    public void writeServices(String resourceName, TextWriteHandle sourceHandle, ExtensionMetadata metadata);
-    /**
-     * Installs the services that implement a resource.
-     * @param resourceName	the name of the resource
-     * @param sourceHandle	a handle on the source for the XQuery implementation
      * @param metadata	the metadata about the resource services
      * @param methodParams	a declaration of the parameters for the services
      */

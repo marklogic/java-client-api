@@ -83,21 +83,13 @@ class ResourceExtensionsImpl
 	}
 
 	@Override
-	public void writeServices(String resourceName, TextWriteHandle sourceHandle) {
-		writeServices(resourceName, sourceHandle, null, (MethodParameters[]) null);
-	}
-	@Override
-	public void writeServices(
-		String resourceName, TextWriteHandle sourceHandle, ExtensionMetadata metadata
-	) {
-		writeServices(resourceName, sourceHandle, metadata, (MethodParameters[]) null);
-	}
-	@Override
 	public void writeServices(
 		String resourceName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, MethodParameters... methodParams
 	) {
 		if (resourceName == null)
 			throw new IllegalArgumentException("Writing resource services with null name");
+		if (methodParams == null || methodParams.length == 0)
+			throw new IllegalArgumentException("Writing resource services with no methods");
 
 		if (logger.isInfoEnabled())
 			logger.info("Writing resource services source for {}", resourceName);
@@ -105,10 +97,8 @@ class ResourceExtensionsImpl
 		HandleImplementation sourceBase =
 			HandleAccessor.checkHandle(sourceHandle, "resource");
 
-		RequestParameters extraParams = (metadata != null) ? metadata.asParameters() : null;
-		if (methodParams != null) {
-			if (extraParams == null)
-				extraParams = new RequestParameters();
+		RequestParameters extraParams =
+			(metadata != null) ? metadata.asParameters() : new RequestParameters();
 			for (MethodParameters params : methodParams) {
 				String method = params.getMethod().toString().toLowerCase();
 				extraParams.add("method", method);
@@ -117,7 +107,6 @@ class ResourceExtensionsImpl
 					extraParams.put(prefix+entry.getKey(), entry.getValue());
 				}
 			}
-		}
 
 		services.putValue(requestLogger, "config/resources", resourceName, extraParams, "application/xquery", sourceBase.sendContent());
 	}
