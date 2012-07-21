@@ -579,7 +579,7 @@ public final class QueryOptionsHandle
 	@Override
 	public void setFormat(Format format) {
 		if (format != Format.XML) {
-            new RuntimeException("QueryOptionsHandle supports the XML format only");
+            new IllegalArgumentException("QueryOptionsHandle supports the XML format only");
         }
 	}
 
@@ -992,7 +992,7 @@ public final class QueryOptionsHandle
 
 			return buffer.toByteArray();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		}
 	}
 	/**

@@ -55,14 +55,14 @@ public class OptimisticLocking {
 	}
 
 	// install the transform and then write a transformed document 
-	public static void run(String host, int port, String admin_user, String admin_password, String writer_user, String writer_password, Authentication authType) {
+	public static void run(String host, int port, String admin_user, String admin_password, String writer_user, String writer_password, Authentication authType) throws IOException {
 		System.out.println("example: "+OptimisticLocking.class.getName());
 
 		requireOptimisticLocking( host, port, admin_user,  admin_password,  authType );
 
 		modifyDatabase(           host, port, writer_user, writer_password, authType );
 
-		tearDownExample(host, port, admin_user, admin_password, authType);
+		tearDownExample(          host, port, admin_user,  admin_password,  authType );
 	}
 
 	public static void requireOptimisticLocking(String host, int port, String user, String password, Authentication authType) {
@@ -88,7 +88,7 @@ public class OptimisticLocking {
 		client.release();
 	}
 
-	public static void modifyDatabase(String host, int port, String user, String password, Authentication authType) {
+	public static void modifyDatabase(String host, int port, String user, String password, Authentication authType) throws IOException {
 		String filename = "flipper.xml";
 
 		// create the client
@@ -98,7 +98,7 @@ public class OptimisticLocking {
 		InputStream docStream = OptimisticLocking.class.getClassLoader().getResourceAsStream(
 			"data"+File.separator+filename);
 		if (docStream == null)
-			throw new RuntimeException("Could not read document example");
+			throw new IOException("Could not read document example");
 
 		// create a manager for writing XML documents
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -166,7 +166,7 @@ public class OptimisticLocking {
 		InputStream propsStream =
 			OptimisticLocking.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
-			throw new RuntimeException("Could not read example properties");
+			throw new IOException("Could not read example properties");
 
 		Properties props = new Properties();
 		props.load(propsStream);

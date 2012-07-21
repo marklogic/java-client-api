@@ -63,13 +63,13 @@ public class StringSearch {
 		run(host, port, admin_user, admin_password, writer_user, writer_password, authType);
 	}
 
-	public static void run(String host, int port, String admin_user, String admin_password, String writer_user, String writer_password, Authentication authType) {
+	public static void run(String host, int port, String admin_user, String admin_password, String writer_user, String writer_password, Authentication authType) throws IOException {
 		System.out.println("example: "+StringSearch.class.getName());
 
-		configure( host, port, admin_user,  admin_password,  authType );
-		search(    host, port, writer_user, writer_password, authType );
+		configure(      host, port, admin_user,  admin_password,  authType );
+		search(         host, port, writer_user, writer_password, authType );
 
-		tearDownExample(host, port, admin_user, admin_password, authType);
+		tearDownExample(host, port, admin_user,  admin_password,  authType );
 	}
 
 	public static void configure(String host, int port, String user, String password, Authentication authType) {
@@ -94,7 +94,7 @@ public class StringSearch {
 		client.release();
 	}
 
-	public static void search(String host, int port, String user, String password, Authentication authType) {
+	public static void search(String host, int port, String user, String password, Authentication authType) throws IOException {
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
@@ -147,7 +147,7 @@ public class StringSearch {
 	}
 
 	// set up by writing the document content and options used in the example query
-	public static void setUpExample(DatabaseClient client) {
+	public static void setUpExample(DatabaseClient client) throws IOException {
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
 		InputStreamHandle contentHandle = new InputStreamHandle();
@@ -156,7 +156,7 @@ public class StringSearch {
 			InputStream docStream = StringSearch.class.getClassLoader().getResourceAsStream(
 					"data"+File.separator+filename);
 			if (docStream == null)
-				throw new RuntimeException("Could not read document example");
+				throw new IOException("Could not read document example");
 
 			contentHandle.set(docStream);
 
@@ -188,7 +188,7 @@ public class StringSearch {
 		InputStream propsStream =
 			StringSearch.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
-			throw new RuntimeException("Could not read example properties");
+			throw new IOException("Could not read example properties");
 
 		Properties props = new Properties();
 		props.load(propsStream);

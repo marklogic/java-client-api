@@ -48,7 +48,7 @@ public class MultiStatementTransaction {
 		run(host, port, writer_user, writer_password, authType);
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType) {
+	public static void run(String host, int port, String user, String password, Authentication authType) throws IOException {
 		System.out.println("example: "+MultiStatementTransaction.class.getName());
 
 		String beforeFilename = "flipper.xml";
@@ -95,11 +95,11 @@ public class MultiStatementTransaction {
 	}
 
 	// set up by writing document content for the example to read
-	public static void setUpExample(XMLDocumentManager docMgr, String docId, String filename) {
+	public static void setUpExample(XMLDocumentManager docMgr, String docId, String filename) throws IOException {
 		InputStream docStream = MultiStatementTransaction.class.getClassLoader().getResourceAsStream(
 				"data"+File.separator+filename);
 		if (docStream == null)
-			throw new RuntimeException("Could not read document example");
+			throw new IOException("Could not read document example");
 
 		InputStreamHandle handle = new InputStreamHandle();
 		handle.set(docStream);
@@ -118,7 +118,7 @@ public class MultiStatementTransaction {
 		InputStream propsStream =
 			MultiStatementTransaction.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
-			throw new RuntimeException("Could not read example properties");
+			throw new IOException("Could not read example properties");
 
 		Properties props = new Properties();
 		props.load(propsStream);

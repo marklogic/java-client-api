@@ -68,14 +68,14 @@ public class ResourceExtension {
 	}
 
 	// install and then use the resource extension
-	public static void run(String host, int port, String admin_user, String admin_password, String writer_user, String writer_password, Authentication authType) {
+	public static void run(String host, int port, String admin_user, String admin_password, String writer_user, String writer_password, Authentication authType) throws IOException {
 		System.out.println("example: "+ResourceExtension.class.getName());
 
 		installResourceExtension(host, port, admin_user,  admin_password,  authType);
 
-		useResource(host, port, writer_user, writer_password, authType);
+		useResource(             host, port, writer_user, writer_password, authType);
 
-		tearDownExample(host, port, admin_user, admin_password, authType);
+		tearDownExample(         host, port, admin_user,  admin_password,  authType);
 	}
 
 	/**
@@ -215,7 +215,7 @@ public class ResourceExtension {
 	}
 
 	// install the resource extension on the server
-	public static void installResourceExtension(String host, int port, String user, String password, Authentication authType) {
+	public static void installResourceExtension(String host, int port, String user, String password, Authentication authType) throws IOException {
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
@@ -233,7 +233,7 @@ public class ResourceExtension {
 		InputStream sourceStream = ResourceExtension.class.getClassLoader().getResourceAsStream(
 			"scripts"+File.separator+DictionaryManager.NAME+".xqy");
 		if (sourceStream == null)
-			throw new RuntimeException("Could not read example resource extension");
+			throw new IOException("Could not read example resource extension");
 
 		// create a handle on the extension source code
 		InputStreamHandle handle = new InputStreamHandle();
@@ -317,7 +317,7 @@ public class ResourceExtension {
 		InputStream propsStream =
 			ResourceExtension.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
-			throw new RuntimeException("Could not read example properties");
+			throw new IOException("Could not read example properties");
 
 		Properties props = new Properties();
 		props.load(propsStream);

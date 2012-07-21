@@ -24,7 +24,8 @@ import javax.xml.bind.JAXBException;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 
 /**
- * AllExamples executes all examples.  Please set up a REST server and configure Example.properties
+ * AllCookbookExamples executes all of the recipe examples in the cookbook.
+ * Please set up a REST server and configure Example.properties
  * before running any example.
  */
 public class AllCookbookExamples {
@@ -79,12 +80,11 @@ public class AllCookbookExamples {
 		InputStream propsStream =
 			AllCookbookExamples.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
-			throw new RuntimeException("Could not read example properties");
+			throw new IOException("Could not read example properties");
 
 		Properties props = new Properties();
 		props.load(propsStream);
 
 		return props;
 	}
-
 }

@@ -68,7 +68,7 @@ public class HTMLCleanerHandleExample {
 		InputStream docStream = HTMLCleanerHandleExample.class.getClassLoader().getResourceAsStream(
 				"data"+File.separator+fileroot+".html");
 		if (docStream == null)
-			throw new RuntimeException("Could not read document example");
+			throw new IOException("Could not read document example");
 
 		// create an identifier for the document
 		String docId = "/example/"+fileroot+".xhtml";
@@ -109,7 +109,7 @@ public class HTMLCleanerHandleExample {
 		String propsName = "Example.properties";
 		InputStream propsStream = HTMLCleanerHandleExample.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
-			throw new RuntimeException("Could not read example properties");
+			throw new IOException("Could not read example properties");
 
 		Properties props = new Properties();
 		props.load(propsStream);

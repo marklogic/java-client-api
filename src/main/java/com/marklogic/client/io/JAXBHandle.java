@@ -132,7 +132,7 @@ public class JAXBHandle
 
 			return buffer.toByteArray();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		}
 	}
 	/**

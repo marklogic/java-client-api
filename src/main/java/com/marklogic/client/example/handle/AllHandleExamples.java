@@ -61,7 +61,7 @@ public class AllHandleExamples {
 		InputStream propsStream =
 			AllHandleExamples.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
-			throw new RuntimeException("Could not read example properties");
+			throw new IOException("Could not read example properties");
 
 		Properties props = new Properties();
 		props.load(propsStream);

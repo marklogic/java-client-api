@@ -73,7 +73,7 @@ public class DocumentOutputStream {
         		InputStream docStream = DocumentOutputStream.class.getClassLoader().getResourceAsStream(
         			"data"+File.separator+FILENAME);
         		if (docStream == null)
-        			throw new RuntimeException("Could not read document example");
+        			throw new IOException("Could not read document example");
 
         		// copy content to the output stream
         		byte[] buf = new byte[MAX_BUF];
@@ -109,7 +109,7 @@ public class DocumentOutputStream {
 		InputStream propsStream =
 			DocumentOutputStream.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
-			throw new RuntimeException("Could not read example properties");
+			throw new IOException("Could not read example properties");
 
 		Properties props = new Properties();
 		props.load(propsStream);

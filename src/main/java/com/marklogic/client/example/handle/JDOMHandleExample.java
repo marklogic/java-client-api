@@ -66,7 +66,7 @@ public class JDOMHandleExample {
 		InputStream docStream = JDOMHandleExample.class.getClassLoader().getResourceAsStream(
 				"data"+File.separator+filename);
 		if (docStream == null)
-			throw new RuntimeException("Could not read document example");
+			throw new IOException("Could not read document example");
 
 		// create an identifier for the document
 		String docId = "/example/"+filename;
@@ -110,7 +110,7 @@ public class JDOMHandleExample {
 		String propsName = "Example.properties";
 		InputStream propsStream = JDOMHandleExample.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
-			throw new RuntimeException("Could not read example properties");
+			throw new IOException("Could not read example properties");
 
 		Properties props = new Properties();
 		props.load(propsStream);

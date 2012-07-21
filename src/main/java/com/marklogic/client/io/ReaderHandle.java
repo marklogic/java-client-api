@@ -144,7 +144,7 @@ public class ReaderHandle
 
 			return b;
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		}
 	}
 	/**
@@ -195,7 +195,7 @@ public class ReaderHandle
 			byteBuf.clear();
 			CoderResult result = encoder.encode(charBuf, byteBuf, false);
 			if (result.isError()) {
-				throw new RuntimeException(result.toString());
+				throw new IOException(result.toString());
 			}
 			byteBuf.flip();
 			out.write(buf, 0, byteBuf.limit());

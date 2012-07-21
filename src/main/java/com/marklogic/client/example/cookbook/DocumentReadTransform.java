@@ -56,7 +56,7 @@ public class DocumentReadTransform {
 	}
 
 	// install the transform and then read a transformed document 
-	public static void run(String host, int port, String admin_user, String admin_password, String writer_user, String writer_password, Authentication authType) {
+	public static void run(String host, int port, String admin_user, String admin_password, String writer_user, String writer_password, Authentication authType) throws IOException {
 		System.out.println("example: "+DocumentReadTransform.class.getName());
 
 		installTransform( host, port, admin_user,  admin_password,  authType );
@@ -66,7 +66,7 @@ public class DocumentReadTransform {
 		tearDownExample(host, port, admin_user, admin_password, authType);
 	}
 
-	public static void installTransform(String host, int port, String user, String password, Authentication authType) {
+	public static void installTransform(String host, int port, String user, String password, Authentication authType) throws IOException {
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
@@ -84,7 +84,7 @@ public class DocumentReadTransform {
 		InputStream transStream = DocumentReadTransform.class.getClassLoader().getResourceAsStream(
 			"scripts"+File.separator+TRANSFORM_NAME+".xsl");
 		if (transStream == null)
-			throw new RuntimeException("Could not read example transform");
+			throw new IOException("Could not read example transform");
 
 		// create a handle on the transform source code
 		InputStreamHandle handle = new InputStreamHandle();
@@ -99,7 +99,7 @@ public class DocumentReadTransform {
 		client.release();
 	}
 
-	public static void readDocument(String host, int port, String user, String password, Authentication authType) {
+	public static void readDocument(String host, int port, String user, String password, Authentication authType) throws IOException {
 		String filename = "flipper.xml";
 
 		// create the client
@@ -133,11 +133,11 @@ public class DocumentReadTransform {
 	}
 
 	// set up by writing document content for the example to read
-	public static void setUpExample(DatabaseClient client, String docId, String filename) {
+	public static void setUpExample(DatabaseClient client, String docId, String filename) throws IOException {
 		InputStream docStream = DocumentReadTransform.class.getClassLoader().getResourceAsStream(
 				"data"+File.separator+filename);
 		if (docStream == null)
-			throw new RuntimeException("Could not read document example");
+			throw new IOException("Could not read document example");
 
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
@@ -170,7 +170,7 @@ public class DocumentReadTransform {
 		InputStream propsStream =
 			DocumentReadTransform.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
-			throw new RuntimeException("Could not read example properties");
+			throw new IOException("Could not read example properties");
 
 		Properties props = new Properties();
 		props.load(propsStream);

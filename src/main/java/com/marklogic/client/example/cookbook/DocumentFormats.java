@@ -47,7 +47,7 @@ public class DocumentFormats {
 		run(host, port, writer_user, writer_password, authType);
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType) {
+	public static void run(String host, int port, String user, String password, Authentication authType) throws IOException {
 		System.out.println("example: "+DocumentFormats.class.getName());
 
 		// a list of files with the format of each file
@@ -74,14 +74,14 @@ public class DocumentFormats {
 	}
 
 	// write, read, and delete the document
-	public static void writeReadDeleteDocument(DatabaseClient client, String filename, String format) {
+	public static void writeReadDeleteDocument(DatabaseClient client, String filename, String format) throws IOException {
 		// create a manager for documents of any format
 		GenericDocumentManager docMgr = client.newDocumentManager();
 
 		InputStream docStream = DocumentFormats.class.getClassLoader().getResourceAsStream(
 				"data"+File.separator+filename);
 		if (docStream == null)
-			throw new RuntimeException("Could not read document example");
+			throw new IOException("Could not read document example");
 
 		// create an identifier for the document
 		String docId = "/example/"+filename;
@@ -117,7 +117,7 @@ public class DocumentFormats {
 		InputStream propsStream =
 			DocumentFormats.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
-			throw new RuntimeException("Could not read example properties");
+			throw new IOException("Could not read example properties");
 
 		Properties props = new Properties();
 		props.load(propsStream);

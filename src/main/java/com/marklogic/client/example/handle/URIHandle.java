@@ -47,6 +47,7 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.marker.BinaryReadHandle;
@@ -111,7 +112,7 @@ public class URIHandle
 		else if (authType == Authentication.DIGEST)
 			prefList.add(AuthPolicy.DIGEST);
 		else
-			throw new RuntimeException("Unknown authentication type "+authType.name());
+			throw new IllegalArgumentException("Unknown authentication type "+authType.name());
 
 		defaultClient.getParams().setParameter(AuthPNames.PROXY_AUTH_PREF, prefList);
 
@@ -198,9 +199,9 @@ public class URIHandle
 
 			return status.getStatusCode() == 200;
 		} catch(ClientProtocolException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		} catch(IOException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		}
 	}
 
@@ -240,12 +241,12 @@ public class URIHandle
 
 			StatusLine status = response.getStatusLine();
 			if (status.getStatusCode() >= 300) {
-				throw new RuntimeException("Could not write to "+uri.toString()+": "+status.getReasonPhrase());
+				throw new MarkLogicIOException("Could not write to "+uri.toString()+": "+status.getReasonPhrase());
 			}
 
 			content.close();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		}
 	}
 	@Override
@@ -262,22 +263,22 @@ public class URIHandle
 
 			StatusLine status = response.getStatusLine();
 			if (status.getStatusCode() >= 300) {
-				throw new RuntimeException("Could not read from "+uri.toString()+": "+status.getReasonPhrase());
+				throw new MarkLogicIOException("Could not read from "+uri.toString()+": "+status.getReasonPhrase());
 			}
 
 			HttpEntity entity = response.getEntity();
 			if (entity == null) {
-				throw new RuntimeException("Received empty response to write for "+uri.toString());
+				throw new MarkLogicIOException("Received empty response to write for "+uri.toString());
 			}
 
 			InputStream stream = entity.getContent();
 			if (stream == null) {
-				throw new RuntimeException("Could not get stream to write for "+uri.toString());
+				throw new MarkLogicIOException("Could not get stream to write for "+uri.toString());
 			}
 
 			return stream;
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		}
 	}
 
@@ -288,7 +289,7 @@ public class URIHandle
 		try {
 			return (baseUri != null) ? baseUri.resolve(uri) : new URI(uri);
 		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
+			throw new IllegalArgumentException(e);
 		}
 	}
 }

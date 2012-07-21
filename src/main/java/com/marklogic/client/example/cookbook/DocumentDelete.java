@@ -46,7 +46,7 @@ public class DocumentDelete {
 		run(host, port, writer_user, writer_password, authType);
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType) {
+	public static void run(String host, int port, String user, String password, Authentication authType) throws IOException {
 		System.out.println("example: "+DocumentDelete.class.getName());
 
 		String filename = "flipper.xml";
@@ -72,11 +72,11 @@ public class DocumentDelete {
 	}
 
 	// set up by writing document content for the example to delete
-	public static void setUpExample(XMLDocumentManager docMgr, String docId, String filename) {
+	public static void setUpExample(XMLDocumentManager docMgr, String docId, String filename) throws IOException {
 		InputStream docStream = DocumentDelete.class.getClassLoader().getResourceAsStream(
 				"data"+File.separator+filename);
 		if (docStream == null)
-			throw new RuntimeException("Could not read document example");
+			throw new IOException("Could not read document example");
 
 		InputStreamHandle handle = new InputStreamHandle();
 		handle.set(docStream);
@@ -90,7 +90,7 @@ public class DocumentDelete {
 		InputStream propsStream =
 			DocumentDelete.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
-			throw new RuntimeException("Could not read example properties");
+			throw new IOException("Could not read example properties");
 
 		Properties props = new Properties();
 		props.load(propsStream);

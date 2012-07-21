@@ -49,7 +49,7 @@ public class DocumentMetadataWrite {
 		run(host, port, writer_user, writer_password, authType);
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType) {
+	public static void run(String host, int port, String user, String password, Authentication authType) throws IOException {
 		System.out.println("example: "+DocumentMetadataWrite.class.getName());
 
 		String filename = "flipper.xml";
@@ -61,7 +61,7 @@ public class DocumentMetadataWrite {
 		InputStream docStream = DocumentMetadataWrite.class.getClassLoader().getResourceAsStream(
 			"data"+File.separator+filename);
 		if (docStream == null)
-			throw new RuntimeException("Could not read document example");
+			throw new IOException("Could not read document example");
 
 		// create a manager for XML documents
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -102,7 +102,7 @@ public class DocumentMetadataWrite {
 		InputStream propsStream =
 			DocumentMetadataWrite.class.getClassLoader().getResourceAsStream(propsName);
 		if (propsStream == null)
-			throw new RuntimeException("Could not read example properties");
+			throw new IOException("Could not read example properties");
 
 		Properties props = new Properties();
 		props.load(propsStream);

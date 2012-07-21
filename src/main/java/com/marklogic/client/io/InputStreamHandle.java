@@ -153,7 +153,7 @@ public class InputStreamHandle
 
 			return b;
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		}
 	}
 	/**

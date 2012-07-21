@@ -30,6 +30,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.validation.Schema;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,8 +61,9 @@ public class InputSourceHandle
 	static final private Logger logger = LoggerFactory.getLogger(InputSourceHandle.class);
 
 	private EntityResolver   resolver;
-	private InputSource      content;
+	private Schema           defaultSchema;
 	private SAXParserFactory factory;
+	private InputSource      content;
 
 	/**
 	 * Zero-argument constructor.
@@ -130,7 +132,7 @@ public class InputSourceHandle
 			if (logger.isInfoEnabled())
 				logger.info("Processing input source with SAX content handler");
 
-			XMLReader reader = makeReader();
+			XMLReader reader = makeReader(false);
 
 			reader.setContentHandler(handler);
 
@@ -184,7 +186,7 @@ public class InputSourceHandle
 
 			return b;
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new MarkLogicIOException(e);
 		}
 	}
 	/**
@@ -224,14 +226,47 @@ public class InputSourceHandle
 
 		return factory;
 	}
-	protected XMLReader makeReader() {
+
+	/**
+	 * Returns the default schema for validating the input source
+	 * while writing to the database.
+	 * @return	the schema
+	 */
+	public Schema getDefaultSchema() {
+		return defaultSchema;
+	}
+	/**
+	 * Specifies the default schema for validating the input source.  The
+	 * default schema is used only while writing to the database and only
+	 * when no schema has been set directly on the factory.  When validating
+	 * while writing an input source to the database, set the repair policy
+	 * to NONE on the XMLDocumentManager to avoid creating a partial document
+	 * if validation fails.
+	 * @param schema
+	 */
+	public void setDefaultSchema(Schema schema) {
+		this.defaultSchema = schema;
+	}
+
+	protected XMLReader makeReader(boolean withValidation) {
 		try {
 			SAXParserFactory factory = getFactory();
 			if (factory == null) {
 				throw new MarkLogicInternalException("Failed to make SAX parser factory");
 			}
 
+			boolean useDefaultSchema =
+				(withValidation && defaultSchema != null && factory.getSchema() == null);
+			if (useDefaultSchema) {
+				factory.setSchema(defaultSchema);
+			}
+
 			XMLReader reader = factory.newSAXParser().getXMLReader();
+
+			if (useDefaultSchema) {
+				factory.setSchema(null);
+			}
+
 			if (resolver != null)
 				reader.setEntityResolver(resolver);
 
@@ -275,7 +310,7 @@ public class InputSourceHandle
 	public void write(OutputStream out) throws IOException {
 		try {
 			TransformerFactory.newInstance().newTransformer().transform(
-					new SAXSource(makeReader(), content),
+					new SAXSource(makeReader(true), content),
 					new StreamResult(new OutputStreamWriter(out, "UTF-8"))
 					);
 		} catch (TransformerException e) {
