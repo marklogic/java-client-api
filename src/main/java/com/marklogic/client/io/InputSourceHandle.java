@@ -36,8 +36,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
 import com.marklogic.client.MarkLogicIOException;
@@ -61,7 +63,8 @@ public class InputSourceHandle
 	static final private Logger logger = LoggerFactory.getLogger(InputSourceHandle.class);
 
 	private EntityResolver   resolver;
-	private Schema           defaultSchema;
+	private ErrorHandler     errorHandler;
+	private Schema           defaultWriteSchema;
 	private SAXParserFactory factory;
 	private InputSource      content;
 
@@ -96,6 +99,23 @@ public class InputSourceHandle
 	 */
 	public void setResolver(EntityResolver resolver) {
 		this.resolver = resolver;
+	}
+
+	/**
+	 * Returns the error handler for errors discovered while parsing
+	 * the input source.
+	 * @return	the error handler
+	 */
+	public ErrorHandler getErrorHandler() {
+		return errorHandler;
+	}
+	/**
+	 * Specifies the error handler for errors discovered while parsing
+	 * the input source.
+	 * @param errorHandler	the error handler
+	 */
+	public void setErrorHandler(ErrorHandler errorHandler) {
+		this.errorHandler = errorHandler;
 	}
 
 	/**
@@ -230,25 +250,26 @@ public class InputSourceHandle
 	/**
 	 * Returns the default schema for validating the input source
 	 * while writing to the database.
-	 * @return	the schema
+	 * @return	the default schema for writing documents
 	 */
-	public Schema getDefaultSchema() {
-		return defaultSchema;
+	public Schema getDefaultWriteSchema() {
+		return defaultWriteSchema;
 	}
 	/**
-	 * Specifies the default schema for validating the input source.  The
+	 * Specifies the default schema for validating the input source. The
 	 * default schema is used only while writing to the database and only
-	 * when no schema has been set directly on the factory.  When validating
-	 * while writing an input source to the database, set the repair policy
-	 * to NONE on the XMLDocumentManager to avoid creating a partial document
-	 * if validation fails.
-	 * @param schema
+	 * when no schema has been set directly on the factory. To minimize
+	 * creation of partial documents while writing an input source to the database,
+	 * set the error handler on the InputSourceHandle to {@link DraconianErrorHandler}
+	 * and set the repair policy to NONE on the XMLDocumentManager.  An error on the
+	 * root element can still result in an empty document.
+	 * @param schema	the default schema for writing documents
 	 */
-	public void setDefaultSchema(Schema schema) {
-		this.defaultSchema = schema;
+	public void setDefaultWriteSchema(Schema schema) {
+		this.defaultWriteSchema = schema;
 	}
 
-	protected XMLReader makeReader(boolean withValidation) {
+	protected XMLReader makeReader(boolean isForWrite) {
 		try {
 			SAXParserFactory factory = getFactory();
 			if (factory == null) {
@@ -256,9 +277,9 @@ public class InputSourceHandle
 			}
 
 			boolean useDefaultSchema =
-				(withValidation && defaultSchema != null && factory.getSchema() == null);
+				(isForWrite && defaultWriteSchema != null && factory.getSchema() == null);
 			if (useDefaultSchema) {
-				factory.setSchema(defaultSchema);
+				factory.setSchema(defaultWriteSchema);
 			}
 
 			XMLReader reader = factory.newSAXParser().getXMLReader();
@@ -269,6 +290,9 @@ public class InputSourceHandle
 
 			if (resolver != null)
 				reader.setEntityResolver(resolver);
+
+			if (errorHandler != null)
+				reader.setErrorHandler(errorHandler);
 
 			return reader;
 		} catch (SAXException e) {
@@ -317,5 +341,38 @@ public class InputSourceHandle
 			logger.error("Failed to transform input source into result",e);
 			throw new MarkLogicIOException(e);
 		}
+	}
+
+	/**
+	 * DraconianErrorHandler treats SAX parse errors as exceptions
+	 * but ignores warnings (based on the JavaDoc for the
+	 * javax.xml.validation package). To minimize creation of partial
+	 * documents while writing an input source to the database,
+	 * set the error handler on the InputSourceHandle to DraconianErrorHandler
+	 * and set the repair policy to NONE on the XMLDocumentManager.  An error
+	 * on the root element can still result in an empty document.
+	 */
+	static public class DraconianErrorHandler implements ErrorHandler {
+		/**
+		 * Throws the fatal error as a parse exception.
+		 */
+		@Override
+		public void fatalError(SAXParseException e) throws SAXException {
+			throw e;
+		}
+		/**
+		 * Throws the error as a parse exception.
+		 */
+	    @Override
+		public void error(SAXParseException e) throws SAXException {
+			throw e;
+		}
+		/**
+		 * Ignores the warning.
+		 */
+	    @Override
+	    public void warning(SAXParseException e) throws SAXException {
+	    	// noop
+	    }
 	}
 }

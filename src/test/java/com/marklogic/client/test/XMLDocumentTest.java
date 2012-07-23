@@ -24,6 +24,7 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLEventReader;
@@ -35,6 +36,9 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -46,6 +50,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager.DocumentRepair;
 import com.marklogic.client.io.DOMHandle;
@@ -170,5 +175,81 @@ public class XMLDocumentTest {
 			threwException = true;
 		}
 		assertTrue("Expected failure on truncated XML document with no repair", threwException);
+	}
+
+	@Test
+	public void testValidate() throws ParserConfigurationException, SAXException, IOException, TransformerConfigurationException, TransformerFactoryConfigurationError, XMLStreamException {
+		String docId = "/test/testWrite1.xml";
+
+		SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+
+		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+		docMgr.setDocumentRepair(DocumentRepair.NONE);
+
+		String doc = "<?xml version='1.0' encoding='UTF-8'?>"+
+"<root foo='bar'><child/>mixed</root>";
+
+		InputSourceHandle saxHandle = new InputSourceHandle();
+
+		// throw exceptions for parse errors
+		saxHandle.setErrorHandler(new InputSourceHandle.DraconianErrorHandler());
+
+		String validSchema = "<?xml version='1.0' encoding='UTF-8'?>"+
+"<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema' "+
+    "xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' "+
+    "xsi:schemaLocation='http://www.w3.org/2001/XMLSchema XMLSchema.xsd'>"+
+  "<xs:element name='root'>"+
+    "<xs:complexType mixed='true'>"+
+      "<xs:choice minOccurs='0' maxOccurs='unbounded'>"+
+        "<xs:element name='child'/>"+
+      "</xs:choice>"+
+      "<xs:attribute name='foo' type='xs:string' use='optional'/>"+
+    "</xs:complexType>"+
+  "</xs:element>"+
+"</xs:schema>";
+
+		Schema schema = factory.newSchema(new StreamSource(new StringReader(validSchema)));
+
+		saxHandle.setDefaultWriteSchema(schema);
+
+		if (docMgr.exists(docId) != null) {
+			docMgr.delete(docId);
+		}
+
+		docMgr.write(docId, saxHandle.with(new InputSource(new StringReader(doc))));
+
+		DocumentDescriptor docDesc = docMgr.exists(docId);
+		assertTrue("Write failed with valid SAX", docDesc != null);
+
+		docMgr.delete(docId);
+
+		String invalidSchema = "<?xml version='1.0' encoding='UTF-8'?>"+
+		"<xs:schema xmlns:xs='http://www.w3.org/2001/XMLSchema' "+
+		    "xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' "+
+		    "xsi:schemaLocation='http://www.w3.org/2001/XMLSchema XMLSchema.xsd'>"+
+		  "<xs:element name='root'>"+
+		    "<xs:complexType>"+
+		      "<xs:attribute name='foo' type='xs:string' use='optional'/>"+
+		    "</xs:complexType>"+
+		  "</xs:element>"+
+		"</xs:schema>";
+
+		schema = factory.newSchema(new StreamSource(new StringReader(invalidSchema)));
+
+		saxHandle.setDefaultWriteSchema(schema);
+
+		boolean threwException = false;
+		try {
+			docMgr.write(docId, saxHandle.with(new InputSource(new StringReader(doc))));
+		} catch(RuntimeException ex) {
+			threwException = true;
+		}
+		assertTrue("Expected failure for invalid SAX", threwException);
+
+		// if the error occurs in the root element, the server writes an empty document
+		docDesc = docMgr.exists(docId);
+		if (docDesc != null) {
+			docMgr.delete(docId);
+		}
 	}
 }
