@@ -145,7 +145,7 @@ public class QueryOptionsBuilderTest {
 				.returnValues(false)
 				.searchOptions("checked"));
 
-		logger.debug(options.toXMLString());
+		logger.debug(options.toString());
 		assertTrue("returnFacets from build", options.getReturnFacets());
 		options.setReturnFacets(false);
 		assertFalse("returnFacets from setter", options.getReturnFacets());
@@ -401,7 +401,7 @@ public class QueryOptionsBuilderTest {
 		assertEquals("2000s", ((QueryRange) options.getConstraint("decade")
 				.getSource()).getBuckets().get(0).getContent());
 		
-		String optionsString = options.toXMLString();
+		String optionsString = options.toString();
         Document doc = XMLUnit.buildControlDocument(optionsString);
         NodeList nl = xpathEngine.getMatchingNodes("//search:range/search:weight", doc);
 
@@ -447,7 +447,7 @@ public class QueryOptionsBuilderTest {
 		assertEquals("/doc/para/title", pathIndex.getPath());
 		
 		
-        String xml = options.toXMLString();
+        String xml = options.toString();
 
         doc = XMLUnit.buildControlDocument(xml);
 
@@ -474,7 +474,7 @@ public class QueryOptionsBuilderTest {
 
 		assertEquals("summary", qw.getFieldName());
 
-		String optionsString = options.toXMLString();
+		String optionsString = options.toString();
 		
         Document doc = XMLUnit.buildControlDocument(optionsString);
 
@@ -634,7 +634,7 @@ public class QueryOptionsBuilderTest {
 		assertEquals("int1", options.getTuples("fields").getField().get(0).getName());
 		assertEquals("int2", options.getTuples("fields").getField().get(1).getName());
 		
-		logger.debug(options.toXMLString());
+		logger.debug(options.toString());
 		
 		options = exercise(options);
 		assertEquals(3, options.getTuples().size());
@@ -701,7 +701,7 @@ public class QueryOptionsBuilderTest {
 		assertEquals("DomElement on grammar", "and-query", g.getImplicit()
 				.getLocalName());
 
-		logger.debug(options.toXMLString());
+		logger.debug(options.toString());
 		options = exercise(options);
 
 		QueryStarter s1 = g.getStarters().get(0);

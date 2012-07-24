@@ -900,20 +900,6 @@ public final class QueryOptionsHandle
 	}
 
     /**
-     * Returns the query options node as an XML string.
-     * @return The XML string representation of the node.
-     */
-	public String toXMLString() {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		try {
-			this.write(baos);
-		} catch (IOException e) {
-			throw new MarkLogicIOException(e);
-		}
-		return baos.toString();
-	}
-
-    /**
      * Writes the query options node (as XML) to the specified output stream.
      * @param out the output stream receiving the node.
      * @throws IOException if there is an I/O error writing to that stream.

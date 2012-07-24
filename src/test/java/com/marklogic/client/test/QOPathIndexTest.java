@@ -15,14 +15,16 @@
  */
 package com.marklogic.client.test;
 
-import com.marklogic.client.util.EditableNamespaceContext;
-import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.config.QueryOptions;
-import com.marklogic.client.admin.config.QueryOptions.Facets;
-import com.marklogic.client.admin.config.QueryOptions.FragmentScope;
-import com.marklogic.client.admin.config.QueryOptionsBuilder;
-import com.marklogic.client.impl.HandleAccessor;
-import com.marklogic.client.io.QueryOptionsHandle;
+import static org.junit.Assert.assertEquals;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
@@ -35,17 +37,14 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import javax.xml.namespace.NamespaceContext;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.admin.config.QueryOptions;
+import com.marklogic.client.admin.config.QueryOptions.Facets;
+import com.marklogic.client.admin.config.QueryOptions.FragmentScope;
+import com.marklogic.client.admin.config.QueryOptionsBuilder;
+import com.marklogic.client.impl.HandleAccessor;
+import com.marklogic.client.io.QueryOptionsHandle;
+import com.marklogic.client.util.EditableNamespaceContext;
 
 public class QOPathIndexTest {
     private static final Logger logger = (Logger) LoggerFactory
@@ -92,7 +91,7 @@ public class QOPathIndexTest {
         				.withSearchableExpression(
         						builder.searchableExpression("/path/to/test"));
 
-        String xml = options.toXMLString();
+        String xml = options.toString();
 
         Document doc = XMLUnit.buildControlDocument(xml);
 
@@ -118,7 +117,7 @@ public class QOPathIndexTest {
                 .withSearchableExpression(        				
                         builder.searchableExpression("/x:path/to/test", builder.ns("x", "ab'c'")));
 
-        String xml = options.toXMLString();
+        String xml = options.toString();
 
         Document doc = XMLUnit.buildControlDocument(xml);
 
@@ -157,7 +156,7 @@ public class QOPathIndexTest {
 
         options.setSearchableExpressionNamespaceContext(context);
 
-        String xml = options.toXMLString();
+        String xml = options.toString();
 
         Document doc = XMLUnit.buildControlDocument(xml);
 
@@ -196,7 +195,7 @@ public class QOPathIndexTest {
         assertEquals("Correct namespace binding for searchable-expression", nscontext.getNamespaceURI("x"), "ab'c'");
         assertEquals("Correct searchable-expression", expression, "/x:path/to/test");
 
-        String resultxml = handle.toXMLString();
+        String resultxml = handle.toString();
         Document doc = XMLUnit.buildControlDocument(resultxml);
 
         String value = xpathEngine.evaluate("/search:options/search:constraint/search:range/search:path-index/namespace::foo", doc);

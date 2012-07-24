@@ -163,7 +163,7 @@ public class QueryOptionsHandleTest {
     public void emptyOptions() throws IOException, SAXException {
         String correct = "<search:options xmlns:search='http://marklogic.com/appservices/search'/>";
         QueryOptionsHandle options = new QueryOptionsHandle();
-        String result = options.toXMLString();
+        String result = options.toString();
 
         Document cd = XMLUnit.buildControlDocument(correct);
         Document rd = XMLUnit.buildControlDocument(result);
@@ -178,7 +178,7 @@ public class QueryOptionsHandleTest {
                 + "</options>";
         QueryOptionsHandle options = new QueryOptionsHandle();
         options.addForest(1234);
-        String result = options.toXMLString();
+        String result = options.toString();
 
         Document cd = XMLUnit.buildControlDocument(correct);
         Document rd = XMLUnit.buildControlDocument(result);
@@ -197,14 +197,14 @@ public class QueryOptionsHandleTest {
 		QueryOptionsHandle options = mgr.readOptions("tmp",
 				new QueryOptionsHandle());
 
-		logger.debug(options.toXMLString());
+		logger.debug(options.toString());
 		
 		Element e = options.getAdditionalQuery();
 		assertEquals("QueryString wrong after serializing QueryAdditionalQuery", "directory-query", e.getNodeName());
 
 		e.setTextContent("/oscars2/");
 		options.setAdditionalQuery(e);
-		optionsString = options.toXMLString();
+		optionsString = options.toString();
 
 		logger.debug(optionsString);
 		assertTrue("Updated Option not updated from QueryAdditionalQuery",
@@ -235,7 +235,7 @@ public class QueryOptionsHandleTest {
 						Direction.ASCENDING)));
 
 		options.getOperators().add(operator);
-		String optionsString = options.toXMLString();
+		String optionsString = options.toString();
 
         Document doc = XMLUnit.buildControlDocument(optionsString);
         NodeList nl = xpathEngine.getMatchingNodes("//search:sort-order/search:score[. = '' and not(*)]", doc);
@@ -379,7 +379,7 @@ public class QueryOptionsHandleTest {
 			ParserConfigurationException {
 		for (QueryOptionsHandle option : optionsPOJOs) {
 
-			Element rootElement = Utilities.domElement(option.toXMLString());
+			Element rootElement = Utilities.domElement(option.toString());
 			assertEquals(
 					"QName of root element incorrect",
 					new QName("http://marklogic.com/appservices/search",

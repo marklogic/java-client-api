@@ -96,7 +96,7 @@ public class StringSearchTest {
         QueryOptionsManager queryOptionsMgr =
         	Common.client.newServerConfigManager().newQueryOptionsManager();
 
-        logger.error(options.toXMLString());
+        logger.error(options.toString());
 
         queryOptionsMgr.writeOptions(optionsName, options);
 
