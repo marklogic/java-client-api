@@ -23,7 +23,7 @@ import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 		QueryOptionsManager {
 
-	private String QUERY_OPTIONS_BASE = "/config/query";
+	final static private String QUERY_OPTIONS_BASE = "/config/query";
 	private RESTServices services;
 
 	public QueryOptionsManagerImpl(RESTServices services) {
