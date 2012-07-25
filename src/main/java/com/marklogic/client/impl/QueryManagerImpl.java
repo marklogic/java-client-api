@@ -189,10 +189,11 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         case UNKNOWN:
         	valuesFormat = Format.XML;
         	break;
+        case JSON:
         case XML:
         	break;
         default:
-            throw new UnsupportedOperationException("Only XML values results are possible.");
+            throw new UnsupportedOperationException("Only XML and JSON values results are possible.");
         }
 
         String mimetype = valuesFormat.getDefaultMimetype();
@@ -216,10 +217,11 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         case UNKNOWN:
         	valuesFormat = Format.XML;
         	break;
+        case JSON:
         case XML:
         	break;
         default:
-            throw new UnsupportedOperationException("Only XML values list results are possible.");
+            throw new UnsupportedOperationException("Only XML and JSON values list results are possible.");
         }
 
         String mimetype = valuesFormat.getDefaultMimetype();
@@ -243,10 +245,11 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         case UNKNOWN:
         	optionsFormat = Format.XML;
         	break;
+        case JSON:
         case XML:
         	break;
         default:
-            throw new UnsupportedOperationException("Only XML options list results are possible.");
+            throw new UnsupportedOperationException("Only XML and JSON options list results are possible.");
         }
 
         String mimetype = optionsFormat.getDefaultMimetype();
