@@ -86,7 +86,6 @@ public class DeleteSearchTest {
         DeleteQueryDefinition qdef = queryMgr.newDeleteDefinition();
         qdef.setDirectory("/delete/test/");
 
-        SearchHandle handle = new SearchHandle();
         queryMgr.delete(qdef);
     }
 }

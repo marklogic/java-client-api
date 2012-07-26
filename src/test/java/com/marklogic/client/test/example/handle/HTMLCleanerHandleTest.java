@@ -28,7 +28,7 @@ public class HTMLCleanerHandleTest {
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			HTMLCleanerHandleExample.main(null);
+			HTMLCleanerHandleExample.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -28,7 +28,7 @@ public class JacksonHandleTest {
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			JacksonHandleExample.main(null);
+			JacksonHandleExample.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();

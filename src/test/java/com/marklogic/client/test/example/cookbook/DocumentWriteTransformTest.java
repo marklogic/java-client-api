@@ -28,7 +28,7 @@ public class DocumentWriteTransformTest {
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			DocumentWriteTransform.main(null);
+			DocumentWriteTransform.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();

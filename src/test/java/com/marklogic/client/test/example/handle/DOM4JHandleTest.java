@@ -29,7 +29,7 @@ public class DOM4JHandleTest {
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			DOM4JHandleExample.main(null);
+			DOM4JHandleExample.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();

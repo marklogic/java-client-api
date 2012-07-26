@@ -30,7 +30,7 @@ public class JAXBDocumentTest {
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			JAXBDocument.main(null);
+			JAXBDocument.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -28,7 +28,7 @@ public class DocumentFormatsTest {
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			DocumentFormats.main(null);
+			DocumentFormats.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();

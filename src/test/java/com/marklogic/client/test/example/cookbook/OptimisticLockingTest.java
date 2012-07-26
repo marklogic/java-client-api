@@ -28,7 +28,7 @@ public class OptimisticLockingTest {
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			OptimisticLocking.main(null);
+			OptimisticLocking.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -28,7 +28,7 @@ public class DocumentMetadataWriteTest {
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			DocumentMetadataWrite.main(null);
+			DocumentMetadataWrite.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();

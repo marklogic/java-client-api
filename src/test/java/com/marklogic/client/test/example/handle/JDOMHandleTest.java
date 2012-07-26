@@ -29,7 +29,7 @@ public class JDOMHandleTest {
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			JDOMHandleExample.main(null);
+			JDOMHandleExample.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();

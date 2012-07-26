@@ -42,13 +42,17 @@ import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.StringHandle;
 
 public class GenericDocumentTest {
+	static private Random seed;
+
 	@BeforeClass
 	public static void beforeClass() {
+		seed = new Random();
 		Common.connect();
 	}
 	@AfterClass
 	public static void afterClass() {
 		Common.release();
+		seed = null;
 	}
 
 	@Test
@@ -124,7 +128,7 @@ public class GenericDocumentTest {
 
 		StringHandle xmlStringHandle = new StringHandle();
 		String stringMetadata = docMgr.readMetadata(docId, xmlStringHandle).get();
-		assertTrue("Could not get document metadata as an XML String", stringMetadata != null || stringMetadata.length() == 0);
+		assertTrue("Could not get document metadata as an XML String", stringMetadata != null && stringMetadata.length() > 0);
 
 		Document domMetadata = docMgr.readMetadata(docId, new DOMHandle()).get();
 		assertTrue("Could not get document metadata as an XML document", domMetadata != null);
@@ -132,7 +136,7 @@ public class GenericDocumentTest {
 		StringHandle jsonStringHandle = new StringHandle();
 		jsonStringHandle.setFormat(Format.JSON);
 		stringMetadata = docMgr.readMetadata(docId, jsonStringHandle).get();
-		assertTrue("Could not get document metadata as JSON", stringMetadata != null || stringMetadata.length() == 0);
+		assertTrue("Could not get document metadata as JSON", stringMetadata != null && stringMetadata.length() > 0);
 
 		String docText = docMgr.read(docId, xmlStringHandle, new StringHandle()).get();
 		stringMetadata = xmlStringHandle.get();
@@ -170,7 +174,7 @@ public class GenericDocumentTest {
 		TextDocumentManager docMgr = Common.client.newTextDocumentManager();
 		docMgr.write(docId1,new StringHandle().with("A simple text document"));
 
-		String transactionName = "java-client-" + new Random().nextLong();
+		String transactionName = "java-client-" + seed.nextLong();
 
 		Transaction transaction = Common.client.openTransaction(transactionName);
 		StringHandle docHandle = docMgr.read(docId1, new StringHandle(), transaction);

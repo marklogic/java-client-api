@@ -28,7 +28,7 @@ public class DocumentDeleteTest {
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			DocumentDelete.main(null);
+			DocumentDelete.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();

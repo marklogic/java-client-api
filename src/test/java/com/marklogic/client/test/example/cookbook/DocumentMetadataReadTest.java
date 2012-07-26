@@ -28,7 +28,7 @@ public class DocumentMetadataReadTest {
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			DocumentMetadataRead.main(null);
+			DocumentMetadataRead.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();

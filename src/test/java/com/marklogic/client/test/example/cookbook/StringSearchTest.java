@@ -28,7 +28,7 @@ public class StringSearchTest {
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			StringSearch.main(null);
+			StringSearch.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();

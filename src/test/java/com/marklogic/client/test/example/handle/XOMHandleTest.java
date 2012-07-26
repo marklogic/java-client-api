@@ -31,7 +31,7 @@ public class XOMHandleTest {
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			XOMHandleExample.main(null);
+			XOMHandleExample.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -28,7 +28,7 @@ public class DocumentReadTransformTest {
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			DocumentReadTransform.main(null);
+			DocumentReadTransform.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();

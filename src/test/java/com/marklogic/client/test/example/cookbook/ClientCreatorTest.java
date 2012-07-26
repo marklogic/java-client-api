@@ -28,7 +28,7 @@ public class ClientCreatorTest {
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			ClientCreator.main(null);
+			ClientCreator.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();

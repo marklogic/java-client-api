@@ -28,7 +28,7 @@ public class DocumentOutputStreamTest {
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			DocumentOutputStream.main(null);
+			DocumentOutputStream.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();

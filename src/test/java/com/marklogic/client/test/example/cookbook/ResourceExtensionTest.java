@@ -28,7 +28,7 @@ public class ResourceExtensionTest {
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			ResourceExtension.main(null);
+			ResourceExtension.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();

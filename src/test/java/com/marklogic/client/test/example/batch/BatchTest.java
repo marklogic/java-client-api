@@ -28,7 +28,7 @@ public class BatchTest {
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			BatchExample.main(null);
+			BatchExample.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();

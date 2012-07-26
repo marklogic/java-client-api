@@ -72,6 +72,10 @@ import com.marklogic.client.io.XMLStreamReaderHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 
+/*
+TODO: rename BufferableHandleTest
+operate on all bufferables
+ */
 public class DocumentManagerTest {
 	public interface WriteSetter<H extends AbstractWriteHandle> {
 		public H getHandle();
@@ -162,8 +166,6 @@ public class DocumentManagerTest {
 				} 
 			}
 		}
-
-		HashMap<String,Object> documents = new HashMap<String,Object>();
 
 		Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		Element root = domDocument.createElement("root");
