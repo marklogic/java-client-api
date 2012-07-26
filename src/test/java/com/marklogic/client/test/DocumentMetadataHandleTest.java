@@ -119,7 +119,7 @@ public class DocumentMetadataHandleTest {
 				docMgr.writeMetadata(docId, metaWriteHandle);
 				StringHandle xmlStringHandle = new StringHandle();
 				String stringMetadata = docMgr.readMetadata(docId, xmlStringHandle).get();
-				assertTrue("Could not get document metadata as an XML String", stringMetadata != null && stringMetadata.length() == 0);
+				assertTrue("Could not get document metadata as an XML String", stringMetadata != null && stringMetadata.length() > 0);
 			} else {
 				assertTrue("Test case error", false);
 			}
