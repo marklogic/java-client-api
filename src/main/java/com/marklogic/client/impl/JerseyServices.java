@@ -460,6 +460,9 @@ public class JerseyServices implements RESTServices {
 			throw new IllegalArgumentException(
 					"Document read for document identifier without uri");
 
+		assert metadataHandle != null : "metadataHandle is null";
+		assert contentHandle  != null : "contentHandle is null";
+
 		if (logger.isInfoEnabled())
 			logger.info("Getting multipart for {} in transaction {}", uri,
 				transactionId);
@@ -529,7 +532,7 @@ public class JerseyServices implements RESTServices {
 			updateMimetype(desc, contentHeaders);
 			updateLength(desc, contentHeaders);
 			copyDescriptor(desc, contentBase);
-		} else if (contentBase != null) {
+		} else {
 			updateFormat(contentBase, responseHeaders);
 			updateMimetype(contentBase, contentHeaders);
 			updateLength(contentBase, contentHeaders);

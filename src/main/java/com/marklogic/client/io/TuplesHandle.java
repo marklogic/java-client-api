@@ -72,7 +72,7 @@ public class TuplesHandle
     @Override
     public void setFormat(Format format) {
         if (format != Format.XML)
-            new IllegalArgumentException("ValuesHandle supports the XML format only");
+        	throw new IllegalArgumentException("ValuesHandle supports the XML format only");
     }
 
     /**
@@ -115,6 +115,13 @@ public class TuplesHandle
     @Override
     public ValuesDefinition getQueryCriteria() {
         return valdef;
+    }
+    /**
+     * Specifies the tuples query definition used to identify this set of tuples.
+     * @param vdef	The query criteria.
+     */
+    public void setQueryCriteria(ValuesDefinition vdef) {
+    	valdef = vdef;
     }
 
     /**

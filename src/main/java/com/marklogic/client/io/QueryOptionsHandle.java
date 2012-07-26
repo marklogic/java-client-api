@@ -579,7 +579,7 @@ public final class QueryOptionsHandle
 	@Override
 	public void setFormat(Format format) {
 		if (format != Format.XML) {
-            new IllegalArgumentException("QueryOptionsHandle supports the XML format only");
+            throw new IllegalArgumentException("QueryOptionsHandle supports the XML format only");
         }
 	}
 

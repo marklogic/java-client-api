@@ -80,7 +80,7 @@ public class URIHandle
 	private URI         currentUri;
 	private boolean     usePut = true;
 
-	public URIHandle(HttpClient httpclient) {
+	public URIHandle(HttpClient client) {
 		super();
 		setClient(client);
 	}

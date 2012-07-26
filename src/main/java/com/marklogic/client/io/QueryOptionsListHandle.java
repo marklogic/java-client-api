@@ -76,7 +76,7 @@ public class QueryOptionsListHandle
     @Override
     public void setFormat(Format format) {
         if (format != Format.XML)
-            new IllegalArgumentException("QueryOptionsListHandle supports the XML format only");
+        	throw new IllegalArgumentException("QueryOptionsListHandle supports the XML format only");
     }
 
     /**

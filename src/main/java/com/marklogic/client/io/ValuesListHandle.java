@@ -61,7 +61,7 @@ public class ValuesListHandle
     @Override
     public void setFormat(Format format) {
         if (format != Format.XML)
-            new IllegalArgumentException("ValuesListHandle supports the XML format only");
+        	throw new IllegalArgumentException("ValuesListHandle supports the XML format only");
     }
 
     public ValuesListHandle withFormat(Format format) {

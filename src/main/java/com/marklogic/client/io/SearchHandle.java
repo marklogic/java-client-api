@@ -113,7 +113,7 @@ public class SearchHandle
     @Override
     public void setFormat(Format format) {
         if (format != Format.XML)
-            new IllegalArgumentException("SearchHandle supports the XML format only");
+        	throw new IllegalArgumentException("SearchHandle supports the XML format only");
     }
 
     /**
@@ -530,9 +530,9 @@ public class SearchHandle
             box[2] = n;
             box[3] = e;
 
-            name = "[" + box[0] + ", " + box[1]+ ", " + box[2] + ", " + box[3] + "]";
+            this.name = "[" + box[0] + ", " + box[1]+ ", " + box[2] + ", " + box[3] + "]";
             this.count = count;
-            label = name;
+            this.label = name;
         }
 
         @Override
