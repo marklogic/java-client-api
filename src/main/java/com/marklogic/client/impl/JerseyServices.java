@@ -283,7 +283,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	private void makeFirstRequest() {
-		connection.path("ping").head();
+		connection.path("ping").head().close();
 	}
 
 	@Override
