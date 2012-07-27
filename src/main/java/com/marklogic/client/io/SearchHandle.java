@@ -635,7 +635,7 @@ public class SearchHandle
             } else if ("meta".equals(localName))        { handleMetadata();
             } else if ("plan".equals(localName))        { handlePlan();
             } else if ("match".equals(localName))       { handleMatch(uri, localName, attributes);
-            } else if ("highlight".equals(localName))   { inHighlight = true;
+            } else if ("highlight".equals(localName))   { handleHighlight();
             } else if ("facet".equals(localName))       { handleFacet(attributes);
             } else if ("facet-value".equals(localName)) { handleFacetValue(attributes);
             } else if ("boxes".equals(localName))       { handleGeoFacet(attributes);
@@ -755,6 +755,18 @@ public class SearchHandle
             MatchLocation loc = new MatchLocationImpl(attributes.getValue("", "path"));
             ((MatchDocumentSummaryImpl) matchSummaries[matchSlot]).addLocation(loc);
             inMatch = true;
+        }
+
+        private void handleHighlight() {
+            if (!buildDOM) {
+                if (characters != null) {
+                    MatchSnippet snippet = new MatchSnippetImpl(false, characters);
+                    MatchLocation location = ((MatchDocumentSummaryImpl) matchSummaries[matchSlot]).getCurrentLocation();
+                    ((MatchLocationImpl) location).addSnippet(snippet);
+                }
+            }
+
+            inHighlight = true;
         }
 
         private void handleFacet(Attributes attributes) {
