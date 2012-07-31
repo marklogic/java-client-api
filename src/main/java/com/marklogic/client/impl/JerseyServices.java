@@ -31,7 +31,6 @@ import javax.net.ssl.SSLException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
-import com.marklogic.client.query.QueryManager;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.auth.params.AuthPNames;
@@ -46,41 +45,42 @@ import org.apache.http.conn.ssl.AbstractVerifier;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.document.ContentDescriptor;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
-import com.marklogic.client.document.DocumentDescriptor;
-import com.marklogic.client.document.DocumentManager.Metadata;
-import com.marklogic.client.query.ElementLocator;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.query.KeyLocator;
 import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.util.RequestLogger;
-import com.marklogic.client.util.RequestParameters;
 import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.document.ContentDescriptor;
+import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
-import com.marklogic.client.query.ValueLocator;
-import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.KeyValueQueryDefinition;
-import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.query.ValuesDefinition;
-import com.marklogic.client.query.ValuesListDefinition;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
+import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.ElementLocator;
+import com.marklogic.client.query.KeyLocator;
+import com.marklogic.client.query.KeyValueQueryDefinition;
+import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.query.ValueLocator;
+import com.marklogic.client.query.ValuesDefinition;
+import com.marklogic.client.query.ValuesListDefinition;
+import com.marklogic.client.util.RequestLogger;
+import com.marklogic.client.util.RequestParameters;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
@@ -209,7 +209,7 @@ public class JerseyServices implements RESTServices {
 		SchemeRegistry schemeRegistry = new SchemeRegistry();
 		schemeRegistry.register(scheme);
 
-		ThreadSafeClientConnManager connMgr = new ThreadSafeClientConnManager(
+		PoolingClientConnectionManager connMgr = new PoolingClientConnectionManager(
 				schemeRegistry);
 		connMgr.setDefaultMaxPerRoute(100);
 

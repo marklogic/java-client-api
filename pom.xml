@@ -108,22 +108,22 @@
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-client</artifactId>
-			<version>1.12</version>
+			<version>1.13</version>
 		</dependency>
         <dependency>
         	<groupId>com.sun.jersey.contribs</groupId>
         	<artifactId>jersey-apache-client4</artifactId>
-        	<version>1.12</version>
+        	<version>1.13</version>
         </dependency>
 		<dependency>
 		    <groupId>com.sun.jersey.contribs</groupId>
 		    <artifactId>jersey-multipart</artifactId>
-		    <version>1.12</version>
+		    <version>1.13</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.6</version>
 		</dependency>
 		<!-- test dependencies -->
 		<dependency>
@@ -142,7 +142,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.4</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -169,6 +169,14 @@
 			<version>2.2</version>
 			<scope>provided</scope>
 		</dependency>
+<!--
+		<dependency>
+        	<groupId>net.sf.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>2.3</version>
+			<scope>provided</scope>
+		</dependency>
+  -->
 	</dependencies>
 
 	<dependencyManagement>
@@ -177,12 +185,12 @@
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
 				<artifactId>httpclient</artifactId>
-				<version>4.1.1</version>
+				<version>4.2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
 				<artifactId>httpcore</artifactId>
-				<version>4.1</version>
+				<version>4.2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-logging</groupId>
@@ -192,12 +200,12 @@
 			<dependency>
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
-				<version>1.4</version>
+				<version>1.6</version>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.jersey</groupId>
 				<artifactId>jersey-core</artifactId>
-				<version>1.12</version>
+				<version>1.13</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jvnet</groupId>
@@ -207,12 +215,12 @@
 			<dependency>
 				<groupId>ch.qos.logback</groupId>
 				<artifactId>logback-core</artifactId>
-				<version>1.0.0</version>
+				<version>1.0.6</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
-				<version>1.6.4</version>
+				<version>1.6.5</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

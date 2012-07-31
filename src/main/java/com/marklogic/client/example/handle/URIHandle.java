@@ -42,7 +42,7 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 
@@ -100,7 +100,7 @@ public class URIHandle
 				new Scheme("http", port, PlainSocketFactory.getSocketFactory())
 				);
 
-		ThreadSafeClientConnManager connMgr = new ThreadSafeClientConnManager(
+		PoolingClientConnectionManager connMgr = new PoolingClientConnectionManager(
 				schemeRegistry);
 		connMgr.setDefaultMaxPerRoute(100);
 
