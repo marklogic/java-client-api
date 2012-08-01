@@ -52,13 +52,19 @@ public class Common {
 			client.release();
 			client = null;
 		}
-		client = DatabaseClientFactory.newClient(
-			Common.HOST, Common.PORT, Common.USERNAME, Common.PASSWORD, Authentication.DIGEST
-			);
+		client = newClient();
 	}
 
 	static void connectAdmin() {
-		client = DatabaseClientFactory.newClient(
+		client = newAdminClient();
+	}
+	static DatabaseClient newClient() {
+		return DatabaseClientFactory.newClient(
+				Common.HOST, Common.PORT, Common.USERNAME, Common.PASSWORD, Authentication.DIGEST
+				);
+	}
+	static DatabaseClient newAdminClient() {
+		return DatabaseClientFactory.newClient(
 				Common.HOST, Common.PORT, Common.ADMIN_USERNAME, Common.ADMIN_PASSWORD, Authentication.DIGEST
 				);
 	}
