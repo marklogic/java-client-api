@@ -181,8 +181,6 @@ public class GenericDocumentTest {
 		docMgr.write(docId2, docHandle, transaction);
 		docMgr.delete(docId1, transaction);
 
-System.out.println("TRANSACTION: "+transaction.getTransactionId().replaceFirst("^[^_]+_", ""));
-
 		Document status = transaction.readStatus(new DOMHandle()).get();
 		assertXpathExists("//*[local-name() = 'transaction-name' and "+
 				"string(.) = '"+transactionName+"']", status);
