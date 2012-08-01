@@ -31,14 +31,14 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.document.DocumentManager.Metadata;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 
 public class GenericDocumentTest {
@@ -181,11 +181,16 @@ public class GenericDocumentTest {
 		docMgr.write(docId2, docHandle, transaction);
 		docMgr.delete(docId1, transaction);
 
+System.out.println("TRANSACTION: "+transaction.getTransactionId().replaceFirst("^[^_]+_", ""));
+
 		Document status = transaction.readStatus(new DOMHandle()).get();
 		assertXpathExists("//*[local-name() = 'transaction-name' and "+
 				"string(.) = '"+transactionName+"']", status);
 
 		transaction.commit();
+
+// TODO: remove after Bug:18641 is fixed
+try { Thread.sleep(1000); } catch (InterruptedException e) {}
 
 		assertTrue("Document 1 exists",        docMgr.exists(docId1)==null);
 		assertTrue("Document 2 doesn't exist", docMgr.exists(docId2)!=null);
@@ -206,6 +211,9 @@ public class GenericDocumentTest {
 		docMgr.write(docId2, docHandle, transaction);
 		docMgr.delete(docId1, transaction);
 		transaction.rollback();
+
+// TODO: remove after Bug:18641 is fixed
+try { Thread.sleep(1000); } catch (InterruptedException e) {}
 
 		assertTrue("Document 1 doesn't exist", docMgr.exists(docId1)!=null);
 		assertTrue("Document 2 exists",        docMgr.exists(docId2)==null);
@@ -245,6 +253,9 @@ public class GenericDocumentTest {
 		}
 
 		transaction.commit();
+
+// TODO: remove after Bug:18641 is fixed
+try { Thread.sleep(1000); } catch (InterruptedException e) {}
 
 		for (String docId: docIds) {
 			assertTrue("Document doesn't exist "+docId, docMgr.exists(docId)!=null);
