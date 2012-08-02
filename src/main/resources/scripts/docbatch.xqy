@@ -5,11 +5,14 @@ xquery version "1.0-ml";
 module namespace docbatch = "http://marklogic.com/rest-api/resource/docbatch";
 
 (: WARNING: 
-    The document-model library may change in a future release without notice.
+    The document model libraries may change in a future release without notice.
     Do not call the functions of the document-model library in your own code.
     :)
-import module namespace docmod = "http://marklogic.com/rest-api/models/document-model"
-    at "/MarkLogic/rest-api/models/document-model.xqy";
+import module namespace docmodqry = "http://marklogic.com/rest-api/models/document-model-query"
+    at "/MarkLogic/rest-api/models/document-model-query.xqy";
+
+import module namespace docmodupd = "http://marklogic.com/rest-api/models/document-model-update"
+    at "/MarkLogic/rest-api/models/document-model-update.xqy";
 
 declare namespace rapi = "http://marklogic.com/rest-api";
 
@@ -184,7 +187,7 @@ declare private function docbatch:apply-put(
                         )
                 return
                     try {
-                        docmod:put($headers,$params,$env)
+                        docmodupd:put($headers,$params,$env)
                     } catch($e) {
                         <rapi:error>{$e}</rapi:error>
                     }
@@ -240,8 +243,8 @@ declare private function docbatch:apply-get(
                     try {
                         if ($i eq 1)
 (: TODO: document {} should be unneeded :)
-                        then document {docmod:get($headers,$params,())}
-                        else docmod:get($headers,$params,())
+                        then document {docmodqry:get($headers,$params,())}
+                        else docmodqry:get($headers,$params,())
                     } catch($e) {
                         <rapi:error>{$e}</rapi:error>
                     }
@@ -275,7 +278,7 @@ declare private function docbatch:apply-delete(
                 )
         return
             try {
-                docmod:delete($headers,$params,())
+                docmodupd:delete($headers,$params,())
             } catch($e) {
                 <rapi:error>{$e}</rapi:error>
             }
