@@ -31,12 +31,11 @@ import javax.net.ssl.SSLException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.HttpHost;
 import org.apache.http.auth.params.AuthPNames;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.client.params.ClientPNames;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
@@ -44,7 +43,6 @@ import org.apache.http.conn.scheme.SchemeSocketFactory;
 import org.apache.http.conn.ssl.AbstractVerifier;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
@@ -135,7 +133,7 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public void connect(String host, int port, String user, String password,
-			Authentication type, SSLContext context,
+			Authentication authenType, SSLContext context,
 			SSLHostnameVerifier verifier) {
 		X509HostnameVerifier x509Verifier = null;
 		if (verifier == null)
@@ -154,11 +152,11 @@ public class JerseyServices implements RESTServices {
 			throw new IllegalArgumentException(
 					"Null SSLContent but non-null SSLHostnameVerifier for client");
 
-		connect(host, port, user, password, type, context, x509Verifier);
+		connect(host, port, user, password, authenType, context, x509Verifier);
 	}
 
 	private void connect(String host, int port, String user, String password,
-			Authentication type, SSLContext context,
+			Authentication authenType, SSLContext context,
 			X509HostnameVerifier verifier) {
 		if (logger.isInfoEnabled())
 			logger.info("Connecting to {} at {} as {}", new Object[] { host,
@@ -166,17 +164,18 @@ public class JerseyServices implements RESTServices {
 
 		if (host == null)
 			throw new IllegalArgumentException("No host provided");
-		if (user == null)
-			throw new IllegalArgumentException("No user provided");
-		if (password == null)
-			throw new IllegalArgumentException("No password provided");
-		if (type == null) {
+
+		if (authenType == null) {
 			if (context != null) {
-				type = Authentication.BASIC;
-			} else {
-				throw new IllegalArgumentException(
-						"No authentication type provided");
+				authenType = Authentication.BASIC;
 			}
+		}
+
+		if (authenType != null) {
+			if (user == null)
+				throw new IllegalArgumentException("No user provided");
+			if (password == null)
+				throw new IllegalArgumentException("No password provided");
 		}
 
 		if (connection != null)
@@ -185,6 +184,8 @@ public class JerseyServices implements RESTServices {
 			client.destroy();
 			client = null;
 		}
+
+		String baseUri = ((context == null) ? "http" : "https") + "://" + host + ":" + port + "/v1/";
 
 		// TODO: integrated control of HTTP Client and Jersey Client logging
 		System.setProperty("org.apache.commons.logging.Log",
@@ -209,35 +210,46 @@ public class JerseyServices implements RESTServices {
 		SchemeRegistry schemeRegistry = new SchemeRegistry();
 		schemeRegistry.register(scheme);
 
-		PoolingClientConnectionManager connMgr = new PoolingClientConnectionManager(
-				schemeRegistry);
-		connMgr.setDefaultMaxPerRoute(100);
+		int maxConnections = 100;
 
-		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-		credentialsProvider.setCredentials(new AuthScope(host, port),
-				new UsernamePasswordCredentials(user, password));
+		PoolingClientConnectionManager connMgr =
+			new PoolingClientConnectionManager(schemeRegistry);
+		connMgr.setMaxTotal(maxConnections);
+		connMgr.setDefaultMaxPerRoute(maxConnections);
+		connMgr.setMaxPerRoute(
+				new HttpRoute(new HttpHost(baseUri)), maxConnections
+				);
 
-		List<String> authpref = new ArrayList<String>();
-		if (type == Authentication.BASIC)
-			authpref.add(AuthPolicy.BASIC);
-		else if (type == Authentication.DIGEST)
-			authpref.add(AuthPolicy.DIGEST);
-		else
-			throw new MarkLogicInternalException(
-					"Internal error - unknown authentication type: "
-							+ type.name());
+//		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+//		credentialsProvider.setCredentials(new AuthScope(host, port),
+//				new UsernamePasswordCredentials(user, password));
 
 		HttpParams httpParams = new BasicHttpParams();
-		httpParams.setParameter(AuthPNames.PROXY_AUTH_PREF, authpref);
+
+		if (authenType != null) {
+			List<String> authpref = new ArrayList<String>();
+
+			if (authenType == Authentication.BASIC)
+				authpref.add(AuthPolicy.BASIC);
+			else if (authenType == Authentication.DIGEST)
+				authpref.add(AuthPolicy.DIGEST);
+			else
+				throw new MarkLogicInternalException(
+						"Internal error - unknown authentication type: "
+						+ authenType.name());
+
+			httpParams.setParameter(AuthPNames.PROXY_AUTH_PREF, authpref);
+		}
+
 		// note that setting PROPERTY_FOLLOW_REDIRECTS below doesn't seem to
 		// work
 		httpParams.setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, false);
 
 		DefaultApacheHttpClient4Config config = new DefaultApacheHttpClient4Config();
 		Map<String, Object> configProps = config.getProperties();
-		configProps
-				.put(ApacheHttpClient4Config.PROPERTY_PREEMPTIVE_BASIC_AUTHENTICATION,
-						false);
+		configProps.put(
+				ApacheHttpClient4Config.PROPERTY_PREEMPTIVE_BASIC_AUTHENTICATION,
+				false);
 		configProps.put(ApacheHttpClient4Config.PROPERTY_CONNECTION_MANAGER,
 				connMgr);
 		configProps.put(ApacheHttpClient4Config.PROPERTY_FOLLOW_REDIRECTS,
@@ -253,17 +265,18 @@ public class JerseyServices implements RESTServices {
 
 		// System.setProperty("javax.net.debug", "all"); // all or ssl
 
-		if (type == Authentication.BASIC)
-			client.addFilter(new HTTPBasicAuthFilter(user, password));
-		else if (type == Authentication.DIGEST)
-			client.addFilter(new HTTPDigestAuthFilter(user, password));
-		else
-			throw new MarkLogicInternalException(
+		if (authenType != null) {
+			if (authenType == Authentication.BASIC)
+				client.addFilter(new HTTPBasicAuthFilter(user, password));
+			else if (authenType == Authentication.DIGEST)
+				client.addFilter(new HTTPDigestAuthFilter(user, password));
+			else
+				throw new MarkLogicInternalException(
 					"Internal error - unknown authentication type: "
-							+ type.name());
+							+ authenType.name());
+		}
 
-		connection = client.resource(((context == null) ? "http" : "https")
-				+ "://" + host + ":" + port + "/v1/");
+		connection = client.resource(baseUri);
 	}
 
 	@Override

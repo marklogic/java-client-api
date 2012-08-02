@@ -44,11 +44,7 @@ public class DatabaseClientFactory {
 		/**
 		 * Moderate security without SSL.
 		 */
-		DIGEST,
-		/**
-		 * No security, which can be convenient for experimentation. 
-		 */
-		NONE;
+		DIGEST;
 	}
 	/**
 	 * An SSLHostnameVerifier checks whether a hostname is acceptable
@@ -100,6 +96,19 @@ public class DatabaseClientFactory {
 	}
 
 	private DatabaseClientFactory() {
+	}
+
+	/**
+	 * Creates a client to access the database by means of a REST server
+	 * without any authentication. Such clients can be convenient for
+	 * experimentation but should not be used in production. 
+	 * 
+	 * @param host	the host with the REST server
+	 * @param port	the port for the REST server
+	 * @return	a new client for making database requests
+	 */
+	static public DatabaseClient newClient(String host, int port) {
+		return newClient(host, port, null, null, null, null, null);
 	}
 
 	/**
