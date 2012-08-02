@@ -45,12 +45,17 @@ public interface QueryManager {
     public void setViews(ResponseViews views);
     public void setViews(QueryView... views);
 
+    public StringQueryDefinition newStringDefinition();
     public StringQueryDefinition newStringDefinition(String optionsName);
+    public KeyValueQueryDefinition newKeyValueDefinition();
     public KeyValueQueryDefinition newKeyValueDefinition(String optionsName);
+    public StructuredQueryBuilder newStructuredQueryBuilder();
     public StructuredQueryBuilder newStructuredQueryBuilder(String optionsName);
     public DeleteQueryDefinition newDeleteDefinition();
 
+    public ValuesDefinition newValuesDefinition();
     public ValuesDefinition newValuesDefinition(String optionsName);
+    public ValuesListDefinition newValuesListDefinition();
     public ValuesListDefinition newValuesListDefinition(String optionsName);
 
     public ElementLocator newElementLocator(QName element);

@@ -74,13 +74,27 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     }
 
     @Override
+    public StringQueryDefinition newStringDefinition() {
+        return new StringQueryDefinitionImpl(null);
+    }
+    @Override
     public StringQueryDefinition newStringDefinition(String optionsName) {
         return new StringQueryDefinitionImpl(optionsName);
     }
 
     @Override
+    public KeyValueQueryDefinition newKeyValueDefinition() {
+        return new KeyValueQueryDefinitionImpl(null);
+    }
+
+    @Override
     public KeyValueQueryDefinition newKeyValueDefinition(String optionsName) {
         return new KeyValueQueryDefinitionImpl(optionsName);
+    }
+
+    @Override
+    public StructuredQueryBuilder newStructuredQueryBuilder() {
+        return new StructuredQueryBuilder(null);
     }
 
     @Override
@@ -109,8 +123,18 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     }
 
     @Override
+    public ValuesDefinition newValuesDefinition() {
+        return new ValuesDefinitionImpl(null);
+    }
+
+    @Override
     public ValuesDefinition newValuesDefinition(String optionsName) {
         return new ValuesDefinitionImpl(optionsName);
+    }
+
+    @Override
+    public ValuesListDefinition newValuesListDefinition() {
+        return new ValuesListDefinitionImpl(null);
     }
 
     @Override
