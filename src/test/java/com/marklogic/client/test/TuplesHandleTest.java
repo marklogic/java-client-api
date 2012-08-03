@@ -16,11 +16,17 @@
 package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.marklogic.client.io.ValuesHandle;
+import com.marklogic.client.query.AggregateResult;
+import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.Tuple;
 import com.marklogic.client.query.TypedDistinctValue;
 import com.marklogic.client.io.TuplesHandle;
+import com.marklogic.client.query.ValuesDefinition;
+import com.marklogic.client.query.ValuesMetrics;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -49,6 +55,47 @@ public class TuplesHandleTest {
     }
 
     @Test
+    public void testAggregates() throws IOException, ParserConfigurationException, SAXException {
+        QueryManager queryMgr = Common.client.newQueryManager();
+
+        ValuesDefinition vdef = queryMgr.newValuesDefinition("co", "valuesoptions3");
+        vdef.setAggregate("correlation", "covariance");
+
+        TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
+
+        Tuple[] tuples = t.getTuples();
+        assertEquals("Nine tuples are expected", 9, tuples.length);
+        assertEquals("The tuples are named 'co'", "co", t.getName());
+
+        AggregateResult[] agg = t.getAggregates();
+        assertEquals("Two aggregates are expected", 2, agg.length);
+
+        Double cov = t.getAggregate("covariance").get("xs:double", Double.class);
+        assertTrue("The covariance is between 0.004 and 0.005",
+                cov > 0.004 && cov < 0.005);
+
+        ValuesMetrics metrics = t.getMetrics();
+        assertTrue("The values resolution time is greater than 0", metrics.getValuesResolutionTime() > 0);
+    }
+
+    @Test
+    public void testValuesHandle2() throws IOException, ParserConfigurationException, SAXException {
+        File f = new File("src/test/resources/tuples2.xml");
+        FileInputStream is = new FileInputStream(f);
+
+        MyTuplesHandle t = new MyTuplesHandle();
+        t.parseTestData(is);
+
+        Tuple[] tuples = t.getTuples();
+        assertEquals("Nine tuples are expected", 9, tuples.length);
+        assertEquals("The tuples are named 'co'", "co", t.getName());
+
+        ValuesMetrics metrics = t.getMetrics();
+        assertTrue("The values resolution time is greater than 0", metrics.getValuesResolutionTime() > 0);
+        assertEquals("The aggregate resolution time is -1 (absent)", metrics.getAggregateResolutionTime(), -1);
+    }
+
+    //@Test
     public void testValuesHandle() throws IOException, ParserConfigurationException, SAXException {
         File f = new File("src/test/resources/tuples.xml");
         FileInputStream is = new FileInputStream(f);

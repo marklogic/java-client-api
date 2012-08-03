@@ -20,8 +20,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import com.marklogic.client.query.AggregateResult;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.CountedDistinctValue;
+import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
 import com.marklogic.client.io.ValuesHandle;
 import com.marklogic.client.io.ValuesListHandle;
@@ -51,6 +53,24 @@ public class ValuesHandleTest {
     @AfterClass
     public static void afterClass() {
         Common.release();
+    }
+
+    @Test
+    public void testAggregates() throws IOException, ParserConfigurationException, SAXException {
+        QueryManager queryMgr = Common.client.newQueryManager();
+
+        ValuesDefinition vdef = queryMgr.newValuesDefinition("double", "valuesoptions");
+        vdef.setAggregate("sum", "avg");
+        vdef.setName("double");
+
+        //ValuesListDefinition vldef = queryMgr.newValuesListDefinition("valuesoptions");
+        //ValuesListHandle vlh = queryMgr.valuesList(vldef, new ValuesListHandle());
+
+        ValuesHandle v = queryMgr.values(vdef, new ValuesHandle());
+
+        AggregateResult[] agg = v.getAggregates();
+
+        System.err.println(v);
     }
 
     @Test

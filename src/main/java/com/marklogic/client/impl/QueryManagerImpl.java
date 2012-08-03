@@ -21,6 +21,8 @@ import java.util.Iterator;
 
 import javax.xml.namespace.QName;
 
+import com.marklogic.client.io.TuplesHandle;
+import com.marklogic.client.io.marker.TuplesReadHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.ElementLocator;
 import com.marklogic.client.io.Format;
@@ -123,13 +125,13 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     }
 
     @Override
-    public ValuesDefinition newValuesDefinition() {
-        return new ValuesDefinitionImpl(null);
+    public ValuesDefinition newValuesDefinition(String name) {
+        return new ValuesDefinitionImpl(name, null);
     }
 
     @Override
-    public ValuesDefinition newValuesDefinition(String optionsName) {
-        return new ValuesDefinitionImpl(optionsName);
+    public ValuesDefinition newValuesDefinition(String name, String optionsName) {
+        return new ValuesDefinitionImpl(name, optionsName);
     }
 
     @Override
@@ -225,6 +227,38 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         String tid = transaction == null ? null : transaction.getTransactionId();
         valuesBase.receiveContent(services.values(valuesBase.receiveAs(), valdef, mimetype, tid));
         return valuesHandle;
+    }
+
+    @Override
+    public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle) {
+        return tuples(valdef, tupleHandle, null);
+    }
+
+    @Override
+    public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tuplesHandle, Transaction transaction) {
+        HandleImplementation valuesBase = HandleAccessor.checkHandle(tuplesHandle, "values");
+
+        if (tuplesHandle instanceof TuplesHandle) {
+            ((TuplesHandle) tuplesHandle).setQueryCriteria(valdef);
+        }
+
+        Format valuesFormat = valuesBase.getFormat();
+        switch(valuesFormat) {
+            case UNKNOWN:
+                valuesFormat = Format.XML;
+                break;
+            case JSON:
+            case XML:
+                break;
+            default:
+                throw new UnsupportedOperationException("Only XML and JSON values results are possible.");
+        }
+
+        String mimetype = valuesFormat.getDefaultMimetype();
+
+        String tid = transaction == null ? null : transaction.getTransactionId();
+        valuesBase.receiveContent(services.values(valuesBase.receiveAs(), valdef, mimetype, tid));
+        return tuplesHandle;
     }
 
     @Override

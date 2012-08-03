@@ -18,11 +18,14 @@ package com.marklogic.client.io;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import com.marklogic.client.query.AggregateResult;
+import com.marklogic.client.query.ValuesMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +47,7 @@ public class ValuesHandle
     private ValuesBuilder.Values valuesHolder;
     private JAXBContext jc;
     private Unmarshaller unmarshaller;
+    private HashMap<String, AggregateResult> hashedAggregates = null;
 
     private ValuesDefinition valuesdef = null;
 
@@ -114,4 +118,29 @@ public class ValuesHandle
         return valuesHolder.getValues();
     }
 
+    @Override
+    public AggregateResult[] getAggregates() {
+        return valuesHolder.getAggregates();
+    }
+
+    @Override
+    public AggregateResult getAggregate(String name) {
+        if (hashedAggregates == null) {
+            hashedAggregates = new HashMap<String, AggregateResult> ();
+            for (AggregateResult aggregate : valuesHolder.getAggregates()) {
+                hashedAggregates.put(aggregate.getName(), aggregate);
+            }
+        }
+
+        if (hashedAggregates.containsKey(name)) {
+            return hashedAggregates.get(name);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public ValuesMetrics getMetrics() {
+        return valuesHolder.getMetrics();
+    }
 }

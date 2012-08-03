@@ -18,11 +18,14 @@ package com.marklogic.client.io;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import com.marklogic.client.query.AggregateResult;
+import com.marklogic.client.query.ValuesMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +52,7 @@ public class TuplesHandle
     private Unmarshaller unmarshaller;
 
     private ValuesDefinition valdef = null;
+    private HashMap<String, AggregateResult> hashedAggregates = null;
 
     public TuplesHandle() {
     	super();
@@ -124,6 +128,11 @@ public class TuplesHandle
     	valdef = vdef;
     }
 
+    @Override
+    public String getName() {
+        return tuplesHolder.getName();
+    }
+
     /**
      * Returns an array of the Tuples returned by this query.
      * @return The tuples array.
@@ -133,4 +142,29 @@ public class TuplesHandle
         return tuplesHolder.getTuples();
     }
 
+    @Override
+    public AggregateResult[] getAggregates() {
+        return tuplesHolder.getAggregates();
+    }
+
+    @Override
+    public AggregateResult getAggregate(String name) {
+        if (hashedAggregates == null) {
+            hashedAggregates = new HashMap<String, AggregateResult>();
+            for (AggregateResult aggregate : tuplesHolder.getAggregates()) {
+                hashedAggregates.put(aggregate.getName(), aggregate);
+            }
+        }
+
+        if (hashedAggregates.containsKey(name)) {
+            return hashedAggregates.get(name);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public ValuesMetrics getMetrics() {
+        return tuplesHolder.getMetrics();
+    }
 }

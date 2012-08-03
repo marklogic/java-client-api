@@ -22,13 +22,17 @@ public class ValuesDefinitionImpl implements ValuesDefinition {
     private String name = null;
     private QueryDefinition qdef = null;
     private String options = null;
-    private String aggregate = null;
+    private String[] aggregate = null;
     private String aggPath = null;
     private String view = null;
     private Direction direction = null;
     private Frequency frequency = null;
 
-    public ValuesDefinitionImpl(String optionsName) {
+    public ValuesDefinitionImpl(String name, String optionsName) {
+        if (name == null) {
+            throw new NullPointerException("ValuesDefinition name must not be null.");
+        }
+        this.name = name;
         options = optionsName;
     }
 
@@ -39,6 +43,9 @@ public class ValuesDefinitionImpl implements ValuesDefinition {
 
     @Override
     public void setName(String name) {
+        if (name == null) {
+            throw new NullPointerException("ValuesDefinition name must not be null.");
+        }
         this.name = name;
     }
 
@@ -63,12 +70,12 @@ public class ValuesDefinitionImpl implements ValuesDefinition {
     }
 
     @Override
-    public String getAggregate() {
+    public String[] getAggregate() {
         return aggregate;
     }
 
     @Override
-    public void setAggregate(String aggregate) {
+    public void setAggregate(String... aggregate) {
         this.aggregate = aggregate;
     }
 

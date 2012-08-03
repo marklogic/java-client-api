@@ -1251,7 +1251,9 @@ public class JerseyServices implements RESTServices {
 		}
 
 		if (valDef.getAggregate() != null) {
-			docParams.add("aggregate", valDef.getAggregate());
+            for (String aggregate : valDef.getAggregate()) {
+			    docParams.add("aggregate", aggregate);
+            }
 		}
 
 		if (valDef.getAggregatePath() != null) {

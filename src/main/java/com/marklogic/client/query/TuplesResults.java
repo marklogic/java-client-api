@@ -26,9 +26,34 @@ public interface TuplesResults {
     public ValuesDefinition getQueryCriteria();
 
     /**
+     * Returns the name of the tuples.
+     * @return The name.
+     */
+    public String getName();
+
+    /**
+     * Returns an array of the aggregates.
+     * @return The array of aggrgates.
+     */
+    public AggregateResult[] getAggregates();
+
+    /**
+     * Returns the aggregate result for the named aggregate function.
+     * @param name The name of the aggregate function.
+     * @return The corresponding aggregate, or null if no such aggregate exists.
+     */
+    public AggregateResult getAggregate(String name);
+
+    /**
      * Returns an array of Tuples.
      * @return The array of tuples.
      */
     public Tuple[] getTuples();
+
+    /**
+     * Returns performance metrics about the query.
+     * @return The metrics
+     */
+    public ValuesMetrics getMetrics();
 }
 

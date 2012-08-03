@@ -73,13 +73,13 @@ public interface ValuesDefinition {
      * Returns the name of the aggregate function applied to this query.
      * @return The name of the function.
      */
-    public String getAggregate();
+    public String[] getAggregate();
 
     /**
      * Sets the name of the aggregate function to be applied as part of this values query.
      * @param aggregate The neme of the function.
      */
-    public void setAggregate(String aggregate);
+    public void setAggregate(String... aggregate);
 
     /**
      * Returns the aggregate path.

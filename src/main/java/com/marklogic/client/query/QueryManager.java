@@ -22,6 +22,7 @@ import javax.xml.namespace.QName;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
+import com.marklogic.client.io.marker.TuplesReadHandle;
 import com.marklogic.client.io.marker.ValuesListReadHandle;
 import com.marklogic.client.io.marker.ValuesReadHandle;
 import com.marklogic.client.util.RequestLogger;
@@ -53,8 +54,8 @@ public interface QueryManager {
     public StructuredQueryBuilder newStructuredQueryBuilder(String optionsName);
     public DeleteQueryDefinition newDeleteDefinition();
 
-    public ValuesDefinition newValuesDefinition();
-    public ValuesDefinition newValuesDefinition(String optionsName);
+    public ValuesDefinition newValuesDefinition(String name);
+    public ValuesDefinition newValuesDefinition(String name, String optionsName);
     public ValuesListDefinition newValuesListDefinition();
     public ValuesListDefinition newValuesListDefinition(String optionsName);
 
@@ -72,6 +73,9 @@ public interface QueryManager {
 
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle);
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, Transaction transaction);
+
+    public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T valueHandle);
+    public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T valueHandle, Transaction transaction);
 
     public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valueHandle);
     public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valueHandle, Transaction transaction);

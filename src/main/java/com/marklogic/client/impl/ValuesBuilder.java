@@ -15,7 +15,10 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.query.AggregateResult;
 import com.marklogic.client.query.CountedDistinctValue;
+import com.marklogic.client.query.SearchMetrics;
+import com.marklogic.client.query.ValuesMetrics;
 
 import java.util.ArrayList;
 
@@ -47,8 +50,15 @@ public final class ValuesBuilder {
         @XmlElement(namespace = Values.VALUES_NS, name = "distinct-value")
         private ArrayList<CountedDistinctValue> distinctValues;
 
+        @XmlElement(namespace = Values.VALUES_NS, name = "aggregate-result")
+        private ArrayList<AggregateResult> aggregateResults;
+
+        @XmlElement(namespace = Values.VALUES_NS, name = "metrics")
+        private ValuesMetricsImpl metrics;
+
         public Values() {
             distinctValues = new ArrayList<CountedDistinctValue>();
+            aggregateResults = new ArrayList<AggregateResult>();
         }
 
         public String getName() {
@@ -61,6 +71,14 @@ public final class ValuesBuilder {
 
         public CountedDistinctValue[] getValues() {
             return distinctValues.toArray(new CountedDistinctValue[0]);
+        }
+
+        public AggregateResult[] getAggregates() {
+            return aggregateResults.toArray(new AggregateResult[0]);
+        }
+
+        public ValuesMetrics getMetrics() {
+            return metrics;
         }
     }
 }

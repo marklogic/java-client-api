@@ -15,7 +15,9 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.query.AggregateResult;
 import com.marklogic.client.query.Tuple;
+import com.marklogic.client.query.ValuesMetrics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,12 +47,31 @@ public final class TuplesBuilder {
         @XmlElement(namespace = Tuples.TUPLES_NS, name = "tuple")
         private List<Tuple> tuples;
 
+        @XmlElement(namespace = Tuples.TUPLES_NS, name = "aggregate-result")
+        private ArrayList<AggregateResult> aggregateResults;
+
+        @XmlElement(namespace = Tuples.TUPLES_NS, name = "metrics")
+        private ValuesMetricsImpl metrics;
+
+        public String getName() {
+            return name;
+        }
+
         public Tuples() {
             tuples = new ArrayList<Tuple>();
+            aggregateResults = new ArrayList<AggregateResult>();
         }
 
         public Tuple[] getTuples() {
             return tuples.toArray(new Tuple[0]);
+        }
+
+        public AggregateResult[] getAggregates() {
+            return aggregateResults.toArray(new AggregateResult[0]);
+        }
+
+        public ValuesMetrics getMetrics() {
+            return metrics;
         }
     }
 }
