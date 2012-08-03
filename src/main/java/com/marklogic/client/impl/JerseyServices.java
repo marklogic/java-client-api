@@ -1095,12 +1095,12 @@ public class JerseyServices implements RESTServices {
 		}
 
 		for (QueryManager.QueryView view : views) {
-			if (view == QueryManager.QueryView.SEARCH) {
-				params.put("view", "search");
+			if (view == QueryManager.QueryView.RESULTS) {
+				params.put("view", "results");
 			} else if (view == QueryManager.QueryView.FACETS) {
 				params.put("view", "facets");
-			} else if (view == QueryManager.QueryView.METRICS) {
-				params.put("view", "metrics");
+			} else if (view == QueryManager.QueryView.METADATA) {
+				params.put("view", "metadata");
 			}
 		}
 

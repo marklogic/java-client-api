@@ -35,7 +35,7 @@ public interface QueryManager {
     }
 
     public enum QueryView {
-        SEARCH, FACETS, METRICS;
+        RESULTS, FACETS, METADATA;
     }
 
     public long getPageLength();
