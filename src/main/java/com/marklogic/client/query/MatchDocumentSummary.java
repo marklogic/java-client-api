@@ -74,4 +74,11 @@ public interface MatchDocumentSummary {
      * @return The array of snippet documents.
      */
     public Document[] getSnippets();
+
+    /**
+     * Returns the metadata associated with this document.
+     *
+     * @return the metadata
+     */
+    public Document getMetadata();
 }

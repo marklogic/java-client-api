@@ -47,12 +47,6 @@ public interface SearchResults {
     public MatchDocumentSummary[] getMatchResults();
 
     /**
-     * Returns search metadata.
-     * @return The metadata.
-     */
-    public Document getMetadata();
-
-    /**
      * Returns the array of facet results.
      * @return The facet results.
      */

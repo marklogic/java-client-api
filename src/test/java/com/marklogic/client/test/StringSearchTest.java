@@ -24,11 +24,15 @@ import java.io.IOException;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.marklogic.client.query.FacetResult;
+import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.SearchMetrics;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.query.QueryManager;
@@ -58,7 +62,7 @@ public class StringSearchTest {
         Common.release();
     }
 
-    @Test
+    //@Test
     public void testStringSearch() throws IOException, ParserConfigurationException, SAXException {
         String optionsName = "facets";
 
@@ -124,31 +128,37 @@ public class StringSearchTest {
         assertNotNull(summaries);
     }
 
-/*
-    @Test
+    //@Test
     public void testStringSearch2() throws IOException {
         QueryManager queryMgr = Common.client.newQueryManager();
-        StringQueryDefinition qdef = queryMgr.newStringDefinition(null);
-        qdef.setCriteria("leaf3");
+        StringQueryDefinition qdef = queryMgr.newStringDefinition("em-1");
+        qdef.setCriteria("10");
 
         SearchHandle handle = new SearchHandle();
-        handle.setForceDOM(true);
         handle = queryMgr.search(qdef, handle);
 
         assertNotNull(handle);
     }
 
-    @Test
-    public void testStringStringSearch() throws IOException {
+    //@Test
+    public void testStringSearch3() throws IOException {
         QueryManager queryMgr = Common.client.newQueryManager();
-        StringQueryDefinition qdef = queryMgr.newStringDefinition(null);
-        qdef.setCriteria("leaf3");
+        StringQueryDefinition qdef = queryMgr.newStringDefinition("metatest-1");
+        qdef.setCriteria("10");
 
-        StringHandle handle = new StringHandle();
+        SearchHandle handle = new SearchHandle();
         handle = queryMgr.search(qdef, handle);
 
+        String[] facetNames = handle.getFacetNames();
+        FacetResult[] facetResults = handle.getFacetResults();
+        MatchDocumentSummary[] matchDocSum = handle.getMatchResults();
+        SearchMetrics metrics = handle.getMetrics();
+        Document plan = handle.getPlan();
+        QueryDefinition def = handle.getQueryCriteria();
+        SearchHandle.Report[] reports = handle.getReports();
+        SearchHandle.Warning[] warnings = handle.getWarnings();
+        long total = handle.getTotalResults();
+
         assertNotNull(handle);
-        assertNotNull(handle.get());
     }
-*/
 }

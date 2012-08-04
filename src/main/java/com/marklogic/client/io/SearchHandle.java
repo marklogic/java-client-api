@@ -91,7 +91,6 @@ public class SearchHandle
     private String[] facetNames = null;
     private long totalResults = -1;
     private boolean alwaysDomSnippets = false;
-    private Document metadata = null;
     private Document plan = null;
     private ArrayList<Warning> warnings = null;
     private ArrayList<Report> reports = null;
@@ -216,18 +215,6 @@ public class SearchHandle
     }
 
     /**
-     * Returns metadata associated with this search.
-     *
-     * <p>Metadata is highly variable and is always returned as a DOM Document.</p>
-     *
-     * @return The metadata.
-     */
-    @Override
-    public Document getMetadata() {
-        return metadata;
-    }
-
-    /**
      * Returns an array of facet results for this search.
      * @return The facets array.
      */
@@ -343,6 +330,7 @@ public class SearchHandle
         private ArrayList<Document> snippets = new ArrayList<Document>();
         private String mimetype = null;
         private long byteLength = 0;
+        private Document metadata = null;
 
         public MatchDocumentSummaryImpl(String uri, int score, double confidence, double fitness, String path) {
             this.uri = uri;
@@ -392,6 +380,11 @@ public class SearchHandle
             return locations;
         }
 
+        @Override
+        public Document getMetadata() {
+            return metadata;
+        }
+
         public void addLocation(MatchLocation loc) {
             locvec.add(loc);
         }
@@ -402,6 +395,10 @@ public class SearchHandle
 
         public void addSnippet(Document snippet) {
             this.snippets.add(snippet);
+        }
+
+        public void setMetadata(Document meta) {
+            metadata = meta;
         }
     }
 
@@ -557,13 +554,11 @@ public class SearchHandle
     }
 
     private class SearchResponse implements ContentHandler {
-        private boolean parsing = false;
         private HashMap<String, String> nsmap = new HashMap<String, String> ();
         private boolean buildDOM = false;
-        private boolean inMatch = false;
-        private boolean inHighlight = false;
         private boolean inMetrics = false;
         private boolean inTime = false;
+        private boolean inResult = false;
         private Stack<Node> stack = null;
         private ArrayList<WSorChar> preceding = null;
         private DocumentBuilder builder = null;
@@ -600,12 +595,10 @@ public class SearchHandle
 
         @Override
         public void startDocument() throws SAXException {
-            parsing = true;
         }
 
         @Override
         public void endDocument() throws SAXException {
-            parsing = false;
         }
 
         @Override
@@ -632,7 +625,7 @@ public class SearchHandle
             if ("response".equals(localName))           { handleResponse(uri, localName, attributes);
             } else if ("result".equals(localName))      { handleResult(uri, localName, attributes);
             } else if ("snippet".equals(localName))     { handleSnippet();
-            } else if ("meta".equals(localName))        { handleMetadata();
+            } else if ("metadata".equals(localName))    { handleMetadata();
             } else if ("plan".equals(localName))        { handlePlan();
             } else if ("match".equals(localName))       { handleMatch(uri, localName, attributes);
             } else if ("highlight".equals(localName))   { handleHighlight();
@@ -681,6 +674,8 @@ public class SearchHandle
         }
 
         private void handleResult(String uri, String localName, Attributes attributes) {
+            inResult = true;
+
             String ruri = attributes.getValue("", "uri");
             String path = attributes.getValue("", "path");
             int score = Integer.parseInt(attributes.getValue("", "score"));
@@ -754,7 +749,6 @@ public class SearchHandle
         private void handleMatch(String uri, String localName, Attributes attributes) {
             MatchLocation loc = new MatchLocationImpl(attributes.getValue("", "path"));
             ((MatchDocumentSummaryImpl) matchSummaries[matchSlot]).addLocation(loc);
-            inMatch = true;
         }
 
         private void handleHighlight() {
@@ -765,8 +759,6 @@ public class SearchHandle
                     ((MatchLocationImpl) location).addSnippet(snippet);
                 }
             }
-
-            inHighlight = true;
         }
 
         private void handleFacet(Attributes attributes) {
@@ -935,10 +927,14 @@ public class SearchHandle
                 return;
             }
 
-            if ("meta".equals(localName)) {
-                metadata = dom;
+            if ("metadata".equals(localName)) {
                 characters = null;
                 buildDOM = false;
+
+                if (inResult) {
+                    ((MatchDocumentSummaryImpl) matchSummaries[matchSlot]).setMetadata(dom);
+                }
+
                 return;
             }
 
@@ -971,7 +967,6 @@ public class SearchHandle
                         ((MatchLocationImpl) location).addSnippet(snippet);
                     }
                 }
-                inMatch = false;
                 characters = null;
                 return;
             }
@@ -984,7 +979,6 @@ public class SearchHandle
                         ((MatchLocationImpl) location).addSnippet(snippet);
                     }
                 }
-                inHighlight = false;
                 characters = null;
                 return;
             }
@@ -1012,6 +1006,8 @@ public class SearchHandle
             }
 
             if ("result".equals(localName)) {
+                inResult = false;
+
                 if (buildDOM && (alwaysDomSnippets || !"snippet".equals(snippetFormat))) {
                     buildDOM = false;
                     ((MatchDocumentSummaryImpl) matchSummaries[matchSlot]).addSnippet(dom);
