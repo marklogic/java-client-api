@@ -37,7 +37,9 @@ import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * An XML Event Reader Handle represents XML content as an XML event reader
@@ -49,7 +51,8 @@ import com.marklogic.client.io.marker.XMLReadHandle;
 public class XMLEventReaderHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
 	implements OutputStreamSender, BufferableHandle,
-		XMLReadHandle, StructureReadHandle
+		XMLReadHandle, XMLWriteHandle,
+		StructureReadHandle, StructureWriteHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(XMLEventReaderHandle.class);
 
@@ -244,7 +247,7 @@ public class XMLEventReaderHandle
 		try {
 			XMLOutputFactory factory = XMLOutputFactory.newFactory();
 			XMLEventWriter   writer  = factory.createXMLEventWriter(out, "UTF-8");
-
+			
 			writer.add(content);
 			writer.flush();
 			writer.close();

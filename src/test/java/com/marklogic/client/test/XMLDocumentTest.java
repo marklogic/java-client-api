@@ -71,7 +71,8 @@ public class XMLDocumentTest {
 	}
 
 	@Test
-	public void testReadWrite() throws ParserConfigurationException, SAXException, IOException, TransformerConfigurationException, TransformerFactoryConfigurationError, XMLStreamException {
+	public void testReadWrite()
+	throws ParserConfigurationException, SAXException, IOException, TransformerConfigurationException, TransformerFactoryConfigurationError, XMLStreamException {
 		String docId = "/test/testWrite1.xml";
 
 		Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
@@ -178,7 +179,8 @@ public class XMLDocumentTest {
 	}
 
 	@Test
-	public void testValidate() throws ParserConfigurationException, SAXException, IOException, TransformerConfigurationException, TransformerFactoryConfigurationError, XMLStreamException {
+	public void testValidate()
+	throws ParserConfigurationException, SAXException, IOException, TransformerConfigurationException, TransformerFactoryConfigurationError, XMLStreamException {
 		String docId = "/test/testWrite1.xml";
 
 		SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -251,5 +253,50 @@ public class XMLDocumentTest {
 		if (docDesc != null) {
 			docMgr.delete(docId);
 		}
+	}
+
+	@Test
+	public void testStAXWrite()
+	throws XMLStreamException, SAXException, IOException {
+		String docId = "/test/testWrite1.xml";
+
+		String docIn = 
+			"<?xml version='1.0'?>"+
+			"<def:default"+
+			" xmlns:def='http://marklogic.com/example/ns/default'"+
+			" xmlns:sp='http://marklogic.com/example/ns/specified'"+
+			" xmlns:un='http://marklogic.com/example/ns/unspecified'"+
+			">"+
+			"<sp:specified>first value</sp:specified>"+
+			"<un:unspecified>second value</un:unspecified>"+
+			"</def:default>";
+
+		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+
+		XMLStreamReaderHandle streamHandle = new XMLStreamReaderHandle();
+		streamHandle.set(
+				streamHandle.getFactory().createXMLStreamReader(
+						new StringReader(docIn)
+						)
+				);
+
+		docMgr.write(docId, streamHandle);
+
+		String docOut = docMgr.read(docId, new StringHandle()).get();
+		assertNotNull("Wrote null document for StAX stream", docOut);
+		assertXMLEqual("Failed to write StAX stream", docIn, docOut);
+
+		XMLEventReaderHandle eventHandle = new XMLEventReaderHandle();
+		eventHandle.set(
+				eventHandle.getFactory().createXMLEventReader(
+						new StringReader(docIn)
+						)
+				);
+
+		docMgr.write(docId, eventHandle);
+
+		docOut = docMgr.read(docId, new StringHandle()).get();
+		assertNotNull("Wrote null document for StAX events", docOut);
+		assertXMLEqual("Failed to write StAX events", docIn, docOut);
 	}
 }
