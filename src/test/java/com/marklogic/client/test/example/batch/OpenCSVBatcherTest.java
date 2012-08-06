@@ -13,29 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.test.example.handle;
+package com.marklogic.client.test.example.batch;
 
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
-import org.jdom2.JDOMException;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.junit.Test;
 
-import com.marklogic.client.example.handle.JDOMHandleExample;
+import com.marklogic.client.example.batch.OpenCSVBatcherExample;
 
-public class JDOMHandleTest {
+public class OpenCSVBatcherTest {
 	@Test
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			JDOMHandleExample.main(new String[0]);
+			OpenCSVBatcherExample.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (JDOMException e) {
+		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
 		}
-		assertTrue("JDOMHandleExample failed", succeeded);
+		assertTrue("OpenCSVSplitterExample failed", succeeded);
 	}
 }

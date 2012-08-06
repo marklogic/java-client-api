@@ -1669,8 +1669,9 @@ public class JerseyServices implements RESTServices {
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
 
 		checkStatus(response, "read", "resource", path,
-				(mimetypes != null && mimetypes.length > 0) ?
-						ResponseStatus.OK : ResponseStatus.NO_CONTENT);
+				(response.hasEntity() ||
+						(mimetypes != null && mimetypes.length > 0)) ?
+					ResponseStatus.OK : ResponseStatus.NO_CONTENT);
 
 		return makeResults(reqlog, "read", "resource", response);
 	}
@@ -1748,8 +1749,9 @@ public class JerseyServices implements RESTServices {
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
 
 		checkStatus(response, "apply", "resource", path,
-				(outputMimetypes != null && outputMimetypes.length > 0) ?
-						ResponseStatus.OK : ResponseStatus.CREATED_OR_NO_CONTENT);
+				(response.hasEntity() ||
+						(outputMimetypes != null && outputMimetypes.length > 0)) ?
+					ResponseStatus.OK : ResponseStatus.CREATED_OR_NO_CONTENT);
 
 		return makeResults(reqlog, "apply", "resource", response);
 	}
@@ -1765,8 +1767,9 @@ public class JerseyServices implements RESTServices {
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
 
 		checkStatus(response, "apply", "resource", path,
-				(outputMimetypes != null && outputMimetypes.length > 0) ?
-						ResponseStatus.OK : ResponseStatus.CREATED_OR_NO_CONTENT);
+				(response.hasEntity() ||
+						(outputMimetypes != null && outputMimetypes.length > 0)) ?
+					ResponseStatus.OK : ResponseStatus.CREATED_OR_NO_CONTENT);
 
 		return makeResults(reqlog, "apply", "resource", response);
 	}

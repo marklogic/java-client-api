@@ -19,20 +19,24 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.junit.Test;
 
-import com.marklogic.client.example.batch.BatchExample;
+import com.marklogic.client.example.batch.SearchCollectorExample;
 
-public class BatchTest {
+public class SearchCollectorTest {
 	@Test
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			BatchExample.main(new String[0]);
+			SearchCollectorExample.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
 		}
-		assertTrue("BatchExample failed", succeeded);
+		assertTrue("SearchCollectorExample failed", succeeded);
 	}
 }

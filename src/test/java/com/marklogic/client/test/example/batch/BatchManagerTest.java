@@ -13,29 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.test.example.handle;
+package com.marklogic.client.test.example.batch;
 
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
-import org.jdom2.JDOMException;
 import org.junit.Test;
 
-import com.marklogic.client.example.handle.JDOMHandleExample;
+import com.marklogic.client.example.batch.BatchManagerExample;
 
-public class JDOMHandleTest {
+public class BatchManagerTest {
 	@Test
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			JDOMHandleExample.main(new String[0]);
+			BatchManagerExample.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (JDOMException e) {
-			e.printStackTrace();
 		}
-		assertTrue("JDOMHandleExample failed", succeeded);
+		assertTrue("BatchExample failed", succeeded);
 	}
 }

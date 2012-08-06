@@ -22,28 +22,29 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.util.RequestParameters;
 import com.marklogic.client.extensions.ResourceManager;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.util.RequestParameters;
 
 /**
  * BatchManager provides an extension for executing a batch of document requests.
@@ -94,7 +95,7 @@ public class BatchManager extends ResourceManager {
 		}
 	}
 
-// TODO: assemble a single thread-safe queue
+// TODO: assemble a single thread-safe queue instead of two separate queues
 	public class BatchResponse implements Iterator<OutputItem> {
 		boolean success = false;
 		Iterator<OutputItem> items;
@@ -484,7 +485,7 @@ public class BatchManager extends ResourceManager {
 
 		BatchResponse response = new BatchResponse();
 		response.success = requestSuccess;
-		response.items   = items.iterator();
+		response.items   = new ConcurrentLinkedQueue<OutputItem>(items).iterator();
 		response.results = resultItr;
 
 		return response;

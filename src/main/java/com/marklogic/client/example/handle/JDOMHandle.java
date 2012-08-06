@@ -24,10 +24,11 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 
-import org.jdom.Document;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.Document;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.input.sax.XMLReaders;
+import org.jdom2.output.XMLOutputter;
 
 import com.marklogic.client.io.Format;
 import com.marklogic.client.MarkLogicIOException;
@@ -70,7 +71,7 @@ public class JDOMHandle
 		this.builder = builder;
 	}
 	protected SAXBuilder makeBuilder() {
-		return new SAXBuilder(false);
+		return new SAXBuilder(XMLReaders.NONVALIDATING);
 	}
 
 	public XMLOutputter getOutputter() {
