@@ -187,9 +187,6 @@ public class GenericDocumentTest {
 
 		transaction.commit();
 
-// TODO: remove after Bug:18641 is fixed
-try { Thread.sleep(1000); } catch (InterruptedException e) {}
-
 		assertTrue("Document 1 exists",        docMgr.exists(docId1)==null);
 		assertTrue("Document 2 doesn't exist", docMgr.exists(docId2)!=null);
 
@@ -209,9 +206,6 @@ try { Thread.sleep(1000); } catch (InterruptedException e) {}
 		docMgr.write(docId2, docHandle, transaction);
 		docMgr.delete(docId1, transaction);
 		transaction.rollback();
-
-// TODO: remove after Bug:18641 is fixed
-try { Thread.sleep(1000); } catch (InterruptedException e) {}
 
 		assertTrue("Document 1 doesn't exist", docMgr.exists(docId1)!=null);
 		assertTrue("Document 2 exists",        docMgr.exists(docId2)==null);
@@ -251,9 +245,6 @@ try { Thread.sleep(1000); } catch (InterruptedException e) {}
 		}
 
 		transaction.commit();
-
-// TODO: remove after Bug:18641 is fixed
-try { Thread.sleep(1000); } catch (InterruptedException e) {}
 
 		for (String docId: docIds) {
 			assertTrue("Document doesn't exist "+docId, docMgr.exists(docId)!=null);
