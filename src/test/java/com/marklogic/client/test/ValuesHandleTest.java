@@ -16,35 +16,33 @@
 package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import com.marklogic.client.query.AggregateResult;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.CountedDistinctValue;
-import com.marklogic.client.query.ValuesDefinition;
-import com.marklogic.client.query.ValuesListDefinition;
-import com.marklogic.client.io.ValuesHandle;
-import com.marklogic.client.io.ValuesListHandle;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.xml.sax.SAXException;
+
+import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.ValuesHandle;
+import com.marklogic.client.io.ValuesListHandle;
+import com.marklogic.client.query.AggregateResult;
+import com.marklogic.client.query.CountedDistinctValue;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.ValuesDefinition;
+import com.marklogic.client.query.ValuesListDefinition;
+
 public class ValuesHandleTest {
-	private static final Logger logger = (Logger) LoggerFactory
-			.getLogger(QueryOptionsHandleTest.class);
-	
     @BeforeClass
     public static void beforeClass() {
         Common.connectAdmin();
@@ -57,7 +55,26 @@ public class ValuesHandleTest {
 
     @Test
     public void testAggregates() throws IOException, ParserConfigurationException, SAXException {
-        QueryManager queryMgr = Common.client.newQueryManager();
+    	String options =
+    	"<?xml version='1.0'?>"+
+    	"<options xmlns=\"http://marklogic.com/appservices/search\">"+
+    	  "<values name=\"grandchild\">"+
+    	     "<range type=\"xs:string\">"+
+    	        "<element ns=\"\" name=\"grandchild\"/>"+
+    	     "</range>"+
+    	  "</values>"+
+    	  "<values name=\"double\">"+
+    	     "<range type=\"xs:double\">"+
+    	        "<element ns=\"\" name=\"double\"/>"+
+    	     "</range>"+
+    	  "</values>"+
+    	  "<return-metrics>false</return-metrics>"+
+    	"</options>";
+
+    	QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+    	optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
+
+    	QueryManager queryMgr = Common.client.newQueryManager();
 
         ValuesDefinition vdef = queryMgr.newValuesDefinition("double", "valuesoptions");
         vdef.setAggregate("sum", "avg");
@@ -69,8 +86,15 @@ public class ValuesHandleTest {
         ValuesHandle v = queryMgr.values(vdef, new ValuesHandle());
 
         AggregateResult[] agg = v.getAggregates();
+        assertEquals("There should be 2 aggregates", 2, agg.length);
+        double first  = agg[0].get("xs:double", Double.class);
+        assertTrue("Aggregate 1 should be between 6.8 and 7.0",
+                6.8 < first && first < 7.0);
+        double second = agg[1].get("xs:double", Double.class);
+        assertTrue("Aggregate 2 should be between 1.72 and 1.73",
+        		1.72 < second && second < 1.73);
 
-        System.err.println(v);
+        optionsMgr.deleteOptions("valuesoptions");
     }
 
     @Test

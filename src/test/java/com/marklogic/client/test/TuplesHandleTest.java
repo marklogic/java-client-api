@@ -16,34 +16,31 @@
 package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.marklogic.client.io.ValuesHandle;
-import com.marklogic.client.query.AggregateResult;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.Tuple;
-import com.marklogic.client.query.TypedDistinctValue;
-import com.marklogic.client.io.TuplesHandle;
-import com.marklogic.client.query.ValuesDefinition;
-import com.marklogic.client.query.ValuesMetrics;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.xml.sax.SAXException;
+
+import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.TuplesHandle;
+import com.marklogic.client.query.AggregateResult;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.Tuple;
+import com.marklogic.client.query.TypedDistinctValue;
+import com.marklogic.client.query.ValuesDefinition;
+import com.marklogic.client.query.ValuesMetrics;
+
 public class TuplesHandleTest {
-	private static final Logger logger = (Logger) LoggerFactory
-			.getLogger(QueryOptionsHandleTest.class);
-	
     @BeforeClass
     public static void beforeClass() {
         Common.connectAdmin();
@@ -56,26 +53,45 @@ public class TuplesHandleTest {
 
     @Test
     public void testAggregates() throws IOException, ParserConfigurationException, SAXException {
-        QueryManager queryMgr = Common.client.newQueryManager();
+    	String options =
+        	"<?xml version='1.0'?>"+
+        	"<options xmlns=\"http://marklogic.com/appservices/search\">"+
+        	  "<values name=\"grandchild\">"+
+        	     "<range type=\"xs:string\">"+
+        	        "<element ns=\"\" name=\"grandchild\"/>"+
+        	     "</range>"+
+         	     "<values-option>limit=2</values-option>"+
+        	  "</values>"+
+        	  "<tuples name=\"co\">"+
+        	     "<range type=\"xs:double\">"+
+        	        "<element ns=\"\" name=\"double\"/>"+
+        	     "</range>"+
+        	     "<range type=\"xs:int\">"+
+     	            "<element ns=\"\" name=\"int\"/>"+
+     	         "</range>"+
+        	  "</tuples>"+
+        	  "<return-metrics>false</return-metrics>"+
+        	  "<return-values>false</return-values>"+
+        	"</options>";
 
-        ValuesDefinition vdef = queryMgr.newValuesDefinition("co", "valuesoptions3");
+    	QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+    	optionsMgr.writeOptions("valuesoptions2", new StringHandle(options));
+
+    	QueryManager queryMgr = Common.client.newQueryManager();
+
+        ValuesDefinition vdef = queryMgr.newValuesDefinition("co", "valuesoptions2");
         vdef.setAggregate("correlation", "covariance");
 
         TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
 
-        Tuple[] tuples = t.getTuples();
-        assertEquals("Nine tuples are expected", 9, tuples.length);
-        assertEquals("The tuples are named 'co'", "co", t.getName());
-
         AggregateResult[] agg = t.getAggregates();
         assertEquals("Two aggregates are expected", 2, agg.length);
 
-        Double cov = t.getAggregate("covariance").get("xs:double", Double.class);
+        double cov = t.getAggregate("covariance").get("xs:double", Double.class);
         assertTrue("The covariance is between 0.004 and 0.005",
                 cov > 0.004 && cov < 0.005);
 
-        ValuesMetrics metrics = t.getMetrics();
-        assertTrue("The values resolution time is greater than 0", metrics.getValuesResolutionTime() > 0);
+        optionsMgr.deleteOptions("valuesoptions3");
     }
 
     @Test
@@ -95,7 +111,7 @@ public class TuplesHandleTest {
         assertEquals("The aggregate resolution time is -1 (absent)", metrics.getAggregateResolutionTime(), -1);
     }
 
-    //@Test
+    @Test
     public void testValuesHandle() throws IOException, ParserConfigurationException, SAXException {
         File f = new File("src/test/resources/tuples.xml");
         FileInputStream is = new FileInputStream(f);
