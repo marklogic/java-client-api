@@ -71,7 +71,7 @@ import com.marklogic.client.query.ElementLocator;
 import com.marklogic.client.query.KeyLocator;
 import com.marklogic.client.query.KeyValueQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.ValueLocator;
@@ -1080,9 +1080,8 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public <T> T search(Class<T> as, QueryDefinition queryDef, String mimetype,
-			long start, long len, QueryManager.ResponseViews views,
-			String transactionId) throws ForbiddenUserException,
-			FailedRequestException {
+			long start, long len, QueryView view, String transactionId) 
+	throws ForbiddenUserException, FailedRequestException {
 		RequestParameters params = new RequestParameters();
 		ClientResponse response = null;
 
@@ -1094,12 +1093,14 @@ public class JerseyServices implements RESTServices {
 			params.put("pageLength", "" + len);
 		}
 
-		for (QueryManager.QueryView view : views) {
-			if (view == QueryManager.QueryView.RESULTS) {
+		if (view != null && view != QueryView.DEFAULT) {
+			if (view == QueryView.ALL) {
+				params.put("view", "all");
+			} else if (view == QueryView.RESULTS) {
 				params.put("view", "results");
-			} else if (view == QueryManager.QueryView.FACETS) {
+			} else if (view == QueryView.FACETS) {
 				params.put("view", "facets");
-			} else if (view == QueryManager.QueryView.METADATA) {
+			} else if (view == QueryView.METADATA) {
 				params.put("view", "metadata");
 			}
 		}

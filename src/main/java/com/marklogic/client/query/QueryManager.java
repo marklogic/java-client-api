@@ -15,8 +15,6 @@
  */
 package com.marklogic.client.query;
 
-import java.util.Set;
-
 import javax.xml.namespace.QName;
 
 import com.marklogic.client.Transaction;
@@ -32,19 +30,15 @@ public interface QueryManager {
     static final public long DEFAULT_PAGE_LENGTH = 10;
     static final public long START = 1;
 
-    public interface ResponseViews extends Set<QueryView> {
-    }
-
     public enum QueryView {
-        RESULTS, FACETS, METADATA;
+        DEFAULT, RESULTS, FACETS, METADATA, ALL;
     }
 
     public long getPageLength();
     public void setPageLength(long length);
 
-    public ResponseViews getViews();
-    public void setViews(ResponseViews views);
-    public void setViews(QueryView... views);
+    public QueryView getView();
+    public void setView(QueryView view);
 
     public StringQueryDefinition newStringDefinition();
     public StringQueryDefinition newStringDefinition(String optionsName);

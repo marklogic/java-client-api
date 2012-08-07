@@ -55,6 +55,8 @@ public class StructuredSearchTest {
         assertFalse(results.getMetrics().getTotalTime() == -1);
 
         MatchDocumentSummary[] summaries = results.getMatchResults();
+        assertNotNull(summaries);
+        assertTrue(summaries.length > 0);
         for (MatchDocumentSummary summary : summaries) {
             MatchLocation[] locations = summary.getMatchLocations();
             for (MatchLocation location : locations) {

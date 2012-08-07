@@ -21,23 +21,23 @@ import javax.net.ssl.SSLContext;
 
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.document.DocumentDescriptor;
-import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.util.RequestLogger;
-import com.marklogic.client.util.RequestParameters;
 import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
-import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.query.ValuesDefinition;
-import com.marklogic.client.query.ValuesListDefinition;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
+import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.QueryManager.QueryView;
+import com.marklogic.client.query.ValuesDefinition;
+import com.marklogic.client.query.ValuesListDefinition;
+import com.marklogic.client.util.RequestLogger;
+import com.marklogic.client.util.RequestParameters;
 import com.sun.jersey.api.client.ClientResponse;
 
 public interface RESTServices {
@@ -63,7 +63,7 @@ public interface RESTServices {
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     public <T> T search(Class <T> as, QueryDefinition queryDef, String mimetype, long start,
-                        long len, QueryManager.ResponseViews views, String transactionId)
+                        long len, QueryView view, String transactionId)
     	throws ForbiddenUserException, FailedRequestException;
 
     public void deleteSearch(DeleteQueryDefinition queryDef, String transactionId)

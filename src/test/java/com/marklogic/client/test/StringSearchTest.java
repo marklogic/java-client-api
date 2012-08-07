@@ -16,6 +16,7 @@
 package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
@@ -24,29 +25,27 @@ import java.io.IOException;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 
-import com.marklogic.client.query.FacetResult;
-import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.query.SearchMetrics;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.admin.config.QueryOptions.Facets;
 import com.marklogic.client.admin.config.QueryOptions.FragmentScope;
 import com.marklogic.client.admin.config.QueryOptions.QueryRange;
 import com.marklogic.client.admin.config.QueryOptions.QueryTransformResults;
 import com.marklogic.client.admin.config.QueryOptionsBuilder;
-import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.query.FacetResult;
+import com.marklogic.client.query.MatchDocumentSummary;
+import com.marklogic.client.query.MatchLocation;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.QueryManager.QueryView;
+import com.marklogic.client.query.StringQueryDefinition;
 
 public class StringSearchTest {
 	private static final Logger logger = (Logger) LoggerFactory
@@ -62,14 +61,122 @@ public class StringSearchTest {
         Common.release();
     }
 
-    //@Test
+    @Test
     public void testStringSearch() throws IOException, ParserConfigurationException, SAXException {
+        String optionsName = writeOptions();
+
+        QueryManager queryMgr = Common.client.newQueryManager();
+
+        StringQueryDefinition qdef = queryMgr.newStringDefinition(optionsName);
+        qdef.setCriteria("grandchild1 OR grandchild4");
+
+        SearchHandle results = queryMgr.search(qdef, new SearchHandle());
+        assertNotNull(results);
+        assertFalse(results.getMetrics().getTotalTime() == -1);
+
+        FacetResult[] facets = results.getFacetResults();
+        assertNotNull(facets);
+        assertTrue(facets.length > 0);
+
+        MatchDocumentSummary[] summaries = results.getMatchResults();
+        assertTrue(summaries.length > 0);
+        for (MatchDocumentSummary summary : summaries) {
+        	MatchLocation[] locations = summary.getMatchLocations();
+            for (MatchLocation location : locations) {
+                assertNotNull(location.getAllSnippetText());
+            }
+        }
+
+        assertNotNull(summaries);
+    }
+
+    @Test
+    public void testStringSearch2() throws IOException {
+        QueryManager queryMgr = Common.client.newQueryManager();
+
+        // "em-1"
+        StringQueryDefinition qdef = queryMgr.newStringDefinition();
+        qdef.setCriteria("10");
+
+        SearchHandle handle = new SearchHandle();
+        handle = queryMgr.search(qdef, handle);
+
+        assertNotNull(handle);
+    }
+
+    @Test
+    public void testStringSearch3() throws IOException {
+        QueryManager queryMgr = Common.client.newQueryManager();
+        // "metatest-1"
+        StringQueryDefinition qdef = queryMgr.newStringDefinition();
+        qdef.setCriteria("10");
+
+        SearchHandle handle = new SearchHandle();
+        handle = queryMgr.search(qdef, handle);
+
+/* UNUSED
+        String[] facetNames = handle.getFacetNames();
+        FacetResult[] facetResults = handle.getFacetResults();
+        MatchDocumentSummary[] matchDocSum = handle.getMatchResults();
+        SearchMetrics metrics = handle.getMetrics();
+        Document plan = handle.getPlan();
+        QueryDefinition def = handle.getQueryCriteria();
+        SearchHandle.Report[] reports = handle.getReports();
+        SearchHandle.Warning[] warnings = handle.getWarnings();
+        long total = handle.getTotalResults();
+ */
+
+        assertNotNull(handle);
+    }
+
+    @Test
+    public void testStringSearch4() throws IOException {
+        String optionsName = writeOptions();
+
+        QueryManager queryMgr = Common.client.newQueryManager();
+
+        StringQueryDefinition qdef = queryMgr.newStringDefinition(optionsName);
+        qdef.setCriteria("grandchild1 OR grandchild4");
+
+        queryMgr.setView(QueryView.FACETS);
+        SearchHandle results = queryMgr.search(qdef, new SearchHandle());
+        assertNotNull(results);
+
+        FacetResult[] facets = results.getFacetResults();
+        assertNotNull(facets);
+        assertTrue(facets.length > 0);
+
+        MatchDocumentSummary[] summaries = results.getMatchResults();
+        assertTrue(summaries == null || summaries.length == 0);
+
+        queryMgr.setView(QueryView.RESULTS);
+        results = queryMgr.search(qdef, new SearchHandle());
+        assertNotNull(results);
+
+        facets = results.getFacetResults();
+        assertTrue(facets == null || facets.length == 0);
+
+        summaries = results.getMatchResults();
+        assertNotNull(summaries);
+        assertTrue(summaries.length > 0);
+    }
+
+    private String writeOptions() {
         String optionsName = "facets";
 
         // Get back facets...
         QueryOptionsBuilder builder = new QueryOptionsBuilder();
-        QueryOptionsHandle options = new QueryOptionsHandle()
-		.withConstraints(
+		QueryRange grandchildRange = builder.range(
+				builder.elementRangeIndex(
+						new QName("grandchild"),
+						builder.stringRangeType("http://marklogic.com/collation/")
+						));
+		grandchildRange.setDoFacets(true);
+		QueryOptionsHandle options = new QueryOptionsHandle().withConstraints(
+        		builder.constraint("grandchild",grandchildRange)
+        		);
+/*
+        .withConstraints(
         		builder.constraint("decade", 
         				builder.range(
         						builder.elementAttributeRangeIndex(
@@ -88,11 +195,10 @@ public class StringSearchTest {
 		        		                builder.bucket("1930s", "1930s", "1930", "1940"),
 		        		                builder.bucket("1920s", "1920s", "1920", "1930")),
         							"limit=10")));
-        						
-        QueryRange range = options.getConstraint("decade").getSource();
-        assertEquals(range.getElement(), new QName(
-                "http://marklogic.com/wikipedia", "nominee"));
-        assertEquals(range.getAttribute(), new QName("year"));
+ */
+
+        QueryRange range = options.getConstraint("grandchild").getSource();
+        assertEquals(range.getElement(), new QName("grandchild"));
 
         QueryTransformResults tresults = builder.emptySnippets();
         options.withTransformResults(tresults);
@@ -100,65 +206,8 @@ public class StringSearchTest {
         QueryOptionsManager queryOptionsMgr =
         	Common.client.newServerConfigManager().newQueryOptionsManager();
 
-        logger.error(options.toString());
-
         queryOptionsMgr.writeOptions(optionsName, options);
 
-        QueryManager queryMgr = Common.client.newQueryManager();
-        StringQueryDefinition qdef = queryMgr.newStringDefinition(optionsName);
-        qdef.setCriteria("Peck");
-
-        /*
-        StringHandle handle = queryMgr.search(qdef, new StringHandle());
-        System.err.println(handle.get());
-        */
-
-        SearchHandle results = queryMgr.search(qdef, new SearchHandle());
-        assertNotNull(results);
-        assertFalse(results.getMetrics().getTotalTime() == -1);
-
-        MatchDocumentSummary[] summaries = results.getMatchResults();
-        for (MatchDocumentSummary summary : summaries) {
-            MatchLocation[] locations = summary.getMatchLocations();
-            for (MatchLocation location : locations) {
-                assertNotNull(location.getAllSnippetText());
-            }
-        }
-
-        assertNotNull(summaries);
-    }
-
-    //@Test
-    public void testStringSearch2() throws IOException {
-        QueryManager queryMgr = Common.client.newQueryManager();
-        StringQueryDefinition qdef = queryMgr.newStringDefinition("em-1");
-        qdef.setCriteria("10");
-
-        SearchHandle handle = new SearchHandle();
-        handle = queryMgr.search(qdef, handle);
-
-        assertNotNull(handle);
-    }
-
-    //@Test
-    public void testStringSearch3() throws IOException {
-        QueryManager queryMgr = Common.client.newQueryManager();
-        StringQueryDefinition qdef = queryMgr.newStringDefinition("metatest-1");
-        qdef.setCriteria("10");
-
-        SearchHandle handle = new SearchHandle();
-        handle = queryMgr.search(qdef, handle);
-
-        String[] facetNames = handle.getFacetNames();
-        FacetResult[] facetResults = handle.getFacetResults();
-        MatchDocumentSummary[] matchDocSum = handle.getMatchResults();
-        SearchMetrics metrics = handle.getMetrics();
-        Document plan = handle.getPlan();
-        QueryDefinition def = handle.getQueryCriteria();
-        SearchHandle.Report[] reports = handle.getReports();
-        SearchHandle.Warning[] warnings = handle.getWarnings();
-        long total = handle.getTotalResults();
-
-        assertNotNull(handle);
+        return optionsName;
     }
 }

@@ -15,64 +15,55 @@
  */
 package com.marklogic.client.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-
 import javax.xml.namespace.QName;
 
-import com.marklogic.client.io.TuplesHandle;
-import com.marklogic.client.io.marker.TuplesReadHandle;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.ElementLocator;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.query.KeyLocator;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.io.TuplesHandle;
+import com.marklogic.client.io.ValuesHandle;
+import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
+import com.marklogic.client.io.marker.SearchReadHandle;
+import com.marklogic.client.io.marker.TuplesReadHandle;
+import com.marklogic.client.io.marker.ValuesListReadHandle;
+import com.marklogic.client.io.marker.ValuesReadHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.ElementLocator;
+import com.marklogic.client.query.KeyLocator;
 import com.marklogic.client.query.KeyValueQueryDefinition;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
-import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.io.ValuesHandle;
-import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
-import com.marklogic.client.io.marker.SearchReadHandle;
-import com.marklogic.client.io.marker.ValuesListReadHandle;
-import com.marklogic.client.io.marker.ValuesReadHandle;
 
 public class QueryManagerImpl extends AbstractLoggingManager implements QueryManager {
     private RESTServices services = null;
     private long pageLen = -1;
-    private ResponseViews views = new ResponseViewsImpl();
+    private QueryView view = QueryView.DEFAULT;
 
     public QueryManagerImpl(RESTServices services) {
         this.services = services;
     }
 
+    @Override
     public long getPageLength() {
         return pageLen;
     }
-
+    @Override
     public void setPageLength(long length) {
         pageLen = length;
     }
 
-    public ResponseViews getViews() {
-        return views;
+    @Override
+    public QueryView getView() {
+        return view;
     }
-
-    public void setViews(ResponseViews views) {
-        this.views = views;
-    }
-
-    public void setViews(QueryView... views) {
-        this.views = new ResponseViewsImpl();
-        for (QueryView view : views) {
-            this.views.add(view);
-        }
+    @Override
+    public void setView(QueryView view) {
+    	this.view = (view == null) ? QueryView.DEFAULT : view;
     }
 
     @Override
@@ -182,7 +173,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         String mimetype = searchFormat.getDefaultMimetype();
 
         String tid = transaction == null ? null : transaction.getTransactionId();
-        searchBase.receiveContent(services.search(searchBase.receiveAs(), querydef, mimetype, start, pageLen, views, tid));
+        searchBase.receiveContent(services.search(searchBase.receiveAs(), querydef, mimetype, start, pageLen, view, tid));
         return searchHandle;
     }
 
@@ -336,79 +327,6 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
             return summaries[0];
         } else {
             return null;
-        }
-    }
-
-    private class ResponseViewsImpl implements ResponseViews {
-        private ArrayList<QueryView> views = new ArrayList<QueryView>();
-
-        @Override
-        public int size() {
-            return views.size();
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return views.isEmpty();
-        }
-
-        @Override
-        public boolean contains(Object o) {
-            return views.contains(o);
-        }
-
-        @Override
-        public Iterator<QueryView> iterator() {
-            return views.iterator();
-        }
-
-        @Override
-        public Object[] toArray() {
-            return views.toArray(new QueryView[0]);
-        }
-
-        @Override
-        public <T> T[] toArray(T[] ts) {
-            return (T[]) views.toArray(new QueryView[0]);
-        }
-
-        @Override
-        public boolean add(QueryView queryView) {
-            if (!contains(queryView)) {
-                return views.add(queryView);
-            } else {
-                return false;
-            }
-        }
-
-        @Override
-        public boolean remove(Object o) {
-            return views.remove(o);
-        }
-
-        @Override
-        public boolean containsAll(Collection<?> objects) {
-            return views.containsAll(objects);
-        }
-
-        @Override
-        public boolean addAll(Collection<? extends QueryView> queryViews) {
-            return views.addAll(queryViews);
-        }
-
-        @Override
-        public boolean retainAll(Collection<?> objects) {
-            return views.retainAll(objects);
-        }
-
-        @Override
-        public boolean removeAll(Collection<?> objects) {
-            return views.removeAll(objects);
-        }
-
-        @Override
-        public void clear() {
-            views.clear();
         }
     }
 }
