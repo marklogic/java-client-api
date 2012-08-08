@@ -94,7 +94,6 @@ import com.marklogic.client.impl.Utilities;
  * <p>
  * Entry points: <br>
  * 
- * 
  * QueryOptionsBuilder builder = new QueryOptionsBuilder(); 
  * QueryOptionsHandle options = new QueryOptionsHandle();
  * 

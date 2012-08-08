@@ -419,7 +419,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 	}
 
     /**
-     * Partial implemenation of constraint sources that can have facets
+     * Partial implementation of constraint sources that can have facets
      */
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public abstract static class FacetableConstraintConfiguration extends
@@ -429,7 +429,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		private String collation;
 
 		@XmlAttribute(name = "facet")
-		private boolean doFacets;
+		private Boolean doFacets;
 
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "facet-option")
 		private List<String> facetOptions;
@@ -454,9 +454,9 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		 * Perform facets on this constraint.
 		 * 
 		 * @param doFacets
-		 *            set to true to configure facets, false otherwise.
+		 *            set to true to configure facets, false otherwise.  This field is nullable because facets are irrelevant in values and tuples configuration.
 		 */
-		public void doFacets(boolean doFacets) {
+		public void doFacets(Boolean doFacets) {
 			this.doFacets = doFacets;
 		}
 
@@ -468,7 +468,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		 * @return true if this constraint is configured for facets. False
 		 *         otherwise.
 		 */
-		public boolean getDoFacets() {
+		public Boolean getDoFacets() {
 			return doFacets;
 		}
 

@@ -443,7 +443,9 @@ public class QueryOptionsBuilderTest {
         				.withSearchableExpression(
         						builder.searchableExpression("/path/to/test"));
 		
-		PathIndex pathIndex = options.getConstraint("t").getSource().getPathIndex();
+		QueryRange range =  options.getConstraint("t").getSource();
+		assertNull(range.getDoFacets());
+		PathIndex pathIndex = range.getPathIndex();
 		assertEquals("/doc/para/title", pathIndex.getPath());
 		
 		
