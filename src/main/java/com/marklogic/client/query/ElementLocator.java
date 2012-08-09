@@ -17,9 +17,33 @@ package com.marklogic.client.query;
 
 import javax.xml.namespace.QName;
 
+/**
+ * An Element Locator specifies an element or element and attribute
+ * containing a value as part of a KeyValueQueryDefinition.
+ * The element is required.  The attribute is optional.
+ */
 public interface ElementLocator extends ValueLocator {
-    public QName getElement();
+    /**
+     * Returns the name of the element containing the attribute
+     * or value.
+     * @return	the element name
+     */
+	public QName getElement();
+	/**
+	 * Specifies the name of the element containing the attribute
+     * (if also specified) or value. The element may have namespace.
+	 * @param qname	the element name
+	 */
     public void setElement(QName qname);
+    /**
+     * Returns the name of the attribute (if specified).
+     * @return	the attribute name
+     */
     public QName getAttribute();
+    /**
+     * Specifies the name of the attribute containing the value.  The
+     * element name must also be specified.
+     * @param qname	the attribute name
+     */
     public void setAttribute(QName qname);
 }

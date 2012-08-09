@@ -15,7 +15,19 @@
  */
 package com.marklogic.client.query;
 
+/**
+ * A Key Locator specifies a JSON key containing a value as part
+ * of a KeyValueQueryDefinition.
+ */
 public interface KeyLocator extends ValueLocator {
-    public String getKey();
+    /**
+     * Returns a JSON key.
+     * @return	the JSON key
+     */
+	public String getKey();
+	/**
+	 * Specifies the JSON key.
+	 * @param key	the JSON key
+	 */
     public void setKey(String key);
 }
