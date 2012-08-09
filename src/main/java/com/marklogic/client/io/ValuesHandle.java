@@ -38,6 +38,11 @@ import com.marklogic.client.query.ValuesResults;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.ValuesReadHandle;
 
+/**
+ * A ValuesHandle represents a list of values or of tuples
+ * (combination of values for the same document) retrieved
+ * from the indexes.
+ */
 public class ValuesHandle
 	extends BaseHandle<InputStream, OperationNotSupported>
 	implements ValuesReadHandle, ValuesResults
@@ -51,6 +56,9 @@ public class ValuesHandle
 
     private ValuesDefinition valuesdef = null;
 
+    /**
+     * Zero-argument constructor.
+     */
     public ValuesHandle() {
     	super();
     	super.setFormat(Format.XML);
@@ -63,12 +71,27 @@ public class ValuesHandle
         }
     }
 
+    /**
+     * Sets the format associated with this handle.
+     *
+     * This handle only supports XML.
+     *
+     * @param format The format, which must be Format.XML or an exception will be raised.
+     */
     @Override
     public void setFormat(Format format) {
         if (format != Format.XML)
         	throw new IllegalArgumentException("ValuesHandle supports the XML format only");
     }
 
+    /**
+     * Fluent setter for the format associated with this handle.
+     *
+     * This handle only supports XML.
+     *
+     * @param format The format, which must be Format.XML or an exception will be raised.
+     * @return The SearchHandle instance on which this method was called.
+     */
     public ValuesHandle withFormat(Format format) {
         setFormat(format);
         return this;
@@ -94,6 +117,13 @@ public class ValuesHandle
         }
     }
 
+    /**
+     * Sets the query definition used when retrieving values.
+     *
+     * <p>Calling this method always deletes any cached values.</p>
+     *
+     * @param querydef The new QueryDefinition
+     */
     public void setQueryCriteria(ValuesDefinition vdef) {
         valuesdef = vdef;
     }
