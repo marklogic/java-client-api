@@ -15,5 +15,9 @@
  */
 package com.marklogic.client.query;
 
+/**
+ * A Locator identifying a JSON key, element, or element and attribute
+ * containing a value as part of a KeyValueQueryDefinition.
+ */
 public interface ValueLocator {
 }
