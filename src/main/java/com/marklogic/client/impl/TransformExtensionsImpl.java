@@ -33,6 +33,8 @@ import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
+
+@SuppressWarnings({"unchecked", "rawtypes"})
 class TransformExtensionsImpl
 	extends AbstractLoggingManager
 	implements TransformExtensionsManager

@@ -87,6 +87,7 @@ public class DocumentMetadataHandle
 		 */
 		public void addAll(String... collections);
 	}
+	@SuppressWarnings("serial")
 	private class CollectionsImpl extends HashSet<String> implements DocumentCollections {
 		@Override
 	    public void addAll(String... collections) {
@@ -111,6 +112,7 @@ public class DocumentMetadataHandle
 	     */
 		public void add(String role, Capability... capabilities);
 	}
+	@SuppressWarnings("serial")
 	private class PermissionsImpl extends HashMap<String,Set<Capability>> implements DocumentPermissions {
 		@Override
 		public void add(String role, Capability... capabilities) {
@@ -123,6 +125,7 @@ public class DocumentMetadataHandle
 
 			put(role, caps);
 		}
+		@SuppressWarnings("unused")
 		public void add(String role, Capability capability) {
 			if (containsKey(role)) {
 				get(role).add(capability);
@@ -262,6 +265,7 @@ public class DocumentMetadataHandle
 		 */
 		public Object put(QName name, String value);
 	}
+	@SuppressWarnings("serial")
 	private class PropertiesImpl extends NameMapBase<Object> implements DocumentProperties {
 		private PropertiesImpl() {
 			super();

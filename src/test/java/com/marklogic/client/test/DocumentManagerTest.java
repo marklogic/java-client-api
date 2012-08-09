@@ -51,6 +51,9 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -88,16 +91,17 @@ public class DocumentManagerTest {
 		public Document getContent() throws Exception;
 	}
 
-//	@BeforeClass
+	@BeforeClass
 	public static void beforeClass() {
 		Common.connect();
 	}
-//	@AfterClass
+	@AfterClass
 	public static void afterClass() {
 		Common.release();
 	}
 
-//	@Test
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test
 	public void testReadWrite() throws TransformerFactoryConfigurationError, Exception {
 		// known document managers
 		DocumentManager[] managers = {
@@ -179,7 +183,7 @@ public class DocumentManagerTest {
 			String format = manager.getClass().getName().replaceFirst("^com\\.marklogic\\.client\\.impl\\.(.*?)DocumentImpl$", "$1").toUpperCase();
 
 // TODO: other formats
-if (!"XML".equals(format)) continue;
+			if (!"XML".equals(format)) continue;
 
 			HashSet<Class<AbstractReadHandle>> formatReaders = readHandles.get(format);
 			if (formatReaders == null || formatReaders.isEmpty()) {
@@ -212,6 +216,7 @@ if (!"XML".equals(format)) continue;
 		}
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void testWriteRead(
 			DocumentManager docMgr,
 			String                  docId,
@@ -220,10 +225,10 @@ if (!"XML".equals(format)) continue;
 			Document                writeContent
 			) throws Exception
 	{
-System.out.println(
-docMgr.getClass().getName()+
-" writing "+writeSetter.getClass().getName()+
-" reading "+readGetter.getClass().getName());
+		System.out.println(
+				docMgr.getClass().getName()+
+				" writing "+writeSetter.getClass().getName()+
+				" reading "+readGetter.getClass().getName());
 		writeSetter.setContent(writeContent);
 		AbstractWriteHandle writeHandle = writeSetter.getHandle();
 		docMgr.write(docId, writeHandle);

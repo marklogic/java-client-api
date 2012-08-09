@@ -18,6 +18,7 @@ package com.marklogic.client;
 /**
  * An InternalException suggests a defect in the API.  Please contact MarkLogic support.
  */
+@SuppressWarnings("serial")
 public class MarkLogicInternalException extends RuntimeException {
 
 	public MarkLogicInternalException(String message) {

@@ -22,6 +22,7 @@ import com.marklogic.client.impl.FailedRequest;
  * Access the failed request payload using getFailedRequest()
  *
  */
+@SuppressWarnings("serial")
 public class ResourceNotFoundException extends MarkLogicServerException {
 
 	public ResourceNotFoundException(String message) {

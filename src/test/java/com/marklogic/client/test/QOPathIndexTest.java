@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.config.QueryOptions;
 import com.marklogic.client.admin.config.QueryOptions.Facets;
 import com.marklogic.client.admin.config.QueryOptions.FragmentScope;
@@ -47,7 +46,8 @@ import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.util.EditableNamespaceContext;
 
 public class QOPathIndexTest {
-    private static final Logger logger = (Logger) LoggerFactory
+    @SuppressWarnings("unused")
+	private static final Logger logger = (Logger) LoggerFactory
             .getLogger(QOPathIndexTest.class);
 
     private static QueryOptionsBuilder builder;
@@ -181,9 +181,6 @@ public class QOPathIndexTest {
                 "</ns2:options>\n";
 
         InputStream in = new ByteArrayInputStream(xml.getBytes("utf-8"));
-
-        QueryOptionsManager mgr =
-        	Common.client.newServerConfigManager().newQueryOptionsManager();
 
         QueryOptionsHandle handle = new QueryOptionsHandle();
 

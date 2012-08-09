@@ -22,6 +22,7 @@ import com.marklogic.client.impl.FailedRequest;
  * are not sufficient for the task requested.  This exception corresponds 
  * to HTTP status code 403.
  */
+@SuppressWarnings("serial")
 public class ForbiddenUserException extends MarkLogicServerException {
 	public ForbiddenUserException(String message) {
 		super(message);

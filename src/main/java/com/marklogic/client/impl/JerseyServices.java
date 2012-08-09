@@ -92,6 +92,7 @@ import com.sun.jersey.multipart.Boundary;
 import com.sun.jersey.multipart.MultiPart;
 import com.sun.jersey.multipart.MultiPartMediaTypes;
 
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class JerseyServices implements RESTServices {
 	static final private Logger logger = LoggerFactory
 			.getLogger(JerseyServices.class);

@@ -16,7 +16,10 @@
 package com.marklogic.client;
 
 
-
+/**
+ * RuntimeException thrown by the Java Client API when a code block internally throws java.lang.IOException.
+ */
+@SuppressWarnings("serial")
 public class MarkLogicIOException extends RuntimeException {
 
 

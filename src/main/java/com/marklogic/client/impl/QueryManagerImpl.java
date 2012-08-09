@@ -151,6 +151,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     }
 
     @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction) {
 		HandleImplementation searchBase = HandleAccessor.checkHandle(searchHandle, "search");
 
@@ -194,6 +195,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     }
 
     @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valuesHandle, Transaction transaction) {
     	HandleImplementation valuesBase = HandleAccessor.checkHandle(valuesHandle, "values");
 
@@ -226,6 +228,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     }
 
     @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tuplesHandle, Transaction transaction) {
         HandleImplementation valuesBase = HandleAccessor.checkHandle(tuplesHandle, "values");
 
@@ -257,7 +260,8 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         return valuesList(valdef, valueHandle, null);
     }
 
-    @Override
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
     public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valuesHandle, Transaction transaction) {
     	HandleImplementation valuesBase = HandleAccessor.checkHandle(valuesHandle, "valueslist");
 
@@ -285,7 +289,8 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         return optionsList(optionsHandle, null);
     }
 
-    @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	@Override
     public <T extends QueryOptionsListReadHandle> T optionsList(T optionsHandle, Transaction transaction) {
     	HandleImplementation optionsBase = HandleAccessor.checkHandle(optionsHandle, "optionslist");
 

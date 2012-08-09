@@ -26,6 +26,7 @@ import com.marklogic.client.impl.FailedRequest;
  * @see FailedRequest
  *
  */
+@SuppressWarnings("serial")
 public abstract class MarkLogicServerException extends RuntimeException {
 	private FailedRequest failedRequest;
 	

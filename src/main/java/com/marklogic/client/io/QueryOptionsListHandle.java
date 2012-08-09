@@ -30,10 +30,10 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.query.QueryOptionsListBuilder;
-import com.marklogic.client.query.QueryOptionsListResults;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
+import com.marklogic.client.query.QueryOptionsListBuilder;
+import com.marklogic.client.query.QueryOptionsListResults;
 
 /**
  * A QueryOptionsListHandle is used to access the list of named query options that exist on the server.
@@ -45,7 +45,6 @@ public class QueryOptionsListHandle
     static final private Logger logger = LoggerFactory.getLogger(QueryOptionsListHandle.class);
 
     private QueryOptionsListBuilder.OptionsList optionsHolder;
-    private QueryOptionsListBuilder optionsBuilder;
     private JAXBContext jc;
     private Marshaller marshaller;
     private Unmarshaller unmarshaller;
@@ -53,8 +52,6 @@ public class QueryOptionsListHandle
     public QueryOptionsListHandle() {
     	super();
     	super.setFormat(Format.XML);
-
-        optionsBuilder = new QueryOptionsListBuilder();
 
         try {
             jc = JAXBContext.newInstance(QueryOptionsListBuilder.OptionsList.class);

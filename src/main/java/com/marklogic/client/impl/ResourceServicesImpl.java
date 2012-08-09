@@ -23,6 +23,8 @@ import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 
+
+@SuppressWarnings({"unchecked", "rawtypes"})
 class ResourceServicesImpl
     extends AbstractLoggingManager
     implements ResourceServices

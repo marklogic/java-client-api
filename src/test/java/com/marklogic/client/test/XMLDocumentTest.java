@@ -70,6 +70,7 @@ public class XMLDocumentTest {
 		Common.release();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testReadWrite()
 	throws ParserConfigurationException, SAXException, IOException, TransformerConfigurationException, TransformerFactoryConfigurationError, XMLStreamException {

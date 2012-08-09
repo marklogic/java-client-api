@@ -52,7 +52,9 @@ public class HTMLCleanerHandleExample {
 		run(host, port, writer_user, writer_password, authType);
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType)
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static void run(String host, int port, String user, String password, Authentication authType)
 	throws IOException {
 		System.out.println("example: "+HTMLCleanerHandleExample.class.getName());
 

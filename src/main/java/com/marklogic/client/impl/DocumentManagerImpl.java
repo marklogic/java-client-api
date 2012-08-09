@@ -186,7 +186,8 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		return read(desc, metadataHandle, contentHandle, transform, transaction, getReadParams());
 	}
 
-    public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction, RequestParameters extraParams)
+    @SuppressWarnings("rawtypes")
+	public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction, RequestParameters extraParams)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		if (desc == null)
 			throw new IllegalArgumentException("Reading document with null identifier");
@@ -311,6 +312,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		write(desc, metadataHandle, contentHandle, transform, transaction, getWriteParams());
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform, Transaction transaction, RequestParameters extraParams)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		if (desc == null)
@@ -439,6 +441,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 	private void checkContentFormat(Object contentHandle) {
 		checkContentFormat(HandleAccessor.checkHandle(contentHandle, "content"));
 	}
+	@SuppressWarnings("rawtypes")
 	private void checkContentFormat(HandleImplementation contentBase) {
 		if (contentBase == null)
 			return;

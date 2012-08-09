@@ -92,6 +92,7 @@ public class QueryOptionsTransformInjectNS extends XMLFilterImpl {
         private Vector<String> values = new Vector<String> ();
         private Vector<String> nsuris = new Vector<String> ();
 
+        @SuppressWarnings("unused")
         public BindingAttributes() {
         }
 

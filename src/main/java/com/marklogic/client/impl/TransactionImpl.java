@@ -39,6 +39,7 @@ class TransactionImpl implements Transaction {
 	}
 
 	@Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
 	public <T extends StructureReadHandle> T readStatus(T handle) throws ForbiddenUserException, FailedRequestException {
 		if (handle == null)
 			throw new IllegalArgumentException("reading transaction status with null handle");

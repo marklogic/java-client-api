@@ -200,6 +200,7 @@ public class BatchManager extends ResourceManager {
 			this.content = content;
 			return this;
 		}
+		@SuppressWarnings("rawtypes")
 		String getContentMimetype() {
 			return ((BaseHandle) content).getMimetype();
 		}
@@ -325,7 +326,6 @@ public class BatchManager extends ResourceManager {
 			InputItem item = entry.getValue();
 
 			if (item instanceof DeleteInput) {
-				DeleteInput ditem = (DeleteInput) item;
 				manifestBuilder.append("<rapi:delete-request>\n");
 
 				manifestBuilder.append("<rapi:uri>");

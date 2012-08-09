@@ -151,6 +151,7 @@ public class DatabaseClientFactory {
 	 * @return	a new client for making database requests
 	 */
 	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
+		logger.debug("Creating new database client for server at "+host+":"+port);
 		RESTServices services = new JerseyServices();
 		services.connect(host, port, user, password, type, context, verifier);
 

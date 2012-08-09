@@ -22,6 +22,7 @@ import com.marklogic.client.impl.FailedRequest;
  * from the REST API.  This class is a semantically thin one, meaning that it is used as
  * catch-all for various things that can go wrong on the REST server.
  */
+@SuppressWarnings("serial")
 public class FailedRequestException extends MarkLogicServerException {
 	
 	public FailedRequestException(String message) {

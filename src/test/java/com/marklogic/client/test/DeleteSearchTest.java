@@ -15,12 +15,13 @@
  */
 package com.marklogic.client.test;
 
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.SearchHandle;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.IOException;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -30,15 +31,15 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 
 public class DeleteSearchTest {
+	@SuppressWarnings("unused")
 	private static final Logger logger = (Logger) LoggerFactory
 			.getLogger(QueryOptionsHandleTest.class);
 	
@@ -56,7 +57,8 @@ public class DeleteSearchTest {
         root.appendChild(domDocument.createTextNode("mixed"));
         domDocument.appendChild(root);
 
-        String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
+        @SuppressWarnings("unused")
+		String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
                 .getDOMImplementation()).createLSSerializer().writeToString(domDocument);
 
         XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();

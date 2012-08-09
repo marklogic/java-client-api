@@ -36,6 +36,7 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 	}
 
 	@Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
 	public <T extends QueryOptionsReadHandle> T readOptions(String name,
 			T queryOptionsHandle) {
 		if (name == null) {
@@ -67,6 +68,7 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 		return queryOptionsHandle;
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void writeOptions(String name,
 			QueryOptionsWriteHandle queryOptionsHandle) {

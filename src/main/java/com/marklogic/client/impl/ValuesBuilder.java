@@ -15,11 +15,6 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.query.AggregateResult;
-import com.marklogic.client.query.CountedDistinctValue;
-import com.marklogic.client.query.SearchMetrics;
-import com.marklogic.client.query.ValuesMetrics;
-
 import java.util.ArrayList;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -27,6 +22,10 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+
+import com.marklogic.client.query.AggregateResult;
+import com.marklogic.client.query.CountedDistinctValue;
+import com.marklogic.client.query.ValuesMetrics;
 
 /**
  * A ValuesBuilder parses a set of value results.

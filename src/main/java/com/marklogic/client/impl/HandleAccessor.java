@@ -23,6 +23,7 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
  * HandleAccessor is used internally.  Applications will not ordinarily need to use it.
  *
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class HandleAccessor {
 	static public HandleImplementation checkHandle(Object object, String type) {
 		if (!isHandle(object))

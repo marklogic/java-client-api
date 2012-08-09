@@ -68,6 +68,7 @@ class RequestLoggerImpl implements RequestLogger {
 	}
 
 	@Override
+    @SuppressWarnings("unchecked")
 	public <T> T copyContent(T content) {
 		if (content == null)
 			return content;

@@ -15,8 +15,17 @@
  */
 package com.marklogic.client.test;
 
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.io.QueryOptionsListHandle;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -24,18 +33,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.io.QueryOptionsListHandle;
+import com.marklogic.client.query.QueryManager;
 
 public class QueryOptionsListHandleTest {
+	@SuppressWarnings("unused")
 	private static final Logger logger = (Logger) LoggerFactory
 			.getLogger(QueryOptionsHandleTest.class);
 	

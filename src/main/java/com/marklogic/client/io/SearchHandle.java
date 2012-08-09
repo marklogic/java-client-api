@@ -149,11 +149,13 @@ public class SearchHandle
 	@Override
 	protected void receiveContent(InputStream content) {
         try {
+        	logger.debug("SearchHandle receiving content");
             searchResponse = new SearchResponse();
             SAXParser parser = pfactory.newSAXParser();
             XMLReader reader = parser.getXMLReader();
             reader.setContentHandler(searchResponse);
             reader.parse(new InputSource(new InputStreamReader(content, "UTF-8")));
+            logger.debug("SearchHandle received content");
         } catch (SAXException se) {
             throw new MarkLogicIOException("Could not construct search results: parser error", se);
         } catch (ParserConfigurationException pce) {
@@ -328,8 +330,6 @@ public class SearchHandle
         private ArrayList<MatchLocation> locvec = new ArrayList<MatchLocation>();
         private MatchLocation[] locations = null;
         private ArrayList<Document> snippets = new ArrayList<Document>();
-        private String mimetype = null;
-        private long byteLength = 0;
         private Document metadata = null;
 
         public MatchDocumentSummaryImpl(String uri, int score, double confidence, double fitness, String path) {
@@ -446,8 +446,7 @@ public class SearchHandle
     private class MatchSnippetImpl implements MatchSnippet {
         private boolean high = false;
         private String text = null;
-        private Document dom = null;
-
+        
         public MatchSnippetImpl(boolean high, String text) {
             this.high = high;
             this.text = text;
@@ -572,7 +571,8 @@ public class SearchHandle
         private ArrayList<String> facetNamesList = null;
         private ArrayList<FacetResult> facetResults = null;
 
-        long start = 0;
+        @SuppressWarnings("unused")
+		long start = 0;
         int pageLength = 0;
         Document dom = null;
         String snippetFormat = null;
@@ -1113,22 +1113,12 @@ public class SearchHandle
         }
 
         private class WSorChar {
-            String chars = null;
-            String target = null;
-            String data = null;
-
             public WSorChar(String chars) {
-                this.chars = chars;
             }
 
             public WSorChar(String target, String data) {
-                this.target = target;
-                this.data = data;
             }
 
-            public boolean isChars() {
-                return chars != null;
-            }
         }
     }
 

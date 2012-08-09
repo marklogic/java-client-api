@@ -15,12 +15,10 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.query.ValuesMetrics;
-
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlValue;
+
 import com.marklogic.client.impl.ValuesBuilder.Values;
+import com.marklogic.client.query.ValuesMetrics;
 
 /**
  * A CountedDistinctValue is a value that includes a frequency.

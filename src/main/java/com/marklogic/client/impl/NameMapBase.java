@@ -29,6 +29,7 @@ import javax.xml.namespace.QName;
  * for association with a domain).
  * @param <V>
  */
+@SuppressWarnings("serial")
 public class NameMapBase<V>
     extends HashMap<QName,V>
     implements NameMap<V>
@@ -61,6 +62,7 @@ public class NameMapBase<V>
 		return super.get(makeQName(name));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T get(QName name, Class<T> as) {
 		Object value = get(name);

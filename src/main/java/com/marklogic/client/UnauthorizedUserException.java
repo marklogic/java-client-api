@@ -15,6 +15,7 @@
  */
 package com.marklogic.client;
 
+@SuppressWarnings("serial")
 public class UnauthorizedUserException extends RuntimeException {
 	public UnauthorizedUserException() {
 		super();

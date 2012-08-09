@@ -16,9 +16,9 @@
 package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
@@ -33,8 +33,6 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.config.QueryOptions.Facets;
-import com.marklogic.client.admin.config.QueryOptions.FragmentScope;
 import com.marklogic.client.admin.config.QueryOptions.QueryRange;
 import com.marklogic.client.admin.config.QueryOptions.QueryTransformResults;
 import com.marklogic.client.admin.config.QueryOptionsBuilder;
@@ -48,6 +46,7 @@ import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.StringQueryDefinition;
 
 public class StringSearchTest {
+	@SuppressWarnings("unused")
 	private static final Logger logger = (Logger) LoggerFactory
 			.getLogger(QueryOptionsHandleTest.class);
 	

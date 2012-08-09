@@ -29,6 +29,8 @@ import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
 
+
+@SuppressWarnings({"unchecked", "rawtypes"})
 class ResourceExtensionsImpl
 	extends AbstractLoggingManager
 	implements ResourceExtensionsManager

@@ -65,6 +65,7 @@ import com.marklogic.client.admin.config.QueryOptions.QueryOperator;
 import com.marklogic.client.admin.config.QueryOptions.QueryRange;
 import com.marklogic.client.admin.config.QueryOptions.QuerySortOrder;
 import com.marklogic.client.admin.config.QueryOptions.QuerySortOrder.Direction;
+import com.marklogic.client.admin.config.QueryOptions.QuerySortOrder.Score;
 import com.marklogic.client.admin.config.QueryOptions.QueryState;
 import com.marklogic.client.admin.config.QueryOptions.QuerySuggestionSource;
 import com.marklogic.client.admin.config.QueryOptions.QueryTerm;
@@ -91,8 +92,7 @@ public class QueryOptionsHandleTest {
 
 	private static final Logger logger = (Logger) LoggerFactory
 			.getLogger(QueryOptionsHandleTest.class);
-	private static final String DEFAULT_COLLATION = "http://marklogic.com/collation/";
-
+	
 	private static String[] testOptionsCorpus = new String[] {
 			"search-config-empty.xml", "search-config-simple.xml",
 			"search-config-annotated.xml", "search-config-geo.xml",
@@ -303,6 +303,8 @@ public class QueryOptionsHandleTest {
 		List<QueryState> states = o.getStates();
 		QueryState state1 = states.get(0);
 		QuerySortOrder so1 = state1.getSortOrders().get(0);
+		
+		assertEquals(so1.getScore(), Score.YES);
 		
 		QueryTransformResults transformResultsOption = options
 				.getTransformResults();

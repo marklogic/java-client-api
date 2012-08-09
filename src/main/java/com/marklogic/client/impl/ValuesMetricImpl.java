@@ -15,14 +15,14 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.MarkLogicIOException;
+import java.util.Calendar;
 
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
-import java.util.Calendar;
+
+import com.marklogic.client.MarkLogicIOException;
 
 /**
  * A CountedDistinctValue is a value that includes a frequency.

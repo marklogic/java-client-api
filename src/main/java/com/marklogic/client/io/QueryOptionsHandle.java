@@ -911,6 +911,7 @@ public final class QueryOptionsHandle
 				new QName("http://marklogic.com/appservices/search", "options"),
 				QueryOptions.class, optionsHolder);
 		try {
+			logger.debug("Begin write of QueryOptionsHandle");
             optionsHolder.patchBindings();
 
 			marshaller.marshal(jaxbElement, baos);
@@ -934,6 +935,7 @@ public final class QueryOptionsHandle
 
             SAXSource saxSource = new SAXSource(itransform, source);
             transformer.transform(saxSource, result);
+            logger.debug("End write of QueryOptionsHandle");       
         } catch (JAXBException e) {
             throw new MarkLogicBindingException(e);
         } catch (ParserConfigurationException e) {
