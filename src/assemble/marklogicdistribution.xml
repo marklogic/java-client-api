@@ -14,9 +14,9 @@
     <fileSets>
         <fileSet>
             <directory>target</directory>
-            <outputDirectory>/lib</outputDirectory>
+            <outputDirectory>/</outputDirectory>
             <includes>
-                <include>*.jar</include>
+				<include>client-api-java-*.jar</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -28,22 +28,26 @@
             <directory>src/main/java</directory>
             <outputDirectory>/example</outputDirectory>
             <includes>
-                <include>Example.properties</include>
-                <include>data/*</include>
-                <include>scripts/*</include>
                 <include>com/marklogic/client/example/cookbook/*.java</include>
                 <include>com/marklogic/client/example/handle/*.java</include>
+				<include>com/marklogic/client/example/batch/*.java</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>src/main/resources</directory>
+            <outputDirectory>/example</outputDirectory>
+            <includes>
+                <include>Example.properties</include>
+                <include>data/**</include>
+                <include>scripts/**</include>
+            </includes>
+        </fileSet>
+		
     </fileSets>
     <files>
         <file>
             <source>src/main/resources/example/README.txt</source>
             <outputDirectory>/example</outputDirectory>
-        </file>
-        <file>
-            <source>src/main/resources/query-options-template.xml</source>
-            <outputDirectory>/</outputDirectory>
         </file>
         <file>
             <source>src/main/resources/Readme.txt</source>
