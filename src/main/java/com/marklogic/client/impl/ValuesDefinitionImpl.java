@@ -15,12 +15,12 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.ValueQueryDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 
 public class ValuesDefinitionImpl implements ValuesDefinition {
     private String name = null;
-    private QueryDefinition qdef = null;
+    private ValueQueryDefinition qdef = null;
     private String options = null;
     private String[] aggregate = null;
     private String aggPath = null;
@@ -50,12 +50,12 @@ public class ValuesDefinitionImpl implements ValuesDefinition {
     }
 
     @Override
-    public QueryDefinition getQueryDefinition() {
+    public ValueQueryDefinition getQueryDefinition() {
         return qdef;
     }
 
     @Override
-    public void setQueryDefinition(QueryDefinition qdef) {
+    public void setQueryDefinition(ValueQueryDefinition qdef) {
         this.qdef = qdef;
     }
 

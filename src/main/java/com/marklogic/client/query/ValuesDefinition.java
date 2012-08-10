@@ -49,13 +49,13 @@ public interface ValuesDefinition {
      * Returns the query definition associated with this values query.
      * @return The query definition.
      */
-    public QueryDefinition getQueryDefinition();
+    public ValueQueryDefinition getQueryDefinition();
 
     /**
      * Set the query definition associated with this values query.
      * @param qdef The query definition.
      */
-    public void setQueryDefinition(QueryDefinition qdef);
+    public void setQueryDefinition(ValueQueryDefinition qdef);
 
     /**
      * Returns the name of the options node used for this values query.
@@ -64,7 +64,7 @@ public interface ValuesDefinition {
     public String getOptionsName();
 
     /**
-     * Set the name of the option snode to use for this values query.
+     * Set the name of the options node to use for this values query.
      * @param optname The name of the options node.
      */
     public void setOptionsName(String optname);
@@ -77,7 +77,7 @@ public interface ValuesDefinition {
 
     /**
      * Sets the name of the aggregate function to be applied as part of this values query.
-     * @param aggregate The neme of the function.
+     * @param aggregate The name of the function.
      */
     public void setAggregate(String... aggregate);
 
@@ -100,7 +100,7 @@ public interface ValuesDefinition {
     public String getView();
 
     /**
-     * Sets the vue for this values query.
+     * Sets the view for this values query.
      * @param view The view.
      */
     public void setView(String view);

@@ -18,7 +18,9 @@ package com.marklogic.client.query;
 /**
  * A StringQueryDefinition represents the criteria associated with a simple string query.
  */
-public interface StringQueryDefinition extends QueryDefinition {
+public interface StringQueryDefinition
+	extends QueryDefinition, ValueQueryDefinition
+{
     /**
      * Returns the query criteria, that is the query string.
      * @return The query string.

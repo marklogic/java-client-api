@@ -39,6 +39,10 @@ import com.marklogic.client.io.ValuesListHandle;
 import com.marklogic.client.query.AggregateResult;
 import com.marklogic.client.query.CountedDistinctValue;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.query.ValueQueryDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
 
@@ -55,28 +59,11 @@ public class ValuesHandleTest {
 
     @Test
     public void testAggregates() throws IOException, ParserConfigurationException, SAXException {
-    	String options =
-    	"<?xml version='1.0'?>"+
-    	"<options xmlns=\"http://marklogic.com/appservices/search\">"+
-    	  "<values name=\"grandchild\">"+
-    	     "<range type=\"xs:string\">"+
-    	        "<element ns=\"\" name=\"grandchild\"/>"+
-    	     "</range>"+
-    	  "</values>"+
-    	  "<values name=\"double\">"+
-    	     "<range type=\"xs:double\">"+
-    	        "<element ns=\"\" name=\"double\"/>"+
-    	     "</range>"+
-    	  "</values>"+
-    	  "<return-metrics>false</return-metrics>"+
-    	"</options>";
-
-    	QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
-    	optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
+    	String optionsName = makeValuesOptions();
 
     	QueryManager queryMgr = Common.client.newQueryManager();
 
-        ValuesDefinition vdef = queryMgr.newValuesDefinition("double", "valuesoptions");
+        ValuesDefinition vdef = queryMgr.newValuesDefinition("double", optionsName);
         vdef.setAggregate("sum", "avg");
         vdef.setName("double");
 
@@ -94,7 +81,42 @@ public class ValuesHandleTest {
         assertTrue("Aggregate 2 should be between 1.72 and 1.73",
         		1.72 < second && second < 1.73);
 
-        optionsMgr.deleteOptions("valuesoptions");
+        Common.client.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
+    }
+
+    @Test
+    public void testCriteria() {
+    	String optionsName = makeValuesOptions();
+
+    	QueryManager queryMgr = Common.client.newQueryManager();
+
+        ValuesDefinition vdef = queryMgr.newValuesDefinition("double", optionsName);
+
+        for (int i=0; i < 2; i++) {
+        	ValueQueryDefinition vQuery = null;
+        	switch (i) {
+        	case 0:
+        		StringQueryDefinition stringQuery = queryMgr.newStringDefinition();
+        		stringQuery.setCriteria("10");
+        		vQuery = stringQuery;
+        		break;
+        	case 1:
+                StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(null);
+                StructuredQueryDefinition t = qb.term("10");
+                vQuery = t;
+                break;
+        	default:
+        		assertTrue("test case error", false);
+        	}
+        	vdef.setQueryDefinition(vQuery);
+
+        	ValuesHandle v = queryMgr.values(vdef, new ValuesHandle());
+        	CountedDistinctValue dv[] = v.getValues();
+        	assertNotNull("There should be values", dv);
+        	assertEquals("There should be 3 values", 3, dv.length);
+        }
+
+        Common.client.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
     }
 
     @Test
@@ -141,6 +163,29 @@ public class ValuesHandleTest {
         HashMap<String,String> map = results.getValuesMap();
         assertEquals("Map should contain two keys", map.size(), 2);
         assertEquals("Size should have this uri", map.get("size"), "/v1/values/size?options=photos");
+    }
+
+    private String makeValuesOptions() {
+    	String options = 
+        	"<?xml version='1.0'?>"+
+        	"<options xmlns=\"http://marklogic.com/appservices/search\">"+
+        	  "<values name=\"grandchild\">"+
+        	     "<range type=\"xs:string\">"+
+        	        "<element ns=\"\" name=\"grandchild\"/>"+
+        	     "</range>"+
+        	  "</values>"+
+        	  "<values name=\"double\">"+
+        	     "<range type=\"xs:double\">"+
+        	        "<element ns=\"\" name=\"double\"/>"+
+        	     "</range>"+
+        	  "</values>"+
+        	  "<return-metrics>false</return-metrics>"+
+        	"</options>";
+
+    	QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+    	optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
+
+    	return "valuesoptions";
     }
 
     public class MyValuesHandle extends ValuesHandle {

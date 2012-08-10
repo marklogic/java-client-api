@@ -18,6 +18,8 @@ package com.marklogic.client.impl;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -53,6 +55,7 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.document.ContentDescriptor;
@@ -75,6 +78,7 @@ import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.ValueLocator;
+import com.marklogic.client.query.ValueQueryDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
 import com.marklogic.client.util.RequestLogger;
@@ -117,8 +121,17 @@ public class JerseyServices implements RESTServices {
 	private WebResource connection;
 	private boolean isFirstRequest = true;
 
+//	private boolean headFirst = false;
+
 	public JerseyServices() {
 	}
+
+//	public boolean isHeadFirst() {
+//		return headFirst;
+//	}
+//	public void setHeadFirst(boolean headFirst) {
+//		this.headFirst = headFirst;
+//	}
 
 	private FailedRequest extractErrorFields(ClientResponse response) {
 		InputStream is = response.getEntityInputStream();
@@ -691,7 +704,8 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		if (value instanceof OutputStreamSender) {
-			if (isFirstRequest)
+			// headFirst
+			if (isFirstRequest) 
 				makeFirstRequest();
 			response = builder
 					.put(ClientResponse.class, new StreamingOutputImpl(
@@ -699,6 +713,7 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 		} else {
+			// headFirst
 			if (isFirstRequest
 					&& (value instanceof InputStream || value instanceof Reader))
 				makeFirstRequest();
@@ -802,6 +817,7 @@ public class JerseyServices implements RESTServices {
 		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
 				categories, transactionId, extraParams, true);
 
+		// headFirst
 		if (isFirstRequest && hasStreamingPart)
 			makeFirstRequest();
 
@@ -1282,6 +1298,50 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 
+		if (valDef.getQueryDefinition() != null) {
+			ValueQueryDefinition queryDef = valDef.getQueryDefinition();
+
+			if (optionsName == null) {
+				optionsName = queryDef.getOptionsName();
+				if (optionsName != null) {
+					docParams.add("options", optionsName);
+				}
+			} else if (queryDef.getOptionsName() != null) {
+				if (optionsName != queryDef.getOptionsName() &&
+						logger.isWarnEnabled())
+					logger.warn("values definition options take precedence over query definition options");
+			}
+
+			if (queryDef.getCollections() != null) {
+				if (logger.isWarnEnabled())
+					logger.warn("collections scope ignored for values query");
+			}
+			if (queryDef.getDirectory() != null) {
+				if (logger.isWarnEnabled())
+					logger.warn("directory scope ignored for values query");
+			}
+
+			if (queryDef instanceof StringQueryDefinition) {
+				String text = ((StringQueryDefinition) queryDef).getCriteria();
+	            if (text != null) {
+	            	docParams.add("q", text);
+	            }
+			} else if (queryDef instanceof StructuredQueryDefinition) {
+				String structure = ((StructuredQueryDefinition) queryDef)
+						.serialize();
+	            if (structure != null) {
+	            		docParams.add(
+	            			"structuredQuery",
+	            			structure
+	            			);
+	            }
+			} else {
+				if (logger.isWarnEnabled())
+					logger.warn("unsupported query definition: "+
+							queryDef.getClass().getName());
+			}
+		}
+
 		if (transactionId != null) {
 			docParams.add("txid", transactionId);
 		}
@@ -1541,6 +1601,7 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		if ("put".equals(method)) {
+			// headFirst
 			if (isFirstRequest && hasStreamingPart)
 				makeFirstRequest();
 
@@ -1556,6 +1617,7 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 		} else if ("post".equals(method)) {
+			// headFirst
 			if (isFirstRequest && hasStreamingPart)
 				makeFirstRequest();
 
@@ -1823,13 +1885,15 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		if (value instanceof OutputStreamSender) {
-			if (isFirstRequest)
+			// headFirst
+			if (isFirstRequest) 
 				makeFirstRequest();
 
 			response = builder
 					.put(ClientResponse.class, new StreamingOutputImpl(
 							(OutputStreamSender) value, reqlog));
 		} else {
+			// headFirst
 			if (isFirstRequest
 					&& (value instanceof InputStream || value instanceof Reader))
 				makeFirstRequest();
@@ -1891,13 +1955,15 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		if (value instanceof OutputStreamSender) {
-			if (isFirstRequest)
+			// headFirst
+			if (isFirstRequest) 
 				makeFirstRequest();
 
 			response = builder
 					.post(ClientResponse.class, new StreamingOutputImpl(
 							(OutputStreamSender) value, reqlog));
 		} else {
+			// headFirst
 			if (isFirstRequest
 					&& (value instanceof InputStream || value instanceof Reader))
 				makeFirstRequest();
@@ -1933,6 +1999,7 @@ public class JerseyServices implements RESTServices {
 		if (logger.isInfoEnabled())
 			logger.info("Posting multipart for {}", path);
 
+		// headFirst
 		if (isFirstRequest && hasStreamingPart)
 			makeFirstRequest();
 
@@ -2060,7 +2127,6 @@ public class JerseyServices implements RESTServices {
 			String entityType, String path, ResponseStatus expected) {
 		ClientResponse.Status status = response.getClientResponseStatus();
 		if (!expected.isExpected(status)) {
-			response.close();
 			if (status == ClientResponse.Status.NOT_FOUND) {
 				throw new ResourceNotFoundException("Could not " + operation
 						+ " " + entityType + " at " + path,
