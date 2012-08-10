@@ -133,7 +133,7 @@ public class DatabaseClientImpl implements DatabaseClient {
 	}
 
 	// undocumented backdoor access to JerseyServices
-	public RESTServices getService() {
+	public RESTServices getServices() {
 		return services;
 	}
 }
