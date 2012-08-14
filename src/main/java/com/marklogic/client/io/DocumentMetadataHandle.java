@@ -668,7 +668,7 @@ public class DocumentMetadataHandle
 	// TODO: select the metadata sent
 	private void sendMetadataImpl(OutputStream out) {
 		try {
-			XMLOutputFactory factory = XMLOutputFactory.newFactory();
+			XMLOutputFactory factory = XMLOutputFactory.newInstance();
 			factory.setProperty("javax.xml.stream.isRepairingNamespaces", new Boolean(true));
 
 			valueSerializer = null;

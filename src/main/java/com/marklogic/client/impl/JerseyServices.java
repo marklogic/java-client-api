@@ -118,17 +118,12 @@ public class JerseyServices implements RESTServices {
 	private WebResource connection;
 	private boolean isFirstRequest = true;
 
-//	private boolean headFirst = false;
+    private boolean headFirst = false;
 
 	public JerseyServices() {
+        String head = System.getProperty("com.marklogic.client.headfirst");
+        headFirst = ("true".equals(head) || "1".equals(head));
 	}
-
-//	public boolean isHeadFirst() {
-//		return headFirst;
-//	}
-//	public void setHeadFirst(boolean headFirst) {
-//		this.headFirst = headFirst;
-//	}
 
 	private FailedRequest extractErrorFields(ClientResponse response) {
 		InputStream is = response.getEntityInputStream();
@@ -701,8 +696,7 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		if (value instanceof OutputStreamSender) {
-			// headFirst
-			if (isFirstRequest) 
+			if (isFirstRequest || headFirst)
 				makeFirstRequest();
 			response = builder
 					.put(ClientResponse.class, new StreamingOutputImpl(
@@ -710,8 +704,7 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 		} else {
-			// headFirst
-			if (isFirstRequest
+			if ((isFirstRequest || headFirst)
 					&& (value instanceof InputStream || value instanceof Reader))
 				makeFirstRequest();
 
@@ -814,8 +807,7 @@ public class JerseyServices implements RESTServices {
 		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
 				categories, transactionId, extraParams, true);
 
-		// headFirst
-		if (isFirstRequest && hasStreamingPart)
+		if ((isFirstRequest || headFirst) && hasStreamingPart)
 			makeFirstRequest();
 
 		WebResource.Builder builder = makeDocumentResource(docParams).type(
@@ -1598,8 +1590,7 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		if ("put".equals(method)) {
-			// headFirst
-			if (isFirstRequest && hasStreamingPart)
+			if ((isFirstRequest || headFirst) && hasStreamingPart)
 				makeFirstRequest();
 
 			String connectPath = (key != null) ? type + "/" + key : type;
@@ -1614,8 +1605,7 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 		} else if ("post".equals(method)) {
-			// headFirst
-			if (isFirstRequest && hasStreamingPart)
+			if ((isFirstRequest || headFirst) && hasStreamingPart)
 				makeFirstRequest();
 
 			WebResource resource = (requestParams == null) ? connection
@@ -1882,16 +1872,14 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		if (value instanceof OutputStreamSender) {
-			// headFirst
-			if (isFirstRequest) 
+			if (isFirstRequest || headFirst)
 				makeFirstRequest();
 
 			response = builder
 					.put(ClientResponse.class, new StreamingOutputImpl(
 							(OutputStreamSender) value, reqlog));
 		} else {
-			// headFirst
-			if (isFirstRequest
+			if ((isFirstRequest || headFirst)
 					&& (value instanceof InputStream || value instanceof Reader))
 				makeFirstRequest();
 
@@ -1952,16 +1940,14 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		if (value instanceof OutputStreamSender) {
-			// headFirst
-			if (isFirstRequest) 
+			if (isFirstRequest || headFirst)
 				makeFirstRequest();
 
 			response = builder
 					.post(ClientResponse.class, new StreamingOutputImpl(
 							(OutputStreamSender) value, reqlog));
 		} else {
-			// headFirst
-			if (isFirstRequest
+			if ((isFirstRequest || headFirst)
 					&& (value instanceof InputStream || value instanceof Reader))
 				makeFirstRequest();
 
@@ -1996,8 +1982,7 @@ public class JerseyServices implements RESTServices {
 		if (logger.isInfoEnabled())
 			logger.info("Posting multipart for {}", path);
 
-		// headFirst
-		if (isFirstRequest && hasStreamingPart)
+		if ((isFirstRequest || headFirst) && hasStreamingPart)
 			makeFirstRequest();
 
 		ClientResponse response = builder.post(ClientResponse.class, multiPart);
