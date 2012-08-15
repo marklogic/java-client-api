@@ -43,7 +43,8 @@ import org.apache.http.conn.scheme.SchemeSocketFactory;
 import org.apache.http.conn.ssl.AbstractVerifier;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
-import org.apache.http.impl.conn.PoolingClientConnectionManager;
+//import org.apache.http.impl.conn.PoolingClientConnectionManager;    // 4.2
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;   // 4.1
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.slf4j.Logger;
@@ -218,6 +219,7 @@ public class JerseyServices implements RESTServices {
 
 		int maxConnections = 100;
 
+        /* 4.2
 		PoolingClientConnectionManager connMgr =
 			new PoolingClientConnectionManager(schemeRegistry);
 		connMgr.setMaxTotal(maxConnections);
@@ -225,6 +227,11 @@ public class JerseyServices implements RESTServices {
 		connMgr.setMaxPerRoute(
 				new HttpRoute(new HttpHost(baseUri)), maxConnections
 				);
+	    */
+        // start 4.1
+        ThreadSafeClientConnManager connMgr = new ThreadSafeClientConnManager(schemeRegistry);
+        connMgr.setDefaultMaxPerRoute(100);
+        // end 4.1
 
 //		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 //		credentialsProvider.setCredentials(new AuthScope(host, port),

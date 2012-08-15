@@ -42,7 +42,8 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.PoolingClientConnectionManager;
+//import org.apache.http.impl.conn.PoolingClientConnectionManager;  // 4.2
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager; // 4.1
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 
@@ -100,13 +101,14 @@ public class URIHandle
 				new Scheme("http", port, PlainSocketFactory.getSocketFactory())
 				);
 
-		PoolingClientConnectionManager connMgr = new PoolingClientConnectionManager(
+		// PoolingClientConnectionManager connMgr = new PoolingClientConnectionManager(  // 4.2
+        ThreadSafeClientConnManager connMgr = new ThreadSafeClientConnManager(
 				schemeRegistry);
 		connMgr.setDefaultMaxPerRoute(100);
 
-		DefaultHttpClient defaultClient = new DefaultHttpClient(connMgr);
+        DefaultHttpClient defaultClient = new DefaultHttpClient(connMgr);
 
-		List<String> prefList = new ArrayList<String>();
+        List<String> prefList = new ArrayList<String>();
 		if (authType == Authentication.BASIC)
 			prefList.add(AuthPolicy.BASIC);
 		else if (authType == Authentication.DIGEST)
