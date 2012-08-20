@@ -81,4 +81,10 @@ public class QueryOptionsListHandleTest {
             receiveContent(stream);
         }
     }
+    
+    @Test
+    public void testInitialization() {
+    	new QueryOptionsListHandle().getValuesMap();
+    	
+    }
 }

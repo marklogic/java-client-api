@@ -52,7 +52,6 @@ public class QueryOptionsListHandle
     public QueryOptionsListHandle() {
     	super();
     	super.setFormat(Format.XML);
-
         try {
             jc = JAXBContext.newInstance(QueryOptionsListBuilder.OptionsList.class);
             marshaller = jc.createMarshaller();
@@ -118,6 +117,7 @@ public class QueryOptionsListHandle
      */
     @Override
     public HashMap<String, String> getValuesMap() {
-        return optionsHolder.getOptionsMap();
+    	if (optionsHolder == null ) return null;
+    	else return optionsHolder.getOptionsMap();
     }
 }
