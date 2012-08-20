@@ -20,6 +20,7 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathExists;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Random;
@@ -31,7 +32,10 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
@@ -166,6 +170,50 @@ public class GenericDocumentTest {
 		assertXpathEvaluatesTo("0","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='3'])",stringMetadata);
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Test
+	public void testUrisWithSpaces() {
+		DocumentManager docMgr = Common.newClient().newDocumentManager();
+
+		String[] testUris = new String[] { "/a", "/a%20b", "/a+b+c", "/a%isa#vrybig*andStrangeUr-d/x", "/χρυσαφὶ.html", "/фальшивый" };
+		for (String testUri : testUris) {
+			String contents = "<a>" + testUri + "</a>";
+			docMgr.write(testUri, new StringHandle(contents));
+			StringHandle result = new StringHandle();
+			docMgr.read(testUri, result);
+			assertEquals(contents, result.get());
+			docMgr.delete(testUri);
+			try {
+				docMgr.read(testUri, result);
+				fail("Document was not deleted");
+			} catch (ResourceNotFoundException e) {
+				//pass   404 after delete successful
+			}
+			
+		}
+
+		String[] urisWithSpaces = new String[] { "/a b", "/uri with spaces" };
+		for (String testUri : urisWithSpaces) {
+			try {
+				StringHandle result = new StringHandle();   // should be able to read these, with 404
+				docMgr.read(testUri, result);
+			} catch (ResourceNotFoundException e) {
+				//pass
+			}
+			try {
+				String contents = "<a>" + testUri + "</a>";
+				docMgr.write(testUri, new StringHandle(contents));
+				fail("Server accepted URI with a space in it");
+			} catch (FailedRequestException e) {
+				// pass   cannot write to uris with spaces.
+			}
+		}
+		for (String testUri : urisWithSpaces) {
+			docMgr.delete(testUri);		// can delete with 204.
+		}
+	}
+	
+	
 	@Test
 	public void testCommit() throws XpathException {
 		String docId1 = "/test/testExists1.txt";

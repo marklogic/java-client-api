@@ -18,6 +18,8 @@ package com.marklogic.client.impl;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -54,6 +56,7 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.document.ContentDescriptor;
@@ -963,7 +966,11 @@ public class JerseyServices implements RESTServices {
 					docParams.put(extraKey, entry.getValue());
 			}
 		}
-		docParams.add("uri", uri);
+		try {
+			docParams.add("uri", URLEncoder.encode(uri, "utf-8").replace("+","%20"));
+		} catch (UnsupportedEncodingException e) {
+			throw new MarkLogicIOException("UTF-8 encoding unavailable");
+		}
 		if (categories == null || categories.size() == 0) {
 			docParams.add("category", "content");
 		} else {
