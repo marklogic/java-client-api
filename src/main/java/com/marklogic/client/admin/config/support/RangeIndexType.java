@@ -15,23 +15,21 @@
  */
 package com.marklogic.client.admin.config.support;
 
-import javax.xml.namespace.QName;
 
 
 public class RangeIndexType implements Typed {
-	public QName type;
+	public String type;
 	private String collation;
-	public RangeIndexType(QName qname) {
-		this.type = qname;
+	public RangeIndexType(String type) {
+		this.type = type;
 	}
-	public RangeIndexType(String collation) {
-		this.type = new QName("xs:string");
-		this.collation=collation;
+	public void setCollation(String collation) {
+		this.collation = collation;
 	}
 	public String getCollation() {
 		return collation;
 	}
-	public QName getType() {
+	public String getType() {
 		return type;
 	}
 }

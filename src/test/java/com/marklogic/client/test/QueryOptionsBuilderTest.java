@@ -380,7 +380,7 @@ public class QueryOptionsBuilderTest {
 							builder.range(builder.elementAttributeRangeIndex(
 									new QName("http://marklogic.com/wikipedia", "nominee"),
 									new QName("year"),
-									builder.rangeType(new QName("xs:gYear"))),
+									builder.rangeType("xs:gYear")),
 									Facets.FACETED,
 									FragmentScope.DOCUMENTS,
 									builder.buckets(
@@ -398,8 +398,12 @@ public class QueryOptionsBuilderTest {
 		
 		options = exercise(options);
 
-		assertEquals("2000s", ((QueryRange) options.getConstraint("decade")
-				.getSource()).getBuckets().get(0).getContent());
+		QueryRange range1 = (QueryRange) options.getConstraint("decade")
+				.getSource();
+		assertEquals("2000s",  range1.getBuckets().get(0).getContent());
+		
+		assertEquals(true, range1.getDoFacets());
+		assertEquals("xs:gYear", range1.getType());
 		
 		String optionsString = options.toString();
         Document doc = XMLUnit.buildControlDocument(optionsString);
@@ -414,7 +418,7 @@ public class QueryOptionsBuilderTest {
 									builder.elementRangeIndex(
 											new QName("http://purl.org/dc/elements/1.1/", "date"), 
 											
-											builder.rangeType(new QName("xs:dateTime"))),
+											builder.rangeType("xs:dateTime")),
 											Facets.FACETED,
 											FragmentScope.DOCUMENTS,
 											builder.buckets(
@@ -593,7 +597,7 @@ public class QueryOptionsBuilderTest {
 						builder.values(
 									"fieldrange",
 									builder.range(
-											builder.fieldRangeIndex("int1", builder.rangeType(new QName("xs:int")))),
+											builder.fieldRangeIndex("int1", builder.rangeType("xs:int"))),
 									builder.aggregate("stddev")),  // field must exist to pass with an aggregate -- search-impl.xqy 3080 bug? TODO log the bug
 						builder.values("field", 
 								builder.field("fieldname")))
@@ -686,12 +690,12 @@ public class QueryOptionsBuilderTest {
 				.withGrammar(builder.grammar(
                         builder.starters(
                             builder.starterGrouping("(", 30, ")"), 
-                            builder.starterPrefix( "-", 40, new QName("cts:not-query"))), 
+                            builder.starterPrefix( "-", 40, "cts:not-query")), 
                         builder.joiners(
-                            builder.joiner( "AND", 20, JoinerApply.PREFIX, new QName( "cts:and-query"), Tokenize.WORD), 
-                            builder.joiner("OR", 10, JoinerApply.INFIX, new QName("cts:or-query"), Tokenize.WORD), 
-                            builder.joiner("NEAR", 30, JoinerApply.INFIX, new QName("cts:near-query"), Tokenize.WORD), 
-                            builder.joiner("NEAR/", 30, JoinerApply.NEAR2, new QName("cts:near-query"), null, 2), 
+                            builder.joiner( "AND", 20, JoinerApply.PREFIX,  "cts:and-query", Tokenize.WORD), 
+                            builder.joiner("OR", 10, JoinerApply.INFIX, "cts:or-query", Tokenize.WORD), 
+                            builder.joiner("NEAR", 30, JoinerApply.INFIX, "cts:near-query", Tokenize.WORD), 
+                            builder.joiner("NEAR/", 30, JoinerApply.NEAR2, "cts:near-query", null, 2), 
                             builder.joiner( "LT", 50, JoinerApply.CONSTRAINT, Comparator.LT, Tokenize.WORD)),
 						"\"",
 						Utilities.domElement("<cts:and-query strength=\"20\" xmlns:cts=\"http://marklogic.com/cts\"/>")));
@@ -706,6 +710,7 @@ public class QueryOptionsBuilderTest {
 		logger.debug(options.toString());
 		options = exercise(options);
 
+		g = options.getGrammar();
 		QueryStarter s1 = g.getStarters().get(0);
 		assertEquals("(", s1.getStarterText());
 		assertEquals(30, s1.getStrength());
@@ -719,15 +724,15 @@ public class QueryOptionsBuilderTest {
 
 		QueryStarter s2 = g.getStarters().get(1);
 		assertEquals("-", s2.getStarterText());
-		assertEquals(new QName("cts:not-query"), s2.getElement());
-		s2.setElement(new QName("cts:and-query"));
-		assertEquals(new QName("cts:and-query"), s2.getElement());
+		assertEquals("cts:not-query", s2.getElement());
+		s2.setElement("cts:and-query");
+		assertEquals("cts:and-query", s2.getElement());
 
 		QueryJoiner j1 = g.getJoiners().get(0);
 		assertEquals("AND", j1.getJoinerText());
 		assertEquals(20, j1.getStrength());
 		assertEquals(JoinerApply.PREFIX, j1.getApply());
-		assertEquals(new QName("cts:and-query"), j1.getElement());
+		assertEquals("cts:and-query", j1.getElement());
 		assertEquals(Tokenize.WORD, j1.getTokenize());
 		
 		
@@ -751,7 +756,7 @@ public class QueryOptionsBuilderTest {
 
 		QuerySortOrder so = options.getOperator("sortcolor")
 				.getState("pantone").getSortOrders().get(0);
-		assertEquals(new QName("xs:string"), so.getType());
+		assertEquals("xs:string", so.getType());
 		assertEquals(QueryOptions.DEFAULT_COLLATION, so.getCollation());
 		assertEquals(Direction.ASCENDING, so.getDirection());
 
@@ -800,12 +805,18 @@ public class QueryOptionsBuilderTest {
 							builder.sortByScore(Direction.ASCENDING));
 
 		QuerySortOrder so = options.getSortOrders().get(0);
-		assertEquals(new QName("xs:string"), so.getType());
+		assertEquals("xs:string", so.getType());
 		assertEquals(QueryOptions.DEFAULT_COLLATION, so.getCollation());
 		assertEquals(Direction.ASCENDING, so.getDirection());
 
 		so.unsetScore();
 		assertNull(so.getScore());
+		
+		options = exercise(options);
+		
+		so = options.getSortOrders().get(0);
+		assertEquals("xs:string", so.getType());
+		
 
 	};
 

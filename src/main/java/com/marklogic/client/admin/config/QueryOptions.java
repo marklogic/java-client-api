@@ -435,7 +435,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		private List<String> facetOptions;
 
 		@XmlAttribute
-		private QName type;
+		private String type;
 
 		public FacetableConstraintConfiguration() {
 			facetOptions = new ArrayList<String>();
@@ -481,7 +481,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			return facetOptions;
 		}
 
-		public QName getType() {
+		public String getType() {
 			return type;
 		}
 
@@ -500,7 +500,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			}
 		}
 
-		public void setType(QName type) {
+		public void setType(String type) {
 			this.type = type;
 		}
 	}
@@ -1810,7 +1810,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			@XmlAttribute
 			private String delimiter;
 			@XmlAttribute
-			private QName element;
+			private String element;
 			@XmlValue
 			private String joinerText;
 			@XmlAttribute
@@ -1843,7 +1843,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 				return delimiter;
 			}
 
-			public QName getElement() {
+			public String getElement() {
 				return element;
 			}
 
@@ -1879,8 +1879,8 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 				this.consume = consume;
 			}
 
-			public void setElement(QName qName) {
-				this.element = qName;
+			public void setElement(String element) {
+				 this.element = element;
 			}
 
 			public void setStrength(int strength) {
@@ -1917,7 +1917,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			@XmlAttribute
 			private String delimiter;
 			@XmlAttribute
-			private QName element;
+			private String element;
 			@XmlAttribute
 			private String options;
 			@XmlValue
@@ -1944,7 +1944,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 				return delimiter;
 			}
 
-			public QName getElement() {
+			public String getElement() {
 				return element;
 			}
 
@@ -1976,7 +1976,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 				this.delimiter = delimiter;
 			}
 
-			public void setElement(QName element) {
+			public void setElement(String element) {
 				this.element = element;
 			}
 
@@ -2356,7 +2356,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		private String score;
 
 		@XmlAttribute
-		private QName type;
+		private String type;
 
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
 		private List<QueryAnnotation> annotations;
@@ -2399,7 +2399,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			return this.jsonKey.getName();
 		}
 
-		public QName getType() {
+		public String getType() {
 			return type;
 		}
 
@@ -2443,7 +2443,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			score = null;
 		}
 
-		public void setType(QName type) {
+		public void setType(String type) {
 			this.type = type;
 		}
 

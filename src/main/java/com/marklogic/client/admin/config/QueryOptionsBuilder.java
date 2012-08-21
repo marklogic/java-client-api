@@ -1272,15 +1272,17 @@ public class QueryOptionsBuilder {
 	 * @return An object to configure range indexes along with data source information.
 	 */
 	public RangeIndexType stringRangeType(String collation) {
-		return new RangeIndexType(collation);
+		RangeIndexType rangeIndexType = new RangeIndexType("xs:string");
+		rangeIndexType.setCollation(collation);
+		return rangeIndexType;
 	}
 
 	/**
 	 * Builds a range index type for types other than xs:string.
-	 * @param type The XML schema type backing the index.
+	 * @param type The XML schema type backing the index.  This is a string in "xs:string" form.
 	 * @return An object to configure range indexes along with data source information.
 	 */
-	public RangeIndexType rangeType(QName type) {
+	public RangeIndexType rangeType(String type) {
 		return new RangeIndexType(type);
 	}
 
@@ -1359,9 +1361,10 @@ public class QueryOptionsBuilder {
 	 * Builds a starter used for prefixing terms.
 	 * @param text The text that prefixes a term.
 	 * @param strength The strength of this starter relative to other parts of the grammar.
+     * @param element A String of form "cts:query", which is the name of cts:query element.
 	 * @return A starter to be included in a grammar builder method call.
 	 */
-	public QueryStarter starterPrefix(String text, int strength, QName element) {
+	public QueryStarter starterPrefix(String text, int strength, String element) {
 		QueryStarter starter = new QueryStarter();
 		starter.setStarterText(text);
 		starter.setStrength(strength);
@@ -1429,14 +1432,14 @@ public class QueryOptionsBuilder {
 	 *            Strength of this joiner relative to others.
 	 * @param apply
 	 *            Enum to specify how the joiner fits into the Search grammar.
-	 * @param element
-	 *            QName of a cts query. This joiner encapsulates the cts query.
+     * @param element 
+     *            A String of form "cts:query", which is the name of cts:query element.
 	 * @param token
 	 *            Enum to specify how the joiner tokenizes the search string.
 	 * @return An object for use in constructing QueryGrammar configurations.
 	 */
 	public QueryJoiner joiner(String joinerText, int strength,
-			JoinerApply apply, QName element, Tokenize token) {
+			JoinerApply apply, String element, Tokenize token) {
 		return joiner(joinerText, strength, apply, element, token, null);
 	}
 
@@ -1450,9 +1453,8 @@ public class QueryOptionsBuilder {
 	 *            Strength of this joiner relative to others.
 	 * @param apply
 	 *            Enum to specify how the joiner fits into the Search grammar.
-	 * @param element
-	 *            QName of a cts query. This builder function requires
-	 *            "cts:near-query".
+     * @param element 
+     *            A String of form "cts:query", which is the name of cts:query element.
 	 * @param tokenize
 	 *            Enum to specify how the joiner tokenizes the search string.
 	 * @param consume
@@ -1460,11 +1462,11 @@ public class QueryOptionsBuilder {
 	 * @return An object for use in constructing QueryGrammar configurations.
 	 */
 	public QueryJoiner joiner(String joinerText, int strength,
-			JoinerApply apply, QName element, Tokenize tokenize, Integer consume) {
+			JoinerApply apply, String element, Tokenize tokenize, Integer consume) {
 		QueryJoiner joiner = new QueryJoiner(joinerText);
 		joiner.setStrength(strength);
 		joiner.setApply(apply);
-		joiner.setElement(element);
+        joiner.setElement(element);
 		if (tokenize != null) {
 			joiner.setTokenize(tokenize);
 		}

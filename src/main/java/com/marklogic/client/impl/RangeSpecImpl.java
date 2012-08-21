@@ -15,18 +15,16 @@
  */
 package com.marklogic.client.impl;
 
-import javax.xml.namespace.QName;
-
 import com.marklogic.client.admin.config.support.IndexSpecImpl;
 import com.marklogic.client.admin.config.support.RangeIndexed;
 import com.marklogic.client.admin.config.support.RangeSpec;
 
 public class RangeSpecImpl extends IndexSpecImpl implements RangeSpec {
 
-	private QName type;
+	private String type;
 	private String collation;
 
-	public void setType(QName type) {
+	public void setType(String type) {
 		this.type = type;
 	}
 
@@ -35,7 +33,7 @@ public class RangeSpecImpl extends IndexSpecImpl implements RangeSpec {
 	}
 
 	@Override
-	public QName getType() {
+	public String getType() {
 		return type;
 	}
 
