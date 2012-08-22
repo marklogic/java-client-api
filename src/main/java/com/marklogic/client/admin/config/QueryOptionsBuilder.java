@@ -551,8 +551,8 @@ public class QueryOptionsBuilder {
 
 	/**
 	 * Builds a QueryCollection object to use the Collection URIs as source of
-	 * constraint values. The single-argument version assumes NO facets no facet
-	 * options.
+	 * constraint values. This single-argument assumes that the server's collection
+	 * lexicon is enabled, and that facets will be resolved in searches.
 	 * 
 	 * @param prefix
 	 *            This value will be trimmed from the start of collection URIs
