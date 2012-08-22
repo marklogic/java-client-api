@@ -93,9 +93,9 @@ import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
  * 
  * <pre>QueryOptionsHandle handle = new QueryOptionsHandle();</pre>
  *  
- * <p>Build up options to a handle using</p>
+ * <p>Build up options to a handle using fluent setter methods</p>
  * 
- * <pre>handle.build()</pre>
+ * <pre>handle.withConstraints(...).withTerm(...).withOperators(...)</pre>
  * 
  * <p>and constructed items from QueryOptionsBuilder.</p>
  * 
