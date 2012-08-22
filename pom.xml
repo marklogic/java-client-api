@@ -64,7 +64,6 @@
 						<exclude>example/**</exclude>
 						<exclude>scripts/**</exclude>
 						<exclude>*.txt</exclude>
-						<exclude>logback.xml</exclude>
 						<exclude>property.xsd</exclude>
 						<exclude>restapi-bindings.xjb</exclude>
 						<exclude>security.xsd</exclude>
@@ -88,7 +87,6 @@
 								<exclude>example/**</exclude>
 								<exclude>data/**</exclude>
 								<exclude>Example.properties</exclude>
-								<exclude>logback.xml</exclude>
 								<exclude>*.xsd</exclude>
 								<exclude>*.xjb</exclude>
 							</excludes>
