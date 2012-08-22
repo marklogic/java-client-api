@@ -233,9 +233,11 @@ public class StructuredQueryBuilder {
         }
 
         public String innerSerialize() {
-            return "<and-not-query>"
+            return "<and-not-query><positive-query>"
                     + ((AbstractStructuredQuery) positive).innerSerialize()
-                    + ((AbstractStructuredQuery) negative).innerSerialize() + "</and-not-query>";
+                    + "</positive-query><negative-query>"
+                    + ((AbstractStructuredQuery) negative).innerSerialize()
+                    + "</negative-query></and-not-query>";
         }
     }
 
