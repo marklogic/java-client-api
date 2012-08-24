@@ -4,7 +4,7 @@
 	<groupId>com.marklogic</groupId>
 	<artifactId>client-api-java</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0</version>
+	<version>1.0-1</version>
 	<name>client-api-java</name>
 	<url>http://developer.marklogic.com</url>
 	<build>
