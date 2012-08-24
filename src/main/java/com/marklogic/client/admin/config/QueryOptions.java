@@ -105,24 +105,42 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "word")
 		private QueryWord word;
 
+		/**
+		 * Zero-argument constructor.
+		 */
 		public QueryConstraint() {
 			super();
 		}
 
+		/**
+		 * Construct with the name of the constraint.
+		 */
 		public QueryConstraint(String name) {
 			this();
 			annotations = new ArrayList<QueryAnnotation>();
 			setName(name);
 		}
 
+		/**
+		 * Returns the list of annotations on the constraint.
+		 * @return	the annotations
+		 */
 		public List<QueryAnnotation> getAnnotations() {
 			return this.annotations;
 		}
 
+		/**
+		 * Returns the name of the constraint.
+		 * @return	the name
+		 */
 		public String getName() {
 			return name;
 		}
 
+		/**
+		 * Returns the constrained index.
+		 * @return	the index specification
+		 */
 		@SuppressWarnings("unchecked")
 		public <T extends BaseConstraintItem> T getSource() {
 			if (collection != null) {
@@ -149,10 +167,18 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			return null;
 		}
 
+		/**
+		 * Specifies the name of the constraint.
+		 * @param name	the constraint name
+		 */
 		public void setName(String name) {
 			this.name = name;
 		}
 
+		/**
+		 * Specifies the constrained index.
+		 * @param constraintDefinition	the index specification
+		 */
 		public void setSource(ConstraintSource constraintDefinition) {
 			if (constraintDefinition instanceof QueryCollection) {
 				collection = (QueryCollection) constraintDefinition;
@@ -177,6 +203,9 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			}
 		}
 
+		/**
+		 * Adds an annotation and returns the constraint.
+		 */
 		public QueryConstraint annotate(String xmlAnnotation) {
 			QueryAnnotation annotation = new QueryAnnotation();
 			annotation.add(Utilities.domElement(xmlAnnotation));
@@ -437,6 +466,9 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		@XmlAttribute
 		private String type;
 
+		/**
+		 * Zero-argument constructor.
+		 */
 		public FacetableConstraintConfiguration() {
 			facetOptions = new ArrayList<String>();
 		}
@@ -460,20 +492,24 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			this.doFacets = doFacets;
 		}
 
+		/**
+		 * Returns the collation for this facetable constraint.
+		 * @return	the collation
+		 */
 		public String getCollation() {
 			return collation;
 		}
 
 		/**
-		 * @return true if this constraint is configured for facets. False
-		 *         otherwise.
+		 * Return whether this constraint is configured for facets.
+		 * @return true or false
 		 */
 		public Boolean getDoFacets() {
 			return doFacets;
 		}
 
 		/**
-		 * get the list of facet options.
+		 * Get the list of facet options.
 		 * 
 		 * @return A list of the facet options for this facetable contstraint.
 		 */
@@ -481,18 +517,34 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			return facetOptions;
 		}
 
+		/**
+		 * Returns the datatype of the facetable constraint.
+		 * @return	the datatype
+		 */
 		public String getType() {
 			return type;
 		}
 
+		/**
+		 * Specifies the collation for the constraint.
+		 * @param collation	the collation
+		 */
 		public void setCollation(String collation) {
 			this.collation = collation;
 		}
 
+		/**
+		 * Specifies whether to configure this constraint for facets.
+		 * @param doFacets	true to use the constraint for facets
+		 */
 		public void setDoFacets(boolean doFacets) {
 			this.doFacets = doFacets;
 		}
 
+		/**
+		 * Specifies the list of facet options.
+		 * @param facetOptions	options for faceting on the constraint
+		 */
 		public void setFacetOptions(List<String> facetOptions) {
 			this.facetOptions = new ArrayList<String>();
 			for (String option : facetOptions) {
@@ -500,6 +552,10 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			}
 		}
 
+		/**
+		 * Specifies the datatype for the constraint.
+		 * @param type	the datatype
+		 */
 		public void setType(String type) {
 			this.type = type;
 		}
@@ -532,20 +588,35 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
 		private List<QueryAnnotation> annotations;
-		
+
+		/**
+		 * Gets the annotations on this custom constraint.
+		 */
 		public List<QueryAnnotation> getAnnotations() {
 			return this.annotations;
 		}
 		
+		/**
+		 * Adds an annotation, returning this custom constraint.
+		 */
 		public QueryCustom annotate(String xmlString) {
 			this.annotations.add(new QueryAnnotation(xmlString));
 			return this;
 		}
 		
+		/**
+		 * Constructor for the custom constraint.
+		 * @param doFacets	whether to build a facet on the custom constraint
+		 */
 		public QueryCustom(boolean doFacets) {
 			this.doFacets(doFacets);
 		}
 
+		/**
+		 * Constructor for the custom constraint.
+		 * @param doFacets	whether to build a facet on the custom constraint
+		 * @param parseExtension	the identification of the XQuery function that implements the custom constraint
+		 */
 		public QueryCustom(boolean doFacets, XQueryExtension parseExtension) {
 			this.doFacets(doFacets);
 			this.parse = parseExtension;
@@ -555,26 +626,50 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			annotations = new ArrayList<QueryAnnotation>();
 		}
 
+		/**
+		 * Returns the XQuery function called to finish the facet.
+		 * @return	the identification of the XQuery function 
+		 */
 		public XQueryExtension getFinishFacet() {
 			return finishFacet;
 		}
 
+		/**
+		 * Returns the XQuery function called to implement the custom constraint.
+		 * @return	the identification of the XQuery function 
+		 */
 		public XQueryExtension getParse() {
 			return parse;
 		}
 
+		/**
+		 * Returns the XQuery function called to start the facet.
+		 * @return	the identification of the XQuery function 
+		 */
 		public XQueryExtension getStartFacet() {
 			return startFacet;
 		}
 
+		/**
+		 * Specifies an XQuery function called to finish the facet.
+		 * @param finishFacet	the identification of the XQuery function 
+		 */
 		public void setFinishFacet(XQueryExtension finishFacet) {
 			this.finishFacet = finishFacet;
 		}
 
+		/**
+		 * Specifies an XQuery function called to implement the custom constraint.
+		 * @param parse	the identification of the XQuery function 
+		 */
 		public void setParse(XQueryExtension parse) {
 			this.parse = parse;
 		}
 
+		/**
+		 * Specifies an XQuery function called to start the facet.
+		 * @param startFacet	the identification of the XQuery function 
+		 */
 		public void setStartFacet(XQueryExtension startFacet) {
 			this.startFacet = startFacet;
 		}
@@ -596,56 +691,79 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		@XmlAccessorType(XmlAccessType.FIELD)
 		public static class Bucket implements Buckets {
 
-			/**
-			 * The textual label for the bucket.
-			 */
 			@XmlValue
 			private String content;
-			/**
-			 * The low end of the bucket's range. Stands for
-			 * "greater than or equal to".
-			 */
 			@XmlAttribute
 			private String ge;
-			/**
-			 * The high end of the bucket's range. Stands for "less than"
-			 */
 			@XmlAttribute
 			private String lt;
-			/**
-			 * A unique name to reference this bucket.
-			 */
 			@XmlAttribute
 			private String name;
 
+			/**
+			 * Returns the textual label for the bucket.
+			 * @return	the label
+			 */
 			public String getContent() {
 				return content;
 			}
 
+			/**
+			 * Returns the low end of the bucket's range. Stands for
+			 * "greater than or equal to".
+			 * @return	the low range boundary
+			 */
 			public String getGe() {
 				return ge;
 			}
 
+			/**
+			 * Returns the high end of the bucket's range. Stands for
+			 * "less than".
+			 * @return	the high range boundary
+			 */
 			public String getLt() {
 				return lt;
 			}
 
+			/**
+			 * Returns a unique name to reference this bucket.
+			 * @return	the name distinguishing the bucket
+			 */
 			public String getName() {
 				return name;
 			}
 
+			/**
+			 * Specifies the textual label for the bucket.
+			 * @param content	the label
+			 */
 			public void setContent(String content) {
 				this.content = content;
 			}
 
+			/**
+			 * Specifies the low end of the bucket's range. Stands for
+			 * "greater than or equal to".
+			 * @param ge	the low range boundary
+			 */
 			public void setGe(String ge) {
 				this.ge = ge;
 			}
 
+			/**
+			 * Specifies the high end of the bucket's range. Stands for
+			 * "less than".
+			 * @param lt	the high range boundary
+			 */
 			public void setLt(String lt) {
 				this.lt = lt;
 			}
 
+			/**
+			 * Specifies a unique name to reference this bucket.
+			 * @param name	the name distinguishing the bucket
+			 */
 			public void setName(String name) {
 				this.name = name;
 			}
@@ -662,11 +780,26 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 
 			/**
 			 * Defines values for use in computed buckets anchored to time.
-			 * 
 			 */
 			public static enum AnchorValue {
 
-				NOW, START_OF_DAY, START_OF_MONTH, START_OF_YEAR;
+				/**
+				 * An anchor relative to the current date and time.
+				 */
+				NOW,
+				/**
+				 * An anchor relative to the start of the current day.
+				 */
+				START_OF_DAY,
+				/**
+				 * An anchor relative to the start of the current month.
+				 */
+				START_OF_MONTH,
+				/**
+				 * An anchor relative to the start of the current year.
+				 */
+				START_OF_YEAR;
+
 				static AnchorValue fromXmlString(String xmlString) {
 					return AnchorValue.valueOf(xmlString.toUpperCase().replace(
 							"-", "_"));
@@ -678,52 +811,31 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 
 			}
 
-			/**
-			 * A value for anchoring this computed bucket.
-			 */
 			@XmlAttribute(name = "anchor")
 			private String anchor;
 
-			/**
-			 * The low end of the bucket's range. Stands for
-			 * "greater than or equal to".
-			 */
 			@XmlAttribute
 			private String ge;
 
-			/**
-			 * A value for anchoring the "greate than or equal" value for this
-			 * computed bucket.
-			 */
 			@XmlAttribute(name = "ge-anchor")
 			private String geAnchor;
 
-			/**
-			 * The textual label for the bucket.
-			 */
 			@XmlValue
 			private String label;
 
-			/**
-			 * The high end of the bucket's range. Stands for "less than"
-			 */
 			@XmlAttribute
 			private String lt;
 
-			/**
-			 * A value for anchoring the "less than" value for this computed
-			 * bucket.
-			 */
 			@XmlAttribute(name = "lt-anchor")
 			private String ltAnchor;
 
-			/**
-			 * A unique name to reference this bucket.
-			 */
 			@XmlAttribute
 			private String name;
 
-			
+			/**
+			 * Returns a value for anchoring this computed bucket.
+			 * @return	the anchor value
+			 */
 			public String getAnchor() {
 				return anchor;
 			}
@@ -732,46 +844,96 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 				return AnchorValue.fromXmlString(anchor);
 			}
 
+			/**
+			 * Returns the low end of the bucket's range. Stands for
+			 * "greater than or equal to".
+			 * @return	the low end for the range
+			 */
 			public String getGe() {
 				return ge;
 			}
 
+			/**
+			 * Returns a value for anchoring the "greater than or equal" value
+			 * for this computed bucket.
+			 * @return	the low boundary for the bucket
+			 */
 			public String getGeAnchor() {
 				return geAnchor;
 			}
 
+			/**
+			 * Returns the textual label for the bucket.
+			 * @return	the label
+			 */
 			public String getLabel() {
 				return label;
 			}
 
+			/**
+			 * Returns the high end of the bucket's range. Stands
+			 * for "less than".
+			 * @return	the high end of the range
+			 */
 			public String getLt() {
 				return lt;
 			}
 
+			/**
+			 * Returns a value for anchoring the "less than" value
+			 * for this computed bucket.
+			 * @return	the high boundary for the bucket
+			 */
 			public String getLtAnchor() {
 				return ltAnchor;
 			}
 
+			/**
+			 * Returns the unique name to reference this bucket.
+			 * @return	the bucket name
+			 */
 			public String getName() {
 				return name;
 			}
 
+			/**
+			 * Specifies a value for anchoring this computed bucket.
+			 * @param anchorValue	the anchor value
+			 */
 			public void setAnchor(AnchorValue anchorValue) {
 				this.anchor = anchorValue.toXmlString();
 			}
 
+			/**
+			 * Specifies the low end of the bucket's range. Stands for
+			 * "greater than or equal to".
+			 * @param ge	the low end for the range
+			 */
 			public void setGe(String ge) {
 				this.ge = ge;
 			}
 
+			/**
+			 * Specifies the textual label for the bucket.
+			 * @param content	the label
+			 */
 			public void setLabel(String content) {
 				this.label = content;
 			}
 
+			/**
+			 * Specifies the high end of the bucket's range. Stands
+			 * for "less than".
+			 * @param lt	the high end of the range
+			 */
 			public void setLt(String lt) {
 				this.lt = lt;
 			}
 
+			/**
+			 * Specifies unique name to reference this bucket.
+			 * @param name	the bucket name
+			 */
 			public void setName(String name) {
 				this.name = name;
 			}
@@ -784,21 +946,31 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "computed-bucket")
 		private List<ComputedBucket> computedBuckets;
 
+		/**
+		 * Zero-argument constructor.
+		 */
 		public QueryRange() {
 			buckets = new ArrayList<Bucket>();
 			computedBuckets = new ArrayList<ComputedBucket>();
 		}
 
 		/**
-		 * Add a bucket to this RangeOption's buckets.
+		 * Add a bucket to this QueryRange's buckets.
 		 * 
 		 * @param bucket
-		 *            a Bucket object for use with this RangeOption
+		 *            a Bucket object for use with this QueryRange
 		 */
 		public void addBucket(Bucket bucket) {
 			buckets.add(bucket);
 		}
 
+		/**
+		 * Add a computed bucket to this QueryRange's buckets.
+		 * 
+		 * @param computedBucket
+		 *            a ComputedBucket object for use with this QueryRange
+		 * @return	this QueryRange
+		 */
 		public QueryRange addComputedBucket(ComputedBucket computedBucket) {
 			this.computedBuckets.add(computedBucket);
 			return this;
@@ -813,19 +985,25 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		}
 
 		/**
-		 * @return the list of buckets for this RangeOption
+		 * Returns the list of buckets for this QueryRange.
+		 * @return the bucket list
 		 */
 		public List<Bucket> getBuckets() {
 			return buckets;
 		}
 
 		/**
-		 * @return this RangeOptions's List of ComputedBuckets
+		 * The list of computed buckets for this QueryRange.
+		 * @return the bucket list
 		 */
 		public List<ComputedBucket> getComputedBuckets() {
 			return computedBuckets;
 		}
 
+		/**
+		 * Add a list of buckets to the buckets for this QueryRange.
+		 * @param buckets	the bucket list
+		 */
 		public void addBuckets(List<Buckets> buckets) {
 			if (buckets != null) {
 				for (Buckets b : buckets) {
@@ -839,12 +1017,17 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			}
 		}
  		
- 		
+		/**
+		 * Add this QueryRange to the tuples query.
+		 */
 		public void build(QueryTuples tuples) {
 			tuples.addRange(this);
 		}
 
-		
+
+		/**
+		 * Add this QueryRange to the values query.
+		 */
 		public void build(QueryValues values) {
 			values.setRange(this);
 		}
@@ -876,11 +1059,10 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		private String prefix;
 
 		/**
-		 * 
-		 * @return The prefix to be removed from collectionOption URIs in
-		 *         generating facet labels.
+		 * The prefix to be removed from collectionOption URIs in
+		 * generating facet labels.
+		 * @return	the prefix
 		 */
-
 		public String getPrefix() {
 			return prefix;
 		}
@@ -897,12 +1079,17 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			this.prefix = prefix;
 		}
 
-		
+		/**
+		 * Add this QueryCollection to the tuples query.
+		 */
 		public void build(QueryTuples tuples) {
 			tuples.setCollection(this);
 		}
 
 		
+		/**
+		 * Add this QueryCollection to the values query.
+		 */
 		public void build(QueryValues values) {
 			values.setCollection(this);
 		}
@@ -918,6 +1105,9 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 	public final static class QueryProperties extends BaseConstraintItem implements ConstraintSource
 			 {
 
+		/**
+		 * Zero-argument constructor.
+		 */
 		public QueryProperties() {
 		}
 
@@ -935,18 +1125,34 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		@XmlAttribute
 		private String ns;
 
+		/**
+		 * Returns the local name of the element.
+		 * @return	the name.
+		 */
 		public String getName() {
 			return name;
 		}
 
+		/**
+		 * Returns the namespace URI for the element.
+		 * @return	the namespace URI
+		 */
 		public String getNs() {
 			return ns;
 		}
 
+		/**
+		 * Specifies the local name of the element.
+		 * @param name	the local name
+		 */
 		public void setName(String name) {
 			this.name = name;
 		}
 
+		/**
+		 * Specifies the namespace URI for the element.
+		 * @param ns	the namespace URI
+		 */
 		public void setNs(String ns) {
 			this.ns = ns;
 		}
@@ -977,6 +1183,9 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "parent")
 		private MarkLogicQName parent;
 
+		/**
+		 * Zero-argument constructor.
+		 */
 		public QueryGeospatial() {
 			this.geoOptions = new ArrayList<String>();
 			this.facetOptions = new ArrayList<String>();
@@ -984,54 +1193,98 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		}
 
 		/**
-		 * Add a facet option to this constraint type
+		 * Add a facet option to this Geospatial constraint.
 		 * 
-		 * @param facetOption
+		 * @param facetOption	the option
 		 */
 		public void addFacetOption(String facetOption) {
 			this.facetOptions.add(facetOption);
 		}
 
+		/**
+		 * Add a geospatial option to this constraint.
+		 * @param geoOption	the option
+		 */
 		public void addGeoOption(String geoOption) {
 			this.geoOptions.add(geoOption);
 		}
 
+		/**
+		 * List the facet options for the GeoSpatial constraint.
+		 * @return	the facet options
+		 */
 		public List<String> getFacetOptions() {
 			return facetOptions;
 		}
 
+		/**
+		 * Returns the heatmap for this GeoSpatial constraint.
+		 * @return	the heatmap
+		 */
 		public Heatmap getHeatmap() {
 			return heatmap;
 		}
 
+		/**
+		 * Returns the latitude element or attribute as a MarkLogic QName.
+		 * @return	the latitude
+		 */
 		public MarkLogicQName getLatitude() {
 			return latitude;
 		}
 
+		/**
+		 * Returns the longitude element or attribute as a MarkLogic QName.
+		 * @return	the longitude
+		 */
 		public MarkLogicQName getLongitude() {
 			return longitude;
 		}
 
+		/**
+		 * Returns the latitude and longitude container as a MarkLogic QName.
+		 * @return	the container
+		 */
 		public MarkLogicQName getParent() {
 			return parent;
 		}
 
+		/**
+		 * Specifies the geospatial options for this constraint.
+		 * @param geoOptions	the option list
+		 */
 		public void setGeoOptions(List<String> geoOptions) {
 			this.geoOptions = geoOptions;
 		}
 
+		/**
+		 * Specifies the heatmap for this GeoSpatial constraint.
+		 * @param heatmap	the heatmap
+		 */
 		public void setHeatmap(Heatmap heatmap) {
 			this.heatmap = heatmap;
 		}
 
+		/**
+		 * Specifies the latitude element or attribute as a MarkLogic QName.
+		 * @param latitude	the latitude
+		 */
 		public void setLatitude(MarkLogicQName latitude) {
 			this.latitude = latitude;
 		}
 
+		/**
+		 * Specifies the longitude element or attribute as a MarkLogic QName.
+		 * @param longitude	the longitude
+		 */
 		public void setLongitude(MarkLogicQName longitude) {
 			this.longitude = longitude;
 		}
 
+		/**
+		 * Specifies the latitude and longitude container as a MarkLogic QName.
+		 * @param parent	the container
+		 */
 		public void setParent(MarkLogicQName parent) {
 			this.parent = parent;
 		}
@@ -1066,7 +1319,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 	}
 
     /**
-     * Models a two-dimensional grid used to categorize data along two dimenstions.
+     * Models a two-dimensional grid used to categorize data along two dimensions.
      * Use with geographic indexes
      */
 	@XmlAccessorType(XmlAccessType.FIELD)
@@ -1084,61 +1337,114 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		@XmlAttribute
 		private double w;
 
+		/**
+		 * Returns the east longitude.
+		 * @return	the longitude
+		 */
 		public double getE() {
 			return e;
 		}
 
+		/**
+		 * Returns the number of latitudinal divisions.
+		 * @return	the number of divisions
+		 */
 		public int getLatdivs() {
 			return latdivs;
 		}
 
+		/**
+		 * Returns the number of longitudinal divisions.
+		 * @return	the number of divisions
+		 */
 		public int getLondivs() {
 			return londivs;
 		}
 
+		/**
+		 * Returns the north latitude.
+		 * @return	the latitude
+		 */
 		public double getN() {
 			return n;
 		}
 
+		/**
+		 * Returns the south latitude.
+		 * @return	the latitude
+		 */
 		public double getS() {
 			return s;
 		}
 
+		/**
+		 * Returns the west longitude.
+		 * @return	the longitude
+		 */
 		public double getW() {
 			return w;
 		}
 
+		/**
+		 * Specifies the east longitude.
+		 * @param e	the longitude
+		 * @return	this heatmap
+		 */
 		public Heatmap setE(double e) {
 			this.e = e;
 			return this;
 		}
 
+		/**
+		 * Specifies the number of latitudinal divisions.
+		 * @param latdivs	the number of divisions
+		 * @return	this heatmap
+		 */
 		public Heatmap setLatdivs(int latdivs) {
 			this.latdivs = latdivs;
 			return this;
 		}
 
+		/**
+		 * Specifies the number of longitudinal divisions.
+		 * @param londivs	the number of divisions
+		 * @return	this heatmap
+		 */
 		public Heatmap setLondivs(int londivs) {
 			this.londivs = londivs;
 			return this;
 		}
 
+		/**
+		 * Specifies the north latitude.
+		 * @param n	the latitude
+		 * @return	this heatmap
+		 */
 		public Heatmap setN(double n) {
 			this.n = n;
 			return this;
 		}
 
+		/**
+		 * Specifies the south latitude.
+		 * @param s	the latitude
+		 * @return	this heatmap
+		 */
 		public Heatmap setS(double s) {
 			this.s = s;
 			return this;
 		}
 
+		/**
+		 * Specifies the west longitude.
+		 * @param w	the longitude
+		 * @return	this heatmap
+		 */
 		public Heatmap setW(double w) {
 			this.w = w;
 			return this;
 		}
 	}
-
 
 
     /**
@@ -1240,6 +1546,9 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		@XmlValue
 		private String path = null;
 
+		/**
+		 * Zero-argument constructor.
+		 */
 		public PathIndex() {
 		}
 
@@ -1275,27 +1584,49 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		@XmlValue
 		private String name;
 
+		/**
+		 * Zero-argument constructor.
+		 */
 		public JsonKey() {
 
 		}
 
+		/**
+		 * Constructs the JSON key specifier with the key.
+		 * @param name	the JSON key
+		 */
 		public JsonKey(String name) {
 			this.name = name;
 		}
 
 
+		/**
+		 * Returns the key.
+		 * @return	the key
+		 */
 		public String getName() {
 			return name;
 		}
 
+		/**
+		 * Adds this JSON key to the metadata extraction specification.
+		 */
 		public void build(QueryExtractMetadata extractMetadata) {
 			extractMetadata.getJsonKeys().add(this);
 		}
 
+		/**
+		 * Adds this JSON key to the values query specification.
+		 * @param values	the query
+		 */
 		public void build(QueryValues values) {
 			values.setJsonKey(this);
 		}
 
+		/**
+		 * Adds this JSON key to the tuples query specification.
+		 * @param values	the query
+		 */
 		public void build(QueryTuples values) {
 			values.addJsonKey(this);
 		}
@@ -1315,31 +1646,56 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		@XmlAttribute
 		private String name;
 
+		/**
+		 * Zero-argument constructor.
+		 */
 		public Field() {
 
 		}
 
+		/**
+		 * Constructs the field with the name of the field.
+		 * @param name	the field
+		 */
 		public Field(String name) {
 			this.name = name;
 		}
 
 
+		/**
+		 * Adds this field to the tuples query specification.
+		 */
 		public void build(QueryTuples tuples) {
 			tuples.addField(this);
 		}
 
+		/**
+		 * Returns the name of the field.
+		 * @return	the field
+		 */
 		public String getName() {
 			return name;
 		}
 
+		/**
+		 * Specifies the name of the field.
+		 * @param name	the field
+		 */
 		public void setName(String name) {
 			this.name = name;
 		}
 
+		/**
+		 * Adds this field to the indexed specification.
+		 * @param indexable	the index specification
+		 */
 		public void build(Indexed indexable) {
 			indexable.setField(this);
 		}
-		
+
+		/**
+		 * Adds this field to the values query specification.
+		 */
 		public void build(QueryValues values) {
 			values.setField(this);
 		}
@@ -1354,12 +1710,12 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 	}
 
 	
-	@XmlAccessorType(XmlAccessType.FIELD)
     /**
      * Models specification for extracting document metadata in search results.
      *
      * Can contain ConstraintValue, AttributeValue, ElementValue, or JSonKey
      */ 
+	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class QueryExtractMetadata {
 
 		@XmlElement(namespace=SEARCH_NS, name="qname")
@@ -1374,6 +1730,9 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		private List<JsonKey> jsonKeys;
 
 
+		/**
+		 * Zero-argument constructor.
+		 */
 		public QueryExtractMetadata() {
 			this.qnames = new ArrayList<AttributeOrElementValue>();
 			this.constraintValues = new ArrayList<ConstraintValue>();
@@ -1768,25 +2127,72 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		}
 	}
 
-
-
-
     /**
      * Models an extension to the default grammar for search strings.
      */
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static final class QueryGrammar {
 
+		/**
+		 * A Query Joiner combines two terms as part of a query grammar.
+		 */
 		@XmlAccessorType(XmlAccessType.FIELD)
 		public static final class QueryJoiner  {
 
+			/**
+			 * A Comparator enumerates the possible binary relations
+			 * for constraining an index with a value.
+			 */
 			public enum Comparator {
-				EQ, GE, GT, LE, LT, NE;
+				/**
+				 * The Equals operation.
+				 */
+				EQ,
+				/**
+				 * The Greater-than-or-equal-to operation.
+				 */
+				GE,
+				/**
+				 * The Greater-than operation.
+				 */
+				GT,
+				/**
+				 * The Less-than-or-equal-to operation.
+				 */
+				LE,
+				/**
+				 * The Less-than operation.
+				 */
+				LT,
+				/**
+				 * The Not-equals operation.
+				 */
+				NE;
 			}
 
+			/**
+			 * A JoinerApply enumerates the built-in functions available 
+			 * to join the terms.
+			 */
 			public enum JoinerApply {
 
-				CONSTRAINT, INFIX, NEAR2, PREFIX;
+				/**
+				 * Constrains the index term with the value term, using the Comparator
+				 * if specified.
+				 */
+				CONSTRAINT,
+				/**
+				 * Inserts an infix between the terms.
+				 */
+				INFIX,
+				/**
+				 * Specifies proximity between the terms.
+				 */
+				NEAR2,
+				/**
+				 * Prepends to the terms.
+				 */
+				PREFIX;
 
 				static JoinerApply fromXMLString(String xmlString) {
 					return JoinerApply.valueOf(xmlString.toUpperCase().replace(
@@ -1894,13 +2300,26 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 
 		}
 
+		/**
+		 * A Query Starter delimits a term as part of a query grammar.
+		 */
 		@XmlAccessorType(XmlAccessType.FIELD)
-		public final static class QueryStarter 
-				 {
+		public final static class QueryStarter {
 
+			/**
+			 * A StarterApply enumerates the built-in functions available 
+			 * to start terms.
+			 */
 			public enum StarterApply {
 
-				GROUPING, PREFIX;
+				/**
+				 * Groups the terms
+				 */
+				GROUPING,
+				/**
+				 * Prepends to the terms
+				 */
+				PREFIX;
 
 				static StarterApply fromXMLString(String xmlString) {
 					return StarterApply.valueOf(xmlString.toUpperCase()
@@ -1999,9 +2418,19 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			
 		}
 
+		/**
+		 * Tokenize enumerates how terms are distinguished for a joiner.
+		 */
 		public enum Tokenize {
 
-			DEFAULT, WORD;
+			/**
+			 * Uses the default tokenizing strategy for distinguishing terms.
+			 */
+			DEFAULT,
+			/**
+			 * Uses word boundaries to distinguish terms.
+			 */
+			WORD;
 
 			static Tokenize fromXMLString(String xmlString) {
 				return Tokenize.valueOf(xmlString.toUpperCase().replace("-",
@@ -2315,9 +2744,19 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 	public static class QuerySortOrder  implements Indexed, Annotatable<QuerySortOrder> 
 			 {
 
+		/**
+		 * Direction enumerates the order for sorting values.
+		 */
 		public enum Direction  {
 
-			ASCENDING, DESCENDING;
+			/**
+			 * Sorts values in ascending order.
+			 */
+			ASCENDING,
+			/**
+			 * Sorts values in descending order.
+			 */
+			DESCENDING;
 
 			static Direction fromXMLString(String xmlString) {
 				return Direction.valueOf(xmlString.toUpperCase().replace("-",
@@ -2329,9 +2768,14 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			}
 		}
 
+		/**
+		 * Score enumerates whether or not the relevance score is used.
+		 */
 		public enum Score  {
+			/**
+			 * Uses the score.
+			 */
 			YES;
-
 		};
 
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "attribute")
@@ -2474,7 +2918,14 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		 */
 		public enum TermApply {
 
-			ALL_RESULTS, NO_RESULTS;
+			/**
+			 * Treats an empty string as a request for all results.
+			 */
+			ALL_RESULTS,
+			/**
+			 * Treats an empty string as a request for no results.
+			 */
+			NO_RESULTS;
 
 			public static TermApply fromXmlString(String xmlString) {
 				return TermApply.valueOf(xmlString.toUpperCase().replace("-",
@@ -2638,7 +3089,8 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			return ref;
 		}
 	}
-    /**
+
+	/**
      * Models configurations that transform search results.
      *
      * Includes pre-configured methods to get raw results, empty results, and to 
