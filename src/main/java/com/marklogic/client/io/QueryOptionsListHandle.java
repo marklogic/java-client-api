@@ -49,6 +49,9 @@ public class QueryOptionsListHandle
     private Marshaller marshaller;
     private Unmarshaller unmarshaller;
 
+    /**
+     * The constructor.
+     */
     public QueryOptionsListHandle() {
     	super();
     	super.setFormat(Format.XML);

@@ -27,13 +27,15 @@ import com.marklogic.client.util.RequestLogger;
 
 /**
  * A Query Manager supports searching documents and retrieving values and
- * tuples from lexicons.  To specify the stable part of a query,
- * you write the query options once using QueryOptionsManager
- * before querying using QueryManager.
+ * tuples from lexicons. Query configuration depends on the kind of query
+ * definition used, the parameters to that definition, and the server-side
+ * options used. Server-side options can be constructed and written to
+ * the server with a QueryOptionsManager. Once stored on the server, a
+ * set of named query options can be used by any query.
  */
 public interface QueryManager {
     /**
-     * The default maximum number of documents in search results.
+     * The default maximum number of documents in a page of search results.
      */
     static final public long DEFAULT_PAGE_LENGTH = 10;
     /**
@@ -69,64 +71,71 @@ public interface QueryManager {
     }
 
     /**
-     * Returns the maximum number of documents in the result list
-     * for queries.
-     * @return	the maximum number of results
+     * Returns the maximum number of documents that can appear in any page of query results.
+     * @return the maximum number of results
      */
     public long getPageLength();
+
     /**
-     * Specifies the maximum number of documents in the result list
-     * for queries, overriding any maximum specified in the query options.
+     * Specifies the maximum number of documents that can appear in any page of the query results,
+     * overriding any maximum specified in the query options.
      * @param length	the maximum number of results
      */
     public void setPageLength(long length);
 
     /**
-     * Returns the type of results produced by queries.
+     * Returns the type of view results produced by queries.
      * @return	the view type for the queries
      */
     public QueryView getView();
+
     /**
-     * Specifies the type of results produced by queries.
+     * Specifies the type of view results produced by queries.
      * @param view	the view type for the queries
      */
     public void setView(QueryView view);
 
     /**
-     * Creates a query definition based on a string.  The string
+     * Creates a query definition based on a string and the default
+     * query options.  The string
      * has a simple grammar for specifying constraint values
      * for indexes and can be supplied by an end-user in a web form.
      * @return	the string query definition
      */
     public StringQueryDefinition newStringDefinition();
+
     /**
-     * Creates a query definition based on a string and on query options
+     * Creates a query definition based on a string and on named query options
      * saved previously.
      * @param optionsName	the name of the query options
      * @return	the string query definition
      */
     public StringQueryDefinition newStringDefinition(String optionsName);
+
     /**
-     * Creates a query definition based on a locator such as JSON key,
-     * element name, or element and attribute name.
+     * Creates a query definition based on a locator such as a JSON key,
+     * element name, or element and attribute name and the default query
+     * options.
      * @return	the key-value query definition
      */
     public KeyValueQueryDefinition newKeyValueDefinition();
+
     /**
-     * Creates a query definition based on a locator and value and on
+     * Creates a query definition based on a locator and on named
      * query options saved previously.
      * @param optionsName	the name of the query options
      * @return	the key-value query definition
      */
     public KeyValueQueryDefinition newKeyValueDefinition(String optionsName);
+
     /**
      * Creates a query definition based on a structure that identifies
-     * clauses and conjunctions.
+     * clauses and conjunctions and the default query options.
      * @return	the structured query definition
      */
     public StructuredQueryBuilder newStructuredQueryBuilder();
     /**
-     * Creates a query definition based on a structure and on
+     * Creates a query definition based on a structure and on named
      * query options saved previously.
      * @param optionsName	the name of the query options
      * @return	the structured query definition
@@ -141,21 +150,34 @@ public interface QueryManager {
 
     /**
      * Creates a query definition for retrieving values based on
-     * a named constraint on an index.
+     * a named constraint on an index and the default query options.
      * @param name	the index constraint
      * @return	the values query definition
      */
     public ValuesDefinition newValuesDefinition(String name);
+
     /**
      * Creates a query definition for retrieving values based on
-     * a named constraint and on query options saved previously.
+     * a named constraint and on named query options saved previously.
      * @param name	the index constraint
      * @param optionsName	the name of the query options
      * @return	the values query definition
      */
     public ValuesDefinition newValuesDefinition(String name, String optionsName);
 
+    /**
+     * Creates a query definition for retrieving the list of available
+     * named lexicon configurations from the default query options.
+     * @return the values list definition
+     */
     public ValuesListDefinition newValuesListDefinition();
+
+    /**
+     * Creates a query definition for retrieving the list of available
+     * named lexicon configurations from the named query options.
+     * @param optionsName the name of the query options
+     * @return the values list definition
+     */
     public ValuesListDefinition newValuesListDefinition(String optionsName);
 
     /**
@@ -165,14 +187,16 @@ public interface QueryManager {
      * @return	the locator for a key-value query
      */
     public ElementLocator newElementLocator(QName element);
+
     /**
      * Creates a locator for a key-value query based on an element name
-     * and attribute name.
+     * and attribute name, either or both of which may have a namespace.
      * @param element	the element name
      * @param attribute	the attribute name
      * @return	the locator for a key-value query
      */
     public ElementLocator newElementLocator(QName element, QName attribute);
+
     /**
      * Creates a locator for a key-value query based on a JSON key.
      * @param key	the JSON key
@@ -188,6 +212,7 @@ public interface QueryManager {
      * @return	the handle populated with the results from the search
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle);
+
     /**
      * Searches documents based on query criteria and, potentially, previously
      * saved query options starting with the specified page listing 
@@ -198,6 +223,7 @@ public interface QueryManager {
      * @return	the handle populated with the results from the search
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start);
+
     /**
      * Searches documents based on query criteria and, potentially, previously
      * saved query options.  The search includes documents modified by the
@@ -208,6 +234,7 @@ public interface QueryManager {
      * @return	the handle populated with the results from the search
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction);
+
     /**
      * Searches documents based on query criteria and, potentially, previously
      * saved query options starting with the specified page listing 
@@ -226,6 +253,7 @@ public interface QueryManager {
      * @param querydef	the definition of query criteria
      */
     public void delete(DeleteQueryDefinition querydef);
+
     /**
      * Deletes documents based on the query criteria as part
      * of the specified transaction.
@@ -242,6 +270,7 @@ public interface QueryManager {
      * @return	the handle populated with the values from the index
      */
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle);
+
     /**
      * Retrieves values from indexes based on query criteria and, potentially,
      * previously saved query options.  The query includes documents modified
@@ -261,6 +290,7 @@ public interface QueryManager {
      * @return	the handle populated with the tuples from the index
      */
     public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T valueHandle);
+
     /**
      * Retrieves combinations of values for the same document from indexes
      * based on query criteria and, potentially, previously saved query options.
@@ -273,13 +303,65 @@ public interface QueryManager {
      */
     public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T valueHandle, Transaction transaction);
 
+    /**
+     * Retrieves the list of available named lexicon configurations from the
+     * values list definition and, potentially, previously saved query options.
+     * @param valdef the definition of the query criteria and options
+     * @param valueHandle a handle for reading the list of names lexicon configurations
+     * @return the handle populated with the names
+     */
     public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valueHandle);
+
+    /**
+     * Retrieves the list of available named lexicon configurations from the
+     * values list definition and, potentially, previously saved query options.
+     * The query includes options modified by the transaction and ignores
+     * options deleted by the transaction.
+     * @param valdef the definition of the query criteria and options
+     * @param valueHandle a handle for reading the list of names lexicon configurations
+     * @param transaction	a open transaction for matching documents
+     * @return the handle populated with the names
+     */
     public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valueHandle, Transaction transaction);
 
+    /**
+     * Retrieves the list of available named query options.
+     * @param valueHandle a handle for reading the list of name options
+     * @return the handle populated with the names
+     */
     public <T extends QueryOptionsListReadHandle> T optionsList(T valueHandle);
+
+    /**
+     * Retrieves the list of available named query options.
+     * The query includes options modified by the transaction and ignores
+     * options deleted by the transaction.
+     * @param valueHandle a handle for reading the list of name options
+     * @param transaction	a open transaction for matching documents
+     * @return the handle populated with the names
+     */
     public <T extends QueryOptionsListReadHandle> T optionsList(T valueHandle, Transaction transaction);
 
+    /**
+     * The findOne method is a convenience.
+     * It searches documents based on query criteria and, potentially, previously
+     * saved query options. It returns the MatchDocumentSummary of the first
+     * search result.
+     * @param querydef	the definition of query criteria and query options
+     * @return the summary of the first search result or null if there are no results
+     */
     public MatchDocumentSummary findOne(QueryDefinition querydef);
+
+    /**
+     * The findOne method is a convenience.
+     * It searches documents based on query criteria and, potentially, previously
+     * saved query options. It returns the MatchDocumentSummary of the first
+     * search result.
+     * The search includes documents modified by the
+     * transaction and ignores documents deleted by the transaction.
+     * @param querydef	the definition of query criteria and query options
+     * @param transaction	a open transaction for matching documents
+     * @return the summary of the first search result or null if there are no results
+     */
     public MatchDocumentSummary findOne(QueryDefinition querydef, Transaction transaction);
 
     /**
@@ -289,6 +371,7 @@ public interface QueryManager {
      * @param logger	the logger that receives debugging output
      */
     public void startLogging(RequestLogger logger);
+
     /**
      *  Stops debugging client requests.
      */

@@ -26,11 +26,11 @@
 <p>
 	Use the {@link com.marklogic.client.DatabaseClient} to create
 	the appropriate document manager for the format of the content --
-	a {@link com.marklogic.client.BinaryDocumentManager} for a binary
-	document or an {@link com.marklogic.client.XMLDocumentManager} for
-	an XML document. The client also provides {@link com.marklogic.client.JSONDocumentManager}
-	and {@link com.marklogic.client.TextDocumentManager} document manager
-	for those formats. Use {@link com.marklogic.client.GenericDocumentManager}
+	a {@link com.marklogic.client.document.BinaryDocumentManager} for a binary
+	document or an {@link com.marklogic.client.document.XMLDocumentManager} for
+	an XML document. The client also provides {@link com.marklogic.client.document.JSONDocumentManager}
+	and {@link com.marklogic.client.document.TextDocumentManager} document manager
+	for those formats. Use {@link com.marklogic.client.document.GenericDocumentManager}
 	if you don't know the format or need to process multiple documents
 	with different formats.  
 </p>
@@ -94,10 +94,10 @@ docMgr.write(docId, handle);
 	that implement {@link com.marklogic.client.io.marker.XMLReadHandle}.  To learn which handles
 	you can use to write the content of an XML document, look at the classes that implement
 	{@link com.marklogic.client.io.marker.XMLWriteHandle}.  
-	{@link com.marklogic.client.BinaryDocumentManager},
-	{@link com.marklogic.client.JSONDocumentManager},
-	{@link com.marklogic.client.TextDocumentManager}, and
-	{@link com.marklogic.client.GenericDocumentManager}
+	{@link com.marklogic.client.document.BinaryDocumentManager},
+	{@link com.marklogic.client.document.JSONDocumentManager},
+	{@link com.marklogic.client.document.TextDocumentManager}, and
+	{@link com.marklogic.client.document.GenericDocumentManager}
 	each have corresponding read and write handles that identify the handle classes
 	that can be used when reading and writing documents of that format.
 </p>
@@ -110,11 +110,11 @@ docMgr.write(docId, handle);
     To prepare a database for search applications, you will have created
     indexes on the fields and elements of documents.  A QueryOptionsHandle
     object provides hooks for configuring search and query applications' use of
-    indexes.  Use {@link com.marklogic.client.QueryOptionsManager} to write,
+    indexes.  Use {@link com.marklogic.client.admin.QueryOptionsManager} to write,
     read, and delete query options.   Use {@link
     com.marklogic.client.io.QueryOptionsHandle} to manipulate QueryOptions
     configurations.  Use {@link
-    com.marklogic.client.config.QueryOptionsBuilder} to build new
+    com.marklogic.client.admin.config.QueryOptionsBuilder} to build new
     configurations or add to existing ones.
 </p>
 <p>
@@ -136,7 +136,7 @@ optionsMgr.writeOptions("shipments", handle);
 </pre>
 <h2>Working with the Query Manager</h2>
 <p>
-	Use {@link com.marklogic.client.QueryManager} to search documents or
+	Use {@link com.marklogic.client.query.QueryManager} to search documents or
 	extract values, co-occurrences of values, or full tuple records from
 	document indexes.  The search() method takes the name for search options
 	that you wrote to the database previously, a query definition including

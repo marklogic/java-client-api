@@ -122,7 +122,7 @@ public class ValuesHandle
      *
      * <p>Calling this method always deletes any cached values.</p>
      *
-     * @param querydef The new QueryDefinition
+     * @param vdef The new ValuesDefinition
      */
     public void setQueryCriteria(ValuesDefinition vdef) {
         valuesdef = vdef;

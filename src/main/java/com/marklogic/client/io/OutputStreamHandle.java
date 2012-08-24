@@ -97,7 +97,7 @@ public class OutputStreamHandle
 	/**
 	 * Assigns an output stream sender providing the callback that writes
 	 * content to the database via an output stream.
-	 * @param content	the output stream sender
+	 * @param sender	the output stream sender
 	 */
 	public void set(OutputStreamSender sender) {
 		this.sender = sender;
@@ -105,7 +105,7 @@ public class OutputStreamHandle
     /**
 	 * Assigns an output stream sender providing the callback that writes
 	 * content to the database and returns the handle as a fluent convenience.
-	 * @param content	the output stream sender
+	 * @param sender	the output stream sender
 	 * @return	this handle
      */
 	public OutputStreamHandle with(OutputStreamSender sender) {

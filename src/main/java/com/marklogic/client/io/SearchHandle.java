@@ -255,7 +255,7 @@ public class SearchHandle
      * Returns the query plan associated with this search.
      *
      * <p>Query plans are highly variable and are always returned as a DOM Document.</p>
-     * @return
+     * @return the plan as a DOM Document
      */
     @Override
     public Document getPlan() {

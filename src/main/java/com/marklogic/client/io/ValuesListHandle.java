@@ -46,6 +46,9 @@ public class ValuesListHandle
 
     String optionsName = null;
 
+    /**
+     * The constructor.
+     */
     public ValuesListHandle() {
     	super();
     	super.setFormat(Format.XML);
@@ -58,21 +61,47 @@ public class ValuesListHandle
         }
     }
 
+    /**
+     * Sets the format associated with this handle.
+     *
+     * This handle only supports XML.
+     *
+     * @param format The format, which must be Format.XML or an exception will be raised.
+     */
     @Override
     public void setFormat(Format format) {
         if (format != Format.XML)
         	throw new IllegalArgumentException("ValuesListHandle supports the XML format only");
     }
 
+    /**
+     * Fluent setter for the format associated with this handle.
+     *
+     * This handle only supports XML.
+     *
+     * @param format The format, which must be Format.XML or an exception will be raised.
+     * @return The QueryOptionsListHandle instance on which this method was called.
+     */
     public ValuesListHandle withFormat(Format format) {
         setFormat(format);
         return this;
     }
 
+    /**
+     * Returns the name of the query options used for this query.
+     * @return The options name.
+     */
     public String getOptionsName() {
         return optionsName;
     }
 
+    /**
+     * Sets the name of the query options to be used for this query.
+     *
+     * If no query options node with the specified name exists, the query will fail.
+     *
+     * @param name The name of the saved query options node on the server.
+     */
     public void setOptionsName(String name) {
         optionsName = name;
     }
@@ -97,6 +126,13 @@ public class ValuesListHandle
         }
     }
 
+    /**
+     * Returns a HashMap of the named lexicon configurations.
+     *
+     * The keys are the names of the lexicons, the values are the corresponding URIs on the server.
+     *
+     * @return The map of names to URIs.
+     */
     @Override
     public HashMap<String, String> getValuesMap() {
         return valuesHolder.getValuesMap();

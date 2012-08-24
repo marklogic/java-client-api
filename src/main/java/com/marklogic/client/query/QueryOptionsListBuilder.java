@@ -22,6 +22,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * This is an implementation class used to read the list of named query options from
+ * the server. It may be moved into the .impl package in a future release.
+ */
 public final class QueryOptionsListBuilder {
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlRootElement(namespace = OptionsList.OPTIONS_LIST_NS, name = "query-options")
