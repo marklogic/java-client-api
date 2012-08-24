@@ -21,10 +21,12 @@ import java.util.List;
 import com.marklogic.client.admin.config.QueryOptions.FragmentScope;
 
 /**
- * Interface that wraps building configuration options for a QueryOptions
- * object. It consists of a bunch of getters in order to access state, and a
+ * Interface that wraps building configuration options for a 
+ * {@link com.marklogic.client.admin.config.QueryOptions}
+ * object. Consists of getters in order to access state, and a
  * range of fluent setters that are used to successively build up a
  * configuration.
+ * Used only in {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.configure(...) expressions.
  */
 public class QueryOptionsConfiguration {
 	private Integer concurrencyLevel;

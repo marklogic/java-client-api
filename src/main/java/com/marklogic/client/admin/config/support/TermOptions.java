@@ -17,6 +17,12 @@ package com.marklogic.client.admin.config.support;
 
 import java.util.List;
 
+/**
+ * Marks classes and defined methods for options that
+ * have term options and weights assigned to them.
+ * Used indirectly in {@link com.marklogic.client.admin.config.QueryOptionsBuilder} to construct
+ * {@link com.marklogic.client.admin.config.QueryOptions.QueryCustom} and {@link com.marklogic.client.admin.config.QueryOptions.QueryTerm}.
+ */
 public interface TermOptions {
 
 	public List<String> getTermOptions();

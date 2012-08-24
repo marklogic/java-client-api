@@ -23,7 +23,8 @@ import com.marklogic.client.admin.config.QueryOptions.PathIndex;
 
 
 /**
- * Classes that can have indexes attached to them are marked with this interface.
+ * Marks classes that are backed by MarkLogic indexes.
+ * Used to support {@link com.marklogic.client.admin.config.QueryOptionsBuilder} expressions.
  */
 public interface Indexed {
 

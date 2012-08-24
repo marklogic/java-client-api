@@ -15,6 +15,11 @@
  */
 package com.marklogic.client.admin.config.support;
 
+/**
+ * Used in {@link com.marklogic.client.admin.config.QueryOptionsBuilder} to help construct configurations for geospatial indexes.
+ * Must match the encoding method for geospatial coordinates, wich can be stored as
+ * delimited values in a single element, or as values in pairs of elements or attributes.
+ */
 public enum GeospatialIndexType {
 
 	ELEMENT, ELEMENT_PAIR, ATTRIBUTE_PAIR;

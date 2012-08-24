@@ -97,7 +97,7 @@ import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
  * 
  * <pre>handle.withConstraints(...).withTerm(...).withOperators(...)</pre>
  * 
- * <p>and constructed items from QueryOptionsBuilder.</p>
+ * <p>and constructed items from {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.</p>
  * 
  */
 public final class QueryOptionsHandle

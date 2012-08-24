@@ -19,6 +19,12 @@ import java.util.List;
 
 import com.marklogic.client.admin.config.QueryOptions.Heatmap;
 
+/**
+ * Models an object that helps build heatmaps for use 
+ * in {@link com.marklogic.client.admin.config.QueryOptionsBuilder} geospatial expressions.
+ * Do not use directly.   Build using
+ * {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.heatmap()
+ */
 public class HeatmapAndOptions {
 
 	private Heatmap heatmap;

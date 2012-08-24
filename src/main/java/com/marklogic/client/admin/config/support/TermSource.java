@@ -17,6 +17,11 @@ package com.marklogic.client.admin.config.support;
 
 import java.util.List;
 
+/**
+ * Marks the classes that can back a {@link com.marklogic.client.admin.config.QueryOptions.QueryTerm}
+ * configuration for default searches.
+ * Used only in {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.term(...)
+ */
 public interface TermSource {
 	public List<String> getTermOptions();
 }

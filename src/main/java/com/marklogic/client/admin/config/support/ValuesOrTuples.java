@@ -15,4 +15,9 @@
  */
 package com.marklogic.client.admin.config.support;
 
+/**
+ * Marks classes that can comprise values or tuples
+ * definitions.
+ * Not in use.  See {@link com.marklogic.client.admin.config.support.TupleSource}.
+ */
 public interface ValuesOrTuples {}

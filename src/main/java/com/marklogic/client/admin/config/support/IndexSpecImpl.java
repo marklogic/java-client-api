@@ -22,7 +22,10 @@ import com.marklogic.client.admin.config.QueryOptions.JsonKey;
 import com.marklogic.client.admin.config.QueryOptions.MarkLogicQName;
 import com.marklogic.client.admin.config.QueryOptions.PathIndex;
 
-
+/**
+ * Implements accessors to index or index-like configurations.
+ * Used only in {@link com.marklogic.client.admin.config.QueryOptionsBuilder} expressions.
+ */
 public class IndexSpecImpl implements TermSpec {
 	public QName getAttribute() {
 		return attribute;

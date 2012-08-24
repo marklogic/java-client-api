@@ -16,7 +16,10 @@
 package com.marklogic.client.admin.config.support;
 
 
-
+/**
+ * Used only in {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.*RangeIndex(...) methods
+ * to mark classes that are backed my range indexes.
+ */
 public class RangeIndexType implements Typed {
 	public String type;
 	private String collation;

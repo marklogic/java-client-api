@@ -15,4 +15,9 @@
  */
 package com.marklogic.client.admin.config.support;
 
+/**
+ * Marks {@link com.marklogic.client.admin.config.QueryOptions.QueryRange.Bucket} 
+ * and {@link com.marklogic.client.admin.config.QueryOptions.QueryRange.ComputedBucket} 
+ * as buckets for the purposes of {@link com.marklogic.client.admin.config.QueryOptions.QueryRange} configuration.
+ */
 public interface Buckets {}

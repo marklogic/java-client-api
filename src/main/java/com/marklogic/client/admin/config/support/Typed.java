@@ -16,6 +16,10 @@
 package com.marklogic.client.admin.config.support;
 
 
+/**
+ * Marks classes that carry type and collation attributes.
+ * Used only in {@link com.marklogic.client.admin.config.QueryOptionsBuilder} expressions.
+ */
 public interface Typed {
 	public String getType();
 	public String getCollation();

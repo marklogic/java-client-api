@@ -18,6 +18,10 @@ package com.marklogic.client.admin.config.support;
 import com.marklogic.client.admin.config.QueryOptions.QueryTuples;
 import com.marklogic.client.admin.config.QueryOptions.QueryValues;
 
+/**
+ * Marks classes that can back tuples definitions.
+ * Used only in {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.tuples(...) expressions.
+ */
 public interface TupleSource {
 
 	void build(QueryTuples tuples);

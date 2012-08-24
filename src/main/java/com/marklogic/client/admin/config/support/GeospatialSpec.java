@@ -19,6 +19,14 @@ import javax.xml.namespace.QName;
 
 import com.marklogic.client.admin.config.support.GeospatialIndexType;
 
+/**
+ * Defines an interface to the methods for storing
+ * geospatial values in MarkLogic indexes.
+ * Depending on the {@link com.marklogic.client.admin.config.support.GeospatialIndexType}, different
+ * methods will actually be used in order to build
+ * the geospatial configuration.
+ * Used only in {@link com.marklogic.client.admin.config.QueryOptionsBuilder} expressions.
+ */
 public interface GeospatialSpec {
 
 

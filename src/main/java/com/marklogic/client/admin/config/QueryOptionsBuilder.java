@@ -94,20 +94,23 @@ import com.marklogic.client.impl.Utilities;
  * <p>
  * Entry points: <br>
  * 
+ * <pre>
  * QueryOptionsBuilder builder = new QueryOptionsBuilder(); 
  * QueryOptionsHandle options = new QueryOptionsHandle();
+ * </pre>
  * 
  * With this newly created handle, use fluent setters to append/replace
  * different configuration options supplied by the builder methods below.
  * 
  * An example:
  * 
- * builder.withConstraints(QueryConstraint... constraints)
+ * <pre>builder.withConstraints(QueryConstraint... constraints)
  *    .withOperators(builder.operator( ... ), builder.operator( ... ))
  *    .withTerm(builder.term( ... )) 
  *    .withConfiguration(builder.configure()
  *       .returnFacets(true) 
  *       .returnResults(false));
+ * </pre>
  */
 public class QueryOptionsBuilder {
 
@@ -130,7 +133,8 @@ public class QueryOptionsBuilder {
 	 *            by the end user.
 	 * @param source
 	 *            Source of data for the constraint.
-	 * @return A QueryConstraint object for use in building QueryOptions
+	 * @return A QueryConstraint object for use in 
+     * building {@link com.marklogic.client.admin.config.QueryOptions}
 	 *         configurations
 	 */
 	public QueryConstraint constraint(String name, ConstraintSource source) {
@@ -152,7 +156,7 @@ public class QueryOptionsBuilder {
 	 *            index.
 	 * @param valuesOptions
 	 *            A list of string options to values calls.
-	 * @return A QueryValues object for use in valuesAndTuples builder method.
+	 * @return A QueryValues object for use in values() or tuples() builder method.
 	 */
 	public QueryValues values(String name, TupleSource source,
 			String... valuesOptions) {
@@ -176,7 +180,7 @@ public class QueryOptionsBuilder {
 	 *            user-defined function (UDF).
 	 * @param valuesOptions
 	 *            A list of string options to values calls.
-	 * @return A QueryValues object for use in valuesAndTuples builder method.
+	 * @return A QueryValues object for use in values() or tuples() builder method.
 	 */
 	public QueryValues values(String name, TupleSource source,
 			Aggregate aggregate, String... valuesOptions) {
@@ -201,7 +205,7 @@ public class QueryOptionsBuilder {
 	 *            fields, or geospatial indexes.
 	 * @param valuesOptions
 	 *            A list of string options to values calls.
-	 * @return A QueryTuples object for use in valuesAndTuples builder method.
+	 * @return A QueryTuples object for use in values() or tuples() builder method.
 	 */
 	public QueryTuples tuples(String name, List<TupleSource> sources,
 			String... valuesOptions) {
@@ -224,7 +228,7 @@ public class QueryOptionsBuilder {
 	 *            user-defined function (UDF).
 	 * @param valuesOptions
 	 *            A list of string options to values calls.
-	 * @return A QueryTuples object for use in valuesAndTuples builder method.
+	 * @return A QueryTuples object for use in values() or tuples() builder method.
 	 */
 	public QueryTuples tuples(String name, List<TupleSource> sources,
 			Aggregate aggregate, String... valuesOptions) {
@@ -238,7 +242,7 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Build an operator for use in a QueryOptions configuration.
+	 * Builds an operator for use in a QueryOptions configuration.
 	 * 
 	 * @param name
 	 *            Name of the operator. Used in search strings by end-users.
@@ -318,7 +322,8 @@ public class QueryOptionsBuilder {
 	 * 
 	 * @param ctsQuery
 	 *            A MarkLogic cts:query element, as a string, to be ANDed with
-	 *            the runtime search options.
+	 *            the runtime search options.  The string must be valid XML in the 
+	 *            http://marklogic.com/cts namespace.
 	 * @return A QueryAdditionalQuery object to be used in QueryOptions or
 	 *         QueryState composition.
 	 */
@@ -348,7 +353,7 @@ public class QueryOptionsBuilder {
 	 * 
 	 * @param extractions
 	 *            Zero or more metadata specifictions to include in results
-	 * @return An object to be included in a QueryOptions configuration.
+	 * @return An object to be included in a {@link com.marklogic.client.admin.config.QueryOptions} configuration.
 	 */
 	public QueryExtractMetadata extractMetadata(MetadataExtract... extractions) {
 		QueryExtractMetadata extractMetadata = new QueryExtractMetadata();
@@ -361,7 +366,7 @@ public class QueryOptionsBuilder {
 	/**
 	 * Configures search results to return raw XML documents
 	 * 
-	 * @return A configuration object to be included in QueryOptions with
+	 * @return A configuration object to be included in {@link com.marklogic.client.admin.config.QueryOptions} with
 	 *         withTransformResults
 	 */
 	public QueryTransformResults rawResults() {
@@ -374,7 +379,7 @@ public class QueryOptionsBuilder {
 	 * Configures search results to return no result node. Search results do
 	 * contain document paths and/or identifiers.
 	 * 
-	 * @return A configuration object to be included in QueryOptions with
+	 * @return A configuration object to be included in {@link com.marklogic.client.admin.config.QueryOptions} with
 	 *         withTransformResults
 	 */
 	public QueryTransformResults emptySnippets() {
@@ -389,7 +394,7 @@ public class QueryOptionsBuilder {
 	 * @param preferredElements
 	 *            Zero or more elements from the properties fragment to include.
 	 *            If none are specified, last-modified is used.
-	 * @return A configuration object to be included in QueryOptions with
+	 * @return A configuration object to be included in {@link com.marklogic.client.admin.config.QueryOptions} with
 	 *         withTransformResults
 	 */
 	public QueryTransformResults metadataSnippetTransform(
@@ -417,7 +422,7 @@ public class QueryOptionsBuilder {
 	 * @param preferredElements
 	 *            Zero or more elements that the snippet algorithm looks in
 	 *            first to find matches.
-	 * @return A configuration object to be included in QueryOptions with
+	 * @return A configuration object to be included in {@link com.marklogic.client.admin.config.QueryOptions} with
 	 *         withTransformResults
 	 */
 	public QueryTransformResults snippetTransform(Integer perMatchTokens,
@@ -440,7 +445,7 @@ public class QueryOptionsBuilder {
 	 * 
 	 * @param extension
 	 *            An XQuery extension, build with QueryOptionsBuilder.extension
-	 * @return A configuration object to be included in QueryOptions with
+	 * @return A configuration object to be included in {@link com.marklogic.client.admin.config.QueryOptions} with
 	 *         withTransformResults
 	 */
 	public QueryTransformResults transformResults(XQueryExtension extension) {
@@ -467,7 +472,8 @@ public class QueryOptionsBuilder {
 	 *            together into an overall search expression.
 	 * @param quotation
 	 * @param implicit
-	 * @return A QueryGrammar object for use in composing QueryOptions
+	 * @return A QueryGrammar instance for use in composing 
+     * {@link com.marklogic.client.admin.config.QueryOptions}
 	 */
 	public QueryGrammar grammar(List<QueryStarter> starters,
 			List<QueryJoiner> joiners, String quotation, Element implicit) {
@@ -484,8 +490,8 @@ public class QueryOptionsBuilder {
 	 * 
 	 * @param extension
 	 *            An XQuery module that generates terms (?)
-	 * @return A QueryTerm object to be included in query configurations using
-	 *         QueryOptionsHandle.withTerm
+	 * @return A QueryTerm instance to be included in query configurations using
+	 *         {@link com.marklogic.client.io.QueryOptionsHandle}.withTerm()
 	 */
 	public QueryTerm term(XQueryExtension extension) {
 		QueryTerm term = new QueryTerm();
@@ -539,7 +545,7 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Build a new QueryProperties, which restricts a named constraint to data
+	 * Builds a new QueryProperties, which restricts a named constraint to data
 	 * stored in the properties fragment.
 	 * 
 	 * @return a QueryProperties object for use in building a QueryConstraint
@@ -550,7 +556,7 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Builds a QueryCollection object to use the Collection URIs as source of
+	 * Builds a QueryCollection object to use the Collection URI lexicon as source of
 	 * constraint values. This single-argument assumes that the server's collection
 	 * lexicon is enabled, and that facets will be resolved in searches.
 	 * 
@@ -558,7 +564,7 @@ public class QueryOptionsBuilder {
 	 *            This value will be trimmed from the start of collection URIs
 	 *            to provide more readable facet labels.
 	 * 
-	 * @return A QueryCollection object for use in building QueryOptions
+	 * @return A QueryCollection object for use in building {@link com.marklogic.client.admin.config.QueryOptions}
 	 *         configurations.
 	 */
 	public QueryCollection collection(String prefix) {
@@ -566,7 +572,7 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Builds a QueryCollection object to use the Collection URIs as source of
+	 * Builds a QueryCollection object to use the Collection URI lexicon as source of
 	 * constraint values.
 	 * 
 	 * @param prefix
@@ -595,8 +601,8 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Builds a QueryElementQuery object for use in constraining QueryOptions
-	 * configuration to a particular element.
+	 * Builds a QueryElementQuery object for use in constraining 
+     * searches to a particular element.
 	 * 
 	 * @param qname
 	 *            QName of the element for restricting QueryOptions.
@@ -612,11 +618,11 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Builds a List of TupleSources from 0..N Tuple Sources.
+	 * Builds a List of {@link com.marklogic.client.admin.config.support.TupleSource}s from 0..N Tuple Sources.
 	 * 
 	 * @param tupleSources
 	 *            Zero to N TupleSources
-	 * @return A List containing the tupleSources provided.
+	 * @return A List containing the {@link com.marklogic.client.admin.config.support.TupleSource} provided.
 	 */
 	public List<TupleSource> tupleSources(TupleSource... tupleSources) {
 		return Arrays.asList(tupleSources);
@@ -826,7 +832,7 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Build an element index specification.
+	 * Builds an element index specification.
 	 * 
 	 * @param element
 	 *            QName of an indexed element.
@@ -840,7 +846,7 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Build an element range index specification.
+	 * Builds an element range index specification.
 	 * 
 	 * @param element
 	 *            QName of an indexed element.
@@ -859,7 +865,7 @@ public class QueryOptionsBuilder {
 
 	
 	/**
-	 * Build an element-attribute index specification.
+	 * Builds an element-attribute index specification.
 	 *
 	 * @param element QName of the attribute's parent element.
 	 * @param attribute QName of the indexed attribute.
@@ -873,7 +879,7 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Build an element-attribute range index specification.
+	 * Builds an element-attribute range index specification.
 	 * 
 	 * @param element
 	 *            QName of an indexed element.
@@ -895,7 +901,7 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Build a field index specification.
+	 * Builds a field index specification.
 	 * 
 	 * @param fieldName
 	 *            The name of an indexed field.
@@ -909,7 +915,7 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Build a field range index specification.
+	 * Builds a field range index specification.
 	 * 
 	 * @param fieldName
 	 *            Name of the indexed field
@@ -927,7 +933,7 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Build a JSON index specification.
+	 * Builds a JSON index specification.
 	 * 
 	 * @param jsonKey
 	 *            The name of the indexed JSON key.
@@ -941,7 +947,7 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Build a jsonKey range index specification.
+	 * Builds a jsonKey range index specification.
 	 * 
 	 * @param jsonKey
 	 *            Name of the indexed key
@@ -1072,7 +1078,7 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Build a heatmap specification. Heatmaps are used to visualize the
+	 * Builds a heatmap specification. Heatmaps are used to visualize the
 	 * distribution of geographic data in space. They are defined by their
 	 * bounding box, as well as the number of vertical and horizontal divisions
 	 * within the heatmap.
@@ -1124,7 +1130,7 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Build a new bucket for use in a RangeOption
+	 * Builds a new bucket for use in a {@link com.marklogic.client.admin.config.QueryOptions.QueryRange} configuration
 	 * 
 	 * @param name
 	 *            Name of bucket, for use in query strings.
@@ -1146,7 +1152,7 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Build a new bucket for use in a RangeOption
+	 * Builds a new bucket for use in a {@link com.marklogic.client.admin.config.QueryOptions.QueryRange}
 	 * 
 	 * @param name
 	 *            Name of bucket, for use in query strings.
@@ -1308,7 +1314,8 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Builds a specification to retrieve values from an attribute.
+	 * Builds a specification to retrieve values from an attribute into the 
+	 * extract-metadata section of search results.
 	 * @param elemName QName of the source attribute's parent element.
 	 * @param attrName QName of the attribute.
 	 * @return An object for use in the extractMetadata method
@@ -1323,7 +1330,8 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Builds a specification to retrieve values from a json key.
+	 * Builds a specification to retrieve values from a json key into the 
+	 * extract-metadata section of search results.
 	 * @param keyName Name of the source json key.
 	 * @return An object for use in the extractMetadata method
 	 */
@@ -1375,7 +1383,9 @@ public class QueryOptionsBuilder {
 
 
 	/**
-	 * Builds a list of joiners for use in grammars.
+	 * Builds a list of {@link com.marklogic.client.admin.config.QueryOptions.QueryGrammar.QueryJoiner} 
+     * for use in constructing {@link com.marklogic.client.admin.config.QueryOptions.QueryGrammar}
+     * instances.
 	 * @param joiners Zero or more joiners, created with the joiner methods.
 	 * @return A list of QueryJoiners
 	 */
@@ -1384,9 +1394,13 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Create a joiner with just three arguments, such as this one:
+	 * Builds a QueryJoiner for use in a Search API 
+     * {@link com.marklogic.client.admin.config.QueryOptions.QueryGrammar}.
+	 * This method is for a simple joiner with just three arguments.
+     * <pre>
 	 * &lt;search:joiner strength="50"
 	 * apply="constraint"&gt;:&lt;/search:joiner&gt;
+     * </pre>
 	 * 
 	 * @param joinerText
 	 *            Text of the joiner (here, ":")
@@ -1401,7 +1415,8 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Build a joiner for use in a Search API QueryGrammar
+	 * Builds a QueryJoiner for use in a Search API 
+     * {@link com.marklogic.client.admin.config.QueryOptions.QueryGrammar}
 	 * 
 	 * @param joinerText
 	 *            Text of the joiner.
@@ -1424,7 +1439,8 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Build a joiner for use in a Search API QueryGrammar
+	 * Builds a QueryJoiner for use in a Search API 
+     * {@link com.marklogic.client.admin.config.QueryOptions.QueryGrammar}
 	 * 
 	 * @param joinerText
 	 *            Text of the joiner.
@@ -1444,7 +1460,9 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * A third method for creating joiners. This method includes 'consume' which
+	 * Builds a more complex QueryJoiner for use in a Search API 
+     * {@link com.marklogic.client.admin.config.QueryOptions.QueryGrammar}
+	 * This method includes 'consume' which
 	 * specifies how far to extend the scope of a cts:near-query query.
 	 * 
 	 * @param joinerText
@@ -1479,7 +1497,8 @@ public class QueryOptionsBuilder {
 	}
 
 	/**
-	 * Builds a list of namespace/prefix bindings
+	 * Builds a list of namespace/prefix bindings, as part of a {@link com.marklogic.client.admin.config.QueryOptions.PathIndex}
+     * or {@link com.marklogic.client.admin.config.QueryOptions.QuerySearchableExpression} configuration.
 	 * @param namespaces Zero or more namespace/prefix bindings
 	 * @return An object that encapusulates N namespace/prefix bindings.  Used in path indexes and searchable expression.
 	 */

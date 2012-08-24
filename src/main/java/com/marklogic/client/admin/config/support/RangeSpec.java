@@ -16,7 +16,11 @@
 package com.marklogic.client.admin.config.support;
 
 
-
+/**
+ * Marks classes and defines methods for configuring a
+ * range index description.
+ * Used only in {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.*RangeIndex(...) expressions.
+ */
 public interface RangeSpec extends Typed, IndexSpec {
 	
 	public void setType(String type);

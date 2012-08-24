@@ -15,8 +15,10 @@
  */
 package com.marklogic.client.admin.config.support;
 
-/*
- * Marker for geospatial index.
- * geo-elem-pair|geo-attr|geo-elem
+/**
+ * Marker for geospatial index configurations.
+ * Maps to geo-elem-pair|geo-attr|geo-elem
+ * in the Search API options schema.
+ * Not actually in use.
  */
 public interface GeospatialIndex {}

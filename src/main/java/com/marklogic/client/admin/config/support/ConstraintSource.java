@@ -15,8 +15,10 @@
  */
 package com.marklogic.client.admin.config.support;
 
-/*
- * rename the interface referring to constraint-type elements.
- * i.e. range|value|word|geospatial|properties|custom|collection
+/**
+ * Marks the options configurations that can back constraints.  
+ * Used in {@link com.marklogic.client.admin.config.QueryOptionsBuilder} expressions only. Maps to
+ * range|value|word|geospatial|properties|custom|collection
+ * elements in the backing XML.
  */
 public interface ConstraintSource  {}

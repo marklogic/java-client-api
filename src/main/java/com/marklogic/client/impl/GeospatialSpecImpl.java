@@ -21,6 +21,10 @@ import com.marklogic.client.admin.config.support.IndexSpecImpl;
 
 import javax.xml.namespace.QName;
 
+/**
+ * Implements methods for referencing geospatial indexes.
+ * Used in QueryOptionsBuilder expression building.
+ */
 public class GeospatialSpecImpl extends IndexSpecImpl implements GeospatialSpec {
 
 	private GeospatialIndexType geospatialIndexType;

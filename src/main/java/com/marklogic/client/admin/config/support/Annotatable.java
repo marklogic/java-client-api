@@ -20,7 +20,8 @@ import java.util.List;
 import com.marklogic.client.admin.config.QueryOptions.QueryAnnotation;
 
 /**
- * Provides simple interface for adding annotations and retrieving them
+ * Defines methods for adding annotations and retrieving them
+ * from those option nodes that can be annotated.
  */
 public interface Annotatable<T> {
 	T annotate(String xmlAnnotation);

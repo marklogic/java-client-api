@@ -17,8 +17,10 @@ package com.marklogic.client.admin.config.support;
 
 import com.marklogic.client.admin.config.QueryOptions.QueryExtractMetadata;
 
-/*
- * Marker for qname|constraint-value|json-key
+/**
+ * Marks classes that can be included in metadata extractions.
+ * Used only in {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.extractMetadata(...) expressions to build
+ * {@link com.marklogic.client.admin.config.QueryOptions.QueryExtractMetadata} objects.
  */
 public interface MetadataExtract {
 	public void build(QueryExtractMetadata metadata);

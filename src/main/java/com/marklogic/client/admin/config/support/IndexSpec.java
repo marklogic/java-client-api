@@ -20,7 +20,10 @@ import javax.xml.namespace.QName;
 import com.marklogic.client.admin.config.QueryOptions.PathIndex;
 
 /**
- * Supports building query configurations by encapsulating common index methods in one place.
+ * Defines methods for accessing index (or indexable) configuration elements.  
+ * Indexes in MarkLogic may be built on element names, path expressions, fields, and json keys.
+ * This interface simply defines shared methods among those MarkLogic entities that 
+ * back term sources and range sources.
  */
 public interface IndexSpec {
 	

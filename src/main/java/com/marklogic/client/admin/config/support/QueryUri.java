@@ -18,6 +18,10 @@ package com.marklogic.client.admin.config.support;
 import com.marklogic.client.admin.config.QueryOptions.QueryTuples;
 import com.marklogic.client.admin.config.QueryOptions.QueryValues;
 
+/**
+ * A special marker for indicating that the source of
+ * tuples or values is the URI lexicon.
+ */
 public enum QueryUri implements TupleSource {
 
 	YES;

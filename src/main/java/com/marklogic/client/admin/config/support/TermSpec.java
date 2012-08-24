@@ -16,7 +16,13 @@
 package com.marklogic.client.admin.config.support;
 
 
-
+/**
+ * Marks configurations that can back term constraints, 
+ * such as the word lexicon.
+ * Returned by {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.*TermIndex methods for use in
+ * constructing {@link com.marklogic.client.admin.config.QueryOptions.QueryValues} 
+ * and {@link com.marklogic.client.admin.config.QueryOptions.QueryTerm} configurations.
+ */
 public interface TermSpec extends IndexSpec {
 
 	
