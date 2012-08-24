@@ -24,7 +24,7 @@
 				<version>2.8.1</version>
 				<configuration>
 					<bottom><![CDATA[Copyright 2012, <a href="http://www.marklogic.com">MarkLogic, Inc.<a>]]></bottom>
-					<excludePackageNames>*.impl:*.jaxb:*.support:*.test:*.test.*</excludePackageNames>
+					<excludePackageNames>*.impl:*.jaxb:*.test:*.test.*</excludePackageNames>
 					<links>
 						<link>http://docs.oracle.com/javase/6/docs/api/</link>
 					</links>
