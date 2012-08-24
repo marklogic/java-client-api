@@ -28,8 +28,8 @@ import com.marklogic.client.impl.HandleImplementation;
  * Write handles send content to the server and must implement the sendContent() method.
  * A handle can support both read and write operations.
  *
- * @param <R>
- * @param <W>
+ * @param <R>	a read handle or OperationNotSupported in the com.marklogic.client.io.marker package
+ * @param <W>	a write handle or OperationNotSupported in the com.marklogic.client.io.marker package
  */
 public abstract class BaseHandle<R,W>
     extends HandleImplementation<R,W>
@@ -38,6 +38,9 @@ public abstract class BaseHandle<R,W>
 	private String mimetype;
 	private long length = UNKNOWN_LENGTH;
 
+	/**
+	 * Zero-argument constructor.
+	 */
 	public BaseHandle() {
 		super();
 	}

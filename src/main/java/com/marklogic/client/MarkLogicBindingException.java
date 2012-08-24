@@ -18,6 +18,11 @@ package com.marklogic.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A Binding Exception indicates a problem converting between a Java object
+ * and XML representation of the data.  The exception may indicate an internal
+ * error.  Please contact MarkLogic support.
+ */
 @SuppressWarnings("serial")
 public class MarkLogicBindingException extends RuntimeException {
 

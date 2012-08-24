@@ -15,6 +15,11 @@
  */
 package com.marklogic.client;
 
+/**
+ * An Unauthorized User Exception indicates the user is
+ * not recognized by the server.
+ *
+ */
 @SuppressWarnings("serial")
 public class UnauthorizedUserException extends RuntimeException {
 	public UnauthorizedUserException() {
