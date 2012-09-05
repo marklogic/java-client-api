@@ -22,6 +22,6 @@ package com.marklogic.client.io.marker;
 public interface StructureReadHandle
 	extends
 		DocumentMetadataReadHandle, QueryOptionsReadHandle, QueryOptionsListReadHandle,
-		SearchReadHandle, ValuesListReadHandle, ValuesReadHandle
+		SearchReadHandle, ValuesListReadHandle, ValuesReadHandle, TuplesReadHandle
 {
 }

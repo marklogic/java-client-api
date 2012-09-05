@@ -44,7 +44,7 @@ public class Common {
 	final public static String ADMIN_USERNAME = "rest-admin";
 	final public static String ADMIN_PASSWORD = "x";
 	final public static String HOST     = "localhost";
-	final public static int    PORT     = 8011;
+	final public static int    PORT     = 8012;
 
 	static DatabaseClient client;
 	static void connect() {
@@ -63,7 +63,7 @@ public class Common {
 				Common.HOST, Common.PORT, Common.USERNAME, Common.PASSWORD, Authentication.DIGEST
 				);
 	}
-	static DatabaseClient newAdminClient() {
+	public static DatabaseClient newAdminClient() {
 		return DatabaseClientFactory.newClient(
 				Common.HOST, Common.PORT, Common.ADMIN_USERNAME, Common.ADMIN_PASSWORD, Authentication.DIGEST
 				);
@@ -94,7 +94,7 @@ public class Common {
 		return result;
 	}
 	// the testFile*() methods get a file in the src/test/resources directory
-	static String testFileToString(String filename) throws IOException {
+	public static String testFileToString(String filename) throws IOException {
 		return testFileToString(filename, null);
 	}
 	static String testFileToString(String filename, String encoding) throws IOException {
