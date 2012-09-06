@@ -16,40 +16,28 @@
 package com.marklogic.client.example.cookbook;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.TextDocumentManager;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.StringHandle;
 
 /**
  * ClientCreator illustrates how to create a database client.
  */
 public class ClientCreator {
-
 	public static void main(String[] args) throws IOException {
-		Properties props = loadProperties();
-
-		// connection parameters for writer user
-		String         host            = props.getProperty("example.host");
-		int            port            = Integer.parseInt(props.getProperty("example.port"));
-		String         writer_user     = props.getProperty("example.writer_user");
-		String         writer_password = props.getProperty("example.writer_password");
-		Authentication authType        = Authentication.valueOf(
-				props.getProperty("example.authentication_type").toUpperCase()
-				);
-
-		run(host, port, writer_user, writer_password, authType);
+		run(Util.loadProperties());
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType) {
+	public static void run(ExampleProperties props) {
 		System.out.println("example: "+ClientCreator.class.getName());
 
 		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(
+			props.host, props.port, props.writerUser, props.writerPassword,
+			props.authType);
 
 		// make use of the client connection
 		TextDocumentManager docMgr = client.newTextDocumentManager();
@@ -58,7 +46,8 @@ public class ClientCreator {
 		handle.set("A simple text document");
 		docMgr.write(docId, handle);
 
-		System.out.println("Connected to "+host+":"+port+" as "+user);
+		System.out.println(
+			"Connected to "+props.host+":"+props.port+" as "+props.writerUser);
 
 		// clean up the written document
 		docMgr.delete(docId);
@@ -66,19 +55,4 @@ public class ClientCreator {
 		// release the client
 		client.release();
 	}
-
-	// get the configuration for the example
-	public static Properties loadProperties() throws IOException {
-		String propsName = "Example.properties";
-		InputStream propsStream =
-			ClientCreator.class.getClassLoader().getResourceAsStream(propsName);
-		if (propsStream == null)
-			throw new IOException("Could not read example properties");
-
-		Properties props = new Properties();
-		props.load(propsStream);
-
-		return props;
-	}
-
 }

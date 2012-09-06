@@ -18,12 +18,11 @@ package com.marklogic.client.example.cookbook;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.GenericDocumentManager;
+import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.InputStreamHandle;
 
@@ -31,23 +30,11 @@ import com.marklogic.client.io.InputStreamHandle;
  * DocumentFormats illustrates working with documents in multiple or unknown formats.
  */
 public class DocumentFormats {
-
 	public static void main(String[] args) throws IOException {
-		Properties props = loadProperties();
-
-		// connection parameters for writer user
-		String         host            = props.getProperty("example.host");
-		int            port            = Integer.parseInt(props.getProperty("example.port"));
-		String         writer_user     = props.getProperty("example.writer_user");
-		String         writer_password = props.getProperty("example.writer_password");
-		Authentication authType        = Authentication.valueOf(
-				props.getProperty("example.authentication_type").toUpperCase()
-				);
-
-		run(host, port, writer_user, writer_password, authType);
+		run(Util.loadProperties());
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType) throws IOException {
+	public static void run(ExampleProperties props) throws IOException {
 		System.out.println("example: "+DocumentFormats.class.getName());
 
 		// a list of files with the format of each file
@@ -59,7 +46,9 @@ public class DocumentFormats {
 				};
 
 		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(
+				props.host, props.port, props.writerUser, props.writerPassword,
+				props.authType);
 
 		// iterate over the files
 		for (String[] fileEntry: fileEntries) {
@@ -78,8 +67,7 @@ public class DocumentFormats {
 		// create a manager for documents of any format
 		GenericDocumentManager docMgr = client.newDocumentManager();
 
-		InputStream docStream = DocumentFormats.class.getClassLoader().getResourceAsStream(
-				"data"+File.separator+filename);
+		InputStream docStream = Util.openStream("data"+File.separator+filename);
 		if (docStream == null)
 			throw new IOException("Could not read document example");
 
@@ -110,19 +98,4 @@ public class DocumentFormats {
 		System.out.println("Wrote, read, and deleted /example/"+filename+
 				" content with "+document.length+" bytes in the "+format+" format");
 	}
-
-	// get the configuration for the example
-	public static Properties loadProperties() throws IOException {
-		String propsName = "Example.properties";
-		InputStream propsStream =
-			DocumentFormats.class.getClassLoader().getResourceAsStream(propsName);
-		if (propsStream == null)
-			throw new IOException("Could not read example properties");
-
-		Properties props = new Properties();
-		props.load(propsStream);
-
-		return props;
-	}
-
 }

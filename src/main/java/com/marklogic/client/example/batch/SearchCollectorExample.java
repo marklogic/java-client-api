@@ -18,7 +18,6 @@ package com.marklogic.client.example.batch;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
 
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
@@ -35,7 +34,8 @@ import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.batch.SearchCollector.CollectorResults;
-import com.marklogic.client.example.cookbook.StringSearch;
+import com.marklogic.client.example.cookbook.Util;
+import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
@@ -51,32 +51,22 @@ public class SearchCollectorExample {
 	static final private String[] filenames = {"curbappeal.xml", "flipper.xml", "justintime.xml"};
 
 	public static void main(String[] args) throws IOException, ParserConfigurationException {
-		Properties props = loadProperties();
-
-		// connection parameters for writer and admin users
-		String         host            = props.getProperty("example.host");
-		int            port            = Integer.parseInt(props.getProperty("example.port"));
-		String         writer_user     = props.getProperty("example.writer_user");
-		String         writer_password = props.getProperty("example.writer_password");
-		String         admin_user      = props.getProperty("example.admin_user");
-		String         admin_password  = props.getProperty("example.admin_password");
-		Authentication authType        = Authentication.valueOf(
-				props.getProperty("example.authentication_type").toUpperCase()
-				);
-
-		run(host, port, admin_user, admin_password, writer_user, writer_password, authType);
+		run(Util.loadProperties());
 	}
 
 	// install and then use the resource extension
-	public static void run(String host, int port, String admin_user, String admin_password, String writer_user, String writer_password, Authentication authType)
+	public static void run(ExampleProperties props)
 	throws IOException, ParserConfigurationException {
 		System.out.println("example: "+SearchCollectorExample.class.getName());
 
-		configureExample(host, port, admin_user, admin_password, authType);
+		configureExample(props.host, props.port,
+				props.adminUser, props.adminPassword, props.authType);
 
-		useResource(host, port, writer_user, writer_password, authType);
+		useResource(props.host, props.port,
+				props.writerUser, props.writerPassword, props.authType);
 
-		tearDownExample(host, port, admin_user, admin_password, authType);
+		tearDownExample(props.host, props.port,
+				props.adminUser, props.adminPassword, props.authType);
 	}
 
 	// set up the query options for the collecting search
@@ -96,7 +86,8 @@ public class SearchCollectorExample {
 	}
 
 	// install the resource extension on the server
-	public static void installResourceExtension(DatabaseClient client) {
+	public static void installResourceExtension(DatabaseClient client)
+	throws IOException {
 		// create a manager for resource extensions
 		ResourceExtensionsManager resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
 
@@ -108,7 +99,7 @@ public class SearchCollectorExample {
 		metadata.setVersion("0.1");
 
 		// acquire the resource extension source code
-		InputStream sourceStream = SearchCollectorExample.class.getClassLoader().getResourceAsStream(
+		InputStream sourceStream = Util.openStream(
 			"scripts"+File.separator+SearchCollector.NAME+".xqy");
 		if (sourceStream == null)
 			throw new RuntimeException("Could not read example resource extension");
@@ -186,7 +177,7 @@ public class SearchCollectorExample {
 		InputStreamHandle contentHandle = new InputStreamHandle();
 
 		for (String filename: filenames) {
-			InputStream docStream = StringSearch.class.getClassLoader().getResourceAsStream(
+			InputStream docStream =  Util.openStream(
 					"data"+File.separator+filename);
 			if (docStream == null)
 				throw new IOException("Could not read document example");
@@ -249,19 +240,5 @@ public class SearchCollectorExample {
 		resourceMgr.deleteServices(SearchCollector.NAME);
 
 		client.release();
-	}
-
-	// get the configuration for the example
-	public static Properties loadProperties() throws IOException {
-		String propsName = "Example.properties";
-		InputStream propsStream =
-			SearchCollectorExample.class.getClassLoader().getResourceAsStream(propsName);
-		if (propsStream == null)
-			throw new RuntimeException("Could not read example properties");
-
-		Properties props = new Properties();
-		props.load(propsStream);
-
-		return props;
 	}
 }

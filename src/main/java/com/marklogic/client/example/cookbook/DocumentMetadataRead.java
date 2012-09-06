@@ -18,48 +18,37 @@ package com.marklogic.client.example.cookbook;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
 
 import org.w3c.dom.Document;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 
 /**
  * DocumentMetadataReader illustrates how to read the metadata and content of a database document
  * in a single request.
  */
 public class DocumentMetadataRead {
-
 	public static void main(String[] args) throws IOException {
-		Properties props = loadProperties();
-
-		// connection parameters for writer user
-		String         host            = props.getProperty("example.host");
-		int            port            = Integer.parseInt(props.getProperty("example.port"));
-		String         writer_user     = props.getProperty("example.writer_user");
-		String         writer_password = props.getProperty("example.writer_password");
-		Authentication authType        = Authentication.valueOf(
-				props.getProperty("example.authentication_type").toUpperCase()
-				);
-
-		run(host, port, writer_user, writer_password, authType);
+		run(Util.loadProperties());
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType) throws IOException {
+	public static void run(ExampleProperties props) throws IOException {
 		System.out.println("example: "+DocumentMetadataRead.class.getName());
 
 		String filename = "flipper.xml";
 
 		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(
+				props.host, props.port, props.writerUser, props.writerPassword,
+				props.authType);
 
 		// create a manager for XML documents
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -97,8 +86,7 @@ public class DocumentMetadataRead {
 
 	// set up by writing document metadata and content for the example to read
 	public static void setUpExample(XMLDocumentManager docMgr, String docId, String filename) throws IOException {
-		InputStream docStream = DocumentMetadataRead.class.getClassLoader().getResourceAsStream(
-				"data"+File.separator+filename);
+		InputStream docStream = Util.openStream("data"+File.separator+filename);
 		if (docStream == null)
 			throw new IOException("Could not read document example");
 
@@ -118,19 +106,4 @@ public class DocumentMetadataRead {
 	public static void tearDownExample(XMLDocumentManager docMgr, String docId) {
 		docMgr.delete(docId);
 	}
-
-	// get the configuration for the example
-	public static Properties loadProperties() throws IOException {
-		String propsName = "Example.properties";
-		InputStream propsStream =
-			DocumentMetadataRead.class.getClassLoader().getResourceAsStream(propsName);
-		if (propsStream == null)
-			throw new IOException("Could not read example properties");
-
-		Properties props = new Properties();
-		props.load(propsStream);
-
-		return props;
-	}
-
 }

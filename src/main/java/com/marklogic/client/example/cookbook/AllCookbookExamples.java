@@ -16,12 +16,10 @@
 package com.marklogic.client.example.cookbook;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 import javax.xml.bind.JAXBException;
 
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 
 /**
  * AllCookbookExamples executes all of the recipe examples in the cookbook.
@@ -30,61 +28,29 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
  */
 public class AllCookbookExamples {
 	public static void main(String[] args) throws IOException, JAXBException {
-		Properties props = loadProperties();
-
-		// connection parameters for writer and admin users
-		String         host            = props.getProperty("example.host");
-		int            port            = Integer.parseInt(props.getProperty("example.port"));
-		String         writer_user     = props.getProperty("example.writer_user");
-		String         writer_password = props.getProperty("example.writer_password");
-		String         admin_user      = props.getProperty("example.admin_user");
-		String         admin_password  = props.getProperty("example.admin_password");
-		Authentication authType        = Authentication.valueOf(
-				props.getProperty("example.authentication_type").toUpperCase()
-				);
+		ExampleProperties props = Util.loadProperties();
 
 		// execute the examples
-		ClientCreator.run(         host, port, writer_user, writer_password, authType );
-		DocumentWrite.run(         host, port, writer_user, writer_password, authType );
-		DocumentRead.run(          host, port, writer_user, writer_password, authType );
-		DocumentMetadataWrite.run( host, port, writer_user, writer_password, authType );
-		DocumentMetadataRead.run(  host, port, writer_user, writer_password, authType );
-		DocumentDelete.run(        host, port, writer_user, writer_password, authType );
-		DocumentFormats.run(       host, port, writer_user, writer_password, authType );
-		DocumentOutputStream.run(  host, port, writer_user, writer_password, authType );
-		JAXBDocument.run(          host, port, writer_user, writer_password, authType );
-		KeyValueSearch.run(        host, port, writer_user, writer_password, authType );
-		QueryOptions.run(          host, port, admin_user,  admin_password,  authType );
- 		StringSearch.run(
-				host, port, admin_user, admin_password, writer_user, writer_password, authType);
- 		StructuredSearch.run(
-				host, port, admin_user, admin_password, writer_user, writer_password, authType);
-		MultiStatementTransaction.run(
-				host, port, writer_user, writer_password, authType);
- 		DocumentReadTransform.run(
-				host, port, admin_user, admin_password, writer_user, writer_password, authType);
- 		DocumentWriteTransform.run(
-				host, port, admin_user, admin_password, writer_user, writer_password, authType);
- 		OptimisticLocking.run(
-				host, port, admin_user, admin_password, writer_user, writer_password, authType);
- 		ResourceExtension.run(
-				host, port, admin_user, admin_password, writer_user, writer_password, authType);
+		ClientCreator.run(             props );
+		DocumentWrite.run(             props );
+		DocumentRead.run(              props );
+		DocumentMetadataWrite.run(     props );
+		DocumentMetadataRead.run(      props );
+		DocumentDelete.run(            props );
+		DocumentFormats.run(           props );
+		DocumentOutputStream.run(      props );
+		JAXBDocument.run(              props );
+		KeyValueSearch.run(            props );
+		QueryOptions.run(              props );
+ 		StringSearch.run(              props );
+ 		StructuredSearch.run(          props );
+		MultiStatementTransaction.run( props );
+ 		DocumentReadTransform.run(     props );
+ 		DocumentWriteTransform.run(    props );
+ 		OptimisticLocking.run(         props );
+ 		ResourceExtension.run(         props );
 		// SSLClientCreator is not included in this list because it requires a change
 		//     to the REST server that invalidates all of the other examples.  See
 		//     the comments in SSLClientCreator.
-	}
-
-	// get the configuration for the examples
-	public static Properties loadProperties() throws IOException {
-		String propsName = "Example.properties";
-		InputStream propsStream =
-			AllCookbookExamples.class.getClassLoader().getResourceAsStream(propsName);
-		if (propsStream == null)
-			throw new IOException("Could not read example properties");
-
-		Properties props = new Properties();
-		props.load(propsStream);
-
-		return props;
 	}
 }

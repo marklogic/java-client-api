@@ -16,47 +16,34 @@
 package com.marklogic.client.example.cookbook;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
-import java.util.Properties;
 
 import javax.xml.namespace.QName;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.config.QueryOptions.QueryConstraint;
 import com.marklogic.client.admin.config.QueryOptionsBuilder;
+import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.QueryOptionsHandle;
 
 /**
  * QueryOptions illustrates writing, reading, and deleting query options.
  */
 public class QueryOptions {
-
 	public static void main(String[] args) throws IOException {
-		Properties props = loadProperties();
-
-		// connection parameters for admin user
-		String         host           = props.getProperty("example.host");
-		int            port           = Integer.parseInt(props.getProperty("example.port"));
-		String         admin_user     = props.getProperty("example.admin_user");
-		String         admin_password = props.getProperty("example.admin_password");
-		Authentication authType       = Authentication.valueOf(
-				props.getProperty("example.authentication_type").toUpperCase()
-				);
-
-		run(host, port, admin_user, admin_password, authType);
+		run(Util.loadProperties());
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType) {
+	public static void run(ExampleProperties props) throws IOException {
 		System.out.println("example: "+QueryOptions.class.getName());
 
 		String optionsName = "products";
 
 		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(props.host, props.port,
+				props.adminUser, props.adminPassword, props.authType);
 
 		// create a manager for writing, reading, and deleting query options
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
@@ -92,19 +79,4 @@ public class QueryOptions {
 		// release the client
 		client.release();
 	}
-
-	// get the configuration for the example
-	public static Properties loadProperties() throws IOException {
-		String propsName = "Example.properties";
-		InputStream propsStream =
-			QueryOptions.class.getClassLoader().getResourceAsStream(propsName);
-		if (propsStream == null)
-			throw new IOException("Could not read example properties");
-
-		Properties props = new Properties();
-		props.load(propsStream);
-
-		return props;
-	}
-
 }

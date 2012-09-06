@@ -18,24 +18,24 @@ package com.marklogic.client.example.cookbook;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
 
 import javax.xml.namespace.QName;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.MatchLocation;
-import com.marklogic.client.query.MatchSnippet;
 import com.marklogic.client.admin.config.QueryOptionsBuilder;
-import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.query.MatchDocumentSummary;
+import com.marklogic.client.query.MatchLocation;
+import com.marklogic.client.query.MatchSnippet;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 
 /**
  * StringSearch illustrates searching for documents and iterating over results
@@ -47,29 +47,20 @@ public class StringSearch {
 	static final private String[] filenames = {"curbappeal.xml", "flipper.xml", "justintime.xml"};
 
 	public static void main(String[] args) throws IOException {
-		Properties props = loadProperties();
-
-		// connection parameters for writer and admin users
-		String         host            = props.getProperty("example.host");
-		int            port            = Integer.parseInt(props.getProperty("example.port"));
-		String         writer_user     = props.getProperty("example.writer_user");
-		String         writer_password = props.getProperty("example.writer_password");
-		String         admin_user      = props.getProperty("example.admin_user");
-		String         admin_password  = props.getProperty("example.admin_password");
-		Authentication authType        = Authentication.valueOf(
-				props.getProperty("example.authentication_type").toUpperCase()
-				);
-
-		run(host, port, admin_user, admin_password, writer_user, writer_password, authType);
+		run(Util.loadProperties());
 	}
 
-	public static void run(String host, int port, String admin_user, String admin_password, String writer_user, String writer_password, Authentication authType) throws IOException {
+	public static void run(ExampleProperties props) throws IOException {
 		System.out.println("example: "+StringSearch.class.getName());
 
-		configure(      host, port, admin_user,  admin_password,  authType );
-		search(         host, port, writer_user, writer_password, authType );
+		configure(props.host, props.port,
+				props.adminUser, props.adminPassword, props.authType);
 
-		tearDownExample(host, port, admin_user,  admin_password,  authType );
+		search(props.host, props.port,
+				props.writerUser, props.writerPassword, props.authType);
+
+		tearDownExample(props.host, props.port,
+				props.adminUser, props.adminPassword, props.authType);
 	}
 
 	public static void configure(String host, int port, String user, String password, Authentication authType) {
@@ -153,8 +144,7 @@ public class StringSearch {
 		InputStreamHandle contentHandle = new InputStreamHandle();
 
 		for (String filename: filenames) {
-			InputStream docStream = StringSearch.class.getClassLoader().getResourceAsStream(
-					"data"+File.separator+filename);
+			InputStream docStream = Util.openStream("data"+File.separator+filename);
 			if (docStream == null)
 				throw new IOException("Could not read document example");
 
@@ -181,19 +171,4 @@ public class StringSearch {
 
 		client.release();
 	}
-
-	// get the configuration for the example
-	public static Properties loadProperties() throws IOException {
-		String propsName = "Example.properties";
-		InputStream propsStream =
-			StringSearch.class.getClassLoader().getResourceAsStream(propsName);
-		if (propsStream == null)
-			throw new IOException("Could not read example properties");
-
-		Properties props = new Properties();
-		props.load(propsStream);
-
-		return props;
-	}
-
 }
