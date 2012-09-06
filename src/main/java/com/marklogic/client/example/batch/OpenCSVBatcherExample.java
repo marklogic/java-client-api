@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -31,6 +30,8 @@ import com.marklogic.client.admin.MethodType;
 import com.marklogic.client.admin.ResourceExtensionsManager;
 import com.marklogic.client.admin.ResourceExtensionsManager.MethodParameters;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.example.cookbook.Util;
+import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
 
@@ -41,36 +42,27 @@ import com.marklogic.client.io.StringHandle;
  */
 public class OpenCSVBatcherExample {
 	public static void main(String[] args) throws IOException, ParserConfigurationException {
-		Properties props = loadProperties();
-
-		// connection parameters for writer and admin users
-		String         host            = props.getProperty("example.host");
-		int            port            = Integer.parseInt(props.getProperty("example.port"));
-		String         writer_user     = props.getProperty("example.writer_user");
-		String         writer_password = props.getProperty("example.writer_password");
-		String         admin_user      = props.getProperty("example.admin_user");
-		String         admin_password  = props.getProperty("example.admin_password");
-		Authentication authType        = Authentication.valueOf(
-				props.getProperty("example.authentication_type").toUpperCase()
-				);
-
-		run(host, port, admin_user, admin_password, writer_user, writer_password, authType);
+		run(Util.loadProperties());
 	}
 
 	// install and then use the resource extension
-	public static void run(String host, int port, String admin_user, String admin_password, String writer_user, String writer_password, Authentication authType)
+	public static void run(ExampleProperties props)
 	throws IOException, ParserConfigurationException {
 		System.out.println("example: "+OpenCSVBatcherExample.class.getName());
 
-		installResourceExtension(host, port, admin_user,  admin_password,  authType);
+		installResourceExtension(props.host, props.port,
+				props.adminUser, props.adminPassword, props.authType);
 
-		useResource(host, port, writer_user, writer_password, authType);
+		useResource(props.host, props.port,
+				props.writerUser, props.writerPassword, props.authType);
 
-		tearDownExample(host, port, admin_user, admin_password, authType);
+		tearDownExample(props.host, props.port,
+				props.adminUser, props.adminPassword, props.authType);
 	}
 
 	// install the resource extension on the server
-	public static void installResourceExtension(String host, int port, String user, String password, Authentication authType) {
+	public static void installResourceExtension(String host, int port, String user, String password, Authentication authType)
+	throws IOException {
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
@@ -85,7 +77,7 @@ public class OpenCSVBatcherExample {
 		metadata.setVersion("0.1");
 
 		// acquire the resource extension source code
-		InputStream sourceStream = OpenCSVBatcherExample.class.getClassLoader().getResourceAsStream(
+		InputStream sourceStream = Util.openStream(
 			"scripts"+File.separator+DocumentSplitter.NAME+".xqy");
 		if (sourceStream == null)
 			throw new RuntimeException("Could not read example resource extension");
@@ -115,8 +107,7 @@ public class OpenCSVBatcherExample {
 		splitter.setHasHeader(true);
 
 		// acquire the CSV input
-		InputStream listingStream =
-			OpenCSVBatcherExample.class.getClassLoader().getResourceAsStream(
+		InputStream listingStream = Util.openStream(
 				"data"+File.separator+"listings.csv");
 		if (listingStream == null)
 			throw new RuntimeException("Could not read example listings");
@@ -154,19 +145,5 @@ public class OpenCSVBatcherExample {
 		resourceMgr.deleteServices(DocumentSplitter.NAME);
 
 		client.release();
-	}
-
-	// get the configuration for the example
-	public static Properties loadProperties() throws IOException {
-		String propsName = "Example.properties";
-		InputStream propsStream =
-			OpenCSVBatcherExample.class.getClassLoader().getResourceAsStream(propsName);
-		if (propsStream == null)
-			throw new RuntimeException("Could not read example properties");
-
-		Properties props = new Properties();
-		props.load(propsStream);
-
-		return props;
 	}
 }

@@ -16,8 +16,6 @@
 package com.marklogic.client.example.cookbook;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -25,8 +23,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.JAXBHandle;
 import com.marklogic.client.io.StringHandle;
 
@@ -34,19 +32,8 @@ import com.marklogic.client.io.StringHandle;
  * JAXBDocument illustrates how to write and read a JAXB object structure as a database document.
  */
 public class JAXBDocument {
-	public static void main(String[] args) throws IOException, JAXBException {
-		Properties props = loadProperties();
-
-		// connection parameters for writer user
-		String         host            = props.getProperty("example.host");
-		int            port            = Integer.parseInt(props.getProperty("example.port"));
-		String         writer_user     = props.getProperty("example.writer_user");
-		String         writer_password = props.getProperty("example.writer_password");
-		Authentication authType        = Authentication.valueOf(
-				props.getProperty("example.authentication_type").toUpperCase()
-				);
-
-		run(host, port, writer_user, writer_password, authType);
+	public static void main(String[] args) throws JAXBException, IOException {
+		run(Util.loadProperties());
 	}
 
 	/**
@@ -80,12 +67,13 @@ public class JAXBDocument {
 		}
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType)
-	throws JAXBException {
+	public static void run(ExampleProperties props) throws JAXBException {
 		System.out.println("example: "+JAXBDocument.class.getName());
 
 		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(
+				props.host, props.port, props.writerUser, props.writerPassword,
+				props.authType);
 
 		JAXBContext context = JAXBContext.newInstance(Product.class);
 
@@ -129,19 +117,5 @@ public class JAXBDocument {
 
 		// release the client
 		client.release();
-	}
-
-	// get the configuration for the example
-	public static Properties loadProperties() throws IOException {
-		String propsName = "Example.properties";
-		InputStream propsStream =
-			JAXBDocument.class.getClassLoader().getResourceAsStream(propsName);
-		if (propsStream == null)
-			throw new IOException("Could not read example properties");
-
-		Properties props = new Properties();
-		props.load(propsStream);
-
-		return props;
 	}
 }

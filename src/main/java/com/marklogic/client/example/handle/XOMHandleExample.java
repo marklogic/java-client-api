@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Properties;
 
 import nu.xom.Document;
 import nu.xom.ParsingException;
@@ -27,46 +26,36 @@ import nu.xom.ValidityException;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.example.cookbook.Util;
+import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 
 /**
  * XOMHandleExample illustrates writing and reading content as a XOM structure
  * using the XOMHandle example of a content handle extension.
  */
 public class XOMHandleExample {
-
 	public static void main(String[] args)
 	throws IOException, ValidityException, ParsingException {
-		Properties props = loadProperties();
-
-		// connection parameters for writer user
-		String         host            = props.getProperty("example.host");
-		int            port            = Integer.parseInt(props.getProperty("example.port"));
-		String         writer_user     = props.getProperty("example.writer_user");
-		String         writer_password = props.getProperty("example.writer_password");
-		Authentication authType        = Authentication.valueOf(
-				props.getProperty("example.authentication_type").toUpperCase()
-				);
-
-		run(host, port, writer_user, writer_password, authType);
+		run(Util.loadProperties());
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType)
+	public static void run(ExampleProperties props)
 	throws ValidityException, ParsingException, IOException {
 		System.out.println("example: "+XOMHandleExample.class.getName());
 
 		String filename = "flipper.xml";
 
 		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(
+				props.host, props.port, props.writerUser, props.writerPassword,
+				props.authType);
 
 		// create a manager for documents of any format
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
 		// read the example file
-		InputStream docStream = XOMHandleExample.class.getClassLoader().getResourceAsStream(
-				"data"+File.separator+filename);
+		InputStream docStream = Util.openStream("data"+File.separator+filename);
 		if (docStream == null)
 			throw new IOException("Could not read document example");
 
@@ -105,18 +94,5 @@ public class XOMHandleExample {
 
 		// release the client
 		client.release();
-	}
-
-	// get the configuration for the example
-	public static Properties loadProperties() throws IOException {
-		String propsName = "Example.properties";
-		InputStream propsStream = XOMHandleExample.class.getClassLoader().getResourceAsStream(propsName);
-		if (propsStream == null)
-			throw new IOException("Could not read example properties");
-
-		Properties props = new Properties();
-		props.load(propsStream);
-
-		return props;
 	}
 }

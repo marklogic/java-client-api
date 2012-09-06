@@ -18,21 +18,20 @@ package com.marklogic.client.example.cookbook;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
 
 import javax.xml.namespace.QName;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.example.cookbook.Util.ExampleProperties;
+import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.query.KeyValueQueryDefinition;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.MatchSnippet;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.query.QueryManager;
 
 /**
  * KeyValueSearch illustrates searching for documents and iterating over results
@@ -42,25 +41,16 @@ public class KeyValueSearch {
 	static final private String[] filenames = {"curbappeal.xml", "flipper.xml", "justintime.xml"};
 
 	public static void main(String[] args) throws IOException {
-		Properties props = loadProperties();
-
-		// connection parameters for writer user
-		String         host            = props.getProperty("example.host");
-		int            port            = Integer.parseInt(props.getProperty("example.port"));
-		String         writer_user     = props.getProperty("example.writer_user");
-		String         writer_password = props.getProperty("example.writer_password");
-		Authentication authType        = Authentication.valueOf(
-				props.getProperty("example.authentication_type").toUpperCase()
-				);
-
-		run(host, port, writer_user, writer_password, authType);
+		run(Util.loadProperties());
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType) throws IOException {
+	public static void run(ExampleProperties props) throws IOException {
 		System.out.println("example: "+KeyValueSearch.class.getName());
 
 		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(
+				props.host, props.port, props.writerUser, props.writerPassword,
+				props.authType);
 
 		setUpExample(client);
 
@@ -68,7 +58,7 @@ public class KeyValueSearch {
 		QueryManager queryMgr = client.newQueryManager();
 
 		// create a search definition
-		KeyValueQueryDefinition querydef = queryMgr.newKeyValueDefinition(null);
+		KeyValueQueryDefinition querydef = queryMgr.newKeyValueDefinition();
 		querydef.put(queryMgr.newElementLocator(new QName("industry")), "Real Estate");
 
 		// create a handle for the search results
@@ -117,8 +107,7 @@ public class KeyValueSearch {
 		InputStreamHandle contentHandle = new InputStreamHandle();
 
 		for (String filename: filenames) {
-			InputStream docStream = KeyValueSearch.class.getClassLoader().getResourceAsStream(
-					"data"+File.separator+filename);
+			InputStream docStream = Util.openStream("data"+File.separator+filename);
 			if (docStream == null)
 				throw new IOException("Could not read document example");
 
@@ -136,19 +125,4 @@ public class KeyValueSearch {
 			docMgr.delete("/example/"+filename);
 		}
 	}
-
-	// get the configuration for the example
-	public static Properties loadProperties() throws IOException {
-		String propsName = "Example.properties";
-		InputStream propsStream =
-			KeyValueSearch.class.getClassLoader().getResourceAsStream(propsName);
-		if (propsStream == null)
-			throw new IOException("Could not read example properties");
-
-		Properties props = new Properties();
-		props.load(propsStream);
-
-		return props;
-	}
-
 }

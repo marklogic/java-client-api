@@ -18,13 +18,12 @@ package com.marklogic.client.example.handle;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.example.cookbook.DocumentRead;
+import com.marklogic.client.example.cookbook.Util;
+import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.InputStreamHandle;
 
 /**
@@ -33,32 +32,21 @@ import com.marklogic.client.io.InputStreamHandle;
  */
 public class URIHandleExample {
 	public static void main(String[] args) throws IOException {
-		Properties props = loadProperties();
-
-		// connection parameters for writer user
-		String         host            = props.getProperty("example.host");
-		int            port            = Integer.parseInt(props.getProperty("example.port"));
-		String         writer_user     = props.getProperty("example.writer_user");
-		String         writer_password = props.getProperty("example.writer_password");
-		Authentication authType        = Authentication.valueOf(
-				props.getProperty("example.authentication_type").toUpperCase()
-				);
-
-		run(host, port, writer_user, writer_password, authType);
+		run(Util.loadProperties());
 	}
 
-	public static void run(String host, int port, String user, String password, Authentication authType) throws IOException {
+	public static void run(ExampleProperties props) throws IOException {
 		System.out.println("example: "+URIHandleExample.class.getName());
 
 		String filename = "flipper.xml";
 
 		// create the database client
-		DatabaseClient dbClient = DatabaseClientFactory.newClient(
-				host, port, user, password, authType
-				);
+		DatabaseClient client = DatabaseClientFactory.newClient(
+				props.host, props.port, props.writerUser, props.writerPassword,
+				props.authType);
 
 		// create a manager for XML documents
-		XMLDocumentManager docMgr = dbClient.newXMLDocumentManager();
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
 		// create an identifier for the document
 		String docId = "/example/"+filename;
@@ -67,11 +55,13 @@ public class URIHandleExample {
 
 		// create the URI handle for a web service
 		// for convenience, the example uses the database REST server as a web service
-		URIHandle handle = new URIHandle(host, port, user, password, authType);
+		URIHandle handle = new URIHandle(
+				props.host, props.port, props.writerUser, props.writerPassword,
+				props.authType);
 
 		// identify the base URI for all content at the web service
 		// for convenience, the example uses the base URI for the database REST server
-		handle.setBaseUri("http://"+host+":"+port+"/v1/");
+		handle.setBaseUri("http://"+props.host+":"+props.port+"/v1/");
 
 		// for digest authentication, either configure the HTTP client to buffer or
 		// make an initial request that is repeatable; here the repeatable request
@@ -98,13 +88,12 @@ public class URIHandleExample {
 		tearDownExample(docMgr, docId, webserviceId, newId);
 
 		// release the client
-		dbClient.release();
+		client.release();
 	}
 
 	// set up by writing document content for the example to read
 	public static void setUpExample(XMLDocumentManager docMgr, String docId, String filename) throws IOException {
-		InputStream docStream = DocumentRead.class.getClassLoader().getResourceAsStream(
-				"data"+File.separator+filename);
+		InputStream docStream = Util.openStream("data"+File.separator+filename);
 		if (docStream == null)
 			throw new IOException("Could not read document example");
 
@@ -119,18 +108,5 @@ public class URIHandleExample {
 		docMgr.delete(docId);
 		docMgr.delete(webserviceId);
 		docMgr.delete(newId);
-	}
-
-	// get the configuration for the example
-	public static Properties loadProperties() throws IOException {
-		String propsName = "Example.properties";
-		InputStream propsStream = JDOMHandleExample.class.getClassLoader().getResourceAsStream(propsName);
-		if (propsStream == null)
-			throw new IOException("Could not read example properties");
-
-		Properties props = new Properties();
-		props.load(propsStream);
-
-		return props;
 	}
 }

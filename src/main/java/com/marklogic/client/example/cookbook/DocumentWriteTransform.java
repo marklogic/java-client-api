@@ -18,16 +18,16 @@ package com.marklogic.client.example.cookbook;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ExtensionMetadata;
-import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.admin.TransformExtensionsManager;
+import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
 
@@ -40,31 +40,21 @@ public class DocumentWriteTransform {
 	static final private String TRANSFORM_NAME = "html2xhtml";
 
 	public static void main(String[] args) throws IOException {
-		Properties props = loadProperties();
-
-		// connection parameters for writer and admin users
-		String         host            = props.getProperty("example.host");
-		int            port            = Integer.parseInt(props.getProperty("example.port"));
-		String         writer_user     = props.getProperty("example.writer_user");
-		String         writer_password = props.getProperty("example.writer_password");
-		String         admin_user      = props.getProperty("example.admin_user");
-		String         admin_password  = props.getProperty("example.admin_password");
-		Authentication authType        = Authentication.valueOf(
-				props.getProperty("example.authentication_type").toUpperCase()
-				);
-
-		run(host, port, admin_user, admin_password, writer_user, writer_password, authType);
+		run(Util.loadProperties());
 	}
 
 	// install the transform and then write a transformed document 
-	public static void run(String host, int port, String admin_user, String admin_password, String writer_user, String writer_password, Authentication authType) throws IOException {
+	public static void run(ExampleProperties props) throws IOException {
 		System.out.println("example: "+DocumentWriteTransform.class.getName());
 
-		installTransform( host, port, admin_user,  admin_password,  authType );
+		installTransform(props.host, props.port,
+				props.adminUser, props.adminPassword, props.authType);
 
-		writeDocument(    host, port, writer_user, writer_password, authType );
+		writeDocument(props.host, props.port,
+				props.writerUser, props.writerPassword, props.authType);
 
-		tearDownExample(host, port, admin_user, admin_password, authType);
+		tearDownExample(props.host, props.port,
+				props.adminUser, props.adminPassword, props.authType);
 	}
 
 	public static void installTransform(String host, int port, String user, String password, Authentication authType) throws IOException {
@@ -82,8 +72,8 @@ public class DocumentWriteTransform {
 		metadata.setVersion("0.1");
 
 		// acquire the transform source code
-		InputStream transStream = DocumentWriteTransform.class.getClassLoader().getResourceAsStream(
-			"scripts"+File.separator+TRANSFORM_NAME+".xqy");
+		InputStream transStream = Util.openStream(
+				"scripts"+File.separator+TRANSFORM_NAME+".xqy");
 		if (transStream == null)
 			throw new IOException("Could not read example transform");
 
@@ -107,8 +97,7 @@ public class DocumentWriteTransform {
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// acquire the content
-		InputStream docStream = DocumentWriteTransform.class.getClassLoader().getResourceAsStream(
-			"data"+File.separator+filename);
+		InputStream docStream = Util.openStream("data"+File.separator+filename);
 		if (docStream == null)
 			throw new IOException("Could not read document example");
 
@@ -166,19 +155,4 @@ public class DocumentWriteTransform {
 
 		client.release();
 	}
-
-	// get the configuration for the example
-	public static Properties loadProperties() throws IOException {
-		String propsName = "Example.properties";
-		InputStream propsStream =
-			DocumentWriteTransform.class.getClassLoader().getResourceAsStream(propsName);
-		if (propsStream == null)
-			throw new IOException("Could not read example properties");
-
-		Properties props = new Properties();
-		props.load(propsStream);
-
-		return props;
-	}
-
 }

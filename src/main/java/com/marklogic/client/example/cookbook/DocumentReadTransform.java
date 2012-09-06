@@ -18,16 +18,16 @@ package com.marklogic.client.example.cookbook;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ExtensionMetadata;
-import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.admin.TransformExtensionsManager;
+import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
 
@@ -39,36 +39,27 @@ public class DocumentReadTransform {
 	static final private String TRANSFORM_NAME = "xml2html";
 
 	public static void main(String[] args) throws IOException {
-		Properties props = loadProperties();
-
-		// connection parameters for writer and admin users
-		String         host            = props.getProperty("example.host");
-		int            port            = Integer.parseInt(props.getProperty("example.port"));
-		String         writer_user     = props.getProperty("example.writer_user");
-		String         writer_password = props.getProperty("example.writer_password");
-		String         admin_user      = props.getProperty("example.admin_user");
-		String         admin_password  = props.getProperty("example.admin_password");
-		Authentication authType        = Authentication.valueOf(
-				props.getProperty("example.authentication_type").toUpperCase()
-				);
-
-		run(host, port, admin_user, admin_password, writer_user, writer_password, authType);
+		run(Util.loadProperties());
 	}
 
 	// install the transform and then read a transformed document 
-	public static void run(String host, int port, String admin_user, String admin_password, String writer_user, String writer_password, Authentication authType) throws IOException {
+	public static void run(ExampleProperties props) throws IOException {
 		System.out.println("example: "+DocumentReadTransform.class.getName());
 
-		installTransform( host, port, admin_user,  admin_password,  authType );
+		installTransform(props.host, props.port,
+				props.adminUser, props.adminPassword, props.authType);
 
-		readDocument(     host, port, writer_user, writer_password, authType );
+		readDocument(props.host, props.port,
+				props.writerUser, props.writerPassword, props.authType);
 
-		tearDownExample(host, port, admin_user, admin_password, authType);
+		tearDownExample(props.host, props.port,
+				props.adminUser, props.adminPassword, props.authType);
 	}
 
 	public static void installTransform(String host, int port, String user, String password, Authentication authType) throws IOException {
 		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(
+				host, port, user, password, authType);
 
 		// create a manager for transform extensions
 		TransformExtensionsManager transMgr = client.newServerConfigManager().newTransformExtensionsManager();
@@ -81,7 +72,7 @@ public class DocumentReadTransform {
 		metadata.setVersion("0.1");
 
 		// acquire the transform source code
-		InputStream transStream = DocumentReadTransform.class.getClassLoader().getResourceAsStream(
+		InputStream transStream = Util.openStream(
 			"scripts"+File.separator+TRANSFORM_NAME+".xsl");
 		if (transStream == null)
 			throw new IOException("Could not read example transform");
@@ -103,7 +94,8 @@ public class DocumentReadTransform {
 		String filename = "flipper.xml";
 
 		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(
+				host, port, user, password, authType);
 
 		// create an identifier for the document
 		String docId = "/example/"+filename;
@@ -134,8 +126,7 @@ public class DocumentReadTransform {
 
 	// set up by writing document content for the example to read
 	public static void setUpExample(DatabaseClient client, String docId, String filename) throws IOException {
-		InputStream docStream = DocumentReadTransform.class.getClassLoader().getResourceAsStream(
-				"data"+File.separator+filename);
+		InputStream docStream = Util.openStream("data"+File.separator+filename);
 		if (docStream == null)
 			throw new IOException("Could not read document example");
 
@@ -150,7 +141,8 @@ public class DocumentReadTransform {
 	// clean up by deleting the read document and the example transform
 	public static void tearDownExample(
 			String host, int port, String user, String password, Authentication authType) {
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(
+				host, port, user, password, authType);
 
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
@@ -163,19 +155,4 @@ public class DocumentReadTransform {
 
 		client.release();
 	}
-
-	// get the configuration for the example
-	public static Properties loadProperties() throws IOException {
-		String propsName = "Example.properties";
-		InputStream propsStream =
-			DocumentReadTransform.class.getClassLoader().getResourceAsStream(propsName);
-		if (propsStream == null)
-			throw new IOException("Could not read example properties");
-
-		Properties props = new Properties();
-		props.load(propsStream);
-
-		return props;
-	}
-
 }

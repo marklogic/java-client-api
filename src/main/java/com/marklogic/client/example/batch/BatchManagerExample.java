@@ -18,19 +18,20 @@ package com.marklogic.client.example.batch;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.admin.ExtensionMetadata;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.admin.MethodType;
 import com.marklogic.client.admin.ResourceExtensionsManager;
 import com.marklogic.client.admin.ResourceExtensionsManager.MethodParameters;
+import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.example.cookbook.Util;
+import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
 
@@ -40,35 +41,26 @@ import com.marklogic.client.io.StringHandle;
  */
 public class BatchManagerExample {
 	public static void main(String[] args) throws IOException {
-		Properties props = loadProperties();
-
-		// connection parameters for writer and admin users
-		String         host            = props.getProperty("example.host");
-		int            port            = Integer.parseInt(props.getProperty("example.port"));
-		String         writer_user     = props.getProperty("example.writer_user");
-		String         writer_password = props.getProperty("example.writer_password");
-		String         admin_user      = props.getProperty("example.admin_user");
-		String         admin_password  = props.getProperty("example.admin_password");
-		Authentication authType        = Authentication.valueOf(
-				props.getProperty("example.authentication_type").toUpperCase()
-				);
-
-		run(host, port, admin_user, admin_password, writer_user, writer_password, authType);
+		run(Util.loadProperties());
 	}
 
 	// install and then use the resource extension
-	public static void run(String host, int port, String admin_user, String admin_password, String writer_user, String writer_password, Authentication authType) {
+	public static void run(ExampleProperties props) throws IOException {
 		System.out.println("example: "+BatchManagerExample.class.getName());
 
-		installResourceExtension(host, port, admin_user,  admin_password,  authType);
+		installResourceExtension(props.host, props.port,
+				props.adminUser, props.adminPassword, props.authType);
 
-		useResource(host, port, writer_user, writer_password, authType);
+		useResource(props.host, props.port,
+				props.writerUser, props.writerPassword, props.authType);
 
-		tearDownExample(host, port, admin_user, admin_password, authType);
+		tearDownExample(props.host, props.port,
+				props.adminUser, props.adminPassword, props.authType);
 	}
 
 	// install the resource extension on the server
-	public static void installResourceExtension(String host, int port, String user, String password, Authentication authType) {
+	public static void installResourceExtension(String host, int port, String user, String password, Authentication authType)
+	throws IOException {
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
@@ -83,7 +75,7 @@ public class BatchManagerExample {
 		metadata.setVersion("0.1");
 
 		// acquire the resource extension source code
-		InputStream sourceStream = BatchManagerExample.class.getClassLoader().getResourceAsStream(
+		InputStream sourceStream = Util.openStream(
 			"scripts"+File.separator+BatchManager.NAME+".xqy");
 		if (sourceStream == null)
 			throw new RuntimeException("Could not read example resource extension");
@@ -196,19 +188,5 @@ public class BatchManagerExample {
 		resourceMgr.deleteServices(BatchManager.NAME);
 
 		client.release();
-	}
-
-	// get the configuration for the example
-	public static Properties loadProperties() throws IOException {
-		String propsName = "Example.properties";
-		InputStream propsStream =
-			BatchManagerExample.class.getClassLoader().getResourceAsStream(propsName);
-		if (propsStream == null)
-			throw new RuntimeException("Could not read example properties");
-
-		Properties props = new Properties();
-		props.load(propsStream);
-
-		return props;
 	}
 }

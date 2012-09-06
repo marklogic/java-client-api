@@ -18,17 +18,17 @@ package com.marklogic.client.example.cookbook;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
 
 import org.w3c.dom.Document;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.ServerConfigurationManager.Policy;
+import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputStreamHandle;
 
@@ -38,31 +38,21 @@ import com.marklogic.client.io.InputStreamHandle;
  */
 public class OptimisticLocking {
 	public static void main(String[] args) throws IOException {
-		Properties props = loadProperties();
-
-		// connection parameters for writer and admin users
-		String         host            = props.getProperty("example.host");
-		int            port            = Integer.parseInt(props.getProperty("example.port"));
-		String         writer_user     = props.getProperty("example.writer_user");
-		String         writer_password = props.getProperty("example.writer_password");
-		String         admin_user      = props.getProperty("example.admin_user");
-		String         admin_password  = props.getProperty("example.admin_password");
-		Authentication authType        = Authentication.valueOf(
-				props.getProperty("example.authentication_type").toUpperCase()
-				);
-
-		run(host, port, admin_user, admin_password, writer_user, writer_password, authType);
+		run(Util.loadProperties());
 	}
 
 	// install the transform and then write a transformed document 
-	public static void run(String host, int port, String admin_user, String admin_password, String writer_user, String writer_password, Authentication authType) throws IOException {
+	public static void run(ExampleProperties props) throws IOException {
 		System.out.println("example: "+OptimisticLocking.class.getName());
 
-		requireOptimisticLocking( host, port, admin_user,  admin_password,  authType );
+		requireOptimisticLocking(props.host, props.port,
+				props.adminUser, props.adminPassword, props.authType);
 
-		modifyDatabase(           host, port, writer_user, writer_password, authType );
+		modifyDatabase(props.host, props.port,
+				props.writerUser, props.writerPassword, props.authType);
 
-		tearDownExample(          host, port, admin_user,  admin_password,  authType );
+		tearDownExample(props.host, props.port,
+				props.adminUser, props.adminPassword, props.authType);
 	}
 
 	public static void requireOptimisticLocking(String host, int port, String user, String password, Authentication authType) {
@@ -95,8 +85,7 @@ public class OptimisticLocking {
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		// acquire the content
-		InputStream docStream = OptimisticLocking.class.getClassLoader().getResourceAsStream(
-			"data"+File.separator+filename);
+		InputStream docStream = Util.openStream("data"+File.separator+filename);
 		if (docStream == null)
 			throw new IOException("Could not read document example");
 
@@ -159,19 +148,4 @@ public class OptimisticLocking {
 
 		client.release();
 	}
-
-	// get the configuration for the example
-	public static Properties loadProperties() throws IOException {
-		String propsName = "Example.properties";
-		InputStream propsStream =
-			OptimisticLocking.class.getClassLoader().getResourceAsStream(propsName);
-		if (propsStream == null)
-			throw new IOException("Could not read example properties");
-
-		Properties props = new Properties();
-		props.load(propsStream);
-
-		return props;
-	}
-
 }
