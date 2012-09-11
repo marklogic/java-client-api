@@ -25,6 +25,8 @@ import java.io.InputStream;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.marklogic.client.io.BytesHandle;
+import com.marklogic.client.io.Format;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -41,6 +43,27 @@ import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesMetrics;
 
 public class TuplesHandleTest {
+    private static final String options =
+            "<?xml version='1.0'?>"+
+                    "<options xmlns=\"http://marklogic.com/appservices/search\">"+
+                    "<values name=\"grandchild\">"+
+                    "<range type=\"xs:string\">"+
+                    "<element ns=\"\" name=\"grandchild\"/>"+
+                    "</range>"+
+                    "<values-option>limit=2</values-option>"+
+                    "</values>"+
+                    "<tuples name=\"co\">"+
+                    "<range type=\"xs:double\">"+
+                    "<element ns=\"\" name=\"double\"/>"+
+                    "</range>"+
+                    "<range type=\"xs:int\">"+
+                    "<element ns=\"\" name=\"int\"/>"+
+                    "</range>"+
+                    "</tuples>"+
+                    "<return-metrics>true</return-metrics>"+
+                    "<return-values>true</return-values>"+
+                    "</options>";
+
     @BeforeClass
     public static void beforeClass() {
         Common.connectAdmin();
@@ -53,27 +76,6 @@ public class TuplesHandleTest {
 
     @Test
     public void testAggregates() throws IOException, ParserConfigurationException, SAXException {
-    	String options =
-        	"<?xml version='1.0'?>"+
-        	"<options xmlns=\"http://marklogic.com/appservices/search\">"+
-        	  "<values name=\"grandchild\">"+
-        	     "<range type=\"xs:string\">"+
-        	        "<element ns=\"\" name=\"grandchild\"/>"+
-        	     "</range>"+
-         	     "<values-option>limit=2</values-option>"+
-        	  "</values>"+
-        	  "<tuples name=\"co\">"+
-        	     "<range type=\"xs:double\">"+
-        	        "<element ns=\"\" name=\"double\"/>"+
-        	     "</range>"+
-        	     "<range type=\"xs:int\">"+
-     	            "<element ns=\"\" name=\"int\"/>"+
-     	         "</range>"+
-        	  "</tuples>"+
-        	  "<return-metrics>false</return-metrics>"+
-        	  "<return-values>false</return-values>"+
-        	"</options>";
-
     	QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
     	optionsMgr.writeOptions("valuesoptions2", new StringHandle(options));
 
@@ -91,51 +93,64 @@ public class TuplesHandleTest {
         assertTrue("The covariance is between 0.004 and 0.005",
                 cov > 0.004 && cov < 0.005);
 
-        optionsMgr.deleteOptions("valuesoptions3");
+        Tuple[] tuples = t.getTuples();
+        assertEquals("Nine tuples are expected", 9, tuples.length);
+        assertEquals("The tuples are named 'co'", "co", t.getName());
+
+        ValuesMetrics metrics = t.getMetrics();
+        assertTrue("The values resolution time is >= 0", metrics.getValuesResolutionTime() >= 0);
+        assertTrue("The aggregate resolution time is >= 0", metrics.getAggregateResolutionTime() >= 0);
+
+        optionsMgr.deleteOptions("valuesoptions2");
     }
 
     @Test
     public void testValuesHandle2() throws IOException, ParserConfigurationException, SAXException {
-        File f = new File("src/test/resources/tuples2.xml");
-        FileInputStream is = new FileInputStream(f);
+        QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+        optionsMgr.writeOptions("valuesoptions3", new StringHandle(options));
 
-        MyTuplesHandle t = new MyTuplesHandle();
-        t.parseTestData(is);
+        QueryManager queryMgr = Common.client.newQueryManager();
+
+        ValuesDefinition vdef = queryMgr.newValuesDefinition("co", "valuesoptions3");
+
+        TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
 
         Tuple[] tuples = t.getTuples();
         assertEquals("Nine tuples are expected", 9, tuples.length);
         assertEquals("The tuples are named 'co'", "co", t.getName());
 
         ValuesMetrics metrics = t.getMetrics();
-        assertTrue("The values resolution time is greater than 0", metrics.getValuesResolutionTime() > 0);
-        assertEquals("The aggregate resolution time is -1 (absent)", metrics.getAggregateResolutionTime(), -1);
+        assertTrue("The values resolution time is >= 0", metrics.getValuesResolutionTime() >= 0);
+        // Restore after bug:18747 is fixed
+        // assertEquals("The aggregate resolution time is -1 (absent)", metrics.getAggregateResolutionTime(), -1);
+
+        optionsMgr.deleteOptions("valuesoptions3");
     }
 
     @Test
     public void testValuesHandle() throws IOException, ParserConfigurationException, SAXException {
-        File f = new File("src/test/resources/tuples.xml");
-        FileInputStream is = new FileInputStream(f);
+        QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+        optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
 
-        MyTuplesHandle t = new MyTuplesHandle();
-        t.parseTestData(is);
+        QueryManager queryMgr = Common.client.newQueryManager();
+
+        ValuesDefinition vdef = queryMgr.newValuesDefinition("co", "valuesoptions");
+
+        TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
 
         Tuple[] tuples = t.getTuples();
-
-        assertEquals("Four tuples expected", 4, tuples.length);
+        assertEquals("Nine tuples are expected", 9, tuples.length);
+        assertEquals("The tuples are named 'co'", "co", t.getName());
 
         TypedDistinctValue[] dv = tuples[0].getValues();
 
         assertEquals("Two values per tuple expected", 2, dv.length);
-        assertEquals("First is long", "xs:unsignedLong",  dv[0].getType());
-        assertEquals("Second is string", "xs:string", dv[1].getType());
+        assertEquals("First is long", "xs:double",  dv[0].getType());
+        assertEquals("Second is string", "xs:int", dv[1].getType());
         assertEquals("Frequency is 1", 1, tuples[0].getCount());
-        assertEquals("First value", (long) 45375, (long) dv[0].get(Long.class));
-        assertEquals("Second value", "1/160", dv[1].get(String.class));
-    }
+        assertEquals("First value",  1.2, (double) dv[0].get(Double.class), 0.01);
+        assertEquals("Second value", (int) 4, (int) dv[1].get(Integer.class));
 
-    public class MyTuplesHandle extends TuplesHandle {
-        public void parseTestData(InputStream stream) {
-            receiveContent(stream);
-        }
+        optionsMgr.deleteOptions("valuesoptions");
     }
 }

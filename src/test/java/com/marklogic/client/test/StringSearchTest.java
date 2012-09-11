@@ -25,6 +25,8 @@ import java.io.IOException;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.marklogic.client.io.BytesHandle;
+import com.marklogic.client.io.Format;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -113,18 +115,6 @@ public class StringSearchTest {
         SearchHandle handle = new SearchHandle();
         handle = queryMgr.search(qdef, handle);
 
-/* UNUSED
-        String[] facetNames = handle.getFacetNames();
-        FacetResult[] facetResults = handle.getFacetResults();
-        MatchDocumentSummary[] matchDocSum = handle.getMatchResults();
-        SearchMetrics metrics = handle.getMetrics();
-        Document plan = handle.getPlan();
-        QueryDefinition def = handle.getQueryCriteria();
-        SearchHandle.Report[] reports = handle.getReports();
-        SearchHandle.Warning[] warnings = handle.getWarnings();
-        long total = handle.getTotalResults();
- */
-
         assertNotNull(handle);
     }
 
@@ -174,27 +164,6 @@ public class StringSearchTest {
 		QueryOptionsHandle options = new QueryOptionsHandle().withConstraints(
         		builder.constraint("grandchild",grandchildRange)
         		);
-/*
-        .withConstraints(
-        		builder.constraint("decade", 
-        				builder.range(
-        						builder.elementAttributeRangeIndex(
-        								new QName("http://marklogic.com/wikipedia", "nominee"),
-                						new QName("year"), 
-                						builder.rangeType(new QName("xs:gYear"))),
-                						Facets.FACETED, FragmentScope.DOCUMENTS,
-                						builder.buckets(
-		        						builder.bucket("2000s", "2000s", null, null),
-		        		                builder.bucket("1990s", "1990s", "1990", "2000"),
-		        		                builder.bucket("1980s", "1980s", "1980", "1990"),
-		        		                builder.bucket("1970s", "1970s", "1970", "1980"),
-		        		                builder.bucket("1960s", "1960s", "1960", "1970"),
-		        		                builder.bucket("1950s", "1950s", "1950", "1960"),
-		        		                builder.bucket("1940s", "1940s", "1940", "1950"),
-		        		                builder.bucket("1930s", "1930s", "1930", "1940"),
-		        		                builder.bucket("1920s", "1920s", "1920", "1930")),
-        							"limit=10")));
- */
 
         QueryRange range = options.getConstraint("grandchild").getSource();
         assertEquals(range.getElement(), new QName("grandchild"));
