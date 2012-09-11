@@ -27,6 +27,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.StringHandle;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -148,6 +149,26 @@ public class StringSearchTest {
         summaries = results.getMatchResults();
         assertNotNull(summaries);
         assertTrue(summaries.length > 0);
+    }
+
+    @Test
+    public void testJSON() {
+        String optionsName = writeOptions();
+
+        QueryManager queryMgr = Common.client.newQueryManager();
+
+        StringQueryDefinition qdef = queryMgr.newStringDefinition(optionsName);
+        qdef.setCriteria("grandchild1 OR grandchild4");
+
+        queryMgr.setView(QueryView.FACETS);
+
+        // create a handle for the search results
+        StringHandle resultsHandle = new StringHandle().withFormat(Format.JSON);
+
+        // run the search
+        queryMgr.search(qdef, resultsHandle);
+
+        assertEquals("{", resultsHandle.get().substring(0, 1)); // It's JSON, right?
     }
 
     private String writeOptions() {
