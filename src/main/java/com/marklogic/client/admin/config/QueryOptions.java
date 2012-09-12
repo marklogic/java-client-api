@@ -3114,7 +3114,6 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "max-snippet-chars")
 		private Integer maxSnippetChars;
 		
-		
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "preferred-elements")
 		private PreferredElements preferredElements;
 
@@ -3144,10 +3143,13 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 
 		
 		public QueryTransformResults() {
-			preferredElements = new PreferredElements();
+			
 		}
 
 		public void addPreferredElement(MarkLogicQName element) {
+			if (preferredElements == null) {
+				preferredElements = new PreferredElements();
+			}
 			preferredElements.addElement(element);
 		}
 
@@ -3164,7 +3166,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		}
 
 		public List<MarkLogicQName> getPreferredElements() {
-			return preferredElements.getElements();
+			return (preferredElements == null) ? null : preferredElements.getElements();
 		}
 
 		public void setApply(String apply) {
@@ -3180,6 +3182,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		}
 
 		public void setPreferredElements(List<MarkLogicQName> elements) {
+			this.preferredElements = new PreferredElements();
 			this.preferredElements.setElements(elements);
 		}
 	}
