@@ -509,6 +509,21 @@ public class QueryOptionsBuilder {
 	 *            The source for searches with no named constraint applied.
 	 * @param termOptions
 	 *            Options that fine-tune behavior of a term configuration.
+	 *            Valid term options are:  
+	 *            <pre>
+case-sensitive
+diacritic-sensitive
+diacritic-insensitive
+punctuation-sensitive
+punctuation-insensitive
+whitespace-sensitive
+whitespace-insensitive
+stemmed
+unstemmed
+wildcarded
+unwilcarded
+exact
+lang=iso639code</pre>
 	 * @return A QueryTerm object to be included in query configurations using
 	 *         QueryOptionsHandle.withTerm
 	 */
@@ -543,6 +558,22 @@ public class QueryOptionsBuilder {
 		term.setTermOptions(Arrays.asList(termOptions));
 		return term;
 	}
+	
+	/**
+	 * Builds a term option that consists solely of valid term option strings.
+	 * 
+	 * @param termOptions
+	 *            Options that fine-tune behavior of a term configuration.
+	 * @return A QueryTerm object to be included in query configurations using
+	 *         QueryOptionsHandle.withTerm
+	 * 
+	 */
+	public QueryTerm term(String... termOptions) {
+		QueryTerm term = new QueryTerm();
+		term.setTermOptions(Arrays.asList(termOptions));
+		return term;
+	}
+	
 
 	/**
 	 * Builds a new QueryProperties, which restricts a named constraint to data
@@ -583,7 +614,33 @@ public class QueryOptionsBuilder {
 	 *            source.
 	 * @param options
 	 *            A list of facet options to configure the collection
-	 *            constraint.
+	 *            constraint.  Valid facet options are:
+	 *            <pre>
+ascending
+descending
+empties
+any
+document
+properties
+locks
+frequency-order
+item-order
+fragment-frequency
+item-frequency
+type=type
+timezone=TZ
+limit=N
+sample=N
+truncate=N
+skip=N
+score-logtfidf
+score-logtf
+score-simple
+score-random
+checked
+unchecked
+concurrent
+map</pre>
 	 * @return A QueryCollection object for use in building QueryOptions
 	 *         configurations.
 	 */
