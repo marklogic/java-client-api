@@ -74,6 +74,8 @@ import com.marklogic.client.io.QueryOptionsHandle;
 
 /* 
  * This test targets the QueryOptionsBuilder.
+ * It focuses on validity of generated options and on the ability
+ * to use Java to manipulate them.
  * testRootOptions is the entry point for the test, which parallels the 
  * schema search.rnc.
  */
@@ -876,13 +878,16 @@ public class QueryOptionsBuilderTest {
 		
 		assertEquals("raw", options.getTransformResults().getApply());
 		assertEquals("id", options.getConstraint("id").getName());
-
+		assertNull("no preferred elements", options.getTransformResults().getPreferredElements());
+		
 		QueryTransformResults tr = options.getTransformResults();
 		tr.setAt("x");
 		tr.setNs("http://namespace");
 		assertEquals("x", options.getTransformResults().getAt());
 		assertEquals("http://namespace", options.getTransformResults().getNs());
 
+		logger.debug(options.toString());
+		
 		options = exercise(options);
 
 		tr = options.getTransformResults();
