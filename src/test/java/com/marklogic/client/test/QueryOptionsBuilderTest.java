@@ -838,7 +838,7 @@ public class QueryOptionsBuilderTest {
 		assertEquals("TermConfig after storing", "nation", options.getTerm()
 				.getSource().getElement().getLocalPart());
 		
-		 options = new QueryOptionsHandle();
+		options = new QueryOptionsHandle();
 					options.withConstraints(builder.constraint("nameofconstraint", builder.value(builder.elementTermIndex(new QName("elem")))))
 					.withTerm(
 							builder.term(TermApply.ALL_RESULTS,
@@ -850,6 +850,15 @@ public class QueryOptionsBuilderTest {
 		options = exercise(options);
 
 		assertEquals("TermConfig after storing", "nameofconstraint", options.getTerm().getRef());
+
+		
+		options = new QueryOptionsHandle()
+			.withTerm(builder.term("punctuation-insensitive"));
+
+		options = exercise(options);
+		
+		assertEquals("TermConfig after storing", "punctuation-insensitive", options.getTerm().getTermOptions().get(0));
+		
 
 	};
 
