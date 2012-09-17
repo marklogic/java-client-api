@@ -34,6 +34,7 @@ import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ResourceExtensionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.TransformExtensionsManager;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.OutputStreamSender;
 
 class ServerConfigurationManagerImpl
@@ -47,6 +48,7 @@ class ServerConfigurationManagerImpl
 	private String  defaultDocumentReadTransform;
 	private Boolean serverRequestLogging;
 	private Policy  contentVersions;
+	private Format  errorFormat;
 
 	private RESTServices services;
 
@@ -89,6 +91,8 @@ class ServerConfigurationManagerImpl
 					serverRequestLogging = Boolean.valueOf(reader.getElementText());
 				} else if ("content-versions".equals(localName)) {
 					contentVersions = Enum.valueOf(Policy.class, reader.getElementText().toUpperCase());
+				} else if ("error-format".equals(localName)) {
+					errorFormat = Format.valueOf(reader.getElementText().toUpperCase());
 				}
 			}
 
@@ -134,6 +138,11 @@ class ServerConfigurationManagerImpl
 			if (contentVersions != null) {
 				serializer.writeStartElement(REST_API_NS, "content-versions");
 				serializer.writeCharacters(contentVersions.name().toLowerCase());
+				serializer.writeEndElement();
+			}
+			if (errorFormat != null) {
+				serializer.writeStartElement(REST_API_NS, "error-format");
+				serializer.writeCharacters(errorFormat.name().toLowerCase());
 				serializer.writeEndElement();
 			}
 
@@ -197,5 +206,17 @@ class ServerConfigurationManagerImpl
 	@Override
 	public TransformExtensionsManager newTransformExtensionsManager() {
 		return new TransformExtensionsImpl(services);
+	}
+	
+	@Override
+	public Format getErrorFormat() {
+		return errorFormat;
+	}
+	@Override
+	public void setErrorFormat(Format errorFormat) {
+		if (errorFormat == Format.JSON || errorFormat == Format.XML) 
+			this.errorFormat = errorFormat;
+		else
+			throw new IllegalArgumentException("The only supported values for error format are JSON and XML.");
 	}
 }
