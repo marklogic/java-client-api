@@ -16,14 +16,17 @@
 package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.config.QueryOptionsBuilder;
+import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.config.QueryOptions.Facets;
+import com.marklogic.client.admin.config.QueryOptionsBuilder;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.QueryOptionsHandle;
 
 public class FailedRequestTest {
@@ -66,5 +69,35 @@ public class FailedRequestTest {
 			assertEquals("RESTAPI-INVALIDCONTENT", e.getFailedRequest().getMessageCode());
 		}
 
+	}
+	
+	@Test
+	public void testJSONFailedRequest() {
+		Common.connectAdmin();
+		ServerConfigurationManager serverConfig = Common.client.newServerConfigManager();
+
+		serverConfig.setErrorFormat(Format.JSON);
+		serverConfig.writeConfiguration();
+
+		serverConfig.readConfiguration();
+		assertEquals(Format.JSON, serverConfig.getErrorFormat());
+		
+		try {
+			serverConfig.setErrorFormat(Format.BINARY);
+			fail("Error format cannot be binary");
+		} 
+		catch (IllegalArgumentException e) {
+			//pass
+		}
+		Common.connectAdmin();
+		serverConfig = Common.client.newServerConfigManager();
+
+		serverConfig.setErrorFormat(Format.XML);
+		serverConfig.writeConfiguration();
+
+		serverConfig.readConfiguration();
+
+		assertEquals(Format.XML, serverConfig.getErrorFormat());
+		
 	}
 }
