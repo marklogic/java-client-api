@@ -91,7 +91,8 @@ class TransformExtensionsImpl
 			HandleAccessor.checkHandle(sourceHandle, "transform");
 
 		sourceBase.receiveContent(
-				services.getValue(requestLogger, "config/transforms", transformName, sourceMimetype, sourceBase.receiveAs())
+				services.getValue(requestLogger, "config/transforms", transformName,
+						true, sourceMimetype, sourceBase.receiveAs())
 				);
 
 		return sourceHandle;

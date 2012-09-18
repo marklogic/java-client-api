@@ -63,7 +63,8 @@ class NamespacesManagerImpl
 		if (prefix.length() == 0)
 			throw new IllegalArgumentException("Server does not maintain a default namespace");
 
-		String binding = services.getValue(requestLogger, "config/namespaces", prefix, "application/xml", String.class);
+		String binding = services.getValue(
+				requestLogger, "config/namespaces", prefix, true, "application/xml", String.class);
 		if (binding == null)
 			return null;
 
