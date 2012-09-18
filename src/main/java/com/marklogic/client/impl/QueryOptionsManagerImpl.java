@@ -62,7 +62,7 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 
 		String mimetype = queryOptionsFormat.getDefaultMimetype();
 		queryOptionsBase.receiveContent(services.getValue(
-				requestLogger, QUERY_OPTIONS_BASE, name, mimetype,
+				requestLogger, QUERY_OPTIONS_BASE, name, false, mimetype,
 				queryOptionsBase.receiveAs()));
 
 		return queryOptionsHandle;

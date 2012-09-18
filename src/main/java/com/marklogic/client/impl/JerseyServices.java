@@ -33,11 +33,9 @@ import javax.net.ssl.SSLException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
-import org.apache.http.HttpHost;
 import org.apache.http.auth.params.AuthPNames;
 import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.client.params.ClientPNames;
-import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
@@ -45,8 +43,7 @@ import org.apache.http.conn.scheme.SchemeSocketFactory;
 import org.apache.http.conn.ssl.AbstractVerifier;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
-//import org.apache.http.impl.conn.PoolingClientConnectionManager;    // 4.2
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;   // 4.1
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.slf4j.Logger;
@@ -220,9 +217,9 @@ public class JerseyServices implements RESTServices {
 		SchemeRegistry schemeRegistry = new SchemeRegistry();
 		schemeRegistry.register(scheme);
 
+        /* 4.2
 		int maxConnections = 100;
 
-        /* 4.2
 		PoolingClientConnectionManager connMgr =
 			new PoolingClientConnectionManager(schemeRegistry);
 		connMgr.setMaxTotal(maxConnections);
@@ -1450,8 +1447,8 @@ public class JerseyServices implements RESTServices {
 	// namespaces, search options etc.
 	@Override
 	public <T> T getValue(RequestLogger reqlog, String type, String key,
-			String mimetype, Class<T> as) throws ForbiddenUserException,
-			FailedRequestException {
+			boolean isNullable, String mimetype, Class<T> as
+	) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (logger.isDebugEnabled())
 			logger.debug("Getting {}/{}", type, key);
 
@@ -1465,6 +1462,9 @@ public class JerseyServices implements RESTServices {
 		if (status != ClientResponse.Status.OK) {
 			if (status == ClientResponse.Status.NOT_FOUND) {
 				response.close();
+				if (!isNullable)
+					throw new ResourceNotFoundException(
+							"Could not get " + type + "/" + key); 
 				return null;
 			} else if (status == ClientResponse.Status.FORBIDDEN)
 				throw new ForbiddenUserException("User is not allowed to read "

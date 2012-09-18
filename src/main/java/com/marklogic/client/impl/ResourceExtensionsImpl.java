@@ -78,7 +78,8 @@ class ResourceExtensionsImpl
 			HandleAccessor.checkHandle(sourceHandle, "resource");
 
 		sourceBase.receiveContent(
-				services.getValue(requestLogger, "config/resources", resourceName, "application/xquery", sourceBase.receiveAs())
+				services.getValue(requestLogger, "config/resources", resourceName, true,
+				"application/xquery", sourceBase.receiveAs())
 				);
 
 		return sourceHandle;
