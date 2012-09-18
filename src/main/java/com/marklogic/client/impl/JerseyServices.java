@@ -342,16 +342,18 @@ public class JerseyServices implements RESTServices {
 					"Could not delete non-existent document");
 		}
 		if (status == ClientResponse.Status.FORBIDDEN) {
-			// TODO: inspect response structure to distinguish from insufficient privilege
-			if (desc instanceof DocumentDescriptorImpl && ((DocumentDescriptorImpl) desc).isInternal() == false &&
-					desc.getVersion() == DocumentDescriptor.UNKNOWN_VERSION)
-				throw new FailedRequestException("Content version required to delete document", extractErrorFields(response));
-			throw new ForbiddenUserException("User is not allowed to delete documents",extractErrorFields(response));
+			FailedRequest failure = extractErrorFields(response);
+			if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION"))
+				throw new FailedRequestException("Content version required to delete document", failure);
+			throw new ForbiddenUserException("User is not allowed to delete documents",failure);
 		}
 		if (status == ClientResponse.Status.PRECONDITION_FAILED) {
-			response.close();
-			throw new FailedRequestException(
-					"Content version must match to delete document");
+			FailedRequest failure = extractErrorFields(response);
+			if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION"))
+				throw new FailedRequestException("Content version must match to delete document", failure);
+			else if (failure.getMessageCode().equals("RESTAPI-EMPTYBODY"))
+				throw new FailedRequestException("Empty request body sent to server", failure);
+			throw new FailedRequestException("Precondition Failed", failure);
 		}
 		if (status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("delete failed: "
@@ -731,15 +733,19 @@ public class JerseyServices implements RESTServices {
 					"Could not write non-existent document",
 					extractErrorFields(response));
 		if (status == ClientResponse.Status.FORBIDDEN) {
-			if (desc instanceof DocumentDescriptorImpl && ((DocumentDescriptorImpl) desc).isInternal() == false &&
-					desc.getVersion() == DocumentDescriptor.UNKNOWN_VERSION)
-				throw new FailedRequestException("Content version required to write document",extractErrorFields(response));
-			throw new ForbiddenUserException("User is not allowed to write documents",extractErrorFields(response));
+			FailedRequest failure = extractErrorFields(response);
+			if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION"))
+				throw new FailedRequestException("Content version required to write document",failure);
+			throw new ForbiddenUserException("User is not allowed to write documents",failure);
 		}
-		if (status == ClientResponse.Status.PRECONDITION_FAILED)
-			throw new FailedRequestException(
-					"Content version must match to write document",
-					extractErrorFields(response));
+		if (status == ClientResponse.Status.PRECONDITION_FAILED) {
+			FailedRequest failure = extractErrorFields(response);
+			if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION"))
+				throw new FailedRequestException("Content version must match to write document", failure);
+			else if (failure.getMessageCode().equals("RESTAPI-EMPTYBODY"))
+				throw new FailedRequestException("Empty request body sent to server", failure);
+			throw new FailedRequestException("Precondition Failed", failure);
+		}
 		if (status != ClientResponse.Status.CREATED
 				&& status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("write failed: "
@@ -834,16 +840,18 @@ public class JerseyServices implements RESTServices {
 					"Could not write non-existent document");
 		}
 		if (status == ClientResponse.Status.FORBIDDEN) {
-			// TODO: inspect response structure to distinguish from insufficient privilege
-			if (desc instanceof DocumentDescriptorImpl && ((DocumentDescriptorImpl) desc).isInternal() == false &&
-					desc.getVersion() == DocumentDescriptor.UNKNOWN_VERSION)
-				throw new FailedRequestException("Content version required to write document", extractErrorFields(response));
-			throw new ForbiddenUserException("User is not allowed to write documents", extractErrorFields(response));
+			FailedRequest failure = extractErrorFields(response);
+			if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION"))
+				throw new FailedRequestException("Content version required to write document",failure);
+			throw new ForbiddenUserException("User is not allowed to write documents",failure);
 		}
 		if (status == ClientResponse.Status.PRECONDITION_FAILED) {
-			response.close();
-			throw new FailedRequestException(
-					"Content version must match to write document");
+			FailedRequest failure = extractErrorFields(response);
+			if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION"))
+				throw new FailedRequestException("Content version must match to write document", failure);
+			else if (failure.getMessageCode().equals("RESTAPI-EMPTYBODY"))
+				throw new FailedRequestException("Empty request body sent to server", failure);
+			throw new FailedRequestException("Precondition Failed", failure);	
 		}
 		if (status != ClientResponse.Status.CREATED
 				&& status != ClientResponse.Status.NO_CONTENT)

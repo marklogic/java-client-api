@@ -16,6 +16,7 @@
 package com.marklogic.client.test;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -89,6 +90,9 @@ public class ConditionalDocumentTest {
 		}
 		assertTrue("Write with bad version succeeded", ex != null);
 		assertTrue("Write with bad version had wrong error", statusCode == 412);
+		assertTrue("Write with no version had misleading message", 
+				ex.getMessage().contains("Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri: /test/conditional1.xml version:"));
+
 
 		desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
 		docMgr.write(desc, contentHandle);
@@ -108,19 +112,24 @@ public class ConditionalDocumentTest {
 
 		ex = null;
 		statusCode = 0;
+		// test with string to expose problem for bug 18920
+		String documentUri = desc.getUri();
 		try {
-			desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
-			docMgr.write(desc, contentHandle);
+			docMgr.write(documentUri, contentHandle);
 		} catch (FailedRequestException e) {
 			FailedRequest failreq = e.getFailedRequest();
 			if (failreq != null)
 				statusCode = failreq.getStatusCode();
-System.out.println(e.getFailedRequest().getStatusCode()+" "+e.getMessage());
+			System.out.println(e.getFailedRequest().getStatusCode()+" "+e.getMessage());
 			ex = e;
 		}
 		assertTrue("Overwrite without version succeeded", ex != null);
-		assertTrue("Write with bad version had wrong error", statusCode == 403);
-
+		assertTrue("Write with no version had wrong error", statusCode == 403);
+		System.out.println(ex.getMessage());
+		assertEquals("Write with no version had misleading message", 
+				"Local message: Content version required to write document. Server Message: You do not have permission to this method and URL",
+				ex.getMessage());
+		
 		ex = null;
 		statusCode = 0;
 		try {
@@ -135,6 +144,8 @@ System.out.println(e.getFailedRequest().getStatusCode()+" "+e.getMessage());
 		}
 		assertTrue("Overwrite with bad version succeeded", ex != null);
 		assertTrue("Write with bad version had wrong error", statusCode == 412);
+		assertTrue("Write with no version had misleading message", 
+				ex.getMessage().contains("Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri: /test/conditional1.xml version:"));
 
 		desc.setVersion(goodVersion);
 		docMgr.write(desc, contentHandle);
@@ -169,6 +180,17 @@ System.out.println(e.getFailedRequest().getStatusCode()+" "+e.getMessage());
 		}
 		assertTrue("Delete with bad version succeeded", ex != null);
 
+		try {
+			docMgr.delete(documentUri); // internal documentdescriptor
+		} catch (FailedRequestException e) {
+			ex = e;
+		}
+		assertTrue("Delete with no version succeeded", ex != null);
+		assertEquals("Delete with no version had misleading message", 
+				"Local message: Content version required to delete document. Server Message: You do not have permission to this method and URL",
+				ex.getMessage());
+
+		
 		desc.setVersion(goodVersion);
 		docMgr.delete(desc);
 	}
