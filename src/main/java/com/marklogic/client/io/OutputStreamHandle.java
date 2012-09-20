@@ -55,6 +55,7 @@ public class OutputStreamHandle
 	 */
 	public OutputStreamHandle() {
 		super();
+		super.setResendable(false);
 	}
 	/**
 	 * Initializes the handle with an outputstream sender providing
@@ -84,6 +85,31 @@ public class OutputStreamHandle
 	 */
 	public OutputStreamHandle withMimetype(String mimetype) {
 		setMimetype(mimetype);
+		return this;
+	}
+
+	/**
+	 * Returns whether the content can be resent to the output stream
+	 * if the request must be retried.  The default is false.
+	 */
+	public boolean isResendable() {
+		return super.isResendable();
+	}
+	/**
+	 * Specifies whether the content can be resent to the output stream
+	 * if the request must be retried.
+	 */
+	public void setResendable(boolean resendable) {
+		super.setResendable(resendable);
+	}
+	/**
+	 * Specifies whether the content can be resent to the output stream and
+	 * returns the handle as a fluent convenience.
+	 * @param resendable	true if the content can be sent again
+	 * @return	this handle
+	 */
+	public OutputStreamHandle withResendable(boolean resendable) {
+		setResendable(resendable);
 		return this;
 	}
 

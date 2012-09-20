@@ -49,6 +49,7 @@ public class StringHandle
 	 */
 	public StringHandle() {
 		super();
+   		setResendable(true);
 	}
 	/**
 	 * Initializes the handle with a string for the content.

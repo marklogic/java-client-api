@@ -67,6 +67,7 @@ public class XMLStreamReaderHandle
 	public XMLStreamReaderHandle() {
 		super();
 		super.setFormat(Format.XML);
+   		setResendable(false);
 	}
 	/**
 	 * Initializes the handle with a StAX stream reader for the content.

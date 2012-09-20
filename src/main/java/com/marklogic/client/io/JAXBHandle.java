@@ -62,6 +62,7 @@ public class JAXBHandle
 	public JAXBHandle(JAXBContext context) {
 		super();
 		super.setFormat(Format.XML);
+   		setResendable(true);
 		this.context = context;
 	}
 

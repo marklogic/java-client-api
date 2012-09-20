@@ -51,6 +51,11 @@ public class HandleAccessor {
 			return null;
 		return ((HandleImplementation) handle).sendContent();
 	}
+	static public <W extends AbstractWriteHandle> boolean isResendable(W handle) {
+		if (handle == null)
+			return false;
+		return ((HandleImplementation) handle).isResendable();
+	}
 	static public HandleImplementation as(Object handle) {
 		return ((HandleImplementation) handle);
 	}

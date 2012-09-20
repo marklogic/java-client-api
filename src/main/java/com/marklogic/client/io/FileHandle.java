@@ -58,6 +58,7 @@ public class FileHandle
 	 */
 	public FileHandle() {
 		super();
+   		setResendable(true);
 	}
 	/**
 	 * Initializes the handle with a file containing the content.

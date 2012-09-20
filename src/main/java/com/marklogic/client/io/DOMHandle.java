@@ -65,6 +65,7 @@ public class DOMHandle
 	public DOMHandle() {
 		super();
 		super.setFormat(Format.XML);
+   		setResendable(true);
 	}
 	/**
 	 * Initializes the handle with a DOM document for the content.

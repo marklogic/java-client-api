@@ -52,6 +52,7 @@ public class HTMLCleanerHandle
 	public HTMLCleanerHandle() {
 		super();
 		super.setFormat(Format.XML);
+   		setResendable(true);
 	}
 	public HTMLCleanerHandle(TagNode content) {
 		this();

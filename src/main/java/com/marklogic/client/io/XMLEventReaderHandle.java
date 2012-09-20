@@ -66,6 +66,7 @@ public class XMLEventReaderHandle
 	public XMLEventReaderHandle() {
 		super();
 		super.setFormat(Format.XML);
+   		setResendable(false);
 	}
 	/**
 	 * Initializes the handle with a StAX event reader for the content.

@@ -83,6 +83,7 @@ public class URIHandle
 
 	public URIHandle(HttpClient client) {
 		super();
+   		setResendable(true);
 		setClient(client);
 	}
 	public URIHandle(HttpClient client, URI baseUri) {

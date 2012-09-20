@@ -66,6 +66,7 @@ public class InputStreamHandle
 	 */
 	public InputStreamHandle() {
 		super();
+   		setResendable(false);
 	}
 	/**
 	 * Initializes the handle with an input stream for the content.
