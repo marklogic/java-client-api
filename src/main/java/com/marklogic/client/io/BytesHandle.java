@@ -57,6 +57,7 @@ public class BytesHandle
 	 */
 	public BytesHandle() {
 		super();
+   		setResendable(true);
 	}
 	/**
 	 * Initializes the handle with a byte array for the content.

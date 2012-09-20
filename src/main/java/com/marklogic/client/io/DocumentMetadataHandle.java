@@ -351,6 +351,7 @@ public class DocumentMetadataHandle
 	public DocumentMetadataHandle() {
 		super();
 		super.setFormat(Format.XML);
+   		setResendable(true);
 	}
 
 	/**

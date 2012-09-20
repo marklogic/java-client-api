@@ -57,6 +57,7 @@ public class DOM4JHandle
 	public DOM4JHandle() {
 		super();
 		super.setFormat(Format.XML);
+   		setResendable(true);
 	}
 	public DOM4JHandle(Document content) {
 		this();

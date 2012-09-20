@@ -127,6 +127,7 @@ public final class QueryOptionsHandle
 	 */
     public QueryOptionsHandle() {
 		super.setFormat(Format.XML);
+   		setResendable(true);
 		optionsHolder = new QueryOptions();
 
         try {

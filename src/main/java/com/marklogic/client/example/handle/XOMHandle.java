@@ -54,6 +54,7 @@ public class XOMHandle
 	public XOMHandle() {
 		super();
 		super.setFormat(Format.XML);
+   		setResendable(true);
 	}
 	public XOMHandle(Document content) {
 		this();

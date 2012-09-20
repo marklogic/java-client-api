@@ -63,6 +63,7 @@ public class SourceHandle
 	public SourceHandle() {
 		super();
 		super.setFormat(Format.XML);
+   		setResendable(false);
 	}
 	/**
 	 * Initializes the handle with a transform source for the content.

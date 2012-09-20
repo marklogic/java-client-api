@@ -21,6 +21,8 @@ import com.marklogic.client.document.ContentDescriptor;
 public abstract class HandleImplementation<R,W>
     implements ContentDescriptor
 {
+	private boolean resendable = false;
+
 	protected HandleImplementation() {
 		super();
 	}
@@ -52,5 +54,25 @@ public abstract class HandleImplementation<R,W>
 	 */
 	protected W sendContent() {
 		throw new UnsupportedOperationException(this.getClass().getName()+" cannot send content");
+	}
+
+	/**
+	 * As part of the contract between a write handle and the API, 
+	 * specifies whether the content can be sent again if the request
+	 * must be retried.  The method returns false unless overridden.
+	 * You should rarely if ever need to call this method directly
+	 * when using the handle.
+	 * @return
+	 */
+	protected boolean isResendable() {
+		return resendable;
+	}
+	/**
+	 * Specifies whether the content can be sent again if the request
+	 * must be retried.
+	 * @param resendable	true if the content can be sent again
+	 */
+	protected void setResendable(boolean resendable) {
+		this.resendable = resendable;
 	}
 }

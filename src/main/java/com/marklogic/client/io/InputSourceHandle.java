@@ -74,6 +74,7 @@ public class InputSourceHandle
 	public InputSourceHandle() {
 		super();
 		super.setFormat(Format.XML);
+   		setResendable(false);
 	}
 	/**
 	 * Initializes the handle with a SAX input source for the content.

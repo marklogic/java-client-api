@@ -56,6 +56,7 @@ public class JDOMHandle
 	public JDOMHandle() {
 		super();
 		super.setFormat(Format.XML);
+   		setResendable(true);
 	}
 	public JDOMHandle(Document content) {
 		this();

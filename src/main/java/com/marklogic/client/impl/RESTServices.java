@@ -24,6 +24,7 @@ import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
@@ -60,7 +61,8 @@ public interface RESTServices {
 	public void putDocument(RequestLogger logger, DocumentDescriptor desc, String transactionId,
 			Set<Metadata> categories, RequestParameters extraParams,
 			DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle)
-		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws ResourceNotFoundException, ResourceNotResendableException,
+			ForbiddenUserException, FailedRequestException;
 
     public <T> T search(Class <T> as, QueryDefinition queryDef, String mimetype, long start,
             long len, QueryView view, String transactionId)
@@ -92,39 +94,47 @@ public interface RESTServices {
 	public <T> T getValues(RequestLogger logger, String type, String mimetype, Class<T> as)
 		throws ForbiddenUserException, FailedRequestException;
 	void putValues(RequestLogger reqlog, String type, String mimetype, Object value)
-		throws ForbiddenUserException, FailedRequestException;
+		throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 	public void postValues(RequestLogger logger, String type, String mimetype, Object value)
-		throws ForbiddenUserException, FailedRequestException;
+		throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 	public void postValue(RequestLogger logger, String type, String key, String mimetype, Object value)
-		throws ForbiddenUserException, FailedRequestException;
+		throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 	public void putValue(RequestLogger logger, String type, String key, String mimetype, Object value)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException;
 	public void putValue(RequestLogger logger, String type, String key, RequestParameters extraParams,
 			String mimetype, Object value)
-		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException;
 	public void deleteValue(RequestLogger logger, String type, String key)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public void deleteValues(RequestLogger logger, String type)
 		throws ForbiddenUserException, FailedRequestException;
 
 	public <T> T getResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Class<T> as)
-		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public ServiceResultIterator getResource(RequestLogger reqlog, String path, RequestParameters params, String[] outputMimetypes)
-		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	public <T> T putResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Object value, String outputMimetype, Class<T> as)
-		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException;
 	public <T> T putResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, String outputMimetype, Class<T> as)
-		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException;
 
 	public <T> T postResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Object value, String outputMimetype, Class<T> as)
-		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException;
 	public <T> T postResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, String outputMimetype, Class<T> as)
-		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException;
 	public ServiceResultIterator postResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Object value, String[] outputMimetypes)
-		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException;
 	public ServiceResultIterator postResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, String[] outputMimetypes)
-		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException;
 
 	public <T> T deleteResource(RequestLogger reqlog, String path, RequestParameters params,
 			String mimetype, Class<T> as)

@@ -55,6 +55,7 @@ public class JacksonHandle
 	public JacksonHandle() {
 		super();
 		super.setFormat(Format.JSON);
+   		setResendable(true);
 	}
 
 	public JacksonHandle(JsonNode content) {

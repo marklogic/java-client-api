@@ -63,6 +63,7 @@ public class ReaderHandle
      */
     public ReaderHandle() {
     	super();
+   		setResendable(false);
     }
 	/**
 	 * Initializes the handle with a character reader for the content.
