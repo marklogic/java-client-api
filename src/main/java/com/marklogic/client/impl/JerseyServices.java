@@ -124,11 +124,15 @@ public class JerseyServices implements RESTServices {
 
 	private boolean isFirstRequest = true;
 
-    private boolean headFirst = false;
+	private final boolean hasHeadfirstEnv;
+
+	private boolean headFirst = false;
 
 	public JerseyServices() {
-        String head = System.getProperty("com.marklogic.client.headfirst");
-        headFirst = ("true".equals(head) || "1".equals(head));
+		String head = System.getProperty("com.marklogic.client.headfirst");
+		hasHeadfirstEnv = (head != null); 
+		if (hasHeadfirstEnv)
+			headFirst = ("true".equals(head) || "1".equals(head));
 	}
 
 	private FailedRequest extractErrorFields(ClientResponse response) {
@@ -182,6 +186,9 @@ public class JerseyServices implements RESTServices {
 				authenType = Authentication.BASIC;
 			}
 		}
+
+		if (!hasHeadfirstEnv)
+			headFirst = (authenType == Authentication.DIGEST);
 
 		if (authenType != null) {
 			if (user == null)
