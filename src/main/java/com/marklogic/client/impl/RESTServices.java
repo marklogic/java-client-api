@@ -93,19 +93,23 @@ public interface RESTServices {
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public <T> T getValues(RequestLogger logger, String type, String mimetype, Class<T> as)
 		throws ForbiddenUserException, FailedRequestException;
-	void putValues(RequestLogger reqlog, String type, String mimetype, Object value)
+	public void postValue(RequestLogger logger, String type, String key, String mimetype, Object value,
+			boolean isStreaming)
 		throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
-	public void postValues(RequestLogger logger, String type, String mimetype, Object value)
-		throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
-	public void postValue(RequestLogger logger, String type, String key, String mimetype, Object value)
-		throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
-	public void putValue(RequestLogger logger, String type, String key, String mimetype, Object value)
+	public void putValue(RequestLogger logger, String type, String key,
+			String mimetype, Object value, boolean isStreaming)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException;
 	public void putValue(RequestLogger logger, String type, String key, RequestParameters extraParams,
-			String mimetype, Object value)
+			String mimetype, Object value, boolean isStreaming)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException;
+	public void postValues(RequestLogger logger, String type, String mimetype, Object value,
+			boolean isStreaming)
+		throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+	void putValues(RequestLogger reqlog, String type, String mimetype, Object value,
+			boolean isStreaming)
+		throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 	public void deleteValue(RequestLogger logger, String type, String key)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public void deleteValues(RequestLogger logger, String type)
@@ -116,23 +120,31 @@ public interface RESTServices {
 	public ServiceResultIterator getResource(RequestLogger reqlog, String path, RequestParameters params, String[] outputMimetypes)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-	public <T> T putResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Object value, String outputMimetype, Class<T> as)
+	public <T> T putResource(RequestLogger reqlog, String path, RequestParameters params,
+			String inputMimetype, Object value, String outputMimetype, boolean isStreaming, Class<T> as)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException;
-	public <T> T putResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, String outputMimetype, Class<T> as)
+	public <T> T putResource(RequestLogger reqlog, String path, RequestParameters params,
+			String[] inputMimetypes, Object[] values, String outputMimetype, boolean hasStreamingPart,
+			Class<T> as)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException;
 
-	public <T> T postResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Object value, String outputMimetype, Class<T> as)
+	public <T> T postResource(RequestLogger reqlog, String path, RequestParameters params,
+			String inputMimetype, Object value, String outputMimetype, boolean isStreaming, Class<T> as)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException;
-	public <T> T postResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, String outputMimetype, Class<T> as)
+	public <T> T postResource(RequestLogger reqlog, String path, RequestParameters params,
+			String[] inputMimetypes, Object[] values, String outputMimetype, boolean hasStreamingPart,
+			Class<T> as)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException;
-	public ServiceResultIterator postResource(RequestLogger reqlog, String path, RequestParameters params, String inputMimetype, Object value, String[] outputMimetypes)
+	public ServiceResultIterator postResource(RequestLogger reqlog, String path, RequestParameters params,
+			String inputMimetype, Object value, String[] outputMimetypes, boolean isStreaming)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException;
-	public ServiceResultIterator postResource(RequestLogger reqlog, String path, RequestParameters params, String[] inputMimetypes, Object[] values, String[] outputMimetypes)
+	public ServiceResultIterator postResource(RequestLogger reqlog, String path, RequestParameters params,
+			String[] inputMimetypes, Object[] values, String[] outputMimetypes, boolean hasStreamingPart)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException;
 

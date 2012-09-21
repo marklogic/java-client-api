@@ -185,16 +185,19 @@ class ResourceServicesImpl
 		HandleImplementation inputBase  = HandleAccessor.checkHandle(input,  "write");
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output, "read");
 
-		Object value          = inputBase.sendContent();
-		String inputMimetype  = inputBase.getMimetype();
-		String outputMimetype = outputBase.getMimetype();
-		Class  as             = outputBase.receiveAs();
+		Object  value          = inputBase.sendContent();
+		String  inputMimetype  = inputBase.getMimetype();
+		String  outputMimetype = outputBase.getMimetype();
+		boolean isStreaming    = !inputBase.isResendable();
+		Class   as             = outputBase.receiveAs();
 
 		switch (method) {
 		case PUT:
-			return services.putResource(requestLogger, getResourcePath(), params, inputMimetype, value, outputMimetype, as);
+			return services.putResource(requestLogger, getResourcePath(), params,
+					inputMimetype, value, outputMimetype, isStreaming, as);
 		case POST:
-			return services.postResource(requestLogger, getResourcePath(), params, inputMimetype, value, outputMimetype, as);
+			return services.postResource(requestLogger, getResourcePath(), params,
+					inputMimetype, value, outputMimetype, isStreaming, as);
 		default:
 			throw new IllegalArgumentException("unknown method type: "+method.name());
 		}
@@ -202,8 +205,9 @@ class ResourceServicesImpl
 	private <R extends AbstractReadHandle, W extends AbstractWriteHandle> Object execMethod(MethodType method, RequestParameters params, W[] input, R output) {
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output, "read");
 
-		Object[] value         = null;
-		String[] inputMimetype = null;
+		Object[] value            = null;
+		String[] inputMimetype    = null;
+		boolean  hasStreamingPart = false;
 		if (input != null) {
 			int inputSize = input.length;
 			value         = new Object[inputSize];
@@ -213,6 +217,8 @@ class ResourceServicesImpl
 				HandleImplementation handleBase = HandleAccessor.checkHandle(handle, "write");
 				value[i]         = handleBase.sendContent();
 				inputMimetype[i] = handleBase.getMimetype();
+				if (!hasStreamingPart)
+					hasStreamingPart = !handleBase.isResendable();
 			}
 		}
 
@@ -221,9 +227,11 @@ class ResourceServicesImpl
 
 		switch (method) {
 		case PUT:
-			return services.putResource(requestLogger, getResourcePath(), params, inputMimetype, value, outputMimetype, as);
+			return services.putResource(requestLogger, getResourcePath(), params,
+					inputMimetype, value, outputMimetype, hasStreamingPart, as);
 		case POST:
-			return services.postResource(requestLogger, getResourcePath(), params, inputMimetype, value, outputMimetype, as);
+			return services.postResource(requestLogger, getResourcePath(), params,
+					inputMimetype, value, outputMimetype, hasStreamingPart, as);
 		default:
 			throw new IllegalArgumentException("unknown method type: "+method.name());
 		}
@@ -231,19 +239,22 @@ class ResourceServicesImpl
 	private ServiceResultIterator execMethod(MethodType method, RequestParameters params, AbstractWriteHandle input, String... outputMimetypes) {
 		HandleImplementation inputBase = HandleAccessor.checkHandle(input,  "write");
 
-		Object value         = inputBase.sendContent();
-		String inputMimetype = inputBase.getMimetype();
+		Object  value         = inputBase.sendContent();
+		String  inputMimetype = inputBase.getMimetype();
+		boolean isStreaming   = !inputBase.isResendable();
 
 		switch (method) {
 		case POST:
-			return services.postResource(requestLogger, getResourcePath(), params, inputMimetype, value, outputMimetypes);
+			return services.postResource(requestLogger, getResourcePath(), params,
+					inputMimetype, value, outputMimetypes, isStreaming);
 		default:
 			throw new IllegalArgumentException("unknown method type: "+method.name());
 		}
 	}
 	private <W extends AbstractWriteHandle> ServiceResultIterator execMethod(MethodType method, RequestParameters params, W[] input, String... outputMimetypes) {
-		Object[] value         = null;
-		String[] inputMimetype = null;
+		Object[] value            = null;
+		String[] inputMimetype    = null;
+		boolean  hasStreamingPart = false;
 		if (input != null) {
 			int inputSize = input.length;
 			value         = new Object[inputSize];
@@ -253,12 +264,15 @@ class ResourceServicesImpl
 				HandleImplementation handleBase = HandleAccessor.checkHandle(handle, "write");
 				value[i]         = handleBase.sendContent();
 				inputMimetype[i] = handleBase.getMimetype();
+				if (!hasStreamingPart)
+					hasStreamingPart = !handleBase.isResendable();
 			}
 		}
 
 		switch (method) {
 		case POST:
-			return services.postResource(requestLogger, getResourcePath(), params, inputMimetype, value, outputMimetypes);
+			return services.postResource(requestLogger, getResourcePath(), params,
+					inputMimetype, value, outputMimetypes, hasStreamingPart);
 		default:
 			throw new IllegalArgumentException("unknown method type: "+method.name());
 		}

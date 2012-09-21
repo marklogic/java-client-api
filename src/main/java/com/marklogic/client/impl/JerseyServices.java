@@ -1758,64 +1758,65 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public void putValues(RequestLogger reqlog, String type, String mimetype,
-			Object value)
+			Object value, boolean isStreaming)
 	throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		if (logger.isDebugEnabled())
 			logger.debug("Posting {}", type);
 
-		putPostValueImpl(reqlog, "put", type, null, null, mimetype, value,
+		putPostValueImpl(reqlog, "put", type, null, null, mimetype, value, isStreaming,
 				ClientResponse.Status.NO_CONTENT);
 	}
 
 	@Override
 	public void postValues(RequestLogger reqlog, String type, String mimetype,
-			Object value)
+			Object value, boolean isStreaming)
 	throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		if (logger.isDebugEnabled())
 			logger.debug("Posting {}", type);
 
-		putPostValueImpl(reqlog, "post", type, null, null, mimetype, value,
+		putPostValueImpl(reqlog, "post", type, null, null, mimetype, value, isStreaming,
 				ClientResponse.Status.NO_CONTENT);
 	}
 
 	@Override
 	public void postValue(RequestLogger reqlog, String type, String key,
-			String mimetype, Object value)
+			String mimetype, Object value, boolean isStreaming)
 	throws  ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		if (logger.isDebugEnabled())
 			logger.debug("Posting {}/{}", type, key);
 
-		putPostValueImpl(reqlog, "post", type, key, null, mimetype, value,
+		putPostValueImpl(reqlog, "post", type, key, null, mimetype, value, isStreaming,
 				ClientResponse.Status.CREATED);
 	}
 
 	@Override
 	public void putValue(RequestLogger reqlog, String type, String key,
-			String mimetype, Object value)
+			String mimetype, Object value, boolean isStreaming)
 	throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
 		if (logger.isDebugEnabled())
 			logger.debug("Putting {}/{}", type, key);
 
-		putPostValueImpl(reqlog, "put", type, key, null, mimetype, value,
+		putPostValueImpl(reqlog, "put", type, key, null, mimetype, value, isStreaming,
 				ClientResponse.Status.NO_CONTENT, ClientResponse.Status.CREATED);
 	}
 
 	@Override
 	public void putValue(RequestLogger reqlog, String type, String key,
-			RequestParameters extraParams, String mimetype, Object value)
+			RequestParameters extraParams, String mimetype, Object value,
+			boolean isStreaming)
 	throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
 		if (logger.isDebugEnabled())
 			logger.debug("Putting {}/{}", type, key);
 
 		putPostValueImpl(reqlog, "put", type, key, extraParams, mimetype,
-				value, ClientResponse.Status.NO_CONTENT);
+				value, isStreaming, ClientResponse.Status.NO_CONTENT);
 	}
 
 	private void putPostValueImpl(RequestLogger reqlog, String method,
 			String type, String key, RequestParameters extraParams,
-			String mimetype, Object value,
+			String mimetype, Object value, boolean isStreaming,
 			ClientResponse.Status... expectedStatuses) {
 		if (key != null) {
 			logRequest(reqlog, "writing %s value with %s key and %s mime type",
@@ -1825,17 +1826,11 @@ public class JerseyServices implements RESTServices {
 					(mimetype != null) ? mimetype : null);
 		}
 
-		boolean hasStreamingPart = false;
-
 		Object sentValue = null;
 		if (value instanceof OutputStreamSender) {
-			hasStreamingPart = true;
 			sentValue = new StreamingOutputImpl((OutputStreamSender) value,
 					reqlog);
 		} else {
-			if (value instanceof InputStream || value instanceof Reader)
-				hasStreamingPart = true;
-
 			if (reqlog != null)
 				sentValue = reqlog.copyContent(value);
 			else
@@ -1851,7 +1846,7 @@ public class JerseyServices implements RESTServices {
 		ClientResponse.Status status   = null;
 		for (int retry = 0; true; retry++) {
 			if ("put".equals(method)) {
-				if ((isFirstRequest || headFirst) && hasStreamingPart)
+				if ((isFirstRequest || headFirst) && isStreaming)
 					makeFirstRequest();
 
 				if (builder == null) {
@@ -1864,7 +1859,7 @@ public class JerseyServices implements RESTServices {
 
 				response = builder.put(ClientResponse.class, sentValue);
 			} else if ("post".equals(method)) {
-				if ((isFirstRequest || headFirst) && hasStreamingPart)
+				if ((isFirstRequest || headFirst) && isStreaming)
 					makeFirstRequest();
 
 				if (builder == null) {
@@ -1889,7 +1884,7 @@ public class JerseyServices implements RESTServices {
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
 					!"1".equals(response.getHeaders().getFirst("Retry-After")))
 				break;
-			else if (hasStreamingPart)
+			else if (isStreaming)
 				throw new ResourceNotResendableException(
 						"Cannot retry request for "+connectPath);
 			else if (retry >= maxRetries)
@@ -2071,13 +2066,11 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public <T> T putResource(RequestLogger reqlog, String path,
 			RequestParameters params, String inputMimetype, Object value,
-			String outputMimetype, Class<T> as)
+			String outputMimetype, boolean isStreaming, Class<T> as)
 	throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
 		WebResource.Builder builder =
 			makePutBuilder(path, params, inputMimetype, outputMimetype);
-
-		boolean isStreaming = isStreaming(value);
 
 		ClientResponse        response = null;
 		ClientResponse.Status status   = null;
@@ -2110,12 +2103,10 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public <T> T putResource(RequestLogger reqlog, String path,
 			RequestParameters params, String[] inputMimetypes, Object[] values,
-			String outputMimetype, Class<T> as)
+			String outputMimetype, boolean hasStreamingPart, Class<T> as)
 	throws ResourceNotFoundException, ResourceNotResendableException,
 	 		ForbiddenUserException, FailedRequestException {
-		MultiPart multiPart = new MultiPart();
-		boolean hasStreamingPart =
-			addParts(reqlog, multiPart, inputMimetypes, values);
+		MultiPart multiPart = addParts(reqlog, inputMimetypes, values);
 
 		WebResource.Builder builder =
 			makePutBuilder(path, params, multiPart, outputMimetype);
@@ -2151,13 +2142,11 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public <T> T postResource(RequestLogger reqlog, String path,
 			RequestParameters params, String inputMimetype, Object value,
-			String outputMimetype, Class<T> as)
+			String outputMimetype, boolean isStreaming, Class<T> as)
 	throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
 		WebResource.Builder builder =
 			makePostBuilder(path, params, inputMimetype, outputMimetype);
-
-		boolean isStreaming = isStreaming(value);
 
 		ClientResponse        response = null;
 		ClientResponse.Status status   = null;
@@ -2190,12 +2179,10 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public <T> T postResource(RequestLogger reqlog, String path,
 			RequestParameters params, String[] inputMimetypes, Object[] values,
-			String outputMimetype, Class<T> as)
+			String outputMimetype, boolean hasStreamingPart, Class<T> as)
 	throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
-		MultiPart multiPart = new MultiPart();
-		boolean hasStreamingPart =
-			addParts(reqlog, multiPart, inputMimetypes, values);
+		MultiPart multiPart = addParts(reqlog, inputMimetypes, values);
 
 		WebResource.Builder builder =
 			makePostBuilder(path, params, multiPart, outputMimetype);
@@ -2231,14 +2218,12 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public ServiceResultIterator postResource(RequestLogger reqlog, String path,
 			RequestParameters params, String inputMimetype, Object value,
-			String[] outputMimetypes)
+			String[] outputMimetypes, boolean isStreaming)
 	throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
 		WebResource.Builder builder = makePostBuilder(
 			path, params, inputMimetype, Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE)
 			);
-
-		boolean isStreaming = isStreaming(value);
 
 		ClientResponse        response = null;
 		ClientResponse.Status status   = null;
@@ -2272,12 +2257,10 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public ServiceResultIterator postResource(RequestLogger reqlog, String path,
 			RequestParameters params, String[] inputMimetypes, Object[] values,
-			String[] outputMimetypes)
+			String[] outputMimetypes, boolean hasStreamingPart)
 	throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
-		MultiPart multiPart = new MultiPart();
-		boolean hasStreamingPart =
-			addParts(reqlog, multiPart, inputMimetypes, values);
+		MultiPart multiPart = addParts(reqlog, inputMimetypes, values);
 
 		WebResource.Builder builder = makePostBuilder(path, params, multiPart,
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
@@ -2533,8 +2516,7 @@ public class JerseyServices implements RESTServices {
 		return requestParams;
 	}
 
-	private boolean addParts(RequestLogger reqlog, MultiPart multiPart,
-			String[] mimetypes, Object[] values) {
+	private MultiPart addParts(RequestLogger reqlog, String[] mimetypes, Object[] values) {
 		if (mimetypes == null || mimetypes.length == 0)
 			throw new IllegalArgumentException(
 					"mime types not specified for multipart");
@@ -2547,9 +2529,9 @@ public class JerseyServices implements RESTServices {
 			throw new IllegalArgumentException(
 					"mistmatch between mime types and values for multipart");
 
+		MultiPart multiPart = new MultiPart();
 		multiPart.setMediaType(new MediaType("multipart", "mixed"));
 
-		boolean hasStreamingPart = false;
 		for (int i = 0; i < mimetypes.length; i++) {
 			if (mimetypes[i] == null)
 				throw new IllegalArgumentException("null mimetype: " + i);
@@ -2562,15 +2544,9 @@ public class JerseyServices implements RESTServices {
 
 			BodyPart bodyPart = null;
 			if (values[i] instanceof OutputStreamSender) {
-				if (!hasStreamingPart)
-					hasStreamingPart = true;
 				bodyPart = new BodyPart(new StreamingOutputImpl(
 						(OutputStreamSender) values[i], reqlog), typePart);
 			} else {
-				if (!hasStreamingPart && (values[i] instanceof InputStream
-						|| values[i] instanceof Reader))
-					hasStreamingPart = true;
-
 				if (reqlog != null)
 					bodyPart = new BodyPart(reqlog.copyContent(values[i]),
 							typePart);
@@ -2581,13 +2557,7 @@ public class JerseyServices implements RESTServices {
 			multiPart = multiPart.bodyPart(bodyPart);
 		}
 
-		return hasStreamingPart;
-	}
-
-	private boolean isStreaming(Object value) {
-		 return value instanceof OutputStreamSender
-		 	|| value instanceof InputStream
-			|| value instanceof Reader;
+		return multiPart;
 	}
 
 	private WebResource.Builder makeBuilder(String path,
