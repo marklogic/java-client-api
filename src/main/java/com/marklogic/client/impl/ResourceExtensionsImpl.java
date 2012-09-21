@@ -111,7 +111,8 @@ class ResourceExtensionsImpl
 				}
 			}
 
-		services.putValue(requestLogger, "config/resources", resourceName, extraParams, "application/xquery", sourceBase.sendContent());
+		services.putValue(requestLogger, "config/resources", resourceName, extraParams,
+				"application/xquery", sourceBase.sendContent(), !sourceBase.isResendable());
 	}
 
 	@Override

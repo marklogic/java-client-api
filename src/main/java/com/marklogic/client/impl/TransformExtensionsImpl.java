@@ -166,7 +166,8 @@ class TransformExtensionsImpl
 			}
 		}
 
-		services.putValue(requestLogger, "config/transforms", transformName, extraParams, sourceMimetype, sourceBase.sendContent());
+		services.putValue(requestLogger, "config/transforms", transformName, extraParams,
+				sourceMimetype, sourceBase.sendContent(), !sourceBase.isResendable());
 	}
 
 	@Override

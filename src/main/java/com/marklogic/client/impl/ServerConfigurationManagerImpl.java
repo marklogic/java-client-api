@@ -108,7 +108,7 @@ class ServerConfigurationManagerImpl
 		if (logger.isInfoEnabled())
 			logger.info("Writing server configuration");
 
-		services.putValue(null, "config/properties", null, "application/xml", this);
+		services.putValue(null, "config/properties", null, "application/xml", this, false);
 	}
 	@Override
 	public void write(OutputStream out) throws IOException {
