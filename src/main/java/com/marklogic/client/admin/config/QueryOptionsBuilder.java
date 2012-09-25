@@ -852,6 +852,11 @@ map</pre>
 			geospatial = new QueryGeospatialElement();
 			geospatial.setElement(new MarkLogicQName(index.getElement()
 					.getNamespaceURI(), index.getElement().getLocalPart()));
+		} else if (index.getGeospatialIndexType() == GeospatialIndexType.ELEMENT_CHILD) {
+			geospatial = new QueryGeospatialElement();
+			geospatial.setElement(new MarkLogicQName(index.getElement()
+					.getNamespaceURI(), index.getElement().getLocalPart()));
+			geospatial.setParent(new MarkLogicQName(index.getParent().getNamespaceURI(), index.getParent().getLocalPart()));
 		}
 		if (heatmap != null) {
 			geospatial.setHeatmap(heatmap.getHeatmap());
@@ -1133,7 +1138,26 @@ map</pre>
 		index.setGeospatialIndexType(GeospatialIndexType.ELEMENT);
 		return index;
 	}
-
+	
+	/**
+	 * Builds a geospatial index from data where latitude and longitude
+	 * are encoded together in one element, and are children of
+	 * a specified element.
+	 * @param parent QName of the element that is the parent of geospatial coordinates.
+	 * @param geospatialElement 
+	 * 			QName of the element that contains coordinates. The
+	 *            coordinates are comma-delimited. Default is that latitude
+	 *            precedes longitude. If longitude precedes latitude in your
+	 *            data, use a geo-option called "long-lat-points" on the
+	 *            enclosing geospatial builder method.
+	 */
+	public GeospatialSpec elementChildGeospatialIndex(QName parent, QName geospatialElement) {
+		GeospatialSpecImpl index = new GeospatialSpecImpl();
+		index.setParent(parent);
+		index.setElement(geospatialElement);
+		index.setGeospatialIndexType(GeospatialIndexType.ELEMENT_CHILD);
+		return index;
+	}
 	/**
 	 * Builds a heatmap specification. Heatmaps are used to visualize the
 	 * distribution of geographic data in space. They are defined by their

@@ -173,7 +173,7 @@ public class GenericDocumentTest {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	public void testUrisWithSpaces() {
-		DocumentManager docMgr = Common.newClient().newDocumentManager();
+		DocumentManager docMgr = Common.client.newDocumentManager();
 
 		String[] testUris = new String[] { "/a", "/a%20b", "/a+b+c", "/a%isa#vrybig*andStrangeUr-d/x", "/χρυσαφὶ.html", "/фальшивый" };
 		for (String testUri : testUris) {
