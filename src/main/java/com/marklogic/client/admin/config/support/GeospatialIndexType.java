@@ -22,7 +22,7 @@ package com.marklogic.client.admin.config.support;
  */
 public enum GeospatialIndexType {
 
-	ELEMENT, ELEMENT_PAIR, ATTRIBUTE_PAIR;
+	ELEMENT, ELEMENT_CHILD, ELEMENT_PAIR, ATTRIBUTE_PAIR;
 	
 }
 

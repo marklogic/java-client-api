@@ -566,7 +566,14 @@ public class QueryOptionsBuilderTest {
 						builder.geospatial(
 								builder.elementPairGeospatialIndex(new QName("sf1"),
 										new QName("intptlat"),
-										new QName("intptlon")))));
+										new QName("intptlon")))),
+				builder.constraint(
+						"geoElemChild",
+						builder.geospatial(
+								builder.elementChildGeospatialIndex(
+										new QName("sf1"), 
+										new QName("latlong")), 
+										"type=long-lat-point")));
 
 		QueryGeospatialElement geoElem = options.getConstraint("geoelem")
 				.getSource();
@@ -574,6 +581,8 @@ public class QueryOptionsBuilderTest {
 				.getNamespaceURI());
 
 		options = exercise(options);
+		logger.debug(options.toString());
+		
 		geoElem = options.getConstraint("geoelem")
 				.getSource();
 		assertEquals("GeoConstraint latitude", "ns1", geoElem.getElement()
