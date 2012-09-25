@@ -18,8 +18,6 @@ package com.marklogic.client.impl;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -53,7 +51,6 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
@@ -86,6 +83,7 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.api.client.filter.HTTPDigestAuthFilter;
+import com.sun.jersey.api.uri.UriComponent;
 import com.sun.jersey.client.apache4.ApacheHttpClient4;
 import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
 import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
@@ -972,7 +970,7 @@ public class JerseyServices implements RESTServices {
 		if (name != null || timeLimit > 0) {
 			transParams = new MultivaluedMapImpl();
 			if (name != null)
-				transParams.add("name", name);
+				addEncodedParam(transParams, "name", name);
 			if (timeLimit > 0)
 				transParams.add("timeLimit", String.valueOf(timeLimit));
 		}
@@ -1095,15 +1093,12 @@ public class JerseyServices implements RESTServices {
 		if (extraParams != null && extraParams.size() > 0) {
 			for (Map.Entry<String, List<String>> entry : extraParams.entrySet()) {
 				String extraKey = entry.getKey();
-				if (!"range".equalsIgnoreCase(extraKey))
-					docParams.put(extraKey, entry.getValue());
+				if (!"range".equalsIgnoreCase(extraKey)) {
+					addEncodedParam(docParams, extraKey, entry.getValue());
+				}
 			}
 		}
-		try {
-			docParams.add("uri", URLEncoder.encode(uri, "utf-8").replace("+","%20"));
-		} catch (UnsupportedEncodingException e) {
-			throw new MarkLogicIOException("UTF-8 encoding unavailable");
-		}
+		addEncodedParam(docParams, "uri", uri);
 		if (categories == null || categories.size() == 0) {
 			docParams.add("category", "content");
 		} else {
@@ -1235,110 +1230,105 @@ public class JerseyServices implements RESTServices {
 	public <T> T search(Class<T> as, QueryDefinition queryDef, String mimetype,
 			long start, long len, QueryView view, String transactionId) 
 	throws ForbiddenUserException, FailedRequestException {
-		RequestParameters params = new RequestParameters();
+		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
 		if (start > 1) {
-			params.put("start", "" + start);
+			params.add("start", Long.toString(start));
 		}
 
 		if (len > 0) {
-			params.put("pageLength", "" + len);
+			params.add("pageLength", Long.toString(len));
 		}
 
 		if (view != null && view != QueryView.DEFAULT) {
 			if (view == QueryView.ALL) {
-				params.put("view", "all");
+				params.add("view", "all");
 			} else if (view == QueryView.RESULTS) {
-				params.put("view", "results");
+				params.add("view", "results");
 			} else if (view == QueryView.FACETS) {
-				params.put("view", "facets");
+				params.add("view", "facets");
 			} else if (view == QueryView.METADATA) {
-				params.put("view", "metadata");
+				params.add("view", "metadata");
 			}
 		}
 
 		if (queryDef.getDirectory() != null) {
-			params.put("directory", queryDef.getDirectory());
+			addEncodedParam(params, "directory", queryDef.getDirectory());
 		}
 
-		for (String collection : queryDef.getCollections()) {
-			params.put("collection", collection);
-		}
+		addEncodedParam(params, "collection", queryDef.getCollections());
 
 		if (transactionId != null) {
-			params.put("txid", transactionId);
+			params.add("txid", transactionId);
 		}
 
 		String optionsName = queryDef.getOptionsName();
 		if (optionsName != null && optionsName.length() > 0) {
-			params.put("options", optionsName);
+			addEncodedParam(params, "options", optionsName);
 		}
 
 		WebResource.Builder builder = null;
+		String structure = null;
+		if (queryDef instanceof StringQueryDefinition) {
+           	String text = ((StringQueryDefinition) queryDef).getCriteria();
+           	if (logger.isDebugEnabled())
+           		logger.debug("Searching for {} in transaction {}", text,
+           				transactionId);
+
+           	if (text != null) {
+           		addEncodedParam(params, "q", text);
+           	}
+
+           	builder = connection.path("search").queryParams(params).accept(mimetype);
+		} else if (queryDef instanceof KeyValueQueryDefinition) {
+           	if (logger.isDebugEnabled())
+           		logger.debug("Searching for keys/values in transaction {}",
+           				transactionId);
+
+           	Map<ValueLocator, String> pairs = ((KeyValueQueryDefinition) queryDef);
+           	for (ValueLocator loc : pairs.keySet()) {
+           		if (loc instanceof KeyLocator) {
+           			addEncodedParam(params, "key", ((KeyLocator) loc).getKey());
+           		} else {
+           			ElementLocator eloc = (ElementLocator) loc;
+           			params.add("element", eloc.getElement().toString());
+           			if (eloc.getAttribute() != null) {
+           				params.add("attribute", eloc.getAttribute().toString());
+           			}
+           		}
+           		addEncodedParam(params, "value", pairs.get(loc));
+           	}
+
+           	builder = connection.path("keyvalue").queryParams(params).accept(mimetype);
+		} else if (queryDef instanceof StructuredQueryDefinition) {
+			structure = ((StructuredQueryDefinition) queryDef).serialize();
+
+           	if (logger.isDebugEnabled())
+           		logger.debug("Searching for structure {} in transaction {}", structure,
+           				transactionId);
+
+           	builder = connection.path("search").queryParams(params).type("application/xml");
+        } else if (queryDef instanceof DeleteQueryDefinition) {
+        	if (logger.isDebugEnabled())
+        		logger.debug("Searching for deletes in transaction {}", transactionId);
+
+            	builder = connection.path("search").queryParams(params).accept(mimetype);
+        } else {
+			throw new UnsupportedOperationException("Cannot search with "
+					+ queryDef.getClass().getName());
+		}
 
 		ClientResponse        response = null;
 		ClientResponse.Status status   = null;
 		for (int retry = 0; true; retry++) {
 			if (queryDef instanceof StringQueryDefinition) {
-				String text = ((StringQueryDefinition) queryDef).getCriteria();
-				if (logger.isDebugEnabled())
-					logger.debug("Searching for {} in transaction {}", text,
-						transactionId);
-
-	            if (text != null) {
-				    params.put("q", text);
-	            }
-
-	            if (builder == null)
-	            	builder = connection.path("search")
-						.queryParams(((RequestParametersImplementation) params).getMapImpl())
-						.accept(mimetype);
-
 	            response = builder.get(ClientResponse.class);
 			} else if (queryDef instanceof KeyValueQueryDefinition) {
-				Map<ValueLocator, String> pairs = ((KeyValueQueryDefinition) queryDef);
-				if (logger.isDebugEnabled())
-					logger.debug("Searching for keys/values in transaction {}",
-						transactionId);
-
-				for (ValueLocator loc : pairs.keySet()) {
-					if (loc instanceof KeyLocator) {
-						params.put("key", ((KeyLocator) loc).getKey());
-					} else {
-						ElementLocator eloc = (ElementLocator) loc;
-						params.put("element", eloc.getElement().toString());
-						if (eloc.getAttribute() != null) {
-							params.put("attribute", eloc.getAttribute().toString());
-						}
-					}
-					params.put("value", pairs.get(loc));
-				}
-
-	            if (builder == null)
-	            	builder = connection.path("keyvalue")
-	            		.queryParams(((RequestParametersImplementation) params).getMapImpl())
-	            		.accept(mimetype);
-
 	            response = builder.get(ClientResponse.class);
 			} else if (queryDef instanceof StructuredQueryDefinition) {
-				String structure = ((StructuredQueryDefinition) queryDef).serialize();
-
-				if (builder == null)
-	            	builder = connection.path("search")
-	            		.queryParams(((RequestParametersImplementation) params).getMapImpl())
-	            		.type("application/xml");
-
 				response = builder.post(ClientResponse.class, structure);
 	        } else if (queryDef instanceof DeleteQueryDefinition) {
-	        	if (logger.isDebugEnabled())
-	        		logger.debug("Searching for deletes in transaction {}", transactionId);
-
-				if (builder == null)
-	            	builder = connection.path("search")
-	            		.queryParams(((RequestParametersImplementation) params).getMapImpl())
-	            		.accept(mimetype);
-
-	            response = builder.get(ClientResponse.class);
+				response = builder.get(ClientResponse.class);
 	        } else {
 				throw new UnsupportedOperationException("Cannot search with "
 						+ queryDef.getClass().getName());
@@ -1378,22 +1368,19 @@ public class JerseyServices implements RESTServices {
     @Override
     public void deleteSearch(DeleteQueryDefinition queryDef, String transactionId) throws ForbiddenUserException,
             FailedRequestException {
-        RequestParameters params = new RequestParameters();
+		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
         if (queryDef.getDirectory() != null) {
-            params.put("directory", queryDef.getDirectory());
+            addEncodedParam(params, "directory", queryDef.getDirectory());
         }
 
-        for (String collection : queryDef.getCollections()) {
-            params.put("collection", collection);
-        }
+        addEncodedParam(params, "collection", queryDef.getCollections());
 
         if (transactionId != null) {
-            params.put("txid", transactionId);
+            params.add("txid", transactionId);
         }
 
-		WebResource builder = connection.path("search")
-    		.queryParams(((RequestParametersImplementation) params).getMapImpl());
+		WebResource builder = connection.path("search").queryParams(params);
 
 		ClientResponse        response = null;
 		ClientResponse.Status status   = null;
@@ -1433,17 +1420,15 @@ public class JerseyServices implements RESTServices {
 
 		String optionsName = valDef.getOptionsName();
 		if (optionsName != null && optionsName.length() > 0) {
-			docParams.add("options", optionsName);
+			addEncodedParam(docParams, "options", optionsName);
 		}
 
 		if (valDef.getAggregate() != null) {
-            for (String aggregate : valDef.getAggregate()) {
-			    docParams.add("aggregate", aggregate);
-            }
+			addEncodedParam(docParams, "aggregate", valDef.getAggregate());
 		}
 
 		if (valDef.getAggregatePath() != null) {
-			docParams.add("aggregatePath", valDef.getAggregatePath());
+			addEncodedParam(docParams, "aggregatePath", valDef.getAggregatePath());
 		}
 
 		if (valDef.getView() != null) {
@@ -1472,7 +1457,7 @@ public class JerseyServices implements RESTServices {
 			if (optionsName == null) {
 				optionsName = queryDef.getOptionsName();
 				if (optionsName != null) {
-					docParams.add("options", optionsName);
+					addEncodedParam(docParams, "options", optionsName);
 				}
 			} else if (queryDef.getOptionsName() != null) {
 				if (optionsName != queryDef.getOptionsName() &&
@@ -1492,16 +1477,13 @@ public class JerseyServices implements RESTServices {
 			if (queryDef instanceof StringQueryDefinition) {
 				String text = ((StringQueryDefinition) queryDef).getCriteria();
 	            if (text != null) {
-	            	docParams.add("q", text);
+					addEncodedParam(docParams, "q", text);
 	            }
 			} else if (queryDef instanceof StructuredQueryDefinition) {
 				String structure = ((StructuredQueryDefinition) queryDef)
 						.serialize();
 	            if (structure != null) {
-	            		docParams.add(
-	            			"structuredQuery",
-	            			structure
-	            			);
+					addEncodedParam(docParams, "structuredQuery", structure);
 	            }
 			} else {
 				if (logger.isWarnEnabled())
@@ -1565,7 +1547,7 @@ public class JerseyServices implements RESTServices {
 
 		String optionsName = valDef.getOptionsName();
 		if (optionsName != null && optionsName.length() > 0) {
-			docParams.add("options", optionsName);
+			addEncodedParam(docParams, "options", optionsName);
 		}
 
 		if (transactionId != null) {
@@ -2229,7 +2211,8 @@ public class JerseyServices implements RESTServices {
 	throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
 		WebResource.Builder builder = makePostBuilder(
-			path, params, inputMimetype, Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE)
+			path, params, inputMimetype,
+			Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE)
 			);
 
 		ClientResponse        response = null;
@@ -2338,8 +2321,8 @@ public class JerseyServices implements RESTServices {
 		if (path == null)
 			throw new IllegalArgumentException("Read with null path");
 
-		WebResource.Builder builder = makeBuilder(path,
-				((RequestParametersImplementation) params).getMapImpl(), null, mimetype);
+		WebResource.Builder builder = makeBuilder(path, convertParams(params),
+				null, mimetype);
 
 		if (logger.isDebugEnabled())
 			logger.debug(String.format("Getting %s as %s", path, mimetype));
@@ -2361,9 +2344,8 @@ public class JerseyServices implements RESTServices {
 		if (path == null)
 			throw new IllegalArgumentException("Write with null path");
 
-		WebResource.Builder builder = makeBuilder(path,
-				((RequestParametersImplementation) params).getMapImpl(), inputMimetype,
-				outputMimetype);
+		WebResource.Builder builder = makeBuilder(path, convertParams(params),
+				inputMimetype, outputMimetype);
 
 		if (logger.isDebugEnabled())
 			logger.debug("Putting {}", path);
@@ -2399,8 +2381,7 @@ public class JerseyServices implements RESTServices {
 		if (path == null)
 			throw new IllegalArgumentException("Write with null path");
 
-		WebResource.Builder builder = makeBuilder(path,
-				((RequestParametersImplementation) params).getMapImpl(),
+		WebResource.Builder builder = makeBuilder(path, convertParams(params),
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE),
 				outputMimetype);
 
@@ -2428,9 +2409,8 @@ public class JerseyServices implements RESTServices {
 		if (path == null)
 			throw new IllegalArgumentException("Apply with null path");
 
-		WebResource.Builder builder = makeBuilder(path,
-				((RequestParametersImplementation) params).getMapImpl(), inputMimetype,
-				outputMimetype);
+		WebResource.Builder builder = makeBuilder(path, convertParams(params),
+				inputMimetype, outputMimetype);
 
 		if (logger.isDebugEnabled())
 			logger.debug("Posting {}", path);
@@ -2466,8 +2446,7 @@ public class JerseyServices implements RESTServices {
 		if (path == null)
 			throw new IllegalArgumentException("Apply with null path");
 
-		WebResource.Builder builder = makeBuilder(path,
-				((RequestParametersImplementation) params).getMapImpl(),
+		WebResource.Builder builder = makeBuilder(path, convertParams(params),
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE),
 				outputMimetype);
 
@@ -2495,8 +2474,8 @@ public class JerseyServices implements RESTServices {
 		if (path == null)
 			throw new IllegalArgumentException("Delete with null path");
 
-		WebResource.Builder builder = makeBuilder(path,
-				((RequestParametersImplementation) params).getMapImpl(), null, mimetype);
+		WebResource.Builder builder = makeBuilder(path, convertParams(params),
+				null, mimetype);
 
 		if (logger.isDebugEnabled())
 			logger.debug("Deleting {}", path);
@@ -2519,8 +2498,73 @@ public class JerseyServices implements RESTServices {
 			return null;
 
 		MultivaluedMap<String, String> requestParams = new MultivaluedMapImpl();
-		requestParams.putAll(params);
+		for (Map.Entry<String, List<String>> entry: params.entrySet()) {
+			addEncodedParam(requestParams, entry.getKey(), entry.getValue());
+		}
+
 		return requestParams;
+	}
+
+	private void addEncodedParam(MultivaluedMap<String, String> params, String key, List<String> values) {
+		List<String> encodedParams = encodeParamValues(values);
+		if (encodedParams != null && encodedParams.size() > 0)
+			params.put(key, encodedParams);
+	}
+	private void addEncodedParam(MultivaluedMap<String, String> params, String key, String[] values) {
+		List<String> encodedParams = encodeParamValues(values);
+		if (encodedParams != null && encodedParams.size() > 0)
+			params.put(key, encodedParams);
+	}
+	private void addEncodedParam(MultivaluedMap<String, String> params, String key, String value) {
+		value = encodeParamValue(value);
+		if (value == null)
+			return;
+
+		params.add(key, value);
+	}
+	private List<String> encodeParamValues(List<String> oldValues) {
+		if (oldValues == null)
+			return null;
+
+		int oldSize = oldValues.size();
+		if (oldSize == 0)
+			return null;
+		
+		List<String> newValues = new ArrayList<String>(oldSize);
+		for (String value: oldValues) {
+			String newValue = encodeParamValue(value);
+			if (newValue == null)
+				continue;
+			newValues.add(newValue);
+		}
+
+		return newValues;
+	}
+	private List<String> encodeParamValues(String[] oldValues) {
+		if (oldValues == null)
+			return null;
+
+		int oldSize = oldValues.length;
+		if (oldSize == 0)
+			return null;
+		
+		List<String> newValues = new ArrayList<String>(oldSize);
+		for (String value: oldValues) {
+			String newValue = encodeParamValue(value);
+			if (newValue == null)
+				continue;
+			newValues.add(newValue);
+		}
+
+		return newValues;
+	}
+	private String encodeParamValue(String value) {
+		if (value == null)
+			return null;
+
+		return UriComponent.encode(
+				value, UriComponent.Type.QUERY_PARAM
+				).replace("+", "%20");
 	}
 
 	private MultiPart addParts(RequestLogger reqlog, String[] mimetypes, Object[] values) {
