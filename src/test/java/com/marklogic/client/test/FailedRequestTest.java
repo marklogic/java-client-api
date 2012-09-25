@@ -18,6 +18,8 @@ package com.marklogic.client.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.marklogic.client.FailedRequestException;
@@ -31,6 +33,24 @@ import com.marklogic.client.io.QueryOptionsHandle;
 
 public class FailedRequestTest {
 
+	@Before 
+	@After
+	public void setXMLErrors() {
+		
+		Common.connectAdmin();
+		ServerConfigurationManager serverConfig = Common.client.newServerConfigManager();
+		serverConfig = Common.client.newServerConfigManager();
+
+		serverConfig.setErrorFormat(Format.XML);
+		serverConfig.writeConfiguration();
+
+		serverConfig.readConfiguration();
+
+		
+		
+	}
+	
+	
 	@Test
 	public void testFailedRequest() {
 		Common.connect();
@@ -89,15 +109,8 @@ public class FailedRequestTest {
 		catch (IllegalArgumentException e) {
 			//pass
 		}
-		Common.connectAdmin();
-		serverConfig = Common.client.newServerConfigManager();
-
-		serverConfig.setErrorFormat(Format.XML);
-		serverConfig.writeConfiguration();
-
-		serverConfig.readConfiguration();
-
-		assertEquals(Format.XML, serverConfig.getErrorFormat());
 		
+		testFailedRequest();
+	
 	}
 }

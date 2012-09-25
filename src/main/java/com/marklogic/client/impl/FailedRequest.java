@@ -18,12 +18,15 @@ package com.marklogic.client.impl;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.ws.rs.core.MediaType;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+
+import com.marklogic.client.extra.jackson.JSONErrorParser;
 
 /**
  * Encapsulate data passed in an error response from a REST server instance
@@ -49,42 +52,75 @@ public class FailedRequest {
 
 	private String statusString;
 
+	private static class FailedRequestXMLParser implements FailedRequestParser {
+
+		@Override
+		public FailedRequest parseFailedRequest(int httpStatus, InputStream is) {
+			FailedRequest failure = new FailedRequest();
+			DocumentBuilderFactory factory = DocumentBuilderFactory
+					.newInstance();
+			factory.setNamespaceAware(true);
+			factory.setValidating(false);
+			DocumentBuilder builder;
+			try {
+				builder = factory.newDocumentBuilder();
+				Document doc = builder.parse(is);
+				String statusCode = doc
+						.getElementsByTagNameNS(JerseyServices.ERROR_NS,
+								"status-code").item(0).getTextContent();
+				failure.setStatusCode(Integer.parseInt(statusCode));
+				failure.setStatusString(doc
+						.getElementsByTagNameNS(JerseyServices.ERROR_NS,
+								"status").item(0).getTextContent());
+				failure.setMessageCode(doc
+						.getElementsByTagNameNS(JerseyServices.ERROR_NS,
+								"message-code").item(0).getTextContent());
+				failure.setMessageString(doc
+						.getElementsByTagNameNS(JerseyServices.ERROR_NS,
+								"message").item(0).getTextContent());
+			} catch (ParserConfigurationException e) {
+				failure.setStatusCode(httpStatus);
+				failure.setMessageString("Request failed. Unable to parse server error.");
+			} catch (SAXException e) {
+				failure.setStatusCode(httpStatus);
+				failure.setMessageString("Request failed. Unable to parse server error details");
+			} catch (IOException e) {
+				failure.setStatusCode(httpStatus);
+				failure.setMessageString("Request failed. Error body not received from server");
+			}
+			return failure;
+		}
+		
+	}
 	/*
 	 * send an InputStream to this handler in order to create an error block.
 	 */
-	FailedRequest(int httpStatus, InputStream content) {
+	public static FailedRequest getFailedRequest(int httpStatus, MediaType contentType, InputStream content) {
 
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		factory.setNamespaceAware(true);
-		factory.setValidating(false);
-		DocumentBuilder builder;
-		try {
-			builder = factory.newDocumentBuilder();
-			Document doc = builder.parse(content);
-			String statusCode = doc
-					.getElementsByTagNameNS(JerseyServices.ERROR_NS,
-							"status-code").item(0).getTextContent();
-			this.statusCode = Integer.parseInt(statusCode);
-			statusString = doc
-					.getElementsByTagNameNS(JerseyServices.ERROR_NS, "status")
-					.item(0).getTextContent();
-			messageCode = doc
-					.getElementsByTagNameNS(JerseyServices.ERROR_NS,
-							"message-code").item(0).getTextContent();
-			messageString = doc
-					.getElementsByTagNameNS(JerseyServices.ERROR_NS, "message")
-					.item(0).getTextContent();
-		} catch (ParserConfigurationException e) {
-			statusCode = httpStatus;
-			messageString = "Request failed. Unable to parse server error.";
-		} catch (SAXException e) {
-			statusCode = httpStatus;
-			messageString = "Request failed. Unable to parse server error details";
-		} catch (IOException e) {
-			statusCode = httpStatus;
-			messageString = "Request failed. Error body not received from server";
+		// by default XML is supported
+		if (contentType.equals(MediaType.APPLICATION_XML_TYPE)) {
+			
+			FailedRequestParser xmlParser = new FailedRequestXMLParser();
+			return xmlParser.parseFailedRequest(httpStatus, content);
+			
+		}
+		else if (contentType.equals(MediaType.APPLICATION_JSON_TYPE)) {
+			return jsonFailedRequest(httpStatus, content);						
+		}
+		else {
+			throw new IllegalArgumentException("Only XML and JSON error messages supported by MarkLogic Server");
 		}
 
+	}
+	
+	private static FailedRequest jsonFailedRequest(int httpStatus, InputStream content) {
+		return new JSONErrorParser().parseFailedRequest(httpStatus, content);
+	}
+
+	/**
+	 * No argument constructor so an external class can generate FailedRequest objects.
+	 */
+	public FailedRequest() {
 	}
 
 	public String getMessage() {
@@ -102,5 +138,22 @@ public class FailedRequest {
 	public int getStatusCode() {
 		return statusCode;
 	}
+
+	public void setMessageCode(String messageCode) {
+		this.messageCode = messageCode;
+	}
+
+	public void setMessageString(String messageString) {
+		this.messageString = messageString;
+	}
+
+	public void setStatusCode(int statusCode) {
+		this.statusCode = statusCode;
+	}
+
+	public void setStatusString(String statusString) {
+		this.statusString = statusString;
+	}
+
 
 }

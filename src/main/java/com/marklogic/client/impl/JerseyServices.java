@@ -135,10 +135,10 @@ public class JerseyServices implements RESTServices {
 			headFirst = ("true".equals(head) || "1".equals(head));
 	}
 
-	private FailedRequest extractErrorFields(ClientResponse response) {
+	private FailedRequest extractErrorFields(ClientResponse response) {		
 		InputStream is = response.getEntityInputStream();
 		try {
-			FailedRequest handler = new FailedRequest(response.getStatus(), is);
+			FailedRequest handler = FailedRequest.getFailedRequest(response.getStatus(), response.getType(), is);
 			return handler;
 		} catch (RuntimeException e) {
 			throw (e);
