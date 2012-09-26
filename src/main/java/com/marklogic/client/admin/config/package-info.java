@@ -1,6 +1,37 @@
 /**
- * The package provides classes and interfaces that support query options and query operations
- * such as {@link com.marklogic.client.query.QueryManager}.search().
+ * The package provides classes and interfaces that implement MarkLogic Search API configuration using
+ * Java Objects.
+ * <p>
+ * Ordinarily, objects in this package will be created in one of two ways: 
+ * by retreiving them from a MarkLogic Server using a {@link com.marklogic.client.io.QueryOptionsHandle} 
+ * or by building them with {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.
+ * <p>
+ * A QueryOptions object contains getters and setters for each of the types of 
+ * information that comprise a Search API configuration.  These options include
+ * constraints, tuples configurations, operators, a grammar element, and options for 
+ * configuring the result.
+ * <p>
+ * The classes of each kind of configuration object are enclosed within QueryOptions.  
+ * For example, QueryOptions.QueryGrammar models the set of configuration elements that comprise
+ * a grammar.  QueryOptions.QueryGeospatialElement models access to a
+ * particular geospatial index configuration that uses an element to encode
+ * coordinates.  QueryOptions.QueryTerm contains the behavior of bare search
+ * terms in a Search string configuration.
+ * <p>
+ * While you can access and manipulate query options configurations in this way, 
+ * it is simpler to build fresh ones with {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.
+ * <p>
+ * QueryOptions, when stored on the server and referenced from a subsequent request, 
+ * control the behavior and results of calls to 
+ * {@link com.marklogic.client.query.QueryManager}.search(),
+ * {@link com.marklogic.client.query.QueryManager}.values(), and
+ * {@link com.marklogic.client.query.QueryManager}.tuples().
+ * <p>
+ * For comprehensive treatment of the Search API, the REST API and the Java API visit
+ * {@link http://docs.marklogic.com}
+ * 
+ * 
+ * 
  */
 /*
  * Copyright 2012 MarkLogic Corporation
@@ -16,7 +47,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+*/
 @javax.xml.bind.annotation.XmlSchema (               
     xmlns = { 
             @javax.xml.bind.annotation.XmlNs(prefix = "search", 

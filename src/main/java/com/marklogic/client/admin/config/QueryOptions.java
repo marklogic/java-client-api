@@ -3538,7 +3538,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 
 
     /**
-     * A set of ExpressionNamespaceBindings
+     * A list of ExpressionNamespaceBinding objects.
      */
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class ExpressionNamespaceBindings {
@@ -3559,7 +3559,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 	}
 
     /**
-     * An encapsulation of a prefix and a namespace URI for use in xpath expression evaluation
+     * An encapsulation of a prefix and a namespace URI for use in xpath expression evaluation.
      */
 	@XmlAccessorType(XmlAccessType.FIELD)
 	public static class ExpressionNamespaceBinding {
