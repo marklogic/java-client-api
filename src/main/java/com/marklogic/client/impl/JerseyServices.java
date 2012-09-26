@@ -122,15 +122,17 @@ public class JerseyServices implements RESTServices {
 
 	private boolean isFirstRequest = true;
 
+	static private boolean shouldWarn = true;
 	private final boolean hasHeadfirstEnv;
 
 	private boolean headFirst = false;
 
 	public JerseyServices() {
-		String head = System.getProperty("com.marklogic.client.headfirst");
-		hasHeadfirstEnv = (head != null); 
-		if (hasHeadfirstEnv)
-			headFirst = ("true".equals(head) || "1".equals(head));
+		String headProp = System.getProperty("com.marklogic.client.headfirst");
+		hasHeadfirstEnv = (headProp != null); 
+		if (hasHeadfirstEnv) {
+			headFirst = ("true".equals(headProp) || "1".equals(headProp));
+		}
 	}
 
 	private FailedRequest extractErrorFields(ClientResponse response) {		
@@ -185,8 +187,18 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 
-		if (!hasHeadfirstEnv)
+		if (!hasHeadfirstEnv) {
 			headFirst = (authenType == Authentication.DIGEST);
+			if (headFirst && shouldWarn) {
+				shouldWarn = false;
+				logger.warn(
+"A known issue with HTTP Digest authentication in the client requires\n"+
+"an extra HEAD request during updates. Configure the REST server and\n"+
+"Java client to use Basic authentication with or without SSL to avoid\n"+
+"this roundtrip or set the com.marklogic.client.headfirst property to\n"+
+"'true' to suppress this warning.");
+			}
+		}
 
 		if (authenType != null) {
 			if (user == null)
@@ -208,10 +220,10 @@ public class JerseyServices implements RESTServices {
 		System.setProperty("org.apache.commons.logging.Log",
 				"org.apache.commons.logging.impl.SimpleLog");
 		System.setProperty(
-				"org.apache.commons.logging.simplelog.log.httpclient.wire.header",
+				"org.apache.commons.logging.simplelog.log.org.apache.http",
 				"warn");
 		System.setProperty(
-				"org.apache.commons.logging.simplelog.log.org.apache.commons.httpclient",
+				"org.apache.commons.logging.simplelog.log.org.apache.http.wire",
 				"warn");
 
 		Scheme scheme = null;
