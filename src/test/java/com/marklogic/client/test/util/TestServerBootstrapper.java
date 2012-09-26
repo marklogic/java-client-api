@@ -85,6 +85,7 @@ public class TestServerBootstrapper {
 				+ "/v1/resources/bootstrap");
 
 		HttpResponse response = client.execute(post);
+		@SuppressWarnings("unused")
 		HttpEntity entity = response.getEntity();
 		logger.info("Invoked bootstrap extension.  Response is "
 				+ response.toString());

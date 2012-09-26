@@ -21,7 +21,7 @@ package com.marklogic.client.admin.config.support;
  * range index description.
  * Used only in {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.*RangeIndex(...) expressions.
  */
-public interface RangeSpec extends Typed, IndexSpec {
+public interface RangeSpec extends IndexSpec {
 	
 	public void setType(String type);
 

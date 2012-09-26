@@ -18,7 +18,6 @@ package com.marklogic.client.admin.config.support;
 
 /**
  * Marks options that are backed by term lists.
- * Included for symmetry but not actually in use.
  */
 public interface TermIndexed extends Indexed, TermOptions {
 

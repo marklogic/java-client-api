@@ -18,15 +18,10 @@ package com.marklogic.client.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.Format;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;

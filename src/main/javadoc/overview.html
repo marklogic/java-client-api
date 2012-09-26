@@ -128,9 +128,11 @@ QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
 
 QueryOptionsHandle handle = new QueryOptionsHandle();
 QueryOptionsBuilder builder = new QueryOptionsBuilder();
-handle.build(
-    builder.value("port"),
-        builder.element("port"));
+
+handle.withConstraints(
+	builder.constraint("port",
+		builder.value(
+			builder.elementTermIndex(new QName("port")))));
 
 optionsMgr.writeOptions("shipments", handle);
 </pre>

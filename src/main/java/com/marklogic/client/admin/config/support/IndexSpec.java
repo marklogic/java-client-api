@@ -25,7 +25,7 @@ import com.marklogic.client.admin.config.QueryOptions.PathIndex;
  * This interface simply defines shared methods among those MarkLogic entities that 
  * back term sources and range sources.
  */
-public interface IndexSpec {
+public interface IndexSpec  {
 	
 	public QName getAttribute();
 
