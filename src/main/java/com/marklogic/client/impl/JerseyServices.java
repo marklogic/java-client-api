@@ -122,17 +122,7 @@ public class JerseyServices implements RESTServices {
 
 	private boolean isFirstRequest = true;
 
-	static private boolean shouldWarn = true;
-	private final boolean hasHeadfirstEnv;
-
-	private boolean headFirst = false;
-
 	public JerseyServices() {
-		String headProp = System.getProperty("com.marklogic.client.headfirst");
-		hasHeadfirstEnv = (headProp != null); 
-		if (hasHeadfirstEnv) {
-			headFirst = ("true".equals(headProp) || "1".equals(headProp));
-		}
 	}
 
 	private FailedRequest extractErrorFields(ClientResponse response) {		
@@ -187,19 +177,6 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 
-		if (!hasHeadfirstEnv) {
-			headFirst = (authenType == Authentication.DIGEST);
-			if (headFirst && shouldWarn) {
-				shouldWarn = false;
-				logger.warn(
-"A known issue with HTTP Digest authentication in the client requires\n"+
-"an extra HEAD request during updates. Configure the REST server and\n"+
-"Java client to use Basic authentication with or without SSL to avoid\n"+
-"this roundtrip or set the com.marklogic.client.headfirst property to\n"+
-"'true' to suppress this warning.");
-			}
-		}
-
 		if (authenType != null) {
 			if (user == null)
 				throw new IllegalArgumentException("No user provided");
@@ -239,9 +216,9 @@ public class JerseyServices implements RESTServices {
 		SchemeRegistry schemeRegistry = new SchemeRegistry();
 		schemeRegistry.register(scheme);
 
-        /* 4.2
 		int maxConnections = 100;
 
+        /* 4.2
 		PoolingClientConnectionManager connMgr =
 			new PoolingClientConnectionManager(schemeRegistry);
 		connMgr.setMaxTotal(maxConnections);
@@ -252,7 +229,7 @@ public class JerseyServices implements RESTServices {
 	    */
         // start 4.1
         ThreadSafeClientConnManager connMgr = new ThreadSafeClientConnManager(schemeRegistry);
-        connMgr.setDefaultMaxPerRoute(100);
+        connMgr.setDefaultMaxPerRoute(maxConnections);
         // end 4.1
 
 //		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
@@ -301,15 +278,21 @@ public class JerseyServices implements RESTServices {
 		// System.setProperty("javax.net.debug", "all"); // all or ssl
 
 		if (authenType != null) {
-			if (authenType == Authentication.BASIC)
+			if (authenType == Authentication.BASIC) {
 				client.addFilter(new HTTPBasicAuthFilter(user, password));
-			else if (authenType == Authentication.DIGEST)
+			} else if (authenType == Authentication.DIGEST) {
+				// workaround for JerseyClient bug 1445
+				client.addFilter(new DigestChallengeFilter());
+
 				client.addFilter(new HTTPDigestAuthFilter(user, password));
-			else
+			} else {
 				throw new MarkLogicInternalException(
 					"Internal error - unknown authentication type: "
 							+ authenType.name());
+			}
 		}
+
+		// client.addFilter(new LoggingFilter(System.err));
 
 		connection = client.resource(baseUri);
 	}
@@ -788,7 +771,7 @@ public class JerseyServices implements RESTServices {
 		ClientResponse.Status status   = null;
 		for (int retry = 0; true; retry++) {
 
-			if (isStreaming && (isFirstRequest || headFirst))
+			if (isStreaming && isFirstRequest)
 				makeFirstRequest();
 
 			if (value instanceof OutputStreamSender) {
@@ -916,7 +899,7 @@ public class JerseyServices implements RESTServices {
 		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
 				categories, transactionId, extraParams, true);
 
-		if ((isFirstRequest || headFirst) && hasStreamingPart)
+		if (isFirstRequest && hasStreamingPart)
 			makeFirstRequest();
 
 		WebResource.Builder builder = makeDocumentResource(docParams).type(
@@ -1847,7 +1830,7 @@ public class JerseyServices implements RESTServices {
 		ClientResponse.Status status   = null;
 		for (int retry = 0; true; retry++) {
 			if ("put".equals(method)) {
-				if ((isFirstRequest || headFirst) && isStreaming)
+				if (isFirstRequest && isStreaming)
 					makeFirstRequest();
 
 				if (builder == null) {
@@ -1860,7 +1843,7 @@ public class JerseyServices implements RESTServices {
 
 				response = builder.put(ClientResponse.class, sentValue);
 			} else if ("post".equals(method)) {
-				if ((isFirstRequest || headFirst) && isStreaming)
+				if (isFirstRequest && isStreaming)
 					makeFirstRequest();
 
 				if (builder == null) {
@@ -2367,7 +2350,7 @@ public class JerseyServices implements RESTServices {
 
 	private ClientResponse doPut(RequestLogger reqlog, WebResource.Builder builder,
 			Object value, boolean isStreaming) {
-		if (isStreaming && (isFirstRequest || headFirst))
+		if (isStreaming && isFirstRequest)
 			makeFirstRequest();
 
 		ClientResponse response = null;
@@ -2432,7 +2415,7 @@ public class JerseyServices implements RESTServices {
 
 	private ClientResponse doPost(RequestLogger reqlog, WebResource.Builder builder,
 			Object value, boolean isStreaming) {
-		if (isStreaming && (isFirstRequest || headFirst))
+		if (isStreaming && isFirstRequest)
 			makeFirstRequest();
 
 		ClientResponse response = null;
@@ -2470,7 +2453,7 @@ public class JerseyServices implements RESTServices {
 
 	private ClientResponse doPost(WebResource.Builder builder, MultiPart multiPart,
 			boolean hasStreamingPart) {
-		if ((isFirstRequest || headFirst) && hasStreamingPart)
+		if (isFirstRequest && hasStreamingPart)
 			makeFirstRequest();
 
 		ClientResponse response = builder.post(ClientResponse.class, multiPart);
