@@ -15,13 +15,17 @@
  */
 package com.marklogic.client.test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -78,5 +82,20 @@ public class StructuredSearchTest {
             GenericDocumentManager docMgr = Common.client.newDocumentManager();
             assertTrue("Document exists", docMgr.exists(summary.getUri())!=null);
         }
+    }
+
+    @Test
+    public void testJSON() {
+        QueryManager queryMgr = Common.client.newQueryManager();
+        StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(null);
+        StructuredQueryDefinition t = qb.term("leaf3");
+
+        // create a handle for the search results
+        StringHandle resultsHandle = new StringHandle().withFormat(Format.JSON);
+
+        // run the search
+        queryMgr.search(t, resultsHandle);
+
+        assertEquals("{", resultsHandle.get().substring(0, 1)); // It's JSON, right?
     }
 }

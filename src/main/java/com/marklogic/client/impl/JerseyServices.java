@@ -1257,6 +1257,10 @@ public class JerseyServices implements RESTServices {
 			params.add("txid", transactionId);
 		}
 
+        if ("application/json".equals(mimetype)) {
+            params.add("format", "json");
+        }
+
 		String optionsName = queryDef.getOptionsName();
 		if (optionsName != null && optionsName.length() > 0) {
 			addEncodedParam(params, "options", optionsName);
