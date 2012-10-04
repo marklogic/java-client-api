@@ -120,6 +120,14 @@ public class StructuredQueryBuilderTest {
                 + "<negative-query><term-query><text>two</text></term-query></negative-query>"
                 + "</and-not-query></query>", t.serialize());
 
+        t = qb.notIn(qb.term("one"), qb.term("two"));
+        xml = new StringInputStream(t.serialize());
+        parser.parse(xml, handler);
+        assertEquals("<query xmlns='http://marklogic.com/appservices/search'><not-in-query>"
+                + "<positive-query><term-query><text>one</text></term-query></positive-query>"
+                + "<negative-query><term-query><text>two</text></term-query></negative-query>"
+                + "</not-in-query></query>", t.serialize());
+
         t = qb.documentFragment(qb.document("/some/uri.xml"));
         xml = new StringInputStream(t.serialize());
         parser.parse(xml, handler);
