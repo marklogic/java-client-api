@@ -50,10 +50,6 @@ public class StructuredQueryBuilder {
         return new AndNotQuery(positive, negative);
     }
 
-    public NotInQuery notIn(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
-        return new NotInQuery(positive, negative);
-    }
-
     public DocumentQuery document(String uri) {
         return new DocumentQuery(uri);
     }
@@ -242,25 +238,6 @@ public class StructuredQueryBuilder {
                     + "</positive-query><negative-query>"
                     + ((AbstractStructuredQuery) negative).innerSerialize()
                     + "</negative-query></and-not-query>";
-        }
-    }
-
-    public class NotInQuery extends AbstractStructuredQuery {
-        StructuredQueryDefinition positive = null;
-        StructuredQueryDefinition negative = null;
-
-        public NotInQuery(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
-            super();
-            this.positive = positive;
-            this.negative = negative;
-        }
-
-        public String innerSerialize() {
-            return "<not-in-query><positive-query>"
-                    + ((AbstractStructuredQuery) positive).innerSerialize()
-                    + "</positive-query><negative-query>"
-                    + ((AbstractStructuredQuery) negative).innerSerialize()
-                    + "</negative-query></not-in-query>";
         }
     }
 
