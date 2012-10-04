@@ -524,10 +524,10 @@ declare function bootstrap:post(
     $input as document-node()*
 ) as document-node()*
 {
-    let $ncre := bootstrap:security-config('sec:create-user("rest-admin","rest-admin user", "x",("rest-admin"),(),())')
-    let $ncre := bootstrap:security-config('sec:create-user("rest-reader","rest-reader user", "x",("rest-reader"),(),())')
-    let $ncre := bootstrap:security-config('sec:create-user("rest-writer","rest-writer user", "x",("rest-writer"),(),())')
-    let $ncre := bootstrap:security-config('sec:create-user("valid","valid unprivileged user", "x",(),(),())')
+   let $ncre := bootstrap:security-config('sec:create-user("rest-admin","rest-admin user", "x",("rest-admin"),(),(),())')
+    let $ncre := bootstrap:security-config('sec:create-user("rest-reader","rest-reader user", "x",("rest-reader"),(),(),())')
+    let $ncre := bootstrap:security-config('sec:create-user("rest-writer","rest-writer user", "x",("rest-writer"),(),(),())')
+    let $ncre := bootstrap:security-config('sec:create-user("valid","valid unprivileged user", "x",(),(),(),())')
     let $dbid := xdmp:database("java-unittest")
     let $config := bootstrap:database-configure($dbid)
     let $d1 := bootstrap:load-data()
