@@ -253,8 +253,6 @@ public class JerseyServices implements RESTServices {
 			httpParams.setParameter(AuthPNames.PROXY_AUTH_PREF, authpref);
 		}
 
-		// note that setting PROPERTY_FOLLOW_REDIRECTS below doesn't seem to
-		// work
 		httpParams.setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, false);
 
 		DefaultApacheHttpClient4Config config = new DefaultApacheHttpClient4Config();
@@ -264,14 +262,16 @@ public class JerseyServices implements RESTServices {
 				false);
 		configProps.put(ApacheHttpClient4Config.PROPERTY_CONNECTION_MANAGER,
 				connMgr);
+		// ignored?
 		configProps.put(ApacheHttpClient4Config.PROPERTY_FOLLOW_REDIRECTS,
 				false);
 		// configProps.put(ApacheHttpClient4Config.PROPERTY_CREDENTIALS_PROVIDER,
-		// credentialsProvider);
+		//		credentialsProvider);
 		configProps.put(ApacheHttpClient4Config.PROPERTY_HTTP_PARAMS,
 				httpParams);
-		// configProps.put(ApacheHttpClient4Config.PROPERTY_CHUNKED_ENCODING_SIZE,
-		// 0);
+		// switches from buffered to streamed in Jersey Client
+		configProps.put(ApacheHttpClient4Config.PROPERTY_CHUNKED_ENCODING_SIZE,
+				32 * 1024);
 
 		client = ApacheHttpClient4.create(config);
 
