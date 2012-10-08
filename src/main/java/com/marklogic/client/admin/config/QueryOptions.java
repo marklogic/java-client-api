@@ -30,7 +30,6 @@ import javax.xml.bind.annotation.XmlValue;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 
-import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.admin.config.support.Annotatable;
 import com.marklogic.client.admin.config.support.Buckets;
 import com.marklogic.client.admin.config.support.ConstraintSource;
@@ -42,6 +41,7 @@ import com.marklogic.client.admin.config.support.TermOptions;
 import com.marklogic.client.admin.config.support.TermSource;
 import com.marklogic.client.admin.config.support.TupleSource;
 import com.marklogic.client.impl.Utilities;
+import com.marklogic.client.util.EditableNamespaceContext;
 
 /**
  * Models MarkLogic Search API Configurations.
@@ -2947,7 +2947,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		private List<String> termOptions;
 
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "weight")
-		private double weight;
+		private Double weight;
 
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
 		private List<QueryAnnotation> annotations;
@@ -2965,12 +2965,20 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 
 		public QueryTerm() {
 			annotations = new ArrayList<QueryAnnotation>();
-			defaultConstraint = new DefaultTermSource();
 		}
 
 
+		/**
+		 * get the constraint definition that backs default term queries.
+		 * @return A value, word, or value definition that backs default queries.
+		 */
 		public <T extends BaseConstraintItem> T getSource() {
-			return defaultConstraint.getSource();
+			if (defaultConstraint == null) {
+				return null;
+			}
+			else {
+				return defaultConstraint.getSource();
+			}
 		}
 
 		public TermApply getEmptyApply() {
@@ -2995,10 +3003,15 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			return this.weight;
 		}
 
+		/**
+		 * Sets the source of data that backs default (unprefixed) search terms.
+		 * @param termSource A value, word, or range that backs term queries.
+		 */
 		public void setSource(TermSource termSource) {
+			this.defaultConstraint = new DefaultTermSource();
 			this.defaultConstraint.setSource(termSource);
 		}
-
+		
 		public void setEmptyApply(TermApply termApply) {
 			empty = new XQueryExtension();
 			empty.setApply(termApply.toXmlString());
@@ -3015,6 +3028,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		}
 
 		public void setRef(String defaultSourceName) {
+			this.defaultConstraint = new DefaultTermSource();
 			defaultConstraint.setRef(defaultSourceName);
 		}
 
