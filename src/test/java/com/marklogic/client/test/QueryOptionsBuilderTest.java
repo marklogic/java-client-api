@@ -868,6 +868,9 @@ public class QueryOptionsBuilderTest {
 
 		options = exercise(options);
 		
+		assertNull(options.getTerm().getSource());
+		assertNull(options.getTerm().getWeight());
+		
 		assertEquals("TermConfig after storing", "punctuation-insensitive", options.getTerm().getTermOptions().get(0));
 		
 
