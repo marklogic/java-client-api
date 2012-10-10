@@ -35,6 +35,7 @@ import com.marklogic.client.admin.ResourceExtensionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.OutputStreamHandle;
 import com.marklogic.client.io.OutputStreamSender;
 
 class ServerConfigurationManagerImpl
@@ -108,7 +109,10 @@ class ServerConfigurationManagerImpl
 		if (logger.isInfoEnabled())
 			logger.info("Writing server configuration");
 
-		services.putValue(null, "config/properties", null, "application/xml", this, false);
+		OutputStreamHandle handle = new OutputStreamHandle(this);
+		handle.setResendable(true);
+
+		services.putValue(null, "config/properties", null, "application/xml", handle);
 	}
 	@Override
 	public void write(OutputStream out) throws IOException {

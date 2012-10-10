@@ -112,7 +112,7 @@ class ResourceExtensionsImpl
 			}
 
 		services.putValue(requestLogger, "config/resources", resourceName, extraParams,
-				"application/xquery", sourceBase.sendContent(), !sourceBase.isResendable());
+				"application/xquery", sourceBase);
 	}
 
 	@Override

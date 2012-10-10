@@ -156,8 +156,7 @@ class NamespacesManagerImpl
 			"</namespace>\n"+
 			"</namespace-bindings>";
 
-		services.postValue(requestLogger, "config/namespaces", prefix, "application/xml",
-				structure, false);
+		services.postValue(requestLogger, "config/namespaces", prefix, "application/xml", structure);
 	}
 	@Override
 	public void updatePrefix(String prefix, String namespaceUri) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
@@ -175,8 +174,7 @@ class NamespacesManagerImpl
 			"    <uri>"+namespaceUri+"</uri>\n"+
 			"</namespace>\n";
 
-		services.putValue(requestLogger, "config/namespaces", prefix, "application/xml",
-				structure, false);
+		services.putValue(requestLogger, "config/namespaces", prefix, "application/xml", structure);
 	}
 	@Override
 	public void deletePrefix(String prefix) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {

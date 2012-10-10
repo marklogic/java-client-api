@@ -15,16 +15,13 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.admin.MethodType;
-import com.marklogic.client.util.RequestLogger;
-import com.marklogic.client.util.RequestParameters;
-import com.marklogic.client.extensions.ResourceServices;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.extensions.ResourceServices;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.util.RequestLogger;
+import com.marklogic.client.util.RequestParameters;
 
-
-@SuppressWarnings({"unchecked", "rawtypes"})
 class ResourceServicesImpl
     extends AbstractLoggingManager
     implements ResourceServices
@@ -52,10 +49,8 @@ class ResourceServicesImpl
 	}
 	@Override
 	public <R extends AbstractReadHandle> R get(RequestParameters params, Transaction transaction, R output) {
-		return makeResult(
-				execMethod(MethodType.GET, prepareParams(params, transaction), output),
-				output
-				);
+		return services.getResource(requestLogger, getResourcePath(), 
+				prepareParams(params, transaction), output);
 	}
 	@Override
 	public ServiceResultIterator get(RequestParameters params, String... outputMimetypes) {
@@ -63,7 +58,8 @@ class ResourceServicesImpl
 	}
 	@Override
 	public ServiceResultIterator get(RequestParameters params, Transaction transaction, String... outputMimetypes) {
-		return execMethod(MethodType.GET, prepareParams(params, transaction), outputMimetypes);
+		return services.getIteratedResource(requestLogger, getResourcePath(), 
+				prepareParams(params, transaction), outputMimetypes);
 	}
 
 	@Override
@@ -72,10 +68,8 @@ class ResourceServicesImpl
 	}
 	@Override
 	public <R extends AbstractReadHandle> R put(RequestParameters params, AbstractWriteHandle input, Transaction transaction, R output) {
-		return makeResult(
-				execMethod(MethodType.PUT, prepareParams(params, transaction), input, output),
-				output
-				);
+		return services.putResource(requestLogger, getResourcePath(), 
+				prepareParams(params, transaction), input, output);
 	}
 	@Override
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R put(RequestParameters params, W[] input, R output) {
@@ -83,10 +77,8 @@ class ResourceServicesImpl
 	}
 	@Override
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R put(RequestParameters params, W[] input, Transaction transaction, R output) {
-		return makeResult(
-				execMethod(MethodType.PUT, prepareParams(params, transaction), input, output),
-				output
-				);
+		return services.putResource(requestLogger, getResourcePath(),
+				prepareParams(params, transaction), input, output);
 	}
 
 	@Override
@@ -95,10 +87,8 @@ class ResourceServicesImpl
 	}
 	@Override
 	public <R extends AbstractReadHandle> R post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, R output) {
-		return makeResult(
-				execMethod(MethodType.POST, prepareParams(params, transaction), input, output),
-				output
-				);
+		return services.postResource(
+				requestLogger, getResourcePath(), prepareParams(params, transaction), input, output);
 	}
 	@Override
 	public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, String... outputMimetypes) {
@@ -106,7 +96,8 @@ class ResourceServicesImpl
 	}
 	@Override
 	public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, String... outputMimetypes) {
-		return execMethod(MethodType.POST, prepareParams(params, transaction), input, outputMimetypes);
+		return services.postIteratedResource(
+				requestLogger, getResourcePath(), prepareParams(params, transaction), input, outputMimetypes);
 	}
 	@Override
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R post(RequestParameters params, W[] input, R output) {
@@ -114,10 +105,8 @@ class ResourceServicesImpl
 	}
 	@Override
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R post(RequestParameters params, W[] input, Transaction transaction, R output) {
-		return makeResult(
-				execMethod(MethodType.POST, prepareParams(params, transaction), input, output),
-				output
-				);
+		return services.postResource(
+				requestLogger, getResourcePath(), prepareParams(params, transaction), input, output);
 	}
 	@Override
 	public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, String... outputMimetypes) {
@@ -125,7 +114,8 @@ class ResourceServicesImpl
 	}
 	@Override
 	public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, Transaction transaction, String... outputMimetypes) {
-		return execMethod(MethodType.POST, prepareParams(params, transaction), input, outputMimetypes);
+		return services.postIteratedResource(
+				requestLogger, getResourcePath(), prepareParams(params, transaction), input, outputMimetypes);
 	}
 
 	@Override
@@ -134,10 +124,8 @@ class ResourceServicesImpl
 	}
 	@Override
 	public <R extends AbstractReadHandle> R delete(RequestParameters params, Transaction transaction, R output) {
-		return makeResult(
-				execMethod(MethodType.DELETE, prepareParams(params, transaction), output),
-				output
-				);
+		return services.deleteResource(requestLogger,
+				getResourcePath(), prepareParams(params, transaction), output);
 	}
 
 	@Override
@@ -156,133 +144,5 @@ class ResourceServicesImpl
 		requestParams.add("txid", transaction.getTransactionId());
 
 		return requestParams;
-	}
-
-	private <R extends AbstractReadHandle> Object execMethod(MethodType method, RequestParameters params, R output) {
-		HandleImplementation outputBase = HandleAccessor.checkHandle(output, "read");
-
-		String outputMimetype = outputBase.getMimetype();
-		Class  as             = outputBase.receiveAs();
-
-		switch (method) {
-		case GET:
-			return services.getResource(requestLogger, getResourcePath(), params, outputMimetype, as);
-		case DELETE:
-			return services.deleteResource(requestLogger, getResourcePath(), params, outputMimetype, as);
-		default:
-			throw new IllegalArgumentException("unknown method type: "+method.name());
-		}
-	}
-	private ServiceResultIterator execMethod(MethodType method, RequestParameters params, String... outputMimetypes) {
-		switch (method) {
-		case GET:
-			return services.getResource(requestLogger, getResourcePath(), params, outputMimetypes);
-		default:
-			throw new IllegalArgumentException("unknown method type: "+method.name());
-		}
-	}
-	private <R extends AbstractReadHandle> Object execMethod(MethodType method, RequestParameters params, AbstractWriteHandle input, R output) {
-		HandleImplementation inputBase  = HandleAccessor.checkHandle(input,  "write");
-		HandleImplementation outputBase = HandleAccessor.checkHandle(output, "read");
-
-		Object  value          = inputBase.sendContent();
-		String  inputMimetype  = inputBase.getMimetype();
-		String  outputMimetype = outputBase.getMimetype();
-		boolean isStreaming    = !inputBase.isResendable();
-		Class   as             = outputBase.receiveAs();
-
-		switch (method) {
-		case PUT:
-			return services.putResource(requestLogger, getResourcePath(), params,
-					inputMimetype, value, outputMimetype, isStreaming, as);
-		case POST:
-			return services.postResource(requestLogger, getResourcePath(), params,
-					inputMimetype, value, outputMimetype, isStreaming, as);
-		default:
-			throw new IllegalArgumentException("unknown method type: "+method.name());
-		}
-	}
-	private <R extends AbstractReadHandle, W extends AbstractWriteHandle> Object execMethod(MethodType method, RequestParameters params, W[] input, R output) {
-		HandleImplementation outputBase = HandleAccessor.checkHandle(output, "read");
-
-		Object[] value            = null;
-		String[] inputMimetype    = null;
-		boolean  hasStreamingPart = false;
-		if (input != null) {
-			int inputSize = input.length;
-			value         = new Object[inputSize];
-			inputMimetype = new String[inputSize];
-			for (int i=0; i < inputSize; i++) {
-				AbstractWriteHandle handle = input[i];
-				HandleImplementation handleBase = HandleAccessor.checkHandle(handle, "write");
-				value[i]         = handleBase.sendContent();
-				inputMimetype[i] = handleBase.getMimetype();
-				if (!hasStreamingPart)
-					hasStreamingPart = !handleBase.isResendable();
-			}
-		}
-
-		String outputMimetype = outputBase.getMimetype();
-		Class  as             = outputBase.receiveAs();
-
-		switch (method) {
-		case PUT:
-			return services.putResource(requestLogger, getResourcePath(), params,
-					inputMimetype, value, outputMimetype, hasStreamingPart, as);
-		case POST:
-			return services.postResource(requestLogger, getResourcePath(), params,
-					inputMimetype, value, outputMimetype, hasStreamingPart, as);
-		default:
-			throw new IllegalArgumentException("unknown method type: "+method.name());
-		}
-	}
-	private ServiceResultIterator execMethod(MethodType method, RequestParameters params, AbstractWriteHandle input, String... outputMimetypes) {
-		HandleImplementation inputBase = HandleAccessor.checkHandle(input,  "write");
-
-		Object  value         = inputBase.sendContent();
-		String  inputMimetype = inputBase.getMimetype();
-		boolean isStreaming   = !inputBase.isResendable();
-
-		switch (method) {
-		case POST:
-			return services.postResource(requestLogger, getResourcePath(), params,
-					inputMimetype, value, outputMimetypes, isStreaming);
-		default:
-			throw new IllegalArgumentException("unknown method type: "+method.name());
-		}
-	}
-	private <W extends AbstractWriteHandle> ServiceResultIterator execMethod(MethodType method, RequestParameters params, W[] input, String... outputMimetypes) {
-		Object[] value            = null;
-		String[] inputMimetype    = null;
-		boolean  hasStreamingPart = false;
-		if (input != null) {
-			int inputSize = input.length;
-			value         = new Object[inputSize];
-			inputMimetype = new String[inputSize];
-			for (int i=0; i < inputSize; i++) {
-				AbstractWriteHandle handle = input[i];
-				HandleImplementation handleBase = HandleAccessor.checkHandle(handle, "write");
-				value[i]         = handleBase.sendContent();
-				inputMimetype[i] = handleBase.getMimetype();
-				if (!hasStreamingPart)
-					hasStreamingPart = !handleBase.isResendable();
-			}
-		}
-
-		switch (method) {
-		case POST:
-			return services.postResource(requestLogger, getResourcePath(), params,
-					inputMimetype, value, outputMimetypes, hasStreamingPart);
-		default:
-			throw new IllegalArgumentException("unknown method type: "+method.name());
-		}
-	}
-
-	private <R extends AbstractReadHandle> R makeResult(Object response, R output) {
-		if (response != null) {
-			HandleAccessor.as(output).receiveContent(response);
-		}
-
-		return output;
 	}
 }
