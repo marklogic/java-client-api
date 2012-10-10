@@ -121,7 +121,7 @@ public class JerseyServices implements RESTServices {
 	private int maxRetries  = 64;
 	private int delayMillis = 125;
 
-	private boolean isFirstRequest = true;
+	private boolean isFirstRequest = false;
 
 	public JerseyServices() {
 	}
@@ -255,6 +255,9 @@ public class JerseyServices implements RESTServices {
 		}
 
 		httpParams.setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, false);
+		// long-term alternative to isFirstRequest
+		// httpParams.setBooleanParameter(CoreProtocolPNames.USE_EXPECT_CONTINUE, true);
+		// httpParams.setIntParameter(    CoreProtocolPNames.WAIT_FOR_CONTINUE,   1000);
 
 		DefaultApacheHttpClient4Config config = new DefaultApacheHttpClient4Config();
 		Map<String, Object> configProps = config.getProperties();
@@ -278,19 +281,23 @@ public class JerseyServices implements RESTServices {
 
 		// System.setProperty("javax.net.debug", "all"); // all or ssl
 
-		if (authenType != null) {
-			if (authenType == Authentication.BASIC) {
-				client.addFilter(new HTTPBasicAuthFilter(user, password));
-			} else if (authenType == Authentication.DIGEST) {
-				// workaround for JerseyClient bug 1445
-				client.addFilter(new DigestChallengeFilter());
+		if (authenType == null) {
+			isFirstRequest = false;
+		} else if (authenType == Authentication.BASIC) {
+			isFirstRequest = false;
 
-				client.addFilter(new HTTPDigestAuthFilter(user, password));
-			} else {
-				throw new MarkLogicInternalException(
+			client.addFilter(new HTTPBasicAuthFilter(user, password));
+		} else if (authenType == Authentication.DIGEST) {
+			isFirstRequest = true;
+
+			// workaround for JerseyClient bug 1445
+			client.addFilter(new DigestChallengeFilter());
+
+			client.addFilter(new HTTPDigestAuthFilter(user, password));
+		} else {
+			throw new MarkLogicInternalException(
 					"Internal error - unknown authentication type: "
-							+ authenType.name());
-			}
+					+ authenType.name());
 		}
 
 		// client.addFilter(new LoggingFilter(System.err));
@@ -309,8 +316,6 @@ public class JerseyServices implements RESTServices {
 		connection = null;
 		client.destroy();
 		client = null;
-
-		isFirstRequest = true;
 	}
 
 	private void makeFirstRequest() {
