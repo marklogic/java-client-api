@@ -2649,7 +2649,8 @@ public class JerseyServices implements RESTServices {
 			if (!hasStreamingPart)
 				hasStreamingPart = !handleBase.isResendable();
 
-			String[] typeParts = inputMimetype.contains("/") ?
+			String[] typeParts =
+				(inputMimetype != null && inputMimetype.contains("/")) ?
 					inputMimetype.split("/", 2) : null;
 
 			MediaType typePart = (typeParts != null) ?
