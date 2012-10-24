@@ -96,20 +96,27 @@ public class FailedRequest {
 	 * send an InputStream to this handler in order to create an error block.
 	 */
 	public static FailedRequest getFailedRequest(int httpStatus, MediaType contentType, InputStream content) {
-
+		FailedRequest failure;
+		
 		// by default XML is supported
 		if (contentType.equals(MediaType.APPLICATION_XML_TYPE)) {
 			
 			FailedRequestParser xmlParser = new FailedRequestXMLParser();
-			return xmlParser.parseFailedRequest(httpStatus, content);
+			
+			failure  =  xmlParser.parseFailedRequest(httpStatus, content);
 			
 		}
 		else if (contentType.equals(MediaType.APPLICATION_JSON_TYPE)) {
-			return jsonFailedRequest(httpStatus, content);						
+			failure = jsonFailedRequest(httpStatus, content);						
 		}
 		else {
 			throw new IllegalArgumentException("Only XML and JSON error messages supported by MarkLogic Server");
 		}
+		if (failure.getStatusCode() == 401) {
+			failure.setMessageString("Unauthorized");
+			failure.setStatusString("Failed Auth");
+		}
+		return failure;
 
 	}
 	
