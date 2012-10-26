@@ -1231,10 +1231,6 @@ public class JerseyServices implements RESTServices {
 			params.add("txid", transactionId);
 		}
 
-                if ("application/json".equals(mimetype)) {
-                    params.add("format", "json");
-                }
-
 		String optionsName = queryDef.getOptionsName();
 		if (optionsName != null && optionsName.length() > 0) {
 			addEncodedParam(params, "options", optionsName);
@@ -1280,7 +1276,7 @@ public class JerseyServices implements RESTServices {
            		logger.debug("Searching for structure {} in transaction {}", structure,
            				transactionId);
 
-           	builder = connection.path("search").queryParams(params).type("application/xml");
+           	builder = connection.path("search").queryParams(params).type("application/xml").accept(mimetype);
         } else if (queryDef instanceof DeleteQueryDefinition) {
         	if (logger.isDebugEnabled())
         		logger.debug("Searching for deletes in transaction {}", transactionId);
