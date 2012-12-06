@@ -62,10 +62,6 @@
                         <goals>
                             <goal>bootstrap</goal>
                         </goals>
-                        <configuration>
-                            <skip>true</skip>
-                            <seconds>10</seconds>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
