@@ -23,11 +23,18 @@ import com.marklogic.client.impl.ResourceManagerImplementation;
  * to resource services.  Resource Service extensions can be
  * installed on the server using {@link com.marklogic.client.admin.ResourceExtensionsManager}.
  * Initialize a ResourceManager object by passing it to the
- * {@link com.marklogic.client.DatabaseClient}.init() method.
- * Internally, a ResourceManager calls the Resource Services
- * on the server using the methods of the 
- * {@link ResourceServices} object provided
- * by the init() method of the DatabaseClient. 
+ * {@link com.marklogic.client.DatabaseClient}.init() method. 
+ * 
+ * <p>To expose the services provided by a resource service extension to
+ * applications, implement a subclass of ResourceManager. In your subclass, use
+ * the methods of a {@link ResourceServices} object to call the Resource Services
+ * on the server.</p>
+ * 
+ * <p>Obtain a {@link ResourceServices} object by calling the protected
+ * <code>getServices</code> method of the ResourceManager. This method
+ * has the following signature:</p>
+ * 
+ * <p><code>{@link ResourceServices} getServices()</code></p>
  */
 abstract public class ResourceManager
     extends ResourceManagerImplementation
