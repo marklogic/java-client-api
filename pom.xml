@@ -51,6 +51,24 @@
 					</execution>
 				</executions>
 			</plugin>
+            <plugin>
+                <groupId>com.marklogic</groupId>
+                <artifactId>client-api-bootstrap</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <id>bootstrap</id>
+                        <phase>pre-clean</phase>
+                        <goals>
+                            <goal>bootstrap</goal>
+                        </goals>
+                        <configuration>
+                            <skip>true</skip>
+                            <seconds>10</seconds>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -222,4 +240,18 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>ci</id>
+            <name>MarkLogic CI Repository</name>
+            <url>http://ci.marklogic.com:8080/jenkins/plugin/repository/everything/</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
 </project>
