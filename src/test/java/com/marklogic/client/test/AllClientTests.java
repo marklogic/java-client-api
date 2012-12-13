@@ -43,6 +43,7 @@ import org.junit.runners.Suite;
     StructuredQueryBuilderTest.class,
     StructuredSearchTest.class,
     SearchFacetTest.class,
+    SuggestTest.class,
 
     QueryOptionsHandleTest.class,
     QueryOptionsManagerTest.class,

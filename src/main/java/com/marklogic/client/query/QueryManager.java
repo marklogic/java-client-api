@@ -129,6 +129,30 @@ public interface QueryManager {
     public KeyValueQueryDefinition newKeyValueDefinition(String optionsName);
 
     /**
+     * Creates a suggestion definition based on a single string for completion,
+     * using the default options node.
+     * @return	the suggest definition.
+     */
+    public SuggestDefinition newSuggestionDefinition();
+    
+    /**
+     * Creates a suggestion definition based on a query options name.
+     * @param optionsName	the name of the query options
+     * @return	the suggest definition.
+     */
+    public SuggestDefinition newSuggestionDefinition(String optionsName);
+    
+
+    /**
+     * Creates a suggestion definition based on a single string for completion,
+     * using the default options node.
+     * @param suggestionString A string as input for completion suggestions.
+     * @param optionsName	the name of the query options
+     * @return	the suggest definition.
+     */
+    public SuggestDefinition newSuggestionDefinition(String suggestionString, String optionsName);
+  
+    /**
      * Creates a query definition based on a structure that identifies
      * clauses and conjunctions and the default query options.
      * @return	the structured query definition
@@ -235,6 +259,14 @@ public interface QueryManager {
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction);
 
+    /**
+     * Queries the REST server for suggested string completions based on
+     * values in the SuggestionDefinition.  The list of strings returned by
+     * this function can be used to provide possible values for completing
+     * a string search.
+     */
+    public String[] suggest(SuggestDefinition suggestionDef);
+    
     /**
      * Searches documents based on query criteria and, potentially, previously
      * saved query options starting with the specified page listing 

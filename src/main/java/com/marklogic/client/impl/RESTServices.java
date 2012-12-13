@@ -35,6 +35,7 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
+import com.marklogic.client.query.SuggestDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
 import com.marklogic.client.util.RequestLogger;
@@ -184,4 +185,6 @@ public interface RESTServices {
 			return false;
 		}
 	}
+
+	public <T> T suggest(Class<T> as, SuggestDefinition suggestionDef);
 }

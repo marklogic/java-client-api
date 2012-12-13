@@ -74,6 +74,7 @@ import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.query.SuggestDefinition;
 import com.marklogic.client.query.ValueLocator;
 import com.marklogic.client.query.ValueQueryDefinition;
 import com.marklogic.client.query.ValuesDefinition;
@@ -94,7 +95,7 @@ import com.sun.jersey.multipart.Boundary;
 import com.sun.jersey.multipart.MultiPart;
 import com.sun.jersey.multipart.MultiPartMediaTypes;
 
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class JerseyServices implements RESTServices {
 	static final private Logger logger = LoggerFactory
 			.getLogger(JerseyServices.class);
@@ -118,7 +119,7 @@ public class JerseyServices implements RESTServices {
 	private ApacheHttpClient4 client;
 	private WebResource connection;
 
-	private int maxRetries  = 64;
+	private int maxRetries = 64;
 	private int delayMillis = 125;
 
 	private boolean isFirstRequest = false;
@@ -126,10 +127,11 @@ public class JerseyServices implements RESTServices {
 	public JerseyServices() {
 	}
 
-	private FailedRequest extractErrorFields(ClientResponse response) {		
+	private FailedRequest extractErrorFields(ClientResponse response) {
 		InputStream is = response.getEntityInputStream();
 		try {
-			FailedRequest handler = FailedRequest.getFailedRequest(response.getStatus(), response.getType(), is);
+			FailedRequest handler = FailedRequest.getFailedRequest(
+					response.getStatus(), response.getType(), is);
 			return handler;
 		} catch (RuntimeException e) {
 			throw (e);
@@ -192,7 +194,8 @@ public class JerseyServices implements RESTServices {
 			client = null;
 		}
 
-		String baseUri = ((context == null) ? "http" : "https") + "://" + host + ":" + port + "/v1/";
+		String baseUri = ((context == null) ? "http" : "https") + "://" + host
+				+ ":" + port + "/v1/";
 
 		// TODO: integrated control of HTTP Client and Jersey Client logging
 		System.setProperty("org.apache.commons.logging.Log",
@@ -219,23 +222,24 @@ public class JerseyServices implements RESTServices {
 
 		int maxConnections = 100;
 
-        /* 4.2
-		PoolingClientConnectionManager connMgr =
-			new PoolingClientConnectionManager(schemeRegistry);
-		connMgr.setMaxTotal(maxConnections);
+		/*
+		 * 4.2 PoolingClientConnectionManager connMgr = new
+		 * PoolingClientConnectionManager(schemeRegistry);
+		 * connMgr.setMaxTotal(maxConnections);
+		 * connMgr.setDefaultMaxPerRoute(maxConnections);
+		 * connMgr.setMaxPerRoute( new HttpRoute(new HttpHost(baseUri)),
+		 * maxConnections );
+		 */
+		// start 4.1
+		ThreadSafeClientConnManager connMgr = new ThreadSafeClientConnManager(
+				schemeRegistry);
 		connMgr.setDefaultMaxPerRoute(maxConnections);
-		connMgr.setMaxPerRoute(
-				new HttpRoute(new HttpHost(baseUri)), maxConnections
-				);
-	    */
-        // start 4.1
-        ThreadSafeClientConnManager connMgr = new ThreadSafeClientConnManager(schemeRegistry);
-        connMgr.setDefaultMaxPerRoute(maxConnections);
-        // end 4.1
+		// end 4.1
 
-//		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-//		credentialsProvider.setCredentials(new AuthScope(host, port),
-//				new UsernamePasswordCredentials(user, password));
+		// CredentialsProvider credentialsProvider = new
+		// BasicCredentialsProvider();
+		// credentialsProvider.setCredentials(new AuthScope(host, port),
+		// new UsernamePasswordCredentials(user, password));
 
 		HttpParams httpParams = new BasicHttpParams();
 
@@ -249,28 +253,30 @@ public class JerseyServices implements RESTServices {
 			else
 				throw new MarkLogicInternalException(
 						"Internal error - unknown authentication type: "
-						+ authenType.name());
+								+ authenType.name());
 
 			httpParams.setParameter(AuthPNames.PROXY_AUTH_PREF, authpref);
 		}
 
 		httpParams.setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, false);
 		// long-term alternative to isFirstRequest
-		// httpParams.setBooleanParameter(CoreProtocolPNames.USE_EXPECT_CONTINUE, true);
-		// httpParams.setIntParameter(    CoreProtocolPNames.WAIT_FOR_CONTINUE,   1000);
+		// httpParams.setBooleanParameter(CoreProtocolPNames.USE_EXPECT_CONTINUE,
+		// true);
+		// httpParams.setIntParameter( CoreProtocolPNames.WAIT_FOR_CONTINUE,
+		// 1000);
 
 		DefaultApacheHttpClient4Config config = new DefaultApacheHttpClient4Config();
 		Map<String, Object> configProps = config.getProperties();
-		configProps.put(
-				ApacheHttpClient4Config.PROPERTY_PREEMPTIVE_BASIC_AUTHENTICATION,
-				false);
+		configProps
+				.put(ApacheHttpClient4Config.PROPERTY_PREEMPTIVE_BASIC_AUTHENTICATION,
+						false);
 		configProps.put(ApacheHttpClient4Config.PROPERTY_CONNECTION_MANAGER,
 				connMgr);
 		// ignored?
 		configProps.put(ApacheHttpClient4Config.PROPERTY_FOLLOW_REDIRECTS,
 				false);
 		// configProps.put(ApacheHttpClient4Config.PROPERTY_CREDENTIALS_PROVIDER,
-		//		credentialsProvider);
+		// credentialsProvider);
 		configProps.put(ApacheHttpClient4Config.PROPERTY_HTTP_PARAMS,
 				httpParams);
 		// switches from buffered to streamed in Jersey Client
@@ -297,7 +303,7 @@ public class JerseyServices implements RESTServices {
 		} else {
 			throw new MarkLogicInternalException(
 					"Internal error - unknown authentication type: "
-					+ authenType.name());
+							+ authenType.name());
 		}
 
 		// client.addFilter(new LoggingFilter(System.err));
@@ -338,27 +344,31 @@ public class JerseyServices implements RESTServices {
 		WebResource webResource = makeDocumentResource(makeDocumentParams(uri,
 				categories, transactionId, null));
 
-		WebResource.Builder builder = addVersionHeader(desc, webResource.getRequestBuilder(), "If-Match");
+		WebResource.Builder builder = addVersionHeader(desc,
+				webResource.getRequestBuilder(), "If-Match");
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			response = builder.delete(ClientResponse.class);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		if (status == ClientResponse.Status.NOT_FOUND) {
 			response.close();
@@ -368,15 +378,20 @@ public class JerseyServices implements RESTServices {
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			FailedRequest failure = extractErrorFields(response);
 			if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION"))
-				throw new FailedRequestException("Content version required to delete document", failure);
-			throw new ForbiddenUserException("User is not allowed to delete documents",failure);
+				throw new FailedRequestException(
+						"Content version required to delete document", failure);
+			throw new ForbiddenUserException(
+					"User is not allowed to delete documents", failure);
 		}
 		if (status == ClientResponse.Status.PRECONDITION_FAILED) {
 			FailedRequest failure = extractErrorFields(response);
 			if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION"))
-				throw new FailedRequestException("Content version must match to delete document", failure);
+				throw new FailedRequestException(
+						"Content version must match to delete document",
+						failure);
 			else if (failure.getMessageCode().equals("RESTAPI-EMPTYBODY"))
-				throw new FailedRequestException("Empty request body sent to server", failure);
+				throw new FailedRequestException(
+						"Empty request body sent to server", failure);
 			throw new FailedRequestException("Precondition Failed", failure);
 		}
 		if (status != ClientResponse.Status.NO_CONTENT)
@@ -393,7 +408,7 @@ public class JerseyServices implements RESTServices {
 			RequestParameters extraParams,
 			DocumentMetadataReadHandle metadataHandle,
 			AbstractReadHandle contentHandle) throws ResourceNotFoundException,
-			ForbiddenUserException,  FailedRequestException {
+			ForbiddenUserException, FailedRequestException {
 
 		HandleImplementation metadataBase = HandleAccessor.checkHandle(
 				metadataHandle, "metadata");
@@ -449,25 +464,28 @@ public class JerseyServices implements RESTServices {
 
 		builder = addVersionHeader(desc, builder, "If-None-Match");
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			response = builder.get(ClientResponse.class);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		if (status == ClientResponse.Status.NOT_FOUND)
 			throw new ResourceNotFoundException(
@@ -481,7 +499,8 @@ public class JerseyServices implements RESTServices {
 			response.close();
 			return false;
 		}
-		if (status != ClientResponse.Status.OK && status != ClientResponse.Status.PARTIAL_CONTENT)
+		if (status != ClientResponse.Status.OK
+				&& status != ClientResponse.Status.PARTIAL_CONTENT)
 			throw new FailedRequestException("read failed: "
 					+ status.getReasonPhrase(), extractErrorFields(response));
 
@@ -508,8 +527,8 @@ public class JerseyServices implements RESTServices {
 		if (as != InputStream.class && as != Reader.class)
 			response.close();
 
-		handleBase.receiveContent(
-				(reqlog != null) ? reqlog.copyContent(entity) : entity);
+		handleBase.receiveContent((reqlog != null) ? reqlog.copyContent(entity)
+				: entity);
 
 		return true;
 	}
@@ -518,20 +537,19 @@ public class JerseyServices implements RESTServices {
 			DocumentDescriptor desc, String transactionId,
 			Set<Metadata> categories, RequestParameters extraParams,
 			String metadataFormat, DocumentMetadataReadHandle metadataHandle,
-			AbstractReadHandle contentHandle) throws 
-			ResourceNotFoundException, ForbiddenUserException,
-			FailedRequestException {
+			AbstractReadHandle contentHandle) throws ResourceNotFoundException,
+			ForbiddenUserException, FailedRequestException {
 		String uri = desc.getUri();
 		if (uri == null)
 			throw new IllegalArgumentException(
 					"Document read for document identifier without uri");
 
 		assert metadataHandle != null : "metadataHandle is null";
-		assert contentHandle  != null : "contentHandle is null";
+		assert contentHandle != null : "contentHandle is null";
 
 		if (logger.isDebugEnabled())
 			logger.debug("Getting multipart for {} in transaction {}", uri,
-				transactionId);
+					transactionId);
 
 		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
 				categories, transactionId, extraParams, true);
@@ -542,25 +560,28 @@ public class JerseyServices implements RESTServices {
 
 		builder = addVersionHeader(desc, builder, "If-None-Match");
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			response = builder.get(ClientResponse.class);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		if (status == ClientResponse.Status.NOT_FOUND)
 			throw new ResourceNotFoundException(
@@ -600,12 +621,13 @@ public class JerseyServices implements RESTServices {
 					+ partCount + " parts");
 
 		HandleImplementation metadataBase = HandleAccessor.as(metadataHandle);
-		HandleImplementation contentBase  = HandleAccessor.as(contentHandle);
+		HandleImplementation contentBase = HandleAccessor.as(contentHandle);
 
 		BodyPart contentPart = partList.get(1);
 
 		MultivaluedMap<String, String> responseHeaders = response.getHeaders();
-		MultivaluedMap<String, String> contentHeaders  = contentPart.getHeaders();
+		MultivaluedMap<String, String> contentHeaders = contentPart
+				.getHeaders();
 		if (isExternalDescriptor(desc)) {
 			updateVersion(desc, responseHeaders);
 			updateFormat(desc, responseHeaders);
@@ -618,14 +640,12 @@ public class JerseyServices implements RESTServices {
 			updateLength(contentBase, contentHeaders);
 		}
 
-		metadataBase.receiveContent(
-				partList.get(0).getEntityAs(metadataBase.receiveAs())
-				);
+		metadataBase.receiveContent(partList.get(0).getEntityAs(
+				metadataBase.receiveAs()));
 
-		Object contentEntity = contentPart.getEntityAs(
-				contentBase.receiveAs());
-		contentBase.receiveContent(
-				(reqlog != null) ? reqlog.copyContent(contentEntity) : contentEntity);
+		Object contentEntity = contentPart.getEntityAs(contentBase.receiveAs());
+		contentBase.receiveContent((reqlog != null) ? reqlog
+				.copyContent(contentEntity) : contentEntity);
 
 		response.close();
 
@@ -642,30 +662,33 @@ public class JerseyServices implements RESTServices {
 
 		if (logger.isDebugEnabled())
 			logger.debug("Requesting head for {} in transaction {}", uri,
-				transactionId);
+					transactionId);
 
 		WebResource webResource = makeDocumentResource(makeDocumentParams(uri,
 				null, transactionId, null));
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			response = webResource.head();
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		MultivaluedMap<String, String> responseHeaders = response.getHeaders();
 
@@ -688,10 +711,9 @@ public class JerseyServices implements RESTServices {
 		logRequest(reqlog, "checked %s document from %s transaction", uri,
 				(transactionId != null) ? transactionId : "no");
 
-		DocumentDescriptorImpl desc =
-			new DocumentDescriptorImpl(uri,false);
+		DocumentDescriptorImpl desc = new DocumentDescriptorImpl(uri, false);
 
-		updateVersion(desc,responseHeaders);
+		updateVersion(desc, responseHeaders);
 		updateDescriptor(desc, responseHeaders);
 
 		return desc;
@@ -716,8 +738,8 @@ public class JerseyServices implements RESTServices {
 		}
 
 		Format descFormat = desc.getFormat();
-		String contentMimetype = (descFormat != null && descFormat != Format.UNKNOWN) ?
-				desc.getMimetype() : null;
+		String contentMimetype = (descFormat != null && descFormat != Format.UNKNOWN) ? desc
+				.getMimetype() : null;
 		if (contentMimetype == null && contentBase != null) {
 			Format contentFormat = contentBase.getFormat();
 			if (descFormat != null && descFormat != contentFormat) {
@@ -743,9 +765,9 @@ public class JerseyServices implements RESTServices {
 	private void putDocumentImpl(RequestLogger reqlog, DocumentDescriptor desc,
 			String transactionId, Set<Metadata> categories,
 			RequestParameters extraParams, String mimetype,
-			AbstractWriteHandle handle)
-	throws ResourceNotFoundException, ResourceNotResendableException,
-			ForbiddenUserException, FailedRequestException {
+			AbstractWriteHandle handle) throws ResourceNotFoundException,
+			ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException {
 		String uri = desc.getUri();
 		if (uri == null)
 			throw new IllegalArgumentException(
@@ -772,8 +794,8 @@ public class JerseyServices implements RESTServices {
 
 		boolean isResendable = handleBase.isResendable();
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			Object value = handleBase.sendContent();
@@ -785,14 +807,13 @@ public class JerseyServices implements RESTServices {
 				makeFirstRequest();
 
 			if (value instanceof OutputStreamSender) {
-				response = builder.put(
-						ClientResponse.class,
-						new StreamingOutputImpl((OutputStreamSender) value, reqlog)
-						);
+				response = builder.put(ClientResponse.class,
+						new StreamingOutputImpl((OutputStreamSender) value,
+								reqlog));
 			} else {
 				if (reqlog != null)
-					response = builder.put(
-							ClientResponse.class, reqlog.copyContent(value));
+					response = builder.put(ClientResponse.class,
+							reqlog.copyContent(value));
 				else
 					response = builder.put(ClientResponse.class, value);
 			}
@@ -802,17 +823,21 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			else if (!isResendable)
-				throw new ResourceNotResendableException("Cannot retry request for "+uri);
+				throw new ResourceNotResendableException(
+						"Cannot retry request for " + uri);
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		if (status == ClientResponse.Status.NOT_FOUND)
 			throw new ResourceNotFoundException(
@@ -821,15 +846,19 @@ public class JerseyServices implements RESTServices {
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			FailedRequest failure = extractErrorFields(response);
 			if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION"))
-				throw new FailedRequestException("Content version required to write document",failure);
-			throw new ForbiddenUserException("User is not allowed to write documents",failure);
+				throw new FailedRequestException(
+						"Content version required to write document", failure);
+			throw new ForbiddenUserException(
+					"User is not allowed to write documents", failure);
 		}
 		if (status == ClientResponse.Status.PRECONDITION_FAILED) {
 			FailedRequest failure = extractErrorFields(response);
 			if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION"))
-				throw new FailedRequestException("Content version must match to write document", failure);
+				throw new FailedRequestException(
+						"Content version must match to write document", failure);
 			else if (failure.getMessageCode().equals("RESTAPI-EMPTYBODY"))
-				throw new FailedRequestException("Empty request body sent to server", failure);
+				throw new FailedRequestException(
+						"Empty request body sent to server", failure);
 			throw new FailedRequestException("Precondition Failed", failure);
 		}
 		if (status != ClientResponse.Status.CREATED
@@ -845,7 +874,7 @@ public class JerseyServices implements RESTServices {
 			RequestParameters extraParams, String metadataMimetype,
 			DocumentMetadataWriteHandle metadataHandle, String contentMimetype,
 			AbstractWriteHandle contentHandle)
-	throws ResourceNotFoundException, ResourceNotResendableException,
+			throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
 		String uri = desc.getUri();
 		if (uri == null)
@@ -854,7 +883,7 @@ public class JerseyServices implements RESTServices {
 
 		if (logger.isDebugEnabled())
 			logger.debug("Putting multipart for {} in transaction {}", uri,
-				transactionId);
+					transactionId);
 
 		logRequest(
 				reqlog,
@@ -866,39 +895,42 @@ public class JerseyServices implements RESTServices {
 				categories, transactionId, extraParams, true);
 
 		WebResource.Builder builder = makeDocumentResource(docParams).type(
-				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE)
-				);
+				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
 		builder = addVersionHeader(desc, builder, "If-Match");
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			MultiPart multiPart = new MultiPart();
 			boolean hasStreamingPart = addParts(multiPart, reqlog,
-					new String[]{metadataMimetype, contentMimetype},
-					new AbstractWriteHandle[]{metadataHandle, contentHandle});
+					new String[] { metadataMimetype, contentMimetype },
+					new AbstractWriteHandle[] { metadataHandle, contentHandle });
 
 			if (isFirstRequest)
 				makeFirstRequest();
 
 			response = builder.put(ClientResponse.class, multiPart);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			else if (hasStreamingPart)
-				throw new ResourceNotResendableException("Cannot retry request for "+uri);
+				throw new ResourceNotResendableException(
+						"Cannot retry request for " + uri);
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		if (status == ClientResponse.Status.NOT_FOUND) {
 			response.close();
@@ -908,16 +940,20 @@ public class JerseyServices implements RESTServices {
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			FailedRequest failure = extractErrorFields(response);
 			if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION"))
-				throw new FailedRequestException("Content version required to write document",failure);
-			throw new ForbiddenUserException("User is not allowed to write documents",failure);
+				throw new FailedRequestException(
+						"Content version required to write document", failure);
+			throw new ForbiddenUserException(
+					"User is not allowed to write documents", failure);
 		}
 		if (status == ClientResponse.Status.PRECONDITION_FAILED) {
 			FailedRequest failure = extractErrorFields(response);
 			if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION"))
-				throw new FailedRequestException("Content version must match to write document", failure);
+				throw new FailedRequestException(
+						"Content version must match to write document", failure);
 			else if (failure.getMessageCode().equals("RESTAPI-EMPTYBODY"))
-				throw new FailedRequestException("Empty request body sent to server", failure);
-			throw new FailedRequestException("Precondition Failed", failure);	
+				throw new FailedRequestException(
+						"Empty request body sent to server", failure);
+			throw new FailedRequestException("Precondition Failed", failure);
 		}
 		if (status != ClientResponse.Status.CREATED
 				&& status != ClientResponse.Status.NO_CONTENT)
@@ -946,25 +982,28 @@ public class JerseyServices implements RESTServices {
 				"transactions").queryParams(transParams) : connection
 				.path("transactions");
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			response = resource.post(ClientResponse.class);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException(
@@ -1008,33 +1047,37 @@ public class JerseyServices implements RESTServices {
 					"transaction completion without id: " + result);
 
 		if (logger.isDebugEnabled())
-			logger.debug("Completing transaction {} with {}", transactionId, result);
+			logger.debug("Completing transaction {} with {}", transactionId,
+					result);
 
 		MultivaluedMap<String, String> transParams = new MultivaluedMapImpl();
 		transParams.add("result", result);
 
-		WebResource builder =
-			connection.path("transactions/" + transactionId).queryParams(transParams);
+		WebResource builder = connection.path("transactions/" + transactionId)
+				.queryParams(transParams);
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			response = builder.post(ClientResponse.class);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException(
@@ -1092,8 +1135,9 @@ public class JerseyServices implements RESTServices {
 
 	private boolean isExternalDescriptor(ContentDescriptor desc) {
 		return desc != null && desc instanceof DocumentDescriptorImpl
-			&& !((DocumentDescriptorImpl) desc).isInternal();
+				&& !((DocumentDescriptorImpl) desc).isInternal();
 	}
+
 	private void updateDescriptor(ContentDescriptor desc,
 			MultivaluedMap<String, String> headers) {
 		if (desc == null || headers == null)
@@ -1103,24 +1147,28 @@ public class JerseyServices implements RESTServices {
 		updateMimetype(desc, headers);
 		updateLength(desc, headers);
 	}
+
 	private void copyDescriptor(DocumentDescriptor desc,
 			HandleImplementation handleBase) {
 		if (handleBase == null)
 			return;
-		
+
 		handleBase.setFormat(desc.getFormat());
 		handleBase.setMimetype(desc.getMimetype());
 		handleBase.setByteLength(desc.getByteLength());
 	}
+
 	private void updateFormat(ContentDescriptor descriptor,
 			MultivaluedMap<String, String> headers) {
 		updateFormat(descriptor, getHeaderFormat(headers));
 	}
+
 	private void updateFormat(ContentDescriptor descriptor, Format format) {
 		if (format != null) {
 			descriptor.setFormat(format);
 		}
 	}
+
 	private Format getHeaderFormat(MultivaluedMap<String, String> headers) {
 		if (headers.containsKey("vnd.marklogic.document-format")) {
 			List<String> values = headers.get("vnd.marklogic.document-format");
@@ -1130,15 +1178,18 @@ public class JerseyServices implements RESTServices {
 		}
 		return null;
 	}
+
 	private void updateMimetype(ContentDescriptor descriptor,
 			MultivaluedMap<String, String> headers) {
 		updateMimetype(descriptor, getHeaderMimetype(headers));
 	}
+
 	private void updateMimetype(ContentDescriptor descriptor, String mimetype) {
 		if (mimetype != null) {
 			descriptor.setMimetype(mimetype);
 		}
 	}
+
 	private String getHeaderMimetype(MultivaluedMap<String, String> headers) {
 		if (headers.containsKey("Content-Type")) {
 			List<String> values = headers.get("Content-Type");
@@ -1146,7 +1197,7 @@ public class JerseyServices implements RESTServices {
 				String contentType = values.get(0);
 				String mimetype = contentType.contains(";") ? contentType
 						.substring(0, contentType.indexOf(";")) : contentType;
-// TODO: if "; charset=foo" set character set
+				// TODO: if "; charset=foo" set character set
 				if (mimetype != null && mimetype.length() > 0) {
 					return mimetype;
 				}
@@ -1154,13 +1205,16 @@ public class JerseyServices implements RESTServices {
 		}
 		return null;
 	}
+
 	private void updateLength(ContentDescriptor descriptor,
 			MultivaluedMap<String, String> headers) {
 		updateLength(descriptor, getHeaderLength(headers));
 	}
+
 	private void updateLength(ContentDescriptor descriptor, long length) {
 		descriptor.setByteLength(length);
 	}
+
 	private long getHeaderLength(MultivaluedMap<String, String> headers) {
 		if (headers.containsKey("Content-Length")) {
 			List<String> values = headers.get("Content-Length");
@@ -1170,6 +1224,7 @@ public class JerseyServices implements RESTServices {
 		}
 		return ContentDescriptor.UNKNOWN_LENGTH;
 	}
+
 	private void updateVersion(DocumentDescriptor descriptor,
 			MultivaluedMap<String, String> headers) {
 		long version = DocumentDescriptor.UNKNOWN_VERSION;
@@ -1184,12 +1239,14 @@ public class JerseyServices implements RESTServices {
 		descriptor.setVersion(version);
 	}
 
-	private WebResource.Builder addVersionHeader(DocumentDescriptor desc, WebResource.Builder builder, String name) {
-		if (desc != null && desc instanceof DocumentDescriptorImpl &&
-				!((DocumentDescriptorImpl) desc).isInternal()) {
+	private WebResource.Builder addVersionHeader(DocumentDescriptor desc,
+			WebResource.Builder builder, String name) {
+		if (desc != null && desc instanceof DocumentDescriptorImpl
+				&& !((DocumentDescriptorImpl) desc).isInternal()) {
 			long version = desc.getVersion();
 			if (version != DocumentDescriptor.UNKNOWN_VERSION) {
-				return builder.header(name, "\""+String.valueOf(version)+"\"");
+				return builder.header(name, "\"" + String.valueOf(version)
+						+ "\"");
 			}
 		}
 		return builder;
@@ -1197,8 +1254,8 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public <T> T search(Class<T> as, QueryDefinition queryDef, String mimetype,
-			long start, long len, QueryView view, String transactionId) 
-	throws ForbiddenUserException, FailedRequestException {
+			long start, long len, QueryView view, String transactionId)
+			throws ForbiddenUserException, FailedRequestException {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
 		if (start > 1) {
@@ -1239,67 +1296,72 @@ public class JerseyServices implements RESTServices {
 		WebResource.Builder builder = null;
 		String structure = null;
 		if (queryDef instanceof StringQueryDefinition) {
-           	String text = ((StringQueryDefinition) queryDef).getCriteria();
-           	if (logger.isDebugEnabled())
-           		logger.debug("Searching for {} in transaction {}", text,
-           				transactionId);
+			String text = ((StringQueryDefinition) queryDef).getCriteria();
+			if (logger.isDebugEnabled())
+				logger.debug("Searching for {} in transaction {}", text,
+						transactionId);
 
-           	if (text != null) {
-           		addEncodedParam(params, "q", text);
-           	}
+			if (text != null) {
+				addEncodedParam(params, "q", text);
+			}
 
-           	builder = connection.path("search").queryParams(params).accept(mimetype);
+			builder = connection.path("search").queryParams(params)
+					.accept(mimetype);
 		} else if (queryDef instanceof KeyValueQueryDefinition) {
-           	if (logger.isDebugEnabled())
-           		logger.debug("Searching for keys/values in transaction {}",
-           				transactionId);
+			if (logger.isDebugEnabled())
+				logger.debug("Searching for keys/values in transaction {}",
+						transactionId);
 
-           	Map<ValueLocator, String> pairs = ((KeyValueQueryDefinition) queryDef);
-           	for (ValueLocator loc : pairs.keySet()) {
-           		if (loc instanceof KeyLocator) {
-           			addEncodedParam(params, "key", ((KeyLocator) loc).getKey());
-           		} else {
-           			ElementLocator eloc = (ElementLocator) loc;
-           			params.add("element", eloc.getElement().toString());
-           			if (eloc.getAttribute() != null) {
-           				params.add("attribute", eloc.getAttribute().toString());
-           			}
-           		}
-           		addEncodedParam(params, "value", pairs.get(loc));
-           	}
+			Map<ValueLocator, String> pairs = ((KeyValueQueryDefinition) queryDef);
+			for (ValueLocator loc : pairs.keySet()) {
+				if (loc instanceof KeyLocator) {
+					addEncodedParam(params, "key", ((KeyLocator) loc).getKey());
+				} else {
+					ElementLocator eloc = (ElementLocator) loc;
+					params.add("element", eloc.getElement().toString());
+					if (eloc.getAttribute() != null) {
+						params.add("attribute", eloc.getAttribute().toString());
+					}
+				}
+				addEncodedParam(params, "value", pairs.get(loc));
+			}
 
-           	builder = connection.path("keyvalue").queryParams(params).accept(mimetype);
+			builder = connection.path("keyvalue").queryParams(params)
+					.accept(mimetype);
 		} else if (queryDef instanceof StructuredQueryDefinition) {
 			structure = ((StructuredQueryDefinition) queryDef).serialize();
 
-           	if (logger.isDebugEnabled())
-           		logger.debug("Searching for structure {} in transaction {}", structure,
-           				transactionId);
+			if (logger.isDebugEnabled())
+				logger.debug("Searching for structure {} in transaction {}",
+						structure, transactionId);
 
-           	builder = connection.path("search").queryParams(params).type("application/xml").accept(mimetype);
-        } else if (queryDef instanceof DeleteQueryDefinition) {
-        	if (logger.isDebugEnabled())
-        		logger.debug("Searching for deletes in transaction {}", transactionId);
+			builder = connection.path("search").queryParams(params)
+					.type("application/xml").accept(mimetype);
+		} else if (queryDef instanceof DeleteQueryDefinition) {
+			if (logger.isDebugEnabled())
+				logger.debug("Searching for deletes in transaction {}",
+						transactionId);
 
-            	builder = connection.path("search").queryParams(params).accept(mimetype);
-        } else {
+			builder = connection.path("search").queryParams(params)
+					.accept(mimetype);
+		} else {
 			throw new UnsupportedOperationException("Cannot search with "
 					+ queryDef.getClass().getName());
 		}
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			if (queryDef instanceof StringQueryDefinition) {
-	            response = builder.get(ClientResponse.class);
+				response = builder.get(ClientResponse.class);
 			} else if (queryDef instanceof KeyValueQueryDefinition) {
-	            response = builder.get(ClientResponse.class);
+				response = builder.get(ClientResponse.class);
 			} else if (queryDef instanceof StructuredQueryDefinition) {
 				response = builder.post(ClientResponse.class, structure);
-	        } else if (queryDef instanceof DeleteQueryDefinition) {
+			} else if (queryDef instanceof DeleteQueryDefinition) {
 				response = builder.get(ClientResponse.class);
-	        } else {
+			} else {
 				throw new UnsupportedOperationException("Cannot search with "
 						+ queryDef.getClass().getName());
 			}
@@ -1309,15 +1371,18 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to search",
@@ -1335,55 +1400,59 @@ public class JerseyServices implements RESTServices {
 		return entity;
 	}
 
-    @Override
-    public void deleteSearch(DeleteQueryDefinition queryDef, String transactionId) throws ForbiddenUserException,
-            FailedRequestException {
+	@Override
+	public void deleteSearch(DeleteQueryDefinition queryDef,
+			String transactionId) throws ForbiddenUserException,
+			FailedRequestException {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
-        if (queryDef.getDirectory() != null) {
-            addEncodedParam(params, "directory", queryDef.getDirectory());
-        }
+		if (queryDef.getDirectory() != null) {
+			addEncodedParam(params, "directory", queryDef.getDirectory());
+		}
 
-        addEncodedParam(params, "collection", queryDef.getCollections());
+		addEncodedParam(params, "collection", queryDef.getCollections());
 
-        if (transactionId != null) {
-            params.add("txid", transactionId);
-        }
+		if (transactionId != null) {
+			params.add("txid", transactionId);
+		}
 
 		WebResource builder = connection.path("search").queryParams(params);
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
-	        response = builder.delete(ClientResponse.class);
-			status   = response.getClientResponseStatus();
+			response = builder.delete(ClientResponse.class);
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
-        if (status == ClientResponse.Status.FORBIDDEN) {
-            throw new ForbiddenUserException("User is not allowed to delete",
-                    extractErrorFields(response));
-        }
+		if (status == ClientResponse.Status.FORBIDDEN) {
+			throw new ForbiddenUserException("User is not allowed to delete",
+					extractErrorFields(response));
+		}
 
-        if (status != ClientResponse.Status.NO_CONTENT) {
-            throw new FailedRequestException("delete failed: "
-                    + status.getReasonPhrase(), extractErrorFields(response));
-        }
-    }
+		if (status != ClientResponse.Status.NO_CONTENT) {
+			throw new FailedRequestException("delete failed: "
+					+ status.getReasonPhrase(), extractErrorFields(response));
+		}
+	}
 
-    @Override
+	@Override
 	public <T> T values(Class<T> as, ValuesDefinition valDef, String mimetype,
 			String transactionId) throws ForbiddenUserException,
 			FailedRequestException {
@@ -1399,7 +1468,8 @@ public class JerseyServices implements RESTServices {
 		}
 
 		if (valDef.getAggregatePath() != null) {
-			addEncodedParam(docParams, "aggregatePath", valDef.getAggregatePath());
+			addEncodedParam(docParams, "aggregatePath",
+					valDef.getAggregatePath());
 		}
 
 		if (valDef.getView() != null) {
@@ -1431,8 +1501,8 @@ public class JerseyServices implements RESTServices {
 					addEncodedParam(docParams, "options", optionsName);
 				}
 			} else if (queryDef.getOptionsName() != null) {
-				if (optionsName != queryDef.getOptionsName() &&
-						logger.isWarnEnabled())
+				if (optionsName != queryDef.getOptionsName()
+						&& logger.isWarnEnabled())
 					logger.warn("values definition options take precedence over query definition options");
 			}
 
@@ -1447,19 +1517,19 @@ public class JerseyServices implements RESTServices {
 
 			if (queryDef instanceof StringQueryDefinition) {
 				String text = ((StringQueryDefinition) queryDef).getCriteria();
-	            if (text != null) {
+				if (text != null) {
 					addEncodedParam(docParams, "q", text);
-	            }
+				}
 			} else if (queryDef instanceof StructuredQueryDefinition) {
 				String structure = ((StructuredQueryDefinition) queryDef)
 						.serialize();
-	            if (structure != null) {
+				if (structure != null) {
 					addEncodedParam(docParams, "structuredQuery", structure);
-	            }
+				}
 			} else {
 				if (logger.isWarnEnabled())
-					logger.warn("unsupported query definition: "+
-							queryDef.getClass().getName());
+					logger.warn("unsupported query definition: "
+							+ queryDef.getClass().getName());
 			}
 		}
 
@@ -1472,28 +1542,31 @@ public class JerseyServices implements RESTServices {
 			uri += "/" + valDef.getName();
 		}
 
-		WebResource.Builder builder =
-			connection.path(uri).queryParams(docParams).accept(mimetype);
+		WebResource.Builder builder = connection.path(uri)
+				.queryParams(docParams).accept(mimetype);
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			response = builder.get(ClientResponse.class);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to search",
@@ -1528,28 +1601,31 @@ public class JerseyServices implements RESTServices {
 
 		String uri = "values";
 
-		WebResource.Builder builder =
-			connection.path(uri).queryParams(docParams).accept(mimetype);
+		WebResource.Builder builder = connection.path(uri)
+				.queryParams(docParams).accept(mimetype);
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			response = builder.get(ClientResponse.class);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to search",
@@ -1578,28 +1654,31 @@ public class JerseyServices implements RESTServices {
 
 		String uri = "config/query";
 
-		WebResource.Builder builder =
-			connection.path(uri).queryParams(docParams).accept(mimetype);
+		WebResource.Builder builder = connection.path(uri)
+				.queryParams(docParams).accept(mimetype);
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			response = builder.get(ClientResponse.class);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to search",
@@ -1620,40 +1699,44 @@ public class JerseyServices implements RESTServices {
 	// namespaces, search options etc.
 	@Override
 	public <T> T getValue(RequestLogger reqlog, String type, String key,
-			boolean isNullable, String mimetype, Class<T> as
-	) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+			boolean isNullable, String mimetype, Class<T> as)
+			throws ResourceNotFoundException, ForbiddenUserException,
+			FailedRequestException {
 		if (logger.isDebugEnabled())
 			logger.debug("Getting {}/{}", type, key);
 
-		WebResource.Builder builder =
-			connection.path(type + "/" + key).accept(mimetype);
+		WebResource.Builder builder = connection.path(type + "/" + key).accept(
+				mimetype);
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			response = builder.get(ClientResponse.class);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		if (status != ClientResponse.Status.OK) {
 			if (status == ClientResponse.Status.NOT_FOUND) {
 				response.close();
 				if (!isNullable)
-					throw new ResourceNotFoundException(
-							"Could not get " + type + "/" + key); 
+					throw new ResourceNotFoundException("Could not get " + type
+							+ "/" + key);
 				return null;
 			} else if (status == ClientResponse.Status.FORBIDDEN)
 				throw new ForbiddenUserException("User is not allowed to read "
@@ -1682,25 +1765,28 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = connection.path(type).accept(mimetype);
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			response = builder.get(ClientResponse.class);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to read "
@@ -1724,7 +1810,8 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public void postValue(RequestLogger reqlog, String type, String key,
 			String mimetype, Object value)
-	throws  ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
+			throws ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException {
 		if (logger.isDebugEnabled())
 			logger.debug("Posting {}/{}", type, key);
 
@@ -1734,20 +1821,20 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public void putValue(RequestLogger reqlog, String type, String key,
-			String mimetype, Object value)
-	throws ResourceNotFoundException, ResourceNotResendableException,
-			ForbiddenUserException, FailedRequestException {
+			String mimetype, Object value) throws ResourceNotFoundException,
+			ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException {
 		if (logger.isDebugEnabled())
 			logger.debug("Putting {}/{}", type, key);
 
-		putPostValueImpl(reqlog, "put", type, key, null, mimetype, value, 
+		putPostValueImpl(reqlog, "put", type, key, null, mimetype, value,
 				ClientResponse.Status.NO_CONTENT, ClientResponse.Status.CREATED);
 	}
 
 	@Override
 	public void putValue(RequestLogger reqlog, String type, String key,
 			RequestParameters extraParams, String mimetype, Object value)
-	throws ResourceNotFoundException, ResourceNotResendableException,
+			throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
 		if (logger.isDebugEnabled())
 			logger.debug("Putting {}/{}", type, key);
@@ -1758,7 +1845,8 @@ public class JerseyServices implements RESTServices {
 
 	private void putPostValueImpl(RequestLogger reqlog, String method,
 			String type, String key, RequestParameters extraParams,
-			String mimetype, Object value, ClientResponse.Status... expectedStatuses) {
+			String mimetype, Object value,
+			ClientResponse.Status... expectedStatuses) {
 		if (key != null) {
 			logRequest(reqlog, "writing %s value with %s key and %s mime type",
 					type, key, (mimetype != null) ? mimetype : null);
@@ -1767,24 +1855,24 @@ public class JerseyServices implements RESTServices {
 					(mimetype != null) ? mimetype : null);
 		}
 
-		HandleImplementation handle = (value instanceof HandleImplementation) ?
-				(HandleImplementation) value : null;
+		HandleImplementation handle = (value instanceof HandleImplementation) ? (HandleImplementation) value
+				: null;
 
 		MultivaluedMap<String, String> requestParams = convertParams(extraParams);
 
-		String              connectPath = null;
-		WebResource.Builder builder     = null;
+		String connectPath = null;
+		WebResource.Builder builder = null;
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			Object nextValue = (handle != null) ? handle.sendContent() : value;
 
 			Object sentValue = null;
 			if (nextValue instanceof OutputStreamSender) {
-				sentValue = new StreamingOutputImpl((OutputStreamSender) nextValue,
-						reqlog);
+				sentValue = new StreamingOutputImpl(
+						(OutputStreamSender) nextValue, reqlog);
 			} else {
 				if (reqlog != null && retry == 0)
 					sentValue = reqlog.copyContent(nextValue);
@@ -1792,11 +1880,11 @@ public class JerseyServices implements RESTServices {
 					sentValue = nextValue;
 			}
 
-			boolean isStreaming = (isFirstRequest || handle == null) ?
-					isStreaming(sentValue) : false;
+			boolean isStreaming = (isFirstRequest || handle == null) ? isStreaming(sentValue)
+					: false;
 
-			boolean isResendable = (handle == null) ?
-					!isStreaming : handle.isResendable();
+			boolean isResendable = (handle == null) ? !isStreaming : handle
+					.isResendable();
 
 			if ("put".equals(method)) {
 				if (isFirstRequest && isStreaming)
@@ -1804,9 +1892,9 @@ public class JerseyServices implements RESTServices {
 
 				if (builder == null) {
 					connectPath = (key != null) ? type + "/" + key : type;
-					WebResource resource = (requestParams == null) ?
-							connection.path(connectPath) :
-							connection.path(connectPath).queryParams(requestParams);
+					WebResource resource = (requestParams == null) ? connection
+							.path(connectPath) : connection.path(connectPath)
+							.queryParams(requestParams);
 					builder = resource.type(mimetype);
 				}
 
@@ -1817,9 +1905,9 @@ public class JerseyServices implements RESTServices {
 
 				if (builder == null) {
 					connectPath = type;
-					WebResource resource = (requestParams == null) ?
-							connection.path(connectPath) :
-							connection.path(connectPath).queryParams(requestParams);
+					WebResource resource = (requestParams == null) ? connection
+							.path(connectPath) : connection.path(connectPath)
+							.queryParams(requestParams);
 					builder = resource.type(mimetype);
 				}
 
@@ -1834,18 +1922,21 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			else if (!isResendable)
 				throw new ResourceNotResendableException(
-						"Cannot retry request for "+connectPath);
+						"Cannot retry request for " + connectPath);
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException("User is not allowed to write "
@@ -1871,32 +1962,35 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public void deleteValue(RequestLogger reqlog, String type, String key)
-	throws ResourceNotFoundException, ForbiddenUserException,
+			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
 		if (logger.isDebugEnabled())
 			logger.debug("Deleting {}/{}", type, key);
 
 		WebResource builder = connection.path(type + "/" + key);
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			response = builder.delete(ClientResponse.class);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException("User is not allowed to delete "
@@ -1921,25 +2015,28 @@ public class JerseyServices implements RESTServices {
 
 		WebResource builder = connection.path(type);
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			response = builder.delete(ClientResponse.class);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException("User is not allowed to delete "
@@ -1953,235 +2050,263 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public <R extends AbstractReadHandle> R getResource(
-			RequestLogger reqlog, String path, RequestParameters params, R output)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		HandleImplementation outputBase = HandleAccessor.checkHandle(output, "read");
+	public <R extends AbstractReadHandle> R getResource(RequestLogger reqlog,
+			String path, RequestParameters params, R output)
+			throws ResourceNotFoundException, ForbiddenUserException,
+			FailedRequestException {
+		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
+				"read");
 
 		String mimetype = outputBase.getMimetype();
-		Class  as       = outputBase.receiveAs();
+		Class as = outputBase.receiveAs();
 
 		WebResource.Builder builder = makeGetBuilder(path, params, mimetype);
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			response = doGet(builder);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		checkStatus(response, status, "read", "resource", path,
 				(as != null) ? ResponseStatus.OK : ResponseStatus.NO_CONTENT);
 
 		if (as != null)
-			outputBase.receiveContent(
-					makeResult(reqlog, "read", "resource", response, as));
+			outputBase.receiveContent(makeResult(reqlog, "read", "resource",
+					response, as));
 
 		return output;
 	}
 
 	@Override
-	public ServiceResultIterator getIteratedResource(
-			RequestLogger reqlog, String path, RequestParameters params, String... mimetypes)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+	public ServiceResultIterator getIteratedResource(RequestLogger reqlog,
+			String path, RequestParameters params, String... mimetypes)
+			throws ResourceNotFoundException, ForbiddenUserException,
+			FailedRequestException {
 		WebResource.Builder builder = makeGetBuilder(path, params,
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			response = doGet(builder);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
-		checkStatus(response, status, "read", "resource", path,
-				(response.hasEntity() ||
-						(mimetypes != null && mimetypes.length > 0)) ?
-					ResponseStatus.OK : ResponseStatus.NO_CONTENT);
+		checkStatus(
+				response,
+				status,
+				"read",
+				"resource",
+				path,
+				(response.hasEntity() || (mimetypes != null && mimetypes.length > 0)) ? ResponseStatus.OK
+						: ResponseStatus.NO_CONTENT);
 
 		return makeResults(reqlog, "read", "resource", response);
 	}
 
 	@Override
-	public <R extends AbstractReadHandle>
-	R putResource(RequestLogger reqlog, String path, RequestParameters params,
-			AbstractWriteHandle input, R output)
-	throws ResourceNotFoundException, ResourceNotResendableException,
-			ForbiddenUserException, FailedRequestException {
-		HandleImplementation inputBase  = HandleAccessor.checkHandle(input,  "write");
-		HandleImplementation outputBase = HandleAccessor.checkHandle(output, "read");
+	public <R extends AbstractReadHandle> R putResource(RequestLogger reqlog,
+			String path, RequestParameters params, AbstractWriteHandle input,
+			R output) throws ResourceNotFoundException,
+			ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException {
+		HandleImplementation inputBase = HandleAccessor.checkHandle(input,
+				"write");
+		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
+				"read");
 
-		String  inputMimetype  = inputBase.getMimetype();
-		String  outputMimetype = outputBase.getMimetype();
-		boolean isResendable   = inputBase.isResendable();
-		Class   as             = outputBase.receiveAs();
+		String inputMimetype = inputBase.getMimetype();
+		String outputMimetype = outputBase.getMimetype();
+		boolean isResendable = inputBase.isResendable();
+		Class as = outputBase.receiveAs();
 
-		WebResource.Builder builder =
-			makePutBuilder(path, params, inputMimetype, outputMimetype);
+		WebResource.Builder builder = makePutBuilder(path, params,
+				inputMimetype, outputMimetype);
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
-			response = doPut(
-					reqlog, builder, inputBase.sendContent(), !isResendable
-					);
-			status   = response.getClientResponseStatus();
+			response = doPut(reqlog, builder, inputBase.sendContent(),
+					!isResendable);
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			else if (!isResendable)
-				throw new ResourceNotResendableException("Cannot retry request for "+path);
+				throw new ResourceNotResendableException(
+						"Cannot retry request for " + path);
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		checkStatus(response, status, "write", "resource", path,
 				(as != null) ? ResponseStatus.OK
 						: ResponseStatus.CREATED_OR_NO_CONTENT);
 
 		if (as != null)
-			outputBase.receiveContent(
-					makeResult(reqlog, "write", "resource", response, as));
+			outputBase.receiveContent(makeResult(reqlog, "write", "resource",
+					response, as));
 
 		return output;
 	}
 
 	@Override
-	public <R extends AbstractReadHandle, W extends AbstractWriteHandle>
-	R putResource(RequestLogger reqlog, String path, RequestParameters params,
-			W[] input, R output)
-	throws ResourceNotFoundException, ResourceNotResendableException,
-	 		ForbiddenUserException, FailedRequestException {
+	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R putResource(
+			RequestLogger reqlog, String path, RequestParameters params,
+			W[] input, R output) throws ResourceNotFoundException,
+			ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException {
 		if (input == null || input.length == 0)
 			throw new IllegalArgumentException(
 					"input not specified for multipart");
 
-		HandleImplementation outputBase = HandleAccessor.checkHandle(output, "read");
+		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
+				"read");
 
 		String outputMimetype = outputBase.getMimetype();
-		Class  as             = outputBase.receiveAs();
+		Class as = outputBase.receiveAs();
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			MultiPart multiPart = new MultiPart();
 			boolean hasStreamingPart = addParts(multiPart, reqlog, input);
 
-			WebResource.Builder builder =
-				makePutBuilder(path, params, multiPart, outputMimetype);
+			WebResource.Builder builder = makePutBuilder(path, params,
+					multiPart, outputMimetype);
 
 			response = doPut(builder, multiPart, hasStreamingPart);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			else if (hasStreamingPart)
-				throw new ResourceNotResendableException("Cannot retry request for "+path);
+				throw new ResourceNotResendableException(
+						"Cannot retry request for " + path);
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		checkStatus(response, status, "write", "resource", path,
 				(as != null) ? ResponseStatus.OK
 						: ResponseStatus.CREATED_OR_NO_CONTENT);
 
 		if (as != null)
-			outputBase.receiveContent(
-					makeResult(reqlog, "write", "resource", response, as));
+			outputBase.receiveContent(makeResult(reqlog, "write", "resource",
+					response, as));
 
 		return output;
 	}
 
 	@Override
-	public <R extends AbstractReadHandle> R postResource(
-			RequestLogger reqlog, String path, RequestParameters params,
-			AbstractWriteHandle input, R output)
-	throws ResourceNotFoundException, ResourceNotResendableException,
-			ForbiddenUserException, FailedRequestException {
-		HandleImplementation inputBase  = HandleAccessor.checkHandle(input,  "write");
-		HandleImplementation outputBase = HandleAccessor.checkHandle(output, "read");
+	public <R extends AbstractReadHandle> R postResource(RequestLogger reqlog,
+			String path, RequestParameters params, AbstractWriteHandle input,
+			R output) throws ResourceNotFoundException,
+			ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException {
+		HandleImplementation inputBase = HandleAccessor.checkHandle(input,
+				"write");
+		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
+				"read");
 
-		String  inputMimetype  = inputBase.getMimetype();
-		String  outputMimetype = outputBase.getMimetype();
-		boolean isResendable   = inputBase.isResendable();
-		Class   as             = outputBase.receiveAs();
+		String inputMimetype = inputBase.getMimetype();
+		String outputMimetype = outputBase.getMimetype();
+		boolean isResendable = inputBase.isResendable();
+		Class as = outputBase.receiveAs();
 
-		WebResource.Builder builder =
-			makePostBuilder(path, params, inputMimetype, outputMimetype);
+		WebResource.Builder builder = makePostBuilder(path, params,
+				inputMimetype, outputMimetype);
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
-			response = doPost(
-					reqlog, builder, inputBase.sendContent(), !isResendable
-					);
-			status   = response.getClientResponseStatus();
+			response = doPost(reqlog, builder, inputBase.sendContent(),
+					!isResendable);
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			else if (!isResendable)
-				throw new ResourceNotResendableException("Cannot retry request for "+path);
+				throw new ResourceNotResendableException(
+						"Cannot retry request for " + path);
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		checkStatus(response, status, "apply", "resource", path,
 				(as != null) ? ResponseStatus.OK
 						: ResponseStatus.CREATED_OR_NO_CONTENT);
 
 		if (as != null)
-			outputBase.receiveContent(
-					makeResult(reqlog, "apply", "resource", response, as));
+			outputBase.receiveContent(makeResult(reqlog, "apply", "resource",
+					response, as));
 
 		return output;
 	}
@@ -2189,96 +2314,110 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R postResource(
 			RequestLogger reqlog, String path, RequestParameters params,
-			W[] input, R output)
-	throws ResourceNotFoundException, ResourceNotResendableException,
-			ForbiddenUserException, FailedRequestException {
-		HandleImplementation outputBase = HandleAccessor.checkHandle(output, "read");
+			W[] input, R output) throws ResourceNotFoundException,
+			ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException {
+		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
+				"read");
 
 		String outputMimetype = outputBase.getMimetype();
-		Class  as             = outputBase.receiveAs();
+		Class as = outputBase.receiveAs();
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			MultiPart multiPart = new MultiPart();
 			boolean hasStreamingPart = addParts(multiPart, reqlog, input);
 
-			WebResource.Builder builder =
-				makePostBuilder(path, params, multiPart, outputMimetype);
+			WebResource.Builder builder = makePostBuilder(path, params,
+					multiPart, outputMimetype);
 
 			response = doPost(builder, multiPart, hasStreamingPart);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			else if (hasStreamingPart)
-				throw new ResourceNotResendableException("Cannot retry request for "+path);
+				throw new ResourceNotResendableException(
+						"Cannot retry request for " + path);
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		checkStatus(response, status, "apply", "resource", path,
 				(as != null) ? ResponseStatus.OK
 						: ResponseStatus.CREATED_OR_NO_CONTENT);
 
 		if (as != null)
-			outputBase.receiveContent(
-					makeResult(reqlog, "apply", "resource", response, as));
+			outputBase.receiveContent(makeResult(reqlog, "apply", "resource",
+					response, as));
 
 		return output;
 	}
 
 	@Override
-	public ServiceResultIterator postIteratedResource(
-			RequestLogger reqlog, String path, RequestParameters params,
-			AbstractWriteHandle input, String... outputMimetypes)
-	throws ResourceNotFoundException, ResourceNotResendableException,
-			ForbiddenUserException, FailedRequestException {
-		HandleImplementation inputBase = HandleAccessor.checkHandle(input,  "write");
+	public ServiceResultIterator postIteratedResource(RequestLogger reqlog,
+			String path, RequestParameters params, AbstractWriteHandle input,
+			String... outputMimetypes) throws ResourceNotFoundException,
+			ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException {
+		HandleImplementation inputBase = HandleAccessor.checkHandle(input,
+				"write");
 
-		String  inputMimetype = inputBase.getMimetype();
-		boolean isResendable  = inputBase.isResendable();
+		String inputMimetype = inputBase.getMimetype();
+		boolean isResendable = inputBase.isResendable();
 
-		WebResource.Builder builder = makePostBuilder(
-				path, params, inputMimetype,
-				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE)
-				);
+		WebResource.Builder builder = makePostBuilder(path, params,
+				inputMimetype,
+				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			Object value = inputBase.sendContent();
 
 			response = doPost(reqlog, builder, value, !isResendable);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			else if (!isResendable)
-				throw new ResourceNotResendableException("Cannot retry request for "+path);
+				throw new ResourceNotResendableException(
+						"Cannot retry request for " + path);
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
-		checkStatus(response, status, "apply", "resource", path,
-				(response.hasEntity() || (outputMimetypes != null && outputMimetypes.length > 0)) ?
-					ResponseStatus.OK : ResponseStatus.CREATED_OR_NO_CONTENT);
+		checkStatus(
+				response,
+				status,
+				"apply",
+				"resource",
+				path,
+				(response.hasEntity() || (outputMimetypes != null && outputMimetypes.length > 0)) ? ResponseStatus.OK
+						: ResponseStatus.CREATED_OR_NO_CONTENT);
 
 		return makeResults(reqlog, "apply", "resource", response);
 	}
@@ -2287,88 +2426,104 @@ public class JerseyServices implements RESTServices {
 	public <W extends AbstractWriteHandle> ServiceResultIterator postIteratedResource(
 			RequestLogger reqlog, String path, RequestParameters params,
 			W[] input, String... outputMimetypes)
-	throws ResourceNotFoundException, ResourceNotResendableException,
+			throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			MultiPart multiPart = new MultiPart();
 			boolean hasStreamingPart = addParts(multiPart, reqlog, input);
 
-			WebResource.Builder builder = makePostBuilder(path, params, multiPart,
+			WebResource.Builder builder = makePostBuilder(
+					path,
+					params,
+					multiPart,
 					Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
 
 			response = doPost(builder, multiPart, hasStreamingPart);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			else if (hasStreamingPart)
-				throw new ResourceNotResendableException("Cannot retry request for "+path);
+				throw new ResourceNotResendableException(
+						"Cannot retry request for " + path);
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
-		checkStatus(response, status, "apply", "resource", path,
-				(response.hasEntity() ||
-						(outputMimetypes != null && outputMimetypes.length > 0)) ?
-					ResponseStatus.OK : ResponseStatus.CREATED_OR_NO_CONTENT);
+		checkStatus(
+				response,
+				status,
+				"apply",
+				"resource",
+				path,
+				(response.hasEntity() || (outputMimetypes != null && outputMimetypes.length > 0)) ? ResponseStatus.OK
+						: ResponseStatus.CREATED_OR_NO_CONTENT);
 
 		return makeResults(reqlog, "apply", "resource", response);
 	}
 
 	@Override
 	public <R extends AbstractReadHandle> R deleteResource(
-			RequestLogger reqlog, String path, RequestParameters params, R output)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		HandleImplementation outputBase = HandleAccessor.checkHandle(output, "read");
+			RequestLogger reqlog, String path, RequestParameters params,
+			R output) throws ResourceNotFoundException, ForbiddenUserException,
+			FailedRequestException {
+		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
+				"read");
 
 		String outputMimetype = outputBase.getMimetype();
-		Class  as             = outputBase.receiveAs();
+		Class as = outputBase.receiveAs();
 
-		WebResource.Builder builder =
-			makeDeleteBuilder(reqlog, path, params, outputMimetype);
+		WebResource.Builder builder = makeDeleteBuilder(reqlog, path, params,
+				outputMimetype);
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			response = doDelete(builder);
-			status   = response.getClientResponseStatus();
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		checkStatus(response, status, "delete", "resource", path,
 				(as != null) ? ResponseStatus.OK : ResponseStatus.NO_CONTENT);
 
 		if (as != null)
-			outputBase.receiveContent(
-					makeResult(reqlog, "delete", "resource", response, as));
+			outputBase.receiveContent(makeResult(reqlog, "delete", "resource",
+					response, as));
 
 		return output;
 	}
 
-	private WebResource.Builder makeGetBuilder(
-			String path, RequestParameters params, Object mimetype) {
+	private WebResource.Builder makeGetBuilder(String path,
+			RequestParameters params, Object mimetype) {
 		if (path == null)
 			throw new IllegalArgumentException("Read with null path");
 
@@ -2390,8 +2545,9 @@ public class JerseyServices implements RESTServices {
 		return response;
 	}
 
-	private WebResource.Builder makePutBuilder(String path, RequestParameters params,
-			String inputMimetype, String outputMimetype) {
+	private WebResource.Builder makePutBuilder(String path,
+			RequestParameters params, String inputMimetype,
+			String outputMimetype) {
 		if (path == null)
 			throw new IllegalArgumentException("Write with null path");
 
@@ -2404,8 +2560,8 @@ public class JerseyServices implements RESTServices {
 		return builder;
 	}
 
-	private ClientResponse doPut(RequestLogger reqlog, WebResource.Builder builder,
-			Object value, boolean isStreaming) {
+	private ClientResponse doPut(RequestLogger reqlog,
+			WebResource.Builder builder, Object value, boolean isStreaming) {
 		if (value == null)
 			throw new IllegalArgumentException("Resource write with null value");
 
@@ -2414,7 +2570,8 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		if (value instanceof OutputStreamSender) {
-			response = builder.put(ClientResponse.class, new StreamingOutputImpl(
+			response = builder
+					.put(ClientResponse.class, new StreamingOutputImpl(
 							(OutputStreamSender) value, reqlog));
 		} else {
 			if (reqlog != null)
@@ -2430,8 +2587,8 @@ public class JerseyServices implements RESTServices {
 		return response;
 	}
 
-	private WebResource.Builder makePutBuilder(String path, RequestParameters params,
-			MultiPart multiPart, String outputMimetype) {
+	private WebResource.Builder makePutBuilder(String path,
+			RequestParameters params, MultiPart multiPart, String outputMimetype) {
 		if (path == null)
 			throw new IllegalArgumentException("Write with null path");
 
@@ -2445,8 +2602,8 @@ public class JerseyServices implements RESTServices {
 		return builder;
 	}
 
-	private ClientResponse doPut(WebResource.Builder builder, MultiPart multiPart,
-			boolean hasStreamingPart) {
+	private ClientResponse doPut(WebResource.Builder builder,
+			MultiPart multiPart, boolean hasStreamingPart) {
 		if (isFirstRequest)
 			makeFirstRequest();
 
@@ -2458,8 +2615,9 @@ public class JerseyServices implements RESTServices {
 		return response;
 	}
 
-	private WebResource.Builder makePostBuilder(String path, RequestParameters params,
-			Object inputMimetype, Object outputMimetype) {
+	private WebResource.Builder makePostBuilder(String path,
+			RequestParameters params, Object inputMimetype,
+			Object outputMimetype) {
 		if (path == null)
 			throw new IllegalArgumentException("Apply with null path");
 
@@ -2472,14 +2630,15 @@ public class JerseyServices implements RESTServices {
 		return builder;
 	}
 
-	private ClientResponse doPost(RequestLogger reqlog, WebResource.Builder builder,
-			Object value, boolean isStreaming) {
+	private ClientResponse doPost(RequestLogger reqlog,
+			WebResource.Builder builder, Object value, boolean isStreaming) {
 		if (isFirstRequest && isStreaming(value))
 			makeFirstRequest();
 
 		ClientResponse response = null;
 		if (value instanceof OutputStreamSender) {
-			response = builder.post(ClientResponse.class, new StreamingOutputImpl(
+			response = builder
+					.post(ClientResponse.class, new StreamingOutputImpl(
 							(OutputStreamSender) value, reqlog));
 		} else {
 			if (reqlog != null)
@@ -2495,8 +2654,8 @@ public class JerseyServices implements RESTServices {
 		return response;
 	}
 
-	private WebResource.Builder makePostBuilder(String path, RequestParameters params,
-			MultiPart multiPart, Object outputMimetype) {
+	private WebResource.Builder makePostBuilder(String path,
+			RequestParameters params, MultiPart multiPart, Object outputMimetype) {
 		if (path == null)
 			throw new IllegalArgumentException("Apply with null path");
 
@@ -2510,8 +2669,8 @@ public class JerseyServices implements RESTServices {
 		return builder;
 	}
 
-	private ClientResponse doPost(WebResource.Builder builder, MultiPart multiPart,
-			boolean hasStreamingPart) {
+	private ClientResponse doPost(WebResource.Builder builder,
+			MultiPart multiPart, boolean hasStreamingPart) {
 		if (isFirstRequest)
 			makeFirstRequest();
 
@@ -2523,8 +2682,8 @@ public class JerseyServices implements RESTServices {
 		return response;
 	}
 
-	private WebResource.Builder makeDeleteBuilder(RequestLogger reqlog, String path,
-			RequestParameters params, String mimetype) {
+	private WebResource.Builder makeDeleteBuilder(RequestLogger reqlog,
+			String path, RequestParameters params, String mimetype) {
 		if (path == null)
 			throw new IllegalArgumentException("Delete with null path");
 
@@ -2552,30 +2711,36 @@ public class JerseyServices implements RESTServices {
 			return null;
 
 		MultivaluedMap<String, String> requestParams = new MultivaluedMapImpl();
-		for (Map.Entry<String, List<String>> entry: params.entrySet()) {
+		for (Map.Entry<String, List<String>> entry : params.entrySet()) {
 			addEncodedParam(requestParams, entry.getKey(), entry.getValue());
 		}
 
 		return requestParams;
 	}
 
-	private void addEncodedParam(MultivaluedMap<String, String> params, String key, List<String> values) {
+	private void addEncodedParam(MultivaluedMap<String, String> params,
+			String key, List<String> values) {
 		List<String> encodedParams = encodeParamValues(values);
 		if (encodedParams != null && encodedParams.size() > 0)
 			params.put(key, encodedParams);
 	}
-	private void addEncodedParam(MultivaluedMap<String, String> params, String key, String[] values) {
+
+	private void addEncodedParam(MultivaluedMap<String, String> params,
+			String key, String[] values) {
 		List<String> encodedParams = encodeParamValues(values);
 		if (encodedParams != null && encodedParams.size() > 0)
 			params.put(key, encodedParams);
 	}
-	private void addEncodedParam(MultivaluedMap<String, String> params, String key, String value) {
+
+	private void addEncodedParam(MultivaluedMap<String, String> params,
+			String key, String value) {
 		value = encodeParamValue(value);
 		if (value == null)
 			return;
 
 		params.add(key, value);
 	}
+
 	private List<String> encodeParamValues(List<String> oldValues) {
 		if (oldValues == null)
 			return null;
@@ -2583,9 +2748,9 @@ public class JerseyServices implements RESTServices {
 		int oldSize = oldValues.size();
 		if (oldSize == 0)
 			return null;
-		
+
 		List<String> newValues = new ArrayList<String>(oldSize);
-		for (String value: oldValues) {
+		for (String value : oldValues) {
 			String newValue = encodeParamValue(value);
 			if (newValue == null)
 				continue;
@@ -2594,6 +2759,7 @@ public class JerseyServices implements RESTServices {
 
 		return newValues;
 	}
+
 	private List<String> encodeParamValues(String[] oldValues) {
 		if (oldValues == null)
 			return null;
@@ -2601,9 +2767,9 @@ public class JerseyServices implements RESTServices {
 		int oldSize = oldValues.length;
 		if (oldSize == 0)
 			return null;
-		
+
 		List<String> newValues = new ArrayList<String>(oldSize);
-		for (String value: oldValues) {
+		for (String value : oldValues) {
 			String newValue = encodeParamValue(value);
 			if (newValue == null)
 				continue;
@@ -2612,57 +2778,56 @@ public class JerseyServices implements RESTServices {
 
 		return newValues;
 	}
+
 	private String encodeParamValue(String value) {
 		if (value == null)
 			return null;
 
-		return UriComponent.encode(
-				value, UriComponent.Type.QUERY_PARAM
-				).replace("+", "%20");
+		return UriComponent.encode(value, UriComponent.Type.QUERY_PARAM)
+				.replace("+", "%20");
 	}
 
-	private <W extends AbstractWriteHandle>
-	boolean addParts(MultiPart multiPart, RequestLogger reqlog, W[] input) {
+	private <W extends AbstractWriteHandle> boolean addParts(
+			MultiPart multiPart, RequestLogger reqlog, W[] input) {
 		return addParts(multiPart, reqlog, null, input);
 	}
 
-	private <W extends AbstractWriteHandle> boolean addParts(MultiPart multiPart,
-			RequestLogger reqlog, String[] mimetypes, W[] input) {
+	private <W extends AbstractWriteHandle> boolean addParts(
+			MultiPart multiPart, RequestLogger reqlog, String[] mimetypes,
+			W[] input) {
 		if (mimetypes != null && mimetypes.length != input.length)
 			throw new IllegalArgumentException(
 					"Mismatch between mimetypes and input");
- 
+
 		multiPart.setMediaType(new MediaType("multipart", "mixed"));
 
 		boolean hasStreamingPart = false;
-		for (int i=0; i < input.length; i++) {
+		for (int i = 0; i < input.length; i++) {
 			AbstractWriteHandle handle = input[i];
-			HandleImplementation handleBase = HandleAccessor.checkHandle(handle, "write");
-			Object value         = handleBase.sendContent();
-			String inputMimetype = (mimetypes != null) ? mimetypes[i] :
-					handleBase.getMimetype();
+			HandleImplementation handleBase = HandleAccessor.checkHandle(
+					handle, "write");
+			Object value = handleBase.sendContent();
+			String inputMimetype = (mimetypes != null) ? mimetypes[i]
+					: handleBase.getMimetype();
 
 			if (!hasStreamingPart)
 				hasStreamingPart = !handleBase.isResendable();
 
-			String[] typeParts =
-				(inputMimetype != null && inputMimetype.contains("/")) ?
-					inputMimetype.split("/", 2) : null;
+			String[] typeParts = (inputMimetype != null && inputMimetype
+					.contains("/")) ? inputMimetype.split("/", 2) : null;
 
-			MediaType typePart = (typeParts != null) ?
-					new MediaType(typeParts[0], typeParts[1]) :
-					MediaType.WILDCARD_TYPE;
+			MediaType typePart = (typeParts != null) ? new MediaType(
+					typeParts[0], typeParts[1]) : MediaType.WILDCARD_TYPE;
 
 			BodyPart bodyPart = null;
 			if (value instanceof OutputStreamSender) {
 				bodyPart = new BodyPart(new StreamingOutputImpl(
 						(OutputStreamSender) value, reqlog), typePart);
 			} else {
-			    if (reqlog != null)
-			        bodyPart = new BodyPart(
-			        		reqlog.copyContent(value), typePart);
-			    else
-			        bodyPart = new BodyPart(value, typePart);
+				if (reqlog != null)
+					bodyPart = new BodyPart(reqlog.copyContent(value), typePart);
+				else
+					bodyPart = new BodyPart(value, typePart);
 			}
 
 			multiPart = multiPart.bodyPart(bodyPart);
@@ -2704,8 +2869,9 @@ public class JerseyServices implements RESTServices {
 		return builder;
 	}
 
-	private void checkStatus(ClientResponse response, ClientResponse.Status status,
-			String operation, String entityType, String path, ResponseStatus expected) {
+	private void checkStatus(ClientResponse response,
+			ClientResponse.Status status, String operation, String entityType,
+			String path, ResponseStatus expected) {
 		if (!expected.isExpected(status)) {
 			if (status == ClientResponse.Status.NOT_FOUND) {
 				throw new ResourceNotFoundException("Could not " + operation
@@ -2737,8 +2903,8 @@ public class JerseyServices implements RESTServices {
 		return (reqlog != null) ? reqlog.copyContent(entity) : entity;
 	}
 
-	private ServiceResultIterator makeResults(RequestLogger reqlog, String operation,
-			String entityType, ClientResponse response) {
+	private ServiceResultIterator makeResults(RequestLogger reqlog,
+			String operation, String entityType, ClientResponse response) {
 		logRequest(reqlog, "%s for %s", operation, entityType);
 
 		MultiPart entity = response.getEntity(MultiPart.class);
@@ -2795,16 +2961,18 @@ public class JerseyServices implements RESTServices {
 
 	public class JerseyResult implements ServiceResult {
 		private RequestLogger reqlog;
-		private BodyPart      part;
-		private boolean       extractedHeaders = false;
-		private Format        format;
-		private String        mimetype;
-		private long          length;
+		private BodyPart part;
+		private boolean extractedHeaders = false;
+		private Format format;
+		private String mimetype;
+		private long length;
+
 		public JerseyResult(RequestLogger reqlog, BodyPart part) {
 			super();
 			this.reqlog = reqlog;
-			this.part   = part;
+			this.part = part;
 		}
+
 		@Override
 		public <R extends AbstractReadHandle> R getContent(R handle) {
 			if (part == null)
@@ -2813,62 +2981,69 @@ public class JerseyServices implements RESTServices {
 			HandleImplementation handleBase = HandleAccessor.as(handle);
 
 			extractHeaders();
-			updateFormat(handleBase,   format);
+			updateFormat(handleBase, format);
 			updateMimetype(handleBase, mimetype);
-			updateLength(handleBase,   length);
+			updateLength(handleBase, length);
 
 			Object contentEntity = part.getEntityAs(handleBase.receiveAs());
-			handleBase.receiveContent( (reqlog != null) ?
-					reqlog.copyContent(contentEntity) : contentEntity);
+			handleBase.receiveContent((reqlog != null) ? reqlog
+					.copyContent(contentEntity) : contentEntity);
 
-			part   = null;
+			part = null;
 			reqlog = null;
 
 			return handle;
 		}
+
 		@Override
 		public Format getFormat() {
 			extractHeaders();
 			return format;
 		}
+
 		@Override
 		public String getMimetype() {
 			extractHeaders();
 			return mimetype;
 		}
+
 		@Override
 		public long getLength() {
 			extractHeaders();
 			return length;
 		}
+
 		private void extractHeaders() {
 			if (part == null || extractedHeaders)
 				return;
 			MultivaluedMap<String, String> headers = part.getHeaders();
-			format   = getHeaderFormat(headers);
+			format = getHeaderFormat(headers);
 			mimetype = getHeaderMimetype(headers);
-			length   = getHeaderLength(headers);
+			length = getHeaderLength(headers);
 			extractedHeaders = true;
 		}
 	}
+
 	public class JerseyResultIterator implements ServiceResultIterator {
-		private RequestLogger      reqlog;
-		private ClientResponse     response;
+		private RequestLogger reqlog;
+		private ClientResponse response;
 		private Iterator<BodyPart> partQueue;
-		public JerseyResultIterator(
-				RequestLogger reqlog, ClientResponse response, List<BodyPart> partList
-				) {
+
+		public JerseyResultIterator(RequestLogger reqlog,
+				ClientResponse response, List<BodyPart> partList) {
 			super();
 			if (response != null) {
 				if (partList != null && partList.size() > 0) {
-					this.reqlog    = reqlog;
-					this.response  = response;
-					this.partQueue = new ConcurrentLinkedQueue<BodyPart>(partList).iterator();
+					this.reqlog = reqlog;
+					this.response = response;
+					this.partQueue = new ConcurrentLinkedQueue<BodyPart>(
+							partList).iterator();
 				} else {
 					response.close();
 				}
 			}
 		}
+
 		@Override
 		public boolean hasNext() {
 			if (partQueue == null)
@@ -2878,6 +3053,7 @@ public class JerseyServices implements RESTServices {
 				close();
 			return hasNext;
 		}
+
 		@Override
 		public ServiceResult next() {
 			if (partQueue == null)
@@ -2889,6 +3065,7 @@ public class JerseyServices implements RESTServices {
 
 			return result;
 		}
+
 		@Override
 		public void remove() {
 			if (partQueue == null)
@@ -2897,6 +3074,7 @@ public class JerseyServices implements RESTServices {
 			if (!partQueue.hasNext())
 				close();
 		}
+
 		@Override
 		public void close() {
 			if (response != null) {
@@ -2905,6 +3083,7 @@ public class JerseyServices implements RESTServices {
 			}
 			reqlog = null;
 		}
+
 		@Override
 		protected void finalize() throws Throwable {
 			close();
@@ -2918,5 +3097,76 @@ public class JerseyServices implements RESTServices {
 		if (client == null)
 			return null;
 		return client.getClientHandler().getHttpClient();
+	}
+
+	@Override
+	public <T> T suggest(Class<T> as, SuggestDefinition suggestionDef) {
+		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+
+		String[] stringCriteria = suggestionDef.getStringCriteria();
+		String optionsName = suggestionDef.getOptionsName();
+		Integer limit = suggestionDef.getLimit();
+		Integer cursorPosition = suggestionDef.getCursorPosition();
+		Integer focus = suggestionDef.getFocus();
+
+		if (optionsName != null) {
+			params.add("options", optionsName);
+		}
+		if (limit != null) {
+			params.add("limit", Long.toString(limit));
+		}
+		if (cursorPosition != null) {
+			params.add("cursor-position", Long.toString(cursorPosition));
+		}
+		if (focus != null) {
+			params.add("focus", Long.toString(focus));
+		}
+		for (String stringCriterion : stringCriteria) {
+			params.add("q", stringCriterion);
+		}
+		WebResource.Builder builder = null;
+		builder = connection.path("suggest").queryParams(params)
+				.accept("application/xml");
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
+		int retry = 0;
+		for (; retry < maxRetries; retry++) {
+			response = builder.get(ClientResponse.class);
+
+			status = response.getClientResponseStatus();
+
+			if (isFirstRequest)
+				isFirstRequest = false;
+
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
+				break;
+			try {
+				Thread.sleep(delayMillis);
+			} catch (InterruptedException e) {
+			}
+		}
+
+		if (retry >= maxRetries)
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
+
+		if (status == ClientResponse.Status.FORBIDDEN) {
+			throw new ForbiddenUserException(
+					"User is not allowed to get suggestions",
+					extractErrorFields(response));
+		}
+		if (status != ClientResponse.Status.OK) {
+			throw new FailedRequestException("Suggest call failed: "
+					+ status.getReasonPhrase(), extractErrorFields(response));
+		}
+
+		T entity = response.getEntity(as);
+		if (as != InputStream.class && as != Reader.class)
+			response.close();
+
+		return entity;
+
 	}
 }

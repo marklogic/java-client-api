@@ -15,9 +15,16 @@
  */
 package com.marklogic.client.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.namespace.QName;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+
 import com.marklogic.client.Transaction;
+import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.TuplesHandle;
@@ -36,6 +43,7 @@ import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.SuggestDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
 
@@ -334,4 +342,46 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
             return null;
         }
     }
+
+	@Override
+	public String[] suggest(SuggestDefinition suggestionDef) {
+		DOMHandle handle = new DOMHandle();
+		HandleImplementation suggestBase = HandleAccessor.checkHandle(handle, "suggest");
+
+        Format optionsFormat = suggestBase.getFormat();
+      
+		suggestBase.receiveContent(services.suggest(suggestBase.receiveAs(), suggestionDef));
+        
+		Document doc = handle.get();
+        NodeList nodeList = doc.getDocumentElement().getChildNodes();
+        List<String> suggestions = new ArrayList<String>();
+        for (int i=0; i <nodeList.getLength(); i++) {
+        	suggestions.add(nodeList.item(i).getTextContent());
+        }
+        return suggestions.toArray(new String[suggestions.size()]);
+	}
+
+	@Override
+	public SuggestDefinition newSuggestionDefinition() {
+		SuggestDefinition def = new SuggestDefinitionImpl();
+		return def;
+	}
+			
+
+	@Override
+	public SuggestDefinition newSuggestionDefinition(String optionsName) {
+		SuggestDefinition def = new SuggestDefinitionImpl();
+		def.setStringCriteria(new String[] {""});
+		def.setOptionsName(optionsName);
+		return def;
+	}
+
+	@Override
+	public SuggestDefinition newSuggestionDefinition(String suggestionString,
+			String optionsName) {
+		SuggestDefinition def = new SuggestDefinitionImpl();
+		def.setStringCriteria(new String[] { suggestionString });
+		def.setOptionsName(optionsName);
+		return def;
+	}
 }
