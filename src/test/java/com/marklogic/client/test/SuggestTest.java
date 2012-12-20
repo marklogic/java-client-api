@@ -20,7 +20,7 @@ public class SuggestTest {
 	
 	@SuppressWarnings("unused")
 	private static final Logger logger = (Logger) LoggerFactory
-			.getLogger(QueryOptionsHandleTest.class);
+			.getLogger(SuggestTest.class);
 
 	@BeforeClass
 	public static void beforeClass() {

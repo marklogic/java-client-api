@@ -25,6 +25,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.admin.QueryOptionsManager;
@@ -38,6 +40,11 @@ import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesMetrics;
 
 public class TuplesHandleTest {
+	
+	private static final Logger logger = (Logger) LoggerFactory
+			.getLogger(TuplesHandleTest.class);
+
+	
     private static final String options =
             "<?xml version='1.0'?>"+
                     "<options xmlns=\"http://marklogic.com/appservices/search\">"+
@@ -54,6 +61,18 @@ public class TuplesHandleTest {
                     "<range type=\"xs:int\">"+
                     "<element ns=\"\" name=\"int\"/>"+
                     "</range>"+
+                    "</tuples>"+
+                    "<tuples name=\"n-way\">"+
+                    "<range type=\"xs:double\">"+
+                    "<element ns=\"\" name=\"double\"/>"+
+                    "</range>"+
+                    "<range type=\"xs:int\">"+
+                    "<element ns=\"\" name=\"int\"/>"+
+                    "</range>"+
+                    "<range type=\"xs:string\">"+
+                    "<element ns=\"\" name=\"string\"/>"+
+                    "</range>"+
+                    "<values-option>ascending</values-option>"+
                     "</tuples>"+
                     "<return-metrics>true</return-metrics>"+
                     "<return-values>true</return-values>"+
@@ -74,6 +93,8 @@ public class TuplesHandleTest {
     	QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
     	optionsMgr.writeOptions("valuesoptions2", new StringHandle(options));
 
+    	logger.debug(options.toString());
+    	
     	QueryManager queryMgr = Common.client.newQueryManager();
 
         ValuesDefinition vdef = queryMgr.newValuesDefinition("co", "valuesoptions2");
@@ -85,11 +106,11 @@ public class TuplesHandleTest {
         assertEquals("Two aggregates are expected", 2, agg.length);
 
         double cov = t.getAggregate("covariance").get("xs:double", Double.class);
-        assertTrue("The covariance is between 0.004 and 0.005",
-                cov > 0.004 && cov < 0.005);
+        assertTrue("The covariance is between 1.551 and 1.552",
+                cov > 1.551 && cov < 1.552);
 
         Tuple[] tuples = t.getTuples();
-        assertEquals("Nine tuples are expected", 9, tuples.length);
+        assertEquals("Nine tuples are expected", 12, tuples.length);
         assertEquals("The tuples are named 'co'", "co", t.getName());
 
         ValuesMetrics metrics = t.getMetrics();
@@ -100,7 +121,7 @@ public class TuplesHandleTest {
     }
 
     @Test
-    public void testValuesHandle2() throws IOException, ParserConfigurationException, SAXException {
+    public void testCoVariances() throws IOException, ParserConfigurationException, SAXException {
         QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
         optionsMgr.writeOptions("valuesoptions3", new StringHandle(options));
 
@@ -111,7 +132,7 @@ public class TuplesHandleTest {
         TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
 
         Tuple[] tuples = t.getTuples();
-        assertEquals("Nine tuples are expected", 9, tuples.length);
+        assertEquals("Nine tuples are expected", 12, tuples.length);
         assertEquals("The tuples are named 'co'", "co", t.getName());
 
         ValuesMetrics metrics = t.getMetrics();
@@ -134,18 +155,46 @@ public class TuplesHandleTest {
         TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
 
         Tuple[] tuples = t.getTuples();
-        assertEquals("Nine tuples are expected", 9, tuples.length);
+        assertEquals("Nine tuples are expected", 12, tuples.length);
         assertEquals("The tuples are named 'co'", "co", t.getName());
 
         TypedDistinctValue[] dv = tuples[0].getValues();
 
         assertEquals("Two values per tuple expected", 2, dv.length);
         assertEquals("First is long", "xs:double",  dv[0].getType());
-        assertEquals("Second is string", "xs:int", dv[1].getType());
+        assertEquals("Second is int", "xs:int", dv[1].getType());
         assertEquals("Frequency is 1", 1, tuples[0].getCount());
-        assertEquals("First value",  1.2, (double) dv[0].get(Double.class), 0.01);
-        assertEquals("Second value", (int) 4, (int) dv[1].get(Integer.class));
+        assertEquals("First value",  1.1, (double) dv[0].get(Double.class), 0.01);
+        assertEquals("Second value", (int) 1, (int) dv[1].get(Integer.class));
 
         optionsMgr.deleteOptions("valuesoptions");
+    }
+    
+    @Test
+    public void testNWayTuples() {
+    	 QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+         optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
+
+         QueryManager queryMgr = Common.client.newQueryManager();
+
+         ValuesDefinition vdef = queryMgr.newValuesDefinition("n-way", "valuesoptions");
+
+         TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
+         
+         Tuple[] tuples = t.getTuples();
+         assertEquals("Four tuples are expected", 4, tuples.length);
+         assertEquals("The tuples are named 'n-way'", "n-way", t.getName());
+
+         TypedDistinctValue[] dv = tuples[0].getValues();
+
+         assertEquals("Three values per tuple expected", 3, dv.length);
+         assertEquals("First is long", "xs:double",  dv[0].getType());
+         assertEquals("Second is int", "xs:int", dv[1].getType());
+         assertEquals("Third is string", "xs:string", dv[2].getType());
+         assertEquals("Frequency is 1", 1, tuples[0].getCount());
+         assertEquals("First value",  1.1, (double) dv[0].get(Double.class), 0.01);
+         assertEquals("Second value", (int) 3, (int) dv[1].get(Integer.class));
+         assertEquals("Third value", "Birmingham", (String) dv[2].get(String.class));
+         optionsMgr.deleteOptions("valuesoptions");
     }
 }

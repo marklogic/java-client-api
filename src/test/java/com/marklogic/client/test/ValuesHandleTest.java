@@ -30,6 +30,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.admin.QueryOptionsManager;
@@ -47,7 +49,12 @@ import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
 
 public class ValuesHandleTest {
-    @BeforeClass
+
+
+	private static final Logger logger = (Logger) LoggerFactory
+			.getLogger(ValuesHandleTest.class);
+	
+	@BeforeClass
     public static void beforeClass() {
         Common.connectAdmin();
     }
@@ -75,11 +82,14 @@ public class ValuesHandleTest {
         AggregateResult[] agg = v.getAggregates();
         assertEquals("There should be 2 aggregates", 2, agg.length);
         double first  = agg[0].get("xs:double", Double.class);
-        assertTrue("Aggregate 1 should be between 6.8 and 7.0",
-                6.8 < first && first < 7.0);
+        assertTrue("Aggregate 1 should be between 11.4 and 12",
+                11.4 < first && first < 12.0);
+
         double second = agg[1].get("xs:double", Double.class);
-        assertTrue("Aggregate 2 should be between 1.72 and 1.73",
-        		1.72 < second && second < 1.73);
+
+        logger.debug("" + second);
+        assertTrue("Aggregate 2 should be between 1.43 and 1.44",
+        		1.43 < second && second < 1.44);
 
         Common.client.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
     }

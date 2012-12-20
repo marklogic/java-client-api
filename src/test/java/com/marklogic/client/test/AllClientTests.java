@@ -53,6 +53,10 @@ import org.junit.runners.Suite;
     ResourceServicesTest.class,
     TransformExtensionsTest.class,
     TransformTest.class,
+    
+    ValuesHandleTest.class,
+    TuplesHandleTest.class,
+    ValueConverterTest.class,
 
     // works when run independently but throws JUnit error in suite
 //  JAXBHandle.class,
