@@ -371,7 +371,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 	@Override
 	public SuggestDefinition newSuggestionDefinition(String optionsName) {
 		SuggestDefinition def = new SuggestDefinitionImpl();
-		def.setStringCriteria(new String[] {""});
+		def.setStringCriteria("");
 		def.setOptionsName(optionsName);
 		return def;
 	}
@@ -380,7 +380,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 	public SuggestDefinition newSuggestionDefinition(String suggestionString,
 			String optionsName) {
 		SuggestDefinition def = new SuggestDefinitionImpl();
-		def.setStringCriteria(new String[] { suggestionString });
+		def.setStringCriteria(suggestionString);
 		def.setOptionsName(optionsName);
 		return def;
 	}

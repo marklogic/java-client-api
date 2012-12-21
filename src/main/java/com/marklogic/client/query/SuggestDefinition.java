@@ -20,20 +20,31 @@ public interface SuggestDefinition {
     /**
      * Sets one or more criteria for the suggestion call.  
      * 
-     * If there are no strings, the server will provide suggestions for
-     * the empty string.
-     * 
-     * @param qtext A string for input to suggestions, and zero or more
+     * @param qtext A string for input to suggestions.
+     */
+    public void setStringCriteria(String pqtext);
+    
+    
+    /**
+     * Returns the text of the suggestion call.
+     * @return The suggestion input.
+     */
+    public String getStringCriteria();
+    
+    /**
+     * Sets zero or more search strings to AND with the suggestion call.  
+     *
+     * @param qtext Zero or more
      * string queries to qualify that input string.
      */
-    public void setStringCriteria(String[] qtext);
+    public void setQueryStrings(String... qtext);
     
     
     /**
      * Returns the array of strings set for this SuggestDefinition.
      * @return The query text strings and suggestion input.
      */
-    public String[] getStringCriteria();
+    public String[] getQueryStrings();
     
     /**
      * Sets a limit for a suggest call.  Only this number of suggestions
@@ -61,15 +72,5 @@ public interface SuggestDefinition {
      */
     public Integer getCursorPosition();
     
-    /**
-     * Sets the index for which query text is a suggestion input, as opposed to a qualifying search string.
-     * @param focus
-     */
-    public void setFocus(Integer focus);
-    
-    /**
-     * Returns index to which query text array element is input for suggestions
-     */
-    public Integer getFocus();
     
 }

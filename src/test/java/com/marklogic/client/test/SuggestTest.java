@@ -63,7 +63,8 @@ public class SuggestTest {
 		QueryManager queryMgr = Common.client.newQueryManager();
 		SuggestDefinition def = queryMgr.newSuggestionDefinition(optionsName);
 		
-		def.setStringCriteria(new String[] {"li", "string:FINDME"});
+		def.setStringCriteria("li");
+		def.setQueryStrings("string:FINDME");
 		
 		String[] suggestions = queryMgr.suggest(def);
 		
@@ -107,39 +108,7 @@ public class SuggestTest {
 	}
 	
 	
-	@Test
-	public void testSuggestionWithQueryAndFocus() {
-		QueryManager queryMgr = Common.client.newQueryManager();
-		SuggestDefinition def = queryMgr.newSuggestionDefinition(optionsName);
-		
-		def.setStringCriteria(new String[] {"li", "string:FINDME"});
-		def.setFocus(0);
-		String[] suggestions = null;
-		try {
-		suggestions = queryMgr.suggest(def);
-			// error if focus = 0
-		} catch (FailedRequestException e){
-			//pass 
-		}
-		
-		def.setStringCriteria(new String[] {"string:FINDME", "li"});
-		
-		def.setFocus(2);
-		
-		suggestions = queryMgr.suggest(def);
-		
-		assertEquals(suggestions.length, 1);
-		assertEquals(suggestions[0], "limes");
-		
-		def.setStringCriteria(new String[] {"li", "string:FINDME"});
-		
-		def.setFocus(1);
-		
-		suggestions = queryMgr.suggest(def);
-		
-		assertEquals(suggestions.length, 1);
-		assertEquals(suggestions[0], "limes");
-	}
+	
 	
 
 	private static String writeOptions() {

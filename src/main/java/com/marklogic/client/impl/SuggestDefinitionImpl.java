@@ -5,10 +5,10 @@ import com.marklogic.client.query.SuggestDefinition;
 public class SuggestDefinitionImpl implements SuggestDefinition {
 
 	private String options;
-	private String[] stringCriteria;
+	private String stringCriteria;
+	private String[] queries;
     private Integer limit;
     private Integer cursorPosition;
-    private Integer focus;
     
 	
 	@Override
@@ -22,12 +22,12 @@ public class SuggestDefinitionImpl implements SuggestDefinition {
 	}
 
 	@Override
-	public void setStringCriteria(String[] qtext) {
+	public void setStringCriteria(String qtext) {
 		this.stringCriteria = qtext;
 	}
 
 	@Override
-	public String[] getStringCriteria() {
+	public String getStringCriteria() {
 		return stringCriteria;
 	}
 
@@ -52,13 +52,13 @@ public class SuggestDefinitionImpl implements SuggestDefinition {
 	}
 
 	@Override
-	public void setFocus(Integer focus) {
-		this.focus = focus;
+	public void setQueryStrings(String... qtext) {
+		this.queries = qtext;
 	}
 
 	@Override
-	public Integer getFocus() {
-		return focus;
+	public String[] getQueryStrings() {
+		return queries;
 	}
 
 }

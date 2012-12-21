@@ -3103,12 +3103,15 @@ public class JerseyServices implements RESTServices {
 	public <T> T suggest(Class<T> as, SuggestDefinition suggestionDef) {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
-		String[] stringCriteria = suggestionDef.getStringCriteria();
+		String suggestCriteria = suggestionDef.getStringCriteria();
+		String[] queries = suggestionDef.getQueryStrings();
 		String optionsName = suggestionDef.getOptionsName();
 		Integer limit = suggestionDef.getLimit();
 		Integer cursorPosition = suggestionDef.getCursorPosition();
-		Integer focus = suggestionDef.getFocus();
 
+		if (suggestCriteria != null) {
+			params.add("pqtext", suggestCriteria);
+		}
 		if (optionsName != null) {
 			params.add("options", optionsName);
 		}
@@ -3118,11 +3121,11 @@ public class JerseyServices implements RESTServices {
 		if (cursorPosition != null) {
 			params.add("cursor-position", Long.toString(cursorPosition));
 		}
-		if (focus != null) {
-			params.add("focus", Long.toString(focus));
-		}
-		for (String stringCriterion : stringCriteria) {
-			params.add("q", stringCriterion);
+		if (queries != null) {
+			for (String stringQuery : queries) {
+
+				params.add("q", stringQuery);
+			}
 		}
 		WebResource.Builder builder = null;
 		builder = connection.path("suggest").queryParams(params)
