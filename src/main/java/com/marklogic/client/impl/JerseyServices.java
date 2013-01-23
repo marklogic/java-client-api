@@ -3110,7 +3110,7 @@ public class JerseyServices implements RESTServices {
 		Integer cursorPosition = suggestionDef.getCursorPosition();
 
 		if (suggestCriteria != null) {
-			params.add("pqtext", suggestCriteria);
+			params.add("partial-q", suggestCriteria);
 		}
 		if (optionsName != null) {
 			params.add("options", optionsName);
