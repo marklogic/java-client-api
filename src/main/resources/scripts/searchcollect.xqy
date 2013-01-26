@@ -31,12 +31,12 @@ declare function searchcollect:get(
         searchcollect:prepare-params($params),
 
         if (exists(map:get($params,"q")))
-        then searchmodq:search-get($headers, $params)
+        then searchmodq:search-get($headers,$params,())
         else if (
             exists(map:get($params,"value")) and
             (exists(map:get($params,"key")) or exists(map:get($params,"element")))
             )
-        then searchmodq:keyvalue-get($headers, $params)
+        then searchmodq:keyvalue-get($headers,$params,())
         else error((),"REST-INVALIDPARAM",
             "no query parameters for collecting documents"
             )
@@ -64,7 +64,7 @@ declare function searchcollect:post(
 
             searchcollect:results(
                 $context,
-                searchmodq:search-post($headers,$params,$input)
+                searchmodq:search-post($headers,$params,(),$input)
                 )
             )
 };
