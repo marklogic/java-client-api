@@ -127,7 +127,7 @@ public class ConditionalDocumentTest {
 		assertTrue("Write with no version had wrong error", statusCode == 403);
 		System.out.println(ex.getMessage());
 		assertEquals("Write with no version had misleading message", 
-				"Local message: Content version required to write document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /test/conditional1.xml",
+				"Local message: Content version required to write document. Server Message: You do not have permission to this method and URL",
 				ex.getMessage());
 		
 		ex = null;
