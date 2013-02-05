@@ -42,25 +42,28 @@ public class RawQueryDefinitionTest {
 	public static void setupTestOptions() throws FileNotFoundException {
 		Common.connectAdmin();
 
-		QueryOptionsManager queryOptionsManager = Common.client.newServerConfigManager().newQueryOptionsManager();
+		QueryOptionsManager queryOptionsManager = Common.client
+				.newServerConfigManager().newQueryOptionsManager();
 		File options = new File("src/test/resources/alerting-options.xml");
 		queryOptionsManager.writeOptions("alerts", new FileHandle(options));
-		
+
 		QueryManager queryManager = Common.client.newQueryManager();
-		
+
 		Common.client.newServerConfigManager().setServerRequestLogging(true);
 		Common.release();
 		Common.connect();
-		
+
 		// write three files for alert tests.
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
-		docMgr.write("/alert/first.xml", new FileHandle(new File("src/test/resources/alertFirst.xml")));
-		docMgr.write("/alert/second.xml", new FileHandle(new File("src/test/resources/alertSecond.xml")));
-		docMgr.write("/alert/third.xml", new FileHandle(new File("src/test/resources/alertThird.xml")));
-		
+		docMgr.write("/alert/first.xml", new FileHandle(new File(
+				"src/test/resources/alertFirst.xml")));
+		docMgr.write("/alert/second.xml", new FileHandle(new File(
+				"src/test/resources/alertSecond.xml")));
+		docMgr.write("/alert/third.xml", new FileHandle(new File(
+				"src/test/resources/alertThird.xml")));
 
-    }
-	
+	}
+
 	private static QueryManager queryMgr;
 
 	String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
@@ -79,15 +82,26 @@ public class RawQueryDefinitionTest {
 			+ "<search:element name=\"favorited\" ns=\"\"/>"
 			+ "</search:value>" + "</search:constraint>" + "</search:options>";
 
-	private void check(StructureWriteHandle handle) {
+	private void check(StructureWriteHandle handle, String optionsName) {
 
-		RawQueryDefinition rawStructuredQueryDefinition = queryMgr
-				.newRawDefinition(handle);
+		RawQueryDefinition rawStructuredQueryDefinition;
 
-		SearchHandle results = queryMgr.search(rawStructuredQueryDefinition,
+		if (optionsName == null) {
+			rawStructuredQueryDefinition = queryMgr
+
+			.newRawDefinition(handle);
+		} else {
+
+			rawStructuredQueryDefinition = queryMgr
+
+			.newRawDefinition(handle, optionsName);
+		}
+		SearchHandle results;
+		results = queryMgr.search(rawStructuredQueryDefinition,
 				new SearchHandle());
+
 		assertNotNull(results);
-		
+
 		assertFalse(results.getMetrics().getTotalTime() == -1);
 
 		MatchDocumentSummary[] summaries = results.getMatchResults();
@@ -104,13 +118,18 @@ public class RawQueryDefinitionTest {
 
 	}
 
+	private void check(StructureWriteHandle handle) {
+		check(handle, null);
+
+	}
+
 	@Test
 	public void testCombinedSearches() throws IOException {
 
 		// Structured Query, No Options
 		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(null);
 		StructuredQueryDefinition t = qb.term("leaf3");
-		
+
 		check(new StringHandle(head + t.serialize() + tail));
 
 		// String query no options
@@ -124,7 +143,12 @@ public class RawQueryDefinitionTest {
 		// Structured query plus options
 		str = head + t.serialize() + optionsString + tail;
 		check(new StringHandle(str));
+
+		// Structured query plus options
 		
+		str = head + t.serialize() + optionsString + tail;
+		check(new StringHandle(str), "alerts");
+
 		// All three
 		str = head + qtext3 + t.serialize() + optionsString + tail;
 		System.out.println(str);

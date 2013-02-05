@@ -393,4 +393,12 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 		impl.setHandle(handle);
 		return impl;
 	}
+	
+	@Override
+	public RawQueryDefinition newRawDefinition(StructureWriteHandle handle, String optionsName) {
+		RawQueryDefinitionImpl impl = new RawQueryDefinitionImpl();
+		impl.setOptionsName(optionsName);
+		impl.setHandle(handle);
+		return impl;
+	}
 }

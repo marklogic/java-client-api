@@ -411,5 +411,18 @@ public interface QueryManager {
     public void stopLogging();
 
     
+    /**
+     * Create a raw query definition, which has been pre-constructed as a valid REST API payload.
+     * @param handle a handle that wraps a raw REST API payload.
+     * @return a RawQueryDefinition that wraps the handle and can be used in searches.
+     */
 	public RawQueryDefinition newRawDefinition(StructureWriteHandle handle);
+
+    /**
+     * Create a raw query definition, which has been pre-constructed as a valid REST API payload.
+     * @param handle a handle that wraps a raw REST API payload.
+     * @param optionsName The name of a persisted query options configuration
+     * @return a RawQueryDefinition that wraps the handle and can be used in searches.
+     */
+	public RawQueryDefinition newRawDefinition(StructureWriteHandle handle, String optionsName);
 }
