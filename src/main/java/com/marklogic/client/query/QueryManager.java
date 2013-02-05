@@ -20,6 +20,7 @@ import javax.xml.namespace.QName;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TuplesReadHandle;
 import com.marklogic.client.io.marker.ValuesListReadHandle;
 import com.marklogic.client.io.marker.ValuesReadHandle;
@@ -408,4 +409,7 @@ public interface QueryManager {
      *  Stops debugging client requests.
      */
     public void stopLogging();
+
+    
+	public RawQueryDefinition newRawDefinition(StructureWriteHandle handle);
 }

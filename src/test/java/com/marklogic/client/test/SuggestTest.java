@@ -8,7 +8,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;

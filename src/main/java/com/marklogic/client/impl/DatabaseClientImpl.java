@@ -20,10 +20,12 @@ import java.io.OutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.Transaction;
+import com.marklogic.client.admin.ServerConfigurationManager;
+import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.query.QueryManager;
@@ -31,8 +33,10 @@ import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.extensions.ResourceManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.document.TextDocumentManager;
-import com.marklogic.client.Transaction;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.extensions.ResourceManager;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.util.RequestLogger;
 
 public class DatabaseClientImpl implements DatabaseClient {
 	static final private Logger logger = LoggerFactory.getLogger(DatabaseClientImpl.class);

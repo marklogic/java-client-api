@@ -31,6 +31,7 @@ import com.marklogic.client.io.TuplesHandle;
 import com.marklogic.client.io.ValuesHandle;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TuplesReadHandle;
 import com.marklogic.client.io.marker.ValuesListReadHandle;
 import com.marklogic.client.io.marker.ValuesReadHandle;
@@ -41,6 +42,7 @@ import com.marklogic.client.query.KeyValueQueryDefinition;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.RawQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.SuggestDefinition;
@@ -383,5 +385,12 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 		def.setStringCriteria(suggestionString);
 		def.setOptionsName(optionsName);
 		return def;
+	}
+
+	@Override
+	public RawQueryDefinition newRawDefinition(StructureWriteHandle handle) {
+		RawQueryDefinitionImpl impl = new RawQueryDefinitionImpl();
+		impl.setHandle(handle);
+		return impl;
 	}
 }

@@ -66,12 +66,14 @@ import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.ElementLocator;
 import com.marklogic.client.query.KeyLocator;
 import com.marklogic.client.query.KeyValueQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
+import com.marklogic.client.query.RawQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.SuggestDefinition;
@@ -1295,7 +1297,21 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = null;
 		String structure = null;
-		if (queryDef instanceof StringQueryDefinition) {
+		StructureWriteHandle handle = null;
+		
+		if (queryDef instanceof RawQueryDefinition) {
+			handle = ((RawQueryDefinition) queryDef).getHandle();
+			
+			if (logger.isDebugEnabled())
+				logger.debug("Searching for structure {} in transaction {}",
+						structure, transactionId);
+
+			builder = connection.path("search").queryParams(params)
+					.type("application/xml").accept(mimetype);
+			
+			
+		}
+		else if (queryDef instanceof StringQueryDefinition) {
 			String text = ((StringQueryDefinition) queryDef).getCriteria();
 			if (logger.isDebugEnabled())
 				logger.debug("Searching for {} in transaction {}", text,
@@ -1361,6 +1377,8 @@ public class JerseyServices implements RESTServices {
 				response = builder.post(ClientResponse.class, structure);
 			} else if (queryDef instanceof DeleteQueryDefinition) {
 				response = builder.get(ClientResponse.class);
+			} else if (queryDef instanceof RawQueryDefinition) {
+				response = doPost(null, builder, handle, false);
 			} else {
 				throw new UnsupportedOperationException("Cannot search with "
 						+ queryDef.getClass().getName());
