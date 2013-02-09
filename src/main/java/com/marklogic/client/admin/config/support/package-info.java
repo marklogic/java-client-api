@@ -22,5 +22,9 @@
  * <p>
  * It shouldn't be necessary to use any of the classes in this package
  * in client applications, except to support builder expressions.
+ * <p>
+ * <strong>Note:</strong> the QueryOptions and QueryOptionsBuilder support
+ * component classes are deprecated.
+ * Use a JSON or XML handle instead to write or read query options.
  */
 package com.marklogic.client.admin.config.support;

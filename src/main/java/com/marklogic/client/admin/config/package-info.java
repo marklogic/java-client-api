@@ -29,9 +29,9 @@
  * <p>
  * For comprehensive treatment of the Search API, the REST API and the Java API visit
  * {@link http://docs.marklogic.com}
- * 
- * 
- * 
+ * <p>
+ * <strong>Note:</strong> QueryOptions and QueryOptionsBuilder are deprecated.
+ * Use a JSON or XML handle instead to write or read query options.
  */
 /*
  * Copyright 2012 MarkLogic Corporation

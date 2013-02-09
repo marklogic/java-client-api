@@ -111,7 +111,9 @@ import com.marklogic.client.impl.Utilities;
  *       .returnFacets(true) 
  *       .returnResults(false));
  * </pre>
+ * @deprecated use a JSON or XML handle instead to write or read query options.
  */
+@Deprecated
 public class QueryOptionsBuilder {
 
 	/**
