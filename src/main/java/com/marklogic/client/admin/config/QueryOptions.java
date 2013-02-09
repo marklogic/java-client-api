@@ -50,7 +50,9 @@ import com.marklogic.client.util.EditableNamespaceContext;
  * The classes contained within QueryOptions
  * implement the low-level XML binding to the MarkLogic Search API, along with
  * accessor methods to all configurable options.
+ * @deprecated use a JSON or XML handle instead to write or read query options.
  */
+@Deprecated
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(namespace = QueryOptions.SEARCH_NS, name = "options")
 public final class QueryOptions implements Annotatable<QueryOptions> {
