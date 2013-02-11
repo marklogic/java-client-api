@@ -17,6 +17,8 @@ package com.marklogic.client.document;
 
 import com.marklogic.client.util.RequestParameters;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -37,10 +39,11 @@ public class ServerTransform extends RequestParameters {
 		return name;
 	}
 
-	public RequestParameters merge(RequestParameters currentParams) {
-		RequestParameters params = (currentParams != null) ?
+	public Map<String,List<String>> merge(Map<String,List<String>> currentParams) {
+		Map<String,List<String>> params = (currentParams != null) ?
 				currentParams : new RequestParameters();
-		params.put("transform", getName());
+
+		params.put("transform", Arrays.asList(getName()));
 
 		for (Map.Entry<String, List<String>> entry: entrySet()) {
 			params.put("trans:"+entry.getKey(), entry.getValue());

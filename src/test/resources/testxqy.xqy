@@ -19,7 +19,7 @@ declare function testxqy:transform(
         let $root  := $content/*
         return document {
             $root/preceding-sibling::node(),
-            element {name($root)} {
+            element {node-name($root)} {
                 attribute {
                     QName(
                         "http://marklogic.com/rest-api/test/transform",

@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.query;
 
+import com.marklogic.client.document.ServerTransform;
+
 /**
  * A QueryDefinition represents the common parts of all kinds of searches that can be performed.
  */
@@ -58,5 +60,19 @@ public interface QueryDefinition {
      * @param directory The directory URI.
      */
     public void setDirectory(String directory);
+
+    /**
+     * Returns the transform that modifies responses to this query
+     * on the server.
+     * @return The transform.
+     */
+    public ServerTransform getResponseTransform();
+
+    /**
+     * Specifies a transform that modifies responses to this query
+     * on the server.
+     * @param transform	A server transform to modify the query response.
+     */
+    public void setResponseTransform(ServerTransform transform);
 }
 

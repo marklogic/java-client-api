@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.io.Format;
@@ -371,6 +372,55 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		services.deleteDocument(requestLogger, desc, (transaction == null) ? null : transaction.getTransactionId(), null);
     }
 
+/* TODO
+	@Override
+	public String create(DocumentUriTemplate template, W contentHandle)
+	throws ForbiddenUserException, FailedRequestException {
+		return create(template, null, contentHandle, null, null);
+	}
+	@Override
+	public String create(DocumentUriTemplate template, W contentHandle, ServerTransform transform)
+	throws ForbiddenUserException, FailedRequestException {
+		return create(template, null, contentHandle, transform, null);
+	}
+	@Override
+	public String create(DocumentUriTemplate template, W contentHandle, Transaction transaction)
+	throws ForbiddenUserException, FailedRequestException {
+		return create(template, null, contentHandle, null, transaction);
+	}
+	@Override
+	public String create(DocumentUriTemplate template, W contentHandle, ServerTransform transform,
+			Transaction transaction)
+	throws ForbiddenUserException, FailedRequestException {
+		return create(template, null, contentHandle, transform, transaction);
+	}
+	@Override
+	public String create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle,
+			W contentHandle)
+	throws ForbiddenUserException, FailedRequestException {
+		return create(template, metadataHandle, contentHandle, null, null);
+	}
+	@Override
+	public String create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle,
+			W contentHandle, ServerTransform transform)
+	throws ForbiddenUserException, FailedRequestException {
+		return create(template, metadataHandle, contentHandle, transform, null);
+	}
+	@Override
+	public String create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle,
+			W contentHandle, Transaction transaction)
+	throws ForbiddenUserException, FailedRequestException {
+		return create(template, metadataHandle, contentHandle, null, transaction);
+	}
+	@Override
+	public String create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle,
+			W contentHandle, ServerTransform transform, Transaction transaction)
+	throws ForbiddenUserException, FailedRequestException {
+// TODO Jersey POST call
+		return null;
+	}
+ */
+
 	@Override
     public <T extends DocumentMetadataReadHandle> T readMetadata(String uri, T metadataHandle) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		return readMetadata(uri, metadataHandle, null);
@@ -438,6 +488,13 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		return new DocumentDescriptorImpl(uri, false);
 	}
 
+/* TODO
+	@Override
+    public DocumentUriTemplate newDocumentUriTemplate(String extension) {
+		return new DocumentUriTemplateImpl(extension);
+	}
+ */
+
 	private void checkContentFormat(Object contentHandle) {
 		checkContentFormat(HandleAccessor.checkHandle(contentHandle, "content"));
 	}
@@ -459,7 +516,12 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		if (transform == null)
 			return extraParams;
 
-		return transform.merge(extraParams);
+		if (extraParams == null)
+			extraParams = new RequestParameters();
+
+		transform.merge(extraParams);
+
+		return extraParams;
 	}
 
 	// hooks for extension

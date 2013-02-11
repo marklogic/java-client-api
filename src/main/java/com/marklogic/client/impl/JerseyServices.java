@@ -58,6 +58,7 @@ import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.document.ContentDescriptor;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.io.Format;
@@ -1280,8 +1281,9 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 
-		if (queryDef.getDirectory() != null) {
-			addEncodedParam(params, "directory", queryDef.getDirectory());
+		String directory = queryDef.getDirectory();
+		if (directory != null) {
+			addEncodedParam(params, "directory", directory);
 		}
 
 		addEncodedParam(params, "collection", queryDef.getCollections());
@@ -1293,6 +1295,11 @@ public class JerseyServices implements RESTServices {
 		String optionsName = queryDef.getOptionsName();
 		if (optionsName != null && optionsName.length() > 0) {
 			addEncodedParam(params, "options", optionsName);
+		}
+
+		ServerTransform transform = queryDef.getResponseTransform();
+		if (transform != null) {
+			transform.merge(params);
 		}
 
 		WebResource.Builder builder = null;
@@ -1548,6 +1555,11 @@ public class JerseyServices implements RESTServices {
 				if (logger.isWarnEnabled())
 					logger.warn("unsupported query definition: "
 							+ queryDef.getClass().getName());
+			}
+
+			ServerTransform transform = queryDef.getResponseTransform();
+			if (transform != null) {
+				transform.merge(docParams);
 			}
 		}
 

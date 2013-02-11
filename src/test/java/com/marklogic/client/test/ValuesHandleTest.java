@@ -175,7 +175,7 @@ public class ValuesHandleTest {
         assertEquals("Size should have this uri", map.get("size"), "/v1/values/size?options=photos");
     }
 
-    private String makeValuesOptions() {
+    static public String makeValuesOptions() {
     	String options = 
         	"<?xml version='1.0'?>"+
         	"<options xmlns=\"http://marklogic.com/appservices/search\">"+

@@ -17,19 +17,19 @@ package com.marklogic.client.impl;
 
 import java.util.HashSet;
 
+import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.query.QueryDefinition;
 
 public abstract class AbstractQueryDefinition implements QueryDefinition {
     protected String optionsUri = null;
-    protected HashSet<String> collections = new HashSet<String>();
-    protected String directory = null;
-    protected String transform = null;
+    private HashSet<String> collections = new HashSet<String>();
+    private String          directory   = null;
+	private ServerTransform transform   = null;
 
     @Override
     public String getOptionsName() {
         return optionsUri;
     }
-
     @Override
     public void setOptionsName(String uri) {
         // FIXME: check for null?
@@ -40,7 +40,6 @@ public abstract class AbstractQueryDefinition implements QueryDefinition {
     public String[] getCollections() {
         return collections.toArray(new String[0]);
     }
-
     @Override
     public void setCollections(String... collections) {
         this.collections.clear();
@@ -54,9 +53,17 @@ public abstract class AbstractQueryDefinition implements QueryDefinition {
     public String getDirectory() {
         return directory;
     }
-
     @Override
     public void setDirectory(String directory) {
         this.directory = directory;
     }
+
+    @Override
+	public ServerTransform getResponseTransform() {
+		return transform;
+	}
+	@Override
+	public void setResponseTransform(ServerTransform transform) {
+		this.transform = transform;
+	}
 }
