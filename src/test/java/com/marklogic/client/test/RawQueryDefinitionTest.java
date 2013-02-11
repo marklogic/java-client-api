@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.marklogic.client.test;
 
 import static org.junit.Assert.assertFalse;
@@ -21,7 +36,7 @@ import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawQueryDefinition;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
@@ -46,8 +61,6 @@ public class RawQueryDefinitionTest {
 				.newServerConfigManager().newQueryOptionsManager();
 		File options = new File("src/test/resources/alerting-options.xml");
 		queryOptionsManager.writeOptions("alerts", new FileHandle(options));
-
-		QueryManager queryManager = Common.client.newQueryManager();
 
 		Common.client.newServerConfigManager().setServerRequestLogging(true);
 		Common.release();
@@ -83,21 +96,17 @@ public class RawQueryDefinitionTest {
 			+ "</search:value>" + "</search:constraint>" + "</search:options>";
 
 	private void check(StructureWriteHandle handle, String optionsName) {
-
-		RawQueryDefinition rawStructuredQueryDefinition;
+		RawCombinedQueryDefinition rawCombinedQueryDefinition;
 
 		if (optionsName == null) {
-			rawStructuredQueryDefinition = queryMgr
-
-			.newRawDefinition(handle);
+			rawCombinedQueryDefinition =
+				queryMgr.newRawCombinedQueryDefinition(handle);
 		} else {
-
-			rawStructuredQueryDefinition = queryMgr
-
-			.newRawDefinition(handle, optionsName);
+			rawCombinedQueryDefinition =
+				queryMgr.newRawCombinedQueryDefinition(handle, optionsName);
 		}
 		SearchHandle results;
-		results = queryMgr.search(rawStructuredQueryDefinition,
+		results = queryMgr.search(rawCombinedQueryDefinition,
 				new SearchHandle());
 
 		assertNotNull(results);
@@ -125,7 +134,6 @@ public class RawQueryDefinitionTest {
 
 	@Test
 	public void testCombinedSearches() throws IOException {
-
 		// Structured Query, No Options
 		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(null);
 		StructuredQueryDefinition t = qb.term("leaf3");

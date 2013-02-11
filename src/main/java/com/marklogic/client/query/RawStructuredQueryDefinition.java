@@ -18,19 +18,15 @@ package com.marklogic.client.query;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 
 /**
- * A RawQueryDefinition provides access to a query
+ * A RawStructuredQueryDefinition provides access to a structured query
  * in a JSON or XML representation.
  */
-public interface RawQueryDefinition extends QueryDefinition {
+public interface RawStructuredQueryDefinition extends RawQueryDefinition {
 	/**
-	 * Returns the handle for the JSON or XML representation of the query.
-	 * @return	the JSON or XML handle.
-	 */
-	public StructureWriteHandle getHandle();
-
-	/**
-	 * Specifies the handle for the JSON or XML representation of the query.
+	 * Specifies the handle for the JSON or XML representation
+	 * of a structured query and returns the query definition.
 	 * @param handle	the JSON or XML handle.
+	 * @return	the query definition.
 	 */
-	public void setHandle(StructureWriteHandle handle);
+	public RawStructuredQueryDefinition withHandle(StructureWriteHandle handle);
 }

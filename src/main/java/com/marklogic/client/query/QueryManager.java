@@ -410,19 +410,33 @@ public interface QueryManager {
      */
     public void stopLogging();
 
-    
     /**
-     * Create a raw query definition, which has been pre-constructed as a valid REST API payload.
-     * @param handle a handle that wraps a raw REST API payload.
-     * @return a RawQueryDefinition that wraps the handle and can be used in searches.
+     * Defines a combined query from a JSON or XML representation.
+     * @param handle a handle for a JSON or XML combined query.
+     * @return a QueryDefinition for use of the combined query.
      */
-	public RawQueryDefinition newRawDefinition(StructureWriteHandle handle);
+	public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle);
 
     /**
-     * Create a raw query definition, which has been pre-constructed as a valid REST API payload.
-     * @param handle a handle that wraps a raw REST API payload.
+     * Defines a combined query from a JSON or XML representation.
+     * @param handle a handle for a JSON or XML combined query.
      * @param optionsName The name of a persisted query options configuration
-     * @return a RawQueryDefinition that wraps the handle and can be used in searches.
+     * @return a QueryDefinition for use of the combined query.
      */
-	public RawQueryDefinition newRawDefinition(StructureWriteHandle handle, String optionsName);
+	public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle, String optionsName);
+
+    /**
+     * Defines a structured query from a JSON or XML representation.
+     * @param handle a handle for a JSON or XML structured query.
+     * @return a QueryDefinition for use of the structured query.
+     */
+	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle);
+
+    /**
+     * Defines a structured query from a JSON or XML representation.
+     * @param handle a handle for a JSON or XML structured query.
+     * @param optionsName The name of a persisted query options configuration
+     * @return a QueryDefinition for use of the structured query.
+     */
+	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle, String optionsName);
 }

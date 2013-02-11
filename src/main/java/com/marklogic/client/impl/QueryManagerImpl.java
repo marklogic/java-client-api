@@ -42,7 +42,8 @@ import com.marklogic.client.query.KeyValueQueryDefinition;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawQueryDefinition;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
+import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.SuggestDefinition;
@@ -388,17 +389,22 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 	}
 
 	@Override
-	public RawQueryDefinition newRawDefinition(StructureWriteHandle handle) {
-		RawQueryDefinitionImpl impl = new RawQueryDefinitionImpl();
-		impl.setHandle(handle);
-		return impl;
+	public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle) {
+		return new RawQueryDefinitionImpl.Combined(handle);
 	}
 	
 	@Override
-	public RawQueryDefinition newRawDefinition(StructureWriteHandle handle, String optionsName) {
-		RawQueryDefinitionImpl impl = new RawQueryDefinitionImpl();
-		impl.setOptionsName(optionsName);
-		impl.setHandle(handle);
-		return impl;
+	public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle, String optionsName) {
+		return new RawQueryDefinitionImpl.Combined(handle, optionsName);
+	}
+	
+	@Override
+	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle) {
+		return new RawQueryDefinitionImpl.Structured(handle);
+	}
+	
+	@Override
+	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle, String optionsName) {
+		return new RawQueryDefinitionImpl.Structured(handle, optionsName);
 	}
 }
