@@ -31,6 +31,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.http.auth.params.AuthPNames;
 import org.apache.http.client.params.AuthPolicy;
@@ -58,6 +59,7 @@ import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.document.ContentDescriptor;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
@@ -730,6 +732,10 @@ public class JerseyServices implements RESTServices {
 			AbstractWriteHandle contentHandle)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
+		if (desc.getUri() == null)
+			throw new IllegalArgumentException(
+					"Document write for document identifier without uri");
+
 		HandleImplementation metadataBase = HandleAccessor.checkHandle(
 				metadataHandle, "metadata");
 		HandleImplementation contentBase = HandleAccessor.checkHandle(
@@ -753,72 +759,131 @@ public class JerseyServices implements RESTServices {
 		}
 
 		if (metadataBase != null && contentBase != null) {
-			putDocumentImpl(reqlog, desc, transactionId, categories,
+			putPostDocumentImpl(reqlog, "put", desc, transactionId, categories,
 					extraParams, metadataMimetype, metadataHandle,
 					contentMimetype, contentHandle);
 		} else if (metadataBase != null) {
-			putDocumentImpl(reqlog, desc, transactionId, categories,
+			putPostDocumentImpl(reqlog, "put", desc, transactionId, categories,
 					extraParams, metadataMimetype, metadataHandle);
 		} else if (contentBase != null) {
-			putDocumentImpl(reqlog, desc, transactionId, null, extraParams,
+			putPostDocumentImpl(reqlog, "put", desc, transactionId, null, extraParams,
 					contentMimetype, contentHandle);
 		}
 	}
 
-	private void putDocumentImpl(RequestLogger reqlog, DocumentDescriptor desc,
-			String transactionId, Set<Metadata> categories,
-			RequestParameters extraParams, String mimetype,
-			AbstractWriteHandle handle) throws ResourceNotFoundException,
-			ResourceNotResendableException, ForbiddenUserException,
+	@Override
+	public DocumentDescriptor postDocument(RequestLogger reqlog, DocumentUriTemplate template,
+			String transactionId, Set<Metadata> categories, RequestParameters extraParams,
+			DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		DocumentDescriptorImpl desc = new DocumentDescriptorImpl(false);
+
+		HandleImplementation metadataBase = HandleAccessor.checkHandle(
+				metadataHandle, "metadata");
+		HandleImplementation contentBase = HandleAccessor.checkHandle(
+				contentHandle, "content");
+
+		String metadataMimetype = null;
+		if (metadataBase != null) {
+			metadataMimetype = metadataBase.getMimetype();
+		}
+
+		Format templateFormat = template.getFormat();
+		String contentMimetype = (templateFormat != null && templateFormat != Format.UNKNOWN) ?
+				template.getMimetype() : null;
+		if (contentMimetype == null && contentBase != null) {
+			Format contentFormat = contentBase.getFormat();
+			if (templateFormat != null && templateFormat != contentFormat) {
+				contentMimetype = templateFormat.getDefaultMimetype();
+				desc.setFormat(templateFormat);
+			} else if (contentFormat != null && contentFormat != Format.UNKNOWN) {
+				contentMimetype = contentBase.getMimetype();
+				desc.setFormat(contentFormat);
+			}
+		}
+		desc.setMimetype(contentMimetype);
+
+		if (extraParams == null)
+			extraParams = new RequestParameters();
+
+		String extension = template.getExtension();
+		if (extension != null)
+			extraParams.add("extension", extension);
+
+		String directory = template.getDirectory();
+		if (directory != null)
+			extraParams.add("directory", directory);
+
+		if (metadataBase != null && contentBase != null) {
+			putPostDocumentImpl(reqlog, "post", desc, transactionId, categories, extraParams,
+					metadataMimetype, metadataHandle, contentMimetype, contentHandle);
+		} else if (contentBase != null) {
+			putPostDocumentImpl(reqlog, "post", desc, transactionId, null, extraParams,
+					contentMimetype, contentHandle);
+		}
+
+		return desc;
+	}
+
+	private void putPostDocumentImpl(RequestLogger reqlog, String method, DocumentDescriptor desc,
+			String transactionId, Set<Metadata> categories, RequestParameters extraParams,
+			String mimetype, AbstractWriteHandle handle)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
 		String uri = desc.getUri();
-		if (uri == null)
-			throw new IllegalArgumentException(
-					"Document write for document identifier without uri");
 
 		HandleImplementation handleBase = HandleAccessor.as(handle);
 
 		if (logger.isDebugEnabled())
-			logger.debug("Putting {} in transaction {}", uri, transactionId);
+			logger.debug("Sending {} document in transaction {}",
+					(uri != null) ? uri : "new", transactionId);
 
 		logRequest(
 				reqlog,
 				"writing %s document from %s transaction with %s mime type and %s metadata categories",
-				uri, (transactionId != null) ? transactionId : "no",
+				(uri != null) ? uri : "new",
+				(transactionId != null) ? transactionId : "no",
 				(mimetype != null) ? mimetype : "no",
 				stringJoin(categories, ", ", "no"));
 
-		WebResource webResource = makeDocumentResource(makeDocumentParams(uri,
-				categories, transactionId, extraParams));
-		WebResource.Builder builder = webResource
-				.type((mimetype != null) ? mimetype : MediaType.WILDCARD);
+		WebResource webResource = makeDocumentResource(
+				makeDocumentParams(uri, categories, transactionId, extraParams));
 
-		builder = addVersionHeader(desc, builder, "If-Match");
+		WebResource.Builder builder = webResource.type(
+				(mimetype != null) ? mimetype : MediaType.WILDCARD);
+		if (uri != null)
+			builder = addVersionHeader(desc, builder, "If-Match");
 
 		boolean isResendable = handleBase.isResendable();
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		MultivaluedMap<String, String> responseHeaders = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			Object value = handleBase.sendContent();
 			if (value == null)
 				throw new IllegalArgumentException(
-						"Document write with null value for " + uri);
+						"Document write with null value for " +
+						((uri != null) ? uri : "new document"));
 
 			if (isFirstRequest && isStreaming(value))
 				makeFirstRequest();
 
 			if (value instanceof OutputStreamSender) {
-				response = builder.put(ClientResponse.class,
-						new StreamingOutputImpl((OutputStreamSender) value,
-								reqlog));
+				StreamingOutput sentStream =
+					new StreamingOutputImpl((OutputStreamSender) value, reqlog);
+				response =
+					("put".equals(method)) ?
+					builder.put(ClientResponse.class,  sentStream) :
+					builder.post(ClientResponse.class, sentStream);
 			} else {
-				if (reqlog != null)
-					response = builder.put(ClientResponse.class,
-							reqlog.copyContent(value));
-				else
-					response = builder.put(ClientResponse.class, value);
+				Object sentObj = (reqlog != null) ?
+						reqlog.copyContent(value) : value;
+				response =
+					("put".equals(method)) ?
+					builder.put(ClientResponse.class,  sentObj) :
+					builder.post(ClientResponse.class, sentObj);
 			}
 
 			status = response.getClientResponseStatus();
@@ -826,13 +891,14 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 
+			responseHeaders = response.getHeaders();
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After")))
+					|| !"1".equals(responseHeaders.getFirst("Retry-After")))
 				break;
 			else if (!isResendable)
 				throw new ResourceNotResendableException(
-						"Cannot retry request for " + uri);
+						"Cannot retry request for " +
+						 ((uri != null) ? uri : "new document"));
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {
@@ -869,40 +935,48 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException("write failed: "
 					+ status.getReasonPhrase(), extractErrorFields(response));
 
+		if (uri == null) {
+			uri = responseHeaders.getFirst("Location");
+			if (uri != null) {
+				desc.setUri(uri);
+				updateVersion(desc, responseHeaders);
+				updateDescriptor(desc, responseHeaders);
+			}
+		}
+
 		response.close();
 	}
 
-	private void putDocumentImpl(RequestLogger reqlog, DocumentDescriptor desc,
-			String transactionId, Set<Metadata> categories,
-			RequestParameters extraParams, String metadataMimetype,
-			DocumentMetadataWriteHandle metadataHandle, String contentMimetype,
+	private void putPostDocumentImpl(RequestLogger reqlog, String method, DocumentDescriptor desc,
+			String transactionId, Set<Metadata> categories, RequestParameters extraParams,
+			String metadataMimetype, DocumentMetadataWriteHandle metadataHandle, String contentMimetype,
 			AbstractWriteHandle contentHandle)
-			throws ResourceNotFoundException, ResourceNotResendableException,
+	throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
 		String uri = desc.getUri();
-		if (uri == null)
-			throw new IllegalArgumentException(
-					"Document write for document identifier without uri");
 
 		if (logger.isDebugEnabled())
-			logger.debug("Putting multipart for {} in transaction {}", uri,
-					transactionId);
+			logger.debug("Sending {} multipart document in transaction {}",
+					(uri != null) ? uri : "new", transactionId);
 
 		logRequest(
 				reqlog,
 				"writing %s document from %s transaction with %s metadata categories and content",
-				uri, (transactionId != null) ? transactionId : "no",
+				(uri != null) ? uri : "new",
+				(transactionId != null) ? transactionId : "no",
 				stringJoin(categories, ", ", "no"));
 
-		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
-				categories, transactionId, extraParams, true);
+		MultivaluedMap<String, String> docParams =
+			makeDocumentParams(uri, categories, transactionId, extraParams, true);
 
 		WebResource.Builder builder = makeDocumentResource(docParams).type(
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
-		builder = addVersionHeader(desc, builder, "If-Match");
+		if (uri != null)
+			builder = addVersionHeader(desc, builder, "If-Match");
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		MultivaluedMap<String, String> responseHeaders = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			MultiPart multiPart = new MultiPart();
@@ -913,19 +987,23 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				makeFirstRequest();
 
-			response = builder.put(ClientResponse.class, multiPart);
+			response =
+				("put".equals(method)) ?
+				builder.put(ClientResponse.class,  multiPart) :
+				builder.post(ClientResponse.class, multiPart);
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
+			responseHeaders = response.getHeaders();
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After")))
+					|| !"1".equals(responseHeaders.getFirst("Retry-After")))
 				break;
 			else if (hasStreamingPart)
 				throw new ResourceNotResendableException(
-						"Cannot retry request for " + uri);
+						"Cannot retry request for " +
+						((uri != null) ? uri : "new document"));
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {
@@ -962,6 +1040,15 @@ public class JerseyServices implements RESTServices {
 				&& status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("write failed: "
 					+ status.getReasonPhrase(), extractErrorFields(response));
+
+		if (uri == null) {
+			uri = responseHeaders.getFirst("Location");
+			if (uri != null) {
+				desc.setUri(uri);
+				updateVersion(desc, responseHeaders);
+				updateDescriptor(desc, responseHeaders);
+			}
+		}
 
 		response.close();
 	}

@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.document;
 
+import com.marklogic.client.io.Format;
+
 /**
  * A Document Descriptor describes a database document.
  */
@@ -34,6 +36,14 @@ public interface DocumentDescriptor extends ContentDescriptor {
 	 * @param uri	the document URI
 	 */
 	public void setUri(String uri);
+
+	/**
+	 * Specifies the format for a database document and
+	 * returns the descriptor object
+	 * @param format	the document format
+	 * @return	the descriptor object
+	 */
+	public DocumentDescriptor withFormat(Format format);
 
 	/**
 	 * Returns the version for the database document.  Each update

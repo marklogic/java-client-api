@@ -70,6 +70,13 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 	 */
     public DocumentDescriptor newDescriptor(String uri);
 
+	/**
+	 * Creates a document uri template for assigning a uri to a document.
+	 * @param extension	the identifier for the document
+	 * @return	a template for the document uri
+	 */
+    public DocumentUriTemplate newDocumentUriTemplate(String extension);
+
     /**
      * Checks whether a document exists and gets its format and mimetype
      * 
@@ -523,6 +530,82 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      */
     public void delete(DocumentDescriptor desc, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+
+    /**
+	 * Creates a database document with a uri assigned by the server.
+	 * @param template	the template for constructing the document uri
+     * @param contentHandle	a handle for writing the content of the document
+	 * @return	the database uri that identifies the created document
+     */
+    public DocumentDescriptor create(DocumentUriTemplate template, W contentHandle)
+    	throws ForbiddenUserException, FailedRequestException;
+	/**
+	 * Creates a database document with a uri assigned by the server as transformed on the server.
+	 * @param template	the template for constructing the document uri
+     * @param contentHandle	a handle for writing the content of the document
+     * @param transform	a server transform to modify the document content
+	 * @return	the database uri that identifies the created document
+	 */
+    public DocumentDescriptor create(DocumentUriTemplate template, W contentHandle, ServerTransform transform)
+		throws ForbiddenUserException, FailedRequestException;
+	/**
+	 * Creates a database document with a uri assigned by the server in an open database transaction.
+	 * @param template	the template for constructing the document uri
+     * @param contentHandle	a handle for writing the content of the document
+     * @param transaction	a open transaction under which the document may have been created or deleted
+	 * @return	the database uri that identifies the created document
+	 */
+    public DocumentDescriptor create(DocumentUriTemplate template, W contentHandle, Transaction transaction)
+		throws ForbiddenUserException, FailedRequestException;
+	/**
+	 * Creates a database document with a uri assigned by the server in an open database transaction as transformed on the server.
+	 * @param template	the template for constructing the document uri
+     * @param contentHandle	a handle for writing the content of the document
+     * @param transform	a server transform to modify the document content
+     * @param transaction	a open transaction under which the document may have been created or deleted
+	 * @return	the database uri that identifies the created document
+	 */
+    public DocumentDescriptor create(DocumentUriTemplate template, W contentHandle, ServerTransform transform, Transaction transaction)
+		throws ForbiddenUserException, FailedRequestException;
+	/**
+	 * Creates a database document with metadata and content and a uri assigned by the server.
+	 * @param template	the template for constructing the document uri
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param contentHandle	a handle for writing the content of the document
+	 * @return	the database uri that identifies the created document
+	 */
+    public DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, W contentHandle)
+		throws ForbiddenUserException, FailedRequestException;
+	/**
+	 * Creates a database document with metadata and content and a uri assigned by the server as transformed on the server.
+	 * @param template	the template for constructing the document uri
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param contentHandle	a handle for writing the content of the document
+     * @param transform	a server transform to modify the document content
+	 * @return	the database uri that identifies the created document
+	 */
+    public DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform)
+		throws ForbiddenUserException, FailedRequestException;
+	/**
+	 * @param template	the template for constructing the document uri
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param contentHandle	a handle for writing the content of the document
+     * @param transaction	a open transaction under which the document may have been created or deleted
+	 * @return	the database uri that identifies the created document
+	 */
+    public DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction)
+		throws ForbiddenUserException, FailedRequestException;
+	/**
+	 * Creates a database document with metadata and content and a uri assigned by the server in an open database transaction as transformed on the server.
+	 * @param template	the template for constructing the document uri
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param contentHandle	a handle for writing the content of the document
+     * @param transform	a server transform to modify the document content
+     * @param transaction	a open transaction under which the document may have been created or deleted
+	 * @return	the database uri that identifies the created document
+	 */
+    public DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform, Transaction transaction)
+		throws ForbiddenUserException, FailedRequestException;
 
     /**
      * Reads the document metadata from the database in the representation provided by the handle

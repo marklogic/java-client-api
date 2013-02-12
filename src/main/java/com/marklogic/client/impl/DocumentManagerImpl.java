@@ -372,54 +372,85 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		services.deleteDocument(requestLogger, desc, (transaction == null) ? null : transaction.getTransactionId(), null);
     }
 
-/* TODO
 	@Override
-	public String create(DocumentUriTemplate template, W contentHandle)
+	public DocumentDescriptor create(DocumentUriTemplate template, W contentHandle)
 	throws ForbiddenUserException, FailedRequestException {
-		return create(template, null, contentHandle, null, null);
+		return create(template, null, contentHandle, null, null, getWriteParams());
 	}
 	@Override
-	public String create(DocumentUriTemplate template, W contentHandle, ServerTransform transform)
+	public DocumentDescriptor create(DocumentUriTemplate template, W contentHandle, 
+			ServerTransform transform)
 	throws ForbiddenUserException, FailedRequestException {
-		return create(template, null, contentHandle, transform, null);
+		return create(template, null, contentHandle, transform, null, getWriteParams());
 	}
 	@Override
-	public String create(DocumentUriTemplate template, W contentHandle, Transaction transaction)
-	throws ForbiddenUserException, FailedRequestException {
-		return create(template, null, contentHandle, null, transaction);
-	}
-	@Override
-	public String create(DocumentUriTemplate template, W contentHandle, ServerTransform transform,
+	public DocumentDescriptor create(DocumentUriTemplate template, W contentHandle,
 			Transaction transaction)
 	throws ForbiddenUserException, FailedRequestException {
-		return create(template, null, contentHandle, transform, transaction);
+		return create(template, null, contentHandle, null, transaction, getWriteParams());
 	}
 	@Override
-	public String create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle,
+	public DocumentDescriptor create(DocumentUriTemplate template, W contentHandle,
+			ServerTransform transform, Transaction transaction)
+	throws ForbiddenUserException, FailedRequestException {
+		return create(template, null, contentHandle, transform, transaction, getWriteParams());
+	}
+	@Override
+	public DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle,
 			W contentHandle)
 	throws ForbiddenUserException, FailedRequestException {
-		return create(template, metadataHandle, contentHandle, null, null);
+		return create(template, metadataHandle, contentHandle, null, null, getWriteParams());
 	}
 	@Override
-	public String create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle,
+	public DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle,
 			W contentHandle, ServerTransform transform)
 	throws ForbiddenUserException, FailedRequestException {
-		return create(template, metadataHandle, contentHandle, transform, null);
+		return create(template, metadataHandle, contentHandle, transform, null, getWriteParams());
 	}
 	@Override
-	public String create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle,
+	public DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle,
 			W contentHandle, Transaction transaction)
 	throws ForbiddenUserException, FailedRequestException {
-		return create(template, metadataHandle, contentHandle, null, transaction);
+		return create(template, metadataHandle, contentHandle, null, transaction, getWriteParams());
 	}
 	@Override
-	public String create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle,
+	public DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle,
 			W contentHandle, ServerTransform transform, Transaction transaction)
 	throws ForbiddenUserException, FailedRequestException {
-// TODO Jersey POST call
-		return null;
+		return create(template, metadataHandle, contentHandle, transform, transaction, getWriteParams());
 	}
- */
+	@SuppressWarnings("rawtypes")
+	public DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle,
+			W contentHandle, ServerTransform transform, Transaction transaction, RequestParameters extraParams)
+	throws ForbiddenUserException, FailedRequestException {
+		if (logger.isInfoEnabled())
+			logger.info("Creating content");
+
+		if (metadataHandle != null) {
+			HandleImplementation metadataBase = HandleAccessor.checkHandle(metadataHandle, "metadata");
+			Format metadataFormat = metadataBase.getFormat();
+			if (metadataFormat == null || (metadataFormat != Format.JSON && metadataFormat != Format.XML)) {
+				if (logger.isWarnEnabled())
+					logger.warn("Unsupported metadata format {}, using XML",metadataFormat.name());
+				metadataBase.setFormat(Format.XML);
+			}
+		}
+
+		checkContentFormat(contentHandle);
+
+		return services.postDocument(
+				requestLogger,
+				template,
+				(transaction == null) ? null : transaction.getTransactionId(),
+				(metadataHandle != null) ? processedMetadata : null,
+				mergeTransformParameters(
+						(transform != null) ? transform : getWriteTransform(),
+						extraParams
+						),
+				metadataHandle,
+				contentHandle
+				);
+	}
 
 	@Override
     public <T extends DocumentMetadataReadHandle> T readMetadata(String uri, T metadataHandle) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
@@ -488,12 +519,10 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		return new DocumentDescriptorImpl(uri, false);
 	}
 
-/* TODO
 	@Override
     public DocumentUriTemplate newDocumentUriTemplate(String extension) {
 		return new DocumentUriTemplateImpl(extension);
 	}
- */
 
 	private void checkContentFormat(Object contentHandle) {
 		checkContentFormat(HandleAccessor.checkHandle(contentHandle, "content"));

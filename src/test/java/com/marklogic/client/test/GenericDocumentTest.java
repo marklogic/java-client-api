@@ -35,8 +35,10 @@ import org.xml.sax.SAXException;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
@@ -307,5 +309,45 @@ public class GenericDocumentTest {
 		for (String docId: docIds) {
 			docMgr.delete(docId);
 		}
+	}
+
+	@Test
+	public void testCreate() throws SAXException, IOException, XpathException {
+		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+
+		DocumentUriTemplate template =
+			docMgr.newDocumentUriTemplate("xml").withDirectory("/test/testcreate/");
+
+		DocumentDescriptor desc = docMgr.create(template, new StringHandle().with(content));
+		String docId = desc.getUri();
+		assertTrue("Could not get URI assigned to created document with content only",
+				docId != null && docId.length() > 0);
+
+		String docText = docMgr.read(desc, new StringHandle()).get();
+		assertXMLEqual("Failed to read content for created document", content, docText);
+		
+		docMgr.delete(desc);
+		
+		docMgr.setMetadataCategories(Metadata.ALL);
+		desc = docMgr.create(
+				template,
+				new StringHandle().with(metadata).withFormat(Format.XML),
+				new StringHandle().with(content));
+		docId = desc.getUri();
+		assertTrue("Could not get URI assigned to created document with metadata and content",
+				docId != null && docId.length() > 0);
+
+		String stringMetadata = docMgr.readMetadata(
+				docId,
+				new StringHandle().withFormat(Format.XML)
+				).get();
+		assertTrue("Failed to read metadata for created document",
+				stringMetadata != null && stringMetadata.length() > 0);
+		assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",stringMetadata);
+		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='app-user'])",stringMetadata);
+		assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",stringMetadata);
+		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='3'])",stringMetadata);
+
+		docMgr.delete(docId);
 	}
 }

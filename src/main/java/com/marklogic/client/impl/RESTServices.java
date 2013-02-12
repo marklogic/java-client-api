@@ -26,6 +26,7 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.io.marker.AbstractReadHandle;
@@ -65,7 +66,13 @@ public interface RESTServices {
 		throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException;
 
-    public <T> T search(Class <T> as, QueryDefinition queryDef, String mimetype, long start,
+	public DocumentDescriptor postDocument(RequestLogger logger, DocumentUriTemplate template,
+			String transactionId, Set<Metadata> categories, RequestParameters extraParams,
+			DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle)
+		throws ResourceNotFoundException, ForbiddenUserException,
+			FailedRequestException;
+
+	public <T> T search(Class <T> as, QueryDefinition queryDef, String mimetype, long start,
             long len, QueryView view, String transactionId)
     	throws ForbiddenUserException, FailedRequestException;
 

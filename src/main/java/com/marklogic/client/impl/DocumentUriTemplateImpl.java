@@ -15,35 +15,42 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.io.Format;
 
-public class DocumentDescriptorImpl implements DocumentDescriptor {
-	private String  uri;
-	private Format  format;
-	private String  mimetype;
-	private long    byteLength = UNKNOWN_LENGTH;
-	private long    version    = UNKNOWN_VERSION;
-	private boolean isInternal = false;
+public class DocumentUriTemplateImpl implements DocumentUriTemplate {
+	private String directory;
+	private String extension;
+	private Format format;
+	private String mimetype;
+	private long length;
 
-	public DocumentDescriptorImpl(boolean isInternal) {
+	public DocumentUriTemplateImpl(String extension) {
 		super();
-		setInternal(isInternal);
-	}
-	public DocumentDescriptorImpl(String uri, boolean isInternal) {
-		this(isInternal);
-		setUri(uri);
+		setExtension(extension);
 	}
 
 	@Override
-	public String getUri() {
-		return uri;
+	public String getDirectory() {
+		return directory;
 	}
 	@Override
-	public void setUri(String uri) {
-		this.uri = uri;
-		if (byteLength != UNKNOWN_LENGTH)
-			byteLength = UNKNOWN_LENGTH;
+	public void setDirectory(String directory) {
+		this.directory = directory;
+	}
+	@Override
+	public DocumentUriTemplate withDirectory(String directory) {
+		setDirectory(directory);
+		return this;
+	}
+
+	@Override
+	public String getExtension() {
+		return extension;
+	}
+	@Override
+	public void setExtension(String extension) {
+		this.extension = extension;
 	}
 
 	@Override
@@ -55,7 +62,7 @@ public class DocumentDescriptorImpl implements DocumentDescriptor {
 		this.format = format;
 	}
 	@Override
-	public DocumentDescriptor withFormat(Format format) {
+	public DocumentUriTemplate withFormat(Format format) {
 		setFormat(format);
 		return this;
 	}
@@ -68,29 +75,12 @@ public class DocumentDescriptorImpl implements DocumentDescriptor {
 	public void setMimetype(String mimetype) {
 		this.mimetype = mimetype;
 	}
-
 	@Override
 	public long getByteLength() {
-    	return byteLength;
-    }
+		return length;
+	}
 	@Override
 	public void setByteLength(long length) {
-    	byteLength = length;
-    }
-
-	@Override
-	public void setVersion(long version) {
-		this.version = version;
-	}
-	@Override
-	public long getVersion() {
-		return version;
-	}
-
-	protected void setInternal(boolean isInternal) {
-		this.isInternal = isInternal;
-	}
-	protected boolean isInternal() {
-		return isInternal;
+		this.length = length;
 	}
 }
