@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 
 import com.marklogic.client.DatabaseClient;
@@ -31,13 +30,11 @@ import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ResourceExtensionsManager;
 import com.marklogic.client.admin.ResourceExtensionsManager.MethodParameters;
 import com.marklogic.client.admin.ServerConfigurationManager;
-import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.batch.SearchCollector.CollectorResults;
 import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
 
 /**
@@ -141,31 +138,34 @@ public class SearchCollectorExample {
 		// create a manager for writing query options
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// Create a builder for constructing query configurations.
-		QueryOptionsBuilder qob = new QueryOptionsBuilder();
+        // create the query options
+        String options =
+        	"<search:options "+
+                	"xmlns:search='http://marklogic.com/appservices/search'>"+
+                "<search:constraint name='industry'>"+
+                	"<search:value>"+
+                		"<search:element name='industry' ns=''/>"+
+                	"</search:value>"+
+                "</search:constraint>"+
+                "<search:return-aggregates>false</search:return-aggregates>"+
+                "<search:return-constraints>false</search:return-constraints>"+
+                "<search:return-facets>false</search:return-facets>"+
+                "<search:return-frequencies>false</search:return-frequencies>"+
+                "<search:return-metrics>false</search:return-metrics>"+
+                "<search:return-plan>false</search:return-plan>"+
+                "<search:return-qtext>false</search:return-qtext>"+
+                "<search:return-query>false</search:return-query>"+
+                "<search:return-similar>true</search:return-similar>"+
+                "<search:return-values>false</search:return-values>"+
+                "<search:return-results>false</search:return-results>"+
+                "<search:transform-results apply='empty-snippet'/>"+
+               "</search:options>";
 
-		// create the query options
-		QueryOptionsHandle queryOptions = new QueryOptionsHandle();
-		queryOptions.setReturnAggregates(false);
-		queryOptions.setReturnConstraints(false);
-		queryOptions.setReturnFacets(false);
-		queryOptions.setReturnFrequencies(false);
-		queryOptions.setReturnMetrics(false);
-		queryOptions.setReturnPlan(false);
-		queryOptions.setReturnQtext(false);
-		queryOptions.setReturnQuery(false);
-		queryOptions.setReturnSimilar(true);
-		queryOptions.setReturnValues(false);
-
-		queryOptions.setReturnResults(true);
-		queryOptions.setTransformResults(qob.emptySnippets());
-
-		queryOptions.addConstraint(
-			qob.constraint("industry",
-				qob.value(qob.elementTermIndex(new QName("industry")))));
+        // create a handle to send the query options
+		StringHandle writeHandle = new StringHandle(options);
 
 		// write the query options to the database
-		optionsMgr.writeOptions(OPTIONS_NAME, queryOptions);
+		optionsMgr.writeOptions(OPTIONS_NAME, writeHandle);
 
 		System.out.println("Configured the query options on the server");
 	}
