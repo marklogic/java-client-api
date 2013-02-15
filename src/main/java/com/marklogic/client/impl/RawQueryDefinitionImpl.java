@@ -17,6 +17,7 @@ package com.marklogic.client.impl;
 
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
+import com.marklogic.client.query.RawQueryByExampleDefinition;
 import com.marklogic.client.query.RawQueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
 
@@ -53,6 +54,23 @@ implements RawQueryDefinition
 
 		@Override
 		public RawStructuredQueryDefinition withHandle(StructureWriteHandle handle) {
+			setHandle(handle);
+			return this;
+		}		
+	}
+
+	static public class ByExample
+	extends RawQueryDefinitionImpl
+	implements RawQueryByExampleDefinition {
+		ByExample(StructureWriteHandle handle) {
+			super(handle);
+		}
+		ByExample(StructureWriteHandle handle, String optionsName) {
+			super(handle, optionsName);
+		}
+
+		@Override
+		public RawQueryByExampleDefinition withHandle(StructureWriteHandle handle) {
 			setHandle(handle);
 			return this;
 		}		

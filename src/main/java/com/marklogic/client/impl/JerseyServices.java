@@ -76,6 +76,7 @@ import com.marklogic.client.query.KeyLocator;
 import com.marklogic.client.query.KeyValueQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
+import com.marklogic.client.query.RawQueryByExampleDefinition;
 import com.marklogic.client.query.RawQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
@@ -1394,16 +1395,37 @@ public class JerseyServices implements RESTServices {
 		StructureWriteHandle handle = null;
 		
 		if (queryDef instanceof RawQueryDefinition) {
+			if (logger.isDebugEnabled())
+				logger.debug("Raw search in transaction {}", transactionId);
+
 			handle = ((RawQueryDefinition) queryDef).getHandle();
 			
-			if (logger.isDebugEnabled())
-				logger.debug("Searching for structure {} in transaction {}",
-						structure, transactionId);
+			HandleImplementation baseHandle = 
+				HandleAccessor.checkHandle(handle, "search");
 
-			builder = connection.path("search").queryParams(params)
-					.type("application/xml").accept(mimetype);
-			
-			
+			Format payloadFormat = baseHandle.getFormat();
+			if (payloadFormat == Format.UNKNOWN)
+				payloadFormat = null;
+			else if (payloadFormat != Format.XML && payloadFormat != Format.JSON)
+				throw new IllegalArgumentException(
+						"Cannot perform raw search for "+payloadFormat.name());
+
+			String payloadMimetype = baseHandle.getMimetype();
+			if (payloadFormat != null) {
+				if (payloadMimetype == null)
+					payloadMimetype = payloadFormat.getDefaultMimetype();
+				params.add("format", payloadFormat.toString().toLowerCase());
+			} else if (payloadMimetype == null) {
+				payloadMimetype = "application/xml";
+			}
+
+			String path = (queryDef instanceof RawQueryByExampleDefinition) ?
+					"qbe" : "search";
+
+			WebResource resource = connection.path(path).queryParams(params);
+			builder = (payloadMimetype != null) ?
+					resource.type(payloadMimetype).accept(mimetype) :
+					resource.accept(mimetype);
 		}
 		else if (queryDef instanceof StringQueryDefinition) {
 			String text = ((StringQueryDefinition) queryDef).getCriteria();

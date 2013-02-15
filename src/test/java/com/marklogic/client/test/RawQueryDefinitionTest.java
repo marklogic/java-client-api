@@ -30,6 +30,7 @@ import org.junit.Test;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.FileHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
@@ -37,11 +38,11 @@ import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
+import com.marklogic.client.query.RawQueryByExampleDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class RawQueryDefinitionTest {
-
 	@BeforeClass
 	public static void beforeClass() {
 		Common.connectAdmin();
@@ -109,6 +110,9 @@ public class RawQueryDefinitionTest {
 		results = queryMgr.search(rawCombinedQueryDefinition,
 				new SearchHandle());
 
+		check(results);
+	}
+	private void check(SearchHandle results) {
 		assertNotNull(results);
 
 		assertFalse(results.getMetrics().getTotalTime() == -1);
@@ -122,14 +126,9 @@ public class RawQueryDefinitionTest {
 				assertNotNull(location.getAllSnippetText());
 			}
 		}
-
-		assertNotNull(summaries);
-
 	}
-
 	private void check(StructureWriteHandle handle) {
 		check(handle, null);
-
 	}
 
 	@Test
@@ -161,5 +160,33 @@ public class RawQueryDefinitionTest {
 		str = head + qtext3 + t.serialize() + optionsString + tail;
 		System.out.println(str);
 		check(new StringHandle(str));
+	}
+
+	@Test
+	public void testByExampleSearch() throws IOException {
+		StringHandle criteria = new StringHandle();
+
+		RawQueryByExampleDefinition qbe =
+			queryMgr.newRawQueryByExampleDefinition(criteria);
+
+		criteria.withFormat(Format.XML).set(
+				"<q:query xmlns:q='"+RawQueryByExampleDefinition.QBE_NS+"'>"+
+				"<favorited>true</favorited>"+
+				"</q:query>"
+				);
+		SearchHandle results = queryMgr.search(qbe, new SearchHandle());
+
+		check(results);
+
+		criteria.withFormat(Format.JSON).set(
+				"{"+
+				"\"$format\":\"xml\","+
+				"\"$query\":{\"favorited\":\"true\"}"+
+				"}"
+				);
+		String output = queryMgr.search(qbe, new StringHandle()).get();
+		assertNotNull("Empty JSON output", output);
+		assertTrue("Output without a match",
+				output.contains("\"results\":[{\"index\":1,"));
 	}
 }

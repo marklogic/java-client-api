@@ -439,4 +439,19 @@ public interface QueryManager {
      * @return a QueryDefinition for use of the structured query.
      */
 	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle, String optionsName);
+
+    /**
+     * Defines a simple query by example from a JSON or XML representation.
+     * @param handle a handle for a JSON or XML query by example.
+     * @return a QueryDefinition for use of the query by example.
+     */
+	public RawQueryByExampleDefinition newRawQueryByExampleDefinition(StructureWriteHandle handle);
+
+    /**
+     * Defines a simple query by example from a JSON or XML representation.
+     * @param handle a handle for a JSON or XML query by example.
+     * @param optionsName The name of a persisted query options configuration
+     * @return a QueryDefinition for use of the query by example.
+     */
+	public RawQueryByExampleDefinition newRawQueryByExampleDefinition(StructureWriteHandle handle, String optionsName);
 }

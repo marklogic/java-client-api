@@ -43,6 +43,7 @@ import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
+import com.marklogic.client.query.RawQueryByExampleDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
@@ -346,13 +347,12 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         }
     }
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public String[] suggest(SuggestDefinition suggestionDef) {
 		DOMHandle handle = new DOMHandle();
 		HandleImplementation suggestBase = HandleAccessor.checkHandle(handle, "suggest");
 
-        Format optionsFormat = suggestBase.getFormat();
-      
 		suggestBase.receiveContent(services.suggest(suggestBase.receiveAs(), suggestionDef));
         
 		Document doc = handle.get();
@@ -406,5 +406,15 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 	@Override
 	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle, String optionsName) {
 		return new RawQueryDefinitionImpl.Structured(handle, optionsName);
+	}
+
+	@Override
+	public RawQueryByExampleDefinition newRawQueryByExampleDefinition(StructureWriteHandle handle) {
+		return new RawQueryDefinitionImpl.ByExample(handle);
+	}
+
+	@Override
+	public RawQueryByExampleDefinition newRawQueryByExampleDefinition(StructureWriteHandle handle, String optionsName) {
+		return new RawQueryDefinitionImpl.ByExample(handle, optionsName);
 	}
 }
