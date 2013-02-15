@@ -16,17 +16,12 @@
 package com.marklogic.client.example.cookbook;
 
 import java.io.IOException;
-import java.util.List;
-
-import javax.xml.namespace.QName;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.config.QueryOptions.QueryConstraint;
-import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
-import com.marklogic.client.io.QueryOptionsHandle;
+import com.marklogic.client.io.StringHandle;
 
 /**
  * QueryOptions illustrates writing, reading, and deleting query options.
@@ -48,33 +43,37 @@ public class QueryOptions {
 		// create a manager for writing, reading, and deleting query options
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// Create a builder for constructing query configurations.
-		QueryOptionsBuilder qob = new QueryOptionsBuilder();
+		// construct the query options
+        String options =
+        	"<search:options "+
+                	"xmlns:search='http://marklogic.com/appservices/search'>"+
+                "<search:constraint name='industry'>"+
+                	"<search:value>"+
+                		"<search:element name='industry' ns=''/>"+
+                	"</search:value>"+
+                "</search:constraint>"+
+               "</search:options>";
 
-		// create the query options
-		QueryOptionsHandle writeHandle;
-		writeHandle = new QueryOptionsHandle().withConstraints(
-				qob.constraint("industry",
-						qob.value(
-								qob.elementTermIndex(new QName("industry")))));
+        // create a handle to send the query options
+		StringHandle writeHandle = new StringHandle(options);
 
 		// write the query options to the database
 		optionsMgr.writeOptions(optionsName, writeHandle);
 
 		// create a handle to receive the query options
-		QueryOptionsHandle readHandle = new QueryOptionsHandle();
+		StringHandle readHandle = new StringHandle();
 
 		// read the query options from the database
 		optionsMgr.readOptions(optionsName, readHandle);
 
 		// access the query options
-		List<QueryConstraint> readConstraints = readHandle.getConstraints();
+		String readOptions = readHandle.get();
 
-		String constraintName = readConstraints.get(0).getName();
+		// delete the query options
 		optionsMgr.deleteOptions(optionsName);
 
 		System.out.println(
-				"Wrote, read, and deleted '"+optionsName+"' query options with '"+constraintName+"' constraint");
+				"Wrote, read, and deleted '"+optionsName+"' query options:\n"+readOptions);
 
 		// release the client
 		client.release();

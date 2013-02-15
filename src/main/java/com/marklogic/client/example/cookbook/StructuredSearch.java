@@ -19,18 +19,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.xml.namespace.QName;
-
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.MatchSnippet;
@@ -71,18 +68,22 @@ public class StructuredSearch {
 		// create a manager for writing query options
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// Create a builder for constructing query configurations.
-		QueryOptionsBuilder qob = new QueryOptionsBuilder();
+		// construct the query options
+        String options =
+        	"<search:options "+
+                	"xmlns:search='http://marklogic.com/appservices/search'>"+
+                "<search:constraint name='industry'>"+
+                	"<search:value>"+
+                		"<search:element name='industry' ns=''/>"+
+                	"</search:value>"+
+                "</search:constraint>"+
+               "</search:options>";
 
-		// create the query options
-		QueryOptionsHandle queryOptions = new QueryOptionsHandle()
-			.withConstraints(
-				qob.constraint("industry",
-						qob.value(
-								qob.elementTermIndex(new QName("industry")))));
+        // create a handle to send the query options
+		StringHandle writeHandle = new StringHandle(options);
 
 		// write the query options to the database
-		optionsMgr.writeOptions(OPTIONS_NAME, queryOptions);
+		optionsMgr.writeOptions(OPTIONS_NAME, writeHandle);
 
 		// release the client
 		client.release();
