@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 MarkLogic Corporation
+ * Copyright 2012-2013 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,8 @@ import com.marklogic.client.impl.HandleImplementation;
  * document metadata, and documents in binary, JSON, text, and XML formats.
  * Read handles receive content from the server and must implement the receiveAs() and
  * receiveContent() methods.
- * Write handles send content to the server and must implement the sendContent() method.
+ * Write handles send content to the server, must implement the sendContent() method,
+ * and should initialize the setResendable() accessor.
  * A handle can support both read and write operations.
  *
  * @param <R>	a read handle or OperationNotSupported in the com.marklogic.client.io.marker package
