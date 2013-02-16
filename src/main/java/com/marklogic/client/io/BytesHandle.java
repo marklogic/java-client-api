@@ -143,6 +143,7 @@ public class BytesHandle
 	protected void receiveContent(byte[] content) {
 		this.content = content;
 	}
+	
 	protected byte[] sendContent() {
 		if (content == null || content.length == 0) {
 			throw new IllegalStateException("No bytes to write");

@@ -42,6 +42,7 @@ import com.marklogic.client.io.StringHandle;
  * qualified by a query using the SearchCollector class example
  * of a Resource Extension.
  */
+@SuppressWarnings("deprecation")
 public class SearchCollectorExample {
 	static final private String OPTIONS_NAME = "collect";
 

@@ -28,6 +28,7 @@ import com.marklogic.client.admin.config.QueryOptions.FragmentScope;
  * configuration.
  * Used only in {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.configure(...) expressions.
  */
+@SuppressWarnings("deprecation")
 public class QueryOptionsConfiguration {
 	private Integer concurrencyLevel;
 

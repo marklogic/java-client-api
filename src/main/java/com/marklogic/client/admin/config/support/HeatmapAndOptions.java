@@ -25,6 +25,7 @@ import com.marklogic.client.admin.config.QueryOptions.Heatmap;
  * Do not use directly.   Build using
  * {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.heatmap()
  */
+@SuppressWarnings("deprecation")
 public class HeatmapAndOptions {
 
 	private Heatmap heatmap;

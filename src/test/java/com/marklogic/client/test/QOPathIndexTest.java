@@ -45,6 +45,7 @@ import com.marklogic.client.impl.HandleAccessor;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.util.EditableNamespaceContext;
 
+@SuppressWarnings("deprecation")
 public class QOPathIndexTest {
     @SuppressWarnings("unused")
 	private static final Logger logger = (Logger) LoggerFactory

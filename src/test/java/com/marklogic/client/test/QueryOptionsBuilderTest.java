@@ -79,6 +79,7 @@ import com.marklogic.client.io.QueryOptionsHandle;
  * testRootOptions is the entry point for the test, which parallels the 
  * schema search.rnc.
  */
+@SuppressWarnings("deprecation")
 public class QueryOptionsBuilderTest {
 
 	private QueryOptionsBuilder builder;

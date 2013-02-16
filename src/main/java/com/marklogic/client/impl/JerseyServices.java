@@ -1344,11 +1344,12 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public <T> T search(Class<T> as, QueryDefinition queryDef, String mimetype,
+	public <T> T search(RequestLogger reqlog, Class<T> as, QueryDefinition queryDef, String mimetype,
 			long start, long len, QueryView view, String transactionId)
 			throws ForbiddenUserException, FailedRequestException {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
+		
 		if (start > 1) {
 			params.add("start", Long.toString(start));
 		}
@@ -1393,8 +1394,9 @@ public class JerseyServices implements RESTServices {
 		WebResource.Builder builder = null;
 		String structure = null;
 		StructureWriteHandle handle = null;
-		
+
 		if (queryDef instanceof RawQueryDefinition) {
+
 			if (logger.isDebugEnabled())
 				logger.debug("Raw search in transaction {}", transactionId);
 
@@ -1428,6 +1430,9 @@ public class JerseyServices implements RESTServices {
 					resource.accept(mimetype);
 		}
 		else if (queryDef instanceof StringQueryDefinition) {
+			builder = connection.path("search").queryParams(params)
+					.type("application/xml").accept(mimetype);
+		} else if (queryDef instanceof StringQueryDefinition) {
 			String text = ((StringQueryDefinition) queryDef).getCriteria();
 			if (logger.isDebugEnabled())
 				logger.debug("Searching for {} in transaction {}", text,
@@ -1486,15 +1491,15 @@ public class JerseyServices implements RESTServices {
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			if (queryDef instanceof StringQueryDefinition) {
-				response = builder.get(ClientResponse.class);
+				response = doGet(builder);
 			} else if (queryDef instanceof KeyValueQueryDefinition) {
-				response = builder.get(ClientResponse.class);
+				response = doGet(builder);
 			} else if (queryDef instanceof StructuredQueryDefinition) {
-				response = builder.post(ClientResponse.class, structure);
+				response = doPost(reqlog, builder, structure, true);
 			} else if (queryDef instanceof DeleteQueryDefinition) {
-				response = builder.get(ClientResponse.class);
+				response = doGet(builder);
 			} else if (queryDef instanceof RawQueryDefinition) {
-				response = doPost(null, builder, handle, false);
+				response = doPost(reqlog, builder, handle, true);
 			} else {
 				throw new UnsupportedOperationException("Cannot search with "
 						+ queryDef.getClass().getName());
@@ -1531,11 +1536,16 @@ public class JerseyServices implements RESTServices {
 		if (as != InputStream.class && as != Reader.class)
 			response.close();
 
+		logRequest(
+				reqlog,
+				"searched starting at %s with length %s in %s transaction with %s mime type",
+				start, len, transactionId, mimetype);
+		
 		return entity;
 	}
 
 	@Override
-	public void deleteSearch(DeleteQueryDefinition queryDef,
+	public void deleteSearch(RequestLogger reqlog, DeleteQueryDefinition queryDef,
 			String transactionId) throws ForbiddenUserException,
 			FailedRequestException {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
@@ -1584,6 +1594,11 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException("delete failed: "
 					+ status.getReasonPhrase(), extractErrorFields(response));
 		}
+		
+		logRequest(
+				reqlog,
+				"deleted search results in %s transaction",
+				transactionId);
 	}
 
 	@Override
@@ -3262,7 +3277,6 @@ public class JerseyServices implements RESTServices {
 		}
 		if (queries != null) {
 			for (String stringQuery : queries) {
-
 				params.add("q", stringQuery);
 			}
 		}
@@ -3310,5 +3324,214 @@ public class JerseyServices implements RESTServices {
 
 		return entity;
 
+	}
+
+	@Override
+	public InputStream match(StructureWriteHandle document,
+			String[] candidateRules) {
+		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+
+		if (candidateRules.length > 0) {
+			for (String candidateRule : candidateRules) {
+				params.add("rule", candidateRule);
+			}
+		}
+		WebResource.Builder builder = null;
+		builder = connection.path("alert/match").queryParams(params)
+				.accept("application/xml");
+		
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
+		int retry = 0;
+		for (; retry < maxRetries; retry++) {
+			response = doPost(null, builder, document, false);
+
+			status = response.getClientResponseStatus();
+
+			if (isFirstRequest)
+				isFirstRequest = false;
+
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
+				break;
+			try {
+				Thread.sleep(delayMillis);
+			} catch (InterruptedException e) {
+			}
+		}
+		if (retry >= maxRetries)
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
+
+		if (status == ClientResponse.Status.FORBIDDEN) {
+			throw new ForbiddenUserException("User is not allowed to match",
+					extractErrorFields(response));
+		}
+		if (status != ClientResponse.Status.OK) {
+			throw new FailedRequestException("match failed: "
+					+ status.getReasonPhrase(), extractErrorFields(response));
+		}
+
+		InputStream entity = response.getEntity(InputStream.class);
+		
+		return entity;
+	}
+
+	@Override
+	public InputStream match(QueryDefinition queryDef,
+			long start, String[] candidateRules) {
+		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+
+		if (start > 1) {
+			params.add("start", Long.toString(start));
+		}
+
+		if (candidateRules.length > 0) {
+			for (String candidateRule : candidateRules) {
+				params.add("rule", candidateRule);
+			}
+		}
+		if (queryDef.getOptionsName() != null) {
+			params.add("options", queryDef.getOptionsName());
+		}
+		WebResource.Builder builder = null;
+		String structure = null;
+		StructureWriteHandle handle = null;
+		
+		if (queryDef instanceof RawQueryDefinition) {
+			handle = ((RawQueryDefinition) queryDef).getHandle();
+
+			if (logger.isDebugEnabled())
+				logger.debug("Searching for structure {}", structure);
+
+			builder = connection.path("alert/match").queryParams(params)
+					.type("application/xml").accept("application/xml");
+		} else if (queryDef instanceof StringQueryDefinition) {
+			String text = ((StringQueryDefinition) queryDef).getCriteria();
+			if (logger.isDebugEnabled())
+				logger.debug("Searching for {} in transaction {}", text);
+
+			if (text != null) {
+				addEncodedParam(params, "q", text);
+			}
+
+			builder = connection.path("alert/match").queryParams(params)
+					.accept("application/xml");
+		} else if (queryDef instanceof StructuredQueryDefinition) {
+			structure = ((StructuredQueryDefinition) queryDef).serialize();
+
+			if (logger.isDebugEnabled())
+				logger.debug("Searching for structure {} in transaction {}",
+						structure);
+
+			builder = connection.path("search").queryParams(params)
+					.type("application/xml").accept("application/xml");
+		} else {
+			throw new UnsupportedOperationException("Cannot match with "
+					+ queryDef.getClass().getName());
+		}
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
+		int retry = 0;
+		for (; retry < maxRetries; retry++) {
+			if (queryDef == null) {
+				response = builder.get(ClientResponse.class);
+			} else if (queryDef instanceof StringQueryDefinition) {
+				response = builder.get(ClientResponse.class);
+			} else if (queryDef instanceof StructuredQueryDefinition) {
+				response = builder.post(ClientResponse.class, structure);
+			} else if (queryDef instanceof RawQueryDefinition) {
+				response = doPost(null, builder, handle, false);
+			} else {
+				throw new UnsupportedOperationException("Cannot match with "
+						+ queryDef.getClass().getName());
+			}
+
+			status = response.getClientResponseStatus();
+
+			if (isFirstRequest)
+				isFirstRequest = false;
+
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
+				break;
+			try {
+				Thread.sleep(delayMillis);
+			} catch (InterruptedException e) {
+			}
+		}
+		if (retry >= maxRetries)
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
+
+		if (status == ClientResponse.Status.FORBIDDEN) {
+			throw new ForbiddenUserException("User is not allowed to match",
+					extractErrorFields(response));
+		}
+		if (status != ClientResponse.Status.OK) {
+			throw new FailedRequestException("match failed: "
+					+ status.getReasonPhrase(), extractErrorFields(response));
+		}
+
+		InputStream entity = response.getEntity(InputStream.class);
+		
+		return entity;
+	}
+
+	@Override
+	public InputStream match(String[] docIds, String[] candidateRules) {
+		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+
+		if (docIds.length > 0) {
+			for (String docId : docIds) {
+				params.add("uri", docId);
+			}
+		}
+		if (candidateRules.length > 0) {
+			for (String candidateRule : candidateRules) {
+				params.add("rule", candidateRule);
+			}
+		}
+		WebResource.Builder builder = connection.path("alert/match").queryParams(params)
+				.accept("application/xml");
+		
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
+		int retry = 0;
+		for (; retry < maxRetries; retry++) {
+			response = doGet(builder);
+
+			status = response.getClientResponseStatus();
+
+			if (isFirstRequest)
+				isFirstRequest = false;
+
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
+				break;
+			try {
+				Thread.sleep(delayMillis);
+			} catch (InterruptedException e) {
+			}
+		}
+		if (retry >= maxRetries)
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
+
+		if (status == ClientResponse.Status.FORBIDDEN) {
+			throw new ForbiddenUserException("User is not allowed to match",
+					extractErrorFields(response));
+		}
+		if (status != ClientResponse.Status.OK) {
+			throw new FailedRequestException("match failed: "
+					+ status.getReasonPhrase(), extractErrorFields(response));
+		}
+
+		InputStream entity = response.getEntity(InputStream.class);
+		
+		return entity;
 	}
 }

@@ -15,9 +15,7 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -58,26 +56,22 @@ public class RawQueryDefinitionTest {
 	public static void setupTestOptions() throws FileNotFoundException {
 		Common.connectAdmin();
 
-		QueryOptionsManager queryOptionsManager = Common.client
-				.newServerConfigManager().newQueryOptionsManager();
+		QueryOptionsManager queryOptionsManager = Common.client.newServerConfigManager().newQueryOptionsManager();
 		File options = new File("src/test/resources/alerting-options.xml");
 		queryOptionsManager.writeOptions("alerts", new FileHandle(options));
-
 		Common.client.newServerConfigManager().setServerRequestLogging(true);
 		Common.release();
 		Common.connect();
-
+		
 		// write three files for alert tests.
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
-		docMgr.write("/alert/first.xml", new FileHandle(new File(
-				"src/test/resources/alertFirst.xml")));
-		docMgr.write("/alert/second.xml", new FileHandle(new File(
-				"src/test/resources/alertSecond.xml")));
-		docMgr.write("/alert/third.xml", new FileHandle(new File(
-				"src/test/resources/alertThird.xml")));
+		docMgr.write("/alert/first.xml", new FileHandle(new File("src/test/resources/alertFirst.xml")));
+		docMgr.write("/alert/second.xml", new FileHandle(new File("src/test/resources/alertSecond.xml")));
+		docMgr.write("/alert/third.xml", new FileHandle(new File("src/test/resources/alertThird.xml")));
+		
 
-	}
-
+    }
+	
 	private static QueryManager queryMgr;
 
 	String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
@@ -136,7 +130,6 @@ public class RawQueryDefinitionTest {
 		// Structured Query, No Options
 		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(null);
 		StructuredQueryDefinition t = qb.term("leaf3");
-
 		check(new StringHandle(head + t.serialize() + tail));
 
 		// String query no options
@@ -152,7 +145,6 @@ public class RawQueryDefinitionTest {
 		check(new StringHandle(str));
 
 		// Structured query plus options
-		
 		str = head + t.serialize() + optionsString + tail;
 		check(new StringHandle(str), "alerts");
 

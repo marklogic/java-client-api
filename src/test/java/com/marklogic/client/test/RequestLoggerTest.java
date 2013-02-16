@@ -36,11 +36,15 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 
-import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.impl.OutputStreamTee;
 import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.util.RequestLogger;
 
 public class RequestLoggerTest {
 	@BeforeClass
@@ -94,6 +98,7 @@ public class RequestLoggerTest {
 		assertEquals("Main output stream failed to read", expectedString, new String(mainBytes));
 		outString = new String(out.toByteArray());
 		assertEquals("Out failed to read", expectedString, outString);
+		tee.close();
 	}
 
 	@Test
@@ -155,6 +160,40 @@ public class RequestLoggerTest {
 		docMgr.delete(docId);
 		outString = new String(out.toByteArray());
 		assertTrue("Delete failed to log output", outString != null && outString.length() > 0);
+		
+	}
+	
+	@Test
+	public void testSearchLog() {
+		QueryManager qMgr = Common.client.newQueryManager();
+		ByteArrayOutputStream out = null;
+		RequestLogger logger = null;
+		String outString = null;
+	
+		out = new ByteArrayOutputStream();
+		logger = Common.client.newLogger(out);
+		logger.setContentMax(RequestLogger.ALL_CONTENT);
+		qMgr.startLogging(logger);
+
+		QueryDefinition querydef = qMgr.newStringDefinition();
+		
+		qMgr.search(querydef, new SearchHandle());
+		outString = new String(out.toByteArray());
+		assertTrue("Search failed to log output", outString != null && outString.length() > 0);
+	
+		out = new ByteArrayOutputStream();
+		logger = Common.client.newLogger(out);
+		logger.setContentMax(RequestLogger.ALL_CONTENT);
+		qMgr.startLogging(logger);
+
+		DeleteQueryDefinition deleteDef = qMgr.newDeleteDefinition();
+		deleteDef.setCollections("x");
+		
+		qMgr.delete(deleteDef);
+		outString = new String(out.toByteArray());
+		assertTrue("SearchDelete failed to log output", outString != null && outString.length() > 0);
+	
+	
 	}
 
 }

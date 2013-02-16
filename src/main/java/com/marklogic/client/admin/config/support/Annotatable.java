@@ -23,6 +23,7 @@ import com.marklogic.client.admin.config.QueryOptions.QueryAnnotation;
  * Defines methods for adding annotations and retrieving them
  * from those option nodes that can be annotated.
  */
+@SuppressWarnings("deprecation")
 public interface Annotatable<T> {
 	T annotate(String xmlAnnotation);
 	public List<QueryAnnotation> getAnnotations();

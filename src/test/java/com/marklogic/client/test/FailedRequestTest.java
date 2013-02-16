@@ -31,6 +31,7 @@ import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.QueryOptionsHandle;
 
+@SuppressWarnings("deprecation")
 public class FailedRequestTest {
 
 	@Before 

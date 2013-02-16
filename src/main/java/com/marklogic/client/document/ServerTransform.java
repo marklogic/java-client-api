@@ -15,12 +15,11 @@
  */
 package com.marklogic.client.document;
 
-import com.marklogic.client.util.RequestParameters;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import com.marklogic.client.util.RequestParameters;
 
 /**
  * ServerTransform specifies the invocation of a transform on the server

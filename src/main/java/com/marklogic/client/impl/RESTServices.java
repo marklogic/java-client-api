@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.impl;
 
+import java.io.InputStream;
 import java.util.Set;
 
 import javax.net.ssl.SSLContext;
@@ -33,6 +34,7 @@ import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
@@ -72,11 +74,11 @@ public interface RESTServices {
 		throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException;
 
-	public <T> T search(Class <T> as, QueryDefinition queryDef, String mimetype, long start,
+    public <T> T search(RequestLogger logger, Class <T> as, QueryDefinition queryDef, String mimetype, long start,
             long len, QueryView view, String transactionId)
     	throws ForbiddenUserException, FailedRequestException;
 
-    public void deleteSearch(DeleteQueryDefinition queryDef, String transactionId)
+    public void deleteSearch(RequestLogger logger, DeleteQueryDefinition queryDef, String transactionId)
             throws ForbiddenUserException, FailedRequestException;
 
     public String openTransaction(String name, int timeLimit)
@@ -194,4 +196,9 @@ public interface RESTServices {
 	}
 
 	public <T> T suggest(Class<T> as, SuggestDefinition suggestionDef);
+	
+	public InputStream match(StructureWriteHandle document, String[] candidateRules);
+	public InputStream match(String[] docIds, String[] candidateRules);
+	public InputStream match(QueryDefinition queryDef, long start, String[] candidateRules);
+
 }

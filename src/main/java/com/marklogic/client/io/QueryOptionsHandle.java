@@ -100,6 +100,7 @@ import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
  * <p>and constructed items from {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.</p>
  * 
  */
+@SuppressWarnings("deprecation")
 public final class QueryOptionsHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
 	implements OutputStreamSender, BufferableHandle,

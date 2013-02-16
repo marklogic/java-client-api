@@ -42,6 +42,7 @@ import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
 
+@SuppressWarnings("deprecation")
 public class QueryOptionsManagerTest {
 	
 	private static final org.slf4j.Logger logger = LoggerFactory

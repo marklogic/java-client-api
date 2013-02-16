@@ -57,6 +57,7 @@ import org.junit.runners.Suite;
     ValuesHandleTest.class,
     TuplesHandleTest.class,
     ValueConverterTest.class,
+    AlertingTest.class,
     RawQueryDefinitionTest.class,
 
     // works when run independently but throws JUnit error in suite

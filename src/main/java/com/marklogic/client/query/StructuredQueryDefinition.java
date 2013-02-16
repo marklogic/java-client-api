@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.query;
 
+
 /**
  * A StructuredQueryDefinition represents the criteria associated with a structured query.
  */
@@ -26,4 +27,5 @@ public interface StructuredQueryDefinition
      * @return The serialized definition.
      */
     public String serialize();
+    
 }

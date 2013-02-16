@@ -39,6 +39,7 @@ import com.marklogic.client.query.StructuredQueryDefinition;
  * StructuredSearch illustrates searching for documents and iterating over results
  * with structured criteria referencing a constraint defined by options.
  */
+@SuppressWarnings("deprecation")
 public class StructuredSearch {
 	static final private String OPTIONS_NAME = "products";
 

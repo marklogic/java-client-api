@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.query;
 
+
 /**
  * A StringQueryDefinition represents the criteria associated with a simple string query.
  */

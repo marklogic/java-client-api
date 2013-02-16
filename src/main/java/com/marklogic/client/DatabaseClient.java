@@ -15,6 +15,8 @@
  */
 package com.marklogic.client;
 
+import java.io.OutputStream;
+
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.GenericDocumentManager;
@@ -23,9 +25,8 @@ import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.extensions.ResourceManager;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.alerting.RuleManager;
 import com.marklogic.client.util.RequestLogger;
-
-import java.io.OutputStream;
 
 /**
  * A Database Client instantiates document and query managers and other objects
@@ -92,6 +93,12 @@ public interface DatabaseClient {
      */
     public QueryManager newQueryManager();
 
+    /**
+     * Creates a manager for building rules and rules-matching applications.
+     * @return a manager for supporting rules and rule-match operations.
+     */
+    public RuleManager newRuleManager();
+    
     /**
      * Creates a manager for configuring the REST server for the database. The
      * ServerConfigurationManager can persist query options and transforms or

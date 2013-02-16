@@ -186,7 +186,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         String mimetype = searchFormat.getDefaultMimetype();
 
         String tid = transaction == null ? null : transaction.getTransactionId();
-        searchBase.receiveContent(services.search(searchBase.receiveAs(), querydef, mimetype, start, pageLen, view, tid));
+        searchBase.receiveContent(services.search(requestLogger, searchBase.receiveAs(), querydef, mimetype, start, pageLen, view, tid));
         return searchHandle;
     }
 
@@ -198,7 +198,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     @Override
     public void delete(DeleteQueryDefinition querydef, Transaction transaction) {
         String tid = transaction == null ? null : transaction.getTransactionId();
-        services.deleteSearch(querydef, tid);
+        services.deleteSearch(requestLogger, querydef, tid);
     }
 
     @Override
@@ -353,7 +353,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 		DOMHandle handle = new DOMHandle();
 		HandleImplementation suggestBase = HandleAccessor.checkHandle(handle, "suggest");
 
-		suggestBase.receiveContent(services.suggest(suggestBase.receiveAs(), suggestionDef));
+        suggestBase.receiveContent(services.suggest(suggestBase.receiveAs(), suggestionDef));
         
 		Document doc = handle.get();
         NodeList nodeList = doc.getDocumentElement().getChildNodes();

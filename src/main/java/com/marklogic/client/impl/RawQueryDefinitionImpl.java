@@ -96,4 +96,5 @@ implements RawQueryDefinition
 	public void setHandle(StructureWriteHandle handle) {
 		this.handle = handle;
 	}
+
 }

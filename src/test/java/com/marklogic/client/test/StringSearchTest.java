@@ -47,6 +47,7 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.StringQueryDefinition;
 
+@SuppressWarnings("deprecation")
 public class StringSearchTest {
 	@SuppressWarnings("unused")
 	private static final Logger logger = (Logger) LoggerFactory

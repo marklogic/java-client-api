@@ -53,13 +53,13 @@ import org.xml.sax.SAXException;
 
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.util.NameMap;
-import com.marklogic.client.impl.NameMapBase;
+import com.marklogic.client.impl.ClientPropertiesImpl;
 import com.marklogic.client.impl.DOMWriter;
 import com.marklogic.client.impl.ValueConverter;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
+import com.marklogic.client.util.NameMap;
 
 /**
  * A DocumentMetadataHandle represents the metadata for a database document
@@ -266,77 +266,12 @@ public class DocumentMetadataHandle
 		public Object put(QName name, String value);
 	}
 	@SuppressWarnings("serial")
-	private class PropertiesImpl extends NameMapBase<Object> implements DocumentProperties {
+	private class PropertiesImpl extends ClientPropertiesImpl implements DocumentProperties {
 		private PropertiesImpl() {
 			super();
 		}
 
-		@Override
-		public Object put(QName name, BigDecimal value) {
-			return super.put(name, value);
-		}
-		@Override
-		public Object put(QName name, BigInteger value) {
-			return super.put(name, value);
-		}
-		@Override
-		public Object put(QName name, Boolean value) {
-			return super.put(name, value);
-		}
-		@Override
-		public Object put(QName name, Byte value) {
-			return super.put(name, value);
-		}
-		@Override
-		public Object put(QName name, byte[] value) {
-			return super.put(name, value);
-		}
-		@Override
-		public Object put(QName name, Calendar value) {
-			return super.put(name, value);
-		}
-		@Override
-		public Object put(QName name, Double value) {
-			return super.put(name, value);
-		}
-		@Override
-		public Object put(QName name, Duration value) {
-			return super.put(name, value);
-		}
-		@Override
-		public Object put(QName name, Float value) {
-			return super.put(name, value);
-		}
-		@Override
-		public Object put(QName name, Integer value) {
-			return super.put(name, value);
-		}
-		@Override
-		public Object put(QName name, Long value) {
-			return super.put(name, value);
-		}
-		@Override
-		public Object put(QName name, NodeList value) {
-			return super.put(name, value);
-		}
-		@Override
-		public Object put(QName name, Short value) {
-			return super.put(name, value);
-		}
-		@Override
-		public Object put(QName name, String value) {
-			return super.put(name, value);
-		}
-		@Override
-		public Object put(QName name, Object value) {
-			// Number includes BigDecimal, BigInteger, Byte, Double, Float, Integer, Long, Short
-			if (value instanceof Boolean || value instanceof byte[] ||
-					value instanceof Calendar || value instanceof Duration ||
-					value instanceof NodeList || value instanceof Number ||
-					value instanceof String)
-				return super.put(name, value);
-			throw new IllegalArgumentException("Invalid value for metadata property "+value.getClass().getName());
-		}
+		
 	}
 
 	private DocumentCollections collections;

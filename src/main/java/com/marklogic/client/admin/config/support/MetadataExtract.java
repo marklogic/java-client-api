@@ -22,6 +22,7 @@ import com.marklogic.client.admin.config.QueryOptions.QueryExtractMetadata;
  * Used only in {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.extractMetadata(...) expressions to build
  * {@link com.marklogic.client.admin.config.QueryOptions.QueryExtractMetadata} objects.
  */
+@SuppressWarnings("deprecation")
 public interface MetadataExtract {
 	public void build(QueryExtractMetadata metadata);
 }

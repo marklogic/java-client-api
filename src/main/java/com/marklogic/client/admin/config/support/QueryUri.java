@@ -22,6 +22,7 @@ import com.marklogic.client.admin.config.QueryOptions.QueryValues;
  * A special marker for indicating that the source of
  * tuples or values is the URI lexicon.
  */
+@SuppressWarnings("deprecation")
 public enum QueryUri implements TupleSource {
 
 	YES;

@@ -26,6 +26,7 @@ import com.marklogic.client.admin.config.QueryOptions.PathIndex;
  * Marks classes that are backed by MarkLogic indexes.
  * Used to support {@link com.marklogic.client.admin.config.QueryOptionsBuilder} expressions.
  */
+@SuppressWarnings("deprecation")
 public interface Indexed {
 
 	void setField(Field field);
