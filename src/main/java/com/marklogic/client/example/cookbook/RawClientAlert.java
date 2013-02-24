@@ -18,25 +18,26 @@ package com.marklogic.client.example.cookbook;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.alerting.RuleDefinition;
+import com.marklogic.client.alerting.RuleDefinitionList;
+import com.marklogic.client.alerting.RuleManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.MatchLocation;
-import com.marklogic.client.query.MatchSnippet;
 import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
+import com.marklogic.client.query.StringQueryDefinition;
 
 /**
- * RawCombinedSearch illustrates searching for documents and iterating over results
- * by passing structured criteria and query options in a single request.
+ * RawClientAlert illustrates finding which rules match one or more documents.
  */
-public class RawCombinedSearch {
+public class RawClientAlert {
+	static final private String RULE_NAME = "real-estate";
+
 	static final private String[] filenames = {"curbappeal.xml", "flipper.xml", "justintime.xml"};
 
 	public static void main(String[] args) throws IOException {
@@ -44,7 +45,7 @@ public class RawCombinedSearch {
 	}
 
 	public static void run(ExampleProperties props) throws IOException {
-		System.out.println("example: "+RawCombinedSearch.class.getName());
+		System.out.println("example: "+RawClientAlert.class.getName());
 
 		// connect the client
 		DatabaseClient client = DatabaseClientFactory.newClient(
@@ -53,18 +54,31 @@ public class RawCombinedSearch {
 
 		setUpExample(client);
 
-		// create a manager for searching
-		QueryManager queryMgr = client.newQueryManager();
+		configure(client);
 
-		// specify the query and options for the search criteria
-		// in raw XML (raw JSON is also supported)
-		String rawSearch =
-    	    "<search:search "+
+		match(client);
+
+		tearDownExample(client);
+
+		// release the client
+		client.release();
+	}
+
+	// set up alert rules 
+	public static void configure(DatabaseClient client) throws IOException {
+		// create a manager for configuring rules
+		RuleManager ruleMgr = client.newRuleManager();
+
+
+		// specify a rule in raw XML (raw JSON is also supported
+		// as well as a POJO rule definition)
+		String rawRule =
+    	    "<rapi:rule xmlns:rapi='http://marklogic.com/rest-api'>"+
+    	    "<rapi:name>"+RULE_NAME+"</rapi:name>"+
+    	    "<rapi:description>industry of Real Estate</rapi:description>"+
+			"<search:search "+
     	            "xmlns:search='http://marklogic.com/appservices/search'>"+
     	    "<search:query>"+
-  	            "<search:term-query>"+
-   	                "<search:text>neighborhoods</search:text>"+
-   	            "</search:term-query>"+
    	            "<search:value-constraint-query>"+
    	                "<search:constraint-name>industry</search:constraint-name>"+
    	                "<search:text>Real Estate</search:text>"+
@@ -77,54 +91,44 @@ public class RawCombinedSearch {
     	            "</search:value>"+
                 "</search:constraint>"+
             "</search:options>"+
-            "</search:search>";
+            "</search:search>"+
+            "<rapi:rule-metadata>"+
+                "<correlate-with>/demographic-statistics?zipcode=</correlate-with>"+
+            "</rapi:rule-metadata>"+
+    	    "</rapi:rule>";
 
-		// create a handle for the search criteria
-		StringHandle rawHandle = new StringHandle(rawSearch);
+		// create a handle for writing the rule
+		StringHandle writeHandle = new StringHandle(rawRule);
 
-        // create a search definition based on the handle
-        RawCombinedQueryDefinition querydef
-                = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+		// write the rule to the database
+		ruleMgr.writeRule(writeHandle);
+	}
 
-        // create a handle for the search results
-		SearchHandle resultsHandle = new SearchHandle();
+	// match documents against the alert rules
+	public static void match(DatabaseClient client) throws IOException {
+		// create a manager for document search criteria
+		QueryManager queryMgr = client.newQueryManager();
 
-		// run the search
-		queryMgr.search(querydef, resultsHandle);
+		// specify the search criteria for the documents
+		String criteria = "neighborhoods";
+		StringQueryDefinition querydef = queryMgr.newStringDefinition();
+		querydef.setCriteria(criteria);
 
-		System.out.println("Matched "+resultsHandle.getTotalResults()+
-				" documents with structured query\n");
+		// create a manager for matching rules
+		RuleManager ruleMgr = client.newRuleManager();
 
-		// iterate over the result documents
-		MatchDocumentSummary[] docSummaries = resultsHandle.getMatchResults();
-		System.out.println("Listing "+docSummaries.length+" documents:\n");
-		for (MatchDocumentSummary docSummary: docSummaries) {
-			String uri = docSummary.getUri();
-			int score = docSummary.getScore();
+        // match the rules against the documents qualified by the criteria
+		RuleDefinitionList matchedRules = ruleMgr.match(querydef);
 
-			// iterate over the match locations within a result document
-			MatchLocation[] locations = docSummary.getMatchLocations();
-			System.out.println("Matched "+locations.length+" locations in "+uri+" with "+score+" score:");
-			for (MatchLocation location: locations) {
-
-				// iterate over the snippets at a match location
-				for (MatchSnippet snippet : location.getSnippets()) {
-					boolean isHighlighted = snippet.isHighlighted();
-
-					if (isHighlighted)
-						System.out.print("[");
-					System.out.print(snippet.getText());
-					if (isHighlighted)
-						System.out.print("]");
-				}
-				System.out.println();
-			}
+        // iterate over the matched rules
+		Iterator<RuleDefinition> ruleItr = matchedRules.iterator();
+		while (ruleItr.hasNext()) {
+			RuleDefinition rule = ruleItr.next();
+			System.out.println(
+					"document criteria "+criteria+" matched rule "+
+					rule.getName()+" with metadata "+rule.getMetadata()
+					);
 		}
-
-		tearDownExample(client);
-
-		// release the client
-		client.release();
 	}
 
 	// set up by writing the document content used in the example query
@@ -144,12 +148,17 @@ public class RawCombinedSearch {
 		}
 	}
 
-	// clean up by deleting the documents used in the example query
+	// clean up by deleting the documents used in the example query and
+	// the rules used for matching
 	public static void tearDownExample(DatabaseClient client) {
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
 		for (String filename: filenames) {
 			docMgr.delete("/example/"+filename);
 		}
+
+		RuleManager ruleMgr = client.newRuleManager();
+
+		ruleMgr.delete(RULE_NAME);
 	}
 }
