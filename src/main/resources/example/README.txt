@@ -59,6 +59,7 @@ The examples illustrate the following common tasks:
 *  OptimisticLocking          write or delete a document only if it has not
                               changed
 *  RawClientAlert             define and find rules that match documents
+*  Suggest                    get suggestions for search criteria words
 *  SSLClientCreator           create a database client using SSL
 
 Each example is a Java application that you can compile and run using the jar
