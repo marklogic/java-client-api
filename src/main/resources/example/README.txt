@@ -1,5 +1,5 @@
 MarkLogic Java API Examples
-August 2012
+March 2013
 
 == Cookbook =============
 
@@ -8,7 +8,7 @@ for common tasks using the MarkLogic Java API.
 
 Before using the examples, perform the following actions:
 
-1.  Install MarkLogic 6 for your chosen platform.
+1.  Install MarkLogic EA1 for your chosen platform.
 
 2.  Set up a new REST API instance for your database.  You can use Information
 Studio at:
@@ -47,11 +47,18 @@ The examples illustrate the following common tasks:
 *  StringSearch               search with string criteria and saved options
 *  StructuredSearch           search with a criteria structure and saved
                               options
+*  StructuredSearch           search with a criteria structure and saved
+                              options
+*  RawCombinedSearch          search with a criteria structure and options
+                              in the request
 *  MultiStatementTransaction  complete a transaction with several requests
 *  DocumentReadTransform      transform content on the server while reading
 *  DocumentWriteTransform     transform content on the server while writing
+*  ResourcExtension           extend the Java API to execute other capabilities
+                              of the MarkLogic server on the client
 *  OptimisticLocking          write or delete a document only if it has not
                               changed
+*  RawClientAlert             define and find rules that match documents
 *  SSLClientCreator           create a database client using SSL
 
 Each example is a Java application that you can compile and run using the jar

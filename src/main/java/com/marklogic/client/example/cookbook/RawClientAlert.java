@@ -33,7 +33,7 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 
 /**
- * RawClientAlert illustrates finding which rules match one or more documents.
+ * RawClientAlert illustrates defining and finding rules that match documents.
  */
 public class RawClientAlert {
 	static final private String RULE_NAME = "real-estate";
