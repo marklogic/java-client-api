@@ -26,7 +26,6 @@ import com.marklogic.client.io.StringHandle;
 /**
  * QueryOptions illustrates writing, reading, and deleting query options.
  */
-@SuppressWarnings("deprecation")
 public class QueryOptions {
 	public static void main(String[] args) throws IOException {
 		run(Util.loadProperties());

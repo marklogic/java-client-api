@@ -38,7 +38,6 @@ import com.marklogic.client.query.StringQueryDefinition;
  * StringSearch illustrates searching for documents and iterating over results
  * with string criteria referencing a constraint defined by options.
  */
-@SuppressWarnings("deprecation")
 public class StringSearch {
 	static final private String OPTIONS_NAME = "products";
 

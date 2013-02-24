@@ -21,8 +21,6 @@ import java.io.InputStream;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.InputStreamHandle;
@@ -32,16 +30,13 @@ import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.MatchSnippet;
 import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
 
 /**
- * StructuredSearch illustrates searching for documents and iterating over results
- * with structured criteria referencing a constraint defined by options.
+ * RawCombinedSearch illustrates searching for documents and iterating over results
+ * by passing structured criteria and query options in a single request.
  */
-public class StructuredSearch {
-	static final private String OPTIONS_NAME = "products";
-
+public class RawCombinedSearch {
 	static final private String[] filenames = {"curbappeal.xml", "flipper.xml", "justintime.xml"};
 
 	public static void main(String[] args) throws IOException {
@@ -49,68 +44,56 @@ public class StructuredSearch {
 	}
 
 	public static void run(ExampleProperties props) throws IOException {
-		System.out.println("example: "+StructuredSearch.class.getName());
+		System.out.println("example: "+RawCombinedSearch.class.getName());
 
-		configure(props.host, props.port,
-				props.adminUser, props.adminPassword, props.authType);
-
-		search(props.host, props.port,
-				props.writerUser, props.writerPassword, props.authType);
-
-		tearDownExample(props.host, props.port,
-				props.adminUser, props.adminPassword, props.authType);
-	}
-
-	public static void configure(String host, int port, String user, String password, Authentication authType) {
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
-
-		// create a manager for writing query options
-		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
-
-		// construct the query options
-        String options =
-        	"<search:options "+
-                	"xmlns:search='http://marklogic.com/appservices/search'>"+
-                "<search:constraint name='industry'>"+
-                	"<search:value>"+
-                		"<search:element name='industry' ns=''/>"+
-                	"</search:value>"+
-                "</search:constraint>"+
-               "</search:options>";
-
-        // create a handle to send the query options
-		StringHandle writeHandle = new StringHandle(options);
-
-		// write the query options to the database
-		optionsMgr.writeOptions(OPTIONS_NAME, writeHandle);
-
-		// release the client
-		client.release();
-	}
-
-	public static void search(String host, int port, String user, String password, Authentication authType) throws IOException {
-		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+		DatabaseClient client = DatabaseClientFactory.newClient(
+				props.host, props.port, props.writerUser, props.writerPassword,
+				props.authType);
 
 		setUpExample(client);
 
 		// create a manager for searching
 		QueryManager queryMgr = client.newQueryManager();
 
-		// create a query builder for the query options
-        StructuredQueryBuilder qb = new StructuredQueryBuilder(OPTIONS_NAME);
+		// specify the query and options for the search criteria
+		String rawSearch =
+    	    "<search:search "+
+    	            "xmlns:search='http://marklogic.com/appservices/search'>"+
+    	    "<search:query>"+
+  	            "<search:term-query>"+
+   	                "<search:text>neighborhoods</search:text>"+
+   	            "</search:term-query>"+
+   	            "<search:value-constraint-query>"+
+   	                "<search:constraint-name>industry</search:constraint-name>"+
+   	                "<search:text>Real Estate</search:text>"+
+   	            "</search:value-constraint-query>"+
+	        "</search:query>"+
+    	    "<search:options>"+
+                "<search:constraint name='industry'>"+
+    	            "<search:value>"+
+    		            "<search:element name='industry' ns=''/>"+
+    	            "</search:value>"+
+                "</search:constraint>"+
+            "</search:options>"+
+            "</search:search>";
 
-        // build a search definition
-        StructuredQueryDefinition querydef
-                = qb.and(qb.term("neighborhoods"), qb.valueConstraint("industry", "Real Estate"));
+		// create a handle for the search criteria
+		StringHandle rawHandle = new StringHandle(rawSearch);
 
-		// create a handle for the search results
+        // create a search definition based on the handle
+        RawCombinedQueryDefinition querydef
+                = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+
+        // create a handle for the search results
 		SearchHandle resultsHandle = new SearchHandle();
 
 		// run the search
 		queryMgr.search(querydef, resultsHandle);
 
+/* TODO:
+   empty, compare REST unit test
+ */
 		System.out.println("Matched "+resultsHandle.getTotalResults()+
 				" documents with structured query\n");
 
@@ -140,11 +123,13 @@ public class StructuredSearch {
 			}
 		}
 
+		tearDownExample(client);
+
 		// release the client
 		client.release();
 	}
 
-	// set up by writing the document content and options used in the example query
+	// set up by writing the document content used in the example query
 	public static void setUpExample(DatabaseClient client) throws IOException {
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
@@ -161,21 +146,12 @@ public class StructuredSearch {
 		}
 	}
 
-	// clean up by deleting the documents and query options used in the example query
-	public static void tearDownExample(
-			String host, int port, String user, String password, Authentication authType) {
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
-
+	// clean up by deleting the documents used in the example query
+	public static void tearDownExample(DatabaseClient client) {
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
 		for (String filename: filenames) {
 			docMgr.delete("/example/"+filename);
 		}
-
-		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
-
-		optionsMgr.deleteOptions(OPTIONS_NAME);
-
-		client.release();
 	}
 }

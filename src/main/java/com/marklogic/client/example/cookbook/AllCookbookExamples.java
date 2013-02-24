@@ -44,6 +44,7 @@ public class AllCookbookExamples {
 		QueryOptions.run(              props );
  		StringSearch.run(              props );
  		StructuredSearch.run(          props );
+ 		RawCombinedSearch.run(         props );
 		MultiStatementTransaction.run( props );
  		DocumentReadTransform.run(     props );
  		DocumentWriteTransform.run(    props );
