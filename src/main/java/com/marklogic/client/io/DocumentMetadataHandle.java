@@ -628,6 +628,9 @@ public class DocumentMetadataHandle
 			serializer.writeEndElement();
 
 			serializer.writeEndDocument();
+
+			serializer.flush();
+			serializer.close();
 		} catch (XMLStreamException e) {
 			throw new MarkLogicIOException("Failed to serialize metadata", e);
 		} catch (TransformerFactoryConfigurationError e) {
