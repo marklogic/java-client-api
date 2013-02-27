@@ -101,7 +101,7 @@ public class RawClientAlert {
 		StringHandle writeHandle = new StringHandle(rawRule);
 
 		// write the rule to the database
-		ruleMgr.writeRule(writeHandle);
+		ruleMgr.writeRule(RULE_NAME, writeHandle);
 	}
 
 	// match documents against the alert rules

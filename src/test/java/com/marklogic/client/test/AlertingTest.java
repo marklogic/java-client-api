@@ -90,6 +90,7 @@ public class AlertingTest {
 		setupMatchRules();
 	}
 
+	
 	@Test
 	public void testRuleDefinitions() throws ParserConfigurationException,
 			SAXException, IOException {
@@ -131,12 +132,12 @@ public class AlertingTest {
 		assertEquals("javatestrule", roundTripped.getName());
 		assertEquals("Rule for testing java", roundTripped.getDescription());
 
-		BytesHandle x = roundTripped.exportQueryDefinition(new BytesHandle());
+		BytesHandle exportedDef = roundTripped.exportQueryDefinition(new BytesHandle());
 
 		assertXMLEqual(
 				"Search element round-tripped",
 				"<search:search xmlns:search=\"http://marklogic.com/appservices/search\"><search:qtext>favorited:true</search:qtext></search:search>",
-				new String(x.get()));
+				new String(exportedDef.get()));
 
 		RuleMetadata metadataReturned = roundTripped.getMetadata();
 		assertEquals(metadata.get(new QName("dataelem1")),
@@ -157,7 +158,7 @@ public class AlertingTest {
 		assertXMLEqual(
 				"Search element round-tripped - string query and options",
 				"<search:search xmlns:search=\"http://marklogic.com/appservices/search\"><search:qtext>favorited:true</search:qtext></search:search>",
-				new String(x.get()));
+				new String(exportedDef.get()));
 
 		// three. structured query with options.
 
@@ -173,9 +174,38 @@ public class AlertingTest {
 		assertXMLEqual(
 				"Search element round-tripped - structured query and options",
 				"<search:search xmlns:search=\"http://marklogic.com/appservices/search\"><search:qtext>favorited:true</search:qtext></search:search>",
-				new String(x.get()));
+				new String(exportedDef.get()));
 		ruleManager.delete("javatestrule");
 	}
+	
+	@Test
+	public void testXMLRuleDefinitions() throws SAXException, IOException {
+		File ruleFile = new File("src/test/resources/rule1.xml");
+		FileHandle ruleHandle = new FileHandle(ruleFile);
+		ruleManager.writeRule("javatestrule", ruleHandle);
+		
+		// separating patch for exists TODO reinstate.
+		//assertTrue(ruleManager.exists("javatestrule"));
+		RuleDefinition def = ruleManager.readRule("javatestrule", new RuleDefinition());
+		assertEquals("javatestrule", def.getName());
+		assertXMLEqual(
+				"Search element round-tripped - structured query and options",
+                "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">"+
+                "<search:qtext>favorited:true</search:qtext>"+
+                "<search:options xmlns:search=\"http://marklogic.com/appservices/search\">"+
+                "<search:constraint name=\"favorited\">"+
+                "<search:value>"+
+                "<search:element ns=\"\" name=\"favorited\" />"+
+                "</search:value>"+
+                "</search:constraint>"+
+                "</search:options>"+
+                "</search:search>",
+				new String(def.exportQueryDefinition(new BytesHandle()).get()));
+		ruleManager.delete("javatestrule");
+				
+	}
+	
+	
 	private static void setupMatchRules() {
 		RuleDefinition definition = new RuleDefinition("favorites",
 				"Rule for testing favorited:true");

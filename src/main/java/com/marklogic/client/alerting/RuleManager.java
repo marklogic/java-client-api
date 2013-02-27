@@ -30,15 +30,6 @@ import com.marklogic.client.query.QueryDefinition;
 public interface RuleManager {
 
 	/**
-	 * Tests for existence of rule on the REST server.
-	 * 
-	 * @param ruleName
-	 *            Name of the rule
-	 * @return true if rule exists, false otherwise.
-	 */
-	public boolean exists(String ruleName);
-
-	/**
 	 * Reads a rule from the server into the provided handle.
 	 * 
 	 * @param ruleName
@@ -55,15 +46,25 @@ public interface RuleManager {
 	/**
 	 * Writes a rule to the server from the provided handle.
 	 * 
+	 * @param readHandle
+	 *            Handle that contains the rule payload. Must be a
+	 *            RuleDefinition object to use this method, which
+	 *            has no ruleName.
+	 */
+	public void writeRule(RuleDefinition writeHandle)
+			throws ResourceNotFoundException, ForbiddenUserException,
+			FailedRequestException;
+	
+	/**
+	 * Writes a rule to the server from the provided handle.
+	 * 
 	 * @param ruleName
 	 *            Name of rule on REST server.
 	 * @param readHandle
 	 *            Handle that contains the rule payload. Often will be an
 	 *            instance of RuleDefinition.
-	 */
-	public void writeRule(RuleWriteHandle writeHandle)
-			throws ResourceNotFoundException, ForbiddenUserException,
-			FailedRequestException;
+     */	
+	public void writeRule(String string, RuleWriteHandle ruleHandle);
 
 	/**
 	 * Removes a rule from the server.
@@ -122,5 +123,7 @@ public interface RuleManager {
 	 */
 	public RuleDefinitionList match(StructureWriteHandle document,
 			String[] candidateRules);
+
+	
 
 }

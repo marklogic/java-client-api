@@ -27,21 +27,15 @@ import com.marklogic.client.io.marker.RuleWriteHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.QueryDefinition;
 
-public class RuleManagerImpl extends AbstractLoggingManager implements RuleManager {
-
+public class RuleManagerImpl extends AbstractLoggingManager implements
+		RuleManager {
 
 	final static private String RULES_BASE = "/alert/rules";
-	
+
 	private RESTServices services;
 
 	public RuleManagerImpl(RESTServices services) {
 		this.services = services;
-	}
-
-	@Override
-	public boolean exists(String ruleName) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -49,12 +43,11 @@ public class RuleManagerImpl extends AbstractLoggingManager implements RuleManag
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
 		if (ruleName == null) {
-			throw new IllegalArgumentException(
-					"Cannot read null rule name");
+			throw new IllegalArgumentException("Cannot read null rule name");
 		}
 
-		HandleImplementation ruleBase = HandleAccessor.checkHandle(
-				ruleHandle, "rule");
+		HandleImplementation ruleBase = HandleAccessor.checkHandle(ruleHandle,
+				"rule");
 
 		Format ruleFormat = ruleBase.getFormat();
 		switch (ruleFormat) {
@@ -70,28 +63,34 @@ public class RuleManagerImpl extends AbstractLoggingManager implements RuleManag
 		}
 
 		String mimetype = ruleFormat.getDefaultMimetype();
-		ruleBase.receiveContent(services.getValue(
-				requestLogger, RULES_BASE, ruleName, false, mimetype,
-				ruleBase.receiveAs()));
+		ruleBase.receiveContent(services.getValue(requestLogger, RULES_BASE,
+				ruleName, false, mimetype, ruleBase.receiveAs()));
 
 		return ruleHandle;
-		}
+	}
+
+	@Override
+	public void writeRule(RuleDefinition ruleHandle) {
+		String ruleName = ((RuleDefinition) ruleHandle).getName();
+		writeRule(ruleName, ruleHandle);
+	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public void writeRule(RuleWriteHandle ruleHandle)
+	public void writeRule(String ruleName, RuleWriteHandle ruleHandle)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
-		String name=null;
 		if (ruleHandle instanceof RuleDefinition) {
-			name = ((RuleDefinition) ruleHandle).getName();
+			String name = ((RuleDefinition) ruleHandle).getName();
+			if (name != null)
+				ruleName = name;
 		}
-		HandleImplementation ruleBase = HandleAccessor.checkHandle(
-				ruleHandle, "rule");
-		
+		HandleImplementation ruleBase = HandleAccessor.checkHandle(ruleHandle,
+				"rule");
+
 		if (ruleBase == null)
 			throw new IllegalArgumentException("Could not write null rule: "
-					+ name);
+					+ ruleName);
 
 		Format ruleFormat = ruleBase.getFormat();
 		switch (ruleFormat) {
@@ -108,9 +107,10 @@ public class RuleManagerImpl extends AbstractLoggingManager implements RuleManag
 
 		String mimetype = ruleFormat.getDefaultMimetype();
 
-		services.putValue(requestLogger, RULES_BASE, name, mimetype, ruleBase);
+		services.putValue(requestLogger, RULES_BASE, ruleName, mimetype,
+				ruleBase);
 	}
-	
+
 	@Override
 	public void delete(String ruleName) throws ForbiddenUserException,
 			FailedRequestException {
@@ -123,13 +123,14 @@ public class RuleManagerImpl extends AbstractLoggingManager implements RuleManag
 	}
 
 	@Override
-	public RuleDefinitionList match(QueryDefinition docQuery,
-			long start, String[] candidateRules) {
-		
+	public RuleDefinitionList match(QueryDefinition docQuery, long start,
+			String[] candidateRules) {
+
 		RuleDefinitionList ruleDefinitionList = new RuleDefinitionList();
-		
-		HandleAccessor.receiveContent(ruleDefinitionList, services.match(docQuery, start, candidateRules));
-	;
+
+		HandleAccessor.receiveContent(ruleDefinitionList,
+				services.match(docQuery, start, candidateRules));
+		;
 		return ruleDefinitionList;
 	}
 
@@ -141,21 +142,22 @@ public class RuleManagerImpl extends AbstractLoggingManager implements RuleManag
 	@Override
 	public RuleDefinitionList match(String[] docIds, String[] candidateRules) {
 		RuleDefinitionList ruleDefinitionList = new RuleDefinitionList();
-		HandleAccessor.receiveContent(ruleDefinitionList,services.match(docIds, candidateRules));
+		HandleAccessor.receiveContent(ruleDefinitionList,
+				services.match(docIds, candidateRules));
 		return ruleDefinitionList;
 	}
 
 	@Override
-	public RuleDefinitionList match(
-			StructureWriteHandle document) {
+	public RuleDefinitionList match(StructureWriteHandle document) {
 		return match(document, new String[] {});
 	}
 
 	@Override
-	public RuleDefinitionList match(
-			StructureWriteHandle document, String[] candidateRules) {
+	public RuleDefinitionList match(StructureWriteHandle document,
+			String[] candidateRules) {
 		RuleDefinitionList ruleDefinitionList = new RuleDefinitionList();
-		HandleAccessor.receiveContent(ruleDefinitionList,services.match(document, candidateRules));
+		HandleAccessor.receiveContent(ruleDefinitionList,
+				services.match(document, candidateRules));
 		return ruleDefinitionList;
 	}
 
