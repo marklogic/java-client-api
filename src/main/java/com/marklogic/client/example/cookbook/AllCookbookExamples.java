@@ -33,6 +33,7 @@ public class AllCookbookExamples {
 		// execute the examples
 		ClientCreator.run(             props );
 		DocumentWrite.run(             props );
+		DocumentWriteServerURI.run(    props );
 		DocumentRead.run(              props );
 		DocumentMetadataWrite.run(     props );
 		DocumentMetadataRead.run(      props );
@@ -45,6 +46,7 @@ public class AllCookbookExamples {
  		StringSearch.run(              props );
  		StructuredSearch.run(          props );
  		RawCombinedSearch.run(         props );
+ 		SearchResponseTransform.run(   props );
 		MultiStatementTransaction.run( props );
  		DocumentReadTransform.run(     props );
  		DocumentWriteTransform.run(    props );
