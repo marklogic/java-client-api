@@ -38,6 +38,11 @@ public class RuleManagerImpl extends AbstractLoggingManager implements
 		this.services = services;
 	}
 
+	@Override
+	public boolean exists(String ruleName) {
+		return services.exists(RULES_BASE + "/" + ruleName);
+	}
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <T extends RuleReadHandle> T readRule(String ruleName, T ruleHandle)
 			throws ResourceNotFoundException, ForbiddenUserException,

@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.io.marker;
 
-public interface RuleWriteHandle {
+public interface RuleWriteHandle extends AbstractWriteHandle {
 
 	
 }

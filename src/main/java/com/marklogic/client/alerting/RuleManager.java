@@ -30,6 +30,15 @@ import com.marklogic.client.query.QueryDefinition;
 public interface RuleManager {
 
 	/**
+	 * Tests for existence of rule on the REST server.
+	 * 
+	 * @param ruleName
+	 *            Name of the rule
+	 * @return true if rule exists, false otherwise.
+	 */
+	public boolean exists(String ruleName);
+
+	/**
 	 * Reads a rule from the server into the provided handle.
 	 * 
 	 * @param ruleName

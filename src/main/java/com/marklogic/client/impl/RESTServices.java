@@ -200,5 +200,12 @@ public interface RESTServices {
 	public InputStream match(StructureWriteHandle document, String[] candidateRules);
 	public InputStream match(String[] docIds, String[] candidateRules);
 	public InputStream match(QueryDefinition queryDef, long start, String[] candidateRules);
+	
+	/**
+	 * Wraps a HEAD request for a simple URI
+	 * @param uri URL to which to make a HEAD request
+	 * @return true if the status response is 200, false if 404;
+	 */
+	public boolean exists(String uri);
 
 }

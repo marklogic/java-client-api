@@ -17,6 +17,7 @@ package com.marklogic.client.test;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -184,8 +185,7 @@ public class AlertingTest {
 		FileHandle ruleHandle = new FileHandle(ruleFile);
 		ruleManager.writeRule("javatestrule", ruleHandle);
 		
-		// separating patch for exists TODO reinstate.
-		//assertTrue(ruleManager.exists("javatestrule"));
+		assertTrue(ruleManager.exists("javatestrule"));
 		RuleDefinition def = ruleManager.readRule("javatestrule", new RuleDefinition());
 		assertEquals("javatestrule", def.getName());
 		assertXMLEqual(

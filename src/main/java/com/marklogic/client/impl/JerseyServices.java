@@ -662,6 +662,34 @@ public class JerseyServices implements RESTServices {
 	public DocumentDescriptor head(RequestLogger reqlog, String uri,
 			String transactionId) throws ForbiddenUserException,
 			FailedRequestException {
+		ClientResponse response = headImpl(reqlog, uri, transactionId, makeDocumentResource(makeDocumentParams(uri,
+				null, transactionId, null)));
+		
+		// 404
+		if (response == null) return null;
+		
+		MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+
+		response.close();
+		logRequest(reqlog, "checked %s document from %s transaction", uri,
+				(transactionId != null) ? transactionId : "no");
+
+		DocumentDescriptorImpl desc = new DocumentDescriptorImpl(uri, false);
+
+		updateVersion(desc, responseHeaders);
+		updateDescriptor(desc, responseHeaders);
+
+		return desc;
+	}
+	
+	@Override
+	public boolean exists(String uri) throws ForbiddenUserException,
+			FailedRequestException {
+		return headImpl(null, uri, null, connection.path(uri)) == null ? false : true;
+	}
+	
+	public ClientResponse headImpl(RequestLogger reqlog, String uri,
+			String transactionId, WebResource webResource) {
 		if (uri == null)
 			throw new IllegalArgumentException(
 					"Existence check for document identifier without uri");
@@ -669,9 +697,6 @@ public class JerseyServices implements RESTServices {
 		if (logger.isDebugEnabled())
 			logger.debug("Requesting head for {} in transaction {}", uri,
 					transactionId);
-
-		WebResource webResource = makeDocumentResource(makeDocumentParams(uri,
-				null, transactionId, null));
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -695,9 +720,7 @@ public class JerseyServices implements RESTServices {
 		if (retry >= maxRetries)
 			throw new FailedRequestException(
 					"Service unavailable and retries exhausted");
-
-		MultivaluedMap<String, String> responseHeaders = response.getHeaders();
-
+		
 		if (status != ClientResponse.Status.OK) {
 			if (status == ClientResponse.Status.NOT_FOUND) {
 				response.close();
@@ -712,17 +735,8 @@ public class JerseyServices implements RESTServices {
 								+ status.getReasonPhrase(),
 						extractErrorFields(response));
 		}
-
-		response.close();
-		logRequest(reqlog, "checked %s document from %s transaction", uri,
-				(transactionId != null) ? transactionId : "no");
-
-		DocumentDescriptorImpl desc = new DocumentDescriptorImpl(uri, false);
-
-		updateVersion(desc, responseHeaders);
-		updateDescriptor(desc, responseHeaders);
-
-		return desc;
+		return response;
+		
 	}
 
 	@Override
