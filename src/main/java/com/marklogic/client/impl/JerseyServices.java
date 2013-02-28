@@ -1410,7 +1410,6 @@ public class JerseyServices implements RESTServices {
 		StructureWriteHandle handle = null;
 
 		if (queryDef instanceof RawQueryDefinition) {
-
 			if (logger.isDebugEnabled())
 				logger.debug("Raw search in transaction {}", transactionId);
 
@@ -1442,10 +1441,6 @@ public class JerseyServices implements RESTServices {
 			builder = (payloadMimetype != null) ?
 					resource.type(payloadMimetype).accept(mimetype) :
 					resource.accept(mimetype);
-		}
-		else if (queryDef instanceof StringQueryDefinition) {
-			builder = connection.path("search").queryParams(params)
-					.type("application/xml").accept(mimetype);
 		} else if (queryDef instanceof StringQueryDefinition) {
 			String text = ((StringQueryDefinition) queryDef).getCriteria();
 			if (logger.isDebugEnabled())
@@ -1457,7 +1452,7 @@ public class JerseyServices implements RESTServices {
 			}
 
 			builder = connection.path("search").queryParams(params)
-					.accept(mimetype);
+				.type("application/xml").accept(mimetype);
 		} else if (queryDef instanceof KeyValueQueryDefinition) {
 			if (logger.isDebugEnabled())
 				logger.debug("Searching for keys/values in transaction {}",

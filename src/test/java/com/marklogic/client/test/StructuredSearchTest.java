@@ -84,6 +84,20 @@ public class StructuredSearchTest {
     }
 
     @Test
+    public void testFailedSearch() throws IOException {
+        QueryManager queryMgr = Common.client.newQueryManager();
+        StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
+        StructuredQueryDefinition qdef = qb.term(
+        		"criteriaThatShouldNotMatchAnyDocument");
+
+        SearchHandle results = queryMgr.search(qdef, new SearchHandle());
+        assertNotNull(results);
+
+        MatchDocumentSummary[] summaries = results.getMatchResults();
+        assertTrue(summaries == null || summaries.length == 0);
+    }
+
+    @Test
     public void testJSON() {
         QueryManager queryMgr = Common.client.newQueryManager();
         StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(null);

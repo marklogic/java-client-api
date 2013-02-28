@@ -68,8 +68,6 @@ public class RawQueryDefinitionTest {
 		docMgr.write("/alert/first.xml", new FileHandle(new File("src/test/resources/alertFirst.xml")));
 		docMgr.write("/alert/second.xml", new FileHandle(new File("src/test/resources/alertSecond.xml")));
 		docMgr.write("/alert/third.xml", new FileHandle(new File("src/test/resources/alertThird.xml")));
-		
-
     }
 	
 	private static QueryManager queryMgr;
@@ -155,17 +153,52 @@ public class RawQueryDefinitionTest {
 	}
 
 	@Test
-	public void testByExampleSearch() throws IOException {
-		StringHandle criteria = new StringHandle();
+	public void testFailedSearch() throws IOException {
+		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
+		StructuredQueryDefinition t = qb.term(
+				"criteriaThatShouldNotMatchAnyDocument");
+
+		RawCombinedQueryDefinition queryDef =
+				queryMgr.newRawCombinedQueryDefinition(
+						new StringHandle(head + t.serialize() + tail)
+						.withMimetype("application/xml")
+						);
+
+		SearchHandle results = queryMgr.search(queryDef, new SearchHandle());
+        assertNotNull(results);
+
+        MatchDocumentSummary[] summaries = results.getMatchResults();
+        assertTrue(summaries == null || summaries.length == 0);
+
+        StringHandle criteria = new StringHandle().withFormat(Format.XML);
+		criteria.set(
+				"<q:query xmlns:q='"+RawQueryByExampleDefinition.QBE_NS+"'>"+
+				"<q:word>criteriaThatShouldNotMatchAnyDocument</q:word>"+
+				"</q:query>"
+				);
 
 		RawQueryByExampleDefinition qbe =
 			queryMgr.newRawQueryByExampleDefinition(criteria);
 
-		criteria.withFormat(Format.XML).set(
+		results = queryMgr.search(qbe, new SearchHandle());
+        assertNotNull(results);
+
+        summaries = results.getMatchResults();
+        assertTrue(summaries == null || summaries.length == 0);
+	}
+
+	@Test
+	public void testByExampleSearch() throws IOException {
+		StringHandle criteria = new StringHandle().withFormat(Format.XML);
+		criteria.set(
 				"<q:query xmlns:q='"+RawQueryByExampleDefinition.QBE_NS+"'>"+
 				"<favorited>true</favorited>"+
 				"</q:query>"
 				);
+
+		RawQueryByExampleDefinition qbe =
+			queryMgr.newRawQueryByExampleDefinition(criteria);
+
 		SearchHandle results = queryMgr.search(qbe, new SearchHandle());
 
 		check(results);
