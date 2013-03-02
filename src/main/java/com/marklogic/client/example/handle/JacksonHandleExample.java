@@ -27,6 +27,7 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
+import com.marklogic.client.extra.jackson.JacksonHandle;
 
 /**
  * JacksonHandleExample illustrates writing and reading content as a JSON structure

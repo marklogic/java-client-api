@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.example.handle;
+package com.marklogic.client.extra.jdom;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -42,6 +42,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * A JDOM Handle represents XML content as a JDOM document for reading or writing.
+ * You must install the JDOM library to use this class.
  */
 public class JDOMHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
@@ -53,21 +54,36 @@ public class JDOMHandle
 	private SAXBuilder   builder;
 	private XMLOutputter outputter;
 
+	/**
+	 * Zero-argument constructor.
+	 */
 	public JDOMHandle() {
 		super();
 		super.setFormat(Format.XML);
    		setResendable(true);
 	}
+	/**
+	 * Provides a handle on XML content as a JDOM document structure.
+	 * @param content	the XML document.
+	 */
 	public JDOMHandle(Document content) {
 		this();
     	set(content);
 	}
 
+	/**
+	 * Returns the JDOM structure builder for XML content.
+	 * @return	the JDOM builder.
+	 */
 	public SAXBuilder getBuilder() {
 		if (builder == null)
 			builder = makeBuilder();
 		return builder;
 	}
+	/**
+	 * Specifies a JDOM structure builder for XML content.
+	 * @param builder	the JDOM builder.
+	 */
 	public void setBuilder(SAXBuilder builder) {
 		this.builder = builder;
 	}
@@ -75,11 +91,19 @@ public class JDOMHandle
 		return new SAXBuilder(XMLReaders.NONVALIDATING);
 	}
 
+	/**
+	 * Returns the JDOM serializer for XML content.
+	 * @return	the JDOM serializer.
+	 */
 	public XMLOutputter getOutputter() {
 		if (outputter == null)
 			outputter = makeOutputter();
 		return outputter;
 	}
+	/**
+	 * Specifies a JDOM serializer for XML content.
+	 * @param outputter	the JDOM serializer.
+	 */
 	public void setOutputter(XMLOutputter outputter) {
 		this.outputter = outputter;
 	}
@@ -87,17 +111,34 @@ public class JDOMHandle
 		return new XMLOutputter();
 	}
 
+	/**
+	 * Returns the XML document structure.
+	 * @return	the XML document.
+	 */
 	public Document get() {
 		return content;
 	}
+	/**
+	 * Assigns an XML document structure as the content.
+	 * @param content	the XML document.
+	 */
     public void set(Document content) {
     	this.content = content;
     }
+	/**
+	 * Assigns an XML document structure as the content and returns the handle.
+	 * @param content	the XML document.
+	 * @return	the handle on the XML document.
+	 */
     public JDOMHandle with(Document content) {
     	set(content);
     	return this;
     }
 
+	/**
+	 * Restricts the format to XML.
+	 */
+	@Override
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			throw new IllegalArgumentException("JDOMHandle supports the XML format only");
@@ -124,6 +165,10 @@ public class JDOMHandle
 			throw new MarkLogicIOException(e);
 		}
 	}
+
+	/**
+	 * Returns the XML document as a string.
+	 */
 	@Override
 	public String toString() {
 		try {
@@ -168,5 +213,4 @@ public class JDOMHandle
 				new OutputStreamWriter(out, "UTF-8")
 				);
 	}
-
 }

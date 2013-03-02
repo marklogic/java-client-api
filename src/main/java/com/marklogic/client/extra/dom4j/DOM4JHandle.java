@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.example.handle;
+package com.marklogic.client.extra.dom4j;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -21,13 +21,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 
-import nu.xom.Builder;
-import nu.xom.Document;
-import nu.xom.ParsingException;
-import nu.xom.Serializer;
-import nu.xom.ValidityException;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
 
 import com.marklogic.client.io.Format;
 import com.marklogic.client.MarkLogicIOException;
@@ -40,57 +42,105 @@ import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
- * A XOM Handle represents XML content as a XOM document for reading or writing.
+ * A DOM4JHandle represents XML content as a dom4j document for reading or writing.
+ * You must install the dom4j library to use this class.
  */
-public class XOMHandle
+public class DOM4JHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
-    implements OutputStreamSender, BufferableHandle,
+	implements OutputStreamSender, BufferableHandle,
     	XMLReadHandle, XMLWriteHandle,
     	StructureReadHandle, StructureWriteHandle
 {
-	private Document content;
-	private Builder  builder;
+	private SAXReader    reader;
+	private OutputFormat outputFormat;
+	private Document     content;
 
-	public XOMHandle() {
+	/**
+	 * Zero-argument constructor.
+	 */
+	public DOM4JHandle() {
 		super();
 		super.setFormat(Format.XML);
    		setResendable(true);
 	}
-	public XOMHandle(Document content) {
+	/**
+	 * Provides a handle on XML content as a dom4j document structure.
+	 * @param content	the XML document.
+	 */
+	public DOM4JHandle(Document content) {
 		this();
     	set(content);
 	}
 
-	public Builder getBuilder() {
-		if (builder == null)
-			builder = makeBuilder();
-		return builder;
+	/**
+	 * Returns the dom4j reader for XML content.
+	 * @return	the dom4j reader.
+	 */
+	public SAXReader getReader() {
+		if (reader == null)
+			reader = makeReader();
+
+		return reader;
 	}
-	public void setBuilder(Builder builder) {
-		this.builder = builder;
+	/**
+	 * Specifies a dom4j reader for XML content.
+	 * @param reader	the dom4j reader.
+	 */
+	public void setReader(SAXReader reader) {
+		this.reader = reader;
 	}
-	protected Builder makeBuilder() {
-		return new Builder(false);
+	protected SAXReader makeReader() {
+		SAXReader reader = new SAXReader();
+		reader.setValidation(false);
+		return reader;
 	}
 
-	protected Serializer makeSerializer(OutputStream out) throws UnsupportedEncodingException {
-		return new Serializer(out, "UTF-8");
+	/**
+	 * Returns the dom4j output format for serializing XML content.
+	 * @return	the output format.
+	 */
+	public OutputFormat getOutputFormat() {
+		return outputFormat;
+	}
+	/**
+	 * Specifies the dom4j output format for serializing XML content.
+	 * @param outputFormat	the output format.
+	 */
+	public void setOutputFormat(OutputFormat outputFormat) {
+		this.outputFormat = outputFormat;
 	}
 
+	/**
+	 * Returns the XML document structure.
+	 * @return	the XML document.
+	 */
 	public Document get() {
 		return content;
 	}
+	/**
+	 * Assigns an XML document structure as the content.
+	 * @param content	the XML document.
+	 */
     public void set(Document content) {
     	this.content = content;
     }
-    public XOMHandle with(Document content) {
+	/**
+	 * Assigns an XML document structure as the content and returns the handle.
+	 * @param content	the XML document.
+	 * @return	the handle on the XML document.
+	 */
+    public DOM4JHandle with(Document content) {
     	set(content);
     	return this;
     }
 
+	/**
+	 * Restricts the format to XML.
+	 */
+	@Override
 	public void setFormat(Format format) {
 		if (format != Format.XML)
-			throw new IllegalArgumentException("XOMHandle supports the XML format only");
+			throw new IllegalArgumentException("JDOMHandle supports the XML format only");
 	}
 
 	@Override
@@ -114,6 +164,10 @@ public class XOMHandle
 			throw new MarkLogicIOException(e);
 		}
 	}
+
+	/**
+	 * Returns the XML document as a string.
+	 */
 	@Override
 	public String toString() {
 		try {
@@ -133,14 +187,12 @@ public class XOMHandle
 			return;
 
 		try {
-			this.content = getBuilder().build(
+			this.content = getReader().read(
 					new InputStreamReader(content, "UTF-8")
 					);
-		} catch (ValidityException e) {
-			throw new MarkLogicIOException(e);
-		} catch (ParsingException e) {
-			throw new MarkLogicIOException(e);
 		} catch (IOException e) {
+			throw new MarkLogicIOException(e);
+		} catch (DocumentException e) {
 			throw new MarkLogicIOException(e);
 		}
 	}
@@ -155,7 +207,13 @@ public class XOMHandle
 	}
 	@Override
 	public void write(OutputStream out) throws IOException {
-		makeSerializer(out).write(content);
+		Writer writer = new OutputStreamWriter(out, "UTF-8");
+		OutputFormat outputFormat = getOutputFormat();
+		if (outputFormat != null) {
+			new XMLWriter(writer, outputFormat).write(content);
+		} else {
+			new XMLWriter(writer).write(content);
+		}
+		writer.flush();
 	}
-
 }

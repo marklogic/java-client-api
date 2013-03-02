@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.example.handle;
+package com.marklogic.client.extra.xom;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -21,71 +21,105 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import nu.xom.Builder;
+import nu.xom.Document;
+import nu.xom.ParsingException;
+import nu.xom.Serializer;
+import nu.xom.ValidityException;
+
 import com.marklogic.client.io.Format;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
- * A JacksonHandle represents JSON content as a Jackson JsonNode for reading or
- * writing.
- * 
+ * A XOM Handle represents XML content as a XOM document for reading or writing.
+ * You must install the XOM library to use this class.
  */
-public class JacksonHandle
-		extends BaseHandle<InputStream, OutputStreamSender>
-		implements OutputStreamSender, BufferableHandle,
-			JSONReadHandle, JSONWriteHandle,
-			StructureReadHandle, StructureWriteHandle
+public class XOMHandle
+	extends BaseHandle<InputStream, OutputStreamSender>
+    implements OutputStreamSender, BufferableHandle,
+    	XMLReadHandle, XMLWriteHandle,
+    	StructureReadHandle, StructureWriteHandle
 {
-	private JsonNode content;
-	private ObjectMapper mapper;
+	private Document content;
+	private Builder  builder;
 
-	public JacksonHandle() {
+	/**
+	 * Zero-argument constructor.
+	 */
+	public XOMHandle() {
 		super();
-		super.setFormat(Format.JSON);
+		super.setFormat(Format.XML);
    		setResendable(true);
 	}
-
-	public JacksonHandle(JsonNode content) {
+	/**
+	 * Provides a handle on XML content as a XOM document structure.
+	 * @param content	the XML document.
+	 */
+	public XOMHandle(Document content) {
 		this();
-		set(content);
+    	set(content);
 	}
 
-	public ObjectMapper getMapper() {
-		if (mapper == null)
-			mapper = new ObjectMapper();
-		return mapper;
+	/**
+	 * Returns the XOM structure builder for XML content.
+	 * @return	the XOM builder.
+	 */
+	public Builder getBuilder() {
+		if (builder == null)
+			builder = makeBuilder();
+		return builder;
+	}
+	/**
+	 * Specifies a XOM structure builder for XML content.
+	 * @param builder	the XOM builder.
+	 */
+	public void setBuilder(Builder builder) {
+		this.builder = builder;
+	}
+	protected Builder makeBuilder() {
+		return new Builder(false);
 	}
 
-	public JsonNode get() {
+	/**
+	 * Returns the XML document structure.
+	 * @return	the XML document.
+	 */
+	public Document get() {
 		return content;
 	}
+	/**
+	 * Assigns an XML document structure as the content.
+	 * @param content	the XML document.
+	 */
+    public void set(Document content) {
+    	this.content = content;
+    }
+	/**
+	 * Assigns an XML document structure as the content and returns the handle.
+	 * @param content	the XML document.
+	 * @return	the handle on the XML document.
+	 */
+    public XOMHandle with(Document content) {
+    	set(content);
+    	return this;
+    }
 
-	public void set(JsonNode content) {
-		this.content = content;
-	}
-
-	public JacksonHandle with(JsonNode content) {
-		set(content);
-		return this;
-	}
-
+	/**
+	 * Restricts the format to XML.
+	 */
+	@Override
 	public void setFormat(Format format) {
-		if (format != Format.JSON)
-			throw new IllegalArgumentException(
-					"JacksonHandle supports the JSON format only");
+		if (format != Format.XML)
+			throw new IllegalArgumentException("XOMHandle supports the XML format only");
 	}
 
 	@Override
@@ -109,6 +143,10 @@ public class JacksonHandle
 			throw new MarkLogicIOException(e);
 		}
 	}
+
+	/**
+	 * Returns the XML document as a string.
+	 */
 	@Override
 	public String toString() {
 		try {
@@ -128,27 +166,31 @@ public class JacksonHandle
 			return;
 
 		try {
-			this.content = getMapper().readValue(
-					new InputStreamReader(content, "UTF-8"), JsonNode.class
+			this.content = getBuilder().build(
+					new InputStreamReader(content, "UTF-8")
 					);
-		} catch (JsonParseException e) {
+		} catch (ValidityException e) {
 			throw new MarkLogicIOException(e);
-		} catch (JsonMappingException e) {
+		} catch (ParsingException e) {
 			throw new MarkLogicIOException(e);
 		} catch (IOException e) {
 			throw new MarkLogicIOException(e);
 		}
-
 	}
+
 	@Override
 	protected OutputStreamSender sendContent() {
 		if (content == null) {
 			throw new IllegalStateException("No document to write");
 		}
+
 		return this;
 	}
 	@Override
 	public void write(OutputStream out) throws IOException {
-		getMapper().writeValue(new OutputStreamWriter(out, "UTF-8"), content);
+		makeSerializer(out).write(content);
+	}
+	protected Serializer makeSerializer(OutputStream out) throws UnsupportedEncodingException {
+		return new Serializer(out, "UTF-8");
 	}
 }

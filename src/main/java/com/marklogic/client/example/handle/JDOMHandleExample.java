@@ -28,6 +28,7 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
+import com.marklogic.client.extra.jdom.JDOMHandle;
 
 /**
  * JDOMHandleExample illustrates writing and reading content as a JDOM structure

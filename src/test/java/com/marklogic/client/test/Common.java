@@ -46,8 +46,8 @@ public class Common {
 	final public static String HOST     = "localhost";
 	final public static int    PORT     = 8012;
 
-	static DatabaseClient client;
-	static void connect() {
+	public static DatabaseClient client;
+	public static void connect() {
 		if (client != null) {
 			client.release();
 			client = null;
@@ -55,10 +55,10 @@ public class Common {
 		client = newClient();
 	}
 
-	static void connectAdmin() {
+	public static void connectAdmin() {
 		client = newAdminClient();
 	}
-	static DatabaseClient newClient() {
+	public static DatabaseClient newClient() {
 		return DatabaseClientFactory.newClient(
 				Common.HOST, Common.PORT, Common.USERNAME, Common.PASSWORD, Authentication.DIGEST
 				);
@@ -68,11 +68,11 @@ public class Common {
 				Common.HOST, Common.PORT, Common.ADMIN_USERNAME, Common.ADMIN_PASSWORD, Authentication.DIGEST
 				);
 	}
-	static void release() {
+	public static void release() {
 		client = null;
 	}
 
-	static byte[] streamToBytes(InputStream is) throws IOException {
+	public static byte[] streamToBytes(InputStream is) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
 		byte[] b = new byte[1000];
 		int len = 0;
@@ -81,7 +81,7 @@ public class Common {
 		}
 		return baos.toByteArray();
 	}
-	static String readerToString(Reader r) throws IOException {
+	public static String readerToString(Reader r) throws IOException {
 		StringWriter w = new StringWriter(); 
 		char[] cbuf = new char[1000];
 		int len = 0;
@@ -97,13 +97,13 @@ public class Common {
 	public static String testFileToString(String filename) throws IOException {
 		return testFileToString(filename, null);
 	}
-	static String testFileToString(String filename, String encoding) throws IOException {
+	public static String testFileToString(String filename, String encoding) throws IOException {
 		return readerToString(testFileToReader(filename, encoding));
 	}
-	static Reader testFileToReader(String filename) {
+	public static Reader testFileToReader(String filename) {
 		return testFileToReader(filename, null);
 	}
-	static Reader testFileToReader(String filename, String encoding) {
+	public static Reader testFileToReader(String filename, String encoding) {
 		try {
 			return (encoding != null) ?
 					new InputStreamReader(testFileToStream(filename), encoding) :
@@ -112,10 +112,10 @@ public class Common {
 			throw new RuntimeException(e);
 		}
 	}
-	static InputStream testFileToStream(String filename) {
+	public static InputStream testFileToStream(String filename) {
 		return ResourceExtensionsTest.class.getClassLoader().getResourceAsStream(filename);
 	}
-	static String testDocumentToString(Document document) {
+	public static String testDocumentToString(Document document) {
 		try {
 			return ((DOMImplementationLS) DocumentBuilderFactory
 					.newInstance()
@@ -130,7 +130,7 @@ public class Common {
 			throw new RuntimeException(e);
 		}
 	}
-	static Document testStringToDocument(String document) {
+	public static Document testStringToDocument(String document) {
 		try {
 			return DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
 					new InputSource(new StringReader(document)));

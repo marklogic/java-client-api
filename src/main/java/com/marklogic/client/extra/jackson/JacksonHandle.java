@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.example.handle;
+package com.marklogic.client.extra.jackson;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -23,83 +23,93 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.SAXReader;
-import org.dom4j.io.XMLWriter;
-
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.BufferableHandle;
+import com.marklogic.client.io.marker.JSONReadHandle;
+import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
- * A DOM4JHandle represents XML content as a dom4j document for reading or writing.
+ * A JacksonHandle represents JSON content as a Jackson JsonNode for reading or
+ * writing.  You must install the Jackson library to use this class.
  */
-public class DOM4JHandle
-	extends BaseHandle<InputStream, OutputStreamSender>
-	implements OutputStreamSender, BufferableHandle,
-    	XMLReadHandle, XMLWriteHandle,
-    	StructureReadHandle, StructureWriteHandle
+public class JacksonHandle
+		extends BaseHandle<InputStream, OutputStreamSender>
+		implements OutputStreamSender, BufferableHandle,
+			JSONReadHandle, JSONWriteHandle,
+			StructureReadHandle, StructureWriteHandle
 {
-	private SAXReader    reader;
-	private OutputFormat outputFormat;
-	private Document     content;
+	private JsonNode content;
+	private ObjectMapper mapper;
 
-	public DOM4JHandle() {
+	/**
+	 * Zero-argument constructor.
+	 */
+	public JacksonHandle() {
 		super();
-		super.setFormat(Format.XML);
+		super.setFormat(Format.JSON);
    		setResendable(true);
 	}
-	public DOM4JHandle(Document content) {
+	/**
+	 * Provides a handle on JSON content as a Jackson tree.
+	 * @param content	the JSON root node of the tree.
+	 */
+	public JacksonHandle(JsonNode content) {
 		this();
-    	set(content);
+		set(content);
 	}
 
-	public Document get() {
+	/**
+	 * Returns the mapper used to construct node objects from JSON.
+	 * @return	the JSON mapper.
+	 */
+	public ObjectMapper getMapper() {
+		if (mapper == null)
+			mapper = new ObjectMapper();
+		return mapper;
+	}
+
+	/**
+	 * Returns the root node of the JSON tree.
+	 * @return	the JSON root node.
+	 */
+	public JsonNode get() {
 		return content;
 	}
-    public void set(Document content) {
-    	this.content = content;
-    }
-    public DOM4JHandle with(Document content) {
-    	set(content);
-    	return this;
-    }
+	/**
+	 * Assigns a JSON tree as the content.
+	 * @param content	the JSON root node.
+	 */
+	public void set(JsonNode content) {
+		this.content = content;
+	}
+	/**
+	 * Assigns a JSON tree as the content and returns the handle.
+	 * @param content	the JSON root node.
+	 * @return	the handle on the JSON tree.
+	 */
+	public JacksonHandle with(JsonNode content) {
+		set(content);
+		return this;
+	}
 
+	/**
+	 * Restricts the format to JSON.
+	 */
+	@Override
 	public void setFormat(Format format) {
-		if (format != Format.XML)
-			throw new IllegalArgumentException("JDOMHandle supports the XML format only");
-	}
-
-	public SAXReader getReader() {
-		if (reader == null)
-			reader = makeReader();
-
-		return reader;
-	}
-	public void setReader(SAXReader reader) {
-		this.reader = reader;
-	}
-	protected SAXReader makeReader() {
-		SAXReader reader = new SAXReader();
-		reader.setValidation(false);
-		return reader;
-	}
-
-	public OutputFormat getOutputFormat() {
-		return outputFormat;
-	}
-	public void setOutputFormat(OutputFormat outputFormat) {
-		this.outputFormat = outputFormat;
+		if (format != Format.JSON)
+			throw new IllegalArgumentException(
+					"JacksonHandle supports the JSON format only");
 	}
 
 	@Override
@@ -123,6 +133,10 @@ public class DOM4JHandle
 			throw new MarkLogicIOException(e);
 		}
 	}
+
+	/**
+	 * Returns the JSON tree as a string.
+	 */
 	@Override
 	public String toString() {
 		try {
@@ -142,34 +156,27 @@ public class DOM4JHandle
 			return;
 
 		try {
-			this.content = getReader().read(
-					new InputStreamReader(content, "UTF-8")
+			this.content = getMapper().readValue(
+					new InputStreamReader(content, "UTF-8"), JsonNode.class
 					);
+		} catch (JsonParseException e) {
+			throw new MarkLogicIOException(e);
+		} catch (JsonMappingException e) {
+			throw new MarkLogicIOException(e);
 		} catch (IOException e) {
 			throw new MarkLogicIOException(e);
-		} catch (DocumentException e) {
-			throw new MarkLogicIOException(e);
 		}
-	}
 
+	}
 	@Override
 	protected OutputStreamSender sendContent() {
 		if (content == null) {
 			throw new IllegalStateException("No document to write");
 		}
-
 		return this;
 	}
 	@Override
 	public void write(OutputStream out) throws IOException {
-		Writer writer = new OutputStreamWriter(out, "UTF-8");
-		OutputFormat outputFormat = getOutputFormat();
-		if (outputFormat != null) {
-			new XMLWriter(writer, outputFormat).write(content);
-		} else {
-			new XMLWriter(writer).write(content);
-		}
-		writer.flush();
+		getMapper().writeValue(new OutputStreamWriter(out, "UTF-8"), content);
 	}
-
 }
