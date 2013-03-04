@@ -40,6 +40,7 @@ import com.marklogic.client.alerting.RuleManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.FileHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
@@ -205,6 +206,40 @@ public class AlertingTest {
 				
 	}
 	
+	@Test
+	public void testJSONRuleDefinitions() throws SAXException, IOException {
+		File ruleFile = new File("src/test/resources/rule1.json");
+		FileHandle ruleHandle = new FileHandle(ruleFile);
+		ruleHandle.setFormat(Format.JSON);
+		ruleManager.writeRule("javatestrule", ruleHandle);
+		
+		assertTrue(ruleManager.exists("javatestrule"));
+		RuleDefinition def = ruleManager.readRule("javatestrule", new RuleDefinition());
+		assertEquals("javatestrule", def.getName());
+		assertXMLEqual(
+				"Search element round-tripped - structured query and options",
+                "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">"+
+                "<search:qtext>favorited:true</search:qtext>"+
+                "<search:options xmlns:search=\"http://marklogic.com/appservices/search\">"+
+                "<search:constraint name=\"favorited\">"+
+                "<search:value>"+
+                "<search:element ns=\"\" name=\"favorited\" />"+
+                "</search:value>"+
+                "</search:constraint>"+
+                "</search:options>"+
+                "</search:search>",
+				new String(def.exportQueryDefinition(new BytesHandle()).get()));
+		
+		
+		BytesHandle bHandle = ruleManager.readRule("javatestrule", new BytesHandle().withFormat(Format.JSON));
+		assertEquals("{\"rule\":{\"name\":\"javatestrule\", \"description\":\"rule to demonstrate REST alerting\", \"search\":{\"qtext\":\"favorited:true\", \"options\":{\"constraint\":[{\"name\":\"favorited\", \"value\":{\"element\":{\"ns\":\"\", \"name\":\"favorited\"}}}]}}, \"rule-metadata\":null}}",
+				new String(bHandle.get()));
+		
+		ruleManager.delete("javatestrule");
+		
+				
+		
+	}
 	
 	private static void setupMatchRules() {
 		RuleDefinition definition = new RuleDefinition("favorites",

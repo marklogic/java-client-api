@@ -33,7 +33,7 @@ import com.marklogic.client.io.marker.RuleListReadHandle;
 
 public class RuleDefinitionList
 extends BaseHandle<InputStream,OperationNotSupported>
-implements RuleListReadHandle {
+implements Iterable<RuleDefinition>, RuleListReadHandle {
 	
 	
 	public List<RuleDefinition> rules;
