@@ -162,6 +162,21 @@ public class StringSearchTest {
         assertTrue(summaries.length > 0);
     }
 
+    @Test
+    public void testFailedSearch() throws IOException {
+        QueryManager queryMgr = Common.client.newQueryManager();
+        queryMgr.setView(QueryView.RESULTS);
+
+        StringQueryDefinition qdef = queryMgr.newStringDefinition();
+        qdef.setCriteria("criteriaThatShouldNotMatchAnyDocument");
+
+        SearchHandle results = queryMgr.search(qdef, new SearchHandle());
+        assertNotNull(results);
+
+        MatchDocumentSummary[] summaries = results.getMatchResults();
+        assertTrue(summaries == null || summaries.length == 0);
+    }
+
     private String writeOptions() {
         String optionsName = "facets";
 

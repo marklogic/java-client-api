@@ -20,6 +20,7 @@ import javax.xml.namespace.QName;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TuplesReadHandle;
 import com.marklogic.client.io.marker.ValuesListReadHandle;
 import com.marklogic.client.io.marker.ValuesReadHandle;
@@ -376,4 +377,34 @@ public interface QueryManager {
      *  Stops debugging client requests.
      */
     public void stopLogging();
+
+    /**
+     * Defines a combined query from a JSON or XML representation.
+     * @param handle a handle for a JSON or XML combined query.
+     * @return a QueryDefinition for use of the combined query.
+     */
+	public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle);
+
+    /**
+     * Defines a combined query from a JSON or XML representation.
+     * @param handle a handle for a JSON or XML combined query.
+     * @param optionsName The name of a persisted query options configuration
+     * @return a QueryDefinition for use of the combined query.
+     */
+	public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle, String optionsName);
+
+    /**
+     * Defines a structured query from a JSON or XML representation.
+     * @param handle a handle for a JSON or XML structured query.
+     * @return a QueryDefinition for use of the structured query.
+     */
+	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle);
+
+    /**
+     * Defines a structured query from a JSON or XML representation.
+     * @param handle a handle for a JSON or XML structured query.
+     * @param optionsName The name of a persisted query options configuration
+     * @return a QueryDefinition for use of the structured query.
+     */
+	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle, String optionsName);
 }

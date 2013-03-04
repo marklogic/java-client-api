@@ -1,0 +1,12 @@
+<tweet id="second">
+    <favorited>
+        true
+    </favorited>
+    <text>
+        magnificently true statements about #hottopic
+    </text>
+    <id>
+        second
+    </id>
+</tweet>
+

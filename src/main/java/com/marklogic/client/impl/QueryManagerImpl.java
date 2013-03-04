@@ -24,6 +24,7 @@ import com.marklogic.client.io.TuplesHandle;
 import com.marklogic.client.io.ValuesHandle;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TuplesReadHandle;
 import com.marklogic.client.io.marker.ValuesListReadHandle;
 import com.marklogic.client.io.marker.ValuesReadHandle;
@@ -34,6 +35,8 @@ import com.marklogic.client.query.KeyValueQueryDefinition;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
+import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.ValuesDefinition;
@@ -174,7 +177,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         String mimetype = searchFormat.getDefaultMimetype();
 
         String tid = transaction == null ? null : transaction.getTransactionId();
-        searchBase.receiveContent(services.search(searchBase.receiveAs(), querydef, mimetype, start, pageLen, view, tid));
+        searchBase.receiveContent(services.search(requestLogger, searchBase.receiveAs(), querydef, mimetype, start, pageLen, view, tid));
         return searchHandle;
     }
 
@@ -186,7 +189,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     @Override
     public void delete(DeleteQueryDefinition querydef, Transaction transaction) {
         String tid = transaction == null ? null : transaction.getTransactionId();
-        services.deleteSearch(querydef, tid);
+        services.deleteSearch(requestLogger, querydef, tid);
     }
 
     @Override
@@ -334,4 +337,24 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
             return null;
         }
     }
+
+    @Override
+	public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle) {
+		return new RawQueryDefinitionImpl.Combined(handle);
+	}
+	
+	@Override
+	public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle, String optionsName) {
+		return new RawQueryDefinitionImpl.Combined(handle, optionsName);
+	}
+	
+	@Override
+	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle) {
+		return new RawQueryDefinitionImpl.Structured(handle);
+	}
+	
+	@Override
+	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle, String optionsName) {
+		return new RawQueryDefinitionImpl.Structured(handle, optionsName);
+	}
 }

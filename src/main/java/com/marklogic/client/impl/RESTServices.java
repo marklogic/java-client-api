@@ -64,11 +64,11 @@ public interface RESTServices {
 		throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException;
 
-    public <T> T search(Class <T> as, QueryDefinition queryDef, String mimetype, long start,
+    public <T> T search(RequestLogger logger, Class <T> as, QueryDefinition queryDef, String mimetype, long start,
             long len, QueryView view, String transactionId)
     	throws ForbiddenUserException, FailedRequestException;
 
-    public void deleteSearch(DeleteQueryDefinition queryDef, String transactionId)
+    public void deleteSearch(RequestLogger logger, DeleteQueryDefinition queryDef, String transactionId)
             throws ForbiddenUserException, FailedRequestException;
 
     public String openTransaction(String name, int timeLimit)

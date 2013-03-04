@@ -66,12 +66,14 @@ import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.ElementLocator;
 import com.marklogic.client.query.KeyLocator;
 import com.marklogic.client.query.KeyValueQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
+import com.marklogic.client.query.RawQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.ValueLocator;
@@ -921,7 +923,7 @@ public class JerseyServices implements RESTServices {
 		}
 		if (status != ClientResponse.Status.CREATED
 				&& status != ClientResponse.Status.NO_CONTENT)
-			throw new FailedRequestException("write failed: "
+			throw new FailedRequestException("write failed: "+ status.getStatusCode() + " "
 					+ status.getReasonPhrase(), extractErrorFields(response));
 
 		response.close();
@@ -1196,7 +1198,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public <T> T search(Class<T> as, QueryDefinition queryDef, String mimetype,
+	public <T> T search(RequestLogger reqlog, Class<T> as, QueryDefinition queryDef, String mimetype,
 			long start, long len, QueryView view, String transactionId) 
 	throws ForbiddenUserException, FailedRequestException {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
@@ -1221,8 +1223,9 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 
-		if (queryDef.getDirectory() != null) {
-			addEncodedParam(params, "directory", queryDef.getDirectory());
+		String directory = queryDef.getDirectory();
+		if (directory != null) {
+			addEncodedParam(params, "directory", directory);
 		}
 
 		addEncodedParam(params, "collection", queryDef.getCollections());
@@ -1238,68 +1241,108 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = null;
 		String structure = null;
-		if (queryDef instanceof StringQueryDefinition) {
-           	String text = ((StringQueryDefinition) queryDef).getCriteria();
-           	if (logger.isDebugEnabled())
-           		logger.debug("Searching for {} in transaction {}", text,
-           				transactionId);
+		StructureWriteHandle handle = null;
 
-           	if (text != null) {
-           		addEncodedParam(params, "q", text);
-           	}
+		if (queryDef instanceof RawQueryDefinition) {
+			if (logger.isDebugEnabled())
+				logger.debug("Raw search in transaction {}", transactionId);
 
-           	builder = connection.path("search").queryParams(params).accept(mimetype);
+			handle = ((RawQueryDefinition) queryDef).getHandle();
+			
+			HandleImplementation baseHandle = 
+				HandleAccessor.checkHandle(handle, "search");
+
+			Format payloadFormat = baseHandle.getFormat();
+			if (payloadFormat == Format.UNKNOWN)
+				payloadFormat = null;
+			else if (payloadFormat != Format.XML && payloadFormat != Format.JSON)
+				throw new IllegalArgumentException(
+						"Cannot perform raw search for "+payloadFormat.name());
+
+			String payloadMimetype = baseHandle.getMimetype();
+			if (payloadFormat != null) {
+				if (payloadMimetype == null)
+					payloadMimetype = payloadFormat.getDefaultMimetype();
+				params.add("format", payloadFormat.toString().toLowerCase());
+			} else if (payloadMimetype == null) {
+				payloadMimetype = "application/xml";
+			}
+
+			String path = "search";
+
+			WebResource resource = connection.path(path).queryParams(params);
+			builder = (payloadMimetype != null) ?
+					resource.type(payloadMimetype).accept(mimetype) :
+					resource.accept(mimetype);
+		} else if (queryDef instanceof StringQueryDefinition) {
+			String text = ((StringQueryDefinition) queryDef).getCriteria();
+			if (logger.isDebugEnabled())
+				logger.debug("Searching for {} in transaction {}", text,
+						transactionId);
+
+			if (text != null) {
+				addEncodedParam(params, "q", text);
+			}
+
+			builder = connection.path("search").queryParams(params)
+				.type("application/xml").accept(mimetype);
 		} else if (queryDef instanceof KeyValueQueryDefinition) {
-           	if (logger.isDebugEnabled())
-           		logger.debug("Searching for keys/values in transaction {}",
-           				transactionId);
+			if (logger.isDebugEnabled())
+				logger.debug("Searching for keys/values in transaction {}",
+						transactionId);
 
-           	Map<ValueLocator, String> pairs = ((KeyValueQueryDefinition) queryDef);
-           	for (ValueLocator loc : pairs.keySet()) {
-           		if (loc instanceof KeyLocator) {
-           			addEncodedParam(params, "key", ((KeyLocator) loc).getKey());
-           		} else {
-           			ElementLocator eloc = (ElementLocator) loc;
-           			params.add("element", eloc.getElement().toString());
-           			if (eloc.getAttribute() != null) {
-           				params.add("attribute", eloc.getAttribute().toString());
-           			}
-           		}
-           		addEncodedParam(params, "value", pairs.get(loc));
-           	}
+			Map<ValueLocator, String> pairs = ((KeyValueQueryDefinition) queryDef);
+			for (ValueLocator loc : pairs.keySet()) {
+				if (loc instanceof KeyLocator) {
+					addEncodedParam(params, "key", ((KeyLocator) loc).getKey());
+				} else {
+					ElementLocator eloc = (ElementLocator) loc;
+					params.add("element", eloc.getElement().toString());
+					if (eloc.getAttribute() != null) {
+						params.add("attribute", eloc.getAttribute().toString());
+					}
+				}
+				addEncodedParam(params, "value", pairs.get(loc));
+			}
 
-           	builder = connection.path("keyvalue").queryParams(params).accept(mimetype);
+			builder = connection.path("keyvalue").queryParams(params)
+					.accept(mimetype);
 		} else if (queryDef instanceof StructuredQueryDefinition) {
 			structure = ((StructuredQueryDefinition) queryDef).serialize();
 
-           	if (logger.isDebugEnabled())
-           		logger.debug("Searching for structure {} in transaction {}", structure,
-           				transactionId);
+			if (logger.isDebugEnabled())
+				logger.debug("Searching for structure {} in transaction {}",
+						structure, transactionId);
 
-           	builder = connection.path("search").queryParams(params).type("application/xml").accept(mimetype);
-        } else if (queryDef instanceof DeleteQueryDefinition) {
-        	if (logger.isDebugEnabled())
-        		logger.debug("Searching for deletes in transaction {}", transactionId);
+			builder = connection.path("search").queryParams(params)
+					.type("application/xml").accept(mimetype);
+		} else if (queryDef instanceof DeleteQueryDefinition) {
+			if (logger.isDebugEnabled())
+				logger.debug("Searching for deletes in transaction {}",
+						transactionId);
 
-            	builder = connection.path("search").queryParams(params).accept(mimetype);
-        } else {
+			builder = connection.path("search").queryParams(params)
+					.accept(mimetype);
+		} else {
 			throw new UnsupportedOperationException("Cannot search with "
 					+ queryDef.getClass().getName());
 		}
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
 			if (queryDef instanceof StringQueryDefinition) {
-	            response = builder.get(ClientResponse.class);
+				response = doGet(builder);
 			} else if (queryDef instanceof KeyValueQueryDefinition) {
-	            response = builder.get(ClientResponse.class);
+				response = doGet(builder);
 			} else if (queryDef instanceof StructuredQueryDefinition) {
-				response = builder.post(ClientResponse.class, structure);
-	        } else if (queryDef instanceof DeleteQueryDefinition) {
-				response = builder.get(ClientResponse.class);
-	        } else {
+				response = doPost(reqlog, builder, structure, true);
+			} else if (queryDef instanceof DeleteQueryDefinition) {
+				response = doGet(builder);
+			} else if (queryDef instanceof RawQueryDefinition) {
+				response = doPost(reqlog, builder, handle, true);
+			} else {
 				throw new UnsupportedOperationException("Cannot search with "
 						+ queryDef.getClass().getName());
 			}
@@ -1309,15 +1352,18 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to search",
@@ -1332,55 +1378,68 @@ public class JerseyServices implements RESTServices {
 		if (as != InputStream.class && as != Reader.class)
 			response.close();
 
+		logRequest(
+				reqlog,
+				"searched starting at %s with length %s in %s transaction with %s mime type",
+				start, len, transactionId, mimetype);
+		
 		return entity;
 	}
 
     @Override
-    public void deleteSearch(DeleteQueryDefinition queryDef, String transactionId) throws ForbiddenUserException,
+    public void deleteSearch(RequestLogger reqlog, DeleteQueryDefinition queryDef, String transactionId) throws ForbiddenUserException,
             FailedRequestException {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
-        if (queryDef.getDirectory() != null) {
-            addEncodedParam(params, "directory", queryDef.getDirectory());
-        }
+		if (queryDef.getDirectory() != null) {
+			addEncodedParam(params, "directory", queryDef.getDirectory());
+		}
 
-        addEncodedParam(params, "collection", queryDef.getCollections());
+		addEncodedParam(params, "collection", queryDef.getCollections());
 
-        if (transactionId != null) {
-            params.add("txid", transactionId);
-        }
+		if (transactionId != null) {
+			params.add("txid", transactionId);
+		}
 
 		WebResource builder = connection.path("search").queryParams(params);
 
-		ClientResponse        response = null;
-		ClientResponse.Status status   = null;
+		ClientResponse response = null;
+		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
-	        response = builder.delete(ClientResponse.class);
-			status   = response.getClientResponseStatus();
+			response = builder.delete(ClientResponse.class);
+			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
+					|| !"1".equals(response.getHeaders()
+							.getFirst("Retry-After")))
 				break;
 			try {
 				Thread.sleep(delayMillis);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 		}
 		if (retry >= maxRetries)
-			throw new FailedRequestException("Service unavailable and retries exhausted");
+			throw new FailedRequestException(
+					"Service unavailable and retries exhausted");
 
-        if (status == ClientResponse.Status.FORBIDDEN) {
-            throw new ForbiddenUserException("User is not allowed to delete",
-                    extractErrorFields(response));
-        }
+		if (status == ClientResponse.Status.FORBIDDEN) {
+			throw new ForbiddenUserException("User is not allowed to delete",
+					extractErrorFields(response));
+		}
 
-        if (status != ClientResponse.Status.NO_CONTENT) {
-            throw new FailedRequestException("delete failed: "
-                    + status.getReasonPhrase(), extractErrorFields(response));
-        }
+		if (status != ClientResponse.Status.NO_CONTENT) {
+			throw new FailedRequestException("delete failed: "
+					+ status.getReasonPhrase(), extractErrorFields(response));
+		}
+		
+		logRequest(
+				reqlog,
+				"deleted search results in %s transaction",
+				transactionId);
     }
 
     @Override
