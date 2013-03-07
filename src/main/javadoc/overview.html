@@ -105,17 +105,15 @@ docMgr.write(docId, handle);
 	You can read or write document metadata in the same request as document
 	content or separately.
 </p>
-<h2>Working with the Query Options Manager</h2>
+<h2>Working with Query Options</h2>
 <p>
     To prepare a database for search applications, you will have created
-    indexes on the fields and elements of documents.  A QueryOptionsHandle
-    object provides hooks for configuring search and query applications' use of
-    indexes.  Use {@link com.marklogic.client.admin.QueryOptionsManager} to write,
-    read, and delete query options.   Use {@link
-    com.marklogic.client.io.QueryOptionsHandle} to manipulate QueryOptions
-    configurations.  Use {@link
-    com.marklogic.client.admin.config.QueryOptionsBuilder} to build new
-    configurations or add to existing ones.
+    indexes on the fields and elements of documents.  Query options
+    declare and configure the use of indexes for search and query
+    applications. You specify query options as a JSON or XML structure.
+    You use {@link com.marklogic.client.query.QueryOptionsManager} to
+    write query options in JSON or XML to the server or to read
+    query options back into the application.  
 </p>
 <p>
     The following example writes new query options named "shipments" with a
@@ -126,13 +124,16 @@ docMgr.write(docId, handle);
 <pre>
 QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
 
-QueryOptionsHandle handle = new QueryOptionsHandle();
-QueryOptionsBuilder builder = new QueryOptionsBuilder();
+String options =
+            "&lt;search:options&gt;"+
+                "&lt;search:constraint name=\"port\"&gt;"+
+                    "&lt;search:value&gt;"+
+                        "&lt;search:element name=\"port\" ns=\"\"/&gt;"+
+                    "&lt;/search:value&gt;"+
+                "&lt;/search:constraint&gt;"+
+            "&lt;/search:options&gt;";
 
-handle.withConstraints(
-	builder.constraint("port",
-		builder.value(
-			builder.elementTermIndex(new QName("port")))));
+StringHandle handle = new StringHandle(options);
 
 optionsMgr.writeOptions("shipments", handle);
 </pre>
