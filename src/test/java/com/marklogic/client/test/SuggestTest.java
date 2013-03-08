@@ -17,6 +17,10 @@ package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+
+import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -24,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.SuggestDefinition;
@@ -36,16 +42,32 @@ public class SuggestTest {
 	private static final Logger logger = (Logger) LoggerFactory
 			.getLogger(SuggestTest.class);
 
-	@BeforeClass
-	public static void beforeClass() {
-		Common.connectAdmin();
-		writeOptions();
-	}
-
 	@AfterClass
-	public static void afterClass() {
+	public static void teardown() {
+		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+		docMgr.delete("/sample/suggestion.xml");
+		docMgr.delete("/sample2/suggestion.xml");
+		
 		Common.release();
 	}
+
+	@BeforeClass
+	public static void setup() throws FileNotFoundException {
+		XMLUnit.setIgnoreWhitespace(true);
+		Common.connectAdmin();
+		writeOptions();
+		
+		Common.client.newServerConfigManager().setServerRequestLogging(true);
+		Common.release();
+		Common.connect();
+
+		// write three files for alert tests.
+		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+		docMgr.write("/sample/suggestion.xml", new StringHandle("<suggest><string>FINDME</string>Something I love to suggest is sugar with savory succulent limes.</suggest>"));
+		docMgr.write("/sample2/suggestion.xml", new StringHandle("<suggest>Something I hate to suggest is liver with lard.</suggest>"));
+	
+	}
+
 
 	// case one, zero definition
 	@Test
@@ -146,4 +168,6 @@ public class SuggestTest {
 
 		return optionsName;
 	}
+	
+	
 }
