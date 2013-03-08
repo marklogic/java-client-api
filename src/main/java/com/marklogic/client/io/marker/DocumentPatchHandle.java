@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 MarkLogic Corporation
+ * Copyright 2013 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 package com.marklogic.client.io.marker;
 
 /**
- * A Structure Write Handle can represent a data structure written to the database.
+ * A Document Patch Handle can represent a patch with changes
+ * to document metadata or structured content.
  */
-public interface StructureWriteHandle
-extends DocumentPatchHandle, DocumentMetadataWriteHandle, QueryOptionsWriteHandle, RuleWriteHandle
-{
+public interface DocumentPatchHandle
+extends AbstractWriteHandle {
 }
