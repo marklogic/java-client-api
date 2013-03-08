@@ -51,6 +51,7 @@ public class AllCookbookExamples {
  		DocumentReadTransform.run(     props );
  		DocumentWriteTransform.run(    props );
  		OptimisticLocking.run(         props );
+ 		RawClientAlert.run(            props );
  		ResourceExtension.run(         props );
 		// SSLClientCreator is not included in this list because it requires a change
 		//     to the REST server that invalidates all of the other examples.  See

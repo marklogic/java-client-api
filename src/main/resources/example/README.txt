@@ -35,6 +35,8 @@ The examples illustrate the following common tasks:
 
 *  ClientCreator              create a database client
 *  DocumentWrite              write document content to the database
+*  DocumentWriteServerURI     write document content to the database with an
+                              identifier assigned by the server
 *  DocumentRead               read document content from the database
 *  DocumentMetadataWrite      write document content and metadata
 *  DocumentMetadataRead       read document content and metadata
@@ -47,11 +49,10 @@ The examples illustrate the following common tasks:
 *  StringSearch               search with string criteria and saved options
 *  StructuredSearch           search with a criteria structure and saved
                               options
-*  StructuredSearch           search with a criteria structure and saved
-                              options
 *  RawCombinedSearch          search with a criteria structure and options
                               in the request
 *  MultiStatementTransaction  complete a transaction with several requests
+*  ServerResponseTransform    transform a search response on the server 
 *  DocumentReadTransform      transform content on the server while reading
 *  DocumentWriteTransform     transform content on the server while writing
 *  ResourcExtension           extend the Java API to execute other capabilities
