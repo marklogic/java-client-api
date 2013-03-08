@@ -27,6 +27,7 @@ import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
+import com.marklogic.client.io.marker.DocumentPatchHandle;
 
 /**
  * A Document Manager provides database operations on a document.
@@ -76,6 +77,13 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 	 * @return	a template for the document uri
 	 */
     public DocumentUriTemplate newDocumentUriTemplate(String extension);
+
+    /**
+     * Creates a builder for specifying changes to the metadata of a document.
+     * @param format	whether the patch specifies metadata with JSON or XML paths
+     * @return	the patch builder
+     */
+    public DocumentMetadataPatchBuilder newPatchBuilder(Format pathFormat);
 
     /**
      * Checks whether a document exists and gets its format and mimetype
@@ -608,6 +616,57 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 		throws ForbiddenUserException, FailedRequestException;
 
     /**
+     * Modifies the metadata or content of a document within an open database transaction on the server.
+     * Content can only be modified for JSON or XML documents.  When sending
+     * a raw JSON or XML patch, you must use the setMetadataCategories()
+     * method to specify whether the patch includes metadata.
+     * 
+     * To call patch(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param patch	a handle for writing the modification to the document metadata or content
+     */
+    public void patch(String docId, DocumentPatchHandle patch);
+    /**
+     * Modifies the metadata or content of a document within an open database transaction on the server.
+     * Content can only be modified for JSON or XML documents.  When sending
+     * a raw JSON or XML patch, you must use the setMetadataCategories()
+     * method to specify whether the patch includes metadata.
+     * 
+     * To call patch(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param patch	a handle for writing the modification to the document metadata or content
+     * @param transaction	a open transaction
+     */
+    public void patch(String docId, DocumentPatchHandle patch, Transaction transaction);
+    /**
+     * Modifies the metadata or content of a document.
+     * Content can only be modified for JSON or XML documents.  When sending
+     * a raw JSON or XML patch, you must use the setMetadataCategories()
+     * method to specify whether the patch includes metadata.
+     * 
+     * To call patch(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param patch	a handle for writing the modification to the document metadata or content
+     */
+    public void patch(DocumentDescriptor desc, DocumentPatchHandle patch);
+    /**
+     * Modifies the metadata or content of a document within an open database transaction on the server.
+     * Content can only be modified for JSON or XML documents.  When sending
+     * a raw JSON or XML patch, you must use the setMetadataCategories()
+     * method to specify whether the patch includes metadata.
+     * 
+     * To call patch(), an application must authenticate as rest-writer or rest-admin.
+     * 
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param patch	a handle for writing the modification to the document metadata or content
+     * @param transaction	a open transaction
+     */
+    public void patch(DocumentDescriptor desc, DocumentPatchHandle patch, Transaction transaction);
+
+    /**
      * Reads the document metadata from the database in the representation provided by the handle
      * 
      * To call readMetadata(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
@@ -681,19 +740,25 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
     public Format getContentFormat();
 
     /**
-     * Returns the categories of metadata to read or write
+     * Returns the categories of metadata to read, write, or patch.
      * 
-     * @return	the set of metadata categories for reading or writing
+     * @return	the set of metadata categories
      */
     public Set<Metadata> getMetadataCategories();
     /**
-     * Specifies the categories of metadata to read or write
+     * Specifies the categories of metadata to read, write, or patch.
+     * @param categories	the set of metadata categories
      */
     public void setMetadataCategories(Set<Metadata> categories);
     /**
-     * Specifies the categories of metadata to read or write
+     * Specifies the categories of metadata to read, write, or patch.
+     * @param categories	the set of metadata categories
      */
     public void setMetadataCategories(Metadata... categories);
+    /**
+     * Clears the metadata categories.
+     */
+    public void clearMetadataCategories();
 
     /**
      * Returns the transform for read requests that don't specify a transform

@@ -16,6 +16,7 @@
 package com.marklogic.client.impl;
 
 import com.marklogic.client.io.Format;
+import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.util.RequestParameters;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -31,9 +32,16 @@ public class JSONDocumentImpl
 		super(services,Format.JSON);
 	}
 
+	@Override
+    public DocumentPatchBuilder newPatchBuilder() {
+    	return new DocumentPatchBuilderImpl(Format.JSON);
+    }
+
+	@Override
 	public String getLanguage() {
 		return language;
 	}
+	@Override
 	public void setLanguage(String language) {
 		this.language = language;
 	}

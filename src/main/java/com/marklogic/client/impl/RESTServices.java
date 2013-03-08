@@ -34,6 +34,7 @@ import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
+import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
@@ -73,6 +74,11 @@ public interface RESTServices {
 			DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle)
 		throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException;
+
+	public void patchDocument(RequestLogger logger, DocumentDescriptor desc, String transactionId,
+			Set<Metadata> categories, DocumentPatchHandle patchHandle)
+		throws ResourceNotFoundException, ResourceNotResendableException,
+			ForbiddenUserException, FailedRequestException;
 
     public <T> T search(RequestLogger logger, Class <T> as, QueryDefinition queryDef, String mimetype, long start,
             long len, QueryView view, String transactionId)

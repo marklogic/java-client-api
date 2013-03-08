@@ -45,9 +45,17 @@ public interface XMLDocumentManager extends DocumentManager<XMLReadHandle, XMLWr
 	 */
     public DocumentRepair getDocumentRepair();
     /**
-	 * Specifies whether poorly formed XML documents written by the manager should be repaired on the server.
+	 * Specifies whether poorly formed XML documents written by the manager
+	 * should be repaired on the server.
 	 * 
      * @param policy	the repair policy for written documents
      */
     public void setDocumentRepair(DocumentRepair policy);
+
+    /**
+     * Creates a builder for specifying changes to the content and metadata
+     * of an XML document.
+     * @return	the patch builder
+     */
+    public DocumentPatchBuilder newPatchBuilder();
 }

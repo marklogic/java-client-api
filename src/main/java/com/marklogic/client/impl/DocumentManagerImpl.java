@@ -21,20 +21,23 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.document.DocumentDescriptor;
-import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.util.RequestParameters;
 import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.document.DocumentMetadataPatchBuilder;
+import com.marklogic.client.document.DocumentUriTemplate;
+import com.marklogic.client.document.ServerTransform;
+import com.marklogic.client.impl.DocumentMetadataPatchBuilderImpl.DocumentPatchHandleImpl;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
+import com.marklogic.client.io.marker.DocumentPatchHandle;
+import com.marklogic.client.util.RequestParameters;
 
 abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends AbstractWriteHandle>
     extends AbstractLoggingManager
@@ -80,15 +83,20 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     }
 	@Override
     public void setMetadataCategories(Set<Metadata> categories) {
-		processedMetadata.clear();
+		clearMetadataCategories();
 		processedMetadata.addAll(categories);
     }
 	@Override
     public void setMetadataCategories(Metadata... categories) {
-   		processedMetadata.clear();
+		clearMetadataCategories();
     	for (Metadata category: categories)
     		processedMetadata.add(category);
     }
+	@Override
+    public void clearMetadataCategories() {
+   		processedMetadata.clear();
+    }
+
 
 	@Override
 	public DocumentDescriptor exists(String uri) throws ForbiddenUserException, FailedRequestException {
@@ -453,6 +461,38 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 	}
 
 	@Override
+	public void patch(String uri, DocumentPatchHandle patch)
+	throws ForbiddenUserException, FailedRequestException {
+		patch(uri, patch, null);
+	}
+	@Override
+	public void patch(String uri, DocumentPatchHandle patch, Transaction transaction)
+	throws ForbiddenUserException, FailedRequestException {
+		patch(new DocumentDescriptorImpl(uri, true), patch, transaction);
+	}
+	@Override
+	public void patch(DocumentDescriptor desc, DocumentPatchHandle patch)
+	throws ForbiddenUserException, FailedRequestException {
+		patch(desc, patch, null);
+	}
+	@Override
+	public void patch(DocumentDescriptor desc, DocumentPatchHandle patch, Transaction transaction)
+	throws ForbiddenUserException, FailedRequestException {
+		if (logger.isInfoEnabled())
+			logger.info("Patching document");
+
+		services.patchDocument(
+				requestLogger,
+				desc,
+				(transaction == null) ? null : transaction.getTransactionId(),
+				(patch instanceof DocumentPatchHandleImpl) ? 
+						((DocumentPatchHandleImpl) patch).getMetadata() :
+						processedMetadata,
+				patch
+				);
+	}
+
+	@Override
     public <T extends DocumentMetadataReadHandle> T readMetadata(String uri, T metadataHandle) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		return readMetadata(uri, metadataHandle, null);
     }
@@ -523,6 +563,11 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     public DocumentUriTemplate newDocumentUriTemplate(String extension) {
 		return new DocumentUriTemplateImpl(extension);
 	}
+
+	@Override
+    public DocumentMetadataPatchBuilder newPatchBuilder(Format pathFormat) {
+    	return new DocumentMetadataPatchBuilderImpl(pathFormat);
+    }
 
 	private void checkContentFormat(Object contentHandle) {
 		checkContentFormat(HandleAccessor.checkHandle(contentHandle, "content"));

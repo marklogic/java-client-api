@@ -69,6 +69,7 @@ import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
+import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.ElementLocator;
@@ -530,6 +531,7 @@ public class JerseyServices implements RESTServices {
 
 		Class as = handleBase.receiveAs();
 		Object entity = response.getEntity(as);
+// TODO: test assignable from, not identical to
 		if (as != InputStream.class && as != Reader.class)
 			response.close();
 
@@ -869,6 +871,10 @@ public class JerseyServices implements RESTServices {
 		if (uri != null)
 			builder = addVersionHeader(desc, builder, "If-Match");
 
+		if ("patch".equals(method)) {
+			builder = builder.header("X-HTTP-Method-Override", "PATCH");
+			method  = "post";
+		}
 		boolean isResendable = handleBase.isResendable();
 
 		ClientResponse response = null;
@@ -1066,6 +1072,19 @@ public class JerseyServices implements RESTServices {
 		}
 
 		response.close();
+	}
+
+	@Override
+	public void patchDocument(RequestLogger reqlog, DocumentDescriptor desc, String transactionId,
+			Set<Metadata> categories, DocumentPatchHandle patchHandle)
+	throws ResourceNotFoundException, ResourceNotResendableException,
+			ForbiddenUserException, FailedRequestException {
+		HandleImplementation patchBase = HandleAccessor.checkHandle(
+				patchHandle, "patch");
+
+// TODO: add content to categories for JSON or XML patch
+		putPostDocumentImpl(reqlog, "patch", desc, transactionId, categories, null,
+				patchBase.getMimetype(), patchHandle);
 	}
 
 	@Override
@@ -1363,7 +1382,6 @@ public class JerseyServices implements RESTServices {
 			throws ForbiddenUserException, FailedRequestException {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
-		
 		if (start > 1) {
 			params.add("start", Long.toString(start));
 		}

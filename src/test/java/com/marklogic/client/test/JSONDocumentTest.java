@@ -36,6 +36,8 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 
 import com.marklogic.client.io.Format;
+import com.marklogic.client.document.DocumentPatchBuilder;
+import com.marklogic.client.document.DocumentPatchBuilder.Position;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.BytesHandle;
@@ -44,6 +46,7 @@ import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.DocumentPatchHandle;
 
 public class JSONDocumentTest {
 	@BeforeClass
@@ -58,24 +61,10 @@ public class JSONDocumentTest {
 	@Test
 	public void testReadWrite() throws IOException {
 		String docId = "/test/testWrite1.json";
-
 		ObjectMapper mapper = new ObjectMapper();
-
-		ObjectNode sourceNode = mapper.createObjectNode();
-		sourceNode.put("stringKey", "string value");
-		sourceNode.put("numberKey", 7);
-		ObjectNode childNode = mapper.createObjectNode();
-		childNode.put("childObjectKey", "child object value");
-		sourceNode.put("objectKey", childNode);
-		ArrayNode childArray = mapper.createArrayNode();
-		childArray.add("item value");
-		childArray.add(3);
-		childNode = mapper.createObjectNode();
-		childNode.put("itemObjectKey", "item object value");
-		childArray.add(childNode);
-		sourceNode.put("arrayKey", childArray);
-
+		ObjectNode sourceNode = makeContent(mapper);
 		String content = mapper.writeValueAsString(sourceNode);
+
 		JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
 		docMgr.write(docId, new StringHandle().with(content));
 
@@ -118,5 +107,83 @@ public class JSONDocumentTest {
 		Document document = xmlMgr.read(docId, new DOMHandle()).get();
 		assertEquals("Failed to set language attribute on JSON", lang,
 				document.getDocumentElement().getAttributeNS(XMLConstants.XML_NS_URI, "lang"));
+	}
+
+	@Test
+	public void testPatch() throws IOException {
+		String docId = "/test/testWrite1.json";
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode sourceNode = makeContent(mapper);
+		String content = mapper.writeValueAsString(sourceNode);
+
+		JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
+		docMgr.write(docId, new StringHandle().with(content));
+
+		DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
+
+		patchBldr.replaceValue("$.stringKey", "replaced value");
+
+		patchBldr.delete("$.numberKey");
+
+		ObjectNode fragmentNode = mapper.createObjectNode();
+		fragmentNode.put("replacedChildKey","replaced object value");
+		String fragment = mapper.writeValueAsString(fragmentNode);
+		patchBldr.replaceFragment("$.objectKey.childObjectKey", fragment);
+
+		fragmentNode = mapper.createObjectNode();
+		fragmentNode.put("insertedKey",9);
+		fragment = mapper.writeValueAsString(fragmentNode);
+		patchBldr.insertFragment("$.arrayKey", Position.BEFORE, fragment);
+
+		fragmentNode = mapper.createObjectNode();
+		fragmentNode.put("appendedKey","appended item");
+		fragment = mapper.writeValueAsString(fragmentNode);
+		patchBldr.insertFragment("$.arrayKey", Position.LAST_CHILD, fragment);
+
+		DocumentPatchHandle patchHandle = patchBldr.build();
+
+		docMgr.patch(docId, patchHandle);
+
+		ObjectNode expectedNode = mapper.createObjectNode();
+		expectedNode.put("stringKey", "replaced value");
+		ObjectNode childNode = mapper.createObjectNode();
+		childNode.put("replacedChildKey", "replaced object value");
+		expectedNode.put("objectKey", childNode);
+		expectedNode.put("insertedKey", 9);
+		ArrayNode childArray = mapper.createArrayNode();
+		childArray.add("item value");
+		childArray.add(3);
+		childNode = mapper.createObjectNode();
+		childNode.put("itemObjectKey", "item object value");
+		childArray.add(childNode);
+		childNode = mapper.createObjectNode();
+		childNode.put("appendedKey", "appended item");
+		childArray.add(childNode);
+		expectedNode.put("arrayKey", childArray);
+
+		String docText = docMgr.read(docId, new StringHandle()).get();
+		assertNotNull("Read null string for patched JSON content",docText);
+		JsonNode readNode = mapper.readTree(docText);
+		assertTrue("Patched JSON document without expected result", expectedNode.equals(readNode));
+
+		docMgr.delete(docId);
+	}
+
+	private ObjectNode makeContent(ObjectMapper mapper) throws IOException {
+		ObjectNode sourceNode = mapper.createObjectNode();
+		sourceNode.put("stringKey", "string value");
+		sourceNode.put("numberKey", 7);
+		ObjectNode childNode = mapper.createObjectNode();
+		childNode.put("childObjectKey", "child object value");
+		sourceNode.put("objectKey", childNode);
+		ArrayNode childArray = mapper.createArrayNode();
+		childArray.add("item value");
+		childArray.add(3);
+		childNode = mapper.createObjectNode();
+		childNode.put("itemObjectKey", "item object value");
+		childArray.add(childNode);
+		sourceNode.put("arrayKey", childArray);
+
+		return sourceNode;
 	}
 }

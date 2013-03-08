@@ -51,7 +51,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.document.DocumentPatchBuilder.Position;
 import com.marklogic.client.document.XMLDocumentManager.DocumentRepair;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputSourceHandle;
@@ -59,6 +61,7 @@ import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.XMLEventReaderHandle;
 import com.marklogic.client.io.XMLStreamReaderHandle;
+import com.marklogic.client.io.marker.DocumentPatchHandle;
 
 public class XMLDocumentTest {
 	@BeforeClass
@@ -299,5 +302,59 @@ public class XMLDocumentTest {
 		docOut = docMgr.read(docId, new StringHandle()).get();
 		assertNotNull("Wrote null document for StAX events", docOut);
 		assertXMLEqual("Failed to write StAX events", docIn, docOut);
+	}
+
+	@Test
+	public void testPatch() throws Exception {
+		String docId = "/test/testWrite1.xml";
+
+		Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+		Element root    = domDocument.createElement("root");
+		Element firstChild = domDocument.createElement("firstChild");
+		Element firstChildOfFirstChild = domDocument.createElement("firstChildOfFirstChild"); 
+		firstChild.appendChild(firstChildOfFirstChild);
+		root.appendChild(firstChild);
+		Element secondChild = domDocument.createElement("secondChild");
+		root.appendChild(secondChild);
+		Element thirdChild = domDocument.createElement("thirdChild");
+		thirdChild.setTextContent("old value");
+		root.appendChild(thirdChild);
+		Element fourthChild = domDocument.createElement("fourthChild");
+		root.appendChild(fourthChild);
+		domDocument.appendChild(root);
+
+		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+		docMgr.write(docId, new DOMHandle().with(domDocument));
+
+		DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
+		patchBldr.insertFragment(
+				"/root/firstChild/firstChildOfFirstChild", Position.BEFORE, "<newFirstChildOfFirstChild/>"
+				);
+		patchBldr.insertFragment(
+				"/root/firstChild", Position.LAST_CHILD, "<lastChildOfFirstChild/>"
+				);
+		patchBldr.replaceFragment("/root/secondChild", "<replacedSecondChild/>");
+		patchBldr.replaceValue("/root/thirdChild", "new value");
+		patchBldr.delete("fourthChild");
+
+		DocumentPatchHandle patchHandle = patchBldr.build();
+
+		docMgr.patch(docId, patchHandle);
+
+		firstChild.insertBefore(
+				domDocument.createElement("newFirstChildOfFirstChild"), firstChildOfFirstChild
+				);
+		firstChild.appendChild(domDocument.createElement("lastChildOfFirstChild"));
+		root.replaceChild(domDocument.createElement("replacedSecondChild"), secondChild);
+		thirdChild.setTextContent("new value");
+		root.removeChild(fourthChild);
+
+		String expected = Common.testDocumentToString(domDocument);
+
+		String actual   = docMgr.read(docId, new StringHandle()).get();
+		assertNotNull("Read null string for patched XML content",actual);
+		assertXMLEqual("Patched XML document without expected result",expected,actual);
+
+		docMgr.delete(docId);
 	}
 }

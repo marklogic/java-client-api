@@ -18,6 +18,7 @@ package com.marklogic.client.impl;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.util.RequestParameters;
+import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
@@ -32,12 +33,19 @@ class XMLDocumentImpl
 		super(services, Format.XML);
 	}
 
+	@Override
 	public DocumentRepair getDocumentRepair() {
 		return repair;
 	}
+	@Override
 	public void setDocumentRepair(DocumentRepair policy) {
 		repair = policy;
 	}
+
+	@Override
+    public DocumentPatchBuilder newPatchBuilder() {
+    	return new DocumentPatchBuilderImpl(Format.XML);
+    }
 
 	protected RequestParameters getWriteParams() {
 		if (repair == null)

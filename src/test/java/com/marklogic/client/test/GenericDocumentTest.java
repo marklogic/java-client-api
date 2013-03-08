@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Random;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
@@ -38,14 +39,19 @@ import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.document.DocumentMetadataPatchBuilder;
 import com.marklogic.client.document.DocumentUriTemplate;
+import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.DocumentPatchHandle;
 
 public class GenericDocumentTest {
 	static private Random seed;
@@ -121,6 +127,26 @@ public class GenericDocumentTest {
 	"  </prop:properties>\n"+
 	"  <rapi:quality>3</rapi:quality>\n"+
 	"</rapi:metadata>\n";
+
+	final static String patchedMetadata =
+		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
+		"<rapi:metadata uri=\"/test/testMetadataXML1.xml\" xsi:schemaLocation=\"http://marklogic.com/rest-api/database dbmeta.xsd\" xmlns:rapi=\"http://marklogic.com/rest-api\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"+
+		"  <rapi:collections>\n"+
+		"    <rapi:collection>/document/collection1</rapi:collection>\n"+
+		"    <rapi:collection>/document/collection2</rapi:collection>\n"+
+		"    <rapi:collection>/document/collection3</rapi:collection>\n"+
+		"  </rapi:collections>\n"+
+		"  <rapi:permissions>\n"+
+		"    <rapi:permission>\n"+
+		"      <rapi:role-name>app-user</rapi:role-name>\n"+
+		"      <rapi:capability>update</rapi:capability>\n"+
+		"    </rapi:permission>\n"+
+		"  </rapi:permissions>\n"+
+		"  <prop:properties xmlns:prop=\"http://marklogic.com/xdmp/property\">\n"+
+		"    <second>2</second>\n"+
+		"  </prop:properties>\n"+
+		"  <rapi:quality>4</rapi:quality>\n"+
+		"</rapi:metadata>\n";
 
 	@Test
 	public void testReadWriteMetadata() throws SAXException, IOException, XpathException {
@@ -347,6 +373,43 @@ public class GenericDocumentTest {
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='app-user'])",stringMetadata);
 		assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",stringMetadata);
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='3'])",stringMetadata);
+
+		docMgr.delete(docId);
+	}
+
+	@Test
+	public void testPatch() throws IOException, XpathException, SAXException {
+		String docId = "/test/testMetadataXML1.xml";
+
+		GenericDocumentManager docMgr = Common.client.newDocumentManager();
+		docMgr.write(
+				docId,
+				new BytesHandle(content.getBytes(Charset.forName("UTF-8")))
+					.withFormat(Format.XML)
+				);
+
+		docMgr.setMetadataCategories(Metadata.ALL);
+		docMgr.writeMetadata(docId, new StringHandle().with(metadata));
+
+		for (Format format: new Format[]{Format.XML, Format.JSON}) {
+			DocumentMetadataPatchBuilder patchBldr = docMgr.newPatchBuilder(format);
+			DocumentPatchHandle patchHandle = patchBldr
+			.addCollection("/document/collection3")
+			.replacePermission("app-user", Capability.UPDATE)
+			.deleteProperty("first")
+			.setQuality(4)
+			.build();
+
+			docMgr.patch(docId, patchHandle);
+
+			String metadata = docMgr.readMetadata(docId, new StringHandle().withFormat(Format.XML)).get();
+
+			assertTrue("Could not read document metadata after write default", metadata != null);
+			assertXpathEvaluatesTo("3","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",metadata);
+			assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission' and string(*[local-name()='role-name'])='app-user']/*[local-name()='capability'])",metadata);
+			assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",metadata);
+			assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='4'])",metadata);
+		}
 
 		docMgr.delete(docId);
 	}
