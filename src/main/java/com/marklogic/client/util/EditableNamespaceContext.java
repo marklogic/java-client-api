@@ -32,7 +32,7 @@ import javax.xml.namespace.NamespaceContext;
  * can act as a NamespaceContext.
  */
 public class EditableNamespaceContext
-    implements NamespaceContext, Map<String, String>
+    implements IterableNamespaceContext, Map<String, String>
 {
 	// key is prefix, value is namespace URI
 	private HashMap<String, String> bindings = new HashMap<String, String>();
