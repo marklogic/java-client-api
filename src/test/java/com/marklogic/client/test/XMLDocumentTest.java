@@ -321,6 +321,9 @@ public class XMLDocumentTest {
 		root.appendChild(thirdChild);
 		Element fourthChild = domDocument.createElement("fourthChild");
 		root.appendChild(fourthChild);
+		Element fifthChild = domDocument.createElement("fifthChild");
+		fifthChild.setTextContent("5");
+		root.appendChild(fifthChild);
 		domDocument.appendChild(root);
 
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
@@ -336,6 +339,7 @@ public class XMLDocumentTest {
 		patchBldr.replaceFragment("/root/secondChild", "<replacedSecondChild/>");
 		patchBldr.replaceValue("/root/thirdChild", "new value");
 		patchBldr.delete("fourthChild");
+		patchBldr.replaceApply("fifthChild", patchBldr.call().multiply(3));
 
 		DocumentPatchHandle patchHandle = patchBldr.build();
 
@@ -347,6 +351,7 @@ public class XMLDocumentTest {
 		firstChild.appendChild(domDocument.createElement("lastChildOfFirstChild"));
 		root.replaceChild(domDocument.createElement("replacedSecondChild"), secondChild);
 		thirdChild.setTextContent("new value");
+		fifthChild.setTextContent("15");
 		root.removeChild(fourthChild);
 
 		String expected = Common.testDocumentToString(domDocument);

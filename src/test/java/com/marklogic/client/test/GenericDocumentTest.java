@@ -389,14 +389,17 @@ public class GenericDocumentTest {
 				);
 
 		docMgr.setMetadataCategories(Metadata.ALL);
-		docMgr.writeMetadata(docId, new StringHandle().with(metadata));
 
 		for (Format format: new Format[]{Format.XML, Format.JSON}) {
+			// init or reinit
+			docMgr.writeMetadata(docId, new StringHandle().with(metadata));
+
 			DocumentMetadataPatchBuilder patchBldr = docMgr.newPatchBuilder(format);
 			DocumentPatchHandle patchHandle = patchBldr
 			.addCollection("/document/collection3")
 			.replacePermission("app-user", Capability.UPDATE)
 			.deleteProperty("first")
+			.replacePropertyApply("second", patchBldr.call().add(3))
 			.setQuality(4)
 			.build();
 
@@ -408,6 +411,7 @@ public class GenericDocumentTest {
 			assertXpathEvaluatesTo("3","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",metadata);
 			assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission' and string(*[local-name()='role-name'])='app-user']/*[local-name()='capability'])",metadata);
 			assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",metadata);
+			assertXpathEvaluatesTo("5","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='second'])",metadata);
 			assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='4'])",metadata);
 		}
 

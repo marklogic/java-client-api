@@ -29,6 +29,152 @@ import com.marklogic.client.io.marker.DocumentPatchHandle;
  */
 public interface DocumentMetadataPatchBuilder {
 	/**
+	 * A Call specifies how to apply a built-in or library function
+	 * when replacing an existing fragment.  You must construct a call
+	 * using the CallBuilder.
+	 */
+	public interface Call {
+	}
+
+	/**
+	 * A CallBuilder constructs a Call to a built-in or library function
+	 * to produce the replacement for an existing fragment.  You must
+	 * construct the CallBuilder using the factory method of the
+	 * DocumentPatchBuilder.
+	 */
+	public interface CallBuilder {
+		/**
+		 * Calls the built-in method to add to an existing value.
+		 * @param number	the added number
+		 * @return	the specification of the add call
+		 */
+		public Call add(Number number);
+		/**
+		 * Calls the built-in method to subtract from an existing value.
+		 * @param number	the subtracted number
+		 * @return	the specification of the subtract call
+		 */
+		public Call subtract(Number number);
+		/**
+		 * Calls the built-in method to multiply an existing value.
+		 * @param number	the multiplier
+		 * @return	the specification of the multiply call
+		 */
+		public Call multiply(Number number);
+		/**
+		 * Calls the built-in method to divide an existing value
+		 * by the supplied number.
+		 * @param number	the divisor
+		 * @return	the specification of the divide call
+		 */
+		public Call divideBy(Number number);
+
+		/**
+		 * Calls the built-in method to append an existing string
+		 * to the supplied string.
+		 * @param prefix	the string that appears first
+		 * @return	the specification of the concatenation call
+		 */
+		public Call concatenateAfter(String prefix);
+		/**
+		 * Calls the built-in method to concatenate an existing string
+		 * between the supplied strings.
+		 * @param prefix	the string that appears first
+		 * @param suffix	the string that appears last
+		 * @return	the specification of the concatenation call
+		 */
+		public Call concatenateBetween(String prefix, String suffix);
+		/**
+		 * Calls the built-in method to concatenate an existing string
+		 * before the supplied string.
+		 * @param suffix	the string that appears last
+		 * @return	the specification of the concatenation call
+		 */
+		public Call concatenateBefore(String suffix);
+		/**
+		 * Calls the built-in method to reduce an existing string
+		 * to a trailing substring.
+		 * @param prefix	the initial part of the string
+		 * @return	the specification of the substring call
+		 */
+		public Call substringAfter(String prefix);
+		/**
+		 * Calls the built-in method to reduce an existing string
+		 * to a leading substring.
+		 * @param suffix	the final part of the string
+		 * @return	the specification of the substring call
+		 */
+		public Call substringBefore(String suffix);
+		/**
+		 * Calls the built-in method to modify an existing string
+		 * with a regular expression
+		 * @param pattern	the matching regular expression
+		 * @param replacement	the replacement for the match
+		 * @return	the specification of the regex call
+		 */
+		public Call replaceRegex(String pattern, String replacement);
+		/**
+		 * Calls the built-in method to modify an existing string
+		 * with a regular expression
+		 * @param pattern	the matching regular expression
+		 * @param replacement	the replacement for the match
+		 * @param flags	the regex flags
+		 * @return	the specification of the regex call
+		 */
+		public Call replaceRegex(
+				String pattern, String replacement, String flags
+				);
+
+		/**
+		 * Calls a function with no arguments other than the existing
+		 * fragment.  The function must be provided by the library specified
+		 * using the DocumentPatchBuilder.
+		 * @param function	the name of the function
+		 * @return	the specification of the function call
+		 */
+		public Call applyLibrary(String function);
+		/**
+		 * Calls a function with the existing fragment and one or more
+		 * values.  The function must be provided by the library specified
+		 * using the DocumentPatchBuilder.
+		 * @param function	the name of the function
+		 * @param args	the literal values
+		 * @return	the specification of the function call
+		 */
+		public Call applyLibraryValues(String function, Object... args);
+		/**
+		 * Calls a function with the existing fragment and one or more
+		 * specified fragments.  The function must be provided by the
+		 * library specified using the DocumentPatchBuilder.
+		 * @param function	the name of the function
+		 * @param args	the fragments
+		 * @return	the specification of the function call
+		 */
+		public Call applyLibraryFragments(String function, Object... args);
+	}
+
+	/**
+	 * A PatchHandle produced by the builder can produce a string
+	 * representation of the patch for saving, logging, or other uses.
+	 */
+	public interface PatchHandle extends DocumentPatchHandle {
+		/**
+		 * Returns a JSON or XML representation of the patch as a string.
+		 * @return	the patch
+		 */
+		public String toString();
+	}
+
+	/**
+	 * Specifies an XQuery library installed on the server 
+	 * that supplies functions for modifying existing fragments.
+	 * @param ns	the XQuery library namespace
+	 * @param at	the XQuery library path on the server
+	 * @return	the patch builder (for convenient chaining)
+	 */
+	public DocumentMetadataPatchBuilder library(String ns, String at);
+
+	/**
 	 * Adds the specified collections.
 	 * @param collections	the collection identifiers
 	 * @return	the patch builder (for convenient chaining)
@@ -89,14 +235,14 @@ public interface DocumentMetadataPatchBuilder {
 	 * @param value	the value of the new property
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder addProperty(String name, Object value);
+	public DocumentMetadataPatchBuilder addPropertyValue(String name, Object value);
 	/**
 	 * Adds a new metadata property with a namespaced name.
 	 * @param name	the namespaced name of the new property
 	 * @param value	the value of the new property
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder addProperty(QName name, Object value);
+	public DocumentMetadataPatchBuilder addPropertyValue(QName name, Object value);
 	/**
 	 * Deletes the specified metadata properties with simple names.
 	 * @param names	the property names
@@ -115,14 +261,14 @@ public interface DocumentMetadataPatchBuilder {
 	 * @param newValue the new value of the property
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder replaceProperty(String name, Object newValue);
+	public DocumentMetadataPatchBuilder replacePropertyValue(String name, Object newValue);
 	/**
 	 * Replaces the existing value of a metadata property having a namespaced name.
 	 * @param name	the namespaced name of the existing property
 	 * @param newValue the new value of the property
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder replaceProperty(QName name, Object newValue);
+	public DocumentMetadataPatchBuilder replacePropertyValue(QName name, Object newValue);
 	/**
 	 * Replaces an existing metadata property with a new property having a simple name.
 	 * @param oldName	the name of the existing property
@@ -130,7 +276,7 @@ public interface DocumentMetadataPatchBuilder {
 	 * @param newValue the value of the property
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder replaceProperty(
+	public DocumentMetadataPatchBuilder replacePropertyValue(
 			String oldName, String newName, Object newValue
 			);
 	/**
@@ -140,8 +286,39 @@ public interface DocumentMetadataPatchBuilder {
 	 * @param newValue the value of the property
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder replaceProperty(
+	public DocumentMetadataPatchBuilder replacePropertyValue(
 			QName oldName, QName newName, Object newValue
+			);
+
+	/**
+	 * A factory method for building calls to modify an existing node
+	 * by applying built-in functions or functions from a library.
+	 * @return	the builder for function calls
+	 */
+	public CallBuilder call();
+
+	/**
+	 * Specifies a replacement operation by applying a function
+	 * to a metadata property having a simple name. You must use
+	 * CallBuilder to build a specification of the call.
+	 * @param name	the name of the existing property
+	 * @param call	the specification of the function call
+	 * @return	the patch builder (for convenient chaining)
+	 */
+	public DocumentMetadataPatchBuilder replacePropertyApply(
+			String name, Call call
+			);
+
+	/**
+	 * Specifies a replacement operation by applying a function
+	 * to a metadata property having a namespaced name. You must
+	 * use CallBuilder to build a specification of the call.
+	 * @param name	the name of the existing property
+	 * @param call	the specification of the function call
+	 * @return	the patch builder (for convenient chaining)
+	 */
+	public DocumentMetadataPatchBuilder replacePropertyApply(
+			QName name, Call call
 			);
 
 	/**
@@ -159,5 +336,5 @@ public interface DocumentMetadataPatchBuilder {
 	 * the patch builder do not alter the patch built previously.
 	 * @return	the handle on the built patch
 	 */
-	public DocumentPatchHandle build() throws MarkLogicIOException;
+	public PatchHandle build() throws MarkLogicIOException;
 }

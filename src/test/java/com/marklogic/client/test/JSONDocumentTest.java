@@ -135,6 +135,8 @@ public class JSONDocumentTest {
 		fragment = mapper.writeValueAsString(fragmentNode);
 		patchBldr.insertFragment("$.arrayKey", Position.BEFORE, fragment);
 
+		patchBldr.replaceApply("$.arrayKey.[*][?(@=\"3\")]", patchBldr.call().add(2));
+
 		fragmentNode = mapper.createObjectNode();
 		fragmentNode.put("appendedKey","appended item");
 		fragment = mapper.writeValueAsString(fragmentNode);
@@ -152,7 +154,7 @@ public class JSONDocumentTest {
 		expectedNode.put("insertedKey", 9);
 		ArrayNode childArray = mapper.createArrayNode();
 		childArray.add("item value");
-		childArray.add(3);
+		childArray.add(5);
 		childNode = mapper.createObjectNode();
 		childNode.put("itemObjectKey", "item object value");
 		childArray.add(childNode);

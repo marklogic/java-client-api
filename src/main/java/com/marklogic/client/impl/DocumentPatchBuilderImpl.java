@@ -26,6 +26,7 @@ implements DocumentPatchBuilder
 {
 /* TODO:
     if null metadata categories, patch content
+    add content with categories for JSON or XML patch - flag in builder?  What about raw?
 
 	insert values for JSON array items
 	awareness of popular fragment sources
@@ -158,85 +159,16 @@ implements DocumentPatchBuilder
 		}
 		@Override
 		public void write(JSONStringWriter serializer) {
-			writeStartReplaceApply(serializer, selectPath, call.function);
-			if (call.args != null || call.args.length == 0) {
-				serializer.writeStartEntry("content");
-				if (call.isFragment) {
-					if (call.args.length == 1) {
-						serializer.writeFragment(
-								(call.args[0] instanceof String) ?
-								(String) call.args[0] : call.args[0].toString()
-								);
-					} else {
-						serializer.writeStartArray();
-						for (Object fragment: call.args) {
-							serializer.writeFragment(
-									(fragment instanceof String) ?
-									(String) fragment : fragment.toString()
-									);
-						}
-						serializer.writeEndArray();
-					}
-				} else {
-					// TODO: datatypes
-					if (call.args.length == 1) {
-						serializer.writeStringValue(call.args[0]);
-					} else {
-						serializer.writeStartArray();
-						for (Object value: call.args) {
-							serializer.writeStartObject();
-							serializer.writeStartEntry("value");
-							serializer.writeStringValue(value);
-							serializer.writeEndObject();
-						}
-						serializer.writeEndArray();
-					}
-				}
-			}
-			serializer.writeEndObject();
-			serializer.writeEndObject();
+			writeReplaceApply(serializer, selectPath, call);
 		}
 		@Override
 		public void write(XMLOutputSerializer out) throws Exception {
-			XMLStreamWriter serializer = out.getSerializer();
-			writeStartReplaceApply(out, selectPath, call.function);
-
-			if (call.args != null || call.args.length == 0) {
-				if (call.isFragment) {
-					serializer.writeCharacters(""); // force the tag close
-					for (Object fragment: call.args) {
-						out.getWriter().write(
-								(fragment instanceof String) ?
-								(String) fragment : fragment.toString()
-								);
-					}
-				} else {
-					if (call.args.length == 1) {
-						convertFromJava(out, call.args[0]);
-					} else {
-						for (Object value: call.args) {
-							serializer.writeStartElement("rapi", "value", REST_API_NS);
-							convertFromJava(out, value);
-							serializer.writeEndElement();
-						}
-					}
-				}
-			}
-
-			serializer.writeEndElement();
+			writeReplaceApply(out, selectPath, call);
 		}
 	}
 
-	private CallBuilderImpl callBuilder;
-
 	DocumentPatchBuilderImpl(Format format) {
 		super(format);
-	}
-
-	@Override
-	public DocumentPatchBuilder library(String name) {
-		library = name;
-		return this;
 	}
 
 	@Override
@@ -281,121 +213,5 @@ implements DocumentPatchBuilder
 				new ContentReplaceApplyOperation(selectPath, (CallImpl) call)
 				);
 		return this;
-	}
-
-	@Override
-	public CallBuilder call() {
-		if (callBuilder == null)
-			callBuilder = new CallBuilderImpl();
-		return callBuilder;
-	}
-
-	static class CallImpl implements Call {
-		String   function;
-		boolean  isFragment = true;
-		Object[] args;
-		CallImpl(String function) {
-			super();
-			this.function = function;
-		}
-		CallImpl(String function, boolean isFragment, Object... args) {
-			this(function);
-			this.isFragment = isFragment;
-			this.args       = args;
-		}
-	}
-	static class CallBuilderImpl implements CallBuilder {
-		CallBuilderImpl() {
-			super();
-		}
-		@Override
-		public Call add(Number number) {
-			if (number == null)
-				throw new IllegalArgumentException("Cannot add null number");
-			return new CallImpl("ml.add", false, number.toString());
-		}
-		@Override
-		public Call subtract(Number number) {
-			if (number == null)
-				throw new IllegalArgumentException("Cannot subtract null number");
-			return new CallImpl("ml.subtract", false, number.toString());
-		}
-		@Override
-		public Call multiply(Number number) {
-			if (number == null)
-				throw new IllegalArgumentException("Cannot multiply null number");
-			return new CallImpl("ml.multiply", false, number.toString());
-		}
-		@Override
-		public Call divideBy(Number number) {
-			if (number == null)
-				throw new IllegalArgumentException("Cannot divide null number");
-			return new CallImpl("ml.divide", false, number.toString());
-		}
-
-		@Override
-		public Call concatenateAfter(String prefix) {
-			if (prefix == null)
-				throw new IllegalArgumentException(
-						"Cannot concatenate after null prefix");
-			return new CallImpl("ml.concat-after", false, prefix);
-		}
-		@Override
-		public Call concatenateBetween(String prefix, String suffix) {
-			if (prefix == null || suffix == null)
-				throw new IllegalArgumentException(
-						"Cannot concatenate between null prefix or suffix");
-			return new CallImpl("ml.concat-between", false, prefix, suffix);
-		}
-		@Override
-		public Call concatenateBefore(String suffix) {
-			if (suffix == null)
-				throw new IllegalArgumentException(
-						"Cannot concatenate before null suffix");
-			return new CallImpl("ml.concat-before", false, suffix);
-		}
-		@Override
-		public Call substringAfter(String prefix) {
-			if (prefix == null)
-				throw new IllegalArgumentException(
-						"Cannot substring after null prefix");
-			return new CallImpl("ml.substring-after", false, prefix);
-		}
-		@Override
-		public Call substringBefore(String suffix) {
-			if (suffix == null)
-				throw new IllegalArgumentException(
-						"Cannot substring before null suffix");
-			return new CallImpl("ml.substring-before", false, suffix);
-		}
-		@Override
-		public Call replaceRegex(String pattern, String replacement) {
-			if (pattern == null || replacement == null)
-				throw new IllegalArgumentException(
-						"Cannot replace regex with null pattern or replacement");
-			return new CallImpl("ml.replace-regex", false, pattern, replacement);
-		}
-		@Override
-		public Call replaceRegex(
-				String pattern, String replacement, String flags
-				) {
-			if (pattern == null || replacement == null || flags == null)
-				throw new IllegalArgumentException(
-						"Cannot replace regex with null pattern, replacement, or flags");
-			return new CallImpl("ml.replace-regex", false, pattern, replacement, flags);
-		}
-
-		@Override
-		public Call applyLibrary(String function) {
-			return new CallImpl(function);
-		}
-		@Override
-		public Call applyLibraryValues(String function, Object... args) {
-			return new CallImpl(function, false, args);
-		}
-		@Override
-		public Call applyLibraryFragments(String function, Object... args) {
-			return new CallImpl(function, true, args);
-		}
 	}
 }

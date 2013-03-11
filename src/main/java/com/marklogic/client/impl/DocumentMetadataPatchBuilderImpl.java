@@ -29,12 +29,11 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.document.DocumentMetadataPatchBuilder;
 import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.document.DocumentMetadataPatchBuilder;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.util.IterableNamespaceContext;
 
 class DocumentMetadataPatchBuilderImpl
@@ -131,21 +130,90 @@ implements DocumentMetadataPatchBuilder
 			serializer.writeAttribute("context",  context);
 			serializer.writeAttribute("position", position);
 		}
-		public void writeStartReplaceApply(JSONStringWriter serializer, String select, String function) {
+		public void writeReplaceApply(JSONStringWriter serializer, String select, CallImpl call) {
 			serializer.writeStartObject();
 			serializer.writeStartEntry("replace");
 			serializer.writeStartObject();
 			serializer.writeStartEntry("select");
 			serializer.writeStringValue(select);
 			serializer.writeStartEntry("apply");
-			serializer.writeStringValue(function);
+			serializer.writeStringValue(call.function);
+			if (call.args != null || call.args.length == 0) {
+				serializer.writeStartEntry("content");
+				writeCall(serializer, call);
+			}
+			serializer.writeEndObject();
+			serializer.writeEndObject();
 		}
-		public void writeStartReplaceApply(XMLOutputSerializer out, String select, String function)
-		throws Exception {
+		public void writeReplaceApply(XMLOutputSerializer out, String select, CallImpl call) throws Exception {
 			XMLStreamWriter serializer = out.getSerializer();
-			serializer.writeStartElement("rapi",  "replace-apply", REST_API_NS);
-			serializer.writeAttribute("select",   select);
-			serializer.writeAttribute("apply",    function);
+
+			serializer.writeStartElement("rapi", "replace", REST_API_NS);
+			serializer.writeAttribute("select",  select);
+			serializer.writeAttribute("apply",   call.function);
+			if (call.args != null || call.args.length == 0) {
+				writeCall(out, call);
+			}
+			serializer.writeEndElement();
+		}
+		public void writeCall(JSONStringWriter serializer, CallImpl call) {
+			if (call == null) return;
+
+			if (call.isFragment) {
+				if (call.args.length == 1) {
+					serializer.writeFragment(
+							(call.args[0] instanceof String) ?
+									(String) call.args[0] : call.args[0].toString()
+					);
+				} else {
+					serializer.writeStartArray();
+					for (Object fragment: call.args) {
+						serializer.writeFragment(
+								(fragment instanceof String) ?
+										(String) fragment : fragment.toString()
+						);
+					}
+					serializer.writeEndArray();
+				}
+			} else {
+				// TODO: datatypes
+				if (call.args.length == 1) {
+					serializer.writeStringValue(call.args[0]);
+				} else {
+					serializer.writeStartArray();
+					for (Object value: call.args) {
+						serializer.writeStartObject();
+						serializer.writeStartEntry("value");
+						serializer.writeStringValue(value);
+						serializer.writeEndObject();
+					}
+					serializer.writeEndArray();
+				}
+			}
+		}
+		public void writeCall(XMLOutputSerializer out, CallImpl call) throws Exception {
+			if (call == null) return;
+
+			XMLStreamWriter serializer = out.getSerializer();
+			if (call.isFragment) {
+				serializer.writeCharacters(""); // force the tag close
+				for (Object fragment: call.args) {
+					out.getWriter().write(
+							(fragment instanceof String) ?
+									(String) fragment : fragment.toString()
+					);
+				}
+			} else {
+				if (call.args.length == 1) {
+					convertFromJava(out, call.args[0]);
+				} else {
+					for (Object value: call.args) {
+						serializer.writeStartElement("rapi", "value", REST_API_NS);
+						convertFromJava(out, value);
+						serializer.writeEndElement();
+					}
+				}
+			}
 		}
 
 		public void writeStartElement(XMLOutputSerializer out, QName qname, String name)
@@ -322,7 +390,7 @@ implements DocumentMetadataPatchBuilder
 		}
 		@Override
 		public void write(JSONStringWriter serializer) {
-			writeDelete(serializer, "$.permissions.[*][?(@[\"role-name\"]="+JSONStringWriter.toJSON(role)+")]");
+			writeDelete(serializer, "$.permissions.[*][?(@.role-name="+JSONStringWriter.toJSON(role)+")]");
 		}
 		@Override
 		public void write(XMLOutputSerializer out) throws Exception {
@@ -343,7 +411,7 @@ implements DocumentMetadataPatchBuilder
 		}
 		@Override
 		public void write(JSONStringWriter serializer) {
-			writeStartReplace(serializer, "$.permissions.[*][?(@[\"role-name\"]="+JSONStringWriter.toJSON(oldRole)+")]");
+			writeStartReplace(serializer, "$.permissions.[*][?(@.role-name="+JSONStringWriter.toJSON(oldRole)+")]");
 			serializer.writeStartEntry("content");
 			serializer.writeStartObject();
 			serializer.writeStartEntry("role-name");
@@ -473,7 +541,9 @@ implements DocumentMetadataPatchBuilder
 		@Override
 		public void write(JSONStringWriter serializer) {
 			// TODO: error if name empty
-			writeStartReplace(serializer, "$.properties.["+JSONStringWriter.toJSON(oldName)+"]");
+			writeStartReplace(serializer,
+					"$.properties.["+JSONStringWriter.toJSON(oldName)+"]"
+					);
 			serializer.writeStartEntry("content");
 			serializer.writeStartObject();
 			serializer.writeStartEntry(newName);
@@ -495,6 +565,40 @@ implements DocumentMetadataPatchBuilder
 			serializer.writeEndElement();
 
 			serializer.writeEndElement();
+		}
+	}
+	static class ReplacePropertyApplyOperation extends PatchOperation {
+		QName    qname;
+		String   name;
+		CallImpl call;
+		ReplacePropertyApplyOperation(CallImpl call) {
+			super();
+			this.call = call;
+		}
+		ReplacePropertyApplyOperation(String name, CallImpl call) {
+			this(call);
+			this.name = name;
+		}
+		ReplacePropertyApplyOperation(QName qname, CallImpl call) {
+			this(call);
+			this.qname = qname;
+		}
+		@Override
+		public void write(JSONStringWriter serializer) {
+			// TODO: error if name empty
+			writeReplaceApply(serializer, 
+					"$.properties.["+JSONStringWriter.toJSON(name)+"]",
+					call
+					);
+		}
+		@Override
+		public void write(XMLOutputSerializer out) throws Exception {
+			// TODO: declare namespace on root
+			writeReplaceApply(out,
+					"/rapi:metadata/prop:properties/" +
+						getLexicalName(qname, name),
+					call
+					);
 		}
 	}
 
@@ -521,7 +625,10 @@ implements DocumentMetadataPatchBuilder
 		}
 	}
 
-	static class DocumentPatchHandleImpl extends StringHandle {
+	static class DocumentPatchHandleImpl
+	extends StringHandle
+	implements PatchHandle
+	{
 		private Set<Metadata> metadata;
 		DocumentPatchHandleImpl(Set<Metadata> metadata) {
 			super();
@@ -532,15 +639,25 @@ implements DocumentMetadataPatchBuilder
 		}
 	}
 
+	private CallBuilderImpl callBuilder;
+
 	protected List<PatchOperation>      operations       = new ArrayList<PatchOperation>();
 	protected IterableNamespaceContext  namespaceContext;
-	protected String                    library;
+	protected String                    libraryNs;
+	protected String                    libraryAt;
 	protected Format                    format;
 	protected Set<Metadata>             processedMetadata;
 
 	DocumentMetadataPatchBuilderImpl(Format format) {
 		super();
 		this.format = format;
+	}
+
+	@Override
+	public DocumentMetadataPatchBuilder library(String ns, String at) {
+		libraryNs = ns;
+		libraryAt = at;
+		return this;
 	}
 
 	@Override
@@ -598,7 +715,7 @@ implements DocumentMetadataPatchBuilder
 	}
 
 	@Override
-	public DocumentMetadataPatchBuilder addProperty(String name, Object value) {
+	public DocumentMetadataPatchBuilder addPropertyValue(String name, Object value) {
 		onProperties();
 		QName qname = asQName(name);
 		operations.add(
@@ -609,7 +726,7 @@ implements DocumentMetadataPatchBuilder
 		return this;
 	}
 	@Override
-	public DocumentMetadataPatchBuilder addProperty(QName name, Object value) {
+	public DocumentMetadataPatchBuilder addPropertyValue(QName name, Object value) {
 		onProperties();
 		operations.add(new AddPropertyOperation(name, value));
 		return this;
@@ -636,7 +753,7 @@ implements DocumentMetadataPatchBuilder
 		return this;
 	}
 	@Override
-	public DocumentMetadataPatchBuilder replaceProperty(String name, Object newValue) {
+	public DocumentMetadataPatchBuilder replacePropertyValue(String name, Object newValue) {
 		onProperties();
 		QName qname = asQName(name);
 		operations.add(
@@ -647,13 +764,13 @@ implements DocumentMetadataPatchBuilder
 		return this;
 	}
 	@Override
-	public DocumentMetadataPatchBuilder replaceProperty(QName name, Object newValue) {
+	public DocumentMetadataPatchBuilder replacePropertyValue(QName name, Object newValue) {
 		onProperties();
 		operations.add(new ReplacePropertyOperation(name, name, newValue));
 		return this;
 	}
 	@Override
-	public DocumentMetadataPatchBuilder replaceProperty(
+	public DocumentMetadataPatchBuilder replacePropertyValue(
 			String oldName, String newName, Object newValue) {
 		onProperties();
 		QName oldQName = asQName(oldName);
@@ -666,10 +783,32 @@ implements DocumentMetadataPatchBuilder
 		return this;
 	}
 	@Override
-	public DocumentMetadataPatchBuilder replaceProperty(
+	public DocumentMetadataPatchBuilder replacePropertyValue(
 			QName oldName, QName newName, Object newValue) {
 		onProperties();
 		operations.add(new ReplacePropertyOperation(oldName, newName, newValue));
+		return this;
+	}
+	@Override
+	public DocumentMetadataPatchBuilder replacePropertyApply(
+			String name, Call call
+			) {
+		if (!CallImpl.class.isAssignableFrom(call.getClass()))
+			throw new IllegalArgumentException(
+					"Cannot use external call implementation");
+		onProperties();
+		operations.add(new ReplacePropertyApplyOperation(name, (CallImpl) call));
+		return this;
+	}
+	@Override
+	public DocumentMetadataPatchBuilder replacePropertyApply(
+			QName name, Call call
+			) {
+		if (!CallImpl.class.isAssignableFrom(call.getClass()))
+			throw new IllegalArgumentException(
+					"Cannot use external call implementation");
+		onProperties();
+		operations.add(new ReplacePropertyApplyOperation(name, (CallImpl) call));
 		return this;
 	}
 
@@ -702,7 +841,7 @@ implements DocumentMetadataPatchBuilder
 	}
 
 	@Override
-	public DocumentPatchHandle build() throws MarkLogicIOException {
+	public PatchHandle build() throws MarkLogicIOException {
 		DocumentPatchHandleImpl handle = new DocumentPatchHandleImpl(processedMetadata);
 		if (format == Format.JSON) {
 			handle.setFormat(format);
@@ -711,8 +850,20 @@ implements DocumentMetadataPatchBuilder
 
 			writer.writeStartObject();
 			writer.writeStartEntry("patch");
-
 			writer.writeStartArray();
+
+			if (libraryNs != null && libraryAt != null) {
+				writer.writeStartObject();
+				writer.writeStartEntry("replace-library");
+				writer.writeStartObject();
+				writer.writeStartEntry("ns");
+				writer.writeStringValue(libraryNs);
+				writer.writeStartEntry("at");
+				writer.writeStringValue(libraryAt);
+				writer.writeEndObject();
+				writer.writeEndObject();
+			}
+
 			for (PatchOperation operation: operations) {
 				writer.writeStartItem();
 				operation.write(writer);
@@ -748,6 +899,13 @@ implements DocumentMetadataPatchBuilder
 				serializer.writeStartDocument("utf-8", "1.0");
 
 				serializer.writeStartElement("rapi", "patch", REST_API_NS);
+
+				if (libraryNs != null && libraryAt != null) {
+					serializer.writeStartElement("rapi", "replace-library", REST_API_NS);
+					serializer.writeAttribute("ns", libraryNs);
+					serializer.writeAttribute("at", libraryAt);
+					serializer.writeEndElement();
+				}
 
 				for (PatchOperation operation: operations) {
 					operation.write(out);
@@ -790,5 +948,121 @@ implements DocumentMetadataPatchBuilder
 			// otherwise, fall through
 		}
 		return null;
+	}
+
+	@Override
+	public CallBuilder call() {
+		if (callBuilder == null)
+			callBuilder = new CallBuilderImpl();
+		return callBuilder;
+	}
+
+	static class CallImpl implements Call {
+		String   function;
+		boolean  isFragment = true;
+		Object[] args;
+		CallImpl(String function) {
+			super();
+			this.function = function;
+		}
+		CallImpl(String function, boolean isFragment, Object... args) {
+			this(function);
+			this.isFragment = isFragment;
+			this.args       = args;
+		}
+	}
+	static class CallBuilderImpl implements CallBuilder {
+		CallBuilderImpl() {
+			super();
+		}
+		@Override
+		public Call add(Number number) {
+			if (number == null)
+				throw new IllegalArgumentException("Cannot add null number");
+			return new CallImpl("ml.add", false, number);
+		}
+		@Override
+		public Call subtract(Number number) {
+			if (number == null)
+				throw new IllegalArgumentException("Cannot subtract null number");
+			return new CallImpl("ml.subtract", false, number);
+		}
+		@Override
+		public Call multiply(Number number) {
+			if (number == null)
+				throw new IllegalArgumentException("Cannot multiply null number");
+			return new CallImpl("ml.multiply", false, number);
+		}
+		@Override
+		public Call divideBy(Number number) {
+			if (number == null)
+				throw new IllegalArgumentException("Cannot divide null number");
+			return new CallImpl("ml.divide", false, number);
+		}
+
+		@Override
+		public Call concatenateAfter(String prefix) {
+			if (prefix == null)
+				throw new IllegalArgumentException(
+						"Cannot concatenate after null prefix");
+			return new CallImpl("ml.concat-after", false, prefix);
+		}
+		@Override
+		public Call concatenateBetween(String prefix, String suffix) {
+			if (prefix == null || suffix == null)
+				throw new IllegalArgumentException(
+						"Cannot concatenate between null prefix or suffix");
+			return new CallImpl("ml.concat-between", false, prefix, suffix);
+		}
+		@Override
+		public Call concatenateBefore(String suffix) {
+			if (suffix == null)
+				throw new IllegalArgumentException(
+						"Cannot concatenate before null suffix");
+			return new CallImpl("ml.concat-before", false, suffix);
+		}
+		@Override
+		public Call substringAfter(String prefix) {
+			if (prefix == null)
+				throw new IllegalArgumentException(
+						"Cannot substring after null prefix");
+			return new CallImpl("ml.substring-after", false, prefix);
+		}
+		@Override
+		public Call substringBefore(String suffix) {
+			if (suffix == null)
+				throw new IllegalArgumentException(
+						"Cannot substring before null suffix");
+			return new CallImpl("ml.substring-before", false, suffix);
+		}
+		@Override
+		public Call replaceRegex(String pattern, String replacement) {
+			if (pattern == null || replacement == null)
+				throw new IllegalArgumentException(
+						"Cannot replace regex with null pattern or replacement");
+			return new CallImpl("ml.replace-regex", false, pattern, replacement);
+		}
+		@Override
+		public Call replaceRegex(
+				String pattern, String replacement, String flags
+				) {
+			if (pattern == null || replacement == null || flags == null)
+				throw new IllegalArgumentException(
+						"Cannot replace regex with null pattern, replacement, or flags");
+			return new CallImpl("ml.replace-regex", false, pattern, replacement, flags);
+		}
+
+		@Override
+		public Call applyLibrary(String function) {
+			return new CallImpl(function);
+		}
+		@Override
+		public Call applyLibraryValues(String function, Object... args) {
+			return new CallImpl(function, false, args);
+		}
+		@Override
+		public Call applyLibraryFragments(String function, Object... args) {
+			return new CallImpl(function, true, args);
+		}
 	}
 }
