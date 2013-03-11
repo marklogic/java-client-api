@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.xml.XMLConstants;
-import javax.xml.namespace.NamespaceContext;
 
 /**
  * EditableNamespaceContext provides access to namespace bindings of prefixes and URIs and

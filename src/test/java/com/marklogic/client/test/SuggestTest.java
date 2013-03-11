@@ -17,7 +17,6 @@ package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 
 import org.custommonkey.xmlunit.XMLUnit;
@@ -29,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.SuggestDefinition;

@@ -19,8 +19,10 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 
 import javax.xml.namespace.QName;
@@ -30,6 +32,8 @@ import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.admin.QueryOptionsManager;
@@ -39,12 +43,15 @@ import com.marklogic.client.alerting.RuleDefinitionList;
 import com.marklogic.client.alerting.RuleManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.BytesHandle;
+import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryBuilder.Operator;
+import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class AlertingTest {
 
@@ -92,7 +99,6 @@ public class AlertingTest {
 		setupMatchRules();
 	}
 
-	
 	@Test
 	public void testRuleDefinitions() throws ParserConfigurationException,
 			SAXException, IOException {
@@ -134,12 +140,36 @@ public class AlertingTest {
 		assertEquals("javatestrule", roundTripped.getName());
 		assertEquals("Rule for testing java", roundTripped.getDescription());
 
-		BytesHandle exportedDef = roundTripped.exportQueryDefinition(new BytesHandle());
+		// test exporting XML
+		BytesHandle exportedDef = roundTripped
+				.exportQueryDefinition(new BytesHandle());
 
 		assertXMLEqual(
 				"Search element round-tripped",
 				"<search:search xmlns:search=\"http://marklogic.com/appservices/search\"><search:qtext>favorited:true</search:qtext></search:search>",
 				new String(exportedDef.get()));
+
+		FileHandle fileExport = roundTripped
+				.exportQueryDefinition(new FileHandle(new File(
+						"target/fileout.xml")));
+
+		BufferedReader reader = new BufferedReader(new FileReader(fileExport.get()));
+		String line = null;
+		StringBuilder sb = new StringBuilder();
+		String ls = System.getProperty("line.separator");
+
+		while ((line = reader.readLine()) != null) {
+			sb.append(line);
+			sb.append(ls);
+		}
+		reader.close();
+
+		String fileContents = sb.toString();
+		
+		assertXMLEqual(
+				"Search element round-tripped",
+				"<search:search xmlns:search=\"http://marklogic.com/appservices/search\"><search:qtext>favorited:true</search:qtext></search:search>",
+				fileContents);
 
 		RuleMetadata metadataReturned = roundTripped.getMetadata();
 		assertEquals(metadata.get(new QName("dataelem1")),
@@ -179,68 +209,65 @@ public class AlertingTest {
 				new String(exportedDef.get()));
 		ruleManager.delete("javatestrule");
 	}
-	
+
 	@Test
 	public void testXMLRuleDefinitions() throws SAXException, IOException {
 		File ruleFile = new File("src/test/resources/rule1.xml");
 		FileHandle ruleHandle = new FileHandle(ruleFile);
 		ruleManager.writeRule("javatestrule", ruleHandle);
-		
+
 		assertTrue(ruleManager.exists("javatestrule"));
-		RuleDefinition def = ruleManager.readRule("javatestrule", new RuleDefinition());
+		RuleDefinition def = ruleManager.readRule("javatestrule",
+				new RuleDefinition());
 		assertEquals("javatestrule", def.getName());
 		assertXMLEqual(
 				"Search element round-tripped - structured query and options",
-                "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">"+
-                "<search:qtext>favorited:true</search:qtext>"+
-                "<search:options xmlns:search=\"http://marklogic.com/appservices/search\">"+
-                "<search:constraint name=\"favorited\">"+
-                "<search:value>"+
-                "<search:element ns=\"\" name=\"favorited\" />"+
-                "</search:value>"+
-                "</search:constraint>"+
-                "</search:options>"+
-                "</search:search>",
-				new String(def.exportQueryDefinition(new BytesHandle()).get()));
+				"<search:search xmlns:search=\"http://marklogic.com/appservices/search\">"
+						+ "<search:qtext>favorited:true</search:qtext>"
+						+ "<search:options xmlns:search=\"http://marklogic.com/appservices/search\">"
+						+ "<search:constraint name=\"favorited\">"
+						+ "<search:value>"
+						+ "<search:element ns=\"\" name=\"favorited\" />"
+						+ "</search:value>" + "</search:constraint>"
+						+ "</search:options>" + "</search:search>", new String(
+						def.exportQueryDefinition(new BytesHandle()).get()));
 		ruleManager.delete("javatestrule");
-				
+
 	}
-	
+
 	@Test
 	public void testJSONRuleDefinitions() throws SAXException, IOException {
 		File ruleFile = new File("src/test/resources/rule1.json");
 		FileHandle ruleHandle = new FileHandle(ruleFile);
 		ruleHandle.setFormat(Format.JSON);
 		ruleManager.writeRule("javatestrule", ruleHandle);
-		
+
 		assertTrue(ruleManager.exists("javatestrule"));
-		RuleDefinition def = ruleManager.readRule("javatestrule", new RuleDefinition());
+		RuleDefinition def = ruleManager.readRule("javatestrule",
+				new RuleDefinition());
 		assertEquals("javatestrule", def.getName());
 		assertXMLEqual(
 				"Search element round-tripped - structured query and options",
-                "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">"+
-                "<search:qtext>favorited:true</search:qtext>"+
-                "<search:options xmlns:search=\"http://marklogic.com/appservices/search\">"+
-                "<search:constraint name=\"favorited\">"+
-                "<search:value>"+
-                "<search:element ns=\"\" name=\"favorited\" />"+
-                "</search:value>"+
-                "</search:constraint>"+
-                "</search:options>"+
-                "</search:search>",
-				new String(def.exportQueryDefinition(new BytesHandle()).get()));
-		
-		
-		BytesHandle bHandle = ruleManager.readRule("javatestrule", new BytesHandle().withFormat(Format.JSON));
-		assertEquals("{\"rule\":{\"name\":\"javatestrule\", \"description\":\"rule to demonstrate REST alerting\", \"search\":{\"qtext\":\"favorited:true\", \"options\":{\"constraint\":[{\"name\":\"favorited\", \"value\":{\"element\":{\"ns\":\"\", \"name\":\"favorited\"}}}]}}, \"rule-metadata\":null}}",
+				"<search:search xmlns:search=\"http://marklogic.com/appservices/search\">"
+						+ "<search:qtext>favorited:true</search:qtext>"
+						+ "<search:options xmlns:search=\"http://marklogic.com/appservices/search\">"
+						+ "<search:constraint name=\"favorited\">"
+						+ "<search:value>"
+						+ "<search:element ns=\"\" name=\"favorited\" />"
+						+ "</search:value>" + "</search:constraint>"
+						+ "</search:options>" + "</search:search>", new String(
+						def.exportQueryDefinition(new BytesHandle()).get()));
+
+		BytesHandle bHandle = ruleManager.readRule("javatestrule",
+				new BytesHandle().withFormat(Format.JSON));
+		assertEquals(
+				"{\"rule\":{\"name\":\"javatestrule\", \"description\":\"rule to demonstrate REST alerting\", \"search\":{\"qtext\":\"favorited:true\", \"options\":{\"constraint\":[{\"name\":\"favorited\", \"value\":{\"element\":{\"ns\":\"\", \"name\":\"favorited\"}}}]}}, \"rule-metadata\":null}}",
 				new String(bHandle.get()));
-		
+
 		ruleManager.delete("javatestrule");
-		
-				
-		
+
 	}
-	
+
 	private static void setupMatchRules() {
 		RuleDefinition definition = new RuleDefinition("favorites",
 				"Rule for testing favorited:true");
@@ -265,62 +292,101 @@ public class AlertingTest {
 		ruleManager.writeRule(definition);
 
 	}
-	
+
 	private static void teardownMatchRules() {
 		ruleManager.delete("notfavorited");
 		ruleManager.delete("favorites");
 	}
 
 	@Test
-	public void testMatchDocument() {
-		
+	public void testMatchGetDocumentUri() {
+
 		String[] docs = new String[] { "/alert/second.xml" };
 		String[] candidates = new String[] { "notfavorited" };
 
-		RuleDefinitionList answer = ruleManager.match(docs);
-		
-		assertEquals("One answer for first match scenario, favorite against all rules",
+		RuleDefinitionList answer = ruleManager.match(docs,
+				new RuleDefinitionList());
+
+		assertEquals(
+				"One answer for first match scenario, favorite against all rules",
 				1, answer.size());
 
 		RuleDefinition ruleMatch = answer.iterator().next();
 		assertEquals("favorites", ruleMatch.getName());
 
-		answer = ruleManager.match(docs, candidates);
-		assertEquals("Zero answers for second match scenario, favorites against false rule ",
+		answer = ruleManager.match(docs, candidates, answer);
+		assertEquals(
+				"Zero answers for second match scenario, favorites against false rule ",
 				0, answer.size());
 
 		docs = new String[] { "/alert/first.xml", "/alert/third.xml" };
 
-		answer = ruleManager.match(docs);
-		assertEquals("One answer for first match scenario",
-				1, answer.size());
-		
+		answer = ruleManager.match(docs, answer);
+		assertEquals("One answer for first match scenario", 1, answer.size());
+
 		RuleDefinition match = answer.iterator().next();
 		assertEquals("notfavorited", match.getName());
 
 	}
 
 	@Test
-	public void testMatchQuery() {
+	public void testMatchGetQuery() {
 
-		StringQueryDefinition qtext = queryManager.newStringDefinition("alerts");
+		StringQueryDefinition qtext = queryManager
+				.newStringDefinition("alerts");
 		qtext.setCriteria("favorited:true");
 
-		RuleDefinitionList answer = ruleManager.match(qtext);
+		RuleDefinitionList answer = ruleManager.match(qtext,
+				new RuleDefinitionList());
 		assertEquals("One answer", 1, answer.size());
 
 		qtext.setCriteria("favorited:false");
 		answer = ruleManager.match(qtext, 1L, new String[] { "favorites",
-		"notfavorited" });
+				"notfavorited" }, answer);
 		assertEquals("One answer", answer.size(), 1);
-		assertEquals("Right answer", "notfavorited",
-				answer.iterator().next().getName());
+		assertEquals("Right answer", "notfavorited", answer.iterator().next()
+				.getName());
 
 	}
 
 	@Test
-	public void testMatchPostQuery() {
-		//    public <T extends RuleListReadHandle> T match(StructureWriteHandle document, T RuleListDefinition);
-	//	    public <T extends RuleListReadHandle> T match(StructureWriteHandle document, String[] candidateRules, T RuleListDefinition);
+	public void testMatchPostQuery() throws SAXException, IOException {
+		StructuredQueryBuilder qb = new StructuredQueryBuilder(null);
+		StructuredQueryDefinition structuredQuery;
+		structuredQuery = qb.rangeConstraint("favorited", Operator.EQ, "true");
+
+		DOMHandle answer = ruleManager.match(structuredQuery, new DOMHandle());
+
+		Document doc = answer.get();
+		NodeList nl = doc.getElementsByTagNameNS(
+				"http://marklogic.com/rest-api", "name");
+		assertEquals(2, nl.getLength());
+
+		answer = ruleManager.match(structuredQuery, 1,
+				new String[] { "favorites" }, new DOMHandle());
+
+		doc = answer.get();
+		nl = doc.getElementsByTagNameNS("http://marklogic.com/rest-api", "name");
+		assertEquals(1, nl.getLength());
+
+	}
+
+	@Test
+	public void testMatchPostDocument() {
+		String docToMatch1 = "<favorited>true</favorited>";
+		String docToMatch2 = "<favorited>false</favorited>";
+
+		RuleDefinitionList ans1 = ruleManager.match(new StringHandle(
+				docToMatch1).withFormat(Format.XML), new RuleDefinitionList());
+		assertEquals("doc match 1 count", 1, ans1.size());
+		assertEquals("doc match 1", "favorites", ans1.iterator().next()
+				.getName());
+
+		RuleDefinitionList ans2 = ruleManager.match(new StringHandle(
+				docToMatch2).withFormat(Format.XML), new RuleDefinitionList());
+		assertEquals("doc match 2 count", 1, ans2.size());
+		assertEquals("doc match 2", "notfavorited", ans2.iterator().next()
+				.getName());
+
 	}
 }

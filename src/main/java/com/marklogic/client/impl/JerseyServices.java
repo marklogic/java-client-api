@@ -3358,6 +3358,8 @@ public class JerseyServices implements RESTServices {
 			String[] candidateRules) {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
+		HandleImplementation baseHandle = HandleAccessor.checkHandle(document, "match");
+		
 		if (candidateRules.length > 0) {
 			for (String candidateRule : candidateRules) {
 				params.add("rule", candidateRule);
@@ -3365,7 +3367,7 @@ public class JerseyServices implements RESTServices {
 		}
 		WebResource.Builder builder = null;
 		builder = connection.path("alert/match").queryParams(params)
-				.accept("application/xml");
+				.accept("application/xml").type(baseHandle.getMimetype());
 		
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -3452,7 +3454,7 @@ public class JerseyServices implements RESTServices {
 				logger.debug("Searching for structure {} in transaction {}",
 						structure);
 
-			builder = connection.path("search").queryParams(params)
+			builder = connection.path("alert/match").queryParams(params)
 					.type("application/xml").accept("application/xml");
 		} else {
 			throw new UnsupportedOperationException("Cannot match with "

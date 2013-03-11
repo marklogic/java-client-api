@@ -118,7 +118,7 @@ public class RawClientAlert {
 		RuleManager ruleMgr = client.newRuleManager();
 
         // match the rules against the documents qualified by the criteria
-		RuleDefinitionList matchedRules = ruleMgr.match(querydef);
+		RuleDefinitionList matchedRules = ruleMgr.match(querydef, new RuleDefinitionList());
 
         // iterate over the matched rules
 		Iterator<RuleDefinition> ruleItr = matchedRules.iterator();

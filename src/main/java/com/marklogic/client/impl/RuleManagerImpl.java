@@ -19,9 +19,9 @@ import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.alerting.RuleDefinition;
-import com.marklogic.client.alerting.RuleDefinitionList;
 import com.marklogic.client.alerting.RuleManager;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.marker.RuleListReadHandle;
 import com.marklogic.client.io.marker.RuleReadHandle;
 import com.marklogic.client.io.marker.RuleWriteHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
@@ -123,47 +123,43 @@ public class RuleManagerImpl extends AbstractLoggingManager implements
 	}
 
 	@Override
-	public RuleDefinitionList match(QueryDefinition docQuery) {
-		return match(docQuery, 1, new String[] {});
+	public <T extends RuleListReadHandle> T match(QueryDefinition docQuery, T ruleListHandle) {
+		return match(docQuery, 1, new String[] {}, ruleListHandle);
 	}
 
 	@Override
-	public RuleDefinitionList match(QueryDefinition docQuery, long start,
-			String[] candidateRules) {
+	public <T extends RuleListReadHandle> T match(QueryDefinition docQuery, long start,
+			String[] candidateRules, T ruleListHandle) {
 
-		RuleDefinitionList ruleDefinitionList = new RuleDefinitionList();
-
-		HandleAccessor.receiveContent(ruleDefinitionList,
+		HandleAccessor.receiveContent(ruleListHandle,
 				services.match(docQuery, start, candidateRules));
 		;
-		return ruleDefinitionList;
+		return ruleListHandle;
 	}
 
 	@Override
-	public RuleDefinitionList match(String[] docIds) {
-		return match(docIds, new String[] {});
+	public <T extends RuleListReadHandle> T match(String[] docIds, T ruleListHandle) {
+		return match(docIds, new String[] {}, ruleListHandle);
 	}
 
 	@Override
-	public RuleDefinitionList match(String[] docIds, String[] candidateRules) {
-		RuleDefinitionList ruleDefinitionList = new RuleDefinitionList();
-		HandleAccessor.receiveContent(ruleDefinitionList,
+	public <T extends RuleListReadHandle> T match(String[] docIds, String[] candidateRules, T ruleListHandle) {
+		HandleAccessor.receiveContent(ruleListHandle,
 				services.match(docIds, candidateRules));
-		return ruleDefinitionList;
+		return ruleListHandle;
 	}
 
 	@Override
-	public RuleDefinitionList match(StructureWriteHandle document) {
-		return match(document, new String[] {});
+	public <T extends RuleListReadHandle> T match(StructureWriteHandle document, T ruleListHandle) {
+		return match(document, new String[] {}, ruleListHandle);
 	}
 
 	@Override
-	public RuleDefinitionList match(StructureWriteHandle document,
-			String[] candidateRules) {
-		RuleDefinitionList ruleDefinitionList = new RuleDefinitionList();
-		HandleAccessor.receiveContent(ruleDefinitionList,
+	public <T extends RuleListReadHandle> T match(StructureWriteHandle document,
+			String[] candidateRules, T ruleListHandle) {
+		HandleAccessor.receiveContent(ruleListHandle,
 				services.match(document, candidateRules));
-		return ruleDefinitionList;
+		return ruleListHandle;
 	}
 
 }

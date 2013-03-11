@@ -19,13 +19,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
+import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import javax.xml.stream.events.XMLEvent;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -47,11 +50,13 @@ import com.marklogic.client.RequestConstants;
 import com.marklogic.client.impl.ClientPropertiesImpl;
 import com.marklogic.client.impl.DOMWriter;
 import com.marklogic.client.impl.HandleAccessor;
+import com.marklogic.client.impl.Utilities;
 import com.marklogic.client.impl.ValueConverter;
 import com.marklogic.client.io.BaseHandle;
+import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.OutputStreamSender;
-import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.RuleReadHandle;
 import com.marklogic.client.io.marker.RuleWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -61,14 +66,16 @@ import com.marklogic.client.util.NameMap;
 public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 		implements OutputStreamSender, RuleReadHandle, RuleWriteHandle {
 
+	@SuppressWarnings("unused")
 	private static final Logger logger = (Logger) LoggerFactory
 			.getLogger(RuleDefinition.class);
 
+	private static XMLOutputFactory factory = XMLOutputFactory.newFactory();
+	
 	/**
 	 * A RuleMetadata represents client-supplied metadata for a rule a POJO
 	 * (Plain Old Java Object).
 	 */
-
 	public interface RuleMetadata extends NameMap<Object> {
 	}
 
@@ -85,7 +92,7 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 
 	private String name;
 	private String description;
-	private byte[] queryPayload;
+	private List<XMLEvent> queryPayload;
 	private RuleMetadata metadata;
 
 	/**
@@ -98,15 +105,17 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 	 *            Text description of the rule.
 	 */
 	public RuleDefinition(String name, String description) {
+		this();
 		this.setName(name);
 		this.setDescription(description);
-		this.metadata = new RuleMetadataImpl();
 	}
 
 	/**
 	 * Make a new rule definition, no argument constructor.
 	 */
 	public RuleDefinition() {
+		factory.setProperty("javax.xml.stream.isRepairingNamespaces",
+				new Boolean(true));
 		this.metadata = new RuleMetadataImpl();
 	}
 
@@ -156,12 +165,7 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 	 *            A combined raw query definition serialized as XML.
 	 */
 	public void importQueryDefinition(XMLWriteHandle queryDef) {
-		if (queryDef instanceof BufferableHandle) {
-			this.queryPayload = ((BufferableHandle) queryDef).toBuffer();
-		} else {
-			throw new IllegalArgumentException(
-					"Query definitions must be bufferable");
-		}
+		this.queryPayload = Utilities.importXML(queryDef);
 	}
 
 	/**
@@ -172,22 +176,7 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 	 * @return The handle, with a combined query and options included as XML.
 	 */
 	public <T extends XMLReadHandle> T exportQueryDefinition(T handle) {
-		if (this.queryPayload == null) {
-			return null;
-
-		} else if (!HandleAccessor.isHandle(handle)) {
-			throw new IllegalArgumentException(
-					"Invalid handle provided for export.");
-		} else if (!byte[].class.isAssignableFrom(HandleAccessor
-				.receiveAs(handle))) {
-			throw new IllegalArgumentException(
-					"You can only export to handles that can receive byte[]");
-
-		} else {
-			HandleAccessor.receiveContent(handle, this.queryPayload);
-			return handle;
-		}
-
+		return Utilities.exportXML(this.queryPayload, handle);
 	}
 
 	/**
@@ -200,7 +189,7 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 	}
 
 	/**
-	 * Sete the metadata object for this rule.
+	 * Sets the metadata object for this rule.
 	 * 
 	 * @param metadata
 	 *            The metadata
@@ -212,11 +201,6 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 	@Override
 	public void write(OutputStream out) throws IOException {
 		try {
-
-			XMLOutputFactory factory = XMLOutputFactory.newInstance();
-			factory.setProperty("javax.xml.stream.isRepairingNamespaces",
-					new Boolean(true));
-
 			valueSerializer = null;
 
 			XMLStreamWriter serializer = factory.createXMLStreamWriter(out,
@@ -244,8 +228,11 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 			serializer.writeCharacters(getDescription());
 			serializer.writeEndElement();
 
-			logger.debug("Send: " + new String(queryPayload));
-			out.write(queryPayload);
+			// logger.debug("Send: " + new String(queryPayload));
+			XMLEventWriter eventWriter = factory.createXMLEventWriter(out);
+			for (XMLEvent event : this.queryPayload) {
+				eventWriter.add(event);
+			}
 
 			writeMetadataElement(serializer);
 
@@ -303,7 +290,8 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 
 			trans.transform(new DOMSource(searchElement),
 					new StreamResult(baos));
-			this.queryPayload = baos.toByteArray();
+			importQueryDefinition(new BytesHandle(baos.toByteArray())
+					.withFormat(Format.XML));
 		} catch (TransformerConfigurationException e) {
 			throw new MarkLogicIOException(
 					"Could not get query from rule payload");
@@ -312,7 +300,6 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 					"Could not get query from rule payload");
 		}
 
-		logger.debug("Receive: " + new String(this.queryPayload));
 		receiveRuleMetadataImpl(ruleElement);
 	}
 

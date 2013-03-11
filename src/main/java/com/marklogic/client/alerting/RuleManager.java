@@ -18,6 +18,7 @@ package com.marklogic.client.alerting;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.io.marker.RuleListReadHandle;
 import com.marklogic.client.io.marker.RuleReadHandle;
 import com.marklogic.client.io.marker.RuleWriteHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
@@ -87,9 +88,10 @@ public interface RuleManager {
 	/**
 	 * Matches server rules based on the results of a search.
 	 * @param docQuery A query definition to qualify documents to match
+	 * @param ruleListHandle A handle to hold the match results
 	 * @return The List of rules matched by the documents returned by this query.
 	 */
-	public RuleDefinitionList match(QueryDefinition docQuery);
+	public <T extends RuleListReadHandle> T match(QueryDefinition docQuery, T ruleListHandle);
 
 	/**
 	 * Matches server rules based on results of a search, with pagination applied to search.
@@ -97,41 +99,46 @@ public interface RuleManager {
 	 * @param docQuery A query definition to qualify documents to match
 	 * @param start The start position in query results to match.
 	 * @param candidateRules
+	 * @param ruleListHandle A handle to hold the match results
 	 * @return The list of rules matched by the documents returned by the query.
 	 */
-	public RuleDefinitionList match(QueryDefinition docQuery,
-			long start, String[] candidateRules);
+	public <T extends RuleListReadHandle> T match(QueryDefinition docQuery,
+			long start, String[] candidateRules, T ruleListHandle);
 
 	/**
 	 * Matches server rules based on an array of document IDS
 	 * @param docIds An array of document IDs to match against.
+	 * @param ruleListHandle A handle to hold the match results
 	 * @return The union of all rules matched by the document ids provided.
 	 */
-	public RuleDefinitionList match(String[] docIds);
+	public <T extends RuleListReadHandle> T match(String[] docIds, T ruleListHandle);
 
 	/**
 	 * Matches server rules based on an array of document IDs and an array of rule names
 	 * @param docIds An array of document IDs to match against.
 	 * @param candidateRules An array of rule names to match
+	 * @param ruleListHandle A handle to hold the match results
 	 * @return The union of rules in candidateRules matched by the document ids provided.
 	 */
-	public RuleDefinitionList match(String[] docIds, String[] candidateRules);
+	public <T extends RuleListReadHandle> T match(String[] docIds, String[] candidateRules, T ruleListHandle);
 
 	/**
 	 * Matches server rules based on a document supplied in a write handle.
 	 * @param document A document payload to match against rules.
+	 * @param ruleListHandle A handle to hold the match results
 	 * @return The union of rules in candidateRules matched by the document ids provided.
 	 */
-	public RuleDefinitionList match(StructureWriteHandle document);
+	public <T extends RuleListReadHandle> T match(StructureWriteHandle document, T ruleListHandle);
 
 	/**
 	 * Matches server rules based on a document supplied in a write handle.
 	 * @param document A document payload to match against rules.
 	 * @param candidateRules An array of rule names to match
+	 * @param ruleListHandle A handle to hold the match results
 	 * @return The union of rules in candidateRules matched by the document.
 	 */
-	public RuleDefinitionList match(StructureWriteHandle document,
-			String[] candidateRules);
+	public <T extends RuleListReadHandle> T match(StructureWriteHandle document,
+			String[] candidateRules, T ruleListHandle);
 
 	
 
