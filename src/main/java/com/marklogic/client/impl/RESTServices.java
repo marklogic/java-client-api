@@ -76,7 +76,7 @@ public interface RESTServices {
 			FailedRequestException;
 
 	public void patchDocument(RequestLogger logger, DocumentDescriptor desc, String transactionId,
-			Set<Metadata> categories, DocumentPatchHandle patchHandle)
+			Set<Metadata> categories, boolean isOnContent, DocumentPatchHandle patchHandle)
 		throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException;
 

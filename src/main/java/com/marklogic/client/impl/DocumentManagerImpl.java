@@ -481,13 +481,17 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		if (logger.isInfoEnabled())
 			logger.info("Patching document");
 
+		DocumentPatchHandleImpl builtPatch = 
+			(patch instanceof DocumentPatchHandleImpl) ?
+			(DocumentPatchHandleImpl) patch : null;
 		services.patchDocument(
 				requestLogger,
 				desc,
 				(transaction == null) ? null : transaction.getTransactionId(),
-				(patch instanceof DocumentPatchHandleImpl) ? 
-						((DocumentPatchHandleImpl) patch).getMetadata() :
-						processedMetadata,
+				(builtPatch != null) ?
+						builtPatch.getMetadata() : processedMetadata,
+				(builtPatch != null) ?
+						builtPatch.isOnContent() : true,
 				patch
 				);
 	}

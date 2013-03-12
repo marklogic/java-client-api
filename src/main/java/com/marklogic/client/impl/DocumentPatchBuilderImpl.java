@@ -25,9 +25,6 @@ extends DocumentMetadataPatchBuilderImpl
 implements DocumentPatchBuilder
 {
 /* TODO:
-    if null metadata categories, patch content
-    add content with categories for JSON or XML patch - flag in builder?  What about raw?
-
 	insert values for JSON array items
 	awareness of popular fragment sources
 
@@ -173,6 +170,7 @@ implements DocumentPatchBuilder
 
 	@Override
 	public DocumentPatchBuilder delete(String selectPath) {
+		onContent();
 		operations.add(new ContentDeleteOperation(selectPath));
 		return this;
 	}
@@ -180,6 +178,7 @@ implements DocumentPatchBuilder
 	public DocumentPatchBuilder insertFragment(
 			String contextPath, Position position, Object fragment
 			) {
+		onContent();
 		operations.add(
 				new ContentInsertOperation(contextPath, position, fragment)
 				);
@@ -187,11 +186,13 @@ implements DocumentPatchBuilder
 	}
 	@Override
 	public DocumentPatchBuilder replaceValue(String selectPath, Object value) {
+		onContent();
 		operations.add(new ContentReplaceOperation(selectPath, false, value));
 		return this;
 	}
 	@Override
 	public DocumentPatchBuilder replaceFragment(String selectPath, Object fragment) {
+		onContent();
 		operations.add(new ContentReplaceOperation(selectPath, true, fragment));
 		return this;
 	}
@@ -199,6 +200,7 @@ implements DocumentPatchBuilder
 	public DocumentPatchBuilder replaceInsertFragment(
 			String selectPath, String contextPath, Position position, Object fragment
 			) {
+		onContent();
 		operations.add(
 				new ContentReplaceInsertOperation(selectPath, contextPath, position, fragment)
 				);
@@ -209,9 +211,15 @@ implements DocumentPatchBuilder
 		if (!CallImpl.class.isAssignableFrom(call.getClass()))
 			throw new IllegalArgumentException(
 					"Cannot use external call implementation");
+		onContent();
 		operations.add(
 				new ContentReplaceApplyOperation(selectPath, (CallImpl) call)
 				);
 		return this;
+	}
+	private void onContent() {
+		if (!onContent) {
+			onContent = true;
+		}
 	}
 }

@@ -780,11 +780,11 @@ public class JerseyServices implements RESTServices {
 					extraParams, metadataMimetype, metadataHandle,
 					contentMimetype, contentHandle);
 		} else if (metadataBase != null) {
-			putPostDocumentImpl(reqlog, "put", desc, transactionId, categories,
+			putPostDocumentImpl(reqlog, "put", desc, transactionId, categories, false,
 					extraParams, metadataMimetype, metadataHandle);
 		} else if (contentBase != null) {
-			putPostDocumentImpl(reqlog, "put", desc, transactionId, null, extraParams,
-					contentMimetype, contentHandle);
+			putPostDocumentImpl(reqlog, "put", desc, transactionId, null, true, 
+					extraParams, contentMimetype, contentHandle);
 		}
 	}
 
@@ -835,7 +835,7 @@ public class JerseyServices implements RESTServices {
 			putPostDocumentImpl(reqlog, "post", desc, transactionId, categories, extraParams,
 					metadataMimetype, metadataHandle, contentMimetype, contentHandle);
 		} else if (contentBase != null) {
-			putPostDocumentImpl(reqlog, "post", desc, transactionId, null, extraParams,
+			putPostDocumentImpl(reqlog, "post", desc, transactionId, null, true, extraParams,
 					contentMimetype, contentHandle);
 		}
 
@@ -843,7 +843,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	private void putPostDocumentImpl(RequestLogger reqlog, String method, DocumentDescriptor desc,
-			String transactionId, Set<Metadata> categories, RequestParameters extraParams,
+			String transactionId, Set<Metadata> categories, boolean isOnContent, RequestParameters extraParams,
 			String mimetype, AbstractWriteHandle handle)
 	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
@@ -1076,14 +1076,13 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public void patchDocument(RequestLogger reqlog, DocumentDescriptor desc, String transactionId,
-			Set<Metadata> categories, DocumentPatchHandle patchHandle)
+			Set<Metadata> categories, boolean isOnContent, DocumentPatchHandle patchHandle)
 	throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
 		HandleImplementation patchBase = HandleAccessor.checkHandle(
 				patchHandle, "patch");
 
-// TODO: add content to categories for JSON or XML patch
-		putPostDocumentImpl(reqlog, "patch", desc, transactionId, categories, null,
+		putPostDocumentImpl(reqlog, "patch", desc, transactionId, categories, isOnContent, null,
 				patchBase.getMimetype(), patchHandle);
 	}
 

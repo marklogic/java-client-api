@@ -630,12 +630,17 @@ implements DocumentMetadataPatchBuilder
 	implements PatchHandle
 	{
 		private Set<Metadata> metadata;
-		DocumentPatchHandleImpl(Set<Metadata> metadata) {
+		private boolean       onContent;
+		DocumentPatchHandleImpl(Set<Metadata> metadata, boolean onContent) {
 			super();
-			this.metadata = metadata;
+			this.metadata  = metadata;
+			this.onContent = onContent;
 		}
 		Set<Metadata> getMetadata() {
 			return metadata;
+		}
+		public boolean isOnContent() {
+			return onContent;
 		}
 	}
 
@@ -647,6 +652,7 @@ implements DocumentMetadataPatchBuilder
 	protected String                    libraryAt;
 	protected Format                    format;
 	protected Set<Metadata>             processedMetadata;
+	protected boolean                   onContent = false;
 
 	DocumentMetadataPatchBuilderImpl(Format format) {
 		super();
@@ -842,7 +848,7 @@ implements DocumentMetadataPatchBuilder
 
 	@Override
 	public PatchHandle build() throws MarkLogicIOException {
-		DocumentPatchHandleImpl handle = new DocumentPatchHandleImpl(processedMetadata);
+		DocumentPatchHandleImpl handle = new DocumentPatchHandleImpl(processedMetadata, onContent);
 		if (format == Format.JSON) {
 			handle.setFormat(format);
 
