@@ -1,6 +1,6 @@
 xquery version "1.0-ml";
 
-(: Copyright 2011-2012 MarkLogic Corporation.  All Rights Reserved. :)
+(: Copyright 2012-2013 MarkLogic Corporation.  All Rights Reserved. :)
 
 module namespace searchcollect = "http://marklogic.com/rest-api/resource/searchcollect";
 

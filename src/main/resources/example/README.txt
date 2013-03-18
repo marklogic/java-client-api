@@ -50,6 +50,8 @@ The examples illustrate the following common tasks:
 *  MultiStatementTransaction  complete a transaction with several requests
 *  DocumentReadTransform      transform content on the server while reading
 *  DocumentWriteTransform     transform content on the server while writing
+*  ResourcExtension           extend the Java API to execute other capabilities
+                              of the MarkLogic server on the client
 *  OptimisticLocking          write or delete a document only if it has not
                               changed
 *  SSLClientCreator           create a database client using SSL
