@@ -29,8 +29,16 @@ public interface StringQueryDefinition
     public String getCriteria();
 
     /**
-     * Sets the query criteria, that is the query string.
+     * Sets the query criteria as a query string.
      * @param criteria The query string.
      */
     public void setCriteria(String criteria);
+
+    /**
+     * Sets the query criteria as a query string and returns the query
+	 * definition as a fluent convenience.
+     * @param criteria The query string.
+     * @return	This query definition.
+     */
+    public StringQueryDefinition withCriteria(String criteria);
 }

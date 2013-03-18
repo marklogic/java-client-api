@@ -31,7 +31,12 @@ public class StringQueryDefinitionImpl extends AbstractQueryDefinition implement
 
     @Override
     public void setCriteria(String criteria) {
-        // FIXME: check for null?
         this.criteria = criteria;
+    }
+
+    @Override
+    public StringQueryDefinition withCriteria(String criteria) {
+    	setCriteria(criteria);
+    	return this;
     }
 }
