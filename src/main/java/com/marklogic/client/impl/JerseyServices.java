@@ -2330,12 +2330,16 @@ public class JerseyServices implements RESTServices {
 				"read");
 
 		String inputMimetype = inputBase.getMimetype();
-		String outputMimetype = outputBase.getMimetype();
 		boolean isResendable = inputBase.isResendable();
-		Class as = outputBase.receiveAs();
-
+		String outputMimeType = null;
+		Class as = null;
+		if (outputBase != null) {
+			outputMimeType = outputBase.getMimetype();
+		
+			as = outputBase.receiveAs();
+		}
 		WebResource.Builder builder = makePutBuilder(path, params,
-				inputMimetype, outputMimetype);
+				inputMimetype, outputMimeType);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -2663,11 +2667,14 @@ public class JerseyServices implements RESTServices {
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
 				"read");
 
-		String outputMimetype = outputBase.getMimetype();
-		Class as = outputBase.receiveAs();
-
+		String outputMimeType = null;
+		Class as = null;
+		if (outputBase != null) {
+			outputMimeType = outputBase.getMimetype();
+			as = outputBase.receiveAs();
+		}
 		WebResource.Builder builder = makeDeleteBuilder(reqlog, path, params,
-				outputMimetype);
+				outputMimeType);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;

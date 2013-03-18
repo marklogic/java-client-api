@@ -133,4 +133,11 @@ public interface ServerConfigurationManager {
 	 * @return either Format.JSON or Format.XML
 	 */
 	public Format getErrorFormat();
+	
+	/**
+	 * Creates a manager for writing and reading assets in the REST
+	 * server's modules database.
+	 * @return The extensions manager.
+	 */
+	public ExtensionLibrariesManager newExtensionLibrariesManager();
 }

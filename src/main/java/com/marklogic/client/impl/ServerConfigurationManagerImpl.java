@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.admin.ExtensionLibrariesManager;
 import com.marklogic.client.admin.NamespacesManager;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ResourceExtensionsManager;
@@ -222,5 +223,10 @@ class ServerConfigurationManagerImpl
 			this.errorFormat = errorFormat;
 		else
 			throw new IllegalArgumentException("The only supported values for error format are JSON and XML.");
+	}
+
+	@Override
+	public ExtensionLibrariesManager newExtensionLibrariesManager() {
+		return new ExtensionLibrariesManagerImpl(services);
 	}
 }
