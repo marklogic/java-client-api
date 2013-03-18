@@ -32,6 +32,7 @@ import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.MatchLocation;
+import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
@@ -50,36 +51,43 @@ public class StructuredSearchTest {
     @Test
     public void testStructuredSearch() throws IOException {
         QueryManager queryMgr = Common.client.newQueryManager();
-        StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(null);
-        StructuredQueryDefinition t = qb.term("leaf3");
+        StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
 
-        SearchHandle results = queryMgr.search(t, new SearchHandle());
-        assertNotNull(results);
-        assertFalse(results.getMetrics().getTotalTime() == -1);
+        for (QueryDefinition t:new QueryDefinition[]{
+            qb.term("leaf3"), qb.build(qb.value(qb.element("leaf"), "leaf3"))
+        }) {
+        	SearchHandle results = queryMgr.search(t, new SearchHandle());
+        	assertNotNull(results);
+        	assertFalse(results.getMetrics().getTotalTime() == -1);
 
-        MatchDocumentSummary[] summaries = results.getMatchResults();
-        assertNotNull(summaries);
-        assertTrue(summaries.length > 0);
-        for (MatchDocumentSummary summary : summaries) {
-            MatchLocation[] locations = summary.getMatchLocations();
-            for (MatchLocation location : locations) {
-                assertNotNull(location.getAllSnippetText());
-            }
+        	MatchDocumentSummary[] summaries = results.getMatchResults();
+        	assertNotNull(summaries);
+        	assertTrue(summaries.length > 0);
+        	for (MatchDocumentSummary summary : summaries) {
+        		MatchLocation[] locations = summary.getMatchLocations();
+        		for (MatchLocation location : locations) {
+        			assertNotNull(location.getAllSnippetText());
+        		}
+        	}
+
+        	assertNotNull(summaries);
         }
-
-        assertNotNull(summaries);
     }
 
     @Test
     public void testStructuredSearch1() throws IOException {
         QueryManager queryMgr = Common.client.newQueryManager();
-        StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(null);
-        StructuredQueryDefinition t = qb.term("leaf3");
+        StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
 
-        MatchDocumentSummary summary = queryMgr.findOne(t);
-        if (summary != null) {
-            GenericDocumentManager docMgr = Common.client.newDocumentManager();
-            assertTrue("Document exists", docMgr.exists(summary.getUri())!=null);
+        for (QueryDefinition t:new QueryDefinition[]{
+                qb.term("leaf3"), qb.build(qb.value(qb.element("leaf"), "leaf3"))
+            }) {
+
+        	MatchDocumentSummary summary = queryMgr.findOne(t);
+        	if (summary != null) {
+        		GenericDocumentManager docMgr = Common.client.newDocumentManager();
+        		assertTrue("Document exists", docMgr.exists(summary.getUri())!=null);
+        	}
         }
     }
 
@@ -100,7 +108,7 @@ public class StructuredSearchTest {
     @Test
     public void testJSON() {
         QueryManager queryMgr = Common.client.newQueryManager();
-        StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(null);
+        StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
         StructuredQueryDefinition t = qb.term("leaf3");
 
         // create a handle for the search results

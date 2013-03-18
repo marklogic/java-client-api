@@ -45,10 +45,10 @@ implements RawQueryDefinition
 	static public class Structured
 	extends RawQueryDefinitionImpl
 	implements RawStructuredQueryDefinition {
-		Structured(StructureWriteHandle handle) {
+		public Structured(StructureWriteHandle handle) {
 			super(handle);
 		}
-		Structured(StructureWriteHandle handle, String optionsName) {
+		public Structured(StructureWriteHandle handle, String optionsName) {
 			super(handle, optionsName);
 		}
 
@@ -95,6 +95,14 @@ implements RawQueryDefinition
 	@Override
 	public void setHandle(StructureWriteHandle handle) {
 		this.handle = handle;
+	}
+
+	@Override
+	public String toString() {
+		if (handle == null) {
+			return null;
+		}
+		return handle.toString();
 	}
 
 }
