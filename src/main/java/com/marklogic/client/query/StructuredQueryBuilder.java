@@ -1252,6 +1252,12 @@ public class StructuredQueryBuilder {
     // from a package PointImpl class
 
     abstract class RegionImpl  {
+        /**
+         * Returns the region as a partial string.  This method will be removed in a future
+         * release.
+         * @return	the query content identifying a region
+         */
+    	@Deprecated
         public String serialize() {
         	return extractQueryContent(serializeRegions(this));
         }
@@ -1414,7 +1420,7 @@ public class StructuredQueryBuilder {
 
     static private XMLStreamWriter makeSerializer(OutputStream out) {
 		XMLOutputFactory factory = XMLOutputFactory.newInstance();
-		factory.setProperty("javax.xml.stream.isRepairingNamespaces", new Boolean(true));
+		factory.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, new Boolean(true));
 
 		try {
 			XMLStreamWriter serializer = factory.createXMLStreamWriter(out, "UTF-8");
@@ -1449,7 +1455,8 @@ public class StructuredQueryBuilder {
 		try {
 			XMLStreamWriter serializer = makeSerializer(out);
 
-			serializer.writeStartDocument();
+// omit the XML prolog
+//			serializer.writeStartDocument();
 			serializer.writeStartElement("query");
 
 			if (objects != null) {
@@ -1465,7 +1472,9 @@ public class StructuredQueryBuilder {
 			}
 
 			serializer.writeEndElement();
-			serializer.writeEndDocument();
+//			serializer.writeEndDocument();
+			serializer.flush();
+			serializer.close();
 		} catch (Exception e) {
 			throw new MarkLogicIOException(e);
 		}

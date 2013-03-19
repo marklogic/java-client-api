@@ -65,7 +65,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><and-query><term-query><text>one</text></term-query><term-query><text>two</text></term-query><term-query><text>three</text></term-query></and-query></query>", q);
         }
 
@@ -73,7 +73,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{u.serialize(), qb.build(u).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
         			XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><or-query><term-query><text>one</text></term-query><term-query><text>two</text></term-query><term-query><text>three</text></term-query></or-query></query>", q);
         }
 
@@ -81,7 +81,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{v.serialize(), qb.build(v).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\">"
                 + "<or-query>"
                 + "<and-query><term-query><text>one</text></term-query><term-query><text>two</text></term-query><term-query><text>three</text></term-query></and-query>"
@@ -93,7 +93,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><and-query><term-query><text>one</text><text>two</text><text>three</text></term-query></and-query></query>", q);
         }
 
@@ -101,7 +101,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><and-query><term-query><text>one</text><text>two</text><text>three</text><weight>3.0</weight></term-query></and-query></query>", q);
         }
 
@@ -109,7 +109,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><not-query><term-query><text>one</text></term-query></not-query></query>", q);
         }
 
@@ -117,7 +117,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><near-query><term-query><text>one</text></term-query></near-query></query>", q);
         }
 
@@ -125,7 +125,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><near-query><term-query><text>two</text></term-query>"
                 + "<ordered>false</ordered><distance>4</distance><distance-weight>2.3</distance-weight></near-query></query>", q);
         }
@@ -134,7 +134,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><term-query><text>leaf3</text></term-query></query>", q);
         }
 
@@ -142,7 +142,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><and-not-query>"
                 + "<positive-query><term-query><text>one</text></term-query></positive-query>"
                 + "<negative-query><term-query><text>two</text></term-query></negative-query>"
@@ -153,7 +153,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><document-fragment-query><document-query><uri>/some/uri.xml</uri></document-query></document-fragment-query></query>", q);
         }
 
@@ -161,7 +161,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><properties-query><directory-query><uri>/dir1</uri><uri>dir2</uri><infinite>false</infinite></directory-query></properties-query></query>", q);
         }
 
@@ -169,7 +169,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><locks-query><term-query><text>one</text></term-query></locks-query></query>", q);
         }
 
@@ -177,7 +177,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><element-constraint-query><constraint-name>name</constraint-name><term-query><text>one</text></term-query></element-constraint-query></query>", q);
         }
 
@@ -185,7 +185,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><properties-constraint-query><constraint-name>name</constraint-name><term-query><text>one</text></term-query></properties-constraint-query></query>", q);
         }
 
@@ -193,7 +193,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><collection-constraint-query><constraint-name>name</constraint-name><uri>c1</uri><uri>c2</uri></collection-constraint-query></query>", q);
         }
 
@@ -201,7 +201,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><value-constraint-query><constraint-name>name</constraint-name><text>one</text></value-constraint-query></query>", q);
         }
 
@@ -209,7 +209,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{qb.build(m).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><value-query><element ns=\"\" name=\"name\"></element><text>one</text></value-query></query>", q);
         }
 
@@ -217,7 +217,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><value-constraint-query><constraint-name>name</constraint-name><text>one</text><weight>2.0</weight></value-constraint-query></query>", q);
         }
 
@@ -225,7 +225,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{qb.build(m).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><value-query><element ns=\"\" name=\"name\"></element><text>one</text><weight>2.0</weight></value-query></query>", q);
         }
 
@@ -233,7 +233,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><word-constraint-query><constraint-name>name</constraint-name><text>one</text></word-constraint-query></query>", q);
         }
 
@@ -241,7 +241,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{qb.build(m).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><word-query><element ns=\"\" name=\"name\"></element><text>one</text></word-query></query>", q);
         }
 
@@ -249,7 +249,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><word-constraint-query><constraint-name>name</constraint-name><text>one</text><weight>2.0</weight></word-constraint-query></query>", q);
         }
 
@@ -257,7 +257,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{qb.build(m).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><word-query><element ns=\"\" name=\"name\"></element><text>one</text><weight>2.0</weight></word-query></query>", q);
         }
 
@@ -265,7 +265,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><range-constraint-query><constraint-name>name</constraint-name><value>value1</value><value>value2</value><range-operator>GE</range-operator></range-constraint-query></query>", q);
         }
 
@@ -273,7 +273,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{qb.build(m).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><range-query type=\"xs:string\"><element ns=\"\" name=\"name\"></element><value>value1</value><value>value2</value><range-operator>GE</range-operator></range-query></query>", q);
         }
 
@@ -282,7 +282,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\">"
                 + "<geospatial-constraint-query>"
                 + "<constraint-name>geo</constraint-name>"
@@ -305,7 +305,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{qb.build(m).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\">"
                 + "<geo-elem-pair-query>"
                 + "<parent ns=\"\" name=\"parent\"></parent>"+"<lat ns=\"\" name=\"lat\"></lat>"+"<lon ns=\"\" name=\"lon\"></lon>"
@@ -324,7 +324,7 @@ public class StructuredQueryBuilderTest {
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
-        	assertEquals("<?xml version=\"1.0\" ?><query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><custom-constraint-query><constraint-name>name</constraint-name><text>one</text><text>two</text></custom-constraint-query></query>", q);
         }
 
