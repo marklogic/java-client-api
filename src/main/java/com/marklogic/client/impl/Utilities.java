@@ -79,7 +79,7 @@ public final class Utilities {
 		org.w3c.dom.Element element = null;
 		try {
 			ByteArrayInputStream bais = new ByteArrayInputStream(
-					xmlString.getBytes());
+					xmlString.getBytes(Charset.forName("UTF-8")));
 			element = getFactory().newDocumentBuilder().parse(bais)
 					.getDocumentElement();
 		} catch (SAXException e) {
