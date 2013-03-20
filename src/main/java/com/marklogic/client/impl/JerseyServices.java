@@ -1241,16 +1241,16 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = null;
 		String structure = null;
-		StructureWriteHandle handle = null;
+		HandleImplementation baseHandle = null;
 
 		if (queryDef instanceof RawQueryDefinition) {
 			if (logger.isDebugEnabled())
 				logger.debug("Raw search in transaction {}", transactionId);
 
-			handle = ((RawQueryDefinition) queryDef).getHandle();
+			StructureWriteHandle handle =
+				((RawQueryDefinition) queryDef).getHandle();
 			
-			HandleImplementation baseHandle = 
-				HandleAccessor.checkHandle(handle, "search");
+			baseHandle = HandleAccessor.checkHandle(handle, "search");
 
 			Format payloadFormat = baseHandle.getFormat();
 			if (payloadFormat == Format.UNKNOWN)
@@ -1341,7 +1341,7 @@ public class JerseyServices implements RESTServices {
 			} else if (queryDef instanceof DeleteQueryDefinition) {
 				response = doGet(builder);
 			} else if (queryDef instanceof RawQueryDefinition) {
-				response = doPost(reqlog, builder, handle, true);
+				response = doPost(reqlog, builder, baseHandle.sendContent(), true);
 			} else {
 				throw new UnsupportedOperationException("Cannot search with "
 						+ queryDef.getClass().getName());
