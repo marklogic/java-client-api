@@ -28,10 +28,13 @@ import com.marklogic.client.query.QueryManager;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.MatchLocation;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.io.SearchHandle;
@@ -110,5 +113,41 @@ public class StructuredSearchTest {
         queryMgr.search(t, resultsHandle);
 
         assertEquals("{", resultsHandle.get().substring(0, 1)); // It's JSON, right?
+    }
+
+    @Test
+    public void testExtractMetadata() {
+        QueryManager queryMgr = Common.client.newQueryManager();
+
+        String combined =
+			"<search xmlns=\"http://marklogic.com/appservices/search\">"+
+			"<query>"+
+			"<value-constraint-query>"+
+			"<constraint-name>firstKey</constraint-name>"+
+			"<text>first value</text>"+
+			"</value-constraint-query>"+
+			"</query>"+
+			"<options>"+
+			"<constraint name=\"firstKey\">"+
+			"<value>"+
+			"<element ns=\"http://marklogic.com/xdmp/json\" name=\"firstKey\"/>"+
+			"</value>"+
+			"</constraint>"+
+			"<extract-metadata>"+
+			"<qname elem-ns=\"http://marklogic.com/xdmp/json\" elem-name=\"subKey\"/>"+
+			"</extract-metadata>"+
+			"</options>"+
+			"</search>";
+		StringHandle rawHandle = new StringHandle(combined);
+
+		RawCombinedQueryDefinition rawDef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+
+		SearchHandle sh = queryMgr.search(rawDef, new SearchHandle());
+
+		Document metadata = sh.getMatchResults()[0].getMetadata();
+		Element subKey = (Element)
+			metadata.getElementsByTagNameNS("http://marklogic.com/xdmp/json", "subKey").item(0);
+		assertEquals("string", subKey.getAttribute("type"));
+		assertEquals("sub value", subKey.getTextContent());
     }
 }

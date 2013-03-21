@@ -844,6 +844,7 @@ public class SearchHandle
                     for (int pos = 0; pos < attributes.getLength(); pos++) {
                         Attr attr = dom.createAttributeNS(attributes.getURI(pos), attributes.getQName(pos));
                         attr.setValue(attributes.getValue(pos));
+                        root.setAttributeNode(attr);
                     }
                 }
 
@@ -869,6 +870,7 @@ public class SearchHandle
                 for (int pos = 0; pos < attributes.getLength(); pos++) {
                     Attr attr = dom.createAttributeNS(attributes.getURI(pos), attributes.getQName(pos));
                     attr.setValue(attributes.getValue(pos));
+                    child.setAttributeNode(attr);
                 }
                 stack.peek().appendChild(child);
                 stack.push(child);
