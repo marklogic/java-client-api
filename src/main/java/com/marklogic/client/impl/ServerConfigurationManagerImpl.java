@@ -49,6 +49,7 @@ class ServerConfigurationManagerImpl
 	private Boolean validatingQueries;
 	private Boolean validatingQueryOptions;
 	private String  defaultDocumentReadTransform;
+	private Boolean defaultDocumentReadTransformAll;
 	private Boolean serverRequestLogging;
 	private Policy  contentVersions;
 	private Format  errorFormat;
@@ -76,11 +77,12 @@ class ServerConfigurationManagerImpl
 
 			XMLStreamReader reader = factory.createXMLStreamReader(stream);
 
-			validatingQueries            = null;
-			validatingQueryOptions       = null;
-			defaultDocumentReadTransform = null;
-			serverRequestLogging         = null;
-			contentVersions              = null;
+			validatingQueries               = null;
+			validatingQueryOptions          = null;
+			defaultDocumentReadTransform    = null;
+			defaultDocumentReadTransformAll = null;
+			serverRequestLogging            = null;
+			contentVersions                 = null;
 
 			while (reader.hasNext()) {
 				if (reader.next() != XMLStreamReader.START_ELEMENT)
@@ -93,6 +95,8 @@ class ServerConfigurationManagerImpl
 					validatingQueryOptions = Boolean.valueOf(reader.getElementText());
 				} else if ("document-transform-out".equals(localName)) {
 					defaultDocumentReadTransform = reader.getElementText();
+				} else if ("document-transform-all".equals(localName)) {
+					defaultDocumentReadTransformAll = Boolean.valueOf(reader.getElementText());
 				} else if ("debug".equals(localName)) {
 					serverRequestLogging = Boolean.valueOf(reader.getElementText());
 				} else if ("content-versions".equals(localName)) {
@@ -142,6 +146,11 @@ class ServerConfigurationManagerImpl
 			if (defaultDocumentReadTransform != null) {
 				serializer.writeStartElement(REST_API_NS, "document-transform-out");
 				serializer.writeCharacters(defaultDocumentReadTransform);
+				serializer.writeEndElement();
+			}
+			if (defaultDocumentReadTransformAll != null) {
+				serializer.writeStartElement(REST_API_NS, "document-transform-all");
+				serializer.writeCharacters(defaultDocumentReadTransformAll.toString());
 				serializer.writeEndElement();
 			}
 			if (serverRequestLogging != null) {
@@ -195,6 +204,15 @@ class ServerConfigurationManagerImpl
 	@Override
 	public void setDefaultDocumentReadTransform(String name) {
 		defaultDocumentReadTransform = name;
+	}
+
+	@Override
+	public Boolean getDefaultDocumentReadTransformAll() {
+		return defaultDocumentReadTransformAll;
+	}
+	@Override
+	public void setDefaultDocumentReadTransformAll(Boolean on) {
+		defaultDocumentReadTransformAll = on;
 	}
 
 	@Override

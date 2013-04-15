@@ -83,7 +83,20 @@ public interface ServerConfigurationManager {
 	 * on the read request.
 	 * @param name	the default transform name
 	 */
-	public void   setDefaultDocumentReadTransform(String name);
+	public void setDefaultDocumentReadTransform(String name);
+
+	/**
+	 * Returns whether the default transform for reading documents
+	 * applies to all users or only users with the rest-reader role.
+	 * @return	true if the default read transform applies to all users
+	 */
+	public Boolean getDefaultDocumentReadTransformAll();
+	/**
+	 * Specifies whether the default transform for reading documents
+	 * applies to all users or only users with the rest-reader role.
+	 * @param on	true to apply the default read transform to all users
+	 */
+	public void setDefaultDocumentReadTransformAll(Boolean on);
 
 	/**
 	 * Returns whether the server logs requests to the error log on the server.

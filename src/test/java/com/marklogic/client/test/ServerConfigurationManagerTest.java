@@ -44,43 +44,50 @@ public class ServerConfigurationManagerTest {
 		assertNull("Initial query option validation not null", serverConfig.getQueryOptionValidation());
 
 		serverConfig.readConfiguration();
-		Boolean initialQueryValid = serverConfig.getQueryValidation();
-		Boolean initialOptionValid = serverConfig.getQueryOptionValidation();
-		String  initialReadTrans   = serverConfig.getDefaultDocumentReadTransform();
-		Boolean initialRequestLog  = serverConfig.getServerRequestLogging();
-		Policy  initialVersionReq  = serverConfig.getContentVersionRequests();
-		
-		Boolean modQueryValid = initialQueryValid ? false : true;
-		Boolean modOptionValid = initialOptionValid ? false : true;
-		String  modReadTrans   = "modifiedReadTransform";
-		Boolean modRequestLog  = initialOptionValid ? false : true;
-		Policy  modVersionReq  = (initialVersionReq == Policy.OPTIONAL) ?
+
+		Boolean initialQueryValid   = serverConfig.getQueryValidation();
+		Boolean initialOptionValid  = serverConfig.getQueryOptionValidation();
+		String  initialReadTrans    = serverConfig.getDefaultDocumentReadTransform();
+		Boolean initialReadTransAll = serverConfig.getDefaultDocumentReadTransformAll();
+		Boolean initialRequestLog   = serverConfig.getServerRequestLogging();
+		Policy  initialVersionReq   = serverConfig.getContentVersionRequests();
+
+		Boolean modQueryValid   = initialQueryValid   ? false : true;
+		Boolean modOptionValid  = initialOptionValid  ? false : true;
+		String  modReadTrans    = "modifiedReadTransform";
+		Boolean modReadTransAll = initialReadTransAll ? false : true;
+		Boolean modRequestLog   = initialOptionValid  ? false : true;
+		Policy  modVersionReq   = (initialVersionReq == Policy.OPTIONAL) ?
 			Policy.REQUIRED : Policy.OPTIONAL;
 
 		serverConfig = Common.client.newServerConfigManager();
 		serverConfig.setQueryValidation(modQueryValid);
 		serverConfig.setQueryOptionValidation(modOptionValid);
 		serverConfig.setDefaultDocumentReadTransform(modReadTrans);
+		serverConfig.setDefaultDocumentReadTransformAll(modReadTransAll);
 		serverConfig.setServerRequestLogging(modRequestLog);
 		serverConfig.setContentVersionRequests(modVersionReq);
 		serverConfig.writeConfiguration();
 
 		serverConfig = Common.client.newServerConfigManager();
 		serverConfig.readConfiguration();
-		assertEquals("Failed to change query  validation",
-				modQueryValid, serverConfig.getQueryValidation());
+		assertEquals("Failed to change query validation",
+				modQueryValid,   serverConfig.getQueryValidation());
 		assertEquals("Failed to change query options validation",
-				modOptionValid, serverConfig.getQueryOptionValidation());
+				modOptionValid,  serverConfig.getQueryOptionValidation());
 		assertEquals("Failed to change document read transform",
-				modReadTrans,   serverConfig.getDefaultDocumentReadTransform());
+				modReadTrans,    serverConfig.getDefaultDocumentReadTransform());
+		assertEquals("Failed to change document read transform all",
+				modReadTransAll, serverConfig.getDefaultDocumentReadTransformAll());
 		assertEquals("Failed to change server request logging",
-				modRequestLog,  serverConfig.getServerRequestLogging());
+				modRequestLog,   serverConfig.getServerRequestLogging());
 		assertEquals("Failed to change content version requests",
-				modVersionReq, serverConfig.getContentVersionRequests());
+				modVersionReq,   serverConfig.getContentVersionRequests());
 		
 		serverConfig = Common.client.newServerConfigManager();
 		serverConfig.setQueryOptionValidation(initialOptionValid);
 		serverConfig.setDefaultDocumentReadTransform(initialReadTrans);
+		serverConfig.setDefaultDocumentReadTransformAll(initialReadTransAll);
 		serverConfig.setServerRequestLogging(initialRequestLog);
 		serverConfig.setContentVersionRequests(initialVersionReq);
 		serverConfig.writeConfiguration();
