@@ -10,9 +10,11 @@ import javax.xml.stream.events.XMLEvent;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.admin.ExtensionLibrariesManager;
 import com.marklogic.client.admin.ExtensionLibraryDescriptor;
+import com.marklogic.client.admin.ExtensionLibraryDescriptor.Permission;
 import com.marklogic.client.io.XMLEventReaderHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.util.RequestParameters;
 
 public class ExtensionLibrariesManagerImpl extends AbstractLoggingManager implements ExtensionLibrariesManager {
 
@@ -70,7 +72,11 @@ public class ExtensionLibrariesManagerImpl extends AbstractLoggingManager implem
 	@Override
 	public void write(ExtensionLibraryDescriptor modulesDescriptor,
 			AbstractWriteHandle contentHandle) {
-		write(modulesDescriptor.getPath(), contentHandle);
+		RequestParameters requestParams = new RequestParameters();
+		for (Permission perm : modulesDescriptor.getPermissions()) {
+			requestParams.add("perm:" + perm.getRoleName(), perm.getCapability());
+		}
+		services.putResource(requestLogger, modulesDescriptor.getPath(), requestParams, contentHandle, null);
 	}
 
 	@Override

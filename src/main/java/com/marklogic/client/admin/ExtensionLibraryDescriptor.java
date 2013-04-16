@@ -15,13 +15,37 @@
  */
 package com.marklogic.client.admin;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Identifies a module in the REST server's modules database.
  */
 public class ExtensionLibraryDescriptor {
 
-	private String path;
+	public class Permission {
+		public String getRoleName() {
+			return roleName;
+		}
+		public void setRoleName(String roleName) {
+			this.roleName = roleName;
+		}
+		public String getCapability() {
+			return capability;
+		}
+		public void setCapability(String capability) {
+			this.capability = capability;
+		}
+		private String roleName;
+		private String capability;	
+	}
 	
+	private String path;
+	private List<Permission> permissions;
+	
+	public ExtensionLibraryDescriptor() {
+		this.permissions = new ArrayList<Permission>();
+	}
 	/**
 	 * Gets the path of this module/asset
 	 * 
@@ -44,5 +68,20 @@ public class ExtensionLibraryDescriptor {
 		else {
 			this.path = path;
 		}
+	}
+	
+	/**
+	 * Add a permission to this module
+	 * 
+	 */
+	public void addPermission(String roleName, String capability) {
+		Permission permission = new Permission();
+		permission.setRoleName(roleName);
+		permission.setCapability(capability);
+		this.permissions.add(permission);
+	}
+	
+	public List<Permission> getPermissions() {
+		return this.permissions;
 	}
 }

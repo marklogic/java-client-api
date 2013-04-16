@@ -35,6 +35,14 @@ public class ExtensionLibrariesTest {
 
 		assertTrue("module read and read back", xqueryModuleAsString.startsWith("xquery version \"1.0-ml\";"));
 		
+		// rewrite XQuery file to the modules database with permissions
+		ExtensionLibraryDescriptor moduleDescriptor = new ExtensionLibraryDescriptor();
+		moduleDescriptor.setPath("/ext/my/path/to/my/module.xqy");
+		moduleDescriptor.addPermission("manage-user",  "execute");
+		
+		libsMgr.write(moduleDescriptor, new FileHandle(
+			new File("src/test/resources/module.xqy")).withFormat(Format.TEXT));
+
 		// get the list of descriptors
 		ExtensionLibraryDescriptor[] descriptors = libsMgr.list();
 		assertEquals("number of modules installed", descriptors.length, 1);
