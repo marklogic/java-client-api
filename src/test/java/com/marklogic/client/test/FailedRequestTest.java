@@ -22,8 +22,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.config.QueryOptions.Facets;
@@ -34,12 +37,13 @@ import com.marklogic.client.io.QueryOptionsHandle;
 @SuppressWarnings("deprecation")
 public class FailedRequestTest {
 
-	@Before 
+	@Before
 	@After
 	public void setXMLErrors() {
-		
+
 		Common.connectAdmin();
-		ServerConfigurationManager serverConfig = Common.client.newServerConfigManager();
+		ServerConfigurationManager serverConfig = Common.client
+				.newServerConfigManager();
 		serverConfig = Common.client.newServerConfigManager();
 
 		serverConfig.setErrorFormat(Format.XML);
@@ -47,11 +51,8 @@ public class FailedRequestTest {
 
 		serverConfig.readConfiguration();
 
-		
-		
 	}
-	
-	
+
 	@Test
 	public void testFailedRequest() {
 		Common.connect();
@@ -71,13 +72,15 @@ public class FailedRequestTest {
 		mgr = Common.client.newServerConfigManager().newQueryOptionsManager();
 
 		Common.client.newServerConfigManager().setQueryOptionValidation(true);
-		
+
 		QueryOptionsHandle handle;
 		QueryOptionsBuilder builder = new QueryOptionsBuilder();
 		// make an invalid options node
 		handle = new QueryOptionsHandle().withConstraints(
-				builder.constraint("blah", builder.collection("S", Facets.UNFACETED)),
-				builder.constraint("blah", builder.collection("D", Facets.FACETED)));
+				builder.constraint("blah",
+						builder.collection("S", Facets.UNFACETED)),
+				builder.constraint("blah",
+						builder.collection("D", Facets.FACETED)));
 
 		try {
 			mgr.writeOptions("testempty", handle);
@@ -87,32 +90,54 @@ public class FailedRequestTest {
 					e.getMessage());
 			assertEquals(400, e.getFailedRequest().getStatusCode());
 			assertEquals("Bad Request", e.getFailedRequest().getStatus());
-			assertEquals("RESTAPI-INVALIDCONTENT", e.getFailedRequest().getMessageCode());
+			assertEquals("RESTAPI-INVALIDCONTENT", e.getFailedRequest()
+					.getMessageCode());
 		}
 
 	}
-	
+
 	@Test
 	public void testJSONFailedRequest() {
 		Common.connectAdmin();
-		ServerConfigurationManager serverConfig = Common.client.newServerConfigManager();
+		ServerConfigurationManager serverConfig = Common.client
+				.newServerConfigManager();
 
 		serverConfig.setErrorFormat(Format.JSON);
 		serverConfig.writeConfiguration();
 
 		serverConfig.readConfiguration();
 		assertEquals(Format.JSON, serverConfig.getErrorFormat());
-		
+
 		try {
 			serverConfig.setErrorFormat(Format.BINARY);
 			fail("Error format cannot be binary");
-		} 
-		catch (IllegalArgumentException e) {
-			//pass
+		} catch (IllegalArgumentException e) {
+			// pass
 		}
-		
+
 		testFailedRequest();
-	
+
 	}
-	
+
+	@Test
+	public void testErrorOnNonREST() {
+		DatabaseClient badClient = DatabaseClientFactory.newClient(Common.HOST,
+				8001, Common.USERNAME, Common.PASSWORD, Authentication.DIGEST);
+		ServerConfigurationManager serverConfig = badClient
+				.newServerConfigManager();
+
+		try {
+			serverConfig.readConfiguration();
+		} catch (FailedRequestException e) {
+
+		
+			assertEquals(
+					"Local message: config/properties read failed: Not Found. Server Message: Server (not a REST instance?) did not respond with an expected REST Error message.",
+					e.getMessage());
+			assertEquals(404, e.getFailedRequest().getStatusCode());
+			assertEquals("UNKNOWN", e.getFailedRequest().getStatus());
+		}
+
+	}
+
 }
