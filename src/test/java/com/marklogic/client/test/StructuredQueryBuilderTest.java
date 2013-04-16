@@ -36,6 +36,7 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryBuilder.FragmentScope;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
@@ -277,6 +278,16 @@ public class StructuredQueryBuilderTest {
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><range-query type=\"xs:string\"><element ns=\"\" name=\"name\"></element><value>value1</value><value>value2</value><range-operator>GE</range-operator></range-query></query>", q);
         }
 
+        m = qb.range(qb.element("name"), "xs:string", "http://marklogic.com/collation", FragmentScope.DOCUMENTS, new String[] {"score-function=linear", "scale-factor=4.2"}, Operator.GE, "value1", "value2");
+        for (String q: new String[]{qb.build(m).toString()}) {
+        	xml = new StringInputStream(q);
+        	parser.parse(xml, handler);
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+    				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><range-query type=\"xs:string\" collation=\"http://marklogic.com/collation\"><element ns=\"\" name=\"name\"></element><fragment-scope>documents</fragment-scope><value>value1</value><value>value2</value><range-operator>GE</range-operator><range-option>score-function=linear</range-option><range-option>scale-factor=4.2</range-option></range-query></query>",
+    				q);
+        }
+
+
         t = qb.geospatialConstraint("geo", qb.box(1, 2, 3, 4), qb.circle(0, 0, 100), qb.point(5, 6),
                 qb.polygon(qb.point(1, 2), qb.point(2, 3), qb.point(3, 4), qb.point(4, 1)));
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
@@ -309,6 +320,33 @@ public class StructuredQueryBuilderTest {
     				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\">"
                 + "<geo-elem-pair-query>"
                 + "<parent ns=\"\" name=\"parent\"></parent>"+"<lat ns=\"\" name=\"lat\"></lat>"+"<lon ns=\"\" name=\"lon\"></lon>"
+                + "<box><south>1.0</south><west>2.0</west><north>3.0</north><east>4.0</east></box>"
+                + "<circle><radius>100.0</radius><point><latitude>0.0</latitude><longitude>0.0</longitude></point></circle>"
+                + "<point><latitude>5.0</latitude><longitude>6.0</longitude></point>"
+                + "<polygon><point><latitude>1.0</latitude><longitude>2.0</longitude></point>"
+                + "<point><latitude>2.0</latitude><longitude>3.0</longitude></point>"
+                + "<point><latitude>3.0</latitude><longitude>4.0</longitude></point>"
+                + "<point><latitude>4.0</latitude><longitude>1.0</longitude></point>"
+                + "</polygon></geo-elem-pair-query></query>",
+                q);
+        }
+        
+        m = qb.geospatial(
+        		qb.geoElementPair(qb.element("parent"), qb.element("lat"), qb.element("lon")),
+        		FragmentScope.DOCUMENTS,  
+        		new String[] {"score-function=linear", "scale-factor=2.0"}, 
+        		qb.box(1, 2, 3, 4), qb.circle(0, 0, 100), qb.point(5, 6),
+                qb.polygon(qb.point(1, 2), qb.point(2, 3), qb.point(3, 4), 
+                qb.point(4, 1)));
+        for (String q: new String[]{qb.build(m).toString()}) {
+        	xml = new StringInputStream(q);
+        	parser.parse(xml, handler);
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+    				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\">"
+                + "<geo-elem-pair-query>"
+                + "<parent ns=\"\" name=\"parent\"></parent>"+"<lat ns=\"\" name=\"lat\"></lat>"+"<lon ns=\"\" name=\"lon\"></lon>"
+                + "<fragment-scope>documents</fragment-scope>"
+                + "<geo-option>score-function=linear</geo-option><geo-option>scale-factor=2.0</geo-option>"
                 + "<box><south>1.0</south><west>2.0</west><north>3.0</north><east>4.0</east></box>"
                 + "<circle><radius>100.0</radius><point><latitude>0.0</latitude><longitude>0.0</longitude></point></circle>"
                 + "<point><latitude>5.0</latitude><longitude>6.0</longitude></point>"

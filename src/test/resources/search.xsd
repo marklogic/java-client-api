@@ -35,6 +35,7 @@
       <xs:element ref="search:return-results"/>
       <xs:element ref="search:return-similar"/>
       <xs:element ref="search:return-values"/>
+      <xs:element ref="search:result-decorator"/>
       <xs:element ref="search:search-option"/>
       <xs:element ref="search:searchable-expression"/>
       <xs:element ref="search:sort-order"/>
@@ -170,6 +171,7 @@
           </xs:complexType>
         </xs:element>
         <xs:element ref="search:geo-option"/>
+        <xs:element ref="search:range-option"/>
         <xs:element ref="search:fragment-scope"/>
       </xs:choice>
     </xs:sequence>
@@ -195,6 +197,7 @@
         <xs:element ref="search:lat"/>
         <xs:element ref="search:lon"/>
         <xs:element ref="search:geo-option"/>
+        <xs:element ref="search:range-option"/>
         <xs:element ref="search:fragment-scope"/>
       </xs:choice>
     </xs:sequence>
@@ -226,6 +229,7 @@
         <xs:element ref="search:lat"/>
         <xs:element ref="search:lon"/>
         <xs:element ref="search:geo-option"/>
+        <xs:element ref="search:range-option"/>
         <xs:element ref="search:fragment-scope"/>
       </xs:choice>
     </xs:sequence>
@@ -475,6 +479,7 @@
       </xs:choice>
     </xs:sequence>
   </xs:group>
+  <xs:element name="range-option" type="xs:string"/>
   <xs:attributeGroup name="RangeIndexAttrs">
     <xs:attribute name="type" use="required" type="xs:QName"/>
     <xs:attribute name="collation" type="xs:anyURI"/>
@@ -484,6 +489,7 @@
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="search:RangeIndexDef"/>
         <xs:group ref="search:RangeFacetDef"/>
+        <xs:element ref="search:range-option"/>
       </xs:choice>
       <xs:attributeGroup ref="search:RangeIndexAttrs"/>
       <xs:attribute name="facet" type="xs:boolean"/>
@@ -500,6 +506,11 @@
   <xs:element name="return-results" type="xs:boolean"/>
   <xs:element name="return-similar" type="xs:boolean"/>
   <xs:element name="return-values" type="xs:boolean"/>
+  <xs:element name="result-decorator">
+    <xs:complexType>
+      <xs:attributeGroup ref="search:apply-attrs"/>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="searchable-expression" type="xs:string"/>
   <xs:element name="search-option" type="xs:string"/>
   <xs:element name="sort-order">
@@ -1084,6 +1095,7 @@
       <xs:sequence>
         <xs:element ref="search:constraint-name"/>
         <xs:group ref="search:RangeQueryCriteria"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:range-option"/>
       </xs:sequence>
       <xs:attributeGroup ref="search:any-attribute"/>
     </xs:complexType>
@@ -1093,6 +1105,7 @@
       <xs:sequence>
         <xs:group ref="search:RangeIndexDef"/>
         <xs:group ref="search:RangeQueryCriteria"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:range-option"/>
       </xs:sequence>
       <xs:attributeGroup ref="search:RangeIndexAttrs"/>
     </xs:complexType>
@@ -1108,10 +1121,12 @@
   </xs:element>
   <xs:element name="geospatial-constraint-query" substitutionGroup="search:QueryType">
     <xs:complexType>
-      <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="search:constraint-name"/>
-        <xs:group minOccurs="0" maxOccurs="unbounded" ref="search:RegionType"/>
-      </xs:sequence>
+        <xs:group ref="search:RegionType"/>
+        <xs:element ref="search:geo-option"/>
+        <xs:element ref="search:range-option"/>
+      </xs:choice>
       <xs:attributeGroup ref="search:any-attribute"/>
     </xs:complexType>
   </xs:element>

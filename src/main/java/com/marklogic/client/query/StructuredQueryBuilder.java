@@ -49,7 +49,7 @@ import com.marklogic.client.io.marker.StructureWriteHandle;
  * StructuredQueryBuilder builds a query for documents in the database.
  */
 public class StructuredQueryBuilder {
-    private static Templates extractor;
+   	private static Templates extractor;
     private String builderOptionsURI = null;
 
     public enum Ordering {
@@ -65,9 +65,10 @@ public class StructuredQueryBuilder {
     
     /**
      * Whether a query should search the document or its associated properties.
+     * The value "DOCUMENT" is here for backward-compatibility.
      */
     public enum FragmentScope {
-    	DOCUMENT, PROPERTIES;
+    	@Deprecated DOCUMENT, DOCUMENTS, PROPERTIES;
     }
 
     /**
@@ -224,18 +225,30 @@ public class StructuredQueryBuilder {
 
     public StructuredQueryDefinition range(RangeIndex index, String type, 
     		Operator operator, String... values) {
-        return new RangeQuery(index, type, null, null, operator, values);
+        return new RangeQuery(index, type, null, null, null, operator, values);
     }
     public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
     		Operator operator, String... values) {
-        return new RangeQuery(index, type, collation, null, operator, values);
+        return new RangeQuery(index, type, collation, null, null, operator, values);
     }
     public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
     		FragmentScope scope, Operator operator,
     		String... values) {
-        return new RangeQuery(index, type, collation, scope, operator, values);
+        return new RangeQuery(index, type, collation, scope, null, operator, values);
     }
-
+    public StructuredQueryDefinition range(RangeIndex index, String type, String[] rangeOptions, Operator operator,
+    		String... values) {
+        return new RangeQuery(index, type, null, null, rangeOptions, operator, values);
+    }
+    public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
+    		String[] rangeOptions, Operator operator, String... values) {
+        return new RangeQuery(index, type, collation, null, rangeOptions, operator, values);
+    }
+    public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
+    		FragmentScope scope, String[] rangeOptions, Operator operator,
+    		String... values) {
+        return new RangeQuery(index, type, collation, scope, rangeOptions, operator, values);
+    }
     public StructuredQueryDefinition geospatial(GeospatialIndex index, Region... regions) {
     	checkRegions(regions);
         return new GeospatialQuery(index, null, regions, null);
@@ -987,8 +1000,13 @@ public class StructuredQueryBuilder {
         void innerSerialize(XMLStreamWriter serializer) throws Exception {
     		((IndexImpl) index).innerSerialize(serializer);
     		if (scope != null) {
-        		writeText(serializer, "fragment-scope",
+    			if (scope == FragmentScope.DOCUMENT) {
+    				writeText(serializer, "fragment-scope", "documents");
+    			}
+    			else {
+    				writeText(serializer, "fragment-scope",
         				scope.toString().toLowerCase());
+    			}
     		}
     		writeTextList(serializer, "text", values);
     		writeTextList(serializer, "term-option", options);
@@ -1025,20 +1043,24 @@ public class StructuredQueryBuilder {
         }
     }
 
+        
     class RangeQuery 
     extends AbstractStructuredQuery {
     	RangeIndex    index;
 		FragmentScope scope;
 		String        type;
 		String        collation;
+		String[] rangeOptions;
     	Operator      operator;
     	String[]      values;
     	RangeQuery(RangeIndex index, String type, String collation, 
-    			FragmentScope scope, Operator operator, String[] values) {
+    			FragmentScope scope, String[] rangeOptions, Operator operator, 
+    			String[] values) {
     		this.index     = index;
     		this.type      = type;
     		this.collation = collation;
     		this.scope     = scope;
+    		this.rangeOptions = rangeOptions;
     		this.operator  = operator;
     		this.values    = values;
     	}
@@ -1061,6 +1083,7 @@ public class StructuredQueryBuilder {
         		writeText(serializer, "range-operator",
         				operator.toString().toUpperCase());
     		}
+    		writeTextList(serializer, "range-option", rangeOptions);
     		serializer.writeEndElement();
         }
     }
@@ -1097,11 +1120,11 @@ public class StructuredQueryBuilder {
         		writeText(serializer, "fragment-scope",
         				scope.toString().toLowerCase());
     		}
+     		writeTextList(serializer, "geo-option", options);
             for (Region region : regions) {
             	((RegionImpl) region).innerSerialize(serializer);
             }
-    		writeTextList(serializer, "geo-option", options);
-    		serializer.writeEndElement();
+           serializer.writeEndElement();
         }
     }
 
@@ -1679,5 +1702,9 @@ public class StructuredQueryBuilder {
 		public void write(OutputStream out) throws IOException {
 			writeStructuredQuery(out, convertQueries(queries));
 		}
+	}
+
+	public String[] rangeOptions(String... options) {
+		return options;
 	}
 }
