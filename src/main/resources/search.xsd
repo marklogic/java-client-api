@@ -171,7 +171,6 @@
           </xs:complexType>
         </xs:element>
         <xs:element ref="search:geo-option"/>
-        <xs:element ref="search:range-option"/>
         <xs:element ref="search:fragment-scope"/>
       </xs:choice>
     </xs:sequence>
@@ -197,7 +196,6 @@
         <xs:element ref="search:lat"/>
         <xs:element ref="search:lon"/>
         <xs:element ref="search:geo-option"/>
-        <xs:element ref="search:range-option"/>
         <xs:element ref="search:fragment-scope"/>
       </xs:choice>
     </xs:sequence>
@@ -229,7 +227,6 @@
         <xs:element ref="search:lat"/>
         <xs:element ref="search:lon"/>
         <xs:element ref="search:geo-option"/>
-        <xs:element ref="search:range-option"/>
         <xs:element ref="search:fragment-scope"/>
       </xs:choice>
     </xs:sequence>
@@ -1125,7 +1122,6 @@
         <xs:element ref="search:constraint-name"/>
         <xs:group ref="search:RegionType"/>
         <xs:element ref="search:geo-option"/>
-        <xs:element ref="search:range-option"/>
       </xs:choice>
       <xs:attributeGroup ref="search:any-attribute"/>
     </xs:complexType>
