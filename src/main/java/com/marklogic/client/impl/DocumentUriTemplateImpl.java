@@ -15,10 +15,17 @@
  */
 package com.marklogic.client.impl;
 
+import java.util.regex.Pattern;
+
 import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.io.Format;
 
 public class DocumentUriTemplateImpl implements DocumentUriTemplate {
+	// basic initial directory validation -- full URI validation happens on the server
+	static private final Pattern DIRECTORY_CHECK = Pattern.compile("[^?#]*$");
+	// extension validation in support of extension mapping to mime types on the server
+	static private final Pattern EXTENSION_CHECK = Pattern.compile("^\\.?\\w+$");
+
 	private String directory;
 	private String extension;
 	private Format format;
@@ -36,6 +43,11 @@ public class DocumentUriTemplateImpl implements DocumentUriTemplate {
 	}
 	@Override
 	public void setDirectory(String directory) {
+		if (!DIRECTORY_CHECK.matcher(directory).matches()) {
+			throw new IllegalArgumentException(
+				"Directory is not valid: "+directory
+				);
+		}
 		this.directory = directory;
 	}
 	@Override
@@ -50,6 +62,11 @@ public class DocumentUriTemplateImpl implements DocumentUriTemplate {
 	}
 	@Override
 	public void setExtension(String extension) {
+		if (!EXTENSION_CHECK.matcher(extension).matches()) {
+			throw new IllegalArgumentException(
+				"Extension may contain only word characters after initial period: "+extension
+				);
+		}
 		this.extension = extension;
 	}
 
