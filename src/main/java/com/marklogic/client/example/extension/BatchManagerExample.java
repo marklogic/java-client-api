@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.example.batch;
+package com.marklogic.client.example.extension;
 
 import java.io.File;
 import java.io.IOException;

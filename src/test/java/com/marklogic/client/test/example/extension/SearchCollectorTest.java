@@ -13,26 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.test.example.batch;
+package com.marklogic.client.test.example.extension;
 
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.junit.Test;
 
-import com.marklogic.client.example.batch.BatchManagerExample;
+import com.marklogic.client.example.extension.SearchCollectorExample;
 
-public class BatchManagerTest {
+public class SearchCollectorTest {
 	@Test
 	public void testMain() {
 		boolean succeeded = false;
 		try {
-			BatchManagerExample.main(new String[0]);
+			SearchCollectorExample.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
 		}
-		assertTrue("BatchExample failed", succeeded);
+		assertTrue("SearchCollectorExample failed", succeeded);
 	}
 }

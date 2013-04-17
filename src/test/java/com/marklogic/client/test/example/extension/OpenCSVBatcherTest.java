@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.test.example.batch;
+package com.marklogic.client.test.example.extension;
 
 import static org.junit.Assert.assertTrue;
 
@@ -23,7 +23,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.junit.Test;
 
-import com.marklogic.client.example.batch.OpenCSVBatcherExample;
+import com.marklogic.client.example.extension.OpenCSVBatcherExample;
 
 public class OpenCSVBatcherTest {
 	@Test

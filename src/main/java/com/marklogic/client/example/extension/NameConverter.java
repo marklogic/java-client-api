@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.example.batch;
+package com.marklogic.client.example.extension;
 
 /**
  * NameConverter mangles and unmangles strings as local names

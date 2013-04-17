@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.example.batch;
+package com.marklogic.client.example.extension;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,9 +31,9 @@ import com.marklogic.client.admin.ResourceExtensionsManager;
 import com.marklogic.client.admin.ResourceExtensionsManager.MethodParameters;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.example.batch.SearchCollector.CollectorResults;
 import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
+import com.marklogic.client.example.extension.SearchCollector.CollectorResults;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
 
