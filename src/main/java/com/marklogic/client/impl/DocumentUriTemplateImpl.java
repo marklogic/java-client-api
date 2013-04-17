@@ -22,7 +22,7 @@ import com.marklogic.client.io.Format;
 
 public class DocumentUriTemplateImpl implements DocumentUriTemplate {
 	// basic initial directory validation -- full URI validation happens on the server
-	static private final Pattern DIRECTORY_CHECK = Pattern.compile("[^?#]*$");
+	static private final Pattern DIRECTORY_CHECK = Pattern.compile("^[^?#]*$");
 	// extension validation in support of extension mapping to mime types on the server
 	static private final Pattern EXTENSION_CHECK = Pattern.compile("^\\.?\\w+$");
 
