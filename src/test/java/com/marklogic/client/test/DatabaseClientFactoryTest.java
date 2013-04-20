@@ -16,10 +16,16 @@
 package com.marklogic.client.test;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
+import org.apache.http.client.HttpClient;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.extra.httpclient.HttpClientConfigurator;
 
 public class DatabaseClientFactoryTest {
 	@BeforeClass
@@ -36,14 +42,28 @@ public class DatabaseClientFactoryTest {
 		assertNotNull("Factory could not create client with digest connection", Common.client);
 	}
 
-/*
 	@Test
-	public void testConnectStringIntStringStringBasic() {
-		fail("Not yet implemented");
+	public void testConfigurator() {
+		ConfiguratorImpl configurator = new ConfiguratorImpl();
+
+		DatabaseClientFactory.addConfigurator(configurator);
+
+		DatabaseClientFactory.newClient(
+				Common.HOST, Common.PORT, Common.USERNAME, Common.PASSWORD, Authentication.DIGEST
+				);
+
+		assertTrue("Factory did not apply custom configurator",
+				configurator.isConfigured);
 	}
-	@Test
-	public void testConnectStringIntStringStringSSLContext() {
-		fail("Not yet implemented");
+
+	class ConfiguratorImpl implements HttpClientConfigurator {
+		public boolean isConfigured = false;
+		@Override
+		public void configure(HttpClient client) {
+			if (client != null) {
+				isConfigured = true;
+			}
+		}
+		
 	}
- */
 }

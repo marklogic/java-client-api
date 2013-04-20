@@ -21,9 +21,9 @@ import javax.net.ssl.SSLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.marklogic.client.extra.httpclient.HttpClientConfigurator;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.impl.JerseyServices;
-import com.marklogic.client.impl.RESTServices;
 
 /**
  * A Database Client Factory configures a database client for making
@@ -31,6 +31,8 @@ import com.marklogic.client.impl.RESTServices;
  */
 public class DatabaseClientFactory {
 	static final private Logger logger = LoggerFactory.getLogger(DatabaseClientFactory.class);
+
+	static private ClientConfigurator<?> clientConfigurator;
 
 	/**
 	 * Authentication enumerates the methods for verifying a user and
@@ -46,6 +48,7 @@ public class DatabaseClientFactory {
 		 */
 		DIGEST;
 	}
+
 	/**
 	 * An SSLHostnameVerifier checks whether a hostname is acceptable
 	 * during SSL authentication.
@@ -95,7 +98,37 @@ public class DatabaseClientFactory {
 		}
 	}
 
+	/**
+	 * A ClientConfigurator provides custom configuration for the communication library
+	 * used to sending client requests and receiving server responses.
+	 * @see com.marklogic.client.extra.httpclient.HttpClientConfigurator
+	 * @param <T>	the configurable class for the communication library
+	 */
+	public interface ClientConfigurator<T> {
+		/**
+		 * Called as the last step in configuring the communication library.
+		 * @param client	the configurable object for the communication library
+		 */
+		public void configure(T client);
+	}
+
 	private DatabaseClientFactory() {
+	}
+
+	/**
+	 * Adds a listener that provides custom configuration when a communication library
+	 * is created.
+	 * @see com.marklogic.client.extra.httpclient.HttpClientConfigurator
+	 * @param configurator	the listener for configuring the communication library
+	 */
+	static public void addConfigurator(ClientConfigurator<?> configurator) {
+		if (!HttpClientConfigurator.class.isInstance(configurator)) {
+			throw new IllegalArgumentException(
+					"Configurator must implement HttpClientConfigurator"
+					);
+		}
+
+		clientConfigurator = configurator;
 	}
 
 	/**
@@ -152,8 +185,14 @@ public class DatabaseClientFactory {
 	 */
 	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
 		logger.debug("Creating new database client for server at "+host+":"+port);
-		RESTServices services = new JerseyServices();
+		JerseyServices services = new JerseyServices();
 		services.connect(host, port, user, password, type, context, verifier);
+
+		if (clientConfigurator != null) {
+			((HttpClientConfigurator) clientConfigurator).configure(
+				services.getClientImplementation()
+				);
+		}
 
 		return new DatabaseClientImpl(services);		
 	}
