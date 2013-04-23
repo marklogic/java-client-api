@@ -234,6 +234,31 @@ public class AlertingTest {
 		ruleManager.delete("javatestrule");
 
 	}
+	
+	@Test
+	public void testXMLRuleDefinitionsWithStructuredQuery() throws SAXException, IOException {
+		RuleDefinition defWithImport = new RuleDefinition();
+		defWithImport.setName("javatestrule2");
+		File ruleFile = new File("src/test/resources/structured-query.xml");
+		FileHandle queryHandle = new FileHandle(ruleFile);
+		defWithImport.importQueryDefinition(queryHandle);
+		ruleManager.writeRule(defWithImport);
+
+		assertTrue(ruleManager.exists("javatestrule2"));
+		RuleDefinition def = ruleManager.readRule("javatestrule2",
+				new RuleDefinition());
+		assertEquals("javatestrule2", def.getName());
+		assertXMLEqual(
+				"Search element round-tripped - structured query and options",
+				"<search:search xmlns:search=\"http://marklogic.com/appservices/search\">"
+						+ "<search:query>"
+						+ "<search:term-query><search:text>foo</search:text></search:term-query>"
+						+ "</search:query>"
+						+ "</search:search>", new String(
+						def.exportQueryDefinition(new BytesHandle()).get()));
+		ruleManager.delete("javatestrule");
+
+	}
 
 	@Test
 	public void testJSONRuleDefinitions() throws SAXException, IOException {

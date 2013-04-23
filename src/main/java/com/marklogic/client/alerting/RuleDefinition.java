@@ -19,15 +19,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
+import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -165,7 +169,35 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 	 *            A combined raw query definition serialized as XML.
 	 */
 	public void importQueryDefinition(XMLWriteHandle queryDef) {
-		this.queryPayload = Utilities.importXML(queryDef);
+		List<XMLEvent> importedList = Utilities.importXML(queryDef);
+		// modify XMLEvent list if the imported XML was a structured query.
+		XMLEvent firstEvent = importedList.get(0);
+		if (firstEvent.getEventType() ==  XMLStreamConstants.START_ELEMENT) {
+			logger.info("Get element.");
+			StartElement startElement = firstEvent.asStartElement();
+			if (startElement.getName().getNamespaceURI() == RequestConstants.SEARCH_NS &&
+					startElement.getName().getLocalPart().equals("query")) {
+				logger.info("It's a structured query!!!");
+				//wrap in search.
+				List<XMLEvent> wrappedList = new ArrayList<XMLEvent>();
+				XMLEventFactory  eventFactory = XMLEventFactory.newInstance();
+				XMLEvent startSearchElement = eventFactory.createStartElement("search", RequestConstants.SEARCH_NS, "search");
+				XMLEvent endSearchElement = eventFactory.createEndElement("search", RequestConstants.SEARCH_NS, "search");
+				
+				wrappedList.add(startSearchElement);
+				wrappedList.addAll(importedList);
+				wrappedList.add(endSearchElement);
+				this.queryPayload = wrappedList;
+			}
+			else {
+				this.queryPayload = importedList;
+			}		
+		}
+		else {
+			logger.warn("Expected imported XML to be an element, but it's not.");
+			this.queryPayload = importedList;
+		}
+			
 	}
 
 	/**
