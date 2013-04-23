@@ -88,8 +88,9 @@ public class TuplesHandleTest {
         assertEquals("Two aggregates are expected", 2, agg.length);
 
         double cov = t.getAggregate("covariance").get("xs:double", Double.class);
-        assertTrue("The covariance is between 0.004 and 0.005",
-                cov > 0.004 && cov < 0.005);
+        System.out.println(cov);
+        assertTrue("The covariance is between 1.551 and 1.552",
+                cov > 1.551 && cov < 1.552);
 
         optionsMgr.deleteOptions("valuesoptions3");
     }

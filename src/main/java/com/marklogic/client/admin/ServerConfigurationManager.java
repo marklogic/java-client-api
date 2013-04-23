@@ -56,9 +56,21 @@ public interface ServerConfigurationManager {
 	public Boolean getQueryOptionValidation();
 	/**
 	 * Specifies whether the server validates query options before storing them.
-	 * @param on true to validate the query options
+	 * @param set to true to validate the query options
 	 */
 	public void setQueryOptionValidation(Boolean on);
+
+	/**
+	 * Returns whether the server validates queries before running them.
+	 * @return true if queries are validated
+	 */
+	public Boolean getQueryValidation();
+	
+	/**
+	 * Specifies whether the server validates queries before running them.
+	 * @param set to true to validate queries
+	 */
+	public void setQueryValidation(Boolean on);
 
 	/**
 	 * Returns the name of the default transform for reading documents.

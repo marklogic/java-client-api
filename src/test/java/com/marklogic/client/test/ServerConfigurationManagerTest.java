@@ -44,11 +44,13 @@ public class ServerConfigurationManagerTest {
 		assertNull("Initial query option validation not null", serverConfig.getQueryOptionValidation());
 
 		serverConfig.readConfiguration();
+		Boolean initialQueryValid = serverConfig.getQueryValidation();
 		Boolean initialOptionValid = serverConfig.getQueryOptionValidation();
 		String  initialReadTrans   = serverConfig.getDefaultDocumentReadTransform();
 		Boolean initialRequestLog  = serverConfig.getServerRequestLogging();
 		Policy  initialVersionReq  = serverConfig.getContentVersionRequests();
-
+		
+		Boolean modQueryValid = initialQueryValid ? false : true;
 		Boolean modOptionValid = initialOptionValid ? false : true;
 		String  modReadTrans   = "modifiedReadTransform";
 		Boolean modRequestLog  = initialOptionValid ? false : true;
@@ -56,6 +58,7 @@ public class ServerConfigurationManagerTest {
 			Policy.REQUIRED : Policy.OPTIONAL;
 
 		serverConfig = Common.client.newServerConfigManager();
+		serverConfig.setQueryValidation(modQueryValid);
 		serverConfig.setQueryOptionValidation(modOptionValid);
 		serverConfig.setDefaultDocumentReadTransform(modReadTrans);
 		serverConfig.setServerRequestLogging(modRequestLog);
@@ -64,6 +67,8 @@ public class ServerConfigurationManagerTest {
 
 		serverConfig = Common.client.newServerConfigManager();
 		serverConfig.readConfiguration();
+		assertEquals("Failed to change query  validation",
+				modQueryValid, serverConfig.getQueryValidation());
 		assertEquals("Failed to change query options validation",
 				modOptionValid, serverConfig.getQueryOptionValidation());
 		assertEquals("Failed to change document read transform",

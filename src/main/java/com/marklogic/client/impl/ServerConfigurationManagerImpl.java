@@ -45,6 +45,7 @@ class ServerConfigurationManagerImpl
 
 	static final private String REST_API_NS = "http://marklogic.com/rest-api";
 
+	private Boolean validatingQueries;
 	private Boolean validatingQueryOptions;
 	private String  defaultDocumentReadTransform;
 	private Boolean serverRequestLogging;
@@ -74,6 +75,7 @@ class ServerConfigurationManagerImpl
 
 			XMLStreamReader reader = factory.createXMLStreamReader(stream);
 
+			validatingQueries            = null;
 			validatingQueryOptions       = null;
 			defaultDocumentReadTransform = null;
 			serverRequestLogging         = null;
@@ -84,7 +86,9 @@ class ServerConfigurationManagerImpl
 					continue;
 
 				String localName = reader.getLocalName();
-				if ("validate-options".equals(localName)) {
+				if ("validate-queries".equals(localName)) {
+					validatingQueries = Boolean.valueOf(reader.getElementText());
+				} else if ("validate-options".equals(localName)) {
 					validatingQueryOptions = Boolean.valueOf(reader.getElementText());
 				} else if ("document-transform-out".equals(localName)) {
 					defaultDocumentReadTransform = reader.getElementText();
@@ -124,6 +128,11 @@ class ServerConfigurationManagerImpl
 
 			serializer.writeStartElement(REST_API_NS, "properties");
 
+			if (validatingQueries != null) {
+				serializer.writeStartElement(REST_API_NS, "validate-queries");
+				serializer.writeCharacters(validatingQueries.toString());
+				serializer.writeEndElement();
+			}
 			if (validatingQueryOptions != null) {
 				serializer.writeStartElement(REST_API_NS, "validate-options");
 				serializer.writeCharacters(validatingQueryOptions.toString());
@@ -168,6 +177,16 @@ class ServerConfigurationManagerImpl
 		validatingQueryOptions = on;
 	}
 
+	@Override
+	public Boolean getQueryValidation() {
+		return validatingQueries;
+	}
+
+	@Override
+	public void setQueryValidation(Boolean on) {
+		validatingQueries = on;
+	}
+	
 	@Override
 	public String getDefaultDocumentReadTransform() {
 		return defaultDocumentReadTransform;
@@ -223,4 +242,6 @@ class ServerConfigurationManagerImpl
 		else
 			throw new IllegalArgumentException("The only supported values for error format are JSON and XML.");
 	}
+
+	
 }
