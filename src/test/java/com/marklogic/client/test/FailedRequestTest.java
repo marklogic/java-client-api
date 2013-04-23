@@ -22,6 +22,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.admin.QueryOptionsManager;
@@ -112,5 +115,26 @@ public class FailedRequestTest {
 		
 		testFailedRequest();
 	
+	}
+
+	@Test
+	public void testErrorOnNonREST() {
+		DatabaseClient badClient = DatabaseClientFactory.newClient(Common.HOST,
+				8001, Common.USERNAME, Common.PASSWORD, Authentication.DIGEST);
+		ServerConfigurationManager serverConfig = badClient
+				.newServerConfigManager();
+
+		try {
+			serverConfig.readConfiguration();
+		} catch (FailedRequestException e) {
+
+		
+			assertEquals(
+					"Local message: config/properties read failed: Not Found. Server Message: Server (not a REST instance?) did not respond with an expected REST Error message.",
+					e.getMessage());
+			assertEquals(404, e.getFailedRequest().getStatusCode());
+			assertEquals("UNKNOWN", e.getFailedRequest().getStatus());
+		}
+
 	}
 }

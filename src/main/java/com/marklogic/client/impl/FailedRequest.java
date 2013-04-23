@@ -110,7 +110,11 @@ public class FailedRequest {
 			failure = jsonFailedRequest(httpStatus, content);						
 		}
 		else {
-			throw new IllegalArgumentException("Only XML and JSON error messages supported by MarkLogic Server");
+			failure = new FailedRequest();
+			failure.setStatusCode(httpStatus);
+			failure.setMessageCode("UNKNOWN");
+			failure.setMessageString("Server (not a REST instance?) did not respond with an expected REST Error message.");
+			failure.setStatusString("UNKNOWN");
 		}
 		if (failure.getStatusCode() == 401) {
 			failure.setMessageString("Unauthorized");
