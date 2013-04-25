@@ -34,6 +34,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.http.auth.params.AuthPNames;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.conn.scheme.PlainSocketFactory;
@@ -3280,7 +3281,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public Object getClientImplementation() {
+	public HttpClient getClientImplementation() {
 		if (client == null)
 			return null;
 		return client.getClientHandler().getHttpClient();
