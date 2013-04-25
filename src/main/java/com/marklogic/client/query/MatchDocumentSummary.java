@@ -17,6 +17,8 @@ package com.marklogic.client.query;
 
 import org.w3c.dom.Document;
 
+import com.marklogic.client.io.Format;
+
 /**
  * A MatchDocumentSummary is the information returned for each document found by a search.
  */
@@ -81,4 +83,14 @@ public interface MatchDocumentSummary {
      * @return the metadata
      */
     public Document getMetadata();
+    
+    /**
+     * Returns the mime type associated with this document.
+     */
+    public String getMimeType();
+     
+    /**
+     * Returns the format associated with this document
+     */
+    public Format getFormat();
 }

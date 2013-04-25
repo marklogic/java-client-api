@@ -15,7 +15,10 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -113,6 +116,8 @@ public class RawQueryDefinitionTest {
 		assertNotNull(summaries);
 		assertTrue(summaries.length > 0);
 		for (MatchDocumentSummary summary : summaries) {
+			assertTrue("Mime type of document", summary.getMimeType().matches("(application|text)/xml"));
+			assertEquals("Format of document", Format.XML, summary.getFormat());
 			MatchLocation[] locations = summary.getMatchLocations();
 			for (MatchLocation location : locations) {
 				assertNotNull(location.getAllSnippetText());

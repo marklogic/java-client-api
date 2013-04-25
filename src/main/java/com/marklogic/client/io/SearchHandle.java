@@ -331,13 +331,17 @@ public class SearchHandle
         private MatchLocation[] locations = null;
         private ArrayList<Document> snippets = new ArrayList<Document>();
         private Document metadata = null;
+        private String mimeType = null;
+        private Format format = null;
 
-        public MatchDocumentSummaryImpl(String uri, int score, double confidence, double fitness, String path) {
+        public MatchDocumentSummaryImpl(String uri, int score, double confidence, double fitness, String path, String mimeType, Format format) {
             this.uri = uri;
             this.score = score;
             conf = confidence;
             fit = fitness;
             this.path = path;
+            this.mimeType = mimeType;
+            this.format = format;
         }
 
         @Override
@@ -383,6 +387,16 @@ public class SearchHandle
         @Override
         public Document getMetadata() {
             return metadata;
+        }
+        
+        @Override
+        public String getMimeType() {
+        	return mimeType;
+        }
+        
+        @Override 
+        public Format getFormat() {
+        	return format;
         }
 
         public void addLocation(MatchLocation loc) {
@@ -678,11 +692,19 @@ public class SearchHandle
 
             String ruri = attributes.getValue("", "uri");
             String path = attributes.getValue("", "path");
-            int score = Integer.parseInt(attributes.getValue("", "score"));
-            double confidence = Double.parseDouble(attributes.getValue("", "confidence"));
-            double fitness = Double.parseDouble(attributes.getValue("", "fitness"));
+            String mimeType = attributes.getValue("", "mimetype");
+            String formatString = attributes.getValue("", "format");
+            Format format = Format.UNKNOWN;
+            if (!formatString.equals("")) {
+            	format = Format.valueOf(formatString.toUpperCase());
+            }
 
-            matchSummaries[matchSlot] = new MatchDocumentSummaryImpl(ruri, score, confidence, fitness, path);
+            int score = Integer.parseInt(attributes.getValue("", "score"));
+            
+            double confidence = Double.parseDouble(attributes.getValue("", "confidence"));
+            double fitness = Double.parseDouble(attributes.getValue("", "fitness").toUpperCase());
+            
+            matchSummaries[matchSlot] = new MatchDocumentSummaryImpl(ruri, score, confidence, fitness, path, mimeType, format);
 
             if (alwaysDomSnippets || !"snippet".equals(snippetFormat)) {
                 buildDOM = true;
