@@ -359,10 +359,10 @@ public interface QueryManager {
 
     /**
      * Retrieves the list of available named query options.
-     * @param valueHandle a handle for reading the list of name options
+     * @param listHandle a handle for reading the list of name options
      * @return the handle populated with the names
      */
-    public <T extends QueryOptionsListReadHandle> T optionsList(T valueHandle);
+    public <T extends QueryOptionsListReadHandle> T optionsList(T listHandle);
 
     /**
      * Retrieves the list of available named query options.

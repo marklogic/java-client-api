@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.admin;
 
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
@@ -51,6 +53,13 @@ public interface QueryOptionsManager {
      * @param name name of query options to remove from the REST server.
      */
     public void deleteOptions(String name);
+
+    /**
+     * Retrieves the list of available named query options.
+     * @param listHandle a handle for reading the list of name options
+     * @return the handle populated with the names
+     */
+    public <T extends QueryOptionsListReadHandle> T optionsList(T listHandle);
 
 
 }

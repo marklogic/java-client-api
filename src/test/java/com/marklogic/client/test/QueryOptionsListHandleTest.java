@@ -33,7 +33,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
+import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.QueryOptionsListHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 
 public class QueryOptionsListHandleTest {
@@ -73,6 +75,23 @@ public class QueryOptionsListHandleTest {
         HashMap<String,String> map = results.getValuesMap();
         assertEquals("Map should contain two keys", map.size(), 2);
         assertEquals("photos should have this uri", map.get("photos"), "/v1/config/query/photos");
+    }
+    
+    @Test
+    public void serverOptionsListRaw() throws IOException, ParserConfigurationException, SAXException {
+        QueryManager queryMgr = Common.client.newQueryManager();
+        QueryOptionsManager queryOptionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+
+        StringHandle results = queryMgr.optionsList(new StringHandle());
+        assertNotNull(results);
+        String resultsString = results.get();
+        assertNotNull(resultsString);
+        
+        StringHandle results2 = queryOptionsMgr.optionsList(new StringHandle());
+        assertNotNull(results2);
+        assertEquals(resultsString, results2.get());
+        assertNotNull(resultsString);
+        
     }
 
 

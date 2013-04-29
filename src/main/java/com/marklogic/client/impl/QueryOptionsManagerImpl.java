@@ -15,8 +15,10 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.Transaction;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
@@ -96,4 +98,26 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 
 		services.putValue(requestLogger, QUERY_OPTIONS_BASE, name, mimetype, queryOptionsBase);
 	}
+
+	@Override
+    public <T extends QueryOptionsListReadHandle> T optionsList(T optionsHandle) {
+		    	HandleImplementation optionsBase = HandleAccessor.checkHandle(optionsHandle, "optionslist");
+
+		        Format optionsFormat = optionsBase.getFormat();
+		        switch(optionsFormat) {
+		        case UNKNOWN:
+		        	optionsFormat = Format.XML;
+		        	break;
+		        case JSON:
+		        case XML:
+		        	break;
+		        default:
+		            throw new UnsupportedOperationException("Only XML and JSON options list results are possible.");
+		        }
+
+		        String mimetype = optionsFormat.getDefaultMimetype();
+
+		        optionsBase.receiveContent(services.optionsList(optionsBase.receiveAs(), mimetype, null));
+		        return optionsHandle;
+		    }
 }
