@@ -16,6 +16,7 @@
 package com.marklogic.client.query;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import com.marklogic.client.io.Format;
 
@@ -93,4 +94,11 @@ public interface MatchDocumentSummary {
      * Returns the format associated with this document
      */
     public Format getFormat();
+
+    /**
+     * Get relevance info for a particular result.
+     * Includes data only if a query was sent with the 'relevance-trace' search option.
+     * @return A DOM Element containing relevance trace info.  In the absence of the 'relevance-trace' option, returns null.
+     */
+	public Document getRelevanceInfo();
 }

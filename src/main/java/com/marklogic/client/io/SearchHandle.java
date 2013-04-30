@@ -40,6 +40,7 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -48,6 +49,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.io.marker.OperationNotSupported;
+import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.query.FacetHeatmapValue;
 import com.marklogic.client.query.FacetResult;
 import com.marklogic.client.query.FacetValue;
@@ -57,8 +60,6 @@ import com.marklogic.client.query.MatchSnippet;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.SearchMetrics;
 import com.marklogic.client.query.SearchResults;
-import com.marklogic.client.io.marker.OperationNotSupported;
-import com.marklogic.client.io.marker.SearchReadHandle;
 
 /**
  * A SearchHandle represents a set of search results returned by the server.
@@ -333,6 +334,7 @@ public class SearchHandle
         private Document metadata = null;
         private String mimeType = null;
         private Format format = null;
+        private Document relevanceInfo = null;
 
         public MatchDocumentSummaryImpl(String uri, int score, double confidence, double fitness, String path, String mimeType, Format format) {
             this.uri = uri;
@@ -414,6 +416,15 @@ public class SearchHandle
         public void setMetadata(Document meta) {
             metadata = meta;
         }
+
+		@Override
+		public Document getRelevanceInfo() {
+			return relevanceInfo;
+		}
+
+		public void setRelevanceTrace(Document dom) {
+			this.relevanceInfo = dom;	
+		}
     }
 
     private class MatchLocationImpl implements MatchLocation {
@@ -703,7 +714,6 @@ public class SearchHandle
             
             double confidence = Double.parseDouble(attributes.getValue("", "confidence"));
             double fitness = Double.parseDouble(attributes.getValue("", "fitness").toUpperCase());
-            
             matchSummaries[matchSlot] = new MatchDocumentSummaryImpl(ruri, score, confidence, fitness, path, mimeType, format);
 
             if (alwaysDomSnippets || !"snippet".equals(snippetFormat)) {
@@ -962,6 +972,16 @@ public class SearchHandle
                 return;
             }
 
+            if ("relevance-trace".equals(localName)) {
+                characters = null;
+                buildDOM = false;
+
+                if (inResult) {
+                    ((MatchDocumentSummaryImpl) matchSummaries[matchSlot]).setRelevanceTrace(dom);
+                }
+
+                return;
+            }
             if ("plan".equals(localName)) {
                 plan = dom;
                 characters = null;
@@ -1037,11 +1057,13 @@ public class SearchHandle
                     ((MatchDocumentSummaryImpl) matchSummaries[matchSlot]).addSnippet(dom);
                 }
 
+                
                 matchSlot++;
                 characters = null;
 
                 return;
             }
+            
 
             if (inTime) {
                 if ("query-resolution-time".equals(localName))    { qrTime = parseTime(characters); }

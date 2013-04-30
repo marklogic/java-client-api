@@ -27,6 +27,7 @@ import java.io.IOException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.w3c.dom.Document;
 
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.XMLDocumentManager;
@@ -89,7 +90,10 @@ public class RawQueryDefinitionTest {
 	String optionsString = "<search:options >"
 			+ "<search:constraint name=\"favorited\">" + "<search:value>"
 			+ "<search:element name=\"favorited\" ns=\"\"/>"
-			+ "</search:value>" + "</search:constraint>" + "</search:options>";
+			+ "</search:value>"
+			+ "</search:constraint>" 
+			+ "<search:search-option>relevance-trace</search:search-option>" 
+   			+ "</search:options>";
 
 	private void check(StructureWriteHandle handle, String optionsName) {
 		RawCombinedQueryDefinition rawCombinedQueryDefinition;
@@ -101,12 +105,18 @@ public class RawQueryDefinitionTest {
 			rawCombinedQueryDefinition =
 				queryMgr.newRawCombinedQueryDefinition(handle, optionsName);
 		}
+//		StringHandle stringResults = null;
+//		stringResults = queryMgr.search(rawCombinedQueryDefinition,
+//				new StringHandle());
+//		System.out.println(stringResults.get());
+
 		SearchHandle results;
 		results = queryMgr.search(rawCombinedQueryDefinition,
 				new SearchHandle());
 
 		check(results);
 	}
+	
 	private void check(SearchHandle results) {
 		assertNotNull(results);
 
@@ -118,12 +128,18 @@ public class RawQueryDefinitionTest {
 		for (MatchDocumentSummary summary : summaries) {
 			assertTrue("Mime type of document", summary.getMimeType().matches("(application|text)/xml"));
 			assertEquals("Format of document", Format.XML, summary.getFormat());
+			Document relevanceTrace = summary.getRelevanceInfo();
+			if (relevanceTrace != null) {
+				assertEquals(relevanceTrace.getDocumentElement().getLocalName(), "relevance-info");
+			}
 			MatchLocation[] locations = summary.getMatchLocations();
 			for (MatchLocation location : locations) {
 				assertNotNull(location.getAllSnippetText());
 			}
 		}
 	}
+	
+	
 	private void check(StructureWriteHandle handle) {
 		check(handle, null);
 	}
