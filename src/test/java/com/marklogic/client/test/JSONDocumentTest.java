@@ -36,6 +36,7 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 
 import com.marklogic.client.io.Format;
+import com.marklogic.client.document.DocumentMetadataPatchBuilder.Cardinality;
 import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.DocumentPatchBuilder.Position;
 import com.marklogic.client.document.JSONDocumentManager;
@@ -121,7 +122,7 @@ public class JSONDocumentTest {
 
 		DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
 
-		patchBldr.replaceValue("$.stringKey", "replaced value");
+		patchBldr.replaceValue("$.stringKey", Cardinality.ONE, "replaced value");
 
 		patchBldr.delete("$.numberKey");
 
@@ -140,7 +141,9 @@ public class JSONDocumentTest {
 		fragmentNode = mapper.createObjectNode();
 		fragmentNode.put("appendedKey","appended item");
 		fragment = mapper.writeValueAsString(fragmentNode);
-		patchBldr.insertFragment("$.arrayKey", Position.LAST_CHILD, fragment);
+		patchBldr.insertFragment(
+				"$.arrayKey", Position.LAST_CHILD, Cardinality.ZERO_OR_ONE, fragment
+				);
 
 		DocumentPatchHandle patchHandle = patchBldr.build();
 

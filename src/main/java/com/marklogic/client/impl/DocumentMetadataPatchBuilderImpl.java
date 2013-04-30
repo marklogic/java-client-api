@@ -65,22 +65,32 @@ implements DocumentMetadataPatchBuilder
 		abstract public void write(JSONStringWriter serializer);
 		abstract public void write(XMLOutputSerializer out) throws Exception;
 
-		public void writeDelete(JSONStringWriter serializer, String select) {
+		public void writeDelete(JSONStringWriter serializer, String select, Cardinality cardinality) {
 			serializer.writeStartObject();
 			serializer.writeStartEntry("delete");
 			serializer.writeStartObject();
 			serializer.writeStartEntry("select");
 			serializer.writeStringValue(select);
+			if (cardinality != null) {
+				serializer.writeStartEntry("cardinality");
+				serializer.writeStringValue(cardinality.abbreviate());
+			}
 			serializer.writeEndObject();
 			serializer.writeEndObject();
 		}
-		public void writeDelete(XMLOutputSerializer out, String select) throws Exception {
+		public void writeDelete(XMLOutputSerializer out, String select, Cardinality cardinality)
+		throws Exception {
 			XMLStreamWriter serializer = out.getSerializer();
 			serializer.writeStartElement("rapi", "delete", REST_API_NS);
 			serializer.writeAttribute("select",  select);
+			if (cardinality != null) {
+				serializer.writeAttribute("cardinality", cardinality.abbreviate());
+			}
 			serializer.writeEndElement();
 		}
-		public void writeStartInsert(JSONStringWriter serializer, String context, String position) {
+		public void writeStartInsert(
+				JSONStringWriter serializer, String context, String position, Cardinality cardinality
+		) {
 			serializer.writeStartObject();
 			serializer.writeStartEntry("insert");
 			serializer.writeStartObject();
@@ -88,28 +98,48 @@ implements DocumentMetadataPatchBuilder
 			serializer.writeStringValue(context);
 			serializer.writeStartEntry("position");
 			serializer.writeStringValue(position);
+			if (cardinality != null) {
+				serializer.writeStartEntry("cardinality");
+				serializer.writeStringValue(cardinality.abbreviate());
+			}
 		}
-		public void writeStartInsert(XMLOutputSerializer out, String context, String position)
-		throws Exception {
+		public void writeStartInsert(
+				XMLOutputSerializer out, String context, String position, Cardinality cardinality
+		) throws Exception {
 			XMLStreamWriter serializer = out.getSerializer();
 			serializer.writeStartElement("rapi", "insert", REST_API_NS);
 			serializer.writeAttribute("context",  context);
 			serializer.writeAttribute("position", position);
+			if (cardinality != null) {
+				serializer.writeAttribute("cardinality", cardinality.abbreviate());
+			}
 		}
-		public void writeStartReplace(JSONStringWriter serializer, String select) {
+		public void writeStartReplace(
+				JSONStringWriter serializer, String select, Cardinality cardinality
+		) {
 			serializer.writeStartObject();
 			serializer.writeStartEntry("replace");
 			serializer.writeStartObject();
 			serializer.writeStartEntry("select");
 			serializer.writeStringValue(select);
+			if (cardinality != null) {
+				serializer.writeStartEntry("cardinality");
+				serializer.writeStringValue(cardinality.abbreviate());
+			}
 		}
-		public void writeStartReplace(XMLOutputSerializer out, String select) throws Exception {
+		public void writeStartReplace(
+				XMLOutputSerializer out, String select, Cardinality cardinality
+		) throws Exception {
 			XMLStreamWriter serializer = out.getSerializer();
 			serializer.writeStartElement("rapi", "replace", REST_API_NS);
 			serializer.writeAttribute("select",  select);
+			if (cardinality != null) {
+				serializer.writeAttribute("cardinality", cardinality.abbreviate());
+			}
 		}
 		public void writeStartReplaceInsert(
-				JSONStringWriter serializer, String select, String context, String position
+				JSONStringWriter serializer, String select, String context, String position,
+				Cardinality cardinality
 		) {
 			serializer.writeStartObject();
 			serializer.writeStartEntry("replace-insert");
@@ -120,22 +150,36 @@ implements DocumentMetadataPatchBuilder
 			serializer.writeStringValue(context);
 			serializer.writeStartEntry("position");
 			serializer.writeStringValue(position);
+			if (cardinality != null) {
+				serializer.writeStartEntry("cardinality");
+				serializer.writeStringValue(cardinality.abbreviate());
+			}
 		}
 		public void writeStartReplaceInsert(
-				XMLOutputSerializer out, String select, String context, String position
+				XMLOutputSerializer out, String select, String context, String position,
+				Cardinality cardinality
 		) throws Exception {
 			XMLStreamWriter serializer = out.getSerializer();
 			serializer.writeStartElement("rapi",  "replace-insert", REST_API_NS);
 			serializer.writeAttribute("select",   select);
 			serializer.writeAttribute("context",  context);
 			serializer.writeAttribute("position", position);
+			if (cardinality != null) {
+				serializer.writeAttribute("cardinality", cardinality.abbreviate());
+			}
 		}
-		public void writeReplaceApply(JSONStringWriter serializer, String select, CallImpl call) {
+		public void writeReplaceApply(
+				JSONStringWriter serializer, String select, Cardinality cardinality, CallImpl call
+		) {
 			serializer.writeStartObject();
 			serializer.writeStartEntry("replace");
 			serializer.writeStartObject();
 			serializer.writeStartEntry("select");
 			serializer.writeStringValue(select);
+			if (cardinality != null) {
+				serializer.writeStartEntry("cardinality");
+				serializer.writeStringValue(cardinality.abbreviate());
+			}
 			serializer.writeStartEntry("apply");
 			serializer.writeStringValue(call.function);
 			if (call.args != null || call.args.length == 0) {
@@ -145,11 +189,16 @@ implements DocumentMetadataPatchBuilder
 			serializer.writeEndObject();
 			serializer.writeEndObject();
 		}
-		public void writeReplaceApply(XMLOutputSerializer out, String select, CallImpl call) throws Exception {
+		public void writeReplaceApply(
+				XMLOutputSerializer out, String select, Cardinality cardinality, CallImpl call
+		) throws Exception {
 			XMLStreamWriter serializer = out.getSerializer();
 
 			serializer.writeStartElement("rapi", "replace", REST_API_NS);
 			serializer.writeAttribute("select",  select);
+			if (cardinality != null) {
+				serializer.writeAttribute("cardinality", cardinality.abbreviate());
+			}
 			serializer.writeAttribute("apply",   call.function);
 			if (call.args != null || call.args.length == 0) {
 				writeCall(out, call);
@@ -272,7 +321,7 @@ implements DocumentMetadataPatchBuilder
 		}
 		@Override
 		public void write(JSONStringWriter serializer) {
-			writeStartInsert(serializer, "$.collections", "last-child");
+			writeStartInsert(serializer, "$.collections", "last-child", null);
 			serializer.writeStartEntry("content");
 			serializer.writeStringValue(collection);
 			serializer.writeEndObject();
@@ -281,7 +330,7 @@ implements DocumentMetadataPatchBuilder
 		@Override
 		public void write(XMLOutputSerializer out) throws Exception {
 			XMLStreamWriter serializer = out.getSerializer();
-			writeStartInsert(out, "/rapi:metadata/rapi:collections", "last-child");
+			writeStartInsert(out, "/rapi:metadata/rapi:collections", "last-child", null);
 			serializer.writeStartElement("rapi", "collection", REST_API_NS);
 			serializer.writeCharacters(collection);
 			serializer.writeEndElement();
@@ -296,14 +345,15 @@ implements DocumentMetadataPatchBuilder
 		}
 		@Override
 		public void write(JSONStringWriter serializer) {
-			writeDelete(serializer, "$.collections[*][?(@="+JSONStringWriter.toJSON(collection)+")]");
+			writeDelete(serializer, "$.collections[*][?(@="+JSONStringWriter.toJSON(collection)+")]", null);
 		}
 		@Override
 		public void write(XMLOutputSerializer out) throws Exception {
 			writeDelete(out,
 					"/rapi:metadata/rapi:collections/rapi:collection[.='"+
-					DatatypeConverter.printString(collection)+
-					"']"
+						DatatypeConverter.printString(collection)+
+					"']",
+					null
 					);
 		}
 	}
@@ -317,7 +367,10 @@ implements DocumentMetadataPatchBuilder
 		}
 		@Override
 		public void write(JSONStringWriter serializer) {
-			writeStartReplace(serializer, "$.collections[*][?(@="+JSONStringWriter.toJSON(oldCollection)+")]");
+			writeStartReplace(serializer,
+					"$.collections[*][?(@="+JSONStringWriter.toJSON(oldCollection)+")]",
+					null
+					);
 			serializer.writeStartEntry("content");
 			serializer.writeStringValue(newCollection);
 			serializer.writeEndObject();
@@ -327,7 +380,8 @@ implements DocumentMetadataPatchBuilder
 		public void write(XMLOutputSerializer out) throws Exception {
 			XMLStreamWriter serializer = out.getSerializer();
 			writeStartReplace(out,
-					"/rapi:metadata/rapi:collections/rapi:collection[.='"+oldCollection+"']"
+					"/rapi:metadata/rapi:collections/rapi:collection[.='"+oldCollection+"']",
+					null
 					);
 			serializer.writeStartElement("rapi", "collection", REST_API_NS);
 			serializer.writeCharacters(newCollection);
@@ -346,7 +400,7 @@ implements DocumentMetadataPatchBuilder
 		}
 		@Override
 		public void write(JSONStringWriter serializer) {
-			writeStartInsert(serializer, "$.permissions", "last-child");
+			writeStartInsert(serializer, "$.permissions", "last-child", null);
 			serializer.writeStartEntry("content");
 			serializer.writeStartObject();
 			serializer.writeStartEntry("role-name");
@@ -365,7 +419,7 @@ implements DocumentMetadataPatchBuilder
 		@Override
 		public void write(XMLOutputSerializer out) throws Exception {
 			XMLStreamWriter serializer = out.getSerializer();
-			writeStartInsert(out, "/rapi:metadata/rapi:permissions", "last-child");
+			writeStartInsert(out, "/rapi:metadata/rapi:permissions", "last-child", null);
 			serializer.writeStartElement("rapi", "permission", REST_API_NS);
 
 			serializer.writeStartElement("rapi", "role-name", REST_API_NS);
@@ -390,12 +444,16 @@ implements DocumentMetadataPatchBuilder
 		}
 		@Override
 		public void write(JSONStringWriter serializer) {
-			writeDelete(serializer, "$.permissions.[*][?(@.role-name="+JSONStringWriter.toJSON(role)+")]");
+			writeDelete(serializer,
+					"$.permissions.[*][?(@.role-name="+JSONStringWriter.toJSON(role)+")]",
+					null
+					);
 		}
 		@Override
 		public void write(XMLOutputSerializer out) throws Exception {
 			writeDelete(out,
-					"/rapi:metadata/rapi:permissions/rapi:permission[rapi:role-name='"+role+"']"
+					"/rapi:metadata/rapi:permissions/rapi:permission[rapi:role-name='"+role+"']",
+					null
 					);
 		}
 	}
@@ -411,7 +469,10 @@ implements DocumentMetadataPatchBuilder
 		}
 		@Override
 		public void write(JSONStringWriter serializer) {
-			writeStartReplace(serializer, "$.permissions.[*][?(@.role-name="+JSONStringWriter.toJSON(oldRole)+")]");
+			writeStartReplace(serializer,
+					"$.permissions.[*][?(@.role-name="+JSONStringWriter.toJSON(oldRole)+")]",
+					null
+					);
 			serializer.writeStartEntry("content");
 			serializer.writeStartObject();
 			serializer.writeStartEntry("role-name");
@@ -431,7 +492,8 @@ implements DocumentMetadataPatchBuilder
 		public void write(XMLOutputSerializer out) throws Exception {
 			XMLStreamWriter serializer = out.getSerializer();
 			writeStartReplace(out,
-					"/rapi:metadata/rapi:permissions/rapi:permission[rapi:role-name='"+oldRole+"']"
+					"/rapi:metadata/rapi:permissions/rapi:permission[rapi:role-name='"+oldRole+"']",
+					null
 					);
 			serializer.writeStartElement("rapi", "permission", REST_API_NS);
 
@@ -469,7 +531,7 @@ implements DocumentMetadataPatchBuilder
 		@Override
 		public void write(JSONStringWriter serializer) {
 			// TODO: error if name empty
-			writeStartInsert(serializer, "$.properties", "last-child");
+			writeStartInsert(serializer, "$.properties", "last-child", null);
 			serializer.writeStartEntry("content");
 			serializer.writeStartObject();
 			serializer.writeStartEntry(name);
@@ -482,7 +544,7 @@ implements DocumentMetadataPatchBuilder
 		@Override
 		public void write(XMLOutputSerializer out) throws Exception {
 			XMLStreamWriter serializer = out.getSerializer();
-			writeStartInsert(out, "/rapi:metadata/prop:properties", "last-child");
+			writeStartInsert(out, "/rapi:metadata/prop:properties", "last-child", null);
 
 			// TODO: declare namespace on root
 			writeStartElement(out, qname, name);
@@ -509,13 +571,18 @@ implements DocumentMetadataPatchBuilder
 		@Override
 		public void write(JSONStringWriter serializer) {
 			// TODO: error if name empty
-			writeDelete(serializer, "$.properties.["+JSONStringWriter.toJSON(name)+"]");
+			writeDelete(serializer,
+					"$.properties.["+JSONStringWriter.toJSON(name)+"]",
+					null
+					);
 		}
 		@Override
 		public void write(XMLOutputSerializer out) throws Exception {
 			// TODO: declare namespace on root
-			writeDelete(out, "/rapi:metadata/prop:properties/"+
-					getLexicalName(qname, name));
+			writeDelete(out,
+					"/rapi:metadata/prop:properties/"+getLexicalName(qname, name),
+					null
+					);
 		}
 	}
 	static class ReplacePropertyOperation extends PatchOperation {
@@ -542,7 +609,8 @@ implements DocumentMetadataPatchBuilder
 		public void write(JSONStringWriter serializer) {
 			// TODO: error if name empty
 			writeStartReplace(serializer,
-					"$.properties.["+JSONStringWriter.toJSON(oldName)+"]"
+					"$.properties.["+JSONStringWriter.toJSON(oldName)+"]",
+					null
 					);
 			serializer.writeStartEntry("content");
 			serializer.writeStartObject();
@@ -556,8 +624,9 @@ implements DocumentMetadataPatchBuilder
 		public void write(XMLOutputSerializer out) throws Exception {
 			// TODO: declare namespace on root
 			XMLStreamWriter serializer = out.getSerializer();
-			writeStartReplace(out, "/rapi:metadata/prop:properties/" +
-					getLexicalName(oldQName, oldName));
+			writeStartReplace(out,
+					"/rapi:metadata/prop:properties/" + getLexicalName(oldQName, oldName),
+					null);
 
 			// TODO: declare namespace on root
 			writeStartElement(out, newQName, newName);
@@ -588,6 +657,7 @@ implements DocumentMetadataPatchBuilder
 			// TODO: error if name empty
 			writeReplaceApply(serializer, 
 					"$.properties.["+JSONStringWriter.toJSON(name)+"]",
+					null,
 					call
 					);
 		}
@@ -595,8 +665,8 @@ implements DocumentMetadataPatchBuilder
 		public void write(XMLOutputSerializer out) throws Exception {
 			// TODO: declare namespace on root
 			writeReplaceApply(out,
-					"/rapi:metadata/prop:properties/" +
-						getLexicalName(qname, name),
+					"/rapi:metadata/prop:properties/" + getLexicalName(qname, name),
+					null,
 					call
 					);
 		}
@@ -610,7 +680,7 @@ implements DocumentMetadataPatchBuilder
 		}
 		@Override
 		public void write(JSONStringWriter serializer) {
-			writeStartReplace(serializer, "$.quality");
+			writeStartReplace(serializer, "$.quality", null);
 			serializer.writeStartEntry("content");
 			serializer.writeNumberValue(quality);
 			serializer.writeEndObject();
@@ -619,7 +689,7 @@ implements DocumentMetadataPatchBuilder
 		@Override
 		public void write(XMLOutputSerializer out) throws Exception {
 			XMLStreamWriter serializer = out.getSerializer();
-			writeStartReplace(out, "/rapi:metadata/rapi:quality");
+			writeStartReplace(out, "/rapi:metadata/rapi:quality", null);
 			serializer.writeCharacters(String.valueOf(quality));
 			serializer.writeEndElement();
 		}

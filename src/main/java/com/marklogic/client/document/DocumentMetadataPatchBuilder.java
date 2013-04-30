@@ -29,6 +29,48 @@ import com.marklogic.client.io.marker.DocumentPatchHandle;
  */
 public interface DocumentMetadataPatchBuilder {
 	/**
+	 * The Cardinality enumeration indicates the number of times
+	 * that a path can match without error (which defaults to
+	 * ZERO_OR_MORE, meaning any number of matches).
+	 */
+	public enum Cardinality {
+		/**
+		 * Allows at most one match.
+		 */
+		ZERO_OR_ONE,
+		/**
+		 * Requires exactly one match.
+		 */
+		ONE,
+		/**
+		 * Allows any number of matches.
+		 */
+		ZERO_OR_MORE,
+		/**
+		 * Requires at least one match.
+		 */
+		ONE_OR_MORE;
+		/**
+		 * Returns the standard abbreviation for the cardinality value.
+		 * @return	the abbreviation
+		 */
+		public String abbreviate() {
+			switch(this) {
+			case ZERO_OR_ONE:
+				return "?";
+			case ONE:
+				return ".";
+			case ZERO_OR_MORE:
+				return "*";
+			case ONE_OR_MORE:
+				return "+";
+			default:
+				throw new InternalError("Unknown Cardinality: "+toString());
+			}
+		}
+	}
+
+	/**
 	 * A Call specifies how to apply a built-in or library function
 	 * when replacing an existing fragment.  You must construct a call
 	 * using the CallBuilder.

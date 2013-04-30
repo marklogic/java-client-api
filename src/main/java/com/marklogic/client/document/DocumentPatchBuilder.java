@@ -66,6 +66,15 @@ extends DocumentMetadataPatchBuilder
 			String selectPath
 			);
 	/**
+	 * Specifies an operation to delete an existing JSON or XML fragment.
+	 * @param selectPath	the location of the JSON or XML fragment
+	 * @param cardinality	the number of times the patch can match without error
+	 * @return	the patch builder (for convenient chaining)
+	 */
+	public DocumentPatchBuilder delete(
+			String selectPath, Cardinality cardinality
+			);
+	/**
 	 * Specifies an operation to insert a new JSON or XML fragment.
 	 * @param contextPath	the location of an existing node
 	 * @param position	a location relative to the existing node
@@ -74,6 +83,17 @@ extends DocumentMetadataPatchBuilder
 	 */
 	public DocumentPatchBuilder insertFragment(
 			String contextPath, Position position, Object fragment
+			);
+	/**
+	 * Specifies an operation to insert a new JSON or XML fragment.
+	 * @param contextPath	the location of an existing node
+	 * @param position	a location relative to the existing node
+	 * @param cardinality	the number of times the patch can match without error
+	 * @param fragment	the inserted fragment
+	 * @return	the patch builder (for convenient chaining)
+	 */
+	public DocumentPatchBuilder insertFragment(
+			String contextPath, Position position, Cardinality cardinality, Object fragment
 			);
 	/**
 	 * Specifies a value to replace the existing value of a JSON or XML node.
@@ -85,6 +105,16 @@ extends DocumentMetadataPatchBuilder
 			String selectPath, Object value
 			);
 	/**
+	 * Specifies a value to replace the existing value of a JSON or XML node.
+	 * @param selectPath	the location of the node with the replaced value
+	 * @param cardinality	the number of times the patch can match without error
+	 * @param value	the new value for the node
+	 * @return	the patch builder (for convenient chaining)
+	 */
+	public DocumentPatchBuilder replaceValue(
+			String selectPath, Cardinality cardinality, Object value
+			);
+	/**
 	 * Specifies a fragment to replace an existing JSON or XML fragment.
 	 * @param selectPath	the location of the replaced node
 	 * @param fragment	the replacing fragment
@@ -92,6 +122,16 @@ extends DocumentMetadataPatchBuilder
 	 */
 	public DocumentPatchBuilder replaceFragment(
 			String selectPath, Object fragment
+			);
+	/**
+	 * Specifies a fragment to replace an existing JSON or XML fragment.
+	 * @param selectPath	the location of the replaced node
+	 * @param cardinality	the number of times the patch can match without error
+	 * @param fragment	the replacing fragment
+	 * @return	the patch builder (for convenient chaining)
+	 */
+	public DocumentPatchBuilder replaceFragment(
+			String selectPath, Cardinality cardinality, Object fragment
 			);
 	/**
 	 * Specifies a fragment to replace an existing JSON or XML fragment
@@ -108,6 +148,23 @@ extends DocumentMetadataPatchBuilder
 	public DocumentPatchBuilder replaceInsertFragment(
 			String selectPath, String contextPath, Position position, Object fragment
 			);
+	/**
+	 * Specifies a fragment to replace an existing JSON or XML fragment
+	 * or (if the existing fragment doesn't exist) to insert relative
+	 * to a different existing JSON or XML fragment.
+	 * The selectPath for the replaced node may be relative to the
+	 * contextPath for the insert operation.
+	 * @param selectPath	the location of the replaced node
+	 * @param contextPath	the location of an existing node
+	 * @param position	a location relative to the existing node
+	 * @param cardinality	the number of times the patch can match without error
+	 * @param fragment	the replacing or inserted fragment
+	 * @return	the patch builder (for convenient chaining)
+	 */
+	public DocumentPatchBuilder replaceInsertFragment(
+			String selectPath, String contextPath, Position position, Cardinality cardinality,
+			Object fragment
+			);
 
 	/**
 	 * Specifies a replacement operation by applying a function to 
@@ -118,4 +175,14 @@ extends DocumentMetadataPatchBuilder
 	 * @return	the patch builder (for convenient chaining)
 	 */
 	public DocumentPatchBuilder replaceApply(String selectPath, Call call);
+	/**
+	 * Specifies a replacement operation by applying a function to 
+	 * an existing JSON or XML fragment. You must use CallBuilder
+	 * to build a specification of the call.
+	 * @param selectPath	the location of the replaced node
+	 * @param cardinality	the number of times the patch can match without error
+	 * @param call	the specification of the function call
+	 * @return	the patch builder (for convenient chaining)
+	 */
+	public DocumentPatchBuilder replaceApply(String selectPath, Cardinality cardinality, Call call);
 }

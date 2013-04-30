@@ -51,6 +51,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentMetadataPatchBuilder.Cardinality;
 import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.document.DocumentPatchBuilder.Position;
@@ -331,7 +332,8 @@ public class XMLDocumentTest {
 
 		DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
 		patchBldr.insertFragment(
-				"/root/firstChild/firstChildOfFirstChild", Position.BEFORE, "<newFirstChildOfFirstChild/>"
+				"/root/firstChild/firstChildOfFirstChild", Position.BEFORE, Cardinality.ONE_OR_MORE,
+				"<newFirstChildOfFirstChild/>"
 				);
 		patchBldr.insertFragment(
 				"/root/firstChild", Position.LAST_CHILD, "<lastChildOfFirstChild/>"
@@ -339,7 +341,7 @@ public class XMLDocumentTest {
 		patchBldr.replaceFragment("/root/secondChild", "<replacedSecondChild/>");
 		patchBldr.replaceValue("/root/thirdChild", "new value");
 		patchBldr.delete("fourthChild");
-		patchBldr.replaceApply("fifthChild", patchBldr.call().multiply(3));
+		patchBldr.replaceApply("fifthChild", Cardinality.ONE, patchBldr.call().multiply(3));
 
 		DocumentPatchHandle patchHandle = patchBldr.build();
 
