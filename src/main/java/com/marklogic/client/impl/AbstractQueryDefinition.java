@@ -32,7 +32,6 @@ public abstract class AbstractQueryDefinition implements QueryDefinition {
     }
     @Override
     public void setOptionsName(String uri) {
-        // FIXME: check for null?
         optionsUri = uri;
     }
 
