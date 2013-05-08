@@ -44,6 +44,7 @@ import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.StructureWriteHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * StructuredQueryBuilder builds a query for documents in the database.
@@ -1655,7 +1656,7 @@ public class StructuredQueryBuilder {
 
     class StructuredQueryXMLWriter
     extends BaseHandle<OperationNotSupported, OutputStreamSender>
-	implements StructureWriteHandle, BufferableHandle, OutputStreamSender
+	implements StructureWriteHandle, XMLWriteHandle, BufferableHandle, OutputStreamSender
 	{
     	StructuredQueryDefinition[] queries;
     	StructuredQueryXMLWriter(StructuredQueryDefinition[] queries) {
