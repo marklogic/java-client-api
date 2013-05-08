@@ -15,7 +15,6 @@
  */
 package com.marklogic.client.admin;
 
-import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
