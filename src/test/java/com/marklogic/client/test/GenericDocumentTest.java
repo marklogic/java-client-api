@@ -113,6 +113,7 @@ public class GenericDocumentTest {
 	"  <rapi:collections>\n"+
 	"    <rapi:collection>/document/collection1</rapi:collection>\n"+
 	"    <rapi:collection>/document/collection2</rapi:collection>\n"+
+	"    <rapi:collection>/document/collection4before</rapi:collection>\n"+
 	"  </rapi:collections>\n"+
 	"  <rapi:permissions>\n"+
 	"    <rapi:permission>\n"+
@@ -397,6 +398,7 @@ public class GenericDocumentTest {
 			DocumentMetadataPatchBuilder patchBldr = docMgr.newPatchBuilder(format);
 			DocumentPatchHandle patchHandle = patchBldr
 			.addCollection("/document/collection3")
+			.replaceCollection("/document/collection4before", "/document/collection4after")
 			.replacePermission("app-user", Capability.UPDATE)
 			.deleteProperty("first")
 			.replacePropertyApply("second", patchBldr.call().add(3))
@@ -408,7 +410,8 @@ public class GenericDocumentTest {
 			String metadata = docMgr.readMetadata(docId, new StringHandle().withFormat(Format.XML)).get();
 
 			assertTrue("Could not read document metadata after write default", metadata != null);
-			assertXpathEvaluatesTo("3","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",metadata);
+			assertXpathEvaluatesTo("4","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",metadata);
+			assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection' and string(.)='/document/collection4after'])",metadata);
 			assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission' and string(*[local-name()='role-name'])='app-user']/*[local-name()='capability'])",metadata);
 			assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",metadata);
 			assertXpathEvaluatesTo("5","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='second'])",metadata);
