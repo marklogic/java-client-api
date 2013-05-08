@@ -40,7 +40,6 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -706,7 +705,7 @@ public class SearchHandle
             String mimeType = attributes.getValue("", "mimetype");
             String formatString = attributes.getValue("", "format");
             Format format = Format.UNKNOWN;
-            if (!formatString.equals("")) {
+            if (formatString != null && !formatString.equals("")) {
             	format = Format.valueOf(formatString.toUpperCase());
             }
 
