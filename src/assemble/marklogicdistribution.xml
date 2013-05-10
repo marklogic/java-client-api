@@ -52,6 +52,7 @@
         <file>
             <source>src/main/resources/Readme.txt</source>
             <outputDirectory>/</outputDirectory>
+            <filtered>true</filtered>
         </file>
         <file>
             <source>src/main/resources/LICENSE.txt</source>

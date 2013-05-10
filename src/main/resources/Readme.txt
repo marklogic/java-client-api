@@ -16,7 +16,7 @@ example/
 
 lib/
         This directory contains jar files for the MarkLogic Java API
-        (client-api-java-1.0.jar) as well as its library dependencies.
+        (client-api-java-${project.version}.jar) as well as its library dependencies.
 
 You are encouraged to join the MarkLogic developer mailing list:
 
