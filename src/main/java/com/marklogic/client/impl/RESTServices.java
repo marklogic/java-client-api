@@ -111,6 +111,8 @@ public interface RESTServices {
 		throws ForbiddenUserException, FailedRequestException;
 	public void postValue(RequestLogger logger, String type, String key, String mimetype, Object value)
 		throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+	public void postValue(RequestLogger reqlog, String type, String key, RequestParameters extraParams) 
+		throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 	public void putValue(RequestLogger logger, String type, String key,
 			String mimetype, Object value)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,

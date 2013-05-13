@@ -1999,6 +1999,18 @@ public class JerseyServices implements RESTServices {
 		putPostValueImpl(reqlog, "post", type, key, null, mimetype, value,
 				ClientResponse.Status.CREATED);
 	}
+	@Override
+	public void postValue(RequestLogger reqlog, String type, String key,
+			RequestParameters extraParams
+	) throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException
+	{
+		if (logger.isDebugEnabled())
+			logger.debug("Posting {}/{}", type, key);
+
+		putPostValueImpl(reqlog, "post", type, key, extraParams, null, null,
+				ClientResponse.Status.NO_CONTENT);
+	}
+
 
 	@Override
 	public void putValue(RequestLogger reqlog, String type, String key,
@@ -2036,8 +2048,8 @@ public class JerseyServices implements RESTServices {
 					(mimetype != null) ? mimetype : null);
 		}
 
-		HandleImplementation handle = (value instanceof HandleImplementation) ? (HandleImplementation) value
-				: null;
+		HandleImplementation handle = (value instanceof HandleImplementation) ?
+				(HandleImplementation) value : null;
 
 		MultivaluedMap<String, String> requestParams = convertParams(extraParams);
 
@@ -2064,8 +2076,8 @@ public class JerseyServices implements RESTServices {
 			boolean isStreaming = (isFirstRequest || handle == null) ? isStreaming(sentValue)
 					: false;
 
-			boolean isResendable = (handle == null) ? !isStreaming : handle
-					.isResendable();
+			boolean isResendable = (handle == null) ? !isStreaming :
+				handle.isResendable();
 
 			if ("put".equals(method)) {
 				if (isFirstRequest && isStreaming)
@@ -2073,26 +2085,32 @@ public class JerseyServices implements RESTServices {
 
 				if (builder == null) {
 					connectPath = (key != null) ? type + "/" + key : type;
-					WebResource resource = (requestParams == null) ? connection
-							.path(connectPath) : connection.path(connectPath)
-							.queryParams(requestParams);
-					builder = resource.type(mimetype);
+					WebResource resource = (requestParams == null) ?
+						connection.path(connectPath) :
+						connection.path(connectPath).queryParams(requestParams);
+					builder = (mimetype == null) ?
+						resource.getRequestBuilder() : resource.type(mimetype);
 				}
 
-				response = builder.put(ClientResponse.class, sentValue);
+				response = (sentValue == null) ?
+						builder.put(ClientResponse.class) :
+						builder.put(ClientResponse.class, sentValue);
 			} else if ("post".equals(method)) {
 				if (isFirstRequest && isStreaming)
 					makeFirstRequest();
 
 				if (builder == null) {
 					connectPath = type;
-					WebResource resource = (requestParams == null) ? connection
-							.path(connectPath) : connection.path(connectPath)
-							.queryParams(requestParams);
-					builder = resource.type(mimetype);
+					WebResource resource = (requestParams == null) ?
+						connection.path(connectPath) :
+						connection.path(connectPath).queryParams(requestParams);
+					builder = (mimetype == null) ?
+						resource.getRequestBuilder() : resource.type(mimetype);
 				}
 
-				response = builder.post(ClientResponse.class, sentValue);
+				response = (sentValue == null) ?
+					builder.post(ClientResponse.class) :
+					builder.post(ClientResponse.class, sentValue);
 			} else {
 				throw new MarkLogicInternalException("unknown method type "
 						+ method);

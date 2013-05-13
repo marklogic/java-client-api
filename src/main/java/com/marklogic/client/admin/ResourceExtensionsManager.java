@@ -59,6 +59,13 @@ public interface ResourceExtensionsManager {
      */
     public void deleteServices(String resourceName);
 
+	/**
+	 * Refresh the installed resources service and transform extensions
+	 * to make use of the latest version of dependencies including libraries
+	 * updated through ExtensionLibrariesManager.
+	 */
+	public void refreshExtensions();
+
     /**
      * Starts debugging client requests. You can suspend and resume debugging output
      * using the methods of the logger.

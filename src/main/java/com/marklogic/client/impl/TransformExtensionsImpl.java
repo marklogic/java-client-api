@@ -180,4 +180,15 @@ class TransformExtensionsImpl
 
 		services.deleteValue(requestLogger, "config/transforms", transformName);
 	}
+
+	@Override
+	public void refreshExtensions() {
+		RequestParameters params = new RequestParameters();
+		params.add("cache", "refresh");
+
+		if (logger.isInfoEnabled())
+			logger.info("Refreshing extensions");
+
+		services.postValue(requestLogger, "config/extensions", null, params);
+	}
 }
