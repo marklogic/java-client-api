@@ -70,7 +70,6 @@ import com.marklogic.client.util.NameMap;
 public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 		implements OutputStreamSender, RuleReadHandle, RuleWriteHandle {
 
-	@SuppressWarnings("unused")
 	private static final Logger logger = (Logger) LoggerFactory
 			.getLogger(RuleDefinition.class);
 
