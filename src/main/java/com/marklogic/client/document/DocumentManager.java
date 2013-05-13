@@ -761,24 +761,24 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
     public void clearMetadataCategories();
 
     /**
-     * Returns the transform for read requests that don't specify a transform
+     * Returns the transform for read requests that don't specify a transform.
      * @return	the name of the transform
      */
     public ServerTransform getReadTransform();
     /**
-     * Specifies a read transform for read requests that don't specify a transform
+     * Specifies a transform for read requests that don't specify a transform.
      * 
      * @param transform	the name of the transform
      */
     public void setReadTransform(ServerTransform transform);
  
     /**
-     * Returns the transform for read requests that don't specify a transform
+     * Returns the transform for write requests that don't specify a transform.
      * @return	the name of the transform
      */
     public ServerTransform getWriteTransform();
     /**
-     * Specifies a read transform for read requests that don't specify a transform
+     * Specifies a transform for write requests that don't specify a transform.
      * 
      * @param transform	the name of the transform
      */
