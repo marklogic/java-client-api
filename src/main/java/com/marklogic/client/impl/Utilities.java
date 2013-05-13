@@ -152,7 +152,7 @@ public final class Utilities {
 		return importedXML;
 	}
 
-	@SuppressWarnings({ "unchecked", "resource" })
+	@SuppressWarnings({ "unchecked" })
 	public static <T extends XMLReadHandle> T exportXML(
 			List<XMLEvent> toExport, T handle) {
 		XMLOutputFactory factory = XMLOutputFactory.newInstance();
