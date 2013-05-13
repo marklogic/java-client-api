@@ -225,29 +225,29 @@ public class StructuredQueryBuilder {
 
 
     public StructuredQueryDefinition range(RangeIndex index, String type, 
-    		Operator operator, String... values) {
+    		Operator operator, Object... values) {
         return new RangeQuery(index, type, null, null, null, operator, values);
     }
     public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
-    		Operator operator, String... values) {
+    		Operator operator, Object... values) {
         return new RangeQuery(index, type, collation, null, null, operator, values);
     }
     public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
     		FragmentScope scope, Operator operator,
-    		String... values) {
+    		Object... values) {
         return new RangeQuery(index, type, collation, scope, null, operator, values);
     }
     public StructuredQueryDefinition range(RangeIndex index, String type, String[] rangeOptions, Operator operator,
-    		String... values) {
+    		Object... values) {
         return new RangeQuery(index, type, null, null, rangeOptions, operator, values);
     }
     public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
-    		String[] rangeOptions, Operator operator, String... values) {
+    		String[] rangeOptions, Operator operator, Object... values) {
         return new RangeQuery(index, type, collation, null, rangeOptions, operator, values);
     }
     public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
     		FragmentScope scope, String[] rangeOptions, Operator operator,
-    		String... values) {
+    		Object... values) {
         return new RangeQuery(index, type, collation, scope, rangeOptions, operator, values);
     }
     public StructuredQueryDefinition geospatial(GeospatialIndex index, Region... regions) {
@@ -1056,14 +1056,19 @@ public class StructuredQueryBuilder {
     	String[]      values;
     	RangeQuery(RangeIndex index, String type, String collation, 
     			FragmentScope scope, String[] rangeOptions, Operator operator, 
-    			String[] values) {
+    			Object[] values) {
     		this.index     = index;
     		this.type      = type;
     		this.collation = collation;
     		this.scope     = scope;
     		this.rangeOptions = rangeOptions;
     		this.operator  = operator;
-    		this.values    = values;
+    		this.values    = new String[values.length];
+    		for (int i=0; i < values.length; i++) {
+    			Object value = values[i];
+    			this.values[i] = (value instanceof String) ?
+    					(String) value : value.toString();
+   			}
     	}
     	@Override
     	void innerSerialize(XMLStreamWriter serializer) throws Exception {
