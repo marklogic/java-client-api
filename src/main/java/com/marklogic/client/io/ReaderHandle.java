@@ -31,6 +31,7 @@ import java.nio.charset.CoderResult;
 
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BufferableHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
@@ -48,7 +49,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class ReaderHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
-	implements OutputStreamSender, BufferableHandle,
+	implements OutputStreamSender, BufferableHandle, ContentHandle<Reader>,
 		JSONReadHandle, JSONWriteHandle, 
 		TextReadHandle, TextWriteHandle,
 		XMLReadHandle, XMLWriteHandle,
@@ -82,6 +83,7 @@ public class ReaderHandle
      * 
      * @return	the character reader
      */
+	@Override
     public Reader get() {
     	return content;
     }
@@ -89,6 +91,7 @@ public class ReaderHandle
 	 * Assigns an character reader as the content.
 	 * @param content	a reader
 	 */
+	@Override
 	public void set(Reader content) {
 		this.content = content;
 	}

@@ -33,6 +33,7 @@ import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.BufferableHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
@@ -44,7 +45,7 @@ import com.marklogic.client.io.marker.StructureWriteHandle;
  */
 public class JacksonHandle
 		extends BaseHandle<InputStream, OutputStreamSender>
-		implements OutputStreamSender, BufferableHandle,
+		implements OutputStreamSender, BufferableHandle, ContentHandle<JsonNode>,
 			JSONReadHandle, JSONWriteHandle,
 			StructureReadHandle, StructureWriteHandle
 {
@@ -82,6 +83,7 @@ public class JacksonHandle
 	 * Returns the root node of the JSON tree.
 	 * @return	the JSON root node.
 	 */
+	@Override
 	public JsonNode get() {
 		return content;
 	}
@@ -89,6 +91,7 @@ public class JacksonHandle
 	 * Assigns a JSON tree as the content.
 	 * @param content	the JSON root node.
 	 */
+	@Override
 	public void set(JsonNode content) {
 		this.content = content;
 	}

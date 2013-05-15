@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BufferableHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
@@ -46,7 +47,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class JAXBHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
-    implements OutputStreamSender, BufferableHandle,
+    implements OutputStreamSender, BufferableHandle, ContentHandle<Object>,
         XMLReadHandle, XMLWriteHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(JAXBHandle.class);
@@ -70,13 +71,37 @@ public class JAXBHandle
 	 * Returns the root object of the JAXB structure for the content.
 	 * @return	the root JAXB object
 	 */
+	@Override
 	public Object get() {
+		return content;
+	}
+	/**
+	 * Returns the root object of the JAXB structure for the content
+	 * cast to the specified class.
+	 * @param as	the class of the object
+	 * @return	the root JAXB object
+	 */
+	public <T> T get(Class<T> as) {
+		if (content == null) {
+			return null;
+		}
+		if (as == null) {
+			throw new IllegalArgumentException("Cannot cast content to null class");
+		}
+		if (!as.isAssignableFrom(content.getClass())) {
+			throw new IllegalArgumentException(
+					"Cannot cast "+content.getClass().getName()+" to "+as.getName()
+					);
+		}
+		@SuppressWarnings("unchecked")
+		T content = (T) get();
 		return content;
 	}
 	/**
 	 * Assigns the root object of the JAXB structure for the content.
 	 * @param content	the root JAXB object
 	 */
+	@Override
     public void set(Object content) {
     	this.content = content;
     }

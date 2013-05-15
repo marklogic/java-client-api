@@ -35,6 +35,7 @@ import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.BufferableHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -46,7 +47,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class JDOMHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
-	implements OutputStreamSender, BufferableHandle,
+	implements OutputStreamSender, BufferableHandle, ContentHandle<Document>,
     	XMLReadHandle, XMLWriteHandle,
     	StructureReadHandle, StructureWriteHandle
 {
@@ -115,6 +116,7 @@ public class JDOMHandle
 	 * Returns the XML document structure.
 	 * @return	the XML document.
 	 */
+	@Override
 	public Document get() {
 		return content;
 	}
@@ -122,7 +124,8 @@ public class JDOMHandle
 	 * Assigns an XML document structure as the content.
 	 * @param content	the XML document.
 	 */
-    public void set(Document content) {
+    @Override
+	public void set(Document content) {
     	this.content = content;
     }
 	/**

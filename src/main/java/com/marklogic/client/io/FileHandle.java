@@ -19,6 +19,7 @@ import java.io.File;
 
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.GenericReadHandle;
 import com.marklogic.client.io.marker.GenericWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -43,7 +44,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class FileHandle
 	extends BaseHandle<File, File>
-	implements
+	implements ContentHandle<File>,
 		BinaryReadHandle, BinaryWriteHandle,
 		GenericReadHandle, GenericWriteHandle,
 		JSONReadHandle, JSONWriteHandle, 
@@ -73,6 +74,7 @@ public class FileHandle
 	 * Returns the file for the handle content.
 	 * @return	the file
 	 */
+	@Override
 	public File get() {
 		return content;
 	}
@@ -80,6 +82,7 @@ public class FileHandle
 	 * Assigns a file as the content.
 	 * @param content	the file
 	 */
+	@Override
 	public void set(File content) {
 		this.content = content;
 	}

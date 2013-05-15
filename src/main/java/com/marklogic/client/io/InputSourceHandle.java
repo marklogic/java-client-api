@@ -45,6 +45,7 @@ import org.xml.sax.XMLReader;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.io.marker.BufferableHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -56,7 +57,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class InputSourceHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
-	implements OutputStreamSender, BufferableHandle,
+	implements OutputStreamSender, BufferableHandle, ContentHandle<InputSource>,
 	    XMLReadHandle, XMLWriteHandle,
 	    StructureReadHandle, StructureWriteHandle
 {
@@ -123,6 +124,7 @@ public class InputSourceHandle
 	 * Returns the input source for the content.
 	 * @return	the input source
 	 */
+	@Override
 	public InputSource get() {
     	return content;
     }
@@ -130,6 +132,7 @@ public class InputSourceHandle
 	 * Assigns an input source as the content.
 	 * @param content	an input source
 	 */
+	@Override
 	public void set(InputSource content) {
     	this.content = content;
     }

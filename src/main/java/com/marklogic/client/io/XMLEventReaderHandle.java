@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.io.marker.BufferableHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -50,7 +51,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class XMLEventReaderHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
-	implements OutputStreamSender, BufferableHandle,
+	implements OutputStreamSender, BufferableHandle, ContentHandle<XMLEventReader>,
 		XMLReadHandle, XMLWriteHandle,
 		StructureReadHandle, StructureWriteHandle
 {
@@ -103,6 +104,7 @@ public class XMLEventReaderHandle
 	 * 
 	 * @return	the XML event reader
 	 */
+	@Override
 	public XMLEventReader get() {
 		return content;
 	}
@@ -110,6 +112,7 @@ public class XMLEventReaderHandle
 	 * Assigns the event reader for the content.
 	 * @param content	a StAX event reader
 	 */
+	@Override
 	public void set(XMLEventReader content) {
 		this.content = content;
 	}

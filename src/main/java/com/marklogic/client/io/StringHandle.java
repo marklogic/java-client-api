@@ -22,6 +22,7 @@ import java.nio.charset.Charset;
 
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BufferableHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
@@ -36,7 +37,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class StringHandle
 	extends BaseHandle<byte[], OutputStreamSender>
-	implements OutputStreamSender, BufferableHandle,
+	implements OutputStreamSender, BufferableHandle, ContentHandle<String>,
 		JSONReadHandle, JSONWriteHandle, 
 		TextReadHandle, TextWriteHandle,
 		XMLReadHandle, XMLWriteHandle,
@@ -64,6 +65,7 @@ public class StringHandle
 	 * Returns the string for the content.
 	 * @return	the string
 	 */
+	@Override
 	public String get() {
 		return content;
 	}
@@ -71,6 +73,7 @@ public class StringHandle
 	 * Assigns an string as the content.
 	 * @param content	a string
 	 */
+	@Override
 	public void set(String content) {
 		this.content = content;
 	}

@@ -39,6 +39,7 @@ import org.w3c.dom.ls.LSResourceResolver;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.io.marker.BufferableHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -49,7 +50,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class DOMHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
-	implements OutputStreamSender, BufferableHandle,
+	implements OutputStreamSender, BufferableHandle, ContentHandle<Document>,
 		XMLReadHandle, XMLWriteHandle,
 		StructureReadHandle, StructureWriteHandle
 {
@@ -95,6 +96,7 @@ public class DOMHandle
 	 * Returns the DOM document for the content.
 	 * @return	the DOM document
 	 */
+	@Override
 	public Document get() {
 		return content;
 	}
@@ -102,6 +104,7 @@ public class DOMHandle
 	 * Assigns a DOM document as the content.
 	 * @param content	a DOM document
 	 */
+	@Override
     public void set(Document content) {
     	this.content = content;
     }

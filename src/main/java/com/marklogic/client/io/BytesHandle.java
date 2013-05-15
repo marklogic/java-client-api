@@ -21,6 +21,7 @@ import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
 import com.marklogic.client.io.marker.BufferableHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.GenericReadHandle;
 import com.marklogic.client.io.marker.GenericWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -42,7 +43,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class BytesHandle
 	extends BaseHandle<byte[], byte[]>
-	implements BufferableHandle,
+	implements BufferableHandle, ContentHandle<byte[]>,
 		BinaryReadHandle, BinaryWriteHandle,
 		GenericReadHandle, GenericWriteHandle,
 		JSONReadHandle, JSONWriteHandle, 
@@ -72,6 +73,7 @@ public class BytesHandle
 	 * Returns the byte array for the handle content.
 	 * @return	the byte array
 	 */
+	@Override
 	public byte[] get() {
 		return content;
 	}
@@ -79,6 +81,7 @@ public class BytesHandle
 	 * Assigns a byte array as the content.
 	 * @param content	the byte array
 	 */
+	@Override
 	public void set(byte[] content) {
 		this.content = content;
 	}

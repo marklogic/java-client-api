@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BufferableHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -48,7 +49,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class SourceHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
-	implements OutputStreamSender, BufferableHandle,
+	implements OutputStreamSender, BufferableHandle, ContentHandle<Source>,
 	    XMLReadHandle, XMLWriteHandle, 
 	    StructureReadHandle, StructureWriteHandle
 {
@@ -103,6 +104,7 @@ public class SourceHandle
 	 * Returns the transform source that produces the content.
 	 * @return	the transform source
 	 */
+	@Override
 	public Source get() {
 		return content;
 	}
@@ -110,6 +112,7 @@ public class SourceHandle
 	 * Assigns a transform source that produces the content.
 	 * @param content	the transform source
 	 */
+	@Override
 	public void set(Source content) {
 		this.content = content;
 	}

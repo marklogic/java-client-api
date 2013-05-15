@@ -25,6 +25,7 @@ import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
 import com.marklogic.client.io.marker.BufferableHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.GenericReadHandle;
 import com.marklogic.client.io.marker.GenericWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -49,7 +50,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public class InputStreamHandle
 	extends BaseHandle<InputStream, InputStream>
-	implements BufferableHandle,
+	implements BufferableHandle, ContentHandle<InputStream>,
 		BinaryReadHandle, BinaryWriteHandle,
 		GenericReadHandle, GenericWriteHandle,
 		JSONReadHandle, JSONWriteHandle, 
@@ -85,6 +86,7 @@ public class InputStreamHandle
 	 * 
 	 * @return	the input stream
 	 */
+	@Override
 	public InputStream get() {
 		return content;
 	}
@@ -92,6 +94,7 @@ public class InputStreamHandle
 	 * Assigns an input stream as the content.
 	 * @param content	an input stream
 	 */
+	@Override
 	public void set(InputStream content) {
 		this.content = content;
 	}
