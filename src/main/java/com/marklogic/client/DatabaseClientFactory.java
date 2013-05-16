@@ -15,6 +15,8 @@
  */
 package com.marklogic.client;
 
+import java.io.Serializable;
+
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 
@@ -47,6 +49,15 @@ public class DatabaseClientFactory {
 		 * Moderate security without SSL.
 		 */
 		DIGEST;
+
+		/**
+		 * Returns the enumerated value for the case-insensitive name.
+		 * @param name	the name of the enumerated value
+		 * @return	the enumerated value
+		 */
+		static public Authentication valueOfUncased(String name) {
+			return Authentication.valueOf(name.toUpperCase());
+		}
 	}
 
 	/**
@@ -195,5 +206,183 @@ public class DatabaseClientFactory {
 		}
 
 		return new DatabaseClientImpl(services);		
+	}
+
+	/**
+	 * A Database Client Factory Bean provides an object for specifying configuration
+	 * before creating a client to make database requests.
+	 * 
+	 * <p>For instance, a Spring configuration file might resemble the following
+	 * example:</p>
+	 * <pre>
+	 * &lt;bean name="databaseClientFactory"
+	 * 	   class="com.marklogic.client.DatabaseClientFactory.Bean"&gt;
+	 *   &lt;property name="host"                value="localhost"/&gt;
+	 *   &lt;property name="port"                value="8012"/&gt;
+	 *   &lt;property name="user"                value="rest-writer-user"/&gt;
+	 *   &lt;property name="password"            value="rest-writer-password"/&gt;
+	 *   &lt;property name="authenticationValue" value="digest"/&gt;
+	 * &lt;/bean&gt;
+	 * 
+	 * &lt;bean name="databaseClient"
+	 * 	   class="com.marklogic.client.DatabaseClient"
+	 * 	   factory-bean="databaseClientFactory"
+	 * 	   factory-method="newClient"/&gt;
+	 * </pre>
+	 */
+	static public class Bean implements Serializable {
+		private static final long serialVersionUID = 1L;
+
+		private           String              host;
+		private           int                 port;
+		private           String              user;
+		private           String              password;
+		private           Authentication      authentication;
+		transient private SSLContext          context;
+		transient private SSLHostnameVerifier verifier;
+
+		/**
+		 * Zero-argument constructor for bean applications. Other
+		 * applications can use the static newClient() factory methods
+		 * of DatabaseClientFactory.
+		 */
+		public Bean() {
+			super();
+		}
+
+		/**
+		 * Returns the host for clients created with a
+		 * DatabaseClientFactory.Bean object.
+		 * @return	the client host
+		 */
+		public String getHost() {
+			return host;
+		}
+		/**
+		 * Specifies the host for clients created from a
+		 * DatabaseClientFactory.Bean object.
+		 * @param host	the client host
+		 */
+		public void setHost(String host) {
+			this.host = host;
+		}
+		/**
+		 * Returns the port for clients created with a
+		 * DatabaseClientFactory.Bean object.
+		 * @return	the client port
+		 */
+		public int getPort() {
+			return port;
+		}
+		/**
+		 * Specifies the port for clients created with a
+		 * DatabaseClientFactory.Bean object.
+		 * @param port	the client port
+		 */
+		public void setPort(int port) {
+			this.port = port;
+		}
+		/**
+		 * Returns the user authentication for clients created with a
+		 * DatabaseClientFactory.Bean object.
+		 * @return	the user
+		 */
+		public String getUser() {
+			return user;
+		}
+		/**
+		 * Specifies the user authentication for clients created with a
+		 * DatabaseClientFactory.Bean object.
+		 * @param user	the user
+		 */
+		public void setUser(String user) {
+			this.user = user;
+		}
+		/**
+		 * Returns the password authentication for clients created with a
+		 * DatabaseClientFactory.Bean object.
+		 * @return	the password
+		 */
+		public String getPassword() {
+			return password;
+		}
+		/**
+		 * Specifies the password authentication for clients created with a
+		 * DatabaseClientFactory.Bean object.
+		 * @param password	the password
+		 */
+		public void setPassword(String password) {
+			this.password = password;
+		}
+		/**
+		 * Returns the authentication type for clients created with a
+		 * DatabaseClientFactory.Bean object.
+		 * @return	the authentication type 
+		 */
+		public Authentication getAuthentication() {
+			return authentication;
+		}
+		/**
+		 * Specifies the authentication type for clients created with a
+		 * DatabaseClientFactory.Bean object.
+		 * @param authentication	the authentication type
+		 */
+		public void setAuthentication(Authentication authentication) {
+			this.authentication = authentication;
+		}
+		/**
+		 * Specifies the authentication type for clients created with a
+		 * DatabaseClientFactory.Bean object based on a string value.
+		 * @param authentication	the authentication type
+		 */
+		public void setAuthenticationValue(String authentication) {
+			this.authentication = Authentication.valueOfUncased(authentication);
+		}
+		/**
+		 * Returns the SSLContext for SSL clients created with a
+		 * DatabaseClientFactory.Bean object.
+		 * @return	the SSL context
+		 */
+		public SSLContext getContext() {
+			return context;
+		}
+		/**
+		 * Specifies the SSLContext for clients created with a
+		 * DatabaseClientFactory.Bean object that authenticate with SSL.
+		 * @param context	the SSL context
+		 */
+		public void setContext(SSLContext context) {
+			this.context = context;
+		}
+		/**
+		 * Returns the host verifier for clients created with a
+		 * DatabaseClientFactory.Bean object.
+		 * @return	the host verifier
+		 */
+		public SSLHostnameVerifier getVerifier() {
+			return verifier;
+		}
+		/**
+		 * Specifies the host verifier for clients created with a
+		 * DatabaseClientFactory.Bean object that verify hosts for
+		 * additional security.
+		 * @param verifier	the host verifier
+		 */
+		public void setVerifier(SSLHostnameVerifier verifier) {
+			this.verifier = verifier;
+		}
+
+		/**
+		 * Creates a client for bean applications based on the properties.
+		 * Other applications can use the static newClient() factory methods
+		 * of DatabaseClientFactory.
+		 * The client accesses the database by means of a REST server.
+		 * @return	a new client for making database requests
+		 */
+		public DatabaseClient newClient() {
+			return DatabaseClientFactory.newClient(
+					host, port, user, password, authentication, context, verifier
+					);
+		}
 	}
 }
