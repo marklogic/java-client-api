@@ -17,6 +17,7 @@ package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +30,6 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
-import org.apache.tools.ant.filters.StringInputStream;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -41,7 +41,14 @@ import com.marklogic.client.query.StructuredQueryBuilder.Operator;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class StructuredQueryBuilderTest {
-    @Test
+	// remove dependency on org.apache.tools.ant.filters.StringInputStream
+	class StringInputStream extends ByteArrayInputStream {
+		StringInputStream(String input) {
+			super(input.getBytes());
+		}
+	}
+
+	@Test
     public void testBuilder() throws IOException, SAXException, ParserConfigurationException {
         StructuredQueryBuilder qb = new StructuredQueryBuilder();
         StructuredQueryDefinition t, u, v, m;
