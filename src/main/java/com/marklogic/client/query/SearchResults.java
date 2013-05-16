@@ -15,7 +15,11 @@
  */
 package com.marklogic.client.query;
 
+import java.util.Iterator;
+
 import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
+
 import org.w3c.dom.Document;
 
 /**
@@ -33,6 +37,24 @@ public interface SearchResults {
      * @return The number of results.
      */
     public long getTotalResults();
+
+    /**
+     * Returns the offset of the first result in the search reponse page.
+     * @return	The first result number.
+     */
+    public long getStart();
+
+    /**
+     * Returns the maximum number of results in the search response page.
+     * @return	The page size.
+     */
+    public int getPageLength();
+
+    /**
+     * The type of transform used to produce the result snippets.
+     * @return	The snippet transform type
+     */
+    public String getSnippetTransformType();
 
     /**
      * Returns the search metrics.
@@ -83,5 +105,48 @@ public interface SearchResults {
      */
     public SearchHandle.Report[]  getReports();
 
+    /**
+     * Returns the array of constraint names used in the search
+     * (if requested).
+     * @return	The constraint names.
+     */
+	public String[] getConstraintNames();
+
+    /**
+     * Returns the named constraint used in the search
+     * (if requested).
+     * @param name	The constraint name.
+     * @param handle	An XML handle for reading the constraint.
+     * @return	The handle on the constraint.
+     */
+	public <T extends XMLReadHandle> T getConstraint(String name, T handle);
+
+    /**
+     * Returns an iterator over the constraints used in the search
+     * (if requested).
+     * @param handle	An XML handle for reading the constraints.
+     * @return	An iterator that populates the handle with each constraint.
+     */
+	public <T extends XMLReadHandle> Iterator<T> getConstraintIterator(T handle);
+
+    /**
+     * Returns the plan for the search (if requested).
+     * @param handle	An XML handle for reading the plan.
+     * @return	The handle on the plan.
+     */
+	public <T extends XMLReadHandle> T getPlan(T handle);
+
+	/**
+	 * Returns the string query input (if provided and requested).
+	 * @return	The string queries.
+	 */
+    public String[] getStringQueries();
+
+	/**
+	 * Returns the cts:query used in the search (if requested).
+     * @param handle	An XML handle for reading the query.
+     * @return	The handle on the query.
+	 */
+    public <T extends XMLReadHandle> T getQuery(T handle);
 }
 

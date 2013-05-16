@@ -103,6 +103,9 @@ public final class Utilities {
 				writeHandle, "import");
 
 		XMLInputFactory factory = XMLInputFactory.newInstance();
+		factory.setProperty("javax.xml.stream.isNamespaceAware", new Boolean(true));
+		factory.setProperty("javax.xml.stream.isValidating",     new Boolean(false));
+
 		XMLEventReader reader;
 		Object content = baseHandle.sendContent();
 		try {
@@ -152,18 +155,35 @@ public final class Utilities {
 		return importedXML;
 	}
 
+	public static String extractXMLText(List<XMLEvent> toExport) {
+		if (toExport == null) {
+			return null;
+		}
+
+		StringBuilder buf = new StringBuilder();
+		for (XMLEvent event: toExport) {
+			if (event.isCharacters()) {
+				buf.append(event.asCharacters().getData());
+			}
+		}
+
+		return buf.toString();
+	}
+
 	@SuppressWarnings({ "unchecked" })
 	public static <T extends XMLReadHandle> T exportXML(
 			List<XMLEvent> toExport, T handle) {
+		if (toExport == null || toExport.size() == 0) {
+			return null;
+		}
+
 		XMLOutputFactory factory = XMLOutputFactory.newInstance();
+		factory.setProperty("javax.xml.stream.isRepairingNamespaces", new Boolean(true));
 
 		@SuppressWarnings("rawtypes")
 		HandleImplementation baseHandle = HandleAccessor.checkHandle(handle,
 				"export");
 
-		if (toExport == null) {
-			return null;
-		}
 		XMLEventWriter eventWriter;
 		ByteArrayOutputStream baos = null;
 		OutputStream out = null;

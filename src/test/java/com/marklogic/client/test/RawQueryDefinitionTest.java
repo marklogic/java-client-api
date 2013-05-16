@@ -169,7 +169,6 @@ public class RawQueryDefinitionTest {
 
 		// All three
 		str = head + qtext3 + t.serialize() + optionsString + tail;
-		System.out.println(str);
 		check(new StringHandle(str));
 	}
 

@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual; 
 
 import java.io.IOException;
 
@@ -27,6 +28,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.io.Format;
@@ -124,7 +126,7 @@ public class StructuredSearchTest {
     }
 
     @Test
-    public void testExtractMetadata() {
+    public void testExtractMetadata() throws SAXException, IOException {
         QueryManager queryMgr = Common.client.newQueryManager();
 
         String combined =
@@ -147,10 +149,20 @@ public class StructuredSearchTest {
 
 		SearchHandle sh = queryMgr.search(rawDef, new SearchHandle());
 
-		Document metadata = sh.getMatchResults()[0].getMetadata();
+		MatchDocumentSummary matchResult = sh.getMatchResults()[0];
+		Document metadata = matchResult.getMetadata();
 		Element subKey = (Element)
 		metadata.getElementsByTagNameNS("http://marklogic.com/xdmp/json", "subKey").item(0);
 		assertEquals("string", subKey.getAttribute("type"));
 		assertEquals("sub value", subKey.getTextContent());
+
+		String docStr    = Common.testDocumentToString(metadata);
+		String handleStr = matchResult.getMetadata(new StringHandle()).get();
+		assertXMLEqual("Different metadata for handle", docStr, handleStr);
+
+		Document snippet = matchResult.getSnippets()[0];
+		docStr    = Common.testDocumentToString(snippet);
+		handleStr = matchResult.getSnippetIterator(new StringHandle()).next().get();
+		assertXMLEqual("Different snippet for handle", docStr, handleStr);
     }
 }

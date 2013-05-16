@@ -15,10 +15,12 @@
  */
 package com.marklogic.client.query;
 
+import java.util.Iterator;
+
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.marker.XMLReadHandle;
 
 /**
  * A MatchDocumentSummary is the information returned for each document found by a search.
@@ -78,6 +80,13 @@ public interface MatchDocumentSummary {
      */
     public Document[] getSnippets();
 
+	/**
+     * Returns an iterator over the snippets matched for the result.
+     * @param handle	An XML handle for reading the snippets.
+     * @return	An iterator that populates the handle with each snippet.
+	 */
+	public <T extends XMLReadHandle> Iterator<T> getSnippetIterator(T handle);
+
     /**
      * Returns the metadata associated with this document.
      *
@@ -85,6 +94,13 @@ public interface MatchDocumentSummary {
      */
     public Document getMetadata();
     
+	/**
+     * Returns the metadata for the result.
+     * @param handle	An XML handle for reading the metadata.
+     * @return	The handle on the metadata.
+	 */
+	public <T extends XMLReadHandle> T getMetadata(T handle);
+
     /**
      * Returns the mime type associated with this document.
      */
@@ -101,4 +117,17 @@ public interface MatchDocumentSummary {
      * @return A DOM Element containing relevance trace info.  In the absence of the 'relevance-trace' option, returns null.
      */
 	public Document getRelevanceInfo();
+
+	/**
+     * Returns the relevance information for the result.
+     * @param handle	An XML handle for reading the relevance information.
+     * @return	The handle on the relevance information.
+	 */
+	public <T extends XMLReadHandle> T getRelevanceInfo(T handle);
+
+	/**
+	 * Returns the uris for documents similar to the result (if requested).
+	 * @return	The document uris.
+	 */
+	public String[] getSimilarDocumentUris();
 }

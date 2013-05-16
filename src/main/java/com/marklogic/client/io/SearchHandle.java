@@ -15,41 +15,35 @@
  */
 package com.marklogic.client.io;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Stack;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
 
-import javax.xml.XMLConstants;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.EndElement;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Attr;
-import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.impl.Utilities;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.SearchReadHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.query.FacetHeatmapValue;
 import com.marklogic.client.query.FacetResult;
 import com.marklogic.client.query.FacetValue;
@@ -76,30 +70,34 @@ public class SearchHandle
 	extends BaseHandle<InputStream, OperationNotSupported>
 	implements SearchReadHandle, SearchResults
 {
+	static final private Logger logger = LoggerFactory.getLogger(SearchHandle.class);
 
-    // FIXME: put namespaces on constructed elements?
+    static private String SEARCH_NS = "http://marklogic.com/appservices/search";
+    static private String QUERY_NS  = "http://marklogic.com/cts/query";
 
-    static final private Logger logger = LoggerFactory.getLogger(SearchHandle.class);
-    static private DocumentBuilderFactory bfactory = DocumentBuilderFactory.newInstance();
-    static private SAXParserFactory pfactory = SAXParserFactory.newInstance();
+    private QueryDefinition querydef;
 
-    private QueryDefinition querydef = null;
-    private SearchResponse searchResponse = null;
-    private SearchMetrics metrics = null;
-    private MatchDocumentSummary[] summary = null;
-    private FacetResult[] facets = null;
-    private String[] facetNames = null;
-    private long totalResults = -1;
-    private boolean alwaysDomSnippets = false;
-    private Document plan = null;
-    private ArrayList<Warning> warnings = null;
-    private ArrayList<Report> reports = null;
+    private MatchDocumentSummary[] summary;
+    private SearchMetrics          metrics;
+    private ArrayList<Warning>     warnings;
+    private ArrayList<Report>      reports;
+
+    private LinkedHashMap<String, FacetResult> facets;
+    private LinkedHashMap<String, EventRange>  constraints;
+
+    private EventRange     planEvents;
+    private List<XMLEvent> events;
+
+    private long       totalResults = -1;
+    private long       start        = -1;
+    private int        pageLength   = 0;
+    private String     snippetType;
+    private String[]   qtext;
+    private EventRange queryEvents;
 
     public SearchHandle() {
     	super();
     	super.setFormat(Format.XML);
-        pfactory.setValidating(false);
-        pfactory.setNamespaceAware(true);
     }
 
     /**
@@ -129,16 +127,13 @@ public class SearchHandle
 	}
 
     /**
-     * Sets the force DOM flag.
-     *
-     * If this flag is set to <code>true</code>, snippets will always be returned
-     * as DOM documents, even if the snippet format could be represented using Java
-     * objects.
+     * In a previous release, set the force DOM flag.  This setter now has no effect
+     * and will be removed in a future release.
      *
      * @param forceDOM The flag setting.
      */
+    @Deprecated
     public void setForceDOM(boolean forceDOM) {
-        alwaysDomSnippets = forceDOM;
     }
 
 	@Override
@@ -148,22 +143,41 @@ public class SearchHandle
 
 	@Override
 	protected void receiveContent(InputStream content) {
-        try {
-        	logger.debug("SearchHandle receiving content");
-            searchResponse = new SearchResponse();
-            SAXParser parser = pfactory.newSAXParser();
-            XMLReader reader = parser.getXMLReader();
-            reader.setContentHandler(searchResponse);
-            reader.parse(new InputSource(new InputStreamReader(content, "UTF-8")));
-            logger.debug("SearchHandle received content");
-        } catch (SAXException se) {
-            throw new MarkLogicIOException("Could not construct search results: parser error", se);
-        } catch (ParserConfigurationException pce) {
-            throw new MarkLogicIOException("Could not construct search results: parser configuration error", pce);
-        } catch (IOException ioe) {
-            throw new MarkLogicIOException("Could not construct search results: I/O error", ioe);
-        }
-    }
+		try {
+	    	XMLInputFactory factory = XMLInputFactory.newFactory();
+			factory.setProperty("javax.xml.stream.isNamespaceAware", new Boolean(true));
+			factory.setProperty("javax.xml.stream.isValidating",     new Boolean(false));
+
+			XMLEventReader reader = factory.createXMLEventReader(content, "UTF-8");
+			SearchResponseImpl response = new SearchResponseImpl();
+			response.parse(reader);
+			reader.close();
+
+			summary          =
+				(response.tempSummary == null || response.tempSummary.size() < 1) ?
+				new MatchDocumentSummary[0]:
+				response.tempSummary.toArray(new MatchDocumentSummary[response.tempSummary.size()]);
+			metrics          = response.tempMetrics;
+			facets           = response.tempFacets;
+		    warnings         = response.tempWarnings;
+		    reports          = response.tempReports;
+		    planEvents       = response.tempPlanEvents;
+		    constraints      = response.tempConstraints;
+		    events           = response.tempEvents;
+		    totalResults     = response.tempTotalResults;
+		    start            = response.tempStart;
+		    pageLength       = response.tempPageLength;
+		    snippetType      = response.tempSnippetType;
+		    qtext            =
+				(response.qtextList == null || response.qtextList.size() < 1) ?
+				null :
+				response.qtextList.toArray(new String[response.qtextList.size()]);
+		    queryEvents      = response.tempQueryEvents;
+
+		} catch (XMLStreamException e) {
+            throw new MarkLogicIOException("Could not construct search results: parser error", e);
+		}
+	}
 
     /**
      * Sets the query definition used in the search.
@@ -172,12 +186,22 @@ public class SearchHandle
      *
      * @param querydef The new QueryDefinition
      */
-    public void setQueryCriteria(QueryDefinition querydef) {
+	public void setQueryCriteria(QueryDefinition querydef) {
         this.querydef = querydef;
-        metrics = null;
-        summary = null;
-        facets = null;
-        facetNames = null;
+        summary      = null;
+        metrics      = null;
+        facets       = null;
+        warnings     = null;
+        reports      = null;
+        planEvents   = null;
+        constraints  = null;
+        events       = null;
+        totalResults = -1;
+        start        = -1;
+        pageLength   = 0;
+        snippetType  = null;
+        qtext        = null;
+        queryEvents  = null;
     }
 
     /**
@@ -199,6 +223,49 @@ public class SearchHandle
     }
 
     /**
+     * Returns the start page for this search.
+     * @return The offset to the first result.
+     */
+    @Override
+    public long getStart() {
+        return start;
+    }
+
+    /**
+     * Returns the page length for this search.
+     * @return The number of results in a page.
+     */
+    @Override
+    public int getPageLength() {
+        return pageLength;
+    }
+
+    /**
+     * Identifies whether results have default,
+     * raw document, customer, or no snippets.
+     * @return The type of snippets provided by results.
+     */
+    @Override
+    public String getSnippetTransformType() {
+        return snippetType;
+    }
+
+    /**
+     * Returns the list of string queries, if specified
+     * by the query options.
+     * @return The string queries.
+     */
+    @Override
+    public String[] getStringQueries() {
+        return qtext;
+    }
+
+    @Override
+    public <T extends XMLReadHandle> T getQuery(T handle) {
+        return Utilities.exportXML(getSlice(events, queryEvents), handle);
+    }
+
+    /**
      * Returns the metrics associated with this search.
      * @return The metrics.
      */
@@ -217,14 +284,17 @@ public class SearchHandle
     }
 
     /**
-     * Returns an array of facet results for this search.
-     * @return The facets array.
+     * Returns a list of the facet names returned in this search.
+     * @return The array of names.
      */
     @Override
-    public FacetResult[] getFacetResults() {
-        return facets;
+    public String[] getFacetNames() {
+    	if (facets == null || facets.isEmpty()) {
+    		return null;
+    	}
+    	Set<String> names = facets.keySet();
+        return names.toArray(new String[names.size()]);
     }
-
     /**
      * Returns the named facet results.
      * @param name The name of the facet.
@@ -232,34 +302,74 @@ public class SearchHandle
      */
     @Override
     public FacetResult getFacetResult(String name) {
-        if (facets != null) {
-            for (FacetResult facet : facets) {
-                if (facet.getName().equals(name)) {
-                    return facet;
-                }
-            }
-        }
-        return null;
+    	if (facets == null || facets.isEmpty()) {
+    		return null;
+    	}
+    	return facets.get(name);
     }
-
     /**
-     * Returns a list of the facet names returned in this search.
-     * @return The array of names.
+     * Returns an array of facet results for this search.
+     * @return The facets array.
      */
     @Override
-    public String[] getFacetNames() {
-        return facetNames;
+    public FacetResult[] getFacetResults() {
+    	if (facets == null || facets.isEmpty()) {
+    		return null;
+    	}
+    	Collection<FacetResult> facetResults = facets.values();
+    	return facetResults.toArray(new FacetResult[facetResults.size()]);
+    }
+
+    @Override
+    public String[] getConstraintNames() {
+    	if (constraints == null || constraints.isEmpty()) {
+    		return null;
+    	}
+    	Set<String> names = constraints.keySet();
+        return names.toArray(new String[names.size()]);
+    }
+    @Override
+    public <T extends XMLReadHandle> T getConstraint(String name, T handle) {
+    	if (constraints == null || constraints.isEmpty()) {
+    		return null;
+    	}
+
+    	EventRange constraintEvents = constraints.get(name);
+    	if (constraintEvents == null) {
+    		return null;
+    	}
+
+    	return Utilities.exportXML(
+    			getSlice(events, constraintEvents), handle);
+    }
+    @Override
+    public <T extends XMLReadHandle> Iterator<T> getConstraintIterator(T handle) {
+    	if (constraints == null || constraints.isEmpty()) {
+    		return null;
+    	}
+
+    	List<EventRange> constraintList =
+    		new ArrayList<EventRange>(constraints.values());
+
+        return new EventIterator<T>(events, constraintList, handle);
     }
 
     /**
      * Returns the query plan associated with this search.
      *
-     * <p>Query plans are highly variable and are always returned as a DOM Document.</p>
+     * <p>Query plans are highly variable.</p>
      * @return the plan as a DOM Document
      */
     @Override
     public Document getPlan() {
-        return plan;
+    	DOMHandle handle = getPlan(new DOMHandle());
+    	return (handle == null) ? null : handle.get();
+    }
+    @Override
+    public <T extends XMLReadHandle> T getPlan(T handle) {
+        return Utilities.exportXML(
+        		getSlice(events, planEvents), handle
+        		);
     }
 
     /**
@@ -280,7 +390,39 @@ public class SearchHandle
         return (reports == null) ? null  : reports.toArray(new Report[0]);
     }
 
-    private class SearchMetricsImpl implements SearchMetrics {
+    private List<XMLEvent> getSlice(
+    		List<XMLEvent> eventList, EventRange eventRange
+    ) {
+    	if (eventList == null || eventRange == null) {
+    		return null;
+    	}
+
+    	return eventList.subList(eventRange.getFirst(), eventRange.getNext());
+    }
+	private Document[] getEventDocuments(List<XMLEvent> eventList, List<EventRange> rangeList) {
+    	if (rangeList == null || rangeList.size() < 1) {
+    		return null;
+    	}
+
+    	ArrayList<Document> documents = new ArrayList<Document>();
+
+    	DOMHandle handle = new DOMHandle();
+    	for (int i=0; i < rangeList.size(); i++) {
+    		EventRange eventRange = rangeList.get(i);
+    		handle = Utilities.exportXML(
+    				getSlice(eventList, eventRange), handle
+            		);
+    		Document document = (handle == null) ? null : handle.get();
+    		if (document != null) {
+    			documents.add(document);
+    		}
+    	}
+
+    	int size = documents.size();
+    	return (size == 0) ? null : documents.toArray(new Document[size]);
+    }
+
+	private class SearchMetricsImpl implements SearchMetrics {
         long qrTime = -1;
         long frTime = -1;
         long srTime = -1;
@@ -321,6 +463,22 @@ public class SearchHandle
         }
     }
 
+    private class EventRange {
+    	private int first = -1;
+    	private int next  = -1; // 1 after the last item in the range
+    	private EventRange(int first, int next) {
+    		super();
+    		this.first = first;
+    		this.next  = next;
+    	}
+		int getFirst() {
+			return first;
+		}
+		int getNext() {
+			return next;
+		}
+    }
+
     private class MatchDocumentSummaryImpl implements MatchDocumentSummary {
         private String uri = null;
         private int score = -1;
@@ -329,13 +487,15 @@ public class SearchHandle
         private String path = null;
         private ArrayList<MatchLocation> locvec = new ArrayList<MatchLocation>();
         private MatchLocation[] locations = null;
-        private ArrayList<Document> snippets = new ArrayList<Document>();
-        private Document metadata = null;
         private String mimeType = null;
         private Format format = null;
-        private Document relevanceInfo = null;
 
-        public MatchDocumentSummaryImpl(String uri, int score, double confidence, double fitness, String path, String mimeType, Format format) {
+        private ArrayList<EventRange> snippetEvents;
+        private EventRange            metadataEvents;
+    	private EventRange            relevanceEvents;
+    	private ArrayList<String>     similarUris;
+
+    	public MatchDocumentSummaryImpl(String uri, int score, double confidence, double fitness, String path, String mimeType, Format format) {
             this.uri = uri;
             this.score = score;
             conf = confidence;
@@ -372,7 +532,15 @@ public class SearchHandle
 
         @Override
         public Document[] getSnippets() {
-            return snippets.toArray(new Document[0]);
+        	return getEventDocuments(events, snippetEvents);
+        }
+        @Override
+        public <T extends XMLReadHandle> Iterator<T> getSnippetIterator(T handle) {
+        	if (snippetEvents == null || snippetEvents.size() < 1) {
+        		return null;
+        	}
+
+            return new EventIterator<T>(events, snippetEvents, handle);
         }
 
         @Override
@@ -387,9 +555,20 @@ public class SearchHandle
 
         @Override
         public Document getMetadata() {
-            return metadata;
+        	DOMHandle handle = getMetadata(new DOMHandle());
+        	return (handle == null) ? null : handle.get();
         }
-        
+        @Override
+        public <T extends XMLReadHandle> T getMetadata(T handle) {
+        	if (metadataEvents == null) {
+        		return null;
+        	}
+
+            return Utilities.exportXML(
+            		getSlice(events, metadataEvents), handle
+            		);
+        }
+
         @Override
         public String getMimeType() {
         	return mimeType;
@@ -404,26 +583,30 @@ public class SearchHandle
             locvec.add(loc);
         }
 
-        public MatchLocation getCurrentLocation() {
-            return locvec.get(locvec.size()-1);
+        @Override
+        public String[] getSimilarDocumentUris() {
+        	if (similarUris == null || similarUris.size() < 1) {
+        		return null;
+        	}
+
+            return similarUris.toArray(new String[similarUris.size()]);
         }
 
-        public void addSnippet(Document snippet) {
-            this.snippets.add(snippet);
-        }
-
-        public void setMetadata(Document meta) {
-            metadata = meta;
-        }
-
-		@Override
+        @Override
 		public Document getRelevanceInfo() {
-			return relevanceInfo;
-		}
+			DOMHandle handle = getRelevanceInfo(new DOMHandle());
+	    	return (handle == null) ? null : handle.get();
+	    }
+        @Override
+	    public <T extends XMLReadHandle> T getRelevanceInfo(T handle) {
+	    	if (relevanceEvents == null) {
+	    		return null;
+	    	}
 
-		public void setRelevanceTrace(Document dom) {
-			this.relevanceInfo = dom;	
-		}
+	        return Utilities.exportXML(
+	        		getSlice(events, relevanceEvents), handle
+	        		);
+	    }
     }
 
     private class MatchLocationImpl implements MatchLocation {
@@ -576,597 +759,6 @@ public class SearchHandle
         }
     }
 
-    private class SearchResponse implements ContentHandler {
-        private HashMap<String, String> nsmap = new HashMap<String, String> ();
-        private boolean buildDOM = false;
-        private boolean inMetrics = false;
-        private boolean inTime = false;
-        private boolean inResult = false;
-        private Stack<Node> stack = null;
-        private ArrayList<WSorChar> preceding = null;
-        private DocumentBuilder builder = null;
-        private DOMImplementation domImpl = null;
-        private DatatypeFactory dtFactory = null;
-        private Calendar now = Calendar.getInstance();
-        String characters = null;
-
-        String facetName = null;
-        private ArrayList<FacetValue> facetValues = null;
-        private ArrayList<String> facetNamesList = null;
-        private ArrayList<FacetResult> facetResults = null;
-
-        @SuppressWarnings("unused")
-		long start = 0;
-        int pageLength = 0;
-        Document dom = null;
-        String snippetFormat = null;
-        MatchDocumentSummary[] matchSummaries = null;
-        int matchSlot = 0;
-
-        long qrTime = -1;
-        long frTime = -1;
-        long srTime = -1;
-        long tTime  = -1;
-        long mrTime = -1;
-
-        public SearchResponse() {
-        }
-
-        @Override
-        public void setDocumentLocator(Locator locator) {
-            // nop
-        }
-
-        @Override
-        public void startDocument() throws SAXException {
-        }
-
-        @Override
-        public void endDocument() throws SAXException {
-        }
-
-        @Override
-        public void startPrefixMapping(String prefix, String uri) throws SAXException {
-            nsmap.put(prefix, uri);
-        }
-
-        @Override
-        public void endPrefixMapping(String prefix) throws SAXException {
-            nsmap.remove(prefix);
-        }
-
-        @Override
-        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-            if (buildDOM) {
-                handleDOM(uri, localName,  qName, attributes);
-                return;
-            }
-
-            if (!"http://marklogic.com/appservices/search".equals(uri)) {
-                return;
-            }
-
-            if ("response".equals(localName))           { handleResponse(uri, localName, attributes);
-            } else if ("result".equals(localName))      { handleResult(uri, localName, attributes);
-            } else if ("snippet".equals(localName))     { handleSnippet();
-            } else if ("metadata".equals(localName))    { handleMetadata();
-            } else if ("plan".equals(localName))        { handlePlan();
-            } else if ("match".equals(localName))       { handleMatch(uri, localName, attributes);
-            } else if ("highlight".equals(localName))   { handleHighlight();
-            } else if ("facet".equals(localName))       { handleFacet(attributes);
-            } else if ("facet-value".equals(localName)) { handleFacetValue(attributes);
-            } else if ("boxes".equals(localName))       { handleGeoFacet(attributes);
-            } else if ("box".equals(localName))         { handleGeoFacetValue(attributes);
-            } else if ("qtext".equals(localName))       { // nop
-            } else if ("query".equals(localName))       { // nop
-            } else if ("warning".equals(localName))     { handleWarning(attributes);
-            } else if ("report".equals(localName))      { handleReport(attributes);
-            } else if ("metrics".equals(localName))     { handleMetrics();
-            } else if ("query-resolution-time".equals(localName) || "facet-resolution-time".equals(localName)
-                        || "snippet-resolution-time".equals(localName) || "total-time".equals(localName)
-                        || "metadata-resolution-time".equals(localName)) {
-                inTime = inMetrics;
-            } else {
-                throw new UnsupportedOperationException("Unexpected element in search results: " + localName);
-            }
-
-            characters = null;
-        }
-
-        private void handleResponse(String uri, String localName, Attributes attributes) {
-            snippetFormat = attributes.getValue("", "snippet-format");
-
-            if (alwaysDomSnippets || !"snippet".equals(snippetFormat)) {
-                try {
-                    builder = bfactory.newDocumentBuilder();
-                    domImpl = builder.getDOMImplementation();
-                    stack = new Stack<Node>();
-                    preceding = new ArrayList<WSorChar>();
-                } catch (ParserConfigurationException pce) {
-                    throw new MarkLogicIOException("Failed to create document builder", pce);
-                }
-            }
-
-            String v = attributes.getValue("", "total");
-            totalResults = Long.parseLong(v);
-            v = attributes.getValue("", "page-length");
-            pageLength = Integer.parseInt(v);
-            v = attributes.getValue("", "start");
-            start = Long.parseLong(v);
-            matchSummaries = new MatchDocumentSummary[pageLength];
-            matchSlot = 0;
-        }
-
-        private void handleResult(String uri, String localName, Attributes attributes) {
-            inResult = true;
-
-            String ruri = attributes.getValue("", "uri");
-            String path = attributes.getValue("", "path");
-            String mimeType = attributes.getValue("", "mimetype");
-            String formatString = attributes.getValue("", "format");
-            Format format = Format.UNKNOWN;
-            if (formatString != null && !formatString.equals("")) {
-            	format = Format.valueOf(formatString.toUpperCase());
-            }
-
-            int score = Integer.parseInt(attributes.getValue("", "score"));
-            
-            double confidence = Double.parseDouble(attributes.getValue("", "confidence"));
-            double fitness = Double.parseDouble(attributes.getValue("", "fitness").toUpperCase());
-            matchSummaries[matchSlot] = new MatchDocumentSummaryImpl(ruri, score, confidence, fitness, path, mimeType, format);
-
-            if (alwaysDomSnippets || !"snippet".equals(snippetFormat)) {
-                buildDOM = true;
-                stack.clear();
-            }
-        }
-
-        private void handleSnippet() {
-            if (alwaysDomSnippets || !"snippet".equals(snippetFormat)) {
-                buildDOM = true;
-                stack.clear();
-            }
-        }
-
-        private void handleMetadata() {
-            buildDOM = true;
-
-            if (stack == null) {
-                try {
-                    builder = bfactory.newDocumentBuilder();
-                    domImpl = builder.getDOMImplementation();
-                    stack = new Stack<Node>();
-                    preceding = new ArrayList<WSorChar>();
-                } catch (ParserConfigurationException pce) {
-                    throw new MarkLogicIOException("Failed to create document builder", pce);
-                }
-            } else {
-                stack.clear();
-            }
-
-            // Make sure there's a wrapper
-            handleDOM("http://marklogic.com/appservices/search", "metadata", "search:metadata", null);
-        }
-
-        private void handlePlan() {
-            buildDOM = true;
-
-            if (stack == null) {
-                try {
-                    builder = bfactory.newDocumentBuilder();
-                    domImpl = builder.getDOMImplementation();
-                    stack = new Stack<Node>();
-                    preceding = new ArrayList<WSorChar>();
-                } catch (ParserConfigurationException pce) {
-                    throw new MarkLogicIOException("Failed to create document builder", pce);
-                }
-            } else {
-                stack.clear();
-            }
-
-            // Make sure there's a wrapper
-            handleDOM("http://marklogic.com/appservices/search", "plan", "search:plan", null);
-        }
-
-        /* This is a convenience for debugging, leave it hear to save myself from having to rewrite it
-        private void dumpDOM(Document dom) {
-            DOMImplementationLS domImpl = (DOMImplementationLS) builder.getDOMImplementation();
-            LSOutput domOutput = domImpl.createLSOutput();
-            domOutput.setByteStream(System.err);
-            domImpl.createLSSerializer().write(dom, domOutput);
-        }
-        */
-
-        private void handleMatch(String uri, String localName, Attributes attributes) {
-            MatchLocation loc = new MatchLocationImpl(attributes.getValue("", "path"));
-            ((MatchDocumentSummaryImpl) matchSummaries[matchSlot]).addLocation(loc);
-        }
-
-        private void handleHighlight() {
-            if (!buildDOM) {
-                if (characters != null) {
-                    MatchSnippet snippet = new MatchSnippetImpl(false, characters);
-                    MatchLocation location = ((MatchDocumentSummaryImpl) matchSummaries[matchSlot]).getCurrentLocation();
-                    ((MatchLocationImpl) location).addSnippet(snippet);
-                }
-            }
-        }
-
-        private void handleFacet(Attributes attributes) {
-            facetName = attributes.getValue("", "name");
-            if (facetValues == null) {
-                facetValues = new ArrayList<FacetValue>();
-                facetResults = new ArrayList<FacetResult>();
-                facetNamesList = new ArrayList<String>();
-                facetNamesList.add(facetName);
-            }
-            facetValues.clear();
-        }
-
-        private void handleFacetValue(Attributes attributes) {
-            String name = attributes.getValue("", "name");
-            long count = Long.parseLong(attributes.getValue("","count"));
-            facetValues.add(new FacetValueImpl(name, count));
-        }
-
-        private void handleGeoFacet(Attributes attributes) {
-            facetName = attributes.getValue("", "name");
-            if (facetValues == null) {
-                facetValues = new ArrayList<FacetValue>();
-                facetResults = new ArrayList<FacetResult>();
-                facetNamesList = new ArrayList<String>();
-                facetNamesList.add(facetName);
-            }
-            facetValues.clear();
-        }
-
-        private void handleGeoFacetValue(Attributes attributes) {
-            String name = attributes.getValue("", "name");
-            long count = Long.parseLong(attributes.getValue("", "count"));
-            double s = Double.parseDouble(attributes.getValue("", "s"));
-            double w = Double.parseDouble(attributes.getValue("", "w"));
-            double n = Double.parseDouble(attributes.getValue("", "n"));
-            double e = Double.parseDouble(attributes.getValue("", "e"));
-            facetValues.add(new FacetHeatmapValueImpl(name, count, s, w, n, e));
-        }
-
-        private void handleMetrics() {
-            inMetrics = true;
-            if (dtFactory == null) {
-                try {
-                    dtFactory = DatatypeFactory.newInstance();
-                } catch (DatatypeConfigurationException dce) {
-                    throw new MarkLogicIOException("Cannot instantiate datatypeFactory", dce);
-                }
-            }
-        }
-
-        private void handleWarning(Attributes attributes) {
-            if (warnings == null) {
-                warnings = new ArrayList<Warning>();
-            }
-
-            Warning warning = new Warning();
-            warning.setId(attributes.getValue("id"));
-            warnings.add(warning);
-        }
-
-        private void handleReport(Attributes attributes) {
-            if (reports == null) {
-                reports = new ArrayList<Report>();
-            }
-
-            Report report = new Report();
-            report.setId(attributes.getValue("id"));
-            report.setName(attributes.getValue("name"));
-            report.setType(attributes.getValue("type"));
-            reports.add(report);
-        }
-
-        private void handleDOM(String uri, String localName, String qName, Attributes attributes) {
-            handleCharacters();
-
-            if (stack.isEmpty()) {
-                dom = domImpl.createDocument(uri, qName, null);
-                Element root = dom.getDocumentElement();
-                setNamespaces(root, uri);
-
-                if (attributes != null) {
-                    for (int pos = 0; pos < attributes.getLength(); pos++) {
-                        Attr attr = dom.createAttributeNS(attributes.getURI(pos), attributes.getQName(pos));
-                        attr.setValue(attributes.getValue(pos));
-                        root.setAttributeNode(attr);
-                    }
-                }
-
-                /* TODO: This doesn't seem to be possible in the DOM...
-                Node top = root;
-                Node n = null;
-                for (WSorChar ws : preceding) {
-                    if (ws.isChars()) {
-                        n = dom.createTextNode(new String(ws.chars));
-                    } else {
-                        n = dom.createProcessingInstruction(ws.target, ws.data);
-                    }
-                    dom.insertBefore(n, top);
-                    top = n;
-                }
-                */
-
-                preceding.clear();
-                stack.push(root);
-            } else {
-                Element child = dom.createElementNS(uri, qName);
-                setNamespaces((Element) stack.peek(), uri);
-                for (int pos = 0; pos < attributes.getLength(); pos++) {
-                    Attr attr = dom.createAttributeNS(attributes.getURI(pos), attributes.getQName(pos));
-                    attr.setValue(attributes.getValue(pos));
-                    child.setAttributeNode(attr);
-                }
-                stack.peek().appendChild(child);
-                stack.push(child);
-            }
-        }
-
-        private void setNamespaces(Element element, String uri) {
-            for (String pfx : nsmap.keySet()) {
-                String nsuri = nsmap.get(pfx);
-                if (!nsuri.equals("")) {
-                    String attr = "xmlns";
-                    if (!"".equals(pfx)) {
-                        attr += ":" + pfx;
-                    }
-                    if (!inScope(element, attr, nsuri)) {
-                        element.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, attr, nsuri);
-                    }
-                }
-            }
-        }
-
-        private boolean inScope(Element element, String attr, String uri) {
-            Attr attrNode = element.getAttributeNodeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, attr);
-            if (attrNode != null && uri.equals(attrNode.getValue())) {
-                return true;
-            } else {
-                Node parent = element.getParentNode();
-                if (parent != null && parent.getNodeType() == Element.ELEMENT_NODE) {
-                    return inScope((Element) parent, attr, uri);
-                } else {
-                    return false;
-                }
-            }
-        }
-
-        @Override
-        public void endElement(String uri, String localName, String qName) throws SAXException {
-            if (buildDOM) {
-                handleCharacters();
-                if (!stack.isEmpty()) {
-                    stack.pop();
-                }
-            }
-
-            if (!"http://marklogic.com/appservices/search".equals(uri)) {
-                characters = null;
-                return;
-            }
-
-            if ("snippet".equals(localName)) {
-                if (buildDOM) {
-                    buildDOM = false;
-                    ((MatchDocumentSummaryImpl) matchSummaries[matchSlot]).addSnippet(dom);
-                }
-                characters = null;
-                return;
-            }
-
-            if ("metadata".equals(localName)) {
-                characters = null;
-                buildDOM = false;
-
-                if (inResult) {
-                    ((MatchDocumentSummaryImpl) matchSummaries[matchSlot]).setMetadata(dom);
-                }
-
-                return;
-            }
-
-            if ("relevance-trace".equals(localName)) {
-                characters = null;
-                buildDOM = false;
-
-                if (inResult) {
-                    ((MatchDocumentSummaryImpl) matchSummaries[matchSlot]).setRelevanceTrace(dom);
-                }
-
-                return;
-            }
-            if ("plan".equals(localName)) {
-                plan = dom;
-                characters = null;
-                buildDOM = false;
-                return;
-            }
-
-            if ("warning".equals(localName)) {
-                Warning warning = warnings.get(warnings.size()-1);
-                warning.setMessage(characters);
-                characters = null;
-                return;
-            }
-
-            if ("report".equals(localName)) {
-                Report report = reports.get(reports.size()-1);
-                report.setMessage(characters);
-                characters = null;
-                return;
-            }
-
-            if ("match".equals(localName)) {
-                if (!buildDOM) {
-                    if (characters != null) {
-                        MatchSnippet snippet = new MatchSnippetImpl(false, characters);
-                        MatchLocation location = ((MatchDocumentSummaryImpl) matchSummaries[matchSlot]).getCurrentLocation();
-                        ((MatchLocationImpl) location).addSnippet(snippet);
-                    }
-                }
-                characters = null;
-                return;
-            }
-
-            if ("highlight".equals(localName)) {
-                if (!buildDOM) {
-                    if (characters != null) {
-                        MatchSnippet snippet = new MatchSnippetImpl(true, characters);
-                        MatchLocation location = ((MatchDocumentSummaryImpl) matchSummaries[matchSlot]).getCurrentLocation();
-                        ((MatchLocationImpl) location).addSnippet(snippet);
-                    }
-                }
-                characters = null;
-                return;
-            }
-
-            if ("facet-value".equals(localName)) {
-                ((FacetValueImpl) facetValues.get(facetValues.size()-1)).setLabel(characters);
-                characters = null;
-                return;
-            }
-
-            if ("box".equals(localName)) {
-                characters = null;
-                return;
-            }
-
-            if ("facet".equals(localName) || "boxes".equals(localName)) {
-                facetResults.add(new FacetResultImpl(facetName, facetValues.toArray(new FacetValue[0])));
-            }
-
-            if ("metrics".equals(localName)) {
-                inMetrics = false;
-                metrics = new SearchMetricsImpl(qrTime, frTime, srTime, mrTime, tTime);
-                characters = null;
-                return;
-            }
-
-            if ("result".equals(localName)) {
-                inResult = false;
-
-                if (buildDOM && (alwaysDomSnippets || !"snippet".equals(snippetFormat))) {
-                    buildDOM = false;
-                    ((MatchDocumentSummaryImpl) matchSummaries[matchSlot]).addSnippet(dom);
-                }
-
-                
-                matchSlot++;
-                characters = null;
-
-                return;
-            }
-            
-
-            if (inTime) {
-                if ("query-resolution-time".equals(localName))    { qrTime = parseTime(characters); }
-                if ("facet-resolution-time".equals(localName))    { frTime = parseTime(characters); }
-                if ("snippet-resolution-time".equals(localName))  { srTime = parseTime(characters); }
-                if ("metadata-resolution-time".equals(localName)) { mrTime = parseTime(characters); }
-                if ("total-time".equals(localName))               { tTime = parseTime(characters); }
-                inTime = false;
-                characters = null;
-                return;
-            }
-
-            if ("response".equals(localName)) {
-                if (matchSlot < matchSummaries.length) {
-                    summary = new MatchDocumentSummary[matchSlot];
-                    for (int pos = 0; pos < matchSlot; pos++) {
-                        summary[pos] = matchSummaries[pos];
-                    }
-                } else {
-                    summary = matchSummaries;
-                }
-
-                if (facetResults != null) {
-                    facets = new FacetResult[facetResults.size()];
-                    int pos = 0;
-                    for (FacetResult v : facetResults) {
-                        facets[pos++] = v;
-                    }
-
-                    facetNames = new String[facetNamesList.size()];
-                    pos = 0;
-                    for (String n : facetNamesList) {
-                        facetNames[pos++] = n;
-                    }
-                }
-
-                characters = null;
-            }
-        }
-
-        @Override
-        public void characters(char[] chars, int start, int length) throws SAXException {
-            // Handle the fact that start may be > 0 and length maybe < chars.size
-            char[] ch = new char[length];
-            for (int pos = 0; pos < length; pos++) {
-                ch[pos] = chars[start+pos];
-            }
-
-            // Accumulate characters in case SAX breaks a string into more than one run...
-            if (characters == null) {
-                characters = new String(ch);
-            } else {
-                characters += new String(ch);
-            }
-        }
-
-        @Override
-        public void ignorableWhitespace(char[] chars, int start, int length) throws SAXException {
-            characters(chars, start, length);
-        }
-
-        @Override
-        public void processingInstruction(String target, String data) throws SAXException {
-            if (buildDOM) {
-                handleCharacters();
-                if (stack.isEmpty()) {
-                    preceding.add(new WSorChar(target, data));
-                } else {
-                    stack.peek().appendChild(dom.createProcessingInstruction(target, data));
-                }
-            }
-        }
-
-        @Override
-        public void skippedEntity(String s) throws SAXException {
-            // nop
-        }
-
-        private void handleCharacters() {
-            if (characters != null) {
-                if (stack.isEmpty()) {
-                    preceding.add(new WSorChar(characters));
-                } else {
-                    stack.peek().appendChild(dom.createTextNode(characters));
-                }
-                characters = null;
-            }
-        }
-
-        private long parseTime(String time) {
-            Duration d = dtFactory.newDurationDayTime(time);
-            return d.getTimeInMillis(now);
-        }
-
-        private class WSorChar {
-            public WSorChar(String chars) {
-            }
-
-            public WSorChar(String target, String data) {
-            }
-
-        }
-    }
-
     /**
      * Represents a warning.
      *
@@ -1266,4 +858,548 @@ public class SearchHandle
             text = msg;
         }
     }
+
+    class EventIterator<T extends XMLReadHandle> implements Iterator<T> {
+    	private List<XMLEvent>   eventList;
+    	private List<EventRange> rangeList;
+    	private T                handle;
+    	private int              nextEvent = 0;
+    	EventIterator(List<XMLEvent> eventList, List<EventRange> rangeList, T handle) {
+    		super();
+    		this.eventList = eventList;
+    		this.rangeList = rangeList;
+    		this.handle    = handle;
+    	}
+		@Override
+		public boolean hasNext() {
+			return rangeList != null && nextEvent < rangeList.size();
+		}
+		@Override
+		public T next() {
+			if (!hasNext()) {
+				return null;
+			}
+			EventRange eventRange = rangeList.get(nextEvent++);
+			return Utilities.exportXML(
+					getSlice(eventList, eventRange), handle
+            		);
+		}
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException("Remove not supported");
+		}
+    }
+
+	private class SearchResponseImpl {
+	    private ArrayList<MatchDocumentSummary> tempSummary;
+	    private MatchDocumentSummaryImpl currSummary;
+
+	    private ArrayList<Warning> tempWarnings;
+	    private ArrayList<Report>  tempReports;
+
+	    private SearchMetrics          tempMetrics;
+	    private EventRange             tempPlanEvents;
+	    private List<XMLEvent>         tempEvents;
+
+	    private long tempTotalResults = -1;
+	    private long tempStart        = -1;
+	    private int  tempPageLength   = 0;
+
+	    private LinkedHashMap<String, FacetResult> tempFacets;
+	    private LinkedHashMap<String, EventRange>  tempConstraints;
+
+	    private String tempSnippetType;
+	    private ArrayList<String>      qtextList;
+
+	    private EventRange tempQueryEvents;
+
+	    private SearchResponseImpl() {
+			super();
+		}
+
+		private void parse(XMLEventReader reader) throws XMLStreamException {
+			tempEvents = new ArrayList<XMLEvent>();
+
+			while (reader.hasNext()) {
+				XMLEvent event = reader.nextEvent();
+				int eventType = event.getEventType();
+
+				switch (eventType) {
+				case XMLStreamConstants.START_ELEMENT:
+					handleTop(reader, event.asStartElement());
+					break;
+				case XMLStreamConstants.END_ELEMENT:
+				case XMLStreamConstants.START_DOCUMENT:
+				case XMLStreamConstants.END_DOCUMENT:
+				case XMLStreamConstants.CDATA:
+				case XMLStreamConstants.CHARACTERS:
+				case XMLStreamConstants.ATTRIBUTE:
+				case XMLStreamConstants.COMMENT:
+				case XMLStreamConstants.DTD:
+				case XMLStreamConstants.ENTITY_DECLARATION:
+				case XMLStreamConstants.ENTITY_REFERENCE:
+				case XMLStreamConstants.NAMESPACE:
+				case XMLStreamConstants.NOTATION_DECLARATION:
+				case XMLStreamConstants.PROCESSING_INSTRUCTION:
+				case XMLStreamConstants.SPACE:
+					break;
+				default:
+					throw new InternalError("unknown event type: "+eventType);
+				}
+			}
+		}
+
+		private void handleTop(XMLEventReader reader, StartElement element) throws XMLStreamException {
+	    	QName name = element.getName();
+	        if (!SEARCH_NS.equals(name.getNamespaceURI())) {
+	        	logger.warn("unexpected top element "+name.toString());
+	        	return;
+	        }
+
+	        String localName = name.getLocalPart();
+
+	        if ("response".equals(localName))           { handleResponse(reader, element);
+	        } else if ("result".equals(localName))      { handleResult(reader, element);
+	        } else if ("facet".equals(localName))       { handleFacet(reader, element);
+	        } else if ("boxes".equals(localName))       { handleGeoFacet(reader, element);
+	        } else if ("qtext".equals(localName))       { handleQText(reader, element);
+	        } else if ("query".equals(localName))       { handleQuery(reader, element);
+	        } else if ("constraint".equals(localName))  { handleConstraint(reader, element);
+	        } else if ("warning".equals(localName))     { handleWarning(reader, element);
+	        } else if ("report".equals(localName))      { handleReport(reader, element);
+	        } else if ("plan".equals(localName))        { handlePlan(reader, element);
+	        } else if ("metrics".equals(localName))     { handleMetrics(reader, element);
+	        } else {
+	        	logger.warn("Unexpected top search element "+name.toString());
+	        }
+	    }
+
+	    private void handleResponse(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	    	tempSnippetType  = getAttribute(element, "snippet-format");
+	        tempTotalResults = Long.parseLong(getAttribute(element, "total"));
+	        tempPageLength   = Integer.parseInt(getAttribute(element, "page-length"));
+	        tempStart        = Long.parseLong(getAttribute(element, "start"));
+
+	        collectTop(reader, element);
+	    }
+	    private void collectTop(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	    	QName startName = element.getName();
+			events: while (reader.hasNext()) {
+				XMLEvent event = reader.nextEvent();
+
+				int eventType = event.getEventType();
+				switch (eventType) {
+				case XMLStreamConstants.START_ELEMENT:
+					handleTop(reader, event.asStartElement());
+					break;
+				case XMLStreamConstants.END_ELEMENT:
+					if (startName.equals(event.asEndElement().getName())) {
+						break events;
+					}
+					break;
+				}
+			}
+	    }
+	    private void handleResult(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	        String ruri     = getAttribute(element, "uri");
+	        String path     = getAttribute(element, "path");
+	        String mimeType = getAttribute(element, "mimetype");
+
+	        String formatString = getAttribute(element, "format");
+	        Format format = Format.UNKNOWN;
+	        if (formatString != null && !formatString.equals("")) {
+	        	format = Format.valueOf(formatString.toUpperCase());
+	        }
+
+	        int score = Integer.parseInt(getAttribute(element, "score"));
+	        
+	        double confidence = Double.parseDouble(getAttribute(element, "confidence"));
+	        double fitness = Double.parseDouble(getAttribute(element, "fitness"));
+
+	        currSummary = new MatchDocumentSummaryImpl(
+		        	ruri, score, confidence, fitness, path, mimeType, format);
+
+	        if (tempSummary == null) {
+	        	tempSummary = new ArrayList<MatchDocumentSummary>();
+	        }
+	        tempSummary.add(currSummary);
+
+	        collectResult(reader, element);
+	    }
+	    private void collectResult(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	    	QName snippetName       = new QName(SEARCH_NS, "snippet");
+	    	QName metadataName      = new QName(SEARCH_NS, "metadata");
+	    	QName similarName       = new QName(SEARCH_NS, "similar");
+	    	QName relevanceInfoName = new QName(QUERY_NS,  "relevance-info");
+
+	    	QName resultName = element.getName();
+	    	events: while (reader.hasNext()) {
+	    		XMLEvent event = reader.nextEvent();
+	    		tempEvents.add(event);
+
+	    		int eventType = event.getEventType();
+	    		eventType: switch (eventType) {
+	    		case XMLStreamConstants.START_ELEMENT:
+	    			StartElement startElement = event.asStartElement();
+	    			QName startName = startElement.getName();
+	    			if (snippetName.equals(startName)) {
+	    				handleSnippet(reader, startElement);
+	    			} else if (metadataName.equals(startName)) {
+	    				handleMetadata(reader, startElement);
+	    			} else if (similarName.equals(startName)) {
+	    				handleSimilar(reader, startElement);
+	    			} else if (relevanceInfoName.equals(startName)) {
+	    				handleRelevanceInfo(reader, startElement);
+	    			} else {
+	    				logger.warn("Unexpected result element "+startName.toString());
+	    			}
+    				break eventType;
+	    		case XMLStreamConstants.END_ELEMENT:
+	    			if (resultName.equals(event.asEndElement().getName())) {
+	    				break events;
+	    			}
+	    			break eventType;
+	    		}
+	    	}
+	    }
+	    private void handleMetadata(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	    	// TODO:  populate map with element name/content key/value pairs
+	    	// TODO:  special handling for constraint-meta, attribute-meta?
+	    	currSummary.metadataEvents = consumeEvents(reader, element);
+	    }
+	    private void handleSimilar(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	    	if (currSummary.similarUris == null) {
+	    		currSummary.similarUris = new ArrayList<String>();
+	    	}
+	    	currSummary.similarUris.add(reader.getElementText());
+	    }
+	    private void handleRelevanceInfo(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	    	currSummary.relevanceEvents = consumeEvents(reader, element);
+	    }
+	    private void handlePlan(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	    	tempPlanEvents = consumeEvents(reader, element);
+	    }
+	    private void handleSnippet(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	    	int first = tempEvents.size();
+	    	tempEvents.add(element);
+
+	    	collectSnippet(reader, element);
+
+	    	if (currSummary.snippetEvents == null) {
+	    		currSummary.snippetEvents = new ArrayList<EventRange>();
+	    	}
+	    	currSummary.snippetEvents.add(new EventRange(first, tempEvents.size()));
+	    }
+	    private void collectSnippet(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	    	QName matchName = new QName(SEARCH_NS, "match");
+
+	    	QName snippetName = element.getName();
+			events: while (reader.hasNext()) {
+				XMLEvent event = reader.nextEvent();
+				tempEvents.add(event);
+
+				int eventType = event.getEventType();
+				eventType: switch (eventType) {
+				case XMLStreamConstants.START_ELEMENT:
+					StartElement startElement = event.asStartElement();
+					if (matchName.equals(startElement.getName())) {
+						handleMatch(reader, startElement);
+						break eventType;
+					}
+				case XMLStreamConstants.END_ELEMENT:
+					if (snippetName.equals(event.asEndElement().getName())) {
+						break events;
+					}
+					break eventType;
+				}
+			}
+	    }
+	    private void handleMatch(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	    	MatchLocationImpl location = new MatchLocationImpl(getAttribute(element, "path"));
+
+	    	QName highlightName = new QName(SEARCH_NS, "highlight");
+
+	    	StringBuilder buf = new StringBuilder();
+
+	    	// assumes that highlight elements do not nest
+	    	QName matchName = element.getName();
+			events: while (reader.hasNext()) {
+				XMLEvent event = reader.nextEvent();
+				tempEvents.add(event);
+
+				int eventType = event.getEventType();
+				switch (eventType) {
+				case XMLStreamConstants.START_ELEMENT:
+					StartElement startElement = event.asStartElement();
+					if (highlightName.equals(startElement.getName())) {
+						// add any text preceding a highlight
+						if (buf.length() > 0) {
+							location.addSnippet(new MatchSnippetImpl(false, buf.toString()));
+							buf.setLength(0);
+						}
+					}
+					break;
+				case XMLStreamConstants.CDATA:
+				case XMLStreamConstants.CHARACTERS:
+					buf.append(event.asCharacters().getData());
+					break;
+				case XMLStreamConstants.END_ELEMENT:
+					EndElement endElement = event.asEndElement();
+
+					QName endName = endElement.getName();
+					if (matchName.equals(endName)) {
+						// add any text following the last highlight
+						if (buf.length() > 0) {
+							location.addSnippet(new MatchSnippetImpl(false, buf.toString()));
+						}
+						break events;
+					} else if (highlightName.equals(endName)) {
+						// add any text contained by a highlight
+						location.addSnippet(new MatchSnippetImpl(true, buf.toString()));
+						buf.setLength(0);
+					}
+
+					break;
+				}
+			}
+			buf = null;
+
+			currSummary.addLocation(location);
+	    }
+	    private void handleFacet(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	        if (tempFacets == null) {
+	        	tempFacets = new LinkedHashMap<String, FacetResult>();
+	        }
+
+	        String facetName = getAttribute(element, "name");
+
+	        List<FacetValue> values = new ArrayList<FacetValue>();
+
+            QName facetValuesName = new QName(SEARCH_NS, "facet-value");
+
+            QName facetElementName = element.getName();
+			events: while (reader.hasNext()) {
+				XMLEvent event = reader.nextEvent();
+
+				int eventType = event.getEventType();
+				switch (eventType) {
+				case XMLStreamConstants.START_ELEMENT:
+					StartElement startElement = event.asStartElement();
+					if (facetValuesName.equals(startElement.getName())) {
+						values.add(handleFacetValue(reader, startElement));
+					} else {
+						logger.warn("Unexpected facet element "+startElement.getName().toString());
+					}
+					break;
+				case XMLStreamConstants.END_ELEMENT:
+					if (facetElementName.equals(event.asEndElement().getName())) {
+						break events;
+					}
+					break;
+				}
+			}
+
+            tempFacets.put(
+            	facetName,
+            	new FacetResultImpl(facetName,
+            		values.toArray(new FacetValue[values.size()])));
+	    }
+	    private FacetValue handleFacetValue(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	        String name = getAttribute(element, "name");
+	        long count = Long.parseLong(getAttribute(element, "count"));
+            FacetValueImpl facetValue = new FacetValueImpl(name, count);
+            facetValue.setLabel(reader.getElementText());
+            return facetValue;
+	    }
+	    private void handleGeoFacet(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	        if (tempFacets == null) {
+	        	tempFacets = new LinkedHashMap<String, FacetResult>();
+	        }
+
+	        String facetName = getAttribute(element, "name");
+
+            List<FacetValue> values = new ArrayList<FacetValue>();
+
+            QName boxName = new QName(SEARCH_NS, "box");
+
+            QName boxesName = element.getName();
+			events: while (reader.hasNext()) {
+				XMLEvent event = reader.nextEvent();
+
+				int eventType = event.getEventType();
+				switch (eventType) {
+				case XMLStreamConstants.START_ELEMENT:
+					StartElement startElement = event.asStartElement();
+					if (boxName.equals(startElement.getName())) {
+						values.add(handleGeoFacetValue(reader, startElement));
+					} else {
+						logger.warn("Unexpected boxes element "+startElement.getName().toString());
+					}
+					break;
+				case XMLStreamConstants.END_ELEMENT:
+					if (boxesName.equals(event.asEndElement().getName())) {
+						break events;
+					}
+					break;
+				}
+			}
+
+            tempFacets.put(
+                	facetName,
+            		new FacetResultImpl(facetName,
+            				values.toArray(new FacetValue[values.size()])));
+	    }
+	    private FacetValue handleGeoFacetValue(XMLEventReader reader, StartElement element) {
+	        String name = getAttribute(element, "name");
+	        long count = Long.parseLong(getAttribute(element, "count"));
+	        double s = Double.parseDouble(getAttribute(element, "s"));
+	        double w = Double.parseDouble(getAttribute(element, "w"));
+	        double n = Double.parseDouble(getAttribute(element, "n"));
+	        double e = Double.parseDouble(getAttribute(element, "e"));
+	        return new FacetHeatmapValueImpl(name, count, s, w, n, e);
+	    }
+	    private void handleQText(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	    	if (qtextList == null) {
+	    		qtextList = new ArrayList<String>();
+	    	}
+	    	qtextList.add(reader.getElementText());
+	    }
+	    private void handleQuery(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	    	tempQueryEvents = consumeEvents(reader, element);
+	    }
+	    private void handleMetrics(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	        DatatypeFactory dtFactory;
+            try {
+                dtFactory = DatatypeFactory.newInstance();
+            } catch (DatatypeConfigurationException dce) {
+                throw new MarkLogicIOException("Cannot instantiate datatypeFactory", dce);
+            }
+
+            Calendar now = Calendar.getInstance();
+
+            QName queryName    = new QName(SEARCH_NS, "query-resolution-time");
+            QName facetName    = new QName(SEARCH_NS, "facet-resolution-time");
+            QName snippetName  = new QName(SEARCH_NS, "snippet-resolution-time");
+            QName metadataName = new QName(SEARCH_NS, "metadata-resolution-time");
+            QName totalName    = new QName(SEARCH_NS, "total-time");
+	
+            long qrTime = -1;
+            long frTime = -1;
+            long srTime = -1;
+            long tTime  = -1;
+            long mrTime = -1;
+
+            QName metricsName = element.getName();
+			events: while (reader.hasNext()) {
+				XMLEvent event = reader.nextEvent();
+
+				int eventType = event.getEventType();
+				switch (eventType) {
+				case XMLStreamConstants.START_ELEMENT:
+					StartElement startElement = event.asStartElement();
+					QName startName = startElement.getName();
+					if (queryName.equals(startName)) {
+						qrTime = parseTime(dtFactory, now, reader.getElementText());
+					} else if (facetName.equals(startName)) {
+						frTime = parseTime(dtFactory, now, reader.getElementText());
+					} else if (snippetName.equals(startName)) {
+						srTime = parseTime(dtFactory, now, reader.getElementText());
+					} else if (metadataName.equals(startName)) {
+						mrTime = parseTime(dtFactory, now, reader.getElementText());
+					} else if (totalName.equals(startName)) {
+						tTime = parseTime(dtFactory, now, reader.getElementText());
+					} else {
+						logger.warn("Unexpected metrics element "+startName.toString());
+					}
+					break;
+				case XMLStreamConstants.END_ELEMENT:
+					if (metricsName.equals(event.asEndElement().getName())) {
+						break events;
+					}
+					break;
+				}
+			}
+
+            tempMetrics = new SearchMetricsImpl(qrTime, frTime, srTime, mrTime, tTime);
+	    }
+	    private void handleConstraint(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	        if (tempConstraints == null) {
+	        	tempConstraints = new LinkedHashMap<String, EventRange>();
+	        }
+
+	        String constraintName = getAttribute(element, "name");
+
+	        tempConstraints.put(constraintName, consumeEvents(reader, element));
+	    }
+	    private void handleWarning(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	        if (tempWarnings == null) {
+	            tempWarnings = new ArrayList<Warning>();
+	        }
+
+	        Warning warning = new Warning();
+	        warning.setId(getAttribute(element, "id"));
+            warning.setMessage(reader.getElementText());
+	        tempWarnings.add(warning);
+	    }
+	    private void handleReport(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	        if (tempReports == null) {
+	            tempReports = new ArrayList<Report>();
+	        }
+
+	        Report report = new Report();
+	        report.setId(getAttribute(element, "id"));
+	        report.setName(getAttribute(element, "name"));
+	        report.setType(getAttribute(element, "type"));
+            report.setMessage(reader.getElementText());
+	        tempReports.add(report);
+	    }
+
+	    private String getAttribute(StartElement element, String name) {
+	    	return element.getAttributeByName(new QName(name)).getValue();
+	    }
+        private long parseTime(DatatypeFactory dtFactory, Calendar now, String time) {
+            return dtFactory.newDurationDayTime(time).getTimeInMillis(now);
+        }
+	    private EventRange consumeEvents(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	    	int first = tempEvents.size();
+	    	tempEvents.add(element);
+
+	    	QName startName = element.getName();
+			events: while (reader.hasNext()) {
+				XMLEvent event = reader.nextEvent();
+				tempEvents.add(event);
+
+				int eventType = event.getEventType();
+				switch (eventType) {
+				case XMLStreamConstants.END_ELEMENT:
+					if (startName.equals(event.asEndElement().getName())) {
+						break events;
+					}
+				}
+			}
+
+	    	return new EventRange(first, tempEvents.size());
+	    }
+	}
 }
