@@ -21,7 +21,7 @@ import com.marklogic.client.io.marker.StructureWriteHandle;
  * A RawCombinedQueryDefinition provides access to a combined query
  * in a JSON or XML representation.
  */
-public interface RawCombinedQueryDefinition extends RawQueryDefinition {
+public interface RawCombinedQueryDefinition extends RawQueryDefinition, ValueQueryDefinition {
 	/**
 	 * Specifies the handle for the JSON or XML representation
 	 * of a combined query and returns the query definition.

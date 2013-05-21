@@ -1668,6 +1668,8 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 
+		HandleImplementation baseHandle = null;
+
 		if (valDef.getQueryDefinition() != null) {
 			ValueQueryDefinition queryDef = valDef.getQueryDefinition();
 
@@ -1702,7 +1704,10 @@ public class JerseyServices implements RESTServices {
 				if (structure != null) {
 					addEncodedParam(docParams, "structuredQuery", structure);
 				}
-			} else {
+			} else if (queryDef instanceof RawQueryDefinition) {
+                StructureWriteHandle handle = ((RawQueryDefinition) queryDef).getHandle();
+                baseHandle = HandleAccessor.checkHandle(handle, "values");
+            } else {
 				if (logger.isWarnEnabled())
 					logger.warn("unsupported query definition: "
 							+ queryDef.getClass().getName());
@@ -1730,7 +1735,11 @@ public class JerseyServices implements RESTServices {
 		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
-			response = builder.get(ClientResponse.class);
+
+            response = baseHandle == null ?
+                doGet(builder) :
+                doPost(null, builder.type(baseHandle.getMimetype()), baseHandle.sendContent(), baseHandle.isResendable());
+
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
@@ -1763,6 +1772,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 		return entity;
+		
 	}
 
 	@Override
