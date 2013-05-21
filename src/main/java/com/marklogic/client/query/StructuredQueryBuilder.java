@@ -292,7 +292,10 @@ public class StructuredQueryBuilder {
     public GeospatialIndex geoAttributePair(Element parent, Attribute lat, Attribute lon) {
     	return new GeoAttributePairImpl(parent, lat, lon);
     }
-
+    public GeospatialIndex geoPath(PathIndex pathIndex) {
+    	return new GeoPathImpl(pathIndex);
+    }
+    
     public Point point(double latitude, double longitude) {
         return new Point(latitude, longitude);
     }
@@ -1116,6 +1119,8 @@ public class StructuredQueryBuilder {
         		elemName = "geo-elem-pair-query";
         	else if (index instanceof GeoAttributePairImpl)
         		elemName = "geo-attr-pair-query";
+        	else if (index instanceof GeoPathImpl)
+        		elemName = "geo-path-query";
         	else
         		throw new IllegalStateException(
         				"unknown index class: "+index.getClass().getName());
@@ -1264,6 +1269,18 @@ public class StructuredQueryBuilder {
         	serializeNamedIndex(serializer, "lat", latImpl.qname, latImpl.name);
             serializeNamedIndex(serializer, "lon", lonImpl.qname, lonImpl.name);
         }
+    }
+    
+    class GeoPathImpl extends IndexImpl implements GeospatialIndex {
+    	PathIndex pathIndex;
+    	GeoPathImpl(PathIndex pathIndex) {
+    		this.pathIndex = pathIndex;
+    	}
+    	@Override
+    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        	PathIndexImpl pathIndexImpl = (PathIndexImpl) pathIndex;
+        	pathIndexImpl.innerSerialize(serializer);       	;
+    	}
     }
 
     // TODO IN A FUTURE RELEASE:  remove the deprecated serialize() method

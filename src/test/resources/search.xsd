@@ -105,6 +105,7 @@
       <xs:element ref="search:range"/>
       <xs:element ref="search:word"/>
       <xs:element ref="search:element-query"/>
+      <xs:element ref="search:container"/>
       <xs:element ref="search:properties"/>
       <xs:element ref="search:custom"/>
       <xs:element ref="search:Geospatial"/>
@@ -239,6 +240,24 @@
       </xs:choice>
     </xs:complexType>
   </xs:element>
+  <xs:group name="GeoPathDef">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="search:path-index"/>
+        <xs:element ref="search:geo-option"/>
+        <xs:element ref="search:fragment-scope"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:group>
+  <xs:element name="path-index" type="xs:string"/>
+  <xs:element name="geo-path" substitutionGroup="search:Geospatial">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="search:GeoPathDef"/>
+        <xs:group ref="search:GeoFacetDef"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
   <xs:group name="GeoFacetDef">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -300,6 +319,18 @@
       </xs:element>
     </xs:sequence>
   </xs:group>
+  <xs:element name="container">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:choice>
+          <xs:group ref="search:Element"/>
+          <xs:element ref="search:json-key"/>
+        </xs:choice>
+        <xs:element minOccurs="0" ref="search:fragment-scope"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <!-- deprecated -->
   <xs:element name="element-query">
     <xs:complexType>
       <xs:sequence>
@@ -437,7 +468,6 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="page-length" type="xs:unsignedLong"/>
-  <xs:element name="path-index" type="xs:string"/>
   <xs:element name="properties">
     <xs:complexType/>
   </xs:element>
@@ -871,6 +901,29 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="QueryType" abstract="true"/>
+  <xs:element name="boost-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:matching-query"/>
+        <xs:element ref="search:boosting-query"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="matching-query">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:QueryType"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="boosting-query">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:QueryType"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="and-query" substitutionGroup="search:QueryType">
     <xs:complexType>
       <xs:sequence>
@@ -1003,6 +1056,16 @@
   </xs:element>
   <xs:element name="text" type="xs:string"/>
   <xs:element name="constraint-name" type="search:qtext-token"/>
+  <xs:element name="container-constraint-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="search:constraint-name"/>
+        <xs:element ref="search:QueryType"/>
+      </xs:sequence>
+      <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <!-- deprecated -->
   <xs:element name="element-constraint-query" substitutionGroup="search:QueryType">
     <xs:complexType>
       <xs:sequence>
@@ -1010,6 +1073,18 @@
         <xs:element ref="search:QueryType"/>
       </xs:sequence>
       <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="container-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:choice>
+          <xs:group ref="search:Element"/>
+          <xs:element ref="search:json-key"/>
+        </xs:choice>
+        <xs:element minOccurs="0" ref="search:fragment-scope"/>
+        <xs:element ref="search:QueryType"/>
+      </xs:sequence>
     </xs:complexType>
   </xs:element>
   <xs:element name="properties-constraint-query" substitutionGroup="search:QueryType">
@@ -1107,15 +1182,6 @@
       <xs:attributeGroup ref="search:RangeIndexAttrs"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="container-query" substitutionGroup="search:QueryType">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:group ref="search:Element"/>
-        <xs:element minOccurs="0" ref="search:fragment-scope"/>
-        <xs:element ref="search:QueryType"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
   <xs:element name="geospatial-constraint-query" substitutionGroup="search:QueryType">
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -1147,6 +1213,14 @@
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="search:GeoAttrPairDef"/>
+        <xs:group minOccurs="0" maxOccurs="unbounded" ref="search:RegionType"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="geo-path-query" substitutionGroup="search:GeospatialQuery">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:group ref="search:GeoPathDef"/>
         <xs:group minOccurs="0" maxOccurs="unbounded" ref="search:RegionType"/>
       </xs:sequence>
     </xs:complexType>

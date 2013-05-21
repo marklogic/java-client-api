@@ -364,6 +364,23 @@ public class StructuredQueryBuilderTest {
                 + "</polygon></geo-elem-pair-query></query>",
                 q);
         }
+        
+        m = qb.geospatial(
+        		qb.geoPath(qb.pathIndex("/geo/path")),
+        		qb.box(1, 2, 3, 4), qb.circle(0, 0, 100));
+        for (String q: new String[]{qb.build(m).toString()}) {
+        	xml = new StringInputStream(q);
+        	parser.parse(xml, handler);
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+    				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\">"
+                + "<geo-path-query>"
+                + "<path-index>/geo/path</path-index>"
+                + "<box><south>1.0</south><west>2.0</west><north>3.0</north><east>4.0</east></box>"
+                + "<circle><radius>100.0</radius><point><latitude>0.0</latitude><longitude>0.0</longitude></point></circle>"
+                + "</geo-path-query></query>",
+                q);
+        }
+
 
         t = qb.customConstraint("name", "one", "two");
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
