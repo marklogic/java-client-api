@@ -31,7 +31,6 @@ import org.w3c.dom.Document;
 
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.impl.TuplesBuilder.Tuples;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.SearchHandle;

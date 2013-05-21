@@ -48,6 +48,7 @@ public class StructuredQueryBuilderTest {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Test
     public void testBuilder() throws IOException, SAXException, ParserConfigurationException {
         StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -396,6 +397,23 @@ public class StructuredQueryBuilderTest {
         assertEquals("<value-constraint-query><constraint-name>name</constraint-name><text>one</text></value-constraint-query>", inner);
         inner = qb.point(5, 6).serialize();
         assertEquals("<point><latitude>5.0</latitude><longitude>6.0</longitude></point>", inner);
+        
+        
+        t = qb.boost(qb.term("foo"), qb.term("bar"));
+        for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
+        	xml = new StringInputStream(q);
+        	parser.parse(xml, handler);
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+    				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><boost-query><matching-query><term-query><text>foo</text></term-query></matching-query><boosting-query><term-query><text>bar</text></term-query></boosting-query></boost-query></query>",q);
+        }
+        
+        t = qb.notIn(qb.term("foo"), qb.term("bar"));
+        for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
+        	xml = new StringInputStream(q);
+        	parser.parse(xml, handler);
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" xmlns:xs=\""+
+    				XMLConstants.W3C_XML_SCHEMA_NS_URI+"\"><not-in-query><positive-query><term-query><text>foo</text></term-query></positive-query><negative-query><term-query><text>bar</text></term-query></negative-query></not-in-query></query>",q);
+        }
     }
 
     private class ParseHandler extends DefaultHandler {

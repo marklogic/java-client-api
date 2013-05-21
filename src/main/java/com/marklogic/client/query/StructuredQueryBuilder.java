@@ -258,6 +258,7 @@ public class StructuredQueryBuilder {
     	checkRegions(regions);
         return new GeospatialQuery(index, scope, regions, options);
     }
+    
 
     public Element element(QName qname) {
     	return new ElementImpl(qname);
@@ -464,6 +465,34 @@ public class StructuredQueryBuilder {
     /**
      * Use the StructuredQueryDefinition interface as the type for instances of AndNotQuery.
      */
+    private class NotInQuery
+    extends AbstractStructuredQuery {
+    	private StructuredQueryDefinition positive;
+    	private StructuredQueryDefinition negative;
+
+        /**
+         * Use the andNot() builder method of StructuredQueryBuilder
+         * and type the object as an instance of the StructuredQueryDefinition interface.
+         */
+        @Deprecated
+    	public NotInQuery(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
+            super();
+            this.positive = positive;
+            this.negative = negative;
+        }
+
+        @Override
+    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        	serializer.writeStartElement("not-in-query");
+        	writeQuery(serializer, "positive-query", (AbstractStructuredQuery) positive);
+        	writeQuery(serializer, "negative-query", (AbstractStructuredQuery) negative);
+        	serializer.writeEndElement();
+        }
+    }
+
+    /**
+     * Use the StructuredQueryDefinition interface as the type for instances of AndNotQuery.
+     */
     @Deprecated
     public class AndNotQuery
     extends AbstractStructuredQuery {
@@ -490,6 +519,35 @@ public class StructuredQueryBuilder {
         }
     }
 
+    /**
+     * Use the StructuredQueryDefinition interface as the type for instances of AndNotQuery.
+     */
+    private class BoostQuery
+    extends AbstractStructuredQuery {
+    	private StructuredQueryDefinition matchingQuery;
+    	private StructuredQueryDefinition boostingQuery;
+
+        /**
+         * Use the andNot() builder method of StructuredQueryBuilder
+         * and type the object as an instance of the StructuredQueryDefinition interface.
+         */
+        @Deprecated
+    	public BoostQuery(StructuredQueryDefinition matchingQuery, StructuredQueryDefinition boostingQuery) {
+            super();
+            this.matchingQuery = matchingQuery;
+            this.boostingQuery = boostingQuery;
+        }
+
+        @Override
+    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        	serializer.writeStartElement("boost-query");
+        	writeQuery(serializer, "matching-query", (AbstractStructuredQuery) matchingQuery);
+        	writeQuery(serializer, "boosting-query", (AbstractStructuredQuery) boostingQuery);
+        	serializer.writeEndElement();
+        }
+    }
+    
+    
     /**
      * Use the StructuredQueryDefinition interface as the type for instances of DocumentQuery.
      */
@@ -1271,7 +1329,7 @@ public class StructuredQueryBuilder {
         }
     }
     
-    class GeoPathImpl extends IndexImpl implements GeospatialIndex {
+    private class GeoPathImpl extends IndexImpl implements GeospatialIndex {
     	PathIndex pathIndex;
     	GeoPathImpl(PathIndex pathIndex) {
     		this.pathIndex = pathIndex;
@@ -1729,5 +1787,12 @@ public class StructuredQueryBuilder {
 
 	public String[] rangeOptions(String... options) {
 		return options;
+	}
+	
+	public StructuredQueryDefinition boost(StructuredQueryDefinition matchingQuery, StructuredQueryDefinition boostingQuery) {
+		return new BoostQuery(matchingQuery, boostingQuery);
+	}
+	public StructuredQueryDefinition notIn(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
+		return new NotInQuery(positive, negative);
 	}
 }
