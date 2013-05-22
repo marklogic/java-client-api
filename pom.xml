@@ -8,6 +8,8 @@
 	<name>client-api-java</name>
 	<url>http://developer.marklogic.com</url>
     <properties>
+		<javadoc-title>${project.name} 1.0 ${maven.build.timestamp}</javadoc-title>
+		<maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 	<build>
@@ -33,6 +35,7 @@
 					</links>
 					<overview>${basedir}/src/main/javadoc/overview.html</overview>
 					<show>public</show>
+					<doctitle>${javadoc-title}</doctitle>
 					<use/>
 				</configuration>
 				<executions>
