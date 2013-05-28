@@ -15,8 +15,6 @@
  */
 package com.marklogic.client.query;
 
-// TODO: Implement the rest of the query types
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -284,6 +282,9 @@ public class StructuredQueryBuilder {
     public PathIndex pathIndex(String path) {
     	return new PathIndexImpl(path);
     }
+    public GeospatialIndex geoElement(Element element) {
+    	return new GeoElementImpl(element);
+    }
     public GeospatialIndex geoElement(Element parent, Element element) {
     	return new GeoElementImpl(parent, element);
     }
@@ -462,16 +463,13 @@ public class StructuredQueryBuilder {
         }
     }
 
-    /**
-     * Use the StructuredQueryDefinition interface as the type for instances of AndNotQuery.
-     */
     private class NotInQuery
     extends AbstractStructuredQuery {
     	private StructuredQueryDefinition positive;
     	private StructuredQueryDefinition negative;
 
         /**
-         * Use the andNot() builder method of StructuredQueryBuilder
+         * Use the notIn() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -519,16 +517,13 @@ public class StructuredQueryBuilder {
         }
     }
 
-    /**
-     * Use the StructuredQueryDefinition interface as the type for instances of AndNotQuery.
-     */
     private class BoostQuery
     extends AbstractStructuredQuery {
     	private StructuredQueryDefinition matchingQuery;
     	private StructuredQueryDefinition boostingQuery;
 
         /**
-         * Use the andNot() builder method of StructuredQueryBuilder
+         * Use the boost() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1278,15 +1273,21 @@ public class StructuredQueryBuilder {
     class GeoElementImpl extends IndexImpl implements GeospatialIndex {
     	Element parent;
     	Element element;
-    	GeoElementImpl(Element parent, Element element) {
-    		this.parent  = parent;
+    	GeoElementImpl(Element element) {
+    		super();
     		this.element = element;
+    	}
+    	GeoElementImpl(Element parent, Element element) {
+    		this(element);
+    		this.parent  = parent;
     	}
         @Override
         void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	ElementImpl parentImpl  = (ElementImpl) parent;
+        	if (parent != null) {
+        		ElementImpl parentImpl  = (ElementImpl) parent;
+        		serializeNamedIndex(serializer, "parent",  parentImpl.qname,  parentImpl.name);
+        	}
         	ElementImpl elementImpl = (ElementImpl) element;
-        	serializeNamedIndex(serializer, "parent",  parentImpl.qname,  parentImpl.name);
         	serializeNamedIndex(serializer, "element", elementImpl.qname, elementImpl.name);
         }
     }
