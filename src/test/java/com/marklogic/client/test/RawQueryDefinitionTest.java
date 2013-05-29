@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.test;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -24,10 +26,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.XMLDocumentManager;
@@ -235,7 +239,7 @@ public class RawQueryDefinitionTest {
 	}
 
 	@Test
-	public void testByExampleSearch() throws IOException {
+	public void testByExampleSearch() throws IOException, SAXException, XpathException {
 		StringHandle criteria = new StringHandle().withFormat(Format.XML);
 		criteria.set("<q:query xmlns:q='" + RawQueryByExampleDefinition.QBE_NS
 				+ "'>" + "<favorited>true</favorited>" + "</q:query>");
@@ -247,13 +251,29 @@ public class RawQueryDefinitionTest {
 
 		checkResults(results);
 
+		String output = queryMgr.validate(qbe, new StringHandle()).get();
+		assertNotNull("Empty XML validation", output);
+		assertXMLEqual("Failed to validate QBE", output,
+				"<q:valid-query xmlns:q=\"http://marklogic.com/appservices/querybyexample\"/>");
+
+		output = queryMgr.convert(qbe, new StringHandle()).get();
+		assertNotNull("Empty XML conversion", output);
+		assertXpathEvaluatesTo(
+				"favorited",
+				"string(/*[local-name()='search']/*[local-name()='query']/*[local-name()='value-query']/*[local-name()='element']/@name)",
+				output);
+		assertXpathEvaluatesTo(
+				"true",
+				"string(/*[local-name()='search']/*[local-name()='query']/*[local-name()='value-query']/*[local-name()='text'])",
+				output);
+
 		criteria.withFormat(Format.JSON).set(
 						"{"+
 						"\"$format\":\"xml\","+
 						"\"$query\":{\"favorited\":\"true\"}"+
 						"}"
 						);
-		String output = queryMgr.search(qbe, new StringHandle()).get();
+		output = queryMgr.search(qbe, new StringHandle()).get();
 		assertNotNull("Empty JSON output", output);
 		assertTrue("Output without a match",
 				output.contains("\"results\":[{\"index\":1,"));

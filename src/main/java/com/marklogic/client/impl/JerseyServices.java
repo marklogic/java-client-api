@@ -1378,8 +1378,8 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public <T> T search(RequestLogger reqlog, Class<T> as, QueryDefinition queryDef, String mimetype,
-			long start, long len, QueryView view, String transactionId)
-			throws ForbiddenUserException, FailedRequestException {
+			long start, long len, QueryView view, String transactionId
+	) throws ForbiddenUserException, FailedRequestException {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
 		if (start > 1) {
@@ -1388,6 +1388,10 @@ public class JerseyServices implements RESTServices {
 
 		if (len > 0) {
 			params.add("pageLength", Long.toString(len));
+		}
+
+		if (transactionId != null) {
+			params.add("txid", transactionId);
 		}
 
 		if (view != null && view != QueryView.DEFAULT) {
@@ -1402,16 +1406,37 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 
+		T entity = search(reqlog, as, queryDef, mimetype, params);
+
+		logRequest(
+				reqlog,
+				"searched starting at %s with length %s in %s transaction with %s mime type",
+				start, len, transactionId, mimetype);
+		
+		return entity;
+	}
+	@Override
+	public <T> T search(
+			RequestLogger reqlog, Class<T> as, QueryDefinition queryDef, String mimetype, String view
+	) throws ForbiddenUserException, FailedRequestException {
+		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+
+		if (view != null) {
+			params.add("view", view);
+		}
+
+		return search(reqlog, as, queryDef, mimetype, params);
+	}
+	private <T> T search(RequestLogger reqlog, Class<T> as, QueryDefinition queryDef, String mimetype,
+			MultivaluedMap<String, String> params
+	) throws ForbiddenUserException, FailedRequestException {
+
 		String directory = queryDef.getDirectory();
 		if (directory != null) {
 			addEncodedParam(params, "directory", directory);
 		}
 
 		addEncodedParam(params, "collection", queryDef.getCollections());
-
-		if (transactionId != null) {
-			params.add("txid", transactionId);
-		}
 
 		String optionsName = queryDef.getOptionsName();
 		if (optionsName != null && optionsName.length() > 0) {
@@ -1429,7 +1454,7 @@ public class JerseyServices implements RESTServices {
 
 		if (queryDef instanceof RawQueryDefinition) {
 			if (logger.isDebugEnabled())
-				logger.debug("Raw search in transaction {}", transactionId);
+				logger.debug("Raw search");
 
 			StructureWriteHandle handle =
 				((RawQueryDefinition) queryDef).getHandle();
@@ -1462,8 +1487,7 @@ public class JerseyServices implements RESTServices {
 		} else if (queryDef instanceof StringQueryDefinition) {
 			String text = ((StringQueryDefinition) queryDef).getCriteria();
 			if (logger.isDebugEnabled())
-				logger.debug("Searching for {} in transaction {}", text,
-						transactionId);
+				logger.debug("Searching for {}", text);
 
 			if (text != null) {
 				addEncodedParam(params, "q", text);
@@ -1473,8 +1497,7 @@ public class JerseyServices implements RESTServices {
 				.type("application/xml").accept(mimetype);
 		} else if (queryDef instanceof KeyValueQueryDefinition) {
 			if (logger.isDebugEnabled())
-				logger.debug("Searching for keys/values in transaction {}",
-						transactionId);
+				logger.debug("Searching for keys/values");
 
 			Map<ValueLocator, String> pairs = ((KeyValueQueryDefinition) queryDef);
 			for (ValueLocator loc : pairs.keySet()) {
@@ -1496,15 +1519,13 @@ public class JerseyServices implements RESTServices {
 			structure = ((StructuredQueryDefinition) queryDef).serialize();
 
 			if (logger.isDebugEnabled())
-				logger.debug("Searching for structure {} in transaction {}",
-						structure, transactionId);
+				logger.debug("Searching for structure {}", structure);
 
 			builder = connection.path("search").queryParams(params)
 					.type("application/xml").accept(mimetype);
 		} else if (queryDef instanceof DeleteQueryDefinition) {
 			if (logger.isDebugEnabled())
-				logger.debug("Searching for deletes in transaction {}",
-						transactionId);
+				logger.debug("Searching for deletes");
 
 			builder = connection.path("search").queryParams(params)
 					.accept(mimetype);
@@ -1563,11 +1584,6 @@ public class JerseyServices implements RESTServices {
 		if (as != InputStream.class && as != Reader.class)
 			response.close();
 
-		logRequest(
-				reqlog,
-				"searched starting at %s with length %s in %s transaction with %s mime type",
-				start, len, transactionId, mimetype);
-		
 		return entity;
 	}
 

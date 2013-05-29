@@ -20,6 +20,7 @@ import javax.xml.namespace.QName;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
+import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TuplesReadHandle;
 import com.marklogic.client.io.marker.ValuesListReadHandle;
@@ -396,6 +397,23 @@ public interface QueryManager {
      * @return the summary of the first search result or null if there are no results
      */
     public MatchDocumentSummary findOne(QueryDefinition querydef, Transaction transaction);
+
+    /**
+     * Converts a query by example into a combined query that expresses the criteria
+     * as a structured search.
+     * @param query	the query by example
+     * @param convertedHandle
+     * @return	the handle populated with the combined query
+     */
+    public <T extends StructureReadHandle> T convert(RawQueryByExampleDefinition query, T convertedHandle);
+
+    /**
+     * Checks a query by example for mistakes in expressing the criteria.
+     * @param query	the query by example
+     * @param reportHandle	a handle for reading the validation report 
+     * @return	the handle populated with the validation report
+     */
+    public <T extends StructureReadHandle> T validate(RawQueryByExampleDefinition query, T reportHandle);
 
     /**
      * Starts debugging client requests. You can suspend and resume debugging output

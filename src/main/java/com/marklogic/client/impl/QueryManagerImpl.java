@@ -31,6 +31,7 @@ import com.marklogic.client.io.TuplesHandle;
 import com.marklogic.client.io.ValuesHandle;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
+import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TuplesReadHandle;
 import com.marklogic.client.io.marker.ValuesListReadHandle;
@@ -163,8 +164,9 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     }
 
     @Override
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("unchecked")
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction) {
+		@SuppressWarnings("rawtypes")
 		HandleImplementation searchBase = HandleAccessor.checkHandle(searchHandle, "search");
 
         if (searchHandle instanceof SearchHandle) {
@@ -207,8 +209,9 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     }
 
     @Override
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("unchecked")
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valuesHandle, Transaction transaction) {
+		@SuppressWarnings("rawtypes")
     	HandleImplementation valuesBase = HandleAccessor.checkHandle(valuesHandle, "values");
 
         if (valuesHandle instanceof ValuesHandle) {
@@ -240,8 +243,9 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     }
 
     @Override
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("unchecked")
     public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tuplesHandle, Transaction transaction) {
+		@SuppressWarnings("rawtypes")
         HandleImplementation valuesBase = HandleAccessor.checkHandle(tuplesHandle, "values");
 
         if (tuplesHandle instanceof TuplesHandle) {
@@ -272,9 +276,10 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         return valuesList(valdef, valueHandle, null);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings("unchecked")
 	@Override
     public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valuesHandle, Transaction transaction) {
+		@SuppressWarnings("rawtypes")
     	HandleImplementation valuesBase = HandleAccessor.checkHandle(valuesHandle, "valueslist");
 
         Format valuesFormat = valuesBase.getFormat();
@@ -301,9 +306,10 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         return optionsList(optionsHandle, null);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("unchecked")
 	@Override
     public <T extends QueryOptionsListReadHandle> T optionsList(T optionsHandle, Transaction transaction) {
+		@SuppressWarnings("rawtypes")
     	HandleImplementation optionsBase = HandleAccessor.checkHandle(optionsHandle, "optionslist");
 
         Format optionsFormat = optionsBase.getFormat();
@@ -347,10 +353,12 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         }
     }
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings("unchecked")
 	@Override
 	public String[] suggest(SuggestDefinition suggestionDef) {
 		DOMHandle handle = new DOMHandle();
+
+		@SuppressWarnings("rawtypes")
 		HandleImplementation suggestBase = HandleAccessor.checkHandle(handle, "suggest");
 
         suggestBase.receiveContent(services.suggest(suggestBase.receiveAs(), suggestionDef));
@@ -364,12 +372,75 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         return suggestions.toArray(new String[suggestions.size()]);
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+    public <T extends StructureReadHandle> T convert(RawQueryByExampleDefinition query, T convertedHandle) {
+		@SuppressWarnings("rawtypes")
+		HandleImplementation convertedBase = HandleAccessor.checkHandle(convertedHandle, "convert");
+
+        Format convertedFormat = convertedBase.getFormat();
+        switch(convertedFormat) {
+        case UNKNOWN:
+    		@SuppressWarnings("rawtypes")
+    		HandleImplementation queryBase = HandleAccessor.checkHandle(query.getHandle(), "validate");
+    		convertedFormat = queryBase.getFormat();
+        	if (convertedFormat == Format.UNKNOWN) {
+        		convertedFormat = Format.XML;
+        	}
+        	break;
+        case JSON:
+        case XML:
+        	break;
+        default:
+            throw new UnsupportedOperationException("Only XML and JSON conversions are possible.");
+        }
+
+        String mimetype = convertedFormat.getDefaultMimetype();
+
+        convertedBase.receiveContent(
+        		services.search(requestLogger, convertedBase.receiveAs(), query, mimetype, "structured")
+        		);
+
+        return convertedHandle;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+    public <T extends StructureReadHandle> T validate(RawQueryByExampleDefinition query, T reportHandle) {
+		@SuppressWarnings("rawtypes")
+		HandleImplementation reportBase = HandleAccessor.checkHandle(reportHandle, "validate");
+
+        Format reportFormat = reportBase.getFormat();
+        switch(reportFormat) {
+        case UNKNOWN:
+    		@SuppressWarnings("rawtypes")
+    		HandleImplementation queryBase = HandleAccessor.checkHandle(query.getHandle(), "validate");
+    		reportFormat = queryBase.getFormat();
+        	if (reportFormat == Format.UNKNOWN) {
+        		reportFormat = Format.XML;
+        	}
+        	break;
+        case JSON:
+        case XML:
+        	break;
+        default:
+            throw new UnsupportedOperationException("Only XML and JSON validation reports are possible.");
+        }
+
+        String mimetype = reportFormat.getDefaultMimetype();
+
+        reportBase.receiveContent(
+        		services.search(requestLogger, reportBase.receiveAs(), query, mimetype, "validate")
+        		);
+
+        return reportHandle;
+	}
+
 	@Override
 	public SuggestDefinition newSuggestionDefinition() {
 		SuggestDefinition def = new SuggestDefinitionImpl();
 		return def;
 	}
-			
 
 	@Override
 	public SuggestDefinition newSuggestionDefinition(String optionsName) {
