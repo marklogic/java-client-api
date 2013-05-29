@@ -87,7 +87,23 @@ public interface MatchDocumentSummary {
 	 */
 	public <T extends XMLReadHandle> Iterator<T> getSnippetIterator(T handle);
 
-    /**
+	/**
+	 * Returns the content of the first snippet as a convenience, 
+	 * especially for a raw snippet that contains the entire document.
+     * @param handle	An XML handle for reading the first snippet.
+	 * @return	The handle populated with the first snippet.
+	 */
+	public <T extends XMLReadHandle> T getFirstSnippet(T handle);
+
+	/**
+	 * Returns the text of the first snippet as a convenience,
+	 * especially for a raw snippet that contains an entire document
+	 * in JSON or text format.
+	 * @return	The text of the first snippet
+	 */
+	public String getFirstSnippetText();
+
+	/**
      * Returns the metadata associated with this document.
      *
      * @return the metadata

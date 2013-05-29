@@ -262,7 +262,9 @@ public class SearchHandle
 
     @Override
     public <T extends XMLReadHandle> T getQuery(T handle) {
-        return Utilities.exportXML(getSlice(events, queryEvents), handle);
+        return Utilities.exportToHandle(
+        		getSlice(events, queryEvents), handle
+        		);
     }
 
     /**
@@ -339,8 +341,9 @@ public class SearchHandle
     		return null;
     	}
 
-    	return Utilities.exportXML(
-    			getSlice(events, constraintEvents), handle);
+    	return Utilities.exportToHandle(
+    			getSlice(events, constraintEvents), handle
+    			);
     }
     @Override
     public <T extends XMLReadHandle> Iterator<T> getConstraintIterator(T handle) {
@@ -367,7 +370,7 @@ public class SearchHandle
     }
     @Override
     public <T extends XMLReadHandle> T getPlan(T handle) {
-        return Utilities.exportXML(
+        return Utilities.exportToHandle(
         		getSlice(events, planEvents), handle
         		);
     }
@@ -409,7 +412,7 @@ public class SearchHandle
     	DOMHandle handle = new DOMHandle();
     	for (int i=0; i < rangeList.size(); i++) {
     		EventRange eventRange = rangeList.get(i);
-    		handle = Utilities.exportXML(
+    		handle = Utilities.exportToHandle(
     				getSlice(eventList, eventRange), handle
             		);
     		Document document = (handle == null) ? null : handle.get();
@@ -485,8 +488,7 @@ public class SearchHandle
         private double conf = -1;
         private double fit = -1;
         private String path = null;
-        private ArrayList<MatchLocation> locvec = new ArrayList<MatchLocation>();
-        private MatchLocation[] locations = null;
+        private ArrayList<MatchLocation> locations = new ArrayList<MatchLocation>();
         private String mimeType = null;
         private Format format = null;
 
@@ -535,6 +537,26 @@ public class SearchHandle
         	return getEventDocuments(events, snippetEvents);
         }
         @Override
+        public <T extends XMLReadHandle> T getFirstSnippet(T handle) {
+        	if (snippetEvents == null || snippetEvents.size() < 1) {
+        		return null;
+        	}
+
+        	return Utilities.exportToHandle(
+            		getSlice(events, snippetEvents.get(0)), handle
+            		);
+        }
+        @Override
+        public String getFirstSnippetText() {
+        	if (snippetEvents == null || snippetEvents.size() < 1) {
+        		return null;
+        	}
+
+        	return Utilities.eventTextToString(
+        			getSlice(events, snippetEvents.get(0))
+        			);
+        }
+        @Override
         public <T extends XMLReadHandle> Iterator<T> getSnippetIterator(T handle) {
         	if (snippetEvents == null || snippetEvents.size() < 1) {
         		return null;
@@ -546,11 +568,10 @@ public class SearchHandle
         @Override
         public MatchLocation[] getMatchLocations() {
             if (locations == null) {
-                locations = locvec.toArray(new MatchLocation[0]);
-                locvec.clear();
+                return null;
             }
 
-            return locations;
+            return locations.toArray(new MatchLocation[locations.size()]);
         }
 
         @Override
@@ -560,11 +581,7 @@ public class SearchHandle
         }
         @Override
         public <T extends XMLReadHandle> T getMetadata(T handle) {
-        	if (metadataEvents == null) {
-        		return null;
-        	}
-
-            return Utilities.exportXML(
+            return Utilities.exportToHandle(
             		getSlice(events, metadataEvents), handle
             		);
         }
@@ -580,7 +597,7 @@ public class SearchHandle
         }
 
         public void addLocation(MatchLocation loc) {
-            locvec.add(loc);
+            locations.add(loc);
         }
 
         @Override
@@ -599,11 +616,7 @@ public class SearchHandle
 	    }
         @Override
 	    public <T extends XMLReadHandle> T getRelevanceInfo(T handle) {
-	    	if (relevanceEvents == null) {
-	    		return null;
-	    	}
-
-	        return Utilities.exportXML(
+	        return Utilities.exportToHandle(
 	        		getSlice(events, relevanceEvents), handle
 	        		);
 	    }
@@ -611,8 +624,7 @@ public class SearchHandle
 
     private class MatchLocationImpl implements MatchLocation {
         private String path = null;
-        private ArrayList<MatchSnippet> snips = new ArrayList<MatchSnippet>();
-        private MatchSnippet[] snippets = null;
+        private ArrayList<MatchSnippet> snippets = new ArrayList<MatchSnippet>();
 
         public MatchLocationImpl(String path) {
             this.path = path;
@@ -625,28 +637,29 @@ public class SearchHandle
 
         @Override
         public String getAllSnippetText() {
-            getSnippets();
-            String text = "";
-            if (snippets != null) {
-                for (MatchSnippet snippet : snippets) {
-                    text += snippet.getText();
-                }
+        	if (snippets == null) {
+        		return null;
+        	}
+
+            StringBuilder text = new StringBuilder();
+            for (MatchSnippet snippet : snippets) {
+                text.append(snippet.getText());
             }
-            return text;
+
+            return text.toString();
         }
 
         @Override
         public MatchSnippet[] getSnippets() {
-            if (snippets == null) {
-                snippets = snips.toArray(new MatchSnippet[0]);
-                snips.clear();
-            }
+        	if (snippets == null) {
+        		return null;
+        	}
 
-            return snippets;
+        	return snippets.toArray(new MatchSnippet[snippets.size()]);
         }
 
         public void addSnippet(MatchSnippet s) {
-            snips.add(s);
+            snippets.add(s);
         }
     }
 
@@ -880,7 +893,7 @@ public class SearchHandle
 				return null;
 			}
 			EventRange eventRange = rangeList.get(nextEvent++);
-			return Utilities.exportXML(
+			return Utilities.exportToHandle(
 					getSlice(eventList, eventRange), handle
             		);
 		}
@@ -1036,10 +1049,11 @@ public class SearchHandle
 	    	QName similarName       = new QName(SEARCH_NS, "similar");
 	    	QName relevanceInfoName = new QName(QUERY_NS,  "relevance-info");
 
+	    	int first = -1;
+
 	    	QName resultName = element.getName();
 	    	events: while (reader.hasNext()) {
 	    		XMLEvent event = reader.nextEvent();
-	    		tempEvents.add(event);
 
 	    		int eventType = event.getEventType();
 	    		eventType: switch (eventType) {
@@ -1054,8 +1068,9 @@ public class SearchHandle
 	    				handleSimilar(reader, startElement);
 	    			} else if (relevanceInfoName.equals(startName)) {
 	    				handleRelevanceInfo(reader, startElement);
-	    			} else {
-	    				logger.warn("Unexpected result element "+startName.toString());
+	    			// assumed to be a raw snippet
+	    			} else if (first == -1) {
+	    		    	first = tempEvents.size();
 	    			}
     				break eventType;
 	    		case XMLStreamConstants.END_ELEMENT:
@@ -1063,8 +1078,24 @@ public class SearchHandle
 	    				break events;
 	    			}
 	    			break eventType;
+	    		case XMLStreamConstants.CDATA:
+	    		case XMLStreamConstants.CHARACTERS:
+	    			if (first == -1) {
+	    		    	first = tempEvents.size();
+	    			}
+	    			break eventType;
 	    		}
+
+    			// accumulate raw snippet
+	    		if (first > -1) {
+    		    	tempEvents.add(event);
+    			}
 	    	}
+
+			// capture raw snippet
+	    	if (first > -1) {
+		    	addSnippet(new EventRange(first, tempEvents.size()));
+    		}
 	    }
 	    private void handleMetadata(XMLEventReader reader, StartElement element)
 	    throws XMLStreamException {
@@ -1094,10 +1125,7 @@ public class SearchHandle
 
 	    	collectSnippet(reader, element);
 
-	    	if (currSummary.snippetEvents == null) {
-	    		currSummary.snippetEvents = new ArrayList<EventRange>();
-	    	}
-	    	currSummary.snippetEvents.add(new EventRange(first, tempEvents.size()));
+	    	addSnippet(new EventRange(first, tempEvents.size()));
 	    }
 	    private void collectSnippet(XMLEventReader reader, StartElement element)
 	    throws XMLStreamException {
@@ -1123,6 +1151,12 @@ public class SearchHandle
 					break eventType;
 				}
 			}
+	    }
+	    private void addSnippet(EventRange snippetRange) {
+	    	if (currSummary.snippetEvents == null) {
+	    		currSummary.snippetEvents = new ArrayList<EventRange>();
+	    	}
+	    	currSummary.snippetEvents.add(snippetRange);
 	    }
 	    private void handleMatch(XMLEventReader reader, StartElement element)
 	    throws XMLStreamException {
