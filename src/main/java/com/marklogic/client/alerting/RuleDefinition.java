@@ -168,7 +168,7 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 	 *            A combined raw query definition serialized as XML.
 	 */
 	public void importQueryDefinition(XMLWriteHandle queryDef) {
-		List<XMLEvent> importedList = Utilities.importXML(queryDef);
+		List<XMLEvent> importedList = Utilities.importFromHandle(queryDef);
 		// modify XMLEvent list if the imported XML was a structured query.
 		XMLEvent firstEvent = importedList.get(0);
 		if (firstEvent.getEventType() ==  XMLStreamConstants.START_ELEMENT) {
@@ -207,7 +207,7 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 	 * @return The handle, with a combined query and options included as XML.
 	 */
 	public <T extends XMLReadHandle> T exportQueryDefinition(T handle) {
-		return Utilities.exportXML(this.queryPayload, handle);
+		return Utilities.exportToHandle(this.queryPayload, handle);
 	}
 
 	/**
