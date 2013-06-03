@@ -17,7 +17,6 @@ package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -33,10 +32,10 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.admin.ExtensionMetadata;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.admin.MethodType;
 import com.marklogic.client.admin.ResourceExtensionsManager;
 import com.marklogic.client.admin.ResourceExtensionsManager.MethodParameters;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 
 public class ResourceExtensionsTest {
