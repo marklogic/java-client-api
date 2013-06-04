@@ -91,8 +91,6 @@ class ResourceExtensionsImpl
 	) {
 		if (resourceName == null)
 			throw new IllegalArgumentException("Writing resource services with null name");
-		if (methodParams == null || methodParams.length == 0)
-			throw new IllegalArgumentException("Writing resource services with no methods");
 
 		if (logger.isInfoEnabled())
 			logger.info("Writing resource services source for {}", resourceName);
@@ -102,6 +100,7 @@ class ResourceExtensionsImpl
 
 		RequestParameters extraParams =
 			(metadata != null) ? metadata.asParameters() : new RequestParameters();
+		if (methodParams != null) {
 			for (MethodParameters params : methodParams) {
 				String method = params.getMethod().toString().toLowerCase();
 				extraParams.add("method", method);
@@ -110,6 +109,7 @@ class ResourceExtensionsImpl
 					extraParams.put(prefix+entry.getKey(), entry.getValue());
 				}
 			}
+		}
 
 		services.putValue(requestLogger, "config/resources", resourceName, extraParams,
 				"application/xquery", sourceBase);

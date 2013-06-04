@@ -531,9 +531,10 @@ public class JerseyServices implements RESTServices {
 		}
 
 		Class as = handleBase.receiveAs();
-		Object entity = response.getEntity(as);
+		Object entity = response.hasEntity() ? response.getEntity(as) : null;
+
 // TODO: test assignable from, not identical to
-		if (as != InputStream.class && as != Reader.class)
+		if (entity == null || (as != InputStream.class && as != Reader.class))
 			response.close();
 
 		handleBase.receiveContent((reqlog != null) ? reqlog.copyContent(entity)
@@ -614,7 +615,8 @@ public class JerseyServices implements RESTServices {
 				uri, (transactionId != null) ? transactionId : "no",
 				stringJoin(categories, ", ", "no"));
 
-		MultiPart entity = response.getEntity(MultiPart.class);
+		MultiPart entity = response.hasEntity() ?
+				response.getEntity(MultiPart.class) : null;
 		if (entity == null)
 			return false;
 
@@ -1580,8 +1582,8 @@ public class JerseyServices implements RESTServices {
 					+ status.getReasonPhrase(), extractErrorFields(response));
 		}
 
-		T entity = response.getEntity(as);
-		if (as != InputStream.class && as != Reader.class)
+		T entity = response.hasEntity() ? response.getEntity(as) : null;
+		if (entity == null || (as != InputStream.class && as != Reader.class))
 			response.close();
 
 		return entity;
@@ -1783,8 +1785,8 @@ public class JerseyServices implements RESTServices {
 					+ status.getReasonPhrase(), extractErrorFields(response));
 		}
 
-		T entity = response.getEntity(as);
-		if (as != InputStream.class && as != Reader.class)
+		T entity = response.hasEntity() ? response.getEntity(as) : null;
+		if (entity == null || (as != InputStream.class && as != Reader.class))
 			response.close();
 
 		return entity;
@@ -1843,8 +1845,8 @@ public class JerseyServices implements RESTServices {
 					+ status.getReasonPhrase(), extractErrorFields(response));
 		}
 
-		T entity = response.getEntity(as);
-		if (as != InputStream.class && as != Reader.class)
+		T entity = response.hasEntity() ? response.getEntity(as) : null;
+		if (entity == null || (as != InputStream.class && as != Reader.class))
 			response.close();
 
 		return entity;
@@ -1896,8 +1898,8 @@ public class JerseyServices implements RESTServices {
 					+ status.getReasonPhrase(), extractErrorFields(response));
 		}
 
-		T entity = response.getEntity(as);
-		if (as != InputStream.class && as != Reader.class)
+		T entity = response.hasEntity() ? response.getEntity(as) : null;
+		if (entity == null || (as != InputStream.class && as != Reader.class))
 			response.close();
 
 		return entity;
@@ -1957,8 +1959,8 @@ public class JerseyServices implements RESTServices {
 		logRequest(reqlog, "read %s value with %s key and %s mime type", type,
 				key, (mimetype != null) ? mimetype : null);
 
-		T entity = response.getEntity(as);
-		if (as != InputStream.class && as != Reader.class)
+		T entity = response.hasEntity() ? response.getEntity(as) : null;
+		if (entity == null || (as != InputStream.class && as != Reader.class))
 			response.close();
 
 		return (reqlog != null) ? reqlog.copyContent(entity) : entity;
@@ -2007,8 +2009,8 @@ public class JerseyServices implements RESTServices {
 		logRequest(reqlog, "read %s values with %s mime type", type,
 				(mimetype != null) ? mimetype : null);
 
-		T entity = response.getEntity(as);
-		if (as != InputStream.class && as != Reader.class)
+		T entity = response.hasEntity() ? response.getEntity(as) : null;
+		if (entity == null || (as != InputStream.class && as != Reader.class))
 			response.close();
 
 		return (reqlog != null) ? reqlog.copyContent(entity) : entity;
@@ -3128,8 +3130,8 @@ public class JerseyServices implements RESTServices {
 
 		logRequest(reqlog, "%s for %s", operation, entityType);
 
-		T entity = response.getEntity(as);
-		if (as != InputStream.class && as != Reader.class)
+		T entity = response.hasEntity() ? response.getEntity(as) : null;
+		if (entity == null || (as != InputStream.class && as != Reader.class))
 			response.close();
 
 		return (reqlog != null) ? reqlog.copyContent(entity) : entity;
@@ -3139,7 +3141,8 @@ public class JerseyServices implements RESTServices {
 			String operation, String entityType, ClientResponse response) {
 		logRequest(reqlog, "%s for %s", operation, entityType);
 
-		MultiPart entity = response.getEntity(MultiPart.class);
+		MultiPart entity = response.hasEntity() ?
+				response.getEntity(MultiPart.class) : null;
 		if (entity == null)
 			return null;
 
@@ -3396,12 +3399,11 @@ public class JerseyServices implements RESTServices {
 					+ status.getReasonPhrase(), extractErrorFields(response));
 		}
 
-		T entity = response.getEntity(as);
-		if (as != InputStream.class && as != Reader.class)
+		T entity = response.hasEntity() ? response.getEntity(as) : null;
+		if (entity == null || (as != InputStream.class && as != Reader.class))
 			response.close();
 
 		return entity;
-
 	}
 
 	@Override
@@ -3453,7 +3455,10 @@ public class JerseyServices implements RESTServices {
 					+ status.getReasonPhrase(), extractErrorFields(response));
 		}
 
-		InputStream entity = response.getEntity(InputStream.class);
+		InputStream entity = response.hasEntity() ?
+				response.getEntity(InputStream.class) : null;
+		if (entity == null)
+			response.close();
 		
 		return entity;
 	}
@@ -3556,7 +3561,10 @@ public class JerseyServices implements RESTServices {
 					+ status.getReasonPhrase(), extractErrorFields(response));
 		}
 
-		InputStream entity = response.getEntity(InputStream.class);
+		InputStream entity = response.hasEntity() ?
+				response.getEntity(InputStream.class) : null;
+		if (entity == null)
+			response.close();
 		
 		return entity;
 	}
@@ -3611,7 +3619,10 @@ public class JerseyServices implements RESTServices {
 					+ status.getReasonPhrase(), extractErrorFields(response));
 		}
 
-		InputStream entity = response.getEntity(InputStream.class);
+		InputStream entity = response.hasEntity() ?
+				response.getEntity(InputStream.class) : null;
+		if (entity == null)
+			response.close();
 		
 		return entity;
 	}

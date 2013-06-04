@@ -139,9 +139,8 @@ public class TransformExtensionsTest {
 		try {
 			handle = new StringHandle();
 			extensionMgr.readXQueryTransform(XQUERY_NAME, handle);
-// TODO: INVESTIGATE
 			result = handle.get();
-			transformDeleted = (result == null || result.length() == 0);
+			transformDeleted = (result == null);
 		} catch(FailedRequestException ex) {
 		}
 		assertTrue("Failed to delete XQuery transform", transformDeleted);
