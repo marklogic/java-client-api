@@ -63,6 +63,7 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.XMLEventReaderHandle;
 import com.marklogic.client.io.XMLStreamReaderHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
+import com.marklogic.client.util.EditableNamespaceContext;
 
 public class XMLDocumentTest {
 	@BeforeClass
@@ -361,6 +362,35 @@ public class XMLDocumentTest {
 		String actual   = docMgr.read(docId, new StringHandle()).get();
 		assertNotNull("Read null string for patched XML content",actual);
 		assertXMLEqual("Patched XML document without expected result",expected,actual);
+
+		String before = 
+			"<r:root xmlns:r=\"root.org\">"+
+			"<t:target xmlns:t=\"target.org\">";
+		String after = 
+			"</t:target>"+
+			"</r:root>";
+		docMgr.write(docId, new StringHandle(before+after));
+
+		EditableNamespaceContext namespaces = new EditableNamespaceContext();
+		namespaces.put("r", "root.org");
+		namespaces.put("t", "target.org");
+		namespaces.put("n", "new.org");
+
+		patchBldr = docMgr.newPatchBuilder();
+		patchBldr.setNamespaces(namespaces);
+		String inserted = "<n:new xmlns:n=\"new.org\"/>";
+		patchBldr.insertFragment(
+				"/r:root/t:target", Position.LAST_CHILD, inserted
+				);
+
+		patchHandle = patchBldr.build();
+
+		docMgr.patch(docId, patchHandle);
+
+		expected = before+inserted+after;
+
+		actual = docMgr.read(docId, new StringHandle()).get();
+		assertXMLEqual("Patched namespaced XML document without expected result",expected,actual);
 
 		docMgr.delete(docId);
 	}

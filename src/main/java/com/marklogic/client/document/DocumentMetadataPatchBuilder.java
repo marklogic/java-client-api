@@ -20,6 +20,7 @@ import javax.xml.namespace.QName;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
+import com.marklogic.client.util.IterableNamespaceContext;
 
 /**
  * A DocumentMetadataPatchBuilder specifies changes to the metadata
@@ -206,6 +207,23 @@ public interface DocumentMetadataPatchBuilder {
 		 */
 		public String toString();
 	}
+
+	/**
+	 * Returns the namespaces available for the paths
+	 * of a patch against XML documents.
+	 * @return	the declared namespaces
+	 */
+	public IterableNamespaceContext getNamespaces();
+	/**
+	 * Declares the namespaces available for the paths
+	 * of a patch against XML documents.  You can use the
+	 * {@link com.marklogic.client.util.EditableNamespaceContext}
+	 * class to edit a set of namespaces.  Note that the
+	 * following prefixes are predefined for internal use:
+	 * rapi, prop, xsi, and xs
+	 * @param namespaces	the declared namespaces
+	 */
+	public void setNamespaces(IterableNamespaceContext namespaces);
 
 	/**
 	 * Specifies an XQuery library installed on the server 

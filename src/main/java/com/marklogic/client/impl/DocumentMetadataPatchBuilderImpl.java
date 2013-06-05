@@ -17,8 +17,10 @@ package com.marklogic.client.impl;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.XMLConstants;
@@ -34,6 +36,7 @@ import com.marklogic.client.document.DocumentMetadataPatchBuilder;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.IterableNamespaceContext;
 
 class DocumentMetadataPatchBuilderImpl
@@ -41,6 +44,14 @@ implements DocumentMetadataPatchBuilder
 {
 	final static protected String REST_API_NS     = "http://marklogic.com/rest-api";
 	final static protected String PROPERTY_API_NS = "http://marklogic.com/xdmp/property";
+
+	final static protected Map<String,String> reserved = new HashMap<String,String>();
+	static {
+		reserved.put("rapi", REST_API_NS);
+		reserved.put("prop", PROPERTY_API_NS);
+		reserved.put("xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+		reserved.put("xs",   XMLConstants.W3C_XML_SCHEMA_NS_URI);
+	};
 
 	static class XMLOutputSerializer {
 		private StringWriter    writer;
@@ -717,7 +728,7 @@ implements DocumentMetadataPatchBuilder
 	private CallBuilderImpl callBuilder;
 
 	protected List<PatchOperation>      operations       = new ArrayList<PatchOperation>();
-	protected IterableNamespaceContext  namespaceContext;
+	protected EditableNamespaceContext  namespaces;
 	protected String                    libraryNs;
 	protected String                    libraryAt;
 	protected Format                    format;
@@ -727,6 +738,41 @@ implements DocumentMetadataPatchBuilder
 	DocumentMetadataPatchBuilderImpl(Format format) {
 		super();
 		this.format = format;
+
+		if (format == Format.XML) {
+			namespaces = makeNamespaces();
+		}
+	}
+
+	@Override
+	public IterableNamespaceContext getNamespaces() {
+		return namespaces;
+	}
+	@Override
+	public void setNamespaces(IterableNamespaceContext namespaces) {
+		if (format != Format.XML) {
+			throw new IllegalArgumentException(
+				"Can specify namespaces only for XML patches");
+		}
+
+		EditableNamespaceContext newNamespaces = makeNamespaces();
+		for (String prefix: namespaces.getAllPrefixes()) {
+			String nsUri = namespaces.getNamespaceURI(prefix);
+			if (!newNamespaces.containsKey(prefix)) {
+				newNamespaces.put(prefix, nsUri);
+			} else if (newNamespaces.getNamespaceURI(prefix) != nsUri) {
+				throw new IllegalArgumentException(
+					"Cannot override reserved prefix: "+prefix);
+			}
+		}
+		this.namespaces = newNamespaces;
+	}
+	private EditableNamespaceContext makeNamespaces() {
+		EditableNamespaceContext newNamespaces = new EditableNamespaceContext();
+		for (Map.Entry<String, String> entry: reserved.entrySet()) {
+			newNamespaces.put(entry.getKey(), entry.getValue());
+		}
+		return newNamespaces;
 	}
 
 	@Override
@@ -959,17 +1005,10 @@ implements DocumentMetadataPatchBuilder
 				
 				XMLOutputSerializer out = new XMLOutputSerializer(writer, serializer);
 
-				serializer.setPrefix("rapi", REST_API_NS);
-				serializer.setPrefix("prop", PROPERTY_API_NS);
-				serializer.setPrefix("xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
-				serializer.setPrefix("xs",   XMLConstants.W3C_XML_SCHEMA_NS_URI);
-				if (namespaceContext != null) {
-					for (String nsPrefix: namespaceContext.getAllPrefixes()) {
-						if (nsPrefix != "rapi" && nsPrefix != "prop" && nsPrefix != "xsi" && nsPrefix != "xs")
-							serializer.setPrefix(
-									nsPrefix, namespaceContext.getNamespaceURI(nsPrefix)
-									);
-					}
+				for (String nsPrefix: namespaces.getAllPrefixes()) {
+					serializer.setPrefix(
+						nsPrefix, namespaces.getNamespaceURI(nsPrefix)
+						);
 				}
 
 				serializer.writeStartDocument("utf-8", "1.0");
@@ -1004,20 +1043,17 @@ implements DocumentMetadataPatchBuilder
 	}
 
 	protected QName asQName(String name) {
-		if (namespaceContext == null)
-			return null;
-
 		int pos = name.indexOf(":");
 		if (pos != -1) {
 			String prefix = name.substring(0, pos);
-			String nsUri  = namespaceContext.getNamespaceURI(prefix);
+			String nsUri  = namespaces.getNamespaceURI(prefix);
 			if (!XMLConstants.NULL_NS_URI.equals(nsUri))
 				return new QName(nsUri, name.substring(pos + 1), prefix);
 			else
 				throw new IllegalArgumentException(
 						"no namespace binding for prefix: "+prefix);
 		} else {
-			String nsUri = namespaceContext.getNamespaceURI(
+			String nsUri = namespaces.getNamespaceURI(
 					XMLConstants.DEFAULT_NS_PREFIX);
 			if (!XMLConstants.NULL_NS_URI.equals(nsUri))
 				return new QName(nsUri, name);
