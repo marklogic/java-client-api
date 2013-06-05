@@ -624,7 +624,7 @@ public class SearchHandle
 
     private class MatchLocationImpl implements MatchLocation {
         private String path = null;
-        private ArrayList<MatchSnippet> snippets = new ArrayList<MatchSnippet>();
+        private ArrayList<MatchSnippet> matchEvents = new ArrayList<MatchSnippet>();
 
         public MatchLocationImpl(String path) {
             this.path = path;
@@ -637,12 +637,12 @@ public class SearchHandle
 
         @Override
         public String getAllSnippetText() {
-        	if (snippets == null) {
+        	if (matchEvents == null) {
         		return null;
         	}
 
             StringBuilder text = new StringBuilder();
-            for (MatchSnippet snippet : snippets) {
+            for (MatchSnippet snippet : matchEvents) {
                 text.append(snippet.getText());
             }
 
@@ -651,15 +651,15 @@ public class SearchHandle
 
         @Override
         public MatchSnippet[] getSnippets() {
-        	if (snippets == null) {
+        	if (matchEvents == null) {
         		return null;
         	}
 
-        	return snippets.toArray(new MatchSnippet[snippets.size()]);
+        	return matchEvents.toArray(new MatchSnippet[matchEvents.size()]);
         }
 
-        public void addSnippet(MatchSnippet s) {
-            snippets.add(s);
+        public void addMatchSnippet(MatchSnippet s) {
+            matchEvents.add(s);
         }
     }
 
@@ -1049,7 +1049,7 @@ public class SearchHandle
 	    	QName similarName       = new QName(SEARCH_NS, "similar");
 	    	QName relevanceInfoName = new QName(QUERY_NS,  "relevance-info");
 
-	    	int first = -1;
+	    	ArrayList<XMLEvent> eventBuf = new ArrayList<XMLEvent>();
 
 	    	QName resultName = element.getName();
 	    	events: while (reader.hasNext()) {
@@ -1068,33 +1068,34 @@ public class SearchHandle
 	    				handleSimilar(reader, startElement);
 	    			} else if (relevanceInfoName.equals(startName)) {
 	    				handleRelevanceInfo(reader, startElement);
-	    			// assumed to be a raw snippet
-	    			} else if (first == -1) {
-	    		    	first = tempEvents.size();
+	    			} else {
+	    				break eventType;
 	    			}
-    				break eventType;
+
+	    			// found result substructure, so cannot be a raw snippet
+	    			if (eventBuf != null) {
+	    				eventBuf = null;
+	    			}
+
+	    			break eventType;
 	    		case XMLStreamConstants.END_ELEMENT:
 	    			if (resultName.equals(event.asEndElement().getName())) {
 	    				break events;
 	    			}
 	    			break eventType;
-	    		case XMLStreamConstants.CDATA:
-	    		case XMLStreamConstants.CHARACTERS:
-	    			if (first == -1) {
-	    		    	first = tempEvents.size();
-	    			}
-	    			break eventType;
 	    		}
 
-    			// accumulate raw snippet
-	    		if (first > -1) {
-    		    	tempEvents.add(event);
+    			// buffer candidates for a raw snippet
+    			if (eventBuf != null) {
+    				eventBuf.add(event);
     			}
 	    	}
 
 			// capture raw snippet
-	    	if (first > -1) {
-		    	addSnippet(new EventRange(first, tempEvents.size()));
+			if (eventBuf != null) {
+				int first = tempEvents.size();
+				tempEvents.addAll(eventBuf);
+	    		addSnippet(new EventRange(first, tempEvents.size()));
     		}
 	    }
 	    private void handleMetadata(XMLEventReader reader, StartElement element)
@@ -1179,7 +1180,7 @@ public class SearchHandle
 					if (highlightName.equals(startElement.getName())) {
 						// add any text preceding a highlight
 						if (buf.length() > 0) {
-							location.addSnippet(new MatchSnippetImpl(false, buf.toString()));
+							location.addMatchSnippet(new MatchSnippetImpl(false, buf.toString()));
 							buf.setLength(0);
 						}
 					}
@@ -1195,12 +1196,12 @@ public class SearchHandle
 					if (matchName.equals(endName)) {
 						// add any text following the last highlight
 						if (buf.length() > 0) {
-							location.addSnippet(new MatchSnippetImpl(false, buf.toString()));
+							location.addMatchSnippet(new MatchSnippetImpl(false, buf.toString()));
 						}
 						break events;
 					} else if (highlightName.equals(endName)) {
 						// add any text contained by a highlight
-						location.addSnippet(new MatchSnippetImpl(true, buf.toString()));
+						location.addMatchSnippet(new MatchSnippetImpl(true, buf.toString()));
 						buf.setLength(0);
 					}
 
