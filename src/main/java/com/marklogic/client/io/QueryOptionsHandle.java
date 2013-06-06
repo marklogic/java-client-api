@@ -152,7 +152,7 @@ public final class QueryOptionsHandle
 
 	@Override
     /**
-     * Add an annotation to the the query options.
+     * Add an annotation to the query options.
      * @param queryAnnotation The annotation, as an XML string
      */
 	public QueryOptionsHandle annotate(String queryAnnotation) {
