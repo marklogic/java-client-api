@@ -27,7 +27,7 @@ public interface QueryOptionsManager {
 	
 	
 	/**
-	 * Fetch a query options configuration from the the REST Server by name.
+	 * Fetch a query options configuration from the REST Server by name.
 	 * <p>
 	 * Use a QueryOptionsHandle object for access to the configuration with Java.
 	 * 
