@@ -308,6 +308,16 @@ public class DocumentMetadataHandle
 	public void setCollections(DocumentCollections collections) {
 		this.collections = collections;
 	}
+	/**
+	 * Locally adds the collections to the current collections
+	 * for the document.
+	 * @param collections	the document collections
+	 * @return	the document metadata handle
+	 */
+	public DocumentMetadataHandle withCollections(String... collections) {
+		getCollections().addAll(collections);
+		return this;
+	}
 
 	/**
 	 * Returns a container for the permissions on the document
@@ -327,6 +337,19 @@ public class DocumentMetadataHandle
 	 */
 	public void setPermissions(DocumentPermissions permissions) {
 		this.permissions = permissions;
+	}
+	/**
+	 * Locally adds the role and its capabilities to the current
+	 * permissions for the document.
+     * @param role	the role for users permitted to access the document
+     * @param capabilities	the permissions to be granted to users with the role
+	 * @return	the document metadata handle
+	 */
+	public DocumentMetadataHandle withPermission(
+			String role, Capability... capabilities
+			) {
+		getPermissions().add(role, capabilities);
+		return this;
 	}
 
 	/**
@@ -348,6 +371,28 @@ public class DocumentMetadataHandle
 	public void setProperties(DocumentProperties properties) {
 		this.properties = properties;
 	}
+	/**
+	 * Locally adds the property name and value to the current
+	 * properties for the document.
+	 * @param name	the namespaced QName identifying the property
+	 * @param value	the value of the property
+	 * @return	the document metadata handle
+	 */
+	public DocumentMetadataHandle withProperty(QName name, Object value) {
+		getProperties().put(name, value);
+		return this;
+	}
+	/**
+	 * Locally adds the property name and value to the current
+	 * properties for the document.
+	 * @param name	the simple string name identifying the property
+	 * @param value	the value of the property
+	 * @return	the document metadata handle
+	 */
+	public DocumentMetadataHandle withProperty(String name, Object value) {
+		getProperties().put(name, value);
+		return this;
+	}
 
 	/**
 	 * Returns the quality of the document.
@@ -362,6 +407,15 @@ public class DocumentMetadataHandle
 	 */
 	public void setQuality(int quality) {
 		this.quality = quality;
+	}
+	/**
+	 * Locally specifies the match quality for the document.
+	 * @param quality	the document quality
+	 * @return	the document metadata handle
+	 */
+	public DocumentMetadataHandle withQuality(int quality) {
+		setQuality(quality);
+		return this;
 	}
 
 	/**
