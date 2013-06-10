@@ -25,6 +25,17 @@ as empty-sequence()
                                 "http://marklogic.com/xdmp/property","last-modified","",false() )
     let $c := admin:database-add-range-element-index($c, $dbid, $rangespec)
 
+    let $rangespec := admin:database-range-element-index("string",
+        "http://nwalsh.com/ns/photolib","tag","http://marklogic.com/collation/",false() )
+    let $c := admin:database-add-range-element-index($c, $dbid, $rangespec)
+    let $rangespec := admin:database-range-element-index("date",
+        "http://nwalsh.com/ns/photolib","date","",false() )
+    let $c := admin:database-add-range-element-index($c, $dbid, $rangespec)
+    let $rangespec := admin:database-range-element-attribute-index("date",
+        "http://nwalsh.com/ns/photolib","view","","date","",false() )
+    let $c := admin:database-add-range-element-attribute-index($c, $dbid, $rangespec)
+
+
     let $rangespec := admin:database-range-element-index("double",
         "","double","",false() )
     let $c := admin:database-add-range-element-index($c, $dbid, $rangespec)
@@ -34,6 +45,12 @@ as empty-sequence()
     let $rangespec := admin:database-range-element-index("string",
         "","grandchild","http://marklogic.com/collation/",false() )
     let $c := admin:database-add-range-element-index($c, $dbid, $rangespec)
+    let $rangespec := admin:database-range-element-index("string",
+        "","string","http://marklogic.com/collation/",false() )
+    let $c := admin:database-add-range-element-index($c, $dbid, $rangespec)
+    let $wordspec := admin:database-element-word-lexicon(
+        "","suggest","http://marklogic.com/collation/")
+    let $c := admin:database-add-element-word-lexicon($c, $dbid, $wordspec)
 
     (: create geospatial indexes for geo unit test :)
     let $geospec := admin:database-geospatial-element-pair-index(
@@ -495,6 +512,70 @@ declare function bootstrap:load-data()
             <element-test attribute-test="5"/>
             <element-test attribute-test="9"/>
         </root>),
+xdmp:document-insert(
+    "/sample/tuples-test1.xml",
+    <root name="first">
+        <child id="1">
+            <double>1.1</double>
+            <int>1</int>
+            <string>Alaska</string>
+        </child>
+    </root>
+    ),
+xdmp:document-set-permissions("/sample/tuples-test1.xml",
+    (xdmp:permission("rest-reader","read"),
+    xdmp:permission("rest-writer","update"),
+    xdmp:permission("app-user","read"),
+    xdmp:permission("app-user","update"))
+    ),
+xdmp:document-insert(
+    "/sample/tuples-test2.xml",
+    <root name="second">
+        <child id="3">
+            <double>1.1</double>
+            <int>3</int>
+            <string>Birmingham</string>
+        </child>
+    </root>
+    ),
+xdmp:document-set-permissions("/sample/tuples-test2.xml",
+    (xdmp:permission("rest-reader","read"),
+    xdmp:permission("rest-writer","update"),
+    xdmp:permission("app-user","read"),
+    xdmp:permission("app-user","update"))
+    ),
+xdmp:document-insert(
+    "/sample/tuples-test3.xml",
+    <root name="second">
+        <child id="3">
+            <double>1.2</double>
+            <int>3</int>
+            <string>Birmingham</string>
+        </child>
+    </root>
+    ),
+xdmp:document-set-permissions("/sample/tuples-test3.xml",
+    (xdmp:permission("rest-reader","read"),
+    xdmp:permission("rest-writer","update"),
+    xdmp:permission("app-user","read"),
+    xdmp:permission("app-user","update"))
+    ),
+xdmp:document-insert(
+    "/sample/tuples-test4.xml",
+    <root name="second">
+        <child id="3">
+            <double>1.2</double>
+            <int>3</int>
+            <string>Alaska</string>
+        </child>
+    </root>
+    ),
+xdmp:document-set-permissions("/sample/tuples-test4.xml",
+    (xdmp:permission("rest-reader","read"),
+    xdmp:permission("rest-writer","update"),
+    xdmp:permission("app-user","read"),
+    xdmp:permission("app-user","update"))
+    ),
     xdmp:document-set-permissions("/sample/udf-test.xml",
         (xdmp:permission("rest-reader","read"),
         xdmp:permission("rest-writer","update"),
@@ -508,7 +589,22 @@ declare function bootstrap:load-data()
     xdmp:document-set-permissions("/sample/legacy space file.xml",
         (xdmp:permission("rest-reader","read"),
         xdmp:permission("rest-writer","update"))
-        )
+        ),
+
+    xdmp:document-insert("/sample/suggestion.xml",
+        <suggest><string>FINDME</string>Something I love to suggest is sugar with savory succulent limes.</suggest>),
+    xdmp:document-set-permissions("/sample/suggestion.xml",
+        (xdmp:permission("rest-reader","read"),
+        xdmp:permission("rest-writer","update"))
+        ),
+    xdmp:document-add-collections("/sample/suggestion.xml",("http://some.org/complexsuggestions")),
+    xdmp:document-insert("/sample2/suggestion.xml",
+        <suggest>Something I hate to suggest is liver with lard.</suggest>),
+    xdmp:document-set-permissions("/sample2/suggestion.xml",
+        (xdmp:permission("rest-reader","read"),
+        xdmp:permission("rest-writer","update"))
+            ),
+    xdmp:document-add-collections("/sample2/suggestion.xml",("http://some.org/suggestions"))
 };
 
 declare function bootstrap:load-search-data()
@@ -530,6 +626,7 @@ declare function bootstrap:post(
     let $ncre := bootstrap:security-config('sec:create-user("valid","valid unprivileged user", "x",(),(),(),())')
     let $dbid := xdmp:database("java-unittest")
     let $config := bootstrap:database-configure($dbid)
+    let $_ := xdmp:log(("Configured Java test database:", $config))
     let $d1 := bootstrap:load-data()
     return ()
 };
