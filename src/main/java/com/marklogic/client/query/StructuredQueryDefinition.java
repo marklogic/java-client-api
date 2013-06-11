@@ -16,18 +16,19 @@
 package com.marklogic.client.query;
 
 
+
 /**
  * A StructuredQueryDefinition represents a structured query.
  * 
  * Instances of this interface are produced by StructuredQueryBuilder.
  */
-public interface StructuredQueryDefinition
-	extends QueryDefinition, ValueQueryDefinition
-{
-    /**
-     * Returns the structured query definition as a serialized XML string.
-     * @return The serialized definition.
-     */
-    public String serialize();
-    
+public interface StructuredQueryDefinition extends QueryDefinition,
+		ValueQueryDefinition {
+	/**
+	 * Returns the structured query definition as a serialized XML string.
+	 * 
+	 * @return The serialized definition.
+	 */
+	public String serialize();
+
 }

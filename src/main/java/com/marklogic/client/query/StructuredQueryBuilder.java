@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
@@ -43,6 +45,8 @@ import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
+import com.marklogic.client.util.EditableNamespaceContext;
+import com.marklogic.client.util.IterableNamespaceContext;
 
 /**
  * StructuredQueryBuilder builds a query for documents in the database.
@@ -51,6 +55,18 @@ public class StructuredQueryBuilder {
    	private static Templates extractor;
     private String builderOptionsURI = null;
 
+   final static private String SEARCH_API_NS="http://marklogic.com/appservices/search";
+   
+   /*
+    * This map is used to prevent reuse of reserved prefixes in path expressions.
+    */
+   final static private Map<String,String> reserved = new HashMap<String,String>();
+       static {
+            reserved.put("search", SEARCH_API_NS);
+            reserved.put("xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+            reserved.put("xs",   XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        };
+     
     public enum Ordering {
         ORDERED, UNORDERED;
     }
@@ -73,7 +89,7 @@ public class StructuredQueryBuilder {
     /**
      * A TextIndex can be used for word and value queries.
      */
-    public interface TextIndex {
+    public interface TextIndex { 
     }
     /**
      * A RangeIndex can be used for range queries.  The range index
@@ -122,8 +138,19 @@ public class StructuredQueryBuilder {
 
     public StructuredQueryBuilder() {
     	super();
+    	this.namespaces = makeNamespaces();
     }
     public StructuredQueryBuilder(String optionsName) {
+    	this();
+        builderOptionsURI = optionsName;
+    }
+    
+    public StructuredQueryBuilder(IterableNamespaceContext namespaces) {
+    	this();
+    	setNamespaces(namespaces);
+    }
+    
+    public StructuredQueryBuilder(String optionsName, IterableNamespaceContext namespaces) {
     	this();
         builderOptionsURI = optionsName;
     }
@@ -361,18 +388,26 @@ public class StructuredQueryBuilder {
     }
 
     /* ************************************************************************************* */
+	/**
+	 * Used only for serializing StructuredQueryDefinitions.
+	 */
+	private IterableNamespaceContext namespaces;
+
 
     // TODO IN A FUTURE RELEASE:  remove the deprecated innerSerialize() method
 	private abstract class AbstractStructuredQuery
     extends AbstractQueryDefinition
     implements StructuredQueryDefinition {
-        public AbstractStructuredQuery() {
-            optionsUri = builderOptionsURI;
-        }
+		
 
-        public String serialize() {
-			return serializeQueries(this);
+		public AbstractStructuredQuery() {
+			optionsUri = builderOptionsURI;
+		}
+
+		public String serialize() {
+			return serializeQueries(this);     	
         }
+        
 
         /**
          * Returns the query as a partial string.  This method will be removed in a future
@@ -1538,13 +1573,15 @@ public class StructuredQueryBuilder {
 			throw new MarkLogicIOException(e);
 		}
     }
-    static private String serializeRegions(RegionImpl... regions) {
-    	return serializeQueriesImpl((Object[]) regions);
-    }
-    static private String serializeQueries(AbstractStructuredQuery... queries) {
-    	return serializeQueriesImpl((Object[]) queries);
-    }
-    static private String serializeQueriesImpl(Object... objects) {
+    private String serializeRegions(RegionImpl... regions) {
+		return serializeQueriesImpl((Object[]) regions);
+	}
+
+	private String serializeQueries(AbstractStructuredQuery... queries) {
+		return serializeQueriesImpl((Object[]) queries);
+	}
+
+	private String serializeQueriesImpl(Object... objects) {
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			writeStructuredQueryImpl(baos, objects);
@@ -1552,20 +1589,26 @@ public class StructuredQueryBuilder {
 		} catch (Exception e) {
 			throw new MarkLogicIOException(e);
 		}
-    }
-    static private void writeStructuredQuery(OutputStream out, AbstractStructuredQuery... queries) {
+	}
+     private void writeStructuredQuery(OutputStream out, AbstractStructuredQuery... queries) {
     	writeStructuredQueryImpl(out, (Object[]) queries);
     }
-    static private void writeStructuredQueryImpl(OutputStream out, Object... objects) {
+     private void writeStructuredQueryImpl(OutputStream out, Object... objects) {
 		try {
 			XMLStreamWriter serializer = makeSerializer(out);
 
 // omit the XML prolog
 //			serializer.writeStartDocument();
 			serializer.writeStartElement("query");
-
+			
+			
 			if (objects != null) {
 				if (objects instanceof AbstractStructuredQuery[]) {
+					if (namespaces != null) {
+						for (String prefix : namespaces.getAllPrefixes()) {
+							serializer.writeNamespace(prefix, namespaces.getNamespaceURI(prefix));
+						}
+					}
 					for (AbstractStructuredQuery query: (AbstractStructuredQuery[]) objects) {
 						query.innerSerialize(serializer);
 					}
@@ -1796,4 +1839,30 @@ public class StructuredQueryBuilder {
 	public StructuredQueryDefinition notIn(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
 		return new NotInQuery(positive, negative);
 	}
+	
+	public IterableNamespaceContext getNamespaces() {
+		return namespaces;
+	}
+	
+	public void setNamespaces(IterableNamespaceContext namespaces) {
+	   
+		EditableNamespaceContext newNamespaces = makeNamespaces();
+		for (String prefix: namespaces.getAllPrefixes()) {
+			String nsUri = namespaces.getNamespaceURI(prefix);
+			if (!newNamespaces.containsKey(prefix)) {
+				newNamespaces.put(prefix, nsUri);
+			} else if (newNamespaces.getNamespaceURI(prefix) != nsUri) {
+				throw new IllegalArgumentException(
+					"Cannot override reserved prefix: "+prefix);
+			}
+		}
+		this.namespaces = newNamespaces;
+	}
+	private EditableNamespaceContext makeNamespaces() {
+		EditableNamespaceContext newNamespaces = new EditableNamespaceContext();
+		for (Map.Entry<String, String> entry: reserved.entrySet()) {
+			newNamespaces.put(entry.getKey(), entry.getValue());
+		}
+		return newNamespaces;
+	} 
 }

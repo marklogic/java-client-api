@@ -376,7 +376,7 @@ public class AlertingTest {
 
 	@Test
 	public void testMatchPostQuery() throws SAXException, IOException {
-		StructuredQueryBuilder qb = new StructuredQueryBuilder(null);
+		StructuredQueryBuilder qb = new StructuredQueryBuilder();
 		StructuredQueryDefinition structuredQuery;
 		structuredQuery = qb.rangeConstraint("favorited", Operator.EQ, "true");
 

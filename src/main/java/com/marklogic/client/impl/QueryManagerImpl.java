@@ -100,7 +100,7 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 
     @Override
     public StructuredQueryBuilder newStructuredQueryBuilder() {
-        return new StructuredQueryBuilder(null);
+        return new StructuredQueryBuilder();
     }
 
     @Override

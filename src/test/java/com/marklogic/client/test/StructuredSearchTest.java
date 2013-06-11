@@ -15,11 +15,11 @@
  */
 package com.marklogic.client.test;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual; 
 
 import java.io.IOException;
 
@@ -41,6 +41,7 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.util.EditableNamespaceContext;
 
 public class StructuredSearchTest {
     @BeforeClass
@@ -96,6 +97,27 @@ public class StructuredSearchTest {
         }
     }
 
+    @Test
+    public void testStructuredSearch2() throws IOException {
+    	QueryManager queryMgr = Common.client.newQueryManager();
+        
+    	EditableNamespaceContext namespaces = new EditableNamespaceContext(); 
+    	namespaces.put("x", "root.org");
+    	namespaces.put("y", "target.org");
+    	StructuredQueryBuilder qb = new StructuredQueryBuilder(namespaces);
+    	
+    	StructuredQueryDefinition qdef = qb.geospatial(
+    			qb.geoPath(qb.pathIndex("/x:geo/y:path")),
+    			qb.box(1, 2, 3, 4));
+    	
+    	SearchHandle results = queryMgr.search(qdef, new SearchHandle());
+    	assertNotNull(results);
+
+    	MatchDocumentSummary[] summaries = results.getMatchResults();
+    	assertTrue(summaries == null || summaries.length == 0);
+    }
+
+    
     @Test
     public void testFailedSearch() throws IOException {
         QueryManager queryMgr = Common.client.newQueryManager();
