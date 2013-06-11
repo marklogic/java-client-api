@@ -1052,7 +1052,7 @@ implements DocumentMetadataPatchBuilder
 			else
 				throw new IllegalArgumentException(
 						"no namespace binding for prefix: "+prefix);
-		} else {
+		} else if (namespaces != null) {
 			String nsUri = namespaces.getNamespaceURI(
 					XMLConstants.DEFAULT_NS_PREFIX);
 			if (!XMLConstants.NULL_NS_URI.equals(nsUri))
