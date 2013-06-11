@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.StreamingOutput;
@@ -354,6 +355,7 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = addVersionHeader(desc,
 				webResource.getRequestBuilder(), "If-Match");
+		builder = addTransactionCookie(builder, transactionId);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -466,6 +468,7 @@ public class JerseyServices implements RESTServices {
 		WebResource.Builder builder = makeDocumentResource(
 				makeDocumentParams(uri, categories, transactionId, extraParams))
 				.accept(mimetype);
+		builder = addTransactionCookie(builder, transactionId);
 
 		if (extraParams != null && extraParams.containsKey("range"))
 			builder = builder.header("range", extraParams.get("range").get(0));
@@ -567,7 +570,7 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = makeDocumentResource(docParams).accept(
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
-
+		builder = addTransactionCookie(builder, transactionId);
 		builder = addVersionHeader(desc, builder, "If-None-Match");
 
 		ClientResponse response = null;
@@ -703,11 +706,14 @@ public class JerseyServices implements RESTServices {
 			logger.debug("Requesting head for {} in transaction {}", uri,
 					transactionId);
 
+		WebResource.Builder builder = webResource.getRequestBuilder();
+		builder = addTransactionCookie(builder, transactionId);
+
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
-			response = webResource.head();
+			response = builder.head();
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
@@ -871,8 +877,10 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = webResource.type(
 				(mimetype != null) ? mimetype : MediaType.WILDCARD);
-		if (uri != null)
+		builder = addTransactionCookie(builder, transactionId);
+		if (uri != null) {
 			builder = addVersionHeader(desc, builder, "If-Match");
+		}
 
 		if ("patch".equals(method)) {
 			builder = builder.header("X-HTTP-Method-Override", "PATCH");
@@ -995,8 +1003,10 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = makeDocumentResource(docParams).type(
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
-		if (uri != null)
+		builder = addTransactionCookie(builder, transactionId);
+		if (uri != null) {
 			builder = addVersionHeader(desc, builder, "If-Match");
+		}
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -1179,8 +1189,11 @@ public class JerseyServices implements RESTServices {
 		MultivaluedMap<String, String> transParams = new MultivaluedMapImpl();
 		transParams.add("result", result);
 
-		WebResource builder = connection.path("transactions/" + transactionId)
+		WebResource webResource = connection.path("transactions/" + transactionId)
 				.queryParams(transParams);
+
+		WebResource.Builder builder = webResource.getRequestBuilder();
+		builder = addTransactionCookie(builder, transactionId);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -1249,8 +1262,9 @@ public class JerseyServices implements RESTServices {
 					docParams.add("category", category.name().toLowerCase());
 			}
 		}
-		if (transactionId != null)
+		if (transactionId != null) {
 			docParams.add("txid", transactionId);
+		}
 		return docParams;
 	}
 
@@ -1363,6 +1377,22 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 		descriptor.setVersion(version);
+	}
+
+	private WebResource.Builder addTransactionCookie(
+			WebResource.Builder builder, String transactionId) {
+		if (transactionId != null) {
+			int pos = transactionId.indexOf("_");
+			if (pos != -1) {
+				String hostId = transactionId.substring(0, pos);
+				builder.cookie(new Cookie("HostId", hostId));
+			} else {
+				throw new IllegalArgumentException(
+						"transaction id without host id separator: "+transactionId
+						);
+			}
+		}
+		return builder;
 	}
 
 	private WebResource.Builder addVersionHeader(DocumentDescriptor desc,
@@ -1536,6 +1566,10 @@ public class JerseyServices implements RESTServices {
 					+ queryDef.getClass().getName());
 		}
 
+		if (params.containsKey("txid")) {
+			builder = addTransactionCookie(builder, params.getFirst("txid"));
+		}
+
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
 		int retry = 0;
@@ -1605,7 +1639,10 @@ public class JerseyServices implements RESTServices {
 			params.add("txid", transactionId);
 		}
 
-		WebResource builder = connection.path("search").queryParams(params);
+		WebResource webResource = connection.path("search").queryParams(params);
+
+		WebResource.Builder builder = webResource.getRequestBuilder();
+		builder = addTransactionCookie(builder, transactionId);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -1748,6 +1785,7 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = connection.path(uri)
 				.queryParams(docParams).accept(mimetype);
+		builder = addTransactionCookie(builder, transactionId);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -1812,6 +1850,7 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = connection.path(uri)
 				.queryParams(docParams).accept(mimetype);
+		builder = addTransactionCookie(builder, transactionId);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -1865,6 +1904,7 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = connection.path(uri)
 				.queryParams(docParams).accept(mimetype);
+		builder = addTransactionCookie(builder, transactionId);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
