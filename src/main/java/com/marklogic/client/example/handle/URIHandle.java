@@ -241,13 +241,17 @@ public class URIHandle
 			receiver.setEntity(entity);
 
 			HttpResponse response = client.execute(method, getContext());
+			content.close();
 
 			StatusLine status = response.getStatusLine();
+
+			if (!method.isAborted()) {
+				method.abort();
+			}
+
 			if (status.getStatusCode() >= 300) {
 				throw new MarkLogicIOException("Could not write to "+uri.toString()+": "+status.getReasonPhrase());
 			}
-
-			content.close();
 		} catch (IOException e) {
 			throw new MarkLogicIOException(e);
 		}
@@ -266,16 +270,28 @@ public class URIHandle
 
 			StatusLine status = response.getStatusLine();
 			if (status.getStatusCode() >= 300) {
+				if (!method.isAborted()) {
+					method.abort();
+				}
+
 				throw new MarkLogicIOException("Could not read from "+uri.toString()+": "+status.getReasonPhrase());
 			}
 
 			HttpEntity entity = response.getEntity();
 			if (entity == null) {
+				if (!method.isAborted()) {
+					method.abort();
+				}
+
 				throw new MarkLogicIOException("Received empty response to write for "+uri.toString());
 			}
 
 			InputStream stream = entity.getContent();
 			if (stream == null) {
+				if (!method.isAborted()) {
+					method.abort();
+				}
+
 				throw new MarkLogicIOException("Could not get stream to write for "+uri.toString());
 			}
 
