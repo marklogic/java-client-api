@@ -52,20 +52,25 @@ import com.marklogic.client.util.IterableNamespaceContext;
  * StructuredQueryBuilder builds a query for documents in the database.
  */
 public class StructuredQueryBuilder {
-   	private static Templates extractor;
-    private String builderOptionsURI = null;
-
 	final static private String SEARCH_API_NS="http://marklogic.com/appservices/search";
 
-   /*
-    * This map is used to prevent reuse of reserved prefixes in path expressions.
-    */
+	/*
+	 * This map is used to prevent reuse of reserved prefixes in path expressions.
+	 */
 	final static private Map<String,String> reserved = new HashMap<String,String>();
-    	static {
-            reserved.put("search", SEARCH_API_NS);
-            reserved.put("xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
-            reserved.put("xs",   XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        };
+	static {
+		reserved.put("search", SEARCH_API_NS);
+		reserved.put("xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+		reserved.put("xs",   XMLConstants.W3C_XML_SCHEMA_NS_URI);
+	};
+
+	private static Templates extractor;
+
+    private String builderOptionsURI = null;
+	/**
+	 * Used only for serializing StructuredQueryDefinitions.
+	 */
+	private IterableNamespaceContext namespaces;
 
     /**
      * Control over ordering for use in near queries.
@@ -827,10 +832,6 @@ public class StructuredQueryBuilder {
     }
 
     /* ************************************************************************************* */
-	/**
-	 * Used only for serializing StructuredQueryDefinitions.
-	 */
-	private IterableNamespaceContext namespaces;
 
     // TODO IN A FUTURE RELEASE:  remove the deprecated innerSerialize() method
 	private abstract class AbstractStructuredQuery
