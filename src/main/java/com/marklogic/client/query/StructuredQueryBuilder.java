@@ -55,18 +55,21 @@ public class StructuredQueryBuilder {
    	private static Templates extractor;
     private String builderOptionsURI = null;
 
-   final static private String SEARCH_API_NS="http://marklogic.com/appservices/search";
-   
+	final static private String SEARCH_API_NS="http://marklogic.com/appservices/search";
+
    /*
     * This map is used to prevent reuse of reserved prefixes in path expressions.
     */
-   final static private Map<String,String> reserved = new HashMap<String,String>();
-       static {
+	final static private Map<String,String> reserved = new HashMap<String,String>();
+    	static {
             reserved.put("search", SEARCH_API_NS);
             reserved.put("xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
             reserved.put("xs",   XMLConstants.W3C_XML_SCHEMA_NS_URI);
         };
-     
+
+    /**
+     * Control over ordering for use in near queries.
+     */
     public enum Ordering {
         ORDERED, UNORDERED;
     }
@@ -104,9 +107,15 @@ public class StructuredQueryBuilder {
     public interface GeospatialIndex {
     }
     /**
+     * A ContainerIndex can be used for container queries.
+     */
+    public interface ContainerIndex {
+    }
+
+    /**
      * An Element represents an element in database documents.
      */
-    public interface Element extends RangeIndex, TextIndex {
+    public interface Element extends ContainerIndex, RangeIndex, TextIndex {
     }
     /**
      * An Attribute represents an attribute in database documents.
@@ -127,7 +136,7 @@ public class StructuredQueryBuilder {
     /**
      * A JSONKey represents a key in JSON database documents.
      */
-    public interface JSONKey extends RangeIndex, TextIndex {
+    public interface JSONKey extends ContainerIndex, RangeIndex, TextIndex {
     }
     /**
      * A PathIndex represents an index defined with an XPath
@@ -136,25 +145,50 @@ public class StructuredQueryBuilder {
     public interface PathIndex extends RangeIndex {
     }
 
+    /**
+     * Zero-argument constructor.
+     */
     public StructuredQueryBuilder() {
-    	super();
-    	this.namespaces = makeNamespaces();
+    	this((IterableNamespaceContext) null);
     }
+    /**
+     * Constructs a query builder for queries against the options
+     * persisted with the specified name.  The query can include
+     * constraint queries for any constraints defined by the options.
+     * @param optionsName	the name of the persisted query options
+     */
     public StructuredQueryBuilder(String optionsName) {
-    	this();
+    	this((IterableNamespaceContext) null);
         builderOptionsURI = optionsName;
     }
-    
+    /**
+     * Constructs a query builder for queries using the specified
+     * namespace bindings.
+     * @param namespaces	the bindings of prefixes and namespaces
+     */
     public StructuredQueryBuilder(IterableNamespaceContext namespaces) {
-    	this();
+    	super();
     	setNamespaces(namespaces);
     }
-    
+    /**
+     * Constructs a query builder for queries against the options
+     * persisted with the specified name using the specified
+     * namespace bindings.  The query can include constraint queries
+     * for any constraints defined by the options.
+     * @param optionsName	the name of the persisted query options
+     * @param namespaces	the bindings of prefixes and namespaces
+     */
     public StructuredQueryBuilder(String optionsName, IterableNamespaceContext namespaces) {
-    	this();
+    	this(namespaces);
         builderOptionsURI = optionsName;
     }
 
+    /**
+     * Builds a structured query in XML from the list of query definitions.
+     * The structured query can be passed to the search() method of QueryManager.
+     * @param queries	the query definitions
+     * @return	the structured query
+     */
     public RawStructuredQueryDefinition build(StructuredQueryDefinition... queries) {
     	checkQueries(queries);
 		return new RawQueryDefinitionImpl.Structured(
@@ -162,227 +196,632 @@ public class StructuredQueryBuilder {
 				);
     }
 
+    /**
+     * Defines an AND query over the list of query definitions.
+     * @param queries	the query definitions
+     * @return	the StructuredQueryDefinition for the AND query
+     */
     public AndQuery and(StructuredQueryDefinition... queries) {
     	checkQueries(queries);
         return new AndQuery(queries);
     }
 
+    /**
+     * Defines an OR query over the list of query definitions.
+     * @param queries	the query definitions
+     * @return	the StructuredQueryDefinition for the OR query
+     */
     public OrQuery or(StructuredQueryDefinition... queries) {
     	checkQueries(queries);
     	return new OrQuery(queries);
     }
 
+    /**
+     * Defines a NOT query for a query definition. To negate
+     * a list of query definitions, define an AND or
+     * OR query over the list and define the NOT query over
+     * the AND or OR query.
+     * @param query	the query definition
+     * @return	the StructuredQueryDefinition for the NOT query
+     */
     public NotQuery not(StructuredQueryDefinition query) {
     	checkQuery(query);
         return new NotQuery(query);
     }
 
+    /**
+     * Defines an AND NOT query combining a positive and negative
+     * query. You can use an AND or OR query over a list of query
+     * definitions as the positive or negative query.
+     * @param positive	the positive query definition
+     * @param negative	the negative query definition
+     * @return	the StructuredQueryDefinition for the AND NOT query
+     */
     public AndNotQuery andNot(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
     	checkQuery(positive);
     	checkQuery(negative);
         return new AndNotQuery(positive, negative);
     }
 
+    /**
+     * Defines a NEAR query over the list of query definitions
+     * with default parameters.
+     * @param queries	the query definitions
+     * @return	the StructuredQueryDefinition for the NEAR query
+     */
     public NearQuery near(StructuredQueryDefinition... queries) {
     	checkQueries(queries);
         return new NearQuery(queries);
     }
 
+    /**
+     * Defines a NEAR query over the list of query definitions
+     * with specified parameters.
+     * @param distance	the proximity for the query terms
+     * @param weight	the weight for the query
+     * @param order	the ordering for the query terms
+     * @param queries	the query definitions
+     * @return	the StructuredQueryDefinition for the NEAR query
+     */
     public NearQuery near(int distance, double weight, Ordering order, StructuredQueryDefinition... queries) {
     	checkQueries(queries);
         return new NearQuery(distance, weight, order, queries);
     }
 
+    /**
+     * Associates a query with the content of documents (as opposed to
+     * the properties of documents).
+     * @param query	the query definition
+     * @return	the StructuredQueryDefinition for the document fragment query
+     */
     public DocumentFragmentQuery documentFragment(StructuredQueryDefinition query) {
     	checkQuery(query);
         return new DocumentFragmentQuery(query);
     }
 
+    /**
+     * Associates a query with the properties of documents (as opposed to
+     * the content of documents).
+     * @param query	the query definition
+     * @return	the StructuredQueryDefinition for the properties query
+     */
     public PropertiesQuery properties(StructuredQueryDefinition query) {
     	checkQuery(query);
         return new PropertiesQuery(query);
     }
 
+    /**
+     * Associates a query with durable locks on documents (as opposed to
+     * the content or properties of documents). Such lock fragments are
+     * created with xdmp:lock-acquire().
+     * @param query	the query definition
+     * @return	the StructuredQueryDefinition for the locks query
+     */
     public LocksQuery locks(StructuredQueryDefinition query) {
     	checkQuery(query);
         return new LocksQuery(query);
     }
 
-    public StructuredQueryDefinition containerQuery(Element index, StructuredQueryDefinition query) {
+    /**
+     * Matches a query within the substructure contained by an element or JSON key.
+     * @param index	the element or JSON key
+     * @param query	the query over the contained substructure
+     * @return	the StructuredQueryDefinition for the container query
+     */
+    public StructuredQueryDefinition containerQuery(ContainerIndex index, StructuredQueryDefinition query) {
     	checkQuery(query);
         return new ContainerQuery(index, query);
     }
 
+    /**
+     * Matches documents belonging to at least one
+     * of the criteria collections.
+     * @param uris	the identifiers for the criteria collections
+     * @return	the StructuredQueryDefinition for the collection query
+     */
     public CollectionQuery collection(String... uris) {
         return new CollectionQuery(uris);
     }
 
+    /**
+     * Matches documents at the specified depth within at least one
+     * of the criteria directories.
+     * @param isInfinite	true to match a document at any level of depth
+     * @param uris	the identifiers for the criteria directories
+     * @return	the StructuredQueryDefinition for the directory query
+     */
+// TODO: specified level
     public DirectoryQuery directory(boolean isInfinite, String... uris) {
         return new DirectoryQuery(isInfinite, uris);
     }
 
+    /**
+     * Matches the specified documents.
+     * @param uris	the identifiers for the documents
+     * @return	the StructuredQueryDefinition for the document query
+     */
     public DocumentQuery document(String... uris) {
         return new DocumentQuery(uris);
     }
     
+    /**
+     * Matches documents containing the specified terms.
+     * @param terms	the possible terms to match
+     * @return	the StructuredQueryDefinition for the term query
+     */
     public TermQuery term(String... terms) {
         return new TermQuery(null, terms);
     }
-
+    /**
+     * Matches documents containing the specified terms, modifying
+     * the contribution of the match to the score with the weight.
+     * @param weight	the multiplier for the match in the document ranking
+     * @param terms	the possible terms to match
+     * @return	the StructuredQueryDefinition for the term query
+     */
     public TermQuery term(double weight, String... terms) {
         return new TermQuery(weight, terms);
     }
 
+    /**
+     * Matches an element, attribute, json key, or field
+     * that has a value with the same words as at least one
+     * of the criteria values.
+     * @param index	the value container
+     * @param values	the possible values to match
+     * @return	the StructuredQueryDefinition for the value query
+     */
     public StructuredQueryDefinition value(TextIndex index, String... values) {
         return new ValueQuery(index, null, null, null, values);
     }
+    /**
+     * Matches an element, attribute, json key, or field
+     * that has a value with the same words as at least one
+     * of the criteria values.
+     * @param index	the value container
+     * @param scope	whether the query matches the document content or properties
+     * @param options	options for fine tuning the query
+     * @param weight	the multiplier for the match in the document ranking
+     * @param values	the possible values to match
+     * @return	the StructuredQueryDefinition for the value query
+     */
     public StructuredQueryDefinition value(TextIndex index, FragmentScope scope, String[] options, double weight, String... values) {
         return new ValueQuery(index, scope, options, weight, values);
     }
 
-    public StructuredQueryDefinition word(TextIndex index, String... values) {
-        return new WordQuery(index, null, null, null, values);
+    /**
+     * Matches an element, attribute, json key, or field
+     * that has at least one of the criteria words.
+     * @param index	the word container
+     * @param words	the possible words to match
+     * @return	the StructuredQueryDefinition for the word query
+     */
+    public StructuredQueryDefinition word(TextIndex index, String... words) {
+        return new WordQuery(index, null, null, null, words);
     }
+    /**
+     * Matches an element, attribute, json key, or field
+     * that has at least one of the criteria words.
+     * @param index	the word container
+     * @param scope	whether the query matches the document content or properties
+     * @param options	options for fine tuning the query
+     * @param weight	the multiplier for the match in the document ranking
+     * @param words	the possible words to match
+     * @return	the StructuredQueryDefinition for the word query
+     */
     public StructuredQueryDefinition word(TextIndex index, FragmentScope scope,
-    		String[] options, double weight, String... values) {
-        return new WordQuery(index, scope, options, weight, values);
+    		String[] options, double weight, String... words) {
+        return new WordQuery(index, scope, options, weight, words);
     }
 
-
+    /**
+     * Matches an element, attribute, json key, field, or path
+     * whose value that has the correct datatyped comparison with 
+     * one of the criteria values.
+     * @param index	the range container
+     * @param type	the datatype of the container and specified values
+     * @param operator	the comparison with the criteria values
+     * @param values	the possible datatyped values for the comparison
+     * @return	the StructuredQueryDefinition for the range query
+     */
     public StructuredQueryDefinition range(RangeIndex index, String type, 
     		Operator operator, Object... values) {
         return new RangeQuery(index, type, null, null, null, operator, values);
     }
+// TODO: why a type with a collation?  always xs:string  backward compatibility?
+    /**
+     * Matches an element, attribute, json key, field, or path
+     * whose value that has the correct datatyped comparison with 
+     * one of the criteria values.
+     * @param index	the range container
+     * @param type
+     * @param collation	the identifier for the strategy for comparing types 
+     * @param operator	the comparison with the criteria values
+     * @param values	the possible datatyped values for the comparison
+     * @return	the StructuredQueryDefinition for the range query
+     */
     public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
     		Operator operator, Object... values) {
         return new RangeQuery(index, type, collation, null, null, operator, values);
     }
+    /**
+     * Matches an element, attribute, json key, field, or path
+     * whose value that has the correct datatyped comparison with 
+     * one of the criteria values.
+     * @param index	the range container
+     * @param type
+     * @param collation	the identifier for the strategy for comparing types 
+     * @param scope	whether the query matches the document content or properties
+     * @param operator	the comparison with the criteria values
+     * @param values	the possible datatyped values for the comparison
+     * @return	the StructuredQueryDefinition for the range query
+     */
     public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
     		FragmentScope scope, Operator operator,
     		Object... values) {
         return new RangeQuery(index, type, collation, scope, null, operator, values);
     }
-    public StructuredQueryDefinition range(RangeIndex index, String type, String[] rangeOptions, Operator operator,
+    /**
+     * Matches an element, attribute, json key, field, or path
+     * whose value that has the correct datatyped comparison with 
+     * one of the criteria values.
+     * @param index	the range container
+     * @param type	the datatype of the container and specified values
+     * @param options	options for fine tuning the query
+     * @param operator	the comparison with the criteria values
+     * @param values	the possible datatyped values for the comparison
+     * @return	the StructuredQueryDefinition for the range query
+     */
+    public StructuredQueryDefinition range(RangeIndex index, String type, String[] options, Operator operator,
     		Object... values) {
-        return new RangeQuery(index, type, null, null, rangeOptions, operator, values);
+        return new RangeQuery(index, type, null, null, options, operator, values);
     }
+    /**
+     * Matches an element, attribute, json key, field, or path
+     * whose value that has the correct datatyped comparison with 
+     * one of the criteria values.
+     * @param index	the range container
+     * @param type
+     * @param collation	the identifier for the strategy for comparing types 
+     * @param options	options for fine tuning the query
+     * @param operator	the comparison with the criteria values
+     * @param values	the possible datatyped values for the comparison
+     * @return	the StructuredQueryDefinition for the range query
+     */
     public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
-    		String[] rangeOptions, Operator operator, Object... values) {
-        return new RangeQuery(index, type, collation, null, rangeOptions, operator, values);
+    		String[] options, Operator operator, Object... values) {
+        return new RangeQuery(index, type, collation, null, options, operator, values);
     }
+    /**
+     * Matches an element, attribute, json key, field, or path
+     * whose value that has the correct datatyped comparison with 
+     * one of the criteria values.
+     * @param index	the range container
+     * @param type
+     * @param collation	the identifier for the strategy for comparing types 
+     * @param scope	whether the query matches the document content or properties
+     * @param options	options for fine tuning the query
+     * @param operator	the comparison with the criteria values
+     * @param values	the possible datatyped values for the comparison
+     * @return	the StructuredQueryDefinition for the range query
+     */
     public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
-    		FragmentScope scope, String[] rangeOptions, Operator operator,
+    		FragmentScope scope, String[] options, Operator operator,
     		Object... values) {
-        return new RangeQuery(index, type, collation, scope, rangeOptions, operator, values);
+        return new RangeQuery(index, type, collation, scope, options, operator, values);
     }
+
+    /**
+     * Matches an element, element pair, element attribute, pair, or path
+     * specifying a geospatial point that appears within one of the criteria regions.
+     * @param index	the container for the coordinates of the geospatial point
+     * @param regions	the possible regions containing the point
+     * @return	the StructuredQueryDefinition for the geospatial query
+     */
     public StructuredQueryDefinition geospatial(GeospatialIndex index, Region... regions) {
     	checkRegions(regions);
         return new GeospatialQuery(index, null, regions, null);
     }
+    /**
+     * Matches an element, element pair, element attribute, pair, or path
+     * specifying a geospatial point that appears within one of the criteria regions.
+     * @param index	the container for the coordinates of the geospatial point
+     * @param scope	whether the query matches the document content or properties
+     * @param options	options for fine tuning the query
+     * @param regions	the possible regions containing the point
+     * @return	the StructuredQueryDefinition for the geospatial query
+     */
     public StructuredQueryDefinition geospatial(GeospatialIndex index, FragmentScope scope, String[] options, Region... regions) {
     	checkRegions(regions);
         return new GeospatialQuery(index, scope, regions, options);
     }
-    
 
+    /**
+     * Identifies a namespaced element to match with a query.
+     * @param qname	the name of the element
+     * @return	the element identifier
+     */
     public Element element(QName qname) {
     	return new ElementImpl(qname);
     }
+    /**
+     * Identifies a simple element to match with a query.
+     * @param name	the name of the element
+     * @return	the element identifier
+     */
     public Element element(String name) {
     	return new ElementImpl(name);
     }
+    /**
+     * Identifies a namespaced attribute to match with a query.
+     * @param qname	the name of the attribute 
+     * @return	the attribute identifier
+     */
     public Attribute attribute(QName qname) {
     	return new AttributeImpl(qname);
     }
+    /**
+     * Identifies a simple attribute to match with a query.
+     * @param name	the name of the attribute
+     * @return	the attribute identifier
+     */
     public Attribute attribute(String name) {
     	return new AttributeImpl(name);
     }
+    /**
+     * Identifies an element having an attribute to match with a query.
+     * @param element	the element identifier
+     * @param attribute	the attribute identifier
+     * @return	the identifier for the element-attribute pair
+     */
     public ElementAttribute elementAttribute(Element element, Attribute attribute) {
     	return new ElementAttributeImpl(element, attribute);
     }
+    /**
+     * Identifies a field to match with a query.  Fields are defined
+     * in the configuration for the database. 
+     * @param name	the name of the field
+     * @return	the identifier for the field
+     */
     public Field field(String name) {
     	return new FieldImpl(name);
     }
+    /**
+     * Identifies a JSON key to match with a query.
+     * @param name	the name of the JSON key
+     * @return	the identifier for the JSON key
+     */
     public JSONKey jsonKey(String name) {
     	return new JSONKeyImpl(name);
     }
+    /**
+     * Identifies a path index to match with a query.
+     * @param path	the indexed path
+     * @return	the identifier for the path index 
+     */
     public PathIndex pathIndex(String path) {
     	return new PathIndexImpl(path);
     }
+    /**
+     * Identifies an element whose text has the latitude and longitude
+     * coordinates to match with a geospatial query.
+     * @param element	the element containing the geospatial coordinates
+     * @return	the specification for the index on the geospatial coordinates
+     */
     public GeospatialIndex geoElement(Element element) {
     	return new GeoElementImpl(element);
     }
+    /**
+     * Identifies a parent element with a child element whose text has
+     * the latitude and longitude coordinates to match with a geospatial query.
+     * @param parent	the parent of the element with the coordinates
+     * @param element	the element containing the geospatial coordinates
+     * @return	the specification for the index on the geospatial coordinates
+     */
     public GeospatialIndex geoElement(Element parent, Element element) {
     	return new GeoElementImpl(parent, element);
     }
+    /**
+     * Identifies a parent element with child latitude and longitude elements
+     * to match with a geospatial query.
+     * @param parent	the parent of the element with the coordinates
+     * @param lat	the element with the latitude coordinate
+     * @param lon	the element with the longitude coordinate
+     * @return	the specification for the index on the geospatial coordinates
+     */
     public GeospatialIndex geoElementPair(Element parent, Element lat, Element lon) {
     	return new GeoElementPairImpl(parent, lat, lon);
     }
+    /**
+     * Identifies a parent element with child latitude and longitude attributes
+     * to match with a geospatial query.
+     * @param parent	the parent of the element with the coordinates
+     * @param lat	the attribute with the latitude coordinate
+     * @param lon	the attribute with the longitude coordinate
+     * @return	the specification for the index on the geospatial coordinates
+     */
     public GeospatialIndex geoAttributePair(Element parent, Attribute lat, Attribute lon) {
     	return new GeoAttributePairImpl(parent, lat, lon);
     }
+    /**
+     * Identifies a path with the latitude and longitude to match
+     * with a geospatial query.
+     * @param pathIndex	the indexed path
+     * @return	the specification for the index on the geospatial coordinates
+     */
     public GeospatialIndex geoPath(PathIndex pathIndex) {
     	return new GeoPathImpl(pathIndex);
     }
-    
+
+    /**
+     * Specifies a geospatial point.
+     * @param latitude	the latitude coordinate
+     * @param longitude	the longitude coordinate
+     * @return	the definition of the point
+     */
     public Point point(double latitude, double longitude) {
         return new Point(latitude, longitude);
     }
 
+    /**
+     * Specifies a geospatial region as a circle,
+     * supplying coordinates for the center.
+     * @param latitude	the latitude coordinate of the center
+     * @param longitude	the longitude coordinate of the center
+     * @param radius	the radius of the circle
+     * @return	the definition of the circle
+     */
     public Circle circle(double latitude, double longitude, double radius) {
         return new Circle(latitude, longitude, radius);
     }
-
+    /**
+     * Specifies a geospatial region as a circle,
+     * supplying a point for the center.
+     * @param center	the point defining the center
+     * @param radius	the radius of the circle
+     * @return	the definition of the circle
+     */
     public Circle circle(Point center, double radius) {
         return new Circle(center.getLatitude(), center.getLongitude(), radius);
     }
 
+    /**
+     * Specifies a geospatial region as a box, supplying
+     * the coordinates for the perimeter.
+     * @param south	the latitude of the south coordinate
+     * @param west	the longitude of the west coordinate
+     * @param north	the latitude of the north coordinate
+     * @param east	the longitude of the east coordinate
+     * @return	the definition of the box
+     */
     public Box box(double south, double west, double north, double east) {
         return new Box(south, west, north, east);
     }
 
+    /**
+     * Specifies a geospatial region as an arbitrary polygon.
+     * @param points	the list of points defining the perimeter of the region
+     * @return	the definition of the polygon
+     */
     public Polygon polygon(Point... points) {
         return new Polygon(points);
     }
 
+    /**
+     * Matches a query within the substructure of the container specified
+     * by the constraint.
+     * @param constraintName	the constraint definition
+     * @param query	the query definition
+     * @return	the StructuredQueryDefinition for the element constraint query
+     */
+// TODO: add containerConstraintQuery() and @Deprecated
     public ElementConstraintQuery elementConstraint(String constraintName, StructuredQueryDefinition query) {
     	checkQuery(query);
         return new ElementConstraintQuery(constraintName, query);
     }
 
+
+    /**
+     * Associates a query with the properties of documents (as opposed to
+     * the content of documents) with the specified constraint.
+     * @param constraintName	the constraint definition
+     * @param query	the query definition
+     * @return	the StructuredQueryDefinition for the properties constraint query
+     */
     public PropertiesConstraintQuery propertiesConstraint(String constraintName, StructuredQueryDefinition query) {
     	checkQuery(query);
         return new PropertiesConstraintQuery(constraintName, query);
     }
 
+    /**
+     * Matches documents belonging to at least one
+     * of the criteria collections with the specified constraint.
+     * @param constraintName	the constraint definition
+     * @param uris	the identifiers for the criteria collections
+     * @return	the StructuredQueryDefinition for the collection constraint query
+     */
     public CollectionConstraintQuery collectionConstraint(String constraintName, String... uris) {
         return new CollectionConstraintQuery(constraintName, uris);
     }
 
+    /**
+     * Matches the container specified by the constraint when it
+     * has a value with the same words as at least one
+     * of the criteria values.
+     * @param constraintName	the constraint definition
+     * @param values	the possible values to match
+     * @return	the StructuredQueryDefinition for the value constraint query
+     */
     public ValueConstraintQuery valueConstraint(String constraintName, String... values) {
         return new ValueConstraintQuery(constraintName, values);
     }
-
+    /**
+     * Matches the container specified by the constraint when it
+     * has a value with the same words as at least one
+     * of the criteria values.
+     * @param constraintName	the constraint definition
+     * @param weight	the multiplier for the match in the document ranking
+     * @param values	the possible values to match
+     * @return	the StructuredQueryDefinition for the value constraint query
+     */
     public ValueConstraintQuery valueConstraint(String constraintName, double weight, String... values) {
         return new ValueConstraintQuery(constraintName, weight, values);
     }
 
+    /**
+     * Matches the container specified by the constraint when it
+     * has at least one of the criteria words.
+     * @param constraintName	the constraint definition
+     * @param words	the possible words to match
+     * @return	the StructuredQueryDefinition for the word constraint query
+     */
     public WordConstraintQuery wordConstraint(String constraintName, String... words) {
         return new WordConstraintQuery(constraintName, words);
     }
+    /**
+     * Matches the container specified by the constraint when it
+     * has at least one of the criteria words.
+     * @param constraintName	the constraint definition
+     * @param weight	the multiplier for the match in the document ranking
+     * @param words	the possible words to match
+     * @return	the StructuredQueryDefinition for the word constraint query
+     */
     public WordConstraintQuery wordConstraint(String constraintName, double weight, String... words) {
         return new WordConstraintQuery(constraintName, weight, words);
     }
 
+    /**
+     * Matches the container specified by the constraint
+     * whose value that has the correct datatyped comparison with 
+     * one of the criteria values.
+     * @param constraintName	the constraint definition
+     * @param operator	the comparison with the criteria values
+     * @param values	the possible datatyped values for the comparison
+     * @return	the StructuredQueryDefinition for the range constraint query
+     */
     public RangeConstraintQuery rangeConstraint(String constraintName, Operator operator, String... values) {
         return new RangeConstraintQuery(constraintName, operator, values);
     }
 
+    /**
+     * Matches the container specified by the constraint
+     * whose geospatial point appears within one of the criteria regions.
+     * @param constraintName	the constraint definition
+     * @param regions	the possible regions containing the point
+     * @return	the StructuredQueryDefinition for the geospatial constraint query
+     */
     public GeospatialConstraintQuery geospatialConstraint(String constraintName, Region... regions) {
     	checkRegions(regions);
         return new GeospatialConstraintQuery(constraintName, regions);
     }
 
+    /**
+     * Matches documents as specified by a constraint that implements
+     * a custom query parameterized with the supplied text.
+     * @param constraintName	the constraint definition
+     * @param text	the input to the custom query
+     * @return	the StructuredQueryDefinition for the custom constraint query
+     */
     public CustomConstraintQuery customConstraint(String constraintName, String... text) {
         return new CustomConstraintQuery(constraintName, text);
     }
@@ -393,21 +832,17 @@ public class StructuredQueryBuilder {
 	 */
 	private IterableNamespaceContext namespaces;
 
-
     // TODO IN A FUTURE RELEASE:  remove the deprecated innerSerialize() method
 	private abstract class AbstractStructuredQuery
     extends AbstractQueryDefinition
     implements StructuredQueryDefinition {
-		
-
 		public AbstractStructuredQuery() {
 			optionsUri = builderOptionsURI;
 		}
 
 		public String serialize() {
-			return serializeQueries(this);     	
+			return serializeQueries(this);
         }
-        
 
         /**
          * Returns the query as a partial string.  This method will be removed in a future
@@ -804,6 +1239,7 @@ public class StructuredQueryBuilder {
         }
     }
 
+// TODO: add private ContainerConstraintQuery and deprecate
     /**
      * Use the StructuredQueryDefinition interface as the type for instances of ElementConstraintQuery.
      */
@@ -1059,9 +1495,9 @@ public class StructuredQueryBuilder {
 
     class ContainerQuery
     extends AbstractStructuredQuery {
-    	private Element index;
+    	private ContainerIndex index;
     	private StructuredQueryDefinition query;
-    	ContainerQuery(Element index, StructuredQueryDefinition query) {
+    	ContainerQuery(ContainerIndex index, StructuredQueryDefinition query) {
     		this.index = index;
     		this.query = query;
     	}
@@ -1142,7 +1578,7 @@ public class StructuredQueryBuilder {
 		FragmentScope scope;
 		String        type;
 		String        collation;
-		String[] rangeOptions;
+		String[]      options;
     	Operator      operator;
     	String[]      values;
     	RangeQuery(RangeIndex index, String type, String collation, 
@@ -1152,7 +1588,7 @@ public class StructuredQueryBuilder {
     		this.type      = type;
     		this.collation = collation;
     		this.scope     = scope;
-    		this.rangeOptions = rangeOptions;
+    		this.options = rangeOptions;
     		this.operator  = operator;
     		this.values    = new String[values.length];
     		for (int i=0; i < values.length; i++) {
@@ -1180,7 +1616,7 @@ public class StructuredQueryBuilder {
         		writeText(serializer, "range-operator",
         				operator.toString().toUpperCase());
     		}
-    		writeTextList(serializer, "range-option", rangeOptions);
+    		writeTextList(serializer, "range-option", options);
     		serializer.writeEndElement();
         }
     }
@@ -1601,7 +2037,6 @@ public class StructuredQueryBuilder {
 //			serializer.writeStartDocument();
 			serializer.writeStartElement("query");
 			
-			
 			if (objects != null) {
 				if (objects instanceof AbstractStructuredQuery[]) {
 					if (namespaces != null) {
@@ -1845,15 +2280,16 @@ public class StructuredQueryBuilder {
 	}
 	
 	public void setNamespaces(IterableNamespaceContext namespaces) {
-	   
 		EditableNamespaceContext newNamespaces = makeNamespaces();
-		for (String prefix: namespaces.getAllPrefixes()) {
-			String nsUri = namespaces.getNamespaceURI(prefix);
-			if (!newNamespaces.containsKey(prefix)) {
-				newNamespaces.put(prefix, nsUri);
-			} else if (newNamespaces.getNamespaceURI(prefix) != nsUri) {
-				throw new IllegalArgumentException(
-					"Cannot override reserved prefix: "+prefix);
+		if (namespaces != null) {
+			for (String prefix: namespaces.getAllPrefixes()) {
+				String nsUri = namespaces.getNamespaceURI(prefix);
+				if (!newNamespaces.containsKey(prefix)) {
+					newNamespaces.put(prefix, nsUri);
+				} else if (newNamespaces.getNamespaceURI(prefix) != nsUri) {
+					throw new IllegalArgumentException(
+							"Cannot override reserved prefix: "+prefix);
+				}
 			}
 		}
 		this.namespaces = newNamespaces;
