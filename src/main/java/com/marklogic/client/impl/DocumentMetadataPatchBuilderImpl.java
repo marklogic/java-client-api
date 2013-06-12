@@ -756,13 +756,15 @@ implements DocumentMetadataPatchBuilder
 		}
 
 		EditableNamespaceContext newNamespaces = makeNamespaces();
-		for (String prefix: namespaces.getAllPrefixes()) {
-			String nsUri = namespaces.getNamespaceURI(prefix);
-			if (!newNamespaces.containsKey(prefix)) {
-				newNamespaces.put(prefix, nsUri);
-			} else if (newNamespaces.getNamespaceURI(prefix) != nsUri) {
-				throw new IllegalArgumentException(
-					"Cannot override reserved prefix: "+prefix);
+		if (namespaces != null) {
+			for (String prefix: namespaces.getAllPrefixes()) {
+				String nsUri = namespaces.getNamespaceURI(prefix);
+				if (!newNamespaces.containsKey(prefix)) {
+					newNamespaces.put(prefix, nsUri);
+				} else if (newNamespaces.getNamespaceURI(prefix) != nsUri) {
+					throw new IllegalArgumentException(
+							"Cannot override reserved prefix: "+prefix);
+				}
 			}
 		}
 		this.namespaces = newNamespaces;
