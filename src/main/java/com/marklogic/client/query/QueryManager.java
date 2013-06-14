@@ -135,14 +135,14 @@ public interface QueryManager {
      * using the default options node.
      * @return	the suggest definition.
      */
-    public SuggestDefinition newSuggestionDefinition();
+    public SuggestDefinition newSuggestDefinition();
     
     /**
      * Creates a suggestion definition based on a query options name.
      * @param optionsName	the name of the query options
      * @return	the suggest definition.
      */
-    public SuggestDefinition newSuggestionDefinition(String optionsName);
+    public SuggestDefinition newSuggestDefinition(String optionsName);
     
 
     /**

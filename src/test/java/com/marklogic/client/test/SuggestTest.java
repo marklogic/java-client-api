@@ -71,7 +71,7 @@ public class SuggestTest {
 	@Test
 	public void testNoSuggestion() {
 		QueryManager queryMgr = Common.client.newQueryManager();
-		SuggestDefinition def = queryMgr.newSuggestionDefinition(optionsName);
+		SuggestDefinition def = queryMgr.newSuggestDefinition(optionsName);
 		
 		String[] suggestions = queryMgr.suggest(def);
 		
@@ -95,7 +95,7 @@ public class SuggestTest {
 	@Test
 	public void testSuggestionWithQuery() {
 		QueryManager queryMgr = Common.client.newQueryManager();
-		SuggestDefinition def = queryMgr.newSuggestionDefinition(optionsName);
+		SuggestDefinition def = queryMgr.newSuggestDefinition(optionsName);
 		
 		def.setStringCriteria("li");
 		def.setQueryStrings("string:FINDME");
