@@ -43,11 +43,11 @@ public class GraphSPARQLExample {
 
 		runQuery(appClient);
 
-		//deleteGraph(appClient);
+		deleteGraph(appClient);
 
 		appClient.release();
 
-		//uninstallExtensions(props);
+		uninstallExtensions(props);
 	}
 	public static void runQuery(DatabaseClient appClient) throws IOException {
 		SPARQLManager sparqlMgr = new SPARQLManager(appClient);
