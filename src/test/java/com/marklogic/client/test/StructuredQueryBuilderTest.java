@@ -231,6 +231,17 @@ public class StructuredQueryBuilderTest {
 					+ "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
     				+ "<element-constraint-query><constraint-name>name</constraint-name><term-query><text>one</text></term-query></element-constraint-query></query>", q);
         }
+        
+        t = qb.containerConstraint("name", qb.term("one"));
+        for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
+        	xml = new StringInputStream(q);
+        	parser.parse(xml, handler);
+        	assertEquals("<query xmlns=\"http://marklogic.com/appservices/search\" "
+        			+ "xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" "
+        			+ "xmlns:search=\"http://marklogic.com/appservices/search\" "
+					+ "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
+    				+ "<container-constraint-query><constraint-name>name</constraint-name><term-query><text>one</text></term-query></container-constraint-query></query>", q);
+        }
 
         t = qb.propertiesConstraint("name", qb.term("one"));
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {

@@ -719,7 +719,19 @@ public class StructuredQueryBuilder {
      * @param query	the query definition
      * @return	the StructuredQueryDefinition for the element constraint query
      */
-// TODO: add containerConstraintQuery() and @Deprecated
+    public ContainerConstraintQuery containerConstraint(String constraintName, StructuredQueryDefinition query) {
+    	checkQuery(query);
+        return new ContainerConstraintQuery(constraintName, query);
+    }
+
+    /**
+     * Matches a query within the substructure of the container specified
+     * by the constraint.
+     * @param constraintName	the constraint definition
+     * @param query	the query definition
+     * @return	the StructuredQueryDefinition for the element constraint query
+     */
+	@Deprecated
     public ElementConstraintQuery elementConstraint(String constraintName, StructuredQueryDefinition query) {
     	checkQuery(query);
         return new ElementConstraintQuery(constraintName, query);
@@ -1240,7 +1252,36 @@ public class StructuredQueryBuilder {
         }
     }
 
-// TODO: add private ContainerConstraintQuery and deprecate
+    
+    
+    
+    /**
+     * Use the StructuredQueryDefinition interface as the type for instances of ContainerConstraintQuery.
+     */
+    class ContainerConstraintQuery
+    extends AbstractStructuredQuery {
+        private String name;
+        private StructuredQueryDefinition query;
+
+        /**
+         * Use the containerConstraint() builder method of StructuredQueryBuilder
+         * and type the object as an instance of the StructuredQueryDefinition interface.
+         */
+    	public ContainerConstraintQuery(String constraintName, StructuredQueryDefinition query) {
+            super();
+            name = constraintName;
+            this.query = query;
+        }
+
+        @Override
+    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        	serializer.writeStartElement("container-constraint-query");
+        	writeText(serializer, "constraint-name", name);
+        	writeQuery(serializer, query);
+        	serializer.writeEndElement();
+        }
+    }
+
     /**
      * Use the StructuredQueryDefinition interface as the type for instances of ElementConstraintQuery.
      */
