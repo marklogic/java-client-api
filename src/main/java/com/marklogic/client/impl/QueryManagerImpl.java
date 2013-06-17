@@ -355,13 +355,13 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public String[] suggest(SuggestDefinition suggestionDef) {
+	public String[] suggest(SuggestDefinition suggestDef) {
 		DOMHandle handle = new DOMHandle();
 
 		@SuppressWarnings("rawtypes")
 		HandleImplementation suggestBase = HandleAccessor.checkHandle(handle, "suggest");
 
-        suggestBase.receiveContent(services.suggest(suggestBase.receiveAs(), suggestionDef));
+        suggestBase.receiveContent(services.suggest(suggestBase.receiveAs(), suggestDef));
         
 		Document doc = handle.get();
         NodeList nodeList = doc.getDocumentElement().getChildNodes();
@@ -451,10 +451,10 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 	}
 
 	@Override
-	public SuggestDefinition newSuggestionDefinition(String suggestionString,
+	public SuggestDefinition newSuggestDefinition(String suggestString,
 			String optionsName) {
 		SuggestDefinition def = new SuggestDefinitionImpl();
-		def.setStringCriteria(suggestionString);
+		def.setStringCriteria(suggestString);
 		def.setOptionsName(optionsName);
 		return def;
 	}

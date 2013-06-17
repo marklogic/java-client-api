@@ -83,7 +83,7 @@ public class SuggestTest {
 	@Test
 	public void testOneSuggestion() {
 		QueryManager queryMgr = Common.client.newQueryManager();
-		SuggestDefinition def = queryMgr.newSuggestionDefinition("l", optionsName);
+		SuggestDefinition def = queryMgr.newSuggestDefinition("l", optionsName);
 		
 		String[] suggestions = queryMgr.suggest(def);
 		
@@ -109,7 +109,7 @@ public class SuggestTest {
 	@Test
 	public void testSuggestionWithLimit() {
 		QueryManager queryMgr = Common.client.newQueryManager();
-		SuggestDefinition def = queryMgr.newSuggestionDefinition("li", optionsName);
+		SuggestDefinition def = queryMgr.newSuggestDefinition("li", optionsName);
 		
 		def.setLimit(1);
 		String[] suggestions = queryMgr.suggest(def);
@@ -127,7 +127,7 @@ public class SuggestTest {
 	@Test
 	public void testSuggestionWithCursor() {
 		QueryManager queryMgr = Common.client.newQueryManager();
-		SuggestDefinition def = queryMgr.newSuggestionDefinition("la", optionsName);
+		SuggestDefinition def = queryMgr.newSuggestDefinition("la", optionsName);
 		
 		def.setCursorPosition(0);
 		String[] suggestions = queryMgr.suggest(def);

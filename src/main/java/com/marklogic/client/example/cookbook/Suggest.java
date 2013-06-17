@@ -99,7 +99,7 @@ public class Suggest {
 		// specify the partial criteria for the suggestions and the options
 		//     that define the source of the suggestion words
 		String partialCriteria = "tr";
-		SuggestDefinition def = queryMgr.newSuggestionDefinition(
+		SuggestDefinition def = queryMgr.newSuggestDefinition(
 				partialCriteria, OPTIONS_NAME);
 
 		// get the suggestions

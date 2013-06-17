@@ -148,11 +148,11 @@ public interface QueryManager {
     /**
      * Creates a suggestion definition based on a single string for completion,
      * using the default options node.
-     * @param suggestionString A string as input for completion suggestions.
+     * @param suggestString A string as input for completion suggestions.
      * @param optionsName	the name of the query options
      * @return	the suggest definition.
      */
-    public SuggestDefinition newSuggestionDefinition(String suggestionString, String optionsName);
+    public SuggestDefinition newSuggestDefinition(String suggestString, String optionsName);
   
     /**
      * Creates a query definition based on a structure that identifies
