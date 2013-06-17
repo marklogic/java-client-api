@@ -34,7 +34,7 @@ as empty-sequence()
     let $rangespec := admin:database-range-element-attribute-index("date",
         "http://nwalsh.com/ns/photolib","view","","date","",false() )
     let $c := admin:database-add-range-element-attribute-index($c, $dbid, $rangespec)
-    let $ := admin:database-set-triple-index($c, $dbid, true())
+    let $c := admin:database-set-triple-index($c, $dbid, true())
     let $rangespec := admin:database-range-element-index("double",
         "","double","",false() )
     let $c := admin:database-add-range-element-index($c, $dbid, $rangespec)
