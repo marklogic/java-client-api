@@ -53,7 +53,7 @@ public class Bootstrapper {
 	 * @param args	command-line arguments specifying the configuration and REST server
 	 */
 	public static void main(String[] args)
-	throws ClientProtocolException, IOException, XMLStreamException, FactoryConfigurationError {
+	throws ClientProtocolException, IOException, FactoryConfigurationError {
 		Properties properties = new Properties();
 		for (int i=0; i < args.length; i++) {
 			String name = args[i];
@@ -100,7 +100,7 @@ public class Bootstrapper {
 	 * @param properties	the specification of the configuration and REST server
 	 */
 	public void makeServer(Properties properties)
-	throws ClientProtocolException, IOException, XMLStreamException, FactoryConfigurationError {
+	throws ClientProtocolException, IOException, FactoryConfigurationError {
 		makeServer(new ConfigServer(properties), new RESTServer(properties));
 	}
 	/**
@@ -109,7 +109,7 @@ public class Bootstrapper {
 	 * @param restServer	the specification of the REST server
 	 */
 	public void makeServer(ConfigServer configServer, RESTServer restServer)
-	throws ClientProtocolException, IOException, XMLStreamException, FactoryConfigurationError {
+	throws ClientProtocolException, IOException, FactoryConfigurationError {
         
         DefaultHttpClient client = new DefaultHttpClient();
 
@@ -142,7 +142,12 @@ public class Bootstrapper {
 
         BasicHttpContext context = new BasicHttpContext();
 
-        StringEntity content = new StringEntity(restServer.toXMLString());
+        StringEntity content;
+		try {
+			content = new StringEntity(restServer.toXMLString());
+		} catch (XMLStreamException e) {
+			throw new IOException("Could not create payload to bootstrap server.");
+		}
         content.setContentType("application/xml");
 
         HttpPost poster = new HttpPost("http://"+host+":"+configPort+"/v1/rest-apis");
