@@ -27,16 +27,20 @@ import com.marklogic.client.admin.ResourceExtensionsManager.MethodParameters;
 import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.extensions.ResourceManager;
 import com.marklogic.client.impl.HandleAccessor;
-import com.marklogic.client.impl.HandleImplementation;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.GenericReadHandle;
+import com.marklogic.client.io.marker.GenericWriteHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
 import com.marklogic.client.util.RequestParameters;
 
+/**
+ * GraphManager is an extension that provides experimental graph CRUD functionality to the Java API.
+ * Please note that future graph support will NOT use this code. 
+ */
 public class GraphManager extends ResourceManager {
 	final static public String NAME = "graph";
 
@@ -49,32 +53,49 @@ public class GraphManager extends ResourceManager {
 		client.init(NAME, this);
 	}
 
-	// function that installs XQuery module
-	// use data/foaf1.nt
-
 	public <T extends TextReadHandle> T list(T response) {
 		return getServices().get(null, response);
 	}
 
+	/**
+	 * Deletes the deafult graph
+	 */
 	public void delete() {
 		RequestParameters params = new RequestParameters();
 		params.add("default", "true");
 		getServices().delete(params, null);
 	}
 
+	/**
+	 * Deletes a named graph.
+	 * @param graphUri The URI of the graph to delete.
+	 */
 	public void delete(String graphUri) {
 		RequestParameters params = new RequestParameters();
 		params.add("graph", graphUri);
 		getServices().delete(params, null);
 	}
 
-	public <T extends XMLReadHandle> T read(GraphFormat format, T response) {
+	/**
+	 * Reads the default RDF graph from the server
+	 * @param format The format in which to serialize the graph.
+	 * @param response a templated parameter to hold the response type.
+	 * @return THe serialized graph.
+	 */
+	public <T extends GenericReadHandle> T read(GraphFormat format, T response) {
 		RequestParameters params = new RequestParameters();
 		params.add("default", "true");
 		params.add("output-format", format.toString().toLowerCase());
 		return getServices().get(params, response);
 	}
 
+	/**
+	 * Reads a named graph from the server
+	 * @param graphUri URI of the graph to retrieve.
+	 * @param format The format in which to serialize the graph.
+	 * @param response a templated parameter to hold the response type.
+	 * @return The serialized graph.
+	 */
 	public <T extends XMLReadHandle> T read(String graphUri,
 			GraphFormat format, T response) {
 		RequestParameters params = new RequestParameters();
@@ -83,8 +104,14 @@ public class GraphManager extends ResourceManager {
 		return getServices().get(params, response);
 	}
 
-	public void insert(GraphFormat format, XMLWriteHandle graph) {
-		HandleImplementation baseHandle = HandleAccessor.checkHandle(graph, "graph");
+	/**
+	 * Appends a graph to the default graph on the REST server
+	 * @param format Format of the graph serialization
+	 * @param graph The graph to write.
+	 */
+	@SuppressWarnings("rawtypes")
+	public void insert(GraphFormat format, GenericWriteHandle graph) {
+		HandleAccessor.checkHandle(graph, "graph");
 		
 		if (format == GraphFormat.HTML || format == GraphFormat.XML) {
 			((BaseHandle) graph).setFormat(Format.XML);
@@ -99,8 +126,15 @@ public class GraphManager extends ResourceManager {
 		getServices().post(params, (AbstractWriteHandle) graph);
 	}
 
-	public void insert(String graphUri, GraphFormat format, XMLWriteHandle graph) {
-		HandleImplementation baseHandle = HandleAccessor.checkHandle(graph, "graph");
+	/**
+	 * Appends a named graph to the REST server, or creates it if that name doesn't yet exist on the graph store.
+	 * @param graphUri The graph URI
+	 * @param format the serialization format of the graph payload
+	 * @param graph The graph to write.
+	 */
+	@SuppressWarnings("rawtypes")
+	public void insert(String graphUri, GraphFormat format, GenericWriteHandle graph) {
+		HandleAccessor.checkHandle(graph, "graph");
 		
 		if (format == GraphFormat.HTML || format == GraphFormat.XML) {
 			((BaseHandle) graph).setFormat(Format.XML);
@@ -115,8 +149,14 @@ public class GraphManager extends ResourceManager {
 		getServices().post(params, (AbstractWriteHandle) graph);
 	}
 
-	public void replace(GraphFormat format, XMLWriteHandle graph) {
-		HandleImplementation baseHandle = HandleAccessor.checkHandle(graph, "graph");
+	/**
+	 * Replaces the default graph on the REST server/
+	 * @param format the serialization format of the graph payload
+	 * @param graph The graph to write.
+	 */
+	@SuppressWarnings("rawtypes")
+	public void replace(GraphFormat format, GenericWriteHandle graph) {
+		HandleAccessor.checkHandle(graph, "graph");
 		
 		if (format == GraphFormat.HTML || format == GraphFormat.XML) {
 			((BaseHandle) graph).setFormat(Format.XML);
@@ -131,9 +171,16 @@ public class GraphManager extends ResourceManager {
 		getServices().put(params, (AbstractWriteHandle) graph, null);
 	}
 
+	/**
+	 * Replaces a named graph on the REST server
+	 * @param graphUri The graph URI
+	 * @param format the serialization format of the graph payload
+	 * @param graph The graph to write.
+	 */
+	@SuppressWarnings("rawtypes")
 	public void replace(String graphUri, GraphFormat format,
-			XMLWriteHandle graph) {
-		HandleImplementation baseHandle = HandleAccessor.checkHandle(graph, "graph");
+			GenericWriteHandle graph) {
+		HandleAccessor.checkHandle(graph, "graph");
 		
 		if (format == GraphFormat.HTML || format == GraphFormat.XML) {
 			((BaseHandle) graph).setFormat(Format.XML);
@@ -148,6 +195,11 @@ public class GraphManager extends ResourceManager {
 		getServices().put(params, (AbstractWriteHandle) graph, null);
 	}
 
+	/**
+	 * Installs this extension on the REST server
+	 * @param client the database client connection.
+	 * @throws IOException Thrown in case of an IO problem.
+	 */
 	public static void install(DatabaseClient client) throws IOException {
 		ResourceExtensionsManager resourceMgr = client.newServerConfigManager()
 				.newResourceExtensionsManager();
@@ -185,6 +237,11 @@ public class GraphManager extends ResourceManager {
 				put);
 	}
 
+	/**
+	 * Uninstalls this extension from the REST server
+	 * @param client the database client connection.
+	 * @throws IOException Thrown in the case of some IO issue.
+	 */
 	public static void uninstall(DatabaseClient client) throws IOException {
 		ResourceExtensionsManager resourceMgr = client.newServerConfigManager()
 				.newResourceExtensionsManager();
