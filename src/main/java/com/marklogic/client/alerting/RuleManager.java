@@ -74,7 +74,7 @@ public interface RuleManager {
 	 *            Handle that contains the rule payload. Often will be an
 	 *            instance of RuleDefinition.
      */	
-	public void writeRule(String string, RuleWriteHandle ruleHandle);
+	public void writeRule(String ruleName, RuleWriteHandle ruleHandle);
 
 	/**
 	 * Removes a rule from the server.
