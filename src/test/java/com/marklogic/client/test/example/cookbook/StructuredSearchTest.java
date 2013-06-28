@@ -21,11 +21,16 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.example.cookbook.StructuredSearch;
 
 public class StructuredSearchTest {
 	@Test
-	public void testMain() {
+	public void testMain()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		boolean succeeded = false;
 		try {
 			StructuredSearch.main(new String[0]);

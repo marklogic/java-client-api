@@ -36,6 +36,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.alerting.RuleDefinition;
 import com.marklogic.client.alerting.RuleDefinition.RuleMetadata;
@@ -60,7 +64,8 @@ public class AlertingTest {
 	private static QueryManager queryManager;
 
 	@AfterClass
-	public static void teardown() {
+	public static void teardown()
+	throws ForbiddenUserException, FailedRequestException, ResourceNotFoundException {
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		docMgr.delete("/alert/first.xml");
 		docMgr.delete("/alert/second.xml");
@@ -71,7 +76,8 @@ public class AlertingTest {
 	}
 
 	@BeforeClass
-	public static void setup() throws FileNotFoundException {
+	public static void setup()
+	throws FileNotFoundException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		XMLUnit.setIgnoreWhitespace(true);
 		Common.connectAdmin();
 
@@ -100,8 +106,8 @@ public class AlertingTest {
 	}
 
 	@Test
-	public void testRuleDefinitions() throws ParserConfigurationException,
-			SAXException, IOException {
+	public void testRuleDefinitions()
+	throws ParserConfigurationException, SAXException, IOException, ForbiddenUserException, FailedRequestException, ResourceNotFoundException {
 		RuleDefinition definition = new RuleDefinition("javatestrule",
 				"Rule for testing java");
 
@@ -211,7 +217,8 @@ public class AlertingTest {
 	}
 
 	@Test
-	public void testXMLRuleDefinitions() throws SAXException, IOException {
+	public void testXMLRuleDefinitions()
+	throws SAXException, IOException, ForbiddenUserException, FailedRequestException, ResourceNotFoundException {
 		File ruleFile = new File("src/test/resources/rule1.xml");
 		FileHandle ruleHandle = new FileHandle(ruleFile);
 		ruleManager.writeRule("javatestrule", ruleHandle);
@@ -236,7 +243,8 @@ public class AlertingTest {
 	}
 	
 	@Test
-	public void testXMLRuleDefinitionsWithStructuredQuery() throws SAXException, IOException {
+	public void testXMLRuleDefinitionsWithStructuredQuery()
+	throws SAXException, IOException, ForbiddenUserException, FailedRequestException, ResourceNotFoundException {
 		RuleDefinition defWithImport = new RuleDefinition();
 		defWithImport.setName("javatestrule2");
 		File ruleFile = new File("src/test/resources/structured-query.xml");
@@ -261,7 +269,8 @@ public class AlertingTest {
 	}
 
 	@Test
-	public void testJSONRuleDefinitions() throws SAXException, IOException {
+	public void testJSONRuleDefinitions()
+	throws SAXException, IOException, ForbiddenUserException, FailedRequestException, ResourceNotFoundException {
 		File ruleFile = new File("src/test/resources/rule1.json");
 		FileHandle ruleHandle = new FileHandle(ruleFile);
 		ruleHandle.setFormat(Format.JSON);
@@ -293,7 +302,8 @@ public class AlertingTest {
 
 	}
 
-	private static void setupMatchRules() {
+	private static void setupMatchRules()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		RuleDefinition definition = new RuleDefinition("favorites",
 				"Rule for testing favorited:true");
 		String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
@@ -318,7 +328,8 @@ public class AlertingTest {
 
 	}
 
-	private static void teardownMatchRules() {
+	private static void teardownMatchRules()
+	throws ForbiddenUserException, FailedRequestException {
 		ruleManager.delete("notfavorited");
 		ruleManager.delete("favorites");
 	}

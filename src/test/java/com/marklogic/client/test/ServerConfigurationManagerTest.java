@@ -24,6 +24,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.ServerConfigurationManager.Policy;
 
@@ -38,7 +42,8 @@ public class ServerConfigurationManagerTest {
 	}
 
 	@Test
-	public void testSetGet() throws IOException {
+	public void testSetGet()
+	throws IOException, FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException {
 		ServerConfigurationManager serverConfig = Common.client.newServerConfigManager();
 
 		assertNull("Initial query option validation not null", serverConfig.getQueryOptionValidation());

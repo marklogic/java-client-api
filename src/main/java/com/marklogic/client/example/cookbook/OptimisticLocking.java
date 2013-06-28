@@ -24,6 +24,10 @@ import org.w3c.dom.Document;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.ServerConfigurationManager.Policy;
 import com.marklogic.client.document.DocumentDescriptor;
@@ -37,12 +41,14 @@ import com.marklogic.client.io.InputStreamHandle;
  * updates or deletes a document only when the document hasn't changed.
  */
 public class OptimisticLocking {
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args)
+	throws IOException, FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException {
 		run(Util.loadProperties());
 	}
 
 	// install the transform and then write a transformed document 
-	public static void run(ExampleProperties props) throws IOException {
+	public static void run(ExampleProperties props)
+	throws IOException, FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException {
 		System.out.println("example: "+OptimisticLocking.class.getName());
 
 		requireOptimisticLocking(props.host, props.port,
@@ -55,7 +61,8 @@ public class OptimisticLocking {
 				props.adminUser, props.adminPassword, props.authType);
 	}
 
-	public static void requireOptimisticLocking(String host, int port, String user, String password, Authentication authType) {
+	public static void requireOptimisticLocking(String host, int port, String user, String password, Authentication authType)
+	throws FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException {
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
@@ -78,7 +85,8 @@ public class OptimisticLocking {
 		client.release();
 	}
 
-	public static void modifyDatabase(String host, int port, String user, String password, Authentication authType) throws IOException {
+	public static void modifyDatabase(String host, int port, String user, String password, Authentication authType)
+	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		String filename = "flipper.xml";
 
 		// create the client
@@ -137,7 +145,8 @@ public class OptimisticLocking {
 
 	// clean up by resetting the server configuration
 	public static void tearDownExample(
-			String host, int port, String user, String password, Authentication authType) {
+			String host, int port, String user, String password, Authentication authType)
+	throws FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException {
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		ServerConfigurationManager configMgr = client.newServerConfigManager();

@@ -33,6 +33,10 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.FileHandle;
@@ -66,7 +70,8 @@ public class RawQueryDefinitionTest {
 	}
 
 	@BeforeClass
-	public static void setupTestOptions() throws FileNotFoundException {
+	public static void setupTestOptions()
+	throws FileNotFoundException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		Common.connectAdmin();
 
 		QueryOptionsManager queryOptionsManager = Common.client.newServerConfigManager().newQueryOptionsManager();

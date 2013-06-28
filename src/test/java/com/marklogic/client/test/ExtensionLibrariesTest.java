@@ -7,7 +7,10 @@ import java.io.File;
 
 import org.junit.Test;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.ExtensionLibrariesManager;
 import com.marklogic.client.admin.ExtensionLibraryDescriptor;
 import com.marklogic.client.io.FileHandle;
@@ -17,7 +20,8 @@ import com.marklogic.client.io.StringHandle;
 public class ExtensionLibrariesTest {
 
 	@Test
-	public void testXQueryModuleCRUD() {
+	public void testXQueryModuleCRUD()
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 
 		Common.connectAdmin();
 

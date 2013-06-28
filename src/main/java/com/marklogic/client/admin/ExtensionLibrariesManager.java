@@ -15,6 +15,10 @@
  */
 package com.marklogic.client.admin;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 
@@ -24,14 +28,16 @@ public interface ExtensionLibrariesManager {
 	 * Lists all of the library files that are installed on the server.
 	 * @return An array of ExtensionLibraryDescriptor objects.
 	 */
-	public ExtensionLibraryDescriptor[] list();
+	public ExtensionLibraryDescriptor[] list()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	
 	/**
 	 * Lists all of the library files in one directory (infinite depth) on the server.
 	 * @param directory The directory to list.
 	 * @return An array of ExtensionLibraryDescriptor objects.
 	 */
-	public ExtensionLibraryDescriptor[] list(String directory);
+	public ExtensionLibraryDescriptor[] list(String directory)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	/**
 	 * Reads the contents of a library asset into a handle.
@@ -39,7 +45,8 @@ public interface ExtensionLibrariesManager {
 	 * @param readHandle A handle for reading the contents of the file.
 	 * @return The handle.
 	 */
-	public <T extends AbstractReadHandle> T read(String libraryPath, T readHandle);
+	public <T extends AbstractReadHandle> T read(String libraryPath, T readHandle)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	/**
 	 * Reads the contents of a library asset into a handle.
@@ -48,32 +55,36 @@ public interface ExtensionLibrariesManager {
 	 * @return The handle.
 	 */
 	public <T extends AbstractReadHandle> T read(
-			ExtensionLibraryDescriptor libraryDescriptor, T readHandle);
+			ExtensionLibraryDescriptor libraryDescriptor, T readHandle)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	/**
 	 * Writes the contents of a handle to the provided path on the REST server.
 	 * @param libraryPath The path at which to install the library.
 	 * @param contentHandle The handle containing the contents of the library.
 	 */
-	public void write(String libraryPath, AbstractWriteHandle contentHandle);
+	public void write(String libraryPath, AbstractWriteHandle contentHandle)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
 	/**
 	 * Writes the contents of a handle to the provided path on the REST server.
 	 * @param libraryDescriptor The descriptory which locates where to install the library.
 	 * @param contentHandle The handle containing the contents of the library.
 	 */
-	public void write(ExtensionLibraryDescriptor libraryDescriptor,
-			AbstractWriteHandle contentHandle);
+	public void write(ExtensionLibraryDescriptor libraryDescriptor, AbstractWriteHandle contentHandle)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
 	/**
 	 * Removes a library asset from the server.
 	 * @param libraryPath The path to the library to delete.
 	 */
-	public void delete(String libraryPath);
+	public void delete(String libraryPath)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	/**
 	 * Removes a library asset from the server.
 	 * @param modulesDescriptor A descriptor locating the library to delete.
 	 */
-	public void delete(ExtensionLibraryDescriptor modulesDescriptor);
+	public void delete(ExtensionLibraryDescriptor modulesDescriptor)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 }

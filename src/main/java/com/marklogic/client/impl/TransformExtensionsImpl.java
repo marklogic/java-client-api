@@ -22,7 +22,11 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.util.RequestParameters;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.io.marker.AbstractReadHandle;
@@ -49,7 +53,8 @@ class TransformExtensionsImpl
 	}
 
 	@Override
-	public <T extends StructureReadHandle> T listTransforms(T listHandle) {
+	public <T extends StructureReadHandle> T listTransforms(T listHandle)
+	throws ForbiddenUserException, FailedRequestException {
 		if (listHandle == null)
 			throw new IllegalArgumentException("Reading transform list with null handle");
 
@@ -71,16 +76,18 @@ class TransformExtensionsImpl
 	}
 
 	@Override
-	public <T extends TextReadHandle> T readXQueryTransform(String transformName, T sourceHandle) {
+	public <T extends TextReadHandle> T readXQueryTransform(String transformName, T sourceHandle)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		return readTransform(transformName, "application/xquery", sourceHandle);
 	}
 	@Override
-	public <T extends XMLReadHandle> T readXSLTransform(String transformName,T sourceHandle) {
+	public <T extends XMLReadHandle> T readXSLTransform(String transformName,T sourceHandle)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		return readTransform(transformName, "application/xslt+xml", sourceHandle);
 	}
 	private <T extends AbstractReadHandle> T readTransform(
-		String transformName, String sourceMimetype, T sourceHandle
-	) {
+		String transformName, String sourceMimetype, T sourceHandle)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (transformName == null)
 			throw new IllegalArgumentException("Reading transform with null name");
 
@@ -99,40 +106,42 @@ class TransformExtensionsImpl
 	}
 
 	@Override
-	public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle) {
+	public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		writeXQueryTransform(transformName, sourceHandle, null, null);
 	}
 	@Override
 	public void writeXQueryTransform(
-		String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata
-	) {
+		String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		writeXQueryTransform(transformName, sourceHandle, metadata, null);
 	}
 	@Override
 	public void writeXQueryTransform(
-		String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String, String> paramTypes
-	) {
+		String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String, String> paramTypes)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		writeTransform(transformName, "application/xquery", sourceHandle, metadata, paramTypes);
 	}
 	@Override
-	public void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle) {
+	public void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		writeXSLTransform(transformName, sourceHandle, null, null);
 	}
 	@Override
 	public void writeXSLTransform(
-		String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata
-	) {
+		String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		writeXSLTransform(transformName, sourceHandle, metadata, null);
 	}
 	@Override
 	public void writeXSLTransform(
-		String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String, String> paramTypes
-	) {
+		String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String, String> paramTypes)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		writeTransform(transformName, "application/xslt+xml", sourceHandle, metadata, paramTypes);
 	}
 	private void writeTransform(
-		String transformName, String sourceMimetype, AbstractWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String, String> paramTypes
-	) {
+		String transformName, String sourceMimetype, AbstractWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String, String> paramTypes)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		if (transformName == null)
 			throw new IllegalArgumentException("Writing transform with null name");
 		if (sourceHandle == null)
@@ -171,7 +180,8 @@ class TransformExtensionsImpl
 	}
 
 	@Override
-	public void deleteTransform(String transformName) {
+	public void deleteTransform(String transformName)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (transformName == null)
 			throw new IllegalArgumentException("Deleting transform with null name");
 
@@ -182,7 +192,8 @@ class TransformExtensionsImpl
 	}
 
 	@Override
-	public void refreshExtensions() {
+	public void refreshExtensions()
+	throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		RequestParameters params = new RequestParameters();
 		params.add("cache", "refresh");
 

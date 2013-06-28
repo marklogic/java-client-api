@@ -24,6 +24,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.MethodType;
 import com.marklogic.client.admin.QueryOptionsManager;
@@ -47,13 +51,14 @@ public class SearchCollectorExample {
 
 	static final private String[] filenames = {"curbappeal.xml", "flipper.xml", "justintime.xml"};
 
-	public static void main(String[] args) throws IOException, ParserConfigurationException {
+	public static void main(String[] args)
+	throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		run(Util.loadProperties());
 	}
 
 	// install and then use the resource extension
 	public static void run(ExampleProperties props)
-	throws IOException, ParserConfigurationException {
+	throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		System.out.println("example: "+SearchCollectorExample.class.getName());
 
 		configureExample(props.host, props.port,
@@ -68,7 +73,7 @@ public class SearchCollectorExample {
 
 	// set up the query options for the collecting search
 	public static void configureExample(String host, int port, String user, String password, Authentication authType)
-	throws IOException {
+	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
@@ -134,7 +139,8 @@ public class SearchCollectorExample {
 	}
 
 	// set up the query options for the collecting search
-	public static void configureQueryOptions(DatabaseClient client) {
+	public static void configureQueryOptions(DatabaseClient client)
+	throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
 		// create a manager for writing query options
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
@@ -171,7 +177,8 @@ public class SearchCollectorExample {
 	}
 
 	// set up by writing the document content and options used in the example query
-	public static void setUpExample(DatabaseClient client) throws IOException {
+	public static void setUpExample(DatabaseClient client)
+	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
 		InputStreamHandle contentHandle = new InputStreamHandle();
@@ -223,7 +230,8 @@ public class SearchCollectorExample {
 
 	// clean up by deleting the example resource extension
 	public static void tearDownExample(
-			String host, int port, String user, String password, Authentication authType) {
+			String host, int port, String user, String password, Authentication authType)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();

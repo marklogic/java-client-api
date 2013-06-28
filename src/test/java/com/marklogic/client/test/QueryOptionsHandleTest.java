@@ -48,6 +48,10 @@ import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.config.QueryOptions;
@@ -109,7 +113,8 @@ public class QueryOptionsHandleTest {
 	}
 
 	@BeforeClass
-	public static void setupTestOptions() throws FileNotFoundException {
+	public static void setupTestOptions()
+	throws FileNotFoundException, FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
 		Common.connectAdmin();
 		serverConfig = Common.client.newServerConfigManager();
 
@@ -155,7 +160,8 @@ public class QueryOptionsHandleTest {
     }
 	
 	@AfterClass
-	public static void resetOptionsValidation() {
+	public static void resetOptionsValidation()
+	throws FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException {
 		serverConfig.setQueryOptionValidation(initialConfig);
 		serverConfig.writeConfiguration();
 	}
@@ -192,7 +198,8 @@ public class QueryOptionsHandleTest {
 	
 	
 	@Test
-	public void parseAndBuildAdditionalQuery() throws JAXBException {
+	public void parseAndBuildAdditionalQuery()
+	throws JAXBException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		String optionsString = "<options xmlns=\"http://marklogic.com/appservices/search\"><additional-query><directory-query xmlns=\"http://marklogic.com/cts\"><uri>/oscars/</uri></directory-query></additional-query></options>";
 		mgr.writeOptions("tmp", new StringHandle(optionsString));
 		QueryOptionsHandle options = mgr.readOptions("tmp",
@@ -408,7 +415,8 @@ public class QueryOptionsHandleTest {
 	}
 
     @Test
-    public void bug17240() {
+    public void bug17240()
+    throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
         DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8012, "rest-admin", "x", DatabaseClientFactory.Authentication.DIGEST);
         // create a manager for writing query options
 

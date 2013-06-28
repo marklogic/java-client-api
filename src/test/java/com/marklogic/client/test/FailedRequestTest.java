@@ -27,6 +27,8 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.config.QueryOptions.Facets;
@@ -39,7 +41,8 @@ public class FailedRequestTest {
 
 	@Before
 	@After
-	public void setXMLErrors() {
+	public void setXMLErrors()
+	throws FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException {
 
 		Common.connectAdmin();
 		ServerConfigurationManager serverConfig = Common.client
@@ -54,7 +57,8 @@ public class FailedRequestTest {
 	}
 
 	@Test
-	public void testFailedRequest() {
+	public void testFailedRequest()
+	throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
 		Common.connect();
 		QueryOptionsManager mgr = Common.client.newServerConfigManager()
 				.newQueryOptionsManager();
@@ -97,7 +101,8 @@ public class FailedRequestTest {
 	}
 
 	@Test
-	public void testJSONFailedRequest() {
+	public void testJSONFailedRequest()
+	throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
 		Common.connectAdmin();
 		ServerConfigurationManager serverConfig = Common.client
 				.newServerConfigManager();
@@ -116,11 +121,11 @@ public class FailedRequestTest {
 		}
 
 		testFailedRequest();
-
 	}
 
 	@Test
-	public void testErrorOnNonREST() {
+	public void testErrorOnNonREST()
+	throws ForbiddenUserException {
 		DatabaseClient badClient = DatabaseClientFactory.newClient(Common.HOST,
 				8001, Common.USERNAME, Common.PASSWORD, Authentication.DIGEST);
 		ServerConfigurationManager serverConfig = badClient

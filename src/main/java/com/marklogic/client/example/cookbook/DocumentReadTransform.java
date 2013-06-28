@@ -22,6 +22,10 @@ import java.io.InputStream;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.document.ServerTransform;
@@ -38,12 +42,14 @@ import com.marklogic.client.io.StringHandle;
 public class DocumentReadTransform {
 	static final private String TRANSFORM_NAME = "xml2html";
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args)
+	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		run(Util.loadProperties());
 	}
 
 	// install the transform and then read a transformed document 
-	public static void run(ExampleProperties props) throws IOException {
+	public static void run(ExampleProperties props)
+	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		System.out.println("example: "+DocumentReadTransform.class.getName());
 
 		installTransform(props.host, props.port,
@@ -56,7 +62,8 @@ public class DocumentReadTransform {
 				props.adminUser, props.adminPassword, props.authType);
 	}
 
-	public static void installTransform(String host, int port, String user, String password, Authentication authType) throws IOException {
+	public static void installTransform(String host, int port, String user, String password, Authentication authType)
+	throws IOException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(
 				host, port, user, password, authType);
@@ -90,7 +97,8 @@ public class DocumentReadTransform {
 		client.release();
 	}
 
-	public static void readDocument(String host, int port, String user, String password, Authentication authType) throws IOException {
+	public static void readDocument(String host, int port, String user, String password, Authentication authType)
+	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		String filename = "flipper.xml";
 
 		// create the client
@@ -125,7 +133,8 @@ public class DocumentReadTransform {
 	}
 
 	// set up by writing document content for the example to read
-	public static void setUpExample(DatabaseClient client, String docId, String filename) throws IOException {
+	public static void setUpExample(DatabaseClient client, String docId, String filename)
+	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		InputStream docStream = Util.openStream("data"+File.separator+filename);
 		if (docStream == null)
 			throw new IOException("Could not read document example");
@@ -140,7 +149,8 @@ public class DocumentReadTransform {
 
 	// clean up by deleting the read document and the example transform
 	public static void tearDownExample(
-			String host, int port, String user, String password, Authentication authType) {
+			String host, int port, String user, String password, Authentication authType)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		DatabaseClient client = DatabaseClientFactory.newClient(
 				host, port, user, password, authType);
 

@@ -24,6 +24,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.query.QueryManager;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -130,7 +134,8 @@ public class SearchFacetTest {
     }
 
     @Test
-    public void testFacetSearch() throws IOException, ParserConfigurationException, SAXException {
+    public void testFacetSearch()
+    throws IOException, ParserConfigurationException, SAXException, FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         factory.setValidating(false);

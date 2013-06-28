@@ -34,6 +34,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.ValuesHandle;
@@ -65,7 +69,8 @@ public class ValuesHandleTest {
     }
 
     @Test
-    public void testAggregates() throws IOException, ParserConfigurationException, SAXException {
+    public void testAggregates()
+    throws IOException, ParserConfigurationException, SAXException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
     	String optionsName = makeValuesOptions();
 
     	QueryManager queryMgr = Common.client.newQueryManager();
@@ -95,7 +100,8 @@ public class ValuesHandleTest {
     }
 
     @Test
-    public void testCriteria() {
+    public void testCriteria()
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
     	String optionsName = makeValuesOptions();
 
     	QueryManager queryMgr = Common.client.newQueryManager();
@@ -175,7 +181,8 @@ public class ValuesHandleTest {
         assertEquals("Size should have this uri", map.get("size"), "/v1/values/size?options=photos");
     }
 
-    static public String makeValuesOptions() {
+    static public String makeValuesOptions()
+    throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
     	String options = 
         	"<?xml version='1.0'?>"+
         	"<options xmlns=\"http://marklogic.com/appservices/search\">"+

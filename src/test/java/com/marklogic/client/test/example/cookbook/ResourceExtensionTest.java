@@ -21,11 +21,15 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.example.cookbook.ResourceExtension;
 
 public class ResourceExtensionTest {
 	@Test
-	public void testMain() {
+	public void testMain()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		boolean succeeded = false;
 		try {
 			ResourceExtension.main(new String[0]);

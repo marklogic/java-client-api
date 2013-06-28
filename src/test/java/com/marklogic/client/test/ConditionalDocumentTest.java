@@ -27,6 +27,9 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.io.Format;
@@ -41,7 +44,8 @@ public class ConditionalDocumentTest {
 	static ServerConfigurationManager serverConfig;
 
 	@BeforeClass
-	public static void beforeClass() {
+	public static void beforeClass()
+	throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
 		Common.connectAdmin();
 		serverConfig = Common.client.newServerConfigManager();
 		serverConfig.readConfiguration();
@@ -53,7 +57,8 @@ public class ConditionalDocumentTest {
 		Common.connect();
 	}
 	@AfterClass
-	public static void afterClass() {
+	public static void afterClass()
+	throws FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException {
 		Common.release();
 		serverConfig.setContentVersionRequests(Policy.NONE);
 		serverConfig.writeConfiguration();
@@ -61,7 +66,8 @@ public class ConditionalDocumentTest {
 	}
 
 	@Test
-	public void testConditional() throws SAXException, IOException {
+	public void testConditional() throws SAXException, IOException,
+	ForbiddenUserException, FailedRequestException, ResourceNotFoundException {
 		String docId = "/test/conditional1.xml";
 		long badVersion = 11111;
 

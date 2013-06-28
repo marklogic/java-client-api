@@ -19,6 +19,10 @@ import java.io.IOException;
 
 import javax.xml.bind.JAXBException;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 
 /**
@@ -27,7 +31,8 @@ import com.marklogic.client.example.cookbook.Util.ExampleProperties;
  * before running any example.
  */
 public class AllCookbookExamples {
-	public static void main(String[] args) throws IOException, JAXBException {
+	public static void main(String[] args)
+	throws IOException, JAXBException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		ExampleProperties props = Util.loadProperties();
 
 		// execute the examples

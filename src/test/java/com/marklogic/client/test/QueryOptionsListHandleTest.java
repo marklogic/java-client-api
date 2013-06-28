@@ -33,6 +33,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.QueryOptionsListHandle;
 import com.marklogic.client.io.StringHandle;
@@ -78,7 +80,8 @@ public class QueryOptionsListHandleTest {
     }
     
     @Test
-    public void serverOptionsListRaw() throws IOException, ParserConfigurationException, SAXException {
+    public void serverOptionsListRaw()
+    throws IOException, ParserConfigurationException, SAXException, ForbiddenUserException, FailedRequestException {
         QueryManager queryMgr = Common.client.newQueryManager();
         QueryOptionsManager queryOptionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
 

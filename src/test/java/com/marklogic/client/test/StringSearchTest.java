@@ -32,6 +32,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.config.QueryOptions.QueryRange;
 import com.marklogic.client.admin.config.QueryOptions.QueryTransformResults;
@@ -64,7 +68,8 @@ public class StringSearchTest {
     }
 
     @Test
-    public void testStringSearch() throws IOException, ParserConfigurationException, SAXException {
+    public void testStringSearch()
+    throws IOException, ParserConfigurationException, SAXException, FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
         String optionsName = writeOptions();
 
         QueryManager queryMgr = Common.client.newQueryManager();
@@ -120,7 +125,8 @@ public class StringSearchTest {
     }
 
     @Test
-    public void testStringSearch4() throws IOException {
+    public void testStringSearch4()
+    throws IOException, FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
         String optionsName = writeOptions();
 
         QueryManager queryMgr = Common.client.newQueryManager();
@@ -167,7 +173,8 @@ public class StringSearchTest {
     }
 
     @Test
-    public void testJSON() {
+    public void testJSON()
+    throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
         String optionsName = writeOptions();
 
         QueryManager queryMgr = Common.client.newQueryManager();
@@ -186,7 +193,8 @@ public class StringSearchTest {
         assertEquals("{", resultsHandle.get().substring(0, 1)); // It's JSON, right?
     }
 
-    private String writeOptions() {
+    private String writeOptions()
+    throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
         String optionsName = "facets";
 
         // Get back facets...

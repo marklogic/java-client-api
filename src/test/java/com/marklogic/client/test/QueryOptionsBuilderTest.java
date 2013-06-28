@@ -40,6 +40,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.config.QueryOptions;
@@ -108,7 +112,8 @@ public class QueryOptionsBuilderTest {
 	}
 
 	@Test
-	public void testRootOptions() throws XpathException, SAXException, IOException {
+	public void testRootOptions()
+	throws XpathException, SAXException, IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		testConstraints();
 		testValuesAndTuples();
 		testOperator();
@@ -124,7 +129,8 @@ public class QueryOptionsBuilderTest {
 	}
 
 
-	private void testConfiguration() {
+	private void testConfiguration()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 
 		QueryOptionsHandle options = new QueryOptionsHandle();
 		options.withConfiguration(
@@ -255,7 +261,8 @@ public class QueryOptionsBuilderTest {
 				.get(0).equals("unchecked"));
 	}
 
-	private void testAdditionalQuery() {
+	private void testAdditionalQuery()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		QueryOptionsHandle options = new QueryOptionsHandle().withAdditionalQuery(builder
 				.additionalQuery("<cts:query xmlns:cts=\"http://marklogic.com/cts\" />"));
 
@@ -275,7 +282,8 @@ public class QueryOptionsBuilderTest {
 		aq.setTextContent("some arbitrary query string");
 	};
 
-	private void testAnnotations() {
+	private void testAnnotations()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		QueryOptionsHandle options = new QueryOptionsHandle().annotate("<a:note xmlns:a=\"http://marklogic.com/note\">note</a:note>");
 
 		Element annotation = options.getAnnotations().get(0).get(0);
@@ -300,7 +308,8 @@ public class QueryOptionsBuilderTest {
 	 * This method tests all types of constraints, including the list of
 	 * constraint definition types.
 	 */
-	private void testConstraints() throws XpathException, SAXException, IOException {
+	private void testConstraints()
+	throws XpathException, SAXException, IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		testCollectionConstraint();
 		testValueConstraint();
 		testRangeConstraint();
@@ -311,7 +320,8 @@ public class QueryOptionsBuilderTest {
 		testGeospatialConstraint();
 	};
 
-	private void testCollectionConstraint() {
+	private void testCollectionConstraint()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		QueryOptionsHandle options = new QueryOptionsHandle();
         options.withConstraints(builder.constraint(
 						"collectionConstraint",
@@ -336,7 +346,8 @@ public class QueryOptionsBuilderTest {
 	 * This function writes options to the REST server instance in order to
 	 * check validation and round-tripping.
 	 */
-	private QueryOptionsHandle exercise(QueryOptionsHandle options) {
+	private QueryOptionsHandle exercise(QueryOptionsHandle options)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		Common.connectAdmin();
 		ServerConfigurationManager serverConfig = Common.client
 				.newServerConfigManager();
@@ -353,7 +364,8 @@ public class QueryOptionsBuilderTest {
 
 	}
 
-	private void testValueConstraint() {
+	private void testValueConstraint()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		QueryOptionsHandle options = new QueryOptionsHandle();
         options.withConstraints(
 						builder.constraint("value",
@@ -375,7 +387,8 @@ public class QueryOptionsBuilderTest {
 		
 	};
 
-	private void testRangeConstraint() throws XpathException, SAXException, IOException {
+	private void testRangeConstraint()
+	throws XpathException, SAXException, IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		QueryOptionsHandle options = new QueryOptionsHandle();
 			options.withConstraints(
 					builder.constraint(
@@ -471,7 +484,8 @@ public class QueryOptionsBuilderTest {
 
 	};
 
-	private void testWordConstraint() throws SAXException, IOException, XpathException {
+	private void testWordConstraint()
+	throws SAXException, IOException, XpathException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		QueryOptionsHandle options = new QueryOptionsHandle();
         options.withConstraints(builder.constraint("word", 
 								builder.word(
@@ -492,7 +506,8 @@ public class QueryOptionsBuilderTest {
         assertTrue("Serialized WordConstraint should contain this string", "summary".equals(name));
 	};
 
-	private void testElementQueryConstraint() {
+	private void testElementQueryConstraint()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 
 		QueryOptionsHandle options = new QueryOptionsHandle();
 				options.withConstraints(builder.constraint("eq", 
@@ -505,7 +520,8 @@ public class QueryOptionsBuilderTest {
 		assertEquals("date", qw.getName());
 	};
 
-	private void testPropertiesConstraint() {
+	private void testPropertiesConstraint()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		QueryOptionsHandle options = new QueryOptionsHandle().withConstraints(builder.constraint("props", builder.properties()));
 
 		options = exercise(options);
@@ -515,7 +531,8 @@ public class QueryOptionsBuilderTest {
 		assertTrue(props != null);
 	};
 
-	private void testCustomConstraint() {
+	private void testCustomConstraint()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		QueryOptionsHandle options =new QueryOptionsHandle();
 				options.withConstraints(builder.constraint("queryCustom", builder.customFacet(
 										builder.extension("parse", "http://my/namespace", "/my/parse.xqy"),
@@ -544,7 +561,8 @@ public class QueryOptionsBuilderTest {
 
 	};
 
-	private void testGeospatialConstraint() {
+	private void testGeospatialConstraint()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		
 		QueryOptionsHandle options = new QueryOptionsHandle();
 			options.withConstraints(
@@ -596,7 +614,8 @@ public class QueryOptionsBuilderTest {
 	 * comprehensive coverage of range, value, etc. This method is comprehensive
 	 * for values-specific methods
 	 */
-	private void testValuesAndTuples() {
+	private void testValuesAndTuples()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		QueryOptionsHandle options =
 				new QueryOptionsHandle().withValues(
 						builder.values("uri", 
@@ -696,7 +715,8 @@ public class QueryOptionsBuilderTest {
 
 	};
 
-	private void testGrammar() {
+	private void testGrammar()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		QueryOptionsHandle options = 
 				new QueryOptionsHandle()
 				.withGrammar(builder.grammar(
@@ -804,7 +824,8 @@ public class QueryOptionsBuilderTest {
 
 	};
 
-	private void testSortOrder() {
+	private void testSortOrder()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		QueryOptionsHandle options = 
 				new QueryOptionsHandle()
 					.withSortOrders(
@@ -833,7 +854,8 @@ public class QueryOptionsBuilderTest {
 	};
 
 		
-	private void testTerm() {
+	private void testTerm()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 
 		QueryOptionsHandle options = 
 				new QueryOptionsHandle()
@@ -877,7 +899,8 @@ public class QueryOptionsBuilderTest {
 
 	};
 
-	private void testTransformResults() {
+	private void testTransformResults()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 
 		QueryOptionsHandle options = new QueryOptionsHandle()
 				.withConfiguration(

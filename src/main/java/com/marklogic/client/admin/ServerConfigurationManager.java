@@ -15,6 +15,10 @@
  */
 package com.marklogic.client.admin;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.io.Format;
 
 /**
@@ -43,11 +47,13 @@ public interface ServerConfigurationManager {
 	/**
 	 * Reads the values of the properties from the server into this object.
 	 */
-	public void readConfiguration();
+	public void readConfiguration()
+	throws FailedRequestException, ForbiddenUserException;
 	/**
 	 * Writes the values of the properties of this object to the server.
 	 */
-	public void writeConfiguration();
+	public void writeConfiguration()
+	throws FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException;
 
 	/**
 	 * Returns whether the server validates query options before storing them.

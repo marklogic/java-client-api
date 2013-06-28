@@ -31,6 +31,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.SearchHandle;
@@ -44,7 +47,8 @@ public class DeleteSearchTest {
 			.getLogger(QueryOptionsHandleTest.class);
 	
     @BeforeClass
-    public static void beforeClass() throws ParserConfigurationException {
+    public static void beforeClass()
+    throws ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
         Common.connectAdmin();
 
         String docId = "/delete/test/testWrite1.xml";

@@ -22,6 +22,9 @@ import java.io.InputStream;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.MethodType;
 import com.marklogic.client.admin.ResourceExtensionsManager;
@@ -40,12 +43,14 @@ import com.marklogic.client.io.StringHandle;
  * or delete requests using the BatchManager example of a Resource Extension.
  */
 public class BatchManagerExample {
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args)
+	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		run(Util.loadProperties());
 	}
 
 	// install and then use the resource extension
-	public static void run(ExampleProperties props) throws IOException {
+	public static void run(ExampleProperties props)
+	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		System.out.println("example: "+BatchManagerExample.class.getName());
 
 		installResourceExtension(props.host, props.port,
@@ -94,7 +99,8 @@ public class BatchManagerExample {
 	}
 
 	// use the resource manager
-	public static void useResource(String host, int port, String user, String password, Authentication authType) {
+	public static void useResource(String host, int port, String user, String password, Authentication authType)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
@@ -159,7 +165,8 @@ public class BatchManagerExample {
 	}
 
 	// create some documents to work with
-	public static void setUpExample(DatabaseClient client) {
+	public static void setUpExample(DatabaseClient client)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
 		StringHandle handle = new StringHandle();
@@ -173,7 +180,8 @@ public class BatchManagerExample {
 
 	// clean up by deleting the example resource extension
 	public static void tearDownExample(
-			String host, int port, String user, String password, Authentication authType) {
+			String host, int port, String user, String password, Authentication authType)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();

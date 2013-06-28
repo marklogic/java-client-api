@@ -35,6 +35,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.xml.sax.SAXException;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.DOMHandle;
@@ -61,12 +65,13 @@ public class QueryOptionsManagerTest {
 
 	
 	@Test
-	public void testQueryOptionsManager() throws JAXBException {
+	public void testQueryOptionsManager()
+	throws JAXBException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		QueryOptionsManager mgr =
 			Common.client.newServerConfigManager().newQueryOptionsManager();
 		assertNotNull("Client could not create query options manager", mgr);
 
-														mgr.writeOptions("testempty", new QueryOptionsHandle());
+		mgr.writeOptions("testempty", new QueryOptionsHandle());
         
         String optionsResult = mgr.readOptions("testempty", new StringHandle()).get();
         logger.debug("Empty options from server {}", optionsResult);
@@ -80,7 +85,8 @@ public class QueryOptionsManagerTest {
 	
 
 	@Test
-	public void testXMLDocsAsSearchOptions() throws ParserConfigurationException, SAXException, IOException {
+	public void testXMLDocsAsSearchOptions()
+	throws ParserConfigurationException, SAXException, IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		String optionsName = "invalid";
 		
 		Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
@@ -111,7 +117,8 @@ public class QueryOptionsManagerTest {
 
 
 	@Test
-	public void testJSONOptions() throws JAXBException {
+	public void testJSONOptions()
+	throws JAXBException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		QueryOptionsManager mgr =
 			Common.client.newServerConfigManager().newQueryOptionsManager();
 		assertNotNull("Client could not create query options manager", mgr);

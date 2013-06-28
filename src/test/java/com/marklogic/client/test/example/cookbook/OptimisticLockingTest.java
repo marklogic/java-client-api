@@ -21,11 +21,16 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.example.cookbook.OptimisticLocking;
 
 public class OptimisticLockingTest {
 	@Test
-	public void testMain() {
+	public void testMain()
+	throws FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException {
 		boolean succeeded = false;
 		try {
 			OptimisticLocking.main(new String[0]);

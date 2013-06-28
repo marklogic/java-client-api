@@ -17,6 +17,10 @@ package com.marklogic.client.admin;
 
 import java.util.Map;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
@@ -38,7 +42,8 @@ public interface TransformExtensionsManager {
 	 * @param listHandle	a handle on a JSON or XML representation of the list
 	 * @return	the list handle
 	 */
-	public <T extends StructureReadHandle> T listTransforms(T listHandle);
+	public <T extends StructureReadHandle> T listTransforms(T listHandle)
+	throws ForbiddenUserException, FailedRequestException;
 
 	/**
      * Reads the source for a transform implemented in XQuery.
@@ -46,28 +51,32 @@ public interface TransformExtensionsManager {
      * @param sourceHandle	a handle for reading the text of the XQuery implementation.
      * @return	the XQuery source code
 	 */
-	public <T extends TextReadHandle> T readXQueryTransform(String transformName, T sourceHandle);
+	public <T extends TextReadHandle> T readXQueryTransform(String transformName, T sourceHandle)
+    throws FailedRequestException, ResourceNotFoundException, ForbiddenUserException;
 	/**
      * Reads the source for a transform implemented in XSLT.
      * @param transformName	the name of the transform
      * @param sourceHandle	a handle for reading the text of the XSLT implementation.
      * @return	the XSLT source code
 	 */
-    public <T extends XMLReadHandle> T readXSLTransform(String transformName, T sourceHandle);
+    public <T extends XMLReadHandle> T readXSLTransform(String transformName, T sourceHandle)
+    throws FailedRequestException, ResourceNotFoundException, ForbiddenUserException;
 
     /**
      * Installs a transform implemented in XQuery.
      * @param transformName	the name of the resource
      * @param sourceHandle	a handle on the source for the XQuery implementation
      */
-    public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle);
+    public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle)
+    throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
     /**
      * Installs a transform implemented in XQuery.
      * @param transformName	the name of the resource
      * @param sourceHandle	a handle on the source for the XQuery implementation
      * @param metadata	the metadata about the transform
      */
-    public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata);
+    public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata)
+    throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
     /**
      * Installs a transform implemented in XQuery.
      * @param transformName	the name of the resource
@@ -75,21 +84,24 @@ public interface TransformExtensionsManager {
      * @param metadata	the metadata about the transform
      * @param paramTypes	the names and XML Schema datatypes of the transform parameters
      */
-    public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String,String> paramTypes);
+    public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String,String> paramTypes)
+    throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
     /**
      * Installs a transform implemented in XSL.
      * @param transformName	the name of the resource
      * @param sourceHandle	a handle on the source for the XSL implementation
      */
-    public void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle);
+    public void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle)
+    throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
     /**
      * Installs a transform implemented in XSL.
      * @param transformName	the name of the resource
      * @param sourceHandle	a handle on the source for the XSL implementation
      * @param metadata	the metadata about the transform
      */
-    public void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata);
+    public void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata)
+    throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
     /**
      * Installs a transform implemented in XSL.
      * @param transformName	the name of the resource
@@ -97,20 +109,23 @@ public interface TransformExtensionsManager {
      * @param metadata	the metadata about the transform
      * @param paramTypes	the names and XML Schema datatypes of the transform parameters
      */
-    public void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String,String> paramTypes);
+    public void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String,String> paramTypes)
+    throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
     /**
      * Uninstalls the transform.
      * @param transformName	the name of the transform
      */
-    public void deleteTransform(String transformName);
+    public void deleteTransform(String transformName)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	/**
 	 * Refresh the installed resources service and transform extensions
 	 * to make use of the latest version of dependencies including libraries
 	 * updated through ExtensionLibrariesManager.
 	 */
-	public void refreshExtensions();
+	public void refreshExtensions()
+	throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
     /**
      * Starts debugging client requests. You can suspend and resume debugging output

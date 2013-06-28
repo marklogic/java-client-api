@@ -29,6 +29,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.TuplesHandle;
@@ -89,7 +93,8 @@ public class TuplesHandleTest {
     }
 
     @Test
-    public void testAggregates() throws IOException, ParserConfigurationException, SAXException {
+    public void testAggregates()
+    throws IOException, ParserConfigurationException, SAXException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
     	QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
     	optionsMgr.writeOptions("valuesoptions2", new StringHandle(options));
 
@@ -121,7 +126,8 @@ public class TuplesHandleTest {
     }
 
     @Test
-    public void testCoVariances() throws IOException, ParserConfigurationException, SAXException {
+    public void testCoVariances()
+    throws IOException, ParserConfigurationException, SAXException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
         QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
         optionsMgr.writeOptions("valuesoptions3", new StringHandle(options));
 
@@ -144,7 +150,8 @@ public class TuplesHandleTest {
     }
 
     @Test
-    public void testValuesHandle() throws IOException, ParserConfigurationException, SAXException {
+    public void testValuesHandle()
+    throws IOException, ParserConfigurationException, SAXException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
         QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
         optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
 
@@ -171,7 +178,8 @@ public class TuplesHandleTest {
     }
     
     @Test
-    public void testNWayTuples() {
+    public void testNWayTuples()
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
     	 QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
          optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
 

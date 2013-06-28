@@ -19,6 +19,10 @@ import java.io.IOException;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.StringHandle;
@@ -27,11 +31,13 @@ import com.marklogic.client.io.StringHandle;
  * QueryOptions illustrates writing, reading, and deleting query options.
  */
 public class QueryOptions {
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args)
+	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		run(Util.loadProperties());
 	}
 
-	public static void run(ExampleProperties props) throws IOException {
+	public static void run(ExampleProperties props)
+	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		System.out.println("example: "+QueryOptions.class.getName());
 
 		String optionsName = "products";

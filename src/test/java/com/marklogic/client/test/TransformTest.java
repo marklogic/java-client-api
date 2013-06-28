@@ -26,6 +26,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.document.ServerTransform;
@@ -47,14 +51,16 @@ public class TransformTest {
 	static private String optionsName;
 
 	@BeforeClass
-	public static void beforeClass() throws IOException {
+	public static void beforeClass()
+	throws IOException, FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
 		Common.connectAdmin();
 		xqueryTransform = Common.testFileToString(TransformExtensionsTest.XQUERY_FILE);
 		xslTransform    = Common.testFileToString(TransformExtensionsTest.XSLT_FILE);
     	optionsName = ValuesHandleTest.makeValuesOptions();
 	}
 	@AfterClass
-	public static void afterClass() {
+	public static void afterClass()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
         Common.client.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
 		Common.release();
 		xqueryTransform = null;
@@ -62,7 +68,8 @@ public class TransformTest {
 	}
 
 	@Test
-	public void testXQueryTransform() {
+	public void testXQueryTransform()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		ServerConfigurationManager confMgr =
 			Common.client.newServerConfigManager();
 
@@ -81,7 +88,8 @@ public class TransformTest {
 		extensionMgr.deleteTransform(TransformExtensionsTest.XQUERY_NAME);
 	}
 	@Test
-	public void testXSLTransform() {
+	public void testXSLTransform()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		TransformExtensionsManager extensionMgr =
 			Common.client.newServerConfigManager().newTransformExtensionsManager();
 
@@ -96,7 +104,8 @@ public class TransformTest {
 
 		extensionMgr.deleteTransform(TransformExtensionsTest.XSLT_NAME);
 	}
-	private void runTransform(String transformName) {
+	private void runTransform(String transformName)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		ServerTransform transform = new ServerTransform(transformName);
 		transform.put("value", "true");
 

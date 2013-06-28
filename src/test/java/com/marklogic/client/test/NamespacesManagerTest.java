@@ -22,6 +22,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.admin.NamespacesManager;
 
@@ -36,7 +39,8 @@ public class NamespacesManagerTest {
 	}
 
 	@Test
-	public void testWriteReadPrefix() {
+	public void testWriteReadPrefix()
+	throws ForbiddenUserException, FailedRequestException, ResourceNotFoundException {
 		NamespacesManager nsMgr =
 			Common.client.newServerConfigManager().newNamespacesManager();
 		
@@ -79,7 +83,8 @@ public class NamespacesManagerTest {
 	}
 
 	@Test
-	public void testExceptions() {
+	public void testExceptions()
+	throws ForbiddenUserException, FailedRequestException, ResourceNotFoundException {
 		NamespacesManager nsMgr =
 			Common.client.newServerConfigManager().newNamespacesManager();
 

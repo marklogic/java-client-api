@@ -31,6 +31,9 @@ import org.w3c.dom.Document;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.MethodType;
 import com.marklogic.client.admin.ResourceExtensionsManager;
@@ -50,12 +53,14 @@ import com.marklogic.client.util.RequestParameters;
  * ResourceExtension installs an extension for managing spelling dictionary resources.
  */
 public class ResourceExtension {
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args)
+	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		run(Util.loadProperties());
 	}
 
 	// install and then use the resource extension
-	public static void run(ExampleProperties props) throws IOException {
+	public static void run(ExampleProperties props)
+	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		System.out.println("example: "+ResourceExtension.class.getName());
 
 		installResourceExtension(props.host, props.port,
@@ -87,7 +92,8 @@ public class ResourceExtension {
 			docMgr = client.newXMLDocumentManager();
 		}
 
-		public void createDictionary(String uri, String[] words) {
+		public void createDictionary(String uri, String[] words)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 			StringBuilder builder = new StringBuilder();
 			builder.append("<?xml version='1.0' encoding='UTF-8'?>\n");
 			builder.append("<dictionary xmlns='http://marklogic.com/xdmp/spell'>\n");
@@ -199,7 +205,8 @@ public class ResourceExtension {
 				throw new RuntimeException(ex);
 			}
 		}
-		public void deleteDictionary(String uri) {
+		public void deleteDictionary(String uri)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 			// delegate
 			docMgr.delete(uri);
 		}
@@ -241,7 +248,8 @@ public class ResourceExtension {
 	}
 
 	// use the resource manager
-	public static void useResource(String host, int port, String user, String password, Authentication authType) {
+	public static void useResource(String host, int port, String user, String password, Authentication authType)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 

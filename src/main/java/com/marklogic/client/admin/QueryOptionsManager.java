@@ -15,6 +15,10 @@
  */
 package com.marklogic.client.admin;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
@@ -24,8 +28,6 @@ import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
  * 
  */
 public interface QueryOptionsManager {
-	
-	
 	/**
 	 * Fetch a query options configuration from the REST Server by name.
 	 * <p>
@@ -35,30 +37,29 @@ public interface QueryOptionsManager {
 	 * @param queryOptionsHandle an object into which to fetch the query options.
 	 * @param <T> A set of classes able to read query configurations from the database.
 	 * @return A an object holding the query configurations
-	 *
 	 */
-    public <T extends QueryOptionsReadHandle> T readOptions(String name, T queryOptionsHandle);
-    
+    public <T extends QueryOptionsReadHandle> T readOptions(String name, T queryOptionsHandle)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	
     /**
      * Write a named QueryOptions configuration to the REST server.
      * @param name name given to the QueryOptions for use in runtime queries.
      * @param queryOptionsHandle an object able to serialize a QueryOptions configuration.
      */
-    public void writeOptions(String name, QueryOptionsWriteHandle queryOptionsHandle);
+    public void writeOptions(String name, QueryOptionsWriteHandle queryOptionsHandle)
+    throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException;
     
     /**
      * Remove a search configuration from the REST server.
      * @param name name of query options to remove from the REST server.
      */
-    public void deleteOptions(String name);
+    public void deleteOptions(String name)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
      * Retrieves the list of available named query options.
      * @param listHandle a handle for reading the list of name options
      * @return the handle populated with the names
      */
-    public <T extends QueryOptionsListReadHandle> T optionsList(T listHandle);
-
-
+    public <T extends QueryOptionsListReadHandle> T optionsList(T listHandle) throws ForbiddenUserException, FailedRequestException;
 }

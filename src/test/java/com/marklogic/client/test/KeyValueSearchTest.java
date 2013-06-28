@@ -28,6 +28,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.admin.NamespacesManager;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.query.KeyValueQueryDefinition;
@@ -37,7 +39,8 @@ import com.marklogic.client.query.QueryManager;
 
 public class KeyValueSearchTest {
 	@BeforeClass
-	public static void beforeClass() {
+	public static void beforeClass()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		Common.connectAdmin();
 
 		// setup namespaces to test kv with namespaces
@@ -52,7 +55,8 @@ public class KeyValueSearchTest {
 	}
 
 	@AfterClass
-	public static void afterClass() {
+	public static void afterClass()
+	throws ForbiddenUserException, FailedRequestException {
 		Common.release();
 		Common.connectAdmin();
 		NamespacesManager nsMgr = Common.client.newServerConfigManager()

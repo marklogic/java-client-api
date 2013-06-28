@@ -7,7 +7,11 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.ExtensionLibrariesManager;
 import com.marklogic.client.admin.ExtensionLibraryDescriptor;
 import com.marklogic.client.admin.ExtensionLibraryDescriptor.Permission;
@@ -24,12 +28,14 @@ public class ExtensionLibrariesManagerImpl extends AbstractLoggingManager implem
 		this.services = services;
 	}
 	@Override
-	public ExtensionLibraryDescriptor[] list() {
+	public ExtensionLibraryDescriptor[] list()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		return list("/ext/");
 	}
 
 	@Override
-	public ExtensionLibraryDescriptor[] list(String directory) {
+	public ExtensionLibraryDescriptor[] list(String directory)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		
 		XMLEventReaderHandle handle = services.getResource(requestLogger, directory, null, new XMLEventReaderHandle());
 		
@@ -54,24 +60,27 @@ public class ExtensionLibrariesManagerImpl extends AbstractLoggingManager implem
 	}
 
 	@Override
-	public <T extends AbstractReadHandle> T read(String modulePath, T readHandle) {
+	public <T extends AbstractReadHandle> T read(String modulePath, T readHandle)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		return services.getResource(requestLogger, modulePath, null, readHandle);
 	}
 
 	@Override
 	public <T extends AbstractReadHandle> T read(
-			ExtensionLibraryDescriptor modulesDescriptor, T readHandle) {
+			ExtensionLibraryDescriptor modulesDescriptor, T readHandle)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		return read(modulesDescriptor.getPath(), readHandle);
 	}
 
 	@Override
-	public void write(String modulePath, AbstractWriteHandle contentHandle) {
+	public void write(String modulePath, AbstractWriteHandle contentHandle)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		services.putResource(requestLogger, modulePath, null, contentHandle, null);
 	}
 
 	@Override
-	public void write(ExtensionLibraryDescriptor modulesDescriptor,
-			AbstractWriteHandle contentHandle) {
+	public void write(ExtensionLibraryDescriptor modulesDescriptor, AbstractWriteHandle contentHandle)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		RequestParameters requestParams = new RequestParameters();
 		for (Permission perm : modulesDescriptor.getPermissions()) {
 			requestParams.add("perm:" + perm.getRoleName(), perm.getCapability());
@@ -80,12 +89,14 @@ public class ExtensionLibrariesManagerImpl extends AbstractLoggingManager implem
 	}
 
 	@Override
-	public void delete(String modulePath) {
+	public void delete(String modulePath)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		services.deleteResource(requestLogger, modulePath, null, null);
 	}
 
 	@Override
-	public void delete(ExtensionLibraryDescriptor modulesDescriptor) {
+	public void delete(ExtensionLibraryDescriptor modulesDescriptor)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		delete(modulesDescriptor.getPath());
 	}
 

@@ -26,6 +26,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.StringHandle;
@@ -41,7 +45,8 @@ public class SuggestTest {
 			.getLogger(SuggestTest.class);
 
 	@AfterClass
-	public static void teardown() {
+	public static void teardown()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		docMgr.delete("/sample/suggestion.xml");
 		docMgr.delete("/sample2/suggestion.xml");
@@ -50,7 +55,8 @@ public class SuggestTest {
 	}
 
 	@BeforeClass
-	public static void setup() throws FileNotFoundException {
+	public static void setup()
+	throws FileNotFoundException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		XMLUnit.setIgnoreWhitespace(true);
 		Common.connectAdmin();
 		writeOptions();
@@ -145,7 +151,8 @@ public class SuggestTest {
 	
 	
 
-	private static String writeOptions() {
+	private static String writeOptions()
+	throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
 		String optionsName = "suggest";
 
 		String suggestionOptions = "            <options xmlns='http://marklogic.com/appservices/search'>"

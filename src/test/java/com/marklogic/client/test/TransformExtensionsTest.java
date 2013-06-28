@@ -34,6 +34,9 @@ import org.xml.sax.SAXException;
 
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.io.StringHandle;
@@ -102,7 +105,8 @@ public class TransformExtensionsTest {
 	}
 
 	@Test
-	public void testTransformExtensions() throws XpathException, SAXException, IOException {
+	public void testTransformExtensions()
+	throws XpathException, SAXException, IOException, FailedRequestException, ResourceNotFoundException, ForbiddenUserException, ResourceNotResendableException {
 		TransformExtensionsManager extensionMgr =
 			Common.client.newServerConfigManager().newTransformExtensionsManager();
 
@@ -156,7 +160,8 @@ public class TransformExtensionsTest {
 		}
 		assertTrue("Failed to delete XSLT transform", transformDeleted);
 	}
-	public void writeXQueryTransform(TransformExtensionsManager extensionMgr) {
+	public void writeXQueryTransform(TransformExtensionsManager extensionMgr)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		extensionMgr.writeXQueryTransform(
 				XQUERY_NAME,
 				new StringHandle().withFormat(Format.TEXT).with(xqueryTransform),
@@ -164,7 +169,8 @@ public class TransformExtensionsTest {
 				makeParameters()
 				);		
 	}
-	public void writeXSLTransform(TransformExtensionsManager extensionMgr) {
+	public void writeXSLTransform(TransformExtensionsManager extensionMgr)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		extensionMgr.writeXSLTransform(
 				XSLT_NAME,
 				new StringHandle().withFormat(Format.XML).withMimetype("application/xslt+xml").with(xslTransform),

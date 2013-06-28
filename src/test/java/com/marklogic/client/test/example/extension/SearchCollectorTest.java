@@ -23,11 +23,16 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.junit.Test;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.example.extension.SearchCollectorExample;
 
 public class SearchCollectorTest {
 	@Test
-	public void testMain() {
+	public void testMain()
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		boolean succeeded = false;
 		try {
 			SearchCollectorExample.main(new String[0]);

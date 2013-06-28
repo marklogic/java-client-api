@@ -15,6 +15,10 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
@@ -32,14 +36,15 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 	}
 
 	@Override
-	public void deleteOptions(String name) {
+	public void deleteOptions(String name)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		services.deleteValue(null, QUERY_OPTIONS_BASE, name);
 	}
 
 	@Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
-	public <T extends QueryOptionsReadHandle> T readOptions(String name,
-			T queryOptionsHandle) {
+	public <T extends QueryOptionsReadHandle> T readOptions(String name, T queryOptionsHandle)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (name == null) {
 			throw new IllegalArgumentException(
 					"Cannot read options for null name");
@@ -71,8 +76,8 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public void writeOptions(String name,
-			QueryOptionsWriteHandle queryOptionsHandle) {
+	public void writeOptions(String name, QueryOptionsWriteHandle queryOptionsHandle)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		HandleImplementation queryOptionsBase = HandleAccessor.checkHandle(
 				queryOptionsHandle, "query options");
 
@@ -100,7 +105,8 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-    public <T extends QueryOptionsListReadHandle> T optionsList(T optionsHandle) {
+    public <T extends QueryOptionsListReadHandle> T optionsList(T optionsHandle)
+	throws ForbiddenUserException, FailedRequestException {
 		HandleImplementation optionsBase = HandleAccessor.checkHandle(optionsHandle, "optionslist");
 		
 		Format optionsFormat = optionsBase.getFormat();

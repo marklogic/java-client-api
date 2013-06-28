@@ -22,6 +22,10 @@ import java.io.InputStream;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.document.ServerTransform;
@@ -39,12 +43,14 @@ import com.marklogic.client.io.StringHandle;
 public class DocumentWriteTransform {
 	static final private String TRANSFORM_NAME = "html2xhtml";
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args)
+	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		run(Util.loadProperties());
 	}
 
 	// install the transform and then write a transformed document 
-	public static void run(ExampleProperties props) throws IOException {
+	public static void run(ExampleProperties props)
+	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		System.out.println("example: "+DocumentWriteTransform.class.getName());
 
 		installTransform(props.host, props.port,
@@ -57,7 +63,8 @@ public class DocumentWriteTransform {
 				props.adminUser, props.adminPassword, props.authType);
 	}
 
-	public static void installTransform(String host, int port, String user, String password, Authentication authType) throws IOException {
+	public static void installTransform(String host, int port, String user, String password, Authentication authType)
+	throws IOException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
@@ -90,7 +97,8 @@ public class DocumentWriteTransform {
 		client.release();
 	}
 
-	public static void writeDocument(String host, int port, String user, String password, Authentication authType) throws IOException {
+	public static void writeDocument(String host, int port, String user, String password, Authentication authType)
+	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		String filename = "sentiment.html";
 
 		// create the client
@@ -141,7 +149,8 @@ public class DocumentWriteTransform {
 
 	// clean up by deleting the written document and the example transform
 	public static void tearDownExample(
-			String host, int port, String user, String password, Authentication authType) {
+			String host, int port, String user, String password, Authentication authType)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		TextDocumentManager docMgr = client.newTextDocumentManager();

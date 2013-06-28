@@ -25,6 +25,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.MethodType;
 import com.marklogic.client.admin.ResourceExtensionsManager;
@@ -41,13 +44,14 @@ import com.marklogic.client.io.StringHandle;
  * of a Resource Extension.
  */
 public class OpenCSVBatcherExample {
-	public static void main(String[] args) throws IOException, ParserConfigurationException {
+	public static void main(String[] args)
+	throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		run(Util.loadProperties());
 	}
 
 	// install and then use the resource extension
 	public static void run(ExampleProperties props)
-	throws IOException, ParserConfigurationException {
+	throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		System.out.println("example: "+OpenCSVBatcherExample.class.getName());
 
 		installResourceExtension(props.host, props.port,
@@ -98,7 +102,7 @@ public class OpenCSVBatcherExample {
 
 	// use the resource manager
 	public static void useResource(String host, int port, String user, String password, Authentication authType)
-	throws IOException, ParserConfigurationException {
+	throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
@@ -132,7 +136,8 @@ public class OpenCSVBatcherExample {
 
 	// clean up by deleting the example resource extension
 	public static void tearDownExample(
-			String host, int port, String user, String password, Authentication authType) {
+			String host, int port, String user, String password, Authentication authType)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
