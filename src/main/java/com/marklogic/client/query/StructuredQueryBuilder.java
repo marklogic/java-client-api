@@ -2328,9 +2328,9 @@ public class StructuredQueryBuilder {
 				String nsUri = namespaces.getNamespaceURI(prefix);
 				if (!newNamespaces.containsKey(prefix)) {
 					newNamespaces.put(prefix, nsUri);
-				} else if (newNamespaces.getNamespaceURI(prefix) != nsUri) {
+				} else if (!nsUri.equals(newNamespaces.getNamespaceURI(prefix))) {
 					throw new IllegalArgumentException(
-							"Cannot override reserved prefix: "+prefix);
+							"Cannot change namespace URI for prefix: "+prefix);
 				}
 			}
 		}

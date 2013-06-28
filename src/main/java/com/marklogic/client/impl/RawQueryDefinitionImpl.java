@@ -100,7 +100,7 @@ implements RawQueryDefinition
 	@Override
 	public String toString() {
 		if (handle == null) {
-			return null;
+			return "";
 		}
 		return handle.toString();
 	}

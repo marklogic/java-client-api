@@ -182,6 +182,10 @@ implements DocumentMetadataPatchBuilder
 		public void writeReplaceApply(
 				JSONStringWriter serializer, String select, Cardinality cardinality, CallImpl call
 		) {
+			if (call == null) {
+				throw new IllegalArgumentException("Cannot apply a null call to a function");
+			}
+
 			serializer.writeStartObject();
 			serializer.writeStartEntry("replace");
 			serializer.writeStartObject();
@@ -193,7 +197,7 @@ implements DocumentMetadataPatchBuilder
 			}
 			serializer.writeStartEntry("apply");
 			serializer.writeStringValue(call.function);
-			if (call.args != null || call.args.length == 0) {
+			if (call.args != null && call.args.length > 0) {
 				serializer.writeStartEntry("content");
 				writeCall(serializer, call);
 			}
@@ -203,6 +207,10 @@ implements DocumentMetadataPatchBuilder
 		public void writeReplaceApply(
 				XMLOutputSerializer out, String select, Cardinality cardinality, CallImpl call
 		) throws Exception {
+			if (call == null) {
+				throw new IllegalArgumentException("Cannot apply a null call to a function");
+			}
+
 			XMLStreamWriter serializer = out.getSerializer();
 
 			serializer.writeStartElement("rapi", "replace", REST_API_NS);
@@ -211,7 +219,7 @@ implements DocumentMetadataPatchBuilder
 				serializer.writeAttribute("cardinality", cardinality.abbreviate());
 			}
 			serializer.writeAttribute("apply",   call.function);
-			if (call.args != null || call.args.length == 0) {
+			if (call.args != null && call.args.length > 0) {
 				writeCall(out, call);
 			}
 			serializer.writeEndElement();
@@ -761,9 +769,9 @@ implements DocumentMetadataPatchBuilder
 				String nsUri = namespaces.getNamespaceURI(prefix);
 				if (!newNamespaces.containsKey(prefix)) {
 					newNamespaces.put(prefix, nsUri);
-				} else if (newNamespaces.getNamespaceURI(prefix) != nsUri) {
+				} else if (!nsUri.equals(newNamespaces.getNamespaceURI(prefix))) {
 					throw new IllegalArgumentException(
-							"Cannot override reserved prefix: "+prefix);
+							"Cannot change namespace URI for change prefix: "+prefix);
 				}
 			}
 		}

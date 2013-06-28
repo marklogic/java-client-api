@@ -3506,6 +3506,10 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public InputStream match(QueryDefinition queryDef,
 			long start, String[] candidateRules) {
+		if (queryDef == null) {
+			throw new IllegalArgumentException("Cannot match null query");
+		}
+
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
 		if (start > 1) {
@@ -3517,9 +3521,11 @@ public class JerseyServices implements RESTServices {
 				params.add("rule", candidateRule);
 			}
 		}
+
 		if (queryDef.getOptionsName() != null) {
 			params.add("options", queryDef.getOptionsName());
 		}
+
 		WebResource.Builder builder = null;
 		String structure = null;
 		HandleImplementation baseHandle = null;
