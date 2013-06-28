@@ -335,11 +335,21 @@ public class StructuredQueryBuilder {
      * @param uris	the identifiers for the criteria directories
      * @return	the StructuredQueryDefinition for the directory query
      */
-// TODO: specified level
     public DirectoryQuery directory(boolean isInfinite, String... uris) {
         return new DirectoryQuery(isInfinite, uris);
     }
 
+    /**
+     *M
+     * @param depth
+     * @param string
+     * @param string2
+     * @return
+     */
+    public DirectoryQuery directory(int depth, String... uris) {
+		return new DirectoryQuery(depth, uris);
+    }
+    
     /**
      * Matches the specified documents.
      * @param uris	the identifiers for the documents
@@ -349,6 +359,7 @@ public class StructuredQueryBuilder {
         return new DocumentQuery(uris);
     }
     
+	 
     /**
      * Matches documents containing the specified terms.
      * @param terms	the possible terms to match
@@ -433,7 +444,6 @@ public class StructuredQueryBuilder {
     		Operator operator, Object... values) {
         return new RangeQuery(index, type, null, null, null, operator, values);
     }
-// TODO: why a type with a collation?  always xs:string  backward compatibility?
     /**
      * Matches an element, attribute, json key, field, or path
      * whose value that has the correct datatyped comparison with 
@@ -1159,6 +1169,7 @@ public class StructuredQueryBuilder {
     extends AbstractStructuredQuery {
         private String uris[];
         private Boolean isInfinite;
+        private Integer depth;
 
         /**
          * Use the directory() builder method of StructuredQueryBuilder
@@ -1169,11 +1180,22 @@ public class StructuredQueryBuilder {
             super();
             this.isInfinite = isInfinite;
             this.uris = uris;
+            this.depth = null;
+        }
+        
+        DirectoryQuery(Integer depth, String... uris) {
+        	super();
+        	this.isInfinite = false;
+        	this.uris = uris;
+        	this.depth = depth;
         }
 
         @Override
     	void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("directory-query");
+        	if (depth != null) {
+        		serializer.writeAttribute("depth", Integer.toString(depth));
+        	}
         	writeTextList(serializer, "uri", uris);
         	writeText(serializer, "infinite", isInfinite);
         	serializer.writeEndElement();
@@ -1885,6 +1907,7 @@ public class StructuredQueryBuilder {
     /**
      * Treat the Point class as an interface that extends Region.
      */
+    @Deprecated
     public class Point extends RegionImpl implements Region {
         private double lat = 0.0;
         private double lon = 0.0;
@@ -2342,5 +2365,7 @@ public class StructuredQueryBuilder {
 			newNamespaces.put(entry.getKey(), entry.getValue());
 		}
 		return newNamespaces;
-	} 
+	}
+	
+	
 }
