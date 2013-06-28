@@ -62,7 +62,7 @@ public interface ServerConfigurationManager {
 	public Boolean getQueryOptionValidation();
 	/**
 	 * Specifies whether the server validates query options before storing them.
-	 * @param set to true to validate the query options
+	 * @param on	set to true to validate the query options
 	 */
 	public void setQueryOptionValidation(Boolean on);
 
@@ -74,7 +74,7 @@ public interface ServerConfigurationManager {
 	
 	/**
 	 * Specifies whether the server validates queries before running them.
-	 * @param set to true to validate queries
+	 * @param on	set to true to validate queries
 	 */
 	public void setQueryValidation(Boolean on);
 

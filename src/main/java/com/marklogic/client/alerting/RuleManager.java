@@ -56,7 +56,7 @@ public interface RuleManager {
 	/**
 	 * Writes a rule to the server from the provided handle.
 	 * 
-	 * @param readHandle
+	 * @param writeHandle
 	 *            Handle that contains the rule payload. Must be a
 	 *            RuleDefinition object to use this method, which
 	 *            has no ruleName.
@@ -70,11 +70,11 @@ public interface RuleManager {
 	 * 
 	 * @param ruleName
 	 *            Name of rule on REST server.
-	 * @param readHandle
+	 * @param writeHandle
 	 *            Handle that contains the rule payload. Often will be an
 	 *            instance of RuleDefinition.
      */	
-	public void writeRule(String ruleName, RuleWriteHandle ruleHandle);
+	public void writeRule(String ruleName, RuleWriteHandle writeHandle);
 
 	/**
 	 * Removes a rule from the server.

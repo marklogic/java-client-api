@@ -31,6 +31,11 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.RuleListReadHandle;
 
+/**
+ * Models a list of RuleDefinitions.
+ * Returned by a call to RuleManager.match
+ *
+ */
 public class RuleDefinitionList
 extends BaseHandle<InputStream,OperationNotSupported>
 implements Iterable<RuleDefinition>, RuleListReadHandle {
@@ -38,10 +43,15 @@ implements Iterable<RuleDefinition>, RuleListReadHandle {
 	
 	public List<RuleDefinition> rules;
 	
+	@Override
     public Iterator<RuleDefinition> iterator(){ 
     	return rules.iterator();
     }
 
+	/**
+	 * gets the number of rules in the list.
+	 * @return the number of rules.
+	 */
 	public int size() {
 		return rules.size();
 	}

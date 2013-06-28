@@ -22,6 +22,12 @@ import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 
+/**
+ * ExtensionLibrariesManager provides methods to read, list and update server-side XQuery modules
+ * that reside in the REST instanance's modules database.  It can be used for any assets or code 
+ * that an application needs to store on the server as part of the server-side logic.
+ *
+ */
 public interface ExtensionLibrariesManager {
 
 	/**

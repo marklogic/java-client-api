@@ -80,7 +80,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 
     /**
      * Creates a builder for specifying changes to the metadata of a document.
-     * @param format	whether the patch specifies metadata with JSON or XML paths
+     * @param pathFormat	whether the patch specifies metadata with JSON or XML paths
      * @return	the patch builder
      */
     public DocumentMetadataPatchBuilder newPatchBuilder(Format pathFormat);

@@ -82,15 +82,15 @@ public class RuleManagerImpl extends AbstractLoggingManager implements
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public void writeRule(String ruleName, RuleWriteHandle ruleHandle)
+	public void writeRule(String ruleName, RuleWriteHandle writeHandle)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
-		if (ruleHandle instanceof RuleDefinition) {
-			String name = ((RuleDefinition) ruleHandle).getName();
+		if (writeHandle instanceof RuleDefinition) {
+			String name = ((RuleDefinition) writeHandle).getName();
 			if (name != null)
 				ruleName = name;
 		}
-		HandleImplementation ruleBase = HandleAccessor.checkHandle(ruleHandle,
+		HandleImplementation ruleBase = HandleAccessor.checkHandle(writeHandle,
 				"rule");
 
 		if (ruleBase == null)

@@ -35,7 +35,7 @@ public interface SuggestDefinition {
     /**
      * Sets one or more criteria for the suggestion call.  
      * 
-     * @param qtext A string for input to suggestions.
+     * @param pqtext A string for input to suggestions.
      */
     public void setStringCriteria(String pqtext);
     

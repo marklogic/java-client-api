@@ -3,7 +3,7 @@
  * Java Objects.
  * <p>
  * Ordinarily, objects in this package will be created in one of two ways: 
- * by retreiving them from a MarkLogic Server using a {@link com.marklogic.client.io.QueryOptionsHandle} 
+ * by retrieving them from a MarkLogic Server using a {@link com.marklogic.client.io.QueryOptionsHandle} 
  * or by building them with {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.
  * <p>
  * A QueryOptions object contains getters and setters for each of the types of 
@@ -25,10 +25,10 @@
  * control the behavior and results of calls to 
  * {@link com.marklogic.client.query.QueryManager}.search(),
  * {@link com.marklogic.client.query.QueryManager}.values(), and
- * {@link com.marklogic.client.query.QueryManager}.tuples().
+ * {@link com.marklogic.client.query.QueryManager}.tuples()
  * <p>
  * For comprehensive treatment of the Search API, the REST API and the Java API visit
- * {@link http://docs.marklogic.com}
+ * http://docs.marklogic.com
  * <p>
  * <strong>Note:</strong> QueryOptions and QueryOptionsBuilder are deprecated.
  * Use a JSON or XML handle instead to write or read query options.

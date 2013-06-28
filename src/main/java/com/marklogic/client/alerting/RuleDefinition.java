@@ -67,6 +67,9 @@ import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 import com.marklogic.client.util.NameMap;
 
+/**
+ * A RuleDefinition represents a set of criteria that describe a named condition.
+ */
 public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 		implements OutputStreamSender, RuleReadHandle, RuleWriteHandle {
 
@@ -76,8 +79,7 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 	private static XMLOutputFactory factory = XMLOutputFactory.newFactory();
 	
 	/**
-	 * A RuleMetadata represents client-supplied metadata for a rule a POJO
-	 * (Plain Old Java Object).
+	 * A RuleMetadata represents optional client-supplied metadata that is stored alongside a RuleDefinition.
 	 */
 	public interface RuleMetadata extends NameMap<Object> {
 	}
@@ -229,6 +231,9 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 		this.metadata = metadata;
 	}
 
+	/**
+	 * Writes a serialized RuleDefinition to an OutputStream as XML.
+	 */
 	@Override
 	public void write(OutputStream out) throws IOException {
 		try {
@@ -473,7 +478,7 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 		return InputStream.class;
 	}
 
-	public OutputStreamSender sendContent() {
+	protected OutputStreamSender sendContent() {
 		return this;
 	}
 

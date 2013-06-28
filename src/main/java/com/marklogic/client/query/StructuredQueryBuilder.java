@@ -340,11 +340,12 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     *M
-     * @param depth
-     * @param string
-     * @param string2
-     * @return
+     * Matches documents at the specified depth within at least one
+     * of the criteria directories.
+     * @param depth specifies how many subdirectories deep to traverse  
+     * A value of 1 means to exclude subdirectories.
+     * @param uris	the identifiers for the criteria directories
+     * @return	the StructuredQueryDefinition for the directory query
      */
     public DirectoryQuery directory(int depth, String... uris) {
 		return new DirectoryQuery(depth, uris);

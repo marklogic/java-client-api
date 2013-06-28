@@ -26,6 +26,10 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.example.util.Bootstrapper.ConfigServer;
 import com.marklogic.client.example.util.Bootstrapper.RESTServer;
 
+/**
+ * Sample main method for a REST bootstrapper.
+ *
+ */
 public class BootstrapperExample {
 	public static void main(String[] args)
 	throws ClientProtocolException, IOException, XMLStreamException, FactoryConfigurationError
