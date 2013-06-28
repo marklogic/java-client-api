@@ -98,12 +98,13 @@ public interface RuleManager {
 	 * Use this method to match, say, a page or search results against rules.
 	 * @param docQuery A query definition to qualify documents to match
 	 * @param start The start position in query results to match.
+	 * @param pageLength The number of results in the filtering query to match. Use null to return all matches.
 	 * @param candidateRules
 	 * @param ruleListHandle A handle to hold the match results
 	 * @return The list of rules matched by the documents returned by the query.
 	 */
 	public <T extends RuleListReadHandle> T match(QueryDefinition docQuery,
-			long start, String[] candidateRules, T ruleListHandle);
+			long start, long pageLength, String[] candidateRules, T ruleListHandle);
 
 	/**
 	 * Matches server rules based on an array of document IDS

@@ -26,6 +26,7 @@ import com.marklogic.client.io.marker.RuleReadHandle;
 import com.marklogic.client.io.marker.RuleWriteHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.QueryManager;
 
 public class RuleManagerImpl extends AbstractLoggingManager implements
 		RuleManager {
@@ -124,15 +125,15 @@ public class RuleManagerImpl extends AbstractLoggingManager implements
 
 	@Override
 	public <T extends RuleListReadHandle> T match(QueryDefinition docQuery, T ruleListHandle) {
-		return match(docQuery, 1, new String[] {}, ruleListHandle);
+		return match(docQuery, 1, QueryManager.DEFAULT_PAGE_LENGTH, new String[] {}, ruleListHandle);
 	}
 
 	@Override
 	public <T extends RuleListReadHandle> T match(QueryDefinition docQuery, long start,
-			String[] candidateRules, T ruleListHandle) {
+			long pageLength, String[] candidateRules, T ruleListHandle) {
 
 		HandleAccessor.receiveContent(ruleListHandle,
-				services.match(docQuery, start, candidateRules));
+				services.match(docQuery, start, pageLength, candidateRules));
 		;
 		return ruleListHandle;
 	}

@@ -39,7 +39,7 @@ public interface QueryManager {
     /**
      * The default maximum number of documents in a page of search results.
      */
-    static final public long DEFAULT_PAGE_LENGTH = 10;
+    static final public long DEFAULT_PAGE_LENGTH = -1;
     /**
      * The default page for search results.
      */

@@ -618,6 +618,7 @@ public class JerseyServices implements RESTServices {
 				uri, (transactionId != null) ? transactionId : "no",
 				stringJoin(categories, ", ", "no"));
 
+		@SuppressWarnings("resource")
 		MultiPart entity = response.hasEntity() ?
 				response.getEntity(MultiPart.class) : null;
 		if (entity == null)
@@ -3181,6 +3182,7 @@ public class JerseyServices implements RESTServices {
 			String operation, String entityType, ClientResponse response) {
 		logRequest(reqlog, "%s for %s", operation, entityType);
 
+		@SuppressWarnings("resource")
 		MultiPart entity = response.hasEntity() ?
 				response.getEntity(MultiPart.class) : null;
 		if (entity == null)
@@ -3514,6 +3516,9 @@ public class JerseyServices implements RESTServices {
 
 		if (start > 1) {
 			params.add("start", Long.toString(start));
+		}
+		if (pageLength >= 0) {
+			params.add("pageLength", Long.toString(pageLength));
 		}
 
 		if (candidateRules.length > 0) {

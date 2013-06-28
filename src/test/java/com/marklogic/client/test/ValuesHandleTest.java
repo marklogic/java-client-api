@@ -179,6 +179,14 @@ public class ValuesHandleTest {
         HashMap<String,String> map = results.getValuesMap();
         assertEquals("Map should contain two keys", map.size(), 2);
         assertEquals("Size should have this uri", map.get("size"), "/v1/values/size?options=photos");
+        
+        // test pagelength
+        queryMgr.setPageLength(1L);
+        results = queryMgr.valuesList(vdef, new ValuesListHandle());
+        assertNotNull(results);
+        map = results.getValuesMap();
+        assertEquals("Map should contain one keys", map.size(), 1);
+        
     }
 
     static public String makeValuesOptions()

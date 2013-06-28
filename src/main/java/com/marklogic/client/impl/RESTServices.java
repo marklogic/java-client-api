@@ -210,7 +210,7 @@ public interface RESTServices {
 	
 	public InputStream match(StructureWriteHandle document, String[] candidateRules);
 	public InputStream match(String[] docIds, String[] candidateRules);
-	public InputStream match(QueryDefinition queryDef, long start, String[] candidateRules);
+	public InputStream match(QueryDefinition queryDef, long start, long pageLength, String[] candidateRules);
 	
 	/**
 	 * Wraps a HEAD request for a simple URI

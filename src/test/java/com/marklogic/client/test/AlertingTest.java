@@ -377,12 +377,17 @@ public class AlertingTest {
 		assertEquals("One answer", 1, answer.size());
 
 		qtext.setCriteria("favorited:false");
-		answer = ruleManager.match(qtext, 1L, new String[] { "favorites",
+		answer = ruleManager.match(qtext, 1L, 10L, new String[] { "favorites",
 				"notfavorited" }, answer);
 		assertEquals("One answer", answer.size(), 1);
 		assertEquals("Right answer", "notfavorited", answer.iterator().next()
 				.getName());
-
+		answer = ruleManager.match(qtext, 1L, 0L, new String[] { "favorites",
+		"notfavorited" }, answer);
+		assertEquals("Zero answers (pageLength 0)", answer.size(), 0);
+		answer = ruleManager.match(qtext, 3L, QueryManager.DEFAULT_PAGE_LENGTH, new String[] { "favorites",
+		"notfavorited" }, answer);
+		assertEquals("Zero answers (default pageLength, but start beyond result size)", answer.size(), 0);
 	}
 
 	@Test
@@ -398,7 +403,7 @@ public class AlertingTest {
 				"http://marklogic.com/rest-api", "name");
 		assertEquals(2, nl.getLength());
 
-		answer = ruleManager.match(structuredQuery, 1,
+		answer = ruleManager.match(structuredQuery, 1, QueryManager.DEFAULT_PAGE_LENGTH,
 				new String[] { "favorites" }, new DOMHandle());
 
 		doc = answer.get();
