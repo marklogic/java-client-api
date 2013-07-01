@@ -41,10 +41,12 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.alerting.RuleDefinition;
 import com.marklogic.client.alerting.RuleDefinition.RuleMetadata;
 import com.marklogic.client.alerting.RuleDefinitionList;
 import com.marklogic.client.alerting.RuleManager;
+import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.DOMHandle;
@@ -62,7 +64,8 @@ public class AlertingTest {
 	private static RuleManager ruleManager;
 	private static QueryOptionsManager queryOptionsManager;
 	private static QueryManager queryManager;
-
+	private static TransformExtensionsManager transformManager;
+	
 	@AfterClass
 	public static void teardown()
 	throws ForbiddenUserException, FailedRequestException, ResourceNotFoundException {
@@ -71,7 +74,12 @@ public class AlertingTest {
 		docMgr.delete("/alert/second.xml");
 		docMgr.delete("/alert/third.xml");
 		teardownMatchRules();
+		
+		Common.release();
+		Common.connectAdmin();
 
+		transformManager = Common.client.newServerConfigManager().newTransformExtensionsManager();		
+		transformManager.deleteTransform("ruleTransform");
 		Common.release();
 	}
 
@@ -88,6 +96,12 @@ public class AlertingTest {
 
 		queryManager = Common.client.newQueryManager();
 
+		transformManager = Common.client.newServerConfigManager().newTransformExtensionsManager();
+		
+		File ruleTransform = new File("src/test/resources/rule-transform.xqy");
+		transformManager.writeXQueryTransform("ruleTransform", new FileHandle(ruleTransform));
+
+		
 		Common.client.newServerConfigManager().setServerRequestLogging(true);
 		Common.release();
 		Common.connect();
@@ -350,7 +364,7 @@ public class AlertingTest {
 		RuleDefinition ruleMatch = answer.iterator().next();
 		assertEquals("favorites", ruleMatch.getName());
 
-		answer = ruleManager.match(docs, candidates, answer);
+		answer = ruleManager.match(docs, candidates, answer, null);
 		assertEquals(
 				"Zero answers for second match scenario, favorites against false rule ",
 				0, answer.size());
@@ -410,6 +424,23 @@ public class AlertingTest {
 		nl = doc.getElementsByTagNameNS("http://marklogic.com/rest-api", "name");
 		assertEquals(1, nl.getLength());
 
+	}
+	
+	
+	@Test
+	public void testRuleMatchTransform() {
+		StructuredQueryBuilder qb = new StructuredQueryBuilder();
+		StructuredQueryDefinition structuredQuery;
+		structuredQuery = qb.rangeConstraint("favorited", Operator.EQ, "true");
+
+		ServerTransform transform = new ServerTransform("ruleTransform");
+		
+		DOMHandle answer = ruleManager.match(structuredQuery, 0L, QueryManager.DEFAULT_PAGE_LENGTH, new String[] {}, new DOMHandle(), transform);
+
+		Document doc = answer.get();
+		NodeList nl = doc.getElementsByTagNameNS(
+				"", "transformed-name");
+		assertEquals(2, nl.getLength());
 	}
 
 	@Test

@@ -20,6 +20,7 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.alerting.RuleDefinition;
 import com.marklogic.client.alerting.RuleManager;
+import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.RuleListReadHandle;
 import com.marklogic.client.io.marker.RuleReadHandle;
@@ -131,9 +132,15 @@ public class RuleManagerImpl extends AbstractLoggingManager implements
 	@Override
 	public <T extends RuleListReadHandle> T match(QueryDefinition docQuery, long start,
 			long pageLength, String[] candidateRules, T ruleListHandle) {
+		return match(docQuery, start, pageLength, candidateRules, ruleListHandle, null);
+	}
+
+	@Override
+	public <T extends RuleListReadHandle> T match(QueryDefinition docQuery, long start,
+			long pageLength, String[] candidateRules, T ruleListHandle, ServerTransform transform) {
 
 		HandleAccessor.receiveContent(ruleListHandle,
-				services.match(docQuery, start, pageLength, candidateRules));
+				services.match(docQuery, start, pageLength, candidateRules, transform));
 		;
 		return ruleListHandle;
 	}
@@ -145,8 +152,13 @@ public class RuleManagerImpl extends AbstractLoggingManager implements
 
 	@Override
 	public <T extends RuleListReadHandle> T match(String[] docIds, String[] candidateRules, T ruleListHandle) {
+		return match(docIds, candidateRules, ruleListHandle, null);
+	}
+
+	@Override
+	public <T extends RuleListReadHandle> T match(String[] docIds, String[] candidateRules, T ruleListHandle, ServerTransform transform) {
 		HandleAccessor.receiveContent(ruleListHandle,
-				services.match(docIds, candidateRules));
+				services.match(docIds, candidateRules, transform));
 		return ruleListHandle;
 	}
 
@@ -155,11 +167,18 @@ public class RuleManagerImpl extends AbstractLoggingManager implements
 		return match(document, new String[] {}, ruleListHandle);
 	}
 
+
 	@Override
 	public <T extends RuleListReadHandle> T match(StructureWriteHandle document,
 			String[] candidateRules, T ruleListHandle) {
+		return match(document, candidateRules, ruleListHandle, null);
+	}
+	
+	@Override
+	public <T extends RuleListReadHandle> T match(StructureWriteHandle document,
+			String[] candidateRules, T ruleListHandle, ServerTransform transform) {
 		HandleAccessor.receiveContent(ruleListHandle,
-				services.match(document, candidateRules));
+				services.match(document, candidateRules, transform));
 		return ruleListHandle;
 	}
 

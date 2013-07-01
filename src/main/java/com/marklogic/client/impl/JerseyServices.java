@@ -3450,7 +3450,7 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public InputStream match(StructureWriteHandle document,
-			String[] candidateRules) {
+			String[] candidateRules, ServerTransform transform) {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
 		HandleImplementation baseHandle = HandleAccessor.checkHandle(document, "match");
@@ -3459,6 +3459,9 @@ public class JerseyServices implements RESTServices {
 			for (String candidateRule : candidateRules) {
 				params.add("rule", candidateRule);
 			}
+		}
+		if (transform != null) {
+			transform.merge(params);
 		}
 		WebResource.Builder builder = null;
 		builder = connection.path("alert/match").queryParams(params)
@@ -3507,7 +3510,7 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public InputStream match(QueryDefinition queryDef,
-			long start, long pageLength, String[] candidateRules) {
+			long start, long pageLength, String[] candidateRules, ServerTransform transform) {
 		if (queryDef == null) {
 			throw new IllegalArgumentException("Cannot match null query");
 		}
@@ -3520,7 +3523,9 @@ public class JerseyServices implements RESTServices {
 		if (pageLength >= 0) {
 			params.add("pageLength", Long.toString(pageLength));
 		}
-
+		if (transform != null) {
+			transform.merge(params);
+		}
 		if (candidateRules.length > 0) {
 			for (String candidateRule : candidateRules) {
 				params.add("rule", candidateRule);
@@ -3621,7 +3626,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public InputStream match(String[] docIds, String[] candidateRules) {
+	public InputStream match(String[] docIds, String[] candidateRules, ServerTransform transform) {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
 		if (docIds.length > 0) {
@@ -3633,6 +3638,9 @@ public class JerseyServices implements RESTServices {
 			for (String candidateRule : candidateRules) {
 				params.add("rule", candidateRule);
 			}
+		}
+		if (transform != null) {
+			transform.merge(params);
 		}
 		WebResource.Builder builder = connection.path("alert/match").queryParams(params)
 				.accept("application/xml");

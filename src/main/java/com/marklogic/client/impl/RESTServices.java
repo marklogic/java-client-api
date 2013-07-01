@@ -29,6 +29,7 @@ import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
@@ -208,9 +209,9 @@ public interface RESTServices {
 
 	public <T> T suggest(Class<T> as, SuggestDefinition suggestionDef);
 	
-	public InputStream match(StructureWriteHandle document, String[] candidateRules);
-	public InputStream match(String[] docIds, String[] candidateRules);
-	public InputStream match(QueryDefinition queryDef, long start, long pageLength, String[] candidateRules);
+	public InputStream match(StructureWriteHandle document, String[] candidateRules, ServerTransform transform);
+	public InputStream match(String[] docIds, String[] candidateRules, ServerTransform transform);
+	public InputStream match(QueryDefinition queryDef, long start, long pageLength, String[] candidateRules, ServerTransform transform);
 	
 	/**
 	 * Wraps a HEAD request for a simple URI
