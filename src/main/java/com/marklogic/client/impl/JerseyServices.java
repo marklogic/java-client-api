@@ -3507,7 +3507,7 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public InputStream match(QueryDefinition queryDef,
-			long start, String[] candidateRules) {
+			long start, long pageLength, String[] candidateRules) {
 		if (queryDef == null) {
 			throw new IllegalArgumentException("Cannot match null query");
 		}
