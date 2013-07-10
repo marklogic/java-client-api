@@ -46,6 +46,10 @@ class ResourceExtensionsImpl
 
 	@Override
 	public <T extends StructureReadHandle> T listServices(T listHandle) {
+		return listServices(listHandle, true);
+	}
+	@Override
+	public <T extends StructureReadHandle> T listServices(T listHandle, boolean refresh) {
 		if (listHandle == null)
 			throw new IllegalArgumentException("null handle for listing resource services");
 
@@ -59,8 +63,15 @@ class ResourceExtensionsImpl
 			throw new IllegalArgumentException(
 					"list handle for unsupported format: "+listFormat.getClass().getName());
 
+		RequestParameters extraParams = null;
+		if (!refresh) {
+			extraParams = new RequestParameters();
+			extraParams.put("refresh", "false");
+		}
+
 		listBase.receiveContent(
-				services.getValues(requestLogger, "config/resources", listFormat.getDefaultMimetype(), listBase.receiveAs())
+				services.getValues(requestLogger, "config/resources", extraParams,
+						listFormat.getDefaultMimetype(), listBase.receiveAs())
 				);
 
 		return listHandle;
@@ -124,16 +135,5 @@ class ResourceExtensionsImpl
 			logger.info("Deleting resource services for {}", resourceName);
 
 		services.deleteValue(requestLogger, "config/resources", resourceName);
-	}
-
-	@Override
-	public void refreshExtensions() {
-		RequestParameters params = new RequestParameters();
-		params.add("cache", "refresh");
-
-		if (logger.isInfoEnabled())
-			logger.info("Refreshing extensions");
-
-		services.postValue(requestLogger, "config/extensions", null, params);
 	}
 }

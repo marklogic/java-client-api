@@ -127,7 +127,7 @@ public class TransformExtensionsTest {
 				XMLUnit.buildControlDocument(result)
 				).getLength() == 1);
 
-		result = extensionMgr.listTransforms(new StringHandle().withFormat(Format.XML)).get();
+		result = extensionMgr.listTransforms(new StringHandle().withFormat(Format.XML), true).get();
 		assertNotNull("Failed to retrieve transforms list", result);
 		assertTrue("List without XQuery transform", xpather.getMatchingNodes(
 				"/rapi:transforms/rapi:transform/rapi:name[string(.) = 'testxqy']",

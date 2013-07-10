@@ -55,6 +55,11 @@ class TransformExtensionsImpl
 	@Override
 	public <T extends StructureReadHandle> T listTransforms(T listHandle)
 	throws ForbiddenUserException, FailedRequestException {
+		return listTransforms(listHandle, true);
+	}
+	@Override
+	public <T extends StructureReadHandle> T listTransforms(T listHandle, boolean refresh)
+	throws ForbiddenUserException, FailedRequestException {
 		if (listHandle == null)
 			throw new IllegalArgumentException("Reading transform list with null handle");
 
@@ -68,8 +73,15 @@ class TransformExtensionsImpl
 			throw new IllegalArgumentException(
 					"list handle for unsupported format: "+listFormat.getClass().getName());
 
+		RequestParameters extraParams = null;
+		if (!refresh) {
+			extraParams = new RequestParameters();
+			extraParams.put("refresh", "false");
+		}
+
 		listBase.receiveContent(
-				services.getValues(requestLogger, "config/transforms", listFormat.getDefaultMimetype(), listBase.receiveAs())
+				services.getValues(requestLogger, "config/transforms", extraParams,
+						listFormat.getDefaultMimetype(), listBase.receiveAs())
 				);
 
 		return listHandle;
@@ -189,17 +201,5 @@ class TransformExtensionsImpl
 			logger.info("Deleting transform for {}", transformName);
 
 		services.deleteValue(requestLogger, "config/transforms", transformName);
-	}
-
-	@Override
-	public void refreshExtensions()
-	throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
-		RequestParameters params = new RequestParameters();
-		params.add("cache", "refresh");
-
-		if (logger.isInfoEnabled())
-			logger.info("Refreshing extensions");
-
-		services.postValue(requestLogger, "config/extensions", null, params);
 	}
 }

@@ -35,6 +35,15 @@ public interface ResourceExtensionsManager {
 	 * @return	the list handle
 	 */
     public <T extends StructureReadHandle> T listServices(T listHandle);
+    /**
+	 * Reads the list of resource service extensions installed on the server,
+	 * specifying whether to refresh the metadata about each extension by parsing
+	 * the extension source.
+	 * @param listHandle	a handle on a JSON or XML representation of the list
+     * @param refresh	whether to parse metadata from the extension source
+	 * @return	the list handle
+     */
+    public <T extends StructureReadHandle> T listServices(T listHandle, boolean refresh);
 
     /**
      * Reads the XQuery implementation of the services for a resource.
@@ -58,13 +67,6 @@ public interface ResourceExtensionsManager {
      * @param resourceName	the name of the resource
      */
     public void deleteServices(String resourceName);
-
-	/**
-	 * Refresh the installed resources service and transform extensions
-	 * to make use of the latest version of dependencies including libraries
-	 * updated through ExtensionLibrariesManager.
-	 */
-	public void refreshExtensions();
 
     /**
      * Starts debugging client requests. You can suspend and resume debugging output

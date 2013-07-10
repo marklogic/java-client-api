@@ -618,7 +618,6 @@ public class JerseyServices implements RESTServices {
 				uri, (transactionId != null) ? transactionId : "no",
 				stringJoin(categories, ", ", "no"));
 
-		@SuppressWarnings("resource")
 		MultiPart entity = response.hasEntity() ?
 				response.getEntity(MultiPart.class) : null;
 		if (entity == null)
@@ -2008,12 +2007,22 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public <T> T getValues(RequestLogger reqlog, String type, String mimetype,
-			Class<T> as) throws ForbiddenUserException, FailedRequestException {
+	public <T> T getValues(RequestLogger reqlog, String type, String mimetype, Class<T> as)
+	throws ForbiddenUserException, FailedRequestException {
+		return getValues(reqlog, type, null, mimetype, as);
+	}
+	@Override
+	public <T> T getValues(RequestLogger reqlog, String type, RequestParameters extraParams,
+			String mimetype, Class<T> as)
+	throws ForbiddenUserException, FailedRequestException {
 		if (logger.isDebugEnabled())
 			logger.debug("Getting {}", type);
 
-		WebResource.Builder builder = connection.path(type).accept(mimetype);
+		MultivaluedMap<String, String> requestParams = convertParams(extraParams);
+
+		WebResource.Builder builder = (requestParams == null) ?
+				connection.path(type).accept(mimetype) :
+				connection.path(type).queryParams(requestParams).accept(mimetype);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -3182,7 +3191,6 @@ public class JerseyServices implements RESTServices {
 			String operation, String entityType, ClientResponse response) {
 		logRequest(reqlog, "%s for %s", operation, entityType);
 
-		@SuppressWarnings("resource")
 		MultiPart entity = response.hasEntity() ?
 				response.getEntity(MultiPart.class) : null;
 		if (entity == null)

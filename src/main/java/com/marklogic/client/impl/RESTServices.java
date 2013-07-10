@@ -113,6 +113,9 @@ public interface RESTServices {
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public <T> T getValues(RequestLogger logger, String type, String mimetype, Class<T> as)
 		throws ForbiddenUserException, FailedRequestException;
+	public <T> T getValues(RequestLogger reqlog, String type, RequestParameters extraParams,
+			String mimetype, Class<T> as)
+		throws ForbiddenUserException, FailedRequestException;
 	public void postValue(RequestLogger logger, String type, String key, String mimetype, Object value)
 		throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 	public void postValue(RequestLogger reqlog, String type, String key, RequestParameters extraParams) 
@@ -219,5 +222,4 @@ public interface RESTServices {
 	 * @return true if the status response is 200, false if 404;
 	 */
 	public boolean exists(String uri);
-
 }

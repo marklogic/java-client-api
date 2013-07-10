@@ -38,11 +38,20 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  */
 public interface TransformExtensionsManager {
 	/**
-	 * Lists the installed transform extensions
+	 * Lists the installed transform extensions.
 	 * @param listHandle	a handle on a JSON or XML representation of the list
 	 * @return	the list handle
 	 */
 	public <T extends StructureReadHandle> T listTransforms(T listHandle)
+	throws ForbiddenUserException, FailedRequestException;
+	/**
+	 * Lists the installed transform extensions, specifying whether to refresh
+	 * the metadata about each extension by parsing the extension source.
+	 * @param listHandle	a handle on a JSON or XML representation of the list
+     * @param refresh	whether to parse metadata from the extension source
+	 * @return	the list handle
+	 */
+	public <T extends StructureReadHandle> T listTransforms(T listHandle, boolean refresh)
 	throws ForbiddenUserException, FailedRequestException;
 
 	/**
@@ -118,14 +127,6 @@ public interface TransformExtensionsManager {
      */
     public void deleteTransform(String transformName)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-
-	/**
-	 * Refresh the installed resources service and transform extensions
-	 * to make use of the latest version of dependencies including libraries
-	 * updated through ExtensionLibrariesManager.
-	 */
-	public void refreshExtensions()
-	throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
     /**
      * Starts debugging client requests. You can suspend and resume debugging output

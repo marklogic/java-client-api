@@ -105,7 +105,7 @@ public class ResourceExtensionsTest {
 		extensionMgr.readServices(RESOURCE_NAME, handle);
 		assertEquals("Failed to retrieve resource services", resourceServices, handle.get());
 
-		String result = extensionMgr.listServices(new StringHandle().withFormat(Format.XML)).get();
+		String result = extensionMgr.listServices(new StringHandle().withFormat(Format.XML), true).get();
 		assertNotNull("Failed to retrieve resource services list", result);
 		assertTrue("List without resource", xpather.getMatchingNodes(
 				"/rapi:resources/rapi:resource/rapi:name[string(.) = 'testresource']",
