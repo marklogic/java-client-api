@@ -52,8 +52,10 @@ public class JAXBHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(JAXBHandle.class);
 
-	private JAXBContext context;
-	private Object      content;
+	private JAXBContext  context;
+	private Unmarshaller unmarshaller;
+	private Marshaller   marshaller;
+	private Object       content;
 
 	/**
 	 * Initializes the JAXB handle with the JAXB context for the classes
@@ -62,6 +64,11 @@ public class JAXBHandle
 	 */
 	public JAXBHandle(JAXBContext context) {
 		super();
+		if (context == null) {
+			throw new IllegalArgumentException(
+					"null JAXB context for converting classes"
+					);
+		}
 		super.setFormat(Format.XML);
    		setResendable(true);
 		this.context = context;
@@ -173,11 +180,52 @@ public class JAXBHandle
 		}
 	}
 
-	protected Marshaller makeMarshaller(JAXBContext context) throws JAXBException {
-		Marshaller marshaller = context.createMarshaller();
-		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-		marshaller.setProperty(Marshaller.JAXB_ENCODING,         "UTF-8");
-		return marshaller;
+	/**
+	 * Returns the unmarshaller that converts a tree data structure
+	 * from XML to Java objects, reusing any existing unmarshaller.
+	 * @return	the unmarshaller for the JAXB context
+	 */
+	public Unmarshaller getUnmarshaller()
+	throws JAXBException {
+		return getUnmarshaller(true);
+	}
+	/**
+	 * Returns the unmarshaller that converts a tree data structure
+	 * from XML to Java objects.
+	 * @param reuse	whether to reuse an existing unmarshaller
+	 * @return	the unmarshaller for the JAXB context
+	 */
+	public Unmarshaller getUnmarshaller(boolean reuse)
+	throws JAXBException {
+		if (!reuse || unmarshaller == null) {
+			unmarshaller = context.createUnmarshaller();
+		}
+		return unmarshaller;
+	}
+	/**
+	 * Returns the marshaller that converts a tree data structure
+	 * from Java objects to XML, reusing any existing marshaller.
+	 * @return	the marshaller for the JAXB context
+	 */
+	public Marshaller getMarshaller()
+	throws JAXBException {
+		return getMarshaller(true);
+	}
+	/**
+	 * Returns the marshaller that converts a tree data structure
+	 * from Java objects to XML.
+	 * @param reuse	whether to reuse an existing marshaller
+	 * @return	the marshaller for the JAXB context
+	 */
+	public Marshaller getMarshaller(boolean reuse)
+	throws JAXBException {
+		if (!reuse || this.marshaller == null) {
+			Marshaller marshaller = context.createMarshaller();
+			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+			marshaller.setProperty(Marshaller.JAXB_ENCODING,         "UTF-8");
+			this.marshaller = marshaller;
+		}
+		return this.marshaller;
 	}
 
 	@Override
@@ -187,8 +235,9 @@ public class JAXBHandle
     @Override
 	protected void receiveContent(InputStream content) {
 		try {
-			Unmarshaller unmarshaller = context.createUnmarshaller();
-			this.content = unmarshaller.unmarshal(new InputStreamReader(content, "UTF-8"));
+			this.content = getUnmarshaller().unmarshal(
+					new InputStreamReader(content, "UTF-8")
+					);
 		} catch (JAXBException e) {
 			logger.error("Failed to unmarshall object read from database document",e);
 			throw new MarkLogicIOException(e);
@@ -209,8 +258,7 @@ public class JAXBHandle
 	@Override
 	public void write(OutputStream out) throws IOException {
 		try {
-			Marshaller marshaller = makeMarshaller(context);
-			marshaller.marshal(content, out);
+			getMarshaller().marshal(content, out);
 		} catch (JAXBException e) {
 			logger.error("Failed to marshall object for writing to database document",e);
 			throw new MarkLogicIOException(e);
