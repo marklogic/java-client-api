@@ -61,7 +61,7 @@ declare function graph:post(
 {
     let $input-format := map:get($params, "input-format")
     let $headers := graph:rdf-mime-type("content-type", $input-format)
-    let $insert := semmod:graph-insert($headers, $params, $input)
+    let $insert := semmod:graph-insert($headers, $params, $input, ())
     let $mime := map:put($context, "output-types", "text/plain")
     return document { text { "OK" } }   (: hack to prevent java from not liking status code :)
 };
@@ -74,7 +74,7 @@ declare function graph:put(
 {
     let $input-format := map:get($params, "input-format")
     let $headers := graph:rdf-mime-type("content-type", $input-format)
-    let $insert := semmod:graph-replace($headers, $params, $input)
+    let $insert := semmod:graph-replace($headers, $params, $input, ())
     let $mime := map:put($context, "output-types", "text/plain")
     return document { text { "OK" } }   (: hack to prevent java from not liking status code :)
 };
@@ -84,7 +84,7 @@ declare function graph:delete(
     $params  as map:map
 ) as document-node()?
 {
-    let $insert := semmod:graph-delete(map:map(), $params)
+    let $insert := semmod:graph-delete(map:map(), $params, ())
     return ()
 };
 
