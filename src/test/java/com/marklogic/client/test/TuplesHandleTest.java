@@ -201,8 +201,8 @@ public class TuplesHandleTest {
          assertEquals("Third is string", "xs:string", dv[2].getType());
          assertEquals("Frequency is 1", 1, tuples[0].getCount());
          assertEquals("First value",  1.1, (double) dv[0].get(Double.class), 0.01);
-         assertEquals("Second value", (int) 3, (int) dv[1].get(Integer.class));
-         assertEquals("Third value", "Birmingham", (String) dv[2].get(String.class));
+         assertEquals("Second value", (int) 1, (int) dv[1].get(Integer.class));
+         assertEquals("Third value", "Alaska", (String) dv[2].get(String.class));
          optionsMgr.deleteOptions("valuesoptions");
     }
 }
