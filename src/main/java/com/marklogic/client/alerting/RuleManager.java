@@ -88,8 +88,8 @@ public interface RuleManager {
 
 	/**
 	 * Matches server rules based on the results of a search.
-	 * @param docQuery A query definition to qualify documents to match
-	 * @param ruleListHandle A handle to hold the match results
+	 * @param docQuery A query definition to qualify documents to match.
+	 * @param ruleListHandle A handle to hold the match results.
 	 * @return The List of rules matched by the documents returned by this query.
 	 */
 	public <T extends RuleListReadHandle> T match(QueryDefinition docQuery, T ruleListHandle);
@@ -97,11 +97,11 @@ public interface RuleManager {
 	/**
 	 * Matches server rules based on results of a search, with pagination applied to search.
 	 * Use this method to match, say, a page or search results against rules.
-	 * @param docQuery A query definition to qualify documents to match
+	 * @param docQuery A query definition to qualify documents to match.
 	 * @param start The start position in query results to match.
 	 * @param pageLength The number of results in the filtering query to match. Use null to return all matches.
-	 * @param candidateRules
-	 * @param ruleListHandle A handle to hold the match results
+	 * @param candidateRules An array of rule names to return in matches.  Null matches all rules.
+	 * @param ruleListHandle A handle to hold the match results.
 	 * @return The list of rules matched by the documents returned by the query.
 	 */
 	public <T extends RuleListReadHandle> T match(QueryDefinition docQuery,
@@ -110,12 +110,12 @@ public interface RuleManager {
 	/**
 	 * Matches server rules based on results of a search, with pagination applied to search.
 	 * Use this method to match, say, a page or search results against rules.
-	 * @param docQuery A query definition to qualify documents to match
+	 * @param docQuery A query definition to qualify documents to match.
 	 * @param start The start position in query results to match.
 	 * @param pageLength The number of results in the filtering query to match. Use null to return all matches.
-	 * @param candidateRules
-	 * @param ruleListHandle A handle to hold the match results
-     * @param transform	a server transform to modify the rule list payload
+	 * @param candidateRules An array of rule names to return in matches.  A zero-length array matches all rules.
+	 * @param ruleListHandle A handle to hold the match results.
+     * @param transform	a server transform to modify the rule list payload.
 	 * @return The list of rules matched by the documents returned by the query.
 	 */
 	public <T extends RuleListReadHandle> T match(QueryDefinition docQuery,
@@ -123,28 +123,28 @@ public interface RuleManager {
 		   	ServerTransform transform);
 
 	/**
-	 * Matches server rules based on an array of document IDS
+	 * Matches server rules based on an array of document IDS.
 	 * @param docIds An array of document IDs to match against.
-	 * @param ruleListHandle A handle to hold the match results
+	 * @param ruleListHandle A handle to hold the match results.
 	 * @return The union of all rules matched by the document ids provided.
 	 */
 	public <T extends RuleListReadHandle> T match(String[] docIds, T ruleListHandle);
 
 	/**
-	 * Matches server rules based on an array of document IDs and an array of rule names
+	 * Matches server rules based on an array of document IDs and an array of rule names.
 	 * @param docIds An array of document IDs to match against.
-	 * @param candidateRules An array of rule names to match
+	 * @param candidateRules An array of rule names to return in matches.  A zero-length array matches all rules.
 	 * @param ruleListHandle A handle to hold the match results
 	 * @return The union of rules in candidateRules matched by the document ids provided.
 	 */
 	public <T extends RuleListReadHandle> T match(String[] docIds, String[] candidateRules, T ruleListHandle);
 
 	/**
-	 * Matches server rules based on an array of document IDs and an array of rule names
+	 * Matches server rules based on an array of document IDs and an array of rule names.
 	 * @param docIds An array of document IDs to match against.
-	 * @param candidateRules An array of rule names to match
-	 * @param ruleListHandle A handle to hold the match results
-     * @param transform	a server transform to modify the rule list payload
+	 * @param candidateRules An array of rule names to return in matches.   A zero-length array matches all rules.
+	 * @param ruleListHandle A handle to hold the match results.
+     * @param transform	a server transform to modify the rule list payload.
 	 * @return The union of rules in candidateRules matched by the document ids provided.
 	 */
 	public <T extends RuleListReadHandle> T match(String[] docIds, String[] candidateRules, T ruleListHandle, ServerTransform transform);
@@ -152,7 +152,7 @@ public interface RuleManager {
 	/**
 	 * Matches server rules based on a document supplied in a write handle.
 	 * @param document A document payload to match against rules.
-	 * @param ruleListHandle A handle to hold the match results
+	 * @param ruleListHandle A handle to hold the match results.
 	 * @return The union of rules in candidateRules matched by the document ids provided.
 	 */
 	public <T extends RuleListReadHandle> T match(StructureWriteHandle document, T ruleListHandle);
@@ -160,7 +160,7 @@ public interface RuleManager {
 	/**
 	 * Matches server rules based on a document supplied in a write handle.
 	 * @param document A document payload to match against rules.
-	 * @param candidateRules An array of rule names to match
+	 * @param candidateRules An array of rule names to match.  A zero-length array matches all rules.
 	 * @param ruleListHandle A handle to hold the match results
 	 * @return The union of rules in candidateRules matched by the document.
 	 */
@@ -170,9 +170,9 @@ public interface RuleManager {
 	/**
 	 * Matches server rules based on a document supplied in a write handle.
 	 * @param document A document payload to match against rules.
-	 * @param candidateRules An array of rule names to match
-	 * @param ruleListHandle A handle to hold the match results
-     * @param transform	a server transform to modify the rule list payload
+	 * @param candidateRules An array of rule names to match.  A zero-length array matches all rules.
+	 * @param ruleListHandle A handle to hold the match results.
+     * @param transform	a server transform to modify the rule list payload.
 	 * @return The union of rules in candidateRules matched by the document.
 	 */
 	public <T extends RuleListReadHandle> T match(StructureWriteHandle document,
