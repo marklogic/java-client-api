@@ -873,7 +873,9 @@ public class JerseyServices implements RESTServices {
 				stringJoin(categories, ", ", "no"));
 
 		WebResource webResource = makeDocumentResource(
-				makeDocumentParams(uri, categories, transactionId, extraParams));
+				makeDocumentParams(
+						uri, categories, transactionId, extraParams, isOnContent
+						));
 
 		WebResource.Builder builder = webResource.type(
 				(mimetype != null) ? mimetype : MediaType.WILDCARD);

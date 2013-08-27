@@ -51,6 +51,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentMetadataPatchBuilder.Cardinality;
 import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.XMLDocumentManager;
@@ -310,26 +311,7 @@ public class XMLDocumentTest {
 	public void testPatch() throws Exception {
 		String docId = "/test/testWrite1.xml";
 
-		Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-		Element root    = domDocument.createElement("root");
-		Element firstChild = domDocument.createElement("firstChild");
-		Element firstChildOfFirstChild = domDocument.createElement("firstChildOfFirstChild"); 
-		firstChild.appendChild(firstChildOfFirstChild);
-		root.appendChild(firstChild);
-		Element secondChild = domDocument.createElement("secondChild");
-		root.appendChild(secondChild);
-		Element thirdChild = domDocument.createElement("thirdChild");
-		thirdChild.setTextContent("old value");
-		root.appendChild(thirdChild);
-		Element fourthChild = domDocument.createElement("fourthChild");
-		root.appendChild(fourthChild);
-		Element fifthChild = domDocument.createElement("fifthChild");
-		fifthChild.setTextContent("5");
-		root.appendChild(fifthChild);
-		domDocument.appendChild(root);
-
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
-		docMgr.write(docId, new DOMHandle().with(domDocument));
 
 		DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
 		patchBldr.insertFragment(
@@ -346,22 +328,58 @@ public class XMLDocumentTest {
 
 		DocumentPatchHandle patchHandle = patchBldr.build();
 
-		docMgr.patch(docId, patchHandle);
+		for (int i=0; i < 2; i++) {
+			Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+			Element root    = domDocument.createElement("root");
+			Element firstChild = domDocument.createElement("firstChild");
+			Element firstChildOfFirstChild = domDocument.createElement("firstChildOfFirstChild"); 
+			firstChild.appendChild(firstChildOfFirstChild);
+			root.appendChild(firstChild);
+			Element secondChild = domDocument.createElement("secondChild");
+			root.appendChild(secondChild);
+			Element thirdChild = domDocument.createElement("thirdChild");
+			thirdChild.setTextContent("old value");
+			root.appendChild(thirdChild);
+			Element fourthChild = domDocument.createElement("fourthChild");
+			root.appendChild(fourthChild);
+			Element fifthChild = domDocument.createElement("fifthChild");
+			fifthChild.setTextContent("5");
+			root.appendChild(fifthChild);
+			domDocument.appendChild(root);
 
-		firstChild.insertBefore(
-				domDocument.createElement("newFirstChildOfFirstChild"), firstChildOfFirstChild
-				);
-		firstChild.appendChild(domDocument.createElement("lastChildOfFirstChild"));
-		root.replaceChild(domDocument.createElement("replacedSecondChild"), secondChild);
-		thirdChild.setTextContent("new value");
-		fifthChild.setTextContent("15");
-		root.removeChild(fourthChild);
+			docMgr.write(docId, new DOMHandle().with(domDocument));
 
-		String expected = Common.testDocumentToString(domDocument);
+			String patchType = null;
+			switch (i) {
+			case 0:
+				patchType = "built";
+				docMgr.patch(docId, patchHandle);
+				break;
+			case 1:
+				patchType = "raw";
+				docMgr.clearMetadataCategories();
+				docMgr.patch(docId, new StringHandle(patchHandle.toString()));
+				docMgr.setMetadataCategories(Metadata.ALL);
+				break;
+			default:
+				throw new Exception("unknown patch loop value");
+			}
 
-		String actual   = docMgr.read(docId, new StringHandle()).get();
-		assertNotNull("Read null string for patched XML content",actual);
-		assertXMLEqual("Patched XML document without expected result",expected,actual);
+			firstChild.insertBefore(
+					domDocument.createElement("newFirstChildOfFirstChild"), firstChildOfFirstChild
+			);
+			firstChild.appendChild(domDocument.createElement("lastChildOfFirstChild"));
+			root.replaceChild(domDocument.createElement("replacedSecondChild"), secondChild);
+			thirdChild.setTextContent("new value");
+			fifthChild.setTextContent("15");
+			root.removeChild(fourthChild);
+
+			String expected = Common.testDocumentToString(domDocument);
+
+			String actual   = docMgr.read(docId, new StringHandle()).get();
+			assertNotNull("Read null string for "+patchType+" patched XML content",actual);
+			assertXMLEqual("Unexpected result for "+patchType+" patched XML document",expected,actual);
+		}
 
 		String before = 
 			"<r:root xmlns:r=\"root.org\">"+
@@ -369,7 +387,6 @@ public class XMLDocumentTest {
 		String after = 
 			"</t:target>"+
 			"</r:root>";
-		docMgr.write(docId, new StringHandle(before+after));
 
 		EditableNamespaceContext namespaces = new EditableNamespaceContext();
 		namespaces.put("r", "root.org");
@@ -382,15 +399,30 @@ public class XMLDocumentTest {
 		patchBldr.insertFragment(
 				"/r:root/t:target", Position.LAST_CHILD, inserted
 				);
-
 		patchHandle = patchBldr.build();
 
-		docMgr.patch(docId, patchHandle);
+		String expected = before+inserted+after;
 
-		expected = before+inserted+after;
+		for (int i=0; i < 2; i++) {
+			docMgr.write(docId, new StringHandle(before+after));
 
-		actual = docMgr.read(docId, new StringHandle()).get();
-		assertXMLEqual("Patched namespaced XML document without expected result",expected,actual);
+			String patchType = null;
+			switch (i) {
+			case 0:
+				patchType = "built";
+				docMgr.patch(docId, patchHandle);
+				break;
+			case 1:
+				patchType = "raw";
+				docMgr.patch(docId, new StringHandle(patchHandle.toString()));
+				break;
+			default:
+				throw new Exception("unknown namespaced patch loop value");
+			}
+
+			String actual = docMgr.read(docId, new StringHandle()).get();
+			assertXMLEqual("Unexpected result for "+patchType+" patched namespaced XML document",expected,actual);
+		}
 
 		docMgr.delete(docId);
 	}
