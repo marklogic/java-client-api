@@ -171,7 +171,10 @@ public class StructuredSearchTest {
 
 		SearchHandle sh = queryMgr.search(rawDef, new SearchHandle());
 
-		MatchDocumentSummary matchResult = sh.getMatchResults()[0];
+		MatchDocumentSummary[] summaries = sh.getMatchResults();
+    	assertNotNull(summaries);
+    	assertTrue(summaries.length > 0);
+		MatchDocumentSummary matchResult = summaries[0];
 		Document metadata = matchResult.getMetadata();
 		Element subKey = (Element)
 		metadata.getElementsByTagNameNS("http://marklogic.com/xdmp/json", "subKey").item(0);
