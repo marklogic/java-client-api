@@ -97,7 +97,7 @@ public class ConditionalDocumentTest {
 		assertTrue("Write with bad version succeeded", ex != null);
 		assertTrue("Write with bad version had wrong error", statusCode == 412);
 		assertTrue("Write with no version had misleading message", 
-				ex.getMessage().contains("Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri: /test/conditional1.xml version:"));
+				ex.getMessage().contains("Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri: /test/conditional1.xml"));
 
 
 		desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
