@@ -126,12 +126,10 @@ public class ConditionalDocumentTest {
 			FailedRequest failreq = e.getFailedRequest();
 			if (failreq != null)
 				statusCode = failreq.getStatusCode();
-			System.out.println(e.getFailedRequest().getStatusCode()+" "+e.getMessage());
 			ex = e;
 		}
 		assertTrue("Overwrite without version succeeded", ex != null);
 		assertTrue("Write with no version had wrong error", statusCode == 403);
-		System.out.println(ex.getMessage());
 		assertEquals("Write with no version had misleading message", 
 				"Local message: Content version required to write document. Server Message: You do not have permission to this method and URL",
 				ex.getMessage());
@@ -145,7 +143,6 @@ public class ConditionalDocumentTest {
 			FailedRequest failreq = e.getFailedRequest();
 			if (failreq != null)
 				statusCode = failreq.getStatusCode();
-System.out.println(e.getFailedRequest().getStatusCode()+" "+e.getMessage());
 			ex = e;
 		}
 		assertTrue("Overwrite with bad version succeeded", ex != null);
@@ -170,7 +167,6 @@ System.out.println(e.getFailedRequest().getStatusCode()+" "+e.getMessage());
 			FailedRequest failreq = e.getFailedRequest();
 			if (failreq != null)
 				statusCode = failreq.getStatusCode();
-System.out.println(e.getFailedRequest().getStatusCode()+" "+e.getMessage());
 			ex = e;
 		}
 		assertTrue("Delete without version succeeded", ex != null);
