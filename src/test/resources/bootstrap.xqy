@@ -5,69 +5,195 @@ module namespace bootstrap = "http://marklogic.com/rest-api/resource/bootstrap";
 
 import module namespace admin = "http://marklogic.com/xdmp/admin" at "/MarkLogic/admin.xqy";
 
-declare default function namespace "http://www.w3.org/2005/xpath-functions";
+declare namespace dbx = "http://marklogic.com/xdmp/database";
 
-declare variable $p := "http://marklogic.com/ns/test/places";
+declare default function namespace "http://www.w3.org/2005/xpath-functions";
+declare option xdmp:mapping "false";
 
 declare function bootstrap:database-configure(
   $dbid as xs:unsignedLong)
 as empty-sequence()
 {
-
-	
     let $c := admin:get-configuration()
-
-    (: collection and word lexicons on :)
-    let $c := admin:database-set-collection-lexicon($c, $dbid, true())
-    let $c := admin:database-set-maintain-last-modified($c, $dbid, fn:true())
     
-    let $rangespec := admin:database-range-element-index("dateTime",
-                                "http://marklogic.com/xdmp/property","last-modified","",false() )
-    let $c := admin:database-add-range-element-index($c, $dbid, $rangespec)
-
-    let $rangespec := admin:database-range-element-index("string",
-        "http://nwalsh.com/ns/photolib","tag","http://marklogic.com/collation/",false() )
-    let $c := admin:database-add-range-element-index($c, $dbid, $rangespec)
-    let $rangespec := admin:database-range-element-index("date",
-        "http://nwalsh.com/ns/photolib","date","",false() )
-    let $c := admin:database-add-range-element-index($c, $dbid, $rangespec)
-    let $rangespec := admin:database-range-element-attribute-index("date",
-        "http://nwalsh.com/ns/photolib","view","","date","",false() )
-    let $c := admin:database-add-range-element-attribute-index($c, $dbid, $rangespec)
+    (: collection and word lexicons and triple index on :)
+    let $c := admin:database-set-collection-lexicon($c, $dbid, true())
+    let $c := admin:database-set-maintain-last-modified($c, $dbid, true())
     let $c := admin:database-set-triple-index($c, $dbid, true())
-    let $rangespec := admin:database-range-element-index("double",
-        "","double","",false() )
-    let $c := admin:database-add-range-element-index($c, $dbid, $rangespec)
-    let $rangespec := admin:database-range-element-index("int",
-        "","int","",false() )
-    let $c := admin:database-add-range-element-index($c, $dbid, $rangespec)
-    let $rangespec := admin:database-range-element-index("string",
-        "","grandchild","http://marklogic.com/collation/",false() )
-    let $c := admin:database-add-range-element-index($c, $dbid, $rangespec)
-    let $rangespec := admin:database-range-element-index("string",
-        "","string","http://marklogic.com/collation/",false() )
-    let $c := admin:database-add-range-element-index($c, $dbid, $rangespec)
-    let $wordspec := admin:database-element-word-lexicon(
-        "","suggest","http://marklogic.com/collation/")
-    let $c := admin:database-add-element-word-lexicon($c, $dbid, $wordspec)
+
+    let $index-specs :=
+        let $curr-idx := admin:database-get-range-element-indexes($c, $dbid)
+        let $new-idx  := (
+            "dateTime", "http://marklogic.com/xdmp/property", "last-modified",
+            "string",   "http://nwalsh.com/ns/photolib",      "tag",
+            "date",     "http://nwalsh.com/ns/photolib",      "date",
+            "double",   "",                                   "double",
+            "int",      "",                                   "int",
+            "string",   "",                                   "grandchild",
+            "string",   "",                                   "string"
+            )
+        for $i in 1 to (count($new-idx) idiv 3)
+        let $offset    := ($i * 3) - 2
+        let $datatype  := subsequence($new-idx, $offset, 1)
+        let $collation :=
+            if ($datatype eq "string")
+            then "http://marklogic.com/collation/"
+            else ""
+        let $ns        := subsequence($new-idx, $offset + 1, 1)
+        let $name      := subsequence($new-idx, $offset + 2, 1)
+        let $curr      := $curr-idx[
+            string(dbx:scalar-type) eq $datatype and
+            string(dbx:namespace-uri) eq $ns and
+            tokenize(string(dbx:localname), "\s+") = $name and
+            string(dbx:collation) eq $collation
+            ]
+        return
+            if (exists($curr-idx)) then ()
+            else admin:database-range-element-index(
+                $datatype, $ns, $name, $collation, false()
+                )
+
+    let $c :=
+        if (empty($index-specs)) then $c
+        else admin:database-add-range-element-index($c, $dbid, $index-specs)
+
+    let $index-specs :=
+        let $curr-idx := admin:database-get-range-element-attribute-indexes($c, $dbid)
+        let $new-idx  := (
+            "date", "http://nwalsh.com/ns/photolib", "view", "", "date"
+            )
+        for $i in 1 to (count($new-idx) idiv 5)
+        let $offset    := ($i * 5) - 4
+        let $datatype  := subsequence($new-idx, $offset, 1)
+        let $collation :=
+            if ($datatype eq "string")
+            then "http://marklogic.com/collation/"
+            else ""
+        let $e-ns      := subsequence($new-idx, $offset + 1, 1)
+        let $e-name    := subsequence($new-idx, $offset + 2, 1)
+        let $a-ns      := subsequence($new-idx, $offset + 3, 1)
+        let $a-name    := subsequence($new-idx, $offset + 4, 1)
+        let $curr      := $curr-idx[
+            string(dbx:scalar-type) eq $datatype and
+            string(dbx:parent-namespace-uri) eq $e-ns and
+            tokenize(string(dbx:parent-localname), "\s+") = $e-name and
+            string(dbx:namespace-uri) eq $a-ns and
+            tokenize(string(dbx:localname), "\s+") = $a-name and
+            string(dbx:collation) eq $collation
+            ]
+        return
+            if (exists($curr-idx)) then ()
+            else admin:database-range-element-attribute-index(
+                $datatype, $e-ns, $e-name, $a-ns, $a-name, $collation, false()
+                )
+    let $c :=
+        if (empty($index-specs)) then $c
+        else admin:database-add-range-element-attribute-index($c, $dbid, $index-specs)
+
+    let $index-specs :=
+        let $curr-idx := admin:database-get-element-word-lexicons($c, $dbid)
+        let $new-idx  := (
+            "", "suggest"
+            )
+        for $i in 1 to (count($new-idx) idiv 2)
+        let $offset    := ($i * 2) - 1
+        let $collation := "http://marklogic.com/collation/"
+        let $ns        := subsequence($new-idx, $offset, 1)
+        let $name      := subsequence($new-idx, $offset + 1, 1)
+        let $curr      := $curr-idx[
+            string(dbx:namespace-uri) eq $ns and
+            tokenize(string(dbx:localname), "\s+") = $name and
+            string(dbx:collation) eq $collation
+            ]
+        return
+            if (exists($curr-idx)) then ()
+            else admin:database-element-word-lexicon($ns, $name, $collation)
+    let $c :=
+        if (empty($index-specs)) then $c
+        else admin:database-add-element-word-lexicon($c, $dbid, $index-specs)
 
     (: create geospatial indexes for geo unit test :)
-    let $geospec := admin:database-geospatial-element-pair-index(
-                       $p, "place", $p, "lat", $p, "long", "wgs84", false())
-    let $c := admin:database-add-geospatial-element-pair-index($c, $dbid, $geospec)
+    let $index-specs :=
+        let $curr-idx := admin:database-get-geospatial-element-pair-indexes($c, $dbid)
+        let $p := "http://marklogic.com/ns/test/places"
+        let $new-idx  := (
+            $p, "place", $p, "lat", $p, "long", "wgs84"
+            )
+        for $i in 1 to (count($new-idx) idiv 7)
+        let $offset    := ($i * 7) - 6
+        let $p-ns      := subsequence($new-idx, $offset, 1)
+        let $p-name    := subsequence($new-idx, $offset + 1, 1)
+        let $lat-ns    := subsequence($new-idx, $offset + 2, 1)
+        let $lat-name  := subsequence($new-idx, $offset + 3, 1)
+        let $lon-ns    := subsequence($new-idx, $offset + 4, 1)
+        let $lon-name  := subsequence($new-idx, $offset + 5, 1)
+        let $coord-sys := subsequence($new-idx, $offset + 6, 1)
+        let $curr      := $curr-idx[
+            string(dbx:parent-namespace-uri) eq $p-ns and
+            tokenize(string(dbx:parent-localname), "\s+") = $p-name and
+            string(dbx:latitude-namespace-uri) eq $lat-ns and
+            tokenize(string(dbx:latitude-localname), "\s+") = $lat-name and
+            string(dbx:longitude-namespace-uri) eq $lon-ns and
+            tokenize(string(dbx:longitude-localname), "\s+") = $lon-name and
+            string(dbx:coordinate-system) eq $coord-sys
+            ]
+        return
+            if (exists($curr-idx)) then ()
+            else admin:database-geospatial-element-pair-index(
+                $p-ns, $p-name, $lat-ns, $lat-name, $lon-ns, $lon-name, $coord-sys, false()
+                )
+    let $c :=
+        if (empty($index-specs)) then $c
+        else admin:database-add-geospatial-element-pair-index($c, $dbid, $index-specs)
 
-    let $f1 := admin:database-field("int1", false())
-    let $f2 := admin:database-field("int2", false())
-    let $c := admin:database-add-field($c, $dbid, $f1)
-    let $c := admin:database-add-field($c, $dbid, $f2)
+    let $def-specs :=
+        let $curr-def := admin:database-get-fields($c, $dbid)
+        for $new-def  in ("int1", "int2")
+        let $curr := $curr-def[
+            string(dbx:field-name) eq $new-def
+            ]
+        return
+            if (exists($curr-def)) then ()
+            else admin:database-field($new-def, false())
+    let $c :=
+        if (empty($def-specs)) then $c
+        else (
+            (: you can't create field and field range index in same transaction :)
+            admin:save-configuration-without-restart(
+                admin:database-add-field($c, $dbid, $def-specs)
+                ),
 
- 
-    return admin:save-configuration-without-restart($c),
-    (: you can't create field and field range index in same transaction :)
-    let $c := admin:get-configuration()
-    let $fi1 := admin:database-range-field-index("int", "int1", "", fn:false() )
-    let $fi2 := admin:database-range-field-index("int", "int2", "", fn:false() )
-    let $c := admin:database-add-range-field-index($c, $dbid, ($fi1, $fi2))
+            admin:get-configuration()
+            )
+
+    let $index-specs :=
+        let $curr-idx := admin:database-get-range-field-indexes($c, $dbid)
+        let $new-idx  := (
+            "int", "int1",
+            "int", "int2"
+            )
+        for $i in 1 to (count($new-idx) idiv 2)
+        let $offset    := ($i * 2) - 1
+        let $datatype  := subsequence($new-idx, $offset, 1)
+        let $collation :=
+            if ($datatype eq "string")
+            then "http://marklogic.com/collation/"
+            else ""
+        let $name      := subsequence($new-idx, $offset + 1, 1)
+        let $curr      := $curr-idx[
+            string(dbx:scalar-type) eq $datatype and
+            tokenize(string(dbx:field-name), "\s+") = $name and
+            string(dbx:collation) eq $collation
+            ]
+        return
+            if (exists($curr-idx)) then ()
+            else admin:database-range-field-index(
+                $datatype, $name, $collation, false()
+                )
+    let $c :=
+        if (empty($index-specs)) then $c
+        else admin:database-add-range-field-index($c, $dbid, $index-specs)
+
     return admin:save-configuration-without-restart($c)
 };
 
@@ -76,7 +202,7 @@ $command as xs:string
 ) 
 { 
     try {
-        xdmp:eval(fn:concat('xquery version "1.0-ml"; ',
+        xdmp:eval(concat('xquery version "1.0-ml"; ',
                     'import module namespace sec="http://marklogic.com/xdmp/security" at  ',
                     '    "/MarkLogic/security.xqy"; ',
                     $command),
@@ -91,6 +217,7 @@ $command as xs:string
 
 declare function bootstrap:load-data()
 {
+    xdmp:eval('xquery version "1.0-ml";
     xdmp:document-insert(
         "/sample/first.xml",
         <root name="first">
@@ -604,6 +731,8 @@ xdmp:document-set-permissions("/sample/tuples-test4.xml",
         xdmp:permission("rest-writer","update"))
             ),
     xdmp:document-add-collections("/sample2/suggestion.xml",("http://some.org/suggestions"))
+'
+    )
 };
 
 declare function bootstrap:load-search-data()
@@ -611,22 +740,29 @@ declare function bootstrap:load-search-data()
     ()
 };
 
-
-
 declare function bootstrap:post(
     $context as map:map,
     $params  as map:map,
     $input as document-node()*
 ) as document-node()*
 {
-   let $ncre := bootstrap:security-config('sec:create-user("rest-admin","rest-admin user", "x",("rest-admin"),(),(),())')
-    let $ncre := bootstrap:security-config('sec:create-user("rest-reader","rest-reader user", "x",("rest-reader"),(),(),())')
-    let $ncre := bootstrap:security-config('sec:create-user("rest-writer","rest-writer user", "x",("rest-writer"),(),(),())')
-    let $ncre := bootstrap:security-config('sec:create-user("valid","valid unprivileged user", "x",(),(),(),())')
-    let $dbid := xdmp:database("java-unittest")
-    let $config := bootstrap:database-configure($dbid)
-    let $_ := xdmp:log(("Configured Java test database:", $config))
-    let $d1 := bootstrap:load-data()
-    return ()
-};
+    for $user in ("rest-admin", "rest-reader", "rest-writer", "valid")
+    let $user-id := 
+        try {
+            xdmp:user($user)
+        } catch($e) {
+        }
+    return
+        if (exists($user-id)) then ()
+        else if ($user eq "valid")
+        then bootstrap:security-config('sec:create-user("valid", "valid unprivileged user", "x", (), (), (), ())')
+        else bootstrap:security-config('sec:create-user($user, $user||" user", "x", ($user), (), (), () )'),
 
+    let $dbid := xdmp:database("java-unittest")
+    return (
+        bootstrap:database-configure($dbid),
+        xdmp:log(concat("Configured Java test database:", xdmp:database-name($dbid)))
+        ),
+
+    bootstrap:load-data()
+};
