@@ -48,7 +48,7 @@ as empty-sequence()
             string(dbx:collation) eq $collation
             ]
         return
-            if (exists($curr-idx)) then ()
+            if (exists($curr)) then ()
             else admin:database-range-element-index(
                 $datatype, $ns, $name, $collation, false()
                 )
@@ -82,7 +82,7 @@ as empty-sequence()
             string(dbx:collation) eq $collation
             ]
         return
-            if (exists($curr-idx)) then ()
+            if (exists($curr)) then ()
             else admin:database-range-element-attribute-index(
                 $datatype, $e-ns, $e-name, $a-ns, $a-name, $collation, false()
                 )
@@ -106,7 +106,7 @@ as empty-sequence()
             string(dbx:collation) eq $collation
             ]
         return
-            if (exists($curr-idx)) then ()
+            if (exists($curr)) then ()
             else admin:database-element-word-lexicon($ns, $name, $collation)
     let $c :=
         if (empty($index-specs)) then $c
@@ -138,7 +138,7 @@ as empty-sequence()
             string(dbx:coordinate-system) eq $coord-sys
             ]
         return
-            if (exists($curr-idx)) then ()
+            if (exists($curr)) then ()
             else admin:database-geospatial-element-pair-index(
                 $p-ns, $p-name, $lat-ns, $lat-name, $lon-ns, $lon-name, $coord-sys, false()
                 )
@@ -148,12 +148,12 @@ as empty-sequence()
 
     let $def-specs :=
         let $curr-def := admin:database-get-fields($c, $dbid)
-        for $new-def  in ("int1", "int2")
+        for $new-def in ("int1", "int2")
         let $curr := $curr-def[
             string(dbx:field-name) eq $new-def
             ]
         return
-            if (exists($curr-def)) then ()
+            if (exists($curr)) then ()
             else admin:database-field($new-def, false())
     let $c :=
         if (empty($def-specs)) then $c
@@ -186,7 +186,7 @@ as empty-sequence()
             string(dbx:collation) eq $collation
             ]
         return
-            if (exists($curr-idx)) then ()
+            if (exists($curr)) then ()
             else admin:database-range-field-index(
                 $datatype, $name, $collation, false()
                 )
