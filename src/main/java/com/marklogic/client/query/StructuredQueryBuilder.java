@@ -50,6 +50,9 @@ import com.marklogic.client.util.IterableNamespaceContext;
 
 /**
  * StructuredQueryBuilder builds a query for documents in the database.
+ * Several concrete the query definition classes are now deprecated because you can
+ * instead use the more general {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+ * as the type for query definitions.
  */
 public class StructuredQueryBuilder {
 	final static private String SEARCH_API_NS="http://marklogic.com/appservices/search";
@@ -88,7 +91,8 @@ public class StructuredQueryBuilder {
     
     /**
      * Whether a query should search the document or its associated properties.
-     * The value "DOCUMENT" is here for backward-compatibility.
+     * The value "DOCUMENT" is here for backward-compatibility but deprecated
+     * in favor of DOCUMENTS.
      */
     public enum FragmentScope {
     	@Deprecated DOCUMENT, DOCUMENTS, PROPERTIES;
@@ -730,14 +734,16 @@ public class StructuredQueryBuilder {
      * @param query	the query definition
      * @return	the StructuredQueryDefinition for the element constraint query
      */
-    public ContainerConstraintQuery containerConstraint(String constraintName, StructuredQueryDefinition query) {
+    public StructuredQueryDefinition containerConstraint(String constraintName, StructuredQueryDefinition query) {
     	checkQuery(query);
         return new ContainerConstraintQuery(constraintName, query);
     }
 
     /**
-     * Matches a query within the substructure of the container specified
+     * @deprecated Matches a query within the substructure of the container specified
      * by the constraint.
+     * This method is deprecated in favor of the more general
+     * {@link #containerConstraint(String, StructuredQueryDefinition) containerConstraint()} method.
      * @param constraintName	the constraint definition
      * @param query	the query definition
      * @return	the StructuredQueryDefinition for the element constraint query
@@ -886,7 +892,8 @@ public class StructuredQueryBuilder {
 	// builder methods to StructuredQueryDefinition
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of AndQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of AndQuery.
      */
     @Deprecated
     public class AndQuery
@@ -894,7 +901,7 @@ public class StructuredQueryBuilder {
     	private StructuredQueryDefinition[] queries;
 
         /**
-         * Use the and() builder method of StructuredQueryBuilder
+         * @deprecated Use the and() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -910,7 +917,7 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of OrQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface as the type for instances of OrQuery.
      */
     @Deprecated
     public class OrQuery
@@ -918,7 +925,7 @@ public class StructuredQueryBuilder {
     	private StructuredQueryDefinition[] queries;
 
         /**
-         * Use the or() builder method of StructuredQueryBuilder
+         * @deprecated Use the or() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -934,7 +941,7 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of NotQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface as the type for instances of NotQuery.
      */
     @Deprecated
     public class NotQuery
@@ -942,7 +949,7 @@ public class StructuredQueryBuilder {
     	private StructuredQueryDefinition query;
 
         /**
-         * Use the not() builder method of StructuredQueryBuilder
+         * @deprecated Use the not() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
     	@Deprecated
@@ -963,7 +970,7 @@ public class StructuredQueryBuilder {
     	private StructuredQueryDefinition negative;
 
         /**
-         * Use the notIn() builder method of StructuredQueryBuilder
+         * @deprecated Use the notIn() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -983,7 +990,8 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of AndNotQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of AndNotQuery.
      */
     @Deprecated
     public class AndNotQuery
@@ -992,7 +1000,7 @@ public class StructuredQueryBuilder {
     	private StructuredQueryDefinition negative;
 
         /**
-         * Use the andNot() builder method of StructuredQueryBuilder
+         * @deprecated Use the andNot() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1017,7 +1025,7 @@ public class StructuredQueryBuilder {
     	private StructuredQueryDefinition boostingQuery;
 
         /**
-         * Use the boost() builder method of StructuredQueryBuilder
+         * @deprecated Use the boost() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1038,7 +1046,8 @@ public class StructuredQueryBuilder {
     
     
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of DocumentQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of DocumentQuery.
      */
     @Deprecated
     public class DocumentQuery
@@ -1046,7 +1055,7 @@ public class StructuredQueryBuilder {
         private String[] uris = null;
 
         /**
-         * Use the document() builder method of StructuredQueryBuilder
+         * @deprecated Use the document() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1064,7 +1073,8 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of TermQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of TermQuery.
      */
     @Deprecated
     public class TermQuery
@@ -1073,7 +1083,7 @@ public class StructuredQueryBuilder {
         private Double weight = 0.0;
 
         /**
-         * Use the term() builder method of StructuredQueryBuilder
+         * @deprecated Use the term() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1093,7 +1103,8 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of NearQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of NearQuery.
      */
     @Deprecated
     public class NearQuery
@@ -1104,7 +1115,7 @@ public class StructuredQueryBuilder {
         private StructuredQueryDefinition[] queries;
 
         /**
-         * Use the near() builder method of StructuredQueryBuilder
+         * @deprecated Use the near() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1137,7 +1148,8 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of CollectionQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of CollectionQuery.
      */
     @Deprecated
     public class CollectionQuery
@@ -1145,7 +1157,7 @@ public class StructuredQueryBuilder {
         private String uris[] = null;
 
         /**
-         * Use the collection() builder method of StructuredQueryBuilder
+         * @deprecated Use the collection() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1163,7 +1175,8 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of DirectoryQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of DirectoryQuery.
      */
     @Deprecated
     public class DirectoryQuery
@@ -1173,7 +1186,7 @@ public class StructuredQueryBuilder {
         private Integer depth;
 
         /**
-         * Use the directory() builder method of StructuredQueryBuilder
+         * @deprecated Use the directory() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1204,7 +1217,8 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of DocumentFragmentQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of DocumentFragmentQuery.
      */
     @Deprecated
     public class DocumentFragmentQuery
@@ -1212,7 +1226,7 @@ public class StructuredQueryBuilder {
     	private StructuredQueryDefinition query;
 
         /**
-         * Use the documentFragment() builder method of StructuredQueryBuilder
+         * @deprecated Use the documentFragment() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1228,7 +1242,8 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of PropertiesQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of PropertiesQuery.
      */
     @Deprecated
     public class PropertiesQuery
@@ -1236,7 +1251,7 @@ public class StructuredQueryBuilder {
     	private StructuredQueryDefinition query;
 
         /**
-         * Use the properties() builder method of StructuredQueryBuilder
+         * @deprecated Use the properties() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1252,7 +1267,8 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of LocksQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of LocksQuery.
      */
     @Deprecated
     public class LocksQuery
@@ -1260,7 +1276,7 @@ public class StructuredQueryBuilder {
     	private StructuredQueryDefinition query;
 
         /**
-         * Use the locks() builder method of StructuredQueryBuilder
+         * @deprecated Use the locks() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1279,9 +1295,10 @@ public class StructuredQueryBuilder {
     
     
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of ContainerConstraintQuery.
+     * Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of ContainerConstraintQuery.
      */
-    class ContainerConstraintQuery
+    private class ContainerConstraintQuery
     extends AbstractStructuredQuery {
         private String name;
         private StructuredQueryDefinition query;
@@ -1306,7 +1323,8 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of ElementConstraintQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of ElementConstraintQuery.
      */
     @Deprecated
     public class ElementConstraintQuery
@@ -1315,7 +1333,7 @@ public class StructuredQueryBuilder {
         private StructuredQueryDefinition query;
 
         /**
-         * Use the elementConstraint() builder method of StructuredQueryBuilder
+         * @deprecated Use the elementConstraint() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1335,7 +1353,8 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of PropertiesConstraintQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of PropertiesConstraintQuery.
      */
     @Deprecated
     public class PropertiesConstraintQuery
@@ -1344,7 +1363,7 @@ public class StructuredQueryBuilder {
         private StructuredQueryDefinition query;
 
         /**
-         * Use the propertiesConstraint() builder method of StructuredQueryBuilder
+         * @deprecated Use the propertiesConstraint() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1364,7 +1383,8 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of CollectionConstraintQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of CollectionConstraintQuery.
      */
     @Deprecated
     public class CollectionConstraintQuery
@@ -1373,7 +1393,7 @@ public class StructuredQueryBuilder {
         String[] uris = null;
 
         /**
-         * Use the collectionConstraint() builder method of StructuredQueryBuilder
+         * @deprecated Use the collectionConstraint() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1393,7 +1413,8 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of ValueConstraintQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of ValueConstraintQuery.
      */
     @Deprecated
     public class ValueConstraintQuery
@@ -1403,7 +1424,7 @@ public class StructuredQueryBuilder {
         Double weight;
 
         /**
-         * Use the valueConstraint() builder method of StructuredQueryBuilder
+         * @deprecated Use the valueConstraint() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1430,7 +1451,8 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of WordConstraintQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of WordConstraintQuery.
      */
     @Deprecated
     public class WordConstraintQuery
@@ -1440,7 +1462,7 @@ public class StructuredQueryBuilder {
         Double weight;
 
         /**
-         * Use the wordConstraint() builder method of StructuredQueryBuilder
+         * @deprecated Use the wordConstraint() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1467,7 +1489,8 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of RangeConstraintQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of RangeConstraintQuery.
      */
     @Deprecated
     public class RangeConstraintQuery
@@ -1477,7 +1500,7 @@ public class StructuredQueryBuilder {
         Operator operator = null;
 
         /**
-         * Use the rangeConstraint() builder method of StructuredQueryBuilder
+         * @deprecated Use the rangeConstraint() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1499,7 +1522,8 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of GeospatialConstraintQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of GeospatialConstraintQuery.
      */
     @Deprecated
     public class GeospatialConstraintQuery
@@ -1508,7 +1532,7 @@ public class StructuredQueryBuilder {
         Region[] regions = null;
 
         /**
-         * Use the geospatialConstraint() builder method of StructuredQueryBuilder
+         * @deprecated Use the geospatialConstraint() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1530,7 +1554,8 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the StructuredQueryDefinition interface as the type for instances of CustomConstraintQuery.
+     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
+     * as the type for instances of CustomConstraintQuery.
      */
     @Deprecated
     public class CustomConstraintQuery
@@ -1539,7 +1564,7 @@ public class StructuredQueryBuilder {
         private String name = null;
 
         /**
-         * Use the customConstraint() builder method of StructuredQueryBuilder
+         * @deprecated Use the customConstraint() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
@@ -1878,10 +1903,14 @@ public class StructuredQueryBuilder {
     	}
     }
 
-    // TODO IN A FUTURE RELEASE:  remove the deprecated serialize() method
+    /**
+     * A region matched by a geospatial query.
+     */
     public interface Region {
-        /**
-         * Returns the region as a partial string.  This method will be removed in a future
+        // TODO IN A FUTURE RELEASE:  remove the deprecated serialize() method
+
+    	/**
+         * @deprecated Returns the region as a partial string.  This method will be removed in a future
          * release.
          * @return	the query content identifying a region
          */
@@ -1894,7 +1923,7 @@ public class StructuredQueryBuilder {
 
     abstract class RegionImpl  {
         /**
-         * Returns the region as a partial string.  This method will be removed in a future
+         * @deprecated Returns the region as a partial string.  This method will be removed in a future
          * release.
          * @return	the query content identifying a region
          */
@@ -1906,7 +1935,7 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Treat the Point class as an interface that extends Region.
+     * @deprecated Treat the Point class as an interface that extends Region.
      */
     @Deprecated
     public class Point extends RegionImpl implements Region {
@@ -1914,7 +1943,7 @@ public class StructuredQueryBuilder {
         private double lon = 0.0;
 
         /**
-         * Use the point() builder method of StructuredQueryBuilder.
+         * @deprecated Use the point() builder method of StructuredQueryBuilder.
          */
         @Deprecated
         public Point(double latitude, double longitude) {
@@ -1945,7 +1974,7 @@ public class StructuredQueryBuilder {
     // methods to Region
 
     /**
-     * Use the Region interface as the type for instances of Circle.
+     * @deprecated Use the Region interface as the type for instances of Circle.
      */
     @Deprecated
     public class Circle extends RegionImpl implements Region {
@@ -1953,7 +1982,7 @@ public class StructuredQueryBuilder {
         private double radius = 0.0;
 
         /**
-         * Use the circle() builder method of StructuredQueryBuilder
+         * @deprecated Use the circle() builder method of StructuredQueryBuilder
          * and type the object as an instance of the Region interface.
          */
         @Deprecated
@@ -1972,14 +2001,14 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the Region interface as the type for instances of Box.
+     * @deprecated Use the Region interface as the type for instances of Box.
      */
     @Deprecated
     public class Box extends RegionImpl implements Region {
         private double south, west, north, east;
 
         /**
-         * Use the box() builder method of StructuredQueryBuilder
+         * @deprecated Use the box() builder method of StructuredQueryBuilder
          * and type the object as an instance of the Region interface.
          */
         @Deprecated
@@ -2002,14 +2031,14 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Use the Region interface as the type for instances of Polygon.
+     * @deprecated Use the Region interface as the type for instances of Polygon.
      */
     @Deprecated
     public class Polygon extends RegionImpl implements Region {
         private Point[] points;
 
         /**
-         * Use the polygon() builder method of StructuredQueryBuilder
+         * @deprecated Use the polygon() builder method of StructuredQueryBuilder
          * and type the object as an instance of the Region interface.
          */
         @Deprecated
@@ -2330,21 +2359,52 @@ public class StructuredQueryBuilder {
 		}
 	}
 
+    /**
+     * Converts the list of options used for a range query to an array
+     * as a convenience.
+     * @param options	the list of range query options
+     * @return	the range query options as an array
+     */
 	public String[] rangeOptions(String... options) {
 		return options;
 	}
-	
+
+	/**
+	 * Defines a boost query for the matching and boosting query definitions.  The matching
+	 * or boosting query definitions can each be an AND or OR query definition for complex
+	 * combinations of criteria.
+	 * @param matchingQuery the query definition that filters documents
+	 * @param boostingQuery	the query definition that increases the rank for some filtered documents
+	 * @return	the StructuredQueryDefinition for the boost query
+	 */
 	public StructuredQueryDefinition boost(StructuredQueryDefinition matchingQuery, StructuredQueryDefinition boostingQuery) {
 		return new BoostQuery(matchingQuery, boostingQuery);
 	}
+	/**
+	 * Defines a not-in query for the positive and negative query definitions.  These query definitions
+	 * can each be an AND or OR query definition for complex combinations of criteria.
+	 * @param positive the query definition that includes documents
+	 * @param negative the query definition that excludes documents
+	 * @return
+	 */
 	public StructuredQueryDefinition notIn(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
 		return new NotInQuery(positive, negative);
 	}
-	
+
+	/**
+	 * Gets the namespace bindings used for the query.
+	 * @return	the namespace bindings
+	 */
 	public IterableNamespaceContext getNamespaces() {
 		return namespaces;
 	}
-	
+
+	/**
+	 * Specifies the namespace bindings used for the query.  You can use
+	 * the {@link com.marklogic.client.util.EditableNamespaceContext EditableNamespaceContext}
+	 * class to instantiate a set of bindings between namespace prefixes and Uris.
+	 * @param namespaces	the namespace bindings
+	 */
 	public void setNamespaces(IterableNamespaceContext namespaces) {
 		EditableNamespaceContext newNamespaces = makeNamespaces();
 		if (namespaces != null) {
