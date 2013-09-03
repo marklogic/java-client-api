@@ -29,15 +29,31 @@ import com.marklogic.client.util.RequestParameters;
 public class ServerTransform extends RequestParameters {
 	private String name;
 
+	/**
+	 * Specifies invocation of the named transform on the server.
+	 * @param name	the transform installed on the server
+	 */
 	public ServerTransform(String name) {
 		super();
     	this.name = name;
 	}
 
+	/**
+	 * Gets the name of the invoked transform.
+	 * @return	the name of the transform installed on the server
+	 */
 	public String getName() {
 		return name;
 	}
 
+	/**
+	 * Merges the transform and its parameters with other parameters
+	 * of the request.
+	 * 
+	 * Ordinarily, and application does not need to call this method.
+	 * @param currentParams	the other parameters
+	 * @return	the union of the other parameters and the transform parameters
+	 */
 	public Map<String,List<String>> merge(Map<String,List<String>> currentParams) {
 		Map<String,List<String>> params = (currentParams != null) ?
 				currentParams : new RequestParameters();
