@@ -212,7 +212,7 @@ public interface RESTServices {
 
 	public <T> T suggest(Class<T> as, SuggestDefinition suggestionDef);
 	
-	public InputStream match(StructureWriteHandle document, String[] candidateRules, ServerTransform transform);
+	public InputStream match(StructureWriteHandle document, String[] candidateRules, String mimeType, ServerTransform transform);
 	public InputStream match(String[] docIds, String[] candidateRules, ServerTransform transform);
 	public InputStream match(QueryDefinition queryDef, long start, long pageLength, String[] candidateRules, ServerTransform transform);
 	

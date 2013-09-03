@@ -426,6 +426,19 @@ public class AlertingTest {
 
 	}
 	
+	@Test
+	public void testPostDocumentWithoutFormat() throws SAXException, IOException {
+		StringHandle stringHandle = new StringHandle("<search xmlns=\"http://marklogic.com/appservices/search\"><qtext>true</qtext></search>");
+
+		DOMHandle answer = ruleManager.match(stringHandle, new DOMHandle());
+
+		Document doc = answer.get();
+		NodeList nl = doc.getElementsByTagNameNS(
+				"http://marklogic.com/rest-api", "name");
+		assertEquals(2, nl.getLength());
+
+	}
+	
 	
 	@Test
 	public void testRuleMatchTransform() {

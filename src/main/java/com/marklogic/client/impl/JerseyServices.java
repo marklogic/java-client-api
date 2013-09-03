@@ -3460,11 +3460,10 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public InputStream match(StructureWriteHandle document,
-			String[] candidateRules, ServerTransform transform) {
+			String[] candidateRules, String mimeType, ServerTransform transform) {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
 		HandleImplementation baseHandle = HandleAccessor.checkHandle(document, "match");
-		
 		if (candidateRules.length > 0) {
 			for (String candidateRule : candidateRules) {
 				params.add("rule", candidateRule);
@@ -3475,7 +3474,7 @@ public class JerseyServices implements RESTServices {
 		}
 		WebResource.Builder builder = null;
 		builder = connection.path("alert/match").queryParams(params)
-				.accept("application/xml").type(baseHandle.getMimetype());
+				.accept("application/xml").type(mimeType);
 		
 		ClientResponse response = null;
 		ClientResponse.Status status = null;

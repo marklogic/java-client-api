@@ -174,11 +174,30 @@ public class RuleManagerImpl extends AbstractLoggingManager implements
 		return match(document, candidateRules, ruleListHandle, null);
 	}
 	
+	@SuppressWarnings("rawtypes")
 	@Override
 	public <T extends RuleListReadHandle> T match(StructureWriteHandle document,
 			String[] candidateRules, T ruleListHandle, ServerTransform transform) {
+		
+		HandleImplementation searchBase = HandleAccessor.checkHandle(document, "match");
+		
+		Format searchFormat = searchBase.getFormat();
+        switch(searchFormat) {
+        case UNKNOWN:
+        	searchFormat = Format.XML;
+        	break;
+        case JSON:
+        case XML:
+        	break;
+        default:
+            throw new UnsupportedOperationException("Only XML and JSON queries can filter for rule matches.");
+        }
+
+        String mimeType = searchFormat.getDefaultMimetype();
+
+		
 		HandleAccessor.receiveContent(ruleListHandle,
-				services.match(document, candidateRules, transform));
+				services.match(document, candidateRules, mimeType, transform));
 		return ruleListHandle;
 	}
 
