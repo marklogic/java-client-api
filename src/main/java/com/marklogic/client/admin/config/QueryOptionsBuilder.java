@@ -89,7 +89,10 @@ import com.marklogic.client.admin.config.support.TupleSource;
 import com.marklogic.client.impl.Utilities;
 
 /**
- * @deprecated Use a JSON or XML handle instead of this class to write or read
+ * @deprecated Use a JSON or XML 
+ * {@link com.marklogic.client.io.marker.StructureWriteHandle write handle} or
+ * {@link com.marklogic.client.io.marker.StructureReadHandle read handle}
+ * implementation instead of this class to write or read
  * query options.  For instance:
  * <pre>String opts = new StringBuilder()
  *     .append("&lt;options xmlns=\"http://marklogic.com/appservices/search\">")

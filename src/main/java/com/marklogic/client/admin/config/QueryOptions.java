@@ -44,7 +44,10 @@ import com.marklogic.client.impl.Utilities;
 import com.marklogic.client.util.EditableNamespaceContext;
 
 /**
- * @deprecated Use a JSON or XML handle instead of this class to write or read
+ * @deprecated Use a JSON or XML 
+ * {@link com.marklogic.client.io.marker.StructureWriteHandle write handle} or
+ * {@link com.marklogic.client.io.marker.StructureReadHandle read handle}
+ * implementation instead of this class to write or read
  * query options.  For instance:
  * <pre>String opts = new StringBuilder()
  *     .append("&lt;options xmlns=\"http://marklogic.com/appservices/search\">")
