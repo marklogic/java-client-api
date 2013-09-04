@@ -44,13 +44,14 @@ import com.marklogic.client.impl.Utilities;
 import com.marklogic.client.util.EditableNamespaceContext;
 
 /**
- * Models MarkLogic Search API Configurations.
- * <p>
- * Use a {@link com.marklogic.client.io.QueryOptionsHandle} as the entry point to QueryOptions. 
- * The classes contained within QueryOptions
- * implement the low-level XML binding to the MarkLogic Search API, along with
- * accessor methods to all configurable options.
- * @deprecated use a JSON or XML handle instead to write or read query options.
+ * @deprecated Use a JSON or XML handle instead of this class to write or read
+ * query options.  For instance:
+ * <pre>String opts = new StringBuilder()
+ *     .append("&lt;options xmlns=\"http://marklogic.com/appservices/search\">")
+ *     .append(    "&lt;debug>true&lt;/debug>")
+ *     .append("&lt;/options>")
+ *     .toString();
+ * optsMgr.writeOptions("debug", new StringHandle(opts));</pre>
  */
 @Deprecated
 @XmlAccessorType(XmlAccessType.FIELD)

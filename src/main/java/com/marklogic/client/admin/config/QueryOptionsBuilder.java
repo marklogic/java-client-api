@@ -89,29 +89,14 @@ import com.marklogic.client.admin.config.support.TupleSource;
 import com.marklogic.client.impl.Utilities;
 
 /**
- * QueryOptionsBuilder enables the composition of SearchAPI configurations.
- * 
- * <p>
- * Entry points: <br>
- * 
- * <pre>
- * QueryOptionsBuilder builder = new QueryOptionsBuilder(); 
- * QueryOptionsHandle options = new QueryOptionsHandle();
- * </pre>
- * 
- * With this newly created handle, use fluent setters to append/replace
- * different configuration options supplied by the builder methods below.
- * 
- * An example:
- * 
- * <pre>builder.withConstraints(QueryConstraint... constraints)
- *    .withOperators(builder.operator( ... ), builder.operator( ... ))
- *    .withTerm(builder.term( ... )) 
- *    .withConfiguration(builder.configure()
- *       .returnFacets(true) 
- *       .returnResults(false));
- * </pre>
- * @deprecated use a JSON or XML handle instead to write or read query options.
+ * @deprecated Use a JSON or XML handle instead of this class to write or read
+ * query options.  For instance:
+ * <pre>String opts = new StringBuilder()
+ *     .append("&lt;options xmlns=\"http://marklogic.com/appservices/search\">")
+ *     .append(    "&lt;debug>true&lt;/debug>")
+ *     .append("&lt;/options>")
+ *     .toString();
+ * optsMgr.writeOptions("debug", new StringHandle(opts));</pre>
  */
 @Deprecated
 public class QueryOptionsBuilder {

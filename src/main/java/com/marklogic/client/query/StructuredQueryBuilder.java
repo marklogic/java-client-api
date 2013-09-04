@@ -52,7 +52,10 @@ import com.marklogic.client.util.IterableNamespaceContext;
  * StructuredQueryBuilder builds a query for documents in the database.
  * Several concrete the query definition classes are now deprecated because you can
  * instead use the more general {@link StructuredQueryDefinition StructuredQueryDefinition} interface
- * as the type for query definitions.
+ * as the type for query definitions.  For instance, here is a
+ * forward-compatible approach for capturing an AND query definition
+ * in a variable:
+ * <pre>StructuredQueryDefinition andQry = structuredQueryBuilder.and(... query definitions ...);</pre>
  */
 public class StructuredQueryBuilder {
 	final static private String SEARCH_API_NS="http://marklogic.com/appservices/search";
