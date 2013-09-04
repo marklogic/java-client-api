@@ -27,9 +27,12 @@ import java.util.HashMap;
  * the server. It may be moved into the .impl package in a future release.
  */
 public final class QueryOptionsListBuilder {
+    /**
+     * This is an implementation class that lists the named query options from
+     * the server. It may be moved into the .impl package in a future release.
+     */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlRootElement(namespace = OptionsList.OPTIONS_LIST_NS, name = "query-options")
-
     public static final class OptionsList {
         public static final String OPTIONS_LIST_NS = "http://marklogic.com/rest-api";
 

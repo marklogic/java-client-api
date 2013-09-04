@@ -34,6 +34,10 @@ import com.marklogic.client.query.ValuesListResults;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.ValuesListReadHandle;
 
+/**
+ * A ValuesListHandle represents a list of available named lexicon configurations
+ * from saved query options.
+ */
 public class ValuesListHandle
 	extends BaseHandle<InputStream, OperationNotSupported>
 	implements ValuesListReadHandle, ValuesListResults
