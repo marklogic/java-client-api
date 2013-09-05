@@ -106,7 +106,7 @@ public class TestServerBootstrapper {
 		HttpResponse response = client.execute(put);
 		@SuppressWarnings("unused")
 		HttpEntity entity = response.getEntity();
-		System.out.println("Invoked bootstrap extension.  Response is "
+		System.out.println("Installed bootstrap extension.  Response is "
 				+ response.toString());
 
 	}
