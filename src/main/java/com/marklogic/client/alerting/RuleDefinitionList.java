@@ -41,8 +41,12 @@ extends BaseHandle<InputStream,OperationNotSupported>
 implements Iterable<RuleDefinition>, RuleListReadHandle {
 	
 	
-	public List<RuleDefinition> rules;
+	private List<RuleDefinition> rules;
 	
+	/**
+	 * returns an iterator over a set of rules.
+	 * @return an iterator over [matched] rules.
+	 */
 	@Override
     public Iterator<RuleDefinition> iterator(){ 
     	return rules.iterator();
