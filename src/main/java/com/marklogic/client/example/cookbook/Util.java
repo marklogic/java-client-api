@@ -33,6 +33,8 @@ public class Util {
 		public int            port = -1;
 		public String         adminUser;
 		public String         adminPassword;
+		public String         readerUser;
+		public String         readerPassword;
 		public String         writerUser;
 		public String         writerPassword;
 		public Authentication authType;
@@ -42,6 +44,8 @@ public class Util {
 			port           = Integer.parseInt(props.getProperty("example.port"));
 			adminUser      = props.getProperty("example.admin_user");
 			adminPassword  = props.getProperty("example.admin_password");
+			readerUser     = props.getProperty("example.reader_user");
+			readerPassword = props.getProperty("example.reader_password");
 			writerUser     = props.getProperty("example.writer_user");
 			writerPassword = props.getProperty("example.writer_password");
 			authType       = Authentication.valueOf(
