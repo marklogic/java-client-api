@@ -207,14 +207,20 @@ public class JerseyServices implements RESTServices {
 				+ ":" + port + "/v1/";
 
 		// TODO: integrated control of HTTP Client and Jersey Client logging
-		System.setProperty("org.apache.commons.logging.Log",
+		if (System.getProperty("org.apache.commons.logging.Log") == null) {
+			System.setProperty("org.apache.commons.logging.Log",
 				"org.apache.commons.logging.impl.SimpleLog");
-		System.setProperty(
+		}
+		if (System.getProperty("org.apache.commons.logging.simplelog.log.org.apache.http") == null) {
+			System.setProperty(
 				"org.apache.commons.logging.simplelog.log.org.apache.http",
 				"warn");
-		System.setProperty(
+		}
+		if (System.getProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire") == null) {
+			System.setProperty(
 				"org.apache.commons.logging.simplelog.log.org.apache.http.wire",
 				"warn");
+		}
 
 		Scheme scheme = null;
 		if (context == null) {
