@@ -34,10 +34,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.http.HttpHost;
 import org.apache.http.auth.params.AuthPNames;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.client.params.ClientPNames;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
@@ -110,7 +112,7 @@ public class JerseyServices implements RESTServices {
 			.getLogger(JerseyServices.class);
 	static final String ERROR_NS = "http://marklogic.com/rest-api";
 
-	protected class HostnameVerifierAdapter extends AbstractVerifier {
+	static protected class HostnameVerifierAdapter extends AbstractVerifier {
 		private SSLHostnameVerifier verifier;
 
 		protected HostnameVerifierAdapter(SSLHostnameVerifier verifier) {
@@ -154,19 +156,19 @@ public class JerseyServices implements RESTServices {
 			Authentication authenType, SSLContext context,
 			SSLHostnameVerifier verifier) {
 		X509HostnameVerifier x509Verifier = null;
-		if (verifier == null)
-			;
+		if (verifier == null) {
+			if (context != null)
+				x509Verifier = SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER;
+			}
 		else if (verifier == SSLHostnameVerifier.ANY)
 			x509Verifier = SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
 		else if (verifier == SSLHostnameVerifier.COMMON)
 			x509Verifier = SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER;
 		else if (verifier == SSLHostnameVerifier.STRICT)
 			x509Verifier = SSLSocketFactory.STRICT_HOSTNAME_VERIFIER;
-		else if (context != null && verifier != null)
-			x509Verifier = new HostnameVerifierAdapter(verifier);
 		else if (context != null)
-			x509Verifier = SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER;
-		else if (verifier != null)
+			x509Verifier = new HostnameVerifierAdapter(verifier);
+		else
 			throw new IllegalArgumentException(
 					"Null SSLContent but non-null SSLHostnameVerifier for client");
 
@@ -235,20 +237,24 @@ public class JerseyServices implements RESTServices {
 		SchemeRegistry schemeRegistry = new SchemeRegistry();
 		schemeRegistry.register(scheme);
 
-		int maxConnections = 100;
+		int maxRouteConnections = 100;
+		int maxTotalConnections = 2 * maxRouteConnections;
 
 		/*
 		 * 4.2 PoolingClientConnectionManager connMgr = new
 		 * PoolingClientConnectionManager(schemeRegistry);
-		 * connMgr.setMaxTotal(maxConnections);
-		 * connMgr.setDefaultMaxPerRoute(maxConnections);
+		 * connMgr.setMaxTotal(maxTotalConnections);
+		 * connMgr.setDefaultMaxPerRoute(maxRouteConnections);
 		 * connMgr.setMaxPerRoute( new HttpRoute(new HttpHost(baseUri)),
-		 * maxConnections );
+		 *     maxRouteConnections);
 		 */
 		// start 4.1
 		ThreadSafeClientConnManager connMgr = new ThreadSafeClientConnManager(
 				schemeRegistry);
-		connMgr.setDefaultMaxPerRoute(maxConnections);
+		connMgr.setMaxTotal(maxTotalConnections);
+		connMgr.setDefaultMaxPerRoute(maxRouteConnections);
+		connMgr.setMaxForRoute(new HttpRoute(new HttpHost(baseUri)),
+				maxRouteConnections);
 		// end 4.1
 
 		// CredentialsProvider credentialsProvider = new
@@ -1540,7 +1546,8 @@ public class JerseyServices implements RESTServices {
 				logger.debug("Searching for keys/values");
 
 			Map<ValueLocator, String> pairs = ((KeyValueQueryDefinition) queryDef);
-			for (ValueLocator loc : pairs.keySet()) {
+			for (Map.Entry<ValueLocator, String> entry: pairs.entrySet()) {
+				ValueLocator loc = entry.getKey();
 				if (loc instanceof KeyLocator) {
 					addEncodedParam(params, "key", ((KeyLocator) loc).getKey());
 				} else {
@@ -1550,7 +1557,7 @@ public class JerseyServices implements RESTServices {
 						params.add("attribute", eloc.getAttribute().toString());
 					}
 				}
-				addEncodedParam(params, "value", pairs.get(loc));
+				addEncodedParam(params, "value", entry.getValue());
 			}
 
 			builder = connection.path("keyvalue").queryParams(params)
@@ -3374,13 +3381,13 @@ public class JerseyServices implements RESTServices {
 				response.close();
 				response = null;
 			}
+			partQueue = null;
 			reqlog = null;
 		}
 
 		@Override
 		protected void finalize() throws Throwable {
 			close();
-			partQueue = null;
 			super.finalize();
 		}
 	}
@@ -3592,9 +3599,7 @@ public class JerseyServices implements RESTServices {
 		ClientResponse.Status status = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
-			if (queryDef == null) {
-				response = builder.get(ClientResponse.class);
-			} else if (queryDef instanceof StringQueryDefinition) {
+			if (queryDef instanceof StringQueryDefinition) {
 				response = builder.get(ClientResponse.class);
 			} else if (queryDef instanceof StructuredQueryDefinition) {
 				response = builder.post(ClientResponse.class, structure);

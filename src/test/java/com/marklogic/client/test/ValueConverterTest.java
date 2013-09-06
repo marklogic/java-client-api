@@ -226,6 +226,14 @@ public class ValueConverterTest {
 			this.type     = type;
 			this.value    = value;
 		}
-		
+		public Object getOriginal() {
+			return original;
+		}
+		public String getType() {
+			return type;
+		}
+		public String getValue() {
+			return value;
+		}		
 	}
 }

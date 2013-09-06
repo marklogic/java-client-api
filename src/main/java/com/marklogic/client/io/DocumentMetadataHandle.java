@@ -88,7 +88,7 @@ public class DocumentMetadataHandle
 		public void addAll(String... collections);
 	}
 	@SuppressWarnings("serial")
-	private class CollectionsImpl extends HashSet<String> implements DocumentCollections {
+	static private class CollectionsImpl extends HashSet<String> implements DocumentCollections {
 		@Override
 	    public void addAll(String... collections) {
 	    	if (collections == null || collections.length < 1)
@@ -113,7 +113,7 @@ public class DocumentMetadataHandle
 		public void add(String role, Capability... capabilities);
 	}
 	@SuppressWarnings("serial")
-	private class PermissionsImpl extends HashMap<String,Set<Capability>> implements DocumentPermissions {
+	static private class PermissionsImpl extends HashMap<String,Set<Capability>> implements DocumentPermissions {
 		@Override
 		public void add(String role, Capability... capabilities) {
 			if (capabilities == null || capabilities.length < 1)
@@ -266,7 +266,7 @@ public class DocumentMetadataHandle
 		public Object put(QName name, String value);
 	}
 	@SuppressWarnings("serial")
-	private class PropertiesImpl extends ClientPropertiesImpl implements DocumentProperties {
+	static private class PropertiesImpl extends ClientPropertiesImpl implements DocumentProperties {
 		private PropertiesImpl() {
 			super();
 		}
@@ -659,7 +659,7 @@ public class DocumentMetadataHandle
 	private void sendMetadataImpl(OutputStream out) {
 		try {
 			XMLOutputFactory factory = XMLOutputFactory.newInstance();
-			factory.setProperty("javax.xml.stream.isRepairingNamespaces", new Boolean(true));
+			factory.setProperty("javax.xml.stream.isRepairingNamespaces", true);
 
 			valueSerializer = null;
 

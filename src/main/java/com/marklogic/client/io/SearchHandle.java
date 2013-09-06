@@ -145,8 +145,8 @@ public class SearchHandle
 	protected void receiveContent(InputStream content) {
 		try {
 	    	XMLInputFactory factory = XMLInputFactory.newFactory();
-			factory.setProperty("javax.xml.stream.isNamespaceAware", new Boolean(true));
-			factory.setProperty("javax.xml.stream.isValidating",     new Boolean(false));
+			factory.setProperty("javax.xml.stream.isNamespaceAware", true);
+			factory.setProperty("javax.xml.stream.isValidating",     false);
 
 			XMLEventReader reader = factory.createXMLEventReader(content, "UTF-8");
 			SearchResponseImpl response = new SearchResponseImpl();
@@ -425,7 +425,7 @@ public class SearchHandle
     	return (size == 0) ? null : documents.toArray(new Document[size]);
     }
 
-	private class SearchMetricsImpl implements SearchMetrics {
+	static private class SearchMetricsImpl implements SearchMetrics {
         long qrTime = -1;
         long frTime = -1;
         long srTime = -1;
@@ -466,7 +466,7 @@ public class SearchHandle
         }
     }
 
-    private class EventRange {
+    static private class EventRange {
     	private int first = -1;
     	private int next  = -1; // 1 after the last item in the range
     	private EventRange(int first, int next) {
@@ -622,7 +622,7 @@ public class SearchHandle
 	    }
     }
 
-    private class MatchLocationImpl implements MatchLocation {
+    static private class MatchLocationImpl implements MatchLocation {
         private String path = null;
         private ArrayList<MatchSnippet> matchEvents = new ArrayList<MatchSnippet>();
 
@@ -663,7 +663,7 @@ public class SearchHandle
         }
     }
 
-    private class MatchSnippetImpl implements MatchSnippet {
+    static private class MatchSnippetImpl implements MatchSnippet {
         private boolean high = false;
         private String text = null;
         
@@ -683,7 +683,7 @@ public class SearchHandle
         }
     }
 
-    private class FacetResultImpl implements FacetResult {
+    static private class FacetResultImpl implements FacetResult {
         private String name = null;
         private FacetValue[] values = null;
 
@@ -703,7 +703,7 @@ public class SearchHandle
         }
     }
 
-    private class FacetValueImpl implements FacetValue {
+    static private class FacetValueImpl implements FacetValue {
         private String name = null;
         private long count = 0;
         private String label = null;
@@ -733,7 +733,7 @@ public class SearchHandle
         }
     }
 
-    private class FacetHeatmapValueImpl implements FacetHeatmapValue {
+    static private class FacetHeatmapValueImpl implements FacetHeatmapValue {
         private String name = null;
         private long count = 0;
         private String label = null;
@@ -777,7 +777,7 @@ public class SearchHandle
      *
      * <p>The Search API may return warnings, they are represented by objects in this class.</p>
      */
-    public class Warning {
+    static public class Warning {
         private String id = null;
         private String text = null;
 
@@ -814,7 +814,7 @@ public class SearchHandle
      *
      * <p>The Search API may return report messages, they are represented by objects in this class.</p>
      */
-    public class Report {
+    static public class Report {
         private String id = null;
         private String name = null;
         private String type = null;

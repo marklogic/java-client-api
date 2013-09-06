@@ -147,7 +147,7 @@ public class ResourceServicesTest {
 		extensionMgr.deleteServices(ResourceExtensionsTest.RESOURCE_NAME);
 	}
 
-	class SimpleResourceManager extends ResourceManager {
+	static class SimpleResourceManager extends ResourceManager {
 		public SimpleResourceManager() {
 			super();
 		}

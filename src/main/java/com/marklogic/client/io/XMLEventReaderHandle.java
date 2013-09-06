@@ -200,8 +200,8 @@ public class XMLEventReaderHandle
 	}
 	protected XMLInputFactory makeXMLInputFactory() {
 		XMLInputFactory factory = XMLInputFactory.newFactory();
-		factory.setProperty("javax.xml.stream.isNamespaceAware", new Boolean(true));
-		factory.setProperty("javax.xml.stream.isValidating",     new Boolean(false));
+		factory.setProperty("javax.xml.stream.isNamespaceAware", true);
+		factory.setProperty("javax.xml.stream.isValidating",     false);
 
 		return factory;
 	}

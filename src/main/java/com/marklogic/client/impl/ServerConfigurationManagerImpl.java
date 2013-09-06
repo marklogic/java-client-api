@@ -77,8 +77,8 @@ class ServerConfigurationManagerImpl
 				return;
 
 			XMLInputFactory factory = XMLInputFactory.newFactory();
-			factory.setProperty("javax.xml.stream.isNamespaceAware", new Boolean(true));
-			factory.setProperty("javax.xml.stream.isValidating",     new Boolean(false));
+			factory.setProperty("javax.xml.stream.isNamespaceAware", true);
+			factory.setProperty("javax.xml.stream.isValidating",     false);
 
 			XMLStreamReader reader = factory.createXMLStreamReader(stream);
 
@@ -133,7 +133,7 @@ class ServerConfigurationManagerImpl
 	public void write(OutputStream out) throws IOException {
 		try {
 			XMLOutputFactory factory = XMLOutputFactory.newFactory();
-			factory.setProperty("javax.xml.stream.isRepairingNamespaces", new Boolean(true));
+			factory.setProperty("javax.xml.stream.isRepairingNamespaces", true);
 
 			XMLStreamWriter serializer = factory.createXMLStreamWriter(out, "utf-8");
 

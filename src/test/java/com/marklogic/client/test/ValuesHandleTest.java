@@ -213,13 +213,13 @@ public class ValuesHandleTest {
     	return "valuesoptions";
     }
 
-    public class MyValuesHandle extends ValuesHandle {
+    static public class MyValuesHandle extends ValuesHandle {
         public void parseTestData(InputStream stream) {
             receiveContent(stream);
         }
     }
 
-    public class MyValuesListHandle extends ValuesListHandle {
+    static public class MyValuesListHandle extends ValuesListHandle {
         public void parseTestData(InputStream stream) {
             receiveContent(stream);
         }

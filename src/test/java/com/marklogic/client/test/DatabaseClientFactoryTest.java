@@ -56,7 +56,7 @@ public class DatabaseClientFactoryTest {
 				configurator.isConfigured);
 	}
 
-	class ConfiguratorImpl implements HttpClientConfigurator {
+	static class ConfiguratorImpl implements HttpClientConfigurator {
 		public boolean isConfigured = false;
 		@Override
 		public void configure(HttpClient client) {

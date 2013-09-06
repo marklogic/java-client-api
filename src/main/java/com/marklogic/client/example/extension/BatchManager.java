@@ -96,7 +96,7 @@ public class BatchManager extends ResourceManager {
 	}
 
 // TODO: assemble a single thread-safe queue instead of two separate queues
-	public class BatchResponse implements Iterator<OutputItem> {
+	static public class BatchResponse implements Iterator<OutputItem> {
 		boolean success = false;
 		Iterator<OutputItem> items;
 		ServiceResultIterator results;
@@ -167,6 +167,9 @@ public class BatchManager extends ResourceManager {
 			this.desc = desc;
 			return this;
 		}
+		DocumentDescriptor getDescriptor() {
+			return desc;
+		}
 	}
 	class DeleteInput extends InputItem {
 	}
@@ -203,6 +206,12 @@ public class BatchManager extends ResourceManager {
 		@SuppressWarnings("rawtypes")
 		String getContentMimetype() {
 			return ((BaseHandle) content).getMimetype();
+		}
+		DocumentMetadataHandle getMetadata() {
+			return metadata;
+		}
+		AbstractWriteHandle getContent() {
+			return content;
 		}
 	}
 

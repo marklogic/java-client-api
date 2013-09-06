@@ -31,7 +31,7 @@ public class ValuesMetricImpl {
     private static DatatypeFactory dtFactory = null;
     private static Calendar now = Calendar.getInstance();
 
-    public ValuesMetricImpl() {
+    private static DatatypeFactory getDatatypeFactory() {
         if (dtFactory == null) {
             try {
                 dtFactory = DatatypeFactory.newInstance();
@@ -39,6 +39,10 @@ public class ValuesMetricImpl {
                 throw new MarkLogicIOException("Cannot instantiate datatypeFactory", dce);
             }
         }
+        return dtFactory;
+    }
+
+    public ValuesMetricImpl() {
     }
 
     @XmlValue
@@ -54,8 +58,7 @@ public class ValuesMetricImpl {
     }
 
     private long parseTime(String time) {
-
-        Duration d = dtFactory.newDurationDayTime(time);
+        Duration d = getDatatypeFactory().newDurationDayTime(time);
         return d.getTimeInMillis(now);
     }
 }

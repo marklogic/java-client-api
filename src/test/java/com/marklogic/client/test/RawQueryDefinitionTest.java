@@ -98,8 +98,6 @@ public class RawQueryDefinitionTest {
 
 	StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(null);
 
-	String structuredString = qb.valueConstraint("name", "one").serialize();
-
 	String optionsString = "<search:options >"
 			+ "<search:constraint name=\"favorited\">" + "<search:value>"
 			+ "<search:element name=\"favorited\" ns=\"\"/>"

@@ -98,7 +98,7 @@ public class QueryOptionsListHandleTest {
     }
 
 
-    public class MyQueryOptionsListHandle extends QueryOptionsListHandle {
+    static public class MyQueryOptionsListHandle extends QueryOptionsListHandle {
         public void parseTestData(InputStream stream) {
             receiveContent(stream);
         }

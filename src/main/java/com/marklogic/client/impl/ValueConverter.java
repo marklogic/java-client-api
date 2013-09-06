@@ -64,7 +64,7 @@ public class ValueConverter {
 
 	static public void convertFromJava(Object value, ValueProcessor processor) {
 		if (value == null)
-			processor.process(value, null, null);
+			processor.process(null, null, null);
 		else if (value instanceof BigDecimal)
 			convertFromJava((BigDecimal) value, processor);
 		else if (value instanceof BigInteger)
@@ -100,7 +100,7 @@ public class ValueConverter {
 	}
 	static public void convertFromJava(BigDecimal value, ValueProcessor processor) {
 		if (value == null) {
-			processor.process(value, null, null);
+			processor.process(null, null, null);
 			return;
 		}
 		processor.process(
@@ -111,7 +111,7 @@ public class ValueConverter {
 	}
 	static public void convertFromJava(BigInteger value, ValueProcessor processor) {
 		if (value == null) {
-			processor.process(value, null, null);
+			processor.process(null, null, null);
 			return;
 		}
 		if (MIN_UNSIGNED.compareTo(value) <= 0 &&
@@ -131,7 +131,7 @@ public class ValueConverter {
 	}
 	static public void convertFromJava(Boolean value, ValueProcessor processor) {
 		if (value == null) {
-			processor.process(value, null, null);
+			processor.process(null, null, null);
 			return;
 		}
 		processor.process(
@@ -142,7 +142,7 @@ public class ValueConverter {
 	}
 	static public void convertFromJava(Byte value, ValueProcessor processor) {
 		if (value == null) {
-			processor.process(value, null, null);
+			processor.process(null, null, null);
 			return;
 		}
 		processor.process(
@@ -153,7 +153,7 @@ public class ValueConverter {
 	}
 	static public void convertFromJava(byte[] value, ValueProcessor processor) {
 		if (value == null) {
-			processor.process(value, null, null);
+			processor.process(null, null, null);
 			return;
 		}
 		processor.process(
@@ -164,7 +164,7 @@ public class ValueConverter {
 	}
 	static public void convertFromJava(Calendar value, ValueProcessor processor) {
 		if (value == null) {
-			processor.process(value, null, null);
+			processor.process(null, null, null);
 			return;
 		}
 		if (!value.isSet(Calendar.DAY_OF_MONTH))
@@ -188,7 +188,7 @@ public class ValueConverter {
 	}
 	static public void convertFromJava(Double value, ValueProcessor processor) {
 		if (value == null) {
-			processor.process(value, null, null);
+			processor.process(null, null, null);
 			return;
 		}
 		processor.process(
@@ -199,7 +199,7 @@ public class ValueConverter {
 	}
 	static public void convertFromJava(Duration value, ValueProcessor processor) {
 		if (value == null) {
-			processor.process(value, null, null);
+			processor.process(null, null, null);
 			return;
 		}
 		processor.process(
@@ -210,7 +210,7 @@ public class ValueConverter {
 	}
 	static public void convertFromJava(Float value, ValueProcessor processor) {
 		if (value == null) {
-			processor.process(value, null, null);
+			processor.process(null, null, null);
 			return;
 		}
 		processor.process(
@@ -221,7 +221,7 @@ public class ValueConverter {
 	}
 	static public void convertFromJava(Integer value, ValueProcessor processor) {
 		if (value == null) {
-			processor.process(value, null, null);
+			processor.process(null, null, null);
 			return;
 		}
 		int ival = value.intValue();
@@ -240,7 +240,7 @@ public class ValueConverter {
 	}
 	static public void convertFromJava(Long value, ValueProcessor processor) {
 		if (value == null) {
-			processor.process(value, null, null);
+			processor.process(null, null, null);
 			return;
 		}
 		long longVal = ((Long) value).longValue();
@@ -259,7 +259,7 @@ public class ValueConverter {
 	}
 	static public void convertFromJava(Short value, ValueProcessor processor) {
 		if (value == null) {
-			processor.process(value, null, null);
+			processor.process(null, null, null);
 			return;
 		}
 		processor.process(
@@ -270,7 +270,7 @@ public class ValueConverter {
 	}
 	static public void convertFromJava(String value, ValueProcessor processor) {
 		if (value == null) {
-			processor.process(value, null, null);
+			processor.process(null, null, null);
 			return;
 		}
 		processor.process(

@@ -1008,7 +1008,7 @@ implements DocumentMetadataPatchBuilder
 			handle.setFormat(Format.XML);
 			try {
 				XMLOutputFactory factory = XMLOutputFactory.newInstance();
-				factory.setProperty("javax.xml.stream.isRepairingNamespaces", new Boolean(true));
+				factory.setProperty("javax.xml.stream.isRepairingNamespaces", true);
 
 				StringWriter    writer     = new StringWriter();
 				XMLStreamWriter serializer = factory.createXMLStreamWriter(writer);

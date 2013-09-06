@@ -96,7 +96,7 @@ public class DatabaseClientFactory {
 		 * Builtin supports builtin implementations of SSLHostnameVerifier.
 		 */
 		public class Builtin implements SSLHostnameVerifier {
-			String name;
+			private String name;
 			private Builtin(String name) {
 				super();
 				this.name = name;
@@ -105,6 +105,13 @@ public class DatabaseClientFactory {
 			public void verify(String hostname, String[] cns, String[] subjectAlts) throws SSLException {
 				throw new MarkLogicInternalException(
 						"SSLHostnameVerifier.Builtin called directly instead of passed as parameter");
+			}
+			/**
+			 * Returns the name of the built-in.
+			 * @return	the built-in name
+			 */
+			public String getName() {
+				return name;
 			}
 		}
 	}

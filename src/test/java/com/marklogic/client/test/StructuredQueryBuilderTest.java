@@ -43,7 +43,7 @@ import com.marklogic.client.util.EditableNamespaceContext;
 
 public class StructuredQueryBuilderTest {
 	// remove dependency on org.apache.tools.ant.filters.StringInputStream
-	class StringInputStream extends ByteArrayInputStream {
+	static class StringInputStream extends ByteArrayInputStream {
 		StringInputStream(String input) {
 			super(input.getBytes());
 		}
@@ -564,7 +564,7 @@ q);
         }
     }
 
-    private class ParseHandler extends DefaultHandler {
+    static private class ParseHandler extends DefaultHandler {
         public void fatalError(SAXParseException spe) throws SAXParseException {
             throw spe;
         }
