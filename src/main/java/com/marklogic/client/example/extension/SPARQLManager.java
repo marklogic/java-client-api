@@ -60,6 +60,7 @@ public class SPARQLManager extends ResourceManager {
 		return search(null, namedGraphURI, query, format, response);
 	}
 
+	@SuppressWarnings("rawtypes")
 	public <T extends XMLReadHandle> T search(String defaultGraphURI,
 			String[] namedGraphURI, XMLWriteHandle query, QueryFormat format,
 			T response) {
