@@ -15,6 +15,10 @@
  */
 package com.marklogic.client.query;
 
+/**
+ * Represents the criteria for a suggestion call, in which the beginning
+ * of a term is supplied for possible suggested endings.
+ */
 public interface SuggestDefinition {
 
 	 /**
