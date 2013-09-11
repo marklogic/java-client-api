@@ -2094,7 +2094,7 @@ public class StructuredQueryBuilder {
 
     static private XMLStreamWriter makeSerializer(OutputStream out) {
 		XMLOutputFactory factory = XMLOutputFactory.newInstance();
-		factory.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, new Boolean(true));
+		factory.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, true);
 
 		try {
 			XMLStreamWriter serializer = factory.createXMLStreamWriter(out, "UTF-8");
