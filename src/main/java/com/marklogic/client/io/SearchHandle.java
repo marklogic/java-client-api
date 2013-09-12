@@ -31,6 +31,7 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
@@ -1410,7 +1411,8 @@ public class SearchHandle
 	    }
 
 	    private String getAttribute(StartElement element, String name) {
-	    	return element.getAttributeByName(new QName(name)).getValue();
+	    	Attribute att = element.getAttributeByName(new QName(name));
+	    	return (att != null) ? att.getValue() : null;
 	    }
         private long parseTime(DatatypeFactory dtFactory, Calendar now, String time) {
             return dtFactory.newDurationDayTime(time).getTimeInMillis(now);
