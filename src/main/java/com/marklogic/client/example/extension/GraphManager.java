@@ -46,6 +46,16 @@ public class GraphManager extends ResourceManager {
 
 	enum GraphFormat {
 		HTML, JSON, NQUAD, TURTLE, XML, NTRIPLE;
+		@Override
+		public String toString() {
+			switch(this) {
+			case JSON:
+				return "rdfjson";
+			case XML:
+				return "rdfxml";
+			}
+			return super.toString().toLowerCase();
+		}
 	}
 
 	public GraphManager(DatabaseClient client) {
@@ -85,7 +95,7 @@ public class GraphManager extends ResourceManager {
 	public <T extends GenericReadHandle> T read(GraphFormat format, T response) {
 		RequestParameters params = new RequestParameters();
 		params.add("default", "true");
-		params.add("output-format", format.toString().toLowerCase());
+		params.add("format", format.toString());
 		return getServices().get(params, response);
 	}
 
@@ -100,7 +110,7 @@ public class GraphManager extends ResourceManager {
 			GraphFormat format, T response) {
 		RequestParameters params = new RequestParameters();
 		params.add("graph", graphUri);
-		params.add("output-format", format.toString().toLowerCase());
+		params.add("format", format.toString());
 		return getServices().get(params, response);
 	}
 
@@ -121,7 +131,7 @@ public class GraphManager extends ResourceManager {
 
 		RequestParameters params = new RequestParameters();
 		params.add("default", "true");
-		params.add("input-format", format.toString().toLowerCase());
+		params.add("format", format.toString());
 
 		getServices().post(params, (AbstractWriteHandle) graph);
 	}
@@ -144,7 +154,7 @@ public class GraphManager extends ResourceManager {
 
 		RequestParameters params = new RequestParameters();
 		params.add("graph", graphUri);
-		params.add("input-format", format.toString().toLowerCase());
+		params.add("format", format.toString());
 
 		getServices().post(params, (AbstractWriteHandle) graph);
 	}
@@ -166,7 +176,7 @@ public class GraphManager extends ResourceManager {
 
 		RequestParameters params = new RequestParameters();
 		params.add("default", "true");
-		params.add("input-format", format.toString().toLowerCase());
+		params.add("format", format.toString());
 
 		getServices().put(params, (AbstractWriteHandle) graph, null);
 	}
@@ -190,7 +200,7 @@ public class GraphManager extends ResourceManager {
 
 		RequestParameters params = new RequestParameters();
 		params.add("graph", graphUri);
-		params.add("input-format", format.toString().toLowerCase());
+		params.add("format", format.toString());
 
 		getServices().put(params, (AbstractWriteHandle) graph, null);
 	}
@@ -223,15 +233,15 @@ public class GraphManager extends ResourceManager {
 
 		MethodParameters get = new MethodParameters(MethodType.GET);
 		get.add("graph", "xs:string");
-		get.add("output-format", "xs:string");
+		get.add("format", "xs:string");
 
 		MethodParameters post = new MethodParameters(MethodType.POST);
 		post.add("graph", "xs:string");
-		post.add("input-format", "xs:string");
+		post.add("format", "xs:string");
 
 		MethodParameters put = new MethodParameters(MethodType.PUT);
 		put.add("graph", "xs:string");
-		put.add("input-format", "xs:string");
+		put.add("format", "xs:string");
 
 		resourceMgr.writeServices(NAME, handle, metadata, delete, get, post,
 				put);

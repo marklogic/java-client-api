@@ -19,25 +19,30 @@ declare option xdmp:mapping "false";
 
 declare private function graph:rdf-mime-type(
     $header-name as xs:string,
-    $format as xs:string
+    $format      as xs:string
 ) as map:map
 {
     let $headers := map:map()
-    let $_ := 
-        if ($format eq "nquad")
-        then map:put($headers, "accept", "text/nquad")
-        else if ($format eq "html")
-             then map:put($headers, "accept", "text/html")
-        else if ($format eq "json")
-            then map:put($headers, "accept", "application/json")
-        else if ($format eq "turtle")
-             then map:put($headers, "accept", "text/turtle")
-        else if ($format eq "xml")
-             then map:put($headers, "accept", "application/rdf+xml")
-        else if ($format eq "ntriples")
-             then map:put($headers, "accept", "text/plain")
-        else map:put($headers, "accept", "text/plain")
-    return $headers
+    return (
+        map:put($headers, $header-name, graph:format-mime-type($format)),
+        $headers
+        )
+};
+
+declare private function graph:format-mime-type(
+    $format as xs:string
+) as xs:string
+{
+    switch ($format)
+    case "nquad"     return "application/n-quads"
+    case "html"      return "text/html"
+    case "rdfjson"   return "application/rdf+json"
+    case "turtle"    return "text/turtle"
+    case "rdfxml"    return "application/rdf+xml"
+    case "ntriple"   return "application/n-triples"
+    case "triplexml" return "application/vnd.marklogic.triples+xml"
+    case "n3"        return "text/n3"
+    default          return "text/plain"
 };
 
 declare function graph:get(
@@ -45,12 +50,16 @@ declare function graph:get(
     $params  as map:map
 ) as document-node()*
 {
-    let $output-format := map:get($params, "output-format")
-    let $headers := graph:rdf-mime-type("accept", $output-format)
-    let $mime := map:put($context, "output-types", $output-format)
-    return document { 
-    	semmod:graph-read($headers, $params)
-    }
+    let $mimetype := graph:format-mime-type(map:get($params, "format"))
+    let $headers  := map:map()
+    return (
+        map:put($headers, "accept",       $mimetype),
+        map:put($context, "output-types", $mimetype),
+
+        document { 
+    	   semmod:graph-read($headers, $params)
+            }
+        )
 };
 
 declare function graph:post(
@@ -59,11 +68,14 @@ declare function graph:post(
     $input   as document-node()*
 ) as document-node()?
 {
-    let $input-format := map:get($params, "input-format")
+    let $input-format := map:get($params, "format")
     let $headers := graph:rdf-mime-type("content-type", $input-format)
     let $insert := semmod:graph-insert($headers, $params, $input, ())
-    let $mime := map:put($context, "output-types", "text/plain")
-    return document { text { "OK" } }   (: hack to prevent java from not liking status code :)
+    (: hack to prevent java from not liking status code :)
+    return (
+        map:put($context, "output-types", "text/plain"),
+        document { text { "OK" } } 
+        )
 };
 
 declare function graph:put(
@@ -72,11 +84,14 @@ declare function graph:put(
     $input   as document-node()*
 ) as document-node()?
 {
-    let $input-format := map:get($params, "input-format")
+    let $input-format := map:get($params, "format")
     let $headers := graph:rdf-mime-type("content-type", $input-format)
     let $insert := semmod:graph-replace($headers, $params, $input, ())
-    let $mime := map:put($context, "output-types", "text/plain")
-    return document { text { "OK" } }   (: hack to prevent java from not liking status code :)
+    (: hack to prevent java from not liking status code :)
+    return (
+        map:put($context, "output-types", "text/plain"),
+        document { text { "OK" } } 
+        )
 };
 
 declare function graph:delete(
@@ -84,8 +99,7 @@ declare function graph:delete(
     $params  as map:map
 ) as document-node()?
 {
-    let $insert := semmod:graph-delete(map:map(), $params, ())
-    return ()
+    semmod:graph-delete(map:map(), $params, ())
 };
 
 declare private function graph:prepare-params(
