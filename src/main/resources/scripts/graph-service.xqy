@@ -42,7 +42,7 @@ declare private function graph:format-mime-type(
     case "ntriple"   return "application/n-triples"
     case "triplexml" return "application/vnd.marklogic.triples+xml"
     case "n3"        return "text/n3"
-    default          return "text/plain"
+    default          return "application/n-quads"
 };
 
 declare function graph:get(
@@ -70,12 +70,7 @@ declare function graph:post(
 {
     let $input-format := map:get($params, "format")
     let $headers := graph:rdf-mime-type("content-type", $input-format)
-    let $insert := semmod:graph-insert($headers, $params, $input, ())
-    (: hack to prevent java from not liking status code :)
-    return (
-        map:put($context, "output-types", "text/plain"),
-        document { text { "OK" } } 
-        )
+    return semmod:graph-insert($headers, $params, $input, ())[false()]
 };
 
 declare function graph:put(
@@ -86,12 +81,7 @@ declare function graph:put(
 {
     let $input-format := map:get($params, "format")
     let $headers := graph:rdf-mime-type("content-type", $input-format)
-    let $insert := semmod:graph-replace($headers, $params, $input, ())
-    (: hack to prevent java from not liking status code :)
-    return (
-        map:put($context, "output-types", "text/plain"),
-        document { text { "OK" } } 
-        )
+    return semmod:graph-replace($headers, $params, $input, ())[false()]
 };
 
 declare function graph:delete(
@@ -99,7 +89,7 @@ declare function graph:delete(
     $params  as map:map
 ) as document-node()?
 {
-    semmod:graph-delete(map:map(), $params, ())
+    semmod:graph-delete(map:map(), $params, ())[false()]
 };
 
 declare private function graph:prepare-params(

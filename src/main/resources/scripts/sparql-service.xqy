@@ -18,25 +18,30 @@ declare option xdmp:mapping "false";
 
 declare private function sparql:rdf-mime-type(
     $header-name as xs:string,
-    $format as xs:string
+    $format      as xs:string
 ) as map:map
 {
     let $headers := map:map()
-    let $_ := 
-        if ($format eq "nquad")
-        then map:put($headers, "accept", "text/nquad")
-        else if ($format eq "html")
-             then map:put($headers, "accept", "text/html")
-        else if ($format eq "json")
-            then map:put($headers, "accept", "application/json")
-        else if ($format eq "turtle")
-             then map:put($headers, "accept", "text/turtle")
-        else if ($format eq "xml")
-             then map:put($headers, "accept", "application/rdf+xml")
-        else if ($format eq "ntriples")
-             then map:put($headers, "accept", "text/plain")
-        else map:put($headers, "accept", "text/plain")
-    return $headers
+    return (
+        map:put($headers, $header-name, sparql:format-mime-type($format)),
+        $headers
+        )
+};
+
+declare private function sparql:format-mime-type(
+    $format as xs:string
+) as xs:string
+{
+    switch ($format)
+    case "nquad"     return "application/n-quads"
+    case "html"      return "text/html"
+    case "rdfjson"   return "application/rdf+json"
+    case "turtle"    return "text/turtle"
+    case "rdfxml"    return "application/rdf+xml"
+    case "ntriple"   return "application/n-triples"
+    case "triplexml" return "application/vnd.marklogic.triples+xml"
+    case "n3"        return "text/n3"
+    default          return "application/n-quads"
 };
 
 declare function sparql:post(
