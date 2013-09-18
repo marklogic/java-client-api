@@ -264,22 +264,24 @@ public class QueryOptionsBuilderTest {
 	private void testAdditionalQuery()
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		QueryOptionsHandle options = new QueryOptionsHandle().withAdditionalQuery(builder
-				.additionalQuery("<cts:query xmlns:cts=\"http://marklogic.com/cts\" />"));
+				.additionalQuery("<cts:word-query xmlns:cts=\"http://marklogic.com/cts\"/>"));
+
+		String queryValue = "the one-and-only foo";
 
 		Element aq = options.getAdditionalQuery();
-		assertEquals("query", aq.getLocalName());
+		assertEquals("word-query", aq.getLocalName());
 		assertEquals("http://marklogic.com/cts", aq.getNamespaceURI());
-		aq.setTextContent("some arbitrary query string");
+		aq.setTextContent(queryValue);
 
 		options.setAdditionalQuery(aq);
 		assertTrue(options.getAdditionalQuery().getTextContent()
-				.equals("some arbitrary query string"));
+				.equals(queryValue));
 		options = exercise(options);
 
 		aq = options.getAdditionalQuery();
-		assertEquals("query", aq.getLocalName());
+		assertEquals("word-query", aq.getLocalName());
 		assertEquals("http://marklogic.com/cts", aq.getNamespaceURI());
-		aq.setTextContent("some arbitrary query string");
+		assertTrue(aq.getTextContent().equals(queryValue));
 	};
 
 	private void testAnnotations()
