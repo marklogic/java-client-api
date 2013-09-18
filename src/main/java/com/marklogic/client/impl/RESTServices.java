@@ -194,9 +194,22 @@ public interface RESTServices {
 				return status == ClientResponse.Status.NO_CONTENT;
 			}
 		},
+		OK_OR_NO_CONTENT() {
+			public boolean isExpected(ClientResponse.Status status) {
+				return (status == ClientResponse.Status.OK ||
+						status == ClientResponse.Status.NO_CONTENT);
+			}
+		},
 		CREATED_OR_NO_CONTENT() {
 			public boolean isExpected(ClientResponse.Status status) {
 				return (status == ClientResponse.Status.CREATED ||
+						status == ClientResponse.Status.NO_CONTENT);
+			}
+		},
+		OK_OR_CREATED_OR_NO_CONTENT() {
+			public boolean isExpected(ClientResponse.Status status) {
+				return (status == ClientResponse.Status.OK ||
+						status == ClientResponse.Status.CREATED ||
 						status == ClientResponse.Status.NO_CONTENT);
 			}
 		},

@@ -2467,11 +2467,14 @@ public class JerseyServices implements RESTServices {
 					"Service unavailable and retries exhausted");
 		}
 		checkStatus(response, status, "read", "resource", path,
-				(as != null) ? ResponseStatus.OK : ResponseStatus.NO_CONTENT);
+				ResponseStatus.OK_OR_NO_CONTENT);
 
-		if (as != null)
+		if (as != null) {
 			outputBase.receiveContent(makeResult(reqlog, "read", "resource",
 					response, as));
+		} else {
+			response.close();
+		}
 
 		return output;
 	}
@@ -2514,14 +2517,8 @@ public class JerseyServices implements RESTServices {
 					"Service unavailable and retries exhausted");
 		}
 
-		checkStatus(
-				response,
-				status,
-				"read",
-				"resource",
-				path,
-				(response.hasEntity() || (mimetypes != null && mimetypes.length > 0)) ? ResponseStatus.OK
-						: ResponseStatus.NO_CONTENT);
+		checkStatus(response, status, "read", "resource", path,
+				ResponseStatus.OK_OR_NO_CONTENT);
 
 		return makeResults(reqlog, "read", "resource", response);
 	}
@@ -2582,12 +2579,14 @@ public class JerseyServices implements RESTServices {
 		}
 
 		checkStatus(response, status, "write", "resource", path,
-				(as != null) ? ResponseStatus.OK
-						: ResponseStatus.CREATED_OR_NO_CONTENT);
+				ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
-		if (as != null)
+		if (as != null) {
 			outputBase.receiveContent(makeResult(reqlog, "write", "resource",
 					response, as));
+		} else {
+			response.close();
+		}
 
 		return output;
 	}
@@ -2646,12 +2645,14 @@ public class JerseyServices implements RESTServices {
 		}
 
 		checkStatus(response, status, "write", "resource", path,
-				(as != null) ? ResponseStatus.OK
-						: ResponseStatus.CREATED_OR_NO_CONTENT);
+				ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
-		if (as != null)
+		if (as != null) {
 			outputBase.receiveContent(makeResult(reqlog, "write", "resource",
 					response, as));
+		} else {
+			response.close();
+		}
 
 		return output;
 	}
@@ -2708,12 +2709,14 @@ public class JerseyServices implements RESTServices {
 		}
 
 		checkStatus(response, status, "apply", "resource", path,
-				(as != null) ? ResponseStatus.OK
-						: ResponseStatus.CREATED_OR_NO_CONTENT);
+				ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
-		if (as != null)
+		if (as != null) {
 			outputBase.receiveContent(makeResult(reqlog, "apply", "resource",
 					response, as));
+		} else {
+			response.close();
+		}
 
 		return output;
 	}
@@ -2768,12 +2771,14 @@ public class JerseyServices implements RESTServices {
 		}
 
 		checkStatus(response, status, "apply", "resource", path,
-				(as != null) ? ResponseStatus.OK
-						: ResponseStatus.CREATED_OR_NO_CONTENT);
+				ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
-		if (as != null)
+		if (as != null) {
 			outputBase.receiveContent(makeResult(reqlog, "apply", "resource",
 					response, as));
+		} else {
+			response.close();
+		}
 
 		return output;
 	}
@@ -2827,14 +2832,8 @@ public class JerseyServices implements RESTServices {
 					"Service unavailable and retries exhausted");
 		}
 
-		checkStatus(
-				response,
-				status,
-				"apply",
-				"resource",
-				path,
-				(response.hasEntity() || (outputMimetypes != null && outputMimetypes.length > 0)) ? ResponseStatus.OK
-						: ResponseStatus.CREATED_OR_NO_CONTENT);
+		checkStatus(response, status, "apply", "resource", path,
+				ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
 		return makeResults(reqlog, "apply", "resource", response);
 	}
@@ -2885,14 +2884,8 @@ public class JerseyServices implements RESTServices {
 					"Service unavailable and retries exhausted");
 		}
 
-		checkStatus(
-				response,
-				status,
-				"apply",
-				"resource",
-				path,
-				(response.hasEntity() || (outputMimetypes != null && outputMimetypes.length > 0)) ? ResponseStatus.OK
-						: ResponseStatus.CREATED_OR_NO_CONTENT);
+		checkStatus(response, status, "apply", "resource", path,
+				ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
 		return makeResults(reqlog, "apply", "resource", response);
 	}
@@ -2943,11 +2936,14 @@ public class JerseyServices implements RESTServices {
 		}
 
 		checkStatus(response, status, "delete", "resource", path,
-				(as != null) ? ResponseStatus.OK : ResponseStatus.NO_CONTENT);
+				ResponseStatus.OK_OR_NO_CONTENT);
 
-		if (as != null)
+		if (as != null) {
 			outputBase.receiveContent(makeResult(reqlog, "delete", "resource",
 					response, as));
+		} else {
+			response.close();
+		}
 
 		return output;
 	}
@@ -3321,8 +3317,9 @@ public class JerseyServices implements RESTServices {
 
 	private <T> T makeResult(RequestLogger reqlog, String operation,
 			String entityType, ClientResponse response, Class<T> as) {
-		if (as == null)
+		if (as == null) {
 			return null;
+		}
 
 		logRequest(reqlog, "%s for %s", operation, entityType);
 
