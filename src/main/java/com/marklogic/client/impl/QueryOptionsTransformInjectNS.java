@@ -87,7 +87,7 @@ public class QueryOptionsTransformInjectNS extends XMLFilterImpl {
         super.characters(chars, i, i1);
     }
 
-    private class BindingAttributes implements Attributes {
+    private static class BindingAttributes implements Attributes {
         private Vector<String> names = new Vector<String> ();
         private Vector<String> values = new Vector<String> ();
         private Vector<String> nsuris = new Vector<String> ();

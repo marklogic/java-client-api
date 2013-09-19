@@ -29,7 +29,7 @@ public class ExtensionLibraryDescriptor {
 	 * Wraps assigned permissions for an extension into a Java object.
 	 * A permission has a role name and a capability ("read", "write", or "execute").
 	 */
-	public class Permission {
+	public static class Permission {
 		private String roleName;
 		private String capability;	
 		/**

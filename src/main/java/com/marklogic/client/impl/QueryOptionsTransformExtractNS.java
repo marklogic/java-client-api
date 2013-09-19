@@ -64,7 +64,7 @@ public class QueryOptionsTransformExtractNS extends XMLFilterImpl {
         nsmap.clear();
     }
 
-    private class BindingAttributes implements Attributes {
+    private static class BindingAttributes implements Attributes {
         private Vector<String> names = new Vector<String> ();
         private Vector<String> values = new Vector<String> ();
 

@@ -85,7 +85,7 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 	}
 
 	@SuppressWarnings("serial")
-	private class RuleMetadataImpl extends ClientPropertiesImpl implements
+	private static class RuleMetadataImpl extends ClientPropertiesImpl implements
 			RuleMetadata {
 		private RuleMetadataImpl() {
 			super();
@@ -119,8 +119,7 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 	 * Make a new rule definition, no argument constructor.
 	 */
 	public RuleDefinition() {
-		factory.setProperty("javax.xml.stream.isRepairingNamespaces",
-				new Boolean(true));
+		factory.setProperty("javax.xml.stream.isRepairingNamespaces", true);
 		this.metadata = new RuleMetadataImpl();
 	}
 
