@@ -134,9 +134,9 @@ public class JerseyServices implements RESTServices {
 	private WebResource connection;
 
 	private Random randRetry    = new Random();
-	private int maxRetries      =   9;
-	private int delayFloor      = 120;
-	private int delayMultiplier =   5;
+	private int maxRetries      =  12;
+	private int delayFloor      = 123;
+	private int delayMultiplier =   2;
 
 	private boolean isFirstRequest = false;
 
@@ -3388,11 +3388,8 @@ public class JerseyServices implements RESTServices {
 	}
 
 	private int calculateDelay(Random rand, int iteration) {
-		int base = (iteration == 0) ? delayMultiplier :
-				(1 << iteration) * delayMultiplier;
-		return delayFloor + base + rand.nextInt(
-				(iteration + 1 < maxRetries) ? base : base / 2
-				);
+		int base = (1 << iteration) * delayMultiplier;
+		return delayFloor + base + randRetry.nextInt((iteration + 1 < maxRetries) ? base : 100);
 	}
 
 	public class JerseyResult implements ServiceResult {
