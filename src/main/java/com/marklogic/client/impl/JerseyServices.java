@@ -134,9 +134,9 @@ public class JerseyServices implements RESTServices {
 	private WebResource connection;
 
 	private Random randRetry    = new Random();
-	private int maxRetries      =  12;
-	private int delayFloor      = 123;
-	private int delayMultiplier =   2;
+	private int maxRetries      =  8;
+	private int delayFloor      = 60;
+	private int delayMultiplier = 40;
 
 	private boolean isFirstRequest = false;
 
