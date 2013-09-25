@@ -54,7 +54,10 @@ import com.marklogic.client.util.EditableNamespaceContext;
  *     .append(    "&lt;debug>true&lt;/debug>")
  *     .append("&lt;/options>")
  *     .toString();
- * optsMgr.writeOptions("debug", new StringHandle(opts));</pre>
+ *optsMgr.writeOptions("debug", new StringHandle(opts));</pre>
+ * or
+ * <pre>String opts = "{\"options\":{\"debug\":true}}";
+ *optsMgr.writeOptions("debug", new StringHandle(opts).withFormat(Format.JSON));</pre>
  */
 @Deprecated
 @XmlAccessorType(XmlAccessType.FIELD)
