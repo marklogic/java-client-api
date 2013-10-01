@@ -115,6 +115,8 @@ public class JerseyServices implements RESTServices {
 			.getLogger(JerseyServices.class);
 	static final String ERROR_NS = "http://marklogic.com/rest-api";
 
+	static final private String DOCUMENT_URI_PREFIX = "/documents?uri=";
+
 	static protected class HostnameVerifierAdapter extends AbstractVerifier {
 		private SSLHostnameVerifier verifier;
 
@@ -1010,8 +1012,16 @@ public class JerseyServices implements RESTServices {
 					+ status.getReasonPhrase(), extractErrorFields(response));
 
 		if (uri == null) {
-			uri = responseHeaders.getFirst("Location");
-			if (uri != null) {
+			String location = responseHeaders.getFirst("Location");
+			if (location != null) {
+				int offset = location.indexOf(DOCUMENT_URI_PREFIX);
+				if (offset == -1)
+					throw new MarkLogicInternalException(
+							"document create produced invalid location: " + location);
+				uri = location.substring(offset + DOCUMENT_URI_PREFIX.length());
+				if (uri == null)
+					throw new MarkLogicInternalException(
+							"document create produced location without uri: " + location);
 				desc.setUri(uri);
 				updateVersion(desc, responseHeaders);
 				updateDescriptor(desc, responseHeaders);
@@ -1127,8 +1137,16 @@ public class JerseyServices implements RESTServices {
 					+ status.getReasonPhrase(), extractErrorFields(response));
 
 		if (uri == null) {
-			uri = responseHeaders.getFirst("Location");
-			if (uri != null) {
+			String location = responseHeaders.getFirst("Location");
+			if (location != null) {
+				int offset = location.indexOf(DOCUMENT_URI_PREFIX);
+				if (offset == -1)
+					throw new MarkLogicInternalException(
+							"document create produced invalid location: " + location);
+				uri = location.substring(offset + DOCUMENT_URI_PREFIX.length());
+				if (uri == null)
+					throw new MarkLogicInternalException(
+							"document create produced location without uri: " + location);
 				desc.setUri(uri);
 				updateVersion(desc, responseHeaders);
 				updateDescriptor(desc, responseHeaders);
