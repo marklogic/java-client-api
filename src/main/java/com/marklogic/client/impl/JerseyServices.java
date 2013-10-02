@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -117,6 +118,15 @@ public class JerseyServices implements RESTServices {
 
 	static final private String DOCUMENT_URI_PREFIX = "/documents?uri=";
 
+	static final private int DELAY_FLOOR       =    125;
+	static final private int DELAY_CEILING     =   2000;
+	static final private int DELAY_MULTIPLIER  =     20;
+	static final private int DEFAULT_MAX_DELAY = 120000;
+	static final private int DEFAULT_MIN_RETRY =      8;
+
+	static final private String MAX_DELAY_PROP = "com.marklogic.client.maximumRetrySeconds";
+	static final private String MIN_RETRY_PROP = "com.marklogic.client.minimumRetries";
+
 	static protected class HostnameVerifierAdapter extends AbstractVerifier {
 		private SSLHostnameVerifier verifier;
 
@@ -136,9 +146,9 @@ public class JerseyServices implements RESTServices {
 	private WebResource connection;
 
 	private Random randRetry    = new Random();
-	private int maxRetries      =  8;
-	private int delayFloor      = 60;
-	private int delayMultiplier = 40;
+
+	private int maxDelay = DEFAULT_MAX_DELAY;
+	private int minRetry = DEFAULT_MIN_RETRY;
 
 	private boolean isFirstRequest = false;
 
@@ -215,17 +225,38 @@ public class JerseyServices implements RESTServices {
 		String baseUri = ((context == null) ? "http" : "https") + "://" + host
 				+ ":" + port + "/v1/";
 
+		Properties props = System.getProperties();
+
+		if (props.containsKey(MAX_DELAY_PROP)) {
+			String maxDelayStr = props.getProperty(MAX_DELAY_PROP);
+			if (maxDelayStr != null && maxDelayStr.length() > 0) {
+				int max = Integer.parseInt(maxDelayStr);
+				if (max > 0) {
+					maxDelay = max * 1000;
+				}
+			}
+		}
+		if (props.containsKey(MIN_RETRY_PROP)) {
+			String minRetryStr = props.getProperty(MIN_RETRY_PROP);
+			if (minRetryStr != null && minRetryStr.length() > 0) {
+				int min = Integer.parseInt(minRetryStr);
+				if (min > 0) {
+					minRetry = min;
+				}
+			}
+		}
+
 		// TODO: integrated control of HTTP Client and Jersey Client logging
-		if (System.getProperty("org.apache.commons.logging.Log") == null) {
+		if (!props.containsKey("org.apache.commons.logging.Log")) {
 			System.setProperty("org.apache.commons.logging.Log",
 				"org.apache.commons.logging.impl.SimpleLog");
 		}
-		if (System.getProperty("org.apache.commons.logging.simplelog.log.org.apache.http") == null) {
+		if (!props.containsKey("org.apache.commons.logging.simplelog.log.org.apache.http")) {
 			System.setProperty(
 				"org.apache.commons.logging.simplelog.log.org.apache.http",
 				"warn");
 		}
-		if (System.getProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire") == null) {
+		if (!props.containsKey("org.apache.commons.logging.simplelog.log.org.apache.http.wire")) {
 			System.setProperty(
 				"org.apache.commons.logging.simplelog.log.org.apache.http.wire",
 				"warn");
@@ -381,30 +412,40 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = builder.delete(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.NOT_FOUND) {
 			response.close();
@@ -503,30 +544,40 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = builder.get(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.NOT_FOUND)
 			throw new ResourceNotFoundException(
@@ -566,8 +617,8 @@ public class JerseyServices implements RESTServices {
 		Class as = handleBase.receiveAs();
 		Object entity = response.hasEntity() ? response.getEntity(as) : null;
 
-// TODO: test assignable from, not identical to
-		if (entity == null || (as != InputStream.class && as != Reader.class))
+		if (entity == null ||
+				(!InputStream.class.isAssignableFrom(as) && !Reader.class.isAssignableFrom(as)))
 			response.close();
 
 		handleBase.receiveContent((reqlog != null) ? reqlog.copyContent(entity)
@@ -606,30 +657,40 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = builder.accept(multipartType).get(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.NOT_FOUND)
 			throw new ResourceNotFoundException(
@@ -746,31 +807,41 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = builder.head();
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
-		}		
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
+		}
 		if (status != ClientResponse.Status.OK) {
 			if (status == ClientResponse.Status.NOT_FOUND) {
 				response.close();
@@ -931,8 +1002,17 @@ public class JerseyServices implements RESTServices {
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
 		MultivaluedMap<String, String> responseHeaders = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			Object value = handleBase.sendContent();
 			if (value == null)
 				throw new IllegalArgumentException(
@@ -964,25 +1044,27 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			responseHeaders = response.getHeaders();
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(responseHeaders.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
 			response.close();
 
-			if (!isResendable)
+			if (!isResendable) {
 				throw new ResourceNotResendableException(
 						"Cannot retry request for " +
 						 ((uri != null) ? uri : "new document"));
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
 			}
+
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.NOT_FOUND)
 			throw new ResourceNotFoundException(
@@ -1007,9 +1089,10 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException("Precondition Failed", failure);
 		}
 		if (status != ClientResponse.Status.CREATED
-				&& status != ClientResponse.Status.NO_CONTENT)
+				&& status != ClientResponse.Status.NO_CONTENT) {
 			throw new FailedRequestException("write failed: "
 					+ status.getReasonPhrase(), extractErrorFields(response));
+		}
 
 		if (uri == null) {
 			String location = responseHeaders.getFirst("Location");
@@ -1064,8 +1147,17 @@ public class JerseyServices implements RESTServices {
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
 		MultivaluedMap<String, String> responseHeaders = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			MultiPart multiPart = new MultiPart();
 			boolean hasStreamingPart = addParts(multiPart, reqlog,
 					new String[] { metadataMimetype, contentMimetype },
@@ -1088,25 +1180,26 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			responseHeaders = response.getHeaders();
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(responseHeaders.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
 			response.close();
 
-			if (hasStreamingPart)
+			if (hasStreamingPart) {
 				throw new ResourceNotResendableException(
 						"Cannot retry request for " +
 						((uri != null) ? uri : "new document"));
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
 			}
+
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.NOT_FOUND) {
 			response.close();
@@ -1132,9 +1225,10 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException("Precondition Failed", failure);
 		}
 		if (status != ClientResponse.Status.CREATED
-				&& status != ClientResponse.Status.NO_CONTENT)
+				&& status != ClientResponse.Status.NO_CONTENT) {
 			throw new FailedRequestException("write failed: "
 					+ status.getReasonPhrase(), extractErrorFields(response));
+		}
 
 		if (uri == null) {
 			String location = responseHeaders.getFirst("Location");
@@ -1189,30 +1283,40 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = resource.post(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException(
@@ -1229,7 +1333,7 @@ public class JerseyServices implements RESTServices {
 					"transaction open failed to provide location");
 		if (!location.contains("/"))
 			throw new MarkLogicInternalException(
-					"transaction open produced invalid location " + location);
+					"transaction open produced invalid location: " + location);
 
 		return location.substring(location.lastIndexOf("/") + 1);
 	}
@@ -1270,30 +1374,40 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = builder.post(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException(
@@ -1650,8 +1764,17 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			if (queryDef instanceof StringQueryDefinition) {
 				response = doGet(builder);
 			} else if (queryDef instanceof KeyValueQueryDefinition) {
@@ -1672,22 +1795,23 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to search",
@@ -1728,30 +1852,40 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = builder.delete(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to delete",
@@ -1875,8 +2009,16 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
 
             response = baseHandle == null ?
                 doGet(builder) :
@@ -1887,22 +2029,23 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to search",
@@ -1944,30 +2087,40 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = builder.get(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to search",
@@ -2002,30 +2155,40 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = builder.get(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to search",
@@ -2057,30 +2220,40 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = builder.get(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status != ClientResponse.Status.OK) {
 			if (status == ClientResponse.Status.NOT_FOUND) {
@@ -2128,30 +2301,40 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = builder.get(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to read "
@@ -2242,8 +2425,17 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			Object nextValue = (handle != null) ? handle.sendContent() : value;
 
 			Object sentValue = null;
@@ -2305,25 +2497,27 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
 			response.close();
 
-			if (!isResendable)
+			if (!isResendable) {
 				throw new ResourceNotResendableException(
 						"Cannot retry request for " + connectPath);
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
 			}
+
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException("User is not allowed to write "
@@ -2358,30 +2552,40 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = builder.delete(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException("User is not allowed to delete "
@@ -2408,30 +2612,40 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = builder.delete(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException("User is not allowed to delete "
@@ -2459,30 +2673,40 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = doGet(builder);
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		checkStatus(response, status, "read", "resource", path,
 				ResponseStatus.OK_OR_NO_CONTENT);
@@ -2509,30 +2733,40 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = doGet(builder.accept(multipartType));
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 
 		checkStatus(response, status, "read", "resource", path,
@@ -2566,8 +2800,17 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = doPut(reqlog, builder, inputBase.sendContent(),
 					!isResendable);
 			status = response.getClientResponseStatus();
@@ -2575,25 +2818,27 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
 			response.close();
 
-			if (!isResendable)
+			if (!isResendable) {
 				throw new ResourceNotResendableException(
 						"Cannot retry request for " + path);
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
 			}
+
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 
 		checkStatus(response, status, "write", "resource", path,
@@ -2627,8 +2872,17 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			MultiPart multiPart = new MultiPart();
 			boolean hasStreamingPart = addParts(multiPart, reqlog, input);
 
@@ -2641,25 +2895,27 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
 			response.close();
 
-			if (hasStreamingPart)
+			if (hasStreamingPart) {
 				throw new ResourceNotResendableException(
 						"Cannot retry request for " + path);
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
 			}
+
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 
 		checkStatus(response, status, "write", "resource", path,
@@ -2696,8 +2952,17 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = doPost(reqlog, builder, inputBase.sendContent(),
 					!isResendable);
 			status = response.getClientResponseStatus();
@@ -2705,25 +2970,27 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
 			response.close();
 
-			if (!isResendable)
+			if (!isResendable) {
 				throw new ResourceNotResendableException(
 						"Cannot retry request for " + path);
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
 			}
+
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 
 		checkStatus(response, status, "apply", "resource", path,
@@ -2753,8 +3020,17 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			MultiPart multiPart = new MultiPart();
 			boolean hasStreamingPart = addParts(multiPart, reqlog, input);
 
@@ -2767,25 +3043,27 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
 			response.close();
 
-			if (hasStreamingPart)
+			if (hasStreamingPart) {
 				throw new ResourceNotResendableException(
 						"Cannot retry request for " + path);
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
 			}
+
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 
 		checkStatus(response, status, "apply", "resource", path,
@@ -2819,8 +3097,17 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			Object value = inputBase.sendContent();
 
 			response = doPost(reqlog, builder.accept(multipartType), value, !isResendable);
@@ -2829,25 +3116,27 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
 			response.close();
 
-			if (!isResendable)
+			if (!isResendable) {
 				throw new ResourceNotResendableException(
 						"Cannot retry request for " + path);
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
 			}
+
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 
 		checkStatus(response, status, "apply", "resource", path,
@@ -2864,8 +3153,17 @@ public class JerseyServices implements RESTServices {
 			ForbiddenUserException, FailedRequestException {
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			MultiPart multiPart = new MultiPart();
 			boolean hasStreamingPart = addParts(multiPart, reqlog, input);
 
@@ -2881,25 +3179,27 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
 			response.close();
 
-			if (hasStreamingPart)
+			if (hasStreamingPart) {
 				throw new ResourceNotResendableException(
 						"Cannot retry request for " + path);
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
 			}
+
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 
 		checkStatus(response, status, "apply", "resource", path,
@@ -2927,30 +3227,40 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = doDelete(builder);
 			status = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 
 		checkStatus(response, status, "delete", "resource", path,
@@ -3405,9 +3715,17 @@ public class JerseyServices implements RESTServices {
 		return (builder != null) ? builder.toString() : null;
 	}
 
-	private int calculateDelay(Random rand, int iteration) {
-		int base = (1 << iteration) * delayMultiplier;
-		return delayFloor + base + randRetry.nextInt((iteration + 1 < maxRetries) ? base : 100);
+	private int calculateDelay(Random rand, int i) {
+		int min   =
+			(i  > 6) ? DELAY_CEILING :
+			(i == 0) ? DELAY_FLOOR   :
+			           DELAY_FLOOR + (1 << i) * DELAY_MULTIPLIER;
+		int range =
+			(i >  6) ? DELAY_FLOOR          :
+			(i == 0) ? 2 * DELAY_MULTIPLIER :
+			(i == 6) ? DELAY_CEILING - min  :
+				       (1 << i) * DELAY_MULTIPLIER;
+		return min + randRetry.nextInt(range);
 	}
 
 	public class JerseyResult implements ServiceResult {
@@ -3582,8 +3900,17 @@ public class JerseyServices implements RESTServices {
 				.accept("application/xml");
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = builder.get(ClientResponse.class);
 
 			status = response.getClientResponseStatus();
@@ -3591,23 +3918,23 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException(
@@ -3646,8 +3973,17 @@ public class JerseyServices implements RESTServices {
 		
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = doPost(null, builder, baseHandle.sendContent(), false);
 
 			status = response.getClientResponseStatus();
@@ -3655,22 +3991,23 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to match",
@@ -3756,8 +4093,17 @@ public class JerseyServices implements RESTServices {
 		}
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			if (queryDef instanceof StringQueryDefinition) {
 				response = builder.get(ClientResponse.class);
 			} else if (queryDef instanceof StructuredQueryDefinition) {
@@ -3774,22 +4120,23 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to match",
@@ -3830,8 +4177,17 @@ public class JerseyServices implements RESTServices {
 		
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		long startTime = System.currentTimeMillis();
+		int nextDelay = 0;
 		int retry = 0;
-		for (; retry < maxRetries; retry++) {
+		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+			if (nextDelay > 0) {
+				try {
+					Thread.sleep(nextDelay);
+				} catch (InterruptedException e) {
+				}
+			}
+
 			response = doGet(builder);
 
 			status = response.getClientResponseStatus();
@@ -3839,22 +4195,23 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				isFirstRequest = false;
 
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
-					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After"))) {
+			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
 				break;
 			}
+
+			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
 			response.close();
 
-			try {
-				Thread.sleep(calculateDelay(randRetry, retry));
-			} catch (InterruptedException e) {
-			}
+			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
-		if (retry >= maxRetries) {
-			response.close();
+		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
 			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+					"Service unavailable and maximum retry period elapsed: "+
+						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
+						    " seconds after "+retry+" retries");
 		}
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to match",
