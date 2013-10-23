@@ -111,7 +111,7 @@ public class ExtensionLibraryDescriptor {
 	
 	/**
 	 * gets the list of permissions assigned to this module, beyond the default permissions.
-	 * @returns a List of Permission objects.
+	 * @return a List of Permission objects.
 	 */
 	public List<Permission> getPermissions() {
 		return this.permissions;

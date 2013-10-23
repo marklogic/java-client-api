@@ -2388,7 +2388,7 @@ public class StructuredQueryBuilder {
 	 * can each be an AND or OR query definition for complex combinations of criteria.
 	 * @param positive the query definition that includes documents
 	 * @param negative the query definition that excludes documents
-	 * @return
+	 * @return	the StructuredQueryDefinition for the not-in query
 	 */
 	public StructuredQueryDefinition notIn(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
 		return new NotInQuery(positive, negative);
