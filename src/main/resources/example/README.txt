@@ -1,5 +1,5 @@
 MarkLogic Java API Examples
-March 2013
+October 2013
 
 == Cookbook =============
 
@@ -8,7 +8,7 @@ for common tasks using the MarkLogic Java API.
 
 Before using the examples, perform the following actions:
 
-1.  Install MarkLogic EA1 for your chosen platform.
+1.  Install MarkLogic 7 for your chosen platform.
 
 2.  Set up a new REST API instance for your database.  You can use Information
 Studio at:
