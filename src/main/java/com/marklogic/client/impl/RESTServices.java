@@ -98,7 +98,7 @@ public interface RESTServices {
 	public void rollbackTransaction(String transactionId)
 		throws ForbiddenUserException, FailedRequestException;
 
-    public <T> T values(Class <T> as, ValuesDefinition valdef, String mimetype, String transactionId)
+    public <T> T values(Class <T> as, ValuesDefinition valdef, String mimetype, long start, long pageLength, String transactionId)
             throws ForbiddenUserException, FailedRequestException;
 
     public <T> T valuesList(Class <T> as, ValuesListDefinition valdef, String mimetype, String transactionId)

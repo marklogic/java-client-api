@@ -115,7 +115,7 @@ public class TuplesHandleTest {
                 cov > 1.551 && cov < 1.552);
 
         Tuple[] tuples = t.getTuples();
-        assertEquals("Nine tuples are expected", 12, tuples.length);
+        assertEquals("Twelve tuples are expected", 12, tuples.length);
         assertEquals("The tuples are named 'co'", "co", t.getName());
 
         ValuesMetrics metrics = t.getMetrics();
@@ -138,7 +138,7 @@ public class TuplesHandleTest {
         TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
 
         Tuple[] tuples = t.getTuples();
-        assertEquals("Nine tuples are expected", 12, tuples.length);
+        assertEquals("Twelve tuples are expected", 12, tuples.length);
         assertEquals("The tuples are named 'co'", "co", t.getName());
 
         ValuesMetrics metrics = t.getMetrics();
@@ -162,7 +162,7 @@ public class TuplesHandleTest {
         TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
 
         Tuple[] tuples = t.getTuples();
-        assertEquals("Nine tuples are expected", 12, tuples.length);
+        assertEquals("Twelve tuples are expected", 12, tuples.length);
         assertEquals("The tuples are named 'co'", "co", t.getName());
 
         TypedDistinctValue[] dv = tuples[0].getValues();
@@ -204,5 +204,35 @@ public class TuplesHandleTest {
          assertEquals("Second value", (int) 1, (int) dv[1].get(Integer.class));
          assertEquals("Third value", "Alaska", (String) dv[2].get(String.class));
          optionsMgr.deleteOptions("valuesoptions");
+    }
+    
+    @Test
+    public void testPagingTuples()
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
+        QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+        optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
+
+        QueryManager queryMgr = Common.client.newQueryManager();
+        queryMgr.setPageLength(6);
+
+        ValuesDefinition vdef = queryMgr.newValuesDefinition("co", "valuesoptions");
+
+        TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle(), 3);
+
+        Tuple[] tuples = t.getTuples();
+        assertEquals("Six tuples are expected", 6, tuples.length);
+
+    	TypedDistinctValue[] values = tuples[0].getValues();
+    	String value = values[0].get(Double.class)+" | "+values[1].get(Integer.class);
+        assertEquals("The first tuple is '1.2 | 3'", "1.2 | 3", value);
+
+        values = tuples[5].getValues();
+        value =
+        	values[0].get(Double.class).toString()
+        	+ " | "
+        	+ values[1].get(Integer.class).toString();
+        assertEquals("The last tuple is '2.2 | 4'", "2.2 | 4", value);
+
+        optionsMgr.deleteOptions("valuesoptions");
     }
 }

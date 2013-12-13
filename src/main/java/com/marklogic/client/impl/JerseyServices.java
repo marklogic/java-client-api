@@ -1905,8 +1905,8 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public <T> T values(Class<T> as, ValuesDefinition valDef, String mimetype,
-			String transactionId) throws ForbiddenUserException,
-			FailedRequestException {
+		long start, long pageLength, String transactionId
+	) throws ForbiddenUserException, FailedRequestException {
 		MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
 
 		String optionsName = valDef.getOptionsName();
@@ -1940,6 +1940,13 @@ public class JerseyServices implements RESTServices {
 				docParams.add("frequency", "fragment");
 			} else {
 				docParams.add("frequency", "item");
+			}
+		}
+
+		if (start > 0) {
+			docParams.add("start", Long.toString(start));
+			if (pageLength > 0) {
+				docParams.add("pageLength", Long.toString(pageLength));
 			}
 		}
 
