@@ -245,7 +245,7 @@ public interface QueryManager {
      * document results.
      * @param querydef	the definition of query criteria and query options
      * @param searchHandle	a handle for reading the results from the search
-     * @param start	the number of the result page
+     * @param start	the offset of the first document in the page (where 1 is the first result)
      * @return	the handle populated with the results from the search
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start);
@@ -276,7 +276,7 @@ public interface QueryManager {
      * transaction and ignores documents deleted by the transaction.
      * @param querydef	the definition of query criteria and query options
      * @param searchHandle	a handle for reading the results from the search
-     * @param start	the number of the result page
+     * @param start	the offset of the first document in the page (where 1 is the first result)
      * @param transaction	a open transaction for matching documents
      * @return	the handle populated with the results from the search
      */
@@ -307,6 +307,16 @@ public interface QueryManager {
 
     /**
      * Retrieves values from indexes based on query criteria and, potentially,
+     * previously saved query options.
+     * @param valdef	the definition of query criteria and query options
+     * @param valueHandle	a handle for reading the values for the matched documents
+     * @param start	the offset of the first returned result (where 1 is the first value)
+     * @return	the handle populated with the values from the index
+     */
+    public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, long start);
+
+    /**
+     * Retrieves values from indexes based on query criteria and, potentially,
      * previously saved query options.  The query includes documents modified
      * by the transaction and ignores documents deleted by the transaction.
      * @param valdef	the definition of query criteria and query options
@@ -317,13 +327,35 @@ public interface QueryManager {
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, Transaction transaction);
 
     /**
+     * Retrieves values from indexes based on query criteria and, potentially,
+     * previously saved query options.  The query includes documents modified
+     * by the transaction and ignores documents deleted by the transaction.
+     * @param valdef	the definition of query criteria and query options
+     * @param valueHandle	a handle for reading the values for the matched documents
+     * @param start	the offset of the first returned result (where 1 is the first value)
+     * @param transaction	a open transaction for matching documents
+     * @return	the handle populated with the values from the index
+     */
+    public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, long start, Transaction transaction);
+
+    /**
      * Retrieves combinations of values for the same document from indexes
      * based on query criteria and, potentially, previously saved query options.  
      * @param valdef	the definition of query criteria and query options
-     * @param valueHandle	a handle for reading the tuples for the matched documents
+     * @param tupleHandle	a handle for reading the tuples for the matched documents
      * @return	the handle populated with the tuples from the index
      */
-    public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T valueHandle);
+    public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle);
+
+    /**
+     * Retrieves combinations of values for the same document from indexes
+     * based on query criteria and, potentially, previously saved query options.  
+     * @param valdef	the definition of query criteria and query options
+     * @param tupleHandle	a handle for reading the tuples for the matched documents
+     * @param start	the offset of the first returned result (where 1 is the first tuple)
+     * @return	the handle populated with the tuples from the index
+     */
+    public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, long start);
 
     /**
      * Retrieves combinations of values for the same document from indexes
@@ -331,11 +363,24 @@ public interface QueryManager {
      * The query includes documents modified by the transaction and ignores
      * documents deleted by the transaction.  
      * @param valdef	the definition of query criteria and query options
-     * @param valueHandle	a handle for reading the tuples for the matched documents
+     * @param tupleHandle	a handle for reading the tuples for the matched documents
      * @param transaction	a open transaction for matching documents
      * @return	the handle populated with the tuples from the index
      */
-    public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T valueHandle, Transaction transaction);
+    public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, Transaction transaction);
+
+    /**
+     * Retrieves combinations of values for the same document from indexes
+     * based on query criteria and, potentially, previously saved query options.
+     * The query includes documents modified by the transaction and ignores
+     * documents deleted by the transaction.  
+     * @param valdef	the definition of query criteria and query options
+     * @param tupleHandle	a handle for reading the tuples for the matched documents
+     * @param start	the offset of the first returned result (where 1 is the first tuple)
+     * @param transaction	a open transaction for matching documents
+     * @return	the handle populated with the tuples from the index
+     */
+    public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, long start, Transaction transaction);
 
     /**
      * Retrieves the list of available named lexicon configurations from the

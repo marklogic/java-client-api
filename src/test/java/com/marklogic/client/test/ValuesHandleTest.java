@@ -167,6 +167,29 @@ public class ValuesHandleTest {
         assertEquals("Size should have this uri", map.get("size"), "/v1/values/size?options=photos");
     }
 
+
+    @Test
+    public void testValuesPaging() throws IOException, ParserConfigurationException, SAXException {
+    	String optionsName = makeValuesOptions();
+
+    	QueryManager queryMgr = Common.client.newQueryManager();
+    	queryMgr.setPageLength(2);
+
+        ValuesDefinition vdef = queryMgr.newValuesDefinition("double", optionsName);
+
+        ValuesHandle v = queryMgr.values(vdef, new ValuesHandle(), 2);
+        CountedDistinctValue dv[] = v.getValues();
+        assertNotNull("There should be values", dv);
+        assertEquals("There should be 2 values", 2, dv.length);
+
+        assertEquals("The first value should be '1.2'",
+        		dv[0].get("xs:double", Double.class).toString(), "1.2");
+        assertEquals("The second value should be '2.2'",
+        		dv[1].get("xs:double", Double.class).toString(), "2.2");
+
+        Common.client.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
+    }
+
     // this test only works if you've loaded the 5min guide @Test
     public void serverValuesList() throws IOException, ParserConfigurationException, SAXException {
         String optionsName = "photos";

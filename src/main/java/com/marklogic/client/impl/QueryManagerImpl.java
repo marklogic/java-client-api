@@ -205,17 +205,27 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 
     @Override
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle) {
-        return values(valdef, valueHandle, null);
+        return values(valdef, valueHandle, -1, null);
+    }
+
+    @Override
+    public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, long start) {
+        return values(valdef, valueHandle, start, null);
+    }
+
+    @Override
+    public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, Transaction transaction) {
+        return values(valdef, valueHandle, -1, transaction);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valuesHandle, Transaction transaction) {
-		@SuppressWarnings("rawtypes")
-    	HandleImplementation valuesBase = HandleAccessor.checkHandle(valuesHandle, "values");
+    public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, long start, Transaction transaction) {
+    	@SuppressWarnings("rawtypes")
+    	HandleImplementation valuesBase = HandleAccessor.checkHandle(valueHandle, "values");
 
-        if (valuesHandle instanceof ValuesHandle) {
-            ((ValuesHandle) valuesHandle).setQueryCriteria(valdef);
+        if (valueHandle instanceof ValuesHandle) {
+            ((ValuesHandle) valueHandle).setQueryCriteria(valdef);
         }
 
         Format valuesFormat = valuesBase.getFormat();
@@ -231,25 +241,40 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         }
 
         String mimetype = valuesFormat.getDefaultMimetype();
+        long pageLength = (start == -1) ? -1 : getPageLength();
 
         String tid = transaction == null ? null : transaction.getTransactionId();
-        valuesBase.receiveContent(services.values(valuesBase.receiveAs(), valdef, mimetype, tid));
-        return valuesHandle;
+        valuesBase.receiveContent(
+        	services.values(
+        		valuesBase.receiveAs(), valdef, mimetype, start, pageLength, tid
+        		)
+        	);
+        return valueHandle;
     }
 
     @Override
     public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle) {
-        return tuples(valdef, tupleHandle, null);
+        return tuples(valdef, tupleHandle, -1, null);
+    }
+
+    @Override
+    public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, long start) {
+        return tuples(valdef, tupleHandle, start, null);
+    }
+
+    @Override
+    public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, Transaction transaction) {
+        return tuples(valdef, tupleHandle, -1, transaction);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tuplesHandle, Transaction transaction) {
+    public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, long start, Transaction transaction) {
 		@SuppressWarnings("rawtypes")
-        HandleImplementation valuesBase = HandleAccessor.checkHandle(tuplesHandle, "values");
+        HandleImplementation valuesBase = HandleAccessor.checkHandle(tupleHandle, "values");
 
-        if (tuplesHandle instanceof TuplesHandle) {
-            ((TuplesHandle) tuplesHandle).setQueryCriteria(valdef);
+        if (tupleHandle instanceof TuplesHandle) {
+            ((TuplesHandle) tupleHandle).setQueryCriteria(valdef);
         }
 
         Format valuesFormat = valuesBase.getFormat();
@@ -265,10 +290,15 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
         }
 
         String mimetype = valuesFormat.getDefaultMimetype();
+        long pageLength = (start == -1) ? -1 : getPageLength();
 
         String tid = transaction == null ? null : transaction.getTransactionId();
-        valuesBase.receiveContent(services.values(valuesBase.receiveAs(), valdef, mimetype, tid));
-        return tuplesHandle;
+        valuesBase.receiveContent(
+        	services.values(
+        		valuesBase.receiveAs(), valdef, mimetype, start, pageLength, tid
+        		)
+        	);
+        return tupleHandle;
     }
 
     @Override
