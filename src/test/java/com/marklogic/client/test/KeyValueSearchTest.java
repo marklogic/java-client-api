@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -30,7 +31,6 @@ import org.junit.Test;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.admin.NamespacesManager;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.query.KeyValueQueryDefinition;
 import com.marklogic.client.query.MatchDocumentSummary;
@@ -41,29 +41,12 @@ public class KeyValueSearchTest {
 	@BeforeClass
 	public static void beforeClass()
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		Common.connectAdmin();
-
-		// setup namespaces to test kv with namespaces
-		NamespacesManager nsMgr = Common.client.newServerConfigManager()
-				.newNamespacesManager();
-
-		nsMgr.updatePrefix("ns1", "http://marklogic.com/test-ns1");
-		nsMgr.updatePrefix("ns2", "http://marklogic.com/test-ns2");
-
-		Common.release();
 		Common.connect();
 	}
 
 	@AfterClass
 	public static void afterClass()
 	throws ForbiddenUserException, FailedRequestException {
-		Common.release();
-		Common.connectAdmin();
-		NamespacesManager nsMgr = Common.client.newServerConfigManager()
-				.newNamespacesManager();
-
-		nsMgr.deleteAll();
-
 		Common.release();
 
 	}
@@ -79,14 +62,15 @@ public class KeyValueSearchTest {
 		assertFalse(results.getMetrics().getTotalTime() == -1);
 
 		MatchDocumentSummary[] summaries = results.getMatchResults();
+		assertNotNull(summaries);
+        assertEquals("expected 1 result", 1, summaries.length);
 		for (MatchDocumentSummary summary : summaries) {
 			MatchLocation[] locations = summary.getMatchLocations();
+    		assertEquals("expected 1 match location", 1, locations.length);
 			for (MatchLocation location : locations) {
 				assertNotNull(location.getAllSnippetText());
 			}
 		}
-
-		assertNotNull(summaries);
 	}
 
 	@Test(expected=FailedRequestException.class)
@@ -118,20 +102,21 @@ public class KeyValueSearchTest {
 		QueryManager queryMgr = Common.client.newQueryManager();
 		KeyValueQueryDefinition qdef = queryMgr.newKeyValueDefinition(null);
 
-		qdef.put(queryMgr.newElementLocator(new QName("ns1:leaf")), "leaf3");
+		qdef.put(queryMgr.newElementLocator(new QName("json:thirdKey")), "3");
 		SearchHandle results = queryMgr.search(qdef, new SearchHandle());
 		assertNotNull(results);
 		assertFalse(results.getMetrics().getTotalTime() == -1);
 
 		MatchDocumentSummary[] summaries = results.getMatchResults();
+		assertNotNull(summaries);
+        assertEquals("expected 1 result", 1, summaries.length);
 		for (MatchDocumentSummary summary : summaries) {
 			MatchLocation[] locations = summary.getMatchLocations();
+    		assertEquals("expected 1 match location", 1, locations.length);
 			for (MatchLocation location : locations) {
 				assertNotNull(location.getAllSnippetText());
 			}
 		}
-
-		assertNotNull(summaries);
 	}
 
 	@Test
@@ -145,13 +130,12 @@ public class KeyValueSearchTest {
 		assertFalse(results.getMetrics().getTotalTime() == -1);
 
 		MatchDocumentSummary[] summaries = results.getMatchResults();
+		assertNotNull(summaries);
 		for (MatchDocumentSummary summary : summaries) {
 			MatchLocation[] locations = summary.getMatchLocations();
 			for (MatchLocation location : locations) {
 				assertNotNull(location.getAllSnippetText());
 			}
 		}
-
-		assertNotNull(summaries);
 	}
 }
