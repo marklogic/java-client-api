@@ -68,15 +68,14 @@ public class StructuredSearchTest {
 
         	MatchDocumentSummary[] summaries = results.getMatchResults();
         	assertNotNull(summaries);
-        	assertTrue(summaries.length > 0);
+    		assertEquals("expected 1 result", 1, summaries.length);
         	for (MatchDocumentSummary summary : summaries) {
         		MatchLocation[] locations = summary.getMatchLocations();
+        		assertEquals("expected 1 match location", 1, locations.length);
         		for (MatchLocation location : locations) {
         			assertNotNull(location.getAllSnippetText());
         		}
         	}
-
-        	assertNotNull(summaries);
         }
     }
 
@@ -90,10 +89,10 @@ public class StructuredSearchTest {
             }) {
 
         	MatchDocumentSummary summary = queryMgr.findOne(t);
-        	if (summary != null) {
-        		GenericDocumentManager docMgr = Common.client.newDocumentManager();
-        		assertTrue("Document exists", docMgr.exists(summary.getUri())!=null);
-        	}
+        	assertNotNull(summary);
+
+        	GenericDocumentManager docMgr = Common.client.newDocumentManager();
+       		assertNotNull("Document exists", docMgr.exists(summary.getUri()));
         }
     }
 
@@ -173,7 +172,8 @@ public class StructuredSearchTest {
 
 		MatchDocumentSummary[] summaries = sh.getMatchResults();
     	assertNotNull(summaries);
-    	assertTrue(summaries.length > 0);
+		assertEquals("expected 1 result", 1, summaries.length);
+
 		MatchDocumentSummary matchResult = summaries[0];
 		Document metadata = matchResult.getMetadata();
 		Element subKey = (Element)

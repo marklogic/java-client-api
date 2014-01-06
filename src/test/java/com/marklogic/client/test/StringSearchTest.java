@@ -45,6 +45,7 @@ import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.FacetResult;
+import com.marklogic.client.query.FacetValue;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.QueryManager;
@@ -83,45 +84,37 @@ public class StringSearchTest {
 
         FacetResult[] facets = results.getFacetResults();
         assertNotNull(facets);
-        assertTrue(facets.length > 0);
+        assertEquals("expected 1 facet", 1, facets.length);
+        FacetValue[] facetVals = facets[0].getFacetValues();
+        assertEquals("expected 6 facet values", 6, facetVals.length);
 
         MatchDocumentSummary[] summaries = results.getMatchResults();
-        assertTrue(summaries.length > 0);
-        for (MatchDocumentSummary summary : summaries) {
-        	MatchLocation[] locations = summary.getMatchLocations();
-            for (MatchLocation location : locations) {
-                assertNotNull(location.getAllSnippetText());
-            }
-        }
-
         assertNotNull(summaries);
+        assertEquals("expected 2 results", 2, summaries.length);
     }
 
     @Test
     public void testStringSearch2() throws IOException {
         QueryManager queryMgr = Common.client.newQueryManager();
 
-        // "em-1"
         StringQueryDefinition qdef = queryMgr.newStringDefinition();
         qdef.setCriteria("10");
 
         SearchHandle handle = new SearchHandle();
         handle = queryMgr.search(qdef, handle);
-
         assertNotNull(handle);
-    }
 
-    @Test
-    public void testStringSearch3() throws IOException {
-        QueryManager queryMgr = Common.client.newQueryManager();
-        // "metatest-1"
-        StringQueryDefinition qdef = queryMgr.newStringDefinition();
-        qdef.setCriteria("10");
+		MatchDocumentSummary[] summaries = handle.getMatchResults();
+		assertNotNull(summaries);
+		assertEquals("expected 2 results", 2, summaries.length);
 
-        SearchHandle handle = new SearchHandle();
-        handle = queryMgr.search(qdef, handle);
-
-        assertNotNull(handle);
+		for (MatchDocumentSummary summary : summaries) {
+        	MatchLocation[] locations = summary.getMatchLocations();
+    		assertEquals("expected 1 match location", 1, locations.length);
+			for (MatchLocation location : locations) {
+				assertNotNull(location.getAllSnippetText());
+			}
+        }
     }
 
     @Test
@@ -140,7 +133,9 @@ public class StringSearchTest {
 
         FacetResult[] facets = results.getFacetResults();
         assertNotNull(facets);
-        assertTrue(facets.length > 0);
+        assertEquals("expected 1 facet", 1, facets.length);
+        FacetValue[] facetVals = facets[0].getFacetValues();
+        assertEquals("expected 6 facet values", 6, facetVals.length);
 
         MatchDocumentSummary[] summaries = results.getMatchResults();
         assertTrue(summaries == null || summaries.length == 0);
@@ -154,7 +149,7 @@ public class StringSearchTest {
 
         summaries = results.getMatchResults();
         assertNotNull(summaries);
-        assertTrue(summaries.length > 0);
+        assertEquals("expected 2 results", 2, summaries.length);
     }
 
     @Test
