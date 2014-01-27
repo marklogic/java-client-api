@@ -41,7 +41,7 @@ public interface QueryManager {
      */
     static final public long DEFAULT_PAGE_LENGTH = -1;
     /**
-     * The default page for search results.
+     * The offset of the first result in the default page.
      */
     static final public long START = 1;
 
