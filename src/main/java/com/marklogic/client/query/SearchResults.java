@@ -33,8 +33,11 @@ public interface SearchResults {
     public QueryDefinition getQueryCriteria();
 
     /**
-     * Returns the total number of results.
-     * @return The number of results.
+     * Returns an estimate of the total number of results, which is accurate for unfiltered
+     * queries. In unfiltered queries, documents are matched based entirely on indexes.
+     * In filtered queries, documents are inspected during retrieval, which allows criteria
+     * for which indexes don't exist but makes the final result count unpredictable.
+     * @return The result estimate.
      */
     public long getTotalResults();
 
