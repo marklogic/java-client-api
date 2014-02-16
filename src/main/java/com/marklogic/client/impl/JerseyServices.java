@@ -32,6 +32,7 @@ import javax.net.ssl.SSLException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
+import org.apache.http.HttpVersion;
 import org.apache.http.auth.params.AuthPNames;
 import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.client.params.ClientPNames;
@@ -45,6 +46,7 @@ import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
+import org.apache.http.params.HttpProtocolParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -257,9 +259,14 @@ public class JerseyServices implements RESTServices {
 		}
 
 		httpParams.setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, false);
-		// long-term alternative to isFirstRequest
-		// httpParams.setBooleanParameter(CoreProtocolPNames.USE_EXPECT_CONTINUE, true);
-		// httpParams.setIntParameter(    CoreProtocolPNames.WAIT_FOR_CONTINUE,   1000);
+
+        HttpProtocolParams.setVersion(httpParams, HttpVersion.HTTP_1_1);
+
+        // HttpConnectionParams.setStaleCheckingEnabled(httpParams, false);
+
+        // long-term alternative to isFirstRequest alive
+		// HttpProtocolParams.setUseExpectContinue(httpParams, false);
+		// httpParams.setIntParameter(CoreProtocolPNames.WAIT_FOR_CONTINUE, 1000);
 
 		DefaultApacheHttpClient4Config config = new DefaultApacheHttpClient4Config();
 		Map<String, Object> configProps = config.getProperties();
@@ -353,14 +360,19 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
+			}
+			response.close();
+
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		if (status == ClientResponse.Status.NOT_FOUND) {
 			response.close();
@@ -462,14 +474,19 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
+			}
+			response.close();
+
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		if (status == ClientResponse.Status.NOT_FOUND)
 			throw new ResourceNotFoundException(
@@ -539,30 +556,35 @@ public class JerseyServices implements RESTServices {
 				categories, transactionId, extraParams, true);
 		docParams.add("format", metadataFormat);
 
-		WebResource.Builder builder = makeDocumentResource(docParams).accept(
-				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
-
+		WebResource.Builder builder = makeDocumentResource(docParams).getRequestBuilder();
 		builder = addVersionHeader(desc, builder, "If-None-Match");
+
+		MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
 
 		ClientResponse        response = null;
 		ClientResponse.Status status   = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
-			response = builder.get(ClientResponse.class);
+			response = builder.accept(multipartType).get(ClientResponse.class);
 			status   = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
+			}
+			response.close();
+
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		if (status == ClientResponse.Status.NOT_FOUND)
 			throw new ResourceNotFoundException(
@@ -660,14 +682,19 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
+			}
+			response.close();
+
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		MultivaluedMap<String, String> responseHeaders = response.getHeaders();
 
@@ -805,16 +832,21 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
-			else if (!isResendable)
+			}
+			response.close();
+
+			if (!isResendable)
 				throw new ResourceNotResendableException("Cannot retry request for "+uri);
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		if (status == ClientResponse.Status.NOT_FOUND)
 			throw new ResourceNotFoundException(
@@ -867,10 +899,12 @@ public class JerseyServices implements RESTServices {
 		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
 				categories, transactionId, extraParams, true);
 
-		WebResource.Builder builder = makeDocumentResource(docParams).type(
-				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE)
-				);
-		builder = addVersionHeader(desc, builder, "If-Match");
+		WebResource.Builder builder = makeDocumentResource(docParams).getRequestBuilder();
+ 		if (uri != null) {
+ 			builder = addVersionHeader(desc, builder, "If-Match");
+ 		}
+
+		MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
 
 		ClientResponse        response = null;
 		ClientResponse.Status status   = null;
@@ -884,23 +918,32 @@ public class JerseyServices implements RESTServices {
 			if (isFirstRequest)
 				makeFirstRequest();
 
-			response = builder.put(ClientResponse.class, multiPart);
+			// Must set multipart/mixed mime type explicitly on each request
+			// because Jersey client 1.17 adapter for HttpClient switches
+			// to application/octet-stream on retry
+			WebResource.Builder requestBlder = builder.type(multipartType);
+ 			response = requestBlder.put(ClientResponse.class,  multiPart);
 			status   = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
-			else if (hasStreamingPart)
+			}
+			response.close();
+
+			if (hasStreamingPart)
 				throw new ResourceNotResendableException("Cannot retry request for "+uri);
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		if (status == ClientResponse.Status.NOT_FOUND) {
 			response.close();
@@ -959,14 +1002,19 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
+			}
+			response.close();
+
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException(
@@ -1029,14 +1077,19 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
+			}
+			response.close();
+
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException(
@@ -1354,16 +1407,20 @@ public class JerseyServices implements RESTServices {
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
 					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After")))
+							.getFirst("Retry-After"))) {
 				break;
+			}
+			response.close();
+
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {
 			}
 		}
-		if (retry >= maxRetries)
-			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+		if (retry >= maxRetries) {
+			response.close();
+			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to search",
@@ -1415,16 +1472,20 @@ public class JerseyServices implements RESTServices {
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE
 					|| !"1".equals(response.getHeaders()
-							.getFirst("Retry-After")))
+							.getFirst("Retry-After"))) {
 				break;
+			}
+			response.close();
+
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {
 			}
 		}
-		if (retry >= maxRetries)
-			throw new FailedRequestException(
-					"Service unavailable and retries exhausted");
+		if (retry >= maxRetries) {
+			response.close();
+			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to delete",
@@ -1545,14 +1606,19 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
+			}
+			response.close();
+
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to search",
@@ -1601,14 +1667,19 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
+			}
+			response.close();
+
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to search",
@@ -1651,14 +1722,19 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
+			}
+			response.close();
+
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to search",
@@ -1698,14 +1774,19 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
+			}
+			response.close();
+
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		if (status != ClientResponse.Status.OK) {
 			if (status == ClientResponse.Status.NOT_FOUND) {
@@ -1752,14 +1833,19 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
+			}
+			response.close();
+
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		if (status == ClientResponse.Status.FORBIDDEN) {
 			throw new ForbiddenUserException("User is not allowed to read "
@@ -1894,17 +1980,22 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
-			else if (!isResendable)
+			}
+			response.close();
+
+			if (!isResendable)
 				throw new ResourceNotResendableException(
 						"Cannot retry request for "+connectPath);
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException("User is not allowed to write "
@@ -1948,14 +2039,19 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
+			}
+			response.close();
+
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException("User is not allowed to delete "
@@ -1991,14 +2087,19 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
+			}
+			response.close();
+
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		if (status == ClientResponse.Status.FORBIDDEN)
 			throw new ForbiddenUserException("User is not allowed to delete "
@@ -2033,14 +2134,19 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
+			}
+			response.close();
+
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		checkStatus(response, status, "read", "resource", path,
 				(as != null) ? ResponseStatus.OK : ResponseStatus.NO_CONTENT);
@@ -2056,28 +2162,34 @@ public class JerseyServices implements RESTServices {
 	public ServiceResultIterator getIteratedResource(
 			RequestLogger reqlog, String path, RequestParameters params, String... mimetypes)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		WebResource.Builder builder = makeGetBuilder(path, params,
-				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
+		WebResource.Builder builder = makeGetBuilder(path, params, null);
+
+		MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
 
 		ClientResponse        response = null;
 		ClientResponse.Status status   = null;
 		int retry = 0;
 		for (; retry < maxRetries; retry++) {
-			response = doGet(builder);
+			response = doGet(builder.accept(multipartType));
 			status   = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
+			}
+			response.close();
+
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		checkStatus(response, status, "read", "resource", path,
 				(response.hasEntity() ||
@@ -2117,16 +2229,21 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
-			else if (!isResendable)
+			}
+			response.close();
+
+			if (!isResendable)
 				throw new ResourceNotResendableException("Cannot retry request for "+path);
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		checkStatus(response, status, "write", "resource", path,
 				(as != null) ? ResponseStatus.OK
@@ -2171,16 +2288,21 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
-			else if (hasStreamingPart)
+			}
+			response.close();
+
+			if (hasStreamingPart)
 				throw new ResourceNotResendableException("Cannot retry request for "+path);
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		checkStatus(response, status, "write", "resource", path,
 				(as != null) ? ResponseStatus.OK
@@ -2223,16 +2345,21 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
-			else if (!isResendable)
+			}
+			response.close();
+
+			if (!isResendable)
 				throw new ResourceNotResendableException("Cannot retry request for "+path);
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		checkStatus(response, status, "apply", "resource", path,
 				(as != null) ? ResponseStatus.OK
@@ -2273,16 +2400,21 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
-			else if (hasStreamingPart)
+			}
+			response.close();
+
+			if (hasStreamingPart)
 				throw new ResourceNotResendableException("Cannot retry request for "+path);
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		checkStatus(response, status, "apply", "resource", path,
 				(as != null) ? ResponseStatus.OK
@@ -2306,10 +2438,9 @@ public class JerseyServices implements RESTServices {
 		String  inputMimetype = inputBase.getMimetype();
 		boolean isResendable  = inputBase.isResendable();
 
-		WebResource.Builder builder = makePostBuilder(
-				path, params, inputMimetype,
-				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE)
-				);
+		WebResource.Builder builder = makePostBuilder(path, params, inputMimetype, null);
+
+		MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
 
 		ClientResponse        response = null;
 		ClientResponse.Status status   = null;
@@ -2317,23 +2448,28 @@ public class JerseyServices implements RESTServices {
 		for (; retry < maxRetries; retry++) {
 			Object value = inputBase.sendContent();
 
-			response = doPost(reqlog, builder, value, !isResendable);
+			response = doPost(reqlog, builder.accept(multipartType), value, !isResendable);
 			status   = response.getClientResponseStatus();
 
 			if (isFirstRequest)
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
-			else if (!isResendable)
+			}
+			response.close();
+
+			if (!isResendable)
 				throw new ResourceNotResendableException("Cannot retry request for "+path);
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		checkStatus(response, status, "apply", "resource", path,
 				(response.hasEntity() || (outputMimetypes != null && outputMimetypes.length > 0)) ?
@@ -2365,16 +2501,21 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
-			else if (hasStreamingPart)
+			}
+			response.close();
+
+			if (hasStreamingPart)
 				throw new ResourceNotResendableException("Cannot retry request for "+path);
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		checkStatus(response, status, "apply", "resource", path,
 				(response.hasEntity() ||
@@ -2407,14 +2548,19 @@ public class JerseyServices implements RESTServices {
 				isFirstRequest = false;
 
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE ||
-					!"1".equals(response.getHeaders().getFirst("Retry-After")))
+					!"1".equals(response.getHeaders().getFirst("Retry-After"))) {
 				break;
+			}
+			response.close();
+
 			try {
 				Thread.sleep(delayMillis);
 			} catch (InterruptedException e) {}
 		}
-		if (retry >= maxRetries)
+		if (retry >= maxRetries) {
+			response.close();
 			throw new FailedRequestException("Service unavailable and retries exhausted");
+		}
 
 		checkStatus(response, status, "delete", "resource", path,
 				(as != null) ? ResponseStatus.OK : ResponseStatus.NO_CONTENT);
