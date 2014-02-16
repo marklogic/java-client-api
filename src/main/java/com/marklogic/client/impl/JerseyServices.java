@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -122,8 +123,10 @@ public class JerseyServices implements RESTServices {
 	private ApacheHttpClient4 client;
 	private WebResource connection;
 
-	private int maxRetries  = 64;
-	private int delayMillis = 125;
+	private Random randRetry    = new Random();
+	private int maxRetries      =   9;
+	private int delayFloor      = 120;
+	private int delayMultiplier =   5;
 
 	private boolean isFirstRequest = false;
 
@@ -366,7 +369,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -480,7 +483,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -578,7 +581,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -688,7 +691,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -840,7 +843,7 @@ public class JerseyServices implements RESTServices {
 			if (!isResendable)
 				throw new ResourceNotResendableException("Cannot retry request for "+uri);
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -937,7 +940,7 @@ public class JerseyServices implements RESTServices {
 			if (hasStreamingPart)
 				throw new ResourceNotResendableException("Cannot retry request for "+uri);
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -1008,7 +1011,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -1083,7 +1086,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -1413,7 +1416,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {
 			}
 		}
@@ -1478,7 +1481,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {
 			}
 		}
@@ -1612,7 +1615,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -1673,7 +1676,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -1728,7 +1731,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -1780,7 +1783,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -1839,7 +1842,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -1989,7 +1992,7 @@ public class JerseyServices implements RESTServices {
 				throw new ResourceNotResendableException(
 						"Cannot retry request for "+connectPath);
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -2045,7 +2048,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -2093,7 +2096,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -2140,7 +2143,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -2183,7 +2186,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -2237,7 +2240,7 @@ public class JerseyServices implements RESTServices {
 			if (!isResendable)
 				throw new ResourceNotResendableException("Cannot retry request for "+path);
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -2296,7 +2299,7 @@ public class JerseyServices implements RESTServices {
 			if (hasStreamingPart)
 				throw new ResourceNotResendableException("Cannot retry request for "+path);
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -2353,7 +2356,7 @@ public class JerseyServices implements RESTServices {
 			if (!isResendable)
 				throw new ResourceNotResendableException("Cannot retry request for "+path);
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -2408,7 +2411,7 @@ public class JerseyServices implements RESTServices {
 			if (hasStreamingPart)
 				throw new ResourceNotResendableException("Cannot retry request for "+path);
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -2463,7 +2466,7 @@ public class JerseyServices implements RESTServices {
 			if (!isResendable)
 				throw new ResourceNotResendableException("Cannot retry request for "+path);
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -2509,7 +2512,7 @@ public class JerseyServices implements RESTServices {
 			if (hasStreamingPart)
 				throw new ResourceNotResendableException("Cannot retry request for "+path);
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -2554,7 +2557,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			try {
-				Thread.sleep(delayMillis);
+				Thread.sleep(calculateDelay(randRetry, retry));
 			} catch (InterruptedException e) {}
 		}
 		if (retry >= maxRetries) {
@@ -2996,6 +2999,14 @@ public class JerseyServices implements RESTServices {
 		}
 
 		return (builder != null) ? builder.toString() : null;
+	}
+
+	private int calculateDelay(Random rand, int iteration) {
+		int base = (iteration == 0) ? delayMultiplier :
+				(1 << iteration) * delayMultiplier;
+		return delayFloor + base + rand.nextInt(
+				(iteration + 1 < maxRetries) ? base : base / 2
+				);
 	}
 
 	public class JerseyResult implements ServiceResult {
