@@ -22,6 +22,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -34,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
@@ -44,10 +48,12 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * 
  * The JAXB Handle must be initialized with a JAXB Context with which the root POJO classes
  * have been registered.
+ * 
+ * @param	<C>	one of the classes (or the &lt;?&gt; wildcard for any of the classes) registered with the JAXB Context
  */
-public class JAXBHandle
+public class JAXBHandle<C>
 	extends BaseHandle<InputStream, OutputStreamSender>
-    implements OutputStreamSender, BufferableHandle, ContentHandle<Object>,
+    implements OutputStreamSender, BufferableHandle, ContentHandle<C>,
         XMLReadHandle, XMLWriteHandle
 {
 	static final private Logger logger = LoggerFactory.getLogger(JAXBHandle.class);
@@ -55,7 +61,33 @@ public class JAXBHandle
 	private JAXBContext  context;
 	private Unmarshaller unmarshaller;
 	private Marshaller   marshaller;
-	private Object       content;
+	private C            content;
+
+	/**
+	 * Creates a factory to create a JAXBHandle instance for POJO instances
+	 * of the specified classes.
+	 * @param pojoClasses	the POJO classes for which this factory provides a handle
+	 * @return	the factory
+	 */
+	static public ContentHandleFactory newFactory(Class<?>... pojoClasses)
+	throws JAXBException {
+		if (pojoClasses == null || pojoClasses.length == 0)
+			return null;
+		return new JAXBHandleFactory(pojoClasses);
+	}
+	/**
+	 * Creates a factory to create a JAXBHandle instance for POJO instances
+	 * of the specified classes.
+	 * @param context	the JAXB context for marshaling the POJO classes
+	 * @param pojoClasses	the POJO classes for which this factory provides a handle
+	 * @return	the factory
+	 */
+	static public ContentHandleFactory newFactory(JAXBContext context, Class<?>... pojoClasses)
+	throws JAXBException {
+		if (context == null || pojoClasses == null || pojoClasses.length == 0)
+			return null;
+		return new JAXBHandleFactory(context, pojoClasses);
+	}
 
 	/**
 	 * Initializes the JAXB handle with the JAXB context for the classes
@@ -79,12 +111,12 @@ public class JAXBHandle
 	 * @return	the root JAXB object
 	 */
 	@Override
-	public Object get() {
+	public C get() {
 		return content;
 	}
 	/**
 	 * Returns the root object of the JAXB structure for the content
-	 * cast to the specified class.
+	 * cast to a more specific class.
 	 * @param as	the class of the object
 	 * @return	the root JAXB object
 	 */
@@ -109,7 +141,7 @@ public class JAXBHandle
 	 * @param content	the root JAXB object
 	 */
 	@Override
-    public void set(Object content) {
+    public void set(C content) {
     	this.content = content;
     }
     /**
@@ -118,7 +150,7 @@ public class JAXBHandle
 	 * @param content	the root JAXB object
 	 * @return	this handle
      */
-    public JAXBHandle with(Object content) {
+    public JAXBHandle<C> with(C content) {
     	set(content);
     	return this;
     }
@@ -137,7 +169,7 @@ public class JAXBHandle
 	 * @param mimetype	the mime type of the content
 	 * @return	this handle
 	 */
-	public JAXBHandle withMimetype(String mimetype) {
+	public JAXBHandle<C> withMimetype(String mimetype) {
 		setMimetype(mimetype);
 		return this;
 	}
@@ -235,9 +267,11 @@ public class JAXBHandle
     @Override
 	protected void receiveContent(InputStream content) {
 		try {
-			this.content = getUnmarshaller().unmarshal(
+			@SuppressWarnings("unchecked")
+			C unmarshalled = (C) getUnmarshaller().unmarshal(
 					new InputStreamReader(content, "UTF-8")
 					);
+			this.content = unmarshalled;
 		} catch (JAXBException e) {
 			logger.error("Failed to unmarshall object read from database document",e);
 			throw new MarkLogicIOException(e);
@@ -262,6 +296,39 @@ public class JAXBHandle
 		} catch (JAXBException e) {
 			logger.error("Failed to marshall object for writing to database document",e);
 			throw new MarkLogicIOException(e);
+		}
+	}
+
+	static private class JAXBHandleFactory implements ContentHandleFactory {
+		private Class<?>[]    pojoClasses;
+		private JAXBContext   factoryContext;
+		private Set<Class<?>> classSet;
+
+		private JAXBHandleFactory(Class<?>... pojoClasses)
+		throws JAXBException {
+			this(JAXBContext.newInstance(pojoClasses), pojoClasses);
+		}
+		private JAXBHandleFactory(JAXBContext factoryContext, Class<?>... pojoClasses)
+		throws JAXBException {
+			super();
+			this.pojoClasses    = pojoClasses;
+			this.factoryContext = factoryContext;
+			this.classSet       = new HashSet<Class<?>>(Arrays.asList(pojoClasses));
+		}
+
+		@Override
+		public Class<?>[] getHandledClasses() {
+			return pojoClasses;
+		}
+		@Override
+		public boolean isHandled(Class<?> type) {
+			return classSet.contains(type);
+		}
+		@Override
+		public <C> ContentHandle<C> newHandle(Class<C> type) {
+			ContentHandle<C> handle = isHandled(type) ?
+					(ContentHandle<C>) new JAXBHandle<C>(factoryContext) : null;
+			return handle;
 		}
 	}
 }

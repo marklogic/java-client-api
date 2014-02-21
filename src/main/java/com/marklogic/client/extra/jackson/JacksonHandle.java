@@ -28,12 +28,13 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
@@ -51,6 +52,30 @@ public class JacksonHandle
 {
 	private JsonNode content;
 	private ObjectMapper mapper;
+
+	/**
+	 * Creates a factory to create a JacksonHandle instance for a JSON node.
+	 * @return	the factory
+	 */
+	static public ContentHandleFactory newFactory() {
+		return new ContentHandleFactory() {
+			@Override
+			public Class<?>[] getHandledClasses() {
+				return new Class<?>[]{ JsonNode.class };
+			}
+			@Override
+			public boolean isHandled(Class<?> type) {
+				return JsonNode.class.isAssignableFrom(type);
+			}
+			@Override
+			public <C> ContentHandle<C> newHandle(Class<C> type) {
+				@SuppressWarnings("unchecked")
+				ContentHandle<C> handle = isHandled(type) ?
+						(ContentHandle<C>) new JacksonHandle() : null;
+				return handle;
+			}
+		};
+	}
 
 	/**
 	 * Zero-argument constructor.

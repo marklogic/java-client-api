@@ -21,14 +21,15 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.admin.ExtensionMetadata;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.util.RequestParameters;
 import com.marklogic.client.admin.ResourceExtensionsManager;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
-
+import com.marklogic.client.util.RequestParameters;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 class ResourceExtensionsImpl
@@ -37,14 +38,43 @@ class ResourceExtensionsImpl
 {
 	static final private Logger logger = LoggerFactory.getLogger(ResourceExtensionsImpl.class);
 
-	private RESTServices services;
+    private RESTServices          services;
+	private HandleFactoryRegistry handleRegistry;
 
 	ResourceExtensionsImpl(RESTServices services) {
 		super();
 		this.services = services;
 	}
 
-	@Override
+	HandleFactoryRegistry getHandleRegistry() {
+		return handleRegistry;
+	}
+	void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
+		this.handleRegistry = handleRegistry;
+	}
+
+    @Override
+    public <T> T listServicesAs(Format format, Class<T> as) {
+		return listServicesAs(format, as, true);
+    }
+    @Override
+    public <T> T listServicesAs(Format format, Class<T> as, boolean refresh) {
+		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+		if (!StructureReadHandle.class.isAssignableFrom(handle.getClass())) {
+			throw new IllegalArgumentException(
+					"Handle "+handle.getClass().getName()+
+					" cannot be used to list resource services as "+as.getName()
+					);
+		}
+
+		Utilities.setHandleStructuredFormat(handle, format);
+
+		listServices((StructureReadHandle) handle, refresh);
+
+		return handle.get();
+    }
+
+    @Override
 	public <T extends StructureReadHandle> T listServices(T listHandle) {
 		return listServices(listHandle, true);
 	}
@@ -78,6 +108,20 @@ class ResourceExtensionsImpl
 	}
 
 	@Override
+	public <T> T readServicesAs(String resourceName, Class<T> as) {
+		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+		if (!TextReadHandle.class.isAssignableFrom(handle.getClass())) {
+			throw new IllegalArgumentException(
+					"Handle "+handle.getClass().getName()+
+					" cannot be used to read resource service source as "+as.getName()
+					);
+		}
+
+		readServices(resourceName, (TextReadHandle) handle);
+
+		return handle.get();
+	}
+	@Override
 	public <T extends TextReadHandle> T readServices(String resourceName, T sourceHandle) {
 		if (resourceName == null)
 			throw new IllegalArgumentException("Reading resource services source with null name");
@@ -96,6 +140,33 @@ class ResourceExtensionsImpl
 		return sourceHandle;
 	}
 
+	@Override
+	public void writeServicesAs(
+		String resourceName, Object source, ExtensionMetadata metadata, MethodParameters... methodParams
+	) {
+		if (source == null) {
+			throw new IllegalArgumentException("no source to write");
+		}
+
+		Class<?> as = source.getClass();
+
+		TextWriteHandle sourceHandle = null;
+		if (TextWriteHandle.class.isAssignableFrom(as)) {
+			sourceHandle = (TextWriteHandle) source;
+		} else {
+			ContentHandle<?> handle = getHandleRegistry().makeHandle(as);
+			if (!TextWriteHandle.class.isAssignableFrom(handle.getClass())) {
+				throw new IllegalArgumentException(
+						"Handle "+handle.getClass().getName()+
+						" cannot be used to write resource service source as "+as.getName()
+						);
+			}
+			Utilities.setHandleContent(handle, source);
+			sourceHandle = (TextWriteHandle) handle;
+		}
+
+		writeServices(resourceName, sourceHandle, metadata, methodParams);
+	}
 	@Override
 	public void writeServices(
 		String resourceName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, MethodParameters... methodParams

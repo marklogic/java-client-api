@@ -23,6 +23,7 @@ import java.nio.charset.Charset;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
@@ -44,6 +45,30 @@ public class StringHandle
 		StructureReadHandle, StructureWriteHandle
 {
 	private String content;
+
+	/**
+	 * Creates a factory to create a StringHandle instance for a string.
+	 * @return	the factory
+	 */
+	static public ContentHandleFactory newFactory() {
+		return new ContentHandleFactory() {
+			@Override
+			public Class<?>[] getHandledClasses() {
+				return new Class<?>[]{ String.class };
+			}
+			@Override
+			public boolean isHandled(Class<?> type) {
+				return String.class.isAssignableFrom(type);
+			}
+			@Override
+			public <C> ContentHandle<C> newHandle(Class<C> type) {
+				@SuppressWarnings("unchecked")
+				ContentHandle<C> handle = isHandled(type) ?
+						(ContentHandle<C>) new StringHandle() : null;
+				return handle;
+			}
+		};
+	}
 
 	/**
 	 * Zero-argument constructor.

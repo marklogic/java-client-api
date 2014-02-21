@@ -20,6 +20,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.FailedRequestException;
@@ -31,6 +32,7 @@ import com.marklogic.client.util.RequestParameters;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
@@ -45,14 +47,43 @@ class TransformExtensionsImpl
 {
 	static final private Logger logger = LoggerFactory.getLogger(TransformExtensionsImpl.class);
 
-	private RESTServices services;
+    private RESTServices          services;
+	private HandleFactoryRegistry handleRegistry;
 
 	TransformExtensionsImpl(RESTServices services) {
 		super();
 		this.services = services;
 	}
 
-	@Override
+	HandleFactoryRegistry getHandleRegistry() {
+		return handleRegistry;
+	}
+	void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
+		this.handleRegistry = handleRegistry;
+	}
+
+    @Override
+    public <T> T listTransformsAs(Format format, Class<T> as) {
+		return listTransformsAs(format, as, true);
+    }
+    @Override
+    public <T> T listTransformsAs(Format format, Class<T> as, boolean refresh) {
+		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+		if (!StructureReadHandle.class.isAssignableFrom(handle.getClass())) {
+			throw new IllegalArgumentException(
+					"Handle "+handle.getClass().getName()+
+					" cannot be used to list transforms as "+as.getName()
+					);
+		}
+
+		Utilities.setHandleStructuredFormat(handle, format);
+
+		listTransforms((StructureReadHandle) handle, refresh);
+
+		return handle.get();
+    }
+
+    @Override
 	public <T extends StructureReadHandle> T listTransforms(T listHandle)
 	throws ForbiddenUserException, FailedRequestException {
 		return listTransforms(listHandle, true);
@@ -88,6 +119,37 @@ class TransformExtensionsImpl
 	}
 
 	@Override
+	public <T> T readXQueryTransformAs(String transformName, Class<T> as)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+		if (!TextReadHandle.class.isAssignableFrom(handle.getClass())) {
+			throw new IllegalArgumentException(
+					"Handle "+handle.getClass().getName()+
+					" cannot be used to read transform source as "+as.getName()
+					);
+		}
+
+		readXQueryTransform(transformName, (TextReadHandle) handle);
+
+		return handle.get();
+	}
+	@Override
+	public <T> T readXSLTransformAs(String transformName, Class<T> as)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+		if (!XMLReadHandle.class.isAssignableFrom(handle.getClass())) {
+			throw new IllegalArgumentException(
+					"Handle "+handle.getClass().getName()+
+					" cannot be used to read transform source as "+as.getName()
+					);
+		}
+
+		readXSLTransform(transformName, (XMLReadHandle) handle);
+
+		return handle.get();
+	}
+
+	@Override
 	public <T extends TextReadHandle> T readXQueryTransform(String transformName, T sourceHandle)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		return readTransform(transformName, "application/xquery", sourceHandle);
@@ -115,6 +177,69 @@ class TransformExtensionsImpl
 				);
 
 		return sourceHandle;
+	}
+
+	@Override
+	public void writeXQueryTransformAs(String transformName, Object source)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
+		writeXQueryTransformAs(transformName, null, source);
+	}
+	@Override
+	public void writeXQueryTransformAs(String transformName, ExtensionMetadata metadata, Object source)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
+		if (source == null) {
+			throw new IllegalArgumentException("no source to write");
+		}
+
+		Class<?> as = source.getClass();
+
+		TextWriteHandle sourceHandle = null;
+		if (TextWriteHandle.class.isAssignableFrom(as)) {
+			sourceHandle = (TextWriteHandle) source;
+		} else {
+			ContentHandle<?> handle = getHandleRegistry().makeHandle(as);
+			if (!TextWriteHandle.class.isAssignableFrom(handle.getClass())) {
+				throw new IllegalArgumentException(
+						"Handle "+handle.getClass().getName()+
+						" cannot be used to write transform source as "+as.getName()
+						);
+			}
+			Utilities.setHandleContent(handle, source);
+			sourceHandle = (TextWriteHandle) handle;
+		}
+
+		writeXQueryTransform(transformName, sourceHandle, metadata);
+	}
+	@Override
+	public void writeXSLTransformAs(String transformName, Object source)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
+		writeXSLTransformAs(transformName, null, source);
+	}
+	@Override
+	public void writeXSLTransformAs(String transformName, ExtensionMetadata metadata, Object source)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
+		if (source == null) {
+			throw new IllegalArgumentException("no source to write");
+		}
+
+		Class<?> as = source.getClass();
+
+		XMLWriteHandle sourceHandle = null;
+		if (TextWriteHandle.class.isAssignableFrom(as)) {
+			sourceHandle = (XMLWriteHandle) source;
+		} else {
+			ContentHandle<?> handle = getHandleRegistry().makeHandle(as);
+			if (!XMLWriteHandle.class.isAssignableFrom(handle.getClass())) {
+				throw new IllegalArgumentException(
+						"Handle "+handle.getClass().getName()+
+						" cannot be used to write transform source as "+as.getName()
+						);
+			}
+			Utilities.setHandleContent(handle, source);
+			sourceHandle = (XMLWriteHandle) handle;
+		}
+
+		writeXSLTransform(transformName, sourceHandle, metadata);
 	}
 
 	@Override

@@ -44,9 +44,13 @@ import javax.xml.transform.stream.StreamSource;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.io.BaseHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
 public final class Utilities {
@@ -612,5 +616,42 @@ public final class Utilities {
 			events = null;
 			curr   = -1;
 		}
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	static public void setHandleContent(ContentHandle handle, Object content) {
+		if (handle == null) {
+			return;
+		}
+
+		handle.set(content);
+	}
+	@SuppressWarnings("rawtypes")
+	static public void setHandleStructuredFormat(ContentHandle handle, Format format) {
+		if (handle == null || format == null) {
+			return;
+		}
+
+		if (BaseHandle.class.isAssignableFrom(handle.getClass())) {
+			setHandleStructuredFormat((BaseHandle) handle, format);
+		}
+	}
+	@SuppressWarnings("rawtypes")
+	static public void setHandleStructuredFormat(StructureWriteHandle handle, Format format) {
+		if (handle == null || format == null) {
+			return;
+		}
+
+		if (BaseHandle.class.isAssignableFrom(handle.getClass())) {
+			setHandleStructuredFormat((BaseHandle) handle, format);
+		}
+	}
+	@SuppressWarnings("rawtypes") 
+	static private void setHandleStructuredFormat(BaseHandle handle, Format format) {
+		if (format != Format.JSON && format != Format.XML) {
+			throw new IllegalArgumentException("Received "+format.name()+" format instead of JSON or XML");
+		}
+
+		handle.setFormat(format);
 	}
 }

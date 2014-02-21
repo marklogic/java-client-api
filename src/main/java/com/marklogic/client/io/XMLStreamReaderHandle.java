@@ -38,6 +38,7 @@ import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -61,6 +62,30 @@ public class XMLStreamReaderHandle
 	private XMLResolver     resolver;
 	private XMLStreamReader content;
 	private XMLInputFactory factory;
+
+	/**
+	 * Creates a factory to create an XMLStreamReaderHandle instance for a StAX stream reader.
+	 * @return	the factory
+	 */
+	static public ContentHandleFactory newFactory() {
+		return new ContentHandleFactory() {
+			@Override
+			public Class<?>[] getHandledClasses() {
+				return new Class<?>[]{ XMLStreamReader.class };
+			}
+			@Override
+			public boolean isHandled(Class<?> type) {
+				return XMLStreamReader.class.isAssignableFrom(type);
+			}
+			@Override
+			public <C> ContentHandle<C> newHandle(Class<C> type) {
+				@SuppressWarnings("unchecked")
+				ContentHandle<C> handle = isHandled(type) ?
+						(ContentHandle<C>) new XMLStreamReaderHandle() : null;
+				return handle;
+			}
+		};
+	}
 
 	/**
 	 * Zero-argument constructor.

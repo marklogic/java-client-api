@@ -29,7 +29,7 @@ import com.marklogic.client.io.JAXBHandle;
 import com.marklogic.client.io.StringHandle;
 
 /**
- * JAXBDocument illustrates how to write and read a JAXB object structure as a database document.
+ * JAXBDocument illustrates how to write and read a POJO structure as a database document.
  */
 public class JAXBDocument {
 	public static void main(String[] args) throws JAXBException, IOException {
@@ -68,8 +68,56 @@ public class JAXBDocument {
 	}
 
 	public static void run(ExampleProperties props) throws JAXBException {
-		System.out.println("example: "+JAXBDocument.class.getName());
+		System.out.println("example: "+JAXBDocument.class.getName()+"\n");
 
+		// use either shortcut or strong typed IO
+		runShortcut(props);
+		runStrongTyped(props);
+
+		System.out.println("Wrote, read, and deleted "+Product.class.getName()+" using JAXB");
+	}
+	public static void runShortcut(ExampleProperties props) throws JAXBException {
+		// register the POJO classes
+		DatabaseClientFactory.getHandleRegistry().register(
+			JAXBHandle.newFactory(Product.class)
+			);
+
+		// create the client
+		DatabaseClient client = DatabaseClientFactory.newClient(
+				props.host, props.port, props.writerUser, props.writerPassword,
+				props.authType);
+
+		// create a manager for XML documents
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+
+		// create an instance of the POJO class
+		Product product = new Product();
+		product.setName("FashionForward");
+		product.setIndustry("Retail");
+		product.setDescription(
+				"(Shortcut) Creates demand with high prices, hours from midnight to dawn, and frequent moves");
+
+		// create an identifier for the document
+		String docId = "/example/"+product.getName()+".xml";
+
+		// write the POJO as the document content
+		docMgr.writeAs(docId, product);
+
+		// ... at some other time ...
+
+		// read the POJO from the document content
+		product = docMgr.readAs(docId, Product.class);
+
+		// log the persisted XML document
+		System.out.println(docMgr.readAs(docId, String.class));
+
+		// delete the document
+		docMgr.delete(docId);
+
+		// release the client
+		client.release();
+	}
+	public static void runStrongTyped(ExampleProperties props) throws JAXBException {
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(
 				props.host, props.port, props.writerUser, props.writerPassword,
@@ -77,43 +125,47 @@ public class JAXBDocument {
 
 		JAXBContext context = JAXBContext.newInstance(Product.class);
 
+		// create a manager for XML documents
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+
+		// create a handle for a POJO class marshaled by the JAXB context
+		// Note:  to use a single handle for any of the POJO classes
+		// identified to the JAXB context, use a <?> wildcard instead of
+		// a specific class and call the get(class) method instead of
+		// the get() method.
+		JAXBHandle<Product> handle = new JAXBHandle<Product>(context);
+
+		// create an instance of the POJO class
 		Product product = new Product();
 		product.setName("FashionForward");
 		product.setIndustry("Retail");
 		product.setDescription(
-				"Creates demand with high prices, hours from midnight to dawn, and frequent moves");
-
-		// create a manager for XML documents
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+				"(Strong Typed) Creates demand with high prices, hours from midnight to dawn, and frequent moves");
 
 		// create an identifier for the document
 		String docId = "/example/"+product.getName()+".xml";
 
-		// create a handle for the JAXB object
-		JAXBHandle writeHandle = new JAXBHandle(context);
-		writeHandle.set(product);
+		// set the handle to the POJO instance
+		handle.set(product);
 
-		// write the JAXB object as a document
-		docMgr.write(docId, writeHandle);
+		// write the POJO as the document content
+		docMgr.write(docId, handle);
 
-		// create a handle to receive the document content
-		JAXBHandle readHandle = new JAXBHandle(context);
+		// ... at some other time ...
 
-		// read the JAXB object from the document content
-		docMgr.read(docId, readHandle);
+		// read the POJO from the document content
+		docMgr.read(docId, handle);
 
 		// access the document content
-		product = (Product) readHandle.get();
+		product = handle.get();
 		
-		// ... do something with the JAXB object ...
+		// ... do something with the POJO ...
 
 		// read the persisted XML document for the logging message
-		String productDoc = docMgr.read(docId, new StringHandle()).get();
+		System.out.println(docMgr.read(docId, new StringHandle()).get());
 
 		// delete the document
 		docMgr.delete(docId);
-
-		System.out.println("Wrote, read, and deleted "+product.getName()+" using JAXB:\n"+productDoc);
 
 		// release the client
 		client.release();

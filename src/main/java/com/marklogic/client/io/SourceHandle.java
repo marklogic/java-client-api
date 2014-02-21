@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -57,6 +58,30 @@ public class SourceHandle
 
 	private Transformer transformer;
 	private Source      content;
+
+	/**
+	 * Creates a factory to create a SourceHandle instance for a Transformer Source.
+	 * @return	the factory
+	 */
+	static public ContentHandleFactory newFactory() {
+		return new ContentHandleFactory() {
+			@Override
+			public Class<?>[] getHandledClasses() {
+				return new Class<?>[]{ Source.class };
+			}
+			@Override
+			public boolean isHandled(Class<?> type) {
+				return Source.class.isAssignableFrom(type);
+			}
+			@Override
+			public <C> ContentHandle<C> newHandle(Class<C> type) {
+				@SuppressWarnings("unchecked")
+				ContentHandle<C> handle = isHandled(type) ?
+						(ContentHandle<C>) new SourceHandle() : null;
+				return handle;
+			}
+		};
+	}
 
 	/**
 	 * Zero-argument constructor.

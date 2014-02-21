@@ -15,24 +15,35 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
-public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
-		QueryOptionsManager {
-
+public class QueryOptionsManagerImpl
+	extends AbstractLoggingManager
+	implements QueryOptionsManager
+{
 	final static private String QUERY_OPTIONS_BASE = "/config/query";
-	private RESTServices services;
+    private RESTServices          services;
+	private HandleFactoryRegistry handleRegistry;
 
 	public QueryOptionsManagerImpl(RESTServices services) {
 		this.services = services;
+	}
+
+	HandleFactoryRegistry getHandleRegistry() {
+		return handleRegistry;
+	}
+	void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
+		this.handleRegistry = handleRegistry;
 	}
 
 	@Override
@@ -41,6 +52,23 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 		services.deleteValue(null, QUERY_OPTIONS_BASE, name);
 	}
 
+	@Override
+	public <T> T readOptionsAs(String name, Format format, Class<T> as)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+		if (!QueryOptionsReadHandle.class.isAssignableFrom(handle.getClass())) {
+			throw new IllegalArgumentException(
+					"Handle "+handle.getClass().getName()+
+					" cannot be used to read resource service source as "+as.getName()
+					);
+		}
+
+		Utilities.setHandleStructuredFormat(handle, format);
+
+		readOptions(name, (QueryOptionsReadHandle) handle);
+
+		return handle.get();
+	}
 	@Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
 	public <T extends QueryOptionsReadHandle> T readOptions(String name, T queryOptionsHandle)
@@ -74,6 +102,33 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 		return queryOptionsHandle;
 	}
 
+	@Override
+	public void writeOptionsAs(String name, Format format, Object queryOptions)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
+		if (queryOptions == null) {
+			throw new IllegalArgumentException("no options to write");
+		}
+
+		Class<?> as = queryOptions.getClass();
+
+		QueryOptionsWriteHandle queryOptionsHandle = null;
+		if (QueryOptionsWriteHandle.class.isAssignableFrom(as)) {
+			queryOptionsHandle = (QueryOptionsWriteHandle) queryOptions;
+		} else {
+			ContentHandle<?> handle = getHandleRegistry().makeHandle(as);
+			if (!QueryOptionsWriteHandle.class.isAssignableFrom(handle.getClass())) {
+				throw new IllegalArgumentException(
+						"Handle "+handle.getClass().getName()+
+						" cannot be used to write query options as "+as.getName()
+						);
+			}
+			Utilities.setHandleContent(handle, queryOptions);
+			Utilities.setHandleStructuredFormat(handle, format);
+			queryOptionsHandle = (QueryOptionsWriteHandle) handle;
+		}
+
+		writeOptions(name, queryOptionsHandle);
+	}
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void writeOptions(String name, QueryOptionsWriteHandle queryOptionsHandle)
@@ -103,6 +158,23 @@ public class QueryOptionsManagerImpl extends AbstractLoggingManager implements
 		services.putValue(requestLogger, QUERY_OPTIONS_BASE, name, mimetype, queryOptionsBase);
 	}
 
+	@Override
+    public <T> T optionsListAs(Format format, Class<T> as)
+	throws ForbiddenUserException, FailedRequestException {
+		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+		if (!QueryOptionsListReadHandle.class.isAssignableFrom(handle.getClass())) {
+			throw new IllegalArgumentException(
+					"Handle "+handle.getClass().getName()+
+					" cannot be used to list query options as "+as.getName()
+					);
+		}
+
+		Utilities.setHandleStructuredFormat(handle, format);
+
+		optionsList((QueryOptionsListReadHandle) handle);
+
+		return handle.get();
+    }
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
     public <T extends QueryOptionsListReadHandle> T optionsList(T optionsHandle)

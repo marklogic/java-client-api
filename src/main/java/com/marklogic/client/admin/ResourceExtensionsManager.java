@@ -17,6 +17,7 @@ package com.marklogic.client.admin;
 
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
@@ -29,7 +30,32 @@ import com.marklogic.client.io.marker.TextWriteHandle;
  * by default.
  */
 public interface ResourceExtensionsManager {
-	/**
+    /**
+	 * Reads the list of resource service extensions installed on the server
+	 * in a JSON or XML representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param format	whether to provide the list in a JSON or XML representation
+     * @param as	the IO class for reading the list of resource service extensions
+	 * @return	an object of the IO class with the list of resource service extensions
+     */
+    public <T> T listServicesAs(Format format, Class<T> as);
+    /**
+	 * Reads the list of resource service extensions installed on the server
+	 * in a JSON or XML representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param format	whether to provide the list in a JSON or XML representation
+     * @param as	the IO class for reading the list of resource service extensions
+     * @param refresh	whether to parse metadata from the extension source
+	 * @return	an object of the IO class with the list of resource service extensions
+     */
+    public <T> T listServicesAs(Format format, Class<T> as, boolean refresh);
+    /**
 	 * Reads the list of resource service extensions installed on the server.
 	 * @param listHandle	a handle on a JSON or XML representation of the list
 	 * @return	the list handle
@@ -46,12 +72,41 @@ public interface ResourceExtensionsManager {
     public <T extends StructureReadHandle> T listServices(T listHandle, boolean refresh);
 
     /**
+     * Reads the XQuery implementation of the services for a resource
+	 * in a textual representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param resourceName	the name of the resource
+     * @param as	the IO class for reading the source code as text
+     * @return	an object of the IO class with the source code for the service
+     */
+    public <T> T readServicesAs(String resourceName, Class<T> as);
+
+    /**
      * Reads the XQuery implementation of the services for a resource.
      * @param resourceName	the name of the resource
      * @param sourceHandle	a handle for reading the text of the XQuery implementation.
      * @return	the XQuery source code
      */
     public <T extends TextReadHandle> T readServices(String resourceName, T sourceHandle);
+
+    /**
+     * Installs the services that implement a resource
+	 * in a textual representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param resourceName	the name of the resource
+     * @param source	an IO representation of the source code
+     * @param metadata	the metadata about the resource services
+     * @param methodParams	a declaration of the parameters for the services
+     */
+    public void writeServicesAs(
+        	String resourceName, Object source, ExtensionMetadata metadata, MethodParameters... methodParams
+        	);
 
     /**
      * Installs the services that implement a resource.

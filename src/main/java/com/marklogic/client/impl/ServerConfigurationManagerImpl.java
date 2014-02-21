@@ -33,6 +33,7 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
+import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.admin.ExtensionLibrariesManager;
 import com.marklogic.client.admin.NamespacesManager;
 import com.marklogic.client.admin.QueryOptionsManager;
@@ -58,11 +59,19 @@ class ServerConfigurationManagerImpl
 	private Policy  contentVersions;
 	private Format  errorFormat;
 
-	private RESTServices services;
+    private RESTServices          services;
+	private HandleFactoryRegistry handleRegistry;
 
 	public ServerConfigurationManagerImpl(RESTServices services) {
 		super();
 		this.services = services;
+	}
+
+	HandleFactoryRegistry getHandleRegistry() {
+		return handleRegistry;
+	}
+	void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
+		this.handleRegistry = handleRegistry;
 	}
 
 	@Override
@@ -197,7 +206,6 @@ class ServerConfigurationManagerImpl
 	public Boolean getQueryValidation() {
 		return validatingQueries;
 	}
-
 	@Override
 	public void setQueryValidation(Boolean on) {
 		validatingQueries = on;
@@ -240,20 +248,33 @@ class ServerConfigurationManagerImpl
 	}
 
 	@Override
-	public QueryOptionsManager newQueryOptionsManager() {
-		return new QueryOptionsManagerImpl(services);
+	public ExtensionLibrariesManager newExtensionLibrariesManager() {
+		ExtensionLibrariesManagerImpl extensionMgr =
+			new ExtensionLibrariesManagerImpl(services);
+		extensionMgr.setHandleRegistry(getHandleRegistry());
+		return extensionMgr;
 	}
 	@Override
     public NamespacesManager newNamespacesManager() {
     	return new NamespacesManagerImpl(services);
     }
 	@Override
+	public QueryOptionsManager newQueryOptionsManager() {
+		QueryOptionsManagerImpl optMgr = new QueryOptionsManagerImpl(services);
+		optMgr.setHandleRegistry(getHandleRegistry());
+		return optMgr;
+	}
+	@Override
 	public ResourceExtensionsManager newResourceExtensionsManager() {
-		return new ResourceExtensionsImpl(services);
+		ResourceExtensionsImpl resourceExtensionMgr = new ResourceExtensionsImpl(services);
+		resourceExtensionMgr.setHandleRegistry(getHandleRegistry());
+		return resourceExtensionMgr;
 	}
 	@Override
 	public TransformExtensionsManager newTransformExtensionsManager() {
-		return new TransformExtensionsImpl(services);
+		TransformExtensionsImpl transformExtensionMgr = new TransformExtensionsImpl(services);
+		transformExtensionMgr.setHandleRegistry(getHandleRegistry());
+		return transformExtensionMgr;
 	}
 	
 	@Override
@@ -267,11 +288,4 @@ class ServerConfigurationManagerImpl
 		else
 			throw new IllegalArgumentException("The only supported values for error format are JSON and XML.");
 	}
-
-	@Override
-	public ExtensionLibrariesManager newExtensionLibrariesManager() {
-		return new ExtensionLibrariesManagerImpl(services);
-	}
-
-	
 }

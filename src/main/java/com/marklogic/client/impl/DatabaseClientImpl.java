@@ -29,6 +29,7 @@ import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.extensions.ResourceManager;
+import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.alerting.RuleManager;
 import com.marklogic.client.document.TextDocumentManager;
@@ -38,10 +39,18 @@ import com.marklogic.client.document.XMLDocumentManager;
 public class DatabaseClientImpl implements DatabaseClient {
 	static final private Logger logger = LoggerFactory.getLogger(DatabaseClientImpl.class);
 
-	private RESTServices services;
+	private RESTServices          services;
+	private HandleFactoryRegistry handleRegistry;
 
 	public DatabaseClientImpl(RESTServices services) {
 		this.services = services;
+	}
+
+	public HandleFactoryRegistry getHandleRegistry() {
+		return handleRegistry;
+	}
+	public void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
+		this.handleRegistry = handleRegistry;
 	}
 
 	@Override
@@ -61,38 +70,58 @@ public class DatabaseClientImpl implements DatabaseClient {
 
 	@Override
 	public GenericDocumentManager newDocumentManager() {
-		return new GenericDocumentImpl(services);
+		GenericDocumentImpl docMgr = new GenericDocumentImpl(services);
+		docMgr.setHandleRegistry(getHandleRegistry());
+		return docMgr;
 	}
 	@Override
 	public BinaryDocumentManager newBinaryDocumentManager() {
-		return new BinaryDocumentImpl(services);
+		BinaryDocumentImpl docMgr = new BinaryDocumentImpl(services);
+		docMgr.setHandleRegistry(getHandleRegistry());
+		return docMgr;
 	}
 	@Override
 	public JSONDocumentManager newJSONDocumentManager() {
-		return new JSONDocumentImpl(services);
+		JSONDocumentImpl docMgr = new JSONDocumentImpl(services);
+		docMgr.setHandleRegistry(getHandleRegistry());
+		return docMgr;
 	}
 	@Override
 	public TextDocumentManager newTextDocumentManager() {
-		return new TextDocumentImpl(services);
+		TextDocumentImpl docMgr = new TextDocumentImpl(services);
+		docMgr.setHandleRegistry(getHandleRegistry());
+		return docMgr;
 	}
 	@Override
 	public XMLDocumentManager newXMLDocumentManager() {
-		return new XMLDocumentImpl(services);
+		XMLDocumentImpl docMgr = new XMLDocumentImpl(services);
+		docMgr.setHandleRegistry(getHandleRegistry());
+		return docMgr;
+	}
+
+	@Override
+	public RuleManager newRuleManager() {
+		RuleManagerImpl ruleMgr = new RuleManagerImpl(services);
+		ruleMgr.setHandleRegistry(getHandleRegistry());
+		return ruleMgr;
+	}
+	@Override
+	public QueryManager newQueryManager() {
+		QueryManagerImpl queryMgr = new QueryManagerImpl(services);
+		queryMgr.setHandleRegistry(getHandleRegistry());
+		return queryMgr;
+	}
+	@Override
+	public ServerConfigurationManager newServerConfigManager() {
+		ServerConfigurationManagerImpl configMgr =
+			new ServerConfigurationManagerImpl(services);
+		configMgr.setHandleRegistry(getHandleRegistry());
+		return configMgr;
 	}
 
 	@Override
 	public RequestLogger newLogger(OutputStream out) {
 		return new RequestLoggerImpl(out);
-	}
-
-	@Override
-	public QueryManager newQueryManager() {
-        return new QueryManagerImpl(services);
-	}
-
-	@Override
-	public ServerConfigurationManager newServerConfigManager() {
-		return new ServerConfigurationManagerImpl(services);
 	}
 
 	@Override
@@ -136,10 +165,5 @@ public class DatabaseClientImpl implements DatabaseClient {
 	// undocumented backdoor access to JerseyServices
 	public RESTServices getServices() {
 		return services;
-	}
-
-	@Override
-	public RuleManager newRuleManager() {
-		return new RuleManagerImpl(services);
 	}
 }

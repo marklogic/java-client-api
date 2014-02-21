@@ -21,12 +21,16 @@ import org.slf4j.LoggerFactory;
 import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.util.RequestParameters;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 
 class BinaryDocumentImpl
@@ -41,6 +45,23 @@ class BinaryDocumentImpl
 		super(services, Format.BINARY);
 	}
 
+	// shortcut readers
+	@Override
+	public <T> T readAs(String uri, Class<T> as, long start, long length)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		return readAs(uri, null, as, start, length);
+	}
+	@Override
+	public <T> T readAs(String uri, DocumentMetadataReadHandle metadataHandle, Class<T> as, long start, long length)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+
+		read(uri, metadataHandle, castAbstractReadHandle(as, handle), start, length);
+
+		return handle.get();
+	}
+
+	// strongly typed readers
 	@Override
 	public <T extends BinaryReadHandle> T read(String uri, T contentHandle, long start, long length) {
 		return read(uri, null, contentHandle, null, start, length, null);

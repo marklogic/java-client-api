@@ -20,6 +20,7 @@ import java.io.File;
 import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.io.marker.GenericReadHandle;
 import com.marklogic.client.io.marker.GenericWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -53,6 +54,30 @@ public class FileHandle
 		StructureReadHandle, StructureWriteHandle
 {
 	private File content;
+
+	/**
+	 * Creates a factory to create a FileHandle for a file.
+	 * @return	the factory
+	 */
+	static public ContentHandleFactory newFactory() {
+		return new ContentHandleFactory() {
+			@Override
+			public Class<?>[] getHandledClasses() {
+				return new Class<?>[]{ File.class };
+			}
+			@Override
+			public boolean isHandled(Class<?> type) {
+				return File.class.isAssignableFrom(type);
+			}
+			@Override
+			public <C> ContentHandle<C> newHandle(Class<C> type) {
+				@SuppressWarnings("unchecked")
+				ContentHandle<C> handle = isHandled(type) ?
+						(ContentHandle<C>) new FileHandle() : null;
+				return handle;
+			}
+		};
+	}
 
 	/**
 	 * Zero-argument constructor.

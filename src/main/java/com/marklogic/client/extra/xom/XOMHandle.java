@@ -29,12 +29,13 @@ import nu.xom.ParsingException;
 import nu.xom.Serializer;
 import nu.xom.ValidityException;
 
-import com.marklogic.client.io.Format;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -52,6 +53,30 @@ public class XOMHandle
 {
 	private Document content;
 	private Builder  builder;
+
+	/**
+	 * Creates a factory to create a XOMHandle instance for a XOM document.
+	 * @return	the factory
+	 */
+	static public ContentHandleFactory newFactory() {
+		return new ContentHandleFactory() {
+			@Override
+			public Class<?>[] getHandledClasses() {
+				return new Class<?>[]{ Document.class };
+			}
+			@Override
+			public boolean isHandled(Class<?> type) {
+				return Document.class.isAssignableFrom(type);
+			}
+			@Override
+			public <C> ContentHandle<C> newHandle(Class<C> type) {
+				@SuppressWarnings("unchecked")
+				ContentHandle<C> handle = isHandled(type) ?
+						(ContentHandle<C>) new XOMHandle() : null;
+				return handle;
+			}
+		};
+	}
 
 	/**
 	 * Zero-argument constructor.
