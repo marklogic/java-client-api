@@ -217,6 +217,37 @@ public class ResourceExtension {
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
+		// use either shortcut or strong typed IO
+		installResourceExtensionShortcut(client);
+		installResourceExtensionStrongTyped(client);
+
+		// release the client
+		client.release();
+	}
+	public static void installResourceExtensionShortcut(DatabaseClient client) throws IOException {
+		// create a manager for resource extensions
+		ResourceExtensionsManager resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
+
+		// specify metadata about the resource extension
+		ExtensionMetadata metadata = new ExtensionMetadata();
+		metadata.setTitle("Spelling Dictionary Resource Services");
+		metadata.setDescription("This plugin supports spelling dictionaries");
+		metadata.setProvider("MarkLogic");
+		metadata.setVersion("0.1");
+
+		// acquire the resource extension source code
+		InputStream sourceStream = Util.openStream(
+				"scripts"+File.separator+DictionaryManager.NAME+".xqy");
+		if (sourceStream == null)
+			throw new IOException("Could not read example resource extension");
+
+		// write the resource extension to the database
+		resourceMgr.writeServicesAs(DictionaryManager.NAME, sourceStream, metadata,
+				new MethodParameters(MethodType.GET));
+
+		System.out.println("(Shortcut) Installed the resource extension on the server");
+	}
+	public static void installResourceExtensionStrongTyped(DatabaseClient client) throws IOException {
 		// create a manager for resource extensions
 		ResourceExtensionsManager resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
 
@@ -241,10 +272,7 @@ public class ResourceExtension {
 		resourceMgr.writeServices(DictionaryManager.NAME, handle, metadata,
 				new MethodParameters(MethodType.GET));
 
-		System.out.println("Installed the resource extension on the server");
-
-		// release the client
-		client.release();
+		System.out.println("(Strong Typed) Installed the resource extension on the server");
 	}
 
 	// use the resource manager

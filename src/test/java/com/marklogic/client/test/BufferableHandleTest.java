@@ -157,6 +157,7 @@ public class BufferableHandleTest {
 		refers.child = new Referred();
 
 		JAXBContext jaxbContext = JAXBContext.newInstance(Refers.class);
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		JAXBHandle  jaxbH       = new JAXBHandle(jaxbContext).with(refers);
 
 		before = jaxbH.toBuffer();

@@ -36,12 +36,41 @@ public class DocumentWrite {
 	public static void run(ExampleProperties props) throws IOException {
 		System.out.println("example: "+DocumentWrite.class.getName());
 
-		String filename = "flipper.xml";
-
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(
 				props.host, props.port, props.writerUser, props.writerPassword,
 				props.authType);
+
+		// use either shortcut or strong typed IO
+		runShortcut(client);
+		runStrongTyped(client);
+
+		tearDownExample(client);
+
+		// release the client
+		client.release();
+	}
+	public static void runShortcut(DatabaseClient client) throws IOException {
+		String filename = "flipper.xml";
+
+		// acquire the content
+		InputStream docStream = Util.openStream("data"+File.separator+filename);
+		if (docStream == null)
+			throw new IOException("Could not read document example");
+
+		// create a manager for XML documents
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+
+		// create an identifier for the document
+		String docId = "/example/"+filename;
+
+		// write the document content
+		docMgr.writeAs(docId, docStream);
+
+		System.out.println("(Shortcut) Wrote /example/"+filename+" content");
+	}
+	public static void runStrongTyped(DatabaseClient client) throws IOException {
+		String filename = "flipper.xml";
 
 		// acquire the content
 		InputStream docStream = Util.openStream("data"+File.separator+filename);
@@ -61,16 +90,15 @@ public class DocumentWrite {
 		// write the document content
 		docMgr.write(docId, handle);
 
-		System.out.println("Wrote /example/"+filename+" content");
-
-		tearDownExample(docMgr, docId);
-
-		// release the client
-		client.release();
+		System.out.println("(Strong Typed) Wrote /example/"+filename+" content");
 	}
 
 	// clean up by deleting the document that the example wrote
-	public static void tearDownExample(XMLDocumentManager docMgr, String docId) {
+	public static void tearDownExample(DatabaseClient client) {
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+
+		String docId = "/example/flipper.xml";
+
 		docMgr.delete(docId);
 	}
 }

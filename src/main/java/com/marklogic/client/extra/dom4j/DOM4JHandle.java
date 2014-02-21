@@ -31,12 +31,13 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 
-import com.marklogic.client.io.Format;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -55,6 +56,30 @@ public class DOM4JHandle
 	private SAXReader    reader;
 	private OutputFormat outputFormat;
 	private Document     content;
+
+	/**
+	 * Creates a factory to create a DOM4JHandle instance for a dom4j document.
+	 * @return	the factory
+	 */
+	static public ContentHandleFactory newFactory() {
+		return new ContentHandleFactory() {
+			@Override
+			public Class<?>[] getHandledClasses() {
+				return new Class<?>[]{ Document.class };
+			}
+			@Override
+			public boolean isHandled(Class<?> type) {
+				return Document.class.isAssignableFrom(type);
+			}
+			@Override
+			public <C> ContentHandle<C> newHandle(Class<C> type) {
+				@SuppressWarnings("unchecked")
+				ContentHandle<C> handle = isHandled(type) ?
+						(ContentHandle<C>) new DOM4JHandle() : null;
+				return handle;
+			}
+		};
+	}
 
 	/**
 	 * Zero-argument constructor.

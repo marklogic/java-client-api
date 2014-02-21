@@ -107,7 +107,60 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      */
     public DocumentDescriptor exists(String docId, Transaction transaction)
     	throws ForbiddenUserException, FailedRequestException;
- 
+
+    /**
+     * Reads the document content from the database in the representation specified by the IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param docId the URI identifier for the document
+     * @param as	the IO class for reading the content of the document
+     * @return	an object of the IO class with the content of the document in the database
+     */
+    public <T> T readAs(String docId, Class<T> as)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    /**
+     * Reads the document content from the database in the representation specified by the IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param docId the URI identifier for the document
+     * @param as	the IO class for reading the content of the document
+     * @param transform	a server transform to modify the document content
+     * @return	an object of the IO class with the content of the document in the database
+     */
+    public <T> T readAs(String docId, Class<T> as, ServerTransform transform)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    /**
+     * Reads the document metadata and content from the database in the representation specified by the IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param docId the URI identifier for the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param as	the IO class for reading the content of the document
+     * @return	an object of the IO class with the content of the document in the database
+     */
+    public <T> T readAs(String docId, DocumentMetadataReadHandle metadataHandle, Class<T> as)
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    /**
+     * Reads the document metadata and content from the database in the representation specified by the IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param docId the URI identifier for the document
+     * @param metadataHandle	a handle for reading the metadata of the document
+     * @param as	the IO class for reading the content of the document
+     * @param transform	a server transform to modify the document content
+     * @return	an object of the IO class with the content of the document in the database
+     */
+    public <T> T readAs(String docId, DocumentMetadataReadHandle metadataHandle, Class<T> as, ServerTransform transform)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+
     /**
      * Reads the document content from the database in the representation provided by the handle
      * 
@@ -118,7 +171,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(String docId, T contentHandle)
-    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Reads the document content from the database as transformed on the server.
      * 
@@ -130,7 +183,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(String docId, T contentHandle, ServerTransform transform)
-    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Reads the document content from the database in the representations provided by the handles
      * 
@@ -141,7 +194,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle)
-    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Reads the document content from the database as transformed on the server.
      * 
@@ -153,7 +206,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform)
-    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
      * Reads the document metadata and content from the database in the representations provided by the handles
@@ -313,6 +366,55 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     /**
+     * Writes the document content to the database from an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param content	an IO representation of the document content
+     */
+    public void writeAs(String docId, Object content)
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    /**
+     * Writes the document content to the database from an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param content	an IO representation of the document content
+     * @param transform	a server transform to modify the document content
+     */
+    public void writeAs(String docId, Object content, ServerTransform transform)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    /**
+     * Writes the document content to the database from an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param content	an IO representation of the document content
+     */
+    public void writeAs(String docId, DocumentMetadataWriteHandle metadataHandle, Object content)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    /**
+     * Writes the document content to the database from an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param content	an IO representation of the document content
+     * @param transform	a server transform to modify the document content
+     */
+    public void writeAs(String docId, DocumentMetadataWriteHandle metadataHandle, Object content, ServerTransform transform)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+
+    /**
      * Writes the document content to the database from the representation provided by the handle
      * 
      * To call write(), an application must authenticate as rest-writer or rest-admin.
@@ -321,7 +423,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for writing the content of the document
      */
     public void write(String docId, W contentHandle)
-    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document content to the database as transformed on the server.
      * 
@@ -332,7 +434,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transform	a server transform to modify the document content
      */
     public void write(String docId, W contentHandle, ServerTransform transform)
-		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document content to the database from the representation provided by the handle
      * 
@@ -342,7 +444,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for writing the content of the document
      */
     public void write(DocumentDescriptor desc, W contentHandle)
-		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document content to the database as transformed on the server.
      * 
@@ -353,7 +455,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transform	a server transform to modify the document content
      */
     public void write(DocumentDescriptor desc, W contentHandle, ServerTransform transform)
-		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
      * Writes the document metadata and content to the database from the representations provided by the handles
@@ -365,7 +467,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for writing the content of the document
      */
     public void write(String docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle)
-    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document metadata and content to the database as transformed on the server.
      * 
@@ -377,7 +479,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transform	a server transform to modify the document content
      */
     public void write(String docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform)
-    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document metadata and content to the database from the representations provided by the handles
      * 
@@ -388,7 +490,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for writing the content of the document
      */
     public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, W contentHandle)
-    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document metadata and content to the database as transformed on the server.
      * 
@@ -400,7 +502,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transform	a server transform to modify the document content
      */
     public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform)
-		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
      * Writes the document content to an open database transaction from the representation provided by the handle
@@ -412,7 +514,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
      */
     public void write(String docId, W contentHandle, Transaction transaction)
-    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document content to an open database transaction as transformed on the server.
      * 
@@ -424,7 +526,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
      */
     public void write(String docId, W contentHandle, ServerTransform transform, Transaction transaction)
-    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document content to an open database transaction from the representation provided by the handle
      * 
@@ -435,7 +537,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
      */
     public void write(DocumentDescriptor desc, W contentHandle, Transaction transaction)
-    	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document content to an open database transaction as transformed on the server.
      * 
@@ -447,7 +549,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
      */
     public void write(DocumentDescriptor desc, W contentHandle, ServerTransform transform, Transaction transaction)
-		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
      * Writes the document metadata and content to an open database transaction from the representations provided by the handles
@@ -540,6 +642,59 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
+	 * Creates a database document with a uri assigned by the server from an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+	 * @param template	the template for constructing the document uri
+     * @param content	an IO representation of the document content
+	 * @return	the database uri that identifies the created document
+     */
+    public DocumentDescriptor createAs(DocumentUriTemplate template, Object content)
+		throws ForbiddenUserException, FailedRequestException;
+    /**
+	 * Creates a database document with a uri assigned by the server from an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+	 * @param template	the template for constructing the document uri
+     * @param content	an IO representation of the document content
+     * @param transform	a server transform to modify the document content
+	 * @return	the database uri that identifies the created document
+     */
+    public DocumentDescriptor createAs(DocumentUriTemplate template, Object content, ServerTransform transform)
+		throws ForbiddenUserException, FailedRequestException;
+    /**
+	 * Creates a database document with a uri assigned by the server from an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+	 * @param template	the template for constructing the document uri
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param content	an IO representation of the document content
+	 * @return	the database uri that identifies the created document
+     */
+    public DocumentDescriptor createAs(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, Object content)
+		throws ForbiddenUserException, FailedRequestException;
+    /**
+	 * Creates a database document with a uri assigned by the server from an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+	 * @param template	the template for constructing the document uri
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param content	an IO representation of the document content
+     * @param transform	a server transform to modify the document content
+	 * @return	the database uri that identifies the created document
+     */
+    public DocumentDescriptor createAs(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, Object content, ServerTransform transform)
+		throws ForbiddenUserException, FailedRequestException;
+
+    /**
 	 * Creates a database document with a uri assigned by the server.
 	 * @param template	the template for constructing the document uri
      * @param contentHandle	a handle for writing the content of the document
@@ -613,6 +768,21 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 	 * @return	the database uri that identifies the created document
 	 */
     public DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform, Transaction transaction)
+		throws ForbiddenUserException, FailedRequestException;
+
+    /**
+     * Modifies the metadata or content of a document within an open database transaction on the server.
+     * Content can only be modified for JSON or XML documents.  You must use the setMetadataCategories()
+     * method to specify whether the patch includes metadata.  An IO representation such as a string, 
+     * input stream, or XML DOM specifies the patch as content.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param docId	the URI identifier for the document
+     * @param patch	an IO representation of the patch
+     */
+    public void patchAs(String docId, Object patch)
 		throws ForbiddenUserException, FailedRequestException;
 
     /**

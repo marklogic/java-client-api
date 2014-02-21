@@ -22,6 +22,7 @@ import com.marklogic.client.io.marker.BinaryReadHandle;
 import com.marklogic.client.io.marker.BinaryWriteHandle;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.io.marker.GenericReadHandle;
 import com.marklogic.client.io.marker.GenericWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -52,6 +53,30 @@ public class BytesHandle
 		StructureReadHandle, StructureWriteHandle
 {
 	private byte[] content;
+
+	/**
+	 * Creates a factory to create a BytesHandle instance for a byte[] array.
+	 * @return	the factory
+	 */
+	static public ContentHandleFactory newFactory() {
+		return new ContentHandleFactory() {
+			@Override
+			public Class<?>[] getHandledClasses() {
+				return new Class<?>[]{ byte[].class };
+			}
+			@Override
+			public boolean isHandled(Class<?> type) {
+				return byte[].class.isAssignableFrom(type);
+			}
+			@Override
+			public <C> ContentHandle<C> newHandle(Class<C> type) {
+				@SuppressWarnings("unchecked")
+				ContentHandle<C> handle = isHandled(type) ?
+						(ContentHandle<C>) new BytesHandle() : null;
+				return handle;
+			}
+		};
+	}
 
 	/**
 	 * Zero-argument constructor.

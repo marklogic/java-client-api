@@ -16,6 +16,7 @@
 package com.marklogic.client;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -25,7 +26,10 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.extra.httpclient.HttpClientConfigurator;
 import com.marklogic.client.impl.DatabaseClientImpl;
+import com.marklogic.client.impl.HandleFactoryRegistryImpl;
 import com.marklogic.client.impl.JerseyServices;
+import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.ContentHandleFactory;
 
 /**
  * A Database Client Factory configures a database client for making
@@ -35,6 +39,8 @@ public class DatabaseClientFactory {
 	static final private Logger logger = LoggerFactory.getLogger(DatabaseClientFactory.class);
 
 	static private ClientConfigurator<?> clientConfigurator;
+	static private HandleFactoryRegistry handleRegistry =
+		HandleFactoryRegistryImpl.newDefault();
 
 	/**
 	 * Authentication enumerates the methods for verifying a user and
@@ -117,6 +123,64 @@ public class DatabaseClientFactory {
 	}
 
 	/**
+	 * A HandleFactoryRegistry associates IO representation classes
+	 * with handle factories. The API uses the registry to create 
+	 * a content handle to act as an adapter for a supported
+	 * IO representation class.  The IO class and its instances can
+	 * then be passed directly to convenience methods.
+	 * The default registry associates the content handles provided 
+	 * by the API and the supported IO representation classes.
+	 * Create instances of this interface only if you need to modify
+	 * the default registry.
+	 * @see DatabaseClientFactory#getHandleRegistry()
+	 * @see DatabaseClientFactory.Bean#getHandleRegistry()
+	 */
+	public interface HandleFactoryRegistry {
+		/**
+		 * Associates a factory for content handles with the classes
+		 * for IO representations known to the factory.
+		 * @param factory	a factory for creating content handle instances
+		 */
+		public void register(ContentHandleFactory factory);
+		/**
+		 * Associates a factory for content handles with the specified classes
+		 * for IO representations.
+		 * @param factory	a factory for creating content handle instances
+		 * @param ioClasses	the IO classes for which the factory should create handles
+		 */
+		public void register(ContentHandleFactory factory, Class<?>... ioClasses);
+		/**
+		 * Returns whether the registry associates the class with a factory.
+		 * @param ioClass	the class for an IO representation
+		 * @return	true if a factory has been registered
+		 */
+		public boolean isRegistered(Class<?> ioClass);
+		/**
+		 * Returns the classes for the IO representations for which a factory
+		 * has been registered.
+		 * @return	the IO classes
+		 */
+		public Set<Class<?>> listRegistered();
+		/**
+		 * Creates a ContentHandle if the registry has a factory
+		 * for the class of the IO representation.
+		 * @param type	the class for an IO representation
+		 * @return	a content handle or null if no factory supports the class
+		 */
+		public <C> ContentHandle<C> makeHandle(Class<C> type);
+		/**
+		 * Removes the classes from the registry
+		 * @param ioClasses	one or more registered classes for an IO representation
+		 */
+		public void unregister(Class<?>... ioClasses);
+		/**
+		 * Create a copy of the current registry
+		 * @return	a copy of the current registry
+		 */
+		public HandleFactoryRegistry copy();
+	}
+
+	/**
 	 * A ClientConfigurator provides custom configuration for the communication library
 	 * used to sending client requests and receiving server responses.
 	 * @see com.marklogic.client.extra.httpclient.HttpClientConfigurator
@@ -131,22 +195,6 @@ public class DatabaseClientFactory {
 	}
 
 	private DatabaseClientFactory() {
-	}
-
-	/**
-	 * Adds a listener that provides custom configuration when a communication library
-	 * is created.
-	 * @see com.marklogic.client.extra.httpclient.HttpClientConfigurator
-	 * @param configurator	the listener for configuring the communication library
-	 */
-	static public void addConfigurator(ClientConfigurator<?> configurator) {
-		if (!HttpClientConfigurator.class.isInstance(configurator)) {
-			throw new IllegalArgumentException(
-					"Configurator must implement HttpClientConfigurator"
-					);
-		}
-
-		clientConfigurator = configurator;
 	}
 
 	/**
@@ -183,7 +231,7 @@ public class DatabaseClientFactory {
 	 * @param user	the user with read, write, or administrative privileges
 	 * @param password	the password for the user
 	 * @param type	the type of authentication applied to the request
-	 * @param context	the SSL content for authenticating with the server
+	 * @param context	the SSL context for authenticating with the server
 	 * @return	a new client for making database requests
 	 */
 	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context) {
@@ -197,11 +245,16 @@ public class DatabaseClientFactory {
 	 * @param user	the user with read, write, or administrative privileges
 	 * @param password	the password for the user
 	 * @param type	the type of authentication applied to the request
-	 * @param context	the SSL content for authenticating with the server
+	 * @param context	the SSL context for authenticating with the server
 	 * @param verifier	a callback for checking hostnames
 	 * @return	a new client for making database requests
 	 */
 	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
+		DatabaseClientImpl client = newClientImpl(host, port, user, password, type, context, verifier);
+		client.setHandleRegistry(getHandleRegistry().copy());
+		return client;
+	}
+	static private DatabaseClientImpl newClientImpl(String host, int port, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
 		logger.debug("Creating new database client for server at "+host+":"+port);
 		JerseyServices services = new JerseyServices();
 		services.connect(host, port, user, password, type, context, verifier);
@@ -213,6 +266,48 @@ public class DatabaseClientFactory {
 		}
 
 		return new DatabaseClientImpl(services);		
+	}
+
+	/**
+	 * Returns the default registry with factories for creating handles
+	 * as adapters for IO representations. To create custom registries,
+	 * use 
+	 * @return	the default registry
+	 */
+	static public HandleFactoryRegistry getHandleRegistry() {
+		return handleRegistry;
+	}
+	/**
+	 * Removes the current registered associations so the
+	 * handle registry is empty.
+	 */
+	static public void clearHandleRegistry() {
+		handleRegistry = new HandleFactoryRegistryImpl();
+	}
+	/**
+	 * Initializes a handle registry with the default associations
+	 * between the content handles provided by the API and the supported
+	 * IO representation classes.  Use this method only after clearing
+	 * or overwriting associations in the handle registry.
+	 */
+	static public void registerDefaultHandles() {
+		HandleFactoryRegistryImpl.registerDefaults(getHandleRegistry());
+	}
+
+	/**
+	 * Adds a listener that provides custom configuration when a communication library
+	 * is created.
+	 * @see com.marklogic.client.extra.httpclient.HttpClientConfigurator
+	 * @param configurator	the listener for configuring the communication library
+	 */
+	static public void addConfigurator(ClientConfigurator<?> configurator) {
+		if (!HttpClientConfigurator.class.isInstance(configurator)) {
+			throw new IllegalArgumentException(
+					"Configurator must implement HttpClientConfigurator"
+					);
+		}
+
+		clientConfigurator = configurator;
 	}
 
 	/**
@@ -240,13 +335,16 @@ public class DatabaseClientFactory {
 	static public class Bean implements Serializable {
 		private static final long serialVersionUID = 1L;
 
-		private           String              host;
-		private           int                 port;
-		private           String              user;
-		private           String              password;
-		private           Authentication      authentication;
-		transient private SSLContext          context;
-		transient private SSLHostnameVerifier verifier;
+		private           String                host;
+		private           int                   port;
+		private           String                user;
+		private           String                password;
+		private           Authentication        authentication;
+		private           HandleFactoryRegistry handleRegistry =
+			HandleFactoryRegistryImpl.newDefault();
+
+		transient private SSLContext            context;
+		transient private SSLHostnameVerifier   verifier;
 
 		/**
 		 * Zero-argument constructor for bean applications. Other
@@ -380,6 +478,31 @@ public class DatabaseClientFactory {
 		}
 
 		/**
+		 * Returns the registry for associating 
+		 * IO representation classes with handle factories.
+		 * @return	the registry instance
+		 */
+		public HandleFactoryRegistry getHandleRegistry() {
+			return handleRegistry;
+		}
+		/**
+		 * Removes the current registered associations so the
+		 * handle registry is empty.
+		 */
+		public void clearHandleRegistry() {
+			this.handleRegistry = new HandleFactoryRegistryImpl();
+		}
+		/**
+		 * Initializes a handle registry with the default associations
+		 * between the content handles provided by the API and the supported
+		 * IO representation classes.  Use this method only after clearing
+		 * or overwriting associations in the handle registry.
+		 */
+		public void registerDefaultHandles() {
+			HandleFactoryRegistryImpl.registerDefaults(getHandleRegistry());
+		}
+
+		/**
 		 * Creates a client for bean applications based on the properties.
 		 * Other applications can use the static newClient() factory methods
 		 * of DatabaseClientFactory.
@@ -387,9 +510,10 @@ public class DatabaseClientFactory {
 		 * @return	a new client for making database requests
 		 */
 		public DatabaseClient newClient() {
-			return DatabaseClientFactory.newClient(
-					host, port, user, password, authentication, context, verifier
-					);
+			DatabaseClientImpl client = newClientImpl(host, port, user, password, authentication, context, verifier);
+			client.setHandleRegistry(getHandleRegistry().copy());
+
+			return client;
 		}
 	}
 }

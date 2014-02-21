@@ -23,6 +23,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
@@ -53,31 +54,76 @@ public class RawCombinedSearch {
 
 		setUpExample(client);
 
+		// use either shortcut or strong typed IO
+		runShortcut(client);
+		runStrongTyped(client);
+
+		tearDownExample(client);
+
+		// release the client
+		client.release();
+	}
+	public static void runShortcut(DatabaseClient client) throws IOException {
 		// create a manager for searching
 		QueryManager queryMgr = client.newQueryManager();
 
 		// specify the query and options for the search criteria
 		// in raw XML (raw JSON is also supported)
-		String rawSearch =
-    	    "<search:search "+
-    	            "xmlns:search='http://marklogic.com/appservices/search'>"+
-    	    "<search:query>"+
-  	            "<search:term-query>"+
-   	                "<search:text>neighborhoods</search:text>"+
-   	            "</search:term-query>"+
-   	            "<search:value-constraint-query>"+
-   	                "<search:constraint-name>industry</search:constraint-name>"+
-   	                "<search:text>Real Estate</search:text>"+
-   	            "</search:value-constraint-query>"+
-	        "</search:query>"+
-    	    "<search:options>"+
-                "<search:constraint name='industry'>"+
-    	            "<search:value>"+
-    		            "<search:element name='industry' ns=''/>"+
-    	            "</search:value>"+
-                "</search:constraint>"+
-            "</search:options>"+
-            "</search:search>";
+		String rawSearch = new StringBuilder()
+    	    .append("<search:search ")
+    	    .append(    "xmlns:search='http://marklogic.com/appservices/search'>")
+    	    .append("<search:query>")
+  	        .append(    "<search:term-query>")
+   	        .append(        "<search:text>neighborhoods</search:text>")
+   	        .append(    "</search:term-query>")
+   	        .append(    "<search:value-constraint-query>")
+   	        .append(        "<search:constraint-name>industry</search:constraint-name>")
+   	        .append(        "<search:text>Real Estate</search:text>")
+   	        .append(    "</search:value-constraint-query>")
+	        .append("</search:query>")
+    	    .append("<search:options>")
+            .append(    "<search:constraint name='industry'>")
+    	    .append(        "<search:value>")
+    		.append(            "<search:element name='industry' ns=''/>")
+    	    .append(        "</search:value>")
+            .append(    "</search:constraint>")
+            .append("</search:options>")
+            .append("</search:search>")
+            .toString();
+
+		// run the search
+		String results = queryMgr.searchAs(Format.XML, rawSearch, String.class);
+
+		System.out.println("(Shortcut) Matched:\n"+results+"\n");
+	}
+	public static void runStrongTyped(DatabaseClient client)
+	throws IOException {
+		// create a manager for searching
+		QueryManager queryMgr = client.newQueryManager();
+
+		// specify the query and options for the search criteria
+		// in raw XML (raw JSON is also supported)
+		String rawSearch = new StringBuilder()
+    	    .append("<search:search ")
+    	    .append(    "xmlns:search='http://marklogic.com/appservices/search'>")
+    	    .append("<search:query>")
+  	        .append(    "<search:term-query>")
+   	        .append(        "<search:text>neighborhoods</search:text>")
+   	        .append(    "</search:term-query>")
+   	        .append(    "<search:value-constraint-query>")
+   	        .append(        "<search:constraint-name>industry</search:constraint-name>")
+   	        .append(        "<search:text>Real Estate</search:text>")
+   	        .append(    "</search:value-constraint-query>")
+	        .append("</search:query>")
+    	    .append("<search:options>")
+            .append(    "<search:constraint name='industry'>")
+    	    .append(        "<search:value>")
+    		.append(            "<search:element name='industry' ns=''/>")
+    	    .append(        "</search:value>")
+            .append(    "</search:constraint>")
+            .append("</search:options>")
+            .append("</search:search>")
+            .toString();
 
 		// create a handle for the search criteria
 		StringHandle rawHandle = new StringHandle(rawSearch);
@@ -92,7 +138,7 @@ public class RawCombinedSearch {
 		// run the search
 		queryMgr.search(querydef, resultsHandle);
 
-		System.out.println("Matched "+resultsHandle.getTotalResults()+
+		System.out.println("(Strong Typed) Matched "+resultsHandle.getTotalResults()+
 				" documents with structured query\n");
 
 		// iterate over the result documents
@@ -120,11 +166,6 @@ public class RawCombinedSearch {
 				System.out.println();
 			}
 		}
-
-		tearDownExample(client);
-
-		// release the client
-		client.release();
 	}
 
 	// set up by writing the document content used in the example query

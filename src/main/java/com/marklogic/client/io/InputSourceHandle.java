@@ -46,6 +46,7 @@ import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -68,6 +69,30 @@ public class InputSourceHandle
 	private Schema           defaultWriteSchema;
 	private SAXParserFactory factory;
 	private InputSource      content;
+
+	/**
+	 * Creates a factory to create a InputSourceHandle instance for a SAX InputSource.
+	 * @return	the factory
+	 */
+	static public ContentHandleFactory newFactory() {
+		return new ContentHandleFactory() {
+			@Override
+			public Class<?>[] getHandledClasses() {
+				return new Class<?>[]{ InputSource.class };
+			}
+			@Override
+			public boolean isHandled(Class<?> type) {
+				return InputSource.class.isAssignableFrom(type);
+			}
+			@Override
+			public <C> ContentHandle<C> newHandle(Class<C> type) {
+				@SuppressWarnings("unchecked")
+				ContentHandle<C> handle = isHandled(type) ?
+						(ContentHandle<C>) new InputSourceHandle() : null;
+				return handle;
+			}
+		};
+	}
 
 	/**
 	 * Zero-argument constructor.

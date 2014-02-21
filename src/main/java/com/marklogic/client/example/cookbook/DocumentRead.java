@@ -39,41 +39,63 @@ public class DocumentRead {
 	public static void run(ExampleProperties props) throws IOException {
 		System.out.println("example: "+DocumentRead.class.getName());
 
-		String filename = "flipper.xml";
-
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(
 				props.host, props.port, props.writerUser, props.writerPassword,
 				props.authType);
 
+		setUpExample(client);
+
+		// use either shortcut or strong typed IO
+		runShortcut(client);
+		runStrongTyped(client);
+
+		tearDownExample(client);
+
+		// release the client
+		client.release();
+	}
+	public static void runShortcut(DatabaseClient client) throws IOException {
 		// create a manager for XML documents
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
 		// create an identifier for the document
-		String docId = "/example/"+filename;
+		String docId = "/example/flipper.xml";
 
-		setUpExample(docMgr, docId, filename);
+		// read the document content
+		Document document = docMgr.readAs(docId, Document.class);
+
+		// access the document content
+		String rootName = document.getDocumentElement().getTagName();
+		System.out.println("(Shortcut) Read "+docId+" content with the <"+rootName+"/> root element");
+	}
+	public static void runStrongTyped(DatabaseClient client) throws IOException {
+		// create a manager for XML documents
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+
+		// create an identifier for the document
+		String docId = "/example/flipper.xml";
 
 		// create a handle to receive the document content
 		DOMHandle handle = new DOMHandle();
 
 		// read the document content
 		docMgr.read(docId, handle);
-
-		// access the document content
 		Document document = handle.get();
 
+		// access the document content
 		String rootName = document.getDocumentElement().getTagName();
-		System.out.println("Read /example/"+filename+" content with the <"+rootName+"/> root element");
-
-		tearDownExample(docMgr, docId);
-
-		// release the client
-		client.release();
+		System.out.println("(Strong Typed) Read /example/"+docId+" content with the <"+rootName+"/> root element");
 	}
 
 	// set up by writing document content for the example to read
-	public static void setUpExample(XMLDocumentManager docMgr, String docId, String filename) throws IOException {
+	public static void setUpExample(DatabaseClient client) throws IOException {
+		String filename = "flipper.xml";
+
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+
+		String docId = "/example/"+filename;
+
 		InputStream docStream = Util.openStream("data"+File.separator+filename);
 		if (docStream == null)
 			throw new IOException("Could not read document example");
@@ -85,7 +107,11 @@ public class DocumentRead {
 	}
 
 	// clean up by deleting the document read by the example
-	public static void tearDownExample(XMLDocumentManager docMgr, String docId) {
+	public static void tearDownExample(DatabaseClient client) {
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+
+		String docId = "/example/flipper.xml";
+
 		docMgr.delete(docId);
 	}
 }

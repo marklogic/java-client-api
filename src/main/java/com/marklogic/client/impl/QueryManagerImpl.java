@@ -23,12 +23,14 @@ import javax.xml.namespace.QName;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
+import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.TuplesHandle;
 import com.marklogic.client.io.ValuesHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
@@ -45,6 +47,7 @@ import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
+import com.marklogic.client.query.RawQueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
@@ -52,14 +55,26 @@ import com.marklogic.client.query.SuggestDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
 
-public class QueryManagerImpl extends AbstractLoggingManager implements QueryManager {
-    private RESTServices services = null;
+public class QueryManagerImpl
+	extends AbstractLoggingManager
+	implements QueryManager
+{
+    private RESTServices          services;
+	private HandleFactoryRegistry handleRegistry;
     private long pageLen = -1;
     private QueryView view = QueryView.DEFAULT;
 
     public QueryManagerImpl(RESTServices services) {
-        this.services = services;
+        super();
+    	this.services = services;
     }
+
+	HandleFactoryRegistry getHandleRegistry() {
+		return handleRegistry;
+	}
+	void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
+		this.handleRegistry = handleRegistry;
+	}
 
     @Override
     public long getPageLength() {
@@ -92,7 +107,6 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     public KeyValueQueryDefinition newKeyValueDefinition() {
         return new KeyValueQueryDefinitionImpl(null);
     }
-
     @Override
     public KeyValueQueryDefinition newKeyValueDefinition(String optionsName) {
         return new KeyValueQueryDefinitionImpl(optionsName);
@@ -102,7 +116,6 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     public StructuredQueryBuilder newStructuredQueryBuilder() {
         return new StructuredQueryBuilder();
     }
-
     @Override
     public StructuredQueryBuilder newStructuredQueryBuilder(String optionsName) {
         return new StructuredQueryBuilder(optionsName);
@@ -117,7 +130,6 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     public ElementLocator newElementLocator(QName element) {
         return new ElementLocatorImpl(element);
     }
-
     @Override
     public ElementLocator newElementLocator(QName element, QName attribute) {
         return new ElementLocatorImpl(element, attribute);
@@ -132,7 +144,6 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     public ValuesDefinition newValuesDefinition(String name) {
         return new ValuesDefinitionImpl(name, null);
     }
-
     @Override
     public ValuesDefinition newValuesDefinition(String name, String optionsName) {
         return new ValuesDefinitionImpl(name, optionsName);
@@ -142,27 +153,81 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     public ValuesListDefinition newValuesListDefinition() {
         return new ValuesListDefinitionImpl(null);
     }
-
     @Override
     public ValuesListDefinition newValuesListDefinition(String optionsName) {
         return new ValuesListDefinitionImpl(optionsName);
     }
 
+	// shortcut search
+    @Override
+    public <T> T searchAs(Format format, Object query, Class<T> as) {
+    	return searchAs(format, query, as, 1);
+    }
+    @Override
+    public <T> T searchAs(Format format, Object query, Class<T> as, long start) {
+		if (as == null) {
+			throw new IllegalArgumentException("no type to search as");
+		}
+
+		QueryDefinition querydef = null;
+		if (query == null) {
+			querydef = new StringQueryDefinitionImpl(null).withCriteria("");
+		} else if (RawQueryDefinition.class.isAssignableFrom(query.getClass())) {
+			RawQueryDefinition rawQuery = (RawQueryDefinition) query;
+			Utilities.setHandleStructuredFormat(rawQuery.getHandle(), format);
+    		querydef = rawQuery;
+		} else if (QueryDefinition.class.isAssignableFrom(query.getClass())) {
+    		querydef = (QueryDefinition) query;
+    	} else if (StructureWriteHandle.class.isAssignableFrom(query.getClass())) {
+    		StructureWriteHandle queryHandle = (StructureWriteHandle) query;
+			Utilities.setHandleStructuredFormat(queryHandle, format);
+    		querydef = new RawQueryDefinitionImpl.Combined(queryHandle);
+    	} else {
+    		Class<?> queryAs = query.getClass();
+			ContentHandle<?> queryHandle = getHandleRegistry().makeHandle(queryAs);
+			if (!StructureWriteHandle.class.isAssignableFrom(queryHandle.getClass())) {
+				throw new IllegalArgumentException(
+						"Handle "+queryHandle.getClass().getName()+
+						" cannot be used to search with "+queryAs.getName()
+						);
+			}
+			Utilities.setHandleContent(queryHandle, query);
+			Utilities.setHandleStructuredFormat(queryHandle, format);
+			querydef = new RawQueryDefinitionImpl.Combined((StructureWriteHandle) queryHandle);
+    	}
+
+    	if (as.isAssignableFrom(SearchHandle.class)) {
+    		SearchHandle searchHandle = new SearchHandle();
+    		search(querydef, searchHandle, start);
+    		return as.cast(searchHandle);
+    	} else {
+        	ContentHandle<T> resultHandle = getHandleRegistry().makeHandle(as);
+    		if (!SearchReadHandle.class.isAssignableFrom(resultHandle.getClass())) {
+    			throw new IllegalArgumentException(
+    					"Handle "+resultHandle.getClass().getName()+
+    					" cannot be used to search for "+as.getName()
+    					);
+    		}
+			Utilities.setHandleStructuredFormat(resultHandle, format);
+
+    		search(querydef, (SearchReadHandle) resultHandle, start);
+    		return resultHandle.get();
+    	}
+    }
+
+	// strongly typed search
     @Override
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle) {
         return search(querydef, searchHandle, 1, null);
     }
-
     @Override
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start) {
         return search(querydef, searchHandle, start, null);
     }
-
     @Override
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction) {
         return search(querydef, searchHandle, 1, transaction);
     }
-
     @Override
     @SuppressWarnings("unchecked")
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction) {
@@ -196,7 +261,6 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     public void delete(DeleteQueryDefinition querydef) {
         delete(querydef, null);
     }
-
     @Override
     public void delete(DeleteQueryDefinition querydef, Transaction transaction) {
         String tid = transaction == null ? null : transaction.getTransactionId();
@@ -207,17 +271,14 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle) {
         return values(valdef, valueHandle, -1, null);
     }
-
     @Override
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, long start) {
         return values(valdef, valueHandle, start, null);
     }
-
     @Override
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, Transaction transaction) {
         return values(valdef, valueHandle, -1, transaction);
     }
-
     @Override
     @SuppressWarnings("unchecked")
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, long start, Transaction transaction) {
@@ -256,17 +317,14 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle) {
         return tuples(valdef, tupleHandle, -1, null);
     }
-
     @Override
     public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, long start) {
         return tuples(valdef, tupleHandle, start, null);
     }
-
     @Override
     public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, Transaction transaction) {
         return tuples(valdef, tupleHandle, -1, transaction);
     }
-
     @Override
     @SuppressWarnings("unchecked")
     public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, long start, Transaction transaction) {
@@ -305,7 +363,6 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valueHandle) {
         return valuesList(valdef, valueHandle, null);
     }
-
     @SuppressWarnings("unchecked")
 	@Override
     public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valuesHandle, Transaction transaction) {
@@ -335,7 +392,6 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
     public <T extends QueryOptionsListReadHandle> T optionsList(T optionsHandle) {
         return optionsList(optionsHandle, null);
     }
-
     @SuppressWarnings("unchecked")
 	@Override
     public <T extends QueryOptionsListReadHandle> T optionsList(T optionsHandle, Transaction transaction) {
@@ -371,7 +427,6 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
             return null;
         }
     }
-
     @Override
     public MatchDocumentSummary findOne(QueryDefinition querydef, Transaction transaction) {
         SearchHandle results = search(querydef, new SearchHandle(), transaction);
@@ -471,7 +526,6 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 		SuggestDefinition def = new SuggestDefinitionImpl();
 		return def;
 	}
-
 	@Override
 	public SuggestDefinition newSuggestDefinition(String optionsName) {
 		SuggestDefinition def = new SuggestDefinitionImpl();
@@ -479,7 +533,6 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 		def.setOptionsName(optionsName);
 		return def;
 	}
-
 	@Override
 	public SuggestDefinition newSuggestDefinition(String suggestString,
 			String optionsName) {
@@ -490,32 +543,66 @@ public class QueryManagerImpl extends AbstractLoggingManager implements QueryMan
 	}
 
 	@Override
+	public RawCombinedQueryDefinition newRawCombinedQueryDefinitionAs(Object rawQuery) {
+		return newRawCombinedQueryDefinitionAs(rawQuery, null);
+	}
+	@Override
+	public RawCombinedQueryDefinition newRawCombinedQueryDefinitionAs(Object rawQuery, String optionsName) {
+		return newRawCombinedQueryDefinition(structuredWrite(rawQuery), optionsName);
+	}
+	@Override
 	public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle) {
 		return new RawQueryDefinitionImpl.Combined(handle);
 	}
-	
 	@Override
 	public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle, String optionsName) {
 		return new RawQueryDefinitionImpl.Combined(handle, optionsName);
 	}
-	
+
+	@Override
+	public RawStructuredQueryDefinition newRawStructuredQueryDefinitionAs(Object query) {
+		return newRawStructuredQueryDefinitionAs(query, null);
+	}
+	@Override
+	public RawStructuredQueryDefinition newRawStructuredQueryDefinitionAs(Object query, String optionsName) {
+		return newRawStructuredQueryDefinition(structuredWrite(query), optionsName);
+	}
 	@Override
 	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle) {
 		return new RawQueryDefinitionImpl.Structured(handle);
 	}
-	
 	@Override
 	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle, String optionsName) {
 		return new RawQueryDefinitionImpl.Structured(handle, optionsName);
 	}
 
 	@Override
+	public RawQueryByExampleDefinition newRawQueryByExampleDefinitionAs(Object query) {
+		return newRawQueryByExampleDefinitionAs(query, null);
+	}
+	@Override
+	public RawQueryByExampleDefinition newRawQueryByExampleDefinitionAs(Object query, String optionsName) {
+		return newRawQueryByExampleDefinition(structuredWrite(query), optionsName);
+	}
+	@Override
 	public RawQueryByExampleDefinition newRawQueryByExampleDefinition(StructureWriteHandle handle) {
 		return new RawQueryDefinitionImpl.ByExample(handle);
 	}
-
 	@Override
 	public RawQueryByExampleDefinition newRawQueryByExampleDefinition(StructureWriteHandle handle, String optionsName) {
 		return new RawQueryDefinitionImpl.ByExample(handle, optionsName);
+	}
+
+	private StructureWriteHandle structuredWrite(Object content) {
+		Class<?> as = content.getClass();
+    	ContentHandle<?> handle = getHandleRegistry().makeHandle(as);
+		if (!StructureWriteHandle.class.isAssignableFrom(handle.getClass())) {
+			throw new IllegalArgumentException(
+					"Handle "+handle.getClass().getName()+
+					" does not provide structure write handle for "+as.getName()
+					);
+		}
+
+		return (StructureWriteHandle) handle;
 	}
 }

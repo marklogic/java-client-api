@@ -21,6 +21,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
@@ -34,6 +35,7 @@ import com.marklogic.client.impl.DocumentMetadataPatchBuilderImpl.DocumentPatchH
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
@@ -47,16 +49,17 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 
 	final private Set<Metadata> processedMetadata;
 
-	private RESTServices    services;
-	private Format          contentFormat;
-	private ServerTransform readTransform;
-	private ServerTransform writeTransform;
-    private String          forestName;
+	private RESTServices          services;
+	private Format                contentFormat;
+	private HandleFactoryRegistry handleRegistry;
+	private ServerTransform       readTransform;
+	private ServerTransform       writeTransform;
+    private String                forestName;
 
 	DocumentManagerImpl(RESTServices services, Format contentFormat) {
 		super();
-		this.services = services;
-		this.contentFormat = contentFormat;
+		this.services       = services;
+		this.contentFormat  = contentFormat;
 	}
 
 	RESTServices getServices() {
@@ -64,6 +67,13 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 	}
 	void setServices(RESTServices services) {
 		this.services = services;
+	}
+
+	HandleFactoryRegistry getHandleRegistry() {
+		return handleRegistry;
+	}
+	void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
+		this.handleRegistry = handleRegistry;
 	}
 
 	@Override
@@ -107,6 +117,45 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		return services.head(requestLogger, uri, (transaction == null) ? null : transaction.getTransactionId());
 	}
 
+	// shortcut readers
+	@Override
+    public <T> T readAs(String uri, Class<T> as)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		return readAs(uri, null, as, null);
+	}
+	@Override
+	public <T> T readAs(String uri, Class<T> as, ServerTransform transform)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		return readAs(uri, null, as, transform);
+	}
+	@Override
+	public <T> T readAs(String uri, DocumentMetadataReadHandle metadataHandle, Class<T> as)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		return readAs(uri, metadataHandle, as, null);
+	}
+	@Override
+    public <T> T readAs(String uri, DocumentMetadataReadHandle metadataHandle, Class<T> as, ServerTransform transform)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+			ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+
+			read(uri, metadataHandle, castAbstractReadHandle(as, handle), transform);
+
+			return handle.get();
+	}
+	R castAbstractReadHandle(Class<?> as, AbstractReadHandle handle) {
+		try {
+			@SuppressWarnings("unchecked")
+			R readHandle = (R) handle;
+			return readHandle;
+		} catch(ClassCastException e) {
+			throw new IllegalArgumentException(
+					"Handle "+handle.getClass().getName()+
+					" cannot be used in the context to read "+as.getName()
+					);
+		}
+	}
+
+	// strongly typed readers
 	@Override
 	public <T extends R> T read(String uri, T contentHandle)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
@@ -234,6 +283,63 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		return wasModified ? contentHandle : null;
 	}
 
+	// shortcut writers
+	@Override
+    public void writeAs(String uri, Object content)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		writeAs(uri, null, content, null);
+    }
+	@Override
+    public void writeAs(String uri, Object content, ServerTransform transform)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		writeAs(uri, null, content, transform);
+    }
+	@Override
+    public void writeAs(String uri, DocumentMetadataWriteHandle metadataHandle, Object content)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		writeAs(uri, metadataHandle, content, null);
+    }
+	@Override
+    public void writeAs(String uri, DocumentMetadataWriteHandle metadataHandle, Object content, ServerTransform transform)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		if (content == null) {
+			throw new IllegalArgumentException("no content to write");
+		}
+
+		Class<?> as = content.getClass();
+
+		W writeHandle = null;
+		if (AbstractWriteHandle.class.isAssignableFrom(as)) {
+			AbstractWriteHandle handle = (AbstractWriteHandle) content;
+			writeHandle = castAbstractWriteHandle(null, handle);			
+		} else {
+			ContentHandle<?> handle = getHandleRegistry().makeHandle(as);
+			Utilities.setHandleContent(handle, content);
+			writeHandle = castAbstractWriteHandle(as, handle);			
+		}
+
+		write(uri, metadataHandle, writeHandle, transform);			
+	}
+	W castAbstractWriteHandle(Class<?> as, AbstractWriteHandle handle) {
+		try {
+			@SuppressWarnings("unchecked")
+			W writeHandle = (W) handle;
+			return writeHandle;
+		} catch(ClassCastException e) {
+			if (as == null) {
+				throw new IllegalArgumentException(
+						"Handle "+handle.getClass().getName()+
+						" cannot be used in the context for writing"
+						);
+			}
+			throw new IllegalArgumentException(
+					"Handle "+handle.getClass().getName()+
+					" cannot be used in the context to write "+as.getName()
+					);
+		}
+	}
+
+	// strongly typed writers
 	@Override
 	public void write(String uri, W contentHandle)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
@@ -380,6 +486,39 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		services.deleteDocument(requestLogger, desc, (transaction == null) ? null : transaction.getTransactionId(), null);
     }
 
+	// shortcut creators
+	@Override
+    public DocumentDescriptor createAs(DocumentUriTemplate template, Object content)
+	throws ForbiddenUserException, FailedRequestException {
+		return createAs(template, null, content, null);
+    }
+	@Override
+    public DocumentDescriptor createAs(DocumentUriTemplate template, Object content, ServerTransform transform)
+	throws ForbiddenUserException, FailedRequestException {
+		return createAs(template, null, content, transform);
+    }
+	@Override
+    public DocumentDescriptor createAs(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, Object content)
+	throws ForbiddenUserException, FailedRequestException {
+		return createAs(template, metadataHandle, content, null);
+    }
+	@Override
+    public DocumentDescriptor createAs(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, Object content, ServerTransform transform)
+	throws ForbiddenUserException, FailedRequestException {
+		Class<?> as = content.getClass();
+		W writeHandle = null;
+		if (AbstractWriteHandle.class.isAssignableFrom(as)) {
+			AbstractWriteHandle handle = (AbstractWriteHandle) content;
+			writeHandle = castAbstractWriteHandle(null, handle);			
+		} else {
+			ContentHandle<?> handle = getHandleRegistry().makeHandle(as);
+			Utilities.setHandleContent(handle, content);
+			writeHandle = castAbstractWriteHandle(as, handle);			
+		}
+		return create(template, metadataHandle, writeHandle, transform);
+	}
+
+	// strongly typed creators
 	@Override
 	public DocumentDescriptor create(DocumentUriTemplate template, W contentHandle)
 	throws ForbiddenUserException, FailedRequestException {
@@ -461,6 +600,33 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 	}
 
 	@Override
+	public void patchAs(String uri, Object patch)
+	throws ForbiddenUserException, FailedRequestException {
+		if (patch == null) {
+			throw new IllegalArgumentException("no patch to apply");
+		}
+
+		Class<?> as = patch.getClass();
+
+		DocumentPatchHandle patchHandle = null;
+		if (DocumentPatchHandle.class.isAssignableFrom(as)) {
+			patchHandle = (DocumentPatchHandle) patch;
+		} else {
+			ContentHandle<?> handle = getHandleRegistry().makeHandle(as);
+			if (!DocumentPatchHandle.class.isAssignableFrom(handle.getClass())) {
+				throw new IllegalArgumentException(
+						"Handle "+handle.getClass().getName()+
+						" cannot be used to apply patch as "+as.getName()
+						);
+			}
+			Utilities.setHandleContent(handle, patch);
+			patchHandle = (DocumentPatchHandle) handle;
+		}
+
+		patch(uri, patchHandle);
+	}
+
+	@Override
 	public void patch(String uri, DocumentPatchHandle patch)
 	throws ForbiddenUserException, FailedRequestException {
 		patch(uri, patch, null);
@@ -513,7 +679,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     }
 	@Override
     public void writeMetadata(String uri, DocumentMetadataWriteHandle metadataHandle, Transaction transaction) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		write(uri, metadataHandle, null, transaction);
+		write(uri, metadataHandle, (W) null, transaction);
     }
 
 	@Override

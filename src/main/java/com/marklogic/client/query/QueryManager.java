@@ -18,6 +18,7 @@ package com.marklogic.client.query;
 import javax.xml.namespace.QName;
 
 import com.marklogic.client.Transaction;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
@@ -230,6 +231,36 @@ public interface QueryManager {
      */
     public KeyLocator newKeyLocator(String key);
 
+	/**
+     * Searches documents based on query criteria and, potentially, previously
+     * saved query options with a query or a search response or both in the JSON or
+     * XML representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param format	whether the format of the representation is JSON or XML
+	 * @param query	an IO representation of the JSON or XML query or a query definition (including one built by StructuredQueryBuilder)
+     * @param as	the IO class for reading the search response or SearchHandle.class
+	 * @return	an object of the IO class with the content of the search response or a new SearchHandle
+	 */
+	public <T> T searchAs(Format format, Object query, Class<T> as);
+	/**
+     * Searches documents based on query criteria and, potentially, previously
+     * saved query options with a query or a search response or both in the JSON or
+     * XML representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param format	whether the format of the representation is JSON or XML
+	 * @param query	an IO representation of the JSON or XML query or a query definition (including one built by StructuredQueryBuilder)
+     * @param as	the IO class for reading the search response or SearchHandle.class
+	 * @param start	the offset of the first document in the page (where 1 is the first result)
+	 * @return	an object of the IO class with the content of the search response or a new SearchHandle
+	 */
+    public <T> T searchAs(Format format, Object query, Class<T> as, long start);
+
     /**
      * Searches documents based on query criteria and, potentially, previously
      * saved query options.
@@ -238,7 +269,6 @@ public interface QueryManager {
      * @return	the handle populated with the results from the search
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle);
-
     /**
      * Searches documents based on query criteria and, potentially, previously
      * saved query options starting with the specified page listing 
@@ -249,7 +279,6 @@ public interface QueryManager {
      * @return	the handle populated with the results from the search
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start);
-
     /**
      * Searches documents based on query criteria and, potentially, previously
      * saved query options.  The search includes documents modified by the
@@ -260,15 +289,6 @@ public interface QueryManager {
      * @return	the handle populated with the results from the search
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction);
-
-    /**
-     * Queries the REST server for suggested string completions based on
-     * values in the SuggestionDefinition.  The list of strings returned by
-     * this function can be used to provide possible values for completing
-     * a string search.
-     */
-    public String[] suggest(SuggestDefinition suggestionDef);
-    
     /**
      * Searches documents based on query criteria and, potentially, previously
      * saved query options starting with the specified page listing 
@@ -282,6 +302,14 @@ public interface QueryManager {
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction);
 
+    /**
+     * Queries the REST server for suggested string completions based on
+     * values in the SuggestionDefinition.  The list of strings returned by
+     * this function can be used to provide possible values for completing
+     * a string search.
+     */
+    public String[] suggest(SuggestDefinition suggestionDef);
+    
     /**
      * Deletes documents based on the query criteria.
      * @param querydef	the definition of query criteria
@@ -443,7 +471,7 @@ public interface QueryManager {
      */
     public MatchDocumentSummary findOne(QueryDefinition querydef, Transaction transaction);
 
-    /**
+	/**
      * Converts a query by example into a combined query that expresses the criteria
      * as a structured search.
      * @param query	the query by example
@@ -451,7 +479,6 @@ public interface QueryManager {
      * @return	the handle populated with the combined query
      */
     public <T extends StructureReadHandle> T convert(RawQueryByExampleDefinition query, T convertedHandle);
-
     /**
      * Checks a query by example for mistakes in expressing the criteria.
      * @param query	the query by example
@@ -473,35 +500,99 @@ public interface QueryManager {
      */
     public void stopLogging();
 
-    /**
-     * Defines a combined query from a JSON or XML representation.
-     * @param handle a handle for a JSON or XML combined query.
-     * @return a QueryDefinition for use of the combined query.
-     */
-	public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle);
+	/**
+     * Defines a combined query from a JSON or XML representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+	 * @param rawQuery	an IO representation of the JSON or XML combined query
+     * @return a QueryDefinition for use of the combined query
+	 */
+	public RawCombinedQueryDefinition newRawCombinedQueryDefinitionAs(Object rawQuery);
+	/**
+     * Defines a combined query from a JSON or XML representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+	 * @param rawQuery	an IO representation of the JSON or XML combined query
+     * @param optionsName the name of a persisted query options configuration
+     * @return a QueryDefinition for use of the combined query
+	 */
+	public RawCombinedQueryDefinition newRawCombinedQueryDefinitionAs(Object rawQuery, String optionsName);
 
     /**
      * Defines a combined query from a JSON or XML representation.
-     * @param handle a handle for a JSON or XML combined query.
-     * @param optionsName The name of a persisted query options configuration
-     * @return a QueryDefinition for use of the combined query.
+     * @param handle a handle for a JSON or XML combined query
+     * @return a QueryDefinition for use of the combined query
+     */
+	public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle);
+    /**
+     * Defines a combined query from a JSON or XML representation.
+     * @param handle a handle for a JSON or XML combined query
+     * @param optionsName the name of a persisted query options configuration
+     * @return a QueryDefinition for use of the combined query
      */
 	public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle, String optionsName);
 
-    /**
-     * Defines a structured query from a JSON or XML representation.
-     * @param handle a handle for a JSON or XML structured query.
+	/**
+     * Defines a structured query from a JSON or XML representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+	 * @param rawQuery	an IO representation of the JSON or XML structured query
      * @return a QueryDefinition for use of the structured query.
+	 */
+	public RawStructuredQueryDefinition newRawStructuredQueryDefinitionAs(Object rawQuery);
+	/**
+     * Defines a structured query from a JSON or XML representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+	 * @param rawQuery	an IO representation of the JSON or XML structured query
+     * @param optionsName the name of a persisted query options configuration
+     * @return a QueryDefinition for use of the structured query.
+	 */
+	public RawStructuredQueryDefinition newRawStructuredQueryDefinitionAs(Object rawQuery, String optionsName);
+
+	/**
+     * Defines a structured query from a JSON or XML representation.
+     * @param handle a handle for a JSON or XML structured query
+     * @return a QueryDefinition for use of the structured query
      */
 	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle);
-
     /**
      * Defines a structured query from a JSON or XML representation.
-     * @param handle a handle for a JSON or XML structured query.
-     * @param optionsName The name of a persisted query options configuration
-     * @return a QueryDefinition for use of the structured query.
+     * @param handle a handle for a JSON or XML structured query
+     * @param optionsName the name of a persisted query options configuration
+     * @return a QueryDefinition for use of the structured query
      */
 	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle, String optionsName);
+
+	/**
+     * Defines a simple query by example from a JSON or XML representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+	 * @param rawQuery	an IO representation of the query by example
+     * @return a QueryDefinition for use of the query by example
+	 */
+	public RawQueryByExampleDefinition newRawQueryByExampleDefinitionAs(Object rawQuery);
+	/**
+     * Defines a simple query by example from a JSON or XML representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+	 * @param rawQuery	an IO representation of the query by example
+     * @param optionsName the name of a persisted query options configuration
+     * @return a QueryDefinition for use of the query by example
+	 */
+	public RawQueryByExampleDefinition newRawQueryByExampleDefinitionAs(Object rawQuery, String optionsName);
 
     /**
      * Defines a simple query by example from a JSON or XML representation.
@@ -509,7 +600,6 @@ public interface QueryManager {
      * @return a QueryDefinition for use of the query by example.
      */
 	public RawQueryByExampleDefinition newRawQueryByExampleDefinition(StructureWriteHandle handle);
-
     /**
      * Defines a simple query by example from a JSON or XML representation.
      * @param handle a handle for a JSON or XML query by example.

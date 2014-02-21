@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2014 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,43 +20,37 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import nu.xom.Builder;
-import nu.xom.Document;
-import nu.xom.ParsingException;
-import nu.xom.ValidityException;
-
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
-import com.marklogic.client.extra.xom.XOMHandle;
+import com.marklogic.client.extra.gson.GSONHandle;
 
 /**
- * XOMHandleExample illustrates writing and reading content as a XOM structure
- * using the XOM extra library.  You must install the library first.
+ * GSONHandleExample illustrates writing and reading content as a JSON structure
+ * using the GSON extra library.  You must install the library first.
  */
-public class XOMHandleExample {
-	public static void main(String[] args)
-	throws IOException, ValidityException, ParsingException {
+public class GSONHandleExample {
+	public static void main(String[] args) throws IOException {
 		run(Util.loadProperties());
 	}
 
-	public static void run(ExampleProperties props)
-	throws ValidityException, ParsingException, IOException {
-		System.out.println("example: "+XOMHandleExample.class.getName());
+	public static void run(ExampleProperties props) throws IOException {
+		System.out.println("example: "+GSONHandleExample.class.getName());
 
 		// use either shortcut or strong typed IO
 		runShortcut(props);
 		runStrongTyped(props);
 	}
-	public static void runShortcut(ExampleProperties props)
-	throws ValidityException, ParsingException, IOException {
-		String filename = "flipper.xml";
+	public static void runShortcut(ExampleProperties props) throws IOException {
+		String filename = "flipper.json";
 
 		// register the handle from the extra library
 		DatabaseClientFactory.getHandleRegistry().register(
-				XOMHandle.newFactory()
+				GSONHandle.newFactory()
 				);
 
 		// create the client
@@ -64,8 +58,8 @@ public class XOMHandleExample {
 				props.host, props.port, props.writerUser, props.writerPassword,
 				props.authType);
 
-		// create a manager for documents of any format
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+		// create a manager for JSON documents
+		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 
 		// read the example file
 		InputStream docStream = Util.openStream("data"+File.separator+filename);
@@ -75,8 +69,8 @@ public class XOMHandleExample {
 		// create an identifier for the document
 		String docId = "/example/"+filename;
 
-		// parse the example file with XOM
-		Document writeDocument = new Builder(false).build(
+		// parse the example file with GSON
+		JsonElement writeDocument = new JsonParser().parse(
 				new InputStreamReader(docStream, "UTF-8"));
 
 		// write the document
@@ -85,30 +79,31 @@ public class XOMHandleExample {
 		// ... at some other time ...
 
 		// read the document content
-		Document readDocument = docMgr.readAs(docId, Document.class);
+		JsonElement readDocument = docMgr.readAs(docId, JsonElement.class);
 
-		String rootName = readDocument.getRootElement().getQualifiedName();
+		// access the document content
+		String aRootField =
+			readDocument.getAsJsonObject().entrySet().iterator().next().getKey();
 
 		// delete the document
 		docMgr.delete(docId);
 
 		System.out.println("(Shortcut) Wrote and read /example/"+filename+
-				" content with the <"+rootName+"/> root element using XOM");
+				" content with a root field name of "+aRootField+" using GSON");
 
 		// release the client
 		client.release();
 	}
-	public static void runStrongTyped(ExampleProperties props)
-	throws ValidityException, ParsingException, IOException {
-		String filename = "flipper.xml";
+	public static void runStrongTyped(ExampleProperties props) throws IOException {
+		String filename = "flipper.json";
 
 		// create the client
 		DatabaseClient client = DatabaseClientFactory.newClient(
 				props.host, props.port, props.writerUser, props.writerPassword,
 				props.authType);
 
-		// create a manager for documents of any format
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+		// create a manager for JSON documents
+		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 
 		// read the example file
 		InputStream docStream = Util.openStream("data"+File.separator+filename);
@@ -119,10 +114,10 @@ public class XOMHandleExample {
 		String docId = "/example/"+filename;
 
 		// create a handle for the document
-		XOMHandle writeHandle = new XOMHandle();
+		GSONHandle writeHandle = new GSONHandle();
 
-		// parse the example file with XOM
-		Document writeDocument = writeHandle.getBuilder().build(
+		// parse the example file with GSON
+		JsonElement writeDocument = writeHandle.getParser().parse(
 				new InputStreamReader(docStream, "UTF-8"));
 		writeHandle.set(writeDocument);
 
@@ -132,21 +127,21 @@ public class XOMHandleExample {
 		// ... at some other time ...
 
 		// create a handle to receive the document content
-		XOMHandle readHandle = new XOMHandle();
+		GSONHandle readHandle = new GSONHandle();
 
 		// read the document content
 		docMgr.read(docId, readHandle);
 
 		// access the document content
-		Document readDocument = readHandle.get();
-
-		String rootName = readDocument.getRootElement().getQualifiedName();
+		JsonElement readDocument = readHandle.get();
+		String aRootField =
+			readDocument.getAsJsonObject().entrySet().iterator().next().getKey();
 
 		// delete the document
 		docMgr.delete(docId);
 
 		System.out.println("(Strong Typed) Wrote and read /example/"+filename+
-				" content with the <"+rootName+"/> root element using XOM");
+				" content with a root field name of "+aRootField+" using GSON");
 
 		// release the client
 		client.release();

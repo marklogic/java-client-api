@@ -22,6 +22,7 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.util.RequestLogger;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
@@ -37,6 +38,32 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * to HTML documents on read.
  */
 public interface TransformExtensionsManager {
+    /**
+	 * Reads the list of transform extensions installed on the server
+	 * in a JSON or XML representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param format	whether to provide the list in a JSON or XML representation
+     * @param as	the IO class for reading the list of transform extensions
+	 * @return	an object of the IO class with the list of transform extensions
+     */
+    public <T> T listTransformsAs(Format format, Class<T> as);
+    /**
+	 * Reads the list of transform extensions installed on the server
+	 * in a JSON or XML representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param format	whether to provide the list in a JSON or XML representation
+     * @param as	the IO class for reading the list of transform extensions
+     * @param refresh	whether to parse metadata from the extension source
+	 * @return	an object of the IO class with the list of transform extensions
+     */
+    public <T> T listTransformsAs(Format format, Class<T> as, boolean refresh);
+
 	/**
 	 * Lists the installed transform extensions.
 	 * @param listHandle	a handle on a JSON or XML representation of the list
@@ -52,7 +79,44 @@ public interface TransformExtensionsManager {
 	 * @return	the list handle
 	 */
 	public <T extends StructureReadHandle> T listTransforms(T listHandle, boolean refresh)
-	throws ForbiddenUserException, FailedRequestException;
+		throws ForbiddenUserException, FailedRequestException;
+
+	/**
+     * Reads the source for a transform implemented in XSLT
+	 * in an XML representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param transformName	the name of the transform
+     * @param as	the IO class for reading the source code as XML
+     * @return	an object of the IO class with the XSLT source code
+	 */
+	public <T> T readXSLTransformAs(String transformName, Class<T> as)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+
+	/**
+     * Reads the source for a transform implemented in XSLT.
+     * @param transformName	the name of the transform
+     * @param sourceHandle	a handle for reading the text of the XSLT implementation.
+     * @return	the XSLT source code
+	 */
+    public <T extends XMLReadHandle> T readXSLTransform(String transformName, T sourceHandle)
+    	throws FailedRequestException, ResourceNotFoundException, ForbiddenUserException;
+
+    /**
+     * Reads the source for a transform implemented in XQuery
+	 * in a textual representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param transformName	the name of the transform
+     * @param as	the IO class for reading the source code as text
+     * @return	an object of the IO class with the XQuery source code
+     */
+	public <T> T readXQueryTransformAs(String transformName, Class<T> as)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	/**
      * Reads the source for a transform implemented in XQuery.
@@ -61,40 +125,33 @@ public interface TransformExtensionsManager {
      * @return	the XQuery source code
 	 */
 	public <T extends TextReadHandle> T readXQueryTransform(String transformName, T sourceHandle)
-    throws FailedRequestException, ResourceNotFoundException, ForbiddenUserException;
-	/**
-     * Reads the source for a transform implemented in XSLT.
-     * @param transformName	the name of the transform
-     * @param sourceHandle	a handle for reading the text of the XSLT implementation.
-     * @return	the XSLT source code
-	 */
-    public <T extends XMLReadHandle> T readXSLTransform(String transformName, T sourceHandle)
-    throws FailedRequestException, ResourceNotFoundException, ForbiddenUserException;
+    	throws FailedRequestException, ResourceNotFoundException, ForbiddenUserException;
 
-    /**
-     * Installs a transform implemented in XQuery.
-     * @param transformName	the name of the resource
-     * @param sourceHandle	a handle on the source for the XQuery implementation
-     */
-    public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle)
-    throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
-    /**
-     * Installs a transform implemented in XQuery.
-     * @param transformName	the name of the resource
-     * @param sourceHandle	a handle on the source for the XQuery implementation
+	/**
+     * Installs a transform implemented in XSL
+	 * in an XML representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param transformName	the name of the transform
+     * @param source	an IO representation of the source code
+	 */
+	public void writeXSLTransformAs(String transformName, Object source)
+		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+	/**
+     * Installs a transform implemented in XSL
+	 * in an XML representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param transformName	the name of the transform
      * @param metadata	the metadata about the transform
-     */
-    public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata)
-    throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
-    /**
-     * Installs a transform implemented in XQuery.
-     * @param transformName	the name of the resource
-     * @param sourceHandle	a handle on the source for the XQuery implementation
-     * @param metadata	the metadata about the transform
-     * @param paramTypes	the names and XML Schema datatypes of the transform parameters
-     */
-    public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String,String> paramTypes)
-    throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+     * @param source	an IO representation of the source code
+	 */
+	public void writeXSLTransformAs(String transformName, ExtensionMetadata metadata, Object source)
+		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
     /**
      * Installs a transform implemented in XSL.
@@ -102,7 +159,7 @@ public interface TransformExtensionsManager {
      * @param sourceHandle	a handle on the source for the XSL implementation
      */
     public void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle)
-    throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+    	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
     /**
      * Installs a transform implemented in XSL.
      * @param transformName	the name of the resource
@@ -110,7 +167,7 @@ public interface TransformExtensionsManager {
      * @param metadata	the metadata about the transform
      */
     public void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata)
-    throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+    	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
     /**
      * Installs a transform implemented in XSL.
      * @param transformName	the name of the resource
@@ -118,15 +175,68 @@ public interface TransformExtensionsManager {
      * @param metadata	the metadata about the transform
      * @param paramTypes	the names and XML Schema datatypes of the transform parameters
      */
+    @Deprecated
     public void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String,String> paramTypes)
-    throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+    	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+
+	/**
+     * Installs a transform implemented in XQuery
+	 * in a textual representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param transformName	the name of the transform
+     * @param source	an IO representation of the source code
+	 */
+	public void writeXQueryTransformAs(String transformName, Object source)
+		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+	/**
+     * Installs a transform implemented in XQuery
+	 * in a textual representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param transformName	the name of the transform
+     * @param metadata	the metadata about the transform
+     * @param source	an IO representation of the source code
+	 */
+	public void writeXQueryTransformAs(String transformName, ExtensionMetadata metadata, Object source)
+		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+
+    /**
+     * Installs a transform implemented in XQuery.
+     * @param transformName	the name of the resource
+     * @param sourceHandle	a handle on the source for the XQuery implementation
+     */
+    public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle)
+    	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+    /**
+     * Installs a transform implemented in XQuery.
+     * @param transformName	the name of the resource
+     * @param sourceHandle	a handle on the source for the XQuery implementation
+     * @param metadata	the metadata about the transform
+     */
+    public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata)
+    	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+    /**
+     * Installs a transform implemented in XQuery.
+     * @param transformName	the name of the resource
+     * @param sourceHandle	a handle on the source for the XQuery implementation
+     * @param metadata	the metadata about the transform
+     * @param paramTypes	the names and XML Schema datatypes of the transform parameters
+     */
+    @Deprecated
+    public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String,String> paramTypes)
+    	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
     /**
      * Uninstalls the transform.
      * @param transformName	the name of the transform
      */
     public void deleteTransform(String transformName)
-    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
      * Starts debugging client requests. You can suspend and resume debugging output

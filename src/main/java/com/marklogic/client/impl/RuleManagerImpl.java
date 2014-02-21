@@ -18,10 +18,12 @@ package com.marklogic.client.impl;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.alerting.RuleDefinition;
 import com.marklogic.client.alerting.RuleManager;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.RuleListReadHandle;
 import com.marklogic.client.io.marker.RuleReadHandle;
 import com.marklogic.client.io.marker.RuleWriteHandle;
@@ -29,15 +31,25 @@ import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 
-public class RuleManagerImpl extends AbstractLoggingManager implements
-		RuleManager {
+public class RuleManagerImpl
+	extends AbstractLoggingManager
+	implements RuleManager
+{
 
 	final static private String RULES_BASE = "/alert/rules";
 
-	private RESTServices services;
+	private RESTServices          services;
+	private HandleFactoryRegistry handleRegistry;
 
 	public RuleManagerImpl(RESTServices services) {
 		this.services = services;
+	}
+
+	public HandleFactoryRegistry getHandleRegistry() {
+		return handleRegistry;
+	}
+	public void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
+		this.handleRegistry = handleRegistry;
 	}
 
 	@Override
@@ -45,10 +57,25 @@ public class RuleManagerImpl extends AbstractLoggingManager implements
 		return services.exists(RULES_BASE + "/" + ruleName);
 	}
 
+	@Override
+	public <T> T readRuleAs(String ruleName, Class<T> as)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+		if (!RuleReadHandle.class.isAssignableFrom(handle.getClass())) {
+			throw new IllegalArgumentException(
+					"Handle "+handle.getClass().getName()+
+					" cannot be used to read rule as "+as.getName()
+					);
+		}
+
+		readRule(ruleName, (RuleReadHandle) handle);
+
+		return handle.get();
+	}
+	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <T extends RuleReadHandle> T readRule(String ruleName, T ruleHandle)
-			throws ResourceNotFoundException, ForbiddenUserException,
-			FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (ruleName == null) {
 			throw new IllegalArgumentException("Cannot read null rule name");
 		}
@@ -77,16 +104,40 @@ public class RuleManagerImpl extends AbstractLoggingManager implements
 	}
 
 	@Override
+	public void writeRuleAs(String ruleName, Object ruleSource)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		if (ruleSource == null) {
+			throw new IllegalArgumentException("no source to write");
+		}
+
+		Class<?> as = ruleSource.getClass();
+
+		RuleWriteHandle sourceHandle = null;
+		if (RuleWriteHandle.class.isAssignableFrom(as)) {
+			sourceHandle = (RuleWriteHandle) ruleSource;
+		} else {
+			ContentHandle<?> handle = getHandleRegistry().makeHandle(as);
+			if (!RuleWriteHandle.class.isAssignableFrom(handle.getClass())) {
+				throw new IllegalArgumentException(
+						"Handle "+handle.getClass().getName()+
+						" cannot be used to write rule source as "+as.getName()
+						);
+			}
+			Utilities.setHandleContent(handle, ruleSource);
+			sourceHandle = (RuleWriteHandle) handle;
+		}
+
+		writeRuleAs(ruleName, sourceHandle);
+	}
+	@Override
 	public void writeRule(RuleDefinition ruleHandle) {
-		String ruleName = ((RuleDefinition) ruleHandle).getName();
+		String ruleName = ruleHandle.getName();
 		writeRule(ruleName, ruleHandle);
 	}
-
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void writeRule(String ruleName, RuleWriteHandle writeHandle)
-			throws ResourceNotFoundException, ForbiddenUserException,
-			FailedRequestException {
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		if (writeHandle instanceof RuleDefinition) {
 			String name = ((RuleDefinition) writeHandle).getName();
 			if (name != null)
@@ -114,8 +165,7 @@ public class RuleManagerImpl extends AbstractLoggingManager implements
 
 		String mimetype = ruleFormat.getDefaultMimetype();
 
-		services.putValue(requestLogger, RULES_BASE, ruleName, mimetype,
-				ruleBase);
+		services.putValue(requestLogger, RULES_BASE, ruleName, mimetype, ruleBase);
 	}
 
 	@Override
@@ -128,13 +178,11 @@ public class RuleManagerImpl extends AbstractLoggingManager implements
 	public <T extends RuleListReadHandle> T match(QueryDefinition docQuery, T ruleListHandle) {
 		return match(docQuery, 1, QueryManager.DEFAULT_PAGE_LENGTH, new String[] {}, ruleListHandle);
 	}
-
 	@Override
 	public <T extends RuleListReadHandle> T match(QueryDefinition docQuery, long start,
 			long pageLength, String[] candidateRules, T ruleListHandle) {
 		return match(docQuery, start, pageLength, candidateRules, ruleListHandle, null);
 	}
-
 	@Override
 	public <T extends RuleListReadHandle> T match(QueryDefinition docQuery, long start,
 			long pageLength, String[] candidateRules, T ruleListHandle, ServerTransform transform) {
@@ -149,12 +197,10 @@ public class RuleManagerImpl extends AbstractLoggingManager implements
 	public <T extends RuleListReadHandle> T match(String[] docIds, T ruleListHandle) {
 		return match(docIds, new String[] {}, ruleListHandle);
 	}
-
 	@Override
 	public <T extends RuleListReadHandle> T match(String[] docIds, String[] candidateRules, T ruleListHandle) {
 		return match(docIds, candidateRules, ruleListHandle, null);
 	}
-
 	@Override
 	public <T extends RuleListReadHandle> T match(String[] docIds, String[] candidateRules, T ruleListHandle, ServerTransform transform) {
 		HandleAccessor.receiveContent(ruleListHandle,
@@ -163,17 +209,48 @@ public class RuleManagerImpl extends AbstractLoggingManager implements
 	}
 
 	@Override
+	public <T extends RuleListReadHandle> T matchAs(Object content, T ruleListHandle) {
+		return matchAs(content, null, ruleListHandle, null);
+	}
+	@Override
+	public <T extends RuleListReadHandle> T matchAs(Object content, String[] candidateRules, T ruleListHandle) {
+		return matchAs(content, candidateRules, ruleListHandle, null);
+	}
+	@Override
+	public <T extends RuleListReadHandle> T matchAs(Object content,
+			String[] candidateRules, T ruleListHandle, ServerTransform transform) {
+		if (content == null) {
+			throw new IllegalArgumentException("no content for matching rules");
+		}
+
+		Class<?> as = content.getClass();
+
+		StructureWriteHandle matchHandle = null;
+		if (StructureWriteHandle.class.isAssignableFrom(as)) {
+			matchHandle = (StructureWriteHandle) content;
+		} else {
+			ContentHandle<?> handle = getHandleRegistry().makeHandle(as);
+			if (!StructureWriteHandle.class.isAssignableFrom(handle.getClass())) {
+				throw new IllegalArgumentException(
+						"Handle "+handle.getClass().getName()+
+						" cannot be used to match rules as "+as.getName()
+						);
+			}
+			Utilities.setHandleContent(handle, content);
+			matchHandle = (StructureWriteHandle) handle;
+		}
+
+		return match(matchHandle, candidateRules, ruleListHandle, transform);
+	}
+	@Override
 	public <T extends RuleListReadHandle> T match(StructureWriteHandle document, T ruleListHandle) {
 		return match(document, new String[] {}, ruleListHandle);
 	}
-
-
 	@Override
 	public <T extends RuleListReadHandle> T match(StructureWriteHandle document,
 			String[] candidateRules, T ruleListHandle) {
 		return match(document, candidateRules, ruleListHandle, null);
 	}
-	
 	@SuppressWarnings("rawtypes")
 	@Override
 	public <T extends RuleListReadHandle> T match(StructureWriteHandle document,
