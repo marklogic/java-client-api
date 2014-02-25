@@ -47,7 +47,6 @@ import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
-import com.marklogic.client.query.RawQueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
@@ -158,64 +157,6 @@ public class QueryManagerImpl
         return new ValuesListDefinitionImpl(optionsName);
     }
 
-	// shortcut search
-    @Override
-    public <T> T searchAs(Format format, Object query, Class<T> as) {
-    	return searchAs(format, query, as, 1);
-    }
-    @Override
-    public <T> T searchAs(Format format, Object query, Class<T> as, long start) {
-		if (as == null) {
-			throw new IllegalArgumentException("no type to search as");
-		}
-
-		QueryDefinition querydef = null;
-		if (query == null) {
-			querydef = new StringQueryDefinitionImpl(null).withCriteria("");
-		} else if (RawQueryDefinition.class.isAssignableFrom(query.getClass())) {
-			RawQueryDefinition rawQuery = (RawQueryDefinition) query;
-			Utilities.setHandleStructuredFormat(rawQuery.getHandle(), format);
-    		querydef = rawQuery;
-		} else if (QueryDefinition.class.isAssignableFrom(query.getClass())) {
-    		querydef = (QueryDefinition) query;
-    	} else if (StructureWriteHandle.class.isAssignableFrom(query.getClass())) {
-    		StructureWriteHandle queryHandle = (StructureWriteHandle) query;
-			Utilities.setHandleStructuredFormat(queryHandle, format);
-    		querydef = new RawQueryDefinitionImpl.Combined(queryHandle);
-    	} else {
-    		Class<?> queryAs = query.getClass();
-			ContentHandle<?> queryHandle = getHandleRegistry().makeHandle(queryAs);
-			if (!StructureWriteHandle.class.isAssignableFrom(queryHandle.getClass())) {
-				throw new IllegalArgumentException(
-						"Handle "+queryHandle.getClass().getName()+
-						" cannot be used to search with "+queryAs.getName()
-						);
-			}
-			Utilities.setHandleContent(queryHandle, query);
-			Utilities.setHandleStructuredFormat(queryHandle, format);
-			querydef = new RawQueryDefinitionImpl.Combined((StructureWriteHandle) queryHandle);
-    	}
-
-    	if (as.isAssignableFrom(SearchHandle.class)) {
-    		SearchHandle searchHandle = new SearchHandle();
-    		search(querydef, searchHandle, start);
-    		return as.cast(searchHandle);
-    	} else {
-        	ContentHandle<T> resultHandle = getHandleRegistry().makeHandle(as);
-    		if (!SearchReadHandle.class.isAssignableFrom(resultHandle.getClass())) {
-    			throw new IllegalArgumentException(
-    					"Handle "+resultHandle.getClass().getName()+
-    					" cannot be used to search for "+as.getName()
-    					);
-    		}
-			Utilities.setHandleStructuredFormat(resultHandle, format);
-
-    		search(querydef, (SearchReadHandle) resultHandle, start);
-    		return resultHandle.get();
-    	}
-    }
-
-	// strongly typed search
     @Override
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle) {
         return search(querydef, searchHandle, 1, null);
@@ -543,12 +484,12 @@ public class QueryManagerImpl
 	}
 
 	@Override
-	public RawCombinedQueryDefinition newRawCombinedQueryDefinitionAs(Object rawQuery) {
-		return newRawCombinedQueryDefinitionAs(rawQuery, null);
+	public RawCombinedQueryDefinition newRawCombinedQueryDefinitionAs(Format format, Object rawQuery) {
+		return newRawCombinedQueryDefinitionAs(format, rawQuery, null);
 	}
 	@Override
-	public RawCombinedQueryDefinition newRawCombinedQueryDefinitionAs(Object rawQuery, String optionsName) {
-		return newRawCombinedQueryDefinition(structuredWrite(rawQuery), optionsName);
+	public RawCombinedQueryDefinition newRawCombinedQueryDefinitionAs(Format format, Object rawQuery, String optionsName) {
+		return newRawCombinedQueryDefinition(structuredWrite(format, rawQuery), optionsName);
 	}
 	@Override
 	public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle) {
@@ -560,12 +501,12 @@ public class QueryManagerImpl
 	}
 
 	@Override
-	public RawStructuredQueryDefinition newRawStructuredQueryDefinitionAs(Object query) {
-		return newRawStructuredQueryDefinitionAs(query, null);
+	public RawStructuredQueryDefinition newRawStructuredQueryDefinitionAs(Format format, Object query) {
+		return newRawStructuredQueryDefinitionAs(format, query, null);
 	}
 	@Override
-	public RawStructuredQueryDefinition newRawStructuredQueryDefinitionAs(Object query, String optionsName) {
-		return newRawStructuredQueryDefinition(structuredWrite(query), optionsName);
+	public RawStructuredQueryDefinition newRawStructuredQueryDefinitionAs(Format format, Object query, String optionsName) {
+		return newRawStructuredQueryDefinition(structuredWrite(format, query), optionsName);
 	}
 	@Override
 	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle) {
@@ -577,12 +518,12 @@ public class QueryManagerImpl
 	}
 
 	@Override
-	public RawQueryByExampleDefinition newRawQueryByExampleDefinitionAs(Object query) {
-		return newRawQueryByExampleDefinitionAs(query, null);
+	public RawQueryByExampleDefinition newRawQueryByExampleDefinitionAs(Format format, Object query) {
+		return newRawQueryByExampleDefinitionAs(format, query, null);
 	}
 	@Override
-	public RawQueryByExampleDefinition newRawQueryByExampleDefinitionAs(Object query, String optionsName) {
-		return newRawQueryByExampleDefinition(structuredWrite(query), optionsName);
+	public RawQueryByExampleDefinition newRawQueryByExampleDefinitionAs(Format format, Object query, String optionsName) {
+		return newRawQueryByExampleDefinition(structuredWrite(format, query), optionsName);
 	}
 	@Override
 	public RawQueryByExampleDefinition newRawQueryByExampleDefinition(StructureWriteHandle handle) {
@@ -593,16 +534,19 @@ public class QueryManagerImpl
 		return new RawQueryDefinitionImpl.ByExample(handle, optionsName);
 	}
 
-	private StructureWriteHandle structuredWrite(Object content) {
-		Class<?> as = content.getClass();
-    	ContentHandle<?> handle = getHandleRegistry().makeHandle(as);
-		if (!StructureWriteHandle.class.isAssignableFrom(handle.getClass())) {
+	private StructureWriteHandle structuredWrite(Format format, Object query) {
+		Class<?> as = query.getClass();
+    	ContentHandle<?> queryHandle = getHandleRegistry().makeHandle(as);
+		if (!StructureWriteHandle.class.isAssignableFrom(queryHandle.getClass())) {
 			throw new IllegalArgumentException(
-					"Handle "+handle.getClass().getName()+
+					"Handle "+queryHandle.getClass().getName()+
 					" does not provide structure write handle for "+as.getName()
 					);
 		}
 
-		return (StructureWriteHandle) handle;
+		Utilities.setHandleContent(queryHandle, query);
+		Utilities.setHandleStructuredFormat(queryHandle, format);
+
+		return (StructureWriteHandle) queryHandle;
 	}
 }
