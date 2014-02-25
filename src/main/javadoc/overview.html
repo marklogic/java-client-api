@@ -38,14 +38,24 @@
 	To identify a document in the database, you use a String with the document URI.
 </p>
 <p>
-	To access document content, you create a <em>handle</em> object that supports
-	the appropriate representation.	This concept of content handles is core to the Java API
-	(making use of the Adapter design pattern so the API can read or write content
-	with a diverse and extensible set of representations).
+	To access document content, you can create a <em>handle</em> object that provides
+	strongly-typed support for an IO representation.	This concept of content handles
+	is core to the Java API (making use of the Adapter design pattern so the API can read
+	or write content with a diverse and extensible set of representations). You can define
+	new handle classes to integrate new IO representations into the API.
 </p>
 <p>
-	For instance, consider a binary JPEG file.
-	To write this file to the database, you create a {@link com.marklogic.client.io.FileHandle}
+	For frequently-used requests, you can also write an IO object or specify an IO class
+	to read an object directly. Internally, these shortcut methods create the handle for you.
+	By default, the IO representations supported in shortcut methods include byte[],
+	DOM Document, File, InputStream, SAX InputSource, Reader, Transformer Source, String,
+	StAX XMLEventReader, and StAX XMLEventWriter. You can enable shortcut support
+	for dom4j Document, JDOM Document, GSON JsonElement, Jackson JsonNode, JAXB POJOs, or
+	XOM Document.
+</p>
+<p>
+	For instance, consider a binary JPEG file. To write this file to the database
+	using a strongly typed handle, you create a {@link com.marklogic.client.io.FileHandle}
 	and call the handle's set() method with the File object. You then pass the handle
 	to the operation that writes the binary content to the database.
 </p>
@@ -71,7 +81,16 @@ DOMHandle handle = new DOMHandle();
 
 docMgr.read(docId, handle);
 
-org.w3c.dom.Document document = handle.get();
+Document document = handle.get();
+</pre>
+<p>
+	The following example reads the document with the equivalent shortcut method:
+</p>
+<pre>
+XMLDocumentManager docMgr = client.newXMLDocumentManager();
+String docId = "/db/path/to/myDoc.xml";
+
+Document document = docMgr.readAs(docId, Document.class);
 </pre>
 <p>
 	To write content to a document in the database, set the content in a handle and then pass the 
@@ -80,7 +99,7 @@ org.w3c.dom.Document document = handle.get();
 	<code>/db/path/to/myDoc.xml</code> database document from a DOM document:
 </p>
 <pre>
-org.w3c.dom.Document document = ... <em>create or modify the document</em> ...;
+Document document = ... <em>create or modify the document</em> ...;
 
 XMLDocumentManager docMgr = client.newXMLDocumentManager();
 String docId = "/db/path/to/myDoc.xml";
@@ -88,6 +107,17 @@ DOMHandle handle = new DOMHandle();
 handle.set(document);
 
 docMgr.write(docId, handle);
+</pre>
+<p>
+	The following example writes the document with the equivalent shortcut method:
+</p>
+<pre>
+Document document = ... <em>create or modify the document</em> ...;
+
+XMLDocumentManager docMgr = client.newXMLDocumentManager();
+String docId = "/db/path/to/myDoc.xml";
+
+docMgr.writeAs(docId, document);
 </pre>
 <p>
 	To learn which handles you can use to read the content of an XML document, look at the classes 
@@ -99,7 +129,9 @@ docMgr.write(docId, handle);
 	{@link com.marklogic.client.document.TextDocumentManager}, and
 	{@link com.marklogic.client.document.GenericDocumentManager}
 	each have corresponding read and write handles that identify the handle classes
-	that can be used when reading and writing documents of that format.
+	that can be used when reading and writing documents of that format. The shortcut methods
+	of each document manager work with the same IO objects supported by the handles that are
+	accepted by the document manager and that implement {@link com.marklogic.client.io.marker.ContentHandle}.
 </p>
 <p>
 	You can read or write document metadata in the same request as document
@@ -124,18 +156,37 @@ docMgr.write(docId, handle);
 <pre>
 QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
 
-String options =
-            "&lt;search:options&gt;"+
-                "&lt;search:constraint name=\"port\"&gt;"+
-                    "&lt;search:value&gt;"+
-                        "&lt;search:element name=\"port\" ns=\"\"/&gt;"+
-                    "&lt;/search:value&gt;"+
-                "&lt;/search:constraint&gt;"+
-            "&lt;/search:options&gt;";
+String options = new StringBuilder()
+            .append("&lt;search:options&gt;")
+            .append(    "&lt;search:constraint name=\"port\"&gt;")
+            .append(        "&lt;search:value&gt;")
+            .append(            "&lt;search:element name=\"port\" ns=\"\"/&gt;")
+            .append(        "&lt;/search:value&gt;")
+            .append(    "&lt;/search:constraint&gt;")
+            .append("&lt;/search:options&gt;")
+            .toString();
 
 StringHandle handle = new StringHandle(options);
 
 optionsMgr.writeOptions("shipments", handle);
+</pre>
+<p>
+	The following example writes the query options with the equivalent shortcut method:
+</p>
+<pre>
+QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
+
+String options = new StringBuilder()
+            .append("&lt;search:options&gt;")
+            .append(    "&lt;search:constraint name=\"port\"&gt;")
+            .append(        "&lt;search:value&gt;")
+            .append(            "&lt;search:element name=\"port\" ns=\"\"/&gt;")
+            .append(        "&lt;/search:value&gt;")
+            .append(    "&lt;/search:constraint&gt;")
+            .append("&lt;/search:options&gt;")
+            .toString();
+
+optionsMgr.writeOptionsAs("shipments", Format.XML, options);
 </pre>
 <h2>Working with the Query Manager</h2>
 <p>
@@ -163,7 +214,7 @@ DOMHandle handle = new DOMHandle();
 
 queryMgr.search(querydef, handle);
 
-org.w3c.dom.Document results = handle.get();
+Document results = handle.get();
 </pre>
 <p>
 	Besides XML or JSON, you can also get search results as a Java data structure by using
@@ -215,7 +266,7 @@ org.w3c.dom.Document document =
     returns the handle, you can a write operation in a single line:
 </p>
 <pre>
-org.w3c.dom.Document document = ... <em>create or modify the document</em> ...;
+Document document = ... <em>create or modify the document</em> ...;
 
 client.newXMLDocumentManager().write(
     client.newDocId("/db/path/to/myDoc.xml"),
@@ -226,11 +277,48 @@ client.newXMLDocumentManager().write(
 	When convenient, you can write a search operation in a single line:
 </p>
 <pre>
-org.w3c.dom.Document results = 
-    client.newQueryManager().search(
-        queryMgr.newStringDefinition("shipments").withCriteria("electronics port:Lisbon"),
-        new DOMHandle()
-        ).get();
+Document results = client.newQueryManager().search(
+    queryMgr.newStringDefinition("shipments").withCriteria("electronics port:Lisbon"),
+    new DOMHandle()
+    ).get();
+</pre>
+<h2>Registering New IO Representations for Shortcut Methods</h2>
+<p>
+    To use extra IO handles like
+    {@link com.marklogic.client.extra.dom4j.DOM4JHandle},
+    {@link com.marklogic.client.extra.gson.GSONHandle},
+    {@link com.marklogic.client.extra.jackson.JacksonHandle},
+    {@link com.marklogic.client.extra.jdom.JDOMHandle}, or
+    {@link com.marklogic.client.extra.xom.XOMHandle}, you download the
+    library integrated by the handle and add the library to the classpath.
+    You can enable support in shortcut methods for the IO representation
+    provided by an extra library by registering a factory for the handle
+    using {@link com.marklogic.client.DatabaseClientFactory}.getHandleRegistry().
+</p>
+<p>
+    You can also register a factory for the built-in JAXB handle to support
+    IO on your POJO classes in shortcut methods.  The following example
+    registers the JAXB handle for one or more POJO classes and writes
+    and reads the POJOs as database documents.
+</p>
+<pre>
+// configure once before creating a client
+DatabaseClientFactory.getHandleRegistry().register(
+	JAXBHandle.newFactory(Product.class, ... <em>other POJO classes</em> ...)
+	);
+
+// ... <em>create a database client</em> ...
+
+XMLDocumentManager docMgr = client.newXMLDocumentManager();
+String docId = "/db/path/to/myPOJO.xml";
+
+Product product = ... <em>create or modify the POJO</em> ...;
+
+docMgr.writeAs(docId, product);
+
+// ... <em>at some other time</em> ...
+
+Product product = docMgr.readAs(docId, Product.class);
 </pre>
 </body>
 </html>
