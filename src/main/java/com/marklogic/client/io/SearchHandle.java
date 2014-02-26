@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -293,7 +294,7 @@ public class SearchHandle
     @Override
     public String[] getFacetNames() {
     	if (facets == null || facets.isEmpty()) {
-    		return null;
+    		return new String[0];
     	}
     	Set<String> names = facets.keySet();
         return names.toArray(new String[names.size()]);
@@ -317,7 +318,7 @@ public class SearchHandle
     @Override
     public FacetResult[] getFacetResults() {
     	if (facets == null || facets.isEmpty()) {
-    		return null;
+    		return new FacetResult[0];
     	}
     	Collection<FacetResult> facetResults = facets.values();
     	return facetResults.toArray(new FacetResult[facetResults.size()]);
@@ -326,7 +327,7 @@ public class SearchHandle
     @Override
     public String[] getConstraintNames() {
     	if (constraints == null || constraints.isEmpty()) {
-    		return null;
+    		return new String[0];
     	}
     	Set<String> names = constraints.keySet();
         return names.toArray(new String[names.size()]);
@@ -349,7 +350,8 @@ public class SearchHandle
     @Override
     public <T extends XMLReadHandle> Iterator<T> getConstraintIterator(T handle) {
     	if (constraints == null || constraints.isEmpty()) {
-    		return null;
+    		List<T> list = Collections.emptyList();
+    		return list.iterator();
     	}
 
     	List<EventRange> constraintList =
@@ -382,7 +384,7 @@ public class SearchHandle
      */
     @Override
     public Warning[] getWarnings() {
-        return (warnings == null) ? null : warnings.toArray(new Warning[0]);
+        return (warnings == null) ? new Warning[0] : warnings.toArray(new Warning[0]);
     }
 
     /**
@@ -391,7 +393,7 @@ public class SearchHandle
      */
     @Override
     public Report[] getReports() {
-        return (reports == null) ? null  : reports.toArray(new Report[0]);
+        return (reports == null) ? new Report[0] : reports.toArray(new Report[0]);
     }
 
     private List<XMLEvent> getSlice(
@@ -405,7 +407,7 @@ public class SearchHandle
     }
 	private Document[] getEventDocuments(List<XMLEvent> eventList, List<EventRange> rangeList) {
     	if (rangeList == null || rangeList.size() < 1) {
-    		return null;
+    		return new Document[0];
     	}
 
     	ArrayList<Document> documents = new ArrayList<Document>();
@@ -560,7 +562,8 @@ public class SearchHandle
         @Override
         public <T extends XMLReadHandle> Iterator<T> getSnippetIterator(T handle) {
         	if (snippetEvents == null || snippetEvents.size() < 1) {
-        		return null;
+        		List<T> list = Collections.emptyList();
+        		return list.iterator();
         	}
 
             return new EventIterator<T>(events, snippetEvents, handle);
@@ -569,7 +572,7 @@ public class SearchHandle
         @Override
         public MatchLocation[] getMatchLocations() {
             if (locations == null) {
-                return null;
+                return new MatchLocation[0];
             }
 
             return locations.toArray(new MatchLocation[locations.size()]);
@@ -604,7 +607,7 @@ public class SearchHandle
         @Override
         public String[] getSimilarDocumentUris() {
         	if (similarUris == null || similarUris.size() < 1) {
-        		return null;
+        		return new String[0];
         	}
 
             return similarUris.toArray(new String[similarUris.size()]);
@@ -653,7 +656,7 @@ public class SearchHandle
         @Override
         public MatchSnippet[] getSnippets() {
         	if (matchEvents == null) {
-        		return null;
+        		return new MatchSnippet[0];
         	}
 
         	return matchEvents.toArray(new MatchSnippet[matchEvents.size()]);
