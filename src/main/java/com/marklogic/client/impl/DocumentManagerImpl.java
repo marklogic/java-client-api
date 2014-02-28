@@ -138,7 +138,9 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 			ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
 
-			read(uri, metadataHandle, castAbstractReadHandle(as, handle), transform);
+			if (null == read(uri, metadataHandle, castAbstractReadHandle(as, handle), transform)) {
+				return null;
+			}
 
 			return handle.get();
 	}

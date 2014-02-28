@@ -56,7 +56,9 @@ class BinaryDocumentImpl
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
 
-		read(uri, metadataHandle, castAbstractReadHandle(as, handle), start, length);
+		if (null == read(uri, metadataHandle, castAbstractReadHandle(as, handle), start, length)) {
+			return null;
+		}
 
 		return handle.get();
 	}
