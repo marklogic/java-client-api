@@ -28,8 +28,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.HashSet;
 import java.util.Set;
 
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -56,17 +59,24 @@ import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.BaseHandle;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JAXBHandle;
+import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
+import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.MatchDocumentSummary;
+import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.QueryManager;
 
 public class HandleAsTest {
 	@BeforeClass
@@ -199,18 +209,111 @@ public class HandleAsTest {
 	}
 
 	@Test
+	public void testSearch() throws JAXBException {
+		DatabaseClientFactory.Bean clientFactoryBean = makeClientFactory();
+
+		clientFactoryBean.getHandleRegistry().register(
+				JAXBHandle.newFactory(Product.class)
+				);
+
+		DatabaseClient client = clientFactoryBean.newClient();
+
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+
+		QueryManager queryMgr = client.newQueryManager();
+
+		String basedir = "/tmp/jaxb/test/";
+
+		Product product1 = new Product();
+		product1.setName("Widgetry");
+		product1.setIndustry("IT");
+		product1.setDescription("More widgets than you can shake a stick at");
+
+		Product product2 = new Product();
+		product2.setName("AppExcess");
+		product2.setIndustry("IT");
+		product2.setDescription("There's an app for that.");
+
+		Product[] products = {product1, product2};
+
+		// setup
+		Set<String> prodNames = new HashSet<String>(products.length);
+		for (Product product: products) {
+			String prodName = product.getName();
+			prodNames.add(prodName);
+			String docId = basedir+prodName+".xml";
+			docMgr.writeAs(docId, product);			
+		}
+
+		// test
+		String rawQuery = new StringBuilder()
+			.append("<search:search xmlns:search=\"http://marklogic.com/appservices/search\">")
+			.append("<search:qtext>IT</search:qtext>")
+			.append("<search:options>")
+			.append("<search:transform-results apply=\"raw\"/> ")
+			.append("</search:options>")
+			.append("</search:search>")
+			.toString();
+
+		QueryDefinition queryDef =
+			queryMgr.newRawCombinedQueryDefinitionAs(Format.XML, rawQuery);
+		queryDef.setDirectory(basedir);
+
+		SearchHandle handle = queryMgr.search(queryDef, new SearchHandle());
+
+		MatchDocumentSummary[] summaries = handle.getMatchResults();
+		assertEquals("raw query should retrieve all products", products.length, summaries.length);
+		for (MatchDocumentSummary summary: summaries) {
+			Product product = summary.getFirstSnippetAs(Product.class);
+			assertTrue("raw product should exist", product != null);
+			assertTrue("raw product name should be preserved", prodNames.contains(product.getName()));
+		}
+
+		rawQuery = new StringBuilder()
+			.append("<search:search xmlns:search=\"http://marklogic.com/appservices/search\">")
+			.append("<search:qtext>IT</search:qtext>")
+			.append("<search:options>")
+			.append("<search:extract-metadata>")
+			.append("<search:qname elem-ns=\"\" elem-name=\"name\"/>")
+			.append("<search:qname elem-ns=\"\" elem-name=\"industry\"/>")
+			.append("</search:extract-metadata>")
+			.append("</search:options>")
+			.append("</search:search>")
+			.toString();
+
+		queryDef =
+			queryMgr.newRawCombinedQueryDefinitionAs(Format.XML, rawQuery);
+		queryDef.setDirectory(basedir);
+
+		handle = queryMgr.search(queryDef, new SearchHandle());
+
+		summaries = handle.getMatchResults();
+		assertEquals("metadata query should retrieve all products", products.length, summaries.length);
+		for (MatchDocumentSummary summary: summaries) {
+			Document productDoc = summary.getMetadataAs(Document.class);
+
+			Element name     = (Element) productDoc.getElementsByTagName("name").item(0);
+			assertTrue("metadata product name should exist", name != null);
+			assertTrue("metadata product name should be preserved", prodNames.contains(name.getTextContent()));
+
+			Element industry = (Element) productDoc.getElementsByTagName("industry").item(0);
+			assertTrue("metadata product industry should exist", industry != null);
+		}
+
+		// cleanup
+		DeleteQueryDefinition deleteDef = queryMgr.newDeleteDefinition();
+		deleteDef.setDirectory(basedir);
+
+		queryMgr.delete(deleteDef);
+
+		client.release();
+	}
+
+	@Test
 	public void testHandleRegistry() {
 		int[] iterations = {1,2};
 		for (int i: iterations) {
-			DatabaseClientFactory.Bean clientFactoryBean = null;
-			if (i == 2) {
-				clientFactoryBean = new DatabaseClientFactory.Bean();
-				clientFactoryBean.setHost(Common.HOST);
-				clientFactoryBean.setPort(Common.PORT);
-				clientFactoryBean.setUser(Common.USERNAME);
-				clientFactoryBean.setPassword(Common.PASSWORD);
-				clientFactoryBean.setAuthentication(Authentication.DIGEST);
-			}
+			DatabaseClientFactory.Bean clientFactoryBean = (i == 1) ? null : makeClientFactory();
 
 			HandleFactoryRegistry registry =
 				(i == 1) ? DatabaseClientFactory.getHandleRegistry()
@@ -268,6 +371,16 @@ public class HandleAsTest {
 		}
 	}
 
+	private DatabaseClientFactory.Bean makeClientFactory() {
+		DatabaseClientFactory.Bean clientFactoryBean = new DatabaseClientFactory.Bean();
+		clientFactoryBean.setHost(Common.HOST);
+		clientFactoryBean.setPort(Common.PORT);
+		clientFactoryBean.setUser(Common.USERNAME);
+		clientFactoryBean.setPassword(Common.PASSWORD);
+		clientFactoryBean.setAuthentication(Authentication.DIGEST);
+		return clientFactoryBean;
+	}
+
 	static public class BufferHandle
 	extends BaseHandle<String, String>
 	implements ContentHandle<StringBuilder> {
@@ -315,6 +428,34 @@ public class HandleAsTest {
 			@SuppressWarnings("unchecked")
 			ContentHandle<C> handle = (ContentHandle<C>) new BufferHandle();
 			return handle;
+		}
+	}
+
+	@XmlRootElement
+	static public class Product {
+		private String name;
+		private String industry;
+		private String description;
+		public Product() {
+			super();
+		}
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+		public String getIndustry() {
+			return industry;
+		}
+		public void setIndustry(String industry) {
+			this.industry = industry;
+		}
+		public String getDescription() {
+			return description;
+		}
+		public void setDescription(String description) {
+			this.description = description;
 		}
 	}
 }

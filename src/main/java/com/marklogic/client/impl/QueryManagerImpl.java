@@ -176,7 +176,9 @@ public class QueryManagerImpl
 		HandleImplementation searchBase = HandleAccessor.checkHandle(searchHandle, "search");
 
         if (searchHandle instanceof SearchHandle) {
-            ((SearchHandle) searchHandle).setQueryCriteria(querydef);
+        	SearchHandle responseHandle = (SearchHandle) searchHandle;
+        	responseHandle.setHandleRegistry(getHandleRegistry());
+        	responseHandle.setQueryCriteria(querydef);
         }
 
         Format searchFormat = searchBase.getFormat();
