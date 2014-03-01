@@ -41,8 +41,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
+import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.impl.Utilities;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -77,7 +79,8 @@ public class SearchHandle
     static private String SEARCH_NS = "http://marklogic.com/appservices/search";
     static private String QUERY_NS  = "http://marklogic.com/cts/query";
 
-    private QueryDefinition querydef;
+    private QueryDefinition       querydef;
+    private HandleFactoryRegistry registry;
 
     private MatchDocumentSummary[] summary;
     private SearchMetrics          metrics;
@@ -205,7 +208,6 @@ public class SearchHandle
         qtext        = null;
         queryEvents  = null;
     }
-
     /**
      * Returns the query definition used for the search represented by this handle.
      * @return The query definition.
@@ -213,6 +215,18 @@ public class SearchHandle
     @Override
     public QueryDefinition getQueryCriteria() {
         return querydef;
+    }
+
+    /**
+     * Makes the handle registry for this database client available
+     * to this SearchHandle during processing of the search response.
+     * @param registry	the registry of IO representation classes for this database client
+     */
+    final public void setHandleRegistry(HandleFactoryRegistry registry) {
+    	this.registry = registry;
+    }
+    private HandleFactoryRegistry getHandleRegistry() {
+    	return this.registry;
     }
 
     /**
@@ -536,8 +550,17 @@ public class SearchHandle
         }
 
         @Override
-        public Document[] getSnippets() {
-        	return getEventDocuments(events, snippetEvents);
+        public <T> T getFirstSnippetAs(Class<T> as) {
+			ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+			if (!XMLReadHandle.class.isAssignableFrom(handle.getClass())) {
+				throw new IllegalArgumentException("cannot read snippet from XML with "+handle.getClass());
+			}
+
+			if (null == getFirstSnippet((XMLReadHandle) handle)) {
+				return null;
+			}
+
+			return handle.get();
         }
         @Override
         public <T extends XMLReadHandle> T getFirstSnippet(T handle) {
@@ -558,6 +581,11 @@ public class SearchHandle
         	return Utilities.eventTextToString(
         			getSlice(events, snippetEvents.get(0))
         			);
+        }
+
+        @Override
+        public Document[] getSnippets() {
+        	return getEventDocuments(events, snippetEvents);
         }
         @Override
         public <T extends XMLReadHandle> Iterator<T> getSnippetIterator(T handle) {
@@ -582,6 +610,18 @@ public class SearchHandle
         public Document getMetadata() {
         	DOMHandle handle = getMetadata(new DOMHandle());
         	return (handle == null) ? null : handle.get();
+        }
+        @Override
+        public <T> T getMetadataAs(Class<T> as) {
+			ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+
+			if (!XMLReadHandle.class.isAssignableFrom(handle.getClass())) {
+				throw new IllegalArgumentException("cannot read metadata from XML with "+handle.getClass());
+			}
+
+			getMetadata((XMLReadHandle) handle);
+
+			return handle.get();
         }
         @Override
         public <T extends XMLReadHandle> T getMetadata(T handle) {
@@ -896,6 +936,7 @@ public class SearchHandle
 			if (!hasNext()) {
 				return null;
 			}
+
 			EventRange eventRange = rangeList.get(nextEvent++);
 			return Utilities.exportToHandle(
 					getSlice(eventList, eventRange), handle

@@ -88,8 +88,22 @@ public interface MatchDocumentSummary {
 	public <T extends XMLReadHandle> Iterator<T> getSnippetIterator(T handle);
 
 	/**
-	 * Returns the content of the first snippet as a convenience, 
-	 * especially for a raw snippet that contains the entire document.
+     * Reads the content of the first snippet for the matched result document
+     * in the representation specified by the IO class.  This method provides
+     * particular convenience for a raw snippet that contains the entire
+     * result document.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param as	the IO class for reading the first snippet for the result
+     * @return	an object of the IO class with the content of the document in the first snippet
+	 */
+	public <T> T getFirstSnippetAs(Class<T> as);
+	/**
+	 * Returns the content of the first snippet for the matched result document
+	 * as a convenience, especially for a raw snippet that contains the entire
+	 * result document.
      * @param handle	An XML handle for reading the first snippet.
 	 * @return	The handle populated with the first snippet.
 	 */
@@ -109,9 +123,20 @@ public interface MatchDocumentSummary {
      * @return the metadata
      */
     public Document getMetadata();
-    
+
+    /**
+     * Reads the metadata extracted from the matched result document
+     * in the representation specified by the IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param as	the IO class for reading the metadata for the result
+     * @return	an object of the IO class with the extracted result document metadata
+     */
+	public <T> T getMetadataAs(Class<T> as);
 	/**
-     * Returns the metadata for the result.
+     * Returns the metadata extracted from the result document.
      * @param handle	An XML handle for reading the metadata.
      * @return	The handle on the metadata.
 	 */
