@@ -19,6 +19,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import javax.xml.xpath.XPathExpressionException;
+
 import org.junit.Test;
 
 import com.marklogic.client.example.cookbook.DocumentRead;
@@ -31,6 +33,8 @@ public class DocumentReadTest {
 			DocumentRead.main(new String[0]);
 			succeeded = true;
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (XPathExpressionException e) {
 			e.printStackTrace();
 		}
 		assertTrue("DocumentRead example failed", succeeded);

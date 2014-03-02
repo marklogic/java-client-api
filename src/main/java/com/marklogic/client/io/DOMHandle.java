@@ -22,13 +22,21 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSException;
 import org.w3c.dom.ls.LSInput;
@@ -60,6 +68,7 @@ public class DOMHandle
 	private LSResourceResolver     resolver;
 	private Document               content;
 	private DocumentBuilderFactory factory;
+	private XPath                  xpathProcessor;
 
 	/**
 	 * Creates a factory to create a DOMHandle instance for a DOM document.
@@ -219,6 +228,133 @@ public class DOMHandle
 		// TODO: XInclude
 
 		return factory;
+	}
+
+	/**
+	 * Get the processor used to evaluate XPath expressions.
+	 * You might get the XPath processor to configure it. For instance,
+	 * you can configure the XPath processor to declare namespace
+	 * bindings or to set a function or variable resolver.
+	 * @see com.marklogic.client.util.EditableNamespaceContext
+	 * @return	the XPath expression processor
+	 */
+	public XPath getXPathProcessor() {
+		if (xpathProcessor == null)
+			xpathProcessor = makeXPathProcessorFactory().newXPath();
+		return xpathProcessor;
+	}
+	/**
+	 * Specifies the processor used to evaluate XPath expressions against
+	 * the document.
+	 * @param xpathProcessor	the XPath expression processor
+	 */
+	public void setXPathProcessor(XPath xpathProcessor) {
+		this.xpathProcessor = xpathProcessor;
+	}
+	protected XPathFactory makeXPathProcessorFactory() {
+		return XPathFactory.newInstance();
+	}
+
+	/**
+	 * Evaluate a string XPath expression against the retrieved document.
+	 * An XPath expression can return a Node or subinterface such as
+	 * Element or Text, a NodeList, or a Boolean, Number, or String value.
+	 * @param xpathExpression	the XPath expression as a string
+	 * @param as	the type of the value 
+	 * @return	the value produced by the XPath expression
+	 */
+	public <T> T evaluateXPath(String xpathExpression, Class<T> as)
+	throws XPathExpressionException {
+		return evaluateXPath(xpathExpression, get(), as);
+	}
+	/**
+	 * Evaluate a string XPath expression relative to a node such as a node
+	 * returned by a previous XPath expression.
+	 * An XPath expression can return a Node or subinterface such as
+	 * Element or Text, a NodeList, or a Boolean, Number, or String value.
+	 * @param xpathExpression	the XPath expression as a string
+	 * @param context	the node for evaluating the expression
+	 * @param as	the type of the value 
+	 * @return	the value produced by the XPath expression
+	 */
+	public <T> T evaluateXPath(String xpathExpression, Node context, Class<T> as)
+	throws XPathExpressionException {
+		checkContext(context);
+		return castAs(
+				getXPathProcessor().evaluate(xpathExpression, context, returnXPathConstant(as)),
+				as
+				);
+	}
+	/**
+	 * Compile an XPath string expression for efficient evaluation later.
+	 * @param xpathExpression	the XPath expression as a string
+	 * @return	the compiled XPath expression
+	 */
+	public XPathExpression compileXPath(String xpathExpression)
+	throws XPathExpressionException {
+		return getXPathProcessor().compile(xpathExpression);
+	}
+	/**
+	 * Evaluate a compiled XPath expression against the retrieved document.
+	 * An XPath expression can return a Node or subinterface such as
+	 * Element or Text, a NodeList, or a Boolean, Number, or String value.
+	 * @param xpathExpression	an XPath expression compiled previously
+	 * @param as	the type of the value 
+	 * @return	the value produced by the XPath expression
+	 */
+	public <T> T evaluateXPath(XPathExpression xpathExpression, Class<T> as)
+	throws XPathExpressionException {
+		return evaluateXPath(xpathExpression, get(), as);
+	}
+	/**
+	 * Evaluate a compiled XPath expression relative to a node such as a node
+	 * returned by a previous XPath expression.
+	 * An XPath expression can return a Node or subinterface such as
+	 * Element or Text, a NodeList, or a Boolean, Number, or String value.
+	 * @param xpathExpression	an XPath expression compiled previously
+	 * @param context	the node for evaluating the expression
+	 * @param as	the type of the value 
+	 * @return	the value produced by the XPath expression
+	 */
+	public <T> T evaluateXPath(XPathExpression xpathExpression, Node context, Class<T> as)
+	throws XPathExpressionException {
+		checkContext(context);
+		return castAs(
+				xpathExpression.evaluate(context, returnXPathConstant(as)),
+				as
+				);
+	}
+	protected void checkContext(Node context) {
+		if (context == null) {
+			throw new IllegalStateException("Cannot process empty context");
+		}
+	}
+	protected QName returnXPathConstant(Class<?> as) {
+		if (as == null) {
+			throw new IllegalArgumentException("cannot execute XPath as null");
+		} else if (Node.class.isAssignableFrom(as)) {
+			return XPathConstants.NODE;
+		} else if (NodeList.class.isAssignableFrom(as)) {
+			return XPathConstants.NODESET;
+		} else if (String.class.isAssignableFrom(as)) {
+			return XPathConstants.STRING;
+		} else if (Number.class.isAssignableFrom(as)) {
+			return XPathConstants.NUMBER;
+		} else if (Boolean.class.isAssignableFrom(as)) {
+			return XPathConstants.BOOLEAN;
+		}
+		throw new IllegalArgumentException("cannot execute XPath as "+as.getName());
+	}
+	protected <T> T castAs(Object result, Class<?> as) {
+		if (result == null) {
+			return null;
+		}
+		if (!as.isAssignableFrom(result.getClass())) {
+			throw new IllegalArgumentException("cannot cast "+result.getClass().getName()+" to "+as.getName());
+		}
+		@SuppressWarnings("unchecked")
+		T typedResult = (T) result;
+		return typedResult;
 	}
 
 	@Override
