@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.xml.xpath.XPathExpressionException;
+
 import org.w3c.dom.Document;
 
 import com.marklogic.client.DatabaseClient;
@@ -32,11 +34,13 @@ import com.marklogic.client.io.InputStreamHandle;
  * DocumentReader illustrates how to read the content of a database document.
  */
 public class DocumentRead {
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args)
+	throws IOException, XPathExpressionException {
 		run(Util.loadProperties());
 	}
 
-	public static void run(ExampleProperties props) throws IOException {
+	public static void run(ExampleProperties props)
+	throws IOException, XPathExpressionException {
 		System.out.println("example: "+DocumentRead.class.getName());
 
 		// create the client
@@ -69,7 +73,8 @@ public class DocumentRead {
 		String rootName = document.getDocumentElement().getTagName();
 		System.out.println("(Shortcut) Read "+docId+" content with the <"+rootName+"/> root element");
 	}
-	public static void runStrongTyped(DatabaseClient client) throws IOException {
+	public static void runStrongTyped(DatabaseClient client)
+	throws IOException, XPathExpressionException {
 		// create a manager for XML documents
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
@@ -83,9 +88,12 @@ public class DocumentRead {
 		docMgr.read(docId, handle);
 		Document document = handle.get();
 
+		// apply an XPath 1.0 expression to the document
+		String productName = handle.evaluateXPath("string(/product/name)", String.class);
+
 		// access the document content
 		String rootName = document.getDocumentElement().getTagName();
-		System.out.println("(Strong Typed) Read /example/"+docId+" content with the <"+rootName+"/> root element");
+		System.out.println("(Strong Typed) Read /example/"+docId+" content with the <"+rootName+"/> root element for the "+productName+" product");
 	}
 
 	// set up by writing document content for the example to read
