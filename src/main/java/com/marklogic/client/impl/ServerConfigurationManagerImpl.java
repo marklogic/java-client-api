@@ -51,13 +51,14 @@ class ServerConfigurationManagerImpl
 
 	static final private String REST_API_NS = "http://marklogic.com/rest-api";
 
-	private Boolean validatingQueries;
-	private Boolean validatingQueryOptions;
-	private String  defaultDocumentReadTransform;
-	private Boolean defaultDocumentReadTransformAll;
-	private Boolean serverRequestLogging;
-	private Policy  contentVersions;
-	private Format  errorFormat;
+	private Boolean       validatingQueries;
+	private Boolean       validatingQueryOptions;
+	private String        defaultDocumentReadTransform;
+	private Boolean       defaultDocumentReadTransformAll;
+	private Boolean       serverRequestLogging;
+	private Policy        contentVersions;
+	private UpdatePolicy  updatePolicy;
+	private Format        errorFormat;
 
     private RESTServices          services;
 	private HandleFactoryRegistry handleRegistry;
@@ -97,6 +98,7 @@ class ServerConfigurationManagerImpl
 			defaultDocumentReadTransformAll = null;
 			serverRequestLogging            = null;
 			contentVersions                 = null;
+			updatePolicy                    = null;
 
 			while (reader.hasNext()) {
 				if (reader.next() != XMLStreamReader.START_ELEMENT)
@@ -115,12 +117,21 @@ class ServerConfigurationManagerImpl
 					serverRequestLogging = Boolean.valueOf(reader.getElementText());
 				} else if ("content-versions".equals(localName)) {
 					contentVersions = Enum.valueOf(Policy.class, reader.getElementText().toUpperCase());
+				} else if ("update-policy".equals(localName)) {
+					updatePolicy = Enum.valueOf(UpdatePolicy.class,
+							reader.getElementText().toUpperCase().replace("-", "_"));
 				} else if ("error-format".equals(localName)) {
 					errorFormat = Format.valueOf(reader.getElementText().toUpperCase());
 				}
 			}
 
 			reader.close();
+
+			if (contentVersions == null) {
+				updatePolicyToContentVersion();
+			} else if (updatePolicy == null) {
+				contentVersionToUpdatePolicy();
+			}
 		} catch (XMLStreamException e) {
 			logger.error("Failed to read server configuration stream",e);
 			throw new MarkLogicInternalException(e);
@@ -176,6 +187,11 @@ class ServerConfigurationManagerImpl
 			if (contentVersions != null) {
 				serializer.writeStartElement(REST_API_NS, "content-versions");
 				serializer.writeCharacters(contentVersions.name().toLowerCase());
+				serializer.writeEndElement();
+			}
+			if (updatePolicy != null) {
+				serializer.writeStartElement(REST_API_NS, "update-policy");
+				serializer.writeCharacters(updatePolicy.name().toLowerCase().replace("_", "-"));
 				serializer.writeEndElement();
 			}
 			if (errorFormat != null) {
@@ -239,12 +255,43 @@ class ServerConfigurationManagerImpl
 	}
 
 	@Override
+	public UpdatePolicy getUpdatePolicy() {
+		return updatePolicy;
+	}
+	@Override
+	public void setUpdatePolicy(UpdatePolicy updatePolicy) {
+		this.updatePolicy = updatePolicy;
+		updatePolicyToContentVersion();
+	}
+	private void updatePolicyToContentVersion() {
+		if (updatePolicy == null) {
+			return;
+		}
+		switch (updatePolicy) {
+		case VERSION_REQUIRED: contentVersions = Policy.REQUIRED; break;
+		case VERSION_OPTIONAL: contentVersions = Policy.OPTIONAL; break;
+		case MERGE_METADATA:   contentVersions = Policy.NONE;     break;
+		}
+	}
+
+	@Override
 	public Policy getContentVersionRequests() {
 		return contentVersions;
 	}
 	@Override
 	public void setContentVersionRequests(Policy policy) {
 		contentVersions = policy;
+		contentVersionToUpdatePolicy();
+	}
+	private void contentVersionToUpdatePolicy() {
+		if (contentVersions == null) {
+			return;
+		}
+		switch (contentVersions) {
+		case REQUIRED: updatePolicy = UpdatePolicy.VERSION_REQUIRED; break;
+		case OPTIONAL: updatePolicy = UpdatePolicy.VERSION_OPTIONAL; break;
+		case NONE:     updatePolicy = UpdatePolicy.MERGE_METADATA;   break;
+		}
 	}
 
 	@Override

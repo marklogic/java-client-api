@@ -27,16 +27,16 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
-import com.marklogic.client.document.DocumentDescriptor;
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.admin.ServerConfigurationManager;
-import com.marklogic.client.admin.ServerConfigurationManager.Policy;
+import com.marklogic.client.admin.ServerConfigurationManager.UpdatePolicy;
+import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.impl.FailedRequest;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 
 public class ConditionalDocumentTest {
@@ -49,7 +49,7 @@ public class ConditionalDocumentTest {
 		Common.connectAdmin();
 		serverConfig = Common.client.newServerConfigManager();
 		serverConfig.readConfiguration();
-		serverConfig.setContentVersionRequests(Policy.REQUIRED);
+		serverConfig.setUpdatePolicy(UpdatePolicy.VERSION_REQUIRED);
 		serverConfig.writeConfiguration();
 		adminClient = Common.client;
 		Common.release();
@@ -60,7 +60,7 @@ public class ConditionalDocumentTest {
 	public static void afterClass()
 	throws FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException {
 		Common.release();
-		serverConfig.setContentVersionRequests(Policy.NONE);
+		serverConfig.setUpdatePolicy(UpdatePolicy.MERGE_METADATA);
 		serverConfig.writeConfiguration();
 		adminClient.release();
 	}

@@ -27,6 +27,36 @@ import com.marklogic.client.io.Format;
  */
 public interface ServerConfigurationManager {
 	/**
+	 * Specifies the policy for updating documents in the database. 
+	 */
+	public enum UpdatePolicy {
+		/**
+		 * A document can be updated or deleted only if its version number
+		 * is supplied and matches; a document can be created only if no
+		 * version number is supplied and the document doesn't exist. This
+		 * update policy requires optimistic locking.
+		 */
+		VERSION_REQUIRED,
+		/**
+		 * A document can be updated or deleted if its version number is
+		 * not supplied or if the version number matches. This update policy
+		 * provides for optional optimistic locking.
+		 */
+		VERSION_OPTIONAL,
+		/**
+		 * If a document exists, the supplied metadata is merged with the
+		 * persisted document metadata. This update policy is the default
+		 * (equivalent to content versions of Policy.NONE).
+		 */
+		MERGE_METADATA,
+		/**
+		 * The document is written without testing whether it exists. Only
+		 * the supplied metadata is persisted. This update policy is slightly
+		 * faster than other update policies.
+		 */
+		OVERWRITE_METADATA
+	}
+	/**
 	 * Specifies the policy for use of a capability. 
 	 */
 	public enum Policy {
@@ -116,15 +146,28 @@ public interface ServerConfigurationManager {
 	public void setServerRequestLogging(Boolean on);
 
 	/**
-	 * Returns whether the server requires, allows, or ignores document versionss
+	 * Returns the policy for updating or deleting documents in the database.
+	 * @return	the policy controlling updates or deletes
+	 */
+	public UpdatePolicy getUpdatePolicy();
+	/**
+	 * Specifies the policy for updating or deleting documents in the database.
+	 * @param policy	the policy controlling updates or deletes
+	 */
+	public void setUpdatePolicy(UpdatePolicy policy);
+
+	/**
+	 * Returns whether the server requires, allows, or ignores document versions
 	 * on document read, write, and delete requests.
 	 * @return	the policy as required, optional, or none
+	 * @deprecated	use {@link #getUpdatePolicy()}, which provides more alternatives
 	 */
 	public Policy getContentVersionRequests();
 	/**
-	 * Specifies whether the server requires, allows, or ignores document versionss
+	 * Specifies whether the server requires, allows, or ignores document versions
 	 * on document read, write, and delete requests.
 	 * @param policy	required, optional, or none for document versions
+	 * @deprecated	use {@link #setUpdatePolicy(UpdatePolicy)}, which provides more alternatives
 	 */
 	public void setContentVersionRequests(Policy policy);
 
