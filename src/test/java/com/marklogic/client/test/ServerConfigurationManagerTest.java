@@ -29,7 +29,7 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.ServerConfigurationManager;
-import com.marklogic.client.admin.ServerConfigurationManager.Policy;
+import com.marklogic.client.admin.ServerConfigurationManager.UpdatePolicy;
 
 public class ServerConfigurationManagerTest {
 	@BeforeClass
@@ -50,20 +50,20 @@ public class ServerConfigurationManagerTest {
 
 		serverConfig.readConfiguration();
 
-		Boolean initialQueryValid   = serverConfig.getQueryValidation();
-		Boolean initialOptionValid  = serverConfig.getQueryOptionValidation();
-		String  initialReadTrans    = serverConfig.getDefaultDocumentReadTransform();
-		Boolean initialReadTransAll = serverConfig.getDefaultDocumentReadTransformAll();
-		Boolean initialRequestLog   = serverConfig.getServerRequestLogging();
-		Policy  initialVersionReq   = serverConfig.getContentVersionRequests();
+		Boolean initialQueryValid      = serverConfig.getQueryValidation();
+		Boolean initialOptionValid     = serverConfig.getQueryOptionValidation();
+		String  initialReadTrans       = serverConfig.getDefaultDocumentReadTransform();
+		Boolean initialReadTransAll    = serverConfig.getDefaultDocumentReadTransformAll();
+		Boolean initialRequestLog      = serverConfig.getServerRequestLogging();
+		UpdatePolicy initialVersionReq = serverConfig.getUpdatePolicy();
 
-		Boolean modQueryValid   = initialQueryValid   ? false : true;
-		Boolean modOptionValid  = initialOptionValid  ? false : true;
-		String  modReadTrans    = "modifiedReadTransform";
-		Boolean modReadTransAll = initialReadTransAll ? false : true;
-		Boolean modRequestLog   = initialOptionValid  ? false : true;
-		Policy  modVersionReq   = (initialVersionReq == Policy.OPTIONAL) ?
-			Policy.REQUIRED : Policy.OPTIONAL;
+		Boolean      modQueryValid   = initialQueryValid   ? false : true;
+		Boolean      modOptionValid  = initialOptionValid  ? false : true;
+		String       modReadTrans    = "modifiedReadTransform";
+		Boolean      modReadTransAll = initialReadTransAll ? false : true;
+		Boolean      modRequestLog   = initialOptionValid  ? false : true;
+		UpdatePolicy modVersionReq   = (initialVersionReq == UpdatePolicy.VERSION_OPTIONAL) ?
+				UpdatePolicy.VERSION_REQUIRED : UpdatePolicy.VERSION_OPTIONAL;
 
 		serverConfig = Common.client.newServerConfigManager();
 		serverConfig.setQueryValidation(modQueryValid);
@@ -71,7 +71,7 @@ public class ServerConfigurationManagerTest {
 		serverConfig.setDefaultDocumentReadTransform(modReadTrans);
 		serverConfig.setDefaultDocumentReadTransformAll(modReadTransAll);
 		serverConfig.setServerRequestLogging(modRequestLog);
-		serverConfig.setContentVersionRequests(modVersionReq);
+		serverConfig.setUpdatePolicy(modVersionReq);
 		serverConfig.writeConfiguration();
 
 		serverConfig = Common.client.newServerConfigManager();
@@ -86,15 +86,15 @@ public class ServerConfigurationManagerTest {
 				modReadTransAll, serverConfig.getDefaultDocumentReadTransformAll());
 		assertEquals("Failed to change server request logging",
 				modRequestLog,   serverConfig.getServerRequestLogging());
-		assertEquals("Failed to change content version requests",
-				modVersionReq,   serverConfig.getContentVersionRequests());
+		assertEquals("Failed to change update policy ",
+				modVersionReq,   serverConfig.getUpdatePolicy());
 		
 		serverConfig = Common.client.newServerConfigManager();
 		serverConfig.setQueryOptionValidation(initialOptionValid);
 		serverConfig.setDefaultDocumentReadTransform(initialReadTrans);
 		serverConfig.setDefaultDocumentReadTransformAll(initialReadTransAll);
 		serverConfig.setServerRequestLogging(initialRequestLog);
-		serverConfig.setContentVersionRequests(initialVersionReq);
+		serverConfig.setUpdatePolicy(initialVersionReq);
 		serverConfig.writeConfiguration();
 	}
 

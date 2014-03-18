@@ -79,8 +79,7 @@ public class TransformTest {
 		extensionMgr.writeXQueryTransform(
 				TransformExtensionsTest.XQUERY_NAME,
 				new StringHandle().withFormat(Format.TEXT).with(xqueryTransform),
-				TransformExtensionsTest.makeXQueryMetadata(),
-				TransformExtensionsTest.makeParameters()
+				TransformExtensionsTest.makeXQueryMetadata()
 				);
 
 		runTransform(TransformExtensionsTest.XQUERY_NAME);
@@ -96,8 +95,7 @@ public class TransformTest {
 		extensionMgr.writeXSLTransform(
 				TransformExtensionsTest.XSLT_NAME,
 				new StringHandle().with(xslTransform),
-				TransformExtensionsTest.makeXSLTMetadata(),
-				TransformExtensionsTest.makeParameters()
+				TransformExtensionsTest.makeXSLTMetadata()
 				);
 
 		runTransform(TransformExtensionsTest.XSLT_NAME);
