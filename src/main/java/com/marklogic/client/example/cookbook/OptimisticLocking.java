@@ -29,7 +29,7 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.ServerConfigurationManager;
-import com.marklogic.client.admin.ServerConfigurationManager.Policy;
+import com.marklogic.client.admin.ServerConfigurationManager.UpdatePolicy;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
@@ -74,7 +74,7 @@ public class OptimisticLocking {
 
 		// require content versions for updates and deletes
 		// use Policy.OPTIONAL to allow but not require versions
-		configMgr.setContentVersionRequests(Policy.REQUIRED);
+		configMgr.setUpdatePolicy(UpdatePolicy.VERSION_REQUIRED);
 
 		// write the server configuration to the database
 		configMgr.writeConfiguration();
@@ -152,7 +152,7 @@ public class OptimisticLocking {
 		ServerConfigurationManager configMgr = client.newServerConfigManager();
 
 		configMgr.readConfiguration();
-		configMgr.setContentVersionRequests(Policy.NONE);
+		configMgr.setUpdatePolicy(UpdatePolicy.MERGE_METADATA);
 		configMgr.writeConfiguration();
 
 		client.release();
