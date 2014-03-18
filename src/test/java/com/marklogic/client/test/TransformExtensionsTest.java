@@ -21,7 +21,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
@@ -98,12 +97,6 @@ public class TransformExtensionsTest {
 		return metadata;
 	}
 
-	static Map<String,String> makeParameters() {
-		Map<String,String> params = new HashMap<String,String>();
-		params.put("value", "true");
-		return params;
-	}
-
 	@Test
 	public void testTransformExtensions()
 	throws XpathException, SAXException, IOException, FailedRequestException, ResourceNotFoundException, ForbiddenUserException, ResourceNotResendableException {
@@ -165,8 +158,7 @@ public class TransformExtensionsTest {
 		extensionMgr.writeXQueryTransform(
 				XQUERY_NAME,
 				new StringHandle().withFormat(Format.TEXT).with(xqueryTransform),
-				makeXQueryMetadata(),
-				makeParameters()
+				makeXQueryMetadata()
 				);		
 	}
 	public void writeXSLTransform(TransformExtensionsManager extensionMgr)
@@ -174,8 +166,7 @@ public class TransformExtensionsTest {
 		extensionMgr.writeXSLTransform(
 				XSLT_NAME,
 				new StringHandle().withFormat(Format.XML).withMimetype("application/xslt+xml").with(xslTransform),
-				makeXSLTMetadata(),
-				makeParameters()
+				makeXSLTMetadata()
 				);
 	}
 }
