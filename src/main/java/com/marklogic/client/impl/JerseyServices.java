@@ -152,7 +152,22 @@ public class JerseyServices implements RESTServices {
 	private int maxDelay = DEFAULT_MAX_DELAY;
 	private int minRetry = DEFAULT_MIN_RETRY;
 
-	private boolean isFirstRequest = false;
+	private boolean checkFirstRequest = false;
+
+	static protected class ThreadState {
+		boolean isFirstRequest;
+		ThreadState(boolean value) {
+			isFirstRequest = value;
+		}
+	}
+
+	// workaround: Jersey keeps the DIGEST nonce in a thread-local variable
+	private final ThreadLocal<ThreadState> threadState = new ThreadLocal<ThreadState>() {
+        @Override
+        protected ThreadState initialValue() {
+            return new ThreadState(checkFirstRequest);
+        }
+    };
 
 	public JerseyServices() {
 	}
@@ -352,13 +367,13 @@ public class JerseyServices implements RESTServices {
 		// System.setProperty("javax.net.debug", "all"); // all or ssl
 
 		if (authenType == null) {
-			isFirstRequest = false;
+			checkFirstRequest = false;
 		} else if (authenType == Authentication.BASIC) {
-			isFirstRequest = false;
+			checkFirstRequest = false;
 
 			client.addFilter(new HTTPBasicAuthFilter(user, password));
 		} else if (authenType == Authentication.DIGEST) {
-			isFirstRequest = true;
+			checkFirstRequest = true;
 
 			// workaround for JerseyClient bug 1445
 			client.addFilter(new DigestChallengeFilter());
@@ -401,8 +416,31 @@ public class JerseyServices implements RESTServices {
 		client = null;
 	}
 
-	private void makeFirstRequest() {
-		connection.path("ping").head().close();
+	private boolean isFirstRequest() {
+		return threadState.get().isFirstRequest;
+	}
+	private void setFirstRequest(boolean value) {
+		threadState.get().isFirstRequest = value;
+	}
+	private void checkFirstRequest() {
+		if (checkFirstRequest)
+			setFirstRequest(true);
+	}
+
+	private int makeFirstRequest(int retry) {
+		ClientResponse response = connection.path("ping").head();
+		int statusCode = response.getClientResponseStatus().getStatusCode();
+		if (200 <= statusCode && statusCode < 400) {
+			response.close();
+			return 0;
+		}
+
+		MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+		response.close();
+
+		String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+		int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+		return Math.max(retryAfter, calculateDelay(randRetry, retry));
 	}
 
 	@Override
@@ -441,10 +479,10 @@ public class JerseyServices implements RESTServices {
 			response = builder.delete(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -457,6 +495,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -573,10 +612,10 @@ public class JerseyServices implements RESTServices {
 			response = builder.get(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -589,6 +628,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -686,10 +726,10 @@ public class JerseyServices implements RESTServices {
 			response = builder.accept(multipartType).get(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -702,6 +742,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -836,10 +877,10 @@ public class JerseyServices implements RESTServices {
 			response = builder.head();
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -852,6 +893,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -1034,8 +1076,11 @@ public class JerseyServices implements RESTServices {
 						"Document write with null value for " +
 						((uri != null) ? uri : "new document"));
 
-			if (isFirstRequest && isStreaming(value))
-				makeFirstRequest();
+			if (isFirstRequest() && isStreaming(value)) {
+				nextDelay = makeFirstRequest(retry);
+				if (nextDelay != 0)
+					continue;
+			}
 
 			if (value instanceof OutputStreamSender) {
 				StreamingOutput sentStream =
@@ -1055,18 +1100,19 @@ public class JerseyServices implements RESTServices {
 
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			responseHeaders = response.getHeaders();
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
-				break;
+				if (isFirstRequest())
+					setFirstRequest(false);
+
+ 				break;
 			}
 
 			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
 			response.close();
 
 			if (!isResendable) {
+				checkFirstRequest();
 				throw new ResourceNotResendableException(
 						"Cannot retry request for " +
 						 ((uri != null) ? uri : "new document"));
@@ -1076,6 +1122,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -1178,8 +1225,11 @@ public class JerseyServices implements RESTServices {
 					new String[] { metadataMimetype, contentMimetype },
 					new AbstractWriteHandle[] { metadataHandle, contentHandle });
 
-			if (isFirstRequest)
-				makeFirstRequest();
+			if (isFirstRequest() && hasStreamingPart) {
+				nextDelay = makeFirstRequest(retry);
+				if (nextDelay != 0)
+					continue;
+			}
 
 			// Must set multipart/mixed mime type explicitly on each request
 			// because Jersey client 1.17 adapter for HttpClient switches
@@ -1191,11 +1241,11 @@ public class JerseyServices implements RESTServices {
 				requestBlder.post(ClientResponse.class, multiPart);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			responseHeaders = response.getHeaders();
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
@@ -1211,6 +1261,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -1312,10 +1363,10 @@ public class JerseyServices implements RESTServices {
 			response = resource.post(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -1328,6 +1379,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -1403,10 +1455,10 @@ public class JerseyServices implements RESTServices {
 			response = builder.post(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -1419,6 +1471,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -1807,10 +1860,10 @@ public class JerseyServices implements RESTServices {
 
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -1823,6 +1876,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -1881,10 +1935,10 @@ public class JerseyServices implements RESTServices {
 			response = builder.delete(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -1897,6 +1951,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -2048,10 +2103,10 @@ public class JerseyServices implements RESTServices {
 
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -2064,6 +2119,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -2123,10 +2179,10 @@ public class JerseyServices implements RESTServices {
 			response = builder.get(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -2139,6 +2195,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -2191,10 +2248,10 @@ public class JerseyServices implements RESTServices {
 			response = builder.get(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -2207,6 +2264,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -2256,10 +2314,10 @@ public class JerseyServices implements RESTServices {
 			response = builder.get(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -2272,6 +2330,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -2337,10 +2396,10 @@ public class JerseyServices implements RESTServices {
 			response = builder.get(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -2353,6 +2412,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -2471,16 +2531,19 @@ public class JerseyServices implements RESTServices {
 					sentValue = nextValue;
 			}
 
-			boolean isStreaming = (isFirstRequest || handle == null) ? isStreaming(sentValue)
+			boolean isStreaming = (isFirstRequest() || handle == null) ? isStreaming(sentValue)
 					: false;
 
 			boolean isResendable = (handle == null) ? !isStreaming :
 				handle.isResendable();
 
-			if ("put".equals(method)) {
-				if (isFirstRequest && isStreaming)
-					makeFirstRequest();
+			if (isFirstRequest() && isStreaming) {
+				nextDelay = makeFirstRequest(retry);
+				if (nextDelay != 0)
+					continue;
+			}
 
+			if ("put".equals(method)) {
 				if (builder == null) {
 					connectPath = (key != null) ? type + "/" + key : type;
 					WebResource resource = (requestParams == null) ?
@@ -2494,9 +2557,6 @@ public class JerseyServices implements RESTServices {
 						builder.put(ClientResponse.class) :
 						builder.put(ClientResponse.class, sentValue);
 			} else if ("post".equals(method)) {
-				if (isFirstRequest && isStreaming)
-					makeFirstRequest();
-
 				if (builder == null) {
 					connectPath = type;
 					WebResource resource = (requestParams == null) ?
@@ -2516,10 +2576,10 @@ public class JerseyServices implements RESTServices {
 
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -2528,6 +2588,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			if (!isResendable) {
+				checkFirstRequest();
 				throw new ResourceNotResendableException(
 						"Cannot retry request for " + connectPath);
 			}
@@ -2536,6 +2597,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -2588,10 +2650,10 @@ public class JerseyServices implements RESTServices {
 			response = builder.delete(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -2604,6 +2666,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -2648,10 +2711,10 @@ public class JerseyServices implements RESTServices {
 			response = builder.delete(ClientResponse.class);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -2664,6 +2727,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -2709,10 +2773,10 @@ public class JerseyServices implements RESTServices {
 			response = doGet(builder);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -2725,6 +2789,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -2769,10 +2834,10 @@ public class JerseyServices implements RESTServices {
 			response = doGet(builder.accept(multipartType));
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -2785,6 +2850,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -2837,10 +2903,10 @@ public class JerseyServices implements RESTServices {
 					!isResendable);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -2849,6 +2915,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			if (!isResendable) {
+				checkFirstRequest();
 				throw new ResourceNotResendableException(
 						"Cannot retry request for " + path);
 			}
@@ -2857,6 +2924,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -2914,10 +2982,10 @@ public class JerseyServices implements RESTServices {
 			response = doPut(builder, multiPart, hasStreamingPart);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -2934,6 +3002,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -2989,10 +3058,10 @@ public class JerseyServices implements RESTServices {
 					!isResendable);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -3001,6 +3070,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			if (!isResendable) {
+				checkFirstRequest();
 				throw new ResourceNotResendableException(
 						"Cannot retry request for " + path);
 			}
@@ -3009,6 +3079,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -3062,10 +3133,10 @@ public class JerseyServices implements RESTServices {
 			response = doPost(builder, multiPart, hasStreamingPart);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -3082,6 +3153,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -3135,10 +3207,10 @@ public class JerseyServices implements RESTServices {
 			response = doPost(reqlog, builder.accept(multipartType), value, !isResendable);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -3147,6 +3219,7 @@ public class JerseyServices implements RESTServices {
 			response.close();
 
 			if (!isResendable) {
+				checkFirstRequest();
 				throw new ResourceNotResendableException(
 						"Cannot retry request for " + path);
 			}
@@ -3155,6 +3228,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -3198,10 +3272,10 @@ public class JerseyServices implements RESTServices {
 			response = doPost(builder, multiPart, hasStreamingPart);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -3218,6 +3292,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -3263,10 +3338,10 @@ public class JerseyServices implements RESTServices {
 			response = doDelete(builder);
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -3279,6 +3354,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -3315,8 +3391,8 @@ public class JerseyServices implements RESTServices {
 	private ClientResponse doGet(WebResource.Builder builder) {
 		ClientResponse response = builder.get(ClientResponse.class);
 
-		if (isFirstRequest)
-			isFirstRequest = false;
+		if (isFirstRequest())
+			setFirstRequest(false);
 
 		return response;
 	}
@@ -3341,8 +3417,8 @@ public class JerseyServices implements RESTServices {
 		if (value == null)
 			throw new IllegalArgumentException("Resource write with null value");
 
-		if (isFirstRequest && isStreaming(value))
-			makeFirstRequest();
+		if (isFirstRequest() && isStreaming(value))
+			makeFirstRequest(0);
 
 		ClientResponse response = null;
 		if (value instanceof OutputStreamSender) {
@@ -3357,8 +3433,8 @@ public class JerseyServices implements RESTServices {
 				response = builder.put(ClientResponse.class, value);
 		}
 
-		if (isFirstRequest)
-			isFirstRequest = false;
+		if (isFirstRequest())
+			setFirstRequest(false);
 
 		return response;
 	}
@@ -3380,13 +3456,13 @@ public class JerseyServices implements RESTServices {
 
 	private ClientResponse doPut(WebResource.Builder builder,
 			MultiPart multiPart, boolean hasStreamingPart) {
-		if (isFirstRequest)
-			makeFirstRequest();
+		if (isFirstRequest() && hasStreamingPart)
+			makeFirstRequest(0);
 
 		ClientResponse response = builder.put(ClientResponse.class, multiPart);
 
-		if (isFirstRequest)
-			isFirstRequest = false;
+		if (isFirstRequest())
+			setFirstRequest(false);
 
 		return response;
 	}
@@ -3408,8 +3484,8 @@ public class JerseyServices implements RESTServices {
 
 	private ClientResponse doPost(RequestLogger reqlog,
 			WebResource.Builder builder, Object value, boolean isStreaming) {
-		if (isFirstRequest && isStreaming(value))
-			makeFirstRequest();
+		if (isFirstRequest() && isStreaming(value))
+			makeFirstRequest(0);
 
 		ClientResponse response = null;
 		if (value instanceof OutputStreamSender) {
@@ -3424,8 +3500,8 @@ public class JerseyServices implements RESTServices {
 				response = builder.post(ClientResponse.class, value);
 		}
 
-		if (isFirstRequest)
-			isFirstRequest = false;
+		if (isFirstRequest())
+			setFirstRequest(false);
 
 		return response;
 	}
@@ -3447,13 +3523,13 @@ public class JerseyServices implements RESTServices {
 
 	private ClientResponse doPost(WebResource.Builder builder,
 			MultiPart multiPart, boolean hasStreamingPart) {
-		if (isFirstRequest)
-			makeFirstRequest();
+		if (isFirstRequest() && hasStreamingPart)
+			makeFirstRequest(0);
 
 		ClientResponse response = builder.post(ClientResponse.class, multiPart);
 
-		if (isFirstRequest)
-			isFirstRequest = false;
+		if (isFirstRequest())
+			setFirstRequest(false);
 
 		return response;
 	}
@@ -3475,8 +3551,8 @@ public class JerseyServices implements RESTServices {
 	private ClientResponse doDelete(WebResource.Builder builder) {
 		ClientResponse response = builder.delete(ClientResponse.class);
 
-		if (isFirstRequest)
-			isFirstRequest = false;
+		if (isFirstRequest())
+			setFirstRequest(false);
 
 		return response;
 	}
@@ -3937,10 +4013,10 @@ public class JerseyServices implements RESTServices {
 
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -3953,6 +4029,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -4010,10 +4087,10 @@ public class JerseyServices implements RESTServices {
 
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -4026,6 +4103,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -4139,10 +4217,10 @@ public class JerseyServices implements RESTServices {
 
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -4155,6 +4233,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
@@ -4214,10 +4293,10 @@ public class JerseyServices implements RESTServices {
 
 			status = response.getClientResponseStatus();
 
-			if (isFirstRequest)
-				isFirstRequest = false;
-
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+				if (isFirstRequest())
+					setFirstRequest(false);
+
 				break;
 			}
 
@@ -4230,6 +4309,7 @@ public class JerseyServices implements RESTServices {
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
