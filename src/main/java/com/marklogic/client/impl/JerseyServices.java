@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.MarkLogicInternalException;
@@ -120,6 +121,7 @@ public class JerseyServices implements RESTServices {
 		}
 	}
 
+	private DatabaseClient databaseClient;
 	private ApacheHttpClient4 client;
 	private WebResource connection;
 
@@ -318,7 +320,20 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
+	public DatabaseClient getDatabaseClient() {
+		return databaseClient;
+	}
+	@Override
+	public void setDatabaseClient(DatabaseClient client) {
+		this.databaseClient = client;
+	}
+
+	@Override
 	public void release() {
+		if (databaseClient != null) {
+			databaseClient = null;
+		}
+
 		if (client == null)
 			return;
 

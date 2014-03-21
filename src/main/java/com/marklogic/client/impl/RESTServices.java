@@ -19,6 +19,7 @@ import java.util.Set;
 
 import javax.net.ssl.SSLContext;
 
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.FailedRequestException;
@@ -44,6 +45,8 @@ import com.sun.jersey.api.client.ClientResponse;
 public interface RESTServices {
 	public void connect(String host, int port, String user, String password, Authentication type,
 			SSLContext context, SSLHostnameVerifier verifier);
+	public DatabaseClient getDatabaseClient();
+	public void setDatabaseClient(DatabaseClient client);
 	public void release();
 
 	public void deleteDocument(RequestLogger logger, DocumentDescriptor desc, String transactionId,

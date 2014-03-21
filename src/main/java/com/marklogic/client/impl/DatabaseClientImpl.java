@@ -41,6 +41,7 @@ public class DatabaseClientImpl implements DatabaseClient {
 
 	public DatabaseClientImpl(RESTServices services) {
 		this.services = services;
+		services.setDatabaseClient(this);
 	}
 
 	@Override
