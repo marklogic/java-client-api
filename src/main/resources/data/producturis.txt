@@ -1,0 +1,7 @@
+# product category URIs
+http://en.wikipedia.org/wiki/Real_estate
+http://www.dmoz.org/Business/Real_Estate/
+http://wordnetweb.princeton.edu/perl/webwn3.0?s=real+estate
+http://en.wikipedia.org/wiki/Retail
+http://www.dmoz.org/Business/Retail_Trade/
+http://wordnetweb.princeton.edu/perl/webwn3.0?s=retail
