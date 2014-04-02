@@ -1,6 +1,3 @@
-java-client-api
-===============
-
 # The MarkLogic Java Client API
 
 The API makes it easy to write, read, delete, and find documents
@@ -40,7 +37,7 @@ https://developer.marklogic.com/free-developer
 
 You can build the API in the same way as any Maven project on git:
 
-1. Clone the [java-client-api](https://github.com/marklogic/java-client-api) repository on your machine.
+1. Clone the java-client-api repository on your machine.
 2. Execute a Maven build in the directory containing the pom.xml file.  
 
 You might want to skip the tests until you have configured a test database and REST server:
