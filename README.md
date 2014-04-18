@@ -14,6 +14,14 @@ The Java API supports the following core features of the MarkLogic database:
 *  Execute ACID modifications so the change either succeeds or throws an exception.
 *  Execute multi-statement transactions so changes to multiple documents succeed or fail together.
 
+### QuickStart
+
+For people working with MarkLogic 8 EA
+
+mvn test-compile
+sh src/test/resources/boot-test.sh
+mvn test
+
 ### Learning More
 
 The following resources introduce and document the Java API:
