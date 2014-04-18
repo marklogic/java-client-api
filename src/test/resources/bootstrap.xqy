@@ -746,17 +746,18 @@ declare function bootstrap:post(
     $input as document-node()*
 ) as document-node()*
 {
-    for $user in ("rest-admin", "rest-reader", "rest-writer", "valid")
+    for $user in ("rest-admin", "rest-reader", "rest-writer", "valid") 
     let $user-id := 
         try {
             xdmp:user($user)
         } catch($e) {
+            xdmp:log("User "||$user||" not found.")
         }
     return
-        if (exists($user-id)) then ()
+        if (exists($user-id)) then xdmp:log("User "|| $user || ", id "||$user-id|| "already exists")
         else if ($user eq "valid")
         then bootstrap:security-config('sec:create-user("valid", "valid unprivileged user", "x", (), (), (), ())')
-        else bootstrap:security-config('sec:create-user($user, $user||" user", "x", ($user), (), (), () )'),
+        else bootstrap:security-config('sec:create-user("'||$user||'", "'||$user||' user", "x", ("'||$user||'"), (), (), () )'),
 
     let $dbid := xdmp:database("java-unittest")
     return (
