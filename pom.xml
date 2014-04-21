@@ -160,9 +160,9 @@
 			<version>1.13</version>
 		</dependency>
 		<dependency>
-			<groupId>org.jvnet</groupId>
+			<groupId>org.jvnet.mimepull</groupId>
 			<artifactId>mimepull</artifactId>
-			<version>1.6</version>
+			<version>1.9.4</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
