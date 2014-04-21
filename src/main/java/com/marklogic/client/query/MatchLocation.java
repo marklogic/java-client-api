@@ -26,7 +26,7 @@ public interface MatchLocation {
     public String getPath();
 
     /**
-     * Returns the entire text of the snippet.
+     * Returns the entire text only of the snippet, excluding any highlight tags.
      * @return The snippet text.
      */
 
