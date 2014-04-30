@@ -173,6 +173,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	private FailedRequest extractErrorFields(ClientResponse response) {
+		if ( response == null ) return null;
 		InputStream is = response.getEntityInputStream();
 		try {
 			FailedRequest handler = FailedRequest.getFailedRequest(
@@ -1149,6 +1150,9 @@ public class JerseyServices implements RESTServices {
 				throw new FailedRequestException(
 						"Empty request body sent to server", failure);
 			throw new FailedRequestException("Precondition Failed", failure);
+		}
+		if (status == null) {
+			throw new FailedRequestException("write failed: Unknown Reason", extractErrorFields(response));
 		}
 		if (status != ClientResponse.Status.CREATED
 				&& status != ClientResponse.Status.NO_CONTENT) {
