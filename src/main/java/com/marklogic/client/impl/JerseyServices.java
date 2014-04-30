@@ -430,7 +430,7 @@ public class JerseyServices implements RESTServices {
 	private int makeFirstRequest(int retry) {
 		ClientResponse response = connection.path("ping").head();
 		int statusCode = response.getClientResponseStatus().getStatusCode();
-		if (200 <= statusCode && statusCode < 400) {
+		if (statusCode != ClientResponse.Status.SERVICE_UNAVAILABLE.getStatusCode()) {
 			response.close();
 			return 0;
 		}
@@ -1076,7 +1076,7 @@ public class JerseyServices implements RESTServices {
 						"Document write with null value for " +
 						((uri != null) ? uri : "new document"));
 
-			if (isFirstRequest() && isStreaming(value)) {
+			if (isFirstRequest() && !isResendable && isStreaming(value)) {
 				nextDelay = makeFirstRequest(retry);
 				if (nextDelay != 0)
 					continue;
@@ -2537,7 +2537,7 @@ public class JerseyServices implements RESTServices {
 			boolean isResendable = (handle == null) ? !isStreaming :
 				handle.isResendable();
 
-			if (isFirstRequest() && isStreaming) {
+			if (isFirstRequest() && !isResendable && isStreaming) {
 				nextDelay = makeFirstRequest(retry);
 				if (nextDelay != 0)
 					continue;
