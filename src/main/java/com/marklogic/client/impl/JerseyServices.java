@@ -828,7 +828,7 @@ public class JerseyServices implements RESTServices {
 				throw new IllegalArgumentException(
 						"Document write with null value for " + uri);
 
-			if (isFirstRequest && isStreaming(value))
+			if (isFirstRequest && !isResendable && isStreaming(value))
 				makeFirstRequest();
 
 			if (value instanceof OutputStreamSender) {
@@ -1962,7 +1962,7 @@ public class JerseyServices implements RESTServices {
 					!isStreaming : handle.isResendable();
 
 			if ("put".equals(method)) {
-				if (isFirstRequest && isStreaming)
+				if (isFirstRequest && !isResendable && isStreaming)
 					makeFirstRequest();
 
 				if (builder == null) {
