@@ -41,8 +41,9 @@ import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 
 /**
- * A JacksonHandle represents JSON content as a Jackson JsonNode for reading or
- * writing.  You must install the Jackson library to use this class.
+ * An adapter for using the Jackson Open Source library for JSON; represents 
+ * JSON content as a Jackson JsonNode for reading or writing.  Enables reading and 
+ * writing JSON documents, JSON structured search, and other JSON input and output.  
  */
 public class JacksonHandle
 		extends BaseHandle<InputStream, OutputStreamSender>
