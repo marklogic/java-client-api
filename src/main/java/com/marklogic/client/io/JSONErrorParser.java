@@ -1,4 +1,4 @@
-package com.marklogic.client.extra.jackson;
+package com.marklogic.client.io;
 
 import java.io.IOException;
 import java.io.InputStream;

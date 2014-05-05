@@ -26,7 +26,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import com.marklogic.client.extra.jackson.JSONErrorParser;
+import com.marklogic.client.io.JSONErrorParser;
 
 /**
  * Encapsulate data passed in an error response from a REST server instance
