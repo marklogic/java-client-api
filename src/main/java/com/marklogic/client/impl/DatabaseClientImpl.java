@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.FailedRequestException;
@@ -127,6 +128,12 @@ public class DatabaseClientImpl implements DatabaseClient {
 
 	@Override
     public <T extends ResourceManager> T init(String resourceName, T resourceManager) {
+		return init(resourceName, resourceManager, null);
+	}
+
+	@Override
+    public <T extends ResourceManager> T init(String resourceName, T resourceManager, 
+	  ExtensionMetadata.ScriptLanguage scriptLanguage) {
 		if (resourceManager == null)
 			throw new IllegalArgumentException("Cannot initialize null resource manager");
 		if (resourceName == null)
@@ -135,7 +142,7 @@ public class DatabaseClientImpl implements DatabaseClient {
 			throw new IllegalArgumentException("Cannot initialize resource manager with empty resource name");
 
 		((ResourceManagerImplementation) resourceManager).init(
-				new ResourceServicesImpl(services,resourceName)
+				new ResourceServicesImpl(services,resourceName,scriptLanguage)
 				);
 
 		return resourceManager;

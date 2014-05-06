@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.extensions.ResourceServices;
 import com.marklogic.client.io.marker.AbstractReadHandle;
@@ -28,11 +29,13 @@ class ResourceServicesImpl
 {
 	private String       resourceName;
 	private RESTServices services;
+	private ExtensionMetadata.ScriptLanguage scriptLanguage = ExtensionMetadata.XQUERY;
 
-	ResourceServicesImpl(RESTServices services, String resourceName) {
+	ResourceServicesImpl(RESTServices services, String resourceName, ExtensionMetadata.ScriptLanguage scriptLanguage) {
 		super();
 		this.services     = services;
 		this.resourceName = resourceName;
+		if ( scriptLanguage != null ) this.scriptLanguage = scriptLanguage;
 	}
 
 	@Override
@@ -41,6 +44,11 @@ class ResourceServicesImpl
 	}
 	private String getResourcePath() {
 		return "resources/"+getResourceName();
+	}
+
+	@Override
+	public ExtensionMetadata.ScriptLanguage getScriptLanguage() {
+		return scriptLanguage;
 	}
 
 	@Override

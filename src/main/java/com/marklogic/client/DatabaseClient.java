@@ -24,6 +24,7 @@ import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.extensions.ResourceManager;
+import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.alerting.RuleManager;
 import com.marklogic.client.util.RequestLogger;
@@ -117,6 +118,17 @@ public interface DatabaseClient {
      * @return	the initialized resource manager
      */
     public <T extends ResourceManager> T init(String resourceName, T resourceManager);
+
+    /**
+     * Initializes a manager for a extension resource.
+     * 
+     * @param resourceName	the name of the extension resource
+     * @param resourceManager	the manager for the extension resource
+     * @param scriptLanguage	the script language for the extension resource, either XQUERY (default) or JAVASCRIPT
+     * @return	the initialized resource manager
+     */
+    public <T extends ResourceManager> T init(String resourceName, T resourceManager, 
+	  ExtensionMetadata.ScriptLanguage scriptLanguage);
 
     /**
      * Creates a logger for document and query requests.  To merge the logging output

@@ -17,6 +17,7 @@ package com.marklogic.client.extensions;
 
 import java.util.Iterator;
 
+import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
@@ -39,6 +40,12 @@ public interface ResourceServices {
 	 * @return	the resource name
 	 */
 	public String getResourceName();
+
+	/**
+	 * Returns the script language of the resource.
+	 * @return	the script language
+	 */
+	public ExtensionMetadata.ScriptLanguage getScriptLanguage();
 
 	/**
 	 * Reads resource content by calling a GET service.
