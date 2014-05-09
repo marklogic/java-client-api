@@ -23,10 +23,25 @@ import com.marklogic.client.util.RequestParameters;
  * is optional but recommended.
  */
 public class ExtensionMetadata {
+    /**
+     * The ScriptLanguage enumeration specifies the categories of metadata read from or written to the database.
+     */
+	public enum ScriptLanguage {
+		/** For resource extensions written in xquery. */
+		XQUERY,
+		/** For resource extensions written in javascript. */
+		JAVASCRIPT;
+	}
+	/** Convenience constant to provide something shorter than ExtensionMetadata.ScriptLanguage.XQUERY */
+	public static final ScriptLanguage XQUERY = ScriptLanguage.XQUERY;
+	/** Convenience constant to provide something shorter than ExtensionMetadata.ScriptLanguage.JAVASCRIPT */
+	public static final ScriptLanguage JAVASCRIPT = ScriptLanguage.JAVASCRIPT;
+
 	private String title;
 	private String description;
 	private String provider;
 	private String version;
+	private ScriptLanguage scriptLanguage = XQUERY;
 
 	/**
 	 * Zero-argument constructor.
@@ -93,6 +108,22 @@ public class ExtensionMetadata {
      */
     public void setVersion(String version) {
     	this.version = version;
+    }
+
+	/**
+	 * Returns the script language for this resource extension, either XQUERY (default)
+	 * or JAVASCRIPT.
+	 */
+    public ScriptLanguage getScriptLanguage() {
+        return scriptLanguage;
+    }
+
+	/**
+	 * Specifies the script language for this resource extension, either XQUERY (default)
+	 * or JAVASCRIPT.
+	 */
+    public void setScriptLanguage(ScriptLanguage scriptLanguage) {
+        this.scriptLanguage = scriptLanguage;
     }
 
     /**
