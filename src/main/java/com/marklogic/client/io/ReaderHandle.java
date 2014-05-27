@@ -224,7 +224,7 @@ public class ReaderHandle
 			byteBuf.clear();
 			CoderResult result = encoder.encode(charBuf, byteBuf, false);
 			if (result.isError()) {
-				throw new IOException(result.toString());
+				throw new IOException("Failed during UTF-8 encoding - " + result.toString());
 			}
 			byteBuf.flip();
 			out.write(buf, 0, byteBuf.limit());
