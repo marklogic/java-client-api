@@ -23,8 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 
-import javax.xml.XMLConstants;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -40,7 +38,6 @@ import com.marklogic.client.document.DocumentMetadataPatchBuilder.Cardinality;
 import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.DocumentPatchBuilder.Position;
 import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
@@ -91,23 +88,6 @@ public class JSONDocumentTest {
 		File file = docMgr.read(docId, new FileHandle()).get();
 		readNode = mapper.readTree(file);
 		assertTrue("JSON document mismatch with file", sourceNode.equals(readNode));
-
-		docMgr.write(docId,
-				new StringHandle().with(GenericDocumentTest.metadata).withFormat(Format.XML),
-				new StringHandle().with(content));
-		docText = docMgr.read(docId, new StringHandle()).get();
-		assertNotNull("Read null string for JSON content",docText);
-		readNode = mapper.readTree(docText);
-		assertTrue("Failed to read JSON document as String", sourceNode.equals(readNode));
-
-		String lang = "fr-CA";
-		docMgr.setLanguage(lang);
-		docMgr.write(docId, new StringHandle().with(content));
-
-		XMLDocumentManager xmlMgr = Common.client.newXMLDocumentManager();
-		Document document = xmlMgr.read(docId, new DOMHandle()).get();
-		assertEquals("Failed to set language attribute on JSON", lang,
-				document.getDocumentElement().getAttributeNS(XMLConstants.XML_NS_URI, "lang"));
 	}
 
 	@Test
