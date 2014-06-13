@@ -15,11 +15,14 @@
  */
 package com.marklogic.client.impl;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.FailedRequestException;
@@ -30,6 +33,10 @@ import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentMetadataPatchBuilder;
 import com.marklogic.client.document.DocumentUriTemplate;
+import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentRecord;
+import com.marklogic.client.document.DocumentWriteOperation;
+import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.impl.DocumentMetadataPatchBuilderImpl.DocumentPatchHandleImpl;
 import com.marklogic.client.io.Format;
@@ -39,15 +46,34 @@ import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
+import com.marklogic.client.io.marker.SearchReadHandle;
+import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.util.RequestParameters;
 
 abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends AbstractWriteHandle>
     extends AbstractLoggingManager
     implements DocumentManager<R, W>
 {
+    static final private long DEFAULT_PAGE_LENGTH = 50;
+
 	static final private Logger logger = LoggerFactory.getLogger(DocumentManagerImpl.class);
 
-	final private Set<Metadata> processedMetadata;
+    private boolean isProcessedMetadataModified = false;
+	final private Set<Metadata> processedMetadata = new HashSet<Metadata>() {
+        public boolean add(Metadata e) {
+            isProcessedMetadataModified = true;
+            return super.add(e);
+        }
+    };
+    {
+        processedMetadata.add(Metadata.ALL);
+        // we need to know if the user modifies after us
+        isProcessedMetadataModified = false;
+    }
+        
 
 	private RESTServices          services;
 	private Format                contentFormat;
@@ -55,6 +81,9 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 	private ServerTransform       readTransform;
 	private ServerTransform       writeTransform;
     private String                forestName;
+    private long                  pageLength = DEFAULT_PAGE_LENGTH;
+    private QueryView searchView = QueryView.RESULTS;
+    private Format responseFormat = Format.XML;
 
 	DocumentManagerImpl(RESTServices services, Format contentFormat) {
 		super();
@@ -82,15 +111,6 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     }
 
     // select categories of metadata to read, write, or reset
-	{
-		HashSet<Metadata> metadata = new HashSet<Metadata>();
-		metadata.add(Metadata.ALL);
-		processedMetadata = metadata;
-	}
-	@Override
-    public Set<Metadata> getMetadataCategories() {
-    	return processedMetadata;
-    }
 	@Override
     public void setMetadataCategories(Set<Metadata> categories) {
 		clearMetadataCategories();
@@ -101,6 +121,10 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		clearMetadataCategories();
     	for (Metadata category: categories)
     		processedMetadata.add(category);
+    }
+	@Override
+    public Set<Metadata> getMetadataCategories() {
+    	return processedMetadata;
     }
 	@Override
     public void clearMetadataCategories() {
@@ -250,7 +274,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 	public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction, RequestParameters extraParams)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
 		if (desc == null)
-			throw new IllegalArgumentException("Reading document with null identifier");
+			throw new IllegalArgumentException("Attempt to call read with null DocumentDescriptor");
 
 		if (logger.isInfoEnabled())
 			logger.info("Reading metadata and content for {}", desc.getUri());
@@ -283,6 +307,130 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		// TODO: after response, reset metadata and set flag
 
 		return wasModified ? contentHandle : null;
+	}
+
+	public DocumentPage read(String... uris) {
+		return read(null, null, uris);
+	}
+
+	public DocumentPage read(Transaction transaction, String... uris) {
+		return read(null, transaction, uris);
+	}
+
+	public DocumentPage read(ServerTransform transform, String... uris) {
+		return read(transform, null, uris);
+	}
+
+	public DocumentPage read(ServerTransform transform, Transaction transaction, String... uris) {
+		if (uris == null || uris.length == 0)
+			throw new IllegalArgumentException("Attempt to call read with no uris");
+
+		if (logger.isInfoEnabled())
+			logger.info("Reading metadata and content for multiple uris beginning with {}", uris[0]);
+
+        return services.getBulkDocuments(
+            requestLogger,
+            (transaction == null) ? null : transaction.getTransactionId(),
+            // the default for bulk is no metadata, which differs from the normal default of ALL
+            isProcessedMetadataModified ? processedMetadata : null,
+            responseFormat,
+            null,
+            uris);
+   	}
+
+	public DocumentPage search(QueryDefinition querydef, long start) {
+		return search(querydef, start, null, null);
+	}
+
+	public DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle) {
+		return search(querydef, start, searchHandle, null);
+	}
+
+	public DocumentPage search(QueryDefinition querydef, long start, Transaction transaction) {
+		return search(querydef, start, null, transaction);
+	}
+
+	public DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle, Transaction transaction) {
+
+        if ( searchHandle != null ) {
+            HandleImplementation searchBase = HandleAccessor.checkHandle(searchHandle, "search");
+            if (searchHandle instanceof SearchHandle) {
+                SearchHandle responseHandle = (SearchHandle) searchHandle;
+                responseHandle.setHandleRegistry(getHandleRegistry());
+                responseHandle.setQueryCriteria(querydef);
+            }
+            if ( responseFormat != searchBase.getFormat() ) {
+                throw new UnsupportedOperationException("The format supported by your handle:[" + 
+                    searchBase.getFormat() + "] does not match your setResponseFormat:[" + responseFormat + "]");
+            }
+        }
+
+        String tid = transaction == null ? null : transaction.getTransactionId();
+        // the default for bulk is no metadata, which differs from the normal default of ALL
+        Set<Metadata> metadata = isProcessedMetadataModified ? processedMetadata : null;
+        return services.getBulkDocuments( requestLogger, querydef, start, getPageLength(), 
+            tid, searchHandle, searchView, metadata, responseFormat, null);
+	}
+
+    public long getPageLength() {
+        return pageLength;
+    }
+
+    public void setPageLength(long length) {
+        this.pageLength = length;
+    }
+
+    public QueryView getSearchView() {
+        return searchView;
+    }
+
+    public void setSearchView(QueryView view) {
+        this.searchView = view;
+    }
+
+    public Format getResponseFormat() {
+        return responseFormat;
+    }
+
+    public void setResponseFormat(Format responseFormat) {
+        if ( responseFormat != Format.XML && responseFormat != Format.JSON ) {
+            throw new UnsupportedOperationException("Only XML and JSON are valid response formats.  You specified:[" + 
+                responseFormat + "]");
+        }
+        this.responseFormat = responseFormat;
+    }
+
+	public DocumentWriteSet newWriteSet() {
+		return new DocumentWriteSetImpl();
+	}
+
+	public void write(DocumentWriteSet writeSet) {
+        write(writeSet, null, null);
+	}
+
+	public void write(DocumentWriteSet writeSet, ServerTransform transform) {
+        write(writeSet, transform, null);
+	}
+
+	public void write(DocumentWriteSet writeSet, Transaction transaction) {
+        write(writeSet, null, transaction);
+	}
+
+	public void write(DocumentWriteSet writeSet, ServerTransform transform, Transaction transaction) {
+		JacksonHandle jacksonHandle = new JacksonHandle();
+		jacksonHandle = services.postBulkDocuments(
+            requestLogger,
+            writeSet,
+            (transform != null) ? transform : getWriteTransform(),
+            (transaction == null) ? null : transaction.getTransactionId(),
+			jacksonHandle);
+        JsonNode root = jacksonHandle.get();
+        for (JsonNode item: root.get("documents")) {
+            String uri = item.get("uri").asText();
+            String mimetype = item.get("mime-type").asText();
+            String category = item.get("category").get(0).asText();
+        }
+
 	}
 
 	// shortcut writers

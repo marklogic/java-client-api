@@ -28,6 +28,8 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
+import com.marklogic.client.io.marker.SearchReadHandle;
+import com.marklogic.client.query.QueryDefinition;
 
 /**
  * A Document Manager provides database operations on a document.
@@ -364,6 +366,36 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      */
     public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+
+    public DocumentPage read(String... uris);
+
+    public DocumentPage read(ServerTransform transform, String... uris);
+
+    public DocumentPage read(Transaction transaction, String... uris);
+
+    public DocumentPage read(ServerTransform transform, Transaction transaction, String... uris);
+
+    public DocumentPage search(QueryDefinition querydef, long start);
+
+    public DocumentPage search(QueryDefinition querydef, long start, Transaction transaction);
+
+    public DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle);
+
+    public DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle, Transaction transaction);
+
+    public long getPageLength();
+
+    public void setPageLength(long length);
+
+    public DocumentWriteSet newWriteSet();
+
+    public void write(DocumentWriteSet writeSet);
+
+    public void write(DocumentWriteSet writeSet, ServerTransform transform);
+
+    public void write(DocumentWriteSet writeSet, Transaction transaction);
+
+    public void write(DocumentWriteSet writeSet, ServerTransform transform, Transaction transaction);
 
     /**
      * Writes the document content to the database from an object of an IO class.

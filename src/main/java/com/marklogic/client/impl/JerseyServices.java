@@ -22,6 +22,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -68,6 +69,10 @@ import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.document.ContentDescriptor;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentRecord;
+import com.marklogic.client.document.DocumentWriteOperation;
+import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
@@ -79,6 +84,7 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
+import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.ElementLocator;
@@ -106,6 +112,7 @@ import com.sun.jersey.client.apache4.ApacheHttpClient4;
 import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
 import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
+import com.sun.jersey.core.header.ContentDisposition;
 import com.sun.jersey.multipart.BodyPart;
 import com.sun.jersey.multipart.Boundary;
 import com.sun.jersey.multipart.MultiPart;
@@ -681,6 +688,110 @@ public class JerseyServices implements RESTServices {
 				: entity);
 
 		return true;
+	}
+
+    @Override
+	public DocumentPage getBulkDocuments(RequestLogger reqlog,
+			String transactionId, Set<Metadata> categories, 
+			Format format, RequestParameters extraParams, String... uris)
+			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		boolean hasMetadata = categories != null && categories.size() > 0;
+		JerseyResultIterator iterator = 
+			getBulkDocumentsImpl(reqlog, transactionId, categories, format, extraParams, uris);
+		return convertToDocumentPage(iterator, hasMetadata);
+	}
+
+    @Override
+	public DocumentPage getBulkDocuments(RequestLogger reqlog,
+			QueryDefinition querydef,
+			long start, long pageLength,
+			String transactionId,
+			SearchReadHandle searchHandle, QueryView view,
+            Set<Metadata> categories, Format format, RequestParameters extraParams)
+			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		boolean hasMetadata = categories != null && categories.size() > 0;
+		JerseyResultIterator iterator = 
+			getBulkDocumentsImpl(reqlog, querydef, start, pageLength, transactionId, 
+				searchHandle, view, categories, format, extraParams);
+		return convertToDocumentPage(iterator, hasMetadata);
+	}
+
+	private DocumentPage convertToDocumentPage(JerseyResultIterator iterator, boolean hasMetadata) {
+		ArrayList<DocumentRecord> records = new ArrayList<DocumentRecord>();
+        if ( iterator == null ) {
+            return new DocumentPageImpl(records, 1, 0, 0, 0);
+        }
+		while (iterator.hasNext()) {
+			JerseyResult result = iterator.next();
+			DocumentRecord record;
+			if ( hasMetadata ) {
+				if ( iterator.hasNext() ) {
+					throw new MarkLogicInternalException(
+						"Metadata and content parts should always come in pairs!");
+				}
+				JerseyResult metadata = result;
+				JerseyResult content = iterator.next();
+				record = new JerseyDocumentRecord(content, metadata);
+			} else {
+				JerseyResult content = result;
+				record = new JerseyDocumentRecord(content);
+			}
+			records.add(record);
+		}
+		return new DocumentPageImpl(records, iterator.getStart(), 
+            iterator.getSize(), iterator.getPageSize(), iterator.getTotalSize());
+	}
+
+	private JerseyResultIterator getBulkDocumentsImpl(RequestLogger reqlog,
+			String transactionId, Set<Metadata> categories, 
+			Format format, RequestParameters extraParams, String... uris)
+			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+
+		String path = "documents";
+		RequestParameters params = new RequestParameters();
+		if (format != null)        params.add("format",     format.toString().toLowerCase());
+		for (String uri: uris) {
+			params.add("uri", uri);
+		}
+		return getIteratedResourceImpl(DefaultJerseyResultIterator.class,
+			reqlog, path, params, MultiPartMediaTypes.MULTIPART_MIXED);
+	}
+
+	private JerseyResultIterator getBulkDocumentsImpl(RequestLogger reqlog,
+			QueryDefinition querydef, long start, long pageLength,
+			String transactionId, SearchReadHandle searchHandle, QueryView view,
+            Set<Metadata> categories, Format format, RequestParameters extraParams)
+			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+		if (searchHandle != null && view != null) params.add("view", view.toString().toLowerCase());
+		if (start > 1)             params.add("start",      Long.toString(start));
+		if (pageLength > 0)        params.add("pageLength", Long.toString(pageLength));
+		if (format != null)        params.add("format",     format.toString().toLowerCase());
+		if (transactionId != null) params.add("txid",       transactionId);
+
+		JerseySearchRequest request = 
+			generateSearchRequest(reqlog, querydef, MultiPartMediaTypes.MULTIPART_MIXED, params);
+        ClientResponse response = request.getResponse();
+        if ( response == null ) return null;
+        MultiPart entity = null;
+        if ( searchHandle != null ) {
+            if ( response.hasEntity() ) {
+                entity = response.getEntity(MultiPart.class);
+                if ( entity != null ) {
+                    List<BodyPart> partList = entity.getBodyParts();
+                    if ( partList != null && partList.size() > 0 ) {
+                        BodyPart searchResponsePart = partList.get(0);
+                        HandleImplementation handleBase = HandleAccessor.as(searchHandle);
+
+                        InputStream stream = searchResponsePart.getEntityAs(InputStream.class);
+                        handleBase.receiveContent(stream);
+                        partList = partList.subList(1, partList.size());
+                    }
+                    return makeResults(JerseyServiceResultIterator.class, reqlog, "read", "resource", partList, response);
+                }
+            }
+        }
+        return makeResults(JerseyServiceResultIterator.class, reqlog, "read", "resource", response);
 	}
 
 	private boolean getDocumentImpl(RequestLogger reqlog,
@@ -1582,6 +1693,24 @@ public class JerseyServices implements RESTServices {
 		return null;
 	}
 
+	private Format getHeaderFormat(BodyPart part) {
+		if (part.getHeaders().containsKey("vnd.marklogic.document-format")) {
+			List<String> values = part.getHeaders().get("vnd.marklogic.document-format");
+			if (values != null) {
+				return Format.valueOf(values.get(0).toUpperCase());
+			}
+        } else {
+            ContentDisposition contentDisposition = part.getContentDisposition();
+            if ( contentDisposition != null ) {
+                Map<String, String> parameters = contentDisposition.getParameters();
+                if ( parameters != null && parameters.get("format") != null ) {
+                    return Format.valueOf(parameters.get("format").toUpperCase());
+                }
+            }
+		}
+		return null;
+	}
+
 	private void updateMimetype(ContentDescriptor descriptor,
 			MultivaluedMap<String, String> headers) {
 		updateMimetype(descriptor, getHeaderMimetype(headers));
@@ -1626,6 +1755,14 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 		return ContentDescriptor.UNKNOWN_LENGTH;
+	}
+
+	private String getHeaderUri(ContentDisposition contentDisposition) {
+        if ( contentDisposition != null ) {
+            return contentDisposition.getFileName();
+        }
+		// if it's not found, just return null
+		return null;
 	}
 
 	private void updateVersion(DocumentDescriptor descriptor,
@@ -1726,174 +1863,10 @@ public class JerseyServices implements RESTServices {
 			MultivaluedMap<String, String> params
 	) throws ForbiddenUserException, FailedRequestException {
 
-		String directory = queryDef.getDirectory();
-		if (directory != null) {
-			addEncodedParam(params, "directory", directory);
-		}
+        JerseySearchRequest request = generateSearchRequest(reqlog, queryDef, mimetype, params);
 
-		addEncodedParam(params, "collection", queryDef.getCollections());
-
-		String optionsName = queryDef.getOptionsName();
-		if (optionsName != null && optionsName.length() > 0) {
-			addEncodedParam(params, "options", optionsName);
-		}
-
-		ServerTransform transform = queryDef.getResponseTransform();
-		if (transform != null) {
-			transform.merge(params);
-		}
-
-		WebResource.Builder builder = null;
-		String structure = null;
-		HandleImplementation baseHandle = null;
-
-		if (queryDef instanceof RawQueryDefinition) {
-			if (logger.isDebugEnabled())
-				logger.debug("Raw search");
-
-			StructureWriteHandle handle =
-				((RawQueryDefinition) queryDef).getHandle();
-
-			baseHandle = HandleAccessor.checkHandle(handle, "search");
-
-			Format payloadFormat = baseHandle.getFormat();
-			if (payloadFormat == Format.UNKNOWN)
-				payloadFormat = null;
-			else if (payloadFormat != Format.XML && payloadFormat != Format.JSON)
-				throw new IllegalArgumentException(
-						"Cannot perform raw search for "+payloadFormat.name());
-
-			String payloadMimetype = baseHandle.getMimetype();
-			if (payloadFormat != null) {
-				if (payloadMimetype == null)
-					payloadMimetype = payloadFormat.getDefaultMimetype();
-				params.add("format", payloadFormat.toString().toLowerCase());
-			} else if (payloadMimetype == null) {
-				payloadMimetype = "application/xml";
-			}
-
-			String path = (queryDef instanceof RawQueryByExampleDefinition) ?
-					"qbe" : "search";
-
-			WebResource resource = connection.path(path).queryParams(params);
-			builder = (payloadMimetype != null) ?
-					resource.type(payloadMimetype).accept(mimetype) :
-					resource.accept(mimetype);
-		} else if (queryDef instanceof StringQueryDefinition) {
-			String text = ((StringQueryDefinition) queryDef).getCriteria();
-			if (logger.isDebugEnabled())
-				logger.debug("Searching for {}", text);
-
-			if (text != null) {
-				addEncodedParam(params, "q", text);
-			}
-
-			builder = connection.path("search").queryParams(params)
-				.type("application/xml").accept(mimetype);
-		} else if (queryDef instanceof KeyValueQueryDefinition) {
-			if (logger.isDebugEnabled())
-				logger.debug("Searching for keys/values");
-
-			Map<ValueLocator, String> pairs = ((KeyValueQueryDefinition) queryDef);
-			for (Map.Entry<ValueLocator, String> entry: pairs.entrySet()) {
-				ValueLocator loc = entry.getKey();
-				if (loc instanceof KeyLocator) {
-					addEncodedParam(params, "key", ((KeyLocator) loc).getKey());
-				} else {
-					ElementLocator eloc = (ElementLocator) loc;
-					params.add("element", eloc.getElement().toString());
-					if (eloc.getAttribute() != null) {
-						params.add("attribute", eloc.getAttribute().toString());
-					}
-				}
-				addEncodedParam(params, "value", entry.getValue());
-			}
-
-			builder = connection.path("keyvalue").queryParams(params)
-					.accept(mimetype);
-		} else if (queryDef instanceof StructuredQueryDefinition) {
-			structure = ((StructuredQueryDefinition) queryDef).serialize();
-
-			if (logger.isDebugEnabled())
-				logger.debug("Searching for structure {}", structure);
-
-			builder = connection.path("search").queryParams(params)
-					.type("application/xml").accept(mimetype);
-		} else if (queryDef instanceof DeleteQueryDefinition) {
-			if (logger.isDebugEnabled())
-				logger.debug("Searching for deletes");
-
-			builder = connection.path("search").queryParams(params)
-					.accept(mimetype);
-		} else {
-			throw new UnsupportedOperationException("Cannot search with "
-					+ queryDef.getClass().getName());
-		}
-
-		if (params.containsKey("txid")) {
-			builder = addTransactionCookie(builder, params.getFirst("txid"));
-		}
-
-		ClientResponse response = null;
-		ClientResponse.Status status = null;
-		long startTime = System.currentTimeMillis();
-		int nextDelay = 0;
-		int retry = 0;
-		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
-			if (nextDelay > 0) {
-				try {
-					Thread.sleep(nextDelay);
-				} catch (InterruptedException e) {
-				}
-			}
-
-			if (queryDef instanceof StringQueryDefinition) {
-				response = doGet(builder);
-			} else if (queryDef instanceof KeyValueQueryDefinition) {
-				response = doGet(builder);
-			} else if (queryDef instanceof StructuredQueryDefinition) {
-				response = doPost(reqlog, builder, structure, true);
-			} else if (queryDef instanceof DeleteQueryDefinition) {
-				response = doGet(builder);
-			} else if (queryDef instanceof RawQueryDefinition) {
-				response = doPost(reqlog, builder, baseHandle.sendContent(), true);
-			} else {
-				throw new UnsupportedOperationException("Cannot search with "
-						+ queryDef.getClass().getName());
-			}
-
-			status = response.getClientResponseStatus();
-
-			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
-				if (isFirstRequest())
-					setFirstRequest(false);
-
-				break;
-			}
-
-			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
-			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
-			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
-
-			response.close();
-
-			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
-		}
-		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
-			checkFirstRequest();
-			throw new FailedRequestException(
-					"Service unavailable and maximum retry period elapsed: "+
-						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
-						    " seconds after "+retry+" retries");
-		}
-		if (status == ClientResponse.Status.FORBIDDEN) {
-			throw new ForbiddenUserException("User is not allowed to search",
-					extractErrorFields(response));
-		}
-		if (status != ClientResponse.Status.OK) {
-			throw new FailedRequestException("search failed: "
-					+ status.getReasonPhrase(), extractErrorFields(response));
-		}
+        ClientResponse response = request.getResponse();		
+        if ( response == null ) return null;
 
 		T entity = response.hasEntity() ? response.getEntity(as) : null;
 		if (entity == null || (as != InputStream.class && as != Reader.class))
@@ -1901,6 +1874,208 @@ public class JerseyServices implements RESTServices {
 
 		return entity;
 	}
+
+    private JerseySearchRequest generateSearchRequest(RequestLogger reqlog, QueryDefinition queryDef, 
+            String mimetype, MultivaluedMap<String, String> params) {
+        return new JerseySearchRequest(reqlog, queryDef, mimetype, params);
+    }
+
+    private class JerseySearchRequest {
+        RequestLogger reqlog;
+        QueryDefinition queryDef;
+        String mimetype;
+        MultivaluedMap<String, String> params;
+
+		WebResource.Builder builder = null;
+		String structure = null;
+		HandleImplementation baseHandle = null;
+
+        JerseySearchRequest(RequestLogger reqlog, QueryDefinition queryDef, String mimetype, 
+                MultivaluedMap<String, String> params) {
+            this.reqlog = reqlog;
+            this.queryDef = queryDef;
+            this.mimetype = mimetype;
+            this.params = params != null ? params : new MultivaluedMapImpl();
+            addParams();
+            init();
+        }
+
+        void addParams() {
+            String directory = queryDef.getDirectory();
+            if (directory != null) {
+                addEncodedParam(params, "directory", directory);
+            }
+
+            addEncodedParam(params, "collection", queryDef.getCollections());
+
+            String optionsName = queryDef.getOptionsName();
+            if (optionsName != null && optionsName.length() > 0) {
+                addEncodedParam(params, "options", optionsName);
+            }
+
+            ServerTransform transform = queryDef.getResponseTransform();
+            if (transform != null) {
+                transform.merge(params);
+            }
+        }
+
+        void init() {
+            if (queryDef instanceof RawQueryDefinition) {
+                if (logger.isDebugEnabled())
+                    logger.debug("Raw search");
+
+                StructureWriteHandle handle =
+                    ((RawQueryDefinition) queryDef).getHandle();
+
+                baseHandle = HandleAccessor.checkHandle(handle, "search");
+
+                Format payloadFormat = baseHandle.getFormat();
+                if (payloadFormat == Format.UNKNOWN)
+                    payloadFormat = null;
+                else if (payloadFormat != Format.XML && payloadFormat != Format.JSON)
+                    throw new IllegalArgumentException(
+                            "Cannot perform raw search for "+payloadFormat.name());
+
+                String payloadMimetype = baseHandle.getMimetype();
+                if (payloadFormat != null) {
+                    if (payloadMimetype == null)
+                        payloadMimetype = payloadFormat.getDefaultMimetype();
+                    params.add("format", payloadFormat.toString().toLowerCase());
+                } else if (payloadMimetype == null) {
+                    payloadMimetype = "application/xml";
+                }
+
+                String path = (queryDef instanceof RawQueryByExampleDefinition) ?
+                    "qbe" : "search";
+
+                WebResource resource = connection.path(path).queryParams(params);
+                builder = (payloadMimetype != null) ?
+                    resource.type(payloadMimetype).accept(mimetype) :
+                    resource.accept(mimetype);
+            } else if (queryDef instanceof StringQueryDefinition) {
+                String text = ((StringQueryDefinition) queryDef).getCriteria();
+                if (logger.isDebugEnabled())
+                    logger.debug("Searching for {}", text);
+
+                if (text != null) {
+                    addEncodedParam(params, "q", text);
+                }
+
+                builder = connection.path("search").queryParams(params)
+                    .type("application/xml").accept(mimetype);
+            } else if (queryDef instanceof KeyValueQueryDefinition) {
+                if (logger.isDebugEnabled())
+                    logger.debug("Searching for keys/values");
+
+                Map<ValueLocator, String> pairs = ((KeyValueQueryDefinition) queryDef);
+                for (Map.Entry<ValueLocator, String> entry: pairs.entrySet()) {
+                    ValueLocator loc = entry.getKey();
+                    if (loc instanceof KeyLocator) {
+                        addEncodedParam(params, "key", ((KeyLocator) loc).getKey());
+                    } else {
+                        ElementLocator eloc = (ElementLocator) loc;
+                        params.add("element", eloc.getElement().toString());
+                        if (eloc.getAttribute() != null) {
+                            params.add("attribute", eloc.getAttribute().toString());
+                        }
+                    }
+                    addEncodedParam(params, "value", entry.getValue());
+                }
+
+                builder = connection.path("keyvalue").queryParams(params)
+                    .accept(mimetype);
+            } else if (queryDef instanceof StructuredQueryDefinition) {
+                structure = ((StructuredQueryDefinition) queryDef).serialize();
+
+                if (logger.isDebugEnabled())
+                    logger.debug("Searching for structure {}", structure);
+
+                builder = connection.path("search").queryParams(params)
+                    .type("application/xml").accept(mimetype);
+            } else if (queryDef instanceof DeleteQueryDefinition) {
+                if (logger.isDebugEnabled())
+                    logger.debug("Searching for deletes");
+
+                builder = connection.path("search").queryParams(params)
+                    .accept(mimetype);
+            } else {
+                throw new UnsupportedOperationException("Cannot search with "
+                        + queryDef.getClass().getName());
+            }
+
+            if (params.containsKey("txid")) {
+                builder = addTransactionCookie(builder, params.getFirst("txid"));
+            }
+        }
+
+        ClientResponse getResponse() {
+            ClientResponse response = null;
+            ClientResponse.Status status = null;
+            long startTime = System.currentTimeMillis();
+            int nextDelay = 0;
+            int retry = 0;
+            for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
+                if (nextDelay > 0) {
+                    try {
+                        Thread.sleep(nextDelay);
+                    } catch (InterruptedException e) {
+                    }
+                }
+
+                if (queryDef instanceof StringQueryDefinition) {
+                    response = doGet(builder);
+                } else if (queryDef instanceof KeyValueQueryDefinition) {
+                    response = doGet(builder);
+                } else if (queryDef instanceof StructuredQueryDefinition) {
+                    response = doPost(reqlog, builder, structure, true);
+                } else if (queryDef instanceof DeleteQueryDefinition) {
+                    response = doGet(builder);
+                } else if (queryDef instanceof RawQueryDefinition) {
+                    response = doPost(reqlog, builder, baseHandle.sendContent(), true);
+                } else {
+                    throw new UnsupportedOperationException("Cannot search with "
+                            + queryDef.getClass().getName());
+                }
+
+                status = response.getClientResponseStatus();
+
+                if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+                    if (isFirstRequest())
+                        setFirstRequest(false);
+
+                    break;
+                }
+
+                MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+                String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+                int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+
+                response.close();
+
+                nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
+            }
+            if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+                checkFirstRequest();
+                throw new FailedRequestException(
+                        "Service unavailable and maximum retry period elapsed: "+
+                                Math.round((System.currentTimeMillis() - startTime) / 1000)+
+                                " seconds after "+retry+" retries");
+            }
+            if (status == ClientResponse.Status.NOT_FOUND) {
+				response.close();
+				return null;
+            }
+            if (status == ClientResponse.Status.FORBIDDEN) {
+                throw new ForbiddenUserException("User is not allowed to search",
+                        extractErrorFields(response));
+            }
+            if (status != ClientResponse.Status.OK) {
+                throw new FailedRequestException("search failed: "
+                        + status.getReasonPhrase(), extractErrorFields(response));
+            }
+            return response;
+        }
+    }
 
 	@Override
 	public void deleteSearch(RequestLogger reqlog, DeleteQueryDefinition queryDef,
@@ -2817,6 +2992,13 @@ public class JerseyServices implements RESTServices {
 			String path, RequestParameters params, String... mimetypes)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
+		return getIteratedResourceImpl(JerseyServiceResultIterator.class, reqlog, path, params, mimetypes);
+	}
+
+	private <U extends JerseyResultIterator> U getIteratedResourceImpl(Class<U> clazz, RequestLogger reqlog,
+			String path, RequestParameters params, String... mimetypes)
+			throws ResourceNotFoundException, ForbiddenUserException,
+			FailedRequestException {
 
 		WebResource.Builder builder = makeGetBuilder(path, params, null);
 
@@ -2864,7 +3046,7 @@ public class JerseyServices implements RESTServices {
 		checkStatus(response, status, "read", "resource", path,
 				ResponseStatus.OK_OR_NO_CONTENT);
 
-		return makeResults(reqlog, "read", "resource", response);
+		return makeResults(clazz, reqlog, "read", "resource", response);
 	}
 
 	@Override
@@ -3109,6 +3291,15 @@ public class JerseyServices implements RESTServices {
 			W[] input, R output) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
+		return postResource(reqlog, path, params, input, null, output);
+	}
+
+	@Override
+	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R postResource(
+			RequestLogger reqlog, String path, RequestParameters params,
+			W[] input, Map<String, List>[] headers, R output) throws ResourceNotFoundException,
+			ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException {
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
 				"read");
 
@@ -3129,7 +3320,7 @@ public class JerseyServices implements RESTServices {
 			}
 
 			MultiPart multiPart = new MultiPart();
-			boolean hasStreamingPart = addParts(multiPart, reqlog, input);
+			boolean hasStreamingPart = addParts(multiPart, reqlog, null, input, headers);
 
 			WebResource.Builder builder = makePostBuilder(path, params,
 					multiPart, outputMimetype);
@@ -3178,7 +3369,80 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
+	public void postBulkDocuments(
+			RequestLogger reqlog, DocumentWriteSet writeSet,
+			ServerTransform transform, String transactionId)
+		throws ForbiddenUserException,  FailedRequestException
+	{
+		postBulkDocuments(reqlog, writeSet, transform, transactionId, null);
+	}
+
+	@Override
+	public <R extends AbstractReadHandle> R postBulkDocuments(
+			RequestLogger reqlog, DocumentWriteSet writeSet,
+			ServerTransform transform, String transactionId, R output)
+		throws ForbiddenUserException,  FailedRequestException
+	{
+		ArrayList<AbstractWriteHandle> writeHandles = new ArrayList<AbstractWriteHandle>();
+		ArrayList<Map<String, List>> headerList = new ArrayList<Map<String, List>>();
+		for ( DocumentWriteOperation write: writeSet ) {
+			HandleImplementation metadata =
+				HandleAccessor.checkHandle(write.getMetadata(), "write");
+			HandleImplementation content =
+				HandleAccessor.checkHandle(write.getContent(), "write");
+			MultivaluedMap headers = new MultivaluedMapImpl();
+			if ( metadata != null ) {
+				headers.add("Content-Type", metadata.getMimetype());
+				if ( write.getOperationType() == DocumentWriteOperation.OperationType.METADATA_DEFAULT ) {
+					headers.add("Content-Disposition",
+						ContentDisposition.type("inline").build().toString()
+					);
+				} else {
+					headers.add("Content-Disposition",
+						ContentDisposition
+							.type("attachment")
+							.fileName(write.getUri())
+							.build().toString()
+					);
+				}
+				headerList.add(headers);
+				writeHandles.add(write.getMetadata());
+			}
+			if ( content != null ) {
+				headers.add("Content-Type", content.getMimetype());
+				headers.add("Content-Disposition",
+					ContentDisposition
+						.type("attachment")
+						.fileName(write.getUri())
+						.build().toString()
+				);
+				headerList.add(headers);
+				writeHandles.add(write.getContent());
+			}
+		}
+		RequestParameters params = transform != null ? transform : new RequestParameters();
+		if ( transactionId != null ) params.add("txid", transactionId);
+		return postResource(
+			reqlog,
+			"documents",
+			params, 
+			(AbstractWriteHandle[]) writeHandles.toArray(new AbstractWriteHandle[0]),
+			(Map<String, List>[]) headerList.toArray(new HashMap[0]),
+			output);
+	}
+
+	@Override
 	public ServiceResultIterator postIteratedResource(RequestLogger reqlog,
+			String path, RequestParameters params, AbstractWriteHandle input,
+			String... outputMimetypes) throws ResourceNotFoundException,
+			ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException {
+		return postIteratedResourceImpl(JerseyServiceResultIterator.class,
+			reqlog, path, params, input, outputMimetypes);
+	}
+
+	private <U extends JerseyResultIterator> U postIteratedResourceImpl(
+			Class<U> clazz, RequestLogger reqlog,
 			String path, RequestParameters params, AbstractWriteHandle input,
 			String... outputMimetypes) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
@@ -3242,12 +3506,21 @@ public class JerseyServices implements RESTServices {
 		checkStatus(response, status, "apply", "resource", path,
 				ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
-		return makeResults(reqlog, "apply", "resource", response);
+		return makeResults(clazz, reqlog, "apply", "resource", response);
 	}
 
 	@Override
 	public <W extends AbstractWriteHandle> ServiceResultIterator postIteratedResource(
 			RequestLogger reqlog, String path, RequestParameters params,
+			W[] input, String... outputMimetypes)
+			throws ResourceNotFoundException, ResourceNotResendableException,
+			ForbiddenUserException, FailedRequestException {
+		return postIteratedResourceImpl(JerseyServiceResultIterator.class,
+			reqlog, path, params, input, outputMimetypes);
+	}
+
+	private <W extends AbstractWriteHandle, U extends JerseyResultIterator> U postIteratedResourceImpl(
+			Class<U> clazz, RequestLogger reqlog, String path, RequestParameters params,
 			W[] input, String... outputMimetypes)
 			throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
@@ -3306,7 +3579,7 @@ public class JerseyServices implements RESTServices {
 		checkStatus(response, status, "apply", "resource", path,
 				ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
-		return makeResults(reqlog, "apply", "resource", response);
+		return makeResults(clazz, reqlog, "apply", "resource", response);
 	}
 
 	@Override
@@ -3645,15 +3918,24 @@ public class JerseyServices implements RESTServices {
 
 	private <W extends AbstractWriteHandle> boolean addParts(
 			MultiPart multiPart, RequestLogger reqlog, W[] input) {
-		return addParts(multiPart, reqlog, null, input);
+		return addParts(multiPart, reqlog, null, input, null);
 	}
 
 	private <W extends AbstractWriteHandle> boolean addParts(
 			MultiPart multiPart, RequestLogger reqlog, String[] mimetypes,
 			W[] input) {
+		return addParts(multiPart, reqlog, null, input, null);
+	}
+
+	private <W extends AbstractWriteHandle> boolean addParts(
+			MultiPart multiPart, RequestLogger reqlog, String[] mimetypes,
+			W[] input, Map<String, List>[] headers) {
 		if (mimetypes != null && mimetypes.length != input.length)
 			throw new IllegalArgumentException(
-					"Mismatch between mimetypes and input");
+					"Mismatch between count of mimetypes and input");
+		if (headers != null && headers.length != input.length)
+			throw new IllegalArgumentException(
+					"Mismatch between count of headers and input");
 
 		multiPart.setMediaType(new MediaType("multipart", "mixed"));
 
@@ -3685,6 +3967,10 @@ public class JerseyServices implements RESTServices {
 				else
 					bodyPart = new BodyPart(value, typePart);
 			}
+			if ( headers != null ) {
+                MultivaluedMap mutableHeaders = bodyPart.getHeaders();
+                mutableHeaders.putAll(headers[i]);
+            }
 
 			multiPart = multiPart.bodyPart(bodyPart);
 		}
@@ -3760,22 +4046,43 @@ public class JerseyServices implements RESTServices {
 		return (reqlog != null) ? reqlog.copyContent(entity) : entity;
 	}
 
-	private ServiceResultIterator makeResults(RequestLogger reqlog,
+	private <U extends JerseyResultIterator> U makeResults(
+			Class<U> clazz, RequestLogger reqlog,
 			String operation, String entityType, ClientResponse response) {
-		logRequest(reqlog, "%s for %s", operation, entityType);
-
+        if ( response == null ) return null;
 		MultiPart entity = response.hasEntity() ?
 				response.getEntity(MultiPart.class) : null;
-		if (entity == null)
-			return null;
+        response.close();
+		if (entity == null) return null;
+        return makeResults(clazz, reqlog, operation, entityType, entity.getBodyParts(), response);
+	}
 
-		List<BodyPart> partList = entity.getBodyParts();
-		if (partList == null || partList.size() == 0) {
-			response.close();
-			return null;
+	private <U extends JerseyResultIterator> U makeResults(
+			Class<U> clazz, RequestLogger reqlog,
+			String operation, String entityType, List<BodyPart> partList, ClientResponse response) {
+		logRequest(reqlog, "%s for %s", operation, entityType);
+
+        if ( response == null ) return null;
+		if (partList == null || partList.size() == 0) return null;
+
+		try {
+			java.lang.reflect.Constructor<U> constructor = 
+				clazz.getConstructor(JerseyServices.class, RequestLogger.class, List.class);
+            JerseyResultIterator result = constructor.newInstance(this, reqlog, partList);
+			MultivaluedMap<String, String> headers = response.getHeaders();
+            if (headers.containsKey("vnd.marklogic.start")) {
+                result.setStart(Long.parseLong(headers.get("vnd.marklogic.start").get(0)));
+            }
+            if (headers.containsKey("vnd.marklogic.pageLength")) {
+                result.setPageSize(Long.parseLong(headers.get("vnd.marklogic.pageLength").get(0)));
+            }
+            if (headers.containsKey("vnd.marklogic.result-estimate")) {
+                result.setTotalSize(Long.parseLong(headers.get("vnd.marklogic.result-estimate").get(0)));
+            }
+            return (U) result;
+		} catch (Throwable t) {
+			throw new MarkLogicInternalException("Error instantiating " + clazz.getName(), t);
 		}
-
-		return new JerseyResultIterator(reqlog, response, partList);
 	}
 
 	private boolean isStreaming(Object value) {
@@ -3830,21 +4137,20 @@ public class JerseyServices implements RESTServices {
 		return min + randRetry.nextInt(range);
 	}
 
-	public class JerseyResult implements ServiceResult {
+	public class JerseyResult {
 		private RequestLogger reqlog;
 		private BodyPart part;
 		private boolean extractedHeaders = false;
+		private String uri;
 		private Format format;
 		private String mimetype;
 		private long length;
 
 		public JerseyResult(RequestLogger reqlog, BodyPart part) {
-			super();
 			this.reqlog = reqlog;
 			this.part = part;
 		}
 
-		@Override
 		public <R extends AbstractReadHandle> R getContent(R handle) {
 			if (part == null)
 				throw new IllegalStateException("Content already retrieved");
@@ -3866,19 +4172,20 @@ public class JerseyServices implements RESTServices {
 			return handle;
 		}
 
-		@Override
+		public String getUri() {
+			extractHeaders();
+			return uri;
+		}
 		public Format getFormat() {
 			extractHeaders();
 			return format;
 		}
 
-		@Override
 		public String getMimetype() {
 			extractHeaders();
 			return mimetype;
 		}
 
-		@Override
 		public long getLength() {
 			extractHeaders();
 			return length;
@@ -3888,78 +4195,173 @@ public class JerseyServices implements RESTServices {
 			if (part == null || extractedHeaders)
 				return;
 			MultivaluedMap<String, String> headers = part.getHeaders();
-			format = getHeaderFormat(headers);
+			format = getHeaderFormat(part);
 			mimetype = getHeaderMimetype(headers);
 			length = getHeaderLength(headers);
+			uri = getHeaderUri(part.getContentDisposition());
 			extractedHeaders = true;
 		}
 	}
 
-	public class JerseyResultIterator implements ServiceResultIterator {
+	public class JerseyServiceResult extends JerseyResult implements ServiceResult {
+		public JerseyServiceResult(RequestLogger reqlog, BodyPart part) {
+			super(reqlog, part);
+		}
+	}
+
+	public class JerseyResultIterator<T extends JerseyResult> {
 		private RequestLogger reqlog;
-		private ClientResponse response;
 		private Iterator<BodyPart> partQueue;
+        private Class<T> clazz;
+        private long start = -1;
+        private long size = -1;
+        private long pageSize = -1;
+        private long totalSize = -1;
 
 		public JerseyResultIterator(RequestLogger reqlog,
-				ClientResponse response, List<BodyPart> partList) {
+				List<BodyPart> partList, Class<T> clazz) {
 			super();
-			if (response != null) {
-				if (partList != null && partList.size() > 0) {
-					this.reqlog = reqlog;
-					this.response = response;
-					this.partQueue = new ConcurrentLinkedQueue<BodyPart>(
-							partList).iterator();
-				} else {
-					response.close();
-				}
+            this.clazz = clazz;
+            if (partList != null && partList.size() > 0) {
+                this.reqlog = reqlog;
+                this.partQueue = new ConcurrentLinkedQueue<BodyPart>(
+                        partList).iterator();
 			}
 		}
 
-		@Override
+        public long getStart() {
+            return start;
+        }
+
+        public JerseyResultIterator<T> setStart(long start) {
+            this.start = start;
+            return this;
+        }
+
+        public long getSize() {
+            return size;
+        }
+
+        public JerseyResultIterator<T> setSize(long size) {
+            this.size = new Long(size);
+            return this;
+        }
+
+        public long getPageSize() {
+            return pageSize;
+        }
+
+        public JerseyResultIterator<T> setPageSize(long pageSize) {
+            this.pageSize = pageSize;
+            return this;
+        }
+
+        public long getTotalSize() {
+            return totalSize;
+        }
+
+        public JerseyResultIterator<T> setTotalSize(long totalSize) {
+            this.totalSize = totalSize;
+            return this;
+        }
+
+
 		public boolean hasNext() {
 			if (partQueue == null)
 				return false;
 			boolean hasNext = partQueue.hasNext();
-			if (!partQueue.hasNext())
-				close();
+			if (!partQueue.hasNext()) close();
 			return hasNext;
 		}
 
-		@Override
-		public ServiceResult next() {
+		public T next() {
 			if (partQueue == null)
 				return null;
 
-			ServiceResult result = new JerseyResult(reqlog, partQueue.next());
-			if (!partQueue.hasNext())
-				close();
-
-			return result;
+			try {
+				java.lang.reflect.Constructor<T> constructor = 
+					clazz.getConstructor(JerseyServices.class, RequestLogger.class, BodyPart.class);
+				return constructor.newInstance(new JerseyServices(), reqlog, partQueue.next());
+			} catch (Throwable t) {
+				throw new IllegalStateException("Error instantiating " + clazz.getName());
+			} finally {
+				if (!partQueue.hasNext())
+					close();
+			}
 		}
 
-		@Override
 		public void remove() {
 			if (partQueue == null)
 				return;
 			partQueue.remove();
-			if (!partQueue.hasNext())
-				close();
+			if (!partQueue.hasNext()) close();
 		}
 
-		@Override
 		public void close() {
-			if (response != null) {
-				response.close();
-				response = null;
-			}
 			partQueue = null;
 			reqlog = null;
 		}
 
-		@Override
 		protected void finalize() throws Throwable {
 			close();
 			super.finalize();
+		}
+	}
+
+	public class JerseyServiceResultIterator 
+		extends JerseyResultIterator<JerseyServiceResult>
+		implements ServiceResultIterator
+	{
+		public JerseyServiceResultIterator(RequestLogger reqlog,
+				List<BodyPart> partList) {
+            super(reqlog, partList, JerseyServiceResult.class);
+		}
+	}
+
+	public class DefaultJerseyResultIterator 
+		extends JerseyResultIterator<JerseyResult>
+	{
+		public DefaultJerseyResultIterator(RequestLogger reqlog,
+				List<BodyPart> partList) {
+            super(reqlog, partList, JerseyResult.class);
+		}
+	}
+
+	public class JerseyDocumentRecord implements DocumentRecord {
+		private JerseyResult content;
+		private JerseyResult metadata;
+
+		public JerseyDocumentRecord(JerseyResult content, JerseyResult metadata) {
+			this.content = content;
+			this.metadata = metadata;
+		}
+
+		public JerseyDocumentRecord(JerseyResult content) {
+			this.content = content;
+		}
+
+		public String getUri() {
+			return content.getUri();
+		}
+
+		public Format getFormat() {
+			return content.getFormat();
+		}
+
+		public String getMimetype() {
+			return content.getMimetype();
+		}
+
+		public <T extends DocumentMetadataReadHandle> T getMetadata(T metadataHandle) {
+			if ( metadata == null ) throw new IllegalStateException(
+				"getMetadata called when no metadata is available");
+			return metadata.getContent(metadataHandle);
+		}
+
+		public <T extends AbstractReadHandle> T getContent(T contentHandle) {
+			if ( content == null ) throw new IllegalStateException(
+				"getContent called when no content is available");
+			return content.getContent(contentHandle);
 		}
 	}
 

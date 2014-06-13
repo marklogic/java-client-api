@@ -16,6 +16,8 @@
 package com.marklogic.client.impl;
 
 import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.net.ssl.SSLContext;
@@ -28,15 +30,19 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
+import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
@@ -66,6 +72,21 @@ public interface RESTServices {
 
 	public DocumentDescriptor head(RequestLogger logger, String uri, String transactionId)
 		throws ForbiddenUserException, FailedRequestException;
+
+	public DocumentPage getBulkDocuments(RequestLogger logger, String transactionId,
+			Set<Metadata> categories, Format format, RequestParameters extraParams, String... uris)
+		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+	public DocumentPage getBulkDocuments(RequestLogger logger, QueryDefinition querydef,
+			long start, long pageLength, String transactionId, SearchReadHandle searchHandle, 
+            QueryView view, Set<Metadata> categories, Format format, RequestParameters extraParams)
+		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+
+	public void postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
+			ServerTransform transform, String transactionId)
+		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+	public <T extends AbstractReadHandle> T postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
+			ServerTransform transform, String transactionId, T output)
+		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
 	public void putDocument(RequestLogger logger, DocumentDescriptor desc, String transactionId,
 			Set<Metadata> categories, RequestParameters extraParams,
@@ -156,13 +177,18 @@ public interface RESTServices {
 	public <R extends AbstractReadHandle> R postResource(
 			RequestLogger reqlog, String path, RequestParameters params,
 			AbstractWriteHandle input, R output)
-		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
-			FailedRequestException;
+		throws ResourceNotFoundException, ResourceNotResendableException, 
+            ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R postResource(
 			RequestLogger reqlog, String path, RequestParameters params,
 			W[] input, R output)
-		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
-			FailedRequestException;
+		throws ResourceNotFoundException, ResourceNotResendableException, 
+            ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R postResource(
+			RequestLogger reqlog, String path, RequestParameters params,
+			W[] input, Map<String, List>[] headers, R output)
+		throws ResourceNotFoundException, ResourceNotResendableException, 
+            ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 	public ServiceResultIterator postIteratedResource(
 			RequestLogger reqlog, String path, RequestParameters params,
 			AbstractWriteHandle input, String... outputMimetypes)
