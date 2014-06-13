@@ -28,15 +28,15 @@ import com.marklogic.client.impl.BasicPage;
  **/
 public class PageTest {
 	class TestPage extends BasicPage<Object> {
-		TestPage(Iterable<Object> iterable) {
-			super(iterable);
+		TestPage(Iterable<Object> iterable, long start, long pageSize, long totalSize) {
+			super(iterable, start, pageSize, totalSize);
 		}
 	}
     @Test
     public void testTestPage() {
 		Iterable<Object> iterable = new HashSet<Object>();
 
-		Page<Object> page = new TestPage(iterable).setStart(1).setPageSize(10).setTotalSize(100);
+		Page<Object> page = new TestPage(iterable, 1, 10, 100);
         assertEquals("Unexpected size", 10, page.size());
         assertEquals("Unexpected totalPages", 10, page.getTotalPages());
         assertEquals("Unexpected hasContent", true, page.hasContent());
@@ -45,7 +45,7 @@ public class PageTest {
         assertEquals("Unexpected isFirstPage", true, page.isFirstPage());
         assertEquals("Unexpected isLastPage", false, page.isLastPage());
 
-		page = new TestPage(iterable).setStart(2).setPageSize(10).setTotalSize(100);
+		page = new TestPage(iterable, 2, 10, 100);
         assertEquals("Unexpected size", 10, page.size());
         assertEquals("Unexpected totalPages", 10, page.getTotalPages());
         assertEquals("Unexpected hasContent", true, page.hasContent());
@@ -54,7 +54,7 @@ public class PageTest {
         assertEquals("Unexpected isFirstPage", true, page.isFirstPage());
         assertEquals("Unexpected isLastPage", false, page.isLastPage());
 
-		page = new TestPage(iterable).setStart(10).setPageSize(10).setTotalSize(100);
+		page = new TestPage(iterable, 10, 10, 100);
         assertEquals("Unexpected size", 10, page.size());
         assertEquals("Unexpected totalPages", 10, page.getTotalPages());
         assertEquals("Unexpected hasContent", true, page.hasContent());
@@ -63,7 +63,7 @@ public class PageTest {
         assertEquals("Unexpected isFirstPage", false, page.isFirstPage());
         assertEquals("Unexpected isLastPage", false, page.isLastPage());
 
-		page = new TestPage(iterable).setStart(12).setPageSize(10).setTotalSize(100);
+		page = new TestPage(iterable, 12, 10, 100);
         assertEquals("Unexpected size", 10, page.size());
         assertEquals("Unexpected totalPages", 10, page.getTotalPages());
         assertEquals("Unexpected hasContent", true, page.hasContent());
@@ -72,7 +72,7 @@ public class PageTest {
         assertEquals("Unexpected isFirstPage", false, page.isFirstPage());
         assertEquals("Unexpected isLastPage", false, page.isLastPage());
 
-		page = new TestPage(iterable).setStart(22).setPageSize(20).setTotalSize(100);
+		page = new TestPage(iterable, 22, 20, 100);
         assertEquals("Unexpected size", 20, page.size());
         assertEquals("Unexpected totalPages", 5, page.getTotalPages());
         assertEquals("Unexpected hasContent", true, page.hasContent());
@@ -81,7 +81,7 @@ public class PageTest {
         assertEquals("Unexpected isFirstPage", false, page.isFirstPage());
         assertEquals("Unexpected isLastPage", false, page.isLastPage());
 
-		page = new TestPage(iterable).setStart(18).setPageSize(20).setTotalSize(20);
+		page = new TestPage(iterable, 18, 20, 20);
         assertEquals("Unexpected size", 20, page.size());
         assertEquals("Unexpected totalPages", 1, page.getTotalPages());
         assertEquals("Unexpected hasContent", true, page.hasContent());
@@ -90,7 +90,7 @@ public class PageTest {
         assertEquals("Unexpected isFirstPage", true, page.isFirstPage());
         assertEquals("Unexpected isLastPage", true, page.isLastPage());
 
-		page = new TestPage(iterable).setStart(905).setPageSize(100).setTotalSize(990);
+		page = new TestPage(iterable, 905, 100, 990);
         assertEquals("Unexpected size", 90, page.size());
         assertEquals("Unexpected totalPages", 10, page.getTotalPages());
         assertEquals("Unexpected hasContent", true, page.hasContent());
