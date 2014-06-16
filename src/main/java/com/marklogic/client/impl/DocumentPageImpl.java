@@ -25,8 +25,9 @@ class DocumentPageImpl extends BasicPage<DocumentRecord> implements DocumentPage
     private Iterable<DocumentRecord> iterable;
     private Iterator<DocumentRecord> iterator;
 
-    public DocumentPageImpl(Iterable<DocumentRecord> iterable) {
-        super(iterable);
+    public DocumentPageImpl(Iterable<DocumentRecord> iterable, long start, long size, long pageSize, long totalSize) {
+        super(iterable, start, pageSize, totalSize);
+        this.setSize(size);
         this.iterable = iterable;
         this.iterator = iterable.iterator();
     }
