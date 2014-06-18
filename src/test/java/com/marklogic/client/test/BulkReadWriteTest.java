@@ -19,6 +19,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -39,10 +43,15 @@ import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.JAXBHandle;
 import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
@@ -63,9 +72,12 @@ public class BulkReadWriteTest {
     public static void beforeClass() throws JAXBException {
         Common.connect();
         context = JAXBContext.newInstance(City.class);
+        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "debug");    
     }
     @AfterClass
     public static void afterClass() {
+        cleanUp();
         Common.release();
     }
 
@@ -306,7 +318,7 @@ public class BulkReadWriteTest {
     }
 
     @Test
-    public void testBulkRead() throws IOException, JAXBException {
+    public void testBulkRead() {
         XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 
         DocumentPage page = docMgr.read(DIRECTORY + "1016670.xml", DIRECTORY + "108410.xml", DIRECTORY + "1205733.xml");
@@ -320,7 +332,7 @@ public class BulkReadWriteTest {
     }
 
     @Test
-    public void testBulkSearch() throws IOException, JAXBException {
+    public void testBulkSearch() {
         XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 
         SearchHandle searchHandle = new SearchHandle();
@@ -335,7 +347,37 @@ public class BulkReadWriteTest {
         assertEquals("Failed to find number of records expected", RECORDS_EXPECTED, page.getTotalSize());
         assertEquals("SearchHandle failed to report number of records expected", RECORDS_EXPECTED, searchHandle.getTotalResults());
         assertEquals("SearchHandle failed to report pageLength expected", pageLength, searchHandle.getPageLength());
-        cleanUp();
+    }
+
+    //public void testMixedLoad() {
+    @Test
+    public void testJsonLoad() {
+        JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
+
+        StringHandle doc1 =
+            new StringHandle("{\"animal\": \"dog\", \"says\": \"woof\"}").withFormat(Format.JSON);
+
+        StringHandle doc2 =
+            new StringHandle("{\"animal\": \"cat\", \"says\": \"meow\"}").withFormat(Format.JSON);
+
+        StringHandle doc2Metadata =
+            new StringHandle("{\"quality\" : 2.0}").withFormat(Format.JSON);
+
+        DocumentWriteSet writeSet = docMgr.newWriteSet();
+        writeSet.add("doc1.json", doc1);
+        writeSet.add("doc2.json", doc2Metadata, doc2);
+
+        docMgr.write(writeSet);
+
+        JacksonHandle content1 = new JacksonHandle();
+        docMgr.read("doc1.json", content1);
+        JacksonHandle content2 = new JacksonHandle();
+        DocumentMetadataHandle metadata2 = new DocumentMetadataHandle();
+        docMgr.read("doc2.json", metadata2, content2);
+
+        assertEquals("Failed to read document 1", "dog", content1.get().get("animal").textValue());
+        assertEquals("Failed to read expected quality", 2, metadata2.getQuality());
+        assertEquals("Failed to read document 2", "cat", content2.get().get("animal").textValue());
     }
 
     public void validateRecord(DocumentRecord record) {
@@ -359,6 +401,28 @@ public class BulkReadWriteTest {
             assertEquals("Currency name doesn't match", "Taka", chittagong.getCurrencyName());
         }
     }
+
+    @Test
+    public void testTextLoad() {
+        String docId[] = {"/foo/test/myFoo1.xml","/foo/test/myFoo2.xml","/foo/test/myFoo3.xml"};
+        TextDocumentManager docMgr = Common.client.newTextDocumentManager();
+        DocumentWriteSet writeset =docMgr.newWriteSet();
+
+        writeset.add(docId[0], new StringHandle().with("This is so foo1"));
+        writeset.add(docId[1], new StringHandle().with("This is so foo2"));
+        writeset.add(docId[2], new StringHandle().with("This is so foo3"));
+        docMgr.write(writeset);
+
+        assertEquals("Text document write difference", "This is so foo1", docMgr.read(docId[0], new StringHandle()).get());
+        assertEquals("Text document write difference", "This is so foo2", docMgr.read(docId[1], new StringHandle()).get());
+        assertEquals("Text document write difference", "This is so foo3", docMgr.read(docId[2], new StringHandle()).get());
+
+        docMgr.delete(docId[0]);
+        docMgr.delete(docId[1]);
+        docMgr.delete(docId[2]);
+    }
+
+
 
     private static void addCountry(String line, Map<String, Country> countries) {
         // skip comment lines
@@ -408,10 +472,13 @@ public class BulkReadWriteTest {
         }
     }
 
-    private void cleanUp() {
+    private static void cleanUp() {
         QueryManager queryMgr = Common.client.newQueryManager();
         DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
         deleteQuery.setDirectory("/cities/");
         queryMgr.delete(deleteQuery);
+        JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
+        docMgr.delete("doc1.json");
+        docMgr.delete("doc2.json");
     }
 }
