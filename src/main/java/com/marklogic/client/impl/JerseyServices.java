@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.ws.rs.core.Cookie;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.StreamingOutput;
@@ -1722,9 +1723,9 @@ public class JerseyServices implements RESTServices {
 		}
 	}
 
-	private String getHeaderMimetype(MultivaluedMap<String, String> headers) {
-		if (headers.containsKey("Content-Type")) {
-			List<String> values = headers.get("Content-Type");
+	private String getHeaderMimetype(Map<String, List<String>> headers) {
+		if (headers.containsKey(HttpHeaders.CONTENT_TYPE)) {
+			List<String> values = headers.get(HttpHeaders.CONTENT_TYPE);
 			if (values != null) {
 				String contentType = values.get(0);
 				String mimetype = contentType.contains(";") ? contentType
@@ -1748,8 +1749,8 @@ public class JerseyServices implements RESTServices {
 	}
 
 	private long getHeaderLength(MultivaluedMap<String, String> headers) {
-		if (headers.containsKey("Content-Length")) {
-			List<String> values = headers.get("Content-Length");
+		if (headers.containsKey(HttpHeaders.CONTENT_LENGTH)) {
+			List<String> values = headers.get(HttpHeaders.CONTENT_LENGTH);
 			if (values != null) {
 				return Long.valueOf(values.get(0));
 			}
@@ -3297,14 +3298,13 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R postResource(
 			RequestLogger reqlog, String path, RequestParameters params,
-			W[] input, Map<String, List>[] headers, R output) throws ResourceNotFoundException,
+			W[] input, Map<String, List<String>>[] headers, R output) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
-		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
-				"read");
+		HandleImplementation outputBase = HandleAccessor.checkHandle(output, "read");
 
-		String outputMimetype = outputBase.getMimetype();
-		Class as = outputBase.receiveAs();
+		String outputMimetype = outputBase != null ? outputBase.getMimetype() : null;
+		Class as = outputBase != null ? outputBase.receiveAs() : null;
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -3371,45 +3371,49 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public void postBulkDocuments(
 			RequestLogger reqlog, DocumentWriteSet writeSet,
-			ServerTransform transform, String transactionId)
+			ServerTransform transform, Format defaultFormat, String transactionId)
 		throws ForbiddenUserException,  FailedRequestException
 	{
-		postBulkDocuments(reqlog, writeSet, transform, transactionId, null);
+		postBulkDocuments(reqlog, writeSet, transform, transactionId, defaultFormat, null);
 	}
 
 	@Override
 	public <R extends AbstractReadHandle> R postBulkDocuments(
 			RequestLogger reqlog, DocumentWriteSet writeSet,
-			ServerTransform transform, String transactionId, R output)
+			ServerTransform transform, String transactionId, Format defaultFormat, R output)
 		throws ForbiddenUserException,  FailedRequestException
 	{
 		ArrayList<AbstractWriteHandle> writeHandles = new ArrayList<AbstractWriteHandle>();
-		ArrayList<Map<String, List>> headerList = new ArrayList<Map<String, List>>();
+		ArrayList<Map<String, List<String>>> headerList = new ArrayList<Map<String, List<String>>>();
 		for ( DocumentWriteOperation write: writeSet ) {
 			HandleImplementation metadata =
 				HandleAccessor.checkHandle(write.getMetadata(), "write");
 			HandleImplementation content =
 				HandleAccessor.checkHandle(write.getContent(), "write");
-			MultivaluedMap headers = new MultivaluedMapImpl();
 			if ( metadata != null ) {
-				headers.add("Content-Type", metadata.getMimetype());
+				MultivaluedMap headers = new MultivaluedMapImpl();
+				headers.add(HttpHeaders.CONTENT_TYPE, metadata.getMimetype());
 				if ( write.getOperationType() == DocumentWriteOperation.OperationType.METADATA_DEFAULT ) {
-					headers.add("Content-Disposition",
-						ContentDisposition.type("inline").build().toString()
-					);
+					headers.add("Content-Disposition", "inline; category=metadata");
 				} else {
 					headers.add("Content-Disposition",
 						ContentDisposition
 							.type("attachment")
 							.fileName(write.getUri())
-							.build().toString()
+							.build().toString() +
+						"; category=metadata"
 					);
 				}
 				headerList.add(headers);
 				writeHandles.add(write.getMetadata());
 			}
 			if ( content != null ) {
-				headers.add("Content-Type", content.getMimetype());
+				MultivaluedMap headers = new MultivaluedMapImpl();
+				String mimeType = content.getMimetype();
+				if ( mimeType == null && defaultFormat != null ) {
+					mimeType = defaultFormat.getDefaultMimetype();
+				}
+				headers.add(HttpHeaders.CONTENT_TYPE, mimeType);
 				headers.add("Content-Disposition",
 					ContentDisposition
 						.type("attachment")
@@ -3427,7 +3431,7 @@ public class JerseyServices implements RESTServices {
 			"documents",
 			params, 
 			(AbstractWriteHandle[]) writeHandles.toArray(new AbstractWriteHandle[0]),
-			(Map<String, List>[]) headerList.toArray(new HashMap[0]),
+			(Map<String, List<String>>[]) headerList.toArray(new HashMap[0]),
 			output);
 	}
 
@@ -3929,7 +3933,7 @@ public class JerseyServices implements RESTServices {
 
 	private <W extends AbstractWriteHandle> boolean addParts(
 			MultiPart multiPart, RequestLogger reqlog, String[] mimetypes,
-			W[] input, Map<String, List>[] headers) {
+			W[] input, Map<String, List<String>>[] headers) {
 		if (mimetypes != null && mimetypes.length != input.length)
 			throw new IllegalArgumentException(
 					"Mismatch between count of mimetypes and input");
@@ -3944,12 +3948,18 @@ public class JerseyServices implements RESTServices {
 			AbstractWriteHandle handle = input[i];
 			HandleImplementation handleBase = HandleAccessor.checkHandle(
 					handle, "write");
-			Object value = handleBase.sendContent();
-			String inputMimetype = (mimetypes != null) ? mimetypes[i]
-					: handleBase.getMimetype();
 
 			if (!hasStreamingPart)
 				hasStreamingPart = !handleBase.isResendable();
+
+			Object value = handleBase.sendContent();
+
+			String inputMimetype = null;
+			if ( mimetypes != null ) inputMimetype = mimetypes[i];
+			if ( inputMimetype == null && headers != null ) {
+				inputMimetype = getHeaderMimetype(headers[i]);
+			}
+			if ( inputMimetype == null ) inputMimetype = handleBase.getMimetype();
 
 			String[] typeParts = (inputMimetype != null && inputMimetype
 					.contains("/")) ? inputMimetype.split("/", 2) : null;
@@ -4737,4 +4747,5 @@ public class JerseyServices implements RESTServices {
 		
 		return entity;
 	}
+
 }

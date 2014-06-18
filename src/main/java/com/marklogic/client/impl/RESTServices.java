@@ -82,10 +82,10 @@ public interface RESTServices {
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
 	public void postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
-			ServerTransform transform, String transactionId)
+			ServerTransform transform, Format defaultFormat, String transactionId)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 	public <T extends AbstractReadHandle> T postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
-			ServerTransform transform, String transactionId, T output)
+			ServerTransform transform, String transactionId, Format defaultFormat, T output)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
 	public void putDocument(RequestLogger logger, DocumentDescriptor desc, String transactionId,
@@ -186,7 +186,7 @@ public interface RESTServices {
             ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R postResource(
 			RequestLogger reqlog, String path, RequestParameters params,
-			W[] input, Map<String, List>[] headers, R output)
+			W[] input, Map<String, List<String>>[] headers, R output)
 		throws ResourceNotFoundException, ResourceNotResendableException, 
             ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 	public ServiceResultIterator postIteratedResource(

@@ -417,20 +417,14 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 	}
 
 	public void write(DocumentWriteSet writeSet, ServerTransform transform, Transaction transaction) {
-		JacksonHandle jacksonHandle = new JacksonHandle();
-		jacksonHandle = services.postBulkDocuments(
+		Format defaultFormat = contentFormat;
+		services.postBulkDocuments(
             requestLogger,
             writeSet,
             (transform != null) ? transform : getWriteTransform(),
             (transaction == null) ? null : transaction.getTransactionId(),
-			jacksonHandle);
-        JsonNode root = jacksonHandle.get();
-        for (JsonNode item: root.get("documents")) {
-            String uri = item.get("uri").asText();
-            String mimetype = item.get("mime-type").asText();
-            String category = item.get("category").get(0).asText();
-        }
-
+			defaultFormat,
+			null);
 	}
 
 	// shortcut writers
