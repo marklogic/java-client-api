@@ -55,17 +55,18 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.pojo.annotation.Id;
 
 /** Loads data from cities15000.txt which contains every city above 15000 people, and adds
  * data from countryInfo.txt.
  **/
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BulkReadWriteTest {
-    private static int BATCH_SIZE = 100;
-    private static String DIRECTORY = "/cities/";
-    private static String COUNTRIES_FILE = "countryInfo.txt";
-    private static String CITIES_FILE = "cities_above_300K.txt";
-    private static int RECORDS_EXPECTED = 1363;
+    private static final int BATCH_SIZE = 100;
+    static final String DIRECTORY = "/cities/";
+    private static final String COUNTRIES_FILE = "countryInfo.txt";
+    private static final String CITIES_FILE = "cities_above_300K.txt";
+    static final int RECORDS_EXPECTED = 1363;
     private static JAXBContext context = null;
 
     @BeforeClass
@@ -146,6 +147,7 @@ public class BulkReadWriteTest {
         private long population;
         private int elevation;
 
+        @Id
         public int getGeoNameId() {
             return geoNameId;
         }
@@ -264,16 +266,44 @@ public class BulkReadWriteTest {
         }
     }
 
-    @Test
-    public void testBulkLoad() throws IOException, JAXBException {
-        // register the POJO class
-        DatabaseClientFactory.getHandleRegistry().register(
-            JAXBHandle.newFactory(City.class)
-        );
-        XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+    interface CityWriter {
+        public void addCity(City city);
+        public void finishBatch();
+        public void setNumRecords(int numWritten);
+    }
 
-        JAXBContext context = JAXBContext.newInstance(City.class);
+    private class BulkCityWriter implements CityWriter {
+        private XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+        private JAXBContext context;
+        private DocumentWriteSet writeSet = docMgr.newWriteSet();
 
+        BulkCityWriter() throws JAXBException {
+            // register the POJO class
+            DatabaseClientFactory.getHandleRegistry().register(
+                JAXBHandle.newFactory(City.class)
+            );
+
+            context = JAXBContext.newInstance(City.class);
+        }
+
+        public void addCity(City city) {
+            JAXBHandle<City> handle = new JAXBHandle<City>(context);
+            // set the handle to the POJO instance
+            handle.set(city);
+            writeSet.add( DIRECTORY + city.getGeoNameId() + ".xml", handle );
+        }
+
+        public void finishBatch() {
+            docMgr.write(writeSet);
+            writeSet = docMgr.newWriteSet();
+        }
+
+        public void setNumRecords(int numWritten) {
+            assertEquals("Number of records not expected", numWritten, RECORDS_EXPECTED);
+        }
+    }
+
+    static void loadCities(CityWriter cityWriter) throws Exception {
         // load all the countries into a HashMap (this isn't the big data set)
         // we'll attach country info to each city (that's the big data set)
         Map<String, Country> countries = new HashMap<String, Country>();
@@ -286,35 +316,34 @@ public class BulkReadWriteTest {
         countryReader.close();
 
         // write batches of cities combined with their country info
-        DocumentWriteSet writeSet = docMgr.newWriteSet();
-        System.out.println(BulkReadWriteTest.class.getClassLoader().getResourceAsStream(CITIES_FILE));
+        System.out.println(BulkReadWriteTest.class.getClassLoader().getResource(CITIES_FILE));
         BufferedReader cityReader = new BufferedReader(Common.testFileToReader(CITIES_FILE));
         line = null;
-        long numWritten = 0;
+        int numWritten = 0;
         while ((line = cityReader.readLine()) != null ) {
 
             // instantiate the POJO for this city
             City city = newCity(line, countries);
-
-            // set the handle to the POJO instance
-            JAXBHandle<City> handle = new JAXBHandle<City>(context);
-            handle.set(city);
-            writeSet.add( DIRECTORY + city.getGeoNameId() + ".xml", handle );
+            // let the implementation handle writing the city
+            cityWriter.addCity(city);
 
             // when we have a full batch, write it out
             if ( ++numWritten % BATCH_SIZE == 0 ) {
-                docMgr.write(writeSet);
-                writeSet = docMgr.newWriteSet();
+                cityWriter.finishBatch();
             }
         }
         // if there are any leftovers, let's write this last batch
         if ( numWritten % BATCH_SIZE > 0 ) {
-            docMgr.write(writeSet);
+            cityWriter.finishBatch();
         }
+        cityWriter.setNumRecords(numWritten);
         cityReader.close();
+    }
         
 
-        assertEquals("Number of records not expected", numWritten, RECORDS_EXPECTED);
+    @Test
+    public void testBulkLoad() throws IOException, Exception {
+        loadCities(new BulkCityWriter());
     }
 
     @Test
@@ -380,7 +409,7 @@ public class BulkReadWriteTest {
         assertEquals("Failed to read document 2", "cat", content2.get().get("animal").textValue());
     }
 
-    public void validateRecord(DocumentRecord record) {
+    private void validateRecord(DocumentRecord record) {
         JAXBHandle<City> handle = new JAXBHandle<City>(context);
         assertNotNull("DocumentRecord should never be null", record);
         assertNotNull("Document uri should never be null", record.getUri());
@@ -392,14 +421,18 @@ public class BulkReadWriteTest {
         */
         if ( record.getUri().equals(DIRECTORY + "1205733.xml") ) {
             City chittagong = record.getContent(handle).get();
-            assertEquals("City name doesn't match", "Chittagong", chittagong.getName());
-            assertEquals("City latitude doesn't match", 22.3384, chittagong.getLatitude(), 0);
-            assertEquals("City longitude doesn't match", 91.83168, chittagong.getLongitude(), 0);
-            assertEquals("City population doesn't match", 3920222, chittagong.getPopulation());
-            assertEquals("City elevation doesn't match", 15, chittagong.getElevation());
-            assertEquals("Currency code doesn't match", "BDT", chittagong.getCurrencyCode());
-            assertEquals("Currency name doesn't match", "Taka", chittagong.getCurrencyName());
+            validateChittagong(chittagong);
         }
+    }
+
+    public static void validateChittagong(City chittagong) {
+        assertEquals("City name doesn't match", "Chittagong", chittagong.getName());
+        assertEquals("City latitude doesn't match", 22.3384, chittagong.getLatitude(), 0);
+        assertEquals("City longitude doesn't match", 91.83168, chittagong.getLongitude(), 0);
+        assertEquals("City population doesn't match", 3920222, chittagong.getPopulation());
+        assertEquals("City elevation doesn't match", 15, chittagong.getElevation());
+        assertEquals("Currency code doesn't match", "BDT", chittagong.getCurrencyCode());
+        assertEquals("Currency name doesn't match", "Taka", chittagong.getCurrencyName());
     }
 
     @Test
@@ -423,7 +456,6 @@ public class BulkReadWriteTest {
     }
 
 
-
     private static void addCountry(String line, Map<String, Country> countries) {
         // skip comment lines
         if ( line.startsWith("#") ) return;
@@ -440,11 +472,11 @@ public class BulkReadWriteTest {
         );
     }
 
-    private static Country getCountry(String isoCode, Map<String, Country> countries) {
+    public static Country getCountry(String isoCode, Map<String, Country> countries) {
         return countries.get(isoCode);
     }
 
-    private static City newCity(String line, Map<String, Country> countries) {
+    public static City newCity(String line, Map<String, Country> countries) {
         String[] fields = line.split("	");
         try {
             City city = new City()
@@ -472,7 +504,7 @@ public class BulkReadWriteTest {
         }
     }
 
-    private static void cleanUp() {
+    public static void cleanUp() {
         QueryManager queryMgr = Common.client.newQueryManager();
         DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
         deleteQuery.setDirectory("/cities/");
