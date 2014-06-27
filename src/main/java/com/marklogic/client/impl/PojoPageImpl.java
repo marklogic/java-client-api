@@ -36,4 +36,9 @@ public class PojoPageImpl<T> extends BasicPage<T> implements PojoPage<T>, Iterat
     public T next() {
         return docPage.nextContent(new JacksonPojoHandle<T>(entityClass)).get();
     }
+
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException();
+    }
 }
