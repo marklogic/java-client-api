@@ -390,7 +390,7 @@ public class BulkReadWriteTest {
             new StringHandle("{\"animal\": \"cat\", \"says\": \"meow\"}").withFormat(Format.JSON);
 
         StringHandle doc2Metadata =
-            new StringHandle("{\"quality\" : 2.0}").withFormat(Format.JSON);
+            new StringHandle("{\"quality\" : 2}").withFormat(Format.JSON);
 
         DocumentWriteSet writeSet = docMgr.newWriteSet();
         writeSet.add("doc1.json", doc1);
