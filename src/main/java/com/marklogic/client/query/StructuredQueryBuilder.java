@@ -146,9 +146,9 @@ public class StructuredQueryBuilder {
     public interface Field extends RangeIndex, TextIndex {
     }
     /**
-     * A JSONKey represents a key in JSON database documents.
+     * A JSONProperty represents a key in JSON database documents.
      */
-    public interface JSONKey extends ContainerIndex, RangeIndex, TextIndex {
+    public interface JSONProperty extends Element, ContainerIndex, RangeIndex, TextIndex {
     }
     /**
      * A PathIndex represents an index defined with an XPath
@@ -614,8 +614,8 @@ public class StructuredQueryBuilder {
      * @param name	the name of the JSON key
      * @return	the identifier for the JSON key
      */
-    public JSONKey jsonKey(String name) {
-    	return new JSONKeyImpl(name);
+    public JSONProperty jsonProperty(String name) {
+    	return new JSONPropertyImpl(name);
     }
     /**
      * Identifies a path index to match with a query.
@@ -1814,14 +1814,14 @@ public class StructuredQueryBuilder {
         	serializer.writeEndElement();
         }
     }
-    class JSONKeyImpl extends IndexImpl implements JSONKey {
+    class JSONPropertyImpl extends IndexImpl implements JSONProperty {
     	String name;
-    	JSONKeyImpl(String name) {
+    	JSONPropertyImpl(String name) {
     		this.name = name;
     	}
         @Override
         void innerSerialize(XMLStreamWriter serializer) throws Exception {
-    		writeText(serializer, "json-key", name);
+    		writeText(serializer, "json-property", name);
         }
     }
     class PathIndexImpl extends IndexImpl implements PathIndex {

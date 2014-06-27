@@ -30,6 +30,7 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.QueryManager.QueryView;
 
 /**
  * A Document Manager provides database operations on a document.
@@ -386,6 +387,14 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
     public long getPageLength();
 
     public void setPageLength(long length);
+
+    public Format getResponseFormat();
+
+    public void setResponseFormat(Format format);
+
+    public QueryView getSearchView();
+
+    public void setSearchView(QueryView view);
 
     public DocumentWriteSet newWriteSet();
 
