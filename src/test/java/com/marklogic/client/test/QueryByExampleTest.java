@@ -35,20 +35,20 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
 
 public class QueryByExampleTest {
-	@BeforeClass
-	public static void beforeClass() {
-		Common.connectAdmin();
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "debug");    
+    @BeforeClass
+    public static void beforeClass() {
+        Common.connectAdmin();
+        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "debug");    
         setupData();
-	}
+    }
 
-	@AfterClass
-	public static void afterClass() {
-		Common.release();
-	}
+    @AfterClass
+    public static void afterClass() {
+        Common.release();
+    }
 
-	@Test
+    @Test
     public void jsonQbe() {
         JSONDocumentManager jdm = Common.client.newJSONDocumentManager();
         QueryManager qm = Common.client.newQueryManager();
@@ -62,15 +62,10 @@ public class QueryByExampleTest {
         System.out.println(report.toString());
 
         DocumentPage documents = jdm.search(query, 1);
-        while (documents.hasNext()) {
-            DocumentRecord document = documents.next();
-            System.out.print(document.getUri() + ": ");
-            StringHandle content = document.getContent(new StringHandle());
-            System.out.println(content.toString());
-        }
+        assertEquals("6 json documents should have matched", documents.getTotalSize(), 6);
     }
 
-	@Test
+    @Test
     public void xmlQbe() {
         XMLDocumentManager xdm = Common.client.newXMLDocumentManager();
         QueryManager qm = Common.client.newQueryManager();
@@ -87,12 +82,7 @@ public class QueryByExampleTest {
         System.out.println(report.toString());
 
         DocumentPage documents = xdm.search(query, 1);
-        while (documents.hasNext()) {
-            DocumentRecord document = documents.next();
-            System.out.println(document.getUri() + ": ");
-            StringHandle content = document.getContent(new StringHandle());
-            System.out.println(content.toString());
-        }
+        assertEquals("No XML documents should have matched", documents.getTotalSize(), 0);
     }
 
     public static void setupData() {

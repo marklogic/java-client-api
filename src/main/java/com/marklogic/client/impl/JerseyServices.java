@@ -1941,7 +1941,8 @@ public class JerseyServices implements RESTServices {
                 if (payloadFormat != null) {
                     if (payloadMimetype == null)
                         payloadMimetype = payloadFormat.getDefaultMimetype();
-                    params.add("format", payloadFormat.toString().toLowerCase());
+                    if ( params.get("format") == null ) 
+                        params.add("format", payloadFormat.toString().toLowerCase());
                 } else if (payloadMimetype == null) {
                     payloadMimetype = "application/xml";
                 }
