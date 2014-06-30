@@ -1,0 +1,133 @@
+/*
+ * Copyright 2013-2014 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.marklogic.client.test;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentRecord;
+import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.RawQueryByExampleDefinition;
+
+public class QueryByExampleTest {
+	@BeforeClass
+	public static void beforeClass() {
+		Common.connectAdmin();
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "debug");    
+        setupData();
+	}
+
+	@AfterClass
+	public static void afterClass() {
+		Common.release();
+	}
+
+	@Test
+    public void jsonQbe() {
+        JSONDocumentManager jdm = Common.client.newJSONDocumentManager();
+        QueryManager qm = Common.client.newQueryManager();
+        String queryAsString = "{ \"$query\": { \"kind\": \"bird\" }    }";
+        StringHandle handle = new StringHandle();
+        handle.withFormat(Format.JSON).set(queryAsString);      
+        RawQueryByExampleDefinition query = 
+                qm.newRawQueryByExampleDefinition(handle);
+
+        StringHandle report = qm.validate(query, new StringHandle());
+        System.out.println(report.toString());
+
+        DocumentPage documents = jdm.search(query, 1);
+        while (documents.hasNext()) {
+            DocumentRecord document = documents.next();
+            System.out.print(document.getUri() + ": ");
+            StringHandle content = document.getContent(new StringHandle());
+            System.out.println(content.toString());
+        }
+    }
+
+	@Test
+    public void xmlQbe() {
+        XMLDocumentManager xdm = Common.client.newXMLDocumentManager();
+        QueryManager qm = Common.client.newQueryManager();
+        String queryAsString = 
+            "<q:qbe xmlns:q='http://marklogic.com/appservices/querybyexample'>"+
+                "<q:query>" +
+                  "<kind>bird</kind>" +
+                "</q:query>" +
+              "</q:qbe>";
+        RawQueryByExampleDefinition query = 
+                qm.newRawQueryByExampleDefinition(new StringHandle(queryAsString));
+
+        StringHandle report = qm.validate(query, new StringHandle());
+        System.out.println(report.toString());
+
+        DocumentPage documents = xdm.search(query, 1);
+        while (documents.hasNext()) {
+            DocumentRecord document = documents.next();
+            System.out.println(document.getUri() + ": ");
+            StringHandle content = document.getContent(new StringHandle());
+            System.out.println(content.toString());
+        }
+    }
+
+    public static void setupData() {
+        JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
+        DocumentWriteSet writeSet = docMgr.newWriteSet();
+        String[] animals = new String[] {
+            "{ \"name\": \"aardvark\",  \"kind\": \"mammal\" }",
+            "{ \"name\": \"badger\",    \"kind\": \"mammal\" }",
+            "{ \"name\": \"camel\",     \"kind\": \"mammal\" }",
+            "{ \"name\": \"duck\",      \"kind\": \"bird\" }",
+            "{ \"name\": \"emu\",       \"kind\": \"bird\" }",
+            "{ \"name\": \"fox\",       \"kind\": \"mammal\" }",
+            "{ \"name\": \"goose\",     \"kind\": \"bird\" }",
+            "{ \"name\": \"hare\",      \"kind\": \"mammal\" }",
+            "{ \"name\": \"ibex\",      \"kind\": \"bird\" }",
+            "{ \"name\": \"jaguar\",    \"kind\": \"mammal\" }",
+            "{ \"name\": \"kangaroo\",  \"kind\": \"marsupial\" }",
+            "{ \"name\": \"lemur\",     \"kind\": \"mammal\" }",
+            "{ \"name\": \"moose\",     \"kind\": \"mammal\" }",
+            "{ \"name\": \"nighthawk\", \"kind\": \"bird\" }",
+            "{ \"name\": \"ocelot\",    \"kind\": \"mammal\" }",
+            "{ \"name\": \"panda\",     \"kind\": \"mammal\" }",
+            "{ \"name\": \"rhino\",     \"kind\": \"mammal\" }",
+            "{ \"name\": \"snake\",     \"kind\": \"reptile\" }",
+            "{ \"name\": \"turtle\",    \"kind\": \"reptile\" }",
+            "{ \"name\": \"urial\",     \"kind\": \"mammal\" }",
+            "{ \"name\": \"vulture\",   \"kind\": \"bird\" }",
+            "{ \"name\": \"wallaby\",   \"kind\": \"marsupial\" }",
+            "{ \"name\": \"yak\",       \"kind\": \"mammal\" }",
+            "{ \"name\": \"zebra\",     \"kind\": \"mammal\" }"
+        };
+        for ( int i=0; i < animals.length; i++ ) {
+            String animal = animals[i];
+            writeSet.add( "/animals/" + i + ".json", new StringHandle(animal).withFormat(Format.JSON));
+        }
+        docMgr.write(writeSet);
+    }
+}
