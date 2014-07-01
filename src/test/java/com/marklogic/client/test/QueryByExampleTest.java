@@ -29,8 +29,12 @@ import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
 
@@ -39,12 +43,12 @@ public class QueryByExampleTest {
     public static void beforeClass() {
         Common.connectAdmin();
         //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "debug");    
         setupData();
     }
 
     @AfterClass
     public static void afterClass() {
+        cleanUpData();
         Common.release();
     }
 
@@ -61,7 +65,17 @@ public class QueryByExampleTest {
         StringHandle report = qm.validate(query, new StringHandle());
         System.out.println(report.toString());
 
+        SearchHandle results = qm.search(query, new SearchHandle());
+        assertEquals("6 json results should have matched", results.getTotalResults(), 6);
+        
         DocumentPage documents = jdm.search(query, 1);
+        assertEquals("6 json documents should have matched", documents.getTotalSize(), 6);
+        
+        documents = jdm.search(query, 1, new JacksonHandle());
+        assertEquals("6 json documents should have matched", documents.getTotalSize(), 6);
+        
+        jdm.setResponseFormat(Format.XML);
+        documents = jdm.search(query, 1, new SearchHandle());
         assertEquals("6 json documents should have matched", documents.getTotalSize(), 6);
     }
 
@@ -81,7 +95,13 @@ public class QueryByExampleTest {
         StringHandle report = qm.validate(query, new StringHandle());
         System.out.println(report.toString());
 
+        SearchHandle results = qm.search(query, new SearchHandle());
+        assertEquals("No XML results should have matched", results.getTotalResults(), 0);
+
         DocumentPage documents = xdm.search(query, 1);
+        assertEquals("No XML documents should have matched", documents.getTotalSize(), 0);
+
+        documents = xdm.search(query, 1, new DOMHandle());
         assertEquals("No XML documents should have matched", documents.getTotalSize(), 0);
     }
 
@@ -119,5 +139,12 @@ public class QueryByExampleTest {
             writeSet.add( "/animals/" + i + ".json", new StringHandle(animal).withFormat(Format.JSON));
         }
         docMgr.write(writeSet);
+    }
+
+    public static void cleanUpData() {
+        QueryManager qm = Common.client.newQueryManager();
+        DeleteQueryDefinition deleteQuery = qm.newDeleteDefinition();
+        deleteQuery.setDirectory("/animals/");
+        qm.delete(deleteQuery);
     }
 }
