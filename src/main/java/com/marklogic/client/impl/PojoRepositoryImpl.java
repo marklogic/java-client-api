@@ -19,6 +19,9 @@ import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
@@ -73,6 +76,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     public void write(T entity, Transaction transaction, String... collections) {
         if ( entity == null ) return;
         JacksonPojoHandle contentHandle = new JacksonPojoHandle(entity);
+        contentHandle.getMapper().enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT); 
         DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
         metadataHandle = metadataHandle.withCollections(entityClass.getName());
         if ( collections != null && collections.length > 0 ) {
