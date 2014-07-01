@@ -66,17 +66,18 @@ public abstract class JacksonBaseHandle
         return mapper;
     }
 
-    /**
-     * Restricts the format to JSON.
-     */
-    @Override
-    public void setFormat(Format format) {
-        if (format != Format.JSON) {
-            throw new IllegalArgumentException(
-                    "JacksonHandle supports the JSON format only");
-        }
-        super.setFormat(Format.JSON);
-    }
+	/**
+	 * Enables clients to use any mapper, including databinding mappers for formats other than JSON.
+	 * Use at your own risk!  Note that you may want to configure your mapper as we do to not close
+	 * streams which we may need to reuse if we have to resend a network request:
+	 * <code>
+     *      mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+     *      mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
+	 * </code>
+	 **/
+	public void setMapper(ObjectMapper mapper) {
+		this.mapper = mapper;
+	}
 
     @Override
     public byte[] toBuffer() {
