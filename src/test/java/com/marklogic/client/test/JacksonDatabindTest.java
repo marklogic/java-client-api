@@ -85,7 +85,7 @@ public class JacksonDatabindTest {
             JacksonPojoHandle handle = new JacksonPojoHandle(city);
             // demonstrate our ability to set advanced configuration on the mapper
             // in this case, we're saying wrap our serialization with the name of the pojo class
-		    handle.getMapper().enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT); 
+            handle.getMapper().enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT); 
             writeSet.add(DIRECTORY + "/jsonCities/" + city.getGeoNameId() + ".json", handle);
             numCities++;
         }
@@ -127,7 +127,7 @@ public class JacksonDatabindTest {
             if ( numCities >= MAX_TO_WRITE ) return;
             JacksonPojoHandle handle = new JacksonPojoHandle(city);
             // NOTICE: We've set the mapper to an XmlMapper, showing the versitility of Jackson
-		    handle.setMapper(mapper);
+            handle.setMapper(mapper);
             handle.setFormat(Format.XML);
             writeSet.add(DIRECTORY + "/xmlCities/" + city.getGeoNameId() + ".xml", handle);
             numCities++;
