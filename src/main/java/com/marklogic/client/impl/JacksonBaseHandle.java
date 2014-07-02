@@ -71,27 +71,27 @@ public abstract class JacksonBaseHandle<T>
         return mapper;
     }
 
-	/**
-	 * Enables clients to use any mapper, including databinding mappers for formats other than JSON.
-	 * Use at your own risk!  Note that you may want to configure your mapper as we do to not close
-	 * streams which we may need to reuse if we have to resend a network request:
-	 * <code>
+    /**
+     * Enables clients to use any mapper, including databinding mappers for formats other than JSON.
+     * Use at your own risk!  Note that you may want to configure your mapper as we do to not close
+     * streams which we may need to reuse if we have to resend a network request:
+     * <code>
      *      mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
      *      mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
-	 * </code>
-	 **/
-	public void setMapper(ObjectMapper mapper) {
-		this.mapper = mapper;
-	}
+     * </code>
+     **/
+    public void setMapper(ObjectMapper mapper) {
+        this.mapper = mapper;
+    }
 
     public abstract void set(T content);
-	@Override
-	public void fromBuffer(byte[] buffer) {
-		if (buffer == null || buffer.length == 0)
-			set(null);
-		else
-			receiveContent(new ByteArrayInputStream(buffer));
-	}
+    @Override
+    public void fromBuffer(byte[] buffer) {
+        if (buffer == null || buffer.length == 0)
+            set(null);
+        else
+            receiveContent(new ByteArrayInputStream(buffer));
+    }
     @Override
     public byte[] toBuffer() {
         try {
