@@ -37,7 +37,7 @@ import com.marklogic.client.impl.JacksonBaseHandle;
  * writing JSON documents, JSON structured search, and other JSON input and output.  
  */
 public class JacksonHandle
-		extends JacksonBaseHandle
+		extends JacksonBaseHandle<JsonNode>
 		implements ContentHandle<JsonNode>
 {
 	private JsonNode content;
@@ -83,6 +83,17 @@ public class JacksonHandle
 	}
 
 	/**
+	 * Specifies the format of the content and returns the handle
+	 * as a fluent convenience.
+	 * @param format	the format of the content
+	 * @return	this handle
+	 */
+	public JacksonHandle withFormat(Format format) {
+		setFormat(format);
+		return this;
+	}
+
+	/**
 	 * Returns the root node of the JSON tree.
 	 * @return	the JSON root node.
 	 */
@@ -108,13 +119,6 @@ public class JacksonHandle
 		return this;
 	}
 
-	@Override
-	public void fromBuffer(byte[] buffer) {
-		if (buffer == null || buffer.length == 0)
-			set(null);
-		else
-			receiveContent(new ByteArrayInputStream(buffer));
-	}
 	@Override
 	protected void receiveContent(InputStream content) {
 		if (content == null)

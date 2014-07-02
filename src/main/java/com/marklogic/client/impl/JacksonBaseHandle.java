@@ -30,7 +30,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
@@ -40,10 +39,16 @@ import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
+import com.marklogic.client.io.marker.TextReadHandle;
+import com.marklogic.client.io.marker.TextWriteHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
 
-public abstract class JacksonBaseHandle
+public abstract class JacksonBaseHandle<T>
         extends BaseHandle<InputStream, OutputStreamSender>
         implements OutputStreamSender, BufferableHandle, JSONReadHandle, JSONWriteHandle,
+            TextReadHandle, TextWriteHandle,
+            XMLReadHandle, XMLWriteHandle,
             StructureReadHandle, StructureWriteHandle
 {
     private ObjectMapper mapper;
@@ -79,6 +84,14 @@ public abstract class JacksonBaseHandle
 		this.mapper = mapper;
 	}
 
+    public abstract void set(T content);
+	@Override
+	public void fromBuffer(byte[] buffer) {
+		if (buffer == null || buffer.length == 0)
+			set(null);
+		else
+			receiveContent(new ByteArrayInputStream(buffer));
+	}
     @Override
     public byte[] toBuffer() {
         try {

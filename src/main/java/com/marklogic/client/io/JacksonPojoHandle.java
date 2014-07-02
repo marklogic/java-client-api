@@ -37,7 +37,7 @@ import com.marklogic.client.impl.JacksonBaseHandle;
  * writing JSON documents, JSON structured search, and other JSON input and output.  
  */
 public class JacksonPojoHandle<T>
-        extends JacksonBaseHandle
+        extends JacksonBaseHandle<T>
         implements ContentHandle<T>
 {
     private Class contentClass;
@@ -60,6 +60,17 @@ public class JacksonPojoHandle<T>
     public JacksonPojoHandle(T content) {
         this((Class<T>) content.getClass());
         set(content);
+    }
+
+    /**
+     * Specifies the format of the content and returns the handle
+     * as a fluent convenience.
+     * @param format	the format of the content
+     * @return	this handle
+     */
+    public JacksonPojoHandle withFormat(Format format) {
+        setFormat(format);
+        return this;
     }
 
     /**
@@ -88,13 +99,6 @@ public class JacksonPojoHandle<T>
         return this;
     }
 
-    @Override
-    public void fromBuffer(byte[] buffer) {
-        if (buffer == null || buffer.length == 0)
-            set(null);
-        else
-            receiveContent(new ByteArrayInputStream(buffer));
-    }
     @Override
     protected void receiveContent(InputStream content) {
         if (content == null)
