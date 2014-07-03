@@ -38,6 +38,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.JSONDocumentManager;
@@ -58,8 +59,17 @@ public class JacksonDatabindTest {
 
     @BeforeClass
     public static void beforeClass() {
+        // demonstrate our ability to set advanced configuration on a mapper
+        ObjectMapper mapper = new ObjectMapper();
+        // in this case, we're saying wrap our serialization with the name of the pojo class
+        mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT); 
+        // register a JacksonDatabindHandleFactory ready to marshall any City object to/from json
+        // this enables the writeAs method below
+        DatabaseClientFactory.getHandleRegistry().register(
+            JacksonDatabindHandle.newFactory(mapper, City.class)
+        );
         Common.connect();
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
 
     @AfterClass
@@ -70,35 +80,23 @@ public class JacksonDatabindTest {
 
     /** Here we're trying to keep it simple and demonstrate how you would use Jackson
      * via JacksonDatabindHandle to do the most common-case databinding to serialize your 
-     * pojos to json.  To reuse existing code we're letting BulkReadWriteTest load 
+     * pojos to json.  JacksonDatabindHandle is created under the hood by the factory registered
+     * above in the beforeClass() method. To reuse existing code we're letting BulkReadWriteTest load 
      * records from a csv file and populate our City pojos.  We just manage the 
-     * serialization and persistence logic.
+     * serialization and persistence logic.  We're also demonstrating how to register
+     * a factory so you can use the convenient writeAs method.
      **/
     public class JsonCityWriter implements CityWriter {
         private int numCities = 0;
         private JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
-        private DocumentWriteSet writeSet = docMgr.newWriteSet();
 
         public void addCity(City city) {
             if ( numCities >= MAX_TO_WRITE ) return;
-            // instantiate a JacksonDatabindHandle ready to serialize this city to json
-            JacksonDatabindHandle handle = new JacksonDatabindHandle(city);
-            // demonstrate our ability to set advanced configuration on the mapper
-            // in this case, we're saying wrap our serialization with the name of the pojo class
-            handle.getMapper().enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT); 
-            writeSet.add(DIRECTORY + "/jsonCities/" + city.getGeoNameId() + ".json", handle);
+            docMgr.writeAs(DIRECTORY + "/jsonCities/" + city.getGeoNameId() + ".json", city);
             numCities++;
         }
-        public void finishBatch() {
-            if ( writeSet.size() > 0 ) {
-                docMgr.write(writeSet);
-                // while this test is usually just 10 records so no more than one write set,
-                // we're ready to do more batches if we want to do performance testing here
-                writeSet = docMgr.newWriteSet();
-            }
-        }
-        public void setNumRecords(int numRecords) {
-        }
+        public void finishBatch() {}
+        public void setNumRecords(int numRecords) {}
     }
     
     @Test
@@ -111,7 +109,8 @@ public class JacksonDatabindTest {
     /** We're going to demonstrate the versitility of Jackson by using and XmlMapper
      * to serialize instead of the default JsonMapper to serialize to json.  Most 
      * importantly, this points to the ability with JacksonHandle or JacksonDatabindHandle
-     * to bring your own mapper and all the power that comes with it.
+     * to bring your own mapper and all the power that comes with it.  We're also 
+     * demonstrating the Bulk read/write api this time to write the documents.
      **/
     public static class XmlCityWriter implements CityWriter {
         private int numCities = 0;
@@ -135,11 +134,12 @@ public class JacksonDatabindTest {
         public void finishBatch() {
             if ( writeSet.size() > 0 ) {
                 docMgr.write(writeSet);
+                // while this test is usually just 10 records so no more than one write set,
+                // we're ready to do more batches if we want to do performance testing here
                 writeSet = docMgr.newWriteSet();
             }
         }
-        public void setNumRecords(int numRecords) {
-        }
+        public void setNumRecords(int numRecords) {}
     }
     
     @Test

@@ -21,11 +21,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
@@ -42,6 +45,28 @@ public class JacksonDatabindHandle<T>
 {
     private Class contentClass;
     private T content;
+
+    /**
+     * Creates a factory to create a JacksonDatabindHandle instance for POJO instances
+     * of the specified classes.
+     * @param pojoClasses	the POJO classes for which this factory provides a handle
+     * @return	the factory
+     */
+    static public ContentHandleFactory newFactory(Class<?>... pojoClasses) {
+        if (pojoClasses == null || pojoClasses.length == 0) return null;
+        return new JacksonDatabindHandleFactory(pojoClasses);
+    }
+    /**
+     * Creates a factory to create a JacksonDatabindHandle instance for POJO instances
+     * of the specified classes.
+     * @param mapper	the Jackson ObjectMapper for marshaling the POJO classes
+     * @param pojoClasses	the POJO classes for which this factory provides a handle
+     * @return	the factory
+     */
+    static public ContentHandleFactory newFactory(ObjectMapper mapper, Class<?>... pojoClasses) {
+        if (mapper == null || pojoClasses == null || pojoClasses.length == 0) return null;
+        return new JacksonDatabindHandleFactory(mapper, pojoClasses);
+    }
 
     /**
      * Specify the type of content this JacksonDatabindHandle will manage.
@@ -126,26 +151,34 @@ public class JacksonDatabindHandle<T>
     }
 
     static private class JacksonDatabindHandleFactory implements ContentHandleFactory {
-        private Class<?> contentClass;
+        private Class<?>[] contentClasses;
+        private ObjectMapper mapper = null;
+        private Set<Class<?>> classSet;
 
-        private JacksonDatabindHandleFactory(Class<?> contentClass) {
+        private JacksonDatabindHandleFactory(Class<?>... contentClasses) {
+            this(null, contentClasses);
+        }
+
+        private JacksonDatabindHandleFactory(ObjectMapper mapper, Class<?>... contentClasses) {
             super();
-            this.contentClass = contentClass;
+            this.contentClasses = contentClasses;
+            this.mapper = mapper;
+            this.classSet = new HashSet<Class<?>>(Arrays.asList(contentClasses));
         }
 
         @Override
         public Class<?>[] getHandledClasses() {
-            return new Class<?>[] { contentClass };
+            return contentClasses;
         }
         @Override
         public boolean isHandled(Class<?> type) {
-            return contentClass.isAssignableFrom(type);
+            return classSet.contains(type);
         }
         @Override
         public <C> ContentHandle<C> newHandle(Class<C> type) {
-            @SuppressWarnings("unchecked")
-            ContentHandle<C> handle = isHandled(type) ?
-                (ContentHandle<C>) new JacksonDatabindHandle<C>(type) : null;
+            if ( ! isHandled(type) ) return null;
+            JacksonDatabindHandle handle = new JacksonDatabindHandle<C>(type);
+            if ( mapper != null ) handle.setMapper(mapper);
             return handle;
         }
     }

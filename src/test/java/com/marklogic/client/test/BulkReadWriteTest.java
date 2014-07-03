@@ -38,7 +38,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -278,11 +277,6 @@ public class BulkReadWriteTest {
         private DocumentWriteSet writeSet = docMgr.newWriteSet();
 
         BulkCityWriter() throws JAXBException {
-            // register the POJO class
-            DatabaseClientFactory.getHandleRegistry().register(
-                JAXBHandle.newFactory(City.class)
-            );
-
             context = JAXBContext.newInstance(City.class);
         }
 
