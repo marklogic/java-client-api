@@ -43,7 +43,7 @@ import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonPojoHandle;
+import com.marklogic.client.io.JacksonDatabindHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.test.Common;
@@ -69,7 +69,7 @@ public class JacksonDatabindTest {
     }
 
     /** Here we're trying to keep it simple and demonstrate how you would use Jackson
-     * via JacksonPojoHandle to do the most common-case databinding to serialize your 
+     * via JacksonDatabindHandle to do the most common-case databinding to serialize your 
      * pojos to json.  To reuse existing code we're letting BulkReadWriteTest load 
      * records from a csv file and populate our City pojos.  We just manage the 
      * serialization and persistence logic.
@@ -81,8 +81,8 @@ public class JacksonDatabindTest {
 
         public void addCity(City city) {
             if ( numCities >= MAX_TO_WRITE ) return;
-            // instantiate a JacksonPojoHandle ready to serialize this city to json
-            JacksonPojoHandle handle = new JacksonPojoHandle(city);
+            // instantiate a JacksonDatabindHandle ready to serialize this city to json
+            JacksonDatabindHandle handle = new JacksonDatabindHandle(city);
             // demonstrate our ability to set advanced configuration on the mapper
             // in this case, we're saying wrap our serialization with the name of the pojo class
             handle.getMapper().enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT); 
@@ -110,7 +110,7 @@ public class JacksonDatabindTest {
 
     /** We're going to demonstrate the versitility of Jackson by using and XmlMapper
      * to serialize instead of the default JsonMapper to serialize to json.  Most 
-     * importantly, this points to the ability with JacksonHandle or JacksonPojoHandle
+     * importantly, this points to the ability with JacksonHandle or JacksonDatabindHandle
      * to bring your own mapper and all the power that comes with it.
      **/
     public static class XmlCityWriter implements CityWriter {
@@ -125,7 +125,7 @@ public class JacksonDatabindTest {
 
         public void addCity(City city) {
             if ( numCities >= MAX_TO_WRITE ) return;
-            JacksonPojoHandle handle = new JacksonPojoHandle(city);
+            JacksonDatabindHandle handle = new JacksonDatabindHandle(city);
             // NOTICE: We've set the mapper to an XmlMapper, showing the versitility of Jackson
             handle.setMapper(mapper);
             handle.setFormat(Format.XML);
@@ -166,7 +166,7 @@ public class JacksonDatabindTest {
 
     /** Demonstrate using Jackson's CSV mapper directly to simplify reading in data, populating a 
      * third-party pojo (one we cannot annotate) then writing it out
-     * via JacksonPojoHandle with configuration provided by mix-in annotations.
+     * via JacksonDatabindHandle with configuration provided by mix-in annotations.
      **/
     @Test
     public void testDatabindingThirdPartyPojoWithMixinAnnotations() throws JsonProcessingException, IOException {
@@ -201,7 +201,7 @@ public class JacksonDatabindTest {
         String line = null;
         for (int numWritten = 0; numWritten < MAX_TO_WRITE && (line = cityReader.readLine()) != null; numWritten++ ) {
             Toponym city = reader.readValue(line);
-            JacksonPojoHandle handle = new JacksonPojoHandle(city);
+            JacksonDatabindHandle handle = new JacksonDatabindHandle(city);
             handle.getMapper().addMixInAnnotations(Toponym.class, ToponymMixIn2.class);
             set.add(DIRECTORY + "/thirdPartyJsonCities/" + city.getGeoNameId() + ".json", handle);
         }

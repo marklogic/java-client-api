@@ -36,7 +36,7 @@ import com.marklogic.client.impl.JacksonBaseHandle;
  * JSON content as a Jackson JsonNode for reading or writing.  Enables reading and 
  * writing JSON documents, JSON structured search, and other JSON input and output.  
  */
-public class JacksonPojoHandle<T>
+public class JacksonDatabindHandle<T>
         extends JacksonBaseHandle<T>
         implements ContentHandle<T>
 {
@@ -44,11 +44,11 @@ public class JacksonPojoHandle<T>
     private T content;
 
     /**
-     * Specify the type of content this JacksonPojoHandle will manage.
+     * Specify the type of content this JacksonDatabindHandle will manage.
      * 
-     * @param contentClass either JsonNode.class or the class of your custom Pojo for databinding
+     * @param contentClass the class of your custom Pojo for databinding
      */
-    public JacksonPojoHandle(Class<T> contentClass) {
+    public JacksonDatabindHandle(Class<T> contentClass) {
         super();
         this.contentClass = contentClass;
            setResendable(true);
@@ -57,7 +57,7 @@ public class JacksonPojoHandle<T>
      * Provides a handle on JSON content as a Jackson tree.
      * @param content    the JSON root node of the tree.
      */
-    public JacksonPojoHandle(T content) {
+    public JacksonDatabindHandle(T content) {
         this((Class<T>) content.getClass());
         set(content);
     }
@@ -68,7 +68,7 @@ public class JacksonPojoHandle<T>
      * @param format	the format of the content
      * @return	this handle
      */
-    public JacksonPojoHandle withFormat(Format format) {
+    public JacksonDatabindHandle withFormat(Format format) {
         setFormat(format);
         return this;
     }
@@ -82,8 +82,8 @@ public class JacksonPojoHandle<T>
         return content;
     }
     /**
-     * Assigns either a JsonNode or your custom Pojo as the content.
-     * @param content    the JSON root node or your custom Pojo
+     * Assigns your custom Pojo as the content.
+     * @param content your custom Pojo
      */
     @Override
     public void set(T content) {
@@ -94,7 +94,7 @@ public class JacksonPojoHandle<T>
      * @param content    the JSON root node.
      * @return    the handle on the JSON tree.
      */
-    public JacksonPojoHandle<T> with(T content) {
+    public JacksonDatabindHandle<T> with(T content) {
         set(content);
         return this;
     }
@@ -125,10 +125,10 @@ public class JacksonPojoHandle<T>
         getMapper().writeValue(new OutputStreamWriter(out, "UTF-8"), get());
     }
 
-    static private class JacksonPojoHandleFactory implements ContentHandleFactory {
+    static private class JacksonDatabindHandleFactory implements ContentHandleFactory {
         private Class<?> contentClass;
 
-        private JacksonPojoHandleFactory(Class<?> contentClass) {
+        private JacksonDatabindHandleFactory(Class<?> contentClass) {
             super();
             this.contentClass = contentClass;
         }
@@ -145,7 +145,7 @@ public class JacksonPojoHandle<T>
         public <C> ContentHandle<C> newHandle(Class<C> type) {
             @SuppressWarnings("unchecked")
             ContentHandle<C> handle = isHandled(type) ?
-                (ContentHandle<C>) new JacksonPojoHandle<C>(type) : null;
+                (ContentHandle<C>) new JacksonDatabindHandle<C>(type) : null;
             return handle;
         }
     }

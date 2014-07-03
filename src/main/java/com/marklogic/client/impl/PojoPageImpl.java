@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.Page;
 import com.marklogic.client.impl.BasicPage;
-import com.marklogic.client.io.JacksonPojoHandle;
+import com.marklogic.client.io.JacksonDatabindHandle;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.pojo.PojoPage;
 
@@ -36,7 +36,7 @@ public class PojoPageImpl<T> extends BasicPage<T> implements PojoPage<T>, Iterat
 
     @Override
     public T next() {
-        JacksonPojoHandle<T> handle = new JacksonPojoHandle<T>(entityClass);
+        JacksonDatabindHandle<T> handle = new JacksonDatabindHandle<T>(entityClass);
         handle.getMapper().enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT);
         return docPage.nextContent(handle).get();
     }

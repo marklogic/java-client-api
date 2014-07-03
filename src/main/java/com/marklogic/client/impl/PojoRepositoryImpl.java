@@ -8,7 +8,7 @@ import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonPojoHandle;
+import com.marklogic.client.io.JacksonDatabindHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.pojo.PojoPage;
@@ -75,7 +75,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     }
     public void write(T entity, Transaction transaction, String... collections) {
         if ( entity == null ) return;
-        JacksonPojoHandle contentHandle = new JacksonPojoHandle(entity);
+        JacksonDatabindHandle contentHandle = new JacksonDatabindHandle(entity);
         contentHandle.getMapper().enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT); 
         DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
         metadataHandle = metadataHandle.withCollections(entityClass.getName());
