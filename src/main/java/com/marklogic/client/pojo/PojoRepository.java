@@ -38,6 +38,8 @@ public interface PojoRepository<T, ID extends Serializable> {
     public PojoPage<T> search(QueryDefinition query, long start, SearchReadHandle searchHandle);
     public PojoPage<T> search(QueryDefinition query, long start, SearchReadHandle searchHandle, Transaction transaction);
  
+    public PojoQueryBuilder getQueryBuilder();
+
     public long getPageLength(); // default: 50
     public void setPageLength(long length);
     

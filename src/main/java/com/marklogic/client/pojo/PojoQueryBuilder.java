@@ -25,7 +25,7 @@ public interface PojoQueryBuilder<T> {
     public StructuredQueryDefinition value(String pojoField, String... values);
     public StructuredQueryDefinition value(String pojoField, String[] options,
         double weight, String... values);
-    public StructuredQueryDefinition word(String pojoField, String... words);
+    public StructuredQueryDefinition word(String pojoField, String[] words);
     public StructuredQueryDefinition word(String pojoField, String[] options,
         double weight, String... words);
     public StructuredQueryDefinition word(String... words);

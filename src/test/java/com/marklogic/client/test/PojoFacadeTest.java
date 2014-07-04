@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
 import org.junit.FixMethodOrder;
@@ -29,7 +30,9 @@ import org.junit.Test;
 
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
+import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.test.BulkReadWriteTest;
 import com.marklogic.client.test.BulkReadWriteTest.City;
 import com.marklogic.client.test.BulkReadWriteTest.CityWriter;
@@ -45,7 +48,7 @@ public class PojoFacadeTest {
     public static void beforeClass() {
         Common.connect();
         repository = Common.client.newPojoRepository(City.class, Integer.class);
-        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
     @AfterClass
     public static void afterClass() {
@@ -90,7 +93,47 @@ public class PojoFacadeTest {
     }
 
     @Test
-    public void testC_DeletePojos() throws Exception {
+    public void testC_QueryPojos() throws Exception {
+        PojoQueryBuilder<City> qb = repository.getQueryBuilder();
+        QueryDefinition query = qb.word("Tungi", "Dalatando", "Chittagong");
+        PojoPage<City> page = repository.search(query, 1);
+        Iterator<City> iterator = page.iterator();
+        int numRead = 0;
+        while ( iterator.hasNext() ) {
+            numRead++;
+        }
+        assertEquals("Failed to find number of records expected", 3, numRead);
+        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+
+        qb = repository.getQueryBuilder();
+        query = qb.value("continent", "AF");
+        page = repository.search(query, 1);
+        iterator = page.iterator();
+        numRead = 0;
+        while ( iterator.hasNext() ) {
+            City city = iterator.next();
+            assertEquals("Wrong continent", "AF", city.getContinent());
+            numRead++;
+        }
+        assertEquals("Failed to find number of records expected", 7, numRead);
+        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+
+        query = qb.containerQuery("alternateNames", qb.word("San", "Santo"));
+        page = repository.search(query, 1);
+        iterator = page.iterator();
+        numRead = 0;
+        while ( iterator.hasNext() ) {
+            City city = iterator.next();
+            String alternateNames = Arrays.asList(city.getAlternateNames()).toString();
+            assertTrue("Should contain San", alternateNames.contains("San"));
+            numRead++;
+        }
+        assertEquals("Failed to find number of records expected", 11, numRead);
+        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+    }
+
+    @Test
+    public void testD_DeletePojos() throws Exception {
         repository.delete(1185098, 2239076);
         StringQueryDefinition query = Common.client.newQueryManager().newStringDefinition();
         query.setCriteria("Tungi OR Dalatando OR Chittagong");
@@ -98,9 +141,9 @@ public class PojoFacadeTest {
         assertEquals("Failed to read number of records expected", 1, page.getTotalSize());
 
         // now delete them all
-        repository.delete((String)null);
-        page = repository.search(query, 1);
-        assertEquals("Failed to read number of records expected", 0, page.getTotalSize());
+        //repository.delete((String)null);
+        long count = repository.count((String) null);
+        assertEquals("Failed to read number of records expected", 0, count);
     }
 
     private void validateCity(City city) {
