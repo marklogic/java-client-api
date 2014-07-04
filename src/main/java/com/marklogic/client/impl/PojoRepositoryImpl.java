@@ -98,12 +98,12 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
 
     public long count(String... collections) {
         if ( collections == null ) return 0l;
-        return count(qb.collection(collections));
+        return count(wrapQuery(qb.collection(collections)));
     }
     public long count(QueryDefinition query) {
         long pageLength = getPageLength();
         setPageLength(0);
-        DocumentPage page = docMgr.search(wrapQuery(query), 1);
+        PojoPage page = search(query, 1);
         setPageLength(pageLength);
         return page.getTotalSize();
     }
@@ -202,6 +202,10 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
                 responseHandle.setQueryCriteria(query);
             }
             docMgr.setResponseFormat(searchBase.getFormat());
+        } else {
+            // TODO: remove this once REST API only considers Content-type header
+            // (not format parameter) for expceted payload format
+            docMgr.setResponseFormat(Format.XML);
         }
 
         String tid = transaction == null ? null : transaction.getTransactionId();
@@ -213,6 +217,10 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         return pojoPage;
     }
  
+    public PojoQueryBuilder getQueryBuilder() {
+        return qb;
+    }
+
     public long getPageLength() {
         return docMgr.getPageLength();
     }

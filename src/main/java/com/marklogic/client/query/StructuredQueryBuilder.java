@@ -2252,6 +2252,7 @@ public class StructuredQueryBuilder {
     		return;
     	}
 		for (Object object: objects) {
+			if ( object == null ) continue;
     		serializer.writeStartElement(container);
     		serializer.writeCharacters(
     				(object instanceof String) ?

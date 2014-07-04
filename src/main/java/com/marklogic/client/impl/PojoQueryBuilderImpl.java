@@ -67,19 +67,19 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
     {
         return value(jsonProperty(pojoField), null, options, weight, values);
     }
-    public StructuredQueryDefinition word(String pojoField, String... words) {
-        return word(jsonProperty(pojoField), words);
+    public StructuredQueryDefinition word(String pojoField, String[] words) {
+        return super.word(jsonProperty(pojoField), words);
     }
     public StructuredQueryDefinition word(String pojoField, String[] options,
         double weight, String... words)
     {
-        return word(jsonProperty(pojoField), null, options, weight, words);
+        return super.word(jsonProperty(pojoField), null, options, weight, words);
     }
     public StructuredQueryDefinition word(String... words) {
-        return word(words);
+        return super.word(jsonProperty(classWrapper), words);
     }
     public StructuredQueryDefinition word(String[] options, double weight, String... words) {
-        return word(options, weight, words);
+        return super.word(jsonProperty(classWrapper), null, options, weight, words);
     }
 
     public String getRangeIndexType(String fieldName) {
