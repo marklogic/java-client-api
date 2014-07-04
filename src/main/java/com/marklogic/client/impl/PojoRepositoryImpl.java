@@ -15,10 +15,11 @@ import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.pojo.annotation.Id;
+import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.StructuredQueryDefinition;
-
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -108,8 +109,15 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     }
   
     public void delete(ID... ids) {
+        for ( ID id : ids ) {
+            docMgr.delete(createUri(id));
+        }
     }
     public void delete(String... collections) {
+        QueryManager queryMgr = client.newQueryManager();
+        DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
+        deleteQuery.setCollections(collections);
+        queryMgr.delete((DeleteQueryDefinition) wrapQuery(deleteQuery));
     }
   
     public T read(ID id) {

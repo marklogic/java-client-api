@@ -15,17 +15,6 @@
  */
 package com.marklogic.client.test;
 
-/*
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.annotation.XmlRootElement;
-*/
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -41,20 +30,6 @@ import org.junit.Test;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.StringQueryDefinition;
-/*
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.document.DocumentDescriptor;
-import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.document.DocumentRecord;
-import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JAXBHandle;
-import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StructuredQueryBuilder;
-*/
 import com.marklogic.client.test.BulkReadWriteTest;
 import com.marklogic.client.test.BulkReadWriteTest.City;
 import com.marklogic.client.test.BulkReadWriteTest.CityWriter;
@@ -71,7 +46,6 @@ public class PojoFacadeTest {
         Common.connect();
         repository = Common.client.newPojoRepository(City.class, Integer.class);
         //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "debug");    
     }
     @AfterClass
     public static void afterClass() {
@@ -115,12 +89,19 @@ public class PojoFacadeTest {
         assertEquals("PojoPage failed to report number of records expected", numRead, page.getTotalSize());
     }
 
-    /*
     @Test
     public void testC_DeletePojos() throws Exception {
+        repository.delete(1185098, 2239076);
+        StringQueryDefinition query = Common.client.newQueryManager().newStringDefinition();
+        query.setCriteria("Tungi OR Dalatando OR Chittagong");
+        PojoPage<City> page = repository.search(query, 1);
+        assertEquals("Failed to read number of records expected", 1, page.getTotalSize());
+
+        // now delete them all
         repository.delete((String)null);
+        page = repository.search(query, 1);
+        assertEquals("Failed to read number of records expected", 0, page.getTotalSize());
     }
-    */
 
     private void validateCity(City city) {
         assertNotNull("City should never be null", city);
