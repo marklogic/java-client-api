@@ -32,9 +32,9 @@ import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.query.StructuredQueryBuilder.Operator;
 import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.test.BulkReadWriteTest;
-import com.marklogic.client.test.BulkReadWriteTest.City;
 import com.marklogic.client.test.BulkReadWriteTest.CityWriter;
 
 import static com.marklogic.client.test.BulkReadWriteTest.DIRECTORY;
@@ -93,6 +93,8 @@ public class PojoFacadeTest {
     }
 
     @Test
+    // most of the queries below currently don't work because of issues in the search:search layer
+    // but the numbers expected come from working queries at the cts:search layer
     public void testC_QueryPojos() throws Exception {
         PojoQueryBuilder<City> qb = repository.getQueryBuilder();
         QueryDefinition query = qb.word("Tungi", "Dalatando", "Chittagong");
@@ -105,7 +107,6 @@ public class PojoFacadeTest {
         assertEquals("Failed to find number of records expected", 3, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
-        qb = repository.getQueryBuilder();
         query = qb.value("continent", "AF");
         page = repository.search(query, 1);
         iterator = page.iterator();
@@ -130,6 +131,33 @@ public class PojoFacadeTest {
         }
         assertEquals("Failed to find number of records expected", 11, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+
+        query = qb.geospatial(
+            qb.geoPair("latitude", "longitude"),
+            qb.circle(-34, -58, 100)
+        );
+        page = repository.search(query, 1);
+        iterator = page.iterator();
+        numRead = 0;
+        while ( iterator.hasNext() ) {
+            City city = iterator.next();
+            numRead++;
+        }
+        // this currently doesn't work even in the cts:search layer
+        // when this works we'll find out how many we expect
+        assertEquals("Failed to find number of records expected", -1, numRead);
+        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+
+        query = qb.range("population", Operator.LT, 350000);
+        page = repository.search(query, 1);
+        iterator = page.iterator();
+        numRead = 0;
+        while ( iterator.hasNext() ) {
+            City city = iterator.next();
+            numRead++;
+        }
+        assertEquals("Failed to find number of records expected", 21, numRead);
+        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
     }
 
     @Test
@@ -141,8 +169,8 @@ public class PojoFacadeTest {
         assertEquals("Failed to read number of records expected", 1, page.getTotalSize());
 
         // now delete them all
-        //repository.delete((String)null);
-        long count = repository.count((String) null);
+        repository.delete((String)null);
+        long count = repository.count();
         assertEquals("Failed to read number of records expected", 0, count);
     }
 

@@ -26,7 +26,6 @@ import java.util.logging.Level;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.annotation.XmlRootElement;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -55,7 +54,6 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.pojo.annotation.Id;
 
 /** Loads data from cities15000.txt which contains every city above 15000 people, and adds
  * data from countryInfo.txt.
@@ -80,190 +78,6 @@ public class BulkReadWriteTest {
     public static void afterClass() {
         cleanUp();
         Common.release();
-    }
-
-    static public class Country {
-        private String name, continent, currencyCode, currencyName, isoCode;
-
-        public String getIsoCode() {
-            return isoCode;
-        }
-
-        public Country setIsoCode(String isoCode) {
-            this.isoCode = isoCode;
-            return this;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public Country setName(String name) {
-            this.name = name;
-            return this;
-        }
-
-        public String getContinent() {
-            return continent;
-        }
-
-        public Country setContinent(String continent) {
-            this.continent = continent;
-            return this;
-        }
-
-        public String getCurrencyCode() {
-            return currencyCode;
-        }
-
-        public Country setCurrencyCode(String currencyCode) {
-            this.currencyCode = currencyCode;
-            return this;
-        }
-
-        public String getCurrencyName() {
-            return currencyName;
-        }
-
-        public Country setCurrencyName(String currencyName) {
-            this.currencyName = currencyName;
-            return this;
-        }
-    }
-
-    @XmlRootElement
-    static public class City {
-        private int geoNameId;
-        private String name;
-        private String asciiName;
-        private String[] alternateNames;
-        private double latitude;
-        private double longitude;
-        private String countryIsoCode;
-        private String countryName;
-        private String continent;
-        private String currencyCode;
-        private String currencyName;
-        private long population;
-        private int elevation;
-
-        @Id
-        public int getGeoNameId() {
-            return geoNameId;
-        }
-
-        public City setGeoNameId(int geoNameId) {
-            this.geoNameId = geoNameId;
-            return this;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public City setName(String name) {
-            this.name = name;
-            return this;
-        }
-
-        public String getAsciiName() {
-            return asciiName;
-        }
-
-        public City setAsciiName(String asciiName) {
-            this.asciiName = asciiName;
-            return this;
-        }
-
-        public String[] getAlternateNames() {
-            return alternateNames;
-        }
-
-        public City setAlternateNames(String[] alternateNames) {
-            this.alternateNames = alternateNames;
-            return this;
-        }
-
-        public double getLatitude() {
-            return latitude;
-        }
-
-        public City setLatitude(double latitude) {
-            this.latitude = latitude;
-            return this;
-        }
-
-        public double getLongitude() {
-            return longitude;
-        }
-
-        public City setLongitude(double longitude) {
-            this.longitude = longitude;
-            return this;
-        }
-
-        public String getCountryIsoCode() {
-            return countryIsoCode;
-        }
-
-        public City setCountryIsoCode(String countryIsoCode) {
-            this.countryIsoCode = countryIsoCode;
-            return this;
-        }
-
-        public String getCountryName() {
-            return countryName;
-        }
-
-        public City setCountryName(String countryName) {
-            this.countryName = countryName;
-            return this;
-        }
-
-        public String getContinent() {
-            return continent;
-        }
-
-        public City setContinent(String continent) {
-            this.continent = continent;
-            return this;
-        }
-
-        public String getCurrencyCode() {
-            return currencyCode;
-        }
-
-        public City setCurrencyCode(String currencyCode) {
-            this.currencyCode = currencyCode;
-            return this;
-        }
-
-        public String getCurrencyName() {
-            return currencyName;
-        }
-
-        public City setCurrencyName(String currencyName) {
-            this.currencyName = currencyName;
-            return this;
-        }
-
-        public long getPopulation() {
-            return population;
-        }
-
-        public City setPopulation(long population) {
-            this.population = population;
-            return this;
-        }
-
-        public int getElevation() {
-            return elevation;
-        }
-
-        public City setElevation(int elevation) {
-            this.elevation = elevation;
-            return this;
-        }
     }
 
     interface CityWriter {

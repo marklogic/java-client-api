@@ -1814,9 +1814,10 @@ public class StructuredQueryBuilder {
         	serializer.writeEndElement();
         }
     }
-    class JSONPropertyImpl extends IndexImpl implements JSONProperty {
+    class JSONPropertyImpl extends ElementImpl implements JSONProperty {
     	String name;
     	JSONPropertyImpl(String name) {
+    		super(name);
     		this.name = name;
     	}
         @Override

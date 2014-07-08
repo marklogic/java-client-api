@@ -93,12 +93,16 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     }
 
     public long count() {
-        return count((String) null);
+        return count((QueryDefinition) null);
     }
 
     public long count(String... collections) {
-        if ( collections == null ) return 0l;
-        return count(wrapQuery(qb.collection(collections)));
+        if ( collections != null && collections.length > 0 ) {
+            if ( collections.length > 1 || collections[0] != null ) {
+                return count(qb.collection(collections));
+            }
+        }
+        return count((QueryDefinition) null);
     }
     public long count(QueryDefinition query) {
         long pageLength = getPageLength();
