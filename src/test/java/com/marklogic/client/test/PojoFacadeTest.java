@@ -133,6 +133,38 @@ public class PojoFacadeTest {
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
         query = qb.geospatial(
+            qb.geoField("latLong"),
+            qb.circle(-34, -58, 1)
+        );
+        page = repository.search(query, 1);
+        iterator = page.iterator();
+        numRead = 0;
+        while ( iterator.hasNext() ) {
+            City city = iterator.next();
+            numRead++;
+        }
+        // this currently doesn't work even in the cts:search layer
+        // when this works we'll find out how many we expect
+        assertEquals("Failed to find number of records expected", -1, numRead);
+        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+
+        query = qb.geospatial(
+            qb.geoPath("latLong"),
+            qb.circle(-34, -58, 100)
+        );
+        page = repository.search(query, 1);
+        iterator = page.iterator();
+        numRead = 0;
+        while ( iterator.hasNext() ) {
+            City city = iterator.next();
+            numRead++;
+        }
+        // this currently doesn't work even in the cts:search layer
+        // when this works we'll find out how many we expect
+        assertEquals("Failed to find number of records expected", -1, numRead);
+        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+
+        query = qb.geospatial(
             qb.geoPair("latitude", "longitude"),
             qb.circle(-34, -58, 100)
         );

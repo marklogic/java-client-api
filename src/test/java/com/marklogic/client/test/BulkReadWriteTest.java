@@ -300,6 +300,9 @@ public class BulkReadWriteTest {
               .setAlternateNames( fields[3].split(",") );
             if ( !fields[4].equals("") ) city.setLatitude( Double.parseDouble(fields[4]) );
             if ( !fields[5].equals("") ) city.setLongitude( Double.parseDouble(fields[5]) );
+            if ( !fields[4].equals("") && !fields[5].equals("") ) {
+                city.setLatLong( fields[4] + " " + fields[5] );
+            }
             if ( !fields[14].equals("") ) city.setPopulation( Long.parseLong(fields[14]) );
             if ( !fields[16].equals("") ) city.setElevation( Integer.parseInt(fields[16]) );
             if ( !fields[8].equals("") ) {

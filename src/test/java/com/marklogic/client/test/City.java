@@ -27,6 +27,7 @@ public class City {
     private String[] alternateNames;
     private double latitude;
     private double longitude;
+    private String latLong;
     private String countryIsoCode;
     private String countryName;
     private String continent;
@@ -87,6 +88,15 @@ public class City {
 
     public City setLongitude(double longitude) {
         this.longitude = longitude;
+        return this;
+    }
+
+    public String getLatLong() {
+        return latLong;
+    }
+
+    public City setLatLong(String latLong) {
+        this.latLong = latLong;
         return this;
     }
 
