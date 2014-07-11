@@ -4233,6 +4233,7 @@ public class JerseyServices implements RESTServices {
 			super();
             this.clazz = clazz;
             if (partList != null && partList.size() > 0) {
+                this.size = partList.size();
                 this.reqlog = reqlog;
                 this.partQueue = new ConcurrentLinkedQueue<BodyPart>(
                         partList).iterator();

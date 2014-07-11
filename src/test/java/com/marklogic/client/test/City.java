@@ -35,6 +35,7 @@ public class City {
     private String currencyName;
     private long population;
     private int elevation;
+    private Country country;
 
     @Id
     public int getGeoNameId() {
@@ -160,6 +161,15 @@ public class City {
 
     public City setElevation(int elevation) {
         this.elevation = elevation;
+        return this;
+    }
+
+    public Country getCountry() {
+        return country;
+    }
+
+    public City setCountry(Country country) {
+        this.country = country;
         return this;
     }
 }

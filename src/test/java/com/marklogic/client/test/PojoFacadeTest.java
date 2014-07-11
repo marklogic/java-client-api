@@ -42,12 +42,12 @@ import static com.marklogic.client.test.BulkReadWriteTest.DIRECTORY;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PojoFacadeTest {
     private static final int MAX_TO_WRITE = 100;
-    private static PojoRepository<City, Integer> repository;
+    private static PojoRepository<City, Integer> cities;
 
     @BeforeClass
     public static void beforeClass() {
         Common.connect();
-        repository = Common.client.newPojoRepository(City.class, Integer.class);
+        cities = Common.client.newPojoRepository(City.class, Integer.class);
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
     @AfterClass
@@ -60,7 +60,7 @@ public class PojoFacadeTest {
 
         public void addCity(City city) {
             if ( numCities > MAX_TO_WRITE && !"Chittagong".equals(city.getName()) ) return;
-            repository.write(city);
+            cities.write(city);
             numCities++;
         }
         public void finishBatch() {
@@ -77,10 +77,7 @@ public class PojoFacadeTest {
 
     @Test
     public void testB_ReadPojos() throws Exception {
-        //PojoPage<City> page = repository.read(1185098, 2239076, 1205733);
-        StringQueryDefinition query = Common.client.newQueryManager().newStringDefinition();
-        query.setCriteria("Tungi OR Dalatando OR Chittagong");
-        PojoPage<City> page = repository.search(query, 1);
+        PojoPage<City> page = cities.read(new Integer[]{1185098, 2239076, 1205733});
         Iterator<City> iterator = page.iterator();
         int numRead = 0;
         while ( iterator.hasNext() ) {
@@ -89,26 +86,40 @@ public class PojoFacadeTest {
             numRead++;
         }
         assertEquals("Failed to read number of records expected", 3, numRead);
-        assertEquals("PojoPage failed to report number of records expected", numRead, page.getTotalSize());
+        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
     }
 
     @Test
     // most of the queries below currently don't work because of issues in the search:search layer
     // but the numbers expected come from working queries at the cts:search layer
     public void testC_QueryPojos() throws Exception {
-        PojoQueryBuilder<City> qb = repository.getQueryBuilder();
-        QueryDefinition query = qb.word("Tungi", "Dalatando", "Chittagong");
-        PojoPage<City> page = repository.search(query, 1);
+        StringQueryDefinition stringQuery = Common.client.newQueryManager().newStringDefinition();
+        stringQuery.setCriteria("Tungi OR Dalatando OR Chittagong");
+        PojoPage<City> page = cities.search(stringQuery, 1);
         Iterator<City> iterator = page.iterator();
         int numRead = 0;
         while ( iterator.hasNext() ) {
+            City city = iterator.next();
+            numRead++;
+        }
+        assertEquals("Failed to find number of records expected", 3, numRead);
+        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+
+
+        PojoQueryBuilder<City> qb = cities.getQueryBuilder();
+        QueryDefinition query = qb.word("Tungi", "Dalatando", "Chittagong");
+        page = cities.search(query, 1);
+        iterator = page.iterator();
+        numRead = 0;
+        while ( iterator.hasNext() ) {
+            City city = iterator.next();
             numRead++;
         }
         assertEquals("Failed to find number of records expected", 3, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
         query = qb.value("continent", "AF");
-        page = repository.search(query, 1);
+        page = cities.search(query, 1);
         iterator = page.iterator();
         numRead = 0;
         while ( iterator.hasNext() ) {
@@ -120,7 +131,7 @@ public class PojoFacadeTest {
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
         query = qb.containerQuery("alternateNames", qb.word("San", "Santo"));
-        page = repository.search(query, 1);
+        page = cities.search(query, 1);
         iterator = page.iterator();
         numRead = 0;
         while ( iterator.hasNext() ) {
@@ -136,7 +147,7 @@ public class PojoFacadeTest {
             qb.geoField("latLong"),
             qb.circle(-34, -58, 1)
         );
-        page = repository.search(query, 1);
+        page = cities.search(query, 1);
         iterator = page.iterator();
         numRead = 0;
         while ( iterator.hasNext() ) {
@@ -152,7 +163,7 @@ public class PojoFacadeTest {
             qb.geoPath("latLong"),
             qb.circle(-34, -58, 100)
         );
-        page = repository.search(query, 1);
+        page = cities.search(query, 1);
         iterator = page.iterator();
         numRead = 0;
         while ( iterator.hasNext() ) {
@@ -168,7 +179,7 @@ public class PojoFacadeTest {
             qb.geoPair("latitude", "longitude"),
             qb.circle(-34, -58, 100)
         );
-        page = repository.search(query, 1);
+        page = cities.search(query, 1);
         iterator = page.iterator();
         numRead = 0;
         while ( iterator.hasNext() ) {
@@ -181,7 +192,7 @@ public class PojoFacadeTest {
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
         query = qb.range("population", Operator.LT, 350000);
-        page = repository.search(query, 1);
+        page = cities.search(query, 1);
         iterator = page.iterator();
         numRead = 0;
         while ( iterator.hasNext() ) {
@@ -193,16 +204,68 @@ public class PojoFacadeTest {
     }
 
     @Test
-    public void testD_DeletePojos() throws Exception {
-        repository.delete(1185098, 2239076);
+    public void testD_PojosWithChildren() throws Exception {
+        City dubai = cities.read(292223);
+        City abuDhabi = cities.read(292968);
+        City buenosAires = cities.read(3435910);
+
+        Country ae = new Country()
+            .setIsoCode("AE")
+            .setName("United Arab Emirates")
+            .setContinent("AS")
+            .setCurrencyCode("AED")
+            .setCurrencyName("Dirham");
+        dubai.setCountry( ae );
+        abuDhabi.setCountry( ae );
+
+        Country argentina = new Country()
+            .setIsoCode("AR")
+            .setName("Argentina")
+            .setContinent("SA")
+            .setCurrencyCode("ARS")
+            .setCurrencyName("Peso");
+        buenosAires.setCountry( argentina );
+
+        cities.write(dubai);
+        cities.write(abuDhabi);
+        cities.write(buenosAires);
+
+        PojoQueryBuilder qb = cities.getQueryBuilder();
+        PojoQueryBuilder countriesQb = qb.containerQuery("country");
+        QueryDefinition query = countriesQb.value("continent", "EU");
+        assertEquals("Should not find any countries", 0, cities.search(query, 1).getTotalSize());
+
+        query = countriesQb.value("continent", "AS");
+        assertEquals("Should find two cities", 2, cities.search(query, 1).getTotalSize());
+
+        query = countriesQb.range("continent", Operator.EQ, "AS");
+        assertEquals("Should find two cities", 2, cities.search(query, 1).getTotalSize());
+
+        // the following currently don't work even in the cts:search layer
+        // all countries containing the term "SA"
+        query = countriesQb.word("SA");
+        assertEquals("Should find one city", 1, cities.search(query, 1).getTotalSize());
+
+        // all cities containing the term "SA"
+        query = qb.word("SA");
+        assertEquals("Should find two cities", 2, cities.search(query, 1).getTotalSize());
+
+        // all countries containing the field "currencyName" with the term "peso"
+        query = countriesQb.word("currencyName", new String[]{"peso"});
+        assertEquals("Should find one city", 1, cities.search(query, 1).getTotalSize());
+    }
+
+    @Test
+    public void testE_DeletePojos() throws Exception {
+        cities.delete(1185098, 2239076);
         StringQueryDefinition query = Common.client.newQueryManager().newStringDefinition();
         query.setCriteria("Tungi OR Dalatando OR Chittagong");
-        PojoPage<City> page = repository.search(query, 1);
+        PojoPage<City> page = cities.search(query, 1);
         assertEquals("Failed to read number of records expected", 1, page.getTotalSize());
 
         // now delete them all
-        repository.delete((String)null);
-        long count = repository.count();
+        cities.delete((String)null);
+        long count = cities.count();
         assertEquals("Failed to read number of records expected", 0, count);
     }
 

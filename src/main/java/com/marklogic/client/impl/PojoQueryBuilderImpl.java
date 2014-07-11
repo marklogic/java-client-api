@@ -30,6 +30,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
     private HashMap<String, String> rangeIndextypes = new HashMap<String, String>();
     private Class<?> clazz;
     private String classWrapper;
+    private boolean wrapQueries = false;
 
     public PojoQueryBuilderImpl(Class<T> clazz) {
         super();
@@ -38,21 +39,30 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
         this.classWrapper = clazz.getName();
     }
 
+    public PojoQueryBuilderImpl(Class<T> clazz, boolean wrapQueries) {
+        this(clazz);
+        this.wrapQueries = wrapQueries;
+    }
+
     private StructuredQueryBuilder.PathIndex pojoFieldPath(String pojoField) {
-//System.out.println("DEBUG: [PojoQueryBuilderImpl] =[" + "*[local-name()=\"" + classWrapper + "\"]/" + pojoField + "]");
         //return pathIndex("*[local-name()=\"" + classWrapper + "\"]/" + pojoField);
         return pathIndex(classWrapper + "/" + pojoField);
     }
  
     public StructuredQueryDefinition containerQuery(String pojoField, StructuredQueryDefinition query) {
-        return containerQuery(jsonProperty(pojoField), query);
+        if ( wrapQueries ) {
+            return super.containerQuery(jsonProperty(classWrapper),
+                super.containerQuery(jsonProperty(pojoField), query));
+        } else {
+            return super.containerQuery(jsonProperty(pojoField), query);
+        }
     }
     @Override
     public StructuredQueryDefinition containerQuery(StructuredQueryDefinition query) {
-        return containerQuery(jsonProperty(classWrapper), query);
+        return super.containerQuery(jsonProperty(classWrapper), query);
     }
     public PojoQueryBuilder          containerQuery(String pojoField) {
-        return new PojoQueryBuilderImpl(getType(pojoField));
+        return new PojoQueryBuilderImpl(getType(pojoField), true);
     }
     @Override
     public StructuredQueryBuilder.GeospatialIndex
@@ -67,7 +77,8 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
         return geoPath(pojoFieldPath(pojoField));
     }
     public StructuredQueryDefinition range(String pojoField,
-        StructuredQueryBuilder.Operator operator, Object... values) {
+        StructuredQueryBuilder.Operator operator, Object... values)
+    {
         return range(pojoFieldPath(pojoField), getRangeIndexType(pojoField), operator, values);
     }
     public StructuredQueryDefinition range(String pojoField, String[] options,
@@ -77,20 +88,40 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
             operator, values);
     }
     public StructuredQueryDefinition value(String pojoField, String... values) {
-        return value(jsonProperty(pojoField), values);
+        if ( wrapQueries ) {
+            return super.containerQuery(jsonProperty(classWrapper),
+                value(jsonProperty(pojoField), values));
+        } else {
+            return value(jsonProperty(pojoField), values);
+        }
     }
     public StructuredQueryDefinition value(String pojoField, String[] options,
         double weight, String... values)
     {
-        return value(jsonProperty(pojoField), null, options, weight, values);
+        if ( wrapQueries ) {
+            return super.containerQuery(jsonProperty(classWrapper),
+                value(jsonProperty(pojoField), null, options, weight, values));
+        } else {
+            return value(jsonProperty(pojoField), null, options, weight, values);
+        }
     }
     public StructuredQueryDefinition word(String pojoField, String[] words) {
-        return super.word(jsonProperty(pojoField), words);
+        if ( wrapQueries ) {
+            return super.containerQuery(jsonProperty(classWrapper),
+                super.word(jsonProperty(pojoField), words));
+        } else {
+            return super.word(jsonProperty(pojoField), words);
+        }
     }
     public StructuredQueryDefinition word(String pojoField, String[] options,
         double weight, String... words)
     {
-        return super.word(jsonProperty(pojoField), null, options, weight, words);
+        if ( wrapQueries ) {
+            return super.containerQuery(jsonProperty(classWrapper),
+                super.word(jsonProperty(pojoField), null, options, weight, words));
+        } else {
+            return super.word(jsonProperty(pojoField), null, options, weight, words);
+        }
     }
     public StructuredQueryDefinition word(String... words) {
         return super.word(jsonProperty(classWrapper), words);
