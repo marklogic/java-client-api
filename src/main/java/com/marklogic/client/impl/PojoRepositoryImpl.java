@@ -52,12 +52,18 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     private Field idField;
     private String idFieldName;
 
-    public  PojoRepositoryImpl(DatabaseClient client, Class<T> entityClass, Class<ID> idClass) {
+    PojoRepositoryImpl(DatabaseClient client, Class<T> entityClass) {
         this.client = client;
         this.entityClass = entityClass;
-        this.idClass = idClass;
+        this.idClass = null;
         this.docMgr = client.newJSONDocumentManager();
+        this.docMgr.setResponseFormat(Format.JSON);
         this.qb = new PojoQueryBuilderImpl<T>(entityClass);
+    }
+
+    PojoRepositoryImpl(DatabaseClient client, Class<T> entityClass, Class<ID> idClass) {
+        this(client, entityClass);
+        this.idClass = idClass;
         findId();
         if ( idMethod == null && idField == null ) {
             throw new IllegalArgumentException("Your class " + entityClass.getName() +
@@ -77,7 +83,8 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     public void write(T entity, Transaction transaction, String... collections) {
         if ( entity == null ) return;
         JacksonDatabindHandle contentHandle = new JacksonDatabindHandle(entity);
-        contentHandle.getMapper().enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT); 
+        contentHandle.getMapper().enableDefaultTyping(
+            ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT); 
         DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
         metadataHandle = metadataHandle.withCollections(entityClass.getName());
         if ( collections != null && collections.length > 0 ) {
@@ -93,12 +100,16 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     }
 
     public long count() {
-        return count((String) null);
+        return count((QueryDefinition) null);
     }
 
     public long count(String... collections) {
-        if ( collections == null ) return 0l;
-        return count(wrapQuery(qb.collection(collections)));
+        if ( collections != null && collections.length > 0 ) {
+            if ( collections.length > 1 || collections[0] != null ) {
+                return count(qb.collection(collections));
+            }
+        }
+        return count((QueryDefinition) null);
     }
     public long count(QueryDefinition query) {
         long pageLength = getPageLength();
@@ -121,56 +132,33 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     }
   
     public T read(ID id) {
-        return read(id, null, null);
-    }
-    public T read(ID id, String... collections) {
-        return read(id, null, collections);
+        return read(id, null);
     }
     public T read(ID id, Transaction transaction) {
-        return read(id, transaction, null);
-    }
-    public T read(ID id, Transaction transaction, String... collections) {
-        PojoPage<T> page = read(transaction, collections, id);
+        ArrayList<ID> ids = new ArrayList<ID>();
+        ids.add(id);
+        PojoPage<T> page = read(ids.toArray((ID[])new Serializable[0]), transaction);
         if ( page == null ) return null;
         Iterator<T> iterator = page.iterator();
         if ( iterator.hasNext() ) return iterator.next();
         return null;
     }
-    public PojoPage<T> read(ID... ids) {
-        return read(null, null, ids);
+    public PojoPage<T> read(ID[] ids) {
+        return read(ids, null);
     }
-    public PojoPage<T> read(Transaction transaction, ID... ids) {
-        return read(transaction, null, ids);
-    }
-    public PojoPage<T> read(Transaction transaction, String[] collections, ID... ids) {
-        long pageLength = getPageLength();
-        QueryDefinition query = null;
-        if ( ids != null ) {
-            long tempPageLength = pageLength;
-            tempPageLength = ids.length;
-            setPageLength(tempPageLength);
-            if ( ids.length == 1 ) {
-                query = qb.value(idFieldName, String.valueOf(ids[0]));
-            } else {
-                ArrayList<StructuredQueryDefinition> idQueries =
-                    new ArrayList<StructuredQueryDefinition>(ids.length);
-                for ( ID id : ids ) {
-                    idQueries.add( qb.value(idFieldName, String.valueOf(id)) );
-                }
-                query = qb.and( idQueries.toArray(new StructuredQueryDefinition[0]));
-            }
-            if ( collections != null ) query.setCollections(collections);
-        } else {
-            if ( collections != null ) query = qb.collection(collections);
+    public PojoPage<T> read(ID[] ids, Transaction transaction) {
+        ArrayList<String> uris = new ArrayList<String>();
+        for ( ID id : ids ) {
+            uris.add(createUri(id));
         }
-        PojoPage page = search(wrapQuery(query), 1, null, transaction);
-        setPageLength(pageLength);
-        return page;
+        DocumentPage docPage = (DocumentPage) docMgr.read(transaction, uris.toArray(new String[0]));
+        PojoPage<T> pojoPage = new PojoPageImpl(docPage, entityClass);
+        return pojoPage;
     }
-    public PojoPage<T> read(long start) {
+    public PojoPage<T> readAll(long start) {
         return search(null, start, null, null);
     }
-    public PojoPage<T> read(long start, Transaction transaction) {
+    public PojoPage<T> readAll(long start, Transaction transaction) {
         return search(null, start, null, transaction);
     }
 
@@ -209,8 +197,6 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         }
 
         String tid = transaction == null ? null : transaction.getTransactionId();
-        // we don't need any metadata
-        Set metadata = null;
         DocumentPage docPage = docMgr.search(wrapQuery(query), start, searchHandle, transaction);
         docMgr.setResponseFormat(docMgrFormat);
         PojoPage<T> pojoPage = new PojoPageImpl(docPage, entityClass);

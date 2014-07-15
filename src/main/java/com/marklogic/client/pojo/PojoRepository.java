@@ -23,13 +23,11 @@ public interface PojoRepository<T, ID extends Serializable> {
     public void delete(String... collections);
   
     public T read(ID id);
-    public T read(ID id, String... collections);
     public T read(ID id, Transaction transaction);
-    public T read(ID id, Transaction transaction, String... collections);
-    public PojoPage<T> read(ID... ids);
-    public PojoPage<T> read(Transaction transaction, ID... ids);
-    public PojoPage<T> read(long start);
-    public PojoPage<T> read(long start, Transaction transaction);
+    public PojoPage<T> read(ID[] ids);
+    public PojoPage<T> read(ID[] ids, Transaction transaction);
+    public PojoPage<T> readAll(long start);
+    public PojoPage<T> readAll(long start, Transaction transaction);
  
     public PojoPage<T> search(long start, String... collections);
     public PojoPage<T> search(long start, Transaction transaction, String... collections);

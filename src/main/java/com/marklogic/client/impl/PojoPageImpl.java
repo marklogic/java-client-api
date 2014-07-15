@@ -17,6 +17,7 @@ public class PojoPageImpl<T> extends BasicPage<T> implements PojoPage<T>, Iterat
     public PojoPageImpl(DocumentPage docPage, Class<T> entityClass) {
         super(entityClass);
         setStart( docPage.getStart() );
+        setSize( docPage.size() );
         setPageSize( docPage.getPageSize() );
         setTotalSize( docPage.getTotalSize() );
 
@@ -37,7 +38,8 @@ public class PojoPageImpl<T> extends BasicPage<T> implements PojoPage<T>, Iterat
     @Override
     public T next() {
         JacksonDatabindHandle<T> handle = new JacksonDatabindHandle<T>(entityClass);
-        handle.getMapper().enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT);
+        handle.getMapper().enableDefaultTyping(
+            ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT);
         return docPage.nextContent(handle).get();
     }
 

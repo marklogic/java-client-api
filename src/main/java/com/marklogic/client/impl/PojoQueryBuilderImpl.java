@@ -1,3 +1,18 @@
+/*
+ * Copyright 2012-2014 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.marklogic.client.impl;
 
 import com.marklogic.client.pojo.PojoQueryBuilder;
@@ -15,6 +30,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
     private HashMap<String, String> rangeIndextypes = new HashMap<String, String>();
     private Class<?> clazz;
     private String classWrapper;
+    private boolean wrapQueries = false;
 
     public PojoQueryBuilderImpl(Class<T> clazz) {
         super();
@@ -23,19 +39,30 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
         this.classWrapper = clazz.getName();
     }
 
+    public PojoQueryBuilderImpl(Class<T> clazz, boolean wrapQueries) {
+        this(clazz);
+        this.wrapQueries = wrapQueries;
+    }
+
     private StructuredQueryBuilder.PathIndex pojoFieldPath(String pojoField) {
+        //return pathIndex("*[local-name()=\"" + classWrapper + "\"]/" + pojoField);
         return pathIndex(classWrapper + "/" + pojoField);
     }
  
     public StructuredQueryDefinition containerQuery(String pojoField, StructuredQueryDefinition query) {
-        return containerQuery(jsonProperty(pojoField), query);
+        if ( wrapQueries ) {
+            return super.containerQuery(jsonProperty(classWrapper),
+                super.containerQuery(jsonProperty(pojoField), query));
+        } else {
+            return super.containerQuery(jsonProperty(pojoField), query);
+        }
     }
     @Override
     public StructuredQueryDefinition containerQuery(StructuredQueryDefinition query) {
-        return containerQuery(jsonProperty(classWrapper), query);
+        return super.containerQuery(jsonProperty(classWrapper), query);
     }
     public PojoQueryBuilder          containerQuery(String pojoField) {
-        return new PojoQueryBuilderImpl(getType(pojoField));
+        return new PojoQueryBuilderImpl(getType(pojoField), true);
     }
     @Override
     public StructuredQueryBuilder.GeospatialIndex
@@ -50,7 +77,8 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
         return geoPath(pojoFieldPath(pojoField));
     }
     public StructuredQueryDefinition range(String pojoField,
-        StructuredQueryBuilder.Operator operator, Object... values) {
+        StructuredQueryBuilder.Operator operator, Object... values)
+    {
         return range(pojoFieldPath(pojoField), getRangeIndexType(pojoField), operator, values);
     }
     public StructuredQueryDefinition range(String pojoField, String[] options,
@@ -60,20 +88,40 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
             operator, values);
     }
     public StructuredQueryDefinition value(String pojoField, String... values) {
-        return value(jsonProperty(pojoField), values);
+        if ( wrapQueries ) {
+            return super.containerQuery(jsonProperty(classWrapper),
+                value(jsonProperty(pojoField), values));
+        } else {
+            return value(jsonProperty(pojoField), values);
+        }
     }
     public StructuredQueryDefinition value(String pojoField, String[] options,
         double weight, String... values)
     {
-        return value(jsonProperty(pojoField), null, options, weight, values);
+        if ( wrapQueries ) {
+            return super.containerQuery(jsonProperty(classWrapper),
+                value(jsonProperty(pojoField), null, options, weight, values));
+        } else {
+            return value(jsonProperty(pojoField), null, options, weight, values);
+        }
     }
     public StructuredQueryDefinition word(String pojoField, String[] words) {
-        return super.word(jsonProperty(pojoField), words);
+        if ( wrapQueries ) {
+            return super.containerQuery(jsonProperty(classWrapper),
+                super.word(jsonProperty(pojoField), words));
+        } else {
+            return super.word(jsonProperty(pojoField), words);
+        }
     }
     public StructuredQueryDefinition word(String pojoField, String[] options,
         double weight, String... words)
     {
-        return super.word(jsonProperty(pojoField), null, options, weight, words);
+        if ( wrapQueries ) {
+            return super.containerQuery(jsonProperty(classWrapper),
+                super.word(jsonProperty(pojoField), null, options, weight, words));
+        } else {
+            return super.word(jsonProperty(pojoField), null, options, weight, words);
+        }
     }
     public StructuredQueryDefinition word(String... words) {
         return super.word(jsonProperty(classWrapper), words);
@@ -88,19 +136,19 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
         if ( type == null ) {
             Class fieldClass = getType(fieldName);
             if ( String.class.isAssignableFrom(fieldClass) ) {
-                type = "string";
-            } else if ( Integer.class.isAssignableFrom(fieldClass) ) {
-                type = "int";
-            } else if ( Long.class.isAssignableFrom(fieldClass) ) {
-                type = "long";
-            } else if ( Float.class.isAssignableFrom(fieldClass) ) {
-                type = "float";
-            } else if ( Double.class.isAssignableFrom(fieldClass) ) {
-                type = "double";
+                type = "xs:string";
+            } else if ( Integer.TYPE.equals(fieldClass) ) {
+                type = "xs:int";
+            } else if ( Long.TYPE.equals(fieldClass) ) {
+                type = "xs:long";
+            } else if ( Float.TYPE.equals(fieldClass) ) {
+                type = "xs:float";
+            } else if ( Double.TYPE.equals(fieldClass) ) {
+                type = "xs:double";
             } else if ( Number.class.isAssignableFrom(fieldClass) ) {
-                type = "decimal";
+                type = "xs:decimal";
             } else if ( Date.class.isAssignableFrom(fieldClass) ) {
-                type = "dateTime";
+                type = "xs:dateTime";
             }
             if ( type == null ) {
                 throw new IllegalArgumentException("Field " + fieldName + " is not a native Java type");
@@ -114,8 +162,8 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
         Class fieldClass = types.get(fieldName);
         if ( fieldClass == null ) {
             // figure out the type of the java field
-            String initCapPojoField = fieldName.substring(1,2).toUpperCase() + 
-                fieldName.substring(2);
+            String initCapPojoField = fieldName.substring(0,1).toUpperCase() + 
+                fieldName.substring(1);
             try {
                 fieldClass = clazz.getField(fieldName).getType();
             } catch(NoSuchFieldException e) {
@@ -162,5 +210,3 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
         return fieldClass;
     }
 }
-
-

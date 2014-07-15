@@ -1847,12 +1847,20 @@ public class StructuredQueryBuilder {
     	}
         @Override
         void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	if (parent != null) {
+        	if (parent != null && parent instanceof ElementImpl) {
         		ElementImpl parentImpl  = (ElementImpl) parent;
         		serializeNamedIndex(serializer, "parent",  parentImpl.qname,  parentImpl.name);
+        	} else if (parent != null && parent instanceof IndexImpl) {
+        		IndexImpl parentImpl  = (IndexImpl) parent;
+        		parentImpl.innerSerialize(serializer);
         	}
-        	ElementImpl elementImpl = (ElementImpl) element;
-        	serializeNamedIndex(serializer, "element", elementImpl.qname, elementImpl.name);
+        	if ( element instanceof ElementImpl ) {
+        		ElementImpl elementImpl = (ElementImpl) element;
+        		serializeNamedIndex(serializer, "element", elementImpl.qname, elementImpl.name);
+        	} else if ( element instanceof IndexImpl ) {
+        		IndexImpl indexImpl  = (IndexImpl) element;
+        		indexImpl.innerSerialize(serializer);
+        	}
         }
     }
     class GeoElementPairImpl extends IndexImpl implements GeospatialIndex {
