@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
@@ -71,7 +72,6 @@ public class BulkReadWriteTest {
         Common.connect();
         context = JAXBContext.newInstance(City.class);
         //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "debug");    
     }
     @AfterClass
     public static void afterClass() {
@@ -107,7 +107,7 @@ public class BulkReadWriteTest {
         }
 
         public void setNumRecords(int numWritten) {
-            assertEquals("Number of records not expected", numWritten, RECORDS_EXPECTED);
+            assertEquals("Number of records not expected", RECORDS_EXPECTED, numWritten);
         }
     }
 
@@ -150,12 +150,12 @@ public class BulkReadWriteTest {
         
 
     @Test
-    public void testBulkLoad() throws IOException, Exception {
+    public void testA_BulkLoad() throws IOException, Exception {
         loadCities(new BulkCityWriter());
     }
 
     @Test
-    public void testBulkRead() {
+    public void testB_BulkRead() {
         XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 
         DocumentPage page = docMgr.read(DIRECTORY + "1016670.xml", DIRECTORY + "108410.xml", DIRECTORY + "1205733.xml");
@@ -169,7 +169,7 @@ public class BulkReadWriteTest {
     }
 
     @Test
-    public void testBulkSearch() {
+    public void testC_BulkSearch() {
         XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 
         SearchHandle searchHandle = new SearchHandle();
@@ -188,7 +188,7 @@ public class BulkReadWriteTest {
 
     //public void testMixedLoad() {
     @Test
-    public void testJsonLoad() {
+    public void testD_JsonLoad() {
         JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
 
         StringHandle doc1 =
@@ -244,8 +244,8 @@ public class BulkReadWriteTest {
     }
 
     @Test
-    public void testTextLoad() {
-        String docId[] = {"/foo/test/myFoo1.xml","/foo/test/myFoo2.xml","/foo/test/myFoo3.xml"};
+    public void testE_TextLoad() {
+        String docId[] = {"/foo/test/myFoo1.txt","/foo/test/myFoo2.txt","/foo/test/myFoo3.txt"};
         TextDocumentManager docMgr = Common.client.newTextDocumentManager();
         DocumentWriteSet writeset =docMgr.newWriteSet();
 
@@ -261,6 +261,70 @@ public class BulkReadWriteTest {
         docMgr.delete(docId[0]);
         docMgr.delete(docId[1]);
         docMgr.delete(docId[2]);
+    }
+
+    @Test
+    public void testF_DefaultMetadata() {
+        // Synthesize input content
+        StringHandle doc1 = new StringHandle(
+                "{\"number\": 1}").withFormat(Format.JSON);
+        StringHandle doc2 = new StringHandle(
+                "{\"number\": 2}").withFormat(Format.JSON);
+        StringHandle doc3 = new StringHandle(
+                "{\"number\": 3}").withFormat(Format.JSON);
+        StringHandle doc4 = new StringHandle(
+                "{\"number\": 4}").withFormat(Format.JSON);
+        StringHandle doc5 = new StringHandle(
+                "{\"number\": 5}").withFormat(Format.JSON);
+
+        // Synthesize input metadata
+        DocumentMetadataHandle defaultMetadata1 = 
+                new DocumentMetadataHandle().withQuality(1);
+        DocumentMetadataHandle defaultMetadata2 = 
+                new DocumentMetadataHandle().withQuality(2);
+        DocumentMetadataHandle docSpecificMetadata = 
+                new DocumentMetadataHandle().withCollections("myCollection");
+
+        // Create and build up the batch
+        JSONDocumentManager jdm = Common.client.newJSONDocumentManager();
+        DocumentWriteSet batch = jdm.newWriteSet();
+
+        // use system default metadata
+        batch.add("doc1.json", doc1);       // system default metadata
+
+        // using batch default metadata
+        batch.addDefault(defaultMetadata1);  
+        batch.add("doc2.json", doc2);       // batch default metadata
+        batch.add("doc3.json", docSpecificMetadata, doc3);
+        batch.add("doc4.json", doc4);       // batch default metadata
+
+        // replace batch default metadata with new metadata
+        batch.addDefault(defaultMetadata2); 
+        batch.add("doc5.json", doc5);       // batch default 
+
+        // Execute the write operation
+        jdm.write(batch);
+
+        // Check the results
+        assertEquals("Doc1 should have the system default quality of 0", 0, 
+            jdm.readMetadata("doc1.json", new DocumentMetadataHandle()).getQuality());
+        assertEquals("Doc2 should use the first batch default metadata, with quality 1", defaultMetadata1.getQuality(), 
+                jdm.readMetadata("doc2.json", new DocumentMetadataHandle()).getQuality());
+
+        DocumentMetadataHandle doc3Metadata =  
+                jdm.readMetadata("doc3.json", new DocumentMetadataHandle());
+        assertEquals("Doc3 should have the system default document quality (0) because quality " +
+            "was not included in the document-specific metadata.", 0, doc3Metadata.getQuality());
+        Set collections = doc3Metadata.getCollections();
+        assertEquals("Doc3 should be in exactly one collection from the document-specific metadata.", 1, collections.size());
+        assertEquals("Doc3 should be in the collection \"myCollection\", from the document-specific metadata.",
+            "myCollection", collections.iterator().next());
+
+        // 
+        assertEquals("Doc4 should also use the 1st batch default metadata, with quality 1", defaultMetadata1.getQuality(),
+            jdm.readMetadata("doc4.json", new DocumentMetadataHandle()).getQuality());
+        assertEquals("Doc5 should use the 2nd batch default metadata, with quality 2", defaultMetadata2.getQuality(),
+            jdm.readMetadata("doc5.json", new DocumentMetadataHandle()).getQuality());
     }
 
 

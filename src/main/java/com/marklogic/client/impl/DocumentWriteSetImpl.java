@@ -33,25 +33,25 @@ public class DocumentWriteSetImpl extends LinkedHashSet<DocumentWriteOperation> 
 	}
 
     public DocumentWriteSet add(String docId, AbstractWriteHandle contentHandle) {
-		add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT,
+		add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE,
 			docId, null, contentHandle));
 		return this;
 	}
 
     public DocumentWriteSet add(String docId, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle) {
-		add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT,
+		add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE,
 			docId, metadataHandle, contentHandle));
 		return this;
 	}
 
     public DocumentWriteSet add(DocumentDescriptor desc, AbstractWriteHandle contentHandle) {
-		add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT,
+		add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE,
 			desc.getUri(), null, contentHandle));
 		return this;
 	}
 
     public DocumentWriteSet add(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle) {
-		add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT,
+		add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE,
 			desc.getUri(), metadataHandle, contentHandle));
 		return this;
 	}
