@@ -20,7 +20,10 @@ public interface PojoRepository<T, ID extends Serializable> {
     public long count(QueryDefinition query);
   
     public void delete(ID... ids);
-    public void delete(String... collections);
+    public void deleteAll();
+    /* REST API does not currently support DELETE /search with multiple collection arguments
+    public void deleteAll(String... collections);
+    */
   
     public T read(ID id);
     public T read(ID id, Transaction transaction);

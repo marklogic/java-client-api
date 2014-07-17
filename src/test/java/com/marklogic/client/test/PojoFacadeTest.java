@@ -264,7 +264,7 @@ public class PojoFacadeTest {
         assertEquals("Failed to read number of records expected", 1, page.getTotalSize());
 
         // now delete them all
-        cities.delete((String)null);
+        cities.deleteAll();
         long count = cities.count();
         assertEquals("Failed to read number of records expected", 0, count);
     }
