@@ -124,12 +124,25 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
             docMgr.delete(createUri(id));
         }
     }
-    public void delete(String... collections) {
+    public void deleteAll() {
+        QueryManager queryMgr = client.newQueryManager();
+        DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
+        deleteQuery.setCollections(entityClass.getName());
+        queryMgr.delete(deleteQuery);
+    }
+    /* REST API does not currently support DELETE /search with multiple collection arguments
+    public void deleteAll(String... collections) {
+        if ( collections == null || collections.length == 0 ) {
+            throw new IllegalArgumentException("You must specify at least one collection");
+        } else if ( collections[0] == null ) {
+            throw new IllegalArgumentException("Collection argument must not be null");
+        }
         QueryManager queryMgr = client.newQueryManager();
         DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
         deleteQuery.setCollections(collections);
         queryMgr.delete((DeleteQueryDefinition) wrapQuery(deleteQuery));
     }
+    */
   
     public T read(ID id) {
         return read(id, null);
