@@ -107,7 +107,7 @@ public class PojoFacadeTest {
 
 
         PojoQueryBuilder<City> qb = cities.getQueryBuilder();
-        QueryDefinition query = qb.word("Tungi", "Dalatando", "Chittagong");
+        QueryDefinition query = qb.term("Tungi", "Dalatando", "Chittagong");
         page = cities.search(query, 1);
         iterator = page.iterator();
         numRead = 0;
@@ -130,7 +130,7 @@ public class PojoFacadeTest {
         assertEquals("Failed to find number of records expected", 7, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
-        query = qb.containerQuery("alternateNames", qb.word("San", "Santo"));
+        query = qb.containerQuery("alternateNames", qb.term("San", "Santo"));
         page = cities.search(query, 1);
         iterator = page.iterator();
         numRead = 0;
@@ -141,6 +141,17 @@ public class PojoFacadeTest {
             numRead++;
         }
         assertEquals("Failed to find number of records expected", 11, numRead);
+        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+
+        query = qb.range("population", Operator.LT, 350000);
+        page = cities.search(query, 1);
+        iterator = page.iterator();
+        numRead = 0;
+        while ( iterator.hasNext() ) {
+            City city = iterator.next();
+            numRead++;
+        }
+        assertEquals("Failed to find number of records expected", 21, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
         query = qb.geospatial(
@@ -190,17 +201,6 @@ public class PojoFacadeTest {
         // when this works we'll find out how many we expect
         assertEquals("Failed to find number of records expected", -1, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
-
-        query = qb.range("population", Operator.LT, 350000);
-        page = cities.search(query, 1);
-        iterator = page.iterator();
-        numRead = 0;
-        while ( iterator.hasNext() ) {
-            City city = iterator.next();
-            numRead++;
-        }
-        assertEquals("Failed to find number of records expected", 21, numRead);
-        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
     }
 
     @Test
@@ -241,17 +241,16 @@ public class PojoFacadeTest {
         query = countriesQb.range("continent", Operator.EQ, "AS");
         assertEquals("Should find two cities", 2, cities.search(query, 1).getTotalSize());
 
-        // the following currently don't work even in the cts:search layer
-        // all countries containing the term "SA"
-        query = countriesQb.word("SA");
+        // all countries containing the term SA
+        query = countriesQb.containerQuery(countriesQb.term("SA"));
         assertEquals("Should find one city", 1, cities.search(query, 1).getTotalSize());
 
-        // all cities containing the term "SA"
-        query = qb.word("SA");
-        assertEquals("Should find two cities", 2, cities.search(query, 1).getTotalSize());
+        // all cities containing the term SA
+        query = qb.containerQuery(qb.term("SA"));
+        assertEquals("Should find two cities", 61, cities.search(query, 1).getTotalSize());
 
         // all countries containing the field "currencyName" with the term "peso"
-        query = countriesQb.word("currencyName", new String[]{"peso"});
+        query = countriesQb.word("currencyName", "peso");
         assertEquals("Should find one city", 1, cities.search(query, 1).getTotalSize());
     }
 
