@@ -49,7 +49,7 @@ import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.test.Common;
 import com.marklogic.client.test.BulkReadWriteTest;
-import com.marklogic.client.test.BulkReadWriteTest.City;
+import com.marklogic.client.test.City;
 import com.marklogic.client.test.BulkReadWriteTest.CityWriter;
 
 public class JacksonDatabindTest {
