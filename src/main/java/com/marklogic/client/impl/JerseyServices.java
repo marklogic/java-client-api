@@ -726,7 +726,7 @@ public class JerseyServices implements RESTServices {
 			JerseyResult result = iterator.next();
 			DocumentRecord record;
 			if ( hasMetadata ) {
-				if ( iterator.hasNext() ) {
+				if ( ! iterator.hasNext() ) {
 					throw new MarkLogicInternalException(
 						"Metadata and content parts should always come in pairs!");
 				}
@@ -750,6 +750,8 @@ public class JerseyServices implements RESTServices {
 
 		String path = "documents";
 		RequestParameters params = new RequestParameters();
+		boolean withContent = true;
+		addCategoryParams(categories, params, withContent);
 		if (format != null)        params.add("format",     format.toString().toLowerCase());
 		for (String uri: uris) {
 			params.add("uri", uri);
@@ -764,6 +766,8 @@ public class JerseyServices implements RESTServices {
             Set<Metadata> categories, Format format, RequestParameters extraParams)
 			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+		boolean withContent = true;
+		addCategoryParams(categories, params, withContent);
 		if (searchHandle != null && view != null) params.add("view", view.toString().toLowerCase());
 		if (start > 1)             params.add("start",      Long.toString(start));
 		if (pageLength > 0)        params.add("pageLength", Long.toString(pageLength));
@@ -1603,6 +1607,39 @@ public class JerseyServices implements RESTServices {
 					extractErrorFields(response));
 
 		response.close();
+	}
+
+	private void addCategoryParams(Set<Metadata> categories, MultivaluedMap<String, String> params,
+		boolean withContent)
+	{
+		if (withContent && categories == null || categories.size() == 0) {
+			params.add("category", "content");
+		} else {
+			if (withContent) params.add("category", "content");
+			if (categories.contains(Metadata.ALL)) {
+				params.add("category", "metadata");
+			} else {
+				for (Metadata category : categories) {
+					params.add("category", category.name().toLowerCase());
+				}
+			}
+		}
+	}
+	private void addCategoryParams(Set<Metadata> categories, RequestParameters params,
+		boolean withContent)
+	{
+		if (withContent && categories == null || categories.size() == 0) {
+			params.add("category", "content");
+		} else {
+			if (withContent) params.add("category", "content");
+			if (categories.contains(Metadata.ALL)) {
+				params.add("category", "metadata");
+			} else {
+				for (Metadata category : categories) {
+					params.add("category", category.name().toLowerCase());
+				}
+			}
+		}
 	}
 
 	private MultivaluedMap<String, String> makeDocumentParams(String uri,

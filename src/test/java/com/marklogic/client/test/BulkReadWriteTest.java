@@ -39,6 +39,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.DocumentWriteSet;
@@ -305,6 +306,8 @@ public class BulkReadWriteTest {
         // Execute the write operation
         jdm.write(batch);
 
+        // need the "synthetic response" format to be XML
+        jdm.setResponseFormat(Format.XML);
         // Check the results
         assertEquals("Doc1 should have the system default quality of 0", 0, 
             jdm.readMetadata("doc1.json", new DocumentMetadataHandle()).getQuality());
@@ -325,6 +328,26 @@ public class BulkReadWriteTest {
             jdm.readMetadata("doc4.json", new DocumentMetadataHandle()).getQuality());
         assertEquals("Doc5 should use the 2nd batch default metadata, with quality 2", defaultMetadata2.getQuality(),
             jdm.readMetadata("doc5.json", new DocumentMetadataHandle()).getQuality());
+
+        // let's check getting just quality metadata with content in bulk read
+        jdm.setMetadataCategories(Metadata.QUALITY);
+        DocumentPage documents = jdm.read("doc1.json", "doc2.json", "doc3.json");
+
+        for ( DocumentRecord doc: documents ) {
+            DocumentMetadataHandle metadata = doc.getMetadata(new DocumentMetadataHandle());
+            StringHandle content = doc.getContent(new StringHandle());
+            if ( "doc1.json".equals(doc.getUri()) ) {
+                assertEquals("Doc 1 should have the system default quality of 0", 0, metadata.getQuality());
+                assertTrue("Doc 1 contents are wrong", content.get().matches("\\{\"number\": ?1\\}"));
+            } else if ( "doc2.json".equals(doc.getUri()) ) {
+                assertEquals("Doc 2 should use the first batch default metadata, with quality 1", 1, metadata.getQuality());
+                assertTrue("Doc 2 contents are wrong", content.get().matches("\\{\"number\": ?2\\}"));
+            } else if ( "doc3.json".equals(doc.getUri()) ) {
+                assertEquals("Doc 3 should have the system default document quality (0) because quality " +
+                  "was not included in the document-specific metadata.", 0, metadata.getQuality());
+                assertTrue("Doc 3 contents are wrong", content.get().matches("\\{\"number\": ?3\\}"));
+            }
+        }
     }
 
 
