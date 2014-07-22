@@ -277,6 +277,12 @@ public class BulkReadWriteTest {
                 "{\"number\": 4}").withFormat(Format.JSON);
         StringHandle doc5 = new StringHandle(
                 "{\"number\": 5}").withFormat(Format.JSON);
+        StringHandle doc6 = new StringHandle(
+                "{\"number\": 6}").withFormat(Format.JSON);
+        StringHandle doc7 = new StringHandle(
+                "{\"number\": 7}").withFormat(Format.JSON);
+        StringHandle doc8 = new StringHandle(
+                "{\"number\": 8}").withFormat(Format.JSON);
 
         // Synthesize input metadata
         DocumentMetadataHandle defaultMetadata1 = 
@@ -303,6 +309,14 @@ public class BulkReadWriteTest {
         batch.addDefault(defaultMetadata2); 
         batch.add("doc5.json", doc5);       // batch default 
 
+        // replace default metadata with blank metadata (back to system defaults)
+        batch.disableDefault(); 
+        batch.add("doc6.json", doc6);       // system default metadata
+        batch.addDefault(defaultMetadata1); 
+        batch.add("doc7.json", doc7);       // batch default metadata
+        batch.disableDefault(); 
+        batch.add("doc8.json", doc8);       // system default metadata
+
         // Execute the write operation
         jdm.write(batch);
 
@@ -323,29 +337,37 @@ public class BulkReadWriteTest {
         assertEquals("Doc3 should be in the collection \"myCollection\", from the document-specific metadata.",
             "myCollection", collections.iterator().next());
 
-        // 
-        assertEquals("Doc4 should also use the 1st batch default metadata, with quality 1", defaultMetadata1.getQuality(),
-            jdm.readMetadata("doc4.json", new DocumentMetadataHandle()).getQuality());
-        assertEquals("Doc5 should use the 2nd batch default metadata, with quality 2", defaultMetadata2.getQuality(),
-            jdm.readMetadata("doc5.json", new DocumentMetadataHandle()).getQuality());
-
-        // let's check getting just quality metadata with content in bulk read
+        // let's check getting content with just quality in the metadata 
         jdm.setMetadataCategories(Metadata.QUALITY);
-        DocumentPage documents = jdm.read("doc1.json", "doc2.json", "doc3.json");
+        DocumentPage documents = jdm.read("doc4.json", "doc5.json");
 
         for ( DocumentRecord doc: documents ) {
             DocumentMetadataHandle metadata = doc.getMetadata(new DocumentMetadataHandle());
             StringHandle content = doc.getContent(new StringHandle());
-            if ( "doc1.json".equals(doc.getUri()) ) {
-                assertEquals("Doc 1 should have the system default quality of 0", 0, metadata.getQuality());
-                assertTrue("Doc 1 contents are wrong", content.get().matches("\\{\"number\": ?1\\}"));
-            } else if ( "doc2.json".equals(doc.getUri()) ) {
-                assertEquals("Doc 2 should use the first batch default metadata, with quality 1", 1, metadata.getQuality());
-                assertTrue("Doc 2 contents are wrong", content.get().matches("\\{\"number\": ?2\\}"));
-            } else if ( "doc3.json".equals(doc.getUri()) ) {
-                assertEquals("Doc 3 should have the system default document quality (0) because quality " +
-                  "was not included in the document-specific metadata.", 0, metadata.getQuality());
-                assertTrue("Doc 3 contents are wrong", content.get().matches("\\{\"number\": ?3\\}"));
+            if ( "doc4.json".equals(doc.getUri()) ) {
+                assertEquals("Doc4 should also use the 1st batch default metadata, with quality 1", 1,
+                    metadata.getQuality());
+                assertTrue("Doc 4 contents are wrong", content.get().matches("\\{\"number\": ?4\\}"));
+            } else if ( "doc5.json".equals(doc.getUri()) ) {
+                assertEquals("Doc5 should use the 2nd batch default metadata, with quality 2", 2,
+                    metadata.getQuality());
+                assertTrue("Doc 5 contents are wrong", content.get().matches("\\{\"number\": ?5\\}"));
+            }
+        }
+
+        // now try with just metadata
+        documents = jdm.readMetadata("doc6.json", "doc7.json", "doc8.json");
+        for ( DocumentRecord doc: documents ) {
+            DocumentMetadataHandle metadata = doc.getMetadata(new DocumentMetadataHandle());
+            if ( "doc6.json".equals(doc.getUri()) ) {
+                assertEquals("Doc 6 should have the system default quality of 0", 0,
+                    metadata.getQuality());
+            } else if ( "doc7.json".equals(doc.getUri()) ) {
+                assertEquals("Doc7 should also use the 1st batch default metadata, with quality 1", 1,
+                    metadata.getQuality());
+            } else if ( "doc8.json".equals(doc.getUri()) ) {
+                assertEquals("Doc 8 should have the system default quality of 0", 0,
+                    metadata.getQuality());
             }
         }
     }

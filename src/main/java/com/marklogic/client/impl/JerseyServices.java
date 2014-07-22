@@ -694,12 +694,12 @@ public class JerseyServices implements RESTServices {
     @Override
 	public DocumentPage getBulkDocuments(RequestLogger reqlog,
 			String transactionId, Set<Metadata> categories, 
-			Format format, RequestParameters extraParams, String... uris)
+			Format format, RequestParameters extraParams, boolean withContent, String... uris)
 			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		boolean hasMetadata = categories != null && categories.size() > 0;
 		JerseyResultIterator iterator = 
-			getBulkDocumentsImpl(reqlog, transactionId, categories, format, extraParams, uris);
-		return convertToDocumentPage(iterator, hasMetadata);
+			getBulkDocumentsImpl(reqlog, transactionId, categories, format, extraParams, withContent, uris);
+		return convertToDocumentPage(iterator, withContent, hasMetadata);
 	}
 
     @Override
@@ -708,16 +708,19 @@ public class JerseyServices implements RESTServices {
 			long start, long pageLength,
 			String transactionId,
 			SearchReadHandle searchHandle, QueryView view,
-            Set<Metadata> categories, Format format, RequestParameters extraParams)
+			Set<Metadata> categories, Format format, RequestParameters extraParams)
 			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		boolean hasMetadata = categories != null && categories.size() > 0;
+		boolean hasContent = true;
 		JerseyResultIterator iterator = 
 			getBulkDocumentsImpl(reqlog, querydef, start, pageLength, transactionId, 
 				searchHandle, view, categories, format, extraParams);
-		return convertToDocumentPage(iterator, hasMetadata);
+		return convertToDocumentPage(iterator, hasContent, hasMetadata);
 	}
 
-	private DocumentPage convertToDocumentPage(JerseyResultIterator iterator, boolean hasMetadata) {
+	private DocumentPage convertToDocumentPage(JerseyResultIterator iterator, boolean hasContent,
+		boolean hasMetadata)
+	{
 		ArrayList<DocumentRecord> records = new ArrayList<DocumentRecord>();
         if ( iterator == null ) {
             return new DocumentPageImpl(records, 1, 0, 0, 0);
@@ -725,17 +728,18 @@ public class JerseyServices implements RESTServices {
 		while (iterator.hasNext()) {
 			JerseyResult result = iterator.next();
 			DocumentRecord record;
-			if ( hasMetadata ) {
-				if ( ! iterator.hasNext() ) {
-					throw new MarkLogicInternalException(
-						"Metadata and content parts should always come in pairs!");
-				}
+			if ( hasContent && hasMetadata ) {
 				JerseyResult metadata = result;
 				JerseyResult content = iterator.next();
 				record = new JerseyDocumentRecord(content, metadata);
-			} else {
+			} else if ( hasContent ) {
 				JerseyResult content = result;
 				record = new JerseyDocumentRecord(content);
+			} else if ( hasMetadata ) {
+				JerseyResult metadata = result;
+				record = new JerseyDocumentRecord(null, metadata);
+			} else {
+				throw new IllegalStateException("Should never have neither content nor metadata");
 			}
 			records.add(record);
 		}
@@ -745,12 +749,11 @@ public class JerseyServices implements RESTServices {
 
 	private JerseyResultIterator getBulkDocumentsImpl(RequestLogger reqlog,
 			String transactionId, Set<Metadata> categories, 
-			Format format, RequestParameters extraParams, String... uris)
+			Format format, RequestParameters extraParams, boolean withContent, String... uris)
 			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 
 		String path = "documents";
 		RequestParameters params = new RequestParameters();
-		boolean withContent = true;
 		addCategoryParams(categories, params, withContent);
 		if (format != null)        params.add("format",     format.toString().toLowerCase());
 		for (String uri: uris) {
@@ -3431,7 +3434,15 @@ public class JerseyServices implements RESTServices {
 				HandleAccessor.checkHandle(write.getMetadata(), "write");
 			HandleImplementation content =
 				HandleAccessor.checkHandle(write.getContent(), "write");
-			if ( metadata != null ) {
+			if ( write.getOperationType() == 
+					DocumentWriteOperation.OperationType.DISABLE_METADATA_DEFAULT )
+			{
+				MultivaluedMap headers = new MultivaluedMapImpl();
+				headers.add(HttpHeaders.CONTENT_TYPE, metadata.getMimetype());
+				headers.add("Content-Disposition", "inline; category=metadata");
+				headerList.add(headers);
+				writeHandles.add(write.getMetadata());
+			} else if ( metadata != null ) {
 				MultivaluedMap headers = new MultivaluedMapImpl();
 				headers.add(HttpHeaders.CONTENT_TYPE, metadata.getMimetype());
 				if ( write.getOperationType() == DocumentWriteOperation.OperationType.METADATA_DEFAULT ) {
@@ -4393,7 +4404,13 @@ public class JerseyServices implements RESTServices {
 		}
 
 		public String getUri() {
-			return content.getUri();
+			if ( content == null && metadata != null ) {
+				return metadata.getUri();
+			} else if ( content != null ) {
+				return content.getUri();
+			} else {
+				throw new IllegalStateException("Missing both content and metadata!");
+			}
 		}
 
 		public Format getFormat() {

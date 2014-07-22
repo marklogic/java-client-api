@@ -376,6 +376,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 
     public DocumentPage read(ServerTransform transform, Transaction transaction, String... uris);
 
+    public DocumentPage readMetadata(String... uris);
+
+    public DocumentPage readMetadata(Transaction transaction, String... uris);
+
     public DocumentPage search(QueryDefinition querydef, long start);
 
     public DocumentPage search(QueryDefinition querydef, long start, Transaction transaction);

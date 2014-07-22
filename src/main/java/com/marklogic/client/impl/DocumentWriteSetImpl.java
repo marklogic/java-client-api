@@ -20,6 +20,8 @@ import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteOperation.OperationType;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
@@ -29,6 +31,12 @@ public class DocumentWriteSetImpl extends LinkedHashSet<DocumentWriteOperation> 
     public DocumentWriteSet addDefault(DocumentMetadataWriteHandle metadataHandle) {
 		add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT,
 			null, metadataHandle, null));
+		return this;
+	}
+
+    public DocumentWriteSet disableDefault() {
+		add(new DocumentWriteOperationImpl(OperationType.DISABLE_METADATA_DEFAULT,
+			null, new StringHandle("{ }").withFormat(Format.JSON), null));
 		return this;
 	}
 
