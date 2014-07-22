@@ -278,6 +278,7 @@ public class DocumentMetadataHandle
     private DocumentPermissions permissions;
 	private DocumentProperties  properties;
 	private int                 quality = 0;
+	private boolean             qualityModified = false;
 	private ValueSerializer     valueSerializer;
 
 	/**
@@ -407,6 +408,7 @@ public class DocumentMetadataHandle
 	 */
 	public void setQuality(int quality) {
 		this.quality = quality;
+		this.qualityModified = true;
 	}
 	/**
 	 * Locally specifies the match quality for the document.
@@ -696,6 +698,7 @@ public class DocumentMetadataHandle
 		}
 	}
 	private void sendCollectionsImpl(XMLStreamWriter serializer) throws XMLStreamException {
+		if ( getCollections() == null || getCollections().size() == 0 ) return;
 		serializer.writeStartElement("rapi", "collections", REST_API_NS);
 
 		for (String collection: getCollections()) {
@@ -707,6 +710,7 @@ public class DocumentMetadataHandle
 		serializer.writeEndElement();
 	}
 	private void sendPermissionsImpl(XMLStreamWriter serializer) throws XMLStreamException {
+		if ( getPermissions() == null || getPermissions().size() == 0 ) return;
 		serializer.writeStartElement("rapi", "permissions", REST_API_NS);
 
 		for (Map.Entry<String, Set<Capability>> permission: getPermissions().entrySet()) {
@@ -728,6 +732,7 @@ public class DocumentMetadataHandle
 		serializer.writeEndElement();
 	}
 	private void sendPropertiesImpl(final XMLStreamWriter serializer) throws XMLStreamException, TransformerFactoryConfigurationError, TransformerException {
+		if ( getProperties() == null || getProperties().size() == 0 ) return;
 		serializer.writeStartElement("prop", "properties", PROPERTY_API_NS);
 
 		for (Map.Entry<QName, Object> property: getProperties().entrySet()) {
@@ -765,6 +770,7 @@ public class DocumentMetadataHandle
 		serializer.writeEndElement();
 	}
 	private void sendQualityImpl(XMLStreamWriter serializer) throws XMLStreamException {
+		if ( qualityModified == false ) return;
 		serializer.writeStartElement("rapi", "quality", REST_API_NS);
 		serializer.writeCharacters(String.valueOf(getQuality()));
 		serializer.writeEndElement();
