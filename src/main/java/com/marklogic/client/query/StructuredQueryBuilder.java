@@ -389,7 +389,7 @@ public class StructuredQueryBuilder {
 
     /**
      * Matches an element, attribute, json key, or field
-     * that has a value with the same words as at least one
+     * that has a value with the same string value as at least one
      * of the criteria values.
      * @param index	the value container
      * @param values	the possible values to match
@@ -400,7 +400,7 @@ public class StructuredQueryBuilder {
     }
     /**
      * Matches an element, attribute, json key, or field
-     * that has a value with the same words as at least one
+     * that has a value with the same string value as at least one
      * of the criteria values.
      * @param index	the value container
      * @param scope	whether the query matches the document content or properties
@@ -783,7 +783,7 @@ public class StructuredQueryBuilder {
 
     /**
      * Matches the container specified by the constraint when it
-     * has a value with the same words as at least one
+     * has a value with the same string value as at least one
      * of the criteria values.
      * @param constraintName	the constraint definition
      * @param values	the possible values to match
@@ -794,7 +794,7 @@ public class StructuredQueryBuilder {
     }
     /**
      * Matches the container specified by the constraint when it
-     * has a value with the same words as at least one
+     * has a value with the same string value as at least one
      * of the criteria values.
      * @param constraintName	the constraint definition
      * @param weight	the multiplier for the match in the document ranking
