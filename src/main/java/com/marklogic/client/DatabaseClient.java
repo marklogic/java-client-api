@@ -113,10 +113,15 @@ public interface DatabaseClient {
     public ServerConfigurationManager newServerConfigManager();
 
     /**
-     * Creates a PojoRepository specific to the specified class and id types. 
+     * Creates a PojoRepository specific to the specified class and its id type. 
      * The PojoRepository provides a facade for persisting, retrieving, and
      * querying data contained in Java objects.  Annotations are required to
      * identify the id field and any fields for which you wish to create indexes.
+     *
+     * @param clazz the class type for this PojoRepository to handle
+     * @param idClass the class type of the id field for this clazz, must obviously 
+     *          be Serializable or we'll struggle to marshall it
+     * @return the initialized PojoRepository
      **/
     public <T, ID extends Serializable> PojoRepository<T, ID> newPojoRepository(Class<T> clazz, Class<ID> idClass);
 
