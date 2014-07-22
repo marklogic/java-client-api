@@ -3434,7 +3434,15 @@ public class JerseyServices implements RESTServices {
 				HandleAccessor.checkHandle(write.getMetadata(), "write");
 			HandleImplementation content =
 				HandleAccessor.checkHandle(write.getContent(), "write");
-			if ( metadata != null ) {
+			if ( write.getOperationType() == 
+					DocumentWriteOperation.OperationType.DISABLE_METADATA_DEFAULT )
+			{
+				MultivaluedMap headers = new MultivaluedMapImpl();
+				headers.add(HttpHeaders.CONTENT_TYPE, metadata.getMimetype());
+				headers.add("Content-Disposition", "inline; category=metadata");
+				headerList.add(headers);
+				writeHandles.add(write.getMetadata());
+			} else if ( metadata != null ) {
 				MultivaluedMap headers = new MultivaluedMapImpl();
 				headers.add(HttpHeaders.CONTENT_TYPE, metadata.getMimetype());
 				if ( write.getOperationType() == DocumentWriteOperation.OperationType.METADATA_DEFAULT ) {

@@ -19,7 +19,7 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
 public interface DocumentWriteOperation {
-    public enum OperationType { METADATA_DEFAULT, DOCUMENT_WRITE };
+    public enum OperationType { METADATA_DEFAULT, DISABLE_METADATA_DEFAULT, DOCUMENT_WRITE };
 
     public OperationType getOperationType();
 

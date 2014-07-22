@@ -279,6 +279,10 @@ public class BulkReadWriteTest {
                 "{\"number\": 5}").withFormat(Format.JSON);
         StringHandle doc6 = new StringHandle(
                 "{\"number\": 6}").withFormat(Format.JSON);
+        StringHandle doc7 = new StringHandle(
+                "{\"number\": 7}").withFormat(Format.JSON);
+        StringHandle doc8 = new StringHandle(
+                "{\"number\": 8}").withFormat(Format.JSON);
 
         // Synthesize input metadata
         DocumentMetadataHandle defaultMetadata1 = 
@@ -287,7 +291,6 @@ public class BulkReadWriteTest {
                 new DocumentMetadataHandle().withQuality(2);
         DocumentMetadataHandle docSpecificMetadata = 
                 new DocumentMetadataHandle().withCollections("myCollection");
-        DocumentMetadataHandle blankDefaultMetadata = new DocumentMetadataHandle();
 
         // Create and build up the batch
         JSONDocumentManager jdm = Common.client.newJSONDocumentManager();
@@ -307,8 +310,12 @@ public class BulkReadWriteTest {
         batch.add("doc5.json", doc5);       // batch default 
 
         // replace default metadata with blank metadata (back to system defaults)
-        batch.addDefault(blankDefaultMetadata); 
+        batch.disableDefault(); 
         batch.add("doc6.json", doc6);       // system default metadata
+        batch.addDefault(defaultMetadata1); 
+        batch.add("doc7.json", doc7);       // batch default metadata
+        batch.disableDefault(); 
+        batch.add("doc8.json", doc8);       // system default metadata
 
         // Execute the write operation
         jdm.write(batch);
@@ -332,7 +339,7 @@ public class BulkReadWriteTest {
 
         // let's check getting content with just quality in the metadata 
         jdm.setMetadataCategories(Metadata.QUALITY);
-        DocumentPage documents = jdm.read("doc4.json", "doc5.json", "doc6.json");
+        DocumentPage documents = jdm.read("doc4.json", "doc5.json");
 
         for ( DocumentRecord doc: documents ) {
             DocumentMetadataHandle metadata = doc.getMetadata(new DocumentMetadataHandle());
@@ -345,25 +352,21 @@ public class BulkReadWriteTest {
                 assertEquals("Doc5 should use the 2nd batch default metadata, with quality 2", 2,
                     metadata.getQuality());
                 assertTrue("Doc 5 contents are wrong", content.get().matches("\\{\"number\": ?5\\}"));
-            } else if ( "doc6.json".equals(doc.getUri()) ) {
-                assertEquals("Doc 6 should have the system default quality of 0", 0,
-                    metadata.getQuality());
-                assertTrue("Doc 6 contents are wrong", content.get().matches("\\{\"number\": ?6\\}"));
             }
         }
 
         // now try with just metadata
-        documents = jdm.readMetadata("doc4.json", "doc5.json", "doc6.json");
+        documents = jdm.readMetadata("doc6.json", "doc7.json", "doc8.json");
         for ( DocumentRecord doc: documents ) {
             DocumentMetadataHandle metadata = doc.getMetadata(new DocumentMetadataHandle());
-            if ( "doc4.json".equals(doc.getUri()) ) {
-                assertEquals("Doc4 should also use the 1st batch default metadata, with quality 1", 1,
-                    metadata.getQuality());
-            } else if ( "doc5.json".equals(doc.getUri()) ) {
-                assertEquals("Doc5 should use the 2nd batch default metadata, with quality 2", 2,
-                    metadata.getQuality());
-            } else if ( "doc6.json".equals(doc.getUri()) ) {
+            if ( "doc6.json".equals(doc.getUri()) ) {
                 assertEquals("Doc 6 should have the system default quality of 0", 0,
+                    metadata.getQuality());
+            } else if ( "doc7.json".equals(doc.getUri()) ) {
+                assertEquals("Doc7 should also use the 1st batch default metadata, with quality 1", 1,
+                    metadata.getQuality());
+            } else if ( "doc8.json".equals(doc.getUri()) ) {
+                assertEquals("Doc 8 should have the system default quality of 0", 0,
                     metadata.getQuality());
             }
         }
