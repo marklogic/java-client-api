@@ -74,7 +74,8 @@ public interface RESTServices {
 		throws ForbiddenUserException, FailedRequestException;
 
 	public DocumentPage getBulkDocuments(RequestLogger logger, String transactionId,
-			Set<Metadata> categories, Format format, RequestParameters extraParams, String... uris)
+			Set<Metadata> categories, Format format, RequestParameters extraParams,
+			boolean withContent, String... uris)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 	public DocumentPage getBulkDocuments(RequestLogger logger, QueryDefinition querydef,
 			long start, long pageLength, String transactionId, SearchReadHandle searchHandle, 
