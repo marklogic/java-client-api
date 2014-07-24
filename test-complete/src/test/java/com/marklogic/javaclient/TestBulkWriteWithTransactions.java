@@ -39,17 +39,17 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In Setup");
-//		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
-//		  createRESTUser("app-user", "password","rest-writer","rest-reader"  );
-//		  createRESTUserWithPermissions("usr1", "password",getPermissionNode("eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
-//		  setMaintainLastModified(dbName, true);
+		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		  createRESTUser("app-user", "password","rest-writer","rest-reader"  );
+		  createRESTUserWithPermissions("usr1", "password",getPermissionNode("eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
+		  setMaintainLastModified(dbName, true);
 	}
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-//		tearDownJavaRESTServer(dbName, fNames, restServerName);
-//		deleteRESTUser("app-user");
-//		deleteRESTUser("usr1");
+		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		deleteRESTUser("app-user");
+		deleteRESTUser("usr1");
 	}
 	@Before
 	public void setUp() throws Exception {
@@ -135,7 +135,7 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
         assertEquals("All records are expected to be in same format", type, record.getFormat());
      }
 	/*
-	 * This test is trying to bulk insert in 
+	 * This test is trying to bulk insert documents with transaction open and not commited and try to read documents before commit.
 	 */
 	@Test
 	public void testBulkWritewithTransactions() throws Exception {
@@ -162,7 +162,7 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 		 for(int i =0;i<102;i++){
 		    uris[i]=DIRECTORY+"foo"+i+".xml";
 		  }
-		// t1.commit();
+		
 		  count=0;
 		  DocumentPage page = docMgr.read(t1,uris);
 		  DOMHandle dh = new DOMHandle();
@@ -175,6 +175,7 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 		  }
 		  
 		 assertEquals("document count", 102,count); 
+		 t1.rollback();
 	}
 
 }
