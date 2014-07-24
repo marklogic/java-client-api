@@ -1,0 +1,18 @@
+Step 1: 
+ Build dev source code by doing the following on your dev branch
+
+Mvn clean
+Mvn –Dmaven.test.skip=true install
+
+Step2:
+Go to the directory where you ../test-complete/
+
+Gradlew clean
+
+Gradlew test    => to run all the functional tests, which will take about couple of hours
+
+gradlew -Dtest.single=TestBulkWriteMetadata1 test    => to run individual tests
+
+each test is independent and you can find the results under Java-client-api-qa\build\test-results
+
+and if you run all the functional tests then you can find a report under Java-client-api-qa\build\reports\tests\index.html
