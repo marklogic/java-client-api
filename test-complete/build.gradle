@@ -1,0 +1,16 @@
+
+/* plugins */
+apply plugin: 'java'
+
+
+/* The code repositories to consult for dependencies */
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    compile('com.marklogic:client-api-java:3.0-SNAPSHOT')
+	compile('xmlunit:xmlunit:1.5')
+	compile('junit:junit:4.11')
+}

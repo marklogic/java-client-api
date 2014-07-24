@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<test xmlns:myns="http://mynamespace.com">
+<txt att="1">a</txt>
+</test> 

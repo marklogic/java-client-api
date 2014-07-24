@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<options xmlns="http://marklogic.com/appservices/search">
+  <constraint name="heat">
+    <range type="xs:int">
+      <element ns="http://example.com" name="scoville"/>
+      <bucket name="mild" lt="500">Mild (below 500)</bucket>
+      <bucket name="moderate" ge="500" lt="2500">Moderate (500 - 2500)</bucket>
+      <bucket name="hot" ge="2500" lt="8000">Hot (2500-8000)</bucket>
+      <bucket name="extra-hot" ge="8000">Extra Hot (8000+)</bucket>
+    </range>
+  </constraint>
+</options>

@@ -1,0 +1,8 @@
+<root>
+  <title>The memex</title>
+  <popularity>5</popularity>
+  <id>0026</id>
+  <date xmlns="http://purl.org/dc/elements/1.1/">2009-05-05</date>
+  <price xmlns="http://cloudbank.com" amt="123.45"/>
+  <p>The Memex, unfortunately, had no automated search feature.</p>
+</root>

@@ -1,0 +1,16 @@
+<options xmlns="http://marklogic.com/appservices/search">
+<fragment-scope>properties</fragment-scope>
+  <constraint name="city-property">
+    <word>
+      <element ns="" name="city"/>
+    </word>
+  </constraint>
+    <constraint name="pop">
+    <range type="xs:int">
+      <element ns="" name="popularity"/>
+      <bucket name="low" lt="5">Low</bucket>
+      <bucket name="medium" ge="5" lt="10">Medium</bucket>
+      <bucket name="high" ge="10" lt="15">High</bucket>
+    </range>
+  </constraint>
+</options>

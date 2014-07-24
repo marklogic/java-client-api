@@ -1,0 +1,50 @@
+<options xmlns="http://marklogic.com/appservices/search">
+    <return-metrics>false</return-metrics>
+    <return-qtext>false</return-qtext>
+    <debug>true</debug>
+    <transform-results apply="raw"/>
+    <sort-order>
+      <element ns="" name="title"/>
+    </sort-order>
+    <constraint name="id">
+      <value>
+        <element ns="" name="id"/>
+      </value>
+    </constraint>
+    <constraint name="date">
+      <range type="xs:date" facet="false">
+        <element ns="http://purl.org/dc/elements/1.1/" name="date"/>
+      </range>
+    </constraint>
+    <constraint name="coll">
+      <collection prefix="http://test.com/" facet="true"/>
+    </constraint>
+    <constraint name="para">
+      <word>
+        <field name="para"/>
+        <term-option>case-insensitive</term-option>
+      </word>
+    </constraint>
+    <constraint name="pop">
+      <range type="xs:int" facet="true">
+        <element ns="" name="popularity"/>
+        <bucket name="high" ge="5">High</bucket>
+        <bucket name="medium" ge="3" lt="5">Medium</bucket>
+        <bucket name="low" ge="1" lt="3">Low</bucket>
+      </range>
+    </constraint>
+    <constraint name="price" >
+      <range type="xs:decimal"  facet="false">
+        <element ns="http://cloudbank.com" name="price"/>
+        <attribute ns="" name="amt"/>
+        <bucket name="high" ge="120">High</bucket>
+        <bucket name="medium" ge="3" lt="14">Medium</bucket>
+        <bucket name="low" ge="0" lt="2">Low</bucket>
+      </range>
+    </constraint>
+    <constraint name="intitle">
+      <word>
+        <element ns="" name="title"/>
+      </word>
+    </constraint>
+</options>

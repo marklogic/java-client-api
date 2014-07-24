@@ -1,0 +1,6 @@
+<options xmlns="http://marklogic.com/appservices/search">
+  <return-metrics>false</return-metrics>
+  <return-qtext>false</return-qtext>
+  <debug>true</debug>
+  <transform-results apply="raw"/>
+</options>

@@ -1,0 +1,7 @@
+<options xmlns="http://marklogic.com/appservices/search">
+  <default-suggestion-source>
+    <range type="xs:string" collation="http://marklogic.com/collation/">
+      <element ns="" name="title"/>
+    </range>
+  </default-suggestion-source>
+ </options>

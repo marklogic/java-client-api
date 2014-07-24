@@ -1,0 +1,116 @@
+<search xmlns="http://marklogic.com/appservices/search">
+  <search:query xmlns:search="http://marklogic.com/appservices/search">
+  <search:and-query>
+    <search:and-query>
+      <search:and-query>
+	<search:and-query>
+	  <search:and-query>
+	    <search:and-query>
+	      <search:and-query>
+		<search:collection-constraint-query>
+		  <search:constraint-name>coll</search:constraint-name>
+		  <search:uri>set1</search:uri>
+		</search:collection-constraint-query>
+		<search:collection-constraint-query>
+		  <search:constraint-name>coll</search:constraint-name>
+		  <search:uri>set5</search:uri>
+		</search:collection-constraint-query>
+	      </search:and-query>
+	      <search:not-query>
+		<search:word-constraint-query>
+		  <search:constraint-name>intitle</search:constraint-name>
+		  <search:text>memex</search:text>
+		</search:word-constraint-query>
+	      </search:not-query>
+	    </search:and-query>
+	    <search:or-query>
+	      <search:range-constraint-query>
+		<search:constraint-name>pop</search:constraint-name>
+		<search:value>high</search:value>
+	      </search:range-constraint-query>
+	      <search:range-constraint-query>
+		<search:constraint-name>pop</search:constraint-name>
+		<search:value>medium</search:value>
+	      </search:range-constraint-query>
+	    </search:or-query>
+	  </search:and-query>
+	  <search:range-constraint-query>
+	    <search:constraint-name>price</search:constraint-name>
+	    <search:value>low</search:value>
+	  </search:range-constraint-query>
+	</search:and-query>
+	<search:value-constraint-query>
+	  <search:constraint-name>id</search:constraint-name>
+	  <search:text>**11</search:text>
+	</search:value-constraint-query>
+      </search:and-query>
+      <search:range-constraint-query>
+	<search:constraint-name>date</search:constraint-name>
+	<search:value>2005-01-01</search:value>
+      </search:range-constraint-query>
+    </search:and-query>
+    <search:and-query>
+      <search:word-constraint-query>
+	<search:constraint-name>para</search:constraint-name>
+	<search:text>Bush</search:text>
+      </search:word-constraint-query>
+      <search:not-query>
+	<search:word-constraint-query>
+	  <search:constraint-name>para</search:constraint-name>
+	  <search:text>memex</search:text>
+	</search:word-constraint-query>
+      </search:not-query>
+    </search:and-query>
+  </search:and-query>
+</search:query>    
+  <options>
+    <return-metrics>false</return-metrics>
+    <return-qtext>false</return-qtext>
+    <debug>true</debug>
+    <transform-results apply="raw"/>
+    <sort-order>
+      <element ns="" name="title"/>
+    </sort-order>
+    <constraint name="id">
+      <value>
+        <element ns="" name="id"/>
+      </value>
+    </constraint>
+    <constraint name="date">
+      <range type="xs:date" facet="false">
+        <element ns="http://purl.org/dc/elements/1.1/" name="date"/>
+      </range>
+    </constraint>
+    <constraint name="coll">
+      <collection prefix="http://test.com/" facet="true"/>
+    </constraint>
+    <constraint name="para">
+      <word>
+        <field name="para"/>
+        <term-option>case-insensitive</term-option>
+      </word>
+    </constraint>
+    <constraint name="pop">
+      <range type="xs:int" facet="true">
+        <element ns="" name="popularity"/>
+        <bucket name="high" ge="5">High</bucket>
+        <bucket name="medium" ge="3" lt="5">Medium</bucket>
+        <bucket name="low" ge="1" lt="3">Low</bucket>
+      </range>
+    </constraint>
+    <constraint name="price" >
+      <range type="xs:decimal"  facet="false">
+        <element ns="http://cloudbank.com" name="price"/>
+        <attribute ns="" name="amt"/>
+        <bucket name="high" ge="120">High</bucket>
+        <bucket name="medium" ge="3" lt="14">Medium</bucket>
+        <bucket name="low" ge="0" lt="2">Low</bucket>
+      </range>
+    </constraint>
+    <constraint name="intitle">
+      <word>
+        <element ns="" name="title"/>
+      </word>
+    </constraint>
+  </options>  
+</search>

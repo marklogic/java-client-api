@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<options xmlns="http://marklogic.com/appservices/search">
+  <constraint name="date">
+    <range type="xs:dateTime" facet="true">
+      <element ns="http://example.com" name="entry"/> 
+      <attribute ns="" name="date"/>
+      <computed-bucket lt="-P1Y" anchor="start-of-year" name="older">Older</computed-bucket>
+      <computed-bucket lt="P1Y" ge="P0Y" anchor="start-of-year" name="year">This Year</computed-bucket>
+      <computed-bucket lt="P1M" ge="P0M" anchor="start-of-month" name="month">This Month</computed-bucket>
+      <computed-bucket lt="P1D" ge="P0D" anchor="start-of-day" name="today">Today</computed-bucket>
+      <computed-bucket ge="P0D" anchor="now" name="future">Future</computed-bucket>
+      <facet-option>descending</facet-option>
+    </range>
+  </constraint>
+</options>

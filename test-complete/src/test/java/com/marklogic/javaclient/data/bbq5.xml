@@ -1,0 +1,9 @@
+<entry xmlns="http://example.com" date="2009-07-04T13:32:52-07:00">
+   <title>Kansas City Apple Cinnamon</title>
+   <abstract>Specialty recipe made with real fruit and spices</abstract>
+   <flavor-descriptor>apple</flavor-descriptor>
+   <flavor-descriptor>cinnamon</flavor-descriptor>
+   <flavor-descriptor>brown sugar</flavor-descriptor>
+   <scoville>1000</scoville>
+   <rating>2.0</rating>
+</entry>

@@ -1,0 +1,10 @@
+<root>
+  <title>The Bush article</title>
+  <popularity>4</popularity>
+  <id>0012</id>
+  <date xmlns="http://purl.org/dc/elements/1.1/">2006-02-02</date>
+  <price xmlns="http://cloudbank.com" amt="0.12"/>
+  <score xmlns="http://test.aggr.com">92.45</score>
+  <rate xmlns="http://test.tups.com">5</rate>
+  <p>The Bush article described a device called a Memex.</p>
+</root>

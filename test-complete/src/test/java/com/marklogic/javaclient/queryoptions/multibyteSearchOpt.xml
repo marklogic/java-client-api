@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<options xmlns="http://marklogic.com/appservices/search">
+  <constraint name="mult-title">
+    <word>
+      <element ns="" name="title"/>
+    </word>
+  </constraint>
+  <constraint name="mult-pop">
+    <range type="xs:int">
+      <element ns="" name="popularity"/>
+      <!-- <bucket name="低" lt="5">低</bucket>
+      <bucket name="中" ge="5" lt="10">中</bucket>
+      <bucket name="高" ge="10" lt="15">高</bucket> -->
+      <bucket name="low" lt="5">低</bucket>
+      <bucket name="medium" ge="5" lt="10">中</bucket>
+      <bucket name="high" ge="10" lt="15">高</bucket>
+    </range>
+  </constraint>
+</options>	

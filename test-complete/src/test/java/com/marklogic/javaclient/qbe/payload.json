@@ -1,0 +1,13 @@
+{
+    "$query":
+        "title":{"$word":"Vannevar"},
+        {"id":"0011"},
+        "p":{"$word":"atlantic"},
+        "popularity":{"$gt":3},
+    "$response":{
+        "$extract":{
+            "title":{},
+            "id":{},
+            "p":{},
+            "popularity":{}}}
+ }

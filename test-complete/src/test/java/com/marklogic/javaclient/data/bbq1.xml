@@ -1,0 +1,9 @@
+<entry xmlns="http://example.com" date="2007-10-31T14:17:44.425-07:00">
+   <title>Sally's Southern BBQ</title>
+   <abstract>A classic southern recipe</abstract>
+   <flavor-descriptor>cayanne</flavor-descriptor>
+   <flavor-descriptor>molasses</flavor-descriptor>
+   <flavor-descriptor>smoky</flavor-descriptor>
+   <scoville>800</scoville>
+   <rating>3.0</rating>
+</entry>

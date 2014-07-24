@@ -1,0 +1,10 @@
+<options xmlns="http://marklogic.com/appservices/search">
+  <return-metrics>false</return-metrics>
+  <return-qtext>false</return-qtext>
+  <transform-results apply="raw"/>
+  <constraint name="date">
+    <range type="xs:string">
+      <element ns="http://purl.org/dc/elements/1.1/" name="date"/>
+    </range>
+  </constraint>
+</options>

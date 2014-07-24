@@ -1,0 +1,17 @@
+<options xmlns="http://marklogic.com/appservices/search">
+  <return-metrics>false</return-metrics>
+  <debug>true</debug>
+  <return-qtext>false</return-qtext>
+  <transform-results apply="raw"/>
+  <constraint name="intitle">
+    <word>
+      <element ns="" name="title"/>
+    </word>
+  </constraint>
+  <constraint name="inprice">
+    <word>
+      <element ns="http://cloudbank.com" name="price"/>
+      <attribute ns="" name="amt"/>
+    </word>
+  </constraint>
+</options>

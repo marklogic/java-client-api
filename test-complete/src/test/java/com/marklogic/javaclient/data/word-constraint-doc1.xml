@@ -1,0 +1,12 @@
+<articles>
+	<article year="2005">
+		<title>This is some title</title>
+		<author>Frank Chores</author>
+		<abstract>Paris is the city on France</abstract>
+	</article>
+	<article year="2009">
+		<title>Another article</title>
+		<author>Judy Lewis</author>
+		<abstract>Froggy the animal</abstract>
+	</article>
+</articles>

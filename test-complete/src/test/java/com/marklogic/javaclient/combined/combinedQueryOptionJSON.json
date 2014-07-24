@@ -1,0 +1,1 @@
+{"search":{"query":{"value-constraint-query":{"constraint-name":"id", "text":"0026"}}, "options":{"return-metrics":false, "return-qtext":false, "debug":true, "transform-results":{"apply":"raw"}, "constraint":{"name":"id", "value":{"element":{"ns":"", "name":"id"}}}}}}

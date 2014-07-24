@@ -1,0 +1,1 @@
+{"rule":{"name":"RULE-TEST-3-JSON", "description":"rule for test3 json", "search":{"query":{"word-constraint-query":{"constraint-name":"intitle", "text":"Bush"}}, "options":{"constraint":{"name":"intitle", "word":{"element":{"name":"title", "ns":""}}}}}, "rule-metadata":{"rule-number":"three json"}}}

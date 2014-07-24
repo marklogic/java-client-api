@@ -1,0 +1,12 @@
+<articles>
+	<article year="2005">
+		<title>Le Mans</title>
+		<author>Bud Cassore</author>
+		<abstract>Racing car of the year</abstract>
+	</article>
+	<article year="2009">
+		<title>Yosemite On Beyond</title>
+		<author>John Muir</author>
+		<abstract>nature is so good</abstract>
+	</article>
+</articles>

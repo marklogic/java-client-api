@@ -1,0 +1,29 @@
+<options xmlns="http://marklogic.com/appservices/search">
+  <constraint name="flavor">
+    <value>
+     <element ns="http://example.com" name="flavor-descriptor"/>
+    </value>
+  </constraint>
+  <constraint name="intitle">
+    <word>
+      <element ns="http://example.com" name="title"/>
+    </word>
+  </constraint>
+  <constraint name="heat">
+    <range type="xs:int">
+      <element ns="http://example.com" name="scoville"/>
+      <bucket name="mild" lt="500">Mild (less than 500)</bucket>
+      <bucket name="moderate" ge="500" lt="2500">Moderate (500 - 2500)</bucket>
+      <bucket name="hot" ge="2500" lt="8000">Hot (2500-8000)</bucket>
+      <bucket name="extra-hot" ge="8000">Extra Hot (8000+)</bucket>
+    </range>
+  </constraint>
+  <constraint name="contributor">
+    <collection prefix="http://bbq.com/contributor/"/>
+  </constraint>
+  <constraint name="summary">
+    <word>
+      <field name="bbqtext"/>
+    </word> 
+  </constraint>
+ </options>

@@ -1,0 +1,10 @@
+<entry xmlns="http://example.com" date="2009-04-07T14:44:27.550-07:00">
+   <title>Four little pigs</title>
+   <abstract>Southern Texas-style sauce with extreme heat</abstract>
+   <flavor-descriptor>habenero</flavor-descriptor>
+   <flavor-descriptor>black pepper</flavor-descriptor>
+   <flavor-descriptor>smoky</flavor-descriptor>
+   <flavor-descriptor>brown sugar</flavor-descriptor>
+   <scoville>88000</scoville>
+   <rating>5.0</rating>
+</entry>

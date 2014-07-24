@@ -1,0 +1,72 @@
+<options xmlns="http://marklogic.com/appservices/search">
+  <constraint name="geo-elem">
+    <geo-elem>
+      <element ns="" name="g-elem-point"/>
+    </geo-elem>
+  </constraint>
+  <constraint name="geo-elem-child">
+    <geo-elem>
+      <parent ns="" name="g-elem-child-parent"/>
+      <element ns="" name="g-elem-child-point"/>
+    </geo-elem>
+  </constraint>
+  <constraint name="geo-elem-pair">
+    <geo-elem-pair>
+      <parent ns="" name="g-elem-pair"/>
+      <lat ns="" name="lat"/>
+      <lon ns="" name="long"/>
+    </geo-elem-pair>
+  </constraint>
+  <constraint name="geo-attr-pair">
+    <geo-attr-pair>
+      <parent ns="" name="g-attr-pair"/>
+      <lat ns="" name="lat"/>
+      <lon ns="" name="long"/>
+    </geo-attr-pair>
+  </constraint>
+  <return-metrics>false</return-metrics>
+  <constraint name="eq-name">
+    <element-query ns="" name="name"/>
+  </constraint>
+  <constraint name="eq-desc">
+    <element-query ns="" name="description"/>
+  </constraint>
+  <constraint name="eq-person">
+    <element-query ns="" name="person"/>
+  </constraint>
+  <constraint name="color">
+    <value>
+      <element ns="" name="color"/>
+    </value>
+  </constraint>
+  <constraint name="height">
+    <range type="xs:int">
+      <element ns="" name="height1"/>
+    </range>
+  </constraint>
+  <constraint name="bucket_height">
+    <range type="xs:int">
+      <element ns="" name="height1"/>
+      <bucket name="tall" ge="21">tall (21+)</bucket>
+      <bucket name="short" lt="21">short (0-21)</bucket>
+    </range>
+  </constraint>
+  <constraint name="word_const">
+    <word>
+      <element ns="" name="text"/>
+    </word>
+  </constraint>
+  <constraint name="field_const">
+    <word>
+      <field name="description"/>
+    </word>
+  </constraint>
+  <constraint name="coll">
+    <collection prefix="http://coll/"/>
+  </constraint>
+  <constraint name="prop">
+    <properties/>
+  </constraint>
+  <page-length>25</page-length>
+  <debug>true</debug>
+</options>
