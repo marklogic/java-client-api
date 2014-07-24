@@ -278,4 +278,10 @@ implements DocumentPatchBuilder
 			onContent = true;
 		}
 	}
+
+	@Override
+	public DocumentPatchBuilder pathLanguage(PathLanguage pathLang) {
+		this.pathLang = pathLang;
+		return this;
+	}
 }

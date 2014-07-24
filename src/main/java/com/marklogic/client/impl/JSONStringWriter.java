@@ -17,13 +17,21 @@ package com.marklogic.client.impl;
 
 import java.io.CharArrayWriter;
 
+import com.marklogic.client.document.DocumentPatchBuilder.PathLanguage;
+
 public class JSONStringWriter {
 	private StringBuilder builder;
 	private boolean       isFirst = false;
+	private PathLanguage pathLang;
 
-	JSONStringWriter() {
+	JSONStringWriter(PathLanguage pathLang) {
 		super();
+		this.pathLang = pathLang;
 		builder = new StringBuilder();
+	}
+	
+	public PathLanguage getPathLanguage() {
+		return this.pathLang;
 	}
 
 	public void writeStartObject() {

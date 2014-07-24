@@ -33,6 +33,7 @@ import javax.xml.stream.XMLStreamWriter;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentMetadataPatchBuilder;
+import com.marklogic.client.document.DocumentPatchBuilder.PathLanguage;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
@@ -53,6 +54,7 @@ implements DocumentMetadataPatchBuilder
 		reserved.put("xs",   XMLConstants.W3C_XML_SCHEMA_NS_URI);
 	};
 
+	
 	static class XMLOutputSerializer {
 		private StringWriter    writer;
 		private XMLStreamWriter serializer;
@@ -340,7 +342,9 @@ implements DocumentMetadataPatchBuilder
 		}
 		@Override
 		public void write(JSONStringWriter serializer) {
-			writeStartInsert(serializer, "$.collections", "last-child", null);
+			String pathString = serializer.getPathLanguage() == PathLanguage.JSONPATH ?
+					"$.collections" : "/node()/array-node('collections')";
+			writeStartInsert(serializer, pathString, "last-child", null);
 			serializer.writeStartEntry("content");
 			serializer.writeStringValue(collection);
 			serializer.writeEndObject();
@@ -364,7 +368,10 @@ implements DocumentMetadataPatchBuilder
 		}
 		@Override
 		public void write(JSONStringWriter serializer) {
-			writeDelete(serializer, "$.collections[*][?(@="+JSONStringWriter.toJSON(collection)+")]", null);
+			String pathString = serializer.getPathLanguage() == PathLanguage.JSONPATH ?
+					"$.collections[*][?(@="+JSONStringWriter.toJSON(collection)+")]" :
+					"/node()/array-node('collections')/node()[.="+JSONStringWriter.toJSON(collection)+"]";
+			writeDelete(serializer, pathString, null);
 		}
 		@Override
 		public void write(XMLOutputSerializer out) throws Exception {
@@ -386,8 +393,12 @@ implements DocumentMetadataPatchBuilder
 		}
 		@Override
 		public void write(JSONStringWriter serializer) {
+			String pathString = serializer.getPathLanguage() == PathLanguage.JSONPATH ?
+					"$.collections[*][?(@="+JSONStringWriter.toJSON(oldCollection)+")]" :
+					"/node()/array-node('collections')/node()[.="+JSONStringWriter.toJSON(oldCollection)+"]";
+			
 			writeStartReplace(serializer,
-					"$.collections[*][?(@="+JSONStringWriter.toJSON(oldCollection)+")]",
+					pathString,
 					null
 					);
 			serializer.writeStartEntry("content");
@@ -419,7 +430,10 @@ implements DocumentMetadataPatchBuilder
 		}
 		@Override
 		public void write(JSONStringWriter serializer) {
-			writeStartInsert(serializer, "$.permissions", "last-child", null);
+			String pathString = serializer.getPathLanguage() == PathLanguage.JSONPATH ?
+					"$.permissions" :
+					"/node()/array-node('permissions')";
+			writeStartInsert(serializer, pathString, "last-child", null);
 			serializer.writeStartEntry("content");
 			serializer.writeStartObject();
 			serializer.writeStartEntry("role-name");
@@ -463,8 +477,13 @@ implements DocumentMetadataPatchBuilder
 		}
 		@Override
 		public void write(JSONStringWriter serializer) {
+			
+			String pathString = serializer.getPathLanguage() == PathLanguage.JSONPATH ?
+					"$.permissions.[*][?(@.role-name="+JSONStringWriter.toJSON(role)+")]":
+					"/node()/array-node('permissions')/object-node()[role-name = "+JSONStringWriter.toJSON(role)+"]";
+
 			writeDelete(serializer,
-					"$.permissions.[*][?(@.role-name="+JSONStringWriter.toJSON(role)+")]",
+					pathString,
 					null
 					);
 		}
@@ -488,8 +507,12 @@ implements DocumentMetadataPatchBuilder
 		}
 		@Override
 		public void write(JSONStringWriter serializer) {
+			String pathString = serializer.getPathLanguage() == PathLanguage.JSONPATH ?
+					"$.permissions.[*][?(@.role-name="+JSONStringWriter.toJSON(oldRole)+")]":
+					"/node()/array-node('permissions')/object-node()[role-name = "+JSONStringWriter.toJSON(oldRole)+"]";
+
 			writeStartReplace(serializer,
-					"$.permissions.[*][?(@.role-name="+JSONStringWriter.toJSON(oldRole)+")]",
+					pathString,
 					null
 					);
 			serializer.writeStartEntry("content");
@@ -550,7 +573,11 @@ implements DocumentMetadataPatchBuilder
 		@Override
 		public void write(JSONStringWriter serializer) {
 			// TODO: error if name empty
-			writeStartInsert(serializer, "$.properties", "last-child", null);
+			String pathString = serializer.getPathLanguage() == PathLanguage.JSONPATH ?
+					"$.properties" :
+					"/node()/node('properties')";
+
+			writeStartInsert(serializer, pathString, "last-child", null);
 			serializer.writeStartEntry("content");
 			serializer.writeStartObject();
 			serializer.writeStartEntry(name);
@@ -590,8 +617,12 @@ implements DocumentMetadataPatchBuilder
 		@Override
 		public void write(JSONStringWriter serializer) {
 			// TODO: error if name empty
+            String pathString = serializer.getPathLanguage() == PathLanguage.JSONPATH ?
+					"$.properties.["+JSONStringWriter.toJSON(name)+"]":
+                    "/node()/node('properties')/node()[name(.)="+JSONStringWriter.toJSON(name)+"]";
+
 			writeDelete(serializer,
-					"$.properties.["+JSONStringWriter.toJSON(name)+"]",
+                    pathString,
 					null
 					);
 		}
@@ -627,8 +658,11 @@ implements DocumentMetadataPatchBuilder
 		@Override
 		public void write(JSONStringWriter serializer) {
 			// TODO: error if name empty
+            String pathString = serializer.getPathLanguage() == PathLanguage.JSONPATH ?
+					"$.properties.["+JSONStringWriter.toJSON(oldName)+"]":
+                    "/node()/node('properties')/node()[name(.)="+JSONStringWriter.toJSON(oldName)+"]";
 			writeStartReplace(serializer,
-					"$.properties.["+JSONStringWriter.toJSON(oldName)+"]",
+					pathString,
 					null
 					);
 			serializer.writeStartEntry("content");
@@ -674,8 +708,11 @@ implements DocumentMetadataPatchBuilder
 		@Override
 		public void write(JSONStringWriter serializer) {
 			// TODO: error if name empty
+            String pathString = serializer.getPathLanguage() == PathLanguage.JSONPATH ?
+					"$.properties.["+JSONStringWriter.toJSON(name)+"]":
+                    "/node()/node('properties')/node()[name(.)="+JSONStringWriter.toJSON(name)+"]";
 			writeReplaceApply(serializer, 
-					"$.properties.["+JSONStringWriter.toJSON(name)+"]",
+					pathString,
 					null,
 					call
 					);
@@ -699,7 +736,11 @@ implements DocumentMetadataPatchBuilder
 		}
 		@Override
 		public void write(JSONStringWriter serializer) {
-			writeStartReplace(serializer, "$.quality", null);
+            String pathString = serializer.getPathLanguage() == PathLanguage.JSONPATH ?
+					"$.quality":
+                    "/node()/node('quality')";
+            
+			writeStartReplace(serializer, pathString, null);
 			serializer.writeStartEntry("content");
 			serializer.writeNumberValue(quality);
 			serializer.writeEndObject();
@@ -742,6 +783,7 @@ implements DocumentMetadataPatchBuilder
 	protected Format                    format;
 	protected Set<Metadata>             processedMetadata;
 	protected boolean                   onContent = false;
+	protected PathLanguage                  pathLang = PathLanguage.XPATH;
 
 	DocumentMetadataPatchBuilderImpl(Format format) {
 		super();
@@ -978,9 +1020,11 @@ implements DocumentMetadataPatchBuilder
 		if (format == Format.JSON) {
 			handle.setFormat(format);
 
-			JSONStringWriter writer = new JSONStringWriter();
+			JSONStringWriter writer = new JSONStringWriter(this.pathLang);
 
 			writer.writeStartObject();
+			writer.writeStartEntry("pathlang");
+			writer.writeStringValue(pathLang.toString());
 			writer.writeStartEntry("patch");
 			writer.writeStartArray();
 
