@@ -754,6 +754,7 @@ public class JerseyServices implements RESTServices {
 
 		String path = "documents";
 		RequestParameters params = new RequestParameters();
+		if (transactionId != null) params.add("txid",       transactionId);
 		addCategoryParams(categories, params, withContent);
 		if (format != null)        params.add("format",     format.toString().toLowerCase());
 		for (String uri: uris) {
