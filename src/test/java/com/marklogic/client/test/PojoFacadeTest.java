@@ -90,8 +90,7 @@ public class PojoFacadeTest {
     }
 
     @Test
-    // most of the queries below currently don't work because of issues in the search:search layer
-    // but the numbers expected come from working queries at the cts:search layer
+    // the geo queries below currently don't work yet because underlying layers are not yet ready
     public void testC_QueryPojos() throws Exception {
         StringQueryDefinition stringQuery = Common.client.newQueryManager().newStringDefinition();
         stringQuery.setCriteria("Tungi OR Dalatando OR Chittagong");
@@ -162,6 +161,7 @@ public class PojoFacadeTest {
         iterator = page.iterator();
         numRead = 0;
         while ( iterator.hasNext() ) {
+            @SuppressWarnings("unused")
             City city = iterator.next();
             numRead++;
         }
@@ -178,6 +178,7 @@ public class PojoFacadeTest {
         iterator = page.iterator();
         numRead = 0;
         while ( iterator.hasNext() ) {
+            @SuppressWarnings("unused")
             City city = iterator.next();
             numRead++;
         }
@@ -194,6 +195,7 @@ public class PojoFacadeTest {
         iterator = page.iterator();
         numRead = 0;
         while ( iterator.hasNext() ) {
+            @SuppressWarnings("unused")
             City city = iterator.next();
             numRead++;
         }
