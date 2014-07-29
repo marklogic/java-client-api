@@ -44,7 +44,7 @@ public class ExtensionLibrariesManagerImpl
 	@Override
 	public ExtensionLibraryDescriptor[] list()
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		return list("/ext/");
+		return list("/ext");
 	}
 	@Override
 	public ExtensionLibraryDescriptor[] list(String directory)
