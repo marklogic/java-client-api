@@ -40,9 +40,9 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In Setup");
 		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
-		  createRESTUser("app-user", "password","rest-writer","rest-reader"  );
-		  createRESTUserWithPermissions("usr1", "password",getPermissionNode("eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
-		  setMaintainLastModified(dbName, true);
+		createRESTUser("app-user", "password","rest-writer","rest-reader"  );
+		createRESTUserWithPermissions("usr1", "password",getPermissionNode("eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
+		setMaintainLastModified(dbName, true);
 	}
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
@@ -53,129 +53,326 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 	}
 	@Before
 	public void setUp() throws Exception {
-		   System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-		   System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "debug");   
+
 		// create new connection for each test below
-		  client = DatabaseClientFactory.newClient("localhost", restPort, "usr1", "password", Authentication.DIGEST);
+		client = DatabaseClientFactory.newClient("localhost", restPort, "usr1", "password", Authentication.DIGEST);
 	}
 	@After
 	public void tearDown() throws Exception {
 		System.out.println("Running clear script");	
-    	// release client
-    	client.release();
+		// release client
+		client.release();
 	}
 	public DocumentMetadataHandle setMetadata(){
-		  // create and initialize a handle on the metadata
+		// create and initialize a handle on the metadata
 		DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
-	    metadataHandle.getCollections().addAll("my-collection1","my-collection2");
-	    metadataHandle.getPermissions().add("app-user", Capability.UPDATE, Capability.READ);
-	    metadataHandle.getProperties().put("reviewed", true);
-	    metadataHandle.getProperties().put("myString", "foo");
-	    metadataHandle.getProperties().put("myInteger", 10);
-	    metadataHandle.getProperties().put("myDecimal", 34.56678);
-	    metadataHandle.getProperties().put("myCalendar", Calendar.getInstance().get(Calendar.YEAR));
-	    metadataHandle.setQuality(23);
-	    return	metadataHandle;
+		metadataHandle.getCollections().addAll("my-collection1","my-collection2");
+		metadataHandle.getPermissions().add("app-user", Capability.UPDATE, Capability.READ);
+		metadataHandle.getProperties().put("reviewed", true);
+		metadataHandle.getProperties().put("myString", "foo");
+		metadataHandle.getProperties().put("myInteger", 10);
+		metadataHandle.getProperties().put("myDecimal", 34.56678);
+		metadataHandle.getProperties().put("myCalendar", Calendar.getInstance().get(Calendar.YEAR));
+		metadataHandle.setQuality(23);
+		return	metadataHandle;
 	}
 	public void validateMetadata(DocumentMetadataHandle mh){
 
-	    // get metadata values
-	    DocumentProperties properties = mh.getProperties();
-	    DocumentPermissions permissions = mh.getPermissions();
-	    DocumentCollections collections = mh.getCollections();
-	    
-	    // Properties
-	   // String expectedProperties = "size:5|reviewed:true|myInteger:10|myDecimal:34.56678|myCalendar:2014|myString:foo|";
-	    String actualProperties = getDocumentPropertiesString(properties);
-	    boolean result = actualProperties.contains("size:6|");
-	    assertTrue("Document properties count", result);
-	    
-	    // Permissions
-	    String expectedPermissions1 = "size:4|rest-reader:[READ]|eval:[READ]|app-user:[UPDATE, READ]|rest-writer:[UPDATE]|";
-	    String expectedPermissions2 = "size:4|rest-reader:[READ]|eval:[READ]|app-user:[READ, UPDATE]|rest-writer:[UPDATE]|";
-	    String actualPermissions = getDocumentPermissionsString(permissions);
-	    System.out.println(actualPermissions);
-	    if(actualPermissions.contains("[UPDATE, READ]"))
-	    	assertEquals("Document permissions difference", expectedPermissions1, actualPermissions);
-	    else if(actualPermissions.contains("[READ, UPDATE]"))
-	    	assertEquals("Document permissions difference", expectedPermissions2, actualPermissions);
-	    else
-	    	assertEquals("Document permissions difference", "wrong", actualPermissions);
-	    
-	    // Collections 
-	    String expectedCollections = "size:2|my-collection1|my-collection2|";
-	    String actualCollections = getDocumentCollectionsString(collections);
-	    assertEquals("Document collections difference", expectedCollections, actualCollections);
-	    
+		// get metadata values
+		DocumentProperties properties = mh.getProperties();
+		DocumentPermissions permissions = mh.getPermissions();
+		DocumentCollections collections = mh.getCollections();
+
+		// Properties
+		// String expectedProperties = "size:5|reviewed:true|myInteger:10|myDecimal:34.56678|myCalendar:2014|myString:foo|";
+		String actualProperties = getDocumentPropertiesString(properties);
+		boolean result = actualProperties.contains("size:5|");
+		System.out.println(actualProperties);
+		assertTrue("Document properties count", result);
+
+		// Permissions
+		String expectedPermissions1 = "size:4|rest-reader:[READ]|eval:[READ]|app-user:[UPDATE, READ]|rest-writer:[UPDATE]|";
+		String expectedPermissions2 = "size:4|rest-reader:[READ]|eval:[READ]|app-user:[READ, UPDATE]|rest-writer:[UPDATE]|";
+		String actualPermissions = getDocumentPermissionsString(permissions);
+		System.out.println(actualPermissions);
+		if(actualPermissions.contains("[UPDATE, READ]"))
+			assertEquals("Document permissions difference", expectedPermissions1, actualPermissions);
+		else if(actualPermissions.contains("[READ, UPDATE]"))
+			assertEquals("Document permissions difference", expectedPermissions2, actualPermissions);
+		else
+			assertEquals("Document permissions difference", "wrong", actualPermissions);
+
+		// Collections 
+		String expectedCollections = "size:2|my-collection1|my-collection2|";
+		String actualCollections = getDocumentCollectionsString(collections);
+		assertEquals("Document collections difference", expectedCollections, actualCollections);
+
 	}	
 	public void validateDefaultMetadata(DocumentMetadataHandle mh){
 
-	    // get metadata values
-	    DocumentPermissions permissions = mh.getPermissions();
-	    DocumentCollections collections = mh.getCollections();
-	  	     
-	    // Permissions
-	    
-	    String expectedPermissions1 = "size:3|rest-reader:[READ]|eval:[READ]|rest-writer:[UPDATE]|";
-	    String actualPermissions = getDocumentPermissionsString(permissions);
-	   	assertEquals("Document permissions difference", expectedPermissions1, actualPermissions);
-	    
-	    // Collections 
-	    String expectedCollections = "size:1|http://permission-collections/|";
-	    String actualCollections = getDocumentCollectionsString(collections);
-	    
-	    assertEquals("Document collections difference", expectedCollections, actualCollections);
-//	    System.out.println(actualPermissions);
+		// get metadata values
+		DocumentPermissions permissions = mh.getPermissions();
+		DocumentCollections collections = mh.getCollections();
+
+		// Permissions
+
+		String expectedPermissions1 = "size:3|rest-reader:[READ]|eval:[READ]|rest-writer:[UPDATE]|";
+		String actualPermissions = getDocumentPermissionsString(permissions);
+		assertEquals("Document permissions difference", expectedPermissions1, actualPermissions);
+
+		// Collections 
+		String expectedCollections = "size:1|http://permission-collections/|";
+		String actualCollections = getDocumentCollectionsString(collections);
+
+		assertEquals("Document collections difference", expectedCollections, actualCollections);
+		//	    System.out.println(actualPermissions);
 	}
 	public void validateRecord(DocumentRecord record,Format type) {
-	       
-        assertNotNull("DocumentRecord should never be null", record);
-        assertNotNull("Document uri should never be null", record.getUri());
-        assertTrue("Document uri should start with " + DIRECTORY, record.getUri().startsWith(DIRECTORY));
-        assertEquals("All records are expected to be in same format", type, record.getFormat());
-     }
+
+		assertNotNull("DocumentRecord should never be null", record);
+		assertNotNull("Document uri should never be null", record.getUri());
+		assertTrue("Document uri should start with " + DIRECTORY, record.getUri().startsWith(DIRECTORY));
+		assertEquals("All records are expected to be in same format", type, record.getFormat());
+	}
+/*
+This is a basic test with transaction, and doing commit
+*/	@Test
+public void testBulkWritewithTransactionCommit() throws Exception {
+
+		int count=1;
+		Transaction t= client.openTransaction();
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+		HashMap<String,String> map= new HashMap<String,String>();
+		DocumentWriteSet writeset =docMgr.newWriteSet();
+		for(int i =0;i<102;i++){
+			writeset.add(DIRECTORY+"first"+i+".xml", new DOMHandle(getDocumentContent("This is so first"+i)));
+			map.put(DIRECTORY+"first"+i+".xml", convertXMLDocumentToString(getDocumentContent("This is so first"+i)));
+			if(count%BATCH_SIZE == 0){
+				docMgr.write(writeset,t);
+				writeset = docMgr.newWriteSet();
+			}
+			count++;
+		}
+		if(count%BATCH_SIZE > 0){
+			docMgr.write(writeset,t);
+		}
+		String uris[] = new String[102];
+		for(int i =0;i<102;i++){
+			uris[i]=DIRECTORY+"first"+i+".xml";
+		}
+		try{t.commit();
+		count=0;
+		DocumentPage page = docMgr.read(uris);
+		DOMHandle dh = new DOMHandle();
+		while(page.hasNext()){
+			DocumentRecord rec = page.next();
+			validateRecord(rec,Format.XML);
+			rec.getContent(dh);
+			assertEquals("Comparing the content :",map.get(rec.getUri()),convertXMLDocumentToString(dh.get()));
+			count++;
+		}
+		}catch(Exception e)
+		{System.out.println(e.getMessage());}
+		assertEquals("document count", 102,count); 
+
+	}
 	/*
 	 * This test is trying to bulk insert documents with transaction open and not commited and try to read documents before commit.
 	 */
-	@Test
-	public void testBulkWritewithTransactions() throws Exception {
-		
-		int count=1;
+@Test
+public void testBulkWritewithTransactionsNoCommit() throws Exception {
+		int count=1;boolean tstatus =true;
 		Transaction t1 = client.openTransaction();
-	    XMLDocumentManager docMgr = client.newXMLDocumentManager();
-	    HashMap<String,String> map= new HashMap<String,String>();
-	    DocumentWriteSet writeset =docMgr.newWriteSet();
-	    for(int i =0;i<102;i++){
-	    	
-		    writeset.add(DIRECTORY+"foo"+i+".xml", new DOMHandle(getDocumentContent("This is so foo"+i)));
-		    map.put(DIRECTORY+"foo"+i+".xml", convertXMLDocumentToString(getDocumentContent("This is so foo"+i)));
-		    if(count%BATCH_SIZE == 0){
-		    	  docMgr.write(writeset,t1);
-		    	  writeset = docMgr.newWriteSet();
-		    	}
-		      count++;
-	    }
-	    if(count%BATCH_SIZE > 0){
-	    	docMgr.write(writeset,t1);
-	 	 }
-		 String uris[] = new String[102];
-		 for(int i =0;i<102;i++){
-		    uris[i]=DIRECTORY+"foo"+i+".xml";
-		  }
+		try{ 
+			XMLDocumentManager docMgr = client.newXMLDocumentManager();
+			HashMap<String,String> map= new HashMap<String,String>();
+			DocumentWriteSet writeset =docMgr.newWriteSet();
+			for(int i =0;i<102;i++){
+				writeset.add(DIRECTORY+"bar"+i+".xml", new DOMHandle(getDocumentContent("This is so foo"+i)));
+				map.put(DIRECTORY+"bar"+i+".xml", convertXMLDocumentToString(getDocumentContent("This is so foo"+i)));
+				if(count%BATCH_SIZE == 0){
+					docMgr.write(writeset,t1);
+					writeset = docMgr.newWriteSet();
+				}
+				count++;
+			}
+			if(count%BATCH_SIZE > 0){
+				docMgr.write(writeset,t1);
+			}
+			String uris[] = new String[102];
+			for(int i =0;i<102;i++){
+				uris[i]=DIRECTORY+"bar"+i+".xml";
+			}
+
+			count=0;
+			DocumentPage page = docMgr.read(t1,uris);
+			DOMHandle dh = new DOMHandle();
+			while(page.hasNext()){
+				DocumentRecord rec = page.next();
+				validateRecord(rec,Format.XML);
+				rec.getContent(dh);
+				assertEquals("Comparing the content :",map.get(rec.getUri()),convertXMLDocumentToString(dh.get()));
+				count++;
+			}
+
+			assertEquals("document count", 102,count);
+			t1.rollback();
+			tstatus=false;
+			count=0;
+			page = docMgr.read(uris);
+			dh = new DOMHandle();
+			while(page.hasNext()){
+				DocumentRecord rec = page.next();
+				validateRecord(rec,Format.XML);
+				rec.getContent(dh);
+				assertEquals("Comparing the content :",map.get(rec.getUri()),convertXMLDocumentToString(dh.get()));
+				count++;
+			}
+
+			assertEquals("document count", 0,count);
 		
-		  count=0;
-		  DocumentPage page = docMgr.read(t1,uris);
-		  DOMHandle dh = new DOMHandle();
-		  while(page.hasNext()){
-		    	DocumentRecord rec = page.next();
-		    	validateRecord(rec,Format.XML);
-		    	rec.getContent(dh);
-		    	assertEquals("Comparing the content :",map.get(rec.getUri()),convertXMLDocumentToString(dh.get()));
-		    	count++;
-		  }
-		  
-		 assertEquals("document count", 102,count); 
-		 t1.rollback();
+		}catch(Exception e){
+			System.out.println(e.getMessage());
+			tstatus=true;
+		}
+		finally{
+			if(tstatus) {t1.rollback();}
+		}
+	}
+//This test is trying load some documents, open a transaction, update only metadata,rollback transacton to see metadata info is not commited 
+@Test public void testBulkWritewithMetadataTransactionNoCommit() throws Exception {
+
+		int count=1;
+		boolean tstatus =true;
+		Transaction t1 = client.openTransaction();
+		try{ 
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+		HashMap<String,String> map= new HashMap<String,String>();
+		DocumentWriteSet writeset =docMgr.newWriteSet();
+		for(int i =0;i<102;i++){
+			writeset.add(DIRECTORY+"sec"+i+".xml", new DOMHandle(getDocumentContent("This is so sec"+i)));
+			map.put(DIRECTORY+"sec"+i+".xml", convertXMLDocumentToString(getDocumentContent("This is so sec"+i)));
+			if(count%BATCH_SIZE == 0){
+				docMgr.write(writeset);
+				writeset = docMgr.newWriteSet();
+			}
+			count++;
+		}
+		if(count%BATCH_SIZE > 0){
+			docMgr.write(writeset);
+		}
+		count=0;
+		DocumentMetadataHandle mh = setMetadata();
+		for(int i =0;i<102;i++){
+			writeset.add(DIRECTORY+"sec"+i+".xml",mh, new DOMHandle(getDocumentContent("This is so sec"+i)));
+			if(count%BATCH_SIZE == 0){
+				docMgr.write(writeset,t1);
+				writeset = docMgr.newWriteSet();
+			}
+			count++;
+		}
+		if(count%BATCH_SIZE > 0){
+			docMgr.write(writeset,t1);
+		}
+		String uris[] = new String[102];
+		for(int i =0;i<102;i++){
+			uris[i]=DIRECTORY+"sec"+i+".xml";
+		}
+		count=0;
+		DocumentPage page = docMgr.read(t1,uris);
+		DOMHandle dh = new DOMHandle();
+		DocumentMetadataHandle mh2 = new DocumentMetadataHandle();
+		while(page.hasNext()){
+			DocumentRecord rec = page.next();
+			validateRecord(rec,Format.XML);
+			rec.getContent(dh);
+			assertEquals("Comparing the content :",map.get(rec.getUri()),convertXMLDocumentToString(dh.get()));
+			docMgr.readMetadata(rec.getUri(), mh2);
+		    validateMetadata(mh2);
+			count++;
+		}
+		assertEquals("document count", 102,count); 
+		t1.rollback();
+		tstatus=false;
+		count=0;
+		page = docMgr.read(uris);
+		dh = new DOMHandle();
+		mh2 = new DocumentMetadataHandle();
+		while(page.hasNext()){
+			DocumentRecord rec = page.next();
+			validateRecord(rec,Format.XML);
+			rec.getContent(dh);
+			assertEquals("Comparing the content :",map.get(rec.getUri()),convertXMLDocumentToString(dh.get()));
+			docMgr.readMetadata(rec.getUri(), mh2);
+		    validateDefaultMetadata(mh2);
+			count++;
+		}
+		assertEquals("document count", 102,count); 
+		
+		}catch(Exception e){
+			System.out.println(e.getMessage());
+			tstatus=true;
+		}finally{
+			if(tstatus){
+				t1.rollback();
+			}
+		}
+	
 	}
 
+@Test public void testBulkWritewithMetadataTransactioninDiffClientConnection() throws Exception {
+
+	int count=1;
+	boolean tstatus =true;
+	DatabaseClient c = DatabaseClientFactory.newClient("localhost", restPort, "app-user", "password", Authentication.DIGEST);
+	Transaction t1 = client.openTransaction();
+	try{ 
+	XMLDocumentManager docMgr = client.newXMLDocumentManager();
+	HashMap<String,String> map= new HashMap<String,String>();
+	DocumentWriteSet writeset =docMgr.newWriteSet();
+	DocumentMetadataHandle mh = setMetadata();
+	for(int i =0;i<102;i++){
+		writeset.add(DIRECTORY+"sec"+i+".xml",mh, new DOMHandle(getDocumentContent("This is so sec"+i)));
+		if(count%BATCH_SIZE == 0){
+			docMgr.write(writeset,t1);
+			writeset = docMgr.newWriteSet();
+		}
+		count++;
+	}
+	if(count%BATCH_SIZE > 0){
+		docMgr.write(writeset,t1);
+	}
+	String uris[] = new String[102];
+	for(int i =0;i<102;i++){
+		uris[i]=DIRECTORY+"sec"+i+".xml";
+	}
+	count=0;
+	docMgr = c.newXMLDocumentManager();
+	DocumentPage page = docMgr.read(t1,uris);
+	DOMHandle dh = new DOMHandle();
+	DocumentMetadataHandle mh2 = new DocumentMetadataHandle();
+	while(page.hasNext()){
+		DocumentRecord rec = page.next();
+		validateRecord(rec,Format.XML);
+		rec.getContent(dh);
+		assertEquals("Comparing the content :",map.get(rec.getUri()),convertXMLDocumentToString(dh.get()));
+		docMgr.readMetadata(rec.getUri(), mh2);
+	    validateMetadata(mh2);
+		count++;
+	}
+	assertEquals("document count", 102,count); 
+	t1.commit();
+	tstatus=false;
+	
+	}catch(Exception e){
+		System.out.println(e.getMessage());
+		tstatus=true;
+	}finally{
+		if(tstatus){
+			t1.rollback();
+		}
+		c.release();
+	}
+
+}
 }
