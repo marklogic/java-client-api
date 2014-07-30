@@ -48,7 +48,7 @@ public class PojoFacadeTest {
     public static void beforeClass() {
         Common.connect();
         cities = Common.client.newPojoRepository(City.class, Integer.class);
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
     @AfterClass
     public static void afterClass() {
@@ -154,6 +154,8 @@ public class PojoFacadeTest {
         assertEquals("Failed to find number of records expected", 21, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
+        // TODO: uncomment tests below once geospatial on JSON is implemented in server
+        /*
         query = qb.geospatial(
             qb.geoField("latLong"),
             qb.circle(-34, -58, 1)
@@ -201,6 +203,7 @@ public class PojoFacadeTest {
         // when this works we'll find out how many we expect
         assertEquals("Failed to find number of records expected", -1, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+        */
     }
 
     @Test
