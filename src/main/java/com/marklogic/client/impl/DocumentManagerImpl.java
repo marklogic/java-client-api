@@ -347,7 +347,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
             responseFormat,
             mergeTransformParameters(
                     (transform != null) ? transform : getReadTransform(),
-                    extraParams
+                    null
             ),
             withContent,
             uris);
