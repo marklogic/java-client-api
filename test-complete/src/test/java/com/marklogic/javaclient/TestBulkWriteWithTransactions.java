@@ -2,6 +2,7 @@ package com.marklogic.javaclient;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.util.Calendar;
 import java.util.HashMap;
 
@@ -13,14 +14,17 @@ import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
@@ -42,7 +46,7 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
 		createRESTUser("app-user", "password","rest-writer","rest-reader"  );
 		createRESTUserWithPermissions("usr1", "password",getPermissionNode("eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
-		setMaintainLastModified(dbName, true);
+		
 	}
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
@@ -87,14 +91,14 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 		// String expectedProperties = "size:5|reviewed:true|myInteger:10|myDecimal:34.56678|myCalendar:2014|myString:foo|";
 		String actualProperties = getDocumentPropertiesString(properties);
 		boolean result = actualProperties.contains("size:5|");
-		System.out.println(actualProperties);
+//		System.out.println(actualProperties);
 		assertTrue("Document properties count", result);
 
 		// Permissions
 		String expectedPermissions1 = "size:4|rest-reader:[READ]|eval:[READ]|app-user:[UPDATE, READ]|rest-writer:[UPDATE]|";
 		String expectedPermissions2 = "size:4|rest-reader:[READ]|eval:[READ]|app-user:[READ, UPDATE]|rest-writer:[UPDATE]|";
 		String actualPermissions = getDocumentPermissionsString(permissions);
-		System.out.println(actualPermissions);
+//		System.out.println(actualPermissions);
 		if(actualPermissions.contains("[UPDATE, READ]"))
 			assertEquals("Document permissions difference", expectedPermissions1, actualPermissions);
 		else if(actualPermissions.contains("[READ, UPDATE]"))
@@ -136,7 +140,8 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 	}
 /*
 This is a basic test with transaction, and doing commit
-*/	@Test
+*/
+	@Test
 public void testBulkWritewithTransactionCommit() throws Exception {
 
 		int count=1;
@@ -172,7 +177,7 @@ public void testBulkWritewithTransactionCommit() throws Exception {
 			count++;
 		}
 		}catch(Exception e)
-		{System.out.println(e.getMessage());}
+		{System.out.println(e.getMessage());throw e;}
 		assertEquals("document count", 102,count); 
 
 	}
@@ -234,6 +239,7 @@ public void testBulkWritewithTransactionsNoCommit() throws Exception {
 		}catch(Exception e){
 			System.out.println(e.getMessage());
 			tstatus=true;
+			throw e;
 		}
 		finally{
 			if(tstatus) {t1.rollback();}
@@ -261,10 +267,12 @@ public void testBulkWritewithTransactionsNoCommit() throws Exception {
 		if(count%BATCH_SIZE > 0){
 			docMgr.write(writeset);
 		}
-		count=0;
+		count=1;
+		HashMap<String,String> map2= new HashMap<String,String>();
 		DocumentMetadataHandle mh = setMetadata();
 		for(int i =0;i<102;i++){
-			writeset.add(DIRECTORY+"sec"+i+".xml",mh, new DOMHandle(getDocumentContent("This is so sec"+i)));
+			writeset.add(DIRECTORY+"sec"+i+".xml",mh, new DOMHandle(getDocumentContent("This is with metadata"+i)));
+			map2.put(DIRECTORY+"sec"+i+".xml", convertXMLDocumentToString(getDocumentContent("This is with metadata"+i)));
 			if(count%BATCH_SIZE == 0){
 				docMgr.write(writeset,t1);
 				writeset = docMgr.newWriteSet();
@@ -286,8 +294,8 @@ public void testBulkWritewithTransactionsNoCommit() throws Exception {
 			DocumentRecord rec = page.next();
 			validateRecord(rec,Format.XML);
 			rec.getContent(dh);
-			assertEquals("Comparing the content :",map.get(rec.getUri()),convertXMLDocumentToString(dh.get()));
-			docMgr.readMetadata(rec.getUri(), mh2);
+			assertEquals("Comparing the content :",map2.get(rec.getUri()),convertXMLDocumentToString(dh.get()));
+			docMgr.readMetadata(rec.getUri(), mh2,t1);
 		    validateMetadata(mh2);
 			count++;
 		}
@@ -312,6 +320,7 @@ public void testBulkWritewithTransactionsNoCommit() throws Exception {
 		}catch(Exception e){
 			System.out.println(e.getMessage());
 			tstatus=true;
+			throw e;
 		}finally{
 			if(tstatus){
 				t1.rollback();
@@ -332,7 +341,8 @@ public void testBulkWritewithTransactionsNoCommit() throws Exception {
 	DocumentWriteSet writeset =docMgr.newWriteSet();
 	DocumentMetadataHandle mh = setMetadata();
 	for(int i =0;i<102;i++){
-		writeset.add(DIRECTORY+"sec"+i+".xml",mh, new DOMHandle(getDocumentContent("This is so sec"+i)));
+		writeset.add(DIRECTORY+"third"+i+".xml",mh, new DOMHandle(getDocumentContent("This is third"+i)));
+		map.put(DIRECTORY+"third"+i+".xml", convertXMLDocumentToString(getDocumentContent("This is third"+i)));
 		if(count%BATCH_SIZE == 0){
 			docMgr.write(writeset,t1);
 			writeset = docMgr.newWriteSet();
@@ -344,11 +354,11 @@ public void testBulkWritewithTransactionsNoCommit() throws Exception {
 	}
 	String uris[] = new String[102];
 	for(int i =0;i<102;i++){
-		uris[i]=DIRECTORY+"sec"+i+".xml";
+		uris[i]=DIRECTORY+"third"+i+".xml";
 	}
 	count=0;
-	docMgr = c.newXMLDocumentManager();
-	DocumentPage page = docMgr.read(t1,uris);
+	XMLDocumentManager dMgr = c.newXMLDocumentManager();
+	DocumentPage page = dMgr.read(t1,uris);
 	DOMHandle dh = new DOMHandle();
 	DocumentMetadataHandle mh2 = new DocumentMetadataHandle();
 	while(page.hasNext()){
@@ -356,7 +366,7 @@ public void testBulkWritewithTransactionsNoCommit() throws Exception {
 		validateRecord(rec,Format.XML);
 		rec.getContent(dh);
 		assertEquals("Comparing the content :",map.get(rec.getUri()),convertXMLDocumentToString(dh.get()));
-		docMgr.readMetadata(rec.getUri(), mh2);
+		dMgr.readMetadata(rec.getUri(), mh2,t1);
 	    validateMetadata(mh2);
 		count++;
 	}
@@ -367,6 +377,7 @@ public void testBulkWritewithTransactionsNoCommit() throws Exception {
 	}catch(Exception e){
 		System.out.println(e.getMessage());
 		tstatus=true;
+		throw e;
 	}finally{
 		if(tstatus){
 			t1.rollback();
@@ -375,4 +386,52 @@ public void testBulkWritewithTransactionsNoCommit() throws Exception {
 	}
 
 }
+
+@Test (expected = FailedRequestException.class)
+public void testBulkWritewithTransactionCommitTimeOut() throws Exception {
+
+	int count=1;
+	String docId[] = {"Sega-4MB.jpg"};
+	//	boolean tstatus =false;
+	Transaction t= client.openTransaction("timeoutTrans",3);
+	BinaryDocumentManager docMgr = client.newBinaryDocumentManager();
+
+	DocumentWriteSet writeset =docMgr.newWriteSet();
+	File file1= null;
+	file1 = new File("src/test/java/com/marklogic/javaclient/data/" + docId[0]);
+	FileHandle h1 = new FileHandle(file1);
+	for(int i =0;i<102;i++){
+		writeset.add(DIRECTORY+"binary"+i+".jpg", h1);
+		if(count%BATCH_SIZE == 0){
+			docMgr.write(writeset,t);
+			writeset = docMgr.newWriteSet();
+		}
+		count++;
+	}
+	if(count%BATCH_SIZE > 0){
+		docMgr.write(writeset,t);
+	}
+	t.commit();
+	String uris[] = new String[102];
+	for(int i =0;i<102;i++){
+		uris[i]=DIRECTORY+"binary"+i+".jpg";
+	}
+	count=0;
+	FileHandle rh = new FileHandle();
+	DocumentPage page = docMgr.read(uris);
+	while(page.hasNext()){
+		DocumentRecord rec = page.next();
+		validateRecord(rec,Format.BINARY);
+		rec.getContent(rh);
+		assertEquals("Content length :",file1.length(),rh.get().length());
+		count++;
+	}
+	assertEquals("document count", 102,count); 
+
+	
+
+}
+
+
+
 }

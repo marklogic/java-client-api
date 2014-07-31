@@ -57,6 +57,36 @@ extends DocumentMetadataPatchBuilder
 		}
 	}
 
+
+	/**
+	 * MarkLogic's REST API patch operations support two path languages for JSON,
+	 * XPATH and JSONPATH.  Default for MarkLogic 8 is XPATH,
+	 * but you can use the backwards-compatible JSONPATH too.
+	 */
+	public enum PathLanguage {
+		
+		/**
+		 * Indicates that the given patch uses the XPATH language.
+		 */
+		XPATH, 
+		
+		/**
+		 * Indicates that the given patch uses the JSONPATH language.
+		 */
+		JSONPATH;
+		
+		@Override
+		public String toString() {
+			return super.toString().toLowerCase();
+		};
+		
+	}
+	
+	/**
+	 * Specifies the language for this patch to use
+	 */
+	public DocumentPatchBuilder pathLanguage(PathLanguage pathLang);
+	
 	/**
 	 * Specifies an operation to delete an existing JSON or XML fragment.
 	 * @param selectPath	the location of the JSON or XML fragment
