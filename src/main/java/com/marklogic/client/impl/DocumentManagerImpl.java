@@ -345,7 +345,10 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
             // the default for bulk is no metadata, which differs from the normal default of ALL
             isProcessedMetadataModified ? processedMetadata : null,
             responseFormat,
-            null,
+            mergeTransformParameters(
+                    (transform != null) ? transform : getReadTransform(),
+                    extraParams
+            ),
             withContent,
             uris);
    	}

@@ -754,6 +754,7 @@ public class JerseyServices implements RESTServices {
 
 		String path = "documents";
 		RequestParameters params = new RequestParameters();
+		if ( extraParams != null ) params.putAll(extraParams);
 		if (transactionId != null) params.add("txid",       transactionId);
 		addCategoryParams(categories, params, withContent);
 		if (format != null)        params.add("format",     format.toString().toLowerCase());
@@ -770,6 +771,7 @@ public class JerseyServices implements RESTServices {
             Set<Metadata> categories, Format format, RequestParameters extraParams)
 			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+		if ( extraParams != null ) params.putAll(extraParams);
 		boolean withContent = true;
 		addCategoryParams(categories, params, withContent);
 		if (searchHandle != null && view != null) params.add("view", view.toString().toLowerCase());
@@ -3477,7 +3479,10 @@ public class JerseyServices implements RESTServices {
 				writeHandles.add(write.getContent());
 			}
 		}
-		RequestParameters params = transform != null ? transform : new RequestParameters();
+		RequestParameters params = new RequestParameters();
+		if (transform != null) {
+			transform.merge(params);
+		}
 		if ( transactionId != null ) params.add("txid", transactionId);
 		return postResource(
 			reqlog,
