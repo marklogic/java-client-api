@@ -194,6 +194,28 @@ as empty-sequence()
         if (empty($index-specs)) then $c
         else admin:database-add-range-field-index($c, $dbid, $index-specs)
 
+    let $index-specs := admin:database-range-path-index(
+      $dbid, 
+      "string",
+      "com.marklogic.client.test.Country/continent",
+      "http://marklogic.com/collation/",
+      fn:false(),
+      "ignore")
+    let $c :=
+        if (empty($index-specs)) then $c
+        else admin:database-add-range-path-index($c, $dbid, $index-specs)
+
+    let $index-specs := admin:database-range-path-index(
+      $dbid, 
+      "unsignedLong",
+      "com.marklogic.client.test.City/population",
+      (),
+      fn:false(),
+      "ignore")
+    let $c :=
+        if (empty($index-specs)) then $c
+        else admin:database-add-range-path-index($c, $dbid, $index-specs)
+
     return admin:save-configuration-without-restart($c)
 };
 

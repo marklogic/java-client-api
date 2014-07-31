@@ -132,7 +132,7 @@ class BinaryDocumentImpl
 
 		RequestParameters extraParams = new RequestParameters();
 		if (length > 0)
-			extraParams.put("range", "bytes="+start+"-"+(start + length));
+			extraParams.put("range", "bytes="+start+"-"+(start + length - 1));
 		else
 			extraParams.put("range", "bytes="+String.valueOf(start));
 
