@@ -63,7 +63,6 @@ public class RawQueryDefinitionTest {
 		Common.connectAdmin();
 		queryMgr = Common.client.newQueryManager();
 		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "debug");    
 	}
 
 	@AfterClass
@@ -278,7 +277,7 @@ public class RawQueryDefinitionTest {
 						"\"$query\":{\"favorited\":\"true\"}"+
 						"}"
 						);
-		output = queryMgr.search(qbe, new StringHandle()).get();
+		output = queryMgr.search(qbe, new StringHandle().withFormat(Format.JSON)).get();
 		assertNotNull("Empty JSON output", output);
 		assertTrue("Output without a match",
 				output.contains("\"results\":[{\"index\":1,"));
