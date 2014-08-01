@@ -60,7 +60,7 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 
 	@Before
 	public void setUp() throws Exception {
-		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+//		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		// create new connection for each test below
 		client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
 	}
@@ -128,26 +128,26 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 		FileHandle transformHandle = new FileHandle(transformFile);
 		transMgr.writeXQueryTransform("add-attr-xquery-transform", transformHandle, metadata);
 		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
-		transform.put("trans:name", "Lang");
-		transform.put("trans:value", "English");
+		transform.put("name", "Lang");
+		transform.put("value", "English");
 		int count=1;
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 		HashMap<String,String> map= new HashMap<String,String>();
 		DocumentWriteSet writeset =docMgr.newWriteSet();
-		for(int i =0;i<12;i++){
+		for(int i =0;i<102;i++){
 
 			writeset.add(DIRECTORY+"foo"+i+".xml", new DOMHandle(getDocumentContent("This is so foo"+i)));
 			map.put(DIRECTORY+"foo"+i+".xml", convertXMLDocumentToString(getDocumentContent("This is so foo"+i)));
-			if(count%10 == 0){
+			if(count%BATCH_SIZE == 0){
 				docMgr.write(writeset,transform);
 				writeset = docMgr.newWriteSet();
 			}
 			count++;
 		}
-		if(count%10 > 0){
+		if(count%BATCH_SIZE > 0){
 			docMgr.write(writeset,transform);
 		}
-		docMgr.write("00.xml",new DOMHandle(getDocumentContent("This is so foo")),transform);
+		
 		String uris[] = new String[102];
 		for(int i =0;i<102;i++){
 			uris[i]=DIRECTORY+"foo"+i+".xml";
@@ -158,7 +158,59 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 		while(page.hasNext()){
 			DocumentRecord rec = page.next();
 			rec.getContent(dh);
-			assertEquals("Comparing the content :",map.get(rec.getUri()),convertXMLDocumentToString(dh.get()));
+			assertTrue("Element has attribure ? :",dh.get().getElementsByTagName("foo").item(0).hasAttributes());
+			count++;
+		}
+
+		assertEquals("document count", 102,count); 
+
+	}
+	@Test
+	public void testBulkReadWithXQueryTransform() throws Exception {
+
+		TransformExtensionsManager transMgr = 
+				client.newServerConfigManager().newTransformExtensionsManager();
+		ExtensionMetadata metadata = new ExtensionMetadata();
+		metadata.setTitle("Adding attribute xquery Transform");
+		metadata.setDescription("This plugin transforms an XML document by adding attribute to root node");
+		metadata.setProvider("MarkLogic");
+		metadata.setVersion("0.1");
+		// get the transform file
+		File transformFile = new File("src/test/java/com/marklogic/javaclient/transforms/add-attr-xquery-transform.xqy");
+		FileHandle transformHandle = new FileHandle(transformFile);
+		transMgr.writeXQueryTransform("add-attr-xquery-transform", transformHandle, metadata);
+		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
+		transform.put("name", "Lang");
+		transform.put("value", "English");
+		int count=1;
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+		HashMap<String,String> map= new HashMap<String,String>();
+		DocumentWriteSet writeset =docMgr.newWriteSet();
+		for(int i =0;i<102;i++){
+
+			writeset.add(DIRECTORY+"sec"+i+".xml", new DOMHandle(getDocumentContent("This is to read"+i)));
+			map.put(DIRECTORY+"sec"+i+".xml", convertXMLDocumentToString(getDocumentContent("This is to read"+i)));
+			if(count%BATCH_SIZE == 0){
+				docMgr.write(writeset);
+				writeset = docMgr.newWriteSet();
+			}
+			count++;
+		}
+		if(count%BATCH_SIZE > 0){
+			docMgr.write(writeset);
+		}
+		
+		String uris[] = new String[102];
+		for(int i =0;i<102;i++){
+			uris[i]=DIRECTORY+"sec"+i+".xml";
+		}
+		count=0;
+		DocumentPage page = docMgr.read(transform,uris);
+		DOMHandle dh = new DOMHandle();
+		while(page.hasNext()){
+			DocumentRecord rec = page.next();
+			rec.getContent(dh);
+			assertTrue("Element has attribure ? :",dh.get().getElementsByTagName("foo").item(0).hasAttributes());
 			count++;
 		}
 
