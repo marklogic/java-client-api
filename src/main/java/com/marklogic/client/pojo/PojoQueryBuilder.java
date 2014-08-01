@@ -38,8 +38,14 @@ public interface PojoQueryBuilder<T> {
     public StructuredQueryDefinition range(String pojoField, String[] options,
         StructuredQueryBuilder.Operator operator, Object... values);
     public StructuredQueryDefinition value(String pojoField, String... values);
+    public StructuredQueryDefinition value(String pojoField, Boolean value);
+    public StructuredQueryDefinition value(String pojoField, Number... values);
     public StructuredQueryDefinition value(String pojoField, String[] options,
         double weight, String... values);
+    public StructuredQueryDefinition value(String pojoField, String[] options,
+        double weight, Boolean value);
+    public StructuredQueryDefinition value(String pojoField, String[] options,
+        double weight, Number... values);
     public StructuredQueryDefinition word(String pojoField, String... words);
     public StructuredQueryDefinition word(String pojoField, String[] options,
         double weight, String... words);

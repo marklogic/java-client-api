@@ -95,8 +95,44 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
             return value(jsonProperty(pojoField), values);
         }
     }
+    public StructuredQueryDefinition value(String pojoField, Boolean value) {
+        if ( wrapQueries ) {
+            return super.containerQuery(jsonProperty(classWrapper),
+                value(jsonProperty(pojoField), value));
+        } else {
+            return value(jsonProperty(pojoField), value);
+        }
+    }
+    public StructuredQueryDefinition value(String pojoField, Number... values) {
+        if ( wrapQueries ) {
+            return super.containerQuery(jsonProperty(classWrapper),
+                value(jsonProperty(pojoField), values));
+        } else {
+            return value(jsonProperty(pojoField), values);
+        }
+    }
     public StructuredQueryDefinition value(String pojoField, String[] options,
         double weight, String... values)
+    {
+        if ( wrapQueries ) {
+            return super.containerQuery(jsonProperty(classWrapper),
+                value(jsonProperty(pojoField), null, options, weight, values));
+        } else {
+            return value(jsonProperty(pojoField), null, options, weight, values);
+        }
+    }
+    public StructuredQueryDefinition value(String pojoField, String[] options,
+        double weight, Boolean value)
+    {
+        if ( wrapQueries ) {
+            return super.containerQuery(jsonProperty(classWrapper),
+                value(jsonProperty(pojoField), null, options, weight, value));
+        } else {
+            return value(jsonProperty(pojoField), null, options, weight, value);
+        }
+    }
+    public StructuredQueryDefinition value(String pojoField, String[] options,
+        double weight, Number... values)
     {
         if ( wrapQueries ) {
             return super.containerQuery(jsonProperty(classWrapper),

@@ -400,6 +400,28 @@ public class StructuredQueryBuilder {
     }
     /**
      * Matches an element, attribute, json key, or field
+     * that has a value with the same boolean value as at least one
+     * of the criteria values.
+     * @param index	the value container
+     * @param value	either true or false
+     * @return	the StructuredQueryDefinition for the value query
+     */
+    public StructuredQueryDefinition value(TextIndex index, Boolean value) {
+        return new ValueQuery(index, null, null, null, new Object[] {value});
+    }
+    /**
+     * Matches an element, attribute, json key, or field
+     * that has a value with the same numeric value as at least one
+     * of the criteria values.
+     * @param index	the value container
+     * @param values	the possible values to match
+     * @return	the StructuredQueryDefinition for the value query
+     */
+    public StructuredQueryDefinition value(TextIndex index, Number... values) {
+        return new ValueQuery(index, null, null, null, values);
+    }
+    /**
+     * Matches an element, attribute, json key, or field
      * that has a value with the same string value as at least one
      * of the criteria values.
      * @param index	the value container
@@ -410,6 +432,34 @@ public class StructuredQueryBuilder {
      * @return	the StructuredQueryDefinition for the value query
      */
     public StructuredQueryDefinition value(TextIndex index, FragmentScope scope, String[] options, double weight, String... values) {
+        return new ValueQuery(index, scope, options, weight, values);
+    }
+    /**
+     * Matches an element, attribute, json key, or field
+     * that has a value with the same boolean value as at least one
+     * of the criteria values.
+     * @param index	the value container
+     * @param scope	whether the query matches the document content or properties
+     * @param options	options for fine tuning the query
+     * @param weight	the multiplier for the match in the document ranking
+     * @param value		either true or false
+     * @return	the StructuredQueryDefinition for the value query
+     */
+    public StructuredQueryDefinition value(TextIndex index, FragmentScope scope, String[] options, double weight, Boolean value) {
+        return new ValueQuery(index, scope, options, weight, new Object[] {value});
+    }
+    /**
+     * Matches an element, attribute, json key, or field
+     * that has a value with the same numeric value as at least one
+     * of the criteria values.
+     * @param index	the value container
+     * @param scope	whether the query matches the document content or properties
+     * @param options	options for fine tuning the query
+     * @param weight	the multiplier for the match in the document ranking
+     * @param values	the possible values to match
+     * @return	the StructuredQueryDefinition for the value query
+     */
+    public StructuredQueryDefinition value(TextIndex index, FragmentScope scope, String[] options, double weight, Number... values) {
         return new ValueQuery(index, scope, options, weight, values);
     }
 
@@ -1636,16 +1686,48 @@ public class StructuredQueryBuilder {
     }
 
     class ValueQuery
-    extends TextQuery {
-    	ValueQuery(TextIndex index, FragmentScope scope,
-    			String[] options, Double weight, String[] values) {
-    		super(index, scope, options, weight, values);
-    	}
-    	@Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
-    		serializer.writeStartElement("value-query");
-    		super.innerSerialize(serializer);
-    		serializer.writeEndElement();
+    extends AbstractStructuredQuery {
+        TextIndex     index;
+        FragmentScope scope;
+        String[]      options;
+        Double        weight;
+        Object[]      values;
+        ValueQuery(TextIndex index, FragmentScope scope,
+                String[] options, Double weight, Object[] values) {
+            this.index   = index;
+            this.scope   = scope;
+            this.options = options;
+            this.weight  = weight;
+            this.values  = values;
+        }
+        void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("value-query");
+            ((IndexImpl) index).innerSerialize(serializer);
+            if (scope != null) {
+                if (scope == FragmentScope.DOCUMENT) {
+                    writeText(serializer, "fragment-scope", "documents");
+                }
+                else {
+                    writeText(serializer, "fragment-scope",
+                            scope.toString().toLowerCase());
+                }
+            }
+            if ( values != null ) {
+                for ( Object value: values ) {
+                    if ( value == null ) {
+                        serializer.writeEmptyElement("null");
+                    } else if ( value instanceof String ) {
+                        writeText(serializer, "text", value);
+                    } else if ( value instanceof Number ) {
+                        writeText(serializer, "number", value);
+                    } else if ( value instanceof Boolean ) {
+                        writeText(serializer, "boolean", value);
+                    }
+                }
+            }
+            writeTextList(serializer, "term-option", options);
+            writeText(serializer, "weight", weight);
+            serializer.writeEndElement();
         }
     }
 
