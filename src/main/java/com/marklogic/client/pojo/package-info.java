@@ -1,3 +1,11 @@
+/**
+ * The goal of this package (sometimes referred to as "the pojo facade" is to simplify working
+ * with custom Plain Old Java Objects (pojos) without hassling with persistence details.
+ * {@link com.marklogic.client.pojo.PojoRepository} simplifies create, read, update, and delete
+ * (CRUD) operations on custom pojos. {@link com.marklogic.client.pojo.PojoQueryBuilder} keeps 
+ * all the powerful queries available via StructuredQueryBuilder while enabling queries across 
+ * objects persisted using PojoRepository.
+ */
 /*
  * Copyright 2012-2014 MarkLogic Corporation
  *
@@ -14,10 +22,3 @@
  * limitations under the License.
  */
 package com.marklogic.client.pojo;
-
-import com.marklogic.client.Page;
-
-/** Enables pagination over objects retrieved from the server and deserialized by 
- * PojoRepository read and search methods.
- */
-public interface PojoPage<T> extends Page<T> {}
