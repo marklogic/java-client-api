@@ -368,12 +368,52 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
     public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
+    /**
+     * Reads from the database a list of documents matching the provided uris.  Allows
+     * iteration across matching documents and metadata (only if setMetadataCategories 
+     * has been called to request metadata).  To find out how many of your uris matched,
+     * call the {@link DocumentPage#size() DocumentPage.size()} method.
+     *
+     * @param uris the database uris identifying documents to retrieve
+     * @return the DocumentPage of matching documents and metadata
+     */
     public DocumentPage read(String... uris);
 
+    /**
+     * Reads from the database a list of documents matching the provided uris.  Allows
+     * iteration across matching documents and metadata (only if setMetadataCategories 
+     * has been called to request metadata).  To find out how many of your uris matched,
+     * call the {@link DocumentPage#size() DocumentPage.size()} method.
+     *
+     * @param transform the transform to be run on the server on each document (must already be installed)
+     * @param uris the database uris identifying documents to retrieve
+     * @return the DocumentPage of matching documents and metadata
+     */
     public DocumentPage read(ServerTransform transform, String... uris);
 
+    /**
+     * Reads from the database a list of documents matching the provided uris.  Allows
+     * iteration across matching documents and metadata (only if setMetadataCategories 
+     * has been called to request metadata).  To find out how many of your uris matched,
+     * call the {@link DocumentPage#size() DocumentPage.size()} method.
+     *
+     * @param transaction the transaction in which this read is participating
+     * @param uris the database uris identifying documents to retrieve
+     * @return the DocumentPage of matching documents and metadata
+     */
     public DocumentPage read(Transaction transaction, String... uris);
 
+    /**
+     * Reads from the database a list of documents matching the provided uris.  Allows
+     * iteration across matching documents and metadata (only if setMetadataCategories 
+     * has been called to request metadata).  To find out how many of your uris matched,
+     * call the {@link DocumentPage#size() DocumentPage.size()} method.
+     *
+     * @param transform the transform to be run on the server on each document (must already be installed)
+     * @param transaction the transaction in which this read is participating
+     * @param uris the database uris identifying documents to retrieve
+     * @return the DocumentPage of matching documents and metadata
+     */
     public DocumentPage read(ServerTransform transform, Transaction transaction, String... uris);
 
     public DocumentPage readMetadata(String... uris);

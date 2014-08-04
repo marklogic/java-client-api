@@ -1,3 +1,18 @@
+/*
+ * Copyright 2012-2014 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.marklogic.client.pojo;
 
 import javax.xml.namespace.QName;
@@ -23,8 +38,14 @@ public interface PojoQueryBuilder<T> {
     public StructuredQueryDefinition range(String pojoField, String[] options,
         StructuredQueryBuilder.Operator operator, Object... values);
     public StructuredQueryDefinition value(String pojoField, String... values);
+    public StructuredQueryDefinition value(String pojoField, Boolean value);
+    public StructuredQueryDefinition value(String pojoField, Number... values);
     public StructuredQueryDefinition value(String pojoField, String[] options,
         double weight, String... values);
+    public StructuredQueryDefinition value(String pojoField, String[] options,
+        double weight, Boolean value);
+    public StructuredQueryDefinition value(String pojoField, String[] options,
+        double weight, Number... values);
     public StructuredQueryDefinition word(String pojoField, String... words);
     public StructuredQueryDefinition word(String pojoField, String[] options,
         double weight, String... words);

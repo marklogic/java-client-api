@@ -430,7 +430,8 @@ public class BulkReadWriteTest {
         deleteQuery.setDirectory("/cities/");
         queryMgr.delete(deleteQuery);
         JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
-        docMgr.delete("doc1.json");
-        docMgr.delete("doc2.json");
+        for ( int i=1; i <= 8; i++ ) {
+            docMgr.delete("doc" + i + ".json");
+        }
     }
 }

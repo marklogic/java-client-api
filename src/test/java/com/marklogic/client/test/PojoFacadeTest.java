@@ -142,6 +142,44 @@ public class PojoFacadeTest {
         assertEquals("Failed to find number of records expected", 11, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
+        // test numeric (integer) values
+        query = qb.value("population", 374801);
+        page = cities.search(query, 1);
+        iterator = page.iterator();
+        numRead = 0;
+        while ( iterator.hasNext() ) {
+            City city = iterator.next();
+            assertEquals("Wrong City", "Tirana", city.getName());
+            numRead++;
+        }
+        assertEquals("Failed to find number of records expected", 1, numRead);
+        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+
+        // test numeric (fractional) values
+        query = qb.and(qb.value("latitude", -34.72418), qb.value("longitude", -58.25265));
+        page = cities.search(query, 1);
+        iterator = page.iterator();
+        numRead = 0;
+        while ( iterator.hasNext() ) {
+            City city = iterator.next();
+            assertEquals("Wrong City", "Quilmes", city.getName());
+            numRead++;
+        }
+        assertEquals("Failed to find number of records expected", 1, numRead);
+        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+
+        // test null values
+        query = qb.value("country", new String[] {null});
+        page = cities.search(query, 1);
+        iterator = page.iterator();
+        numRead = 0;
+        while ( iterator.hasNext() ) {
+            City city = iterator.next();
+            numRead++;
+        }
+        assertEquals("Failed to find number of records expected", 50, numRead);
+        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+
         query = qb.range("population", Operator.LT, 350000);
         page = cities.search(query, 1);
         iterator = page.iterator();
