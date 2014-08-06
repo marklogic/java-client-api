@@ -22,6 +22,91 @@ import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.util.IterableNamespaceContext;
  
+/** Extends StructuredQueryBuilder with convenience methods specific to working with pojos.
+ * The goal of {@link com.marklogic.client.pojo the pojo facade} is to simplify working with 
+ * custom pojos. PojoQueryBuilder keeps all the powerful queries available via 
+ * StructuredQueryBuilder while enabling queries across objects persisted using 
+ * {@link PojoRepository}.
+ *
+ * <p>For methods which accept a "pojoField" argument and for {@link #geoField geoField}, we are refering to 
+ * fields (or properties) appropriate for 
+ * <a href="http://docs.oracle.com/javase/tutorial/javabeans/">JavaBeans</a>,
+ * including fields accessible via public getters and setters, or public fields.</p>
+ *
+ *
+ * <p>Where StructuredQueryBuilder accepts StructuredQueryBuilder.TextIndex as a first argument
+ * to 
+ * {@link #value(StructuredQueryBuilder.TextIndex, String...) value(TextIndex, String...)} 
+ * and 
+ * {@link #word(StructuredQueryBuilder.TextIndex, String...) word(TextIndex, String...)}  
+ * methods,
+ * PojoQueryBuilder adds shortcut methods which accept as the first argument a String name of the 
+ * pojoField. Similarly, PojoQueryBuilder accepts String pojoField arguments wherever 
+ * StructuredQueryBuilder accepts StructuredQueryBuilder.Element,
+ * StructuredQueryBuilder.Attribute, and StructuredQueryBuilder.PathIndex
+ * as arguments to 
+ * {@link #geoAttributePair(StructuredQueryBuilder.Element, StructuredQueryBuilder.Attribute,
+ *   StructuredQueryBuilder.Attribute)
+ *   geoAttributePair(Element, Attribute, Attribute)}, 
+ * {@link #geoElement(StructuredQueryBuilder.Element)
+ *   geoElement(Element)}, 
+ * {@link #geoElement(StructuredQueryBuilder.Element, StructuredQueryBuilder.Element)
+ *   geoElement(Element, Element)}, 
+ * {@link #geoElementPair(StructuredQueryBuilder.Element, StructuredQueryBuilder.Element,
+ *   StructuredQueryBuilder.Element)
+ *   geoElementPair(Element, Element, Element)}, 
+ * {@link #geoPath(StructuredQueryBuilder.PathIndex)
+ *   geoPath(PathIndex)}
+ * </p>
+ *
+ * <p>Here are a couple examples.  Without the pojo facade you might persist your products using
+ * {@link com.marklogic.client.io.JacksonDatabindHandle JacksonDatabindHandle} and query the
+ * json property thusly:</p>
+ * <pre>{@code    StructuredQueryBuilder sqb = new StructuredQueryBuilder();
+ *    QueryDefinition query = sqb.value(sqb.jsonProperty("productId"), 12345);}</pre>
+ *
+ * <p>If you use {@link PojoRepository} to persist your products, you can query more simply:</p>
+ * <pre>{@code    PojoQueryBuilder pqb = pojoRepository.getQueryBuilder();
+ *    QueryDefinition query = pqb.value("productId", 12345);}</pre>
+ *
+ * <p>Similarly, without the pojo facade you might persist your pojos using 
+ * {@link com.marklogic.client.io.JAXBHandle JAXBHandle} and if they
+ * have a geoPosition field which is an object with latitude and longitude pojoFields 
+ * (which persist as elements) you might query them thusly:</p>
+ * <pre>{@code    StructuredQueryBuilder sqb = new StructuredQueryBuilder();
+ *    StructuredQueryBuilder.GeospatialIndex geoIdx = sqb.geoElementPair(
+ *      sqb.element("geoPosition"), sqb.element("latitude"), sqb.element("longitude"));}</pre>
+ *
+ * <p>But if you use {@link PojoRepository} to persist your pojos with a latitude and longitude
+ * pojoFields, you can query them more simply:</p>
+ * <pre>{@code    PojoQueryBuilder pqb = pojoRepository.getQueryBuilder();
+ *    StructuredQueryBuilder.GeospatialIndex geoIdx = 
+ *      pqb.geoPair("latitude", "longitude");}</pre>
+ *
+ * <p>As custom pojos may have nested pojos, PojoQueryBuilder also makes it easy to query
+ * those nested pojos.  For example, if you had the following classes:</p>
+ * <pre>    class City {
+ *     {@literal @}Id int id;
+ *      Country country;
+ *      int getId();
+ *      void setId(int id);
+ *      Country getCountry();
+ *      void setCountry(Country country);
+ *    }
+ *    class Country {
+ *      String continent;
+ *      String getContinent();
+ *      void setContinent();
+ *    }</pre>
+ *
+ * <p>That is, you have a pojo class City with a field "country" of type
+ * Country, you could query fields on the nested country thusly:</p>
+ * <pre>{@code    PojoRepository<City, Integer> cities = 
+ *      databaseClient.newPojoRepository(City.class, Integer.class);
+ *    PojoQueryBuilder citiesQb = cities.getQueryBuilder();
+ *    PojoQueryBuilder countriesQb = citiesQb.containerQuery("country");
+ *    QueryDefinition query = countriesQb.value("continent", "EU"); }</pre>
+ */
 public interface PojoQueryBuilder<T> {
     public StructuredQueryDefinition containerQuery(String pojoField,
         StructuredQueryDefinition query);
@@ -29,6 +114,12 @@ public interface PojoQueryBuilder<T> {
     public PojoQueryBuilder<T>          containerQuery(String pojoField);
     public StructuredQueryBuilder.GeospatialIndex
         geoPair(String latitudeFieldName, String longitudeFieldName);
+    /**
+     * NOTE: Since the pojo facade abstracts away the persistence details, "field" here refers 
+     * to a pojoField like all other convenience methods in PojoQueryBuilder,not
+     * a MarkLogic field specified on the server.
+     * @param pojoField the name of a field (or getter or setter) on class T
+     */
     public StructuredQueryBuilder.GeospatialIndex
         geoField(String pojoField);
     public StructuredQueryBuilder.GeospatialIndex
