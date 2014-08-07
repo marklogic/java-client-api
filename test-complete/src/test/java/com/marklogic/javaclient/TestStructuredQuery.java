@@ -43,7 +43,7 @@ public  void testCleanUp() throws Exception
 	System.out.println("Running clear script");
 }	
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testStructuredQuery() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testStructuredQuery");
@@ -87,7 +87,7 @@ public  void testCleanUp() throws Exception
 		client.release();		
 	}
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testStructuredQueryJSON() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testStructuredQueryJSON");
@@ -155,7 +155,7 @@ public  void testCleanUp() throws Exception
 	}
 	
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testValueConstraintWildCard() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testValueConstraintWildCard");
@@ -208,7 +208,7 @@ public  void testCleanUp() throws Exception
 	}
 	
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testAndNotQuery() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testAndNotQuery");
@@ -263,7 +263,7 @@ public  void testCleanUp() throws Exception
 	}
 	
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testNearQuery() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testNearQuery");
@@ -316,7 +316,7 @@ public  void testCleanUp() throws Exception
 	}
 	
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testDirectoryQuery() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testDirectoryQuery");
@@ -375,7 +375,7 @@ public  void testCleanUp() throws Exception
 	}
 	
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testDocumentQuery() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testDocumentQuery");
@@ -435,7 +435,7 @@ public  void testCleanUp() throws Exception
 	}
 	
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testCollectionQuery() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testCollectionQuery");
@@ -509,7 +509,7 @@ public  void testCleanUp() throws Exception
 	}
 	
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testContainerConstraintQuery() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testContainerConstraintQuery");

@@ -32,7 +32,7 @@ public class TestSearchMultibyte extends BasicJavaClientREST {
 	}
 	
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testSearchString() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testSearchString");

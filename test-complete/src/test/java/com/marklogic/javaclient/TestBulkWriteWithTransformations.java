@@ -48,14 +48,14 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In setup");
-//		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
-//		setupAppServicesConstraint(dbName);
+		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		setupAppServicesConstraint(dbName);
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-//				tearDownJavaRESTServer(dbName, fNames, restServerName);
+		tearDownJavaRESTServer(dbName, fNames, restServerName);
 	}
 
 	@Before

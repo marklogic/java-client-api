@@ -69,7 +69,7 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 
 	private static String dbName = "TestBulkWriteDefaultMetadataDB3";
 	private static String [] fNames = {"TestBulkWriteDefaultMetadataDB-3"};
-	private static String restServerName = "TestBulkWriteDefaultMetadata3-RESTServer";
+	private static String restServerName = "REST-Java-Client-API-Server";
 	private static int restPort = 8011;
 	private  DatabaseClient client ;
 	/**
@@ -80,7 +80,7 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 		  System.out.println("In Setup");
 		  setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
 		  createRESTUser("app-user", "password","rest-writer","rest-reader"  );
-		  createRESTUserWithPermissions("usr1", "password",getPermissionNode("eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
+		  createRESTUserWithPermissions("usr1", "password",getPermissionNode("flexrep-eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
 	}
 
 	/**
@@ -140,8 +140,8 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 	    assertTrue("Document properties count", result);
 	    
 	    // Permissions
-	    String expectedPermissions1 = "size:4|rest-reader:[READ]|eval:[READ]|app-user:[UPDATE, READ]|rest-writer:[UPDATE]|";
-	    String expectedPermissions2 = "size:4|rest-reader:[READ]|eval:[READ]|app-user:[READ, UPDATE]|rest-writer:[UPDATE]|";
+	    String expectedPermissions1 = "size:4|flexrep-eval:[READ]|rest-reader:[READ]|app-user:[UPDATE, READ]|rest-writer:[UPDATE]|";
+	    String expectedPermissions2 = "size:4|flexrep-eval:[READ]|rest-reader:[READ]|app-user:[READ, UPDATE]|rest-writer:[UPDATE]|";
 	    String actualPermissions = getDocumentPermissionsString(permissions);
 	    System.out.println(actualPermissions);
 	    if(actualPermissions.contains("[UPDATE, READ]"))
@@ -166,7 +166,7 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 	    
 	    // Permissions
 	    
-	    String expectedPermissions1 = "size:3|rest-reader:[READ]|eval:[READ]|rest-writer:[UPDATE]|";
+	    String expectedPermissions1 = "size:3|flexrep-eval:[READ]|rest-reader:[READ]|rest-writer:[UPDATE]|";
 	    String actualPermissions = getDocumentPermissionsString(permissions);
 	   	assertEquals("Document permissions difference", expectedPermissions1, actualPermissions);
 	    
@@ -488,7 +488,8 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 			 docMgr.readMetadata(rec.getUri(), mh1);
 			// until issue 24 is fixed
 			 //this.validateDefaultMetadata(mh1);
-			 
+			 assertEquals("default quality",0,mh1.getQuality());
+			 assertEquals("default permissions","{flexrep-eval=[READ], rest-reader=[READ], rest-writer=[UPDATE]}",mh1.getPermissions().toString());
 			 page = docMgr.read("/generic/foo.xml");
 			 rec = page.next();
 			 docMgr.readMetadata(rec.getUri(), mh1);

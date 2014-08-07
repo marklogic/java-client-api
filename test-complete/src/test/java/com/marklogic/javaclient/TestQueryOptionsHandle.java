@@ -66,7 +66,7 @@ public class TestQueryOptionsHandle extends BasicJavaClientREST {
 		ReaderHandle handle = new ReaderHandle();
 		
 		// write the files
-		BufferedReader docStream = new BufferedReader(new FileReader("src/junit/com/marklogic/javaclient/queryoptions/" + queryOptionName));
+		BufferedReader docStream = new BufferedReader(new FileReader("src/test/java/com/marklogic/javaclient/queryoptions/" + queryOptionName));
 		handle.set(docStream);
 		
 		// write the query options to the database
@@ -136,7 +136,7 @@ public class TestQueryOptionsHandle extends BasicJavaClientREST {
 		ReaderHandle handle = new ReaderHandle();
 		
 		// write the files
-		BufferedReader docStream = new BufferedReader(new FileReader("src/junit/com/marklogic/javaclient/queryoptions/" + queryOptionName));
+		BufferedReader docStream = new BufferedReader(new FileReader("src/test/java/com/marklogic/javaclient/queryoptions/" + queryOptionName));
 		handle.set(docStream);
 		
 		// write the query options to the database
@@ -207,11 +207,11 @@ public class TestQueryOptionsHandle extends BasicJavaClientREST {
 		}
 
 		// create handle
-		FileHandle handle = new FileHandle(new File("src/junit/com/marklogic/javaclient/queryoptions/" + queryOptionName));
+		FileHandle handle = new FileHandle(new File("src/test/java/com/marklogic/javaclient/queryoptions/" + queryOptionName));
 		handle.setFormat(Format.JSON);
 		
 		// write the files
-		//BufferedReader docStream = new BufferedReader(new FileReader("src/junit/com/marklogic/javaclient/queryoptions/" + queryOptionName));
+		//BufferedReader docStream = new BufferedReader(new FileReader("src/test/java/com/marklogic/javaclient/queryoptions/" + queryOptionName));
 		//handle.set(docStream);
 		
 		
@@ -280,7 +280,7 @@ public class TestQueryOptionsHandle extends BasicJavaClientREST {
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
 		// create handle
-		FileHandle handle = new FileHandle(new File("src/junit/com/marklogic/javaclient/queryoptions/" + queryOptionName));
+		FileHandle handle = new FileHandle(new File("src/test/java/com/marklogic/javaclient/queryoptions/" + queryOptionName));
 		handle.setFormat(Format.JSON);
 				
 		// write the query options to the database

@@ -31,7 +31,7 @@ public class TestAggregates extends BasicJavaClientREST  {
 	
 	private static String dbName = "TestAggregatesDB";
 	private static String [] fNames = {"TestAggregatesDB-1"};
-	private static String restServerName = "REST-Java-Client-API-TestAggregateServer";
+	private static String restServerName = "REST-Java-Client-API-Server";
 	private static int restPort = 8011;
  
     @BeforeClass

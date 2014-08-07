@@ -66,7 +66,7 @@ public class TestRawAlert extends BasicJavaClientREST {
 		RuleManager ruleMgr = client.newRuleManager();
 				
 		// get the rule
-        File file = new File("src/junit/com/marklogic/javaclient/rules/alertRule1.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/rules/alertRule1.xml");
 		
 		// create a handle for the rule
         FileHandle writeHandle = new FileHandle(file);
@@ -134,7 +134,7 @@ public class TestRawAlert extends BasicJavaClientREST {
 		RuleManager ruleMgr = client.newRuleManager();
 				
 		// get the rule
-        File file = new File("src/junit/com/marklogic/javaclient/rules/alertRule1.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/rules/alertRule1.xml");
 		
 		// create a handle for the rule
         FileHandle writeHandle = new FileHandle(file);
@@ -188,8 +188,8 @@ public class TestRawAlert extends BasicJavaClientREST {
         InputStreamHandle ruleHandle2 = new InputStreamHandle();
 
 		// get the rule file
-		InputStream inputStream1 = new FileInputStream("src/junit/com/marklogic/javaclient/rules/alertRule1.xml");
-		InputStream inputStream2 = new FileInputStream("src/junit/com/marklogic/javaclient/rules/alertRule2.xml");
+		InputStream inputStream1 = new FileInputStream("src/test/java/com/marklogic/javaclient/rules/alertRule1.xml");
+		InputStream inputStream2 = new FileInputStream("src/test/java/com/marklogic/javaclient/rules/alertRule2.xml");
 				
 		ruleHandle1.set(inputStream1);
 		ruleHandle2.set(inputStream2);
@@ -259,7 +259,7 @@ public class TestRawAlert extends BasicJavaClientREST {
         InputStreamHandle ruleHandle1 = new InputStreamHandle();
 
 		// get the rule file
-		InputStream inputStream1 = new FileInputStream("src/junit/com/marklogic/javaclient/rules/alertRule1.xml");
+		InputStream inputStream1 = new FileInputStream("src/test/java/com/marklogic/javaclient/rules/alertRule1.xml");
 				
 		ruleHandle1.set(inputStream1);
         
@@ -303,7 +303,7 @@ public class TestRawAlert extends BasicJavaClientREST {
 		RuleManager ruleMgr = client.newRuleManager();
 				
 		// get the rule
-        File file = new File("src/junit/com/marklogic/javaclient/rules/alertRule1.json");
+        File file = new File("src/test/java/com/marklogic/javaclient/rules/alertRule1.json");
 		
 		String ruleInJson = convertFileToString(file);
 		
@@ -377,7 +377,7 @@ public class TestRawAlert extends BasicJavaClientREST {
 		RuleManager ruleMgr = client.newRuleManager();
 				
 		// get the rule
-        File file = new File("src/junit/com/marklogic/javaclient/rules/alertRule1.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/rules/alertRule1.xml");
 				
 		// create a handle for the rule
         FileHandle writeHandle = new FileHandle(file);
@@ -437,7 +437,7 @@ public class TestRawAlert extends BasicJavaClientREST {
 		RuleManager ruleMgr = client.newRuleManager();
 				
 		// get the rule
-        File file = new File("src/junit/com/marklogic/javaclient/rules/alertRule1.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/rules/alertRule1.xml");
 				
 		// create a handle for the rule
         FileHandle writeHandle = new FileHandle(file);
@@ -455,7 +455,7 @@ public class TestRawAlert extends BasicJavaClientREST {
 		// Write the rule in Modules database of Server
 		TransformExtensionsManager transformManager= client.newServerConfigManager().newTransformExtensionsManager();
 		
-		File ruleTransform = new File("src/junit/com/marklogic/javaclient/rules/rule-transform.xqy");
+		File ruleTransform = new File("src/test/java/com/marklogic/javaclient/rules/rule-transform.xqy");
 		transformManager.writeXQueryTransform("ruleTransform", new FileHandle(ruleTransform));
 		
 		// create a manager for matching rules
@@ -507,9 +507,9 @@ public class TestRawAlert extends BasicJavaClientREST {
         InputStreamHandle ruleHandle3 = new InputStreamHandle();
 
 		// get the rule file
-		InputStream inputStream1 = new FileInputStream("src/junit/com/marklogic/javaclient/rules/alertRule1.xml");
-		InputStream inputStream2 = new FileInputStream("src/junit/com/marklogic/javaclient/rules/alertRule2.xml");
-		InputStream inputStream3 = new FileInputStream("src/junit/com/marklogic/javaclient/rules/alertRule3.xml");
+		InputStream inputStream1 = new FileInputStream("src/test/java/com/marklogic/javaclient/rules/alertRule1.xml");
+		InputStream inputStream2 = new FileInputStream("src/test/java/com/marklogic/javaclient/rules/alertRule2.xml");
+		InputStream inputStream3 = new FileInputStream("src/test/java/com/marklogic/javaclient/rules/alertRule3.xml");
 				
 		ruleHandle1.set(inputStream1);
 		ruleHandle2.set(inputStream2);
@@ -521,7 +521,7 @@ public class TestRawAlert extends BasicJavaClientREST {
 		ruleMgr.writeRule("RULE-TEST-3", ruleHandle3);
 		
 		// get the json rule
-        File file = new File("src/junit/com/marklogic/javaclient/rules/alertRule3.json");
+        File file = new File("src/test/java/com/marklogic/javaclient/rules/alertRule3.json");
 		
 		String ruleInJson = convertFileToString(file);
 		
@@ -608,9 +608,9 @@ public class TestRawAlert extends BasicJavaClientREST {
         InputStreamHandle ruleHandle3 = new InputStreamHandle();
 
 		// get the rule file
-		InputStream inputStream1 = new FileInputStream("src/junit/com/marklogic/javaclient/rules/alertRule1.xml");
-		InputStream inputStream2 = new FileInputStream("src/junit/com/marklogic/javaclient/rules/alertRule2.xml");
-		InputStream inputStream3 = new FileInputStream("src/junit/com/marklogic/javaclient/rules/alertRule3.xml");
+		InputStream inputStream1 = new FileInputStream("src/test/java/com/marklogic/javaclient/rules/alertRule1.xml");
+		InputStream inputStream2 = new FileInputStream("src/test/java/com/marklogic/javaclient/rules/alertRule2.xml");
+		InputStream inputStream3 = new FileInputStream("src/test/java/com/marklogic/javaclient/rules/alertRule3.xml");
 				
 		ruleHandle1.set(inputStream1);
 		ruleHandle2.set(inputStream2);
@@ -622,7 +622,7 @@ public class TestRawAlert extends BasicJavaClientREST {
 		ruleMgr.writeRule("RULE-TEST-3", ruleHandle3);
 		
 		// get the json rule
-        File file = new File("src/junit/com/marklogic/javaclient/rules/alertRule3.json");
+        File file = new File("src/test/java/com/marklogic/javaclient/rules/alertRule3.json");
 		
 		String ruleInJson = convertFileToString(file);
 		
@@ -678,7 +678,7 @@ public class TestRawAlert extends BasicJavaClientREST {
 		RuleManager ruleMgr = client.newRuleManager();
 				
 		// get the rule
-        File file = new File("src/junit/com/marklogic/javaclient/rules/alertRule1.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/rules/alertRule1.xml");
 		
 		//String combinedQuery = convertFileToString(file);
 		
@@ -746,7 +746,7 @@ public class TestRawAlert extends BasicJavaClientREST {
 		RuleManager ruleMgr = client.newRuleManager();
 				
 		// get the rule
-        File file = new File("src/junit/com/marklogic/javaclient/rules/alertRule2.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/rules/alertRule2.xml");
 				
 		// create a handle for the rule
         FileHandle writeHandle = new FileHandle(file);

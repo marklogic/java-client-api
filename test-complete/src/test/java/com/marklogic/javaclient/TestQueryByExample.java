@@ -60,7 +60,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 		}
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/qbe/qbe1.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/qbe/qbe1.xml");
         
         String qbeQuery = convertFileToString(file);
         StringHandle qbeHandle = new StringHandle(qbeQuery);
@@ -97,7 +97,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 		}
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/qbe/qbe1.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/qbe/qbe1.xml");
         
         String qbeQuery = convertFileToString(file);
         StringHandle qbeHandle = new StringHandle(qbeQuery);
@@ -134,7 +134,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 		}
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/qbe/qbe1.json");
+        File file = new File("src/test/java/com/marklogic/javaclient/qbe/qbe1.json");
         
         String qbeQuery = convertFileToString(file);
         StringHandle qbeHandle = new StringHandle(qbeQuery);
@@ -201,7 +201,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 		}
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/qbe/qbe1.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/qbe/qbe1.xml");
         FileHandle fileHandle = new FileHandle(file);
         QueryManager queryMgr = client.newQueryManager();
         
@@ -234,7 +234,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 		}
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/qbe/qbe1.json");
+        File file = new File("src/test/java/com/marklogic/javaclient/qbe/qbe1.json");
         FileHandle fileHandle = new FileHandle(file);
 
         QueryManager queryMgr = client.newQueryManager();
@@ -266,7 +266,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 		
 		// get the combined query
 		try{
-        File file = new File("src/junit/com/marklogic/javaclient/qbe/qbe2.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/qbe/qbe2.xml");
      
         FileHandle fileHandle = new FileHandle(file);
         QueryManager queryMgr = client.newQueryManager();
@@ -301,7 +301,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 			
 			
 			// get the combined query
-        	File file = new File("src/junit/com/marklogic/javaclient/qbe/qbe1.xml");
+        	File file = new File("src/test/java/com/marklogic/javaclient/qbe/qbe1.xml");
         	FileHandle fileHandle = new FileHandle(file);
         	QueryManager queryMgr = client.newQueryManager();
         	
@@ -334,7 +334,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 			writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "JSON");
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/qbe/qbe1.json");
+        File file = new File("src/test/java/com/marklogic/javaclient/qbe/qbe1.json");
         
         String qbeQuery = convertFileToString(file);
         StringHandle qbeHandle = new StringHandle(qbeQuery);
@@ -373,7 +373,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 		}
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/qbe/qbe1.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/qbe/qbe1.xml");
         FileHandle fileHandle = new FileHandle(file);
         QueryManager queryMgr = client.newQueryManager();
         
@@ -386,7 +386,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 			assertEquals("Wrong Document Searched",result.getUri() , "/qbe/constraint1.xml");
 		} 
         try{
-        File wrongFile = new File("src/junit/com/marklogic/javaclient/qbe/WrongQbe.xml");
+        File wrongFile = new File("src/test/java/com/marklogic/javaclient/qbe/WrongQbe.xml");
         FileHandle wrongFileHandle = new FileHandle(wrongFile);
         QueryManager newQueryMgr = client.newQueryManager();
         
@@ -421,7 +421,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 		}
 		
 		// get the Correct query
-        File file = new File("src/junit/com/marklogic/javaclient/qbe/qbe1.json");
+        File file = new File("src/test/java/com/marklogic/javaclient/qbe/qbe1.json");
         
         String qbeQuery = convertFileToString(file);
         StringHandle qbeHandle = new StringHandle(qbeQuery);
@@ -440,7 +440,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
         
      // get the query with Wrong Format
         
-        File wrongFile = new File("src/junit/com/marklogic/javaclient/qbe/WrongQbe.json");
+        File wrongFile = new File("src/test/java/com/marklogic/javaclient/qbe/WrongQbe.json");
         
         String wrongQbeQuery = convertFileToString(wrongFile);
         StringHandle newQbeHandle = new StringHandle(wrongQbeQuery);

@@ -10,8 +10,8 @@ declare function example:transform(
 {
    if (fn:empty($content/*)) then $content
   else (
-    let $value := (map:get($params,"trans:value"),"UNDEFINED")[1]
-    let $name := (map:get($params, "trans:name"), "transformed")[1]
+    let $value := (map:get($params,"value"),"UNDEFINED")[1]
+    let $name := (map:get($params, "name"), "transformed")[1]
     let $root  := $content/*
     return 
     (

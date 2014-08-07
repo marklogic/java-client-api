@@ -13,6 +13,7 @@ import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.DatabaseClient;
+
 import org.junit.*;
 public class TestCRUDModulesDb extends BasicJavaClientREST {
 
@@ -26,7 +27,12 @@ public class TestCRUDModulesDb extends BasicJavaClientREST {
 	assocRESTServer(restServerName, dbName,8011);
 	}
 
-@SuppressWarnings("deprecation")
+@After
+public  void testCleanUp() throws Exception
+{
+	clearDB(8011);
+	System.out.println("Running clear script");
+}
 @Test
 	public void testXQueryModuleCRUDDuplicateFile()
 	{	
@@ -72,7 +78,7 @@ public class TestCRUDModulesDb extends BasicJavaClientREST {
 	
 	}
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testXQueryModuleCRUDDifferentPath() {
 		
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
@@ -115,7 +121,7 @@ public class TestCRUDModulesDb extends BasicJavaClientREST {
 		
 	}
 
-@SuppressWarnings("deprecation")
+
 @Test
 public void testXQueryModuleCRUDBinaryFile() {
 		
@@ -153,7 +159,7 @@ public void testXQueryModuleCRUDBinaryFile() {
 		
 	}
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testXQueryModuleCRUDTextFile() {
 		
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
@@ -190,7 +196,7 @@ public void testXQueryModuleCRUDBinaryFile() {
 		
 	}
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testXQueryModuleCRUDXmlFile() {
 		
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
@@ -227,7 +233,7 @@ public void testXQueryModuleCRUDBinaryFile() {
 		
 	}
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testXQueryModuleReadModulesDb() {
 		
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
@@ -273,7 +279,6 @@ public void testXQueryModuleCRUDBinaryFile() {
 		
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 public void testXQueryModuleReadExtensionLibraryDescriptor () {
 		System.out.println("testXQueryModuleReadExtensionLibraryDescriptor");
@@ -324,7 +329,6 @@ DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest
 		
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 public void testXQueryModuleCRUDXmlFileNegative() {
 	

@@ -74,7 +74,7 @@ public void testBug21159Tuples() throws IOException, ParserConfigurationExceptio
 		}
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/LexiconOptions.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/LexiconOptions.xml");
 		
 		String combinedQuery = convertFileToString(file);
 				
@@ -125,7 +125,7 @@ public void testBug21159Values() throws IOException, ParserConfigurationExceptio
 	}
 	
 	// get the combined query
-    File file = new File("src/junit/com/marklogic/javaclient/combined/LexiconOptions.xml");
+    File file = new File("src/test/java/com/marklogic/javaclient/combined/LexiconOptions.xml");
 	
 	String combinedQuery = convertFileToString(file);
 			

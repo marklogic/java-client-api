@@ -55,7 +55,7 @@ public class TestSearchOnJSON extends BasicJavaClientREST {
 		ReaderHandle handle = new ReaderHandle();
 		
 		// write the files
-		BufferedReader docStream = new BufferedReader(new FileReader("src/junit/com/marklogic/javaclient/queryoptions/" + queryOptionName));
+		BufferedReader docStream = new BufferedReader(new FileReader("src/test/java/com/marklogic/javaclient/queryoptions/" + queryOptionName));
 		handle.set(docStream);
 		
 		// write the query options to the database
@@ -133,7 +133,7 @@ public class TestSearchOnJSON extends BasicJavaClientREST {
 		ReaderHandle handle = new ReaderHandle();
 		
 		// write the files
-		BufferedReader docStream = new BufferedReader(new FileReader("src/junit/com/marklogic/javaclient/queryoptions/" + queryOptionName));
+		BufferedReader docStream = new BufferedReader(new FileReader("src/test/java/com/marklogic/javaclient/queryoptions/" + queryOptionName));
 		handle.set(docStream);
 		
 		// write the query options to the database
