@@ -32,14 +32,19 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	private static String dbName = "TestRawCombinedQueryDB";
 	private static String [] fNames = {"TestRawCombinedQueryDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
-
+    private static int restPort =8011;
 @BeforeClass	public static void setUp() throws Exception 
 	{
 	  System.out.println("In setup");
 	  setupJavaRESTServer(dbName, fNames[0],restServerName,8011);
 	  setupAppServicesConstraint(dbName);
 	}
-
+@After
+public  void testCleanUp() throws Exception
+{
+	clearDB(restPort);
+	System.out.println("Running clear script");
+}
 @SuppressWarnings("deprecation")
 @Test	public void testBug22353() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -632,7 +637,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 	
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testRawCombinedQueryComboJSON() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryComboJSON");
@@ -706,7 +711,6 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 	
 
-@SuppressWarnings("deprecation")
 @Test	public void testRawCombinedQueryFieldJSON() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryFieldJSON");
