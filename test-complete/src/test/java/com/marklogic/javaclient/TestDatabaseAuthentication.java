@@ -98,6 +98,7 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST{
 		setDefaultUser("nobody",restServerName);
 	}
 
+@AfterClass
 	public void tearDown() throws Exception
 	{
 		System.out.println("In tear down" );
