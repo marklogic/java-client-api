@@ -32,8 +32,8 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST{
 	
 	@Test public void testAuthenticationNone() throws IOException
 	{
-		setAuthentication("application-level");
-		setDefaultUser("rest-admin");
+		setAuthentication("application-level",restServerName);
+		setDefaultUser("rest-admin",restServerName);
 
 		System.out.println("Running testAuthenticationNone");
 		
@@ -60,14 +60,14 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST{
 		// release client
 		client.release();
 		
-		setAuthentication("digest");
-		setDefaultUser("nobody");
+		setAuthentication("digest",restServerName);
+		setDefaultUser("nobody",restServerName);
 	}
 	
 @Test	public void testAuthenticationBasic() throws IOException
 	{
-		setAuthentication("basic");
-		setDefaultUser("rest-writer");
+		setAuthentication("basic",restServerName);
+		setDefaultUser("rest-writer",restServerName);
 		
 		System.out.println("Running testAuthenticationBasic");
 		
@@ -94,8 +94,8 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST{
 		// release client
 		client.release();
 		
-		setAuthentication("digest");
-		setDefaultUser("nobody");
+		setAuthentication("digest",restServerName);
+		setDefaultUser("nobody",restServerName);
 	}
 
 	public void tearDown() throws Exception
