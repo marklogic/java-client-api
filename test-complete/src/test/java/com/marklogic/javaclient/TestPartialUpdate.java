@@ -18,6 +18,7 @@ import com.marklogic.client.admin.ExtensionLibrariesManager;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentMetadataPatchBuilder;
 import com.marklogic.client.document.DocumentPatchBuilder;
+import com.marklogic.client.document.DocumentPatchBuilder.PathLanguage;
 import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
@@ -30,6 +31,7 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.query.StructuredQueryBuilder.FragmentScope;
 import com.marklogic.client.query.ValuesDefinition.Frequency;
+
 import org.junit.*;
 
 
@@ -39,9 +41,10 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	private static String [] fNames = {"TestPartialUpdateDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
 @BeforeClass
-	public static void setUp() throws Exception 
+	public  static void setUp() throws Exception 
 	{
 	  System.out.println("In setup");
+	  System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	  setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	  setupAppServicesConstraint(dbName);
 	}
@@ -101,7 +104,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		String docId = "/partial-update/json-original.json";
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
-		
+		patchBldr.pathLanguage(PathLanguage.JSONPATH);
 		ObjectNode fragmentNode = mapper.createObjectNode();
 		fragmentNode = mapper.createObjectNode();
 		fragmentNode.put("insertedKey", 9);
@@ -540,6 +543,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
+		patchBldr.pathLanguage(PathLanguage.JSONPATH);
 		String content1 = docMgr.read(docId, new StringHandle()).get();
 		
 		System.out.println("Before" + content1);
@@ -696,7 +700,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		DocumentDescriptor desc = docMgr.newDescriptor(docId);
 		
 		DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
-		
+		patchBldr.pathLanguage(PathLanguage.JSONPATH);
 		ObjectNode fragmentNode = mapper.createObjectNode();
 		fragmentNode = mapper.createObjectNode();
 		fragmentNode.put("insertedKey", 9);
@@ -786,12 +790,12 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		fragmentNode = mapper.createObjectNode();
 		fragmentNode.put("insertedKey", 9);
 		String fragment = mapper.writeValueAsString(fragmentNode);
-		
+		patchBldr.pathLanguage(PathLanguage.JSONPATH);
 		patchBldr.insertFragment("$.employees", Position.LAST_CHILD, fragment);
 		DocumentPatchHandle patchHandle = patchBldr.build();
-		Transaction t = client.openTransaction("Tranc");
-		docMgr.patch(desc, patchHandle,t);
-			t.commit();
+//		Transaction t = client.openTransaction("Tranc");
+		docMgr.patch(desc, patchHandle);//,t);
+//			t.commit();
 		String content = docMgr.read(docId, new StringHandle()).get();
 		
 		System.out.println("After"+content);
@@ -850,7 +854,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		// release client
 		client.release();		
 	}	
-@AfterClass	
+@AfterClass
 public static void tearDown() throws Exception
 	{
 		tearDownJavaRESTServer(dbName, fNames, restServerName);
