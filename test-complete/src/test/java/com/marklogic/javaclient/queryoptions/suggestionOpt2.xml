@@ -1,0 +1,8 @@
+<options xmlns="http://marklogic.com/appservices/search">
+  <default-suggestion-source>
+    <range type="xs:decimal">
+      <element ns="http://cloudbank.com" name="price"/>
+	  <attribute ns="" name="amt"/>
+    </range>
+  </default-suggestion-source>
+ </options>

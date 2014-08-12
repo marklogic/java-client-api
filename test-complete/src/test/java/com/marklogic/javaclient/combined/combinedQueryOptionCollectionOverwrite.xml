@@ -1,0 +1,22 @@
+<search xmlns="http://marklogic.com/appservices/search">
+  <query>
+    <value-constraint-query>
+      <constraint-name>id</constraint-name>
+      <text>0011</text>
+    </value-constraint-query>
+  </query>  
+  <options>
+    <return-metrics>false</return-metrics>
+    <debug>true</debug>
+    <return-qtext>false</return-qtext>
+    <transform-results apply="raw"/>
+    <constraint name="coll">
+      <collection prefix="http://test.com/" facet="false"/>
+    </constraint>
+    <constraint name="intitle">
+      <word>
+        <element ns="" name="title"/>
+      </word>
+    </constraint>
+  </options>  
+</search>

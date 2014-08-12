@@ -16,6 +16,7 @@
 package com.marklogic.client;
 
 import java.io.OutputStream;
+import java.io.Serializable;
 
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.document.BinaryDocumentManager;
@@ -28,6 +29,7 @@ import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.alerting.RuleManager;
 import com.marklogic.client.util.RequestLogger;
+import com.marklogic.client.pojo.PojoRepository;
 
 /**
  * A Database Client instantiates document and query managers and other objects
@@ -109,6 +111,19 @@ public interface DatabaseClient {
      * @return	a manager for the server properties or administrative resources
      */
     public ServerConfigurationManager newServerConfigManager();
+
+    /**
+     * Creates a PojoRepository specific to the specified class and its id type. 
+     * The PojoRepository provides a facade for persisting, retrieving, and
+     * querying data contained in Java objects.  Annotations are required to
+     * identify the id field and any fields for which you wish to create indexes.
+     *
+     * @param clazz the class type for this PojoRepository to handle
+     * @param idClass the class type of the id field for this clazz, must obviously 
+     *          be Serializable or we'll struggle to marshall it
+     * @return the initialized PojoRepository
+     **/
+    public <T, ID extends Serializable> PojoRepository<T, ID> newPojoRepository(Class<T> clazz, Class<ID> idClass);
 
     /**
      * Initializes a manager for a extension resource.

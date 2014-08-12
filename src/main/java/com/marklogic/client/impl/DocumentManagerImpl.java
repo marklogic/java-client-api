@@ -16,6 +16,7 @@
 package com.marklogic.client.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
@@ -66,6 +66,10 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
         public boolean add(Metadata e) {
             isProcessedMetadataModified = true;
             return super.add(e);
+        }
+        public boolean addAll(Collection<? extends Metadata> c) {
+            isProcessedMetadataModified = true;
+            return super.addAll(c);
         }
     };
     {
@@ -322,6 +326,13 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 	}
 
 	public DocumentPage read(ServerTransform transform, Transaction transaction, String... uris) {
+		boolean withContent = true;
+		return read(transform, transaction, withContent, uris);
+	}
+
+	public DocumentPage read(ServerTransform transform, Transaction transaction,
+		boolean withContent, String... uris)
+	{
 		if (uris == null || uris.length == 0)
 			throw new IllegalArgumentException("Attempt to call read with no uris");
 
@@ -334,9 +345,23 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
             // the default for bulk is no metadata, which differs from the normal default of ALL
             isProcessedMetadataModified ? processedMetadata : null,
             responseFormat,
-            null,
+            mergeTransformParameters(
+                    (transform != null) ? transform : getReadTransform(),
+                    null
+            ),
+            withContent,
             uris);
    	}
+
+	public DocumentPage readMetadata(String... uris) {
+		boolean withContent = false;
+		return read(null, null, withContent, uris);
+	}
+
+	public DocumentPage readMetadata(Transaction transaction, String... uris) {
+		boolean withContent = false;
+		return read(null, transaction, withContent, uris);
+	}
 
 	public DocumentPage search(QueryDefinition querydef, long start) {
 		return search(querydef, start, null, null);

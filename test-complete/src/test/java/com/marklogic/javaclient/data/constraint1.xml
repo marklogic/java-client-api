@@ -1,0 +1,8 @@
+<root>
+  <title>Vannevar Bush</title>
+  <popularity>5</popularity>
+  <id>0011</id>
+  <date xmlns="http://purl.org/dc/elements/1.1/">2005-01-01</date>
+  <price xmlns="http://cloudbank.com" amt="0.1"/>
+  <p>Vannevar Bush wrote an article for The Atlantic Monthly</p>
+</root>

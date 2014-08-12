@@ -40,14 +40,12 @@ public class InvalidUserTest {
 
         String docId = "/example/text.txt";
         TextDocumentManager docMgr = client.newTextDocumentManager();
-        // write doc
-        try
-        {
-            // make use of the client connection
+        try {
+            // make use of the client connection so we get an auth error
             StringHandle handle = new StringHandle();
             handle.set("A simple text document");
             docMgr.write(docId, handle);
-            assertEquals(expectedException, exception);
+            // the next line will only run if write doesn't throw an exception
             docMgr.delete(docId);
         }
         catch (Exception e) {
@@ -55,6 +53,7 @@ public class InvalidUserTest {
         } finally {
             client.release();
         }
+        assertEquals(expectedException, exception);
 
     }
 }

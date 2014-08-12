@@ -25,6 +25,8 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.InputSourceHandle;
 import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.JacksonParserHandle;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
@@ -46,6 +48,8 @@ public class HandleFactoryRegistryImpl implements HandleFactoryRegistry {
 		registry.register(FileHandle.newFactory());
 		registry.register(InputSourceHandle.newFactory());
 		registry.register(InputStreamHandle.newFactory());
+		registry.register(JacksonHandle.newFactory());
+		registry.register(JacksonParserHandle.newFactory());
 		registry.register(ReaderHandle.newFactory());
 		registry.register(SourceHandle.newFactory());
 		registry.register(StringHandle.newFactory());

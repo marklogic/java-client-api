@@ -23,6 +23,8 @@ import java.util.Set;
 public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
     public DocumentWriteSet addDefault(DocumentMetadataWriteHandle metadataHandle);
 
+    public DocumentWriteSet disableDefault();
+
     public DocumentWriteSet add(String docId, AbstractWriteHandle contentHandle);
 
     public DocumentWriteSet add(String docId, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle);

@@ -1,0 +1,44 @@
+<search xmlns="http://marklogic.com/appservices/search">
+  <search:query xmlns:search="http://marklogic.com/appservices/search">
+  <search:or-query>
+    <search:and-query>
+      <search:word-constraint-query>
+	<search:constraint-name>para</search:constraint-name>
+	<search:text>Bush</search:text>
+      </search:word-constraint-query>
+      <search:not-query>
+	<search:word-constraint-query>
+	  <search:constraint-name>para</search:constraint-name>
+	  <search:text>memex</search:text>
+	</search:word-constraint-query>
+      </search:not-query>
+    </search:and-query>
+    <search:and-query>
+      <search:value-constraint-query>
+	<search:constraint-name>id</search:constraint-name>
+	<search:text>0026</search:text>
+      </search:value-constraint-query>
+      <search:term-query>
+	<search:text>memex</search:text>
+      </search:term-query>
+    </search:and-query>
+  </search:or-query>
+</search:query>
+  <options>
+    <return-metrics>false</return-metrics>
+    <debug>true</debug>
+    <return-qtext>false</return-qtext>
+    <transform-results apply="snippet"/>
+    <constraint name="para">
+      <word>
+        <field name="para"/>
+          <term-option>case-insensitive</term-option>
+      </word>
+    </constraint>
+    <constraint name="id">
+      <value>
+        <element ns="" name="id"/>
+      </value>
+    </constraint>
+  </options>  
+</search>

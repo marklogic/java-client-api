@@ -1,0 +1,17 @@
+<options xmlns="http://marklogic.com/appservices/search">
+  <return-metrics>false</return-metrics>
+  <debug>true</debug>
+  <return-qtext>false</return-qtext>
+  <transform-results apply="snippet"/>
+    <constraint name="para">
+      <word>
+        <field name="para"/>
+        <term-option>case-insensitive</term-option>
+      </word>
+    </constraint>
+    <constraint name="id">
+      <value>
+        <element ns="" name="id"/>
+      </value>
+    </constraint>
+</options>

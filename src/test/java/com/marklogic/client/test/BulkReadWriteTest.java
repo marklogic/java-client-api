@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
@@ -26,7 +27,6 @@ import java.util.logging.Level;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.annotation.XmlRootElement;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -38,8 +38,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.DocumentWriteSet;
@@ -61,11 +61,11 @@ import com.marklogic.client.query.StructuredQueryBuilder;
  **/
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BulkReadWriteTest {
-    private static int BATCH_SIZE = 100;
-    private static String DIRECTORY = "/cities/";
-    private static String COUNTRIES_FILE = "countryInfo.txt";
-    private static String CITIES_FILE = "cities_above_300K.txt";
-    private static int RECORDS_EXPECTED = 1363;
+    private static final int BATCH_SIZE = 100;
+    static final String DIRECTORY = "/cities/";
+    private static final String COUNTRIES_FILE = "countryInfo.txt";
+    private static final String CITIES_FILE = "cities_above_300K.txt";
+    static final int RECORDS_EXPECTED = 1363;
     private static JAXBContext context = null;
 
     @BeforeClass
@@ -73,7 +73,6 @@ public class BulkReadWriteTest {
         Common.connect();
         context = JAXBContext.newInstance(City.class);
         //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "debug");    
     }
     @AfterClass
     public static void afterClass() {
@@ -81,204 +80,44 @@ public class BulkReadWriteTest {
         Common.release();
     }
 
-    static public class Country {
-        private String name, continent, currencyCode, currencyName, isoCode;
+    interface CityWriter {
+        public void addCity(City city);
+        public void finishBatch();
+        public void setNumRecords(int numWritten);
+    }
 
-        public String getIsoCode() {
-            return isoCode;
+    private class BulkCityWriter implements CityWriter {
+        private XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+        private JAXBContext context;
+        private DocumentWriteSet writeSet = docMgr.newWriteSet();
+
+        BulkCityWriter() throws JAXBException {
+            context = JAXBContext.newInstance(City.class);
         }
 
-        public Country setIsoCode(String isoCode) {
-            this.isoCode = isoCode;
-            return this;
+        public void addCity(City city) {
+            JAXBHandle<City> handle = new JAXBHandle<City>(context);
+            // set the handle to the POJO instance
+            handle.set(city);
+            writeSet.add( DIRECTORY + city.getGeoNameId() + ".xml", handle );
         }
 
-        public String getName() {
-            return name;
+        public void finishBatch() {
+            docMgr.write(writeSet);
+            writeSet = docMgr.newWriteSet();
         }
 
-        public Country setName(String name) {
-            this.name = name;
-            return this;
-        }
-
-        public String getContinent() {
-            return continent;
-        }
-
-        public Country setContinent(String continent) {
-            this.continent = continent;
-            return this;
-        }
-
-        public String getCurrencyCode() {
-            return currencyCode;
-        }
-
-        public Country setCurrencyCode(String currencyCode) {
-            this.currencyCode = currencyCode;
-            return this;
-        }
-
-        public String getCurrencyName() {
-            return currencyName;
-        }
-
-        public Country setCurrencyName(String currencyName) {
-            this.currencyName = currencyName;
-            return this;
+        public void setNumRecords(int numWritten) {
+            assertEquals("Number of records not expected", RECORDS_EXPECTED, numWritten);
         }
     }
 
-    @XmlRootElement
-    static public class City {
-        private int geoNameId;
-        private String name;
-        private String asciiName;
-        private String[] alternateNames;
-        private double latitude;
-        private double longitude;
-        private String countryIsoCode;
-        private String countryName;
-        private String continent;
-        private String currencyCode;
-        private String currencyName;
-        private long population;
-        private int elevation;
-
-        public int getGeoNameId() {
-            return geoNameId;
-        }
-
-        public City setGeoNameId(int geoNameId) {
-            this.geoNameId = geoNameId;
-            return this;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public City setName(String name) {
-            this.name = name;
-            return this;
-        }
-
-        public String getAsciiName() {
-            return asciiName;
-        }
-
-        public City setAsciiName(String asciiName) {
-            this.asciiName = asciiName;
-            return this;
-        }
-
-        public String[] getAlternateNames() {
-            return alternateNames;
-        }
-
-        public City setAlternateNames(String[] alternateNames) {
-            this.alternateNames = alternateNames;
-            return this;
-        }
-
-        public double getLatitude() {
-            return latitude;
-        }
-
-        public City setLatitude(double latitude) {
-            this.latitude = latitude;
-            return this;
-        }
-
-        public double getLongitude() {
-            return longitude;
-        }
-
-        public City setLongitude(double longitude) {
-            this.longitude = longitude;
-            return this;
-        }
-
-        public String getCountryIsoCode() {
-            return countryIsoCode;
-        }
-
-        public City setCountryIsoCode(String countryIsoCode) {
-            this.countryIsoCode = countryIsoCode;
-            return this;
-        }
-
-        public String getCountryName() {
-            return countryName;
-        }
-
-        public City setCountryName(String countryName) {
-            this.countryName = countryName;
-            return this;
-        }
-
-        public String getContinent() {
-            return continent;
-        }
-
-        public City setContinent(String continent) {
-            this.continent = continent;
-            return this;
-        }
-
-        public String getCurrencyCode() {
-            return currencyCode;
-        }
-
-        public City setCurrencyCode(String currencyCode) {
-            this.currencyCode = currencyCode;
-            return this;
-        }
-
-        public String getCurrencyName() {
-            return currencyName;
-        }
-
-        public City setCurrencyName(String currencyName) {
-            this.currencyName = currencyName;
-            return this;
-        }
-
-        public long getPopulation() {
-            return population;
-        }
-
-        public City setPopulation(long population) {
-            this.population = population;
-            return this;
-        }
-
-        public int getElevation() {
-            return elevation;
-        }
-
-        public City setElevation(int elevation) {
-            this.elevation = elevation;
-            return this;
-        }
-    }
-
-    @Test
-    public void testBulkLoad() throws IOException, JAXBException {
-        // register the POJO class
-        DatabaseClientFactory.getHandleRegistry().register(
-            JAXBHandle.newFactory(City.class)
-        );
-        XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
-
-        JAXBContext context = JAXBContext.newInstance(City.class);
-
+    static void loadCities(CityWriter cityWriter) throws Exception {
         // load all the countries into a HashMap (this isn't the big data set)
         // we'll attach country info to each city (that's the big data set)
         Map<String, Country> countries = new HashMap<String, Country>();
-        System.out.println("1:" + BulkReadWriteTest.class.getClassLoader().getResourceAsStream(COUNTRIES_FILE));
-        BufferedReader countryReader = new BufferedReader(Common.testFileToReader(COUNTRIES_FILE));
+        System.out.println("Reading countries:" + BulkReadWriteTest.class.getClassLoader().getResourceAsStream(COUNTRIES_FILE));
+        BufferedReader countryReader = new BufferedReader(Common.testFileToReader(COUNTRIES_FILE, "UTF-8"));
         String line;
         while ((line = countryReader.readLine()) != null ) {
             addCountry(line, countries);
@@ -286,39 +125,38 @@ public class BulkReadWriteTest {
         countryReader.close();
 
         // write batches of cities combined with their country info
-        DocumentWriteSet writeSet = docMgr.newWriteSet();
-        System.out.println(BulkReadWriteTest.class.getClassLoader().getResourceAsStream(CITIES_FILE));
-        BufferedReader cityReader = new BufferedReader(Common.testFileToReader(CITIES_FILE));
+        System.out.println("Reading cities:" + BulkReadWriteTest.class.getClassLoader().getResource(CITIES_FILE));
+        BufferedReader cityReader = new BufferedReader(Common.testFileToReader(CITIES_FILE, "UTF-8"));
         line = null;
-        long numWritten = 0;
+        int numWritten = 0;
         while ((line = cityReader.readLine()) != null ) {
 
             // instantiate the POJO for this city
             City city = newCity(line, countries);
-
-            // set the handle to the POJO instance
-            JAXBHandle<City> handle = new JAXBHandle<City>(context);
-            handle.set(city);
-            writeSet.add( DIRECTORY + city.getGeoNameId() + ".xml", handle );
+            // let the implementation handle writing the city
+            cityWriter.addCity(city);
 
             // when we have a full batch, write it out
             if ( ++numWritten % BATCH_SIZE == 0 ) {
-                docMgr.write(writeSet);
-                writeSet = docMgr.newWriteSet();
+                cityWriter.finishBatch();
             }
         }
         // if there are any leftovers, let's write this last batch
         if ( numWritten % BATCH_SIZE > 0 ) {
-            docMgr.write(writeSet);
+            cityWriter.finishBatch();
         }
+        cityWriter.setNumRecords(numWritten);
         cityReader.close();
+    }
         
 
-        assertEquals("Number of records not expected", numWritten, RECORDS_EXPECTED);
+    @Test
+    public void testA_BulkLoad() throws IOException, Exception {
+        loadCities(new BulkCityWriter());
     }
 
     @Test
-    public void testBulkRead() {
+    public void testB_BulkRead() {
         XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 
         DocumentPage page = docMgr.read(DIRECTORY + "1016670.xml", DIRECTORY + "108410.xml", DIRECTORY + "1205733.xml");
@@ -332,7 +170,7 @@ public class BulkReadWriteTest {
     }
 
     @Test
-    public void testBulkSearch() {
+    public void testC_BulkSearch() {
         XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 
         SearchHandle searchHandle = new SearchHandle();
@@ -351,7 +189,7 @@ public class BulkReadWriteTest {
 
     //public void testMixedLoad() {
     @Test
-    public void testJsonLoad() {
+    public void testD_JsonLoad() {
         JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
 
         StringHandle doc1 =
@@ -361,7 +199,7 @@ public class BulkReadWriteTest {
             new StringHandle("{\"animal\": \"cat\", \"says\": \"meow\"}").withFormat(Format.JSON);
 
         StringHandle doc2Metadata =
-            new StringHandle("{\"quality\" : 2.0}").withFormat(Format.JSON);
+            new StringHandle("{\"quality\" : 2}").withFormat(Format.JSON);
 
         DocumentWriteSet writeSet = docMgr.newWriteSet();
         writeSet.add("doc1.json", doc1);
@@ -380,7 +218,7 @@ public class BulkReadWriteTest {
         assertEquals("Failed to read document 2", "cat", content2.get().get("animal").textValue());
     }
 
-    public void validateRecord(DocumentRecord record) {
+    private void validateRecord(DocumentRecord record) {
         JAXBHandle<City> handle = new JAXBHandle<City>(context);
         assertNotNull("DocumentRecord should never be null", record);
         assertNotNull("Document uri should never be null", record.getUri());
@@ -392,19 +230,23 @@ public class BulkReadWriteTest {
         */
         if ( record.getUri().equals(DIRECTORY + "1205733.xml") ) {
             City chittagong = record.getContent(handle).get();
-            assertEquals("City name doesn't match", "Chittagong", chittagong.getName());
-            assertEquals("City latitude doesn't match", 22.3384, chittagong.getLatitude(), 0);
-            assertEquals("City longitude doesn't match", 91.83168, chittagong.getLongitude(), 0);
-            assertEquals("City population doesn't match", 3920222, chittagong.getPopulation());
-            assertEquals("City elevation doesn't match", 15, chittagong.getElevation());
-            assertEquals("Currency code doesn't match", "BDT", chittagong.getCurrencyCode());
-            assertEquals("Currency name doesn't match", "Taka", chittagong.getCurrencyName());
+            validateChittagong(chittagong);
         }
     }
 
+    public static void validateChittagong(City chittagong) {
+        assertEquals("City name doesn't match", "Chittagong", chittagong.getName());
+        assertEquals("City latitude doesn't match", 22.3384, chittagong.getLatitude(), 0);
+        assertEquals("City longitude doesn't match", 91.83168, chittagong.getLongitude(), 0);
+        assertEquals("City population doesn't match", 3920222, chittagong.getPopulation());
+        assertEquals("City elevation doesn't match", 15, chittagong.getElevation());
+        assertEquals("Currency code doesn't match", "BDT", chittagong.getCurrencyCode());
+        assertEquals("Currency name doesn't match", "Taka", chittagong.getCurrencyName());
+    }
+
     @Test
-    public void testTextLoad() {
-        String docId[] = {"/foo/test/myFoo1.xml","/foo/test/myFoo2.xml","/foo/test/myFoo3.xml"};
+    public void testE_TextLoad() {
+        String docId[] = {"/foo/test/myFoo1.txt","/foo/test/myFoo2.txt","/foo/test/myFoo3.txt"};
         TextDocumentManager docMgr = Common.client.newTextDocumentManager();
         DocumentWriteSet writeset =docMgr.newWriteSet();
 
@@ -422,6 +264,113 @@ public class BulkReadWriteTest {
         docMgr.delete(docId[2]);
     }
 
+    @Test
+    public void testF_DefaultMetadata() {
+        // Synthesize input content
+        StringHandle doc1 = new StringHandle(
+                "{\"number\": 1}").withFormat(Format.JSON);
+        StringHandle doc2 = new StringHandle(
+                "{\"number\": 2}").withFormat(Format.JSON);
+        StringHandle doc3 = new StringHandle(
+                "{\"number\": 3}").withFormat(Format.JSON);
+        StringHandle doc4 = new StringHandle(
+                "{\"number\": 4}").withFormat(Format.JSON);
+        StringHandle doc5 = new StringHandle(
+                "{\"number\": 5}").withFormat(Format.JSON);
+        StringHandle doc6 = new StringHandle(
+                "{\"number\": 6}").withFormat(Format.JSON);
+        StringHandle doc7 = new StringHandle(
+                "{\"number\": 7}").withFormat(Format.JSON);
+        StringHandle doc8 = new StringHandle(
+                "{\"number\": 8}").withFormat(Format.JSON);
+
+        // Synthesize input metadata
+        DocumentMetadataHandle defaultMetadata1 = 
+                new DocumentMetadataHandle().withQuality(1);
+        DocumentMetadataHandle defaultMetadata2 = 
+                new DocumentMetadataHandle().withQuality(2);
+        DocumentMetadataHandle docSpecificMetadata = 
+                new DocumentMetadataHandle().withCollections("myCollection");
+
+        // Create and build up the batch
+        JSONDocumentManager jdm = Common.client.newJSONDocumentManager();
+        DocumentWriteSet batch = jdm.newWriteSet();
+
+        // use system default metadata
+        batch.add("doc1.json", doc1);       // system default metadata
+
+        // using batch default metadata
+        batch.addDefault(defaultMetadata1);  
+        batch.add("doc2.json", doc2);       // batch default metadata
+        batch.add("doc3.json", docSpecificMetadata, doc3);
+        batch.add("doc4.json", doc4);       // batch default metadata
+
+        // replace batch default metadata with new metadata
+        batch.addDefault(defaultMetadata2); 
+        batch.add("doc5.json", doc5);       // batch default 
+
+        // replace default metadata with blank metadata (back to system defaults)
+        batch.disableDefault(); 
+        batch.add("doc6.json", doc6);       // system default metadata
+        batch.addDefault(defaultMetadata1); 
+        batch.add("doc7.json", doc7);       // batch default metadata
+        batch.disableDefault(); 
+        batch.add("doc8.json", doc8);       // system default metadata
+
+        // Execute the write operation
+        jdm.write(batch);
+
+        // need the "synthetic response" format to be XML
+        jdm.setResponseFormat(Format.XML);
+        // Check the results
+        assertEquals("Doc1 should have the system default quality of 0", 0, 
+            jdm.readMetadata("doc1.json", new DocumentMetadataHandle()).getQuality());
+        assertEquals("Doc2 should use the first batch default metadata, with quality 1", defaultMetadata1.getQuality(), 
+                jdm.readMetadata("doc2.json", new DocumentMetadataHandle()).getQuality());
+
+        DocumentMetadataHandle doc3Metadata =  
+                jdm.readMetadata("doc3.json", new DocumentMetadataHandle());
+        assertEquals("Doc3 should have the system default document quality (0) because quality " +
+            "was not included in the document-specific metadata.", 0, doc3Metadata.getQuality());
+        Set collections = doc3Metadata.getCollections();
+        assertEquals("Doc3 should be in exactly one collection from the document-specific metadata.", 1, collections.size());
+        assertEquals("Doc3 should be in the collection \"myCollection\", from the document-specific metadata.",
+            "myCollection", collections.iterator().next());
+
+        // let's check getting content with just quality in the metadata 
+        jdm.setMetadataCategories(Metadata.QUALITY);
+        DocumentPage documents = jdm.read("doc4.json", "doc5.json");
+
+        for ( DocumentRecord doc: documents ) {
+            DocumentMetadataHandle metadata = doc.getMetadata(new DocumentMetadataHandle());
+            StringHandle content = doc.getContent(new StringHandle());
+            if ( "doc4.json".equals(doc.getUri()) ) {
+                assertEquals("Doc4 should also use the 1st batch default metadata, with quality 1", 1,
+                    metadata.getQuality());
+                assertTrue("Doc 4 contents are wrong", content.get().matches("\\{\"number\": ?4\\}"));
+            } else if ( "doc5.json".equals(doc.getUri()) ) {
+                assertEquals("Doc5 should use the 2nd batch default metadata, with quality 2", 2,
+                    metadata.getQuality());
+                assertTrue("Doc 5 contents are wrong", content.get().matches("\\{\"number\": ?5\\}"));
+            }
+        }
+
+        // now try with just metadata
+        documents = jdm.readMetadata("doc6.json", "doc7.json", "doc8.json");
+        for ( DocumentRecord doc: documents ) {
+            DocumentMetadataHandle metadata = doc.getMetadata(new DocumentMetadataHandle());
+            if ( "doc6.json".equals(doc.getUri()) ) {
+                assertEquals("Doc 6 should have the system default quality of 0", 0,
+                    metadata.getQuality());
+            } else if ( "doc7.json".equals(doc.getUri()) ) {
+                assertEquals("Doc7 should also use the 1st batch default metadata, with quality 1", 1,
+                    metadata.getQuality());
+            } else if ( "doc8.json".equals(doc.getUri()) ) {
+                assertEquals("Doc 8 should have the system default quality of 0", 0,
+                    metadata.getQuality());
+            }
+        }
+    }
 
 
     private static void addCountry(String line, Map<String, Country> countries) {
@@ -440,11 +389,11 @@ public class BulkReadWriteTest {
         );
     }
 
-    private static Country getCountry(String isoCode, Map<String, Country> countries) {
+    public static Country getCountry(String isoCode, Map<String, Country> countries) {
         return countries.get(isoCode);
     }
 
-    private static City newCity(String line, Map<String, Country> countries) {
+    public static City newCity(String line, Map<String, Country> countries) {
         String[] fields = line.split("	");
         try {
             City city = new City()
@@ -454,6 +403,9 @@ public class BulkReadWriteTest {
               .setAlternateNames( fields[3].split(",") );
             if ( !fields[4].equals("") ) city.setLatitude( Double.parseDouble(fields[4]) );
             if ( !fields[5].equals("") ) city.setLongitude( Double.parseDouble(fields[5]) );
+            if ( !fields[4].equals("") && !fields[5].equals("") ) {
+                city.setLatLong( fields[4] + " " + fields[5] );
+            }
             if ( !fields[14].equals("") ) city.setPopulation( Long.parseLong(fields[14]) );
             if ( !fields[16].equals("") ) city.setElevation( Integer.parseInt(fields[16]) );
             if ( !fields[8].equals("") ) {
@@ -472,13 +424,14 @@ public class BulkReadWriteTest {
         }
     }
 
-    private static void cleanUp() {
+    public static void cleanUp() {
         QueryManager queryMgr = Common.client.newQueryManager();
         DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
         deleteQuery.setDirectory("/cities/");
         queryMgr.delete(deleteQuery);
         JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
-        docMgr.delete("doc1.json");
-        docMgr.delete("doc2.json");
+        for ( int i=1; i <= 8; i++ ) {
+            docMgr.delete("doc" + i + ".json");
+        }
     }
 }

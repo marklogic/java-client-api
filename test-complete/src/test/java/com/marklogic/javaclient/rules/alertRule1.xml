@@ -1,0 +1,22 @@
+<rapi:rule xmlns:rapi="http://marklogic.com/rest-api">
+  <rapi:name>RULE-TEST-1</rapi:name>
+  <rapi:description>rule for test1</rapi:description>
+  <search:search xmlns:search="http://marklogic.com/appservices/search">
+    <search:query>
+   	  <search:word-constraint-query>
+   	    <search:constraint-name>intitle</search:constraint-name>
+   	    <search:text>Vannevar</search:text>
+   	  </search:word-constraint-query>
+	</search:query>
+    <search:options>
+      <search:constraint name="intitle">
+        <search:word>
+          <search:element name="title" ns=""/>
+    	</search:word>
+      </search:constraint>
+    </search:options>
+  </search:search>
+  <rapi:rule-metadata>
+    <rule-number>one</rule-number>
+  </rapi:rule-metadata>
+</rapi:rule>

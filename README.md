@@ -27,8 +27,8 @@ mvn test
 The following resources introduce and document the Java API:
 
 * [The Java API in Five Minutes](http://developer.marklogic.com/try/java/index)
-* [JavaDoc](http://docs.marklogic.com/guide/java)
-* [User Guide](http://docs.marklogic.com/javadoc/client/index.html)
+* [Java Application Developer's Guide](http://docs.marklogic.com/guide/java)
+* [JavaDoc](http://docs.marklogic.com/javadoc/client/index.html)
 
 ### Installing
 

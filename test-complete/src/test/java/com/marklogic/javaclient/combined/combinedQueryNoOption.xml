@@ -1,0 +1,8 @@
+<search xmlns="http://marklogic.com/appservices/search">
+  <query>
+    <value-constraint-query>
+      <constraint-name>id</constraint-name>
+      <text>0026</text>
+    </value-constraint-query>
+  </query>  
+</search>

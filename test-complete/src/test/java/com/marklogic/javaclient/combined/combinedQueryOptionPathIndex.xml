@@ -1,0 +1,15 @@
+<search xmlns="http://marklogic.com/appservices/search">
+  <search:query xmlns:search="http://marklogic.com/appservices/search">
+  <search:range-constraint-query>
+    <search:constraint-name>pindex</search:constraint-name>
+    <search:value>Aries</search:value>
+  </search:range-constraint-query>
+</search:query>
+  <options>
+   <constraint name="pindex">
+     <range type="xs:string" collation="http://marklogic.com/collation/">
+       <path-index>/Employee/fn</path-index>
+     </range>
+   </constraint>		
+  </options>  
+</search>

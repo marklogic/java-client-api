@@ -25,6 +25,9 @@ public class BasicPage<T> implements Page<T> {
     private long pageSize;
     private long totalSize;
 
+    protected BasicPage(Class<T> type) {
+    }
+
     public BasicPage(Iterable<T> iterable, long start, long pageSize, long totalSize) {
         this.iterable = iterable;
         this.start = start;

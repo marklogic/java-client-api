@@ -16,6 +16,7 @@
 package com.marklogic.client.impl;
 
 import java.io.OutputStream;
+import java.io.Serializable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,8 @@ import com.marklogic.client.alerting.RuleManager;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.pojo.PojoRepository;
+import com.marklogic.client.impl.PojoRepositoryImpl;
 
 public class DatabaseClientImpl implements DatabaseClient {
 	static final private Logger logger = LoggerFactory.getLogger(DatabaseClientImpl.class);
@@ -119,6 +122,11 @@ public class DatabaseClientImpl implements DatabaseClient {
 			new ServerConfigurationManagerImpl(services);
 		configMgr.setHandleRegistry(getHandleRegistry());
 		return configMgr;
+	}
+	@Override
+	public <T, ID extends Serializable> PojoRepository<T, ID> newPojoRepository(Class<T> clazz, Class<ID> idClass) {
+		return new PojoRepositoryImpl<T, ID>(this, clazz, idClass);
+
 	}
 
 	@Override

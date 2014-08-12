@@ -287,7 +287,6 @@ Document results = client.newQueryManager().search(
     To use extra IO handles like
     {@link com.marklogic.client.extra.dom4j.DOM4JHandle},
     {@link com.marklogic.client.extra.gson.GSONHandle},
-    {@link com.marklogic.client.extra.jackson.JacksonHandle},
     {@link com.marklogic.client.extra.jdom.JDOMHandle}, or
     {@link com.marklogic.client.extra.xom.XOMHandle}, you download the
     library integrated by the handle and add the library to the classpath.
@@ -296,10 +295,11 @@ Document results = client.newQueryManager().search(
     using {@link com.marklogic.client.DatabaseClientFactory}.getHandleRegistry().
 </p>
 <p>
-    You can also register a factory for the built-in JAXB handle to support
-    IO on your POJO classes in shortcut methods.  The following example
+    You can also register a factory for the built-in JAXB and JacksonDatabind handles 
+    to support IO on your POJO classes in shortcut methods.  The following example
     registers the JAXB handle for one or more POJO classes and writes
-    and reads the POJOs as database documents.
+    and reads the POJOs as database documents.  The same pattern works with 
+    JacksonDatabindHandle.
 </p>
 <pre>
 // configure once before creating a client

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<options xmlns="http://marklogic.com/appservices/search">
+  <constraint name="summary">
+    <word>
+      <field name="bbqtext"/>
+    </word> 
+  </constraint>
+</options>

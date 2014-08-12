@@ -94,15 +94,17 @@ import com.marklogic.client.impl.Utilities;
  * {@link com.marklogic.client.io.marker.StructureReadHandle read handle}
  * implementation instead of this class to write or read
  * query options.  For instance:
- * <pre>String opts = new StringBuilder()
- *     .append("&lt;options xmlns=\"http://marklogic.com/appservices/search\">")
- *     .append(    "&lt;debug>true&lt;/debug>")
- *     .append("&lt;/options>")
- *     .toString();
- *optsMgr.writeOptions("debug", new StringHandle(opts));</pre>
+ * <pre>{@code
+ *  String opts = new StringBuilder()
+ *       .append("<options xmlns=\"http://marklogic.com/appservices/search\">")
+ *       .append(    "<debug>true</debug>")
+ *       .append("</options>")
+ *       .toString();
+ *  optsMgr.writeOptions("debug", new StringHandle(opts)); }</pre>
  * or
- * <pre>String opts = "{\"options\":{\"debug\":true}}";
- *optsMgr.writeOptions("debug", new StringHandle(opts).withFormat(Format.JSON));</pre>
+ * <pre>{@code
+ *  String opts = "{\"options\":{\"debug\":true}}";
+ *  optsMgr.writeOptions("debug", new StringHandle(opts).withFormat(Format.JSON)); }</pre>
  */
 @Deprecated
 public class QueryOptionsBuilder {

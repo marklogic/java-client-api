@@ -1,0 +1,27 @@
+<search xmlns="http://marklogic.com/appservices/search">
+<search:query xmlns:search="http://marklogic.com/appservices/search">
+  <search:or-query>
+    <search:value-constraint-query>
+      <search:constraint-name>id</search:constraint-name>
+      <search:text>00*2</search:text>
+    </search:value-constraint-query>
+    <search:value-constraint-query>
+      <search:constraint-name>id</search:constraint-name>
+      <search:text>0??6</search:text>
+    </search:value-constraint-query>
+  </search:or-query>
+</search:query>  
+  <options>
+    <return-metrics>false</return-metrics>
+    <return-qtext>false</return-qtext>
+    <search-option>filtered</search-option>
+    <debug>true</debug>
+    <transform-results apply="raw"/>
+      <constraint name="id">
+        <value>
+          <element ns="" name="id"/>
+          <term-option>wildcarded</term-option>
+        </value>
+      </constraint>
+  </options>  
+</search>
