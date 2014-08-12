@@ -31,6 +31,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
 import java.util.Iterator;
 import java.util.Map;
@@ -1273,10 +1274,45 @@ public abstract class ConnectedRESTQA {
 
 	}
 
-	public static void setAuthentication(String level){
+	public static void setAuthentication(String level,String restServerName) throws ClientProtocolException, IOException
+	{
+		DefaultHttpClient client = new DefaultHttpClient();
 
-	}
-	public static void setDefaultUser(String usr){
+		client.getCredentialsProvider().setCredentials(
+				new AuthScope("localhost", 8002),
+				new UsernamePasswordCredentials("admin", "admin"));
+		String  body = "{\"authentication\": \""+level+"\"}";
 
+		HttpPut put = new HttpPut("http://localhost:8002/manage/v2/servers/"+restServerName+"/properties?server-type=http&group-id=Default");
+		put.addHeader("Content-type", "application/json");
+		put.setEntity(new StringEntity(body));
+
+		HttpResponse response2 = client.execute(put);
+		HttpEntity respEntity = response2.getEntity();
+		if(respEntity != null){
+			String content =  EntityUtils.toString(respEntity);
+			System.out.println(content);
+		}
 	}
+	public static void setDefaultUser(String usr,String restServerName) throws ClientProtocolException, IOException {
+		
+		DefaultHttpClient client = new DefaultHttpClient();
+
+		client.getCredentialsProvider().setCredentials(
+				new AuthScope("localhost", 8002),
+				new UsernamePasswordCredentials("admin", "admin"));
+		String  body = "{\"default-user\": \""+usr+"\"}";
+
+		HttpPut put = new HttpPut("http://localhost:8002/manage/v2/servers/"+restServerName+"/properties?server-type=http&group-id=Default");
+		put.addHeader("Content-type", "application/json");
+		put.setEntity(new StringEntity(body));
+
+		HttpResponse response2 = client.execute(put);
+		HttpEntity respEntity = response2.getEntity();
+		if(respEntity != null){
+			String content =  EntityUtils.toString(respEntity);
+			System.out.println(content);
+		}
+	}
+
 }
