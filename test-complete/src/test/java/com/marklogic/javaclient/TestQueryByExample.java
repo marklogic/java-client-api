@@ -35,12 +35,20 @@ public class TestQueryByExample extends BasicJavaClientREST {
 	private static String dbName = "TestQueryByExampleDB";
 	private static String [] fNames = {"TestQueryByExampleDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort=8011;
 @BeforeClass
 	public static void setUp() throws Exception 
 	{
 	  System.out.println("In setup");
 	  setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	  setupAppServicesConstraint(dbName);
+	}
+
+@After
+	public  void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
 	}
 
 @SuppressWarnings("deprecation")
@@ -146,10 +154,10 @@ public class TestQueryByExample extends BasicJavaClientREST {
         
         String resultDoc = queryMgr.search(qbyex, new StringHandle()).get();
         
-        System.out.println(resultDoc);
+        System.out.println("testQueryByExampleJSON Result : "+resultDoc);
 
-        assertTrue("total result is not correct", resultDoc.contains("\"total\":1"));
-        assertTrue("doc returned is not correct", resultDoc.contains("{\"snippet-format\":\"snippet\",\"total\":1,\"start\":1,\"page-length\":10,\"results\":[{\"index\":1,\"uri\":\"/qbe/constraint1.json\",\"path\":\"fn:doc(\\\"/qbe/constraint1.json\\\")\",\"score\":28672,\"confidence\":0.6951694,\"fitness\":0.6951694,\"href\":\"/v1/documents?uri=%2Fqbe%2Fconstraint1.json\",\"mimetype\":\"application/json\",\"format\":\"json\",\"matches\":[{\"path\":\"fn:doc(\\\"/qbe/constraint1.json\\\")/*:json/*:root/*:id\",\"match-text\":[{\"highlight\":11}]}],\"metadata\":[{\"title\":\"Vannevar Bush\",\"metadata-type\":\"element\"},{\"id\":11,\"metadata-type\":\"element\"},{\"p\":\"Vannevar Bush wrote an article for The Atlantic Monthly\",\"metadata-type\":\"element\"},{\"popularity\":5,\"metadata-type\":\"element\"}]}]"));
+
+        assertTrue("doc returned is not correct", resultDoc.contains("<search:result index=\"1\" uri=\"/qbe/constraint1.json\" path=\"fn:doc(&quot;/qbe/constraint1.json&quot;)\" score=\"28672\" confidence=\"0.6951694\" fitness=\"0.6951694\" href=\"/v1/documents?uri=%2Fqbe%2Fconstraint1.json\" mimetype=\"application/json\" format=\"json\">"));
         
 		// release client
 		client.release();		
