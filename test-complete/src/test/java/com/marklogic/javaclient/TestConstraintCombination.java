@@ -3,6 +3,7 @@ package com.marklogic.javaclient;
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
+
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -15,6 +16,7 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.*;
 public class TestConstraintCombination extends BasicJavaClientREST {
@@ -22,6 +24,8 @@ public class TestConstraintCombination extends BasicJavaClientREST {
 	private static String dbName = "ConstraintCombinationDB";
 	private static String [] fNames = {"ConstraintCombinationDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort = 8011;
+	
 @BeforeClass
 	public static void setUp() throws Exception 
 	{
@@ -35,6 +39,13 @@ public class TestConstraintCombination extends BasicJavaClientREST {
 	  includeElementField(dbName, "bbqtext", "http://example.com", "abstract");
 	  enableCollectionLexicon(dbName);
 	  enableTrailingWildcardSearches(dbName);
+	}
+
+@After
+	public  void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
 	}
 
 @SuppressWarnings("deprecation")
