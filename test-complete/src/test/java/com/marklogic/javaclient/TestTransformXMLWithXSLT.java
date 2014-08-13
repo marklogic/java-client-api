@@ -26,7 +26,7 @@ public class TestTransformXMLWithXSLT extends BasicJavaClientREST {
 	@BeforeClass public static void setUp() throws Exception 
 		{
 		  System.out.println("In setup");
-		  setupJavaRESTServerWithDB( "REST-Java-Client-API-Server", 8011);
+		  setupJavaRESTServerWithDB( "REST-Java-Client-API-Server-withDB", 8015);
 		 
 		}
 		
@@ -34,7 +34,7 @@ public class TestTransformXMLWithXSLT extends BasicJavaClientREST {
 	@Test	public void testWriteXMLWithXSLTransform() throws TransformerException, FileNotFoundException
 	{	
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8015, "rest-writer", "x", Authentication.DIGEST);
 		
 		// get the doc
 		Source source = new StreamSource("src/test/java/com/marklogic/javaclient/data/employee.xml");
@@ -76,16 +76,18 @@ public class TestTransformXMLWithXSLT extends BasicJavaClientREST {
 	    
 	    Scanner scanner = new Scanner(fileRead).useDelimiter("\\Z");
 	    String readContent = scanner.next();
-	    String transformedContent = readContent.replaceAll("^name$", "firstname");
-	    assertEquals("XML document write difference", transformedContent, readContent);
+//	    String transformedContent = readContent.replaceAll("^name$", "firstname");
+//	    assertEquals("XML document write difference", transformedContent, readContent);
+	    assertTrue("check document from DB has name element changed",readContent.contains("firstname"));
 	    scanner.close();	    
 	    
 	    // release client
 	    client.release();
+	    scanner.close();
 	}
 	@AfterClass	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		deleteRESTServerWithDB("REST-Java-Client-API-Server");
+		deleteRESTServerWithDB("REST-Java-Client-API-Server-withDB");
 	}
 }

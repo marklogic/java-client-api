@@ -58,7 +58,7 @@ public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
 		srvMgr.writeConfiguration();
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionGeo.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionGeo.xml");
 		
 		// create a handle for the search criteria
         FileHandle rawHandle = new FileHandle(file); // bug 21107
@@ -102,7 +102,7 @@ public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
 		srvMgr.writeConfiguration();
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionGeoJSON.json");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionGeoJSON.json");
         
         String combinedQuery = convertFileToString(file);
 		
@@ -150,7 +150,7 @@ public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
 		srvMgr.writeConfiguration();
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionGeoBoxAndWordJSON.json");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionGeoBoxAndWordJSON.json");
         
         String combinedQuery = convertFileToString(file);
 		
@@ -191,7 +191,7 @@ public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
 		loadGeoData();
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionGeoCircle.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionGeoCircle.xml");
 		
 		// create a handle for the search criteria
         FileHandle rawHandle = new FileHandle(file); // bug 21107
@@ -233,7 +233,7 @@ public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
 		loadGeoData();
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionGeoBox.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionGeoBox.xml");
 		
 		// create a handle for the search criteria
         FileHandle rawHandle = new FileHandle(file); // bug 21107
@@ -273,7 +273,7 @@ public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
 		loadGeoData();
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionGeoBoxAndWord.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionGeoBoxAndWord.xml");
 		
 		// create a handle for the search criteria
         FileHandle rawHandle = new FileHandle(file); // bug 21107
@@ -314,7 +314,7 @@ public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
 		}
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionGeoPointAndWord.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionGeoPointAndWord.xml");
 		
 		// create a handle for the search criteria
         FileHandle rawHandle = new FileHandle(file); // bug 21107

@@ -65,7 +65,7 @@ public class TestBulkWriteMetadata2 extends  BasicJavaClientREST{
 
 	private static String dbName = "TestBulkWriteDefaultMetadataDB2";
 	private static String [] fNames = {"TestBulkWriteDefaultMetadataDB-2"};
-	private static String restServerName = "TestBulkWriteDefaultMetadata2-RESTServer";
+	private static String restServerName = "REST-Java-Client-API-Server";
 	private static int restPort = 8011;
 	private  DatabaseClient client ;
 	/**

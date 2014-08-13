@@ -20,6 +20,7 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
+
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -31,6 +32,7 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
+
 import org.junit.*;
 public class TestQueryOptionBuilder extends BasicJavaClientREST {
 
@@ -46,7 +48,13 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 	}
 	
 
-@SuppressWarnings("deprecation")
+@After
+public  void testCleanUp() throws Exception
+{
+	clearDB(8011);
+	System.out.println("Running clear script");
+}
+
 @Test	public void testValueConstraintWildcard() throws FileNotFoundException, XpathException
 	{	
 		System.out.println("Running testValueConstraintWildcard");
@@ -107,7 +115,7 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 		assertXpathEvaluatesTo("0026", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
 		assertXpathEvaluatesTo("0012", "string(//*[local-name()='result'][2]//*[local-name()='id'])", resultDoc);
 	    
-		String expectedSearchReport = "(cts:search(fn:collection(), cts:or-query((cts:element-value-query(fn:QName(\"\", \"id\"), \"00*2\", (\"lang=en\"), 1), cts:element-value-query(fn:QName(\"\", \"id\"), \"0??6\", (\"lang=en\"), 1))), (\"score-logtfidf\"), 1))[1 to 10]";
+		String expectedSearchReport = "(cts:search(fn:collection(), cts:or-query((cts:element-value-query(fn:QName(\"\",\"id\"), \"00*2\", (\"lang=en\"), 1), cts:element-value-query(fn:QName(\"\",\"id\"), \"0??6\", (\"lang=en\"), 1))), (\"score-logtfidf\"), 1))[1 to 10]";
 		
 		assertXpathEvaluatesTo(expectedSearchReport, "string(//*[local-name()='report'])", resultDoc);
                 
@@ -184,7 +192,7 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 		assertXpathEvaluatesTo("0.12", "string(//*[local-name()='result'][1]//@*[local-name()='amt'])", resultDoc);
 		assertXpathEvaluatesTo("123.45", "string(//*[local-name()='result'][2]//@*[local-name()='amt'])", resultDoc);
 	    
-		String expectedSearchReport = "(cts:search(fn:collection(), cts:or-query((cts:word-query(\"Memex\", (\"lang=en\"), 1), cts:element-attribute-word-query(fn:QName(\"http://cloudbank.com\", \"price\"), fn:QName(\"\", \"amt\"), \".12\", (\"lang=en\"), 1))), (\"score-logtfidf\"), 1))[1 to 10]";
+		String expectedSearchReport = "(cts:search(fn:collection(), cts:or-query((cts:word-query(\"Memex\", (\"lang=en\"), 1), cts:element-attribute-word-query(fn:QName(\"http://cloudbank.com\",\"price\"), fn:QName(\"\",\"amt\"), \".12\", (\"lang=en\"), 1))), (\"score-logtfidf\"), 1))[1 to 10]";
 		
 		assertXpathEvaluatesTo(expectedSearchReport, "string(//*[local-name()='report'])", resultDoc);
                 
@@ -193,7 +201,7 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 	}
 	
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testAllConstraintsWithStringSearch() throws FileNotFoundException, XpathException, TransformerException
 	{	
 		System.out.println("Running testAllConstraintsWithStringSearch");
@@ -310,7 +318,7 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 	}
 
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testAllConstraintsWithStructuredSearch() throws FileNotFoundException, XpathException, TransformerException
 	{	
 		System.out.println("Running testAllConstraintsWithStructuredSearch");
@@ -434,7 +442,7 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 	}
 
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testExtractMetadataWithStructuredSearch() throws XpathException, TransformerException, ParserConfigurationException, SAXException, IOException
 	{	
 		System.out.println("testExtractMetadataWithStructuredSearch");
@@ -590,8 +598,6 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 	    client.release();	
 	}*/
 
-
-@SuppressWarnings("deprecation")
 @Test	public void testExtractMetadataWithStructuredSearchAndRangeConstraint() throws XpathException, TransformerException, ParserConfigurationException, SAXException, IOException
 	{	
 		System.out.println("testExtractMetadataWithStructuredSearchAndRangeConstraint");
@@ -680,7 +686,6 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 	}
 	
 
-@SuppressWarnings("deprecation")
 @Test	public void testDocumentLevelMetadata() throws XpathException, TransformerException, ParserConfigurationException, SAXException, IOException
 	{	
 		System.out.println("testDocumentLevelMetadata");

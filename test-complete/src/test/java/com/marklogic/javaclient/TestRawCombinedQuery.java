@@ -32,14 +32,19 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	private static String dbName = "TestRawCombinedQueryDB";
 	private static String [] fNames = {"TestRawCombinedQueryDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
-
+    private static int restPort =8011;
 @BeforeClass	public static void setUp() throws Exception 
 	{
 	  System.out.println("In setup");
 	  setupJavaRESTServer(dbName, fNames[0],restServerName,8011);
 	  setupAppServicesConstraint(dbName);
 	}
-
+@After
+public  void testCleanUp() throws Exception
+{
+	clearDB(restPort);
+	System.out.println("Running clear script");
+}
 @SuppressWarnings("deprecation")
 @Test	public void testBug22353() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -62,7 +67,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 		}
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOption.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOption.xml");
 		
 		String combinedQuery = convertFileToString(file);
 		
@@ -114,7 +119,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 		}
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOption.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOption.xml");
 		
 		String combinedQuery = convertFileToString(file);
 		
@@ -171,7 +176,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 		setQueryOption(client, queryOptionName);
 				
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryNoOption.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryNoOption.xml");
 		
 		// create a handle for the search criteria
         FileHandle rawHandle = new FileHandle(file);
@@ -223,7 +228,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 		setQueryOption(client, queryOptionName);
 				
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionCollectionOverwrite.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionCollectionOverwrite.xml");
 		
 		// create a handle for the search criteria
         FileHandle rawHandle = new FileHandle(file);
@@ -275,7 +280,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 		setQueryOption(client, queryOptionName);
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionJSONOverwrite.json");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionJSONOverwrite.json");
 		
 		String combinedQuery = convertFileToString(file);
 		
@@ -328,7 +333,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 		}
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionJSON.json");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionJSON.json");
 		
 		String combinedQuery = convertFileToString(file);
 		
@@ -381,7 +386,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 		}
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionWildcard.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionWildcard.xml");
 		
 		String combinedQuery = convertFileToString(file);
 		
@@ -450,7 +455,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	    writeDocumentUsingInputStreamHandle(client, filename5, "/collection-constraint/", metadataHandle5, "XML");
 	    
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionCollection.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionCollection.xml");
 		
 		// create a handle for the search criteria
         FileHandle rawHandle = new FileHandle(file); // bug 21107
@@ -478,7 +483,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	
 	
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testRawCombinedQueryCombo() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryCombo");
@@ -515,7 +520,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	    writeDocumentUsingInputStreamHandle(client, filename5, "/collection-constraint/", metadataHandle5, "XML");
 	    
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionCombo.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionCombo.xml");
 		
 		// create a handle for the search criteria
         FileHandle rawHandle = new FileHandle(file); // bug 21107
@@ -558,7 +563,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 		}
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionField.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionField.xml");
 		
 		// create a handle for the search criteria
         FileHandle rawHandle = new FileHandle(file); // bug 21107
@@ -604,7 +609,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 		}		
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionPathIndex.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionPathIndex.xml");
 		
 		// create a handle for the search criteria
         FileHandle rawHandle = new FileHandle(file); // bug 21107
@@ -632,7 +637,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 	
 
-@SuppressWarnings("deprecation")
+
 @Test	public void testRawCombinedQueryComboJSON() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryComboJSON");
@@ -676,7 +681,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 		srvMgr.writeConfiguration();
 						
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionComboJSON.json");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionComboJSON.json");
 		
 		String combinedQuery = convertFileToString(file);
 		
@@ -706,7 +711,6 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 	
 
-@SuppressWarnings("deprecation")
 @Test	public void testRawCombinedQueryFieldJSON() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryFieldJSON");
@@ -729,7 +733,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 		srvMgr.writeConfiguration();
 				
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionFieldJSON.json");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionFieldJSON.json");
 		
 		String combinedQuery = convertFileToString(file);
 		

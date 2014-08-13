@@ -67,7 +67,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 		}
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOption.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOption.xml");
 		
 		// create a handle for the search criteria
 	    FileHandle rawHandle = new FileHandle(file);
@@ -116,7 +116,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 		}
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionJSON.json");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionJSON.json");
 		
 		String combinedQuery = convertFileToString(file);
 		
@@ -172,7 +172,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 		setQueryOption(client, queryOptionName);
 				
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryNoOption.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryNoOption.xml");
 		
 		// create a handle for the search criteria
         FileHandle rawHandle = new FileHandle(file);
@@ -224,7 +224,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 		setQueryOption(client, queryOptionName);
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionJSONOverwrite.json");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionJSONOverwrite.json");
 		
 		String combinedQuery = convertFileToString(file);
 		
@@ -292,7 +292,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 	    writeDocumentUsingInputStreamHandle(client, filename5, "/collection-constraint/", metadataHandle5, "XML");
 	    
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionCollection.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionCollection.xml");
 		
 		// create a handle for the search criteria
         FileHandle rawHandle = new FileHandle(file); // bug 21107
@@ -357,7 +357,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 	    writeDocumentUsingInputStreamHandle(client, filename5, "/collection-constraint/", metadataHandle5, "XML");
 	    
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionCombo.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionCombo.xml");
 		
 		// create a handle for the search criteria
         FileHandle rawHandle = new FileHandle(file); // bug 21107
@@ -400,7 +400,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 		}
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionField.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionField.xml");
 		
 		// create a handle for the search criteria
         FileHandle rawHandle = new FileHandle(file); // bug 21107
@@ -446,7 +446,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 		}		
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionPathIndex.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionPathIndex.xml");
 		
 		// create a handle for the search criteria
         FileHandle rawHandle = new FileHandle(file); // bug 21107
@@ -515,7 +515,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 		srvMgr.writeConfiguration();
 						
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOptionComboJSON.json");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOptionComboJSON.json");
 		
 		String combinedQuery = convertFileToString(file);
 		

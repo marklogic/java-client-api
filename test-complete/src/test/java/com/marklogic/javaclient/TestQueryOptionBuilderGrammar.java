@@ -25,6 +25,7 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
+
 import org.junit.*;
 public class TestQueryOptionBuilderGrammar extends BasicJavaClientREST {
 
@@ -39,6 +40,13 @@ public class TestQueryOptionBuilderGrammar extends BasicJavaClientREST {
 	  setupAppServicesConstraint(dbName);
 	}
 	
+
+@After
+public  void testCleanUp() throws Exception
+{
+	clearDB(8011);
+	System.out.println("Running clear script");
+}
 
 @SuppressWarnings("deprecation")
 @Test	public void testGrammarOperatorQuotation() throws FileNotFoundException, XpathException, TransformerException

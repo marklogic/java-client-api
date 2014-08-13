@@ -21,6 +21,7 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
+
 import org.junit.*;
 public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientREST {
 
@@ -34,7 +35,13 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 	  setupJavaRESTServer(dbName, fNames[0],restServerName,8011);
 	  setupAppServicesConstraint(dbName);
 	}
-	
+
+@After
+public  void testCleanUp() throws Exception
+{
+	clearDB(8011);
+	System.out.println("Running clear script");
+}	
 
 @SuppressWarnings("deprecation")
 @Test	public void testSearchableExpressionChildAxis() throws FileNotFoundException, XpathException, TransformerException

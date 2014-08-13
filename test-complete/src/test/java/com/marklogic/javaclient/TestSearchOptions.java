@@ -22,6 +22,7 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathNotExists;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathExists;
+
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.*;
 public class TestSearchOptions extends BasicJavaClientREST {
@@ -37,7 +38,13 @@ public class TestSearchOptions extends BasicJavaClientREST {
 	  setupJavaRESTServer(dbName, fNames[0],restServerName,8011);
 	  setupAppServicesConstraint(dbName);
 	}
-	
+
+@After
+public  void testCleanUp() throws Exception
+{
+	clearDB(8011);
+	System.out.println("Running clear script");
+}	
 
 @SuppressWarnings("deprecation")
 @Test	public void testReturnResultsFalse() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException

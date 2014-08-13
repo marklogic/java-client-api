@@ -59,7 +59,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST  {
 	private static final String DIRECTORY ="/bulkread/";
 	private static String dbName = "TestBulkReadSampleDB";
 	private static String [] fNames = {"TestBulkReadSampleDB-1"};
-	private static String restServerName = "TestBulkReadSample-RESTServer";
+	private static String restServerName = "REST-Java-Client-API-Server";
 	private static int restPort = 8011;
 	private  DatabaseClient client ;
     @BeforeClass

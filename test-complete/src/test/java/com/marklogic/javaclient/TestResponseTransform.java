@@ -72,7 +72,7 @@ public class TestResponseTransform extends BasicJavaClientREST {
 		metadata.setVersion("0.1");
 		
 		// get the transform file
-		File transformFile = new File("src/junit/com/marklogic/javaclient/transforms/search2html.xsl");
+		File transformFile = new File("src/test/java/com/marklogic/javaclient/transforms/search2html.xsl");
 		
 		FileHandle transformHandle = new FileHandle(transformFile);
 		
@@ -80,7 +80,7 @@ public class TestResponseTransform extends BasicJavaClientREST {
 		transMgr.writeXSLTransform("search2html", transformHandle, metadata);
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOption.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOption.xml");
 		
 		String combinedQuery = convertFileToString(file);
 		
@@ -146,7 +146,7 @@ public class TestResponseTransform extends BasicJavaClientREST {
 		metadata.setVersion("0.1");
 		
 		// get the transform file
-		File transformFile = new File("src/junit/com/marklogic/javaclient/transforms/search2html.xsl");
+		File transformFile = new File("src/test/java/com/marklogic/javaclient/transforms/search2html.xsl");
 		
 		FileHandle transformHandle = new FileHandle(transformFile);
 		
@@ -154,7 +154,7 @@ public class TestResponseTransform extends BasicJavaClientREST {
 		transMgr.writeXSLTransform("search2html", transformHandle, metadata);
 		
 		// get the combined query
-        File file = new File("src/junit/com/marklogic/javaclient/combined/combinedQueryOption.xml");
+        File file = new File("src/test/java/com/marklogic/javaclient/combined/combinedQueryOption.xml");
 		
 		String combinedQuery = convertFileToString(file);
 		
