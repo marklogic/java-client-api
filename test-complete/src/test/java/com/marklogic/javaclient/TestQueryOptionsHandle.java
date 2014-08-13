@@ -12,6 +12,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import com.marklogic.client.query.QueryManager;
+
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -34,6 +35,7 @@ public class TestQueryOptionsHandle extends BasicJavaClientREST {
 	private static String dbName = "TestQueryOptionsHandleDB";
 	private static String [] fNames = {"TestQueryOptionsHandleDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort=8011;
 
 @BeforeClass	public static void setUp() throws Exception 
 	{
@@ -41,6 +43,14 @@ public class TestQueryOptionsHandle extends BasicJavaClientREST {
 	  setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	  setupAppServicesConstraint(dbName);
 	}
+
+@After
+	public  void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
+	}
+
 	
 
 @SuppressWarnings("deprecation")
