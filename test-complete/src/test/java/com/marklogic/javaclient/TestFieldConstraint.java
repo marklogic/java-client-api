@@ -9,6 +9,7 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.javaclient.BasicJavaClientREST;
+
 import org.junit.*;
 public class TestFieldConstraint extends BasicJavaClientREST {
 	static String filenames[] = {"bbq1.xml", "bbq2.xml", "bbq3.xml", "bbq4.xml", "bbq5.xml"};
@@ -16,6 +17,8 @@ public class TestFieldConstraint extends BasicJavaClientREST {
 	private static String dbName = "FieldConstraintDB";
 	private static String [] fNames = {"FieldConstraintDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort=8011;
+	
 	@BeforeClass
 	public static void setUp() throws Exception
 	{
@@ -24,6 +27,13 @@ public class TestFieldConstraint extends BasicJavaClientREST {
 		addField(dbName, "bbqtext");
 		includeElementField(dbName, "bbqtext", "http://example.com", "title");
 		includeElementField(dbName, "bbqtext", "http://example.com", "abstract");
+	}
+	 
+	 @After
+	public  void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
 	}
 
 	@SuppressWarnings("deprecation")
