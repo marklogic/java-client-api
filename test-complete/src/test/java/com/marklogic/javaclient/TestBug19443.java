@@ -1,27 +1,29 @@
 package com.marklogic.javaclient;
 
-import static org.junit.Assert.*;
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 
-import java.io.FileNotFoundException;
+import org.custommonkey.xmlunit.XMLUnit;
 
 import javax.xml.namespace.QName;
 
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.io.Format;
-import org.custommonkey.xmlunit.exceptions.XpathException;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
+
 import org.junit.*;
 public class TestBug19443 extends BasicJavaClientREST {
 
 	private static String dbName = "TestBug19443DB";
 	private static String [] fNames = {"TestBug19443DB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort = 8011;
+	
 @BeforeClass
 	public static void setUp() throws Exception 
 	{
@@ -30,9 +32,16 @@ public class TestBug19443 extends BasicJavaClientREST {
 	  setupAppServicesConstraint(dbName);
 	}
 
+@After
+	public  void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
+	}
+
 @SuppressWarnings("deprecation")
 @Test
-	public void testBug19443() throws FileNotFoundException, XpathException
+	public void testBug19443() throws Exception
 	{	
 		System.out.println("Running testBug19443");
 				
@@ -59,13 +68,22 @@ public class TestBug19443 extends BasicJavaClientREST {
 		optionsMgr.readOptions("ElementChildGeoSpatialIndex", readHandle);
 	    String output = readHandle.get();
 	    
-	    String outputTrimmed = output.replaceAll("\n", "");
-	    outputTrimmed = outputTrimmed.replaceAll(" ", "");
-	    
 	    System.out.println(output);
 	    
-	    assertTrue("option is not correct", outputTrimmed.contains("<ns2:optionsxmlns:ns2=\"http://marklogic.com/appservices/search\"><ns2:constraintname=\"geoElemChild\"><ns2:geo-elem><ns2:elementns=\"\"name=\"bar\"/><ns2:geo-option>type=long-lat-point</ns2:geo-option><ns2:parentns=\"\"name=\"foo\"/></ns2:geo-elem></ns2:constraint></ns2:options>") || outputTrimmed.contains("<search:optionsxmlns:search=\"http://marklogic.com/appservices/search\"><search:constraintname=\"geoElemChild\"><search:geo-elem><search:elementns=\"\"name=\"bar\"/><search:geo-option>type=long-lat-point</search:geo-option><search:parentns=\"\"name=\"foo\"/></search:geo-elem></search:constraint></search:options>"));
-	                    
+	    String actual = 
+	    		"<search:options xmlns:search=\"http://marklogic.com/appservices/search\">" + 
+	    		  "<search:constraint name=\"geoElemChild\">" + 
+	    		    "<search:geo-elem>" + 
+	      		      "<search:element name=\"bar\" ns=\"\"/>" + 
+	    		      "<search:geo-option>type=long-lat-point</search:geo-option>" + 
+	    		      "<search:parent name=\"foo\" ns=\"\"/>" +
+	    		    "</search:geo-elem>" + 
+	    		  "</search:constraint>" +
+	    		"</search:options>";
+
+	    XMLUnit.setIgnoreWhitespace(true);	    
+	    assertXMLEqual("Hello", actual, output);
+ 
 		// release client
 	    client.release();	
 	}
