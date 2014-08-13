@@ -1091,7 +1091,6 @@ public abstract class ConnectedRESTQA {
 		ArrayNode arrNode = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
 		childNodeObject.put( "field-name", fieldName);
-		childNodeObject.put("field-type", "root");
 		childNodeObject.put( "include-root", true);
 		childNodeObject.putNull( "included-elements");
 		childNodeObject.putNull( "excluded-elements");
