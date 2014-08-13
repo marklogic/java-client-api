@@ -85,8 +85,8 @@ public class TestBug21183 extends BasicJavaClientREST {
 		// release client
 		client.release();		
 	}
-	
-	public void tearDown() throws Exception
+	@AfterClass
+	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
 		tearDownJavaRESTServer(dbName, fNames, restServerName);
