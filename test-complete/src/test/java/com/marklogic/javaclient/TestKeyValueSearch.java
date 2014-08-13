@@ -9,6 +9,7 @@ import javax.xml.transform.TransformerException;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.QueryManager;
+
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -31,12 +32,21 @@ public class TestKeyValueSearch extends BasicJavaClientREST {
 	private static String dbName = "TestKeyValueSearchDB";
 	private static String [] fNames = {"TestKeyValueSearchDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort=8011;
+	
 @BeforeClass
 	public static void setUp() throws Exception 
 	{
 	  System.out.println("In setup");
 	  setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	  setupAppServicesConstraint(dbName);
+	}
+
+@After
+	public  void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
 	}
 
 @SuppressWarnings("deprecation")
@@ -85,7 +95,7 @@ public class TestKeyValueSearch extends BasicJavaClientREST {
 		
 		assertXpathEvaluatesTo("0012", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
 	    
-		String expectedSearchReport = "(cts:search(fn:collection(), cts:element-value-query(fn:QName(\"\", \"id\"), \"0012\", (\"case-sensitive\",\"diacritic-sensitive\",\"punctuation-sensitive\",\"whitespace-sensitive\",\"unstemmed\",\"unwildcarded\",\"lexicon-expand=heuristic\",\"lang=en\"), 1), (\"score-logtfidf\"), 1))[1 to 10]";
+		String expectedSearchReport = "(cts:search(fn:collection(), cts:element-value-query(fn:QName(\"\",\"id\"), \"0012\", (\"case-sensitive\",\"diacritic-sensitive\",\"punctuation-sensitive\",\"whitespace-sensitive\",\"unstemmed\",\"unwildcarded\",\"lexicon-expand=heuristic\",\"lang=en\"), 1), (\"score-logtfidf\"), 1))[1 to 10]";
 		
 		assertXpathEvaluatesTo(expectedSearchReport, "string(//*[local-name()='report'])", resultDoc);
 		
