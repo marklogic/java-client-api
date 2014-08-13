@@ -40,6 +40,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	private static String dbName = "TestPartialUpdateDB";
 	private static String [] fNames = {"TestPartialUpdateDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort=8011;
+	
 @BeforeClass
 	public  static void setUp() throws Exception 
 	{
@@ -47,6 +49,13 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	  System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	  setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	  setupAppServicesConstraint(dbName);
+	}
+
+@After
+	public  void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
 	}
 
 @SuppressWarnings("deprecation")
