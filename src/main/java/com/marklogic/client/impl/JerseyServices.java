@@ -793,9 +793,9 @@ public class JerseyServices implements RESTServices {
                     if ( partList != null && partList.size() > 0 ) {
                         BodyPart searchResponsePart = partList.get(0);
                         HandleImplementation handleBase = HandleAccessor.as(searchHandle);
-
-                        InputStream stream = searchResponsePart.getEntityAs(InputStream.class);
-                        handleBase.receiveContent(stream);
+                        handleBase.receiveContent(
+                            searchResponsePart.getEntityAs(handleBase.receiveAs())
+                        );
                         partList = partList.subList(1, partList.size());
                     }
                     return makeResults(JerseyServiceResultIterator.class, reqlog, "read", "resource", partList, response);
