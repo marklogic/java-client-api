@@ -29,6 +29,14 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST{
 	       setupAppServicesConstraint(dbName);	  
 
 	}
+	 
+	 @After
+	public  void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
+	}
+
 	
 	@Test public void testAuthenticationNone() throws IOException
 	{
@@ -99,7 +107,7 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST{
 	}
 
 @AfterClass
-	public void tearDown() throws Exception
+	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down" );
 		tearDownJavaRESTServer(dbName, fNames, restServerName);
