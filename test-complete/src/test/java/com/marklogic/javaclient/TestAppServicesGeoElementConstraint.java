@@ -73,9 +73,10 @@ public  void testCleanUp() throws Exception
 		
 		// get the result
 		Document resultDoc = resultsHandle.get();
-		
+
+		System.out.println("Returned result of testPointPositiveLangLat :"+convertXMLDocumentToString(resultDoc)+" Ends here");
 		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("karl_kara 12,5 12,5 12 5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
+		assertXpathEvaluatesTo("12,5", "string(//*[local-name()='result'][1]//*[local-name()='highlight'])", resultDoc);
 		
 		// release client
 		client.release();		
@@ -110,9 +111,10 @@ public  void testCleanUp() throws Exception
 		
 		// get the result
 		Document resultDoc = resultsHandle.get();
-		
+
+		System.out.println("testPointNegativeLangLat Result : "+convertXMLDocumentToString(resultDoc));
 		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("karl_kara -12,-5 -12,-5 -12 -5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
+		assertXpathEvaluatesTo("-12,-5", "string(//*[local-name()='result'][1]//*[local-name()='highlight'])", resultDoc);
 		
 		// release client
 		client.release();		
@@ -192,13 +194,13 @@ public  void testCleanUp() throws Exception
 		
 		// get the result
 		Document resultDoc = resultsHandle.get();
-		
+
 		assertXpathEvaluatesTo("5", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("karl_kara 12,5 12,5 12 5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("bill_kara 13,5 13,5 13 5", "string(//*[local-name()='result'][2]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("karl_gale 12,6 12,6 12 6", "string(//*[local-name()='result'][3]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("jack_kara 11,5 11,5 11 5", "string(//*[local-name()='result'][4]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("karl_jill 12,4 12,4 12 4", "string(//*[local-name()='result'][5]//*[local-name()='match'])", resultDoc);
+		assertXpathEvaluatesTo("12,5", "string(//*[local-name()='result'][1]//*[local-name()='highlight'])", resultDoc);
+		assertXpathEvaluatesTo("13,5", "string(//*[local-name()='result'][2]//*[local-name()='highlight'])", resultDoc);
+		assertXpathEvaluatesTo("12,6", "string(//*[local-name()='result'][3]//*[local-name()='highlight'])", resultDoc);
+		assertXpathEvaluatesTo("11,5", "string(//*[local-name()='result'][4]//*[local-name()='highlight'])", resultDoc);
+		assertXpathEvaluatesTo("12,4", "string(//*[local-name()='result'][5]//*[local-name()='highlight'])", resultDoc);
 		
 		// release client
 		client.release();		
@@ -233,12 +235,12 @@ public  void testCleanUp() throws Exception
 		
 		// get the result
 		Document resultDoc = resultsHandle.get();
-		
+
 		assertXpathEvaluatesTo("4", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("karl_kara 12,5 12,5 12 5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("jack_jill 11,4 11,4 11 4", "string(//*[local-name()='result'][2]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("jack_kara 11,5 11,5 11 5", "string(//*[local-name()='result'][3]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("karl_jill 12,4 12,4 12 4", "string(//*[local-name()='result'][4]//*[local-name()='match'])", resultDoc);
+		assertXpathEvaluatesTo("12,5", "string(//*[local-name()='result'][1]//*[local-name()='highlight'])", resultDoc);
+		assertXpathEvaluatesTo("11,4", "string(//*[local-name()='result'][2]//*[local-name()='highlight'])", resultDoc);
+		assertXpathEvaluatesTo("11,5", "string(//*[local-name()='result'][3]//*[local-name()='highlight'])", resultDoc);
+		assertXpathEvaluatesTo("12,4", "string(//*[local-name()='result'][4]//*[local-name()='highlight'])", resultDoc);
 		
 		// release client
 		client.release();		
@@ -273,7 +275,7 @@ public  void testCleanUp() throws Exception
 		
 		// get the result
 		Document resultDoc = resultsHandle.get();
-		
+
 		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
 		assertXpathEvaluatesTo("/geo-constraint/geo-constraint8.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
 		
