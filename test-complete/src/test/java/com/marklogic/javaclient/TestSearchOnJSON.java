@@ -10,6 +10,7 @@ import java.io.InputStream;
 import javax.xml.parsers.ParserConfigurationException;
 
 import com.marklogic.client.query.QueryManager;
+
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
@@ -30,6 +31,7 @@ public class TestSearchOnJSON extends BasicJavaClientREST {
 	private static String dbName = "TestSearchOnJSONDB";
 	private static String [] fNames = {"TestSearchOnJSONDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort = 8011;
 
 @BeforeClass public static void setUp() throws Exception 
 	{
@@ -38,6 +40,12 @@ public class TestSearchOnJSON extends BasicJavaClientREST {
 	  setupAppServicesConstraint(dbName);
 	}
 	
+@After
+public  void testCleanUp() throws Exception
+{
+	clearDB(restPort);
+	System.out.println("Running clear script");
+}
 
 @SuppressWarnings("deprecation")
 @Test	public void testRoundtrippingQueryOption() throws IOException, ParserConfigurationException, SAXException, XpathException
@@ -74,7 +82,7 @@ public class TestSearchOnJSON extends BasicJavaClientREST {
 		
 		String expectedOutput = "{\"options\":{\"return-metrics\":false, \"return-qtext\":false, \"debug\":true, \"transform-results\":{\"apply\":\"raw\"}, \"constraint\":[{\"name\":\"id\", \"value\":{\"element\":{\"ns\":\"\", \"name\":\"id\"}}}]}}";
 		
-		assertEquals("query option in JSON is difference", expectedOutput, output);
+		assertEquals("query option in JSON is difference", expectedOutput, output.trim());
 		
 		// create handle to write back option in json
 		String queryOptionNameJson = queryOptionName.replaceAll(".xml", ".json");

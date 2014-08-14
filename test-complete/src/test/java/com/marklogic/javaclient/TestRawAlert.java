@@ -38,6 +38,7 @@ public class TestRawAlert extends BasicJavaClientREST {
 	private static String dbName = "TestRawAlertDB";
 	private static String [] fNames = {"TestRawAlertDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort = 8011;
 
 @BeforeClass	public static void setUp() throws Exception 
 	{
@@ -46,6 +47,12 @@ public class TestRawAlert extends BasicJavaClientREST {
 	  setupAppServicesConstraint(dbName);
 	}
 	
+@After
+public  void testCleanUp() throws Exception
+{
+	clearDB(restPort);
+	System.out.println("Running clear script");
+}
 
 @SuppressWarnings("deprecation")
 @Test	public void testRawAlert() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
