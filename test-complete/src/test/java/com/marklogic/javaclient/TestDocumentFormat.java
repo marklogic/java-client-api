@@ -95,7 +95,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String docId = uri + filename;
 		
 		String exception = "";
-		String expectedException = "write failed: Bad Request. Server Message: XDMP-JSONCHAR";
+		String expectedException = "";
 		
 		try
 		{
@@ -388,7 +388,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String docId = uri + filename;
 		
 		String exception = "";
-		String expectedException = "Local message: write failed: Bad Request. Server Message: XDMP-DOCUTF8SEQ";
+		String expectedException = "";
 		
 		try
 		{
@@ -429,7 +429,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String docId = uri + filename;
 		
 		String exception = "";
-		String expectedException = "Local message: write failed: Bad Request. Server Message: XDMP-DOCUTF8SEQ";
+		String expectedException = "";
 		
 		try
 		{
@@ -470,7 +470,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String docId = uri + filename;
 		
 		String exception = "";
-		String expectedException = "Local message: write failed: Bad Request. Server Message: XDMP-DOCUTF8SEQ";
+		String expectedException = "";
 		
 		try
 		{
@@ -583,7 +583,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String docId = uri + filename;
 		
 		String exception = "";
-		String expectedException = "write failed: Bad Request. Server Message: XDMP-JSONCHAR";
+		String expectedException = "";
 		
 		try
 		{
