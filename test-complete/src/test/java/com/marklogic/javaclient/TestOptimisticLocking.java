@@ -171,7 +171,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		desc.setVersion(badVersion);
 		
 		String deleteException = "";
-		String expectedDeleteException = "com.marklogic.client.FailedRequestException: Content version must match to delete document";
+		String expectedDeleteException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to delete document";
 		
 		try
 		{
