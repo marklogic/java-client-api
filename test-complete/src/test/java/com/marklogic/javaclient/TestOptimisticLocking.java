@@ -22,18 +22,28 @@ import com.marklogic.client.admin.ServerConfigurationManager.Policy;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.document.XMLDocumentManager;
+
 import org.junit.*;
 public class TestOptimisticLocking extends BasicJavaClientREST{
 
 	private static String dbName = "TestOptimisticLockingDB";
 	private static String [] fNames = {"TestOptimisticLockingDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort=8011;
+	
 	@BeforeClass
 	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
 		
 		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+	}
+
+    @After
+	public  void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
 	}
 
 	@SuppressWarnings("deprecation")
@@ -382,7 +392,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 	@Test	
 	public void testOptionalWithGoodVersion() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
-		System.out.println("Running testOptionalWithGoodVersion");
+System.out.println("Running testOptionalWithGoodVersion");
 		
 		String filename = "json-original.json";
 		String updateFilename = "json-updated.json";
@@ -408,7 +418,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		System.out.println("set optimistic locking to optional");
 		
 		// create document manager
-		JSONDocumentManager docMgr = client.newJSONDocumentManager();
+		JSONDocumentManager docMgr = client.newJSONDocumentManager();		
 		
 		File file = new File("src/test/java/com/marklogic/javaclient/data/" + filename);
 
@@ -495,7 +505,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		desc.setVersion(badVersion);
 		
 		String deleteException = "";
-		String expectedDeleteException = "com.marklogic.client.FailedRequestException: Content version must match to delete document";
+		String expectedDeleteException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to delete document";
 		
 		try
 		{
