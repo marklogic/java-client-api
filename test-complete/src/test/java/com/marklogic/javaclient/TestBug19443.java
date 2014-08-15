@@ -82,7 +82,7 @@ public class TestBug19443 extends BasicJavaClientREST {
 	    		"</search:options>";
 
 	    XMLUnit.setIgnoreWhitespace(true);	    
-	    assertXMLEqual("Hello", actual, output);
+	    assertXMLEqual("testBug19443", actual, output);
  
 		// release client
 	    client.release();	
