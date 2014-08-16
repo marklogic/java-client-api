@@ -1,11 +1,13 @@
 package com.marklogic.javaclient;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+
+import org.custommonkey.xmlunit.*;
+
 import static org.junit.Assert.*;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -13,13 +15,12 @@ import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentMetadataPatchBuilder.Cardinality;
 import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.DocumentPatchBuilder.Position;
-import com.marklogic.client.document.DocumentMetadataPatchBuilder;
-import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
+
+import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.*;
 
 public class TestPatchCardinality extends BasicJavaClientREST {
@@ -27,6 +28,7 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 	private static String dbName = "TestPatchCardinalityDB";
 	private static String [] fNames = {"TestPatchCardinalityDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort=8011;
 @BeforeClass
 	public static void setUp() throws Exception 
 	{
@@ -34,9 +36,14 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 	  setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	  setupAppServicesConstraint(dbName);
 	}
-	
 
-@SuppressWarnings("deprecation")
+@After
+	public  void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
+	}
+	
 @Test	public void testOneCardinalityNegative() throws IOException
 	{	
 		System.out.println("Running testOneCardinalityNegative");
@@ -76,8 +83,6 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 		client.release();		
 	}
 
-
-@SuppressWarnings("deprecation")
 @Test	public void testOneCardinalityPositve() throws IOException
 	{	
 		System.out.println("Running testOneCardinalityPositive");
@@ -109,8 +114,6 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 		client.release();		
 	}
 	
-
-@SuppressWarnings("deprecation")
 @Test	public void testOneOrMoreCardinalityPositve() throws IOException
 	{	
 		System.out.println("Running testOneOrMoreCardinalityPositive");
@@ -146,8 +149,6 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 		client.release();		
 	}
 	
-
-@SuppressWarnings("deprecation")
 @Test	public void testOneOrMoreCardinalityNegative() throws IOException
 	{	
 		System.out.println("Running testOneOrMoreCardinalityNegative");
@@ -187,8 +188,6 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 		client.release();		
 	}
 
-
-@SuppressWarnings("deprecation")
 @Test	public void testZeroOrOneCardinalityNegative() throws IOException
 	{	
 		System.out.println("Running testZeroOrOneCardinalityNegative");
@@ -229,7 +228,6 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 	}
 
 
-@SuppressWarnings("deprecation")
 @Test	public void testZeroOrOneCardinalityPositive() throws IOException
 	{	
 		System.out.println("Running testZeroOrOneCardinalityPositive");
@@ -262,7 +260,6 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 	}
 	
 
-@SuppressWarnings("deprecation")
 @Test	public void testZeroOrOneCardinalityPositiveWithZero() throws IOException
 	{	
 		System.out.println("Running testZeroOrOneCardinalityPositiveWithZero");
@@ -294,8 +291,6 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 		client.release();		
 	}
 	
-
-@SuppressWarnings("deprecation")
 @Test	public void testZeroOrMoreCardinality() throws IOException
 	{	
 		System.out.println("Running testZeroOrMoreCardinality");
@@ -331,74 +326,91 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 		client.release();		
 	}
 
-@SuppressWarnings("deprecation")
 @Test	public void testBug23843() throws IOException
 	{	
-		System.out.println("Running testBug23843");
+	System.out.println("Running testBug23843");
+	
+	String[] filenames = {"cardinal1.xml","cardinal4.xml"};
+
+	DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+			
+	// write docs
+	for(String filename : filenames)
+	{
+		writeDocumentUsingInputStreamHandle(client, filename, "/cardinal/", "XML");
 		
-		String[] filenames = {"cardinal1.xml","cardinal4.xml"};
-
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
-				
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/cardinal/", "XML");
-			
-			String docId = "";
-			
-			XMLDocumentManager docMgr = client.newXMLDocumentManager();
-			DocumentMetadataHandle readMetadataHandle = new DocumentMetadataHandle();
-			
-			DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
-			if (filename == "cardinal1.xml"){
-				patchBldr.insertFragment("/root", Position.LAST_CHILD, Cardinality.ONE, "<bar>added</bar>");
-			}
-			else if (filename == "cardinal4.xml") {
-				patchBldr.insertFragment("/root", Position.LAST_CHILD, "<bar>added</bar>");
-			}
-			DocumentPatchHandle patchHandle = patchBldr.build();
-			String RawPatch = patchHandle.toString();
-			System.out.println("Before"+RawPatch);
-			
-			String exception = "";
-			if (filename == "cardinal1.xml"){
-				try
-				{	docId= "/cardinal/cardinal1.xml";
-					docMgr.patch(docId, patchHandle);
-					System.out.println("After"+docMgr.readMetadata(docId, new DocumentMetadataHandle()).toString());
-					assertEquals("<?xml version=\"1.0\" encoding=\"utf-8\"?><rapi:metadata xmlns:rapi=\"http://marklogic.com/rest-api\" xmlns:prop=\"http://marklogic.com/xdmp/property\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"><rapi:collections></rapi:collections><rapi:permissions><rapi:permission><rapi:role-name>rest-reader</rapi:role-name><rapi:capability>read</rapi:capability></rapi:permission><rapi:permission><rapi:role-name>rest-writer</rapi:role-name><rapi:capability>update</rapi:capability></rapi:permission></rapi:permissions><prop:properties></prop:properties><rapi:quality>0</rapi:quality></rapi:metadata>", docMgr.readMetadata(docId, new DocumentMetadataHandle()).toString());
-				}
-				catch (Exception e)
-				{
-					System.out.println(e.getMessage());
-					exception = e.getMessage();
-				}
-			}
-			else if (filename == "cardinal4.xml") {
-				try
-				{	
-					docId = "/cardinal/cardinal4.xml";
-					docMgr.clearMetadataCategories();
-					docMgr.patch(docId, new StringHandle(patchHandle.toString()));
-					docMgr.setMetadataCategories(Metadata.ALL);
-					System.out.println("After"+docMgr.readMetadata(docId, new DocumentMetadataHandle()).toString());
-					assertEquals("", "<?xml version=\"1.0\" encoding=\"utf-8\"?><rapi:metadata xmlns:rapi=\"http://marklogic.com/rest-api\" xmlns:prop=\"http://marklogic.com/xdmp/property\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"><rapi:collections></rapi:collections><rapi:permissions><rapi:permission><rapi:role-name>rest-reader</rapi:role-name><rapi:capability>read</rapi:capability></rapi:permission><rapi:permission><rapi:role-name>rest-writer</rapi:role-name><rapi:capability>update</rapi:capability></rapi:permission></rapi:permissions><prop:properties></prop:properties><rapi:quality>0</rapi:quality></rapi:metadata>", docMgr.readMetadata(docId, new DocumentMetadataHandle()).toString());
-				}
-				catch (Exception e)
-				{
-					System.out.println(e.getMessage());
-					exception = e.getMessage();
-				}
-			}
-
-			String actual = docMgr.read(docId, new StringHandle()).get();
-			
-			System.out.println("Actual : "+actual);
+		String docId = "";
+		
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+		DocumentMetadataHandle readMetadataHandle = new DocumentMetadataHandle();
+		
+		DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
+		if (filename == "cardinal1.xml"){
+			patchBldr.insertFragment("/root", Position.LAST_CHILD, Cardinality.ONE, "<bar>added</bar>");
 		}
+		else if (filename == "cardinal4.xml") {
+			patchBldr.insertFragment("/root", Position.LAST_CHILD, "<bar>added</bar>");
+		}
+		DocumentPatchHandle patchHandle = patchBldr.build();
+		String RawPatch = patchHandle.toString();
+		System.out.println("Before"+RawPatch);
 		
-		// release client
-		client.release();		
+		String exception = "";
+		if (filename == "cardinal1.xml"){
+			try
+			{	docId= "/cardinal/cardinal1.xml";
+				docMgr.patch(docId, patchHandle);
+				
+			    String actual = docMgr.readMetadata(docId, new DocumentMetadataHandle()).toString();
+				System.out.println("Actual" + actual);
+				
+                assertXpathEvaluatesTo("2", "count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission'])", actual);
+                assertXpathEvaluatesTo("1", "count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='rest-reader'])", actual);
+                assertXpathEvaluatesTo("1", "count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='rest-writer'])", actual);
+                assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='0'])", actual);														
+                
+                assertXpathEvaluatesTo("read","string(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[[local-name()='role-name' and string(.)='rest-reader'] and [local-name()='capability' and string(.)='read']])", actual);
+                assertXpathEvaluatesTo("update","string(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[[local-name()='role-name' and string(.)='rest-writer'] and [local-name()='capability' and string(.)='update']])", actual);
+			}
+			catch (Exception e)
+			{
+				System.out.println(e.getMessage());
+				exception = e.getMessage();
+			}
+		}
+		else if (filename == "cardinal4.xml") {
+			try
+			{	
+				docId = "/cardinal/cardinal4.xml";
+				docMgr.clearMetadataCategories();
+				docMgr.patch(docId, new StringHandle(patchHandle.toString()));
+				docMgr.setMetadataCategories(Metadata.ALL);
+
+			    String actual = docMgr.readMetadata(docId, new DocumentMetadataHandle()).toString();
+				System.out.println("Actual" + actual);
+				
+                assertXpathEvaluatesTo("2", "count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission'])", actual);
+                assertXpathEvaluatesTo("1", "count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='rest-reader'])", actual);
+                assertXpathEvaluatesTo("1", "count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='rest-writer'])", actual);
+                assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='0'])", actual);														
+                
+                assertXpathEvaluatesTo("read","string(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[[local-name()='role-name' and string(.)='rest-reader'] and [local-name()='capability' and string(.)='read']])", actual);
+                assertXpathEvaluatesTo("update","string(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[[local-name()='role-name' and string(.)='rest-writer'] and [local-name()='capability' and string(.)='update']])", actual);
+			}
+			catch (Exception e)
+			{
+				System.out.println(e.getMessage());
+				exception = e.getMessage();
+			}
+		}
+
+		String actual = docMgr.read(docId, new StringHandle()).get();
+		
+		System.out.println("Actual : "+actual);
+	}
+	
+	// release client
+	client.release();		
 	}
 @AfterClass
 public static void tearDown() throws Exception
