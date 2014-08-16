@@ -355,7 +355,6 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 		String RawPatch = patchHandle.toString();
 		System.out.println("Before"+RawPatch);
 		
-		String exception = "";
 		if (filename == "cardinal1.xml"){
 			try
 			{	docId= "/cardinal/cardinal1.xml";
@@ -375,7 +374,6 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 			catch (Exception e)
 			{
 				System.out.println(e.getMessage());
-				exception = e.getMessage();
 			}
 		}
 		else if (filename == "cardinal4.xml") {
@@ -400,7 +398,6 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 			catch (Exception e)
 			{
 				System.out.println(e.getMessage());
-				exception = e.getMessage();
 			}
 		}
 
