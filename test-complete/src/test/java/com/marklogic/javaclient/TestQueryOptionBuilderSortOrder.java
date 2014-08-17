@@ -1,7 +1,12 @@
 package com.marklogic.javaclient;
 
+import java.io.IOException;
+
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.junit.Assert.*;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.FileNotFoundException;
 
@@ -24,12 +29,14 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
+
 import org.junit.*;
 public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 
 	private static String dbName = "TestQueryOptionBuilderSortOrderDB";
 	private static String [] fNames = {"TestQueryOptionBuilderSortOrderDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort = 8011;
 
 @BeforeClass	public static void setUp() throws Exception 
 	{
@@ -37,7 +44,13 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 	  setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	  setupAppServicesConstraint(dbName);
 	}
-	
+
+@After
+	public  void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
+	}
 
 @SuppressWarnings("deprecation")
 @Test	public void testSortOrderDescendingScore() throws FileNotFoundException, XpathException, TransformerException
@@ -107,7 +120,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 
 
 @SuppressWarnings("deprecation")
-@Test	public void testSortOrderPrimaryDescScoreSecondaryAscDate() throws FileNotFoundException, XpathException, TransformerException
+@Test	public void testSortOrderPrimaryDescScoreSecondaryAscDate() throws FileNotFoundException, XpathException, TransformerException, IOException
 	{	
 		System.out.println("Running testSortOrderPrimaryDescScoreSecondaryAscDate");
 		
@@ -147,10 +160,64 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 	    String output = readHandle.get();
 	    System.out.println(output + "testSortOrderPrimaryDescScoreSecondaryAscDate");
 	    
-	    //String expectedOutput = "{\"options\":{\"sort-order\":[{\"direction\":\"descending\", \"score\":null},{\"direction\":\"ascending\", \"type\":\"xs:date\", \"element\":{\"name\":\"date\",\"ns\":\"http:\\/\\/purl.org\\/dc\\/elements\\/1.1\\/\"}}], \"return-metrics\":false, \"return-qtext\":false, \"transform-results\":{\"apply\":\"raw\"}}}";
-	      String expectedOutput = "{\"options\":{\"return-metrics\":false, \"return-qtext\":false, \"sort-order\":[{\"direction\":\"descending\", \"score\":null}, {\"type\":\"xs:date\", \"direction\":\"ascending\", \"element\":{\"ns\":\"http:\\/\\/purl.org\\/dc\\/elements\\/1.1\\/\", \"name\":\"date\"}}], \"transform-results\":{\"apply\":\"raw\"}}}";
-	    assertTrue("Query Options in json is incorrect", output.contains(expectedOutput));
-	    
+        // ----------- Validate options node ----------------------
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode optionsContent = mapper.readTree(output);
+		assertNotNull(optionsContent);
+		System.out.println("JSON output: " + optionsContent);	    
+		
+		JsonNode optionsNode = optionsContent.get("options");
+		assertNotNull(optionsNode);
+		
+		JsonNode metrics = optionsNode.get("return-metrics");
+		assertNotNull(metrics);
+		assertEquals(metrics.booleanValue(), false);
+		
+		JsonNode qtext = optionsNode.get("return-qtext");
+		assertNotNull(qtext);
+		assertEquals(qtext.booleanValue(), false);
+		
+		JsonNode sortOrders = optionsNode.get("sort-order");
+		assertNotNull(sortOrders);
+		System.out.println(optionsContent.get("options").get("sort-order"));
+		
+		assertTrue(sortOrders.isArray());
+		for (final JsonNode sortOrder : sortOrders) {
+			assertNotNull(sortOrder.get("direction"));
+			String direction = sortOrder.get("direction").textValue();
+			
+			if (direction.equals("descending")) {
+				assertTrue(sortOrder.has("score"));
+				assertTrue(sortOrder.get("score").isNull());				
+			}
+			else if (direction.equals("ascending")) {
+				assertTrue(sortOrder.has("type"));
+				assertEquals(sortOrder.get("type").textValue(), "xs:date");
+				
+				JsonNode element = sortOrder.get("element");
+				assertNotNull(element);
+				
+				JsonNode name = element.get("name");
+				assertNotNull(name);
+				assertEquals(name.textValue(), "date");
+				
+				JsonNode ns = element.get("ns");
+				assertNotNull(ns);
+				assertEquals(ns.textValue(), "http://purl.org/dc/elements/1.1/");
+			}
+			else {
+				assertTrue("Found an unexpected object", false);
+			}
+	    }
+
+		JsonNode transformResults = optionsNode.get("transform-results");
+		assertNotNull(transformResults);
+
+		JsonNode apply = transformResults.get("apply");
+		assertNotNull(apply);
+		assertEquals(apply.textValue(), "raw");		
+
+        // ----------- Validate search using options node created ----------------------
 	    // create query manager
 		QueryManager queryMgr = client.newQueryManager();
 		
@@ -165,7 +232,6 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 		
 		// get the result
 		Document resultDoc = resultsHandle.get();
-		//System.out.println(convertXMLDocumentToString(resultDoc));
 		
 		assertXpathEvaluatesTo("3", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
 		assertXpathEvaluatesTo("0012", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
@@ -178,7 +244,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 
 
 @SuppressWarnings("deprecation")
-@Test	public void testMultipleSortOrder() throws FileNotFoundException, XpathException, TransformerException
+@Test	public void testMultipleSortOrder() throws FileNotFoundException, XpathException, TransformerException, IOException
 	{	
 		System.out.println("Running testMultipleSortOrder");
 		
@@ -220,9 +286,83 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 	    String output = readHandle.get();
 	    System.out.println(output);
 	    
-	    String expectedOutput = "{\"options\":{\"return-metrics\":false, \"return-qtext\":false, \"sort-order\":[{\"direction\":\"descending\", \"score\":null}, {\"type\":\"xs:int\", \"direction\":\"ascending\", \"element\":{\"ns\":\"\", \"name\":\"popularity\"}}, {\"type\":\"xs:string\", \"direction\":\"descending\", \"element\":{\"ns\":\"\", \"name\":\"title\"}}], \"transform-results\":{\"apply\":\"raw\"}}}";
-	    assertTrue("Query Options in json is incorrect", output.contains(expectedOutput));
-	    
+	    // ----------- Validate options node ----------------------
+ 		ObjectMapper mapper = new ObjectMapper();
+ 		JsonNode optionsContent = mapper.readTree(output);
+ 		assertNotNull(optionsContent);
+ 		System.out.println("JSON output: " + optionsContent);	    
+ 		
+ 		JsonNode optionsNode = optionsContent.get("options");
+ 		assertNotNull(optionsNode);
+ 		
+ 		JsonNode metrics = optionsNode.get("return-metrics");
+ 		assertNotNull(metrics);
+ 		assertEquals(metrics.booleanValue(), false);
+ 		
+ 		JsonNode qtext = optionsNode.get("return-qtext");
+ 		assertNotNull(qtext);
+ 		assertEquals(qtext.booleanValue(), false);
+	 		
+ 		JsonNode sortOrders = optionsNode.get("sort-order");
+ 		assertNotNull(sortOrders);
+ 		System.out.println(optionsContent.get("options").get("sort-order"));
+ 		
+ 		assertTrue(sortOrders.isArray());
+ 		for (final JsonNode sortOrder : sortOrders) {
+ 			assertNotNull(sortOrder.get("direction"));
+ 			String direction = sortOrder.get("direction").textValue();
+ 			
+ 			if (direction.equals("descending")) {
+ 				if (sortOrder.has("score")) {
+ 				  assertTrue(sortOrder.get("score").isNull());
+ 				}
+ 				else if (sortOrder.has("type")) {
+ 				  assertEquals(sortOrder.get("type").textValue(), "xs:string");
+
+ 				  JsonNode element = sortOrder.get("element");
+ 				  assertNotNull(element);
+ 				
+ 				  JsonNode elementName = element.get("name");
+ 				  assertNotNull(elementName);
+ 				  assertEquals(elementName.textValue(), "title");
+ 				
+ 				  JsonNode elementNS = element.get("ns");
+ 				  assertNotNull(elementNS);
+ 				  assertEquals(elementNS.textValue(), "");
+ 				}
+ 				else {
+ 					assertTrue("Found an unexpected object", false);
+ 				}
+ 					
+ 			}
+ 			else if (direction.equals("ascending")) {
+ 				assertTrue(sortOrder.has("type"));
+ 				assertEquals(sortOrder.get("type").textValue(), "xs:int");
+ 				
+ 				JsonNode element = sortOrder.get("element");
+ 				assertNotNull(element);
+ 				
+ 				JsonNode elementName = element.get("name");
+ 				assertNotNull(elementName);
+ 				assertEquals(elementName.textValue(), "popularity");
+ 				
+ 				JsonNode elementNS = element.get("ns");
+ 				assertNotNull(elementNS);
+ 				assertEquals(elementNS.textValue(), "");
+ 			}
+			else {
+				assertTrue("Found an unexpected object", false);
+			}
+ 	    }
+
+	    JsonNode transformResults = optionsNode.get("transform-results");
+	 	assertNotNull(transformResults);
+
+	 	JsonNode apply = transformResults.get("apply");
+	 	assertNotNull(apply);
+	 	assertEquals(apply.textValue(), "raw");	
+
+	    // ----------- Search based on options node inserted ----------------------
 	    // create query manager
 		QueryManager queryMgr = client.newQueryManager();
 		
@@ -251,7 +391,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 
 
 @SuppressWarnings("deprecation")
-@Test	public void testSortOrderAttribute() throws FileNotFoundException, XpathException, TransformerException
+@Test	public void testSortOrderAttribute() throws FileNotFoundException, XpathException, TransformerException, IOException
 	{	
 		System.out.println("Running testSortOrderAttribute");
 		
@@ -292,9 +432,75 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 	    String output = readHandle.get();
 	    System.out.println(output);
 	    
-	    String expectedOutput = "{\"options\":{\"return-metrics\":false, \"return-qtext\":false, \"sort-order\":[{\"direction\":\"descending\", \"score\":null}, {\"type\":\"xs:decimal\", \"direction\":\"ascending\", \"attribute\":{\"ns\":\"\", \"name\":\"amt\"}, \"element\":{\"ns\":\"http:\\/\\/cloudbank.com\", \"name\":\"price\"}}], \"transform-results\":{\"apply\":\"raw\"}}}";
-	    assertTrue("Query Options in json is incorrect", output.contains(expectedOutput));
+	    // ----------- Validate options node ----------------------
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode optionsContent = mapper.readTree(output);
+		assertNotNull(optionsContent);
+		System.out.println("JSON output: " + optionsContent);	    
+		
+		JsonNode optionsNode = optionsContent.get("options");
+		assertNotNull(optionsNode);
+		
+		JsonNode metrics = optionsNode.get("return-metrics");
+		assertNotNull(metrics);
+		assertEquals(metrics.booleanValue(), false);
+		
+		JsonNode qtext = optionsNode.get("return-qtext");
+		assertNotNull(qtext);
+		assertEquals(qtext.booleanValue(), false);
+		
+		JsonNode sortOrders = optionsNode.get("sort-order");
+		assertNotNull(sortOrders);
+		System.out.println(optionsContent.get("options").get("sort-order"));
+		
+		assertTrue(sortOrders.isArray());
+		for (final JsonNode sortOrder : sortOrders) {
+			assertNotNull(sortOrder.get("direction"));
+			String direction = sortOrder.get("direction").textValue();
+			
+			if (direction.equals("descending")) {
+				assertTrue(sortOrder.has("score"));
+				assertTrue(sortOrder.get("score").isNull());				
+			}
+			else if (direction.equals("ascending")) {
+				assertTrue(sortOrder.has("type"));
+				assertEquals(sortOrder.get("type").textValue(), "xs:decimal");
+
+				JsonNode attribute = sortOrder.get("attribute");
+				assertNotNull(attribute);
+				
+				JsonNode attributeName = attribute.get("name");
+				assertNotNull(attributeName);
+				assertEquals(attributeName.textValue(), "amt");
+				
+				JsonNode attributeNS = attribute.get("ns");
+				assertNotNull(attributeNS);
+				assertEquals(attributeNS.textValue(), "");
+				
+				JsonNode element = sortOrder.get("element");
+				assertNotNull(element);
+				
+				JsonNode elementName = element.get("name");
+				assertNotNull(elementName);
+				assertEquals(elementName.textValue(), "price");
+				
+				JsonNode elementNS = element.get("ns");
+				assertNotNull(elementNS);
+				assertEquals(elementNS.textValue(), "http://cloudbank.com");
+			}
+			else {
+				assertTrue("Found an unexpected object", false);
+			}
+	    }
+
+		JsonNode transformResults = optionsNode.get("transform-results");
+		assertNotNull(transformResults);
+
+		JsonNode apply = transformResults.get("apply");
+		assertNotNull(apply);
+		assertEquals(apply.textValue(), "raw");	
 	    
+	    // ----------- Validate search using options node created ----------------------
 	    // create query manager
 		QueryManager queryMgr = client.newQueryManager();
 		
