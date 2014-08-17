@@ -14,7 +14,7 @@ public class ThreadClass extends Thread{
 	
     public void run()
     {	
-        DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8013, "rest-admin", "x", Authentication.DIGEST);
+        DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
         
         TextDocumentManager docMgr = client.newTextDocumentManager();
 
