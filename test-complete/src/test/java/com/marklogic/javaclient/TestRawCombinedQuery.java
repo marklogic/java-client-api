@@ -753,10 +753,10 @@ public  void testCleanUp() throws Exception
 		String resultDoc = resultsHandle.get();
 		
 		System.out.println(resultDoc);
-		
-		assertTrue("total document returned is incorrect", resultDoc.contains("\"total\":2"));
-		assertTrue("returned doc is incorrect", resultDoc.contains("\"uri\":\"/field-constraint/constraint5.xml\""));
-		assertTrue("returned doc is incorrect", resultDoc.contains("\"uri\":\"/field-constraint/constraint1.xml\""));
+
+		assertTrue("total document returned is incorrect", resultDoc.contains("total=\"2\""));
+		assertTrue("returned doc is incorrect", resultDoc.contains("uri=\"/field-constraint/constraint5.xml\""));
+		assertTrue("returned doc is incorrect", resultDoc.contains("uri=\"/field-constraint/constraint1.xml\""));
 		
 		// release client
 		client.release();		
