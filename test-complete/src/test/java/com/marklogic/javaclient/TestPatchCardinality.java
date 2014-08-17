@@ -342,7 +342,6 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 		String docId = "";
 		
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
-		DocumentMetadataHandle readMetadataHandle = new DocumentMetadataHandle();
 		
 		DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
 		if (filename == "cardinal1.xml"){
@@ -368,9 +367,10 @@ public class TestPatchCardinality extends BasicJavaClientREST {
                 assertXpathEvaluatesTo("1", "count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='rest-writer'])", actual);
                 assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='0'])", actual);														
                 
-                assertXpathEvaluatesTo("read","string(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[[local-name()='role-name' and string(.)='rest-reader'] and [local-name()='capability' and string(.)='read']])", actual);
-                assertXpathEvaluatesTo("update","string(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[[local-name()='role-name' and string(.)='rest-writer'] and [local-name()='capability' and string(.)='update']])", actual);
-			}
+                XMLUnit.getControlDocumentBuilderFactory().setNamespaceAware(false);
+                XMLAssert.assertXpathEvaluatesTo("rest-readerread", "//permissions/permission[role-name[. = 'rest-reader'] and capability[. = 'read']]", actual);
+                XMLAssert.assertXpathEvaluatesTo("rest-writerupdate", "//permissions/permission[role-name[. = 'rest-writer'] and capability[. = 'update']]", actual);    
+            }
 			catch (Exception e)
 			{
 				System.out.println(e.getMessage());
@@ -390,11 +390,12 @@ public class TestPatchCardinality extends BasicJavaClientREST {
                 assertXpathEvaluatesTo("2", "count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission'])", actual);
                 assertXpathEvaluatesTo("1", "count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='rest-reader'])", actual);
                 assertXpathEvaluatesTo("1", "count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='rest-writer'])", actual);
-                assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='0'])", actual);														
+                assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='0'])", actual);														                
                 
-                assertXpathEvaluatesTo("read","string(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[[local-name()='role-name' and string(.)='rest-reader'] and [local-name()='capability' and string(.)='read']])", actual);
-                assertXpathEvaluatesTo("update","string(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[[local-name()='role-name' and string(.)='rest-writer'] and [local-name()='capability' and string(.)='update']])", actual);
-			}
+                XMLUnit.getControlDocumentBuilderFactory().setNamespaceAware(false);
+                XMLAssert.assertXpathEvaluatesTo("rest-readerread", "//permissions/permission[role-name[. = 'rest-reader'] and capability[. = 'read']]", actual);
+                XMLAssert.assertXpathEvaluatesTo("rest-writerupdate", "//permissions/permission[role-name[. = 'rest-writer'] and capability[. = 'update']]", actual);    
+           }
 			catch (Exception e)
 			{
 				System.out.println(e.getMessage());
