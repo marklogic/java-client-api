@@ -6,17 +6,27 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.TextDocumentManager;
+
 import org.junit.*;
 public class TestMultithreading extends BasicJavaClientREST {
 	
 	private static String dbName = "TestMultithreadingDB";
 	private static String [] fNames = {"TestMultithreadingDBDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort=8011;
+	
 @BeforeClass
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		setupJavaRESTServer(dbName, fNames[0], restServerName, restPort);
+	}
+
+@After
+	public  void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
 	}
 
 @SuppressWarnings("deprecation")
