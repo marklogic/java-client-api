@@ -3,17 +3,20 @@ package com.marklogic.javaclient;
 import static org.junit.Assert.*;
 
 import java.io.FileNotFoundException;
+
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.SuggestDefinition;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+
 import org.junit.*;
 public class TestSearchSuggestion extends BasicJavaClientREST {
 
 	private static String dbName = "SearchSuggestionDB";
 	private static String [] fNames = {"SearchSuggestionDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort = 8011;
 
 @BeforeClass public static void setUp() throws Exception 
 	{
@@ -23,6 +26,13 @@ public class TestSearchSuggestion extends BasicJavaClientREST {
 	  setupAppServicesConstraint(dbName);
 	  addRangeElementIndex(dbName, "string", "http://action/", "title", "http://marklogic.com/collation/");
 	  addRangeElementIndex(dbName, "string", "http://noun/", "title", "http://marklogic.com/collation/");
+	}
+
+@After
+	public  void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
 	}
 
 
