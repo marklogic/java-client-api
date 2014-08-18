@@ -31,6 +31,7 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
+
 import org.junit.*;
 public class TestSSLConnection extends BasicJavaClientREST {
 
@@ -38,10 +39,11 @@ public class TestSSLConnection extends BasicJavaClientREST {
 	private static String [] fNames = {"TestSSLConnectionDB-1"};
 	private static String restServerName = "REST-Java-Client-API-SSL-Server";
 
-	protected void setUp() throws Exception 
+@BeforeClass
+	public static void setUp() throws Exception 
 	{
 	  System.out.println("In setup");
-	  setupJavaRESTServer(dbName, fNames[0],restServerName,8033);
+	  setupJavaRESTServer(dbName, fNames[0],restServerName,8012);
 	  setupAppServicesConstraint(dbName);
 	}
 	
@@ -286,7 +288,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
 	@SuppressWarnings("deprecation")
 	@Test	public void testSSLConnectionInvalidPassword() throws IOException, NoSuchAlgorithmException, KeyManagementException
 	{
-		System.out.println("Running testSSLConnectionInvalidPassword");
+        System.out.println("Running testSSLConnectionInvalidPassword");
 		
 		String filename = "facebook-10443244874876159931";
 		
@@ -324,6 +326,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
 		}
 		catch (Exception e) { exception = e.toString(); }
 		
+		System.out.println("Actual exception: " + exception);
 		boolean isExceptionThrown = exception.contains(expectedException);
 		
 		assertTrue("Exception is not thrown", isExceptionThrown);
@@ -381,8 +384,9 @@ public class TestSSLConnection extends BasicJavaClientREST {
 		// release client
 		client.release();
 	}
-	
-	public void tearDown() throws Exception
+
+	@AfterClass
+	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
 		tearDownJavaRESTServer(dbName, fNames, restServerName);
