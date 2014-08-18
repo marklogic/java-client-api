@@ -10,18 +10,28 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.javaclient.BasicJavaClientREST;
+
 import org.junit.*;
 public class TestBug18993 extends BasicJavaClientREST {
 	
 	private static String dbName = "Bug18993DB";
 	private static String [] fNames = {"Bug18993DB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort = 8011;
+	
 	@BeforeClass
 	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
 		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 		loadBug18993();
+	}
+
+@After
+	public  void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
 	}
 
 	@SuppressWarnings("deprecation")
