@@ -19,7 +19,7 @@ public class ThreadSearch extends Thread {
     {	
     	long totalResults = 0;
     	
-        DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8013, "rest-reader", "x", Authentication.DIGEST);
+        DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-reader", "x", Authentication.DIGEST);
         
         QueryManager queryMgr = client.newQueryManager();
         StringQueryDefinition querydef = queryMgr.newStringDefinition(null);
