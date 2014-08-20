@@ -53,7 +53,7 @@ public class TestBulkSearchWithKeyValQueryDef extends BasicJavaClientREST {
 	private static String restServerName = "REST-Java-Client-API-Server";
 	private static int restPort = 8011;
 	private  DatabaseClient client ;
-
+/* this test is commented out untill we make decision in Issue 88
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In setup");
@@ -347,5 +347,5 @@ public class TestBulkSearchWithKeyValQueryDef extends BasicJavaClientREST {
 
 	}
 
-
+*/
 }

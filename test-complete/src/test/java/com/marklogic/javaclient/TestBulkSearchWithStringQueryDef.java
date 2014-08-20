@@ -54,16 +54,16 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST{
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In setup");
-				setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
-				setupAppServicesConstraint(dbName);
-				createRESTUserWithPermissions("usr1", "password",getPermissionNode("flexrep-eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
+		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		setupAppServicesConstraint(dbName);
+		createRESTUserWithPermissions("usr1", "password",getPermissionNode("flexrep-eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-				tearDownJavaRESTServer(dbName, fNames, restServerName);
-				deleteRESTUser("usr1");
+		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		deleteRESTUser("usr1");
 	}
 
 	@Before
