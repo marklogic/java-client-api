@@ -64,26 +64,26 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In setup");
-		//		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
-		//		setupAppServicesConstraint(dbName);
-		//		createRESTUserWithPermissions("usr1", "password",getPermissionNode("flexrep-eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
+		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		setupAppServicesConstraint(dbName);
+		createRESTUserWithPermissions("usr1", "password",getPermissionNode("flexrep-eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-		//		tearDownJavaRESTServer(dbName, fNames, restServerName);
-		//		deleteRESTUser("usr1");
+		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		deleteRESTUser("usr1");
 	}
 
 	@Before
 	public void setUp() throws Exception {
-			System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+//			System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		// create new connection for each test below
 		client = DatabaseClientFactory.newClient("localhost", restPort, "usr1", "password", Authentication.DIGEST);
-//		loadTxtDocuments();
-//		loadXMLDocuments();
-//		loadJSONDocuments();
+		loadTxtDocuments();
+		loadXMLDocuments();
+		loadJSONDocuments();
 	}
 
 	@After
@@ -334,16 +334,18 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 		//using QBE for query definition and set the search criteria
 
 		QueryManager queryMgr = client.newQueryManager();
-		String queryAsString = "{\"search\":{\"query\":{\"says\":{\"word\":\"woof\",\"exact\":true}}}}";
-		//RawQueryByExampleDefinition qd = queryMgr.newRawQueryByExampleDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
+		String queryAsString ="{\"search\":{\"query\":{\"value-constraint-query\":{\"constraint-name\":\"animal\", \"text\":\"woof\"}}, \"options\":{\"constraint\":{\"name\":\"animal\", \"value\":{\"json-property\":\"says\"}}}}}"; 
+	
 		RawCombinedQueryDefinition qd = queryMgr.newRawCombinedQueryDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
 		// set  document manager level settings for search response
 		docMgr.setPageLength(25);
 		docMgr.setSearchView(QueryView.RESULTS);
 		docMgr.setResponseFormat(Format.JSON);
-
-		// Search for documents where content has bar and get first result record, get search handle on it,Use DOMHandle to read results
+		
+		// Search for documents where content has woof and get first result record, 
 		JacksonHandle sh = new JacksonHandle();
+		queryMgr.search(qd, sh);
+		System.out.println(sh.get().toString());
 		DocumentPage page;
 
 		long pageNo=1;
@@ -357,16 +359,14 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 			while(page.hasNext()){
 				DocumentRecord rec = page.next();
 				rec.getFormat();
-				System.out.println(rec.getContent(new StringHandle()).get().toString());
 				validateRecord(rec,Format.JSON);
 				count++;
 			}
 			assertTrue("Page start in results and on page",sh.get().get("start").asLong() == page.getStart());
 			assertEquals("document count", page.size(),count);
-			//			assertEquals("Page Number #",pageNo,page.getPageNumber());
 			pageNo = pageNo + page.getPageSize();
 		}while(!page.isLastPage() &&  page.hasContent() );
-
+		System.out.println(sh.get().toString());
 		assertEquals("page count is  ",5,page.getTotalPages());
 		assertTrue("Page has previous page ?",page.hasPreviousPage());
 		assertEquals("page size", 25,page.getPageSize());
