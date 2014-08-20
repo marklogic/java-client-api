@@ -110,6 +110,9 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST{
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down" );
+		
+		setAuthentication("digest",restServerName);
+		setDefaultUser("nobody",restServerName);
 		tearDownJavaRESTServer(dbName, fNames, restServerName);
 	}
 }
