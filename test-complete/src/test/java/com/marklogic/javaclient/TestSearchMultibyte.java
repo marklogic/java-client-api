@@ -6,6 +6,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import com.marklogic.client.query.QueryManager;
+
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -16,6 +17,7 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.io.DOMHandle;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.*;
 public class TestSearchMultibyte extends BasicJavaClientREST {
@@ -23,6 +25,7 @@ public class TestSearchMultibyte extends BasicJavaClientREST {
 	private static String dbName = "TestSearchMultibyteDB";
 	private static String [] fNames = {"TestSearchMultibyteDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort = 8011;
 
 @BeforeClass	public static void setUp() throws Exception 
 	{
@@ -30,8 +33,13 @@ public class TestSearchMultibyte extends BasicJavaClientREST {
 	  setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	  setupAppServicesConstraint(dbName);
 	}
-	
 
+@After
+	public  void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
+	}
 
 @Test	public void testSearchString() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	

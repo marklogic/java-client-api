@@ -15,7 +15,7 @@ public class TestWriteTextDoc extends BasicJavaClientREST
 	@BeforeClass public static void setUp() throws Exception 
 		{
 		  System.out.println("In setup");
-		  setupJavaRESTServerWithDB( "REST-Java-Client-API-Server", 8011);
+		  setupJavaRESTServerWithDB( "REST-Java-Client-API-Server-withDB", 8015);
 		 
 		}
 	
@@ -32,6 +32,6 @@ public class TestWriteTextDoc extends BasicJavaClientREST
 	@AfterClass	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		deleteRESTServerWithDB("REST-Java-Client-API-Server");
+		deleteRESTServerWithDB("REST-Java-Client-API-Server-withDB");
 	}
 }

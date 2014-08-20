@@ -278,7 +278,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     	// read document mimetype
     	docMgr.read(docId, handle);
     	String format = handle.getFormat().name();
-    	String expectedFormat = "BINARY";
+    	String expectedFormat = "JSON";
     	
     	assertEquals("Format does not match", expectedFormat, format);
 		
@@ -321,7 +321,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     	// read document mimetype
     	docMgr.read(docId, handle);
     	String format = handle.getFormat().name();
-    	String expectedFormat = "TEXT";
+    	String expectedFormat = "JSON";
     	
     	assertEquals("Format does not match", expectedFormat, format);
 		
@@ -493,7 +493,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     	// read document mimetype
     	docMgr.read(docId, handle);
     	String format = handle.getFormat().name();
-    	String expectedFormat = "TEXT";
+    	String expectedFormat = "BINARY";
     	
     	assertEquals("Format does not match", expectedFormat, format);
 		
@@ -665,7 +665,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     	// read document mimetype
     	docMgr.read(docId, handle);
     	String format = handle.getFormat().name();
-    	String expectedFormat = "BINARY";
+    	String expectedFormat = "TEXT";
     	
     	assertEquals("Format does not match", expectedFormat, format);
 		

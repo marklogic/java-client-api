@@ -702,10 +702,9 @@ public  void testCleanUp() throws Exception
 		String resultDoc = resultsHandle.get();
 		
 		System.out.println(resultDoc);
-		
-		assertTrue("total document returned is incorrect", resultDoc.contains("\"total\":1"));
-		assertTrue("returned doc is incorrect", resultDoc.contains("\"uri\":\"/collection-constraint/constraint1.xml\""));
-				
+
+		assertTrue("Returned result is not correct", resultDoc.contains("<search:result index=\"1\" uri=\"/collection-constraint/constraint1.xml\" path=\"fn:doc(&quot;/collection-constraint/constraint1.xml&quot;)\" score=\"28672\" confidence=\"0.6951694\" fitness=\"0.9213214\" href=\"/v1/documents?uri=%2Fcollection-constraint%2Fconstraint1.xml\" mimetype=\"text/xml\" format=\"xml\">"));
+			
 		// release client
 		client.release();		
 	}
@@ -753,10 +752,10 @@ public  void testCleanUp() throws Exception
 		String resultDoc = resultsHandle.get();
 		
 		System.out.println(resultDoc);
-		
-		assertTrue("total document returned is incorrect", resultDoc.contains("\"total\":2"));
-		assertTrue("returned doc is incorrect", resultDoc.contains("\"uri\":\"/field-constraint/constraint5.xml\""));
-		assertTrue("returned doc is incorrect", resultDoc.contains("\"uri\":\"/field-constraint/constraint1.xml\""));
+
+		assertTrue("total document returned is incorrect", resultDoc.contains("total=\"2\""));
+		assertTrue("returned doc is incorrect", resultDoc.contains("uri=\"/field-constraint/constraint5.xml\""));
+		assertTrue("returned doc is incorrect", resultDoc.contains("uri=\"/field-constraint/constraint1.xml\""));
 		
 		// release client
 		client.release();		

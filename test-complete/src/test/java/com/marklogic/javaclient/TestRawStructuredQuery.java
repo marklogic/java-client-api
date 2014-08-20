@@ -28,13 +28,13 @@ import static org.junit.Assert.*;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.*;
-import org.junit.Assert;
 public class TestRawStructuredQuery extends BasicJavaClientREST {
 
 	
 	private static String dbName = "TestRawStructuredQueryDB";
 	private static String [] fNames = {"TestRawStructuredQueryDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort = 8011;
 
 @BeforeClass	public static void setUp() throws Exception 
 	{
@@ -44,7 +44,12 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 	  System.out.println("after setup");
 	}
 	
-
+@After
+public  void testCleanUp() throws Exception
+{
+	clearDB(restPort);
+	System.out.println("Running clear script");
+}
 
 @Test	public void testRawStructuredQueryXML() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	

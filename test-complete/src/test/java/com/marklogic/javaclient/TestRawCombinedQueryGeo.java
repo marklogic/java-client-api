@@ -32,6 +32,7 @@ public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
 	private static String dbName = "TestRawCombinedQueryGeoDB";
 	private static String [] fNames = {"TestRawCombinedQueryGeoDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+    private static int restPort =8011;
 
 @BeforeClass	public static void setUp() throws Exception 
 	{
@@ -39,7 +40,13 @@ public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
 	 setupJavaRESTServer(dbName, fNames[0],restServerName,8011);
 	  setupAppServicesGeoConstraint(dbName);
 	}
-	
+
+@After
+	public  void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
+	}
 
 @SuppressWarnings("deprecation")
 @Test	public void testRawCombinedQueryGeo() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
@@ -123,11 +130,11 @@ public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
 		String resultDoc = resultsHandle.get();
 		
 		System.out.println(resultDoc);
+
+		assertTrue("total document returned is incorrect", resultDoc.contains("total=\"1\""));
+		assertTrue("returned doc is incorrect", resultDoc.contains("uri=\"/geo-constraint/geo-constraint1.xml\""));
+		assertTrue("matched text is incorrect", resultDoc.contains("karl_kara 12,5 12,5 12 5"));
 		
-		assertTrue("total document returned is incorrect", resultDoc.contains("\"total\":1"));
-		assertTrue("returned doc is incorrect", resultDoc.contains("\"uri\":\"/geo-constraint/geo-constraint1.xml\""));
-		assertTrue("matched text is incorrect", resultDoc.contains("\"match-text\":[\"karl_kara 12,5 12,5 12 5\"]"));
-			
 		// release client
 		client.release();		
 	}
@@ -172,8 +179,8 @@ public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
 		
 		System.out.println(resultDoc);
 
-		assertTrue("total document returned is incorrect", resultDoc.contains("\"total\":1"));
-		assertTrue("returned doc is incorrect", resultDoc.contains("\"uri\":\"/geo-constraint/geo-constraint20.xml\""));	
+		assertTrue("total document returned is incorrect", resultDoc.contains("total=\"1\""));
+		assertTrue("returned doc is incorrect", resultDoc.contains("uri=\"/geo-constraint/geo-constraint20.xml\""));	
 			
 		// release client
 		client.release();		

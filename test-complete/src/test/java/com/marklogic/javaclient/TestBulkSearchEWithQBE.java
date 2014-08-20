@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -39,9 +40,12 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
+
+
 
 
 
@@ -60,23 +64,26 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
-		setupAppServicesConstraint(dbName);
-		createRESTUserWithPermissions("usr1", "password",getPermissionNode("flexrep-eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
+		//		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		//		setupAppServicesConstraint(dbName);
+		//		createRESTUserWithPermissions("usr1", "password",getPermissionNode("flexrep-eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
-		deleteRESTUser("usr1");
+		//		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		//		deleteRESTUser("usr1");
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		//	System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+			System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		// create new connection for each test below
 		client = DatabaseClientFactory.newClient("localhost", restPort, "usr1", "password", Authentication.DIGEST);
+//		loadTxtDocuments();
+//		loadXMLDocuments();
+//		loadJSONDocuments();
 	}
 
 	@After
@@ -100,8 +107,11 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 		DocumentWriteSet writeset =docMgr.newWriteSet();
 		for(int i =0;i<102;i++){
-
-			writeset.add(DIRECTORY+"foo"+i+".xml", new DOMHandle(getDocumentContent("This is so foo with a bar "+i)));
+			Document doc = this.getDocumentContent("This is so foo with a bar "+i);
+			Element childElement = doc.createElement("author");
+			childElement.appendChild(doc.createTextNode("rhiea"));
+			doc.getElementsByTagName("foo").item(0).appendChild(childElement);
+			writeset.add(DIRECTORY+"foo"+i+".xml", new DOMHandle(doc));
 
 			if(count%BATCH_SIZE == 0){
 				docMgr.write(writeset);
@@ -129,7 +139,6 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 			docMgr.write(writeset);
 		}
 	}
-
 	public void loadJSONDocuments() throws JsonProcessingException, IOException{
 		int count=1;	 
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
@@ -138,7 +147,7 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 		HashMap<String,String> map= new HashMap<String,String>();
 
 		for(int i =0;i<102;i++){
-			JsonNode jn = new ObjectMapper().readTree("{\"animal\":\"dog"+i+"\", \"says\":\"woof\"}");
+			JsonNode jn = new ObjectMapper().readTree("{\"animal\":\"dog "+i+"\", \"says\":\"woof\"}");
 			JacksonHandle jh = new JacksonHandle();
 			jh.set(jn);
 			writeset.add(DIRECTORY+"dog"+i+".json",jh);
@@ -157,27 +166,24 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 	@Test
 	public void testBulkSearchQBEWithXMLResponseFormat() throws IOException, ParserConfigurationException, SAXException, TransformerException, XpathException {
 		int count;
-		loadTxtDocuments();
-		loadXMLDocuments();
-		loadJSONDocuments();
 		//Creating a xml document manager for bulk search
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 		//using QBE for query definition and set the search criteria
-		
+
 		QueryManager queryMgr = client.newQueryManager();
-        String queryAsString = 
-                "<q:qbe xmlns:q=\"http://marklogic.com/appservices/querybyexample\"><q:query><foo><q:word>foo</q:word></foo></q:query></q:qbe>";
-        RawQueryByExampleDefinition qd = queryMgr.newRawQueryByExampleDefinition(new StringHandle(queryAsString));
-        
+		String queryAsString = 
+				"<q:qbe xmlns:q=\"http://marklogic.com/appservices/querybyexample\"><q:query><foo><q:word>foo</q:word></foo></q:query></q:qbe>";
+		RawQueryByExampleDefinition qd = queryMgr.newRawQueryByExampleDefinition(new StringHandle(queryAsString));
+
 		// set  document manager level settings for search response
 		docMgr.setPageLength(25);
 		docMgr.setSearchView(QueryView.RESULTS);
 		docMgr.setResponseFormat(Format.XML);
-		
+
 		// Search for documents where content has bar and get first result record, get search handle on it,Use DOMHandle to read results
 		DOMHandle dh = new DOMHandle();
 		DocumentPage page;
-			
+
 		long pageNo=1;
 		do{
 			count=0;
@@ -190,10 +196,10 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 				DocumentRecord rec = page.next();
 				rec.getFormat();
 				validateRecord(rec,Format.XML);
-				
+
 				count++;
 			}
-			
+
 			Document resultDoc = dh.get();
 			assertXpathEvaluatesTo("xml", "string(//*[local-name()='result'][last()]//@*[local-name()='format'])", resultDoc);
 			assertEquals("document count", page.size(),count);
@@ -204,31 +210,29 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 		assertTrue("Page has previous page ?",page.hasPreviousPage());
 		assertEquals("page size", 25,page.getPageSize());
 		assertEquals("document count", 102,page.getTotalSize());
-		
+
 	}
 	@Test
 	public void testBulkSearchQBEWithJSONResponseFormat() throws IOException, ParserConfigurationException, SAXException, TransformerException {
 		int count;
-		loadTxtDocuments();
-		loadXMLDocuments();
-		loadJSONDocuments();
+
 		//Creating a xml document manager for bulk search
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 		//using QBE for query definition and set the search criteria
-		
+
 		QueryManager queryMgr = client.newQueryManager();
 		String queryAsString = "{\"$query\": { \"says\": {\"$word\":\"woof\",\"$exact\": false}}}";
-        RawQueryByExampleDefinition qd = queryMgr.newRawQueryByExampleDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
-        
+		RawQueryByExampleDefinition qd = queryMgr.newRawQueryByExampleDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
+
 		// set  document manager level settings for search response
 		docMgr.setPageLength(25);
 		docMgr.setSearchView(QueryView.RESULTS);
 		docMgr.setResponseFormat(Format.JSON);
-		
+
 		// Search for documents where content has bar and get first result record, get search handle on it,Use DOMHandle to read results
 		JacksonHandle sh = new JacksonHandle();
 		DocumentPage page;
-			
+
 		long pageNo=1;
 		do{
 			count=0;
@@ -249,12 +253,125 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 			//			assertEquals("Page Number #",pageNo,page.getPageNumber());
 			pageNo = pageNo + page.getPageSize();
 		}while(!page.isLastPage() &&  page.hasContent() );
-		
+
 		assertEquals("page count is  ",5,page.getTotalPages());
 		assertTrue("Page has previous page ?",page.hasPreviousPage());
 		assertEquals("page size", 25,page.getPageSize());
 		assertEquals("document count", 102,page.getTotalSize());
-		
+
+	}
+	@Test
+	public void testBulkSearchQBECombinedQuery() throws IOException, ParserConfigurationException, SAXException, TransformerException, XpathException {
+		int count;
+
+		//Creating a xml document manager for bulk search
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+		//using QBE for query definition and set the search criteria
+
+		QueryManager queryMgr = client.newQueryManager();
+
+		String queryAsString = "<search:search "+
+				"xmlns:search='http://marklogic.com/appservices/search'>"+
+				"<search:query>"+
+				"<search:term-query>"+
+				"<search:text>bar</search:text>"+
+				"</search:term-query>"+
+				"<search:value-constraint-query>"+
+				"<search:constraint-name>authorName</search:constraint-name>"+
+				"<search:text>rhiea</search:text>"+
+				"</search:value-constraint-query>"+
+				"</search:query>"+
+				"<search:options>"+
+				"<search:constraint name='authorName'>"+
+				"<search:value>"+
+				"<search:element name='author' ns=''/>"+
+				"</search:value>"+
+				"</search:constraint>"+
+				"</search:options>"+
+				"</search:search>";
+		RawCombinedQueryDefinition qd = queryMgr.newRawCombinedQueryDefinition(new StringHandle(queryAsString).withFormat(Format.XML));
+
+		// set  document manager level settings for search response
+		docMgr.setPageLength(25);
+		docMgr.setSearchView(QueryView.RESULTS);
+
+		// Search for documents where content has bar and get first result record, get search handle on it,Use DOMHandle to read results
+		DOMHandle dh = new DOMHandle();
+		DocumentPage page;
+
+		long pageNo=1;
+		do{
+			count=0;
+			page = docMgr.search(qd, pageNo,dh);
+			if(pageNo >1){ 
+				assertFalse("Is this first Page", page.isFirstPage());
+				assertTrue("Is page has previous page ?",page.hasPreviousPage());
+			}
+			while(page.hasNext()){
+				DocumentRecord rec = page.next();
+				validateRecord(rec,Format.XML);
+				count++;
+			}
+			Document resultDoc = dh.get();
+			assertXpathEvaluatesTo("xml", "string(//*[local-name()='result'][last()]//@*[local-name()='format'])", resultDoc);
+			assertEquals("document count", page.size(),count);
+			//			assertEquals("Page Number #",pageNo,page.getPageNumber());
+			pageNo = pageNo + page.getPageSize();
+		}while(!page.isLastPage() &&  page.hasContent() );
+
+		assertEquals("page count is  ",5,page.getTotalPages());
+		assertTrue("Page has previous page ?",page.hasPreviousPage());
+		assertEquals("page size", 25,page.getPageSize());
+		assertEquals("document count", 102,page.getTotalSize());
+
+	}
+	@Test
+	public void testBulkSearchQBEWithJSONCombinedQuery() throws IOException, ParserConfigurationException, SAXException, TransformerException {
+		int count;
+
+		//Creating a xml document manager for bulk search
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+		//using QBE for query definition and set the search criteria
+
+		QueryManager queryMgr = client.newQueryManager();
+		String queryAsString = "{\"search\":{\"query\":{\"says\":{\"word\":\"woof\",\"exact\":true}}}}";
+		//RawQueryByExampleDefinition qd = queryMgr.newRawQueryByExampleDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
+		RawCombinedQueryDefinition qd = queryMgr.newRawCombinedQueryDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
+		// set  document manager level settings for search response
+		docMgr.setPageLength(25);
+		docMgr.setSearchView(QueryView.RESULTS);
+		docMgr.setResponseFormat(Format.JSON);
+
+		// Search for documents where content has bar and get first result record, get search handle on it,Use DOMHandle to read results
+		JacksonHandle sh = new JacksonHandle();
+		DocumentPage page;
+
+		long pageNo=1;
+		do{
+			count=0;
+			page = docMgr.search(qd, pageNo,sh);
+			if(pageNo >1){ 
+				assertFalse("Is this first Page", page.isFirstPage());
+				assertTrue("Is page has previous page ?",page.hasPreviousPage());
+			}
+			while(page.hasNext()){
+				DocumentRecord rec = page.next();
+				rec.getFormat();
+				System.out.println(rec.getContent(new StringHandle()).get().toString());
+				validateRecord(rec,Format.JSON);
+				count++;
+			}
+			assertTrue("Page start in results and on page",sh.get().get("start").asLong() == page.getStart());
+			assertEquals("document count", page.size(),count);
+			//			assertEquals("Page Number #",pageNo,page.getPageNumber());
+			pageNo = pageNo + page.getPageSize();
+		}while(!page.isLastPage() &&  page.hasContent() );
+
+		assertEquals("page count is  ",5,page.getTotalPages());
+		assertTrue("Page has previous page ?",page.hasPreviousPage());
+		assertEquals("page size", 25,page.getPageSize());
+		assertEquals("document count", 102,page.getTotalSize());
+
 	}
 
 }

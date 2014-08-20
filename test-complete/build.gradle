@@ -2,6 +2,14 @@
 /* plugins */
 apply plugin: 'java'
 
+test {
+  tasks.withType(Compile) {
+            options.encoding = 'UTF-8'
+  }
+
+  exclude 'com/marklogic/javaclient/TestSSLConnection.class'
+  exclude 'com/marklogic/javaclient/TestBug18993.class'
+}
 
 /* The code repositories to consult for dependencies */
 repositories {
@@ -14,3 +22,4 @@ dependencies {
 	compile('xmlunit:xmlunit:1.5')
 	compile('junit:junit:4.11')
 }
+

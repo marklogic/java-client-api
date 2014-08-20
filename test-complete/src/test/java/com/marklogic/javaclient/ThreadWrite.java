@@ -17,7 +17,7 @@ public class ThreadWrite extends Thread{
     {	
     	String filename = "flipper.xml";
     	
-        DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8013, "rest-writer", "x", Authentication.DIGEST);
+        DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
         
         File file = new File("src/test/java/com/marklogic/javaclient/data/" + filename);
         

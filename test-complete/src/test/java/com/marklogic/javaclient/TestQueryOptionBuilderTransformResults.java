@@ -23,12 +23,14 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
+
 import org.junit.*;
 public class TestQueryOptionBuilderTransformResults extends BasicJavaClientREST {
 
 	private static String dbName = "TestQueryOptionBuilderTransformResultsDB";
 	private static String [] fNames = {"TestQueryOptionBuilderTransformResultsDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort = 8011;
 
 @BeforeClass	public static void setUp() throws Exception 
 	{
@@ -36,7 +38,13 @@ public class TestQueryOptionBuilderTransformResults extends BasicJavaClientREST 
 	  setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	  setupAppServicesConstraint(dbName);
 	}
-	
+
+@After
+	public  void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
+	}
 
 @SuppressWarnings("deprecation")
 @Test	public void testTransformResuleWithSnippetFunction() throws FileNotFoundException, XpathException, TransformerException

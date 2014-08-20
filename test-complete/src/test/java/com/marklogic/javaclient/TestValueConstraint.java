@@ -18,6 +18,7 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
+
 import org.junit.*;
 public class TestValueConstraint extends BasicJavaClientREST {
 	
@@ -26,11 +27,18 @@ public class TestValueConstraint extends BasicJavaClientREST {
 	private static String dbName = "ValueConstraintDB";
 	private static String [] fNames = {"ValueConstraintDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
+	private static int restPort = 8011;
 	
 @BeforeClass	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
 		setupJavaRESTServer(dbName, fNames[0],  restServerName,8011);
+	}
+@After
+	public  void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
 	}
 	
 @SuppressWarnings("deprecation")
