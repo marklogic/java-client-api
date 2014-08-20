@@ -119,7 +119,7 @@ public class TestServerAssignedDocumentURI extends BasicJavaClientREST {
 		
 		assertTrue("document is not created", content.contains("Flipper"));
 		}catch(ResourceNotFoundException e){
-			System.out.println("Because of Special Characters in uri'/Ã©â?¡Å?/Ã©â?¡Å?/10455375835218157514.xml'it is throwing exception");
+			System.out.println("Because of Special Characters in uri, it is throwing exception");
 		}
 	    // release the client
 	    client.release();
