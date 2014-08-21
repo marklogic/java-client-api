@@ -8,8 +8,6 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.Reader;
-import java.io.StringReader;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,11 +23,9 @@ import org.w3c.dom.Document;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.DocumentWriteSet;
@@ -41,19 +37,15 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.JacksonParserHandle;
-import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
-import com.marklogic.client.FailedRequestException;
 /**
  * @author skottam
  * This test is test the DocumentWriteSet function 
@@ -140,21 +132,24 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 	    assertTrue("Document properties count", result);
 	    
 	    // Permissions
-	    String expectedPermissions1 = "size:4|flexrep-eval:[READ]|rest-reader:[READ]|app-user:[UPDATE, READ]|rest-writer:[UPDATE]|";
-	    String expectedPermissions2 = "size:4|flexrep-eval:[READ]|rest-reader:[READ]|app-user:[READ, UPDATE]|rest-writer:[UPDATE]|";
 	    String actualPermissions = getDocumentPermissionsString(permissions);
 	    System.out.println(actualPermissions);
-	    if(actualPermissions.contains("[UPDATE, READ]"))
-	    	assertEquals("Document permissions difference", expectedPermissions1, actualPermissions);
-	    else if(actualPermissions.contains("[READ, UPDATE]"))
-	    	assertEquals("Document permissions difference", expectedPermissions2, actualPermissions);
-	    else
-	    	assertEquals("Document permissions difference", "wrong", actualPermissions);
+	    
+	   	assertTrue("Document permissions difference in size value", actualPermissions.contains("size:4"));
+	   	assertTrue("Document permissions difference in flexrep-eval permission", actualPermissions.contains("flexrep-eval:[READ]"));
+	   	assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
+	   	assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
+	   	assertTrue("Document permissions difference in app-user permissions", 
+	   			(actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions.contains("app-user:[READ, UPDATE]")));
+	    	  
 	    
 	    // Collections 
-	    String expectedCollections = "size:2|my-collection1|my-collection2|";
 	    String actualCollections = getDocumentCollectionsString(collections);
-	    assertEquals("Document collections difference", expectedCollections, actualCollections);
+	    System.out.println(collections);
+	    
+	    assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
+	   	assertTrue("my-collection1 not found", actualCollections.contains("my-collection1"));
+	   	assertTrue("my-collection2 not found", actualCollections.contains("my-collection2"));	  
 	    
 	}
 	public void validateDefaultMetadata(DocumentMetadataHandle mh){
@@ -165,22 +160,23 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 	    DocumentCollections collections = mh.getCollections();
 	    
 	    // Permissions
-	    
-	    String expectedPermissions1 = "size:3|flexrep-eval:[READ]|rest-reader:[READ]|rest-writer:[UPDATE]|";
 	    String actualPermissions = getDocumentPermissionsString(permissions);
-	   	assertEquals("Document permissions difference", expectedPermissions1, actualPermissions);
+	    System.out.println(actualPermissions);
+	    
+		assertTrue("Document permissions difference in size value", actualPermissions.contains("size:3"));
+		assertTrue("Document permissions difference in flexrep-eval permission", actualPermissions.contains("flexrep-eval:[READ]"));
+		assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
+		assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
 	    
 	    // Collections 
-	    String expectedCollections = "size:1|http://permission-collections/|";
 	    String actualCollections = getDocumentCollectionsString(collections);
-	    
-	    assertEquals("Document collections difference", expectedCollections, actualCollections);
-//	    System.out.println(actualPermissions);
+	    assertTrue("Document collections difference in size value", actualCollections.contains("size:1"));
+	   	assertTrue("my-collection1 not found", actualCollections.contains("http://permission-collections/"));
 	}
 	@Test  
 	public void testWriteMultipleTextDocWithXMLMetadata() throws Exception
 	  {
-		DocumentMetadataHandle mh1,mh2;
+		DocumentMetadataHandle mh2;
 		 String docId[] = {"/foo/test/myFoo1.txt","/foo/test/myFoo2.txt","/foo/test/myFoo3.txt",
 				 			"/foo/test/myFoo4.txt","/foo/test/myFoo5.txt","/foo/test/myFoo6.txt",
 				 			"/foo/test/myFoo7.txt","/foo/test/myFoo8.txt","/foo/test/myFoo9.txt"};
@@ -466,7 +462,6 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 	     SourceHandle sh = new SourceHandle();
 	     sh.set(ds);
 	     sh.setFormat(Format.XML);
-	     DocumentMetadataHandle mh2 = new DocumentMetadataHandle();
 	     writeset.add("/generic/foo.xml", new JacksonHandle().with(constructJSONCollectionMetadata("http://Json-Uri-generic-collections/")), sh); //This document should over write the system default and default collection list and get document specific collection
 	     
 		 docMgr.write(writeset);
@@ -488,8 +483,14 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 			 docMgr.readMetadata(rec.getUri(), mh1);
 			// until issue 24 is fixed
 			 //this.validateDefaultMetadata(mh1);
-			 assertEquals("default quality",0,mh1.getQuality());
-			 assertEquals("default permissions","{flexrep-eval=[READ], rest-reader=[READ], rest-writer=[UPDATE]}",mh1.getPermissions().toString());
+			 assertEquals("default quality", 0, mh1.getQuality());
+			 
+             String actualPermissions = mh1.getPermissions().toString();
+     	     System.out.println(actualPermissions);
+		   	assertTrue("Default permissions must contain flexrep-eval=[READ]", actualPermissions.contains("flexrep-eval=[READ]"));
+		   	assertTrue("Default permissions must contain rest-reader=[READ]", actualPermissions.contains("rest-reader=[READ]"));
+		   	assertTrue("Default permissions must contain rest-writer=[UPDATE]", actualPermissions.contains("rest-writer=[UPDATE]"));
+			 
 			 page = docMgr.read("/generic/foo.xml");
 			 rec = page.next();
 			 docMgr.readMetadata(rec.getUri(), mh1);
