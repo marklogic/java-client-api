@@ -6,7 +6,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Scanner;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -31,9 +30,6 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.JAXBHandle;
 import com.marklogic.client.io.SourceHandle;
 
 public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
