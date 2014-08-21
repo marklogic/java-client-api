@@ -34,23 +34,12 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
-import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
-import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
-
-
-
-
-
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 	private static final int BATCH_SIZE=100;
