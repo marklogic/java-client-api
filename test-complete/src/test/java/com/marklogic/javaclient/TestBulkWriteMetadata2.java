@@ -145,7 +145,7 @@ public class TestBulkWriteMetadata2 extends  BasicJavaClientREST{
 	    	    	    
 	    // Collections 
 	    String actualCollections = getDocumentCollectionsString(collections);	    
-	    assertTrue("Document permissions difference in size value", actualCollections.contains("size:2"));
+	    assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
 	   	assertTrue("my-collection1 not found", actualCollections.contains("my-collection1"));
 	   	assertTrue("my-collection2 not found", actualCollections.contains("my-collection2"));	   		   
 	}
