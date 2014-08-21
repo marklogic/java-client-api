@@ -18,7 +18,6 @@ import org.xml.sax.SAXException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
@@ -40,10 +39,8 @@ import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
-import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
@@ -145,7 +142,6 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 		//Creating a txt document manager for bulk search
 		TextDocumentManager docMgr = client.newTextDocumentManager();
 		//using QueryManger for query definition and set the search criteria
-		QueryManager queryMgr = client.newQueryManager();
 		StructuredQueryBuilder qb = new StructuredQueryBuilder();
 		StructuredQueryDefinition qd = qb.and(qb.term("foo","bar"));
 
@@ -207,14 +203,13 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 	//This test has set response to JSON and pass StringHandle with format as JSON, expectint it to work, logged an issue 82
 	@Test
 	public void testBulkSearchSQDwithResponseFormatandStringHandle() throws Exception{
-		int count =1;
 		loadJSONDocuments();
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 
 		QueryManager queryMgr = client.newQueryManager();
 		StructuredQueryBuilder qb = new StructuredQueryBuilder();
 		StructuredQueryDefinition qd = qb.and(qb.term("dog1","dog11"));
-		SearchHandle r = queryMgr.search(qd, new SearchHandle());
+		queryMgr.search(qd, new SearchHandle());
 
 		docMgr.setResponseFormat(Format.JSON);
 		docMgr.setSearchView(QueryView.METADATA);
@@ -229,7 +224,6 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 			docMgr.readMetadata(rec.getUri(),mh);
 			assertTrue("Records has permissions? ",mh.getPermissions().containsKey("flexrep-eval"));
 			assertTrue("Record has collections ?",mh.getCollections().isEmpty());
-			count++;
 		}
 		assertFalse("Search handle contains",results.get().isEmpty());
 
@@ -249,7 +243,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 
 		docMgr.setSearchView(QueryView.FACETS);
 		JacksonHandle jh = new JacksonHandle();
-		DocumentPage page= docMgr.search(qd, 1,jh);
+		docMgr.search(qd, 1,jh);
 
 		//		System.out.println(jh.get().toString());
 		assertTrue("Searh response has entry for facets",jh.get().has("facets"));
@@ -257,21 +251,21 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 		assertTrue("Searh response has entry for facets",jh.get().has("metrics"));
 
 		docMgr.setSearchView(QueryView.RESULTS);
-		page= docMgr.search(qd, 1,jh);
+		docMgr.search(qd, 1,jh);
 
 		assertFalse("Searh response has entry for facets",jh.get().has("facets"));
 		assertTrue("Searh response has entry for facets",jh.get().has("results"));
 		assertTrue("Searh response has entry for facets",jh.get().has("metrics"));//Issue 84 is tracking this
 
 		docMgr.setSearchView(QueryView.METADATA);
-		page= docMgr.search(qd, 1,jh);
+		docMgr.search(qd, 1,jh);
 
 		assertFalse("Searh response has entry for facets",jh.get().has("facets"));
 		assertTrue("Searh response has entry for facets",jh.get().has("results"));
 		assertTrue("Searh response has entry for facets",jh.get().has("metrics"));
 
 		docMgr.setSearchView(QueryView.ALL);
-		page= docMgr.search(qd, 1,jh);
+		docMgr.search(qd, 1,jh);
 
 		assertTrue("Searh response has entry for facets",jh.get().has("facets"));
 		assertTrue("Searh response has entry for facets",jh.get().has("results"));
@@ -288,7 +282,6 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 	public void testBulkSearchSQDwithTransactionsandDOMHandle() throws Exception{
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 		DOMHandle results = new DOMHandle();
-		QueryManager queryMgr = client.newQueryManager();
 		StructuredQueryBuilder qb = new StructuredQueryBuilder();
 		StructuredQueryDefinition qd = qb.and(qb.term("much","thought"));
 		Transaction t= client.openTransaction();
@@ -324,7 +317,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 		}catch(Exception e){ throw e;}
 		finally{t.rollback();}
 
-		DocumentPage page= docMgr.search(qd, 1,results);
+		docMgr.search(qd, 1,results);
 		assertEquals("Total search results after rollback are ","0",results.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total").getNodeValue());
 
 	}

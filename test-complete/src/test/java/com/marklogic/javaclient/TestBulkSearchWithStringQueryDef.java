@@ -220,7 +220,7 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST{
 		qd.setCriteria("bar");
 		docMgr.setResponseFormat(Format.JSON);
 		SearchHandle results = new SearchHandle();
-		DocumentPage page= docMgr.search(qd, 1,results);
+		docMgr.search(qd, 1,results);
 		MatchDocumentSummary[] summaries = results.getMatchResults();
 		for (MatchDocumentSummary summary : summaries ) {
 			MatchLocation[] locations = summary.getMatchLocations();
@@ -234,7 +234,6 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST{
 	//This test has set response to JSON and pass StringHandle with format as JSON, expectint it to work, logged an issue 82
 	@Test
 	public void testBulkSearchSQDwithResponseFormatandStringHandle() throws Exception{
-		int count =1;
 		loadTxtDocuments();
 		loadJSONDocuments();
 		TextDocumentManager docMgr = client.newTextDocumentManager();
@@ -257,7 +256,6 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST{
 			docMgr.readMetadata(rec.getUri(),mh);
 			assertTrue("Records has permissions? ",mh.getPermissions().containsKey("flexrep-eval"));
 			assertTrue("Record has collections ?",mh.getCollections().isEmpty());
-			count++;
 		}
 		assertFalse("Search handle contains",results.get().isEmpty());
 
@@ -278,7 +276,7 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST{
 
 		docMgr.setSearchView(QueryView.FACETS);
 		JacksonHandle jh = new JacksonHandle();
-		DocumentPage page= docMgr.search(qd, 1,jh);
+		docMgr.search(qd, 1,jh);
 
 		//		System.out.println(jh.get().toString());
 		assertTrue("Searh response has entry for facets",jh.get().has("facets"));
@@ -286,21 +284,21 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST{
 		assertTrue("Searh response has entry for facets",jh.get().has("metrics"));
 
 		docMgr.setSearchView(QueryView.RESULTS);
-		page= docMgr.search(qd, 1,jh);
+		docMgr.search(qd, 1,jh);
 
 		assertFalse("Searh response has entry for facets",jh.get().has("facets"));
 		assertTrue("Searh response has entry for facets",jh.get().has("results"));
 		assertTrue("Searh response has entry for facets",jh.get().has("metrics"));//Issue 84 is tracking this
 
 		docMgr.setSearchView(QueryView.METADATA);
-		page= docMgr.search(qd, 1,jh);
+		docMgr.search(qd, 1,jh);
 
 		assertFalse("Searh response has entry for facets",jh.get().has("facets"));
 		assertTrue("Searh response has entry for facets",jh.get().has("results"));
 		assertTrue("Searh response has entry for facets",jh.get().has("metrics"));
 
 		docMgr.setSearchView(QueryView.ALL);
-		page= docMgr.search(qd, 1,jh);
+		docMgr.search(qd, 1,jh);
 
 		assertTrue("Searh response has entry for facets",jh.get().has("facets"));
 		assertTrue("Searh response has entry for facets",jh.get().has("results"));
