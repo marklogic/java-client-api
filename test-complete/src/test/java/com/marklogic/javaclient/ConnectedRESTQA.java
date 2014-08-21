@@ -827,6 +827,9 @@ public abstract class ConnectedRESTQA {
 	public static void setMaintainLastModified(String dbName,boolean opt) throws Exception{
 		setDatabaseProperties(dbName,"maintain-last-modified",opt);
 	}
+	public static void setAutomaticDirectoryCreation(String dbName, String opt) throws Exception{
+		setDatabaseProperties(dbName,"directory-creation",opt);
+	}
 	/*
 	 * This function constructs a range element index with default collation,range-value-positions and invalid values
 	 * 

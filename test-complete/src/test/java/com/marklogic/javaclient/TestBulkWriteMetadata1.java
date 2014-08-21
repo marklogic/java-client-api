@@ -5,10 +5,8 @@ package com.marklogic.javaclient;
 
 import static org.junit.Assert.*;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.Calendar;
@@ -128,38 +126,39 @@ public class TestBulkWriteMetadata1  extends BasicJavaClientREST {
 	    DocumentCollections collections = mh.getCollections();
 	    
 	    // Properties
-	    String expectedProperties = "size:5|reviewed:true|myInteger:10|myDecimal:34.56678|myCalendar:2014|myString:foo|";
 	    String actualProperties = getDocumentPropertiesString(properties);
-	    assertEquals("Document properties difference", expectedProperties, actualProperties);
+	    
+	    assertTrue("Document properties difference in size value", actualProperties.contains("size:5"));
+	   	assertTrue("Document property reviewed not found or not correct", actualProperties.contains("reviewed:true"));
+	   	assertTrue("Document property myInteger not found or not correct", actualProperties.contains("myInteger:10"));
+	   	assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("myDecimal:34.56678"));
+	   	assertTrue("Document property myCalendar not found or not correct", actualProperties.contains("myCalendar:2014"));
+	   	assertTrue("Document property myString not found or not correct", actualProperties.contains("myString:foo"));
 	    
 	    // Permissions
-	    String expectedPermissions1 = "size:3|rest-reader:[READ]|app-user:[UPDATE, READ]|rest-writer:[UPDATE]|";
-	    String expectedPermissions2 = "size:3|rest-reader:[READ]|app-user:[READ, UPDATE]|rest-writer:[UPDATE]|";
 	    String actualPermissions = getDocumentPermissionsString(permissions);
-	    if(actualPermissions.contains("[UPDATE, READ]"))
-	    	assertEquals("Document permissions difference", expectedPermissions1, actualPermissions);
-	    else if(actualPermissions.contains("[READ, UPDATE]"))
-	    	assertEquals("Document permissions difference", expectedPermissions2, actualPermissions);
-	    else
-	    	assertEquals("Document permissions difference", "wrong", actualPermissions);
-	    
+	   	assertTrue("Document permissions difference in size value", actualPermissions.contains("size:3"));
+	   	assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
+	   	assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
+	   	assertTrue("Document permissions difference in app-user permissions", 
+	   			(actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions.contains("app-user:[READ, UPDATE]")));
+	    	  	    
 	    // Collections 
-	    String expectedCollections = "size:2|my-collection1|my-collection2|";
 	    String actualCollections = getDocumentCollectionsString(collections);
-	    assertEquals("Document collections difference", expectedCollections, actualCollections);
-	    
+	    assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
+	   	assertTrue("my-collection1 not found", actualCollections.contains("my-collection1"));
+	   	assertTrue("my-collection2 not found", actualCollections.contains("my-collection2"));	    
 	}
 
 	@Test  
 	public void testWriteMultipleTextDocWithDefaultMetadata() 
 	  {
-		DocumentMetadataHandle mh1,mh2;
 		 String docId[] = {"/foo/test/myFoo1.txt","/foo/test/myFoo2.txt","/foo/test/myFoo3.txt"};
 	    
 	    TextDocumentManager docMgr = client.newTextDocumentManager();
 	         
 	    DocumentWriteSet writeset =docMgr.newWriteSet();
-	 // put metadata
+	    // put metadata
 	    DocumentMetadataHandle mh = setMetadata();
 	    
 	    writeset.addDefault(mh);

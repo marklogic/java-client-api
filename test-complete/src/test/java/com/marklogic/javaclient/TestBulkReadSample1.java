@@ -13,13 +13,9 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.GenericDocumentManager;
-import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.document.DocumentRecord;
-import com.marklogic.client.extra.jdom.*;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JAXBHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.DOMHandle;
 
@@ -27,16 +23,9 @@ import com.marklogic.client.io.JacksonHandle;
 
 
 import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.FailedRequestException;
-
-
-
-import javax.xml.transform.dom.DOMSource;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.w3c.dom.Document;
 import org.junit.*;
 
 import static org.junit.Assert.*;

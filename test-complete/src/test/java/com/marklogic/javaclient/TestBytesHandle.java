@@ -16,7 +16,6 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.InputStreamHandle;
 import org.junit.*;
 public class TestBytesHandle extends BasicJavaClientREST{
 
@@ -29,7 +28,7 @@ public static void setUp() throws Exception{
 	System.out.println("In setup");
 	setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	}
-@SuppressWarnings("null")
+
 @Test
 public void testXmlCRUD() throws IOException , SAXException, ParserConfigurationException{
 
@@ -82,7 +81,7 @@ public void testXmlCRUD() throws IOException , SAXException, ParserConfiguration
 	String exception = "";
     try
     {
-    	BytesHandle deleteHandle = readDocumentUsingBytesHandle(client, uri+filename, "XML");
+    	readDocumentUsingBytesHandle(client, uri+filename, "XML");
     } catch (Exception e) { exception = e.toString(); }
     
     String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-xml-domhandle/xml-original-test.xml";
@@ -95,7 +94,6 @@ public void testXmlCRUD() throws IOException , SAXException, ParserConfiguration
     
     }
 
-@SuppressWarnings("deprecation")
 @Test
 public void testTextCRUD() throws IOException, ParserConfigurationException, SAXException{
 	String filename = "text-original.txt";
@@ -143,7 +141,7 @@ public void testTextCRUD() throws IOException, ParserConfigurationException, SAX
     String exception = "";
     try
     {
-    	InputStreamHandle deleteHandle = readDocumentUsingInputStreamHandle(client, uri + filename, "Text");
+    	readDocumentUsingInputStreamHandle(client, uri + filename, "Text");
     } catch (Exception e) { exception = e.toString(); }
     
     String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-text-Byteshandle/text-original.txt";
@@ -154,7 +152,6 @@ public void testTextCRUD() throws IOException, ParserConfigurationException, SAX
 
 }
 
-@SuppressWarnings("deprecation")
 @Test
 public void testJsonCRUD() throws IOException, ParserConfigurationException, SAXException{
 	String filename = "json-original.json";
@@ -206,7 +203,7 @@ public void testJsonCRUD() throws IOException, ParserConfigurationException, SAX
     String exception = "";
     try
     {
-    	InputStreamHandle deleteHandle = readDocumentUsingInputStreamHandle(client, uri + filename, "JSON");
+    	readDocumentUsingInputStreamHandle(client, uri + filename, "JSON");
     } catch (Exception e) { exception = e.toString(); }
     
     String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-json-Byteshandle/json-original.json";
@@ -216,7 +213,6 @@ public void testJsonCRUD() throws IOException, ParserConfigurationException, SAX
 	client.release();
 }
 
-@SuppressWarnings("deprecation")
 @Test
 public void testBinaryCRUD() throws IOException, ParserConfigurationException, SAXException{
 	String filename = "Pandakarlino.jpg";
@@ -267,7 +263,7 @@ public void testBinaryCRUD() throws IOException, ParserConfigurationException, S
     String exception = "";
     try
     {
-    	InputStreamHandle deleteHandle = readDocumentUsingInputStreamHandle(client, uri + filename, "Binary");
+    	readDocumentUsingInputStreamHandle(client, uri + filename, "Binary");
     } catch (Exception e) { exception = e.toString(); }
     
     String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-bin-Bytehandle/Pandakarlino.jpg";

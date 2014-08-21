@@ -8,11 +8,6 @@ import java.io.BufferedReader;
 import java.io.StringReader;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.namespace.QName;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -21,7 +16,6 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.GenericDocumentManager;
-import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JAXBHandle;
@@ -259,9 +253,9 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 		 DocumentWriteSet writeset =docMgr.newWriteSet();
 //		 JAXBHandle contentHandle = new JAXBHandle(context);
 //		 contentHandle.set(product1);
-		 writeset.add(docId[0],new JAXBHandle(context).with(product1));
-		 writeset.add(docId[1],new JAXBHandle(context).with(product2));
-		 writeset.add(docId[2],new JAXBHandle(context).with(product3));
+		 writeset.add(docId[0],new JAXBHandle<Product>(context).with(product1));
+		 writeset.add(docId[1],new JAXBHandle<Product>(context).with(product2));
+		 writeset.add(docId[2],new JAXBHandle<Product>(context).with(product3));
 		  
 		 docMgr.write(writeset);
 		 

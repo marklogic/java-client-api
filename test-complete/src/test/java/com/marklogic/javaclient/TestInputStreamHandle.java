@@ -31,7 +31,7 @@ public class TestInputStreamHandle extends BasicJavaClientREST {
 		System.out.println("In setup");
 		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	}
-	@SuppressWarnings("deprecation")
+	
 	@Test
 	public void testXmlCRUD() throws IOException, SAXException, ParserConfigurationException
 	{	
@@ -90,7 +90,7 @@ public class TestInputStreamHandle extends BasicJavaClientREST {
 	    String exception = "";
 	    try
 	    {
-	    	InputStreamHandle deleteHandle = readDocumentUsingInputStreamHandle(client, uri + filename, "XML");
+	    	readDocumentUsingInputStreamHandle(client, uri + filename, "XML");
 	    } catch (Exception e) { exception = e.toString(); }
 	    
 	    String expectedException = "Could not read non-existent document";
@@ -101,7 +101,6 @@ public class TestInputStreamHandle extends BasicJavaClientREST {
 		client.release();
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testTextCRUD() throws IOException
 	{	
@@ -154,7 +153,7 @@ public class TestInputStreamHandle extends BasicJavaClientREST {
 	    String exception = "";
 	    try
 	    {
-	    	InputStreamHandle deleteHandle = readDocumentUsingInputStreamHandle(client, uri + filename, "Text");
+	    	readDocumentUsingInputStreamHandle(client, uri + filename, "Text");
 	    } catch (Exception e) { exception = e.toString(); }
 	    
 	    String expectedException = "Could not read non-existent document";
@@ -165,7 +164,6 @@ public class TestInputStreamHandle extends BasicJavaClientREST {
 		client.release();
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testJsonCRUD() throws IOException
 	{	
@@ -221,7 +219,7 @@ public class TestInputStreamHandle extends BasicJavaClientREST {
 	    String exception = "";
 	    try
 	    {
-	    	InputStreamHandle deleteHandle = readDocumentUsingInputStreamHandle(client, uri + filename, "JSON");
+	    	readDocumentUsingInputStreamHandle(client, uri + filename, "JSON");
 	    } catch (Exception e) { exception = e.toString(); }
 	    
 	    String expectedException = "Could not read non-existent document";
@@ -232,7 +230,6 @@ public class TestInputStreamHandle extends BasicJavaClientREST {
 		client.release();
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testBinaryCRUD() throws IOException
 	{	
@@ -285,7 +282,7 @@ public class TestInputStreamHandle extends BasicJavaClientREST {
 	    String exception = "";
 	    try
 	    {
-	    	InputStreamHandle deleteHandle = readDocumentUsingInputStreamHandle(client, uri + filename, "Binary");
+	    	readDocumentUsingInputStreamHandle(client, uri + filename, "Binary");
 	    } catch (Exception e) { exception = e.toString(); }
 	    
 	    String expectedException = "Could not read non-existent document";

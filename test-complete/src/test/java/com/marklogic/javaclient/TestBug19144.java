@@ -33,7 +33,6 @@ public class TestBug19144 extends BasicJavaClientREST {
 	  setupAppServicesConstraint(dbName);
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testBug19144WithJson() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -73,7 +72,6 @@ public class TestBug19144 extends BasicJavaClientREST {
 		client.release();		
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testBug19144WithXml() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	

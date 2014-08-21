@@ -12,22 +12,16 @@ import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.Tuple;
 import com.marklogic.client.query.ValuesDefinition;
 
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ServerConfigurationManager;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.TuplesHandle;
 import com.marklogic.client.io.ValuesHandle;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.junit.Assert.*;
 
 
@@ -51,7 +45,6 @@ public class TestBug21159 extends BasicJavaClientREST {
     	addRangeElementIndex(dbName, "string", "", "string", "http://marklogic.com/collation/");
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 public void testBug21159Tuples() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -102,7 +95,6 @@ public void testBug21159Tuples() throws IOException, ParserConfigurationExceptio
 		client.release();		
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 public void testBug21159Values() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 {	

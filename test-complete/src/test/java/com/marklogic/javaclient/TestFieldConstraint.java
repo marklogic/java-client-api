@@ -36,7 +36,6 @@ public class TestFieldConstraint extends BasicJavaClientREST {
 		System.out.println("Running clear script");
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testFieldConstraint() throws IOException
 	{
