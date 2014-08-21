@@ -31,7 +31,6 @@ public class TestBug19046 extends BasicJavaClientREST {
 	  setupAppServicesConstraint(dbName);
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testBug19046() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	

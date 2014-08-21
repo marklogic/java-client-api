@@ -48,7 +48,6 @@ public class TestConstraintCombination extends BasicJavaClientREST {
 		System.out.println("Running clear script");
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testConstraintCombination() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{	
@@ -109,7 +108,6 @@ public class TestConstraintCombination extends BasicJavaClientREST {
 		client.release();		
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testConstraintCombinationWordAndCollection() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{	
@@ -168,7 +166,6 @@ public class TestConstraintCombination extends BasicJavaClientREST {
 		client.release();		
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testConstraintCombinationFieldAndRange() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{	

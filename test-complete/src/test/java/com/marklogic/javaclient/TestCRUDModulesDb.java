@@ -18,7 +18,6 @@ import org.junit.*;
 public class TestCRUDModulesDb extends BasicJavaClientREST {
 
 	private static String dbName = "Modules";
-	private static String [] fNames = {"Modules"};
 	private static String restServerName = "REST-Java-Client-API-Server";
 @BeforeClass
 	public static void setUp() throws Exception 
@@ -152,7 +151,7 @@ public void testXQueryModuleCRUDBinaryFile() {
 		
 		try {
 			// read deleted module
-		String xqueryModuleAsString = libsMgr.read(Path, new StringHandle()).get();
+		    libsMgr.read(Path, new StringHandle()).get();
 		} catch (ResourceNotFoundException e) {
 			// pass;
 		}
@@ -226,7 +225,7 @@ public void testXQueryModuleCRUDBinaryFile() {
 		
 		try {
 			// read deleted module
-		 String xqueryModuleAsString = libsMgr.read(Path, new StringHandle()).get();
+		    libsMgr.read(Path, new StringHandle()).get();
 		} catch (ResourceNotFoundException e) {
 			// pass;
 		}

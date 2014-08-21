@@ -37,7 +37,7 @@ public  void testCleanUp() throws Exception
 	clearDB(8011);
 	System.out.println("Running clear script");
 }
-@SuppressWarnings("deprecation")
+
 @Test
 	public void testWithElementAndAttributeIndex() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{	
@@ -85,7 +85,6 @@ public  void testCleanUp() throws Exception
 		client.release();		
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testWithNormalWordQuery() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{	
@@ -131,7 +130,6 @@ public  void testCleanUp() throws Exception
 		client.release();		
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testWithTermOptionCaseInsensitive() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{	

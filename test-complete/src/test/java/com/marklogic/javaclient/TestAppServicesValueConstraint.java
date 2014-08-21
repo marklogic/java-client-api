@@ -172,7 +172,6 @@ public class TestAppServicesValueConstraint extends BasicJavaClientREST {
 		client.release();		
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test	
 	public void testWithIndexSettingsAndNS() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{	

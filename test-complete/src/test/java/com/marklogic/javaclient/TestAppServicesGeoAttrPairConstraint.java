@@ -77,7 +77,6 @@ public  void testCleanUp() throws Exception
 		client.release();		
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testPointPositiveLatNegativeLang() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
