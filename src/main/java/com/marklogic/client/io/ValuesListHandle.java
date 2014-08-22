@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.io;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -30,9 +31,9 @@ import org.slf4j.LoggerFactory;
 import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.impl.ValuesListBuilder;
-import com.marklogic.client.query.ValuesListResults;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.ValuesListReadHandle;
+import com.marklogic.client.query.ValuesListResults;
 
 public class ValuesListHandle
 	extends BaseHandle<InputStream, OperationNotSupported>
@@ -123,7 +124,14 @@ public class ValuesListHandle
         } catch (JAXBException e) {
 			logger.error("Failed to unmarshall values list",e);
 			throw new MarkLogicIOException(e);
-        }
+        } finally {
+			try {
+				content.close();
+			} catch (IOException e) {
+				// ignore.
+			}
+		}
+
     }
 
     /**

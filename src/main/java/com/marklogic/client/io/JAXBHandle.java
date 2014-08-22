@@ -170,6 +170,12 @@ public class JAXBHandle
 		} catch (UnsupportedEncodingException e) {
 			logger.error("Failed to unmarshall object read from database document",e);
 			throw new MarkLogicIOException(e);
+		}  finally {
+			try {
+				content.close();
+			} catch (IOException e) {
+				// ignore.
+			}
 		}
 	}
     @Override

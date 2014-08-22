@@ -1037,7 +1037,13 @@ public final class QueryOptionsHandle
         } catch (UnsupportedEncodingException e) {
             // This can't actually happen...stupid checked exceptions
             throw new MarkLogicBindingException(e);
-        }
+        } finally {
+			try {
+				content.close();
+			} catch (IOException e) {
+				// ignore.
+			}
+		}
 	}
 	
 	protected OutputStreamSender sendContent() {
