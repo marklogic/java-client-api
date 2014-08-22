@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.io;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -24,19 +25,19 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import com.marklogic.client.query.AggregateResult;
-import com.marklogic.client.query.ValuesMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.query.Tuple;
 import com.marklogic.client.impl.TuplesBuilder;
-import com.marklogic.client.query.TuplesResults;
-import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.TuplesReadHandle;
+import com.marklogic.client.query.AggregateResult;
+import com.marklogic.client.query.Tuple;
+import com.marklogic.client.query.TuplesResults;
+import com.marklogic.client.query.ValuesDefinition;
+import com.marklogic.client.query.ValuesMetrics;
 
 /**
  * A TuplesHandle represents a set of tuples returned by a query on the server.
@@ -109,7 +110,13 @@ public class TuplesHandle
         } catch (JAXBException e) {
 			logger.error("Failed to unmarshall tuples",e);
 			throw new MarkLogicIOException(e);
-        }
+        } finally {
+			try {
+				content.close();
+			} catch (IOException e) {
+				// ignore.
+			}
+		}
     }
 
     /**

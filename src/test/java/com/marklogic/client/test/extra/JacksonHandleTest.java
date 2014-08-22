@@ -18,6 +18,8 @@ package com.marklogic.client.test.extra;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,6 +30,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.extra.jackson.JacksonHandle;
+import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.test.Common;
 
 public class JacksonHandleTest {
@@ -80,4 +85,24 @@ public class JacksonHandleTest {
 		// delete the document
 		docMgr.delete(docId);
 	}
+
+	@Test
+	public void test105Searches() throws IOException {
+		QueryManager queryMgr = Common.client.newQueryManager();
+		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
+		
+		for (int i=0;i<105;i++) {
+			for (QueryDefinition t : new QueryDefinition[] { qb.term("leaf3"),
+					qb.build(qb.value(qb.element("leaf"), "leaf3")) }) {
+				JacksonHandle results = queryMgr.search(t, new JacksonHandle());
+				assertNotNull(results);
+				JsonNode jsonResults =results.get();
+				@SuppressWarnings("unused")
+				String resultString = results.getMapper().writeValueAsString(jsonResults);
+				// ignore.
+			}
+		}
+	}	
+
 }
+
