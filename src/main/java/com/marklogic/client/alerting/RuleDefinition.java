@@ -301,6 +301,11 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 		HandleAccessor.receiveContent(handle, content);
 		Element ruleElement = handle.get().getDocumentElement();
 		receiveElement(ruleElement);
+		try {
+			content.close();
+		} catch (IOException e) {
+			//ignore
+		}
 	}
 
 	void receiveElement(Element ruleElement) {
