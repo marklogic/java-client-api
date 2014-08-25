@@ -19,13 +19,76 @@ public class XdbcEval {
         client.register(feature);
         // set up multipart response parsing
         client.register(MultiPartFeature.class);
+        // let's see what types we're getting
+        String xquery = 
+          "declare variable $myvar1 external;" +
+          "declare variable $myvar2 external;" +
+          "declare variable $myvar3 external;" +
+          "declare variable $myvar4 external;" +
+          "declare variable $myvar5 external;" +
+          "declare variable $myvar6 external;" +
+          "declare function local:getType($var) {" +
+              "typeswitch($var) " +
+                "case attribute() return 'attribute()'" +
+                "case comment() return 'comment()'" +
+                //"case document() return 'document()'" +
+                "case element() return 'element()'" +
+                "case node() return 'node()'" +
+                //"case processingInstruction() return 'processingInstruction()'" +
+                "case xs:base64Binary return 'xs:base64Binary'" +
+                "case xs:boolean return 'xs:boolean'" +
+                "case xs:byte return 'xs:byte'" +
+                "case xs:date return 'xs:date'" +
+                "case xs:dateTime return 'xs:dateTime'" +
+                "case xs:dayTimeDuration return 'xs:dayTimeDuration'" +
+                "case xs:short return 'xs:short'" +
+                "case xs:integer return 'xs:integer'" +
+                "case xs:int return 'xs:int'" +
+                "case xs:long return 'xs:long'" +
+                "case xs:decimal return 'xs:decimal'" +
+                "case xs:float return 'xs:float'" +
+                "case xs:double return 'xs:double'" +
+                "case xs:duration return 'xs:duration'" +
+                "case xs:unsignedInt return 'xs:unsignedInt'" +
+                "case xs:unsignedLong return 'xs:unsignedLong'" +
+                "case xs:unsignedShort return 'xs:unsignedShort'" +
+                "case xs:string return 'xs:string'" +
+                "case xs:time return 'xs:time'" +
+                "case xs:yearMonthDuration return 'xs:yearMonthDuration'" +
+                "case xs:anyAtomicType return 'xs:anyAtomicType'" +
+                "case xs:anySimpleType return 'xs:anySimpleType'" +
+                "case item() return 'item()'" +
+                "default return 'unknown'" +
+          "};" +
+          "for $var at $i in ($myvar1, $myvar2, $myvar3, $myvar4, $myvar5, $myvar6) " +
+          "return 'type' || $i || ': ' || local:getType($var)";
         // set up x-www-form-urlencoded request params
         Form params = new Form()
-            .param("xquery", "declare variable $myvar external;\"Hello+World: \"||$myvar")
+            .param("xquery", xquery)
             .param("evn0", "")
-            .param("evl0", "myvar")
-            .param("evt0", "xs:string")
-            .param("evv0", "monsters")
+            .param("evl0", "myvar1")
+            .param("evt0", "xs:int")
+            .param("evv0", "1")
+            .param("evn1", "")
+            .param("evl1", "myvar2")
+            .param("evt1", "xs:float")
+            .param("evv1", "1.1")
+            .param("evn2", "")
+            .param("evl2", "myvar3")
+            .param("evt2", "xs:decimal")
+            .param("evv2", "1.1")
+            .param("evn3", "")
+            .param("evl3", "myvar4")
+            .param("evt3", "xs:double")
+            .param("evv3", "1.1")
+            .param("evn4", "")
+            .param("evl4", "myvar5")
+            .param("evt4", "xs:long")
+            .param("evv4", "999999999999999999")
+            .param("evn5", "")
+            .param("evl5", "myvar6")
+            .param("evt5", "xs:string")
+            .param("evv5", "test")
             .param("locale", "en_US")
             .param("tzoffset", "-21600")
             .param("dbname", "java-unittest");
