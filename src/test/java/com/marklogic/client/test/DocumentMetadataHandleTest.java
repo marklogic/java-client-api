@@ -34,19 +34,24 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.extra.jackson.JacksonHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 
 public class DocumentMetadataHandleTest {
 	@BeforeClass
 	public static void beforeClass() {
 		Common.connect();
+		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
 	@AfterClass
 	public static void afterClass() {
@@ -164,5 +169,20 @@ public class DocumentMetadataHandleTest {
 			}
 			assertEquals("Wrong quality", 3, metaReadHandle.getQuality());
 		}
+	}
+
+	/** If we regress on https://github.com/marklogic/java-client-api/issues/92 */
+	@Test
+	public void testIssue92() {
+		DocumentMetadataHandle metadata = new DocumentMetadataHandle();
+		//metadata.getCollections().add("collection");
+
+		JacksonHandle writeHandle = new JacksonHandle();
+		JsonNode writeDocument = writeHandle.getMapper().convertValue("{\"test\":true}", JsonNode.class);
+		writeHandle.set(writeDocument);
+
+		JSONDocumentManager jsonDocumentManager = Common.client.newJSONDocumentManager();
+		jsonDocumentManager.write("testIssue92.json", metadata, writeHandle);
+		jsonDocumentManager.delete("testIssue92.json");
 	}
 }

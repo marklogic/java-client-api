@@ -25,6 +25,8 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -101,6 +103,8 @@ public class JacksonHandle
 	public ObjectMapper getMapper() {
 		if (mapper == null)
 			mapper = new ObjectMapper();
+			mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+			mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
 		return mapper;
 	}
 
