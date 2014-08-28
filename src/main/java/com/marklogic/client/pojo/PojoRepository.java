@@ -28,14 +28,26 @@ public interface PojoRepository<T, ID extends Serializable> {
     public void write(T entity, Transaction transaction);
     public void write(T entity, Transaction transaction, String... collections);
 
+    /** @return true if a document exists in the database with the id */
     public boolean exists(ID id);
 
+    /** @return the number of documents of type T persisted in the database */
     public long count();
+
+    /** @return the number of documents of type T persisted in the database with at least 
+     * one of the criteria collections*/
     public long count(String... collection);
+
+    /** @return the number of documents of type T persisted in the database which match
+     * the query */
     public long count(QueryDefinition query);
   
+    /** Deletes from the database the documents with the corresponding ids */
     public void delete(ID... ids);
+
+    /** Deletes from the database all documents of type T persisted by the pojo facade */
     public void deleteAll();
+
     /* REST API does not currently support DELETE /search with multiple collection arguments
     public void deleteAll(String... collections);
     */
