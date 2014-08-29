@@ -108,10 +108,23 @@ import com.marklogic.client.util.IterableNamespaceContext;
  *    QueryDefinition query = countriesQb.value("continent", "EU"); }</pre>
  */
 public interface PojoQueryBuilder<T> {
+
+    /** @return a query matching pojos of type T containing the pojoField with contents
+     *          or children matching the specified query */
     public StructuredQueryDefinition containerQuery(String pojoField,
         StructuredQueryDefinition query);
+
+    /** @return a query matching pojos of type T with children matching the specified query */
     public StructuredQueryDefinition containerQuery(StructuredQueryDefinition query);
-    public PojoQueryBuilder<T>          containerQuery(String pojoField);
+
+    /** Use this method to provide a query builder that can query a nested object within your pojo.
+     * All other PojoQueryBuilder methods create queries for direct children of T which are native
+     * types.  If a child of T is an object, and you need to query one of its children, this method
+     * provides you a query builder that is specific to that child object.  To query further levels of 
+     * nested objects you may use this method on the each returned PojoQueryBuilder which represents
+     * one level deeper.
+     * @return a PojoQueryBuilder for nested pojos of the type corresponding with pojoField */
+    public PojoQueryBuilder          containerQuery(String pojoField);
     public StructuredQueryBuilder.GeospatialIndex
         geoPair(String latitudeFieldName, String longitudeFieldName);
     /**
