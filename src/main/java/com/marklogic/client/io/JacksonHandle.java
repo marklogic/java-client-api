@@ -134,6 +134,12 @@ public class JacksonHandle
 			throw new MarkLogicIOException(e);
 		} catch (IOException e) {
 			throw new MarkLogicIOException(e);
+		} finally {
+			try {
+				content.close();
+			} catch (IOException e) {
+				// ignore.
+			}
 		}
 
 	}

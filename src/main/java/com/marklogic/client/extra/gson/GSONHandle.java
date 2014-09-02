@@ -16,6 +16,7 @@
 package com.marklogic.client.extra.gson;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -182,7 +183,14 @@ public class GSONHandle
 			throw new MarkLogicIOException(e);
 		} catch (UnsupportedEncodingException e) {
 			throw new MarkLogicIOException(e);
+		} finally {
+			try {
+				content.close();
+			} catch (IOException e) {
+				// ignore.
+			}
 		}
+
 
 	}
 	@Override
