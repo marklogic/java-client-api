@@ -324,7 +324,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 	//This test is to verify RAW XML structured Query
 	@Test
 	public void testBulkSearchRawXMLStrucQD() throws Exception{
-		setAutomaticDirectoryCreation(dbName,"automatic");
+//		setAutomaticDirectoryCreation(dbName,"automatic");
 		setMaintainLastModified(dbName,true);
 		this.loadJSONDocuments();
 		this.loadXMLDocuments();
@@ -375,7 +375,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 	//This test is to verify RAW JSON structured query
 	@Test
 	public void testBulkSearchRawJSONStrucQD() throws Exception{
-		setAutomaticDirectoryCreation(dbName,"automatic");
+//		setAutomaticDirectoryCreation(dbName,"automatic");
 		setMaintainLastModified(dbName,true);
 		this.loadJSONDocuments();
 		this.loadXMLDocuments();
