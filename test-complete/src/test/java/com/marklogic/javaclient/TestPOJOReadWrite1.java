@@ -27,13 +27,13 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 	public static void setUpBeforeClass() throws Exception {
 		//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		System.out.println("In setup");
-//		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-//		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		tearDownJavaRESTServer(dbName, fNames, restServerName);
 	}
 
 	@Before
