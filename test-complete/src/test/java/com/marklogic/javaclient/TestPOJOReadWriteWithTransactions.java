@@ -277,5 +277,78 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 		
 	}
 
-
+	@Test
+	public void testPOJOSearchWithCollectionsandTransaction() throws Exception {
+		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
+		PojoPage<Artifact> p;
+		Transaction t= client.openTransaction();
+		//Load more than 111 objects into different collections
+		try{
+		for(int i=1;i<112;i++){
+			if(i%2==0){
+			products.write(this.getArtifact(i),t,"even","numbers");
+			}
+			else {
+				products.write(this.getArtifact(i),"odd","numbers");
+			}
+		}
+		assertEquals("Total number of object recods",56, products.count("numbers"));
+		assertEquals("Collection even count",0,products.count("even"));
+		assertEquals("Collection odd count",56,products.count("odd"));
+		
+		products.setPageLength(10);
+		long pageNo=1,count=0;
+		do{
+			count =0;
+			p = products.search(pageNo, "even");
+			while(p.iterator().hasNext()){
+				Artifact a =p.iterator().next();
+				validateArtifact(a);
+				assertTrue("Artifact Id is even", a.getId()%2==0);
+				count++;
+			}
+			assertEquals("Page size",count,p.size());
+			pageNo=pageNo+p.getPageSize();
+		}while(!p.isLastPage() && pageNo<p.getTotalSize());
+		assertEquals("total no of pages",0,p.getTotalPages());
+		do{
+			count =0;
+			p = products.search(pageNo,t, "even");
+			while(p.iterator().hasNext()){
+				Artifact a =p.iterator().next();
+				validateArtifact(a);
+				assertTrue("Artifact Id is even", a.getId()%2==0);
+				count++;
+			}
+			assertEquals("Page size",count,p.size());
+			pageNo=pageNo+p.getPageSize();
+		}while(!p.isLastPage() && pageNo<p.getTotalSize());
+		assertEquals("total no of pages",6,p.getTotalPages());
+		
+		pageNo=1;
+		do{
+			count =0;
+			p = products.search(1,t, "odd");
+			while(p.iterator().hasNext()){
+				Artifact a =p.iterator().next();
+				assertTrue("Artifact Id is even", a.getId()%2 !=0);
+				validateArtifact(a);
+				products.delete(a.getId());
+				count++;
+			}
+//			assertEquals("Page size",count,p.size());
+			pageNo=pageNo+p.getPageSize();
+			
+		}while(!p.isLastPage() );
+		
+		assertEquals("Total no of documents left",0,products.count());
+		}catch(Exception e){
+			throw e;
+		}finally{
+			t.rollback();
+		}
+		//see any document exists
+		assertFalse("all the documents are deleted",products.exists((long)12));
+	}
+	
 }
