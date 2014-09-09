@@ -476,21 +476,20 @@ public abstract class ConnectedRESTQA {
 	 */
 	public static void deleteRESTServer(String restServerName)	{
 		try{
-			associateRESTServerWithDB(restServerName,"Documents");
-			//			DefaultHttpClient client = new DefaultHttpClient();
-			//
-			//			client.getCredentialsProvider().setCredentials(
-			//					new AuthScope("localhost", 8002),
-			//					new UsernamePasswordCredentials("admin", "admin"));
-			//
-			//			HttpDelete delete = new HttpDelete("http://localhost:8002/v1/rest-apis/"+restServerName+"&include=modules");
-			//			HttpResponse response = client.execute(delete);
-			//			
-			//			if(response.getStatusLine().getStatusCode()== 202){
-			//				Thread.sleep(3500);
-			//				waitForServerRestart();
-			//			}
-			//			else System.out.println("Server response "+response.getStatusLine().getStatusCode());
+						DefaultHttpClient client = new DefaultHttpClient();
+			
+						client.getCredentialsProvider().setCredentials(
+								new AuthScope("localhost", 8002),
+								new UsernamePasswordCredentials("admin", "admin"));
+			
+						HttpDelete delete = new HttpDelete("http://localhost:8002/v1/rest-apis/"+restServerName+"&include=modules");
+						HttpResponse response = client.execute(delete);
+						
+						if(response.getStatusLine().getStatusCode()== 202){
+							Thread.sleep(3500);
+							waitForServerRestart();
+						}
+						else System.out.println("Server response "+response.getStatusLine().getStatusCode());
 		}catch (Exception e) {
 			// writing error to Log
 			System.out.println("Inside Deleting Rest server is throwing an error");
@@ -615,12 +614,12 @@ public abstract class ConnectedRESTQA {
 	public static void tearDownJavaRESTServer(String dbName, String [] fNames, String restServerName) throws Exception{
 
 		try{
-			deleteRESTServer(restServerName); 
+			associateRESTServerWithDB(restServerName,"Documents"); 
 		}catch(Exception e){
 			System.out.println("From Deleting Rest server called funnction is throwing an error");
 			e.printStackTrace(); 
 		}
-		waitForServerRestart(); 
+		 
 		try{
 			for(int i = 0; i < fNames.length; i++){
 				detachForest(dbName, fNames[i]); 
@@ -647,6 +646,7 @@ public abstract class ConnectedRESTQA {
 
 		try{
 			deleteRESTServerWithDB(restServerName); 
+			waitForServerRestart();
 		}catch(Exception e){
 			e.printStackTrace(); 
 		}
