@@ -61,24 +61,43 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 
 		Artifact cogs = new Artifact();
 		cogs.setId(counter);
-		cogs.setName("Cogs "+counter);
+		if( counter % 5 == 0){
+		cogs.setName("Cogs special");
 		if(counter % 2 ==0){
 			Company acme = new Company();
-			acme.setName("Acme "+counter+", Inc.");
-			acme.setWebsite("http://www.acme"+counter+".com");
+			acme.setName("Acme special, Inc.");
+			acme.setWebsite("http://www.acme special.com");
 			acme.setLatitude(41.998+counter);
 			acme.setLongitude(-87.966+counter);
 			cogs.setManufacturer(acme);
 
 		}else{
 			Company widgets = new Company();
-			widgets.setName("Widgets "+counter+", Inc.");
-			widgets.setWebsite("http://www.widgets"+counter+".com");
+			widgets.setName("Widgets counter Inc.");
+			widgets.setWebsite("http://www.widgets counter.com");
 			widgets.setLatitude(41.998+counter);
 			widgets.setLongitude(-87.966+counter);
 			cogs.setManufacturer(widgets);
 		}
+		}else{
+			cogs.setName("Cogs "+counter);
+			if(counter % 2 ==0){
+				Company acme = new Company();
+				acme.setName("Acme "+counter+", Inc.");
+				acme.setWebsite("http://www.acme"+counter+".com");
+				acme.setLatitude(41.998+counter);
+				acme.setLongitude(-87.966+counter);
+				cogs.setManufacturer(acme);
 
+			}else{
+				Company widgets = new Company();
+				widgets.setName("Widgets "+counter+", Inc.");
+				widgets.setWebsite("http://www.widgets"+counter+".com");
+				widgets.setLatitude(41.998+counter);
+				widgets.setLongitude(-87.966+counter);
+				cogs.setManufacturer(widgets);
+			}
+		}
 		cogs.setInventory(1000+counter);
 		return cogs;
 	}
@@ -214,6 +233,7 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 		assertEquals("page number after the loop",10,p.getPageNumber());
 		assertEquals("total no of pages",10,p.getTotalPages());
 	}
+	//Searching for Id as Number in JSON using string should not return any results 
 	@Test
 	public void testPOJOSearchWithStringHandle() throws JsonProcessingException, IOException {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
@@ -221,7 +241,7 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 		this.loadSimplePojos(products);
 		QueryManager queryMgr = client.newQueryManager();
 		StringQueryDefinition qd = queryMgr.newStringDefinition();
-		qd.setCriteria("cogs 2");
+		qd.setCriteria("5");
 		StringHandle results = new StringHandle();
 		JacksonHandle jh = new JacksonHandle();
 		p = products.search(qd, 1,jh);
@@ -244,15 +264,16 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 		}while(!p.isLastPage() && pageNo<p.getTotalSize());
 		assertFalse("String handle is not empty",results.get().isEmpty());
 		assertTrue("String handle contains results",results.get().contains("results"));
-		assertTrue("String handle contains format",results.get().contains("\"format\":\"json\""));
+		assertFalse("String handle contains format",results.get().contains("\"format\":\"json\""));
 //		String expected= jh.get().toString();
 //		System.out.println(results.get().contains("\"format\":\"json\"")+ expected);
 		ObjectMapper mapper = new ObjectMapper();
-		String expected= "{\"snippet-format\":\"snippet\",\"total\":1,\"start\":1,\"page-length\":50,\"results\":[{\"index\":1,\"uri\":\"com.marklogic.javaclient.Artifact/2.json\",\"path\":\"fn:doc(\\\"com.marklogic.javaclient.Artifact/2.json\\\")\",\"score\":55936,\"confidence\":0.4903799,\"fitness\":0.8035046,\"href\":\"/v1/documents?uri=com.marklogic.javaclient.Artifact%2F2.json\",\"mimetype\":\"application/json\",\"format\":\"json\",\"matches\":[{\"path\":\"fn:doc(\\\"com.marklogic.javaclient.Artifact/2.json\\\")\",\"match-text\":[]}]}],\"qtext\":\"cogs 2\",\"metrics\":{\"query-resolution-time\":\"PT0.004S\",\"snippet-resolution-time\":\"PT0S\",\"total-time\":\"PT0.005S\"}}";
-		JsonNode expNode = mapper.readTree(expected).get("results").iterator().next().get("matches");
-		JsonNode actNode = mapper.readTree(results.get()).get("results").iterator().next().get("matches");
+//		String expected= "{\"snippet-format\":\"snippet\",\"total\":1,\"start\":1,\"page-length\":50,\"results\":[{\"index\":1,\"uri\":\"com.marklogic.javaclient.Artifact/2.json\",\"path\":\"fn:doc(\\\"com.marklogic.javaclient.Artifact/2.json\\\")\",\"score\":55936,\"confidence\":0.4903799,\"fitness\":0.8035046,\"href\":\"/v1/documents?uri=com.marklogic.javaclient.Artifact%2F2.json\",\"mimetype\":\"application/json\",\"format\":\"json\",\"matches\":[{\"path\":\"fn:doc(\\\"com.marklogic.javaclient.Artifact/2.json\\\")\",\"match-text\":[]}]}],\"qtext\":\"cogs 2\",\"metrics\":{\"query-resolution-time\":\"PT0.004S\",\"snippet-resolution-time\":\"PT0S\",\"total-time\":\"PT0.005S\"}}";
+//		JsonNode expNode = mapper.readTree(expected).get("results").iterator().next().get("matches");
+		JsonNode actNode = mapper.readTree(results.get()).get("total");
 //		System.out.println(expNode.equals(actNode)+"\n"+ expNode.toString()+"\n"+actNode.toString());
-		assertTrue("matching the expected value of search handle",expNode.equals(actNode));
+		
+		assertEquals("Total search results resulted are ",0,actNode.asInt() );
 	}
 
 }
