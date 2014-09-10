@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.document;
+package com.marklogic.client.eval;
 
-import com.marklogic.client.Page;
-import com.marklogic.client.io.marker.AbstractReadHandle;
+import com.marklogic.client.IteratorPage;
 
-public interface DocumentPage extends IteratorPage<DocumentRecord> {
-    public <T extends AbstractReadHandle> T nextContent(T contentHandle);
-}
+/** Marker interface implemented by {@link XMLVariableSet} and {@link JSONVariableSet} 
+ * so ServerEval can accept either type of VariableSet. */
+public interface VariableSet {}

@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.document;
+package com.marklogic.client.eval;
 
-import com.marklogic.client.Page;
-import com.marklogic.client.io.marker.AbstractReadHandle;
-
-public interface DocumentPage extends IteratorPage<DocumentRecord> {
-    public <T extends AbstractReadHandle> T nextContent(T contentHandle);
+public interface XMLVariableSet extends VariableSet {
+    public XMLVariableSet add(String name, XMLWriteHandle value);
+    public XMLVariableSet addAs(String name, Object value);
 }
+
+
