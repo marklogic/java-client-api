@@ -30,6 +30,8 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
 
+import org.skyscreamer.jsonassert.*;
+import org.json.JSONException;
 import org.junit.*;
 
 public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
@@ -121,7 +123,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testSortOrderPrimaryDescScoreSecondaryAscDate() throws FileNotFoundException, XpathException, TransformerException, IOException
+	public void testSortOrderPrimaryDescScoreSecondaryAscDate() throws FileNotFoundException, XpathException, TransformerException, IOException, JSONException
 	{	
 		System.out.println("Running testSortOrderPrimaryDescScoreSecondaryAscDate");
 
@@ -160,64 +162,10 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 		optionsMgr.readOptions("SortOrderPrimaryDescScoreSecondaryAscDate", readHandle);
 		String output = readHandle.get();
 		System.out.println(output + "testSortOrderPrimaryDescScoreSecondaryAscDate");
-
-		// ----------- Validate options node ----------------------
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode optionsContent = mapper.readTree(output);
-		assertNotNull(optionsContent);
-		System.out.println("JSON output: " + optionsContent);	    
-
-		JsonNode optionsNode = optionsContent.get("options");
-		assertNotNull(optionsNode);
-
-		JsonNode metrics = optionsNode.get("return-metrics");
-		assertNotNull(metrics);
-		assertEquals(metrics.booleanValue(), false);
-
-		JsonNode qtext = optionsNode.get("return-qtext");
-		assertNotNull(qtext);
-		assertEquals(qtext.booleanValue(), false);
-
-		JsonNode sortOrders = optionsNode.get("sort-order");
-		assertNotNull(sortOrders);
-		System.out.println(optionsContent.get("options").get("sort-order"));
-
-		assertTrue(sortOrders.isArray());
-		for (final JsonNode sortOrder : sortOrders) {
-			assertNotNull(sortOrder.get("direction"));
-			String direction = sortOrder.get("direction").textValue();
-
-			if (direction.equals("descending")) {
-				assertTrue(sortOrder.has("score"));
-				assertTrue(sortOrder.get("score").isNull());				
-			}
-			else if (direction.equals("ascending")) {
-				assertTrue(sortOrder.has("type"));
-				assertEquals(sortOrder.get("type").textValue(), "xs:date");
-
-				JsonNode element = sortOrder.get("element");
-				assertNotNull(element);
-
-				JsonNode name = element.get("name");
-				assertNotNull(name);
-				assertEquals(name.textValue(), "date");
-
-				JsonNode ns = element.get("ns");
-				assertNotNull(ns);
-				assertEquals(ns.textValue(), "http://purl.org/dc/elements/1.1/");
-			}
-			else {
-				assertTrue("Found an unexpected object", false);
-			}
-		}
-
-		JsonNode transformResults = optionsNode.get("transform-results");
-		assertNotNull(transformResults);
-
-		JsonNode apply = transformResults.get("apply");
-		assertNotNull(apply);
-		assertEquals(apply.textValue(), "raw");		
-
+		String expected = "{\"options\":{\"return-metrics\":false, \"return-qtext\":false, \"sort-order\":[{\"direction\":\"descending\", \"score\":null}, {\"direction\":\"ascending\", \"type\":\"xs:date\", \"element\":{\"name\":\"date\", \"ns\":\"http://purl.org/dc/elements/1.1/\"}}], \"transform-results\":{\"apply\":\"raw\"}}}";
+				
+		JSONAssert.assertEquals(expected, output, false);
+		
 		// ----------- Validate search using options node created ----------------------
 		// create query manager
 		QueryManager queryMgr = client.newQueryManager();
