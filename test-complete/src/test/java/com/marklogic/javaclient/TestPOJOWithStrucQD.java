@@ -13,6 +13,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -24,6 +25,7 @@ import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
@@ -282,6 +284,122 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 		
 		assertEquals("Total search results resulted are ",6,actNode.asInt() );
 	}
+@Test
+	public void testPOJOSearchWithRawXMLStructQD() {
+		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
+		PojoPage<Artifact> p;
+		this.loadSimplePojos(products);
+		
+		QueryManager queryMgr = client.newQueryManager();
+		String rawXMLQuery =
+				"<search:query "+
+						"xmlns:search='http://marklogic.com/appservices/search'>"+
+						" <search:and-query><search:term-query>"+
+						"<search:text>special</search:text>"+
+						"</search:term-query>"+
+						"<search:term-query>"+
+						"<search:text>Acme</search:text>"+
+						"</search:term-query> </search:and-query>"+
+						"</search:query>";
+		StringHandle rh = new StringHandle(rawXMLQuery);
+		RawStructuredQueryDefinition qd =
+				queryMgr.newRawStructuredQueryDefinition(rh);
+		JacksonHandle results = new JacksonHandle();
+		p = products.search(qd, 1,results);
+		products.setPageLength(11);
+		assertEquals("total no of pages",1,p.getTotalPages());
+		System.out.println(p.getTotalPages()+results.get().toString());
+		long pageNo=1,count=0;
+		do{
+			count =0;
+			p = products.search(qd,pageNo,results);
 
+			while(p.iterator().hasNext()){
+				Artifact a =p.iterator().next();
+				validateArtifact(a);
+				count++;
+				assertTrue("Manufacture name starts with acme",a.getManufacturer().getName().contains("Acme"));
+				assertTrue("Artifact name contains",a.getName().contains("special"));
+
+			}
+			assertEquals("Page size",count,p.size());
+			pageNo=pageNo+p.getPageSize();
+
+			assertEquals("Page start from search handls vs page methods",results.get().get("start").asLong(),p.getStart() );
+			assertEquals("Format in the search handle","json",results.get().withArray("results").get(1).path("format").asText());
+			assertTrue("Uri in search handle contains Artifact",results.get().withArray("results").get(1).path("uri").asText().contains("Artifact"));
+			//			System.out.println(results.get().toString());
+		}while(!p.isLastPage() && pageNo<p.getTotalSize());
+		assertTrue("search handle has metrics",results.get().has("metrics"));
+		assertEquals("Total from search handle",11,results.get().get("total").asInt());
+		assertEquals("page number after the loop",1,p.getPageNumber());
+		assertEquals("total no of pages",1,p.getTotalPages());
+	}
+@Test
+public void testPOJOSearchWithRawJSONStructQD() {
+	PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
+	PojoPage<Artifact> p;
+	this.loadSimplePojos(products);
 	
+	QueryManager queryMgr = client.newQueryManager();
+	JacksonHandle jh = new JacksonHandle();
+	ObjectMapper mapper = new ObjectMapper();
+	//	constructing JSON representation of Raw JSON Structured Query
+
+	ObjectNode txtNode = mapper.createObjectNode();
+	txtNode.putArray("text").add("special");
+	ObjectNode termQNode = mapper.createObjectNode();
+	termQNode.set("term-query", txtNode);
+	ObjectNode queriesArrayNode = mapper.createObjectNode();
+	queriesArrayNode.putArray("queries").add(termQNode);
+
+	ObjectNode txtNode2 = mapper.createObjectNode();
+	txtNode2.putArray("text").add("Widgets");
+	ObjectNode termQNode2 = mapper.createObjectNode();
+	termQNode2.set("term-query", txtNode2);
+	queriesArrayNode.withArray("queries").add(termQNode2);
+
+	ObjectNode orQueryNode = mapper.createObjectNode();
+	orQueryNode.set("and-query",queriesArrayNode );
+
+	ObjectNode queryArrayNode = mapper.createObjectNode();
+	queryArrayNode.putArray("queries").add(orQueryNode);
+	ObjectNode mainNode = mapper.createObjectNode();
+	mainNode.set("query", queryArrayNode);
+	jh.set(mainNode);
+	RawStructuredQueryDefinition qd =
+			queryMgr.newRawStructuredQueryDefinition(jh);
+
+	JacksonHandle results = new JacksonHandle();
+	p = products.search(qd, 1,results);
+	products.setPageLength(11);
+	assertEquals("total no of pages",1,p.getTotalPages());
+	System.out.println(p.getTotalPages()+results.get().toString());
+	long pageNo=1,count=0;
+	do{
+		count =0;
+		p = products.search(qd,pageNo,results);
+
+		while(p.iterator().hasNext()){
+			Artifact a =p.iterator().next();
+			validateArtifact(a);
+			count++;
+			assertTrue("Manufacture name starts with acme",a.getManufacturer().getName().contains("Widgets"));
+			assertTrue("Artifact name contains",a.getName().contains("special"));
+
+		}
+		assertEquals("Page size",count,p.size());
+		pageNo=pageNo+p.getPageSize();
+
+		assertEquals("Page start from search handls vs page methods",results.get().get("start").asLong(),p.getStart() );
+		assertEquals("Format in the search handle","json",results.get().withArray("results").get(1).path("format").asText());
+		assertTrue("Uri in search handle contains Artifact",results.get().withArray("results").get(1).path("uri").asText().contains("Artifact"));
+		//			System.out.println(results.get().toString());
+	}while(!p.isLastPage() && pageNo<p.getTotalSize());
+	assertTrue("search handle has metrics",results.get().has("metrics"));
+	assertEquals("Total from search handle",11,results.get().get("total").asInt());
+	assertEquals("page number after the loop",1,p.getPageNumber());
+	assertEquals("total no of pages",1,p.getTotalPages());
+}
+		
 }
