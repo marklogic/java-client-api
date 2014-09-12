@@ -18,6 +18,6 @@ package com.marklogic.client.document;
 import com.marklogic.client.Page;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 
-public interface DocumentPage extends IteratorPage<DocumentRecord> {
+public interface DocumentPage extends Page<DocumentRecord> {
     public <T extends AbstractReadHandle> T nextContent(T contentHandle);
 }

@@ -13,6 +13,9 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 public class XdbcEval {
     public static void main(String[] args) {
+        System.setProperty("com.sun.xml.ws.transport.http.client.HttpTransportPipe.dump", "true");
+        System.setProperty("com.sun.xml.ws.transport.local.LocalTransportPipe.dump", "true");
+        System.setProperty("com.sun.xml.ws.util.pipe.StandaloneTubeAssembler.dump", "true");
         Client client = ClientBuilder.newClient();
         // set up digest auth
         HttpAuthenticationFeature feature = HttpAuthenticationFeature.digest("admin", "admin");
@@ -61,7 +64,10 @@ public class XdbcEval {
                 "default return 'unknown'" +
           "};" +
           "for $var at $i in ($myvar1, $myvar2, $myvar3, $myvar4, $myvar5, $myvar6) " +
-          "return 'type' || $i || ': ' || local:getType($var)";
+          "return (" +
+              "$var," +
+              "'type' || $i || ': ' || local:getType($var)" +
+          ")";
         // set up x-www-form-urlencoded request params
         Form params = new Form()
             .param("xquery", xquery)
@@ -101,7 +107,7 @@ public class XdbcEval {
         MultiPart body = res.readEntity(MultiPart.class);
         System.out.println("response=[" + res  + "]");
         for ( BodyPart part : body.getBodyParts() ) {
-            System.out.println("part body=[" + part.getEntityAs(String.class) + "]");
+            System.out.println("part body2=[" + part.getEntityAs(String.class) + "]");
         }
     }
 }

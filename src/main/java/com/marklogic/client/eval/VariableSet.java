@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.eval;
 
-import com.marklogic.client.IteratorPage;
+import com.marklogic.client.Page;
 
 /** Marker interface implemented by {@link XMLVariableSet} and {@link JSONVariableSet} 
  * so ServerEval can accept either type of VariableSet. */

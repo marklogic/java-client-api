@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.http;
 
-import com.marklogic.client.IteratorPage;
+import com.marklogic.client.Page;
 
-public interface MultiPartResponsePage extends IteratorPage<BodyPart> {
+public interface MultiPartResponsePage extends Page<BodyPart> {
 }

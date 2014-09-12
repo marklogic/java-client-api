@@ -18,7 +18,7 @@ package com.marklogic.client.impl;
 import java.util.Iterator;
 import com.marklogic.client.Page;
 
-public class BasicPage<T> implements IteratorPage<T> {
+public class BasicPage<T> implements Page<T> {
     private Iterable<T> iterable;
     private Iterator<T> iterator;
     private long start;
@@ -45,7 +45,7 @@ public class BasicPage<T> implements IteratorPage<T> {
         return iterator.hasNext();
     }
 
-    public DocumentRecord next() {
+    public T next() {
         return iterator.next();
     }
 
