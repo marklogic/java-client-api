@@ -15,7 +15,9 @@ import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.DocumentWriteSet;
@@ -25,6 +27,7 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 
 /**
@@ -41,7 +44,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 	private static String restServerName = "REST-Java-Client-API-Server";
 	private static int restPort = 8011;
 	private  DatabaseClient client ;
-	
+
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -50,7 +53,6 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 		System.out.println("In Setup");
 		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
 		createRESTUser("app-user", "password", "rest-writer","rest-reader" );
-
 	}
 
 	/**
@@ -95,10 +97,11 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 		metadataHandle.setQuality(23);
 		return	metadataHandle;
 	}
-	
-	public DocumentMetadataHandle setUpdatedMetadataProperties(){
+
+	public DocumentMetadataHandle setUpdatedMetadataProperties() {
 		// create and initialize a handle on the metadata
 		DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+
 		metadataHandle.getProperties().put("reviewed", false);
 		metadataHandle.getProperties().put("myString", "bar");
 		metadataHandle.getProperties().put("myInteger", 20);
@@ -107,8 +110,8 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 		metadataHandle.setQuality(12);
 		return	metadataHandle;
 	}
-	
-	public DocumentMetadataHandle setUpdatedMetadataCollections(){
+
+	public DocumentMetadataHandle setUpdatedMetadataCollections() {
 		// create and initialize a handle on the metadata
 		DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle().withCollections("my-collection3","my-collection4");
 		//metadataHandle.getCollections().addAll("my-collection1","my-collection2");
@@ -121,8 +124,8 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 		metadataHandle.setQuality(23);
 		return	metadataHandle;
 	}
-	
-	public void validateMetadata(DocumentMetadataHandle mh){
+
+	public void validateMetadata(DocumentMetadataHandle mh) {
 		// get metadata values
 		DocumentProperties properties = mh.getProperties();
 		DocumentPermissions permissions = mh.getPermissions();
@@ -142,7 +145,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 		// Permissions
 		String actualPermissions = getDocumentPermissionsString(permissions);
 		System.out.println("Returned permissions: " + actualPermissions);
-		
+
 		assertTrue("Document permissions difference in size value", actualPermissions.contains("size:3"));
 		assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
 		assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
@@ -152,13 +155,13 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 		// Collections 
 		String actualCollections = getDocumentCollectionsString(collections);
 		System.out.println("Returned collections: " + actualCollections);
-		
+
 		assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
 		assertTrue("my-collection1 not found", actualCollections.contains("my-collection1"));
 		assertTrue("my-collection2 not found", actualCollections.contains("my-collection2"));	    
 	}
-	
-	public void validateUpdatedMetadataProperties(DocumentMetadataHandle mh){
+
+	public void validateUpdatedMetadataProperties(DocumentMetadataHandle mh) {
 		// get metadata values
 		DocumentProperties properties = mh.getProperties();
 		DocumentPermissions permissions = mh.getPermissions();
@@ -178,7 +181,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 		// Permissions
 		String actualPermissions = getDocumentPermissionsString(permissions);
 		System.out.println("Returned permissions: " + actualPermissions);
-		
+
 		assertTrue("Document permissions difference in size value", actualPermissions.contains("size:3"));
 		assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
 		assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
@@ -188,13 +191,13 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 		// Collections 
 		String actualCollections = getDocumentCollectionsString(collections);
 		System.out.println("Returned collections: " + actualCollections);
-		
+
 		assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
 		assertTrue("my-collection1 not found", actualCollections.contains("my-collection1"));
 		assertTrue("my-collection2 not found", actualCollections.contains("my-collection2"));	    
 	}
-	
-	public void validateUpdatedMetadataCollections(DocumentMetadataHandle mh){
+
+	public void validateUpdatedMetadataCollections(DocumentMetadataHandle mh) {
 		// get metadata values
 		DocumentProperties properties = mh.getProperties();
 		DocumentPermissions permissions = mh.getPermissions();
@@ -214,7 +217,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 		// Permissions
 		String actualPermissions = getDocumentPermissionsString(permissions);
 		System.out.println("Returned permissions: " + actualPermissions);
-		
+
 		assertTrue("Document permissions difference in size value", actualPermissions.contains("size:3"));
 		assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
 		assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
@@ -224,27 +227,27 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 		// Collections 
 		String actualCollections = getDocumentCollectionsString(collections);
 		System.out.println("Returned collections: " + actualCollections);
-		
+
 		assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
 		assertTrue("my-collection1 not found", actualCollections.contains("my-collection3"));
 		assertTrue("my-collection2 not found", actualCollections.contains("my-collection4"));	    
 	}
-	
-	/* 
-     * This test verifies that properties do not change when new meta data is used in a bulk write set.
-     * Verified by reading individual documents
-     */
 
-	@Test(expected=com.marklogic.client.ForbiddenUserException.class) 
-	public void testWriteMultipleTextDocWithChangedMetadataProperties() 
-	{
+	/* 
+	 * This test verifies that properties do not change when new meta data is used in a bulk write set.
+	 * Verified by reading individual documents. User does not have permission to update the meta-data.
+	 */
+
+	@Test(expected=com.marklogic.client.ForbiddenUserException.class)	
+	public void testWriteMultipleTextDocWithChangedMetadataProperties() {
 		String docId[] = {"/foo/test/myFoo1.txt","/foo/test/myFoo2.txt","/foo/test/myFoo3.txt"};
 
 		TextDocumentManager docMgr = client.newTextDocumentManager();
 
-		DocumentWriteSet writeset =docMgr.newWriteSet();
+		DocumentWriteSet writeset = docMgr.newWriteSet();
 		// put metadata
 		DocumentMetadataHandle mh = setMetadata();
+		DocumentMetadataHandle mhRead = null;		
 
 		writeset.addDefault(mh);
 		writeset.add(docId[0], new StringHandle().with("This is so foo1"));
@@ -255,33 +258,166 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 
 		while(page.hasNext()){
 			DocumentRecord rec = page.next();
-			docMgr.readMetadata(rec.getUri(), mh);
+			docMgr.readMetadata(rec.getUri(), mhRead);
 			validateMetadata(mh);
 		}
 		validateMetadata(mh);
-		
+
 		// Add new meta-data
 		DocumentMetadataHandle mhUpdated = setUpdatedMetadataProperties();
 		writeset.addDefault(mhUpdated);
-		
-		docMgr.write(writeset);
-		page = docMgr.read(docId);
 
-		while(page.hasNext()){
-			DocumentRecord rec = page.next();
-			docMgr.readMetadata(rec.getUri(), mhUpdated);
-			validateUpdatedMetadataProperties(mhUpdated);
+		docMgr.write(writeset);
+		DocumentMetadataHandle mhUpd = null;
+
+		for(String docURI : docId){		
+			docMgr.readMetadata(docURI, mhUpd);
+			validateUpdatedMetadataProperties(mhUpd);
 		}
-		validateUpdatedMetadataProperties(mhUpdated);
+		validateUpdatedMetadataProperties(mhUpd);
 	}
-	
+
 	/* 
-     * This test verifies that collections do change when new meta data is used in a bulk write set.
-     * Verified by reading individual documents
-     */
+	 * Purpose: To validate: DocumentManager::read(Transaction, uri....)
+	 * This test verifies document meta-data reads from an open database transaction in the representation provided by the handle to call readMetadata.
+	 * Verified by reading meta-data of individual document records from Document Page.
+	 * read method performs the bulk read
+	 */
+	@Test
+	public void testBulkReadUsingMultipleUri() {
+		String docId[] = {"/foo/test/transactionURIFoo1.txt","/foo/test/transactionURIFoo2.txt","/foo/test/transactionURIFoo3.txt"};
+		Transaction transaction = client.openTransaction();
+		try {
+			TextDocumentManager docMgr = client.newTextDocumentManager();
+			docMgr.setMetadataCategories(Metadata.ALL);
+			DocumentWriteSet writeset = docMgr.newWriteSet();
+			// put metadata
+			DocumentMetadataHandle mh = setMetadata();
+			DocumentMetadataHandle mhRead = new DocumentMetadataHandle();		
+
+			writeset.addDefault(mh);
+			writeset.add(docId[0], new StringHandle().with("This is so transactionURIFoo 1"));
+			writeset.add(docId[1], new StringHandle().with("This is so transactionURIFoo 2"));
+			writeset.add(docId[2], new StringHandle().with("This is so transactionURIFoo 3"));
+			docMgr.write(writeset, transaction);
+			transaction.commit();
+			transaction = client.openTransaction();
+
+			DocumentPage page = docMgr.read(transaction, docId[0], docId[1], docId[2]);
+
+			while(page.hasNext()){
+				DocumentRecord rec = page.next();
+				mhRead = rec.getMetadata(mhRead);
+				validateMetadata(mhRead);
+			}
+
+			validateMetadata(mhRead);
+		}
+		catch(Exception exp) {
+			System.out.println(exp.getMessage());
+			throw exp;
+		}
+		finally {
+			transaction.rollback();
+		}
+	}
+
+
+	/* 
+	 * * Purpose: To validate: DocumentManager::readMetadata(uri, MetdataHandle, Transaction)
+	 * This test verifies document meta-data reads from an open database transaction in the representation provided by the handle to call readMetadata.
+	 * Verified by reading meta-data for individual documents.
+	 */
+
+	@Test	
+	public void testReadUsingMultipleUriAndMetadataHandleInTransaction() throws Exception {
+		String docId[] = {"/foo/test/multipleURIFoo1.txt","/foo/test/multipleURIFoo2.txt","/foo/test/multipleURIFoo3.txt"};
+		Transaction transaction = client.openTransaction();
+		try {
+			TextDocumentManager docMgr = client.newTextDocumentManager();
+			docMgr.setMetadataCategories(Metadata.ALL);
+
+			DocumentWriteSet writeset = docMgr.newWriteSet();
+			// put metadata
+			DocumentMetadataHandle mh = setMetadata();
+
+			writeset.addDefault(mh);
+			writeset.add(docId[0], new StringHandle().with("This is so multipleURI foo 1"));
+			writeset.add(docId[1], new StringHandle().with("This is so multipleURI foo 2"));
+			writeset.add(docId[2], new StringHandle().with("This is so multipleURI foo 3"));
+			docMgr.write(writeset, transaction);
+			transaction.commit();
+			transaction = client.openTransaction();
+
+			DocumentMetadataHandle mhRead = new DocumentMetadataHandle();
+
+			for(String docStrId : docId) {
+				docMgr.readMetadata(docStrId, mhRead, transaction);
+				validateMetadata(mhRead);
+			}
+			validateMetadata(mhRead);
+		}
+		catch(Exception exp) {
+			System.out.println(exp.getMessage());
+			throw exp;
+		}
+		finally {
+			transaction.rollback();
+		}
+	}
+
+
+	/* 
+	 * * Purpose: To validate: DocumentManager readMetadata(String... uris)
+	 * This test verifies document meta-data reads from an open database in the representation provided by the handle to call readMetadata.
+	 * Verified by reading meta-data for individual documents.
+	 */
+
+	@Test	
+	public void testBulkReadMetadataUsingMultipleUriNoTransaction() throws Exception {
+		String docId[] = {"/foo/test/URIFoo1.txt","/foo/test/URIFoo2.txt","/foo/test/URIFoo3.txt"};
+
+		try {
+			TextDocumentManager docMgr = client.newTextDocumentManager();
+			docMgr.setMetadataCategories(Metadata.ALL);
+
+			DocumentWriteSet writeset = docMgr.newWriteSet();
+			// put metadata
+			DocumentMetadataHandle mh = setMetadata();
+
+			writeset.addDefault(mh);
+			writeset.add(docId[0], new StringHandle().with("This is so URI foo 1"));
+			writeset.add(docId[1], new StringHandle().with("This is so URI foo 2"));
+			writeset.add(docId[2], new StringHandle().with("This is so URI foo 3"));
+			docMgr.write(writeset);
+
+			DocumentMetadataHandle mhRead = new DocumentMetadataHandle();
+
+			DocumentPage page = docMgr.readMetadata(docId[0], docId[1], docId[2]);
+
+			while(page.hasNext()){
+				DocumentRecord rec = page.next();
+				rec.getMetadata(mhRead);
+				validateMetadata(mhRead);
+			}
+
+			validateMetadata(mhRead);
+		}
+		catch(Exception exp) {
+			System.out.println(exp.getMessage());
+			throw exp;
+		}
+		finally {
+			//transaction.rollback();
+		}
+	}
+
+	/* 
+	 * This test verifies that collections do change when new meta data is used in a bulk write set.
+	 * Verified by reading individual documents
+	 */
 	@Test  
-	public void testWriteMultipleTextDocWithChangedMetadataCollections() 
-	{
+	public void testWriteMultipleTextDocWithChangedMetadataCollections() {
 		String docId[] = {"/foo/test/myFoo4.txt","/foo/test/myFoo5.txt","/foo/test/myFoo6.txt"};
 		TextDocumentManager docMgr = client.newTextDocumentManager();
 
@@ -294,10 +430,10 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 		writeset.add(docId[1], new StringHandle().with("This is so foo5"));
 		writeset.add(docId[2], new StringHandle().with("This is so foo6"));
 		docMgr.write(writeset);		
-		
+
 		// Add new meta-data
 		DocumentMetadataHandle mhUpdated = setUpdatedMetadataCollections();
-		
+
 		docMgr.writeMetadata(docId[0], mhUpdated);
 		docMgr.writeMetadata(docId[1], mhUpdated);
 		docMgr.writeMetadata(docId[2], mhUpdated);
