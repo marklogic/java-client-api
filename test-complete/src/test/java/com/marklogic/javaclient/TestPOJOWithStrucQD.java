@@ -13,6 +13,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -24,11 +25,15 @@ import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryBuilder.Operator;
+import com.marklogic.client.query.StructuredQueryDefinition;
 
-public class TestPOJOWithStringQD extends BasicJavaClientREST {
-	private static String dbName = "TestPOJOStringQDSearchDB";
-	private static String [] fNames = {"TestPOJOStringQDSearchDB-1"};
+public class TestPOJOWithStrucQD extends BasicJavaClientREST {
+	private static String dbName = "TestPOJOStrucQDSearchDB";
+	private static String [] fNames = {"TestPOJOStrucQDSearchDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
 	private static int restPort = 8011;
 	private  DatabaseClient client ;
@@ -38,7 +43,7 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 		//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		System.out.println("In setup");
 		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
-		addRangePathIndex(dbName, "string", "com.marklogic.javaclient.Artifact/name", "http://marklogic.com/collation/", "ignore");
+		addRangePathIndex(dbName, "long", "com.marklogic.javaclient.Artifact/inventory", "", "ignore");
 		addRangePathIndex(dbName, "string", "com.marklogic.javaclient.Artifact/manufacturer/com.marklogic.javaclient.Company/name", "http://marklogic.com/collation/", "ignore");
 	}
 
@@ -123,14 +128,14 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
 		this.loadSimplePojos(products);
-		QueryManager queryMgr = client.newQueryManager();
-		StringQueryDefinition qd = queryMgr.newStringDefinition();
-		qd.setCriteria("Widgets");
-
+	
+		StructuredQueryBuilder qb = new StructuredQueryBuilder();
+		StructuredQueryDefinition q1 =qb.andNot(qb.term("cogs"),qb.term("special"));
+		StructuredQueryDefinition qd = qb.and(q1,qb.collection("odd"));
 		products.setPageLength(11);
 		p = products.search(qd, 1);
-		assertEquals("total no of pages",5,p.getTotalPages());
-		System.out.println(p.getTotalPages());
+		assertEquals("total no of pages",4,p.getTotalPages());
+//		System.out.println(p.getTotalPages());
 		long pageNo=1,count=0;
 		do{
 			count =0;
@@ -140,6 +145,7 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 			while(p.iterator().hasNext()){
 				Artifact a =p.iterator().next();
 				validateArtifact(a);
+				assertFalse("Verifying document with special is not there",a.getId()%5==0);
 				assertTrue("Artifact Id is odd", a.getId()%2!=0);
 				assertTrue("Company name contains widgets",a.getManufacturer().getName().contains("Widgets"));
 				count++;
@@ -148,19 +154,20 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 			assertEquals("Page size",count,p.size());
 			pageNo=pageNo+p.getPageSize();
 		}while(!p.isLastPage() && pageNo<p.getTotalSize());
-		assertEquals("page number after the loop",5,p.getPageNumber());
-		assertEquals("total no of pages",5,p.getTotalPages());
+		assertEquals("page number after the loop",4,p.getPageNumber());
+		assertEquals("total no of pages",4,p.getTotalPages());
 	}
-	@Test
+@Test
 	public void testPOJOSearchWithSearchHandle() {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
 		this.loadSimplePojos(products);
-		QueryManager queryMgr = client.newQueryManager();
-		StringQueryDefinition qd = queryMgr.newStringDefinition();
-		qd.setCriteria("Acme");
+		
+		StructuredQueryBuilder qb = new StructuredQueryBuilder();
+		StructuredQueryDefinition q1 =qb.range(qb.pathIndex("com.marklogic.javaclient.Artifact/inventory"), "xs:long",Operator.GT, 1010);
+		StructuredQueryDefinition qd = qb.and(q1,qb.range(qb.pathIndex("com.marklogic.javaclient.Artifact/inventory"), "xs:long",Operator.LE, 1110),qb.collection("even"));
 		SearchHandle results = new SearchHandle();
-		products.setPageLength(11);
+		products.setPageLength(10);
 		p = products.search(qd, 1,results);
 		assertEquals("total no of pages",5,p.getTotalPages());
 		System.out.println(p.getTotalPages());
@@ -172,6 +179,7 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 			while(p.iterator().hasNext()){
 				Artifact a =p.iterator().next();
 				validateArtifact(a);
+				assertTrue("Enventory lies between 1010 to 1110", a.getInventory()>1010 && a.getInventory()<=1110);
 				assertTrue("Artifact Id is even", a.getId()%2==0);
 				assertTrue("Company name contains Acme",a.getManufacturer().getName().contains("Acme"));
 				count++;
@@ -180,7 +188,7 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 			assertEquals("Page size",count,p.size());
 			pageNo=pageNo+p.getPageSize();
 			MatchDocumentSummary[] mds =results.getMatchResults();
-			assertEquals("Size of the results summary",11,mds.length);
+			assertEquals("Size of the results summary",10,mds.length);
 			for(MatchDocumentSummary md:mds){
 				assertTrue("every uri should contain the class name",md.getUri().contains("Artifact"));
 			}
@@ -188,10 +196,10 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 			for(String fname:facetNames){
 				System.out.println(fname);
 			}
-			assertEquals("Total resulr from search handle ",55,results.getTotalResults());
+			assertEquals("Total resulr from search handle ",50,results.getTotalResults());
 			assertTrue("Search Handle metric results ",results.getMetrics().getTotalTime()>0);
 		}while(!p.isLastPage() && pageNo<p.getTotalSize());
-		assertEquals("Page start check",45,p.getStart());
+		assertEquals("Page start check",41,p.getStart());
 		assertEquals("page number after the loop",5,p.getPageNumber());
 		assertEquals("total no of pages",5,p.getTotalPages());
 	}
@@ -200,14 +208,15 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
 		this.loadSimplePojos(products);
-		QueryManager queryMgr = client.newQueryManager();
-		StringQueryDefinition qd = queryMgr.newStringDefinition();
-		qd.setCriteria("cogs");
+		;
+		StructuredQueryBuilder qb = new StructuredQueryBuilder();
+		StructuredQueryDefinition q1 =qb.containerQuery(qb.jsonProperty("name"),qb.term("special") );
+		StructuredQueryDefinition qd = qb.and(q1,qb.word(qb.jsonProperty("name"), "acme"));
 		JacksonHandle results = new JacksonHandle();
 		p = products.search(qd, 1,results);
 		products.setPageLength(11);
-		assertEquals("total no of pages",3,p.getTotalPages());
-		//		System.out.println(p.getTotalPages()+results.get().toString());
+		assertEquals("total no of pages",1,p.getTotalPages());
+		System.out.println(p.getTotalPages()+results.get().toString());
 		long pageNo=1,count=0;
 		do{
 			count =0;
@@ -217,7 +226,9 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 				Artifact a =p.iterator().next();
 				validateArtifact(a);
 				count++;
-				//				System.out.println(a.getId()+" "+a.getManufacturer().getName() +"  "+count);
+				assertTrue("Manufacture name starts with acme",a.getManufacturer().getName().contains("Acme"));
+				assertTrue("Artifact name contains",a.getName().contains("special"));
+
 			}
 			assertEquals("Page size",count,p.size());
 			pageNo=pageNo+p.getPageSize();
@@ -228,20 +239,20 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 			//			System.out.println(results.get().toString());
 		}while(!p.isLastPage() && pageNo<p.getTotalSize());
 		assertTrue("search handle has metrics",results.get().has("metrics"));
-		assertEquals("Search text is","cogs",results.get().path("qtext").asText());
-		assertEquals("Total from search handle",110,results.get().get("total").asInt());
-		assertEquals("page number after the loop",10,p.getPageNumber());
-		assertEquals("total no of pages",10,p.getTotalPages());
+		assertEquals("Total from search handle",11,results.get().get("total").asInt());
+		assertEquals("page number after the loop",1,p.getPageNumber());
+		assertEquals("total no of pages",1,p.getTotalPages());
 	}
-	//Searching for Id as Number in JSON using string should not return any results 
+	//Searching for Id as Number in JSON using value query 
 	@Test
 	public void testPOJOSearchWithStringHandle() throws JsonProcessingException, IOException {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
 		this.loadSimplePojos(products);
-		QueryManager queryMgr = client.newQueryManager();
-		StringQueryDefinition qd = queryMgr.newStringDefinition();
-		qd.setCriteria("5");
+		StructuredQueryBuilder qb = new StructuredQueryBuilder();
+		StructuredQueryDefinition qd =qb.value(qb.jsonProperty("id"), 5,10,15,20,25,30);
+//		StructuredQueryDefinition qd = qb.and(q1,qb.range(qb.pathIndex("com.marklogic.javaclient.Artifact/inventory"), "xs:long",Operator.LE, 1110),qb.collection("even"));
+	
 		StringHandle results = new StringHandle();
 		JacksonHandle jh = new JacksonHandle();
 		p = products.search(qd, 1,jh);
@@ -255,16 +266,14 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 				Artifact a =p.iterator().next();
 				validateArtifact(a);
 				count++;
-				//				System.out.println(a.getId()+" "+a.getManufacturer().getName() +"  "+count);
 			}
 			assertEquals("Page total results",count,p.getTotalSize());
 			pageNo=pageNo+p.getPageSize();
-//				
-					System.out.println(results.get().toString());
+//					System.out.println(results.get().toString());
 		}while(!p.isLastPage() && pageNo<p.getTotalSize());
 		assertFalse("String handle is not empty",results.get().isEmpty());
 		assertTrue("String handle contains results",results.get().contains("results"));
-		assertFalse("String handle contains format",results.get().contains("\"format\":\"json\""));
+		assertTrue("String handle contains format",results.get().contains("\"format\":\"json\""));
 //		String expected= jh.get().toString();
 //		System.out.println(results.get().contains("\"format\":\"json\"")+ expected);
 		ObjectMapper mapper = new ObjectMapper();
@@ -273,7 +282,124 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 		JsonNode actNode = mapper.readTree(results.get()).get("total");
 //		System.out.println(expNode.equals(actNode)+"\n"+ expNode.toString()+"\n"+actNode.toString());
 		
-		assertEquals("Total search results resulted are ",0,actNode.asInt() );
+		assertEquals("Total search results resulted are ",6,actNode.asInt() );
 	}
+@Test
+	public void testPOJOSearchWithRawXMLStructQD() {
+		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
+		PojoPage<Artifact> p;
+		this.loadSimplePojos(products);
+		
+		QueryManager queryMgr = client.newQueryManager();
+		String rawXMLQuery =
+				"<search:query "+
+						"xmlns:search='http://marklogic.com/appservices/search'>"+
+						" <search:and-query><search:term-query>"+
+						"<search:text>special</search:text>"+
+						"</search:term-query>"+
+						"<search:term-query>"+
+						"<search:text>Acme</search:text>"+
+						"</search:term-query> </search:and-query>"+
+						"</search:query>";
+		StringHandle rh = new StringHandle(rawXMLQuery);
+		RawStructuredQueryDefinition qd =
+				queryMgr.newRawStructuredQueryDefinition(rh);
+		JacksonHandle results = new JacksonHandle();
+		p = products.search(qd, 1,results);
+		products.setPageLength(11);
+		assertEquals("total no of pages",1,p.getTotalPages());
+		System.out.println(p.getTotalPages()+results.get().toString());
+		long pageNo=1,count=0;
+		do{
+			count =0;
+			p = products.search(qd,pageNo,results);
 
+			while(p.iterator().hasNext()){
+				Artifact a =p.iterator().next();
+				validateArtifact(a);
+				count++;
+				assertTrue("Manufacture name starts with acme",a.getManufacturer().getName().contains("Acme"));
+				assertTrue("Artifact name contains",a.getName().contains("special"));
+
+			}
+			assertEquals("Page size",count,p.size());
+			pageNo=pageNo+p.getPageSize();
+
+			assertEquals("Page start from search handls vs page methods",results.get().get("start").asLong(),p.getStart() );
+			assertEquals("Format in the search handle","json",results.get().withArray("results").get(1).path("format").asText());
+			assertTrue("Uri in search handle contains Artifact",results.get().withArray("results").get(1).path("uri").asText().contains("Artifact"));
+			//			System.out.println(results.get().toString());
+		}while(!p.isLastPage() && pageNo<p.getTotalSize());
+		assertTrue("search handle has metrics",results.get().has("metrics"));
+		assertEquals("Total from search handle",11,results.get().get("total").asInt());
+		assertEquals("page number after the loop",1,p.getPageNumber());
+		assertEquals("total no of pages",1,p.getTotalPages());
+	}
+@Test
+public void testPOJOSearchWithRawJSONStructQD() {
+	PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
+	PojoPage<Artifact> p;
+	this.loadSimplePojos(products);
+	
+	QueryManager queryMgr = client.newQueryManager();
+	JacksonHandle jh = new JacksonHandle();
+	ObjectMapper mapper = new ObjectMapper();
+	//	constructing JSON representation of Raw JSON Structured Query
+
+	ObjectNode txtNode = mapper.createObjectNode();
+	txtNode.putArray("text").add("special");
+	ObjectNode termQNode = mapper.createObjectNode();
+	termQNode.set("term-query", txtNode);
+	ObjectNode queriesArrayNode = mapper.createObjectNode();
+	queriesArrayNode.putArray("queries").add(termQNode);
+
+	ObjectNode txtNode2 = mapper.createObjectNode();
+	txtNode2.putArray("text").add("Widgets");
+	ObjectNode termQNode2 = mapper.createObjectNode();
+	termQNode2.set("term-query", txtNode2);
+	queriesArrayNode.withArray("queries").add(termQNode2);
+
+	ObjectNode orQueryNode = mapper.createObjectNode();
+	orQueryNode.set("and-query",queriesArrayNode );
+
+	ObjectNode queryArrayNode = mapper.createObjectNode();
+	queryArrayNode.putArray("queries").add(orQueryNode);
+	ObjectNode mainNode = mapper.createObjectNode();
+	mainNode.set("query", queryArrayNode);
+	jh.set(mainNode);
+	RawStructuredQueryDefinition qd =
+			queryMgr.newRawStructuredQueryDefinition(jh);
+
+	JacksonHandle results = new JacksonHandle();
+	p = products.search(qd, 1,results);
+	products.setPageLength(11);
+	assertEquals("total no of pages",1,p.getTotalPages());
+	System.out.println(p.getTotalPages()+results.get().toString());
+	long pageNo=1,count=0;
+	do{
+		count =0;
+		p = products.search(qd,pageNo,results);
+
+		while(p.iterator().hasNext()){
+			Artifact a =p.iterator().next();
+			validateArtifact(a);
+			count++;
+			assertTrue("Manufacture name starts with acme",a.getManufacturer().getName().contains("Widgets"));
+			assertTrue("Artifact name contains",a.getName().contains("special"));
+
+		}
+		assertEquals("Page size",count,p.size());
+		pageNo=pageNo+p.getPageSize();
+
+		assertEquals("Page start from search handls vs page methods",results.get().get("start").asLong(),p.getStart() );
+		assertEquals("Format in the search handle","json",results.get().withArray("results").get(1).path("format").asText());
+		assertTrue("Uri in search handle contains Artifact",results.get().withArray("results").get(1).path("uri").asText().contains("Artifact"));
+		//			System.out.println(results.get().toString());
+	}while(!p.isLastPage() && pageNo<p.getTotalSize());
+	assertTrue("search handle has metrics",results.get().has("metrics"));
+	assertEquals("Total from search handle",11,results.get().get("total").asInt());
+	assertEquals("page number after the loop",1,p.getPageNumber());
+	assertEquals("total no of pages",1,p.getTotalPages());
+}
+		
 }

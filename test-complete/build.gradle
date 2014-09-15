@@ -21,5 +21,6 @@ dependencies {
     compile('com.marklogic:client-api-java:3.0-SNAPSHOT')
 	compile('xmlunit:xmlunit:1.5')
 	compile('junit:junit:4.11')
+    compile('org.skyscreamer:jsonassert:1.2.3')
 }
 
