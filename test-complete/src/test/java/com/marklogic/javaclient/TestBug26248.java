@@ -1,7 +1,5 @@
 package com.marklogic.javaclient;
 
-import static org.junit.Assert.*;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 

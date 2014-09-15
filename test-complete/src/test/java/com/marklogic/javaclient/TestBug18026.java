@@ -40,7 +40,6 @@ public class TestBug18026 extends BasicJavaClientREST {
 		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testBug18026() throws IOException, SAXException, ParserConfigurationException
 	{	
@@ -100,7 +99,6 @@ public class TestBug18026 extends BasicJavaClientREST {
 	    client.release();
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testBug18026WithJson() throws IOException, SAXException, ParserConfigurationException
 	{	

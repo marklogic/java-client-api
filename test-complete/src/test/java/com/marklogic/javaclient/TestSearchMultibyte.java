@@ -27,39 +27,41 @@ public class TestSearchMultibyte extends BasicJavaClientREST {
 	private static String restServerName = "REST-Java-Client-API-Server";
 	private static int restPort = 8011;
 
-@BeforeClass	public static void setUp() throws Exception 
+	@BeforeClass	
+	public static void setUp() throws Exception 
 	{
-	  System.out.println("In setup");
-	  setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
-	  setupAppServicesConstraint(dbName);
+		System.out.println("In setup");
+		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		setupAppServicesConstraint(dbName);
 	}
 
-@After
-	public  void testCleanUp() throws Exception
+	@After
+	public void testCleanUp() throws Exception
 	{
 		clearDB(restPort);
 		System.out.println("Running clear script");
 	}
 
-@Test	public void testSearchString() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	@Test	
+	public void testSearchString() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testSearchString");
-		
+
 		String[] filenames = {"multibyte1.xml", "multibyte2.xml", "multibyte3.xml"};
 		String queryOptionName = "multibyteSearchOpt.xml";
 
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
-				
+
 		// write docs
 		for(String filename : filenames)
 		{
 			writeDocumentUsingInputStreamHandle(client, filename, "/multibyte-search/", "XML");
 		}
-		
+
 		setQueryOption(client, queryOptionName);
-		
+
 		QueryManager queryMgr = client.newQueryManager();
-		
+
 		// create query def
 		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
 		querydef.setCriteria("mult-title:万里长城");
@@ -67,38 +69,37 @@ public class TestSearchMultibyte extends BasicJavaClientREST {
 		// create handle
 		DOMHandle resultsHandle = new DOMHandle();
 		queryMgr.search(querydef, resultsHandle);
-		
+
 		// get the result
 		Document resultDoc = resultsHandle.get();
-		
+
 		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
 		assertXpathEvaluatesTo("/multibyte-search/multibyte1.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
-		
+
 		// release client
 		client.release();		
 	}
-	
 
-@SuppressWarnings("deprecation")
-@Test	public void testSearchStringWithBucket() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	@Test	
+	public void testSearchStringWithBucket() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testSearchStringWithBucket");
-		
+
 		String[] filenames = {"multibyte1.xml", "multibyte2.xml", "multibyte3.xml"};
 		String queryOptionName = "multibyteSearchOpt.xml";
 
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
-				
+
 		// write docs
 		for(String filename : filenames)
 		{
 			writeDocumentUsingInputStreamHandle(client, filename, "/multibyte-search/", "XML");
 		}
-		
+
 		setQueryOption(client, queryOptionName);
-		
+
 		QueryManager queryMgr = client.newQueryManager();
-		
+
 		// create query def
 		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
 		querydef.setCriteria("mult-pop:medium");
@@ -106,39 +107,38 @@ public class TestSearchMultibyte extends BasicJavaClientREST {
 		// create handle
 		DOMHandle resultsHandle = new DOMHandle();
 		queryMgr.search(querydef, resultsHandle);
-		
+
 		// get the result
 		Document resultDoc = resultsHandle.get();
-		
+
 		assertXpathEvaluatesTo("2", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
 		assertXpathEvaluatesTo("/multibyte-search/multibyte2.xml", "string(//*[local-name()='result'][1]//@*[local-name()='uri'])", resultDoc);
 		assertXpathEvaluatesTo("/multibyte-search/multibyte1.xml", "string(//*[local-name()='result'][2]//@*[local-name()='uri'])", resultDoc);
-		
+
 		// release client
 		client.release();		
 	}
-	
 
-@SuppressWarnings("deprecation")
-@Test	public void testSearchStringWithBucketAndWord() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	@Test	
+	public void testSearchStringWithBucketAndWord() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testSearchStringWithBucketAndWord");
-		
+
 		String[] filenames = {"multibyte1.xml", "multibyte2.xml", "multibyte3.xml"};
 		String queryOptionName = "multibyteSearchOpt.xml";
 
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
-				
+
 		// write docs
 		for(String filename : filenames)
 		{
 			writeDocumentUsingInputStreamHandle(client, filename, "/multibyte-search/", "XML");
 		}
-		
+
 		setQueryOption(client, queryOptionName);
-		
+
 		QueryManager queryMgr = client.newQueryManager();
-		
+
 		// create query def
 		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
 		querydef.setCriteria("mult-pop:medium AND mult-title:上海");
@@ -146,18 +146,19 @@ public class TestSearchMultibyte extends BasicJavaClientREST {
 		// create handle
 		DOMHandle resultsHandle = new DOMHandle();
 		queryMgr.search(querydef, resultsHandle);
-		
+
 		// get the result
 		Document resultDoc = resultsHandle.get();
-		
+
 		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
 		assertXpathEvaluatesTo("/multibyte-search/multibyte2.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
-		
+
 		// release client
 		client.release();		
 	}
 
-@AfterClass	public static void tearDown() throws Exception
+	@AfterClass	
+	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
 		tearDownJavaRESTServer(dbName, fNames,restServerName);

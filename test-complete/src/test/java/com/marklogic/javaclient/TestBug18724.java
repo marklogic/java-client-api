@@ -6,14 +6,9 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import com.marklogic.client.query.AggregateResult;
 import com.marklogic.client.query.KeyValueQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.query.ValuesDefinition;
-
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -22,8 +17,6 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.ValuesHandle;
-
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
@@ -47,7 +40,7 @@ public  void testCleanUp() throws Exception
 	clearDB(restPort);
 	System.out.println("Running clear script");
 }
-@SuppressWarnings("deprecation")
+
 @Test
 	public void testDefaultStringSearch() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -96,7 +89,6 @@ public  void testCleanUp() throws Exception
 		client.release();		
 	}
 
-@SuppressWarnings("deprecation")
 @Test	
 	public void testDefaultKeyValueSearch() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	

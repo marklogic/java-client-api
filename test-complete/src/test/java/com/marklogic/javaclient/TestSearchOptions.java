@@ -32,40 +32,41 @@ public class TestSearchOptions extends BasicJavaClientREST {
 	private static String [] fNames = {"TestSearchOptionsDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
 
-@BeforeClass	public static void setUp() throws Exception 
+	@BeforeClass	
+	public static void setUp() throws Exception 
 	{
-	  System.out.println("In setup");
-	  setupJavaRESTServer(dbName, fNames[0],restServerName,8011);
-	  setupAppServicesConstraint(dbName);
+		System.out.println("In setup");
+		setupJavaRESTServer(dbName, fNames[0],restServerName,8011);
+		setupAppServicesConstraint(dbName);
 	}
 
-@After
-public  void testCleanUp() throws Exception
-{
-	clearDB(8011);
-	System.out.println("Running clear script");
-}	
+	@After
+	public void testCleanUp() throws Exception
+	{
+		clearDB(8011);
+		System.out.println("Running clear script");
+	}	
 
-@SuppressWarnings("deprecation")
-@Test	public void testReturnResultsFalse() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	@Test	
+	public void testReturnResultsFalse() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testReturnResultsFalse");
-		
+
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "searchReturnResultsFalseOpt.xml";
 
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
-				
+
 		// write docs
 		for(String filename : filenames)
 		{
 			writeDocumentUsingInputStreamHandle(client, filename, "/return-results-false/", "XML");
 		}
-		
+
 		setQueryOption(client, queryOptionName);
-		
+
 		QueryManager queryMgr = client.newQueryManager();
-		
+
 		// create query def
 		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
 		querydef.setCriteria("intitle:1945");
@@ -73,48 +74,47 @@ public  void testCleanUp() throws Exception
 		// create handle
 		DOMHandle resultsHandle = new DOMHandle();
 		queryMgr.search(querydef, resultsHandle);
-		
+
 		// get the result
 		Document resultDoc = resultsHandle.get();
 		System.out.println(convertXMLDocumentToString(resultDoc));
-		
+
 		assertXpathEvaluatesTo("1", "string(//*[local-name()='response']//@*[local-name()='total'])", resultDoc);
 		assertXpathNotExists("//*[local-name()='result']", resultDoc);
-		
+
 		// release client
 		client.release();		
 	}
-	
 
-@SuppressWarnings("deprecation")
-@Test	public void testSetViewMetadata() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	@Test	
+	public void testSetViewMetadata() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testSetViewMetadata");
-		
+
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "setViewOpt.xml";
 
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
-				
+
 		// create and initialize a handle on the metadata
-	    DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
-	    
-	    // put metadata
-	    metadataHandle.getCollections().addAll("my-collection");
-	    metadataHandle.getCollections().addAll("another-collection");
-	    metadataHandle.getPermissions().add("app-user", Capability.UPDATE, Capability.READ);
-		
+		DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+
+		// put metadata
+		metadataHandle.getCollections().addAll("my-collection");
+		metadataHandle.getCollections().addAll("another-collection");
+		metadataHandle.getPermissions().add("app-user", Capability.UPDATE, Capability.READ);
+
 		// write docs
 		for(String filename : filenames)
 		{
 			writeDocumentUsingInputStreamHandle(client, filename, "/return-setview-meta/", metadataHandle, "XML");
 		}
-		
+
 		setQueryOption(client, queryOptionName);
-		
+
 		QueryManager queryMgr = client.newQueryManager();
 		queryMgr.setView(QueryView.METADATA);
-		
+
 		// create query def
 		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
 		querydef.setCriteria("pop:high");
@@ -122,40 +122,39 @@ public  void testCleanUp() throws Exception
 		// create handle
 		DOMHandle resultsHandle = new DOMHandle();
 		queryMgr.search(querydef, resultsHandle);
-		
+
 		// get the result
 		Document resultDoc = resultsHandle.get();
 		//System.out.println(convertXMLDocumentToString(resultDoc));
-		
+
 		assertXpathEvaluatesTo("3", "string(//*[local-name()='response']//@*[local-name()='total'])", resultDoc);
 		assertXpathExists("//*[local-name()='metrics']", resultDoc);
-		
+
 		// release client
 		client.release();		
 	}
 
-
-@SuppressWarnings("deprecation")
-@Test	public void testSetViewResults() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	@Test	
+	public void testSetViewResults() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testSetViewResults");
-		
+
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "setViewOpt.xml";
 
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
-				
+
 		// write docs
 		for(String filename : filenames)
 		{
 			writeDocumentUsingInputStreamHandle(client, filename, "/return-setview-results/", "XML");
 		}
-		
+
 		setQueryOption(client, queryOptionName);
-		
+
 		QueryManager queryMgr = client.newQueryManager();
 		queryMgr.setView(QueryView.RESULTS);
-		
+
 		// create query def
 		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
 		querydef.setCriteria("pop:high");
@@ -163,40 +162,39 @@ public  void testCleanUp() throws Exception
 		// create handle
 		DOMHandle resultsHandle = new DOMHandle();
 		queryMgr.search(querydef, resultsHandle);
-		
+
 		// get the result
 		Document resultDoc = resultsHandle.get();
 		//System.out.println(convertXMLDocumentToString(resultDoc));
-		
+
 		assertXpathEvaluatesTo("3", "string(//*[local-name()='response']//@*[local-name()='total'])", resultDoc);
 		assertXpathExists("//*[local-name()='result']", resultDoc);
-		
+
 		// release client
 		client.release();		
 	}
-	
 
-@SuppressWarnings("deprecation")
-@Test	public void testSetViewFacets() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	@Test	
+	public void testSetViewFacets() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testSetViewFacets");
-		
+
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "setViewOpt.xml";
 
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
-				
+
 		// write docs
 		for(String filename : filenames)
 		{
 			writeDocumentUsingInputStreamHandle(client, filename, "/return-setview-facets/", "XML");
 		}
-		
+
 		setQueryOption(client, queryOptionName);
-		
+
 		QueryManager queryMgr = client.newQueryManager();
 		queryMgr.setView(QueryView.FACETS);
-		
+
 		// create query def
 		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
 		querydef.setCriteria("pop:high");
@@ -204,40 +202,39 @@ public  void testCleanUp() throws Exception
 		// create handle
 		DOMHandle resultsHandle = new DOMHandle();
 		queryMgr.search(querydef, resultsHandle);
-		
+
 		// get the result
 		Document resultDoc = resultsHandle.get();
 		//System.out.println(convertXMLDocumentToString(resultDoc));
-		
+
 		assertXpathEvaluatesTo("3", "string(//*[local-name()='response']//@*[local-name()='total'])", resultDoc);
 		assertXpathExists("//*[local-name()='facet']", resultDoc);
-		
+
 		// release client
 		client.release();		
 	}
 
-
-@SuppressWarnings("deprecation")
-@Test	public void testSetViewDefault() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	@Test	
+	public void testSetViewDefault() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testSetViewDefault");
-		
+
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "setViewOpt.xml";
 
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
-				
+
 		// write docs
 		for(String filename : filenames)
 		{
 			writeDocumentUsingInputStreamHandle(client, filename, "/return-setview-all/", "XML");
 		}
-		
+
 		setQueryOption(client, queryOptionName);
-		
+
 		QueryManager queryMgr = client.newQueryManager();
 		queryMgr.setView(QueryView.DEFAULT);
-		
+
 		// create query def
 		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
 		querydef.setCriteria("pop:high");
@@ -245,41 +242,40 @@ public  void testCleanUp() throws Exception
 		// create handle
 		DOMHandle resultsHandle = new DOMHandle();
 		queryMgr.search(querydef, resultsHandle);
-		
+
 		// get the result
 		Document resultDoc = resultsHandle.get();
 		System.out.println(convertXMLDocumentToString(resultDoc));
-		
+
 		assertXpathEvaluatesTo("3", "string(//*[local-name()='response']//@*[local-name()='total'])", resultDoc);
 		assertXpathExists("//*[local-name()='result']", resultDoc);
 		assertXpathExists("//*[local-name()='facet']", resultDoc);
-		
+
 		// release client
 		client.release();		
 	}
-		
 
-@SuppressWarnings("deprecation")
-@Test	public void testSetViewAll() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	@Test	
+	public void testSetViewAll() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testSetViewAll");
-		
+
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "setViewOpt.xml";
 
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
-				
+
 		// write docs
 		for(String filename : filenames)
 		{
 			writeDocumentUsingInputStreamHandle(client, filename, "/return-setview-all/", "XML");
 		}
-		
+
 		setQueryOption(client, queryOptionName);
-		
+
 		QueryManager queryMgr = client.newQueryManager();
 		queryMgr.setView(QueryView.ALL);
-		
+
 		// create query def
 		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
 		querydef.setCriteria("pop:high");
@@ -287,21 +283,22 @@ public  void testCleanUp() throws Exception
 		// create handle
 		DOMHandle resultsHandle = new DOMHandle();
 		queryMgr.search(querydef, resultsHandle);
-		
+
 		// get the result
 		Document resultDoc = resultsHandle.get();
 		System.out.println(convertXMLDocumentToString(resultDoc));
-		
+
 		assertXpathEvaluatesTo("3", "string(//*[local-name()='response']//@*[local-name()='total'])", resultDoc);
 		assertXpathExists("//*[local-name()='result']", resultDoc);
 		assertXpathExists("//*[local-name()='facet']", resultDoc);
 		assertXpathExists("//*[local-name()='metrics']", resultDoc);
-		
+
 		// release client
 		client.release();		
 	}
 
-@AfterClass	public static  void tearDown() throws Exception
+	@AfterClass	
+	public static  void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
 		tearDownJavaRESTServer(dbName, fNames, restServerName);

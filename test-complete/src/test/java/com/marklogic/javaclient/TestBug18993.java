@@ -34,7 +34,6 @@ public class TestBug18993 extends BasicJavaClientREST {
 		System.out.println("Running clear script");
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testBug18993() throws IOException
 	{

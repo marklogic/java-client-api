@@ -6,18 +6,15 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import com.marklogic.client.query.QueryManager;
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.junit.Assert.*;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
@@ -35,7 +32,6 @@ public class TestBug20979 extends BasicJavaClientREST {
 	  setupAppServicesConstraint(dbName);
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testBug20979() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	

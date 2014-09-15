@@ -43,7 +43,7 @@ public  void testCleanUp() throws Exception
 	clearDB(8011);
 	System.out.println("Running clear script");
 }
-@SuppressWarnings("deprecation")
+
 @Test
 	public void testPointPositiveLangLat() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -78,7 +78,6 @@ public  void testCleanUp() throws Exception
 		client.release();		
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testPointNegativeLangLat() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -113,7 +112,6 @@ public  void testCleanUp() throws Exception
 		client.release();		
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testNegativePointInvalidValue() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -154,7 +152,6 @@ public  void testCleanUp() throws Exception
 		client.release();		
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testCircleNegativeLangLat() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -193,7 +190,6 @@ public  void testCleanUp() throws Exception
 		client.release();		
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testBoxNegativeLangLat() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -231,7 +227,6 @@ public  void testCleanUp() throws Exception
 		client.release();		
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testBoxAndWord() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	

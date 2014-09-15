@@ -14,16 +14,14 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.OutputStreamHandle;
-import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.javaclient.BasicJavaClientREST;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.*;
 
 import org.junit.*;
-public class TestOutputStreamHandle extends BasicJavaClientREST {
-	
+
+public class TestOutputStreamHandle extends BasicJavaClientREST {	
 	private static String dbName = "OutputStreamHandleDB";
 	private static String [] fNames = {"OutputStreamHandleDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
@@ -34,7 +32,6 @@ public class TestOutputStreamHandle extends BasicJavaClientREST {
 		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testXmlCRUD() throws IOException, SAXException, ParserConfigurationException
 	{	
@@ -91,7 +88,7 @@ public class TestOutputStreamHandle extends BasicJavaClientREST {
 	    String exception = "";
 	    try
 	    {
-	    	InputStreamHandle deleteHandle = readDocumentUsingInputStreamHandle(client, uri + filename, "XML");
+	    	readDocumentUsingInputStreamHandle(client, uri + filename, "XML");
 	    } catch (Exception e) { exception = e.toString(); }
 	    
 	    String expectedException = "Could not read non-existent document";
@@ -102,7 +99,6 @@ public class TestOutputStreamHandle extends BasicJavaClientREST {
 		client.release();
 	}
 	
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testTextCRUD() throws IOException
 	{	
@@ -150,12 +146,10 @@ public class TestOutputStreamHandle extends BasicJavaClientREST {
 	    deleteDocument(client, uri + filename, "Text");
 
 		// read the deleted document
-	    //assertFalse("Document is not deleted", isDocumentExist(client, uri + filename, "Text"));
-	    
 	    String exception = "";
 	    try
 	    {
-	    	InputStreamHandle deleteHandle = readDocumentUsingInputStreamHandle(client, uri + filename, "Text");
+	    	readDocumentUsingInputStreamHandle(client, uri + filename, "Text");
 	    } catch (Exception e) { exception = e.toString(); }
 	    
 	    String expectedException = "Could not read non-existent document";
@@ -166,9 +160,8 @@ public class TestOutputStreamHandle extends BasicJavaClientREST {
 		client.release();
 	}
 
-
-	@SuppressWarnings("deprecation")
-	@Test	public void testJsonCRUD() throws IOException
+	@Test	
+	public void testJsonCRUD() throws IOException
 	{	
 		String filename = "json-original.json";
 		String uri = "/write-json-outputstreamhandle/";
@@ -222,7 +215,7 @@ public class TestOutputStreamHandle extends BasicJavaClientREST {
 	    String exception = "";
 	    try
 	    {
-	    	InputStreamHandle deleteHandle = readDocumentUsingInputStreamHandle(client, uri + filename, "JSON");
+	    	readDocumentUsingInputStreamHandle(client, uri + filename, "JSON");
 	    } catch (Exception e) { exception = e.toString(); }
 	    
 	    String expectedException = "Could not read non-existent document";
@@ -233,9 +226,8 @@ public class TestOutputStreamHandle extends BasicJavaClientREST {
 		client.release();
 	}
 	
-
-	@SuppressWarnings("deprecation")
-	@Test	public void testBinaryCRUD() throws IOException
+	@Test	
+	public void testBinaryCRUD() throws IOException
 	{	
 		String filename = "Pandakarlino.jpg";
 		String uri = "/write-bin-outputstreamhandle/";
@@ -281,12 +273,10 @@ public class TestOutputStreamHandle extends BasicJavaClientREST {
 	    deleteDocument(client, uri + filename, "Binary");
 
 		// read the deleted document
-	    //assertFalse("Document is not deleted", isDocumentExist(client, uri + filename, "Binary"));
-	    
 	    String exception = "";
 	    try
 	    {
-	    	InputStreamHandle deleteHandle = readDocumentUsingInputStreamHandle(client, uri + filename, "Binary");
+	    	readDocumentUsingInputStreamHandle(client, uri + filename, "Binary");
 	    } catch (Exception e) { exception = e.toString(); }
 	    
 	    String expectedException = "Could not read non-existent document";

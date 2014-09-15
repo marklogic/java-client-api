@@ -29,7 +29,6 @@ public class TestBug19016 extends BasicJavaClientREST {
 	  setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testBug19016() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{	

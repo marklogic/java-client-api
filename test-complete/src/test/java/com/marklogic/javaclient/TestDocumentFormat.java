@@ -32,7 +32,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testXMLFormatOnXML() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
@@ -68,7 +67,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testJSONFormatOnXML() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
@@ -109,7 +107,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testBinaryFormatOnXML() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
@@ -145,7 +142,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test	
 	public void testTextFormatOnXML() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
@@ -181,7 +177,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testJSONFormatOnJSON() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
@@ -217,7 +212,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}	
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testXMLFormatOnJSON() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
@@ -253,7 +247,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}	
 
-	@SuppressWarnings("deprecation")
 	@Test	
 	public void testBinaryFormatOnJSON() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
@@ -289,7 +282,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}	
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testTextFormatOnJSON() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
@@ -325,8 +317,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}	
 
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testBinaryFormatOnBinary() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testBinaryFormatOnBinary");
@@ -361,8 +351,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}	
 
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testXMLFormatOnBinary() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testXMLFormatOnBinary");
@@ -402,8 +390,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}	
 
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testJSONFormatOnBinary() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testJSONFormatOnBinary");
@@ -443,8 +429,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testTextFormatOnBinary() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testTextFormatOnBinary");
@@ -484,8 +468,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}	
 
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testTextFormatOnText() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testTextFormatOnText");
@@ -521,7 +503,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	}	
 	
 
-	@SuppressWarnings("deprecation")
 	@Test	public void testXMLFormatOnText() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testXMLFormatOnText");
@@ -556,8 +537,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testJSONFormatOnText() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testJSONFormatOnText");
@@ -597,8 +576,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testBinaryFormatOnText() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testBinaryFormatOnText");
@@ -633,8 +610,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testNegativeJSONFormatWithDOMHandle() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testNegativeJSONFormatWithDOMHandle");

@@ -43,7 +43,7 @@ public class TestAppServicesGeoElemPairConstraint extends BasicJavaClientREST {
 		clearDB(8011);
 		System.out.println("Running clear script");
 	}
-	@SuppressWarnings("deprecation")
+
 	@Test
 	public void testPointPositiveLangLat() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -78,7 +78,6 @@ public class TestAppServicesGeoElemPairConstraint extends BasicJavaClientREST {
 		client.release();		
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testPointNegativeLatPositiveLang() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -113,7 +112,6 @@ public class TestAppServicesGeoElemPairConstraint extends BasicJavaClientREST {
 		client.release();		
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testNegativePointInvalidValue() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -152,7 +150,6 @@ public class TestAppServicesGeoElemPairConstraint extends BasicJavaClientREST {
 		client.release();		
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testCircleNegativeLatPositiveLang() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -191,7 +188,6 @@ public class TestAppServicesGeoElemPairConstraint extends BasicJavaClientREST {
 		client.release();		
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testBoxNegativeLatPositiveLang() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -228,7 +224,6 @@ public class TestAppServicesGeoElemPairConstraint extends BasicJavaClientREST {
 		client.release();		
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testBoxAndWord() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
