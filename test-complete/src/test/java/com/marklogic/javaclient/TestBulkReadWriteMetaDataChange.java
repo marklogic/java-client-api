@@ -12,7 +12,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.Transaction;
@@ -21,6 +23,7 @@ import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
@@ -28,6 +31,7 @@ import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 
 /**
@@ -51,8 +55,9 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In Setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
-		createRESTUser("app-user", "password", "rest-writer","rest-reader" );
+		
+//		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+//		createRESTUser("app-user", "password", "rest-writer","rest-reader" );
 	}
 
 	/**
@@ -61,8 +66,8 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
-		deleteRESTUser("app-user");
+//		tearDownJavaRESTServer(dbName, fNames, restServerName);
+//		deleteRESTUser("app-user");
 	}
 
 	/**
@@ -238,7 +243,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 	 * Verified by reading individual documents. User does not have permission to update the meta-data.
 	 */
 
-	@Test(expected=com.marklogic.client.ForbiddenUserException.class)	
+	@Test
 	public void testWriteMultipleTextDocWithChangedMetadataProperties() {
 		String docId[] = {"/foo/test/myFoo1.txt","/foo/test/myFoo2.txt","/foo/test/myFoo3.txt"};
 
@@ -247,34 +252,90 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 		DocumentWriteSet writeset = docMgr.newWriteSet();
 		// put metadata
 		DocumentMetadataHandle mh = setMetadata();
-		DocumentMetadataHandle mhRead = null;		
-
+		DocumentMetadataHandle mhRead = new DocumentMetadataHandle();		
+		
 		writeset.addDefault(mh);
 		writeset.add(docId[0], new StringHandle().with("This is so foo1"));
 		writeset.add(docId[1], new StringHandle().with("This is so foo2"));
 		writeset.add(docId[2], new StringHandle().with("This is so foo3"));
 		docMgr.write(writeset);
+		StringHandle sh=docMgr.read(docId[0],new StringHandle());
+		System.out.println(sh.get());
 		DocumentPage page = docMgr.read(docId);
-
 		while(page.hasNext()){
 			DocumentRecord rec = page.next();
+			System.out.println(rec.getUri());
 			docMgr.readMetadata(rec.getUri(), mhRead);
-			validateMetadata(mh);
+			validateMetadata(mhRead);
 		}
-		validateMetadata(mh);
+		validateMetadata(mhRead);
 
 		// Add new meta-data
 		DocumentMetadataHandle mhUpdated = setUpdatedMetadataProperties();
 		writeset.addDefault(mhUpdated);
 
 		docMgr.write(writeset);
-		DocumentMetadataHandle mhUpd = null;
+		DocumentMetadataHandle mhUpd = new DocumentMetadataHandle() ;
 
 		for(String docURI : docId){		
 			docMgr.readMetadata(docURI, mhUpd);
 			validateUpdatedMetadataProperties(mhUpd);
 		}
 		validateUpdatedMetadataProperties(mhUpd);
+	}
+	@Test
+	public void testWriteMultipleJacksonPoJoDocsWithMetadata() throws Exception  
+	{
+		String docId[] ={"/jack/iphone.json","/jack/ipad.json","/jack/ipod.json"};
+		Product product1 = new Product();
+		product1.setName("iPhone");
+		product1.setIndustry("Hardware");
+		product1.setDescription("Very cool Iphone");
+		Product product2 = new Product();
+		product2.setName("iPad");
+		product2.setIndustry("Hardware");
+		product2.setDescription("Very cool Ipad");
+		Product product3 = new Product();
+		product3.setName("iPod");
+		product3.setIndustry("Hardware");
+		product3.setDescription("Very cool Ipod");
+		
+		DocumentMetadataHandle mh = setMetadata();
+		DocumentMetadataHandle mhRead = new DocumentMetadataHandle();		
+		
+		JacksonHandle writeHandle = new JacksonHandle();
+		JsonNode writeDocument = writeHandle.getMapper().convertValue(product1, JsonNode.class);
+		writeHandle.set(writeDocument);
+		JsonNode writeDocument2 = writeHandle.getMapper().convertValue(product2, JsonNode.class);
+		JsonNode writeDocument3 = writeHandle.getMapper().convertValue(product3, JsonNode.class);
+		JSONDocumentManager docMgr = client.newJSONDocumentManager();
+		DocumentWriteSet writeset =docMgr.newWriteSet();
+
+		writeset.addDefault(mh);
+		writeset.add(docId[0],writeHandle);
+		writeset.add(docId[1],new JacksonHandle().with(writeDocument2));
+		DocumentMetadataHandle mhUpdated = setUpdatedMetadataCollections();
+		writeset.add(docId[2],mhUpdated,new JacksonHandle().with(writeDocument3));
+		docMgr.write(writeset);
+
+		JacksonHandle jh = new JacksonHandle();
+		docMgr.read(docId[0], jh);		 		  
+		String exp="{\"name\":\"iPhone\",\"industry\":\"Hardware\",\"description\":\"Very cool Iphone\"}";
+		JSONAssert.assertEquals(exp,jh.get().toString() , false);
+		docMgr.readMetadata(docId[0], mhRead);
+		validateMetadata(mhRead);
+		
+		docMgr.read(docId[1], jh);
+		exp="{\"name\":\"iPad\",\"industry\":\"Hardware\",\"description\":\"Very cool Ipad\"}";
+		JSONAssert.assertEquals(exp,jh.get().toString() , false);
+		docMgr.readMetadata(docId[1], mhRead);
+		validateMetadata(mhRead);
+		
+		docMgr.read(docId[2], jh);
+		exp="{\"name\":\"iPod\",\"industry\":\"Hardware\",\"description\":\"Very cool Ipod\"}";
+		JSONAssert.assertEquals(exp,jh.get().toString() , false);
+		docMgr.readMetadata(docId[2], mhRead);
+		this.validateUpdatedMetadataCollections(mhRead);
 	}
 
 	/* 
@@ -284,7 +345,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 	 * read method performs the bulk read
 	 */
 	@Test
-	public void testBulkReadUsingMultipleUri() {
+	public void testBulkReadUsingMultipleUri() throws Exception {
 		String docId[] = {"/foo/test/transactionURIFoo1.txt","/foo/test/transactionURIFoo2.txt","/foo/test/transactionURIFoo3.txt"};
 		Transaction transaction = client.openTransaction();
 		try {
