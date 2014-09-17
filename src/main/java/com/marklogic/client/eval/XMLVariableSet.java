@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.eval;
 
+import com.marklogic.client.io.marker.XMLWriteHandle;
+
 public interface XMLVariableSet extends VariableSet {
     public XMLVariableSet add(String name, XMLWriteHandle value);
     public XMLVariableSet addAs(String name, Object value);

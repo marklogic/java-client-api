@@ -16,7 +16,6 @@
 package com.marklogic.client;
 
 import java.util.Iterator;
-import java.util.Iterable;
 
 /** A generic interface for pagination through large sets of items of type &lt;T&gt;. */
 public interface Page<T> extends Iterator<T>, Iterable<T> {

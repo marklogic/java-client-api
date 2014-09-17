@@ -31,6 +31,6 @@ class DocumentPageImpl extends BasicPage<DocumentRecord> implements DocumentPage
     }
 
     public <T extends AbstractReadHandle> T nextContent(T contentHandle) {
-        return iterator.next().getContent(contentHandle);
+        return internalIterator().next().getContent(contentHandle);
     }
 }

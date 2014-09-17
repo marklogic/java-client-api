@@ -15,6 +15,37 @@
  */
 package com.marklogic.client.io;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.Calendar;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSException;
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSParser;
+
+import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.io.marker.BufferableHandle;
+import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.ContentHandleFactory;
+import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
+
+import javax.xml.datatype.Duration;
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 /**
  * Supports get/set of any type necessary for ServerEval but not handled by JAXBDatatypeHandle or DomNodeHandle.
  * For now the only two types are java.net.URI and javax.xml.namespace.QName.
@@ -24,7 +55,9 @@ public class XQueryTypeHandle<T>
     implements OutputStreamSender, BufferableHandle, ContentHandle<T>,
         XMLReadHandle, XMLWriteHandle
 {
-    private T                   content;
+	static final private Logger logger = LoggerFactory.getLogger(JAXBHandle.class);
+
+	private T                   content;
 
     /**
      * Creates a factory to create a DOMHandle instance for a DOM document.
@@ -38,7 +71,7 @@ public class XQueryTypeHandle<T>
             }
             @Override
             public boolean isHandled(Class<?> type) {
-                return null;
+                return (Boolean) null;
             }
             @Override
             public <C> ContentHandle<C> newHandle(Class<C> type) {
@@ -66,7 +99,7 @@ public class XQueryTypeHandle<T>
      *   </pre>
      */
     public XQueryTypeHandle(QName xsType, T content) {
-        this();
+        this((Class<T>) content.getClass());
         set(content);
     }
 
@@ -120,66 +153,66 @@ public class XQueryTypeHandle<T>
             throw new MarkLogicIOException(e);
         }
     }
-    /**
-     * Returns the factory for building DOM documents.
-     * @return    the document factory
-     */
-    public DocumentBuilderFactory getFactory() throws ParserConfigurationException {
-        if (factory == null)
-            factory = makeDocumentBuilderFactory();
-        return factory;
-    }
-    /**
-     * Specifies the factory for building DOM documents.
-     * @param factory    the document factory
-     */
-    public void setFactory(DocumentBuilderFactory factory) {
-        this.factory = factory;
-    }
-    protected DocumentBuilderFactory makeDocumentBuilderFactory() throws ParserConfigurationException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-        factory.setValidating(false);
-        // TODO: XInclude
-
-        return factory;
-    }
+//    /**
+//     * Returns the factory for building DOM documents.
+//     * @return    the document factory
+//     */
+//    public DocumentBuilderFactory getFactory() throws ParserConfigurationException {
+//        if (factory == null)
+//            factory = makeDocumentBuilderFactory();
+//        return factory;
+//    }
+//    /**
+//     * Specifies the factory for building DOM documents.
+//     * @param factory    the document factory
+//     */
+//    public void setFactory(DocumentBuilderFactory factory) {
+//        this.factory = factory;
+//    }
+//    protected DocumentBuilderFactory makeDocumentBuilderFactory() throws ParserConfigurationException {
+//        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+//        factory.setNamespaceAware(true);
+//        factory.setValidating(false);
+//        // TODO: XInclude
+//
+//        return factory;
+//    }
     @Override
     protected void receiveContent(InputStream content) {
-        if (content == null) {
-            this.content = null;
-            return;
-        }
-
-        try {
-            if (logger.isInfoEnabled())
-                logger.info("Parsing DOM document from input stream");
-
-            DocumentBuilderFactory factory = getFactory();
-            if (factory == null) {
-                throw new MarkLogicInternalException("Failed to make DOM document builder factory");
-            }
-
-            DOMImplementationLS domImpl = (DOMImplementationLS) factory.newDocumentBuilder().getDOMImplementation();
-
-            LSParser parser = domImpl.createLSParser(DOMImplementationLS.MODE_SYNCHRONOUS, null);
-            if (resolver != null) {
-                parser.getDomConfig().setParameter("resource-resolver", resolver);
-            }
-
-            LSInput domInput = domImpl.createLSInput();
-            domInput.setEncoding("UTF-8");
-            domInput.setByteStream(content);
-
-            this.content = parser.parse(domInput);
-            content.close();
-        } catch (IOException e) {
-            logger.error("Failed to parse DOM document from input stream",e);
-            throw new MarkLogicInternalException(e);
-        } catch (ParserConfigurationException e) {
-            logger.error("Failed to parse DOM document from input stream",e);
-            throw new MarkLogicInternalException(e);
-        }
+//        if (content == null) {
+//            this.content = null;
+//            return;
+//        }
+//
+//        try {
+//            if (logger.isInfoEnabled())
+//                logger.info("Parsing DOM document from input stream");
+//
+//            DocumentBuilderFactory factory = getFactory();
+//            if (factory == null) {
+//                throw new MarkLogicInternalException("Failed to make DOM document builder factory");
+//            }
+//
+//            DOMImplementationLS domImpl = (DOMImplementationLS) factory.newDocumentBuilder().getDOMImplementation();
+//
+//            LSParser parser = domImpl.createLSParser(DOMImplementationLS.MODE_SYNCHRONOUS, null);
+//            if (resolver != null) {
+//                parser.getDomConfig().setParameter("resource-resolver", resolver);
+//            }
+//
+//            LSInput domInput = domImpl.createLSInput();
+//            domInput.setEncoding("UTF-8");
+//            domInput.setByteStream(content);
+//
+//            this.content = parser.parse(domInput);
+//            content.close();
+//        } catch (IOException e) {
+//            logger.error("Failed to parse DOM document from input stream",e);
+//            throw new MarkLogicInternalException(e);
+//        } catch (ParserConfigurationException e) {
+//            logger.error("Failed to parse DOM document from input stream",e);
+//            throw new MarkLogicInternalException(e);
+//        }
     }
     @Override
     protected OutputStreamSender sendContent() {
@@ -191,30 +224,30 @@ public class XQueryTypeHandle<T>
     }
     @Override
     public void write(OutputStream out) throws IOException {
-        try {
-            if (logger.isInfoEnabled())
-                logger.info("Serializing DOM document to output stream");
-
-            DocumentBuilderFactory factory = getFactory();
-            if (factory == null) {
-                throw new MarkLogicInternalException("Failed to make DOM document builder factory");
-            }
-
-            DOMImplementationLS domImpl = (DOMImplementationLS) factory.newDocumentBuilder().getDOMImplementation();
-            LSOutput domOutput = domImpl.createLSOutput();
-            domOutput.setEncoding("UTF-8");
-            domOutput.setByteStream(out);
-            domImpl.createLSSerializer().write(content, domOutput);
-        } catch (DOMException e) {
-            logger.error("Failed to serialize DOM document to output stream",e);
-            throw new MarkLogicInternalException(e);
-        } catch (LSException e) {
-            logger.error("Failed to serialize DOM document to output stream",e);
-            throw new MarkLogicInternalException(e);
-        } catch (ParserConfigurationException e) {
-            logger.error("Failed to serialize DOM document to output stream",e);
-            throw new MarkLogicInternalException(e);
-        }
+//        try {
+//            if (logger.isInfoEnabled())
+//                logger.info("Serializing DOM document to output stream");
+//
+//            DocumentBuilderFactory factory = getFactory();
+//            if (factory == null) {
+//                throw new MarkLogicInternalException("Failed to make DOM document builder factory");
+//            }
+//
+//            DOMImplementationLS domImpl = (DOMImplementationLS) factory.newDocumentBuilder().getDOMImplementation();
+//            LSOutput domOutput = domImpl.createLSOutput();
+//            domOutput.setEncoding("UTF-8");
+//            domOutput.setByteStream(out);
+//            domImpl.createLSSerializer().write(content, domOutput);
+//        } catch (DOMException e) {
+//            logger.error("Failed to serialize DOM document to output stream",e);
+//            throw new MarkLogicInternalException(e);
+//        } catch (LSException e) {
+//            logger.error("Failed to serialize DOM document to output stream",e);
+//            throw new MarkLogicInternalException(e);
+//        } catch (ParserConfigurationException e) {
+//            logger.error("Failed to serialize DOM document to output stream",e);
+//            throw new MarkLogicInternalException(e);
+//        }
     }
 }
 

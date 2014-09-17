@@ -15,8 +15,36 @@
  */
 package com.marklogic.client.io;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.Calendar;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSException;
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSParser;
+
+import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.io.marker.BufferableHandle;
+import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.ContentHandleFactory;
+import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
+
+import javax.xml.datatype.Duration;
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Supports get/set of any type handled by javax.xml.bind.DatatypeConverter or for time-
@@ -27,7 +55,41 @@ public class JAXBDatatypeHandle<T>
     implements OutputStreamSender, BufferableHandle, ContentHandle<T>,
         XMLReadHandle, XMLWriteHandle
 {
-    private Node                   content;
+    public static final DataType<Calendar> XS_ANYURI = new DataType<Calendar>(Calendar.class);
+    public static final DataType<Calendar> XS_BASE64BINARY = new DataType<Calendar>(Calendar.class);
+    public static final DataType<Calendar> XS_BOOLEAN = new DataType<Calendar>(Calendar.class);
+    public static final DataType<Calendar> XS_DATE = new DataType<Calendar>(Calendar.class);
+    public static final DataType<Calendar> XS_DATETIME = new DataType<Calendar>(Calendar.class);
+    public static final DataType<Calendar> XS_DAYTIMEDURATION = new DataType<Calendar>(Calendar.class);
+    public static final DataType<Calendar> XS_DECIMAL = new DataType<Calendar>(Calendar.class);
+    public static final DataType<Calendar> XS_DOUBLE = new DataType<Calendar>(Calendar.class);
+    public static final DataType<Duration> XS_DURATION = new DataType<Duration>(Duration.class);
+    public static final DataType<Calendar> XS_FLOAT = new DataType<Calendar>(Calendar.class);
+    public static final DataType<Calendar> XS_GDAY = new DataType<Calendar>(Calendar.class);
+    public static final DataType<Calendar> XS_GMONTH = new DataType<Calendar>(Calendar.class);
+    public static final DataType<Calendar> XS_GMONTHDAY = new DataType<Calendar>(Calendar.class);
+    public static final DataType<Calendar> XS_GYEAR = new DataType<Calendar>(Calendar.class);
+    public static final DataType<Calendar> XS_GYEARMONTH = new DataType<Calendar>(Calendar.class);
+    public static final DataType<Calendar> XS_HEXBINARY = new DataType<Calendar>(Calendar.class);
+    public static final DataType<Calendar> XS_INTEGER = new DataType<Calendar>(Calendar.class);
+    public static final DataType<Calendar> XS_QNAME = new DataType<Calendar>(Calendar.class);
+    public static final DataType<Calendar> XS_STRING = new DataType<Calendar>(Calendar.class);
+    public static final DataType<Calendar> XS_TIME = new DataType<Calendar>(Calendar.class);
+
+    public static class DataType<D> {
+         private Class<D> clazz;
+         private DataType(Class<D> clazz) {
+             this.clazz = clazz;
+         }
+
+         public Class<D> getMappedClass() {
+             return clazz;
+         }
+     };
+
+	static final private Logger logger = LoggerFactory.getLogger(JAXBHandle.class);
+
+    private T                      content;
     private DocumentBuilderFactory factory;
 
     /**
@@ -42,7 +104,7 @@ public class JAXBDatatypeHandle<T>
             }
             @Override
             public boolean isHandled(Class<?> type) {
-                return null;
+                return (Boolean) null;
             }
             @Override
             public <C> ContentHandle<C> newHandle(Class<C> type) {
@@ -55,6 +117,7 @@ public class JAXBDatatypeHandle<T>
         super();
         setResendable(true);
     }
+
 
     /**
      * Initializes the handle with the content.
@@ -102,9 +165,23 @@ public class JAXBDatatypeHandle<T>
      *   javax.xml.datatype.XMLGregorianCalendar
      *   </pre>
      */
-    public JAXBDatatypeHandle(QName xsType, T content) {
-        this();
+    public JAXBDatatypeHandle(DataType<T> type) {
+        super();
+    }
+
+    public JAXBDatatypeHandle(DataType<T> type, String content) {
+        super();
+        set(convert(content));
+    }
+
+    public JAXBDatatypeHandle(T content) {
+        super();
         set(content);
+    }
+
+    public T convert(String content) {
+        // use DatatypeConverter or DatatypeFactory to convert 
+        return null;
     }
 
     /**
@@ -200,15 +277,15 @@ public class JAXBDatatypeHandle<T>
             DOMImplementationLS domImpl = (DOMImplementationLS) factory.newDocumentBuilder().getDOMImplementation();
 
             LSParser parser = domImpl.createLSParser(DOMImplementationLS.MODE_SYNCHRONOUS, null);
-            if (resolver != null) {
-                parser.getDomConfig().setParameter("resource-resolver", resolver);
-            }
+//            if (resolver != null) {
+//                parser.getDomConfig().setParameter("resource-resolver", resolver);
+//            }
 
             LSInput domInput = domImpl.createLSInput();
             domInput.setEncoding("UTF-8");
             domInput.setByteStream(content);
 
-            this.content = parser.parse(domInput);
+            this.content = (T) parser.parse(domInput);
             content.close();
         } catch (IOException e) {
             logger.error("Failed to parse DOM document from input stream",e);
@@ -241,7 +318,7 @@ public class JAXBDatatypeHandle<T>
             LSOutput domOutput = domImpl.createLSOutput();
             domOutput.setEncoding("UTF-8");
             domOutput.setByteStream(out);
-            domImpl.createLSSerializer().write(content, domOutput);
+            domImpl.createLSSerializer().write((Node) content, domOutput);
         } catch (DOMException e) {
             logger.error("Failed to serialize DOM document to output stream",e);
             throw new MarkLogicInternalException(e);
@@ -253,6 +330,7 @@ public class JAXBDatatypeHandle<T>
             throw new MarkLogicInternalException(e);
         }
     }
+
 }
 
 

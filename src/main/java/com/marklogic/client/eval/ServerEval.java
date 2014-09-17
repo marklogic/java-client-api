@@ -15,31 +15,10 @@
  */
 package com.marklogic.client.eval;
 
+import com.marklogic.client.io.marker.AbstractReadHandle;
+
 public interface ServerEval {
-    public <T> T evalXQueryAs(Class<T> responseType, TextWriteHandle xquery, VariableSet vars, 
-        String database, Transaction transaction, TransactionMode mode);
-    public <T> T evalJavascriptAs(Class<T> responseType, TextWriteHandle xquery, JSONVariableSet vars, 
-        String database, Transaction transaction, TransactionMode mode);
-    public <T> T evalXQueryAs(Class<T> responseType, String xquery, VariableSet vars, 
-        String database, Transaction transaction, TransactionMode mode);
-    public <T> T evalJavascriptAs(Class<T> responseType, String xquery, JSONVariableSet vars, 
-        String database, Transaction transaction, TransactionMode mode);
-    public <H extends AbstractReadHandle> H evalXQuery(H responseHandle, TextWriteHandle xquery, VariableSet vars, 
-        String database, Transaction transaction, TransactionMode mode);
-    public <H extends AbstractReadHandle> H evalJavascript(H responseHandle, TextWriteHandle xquery, JSONVariableSet vars, 
-        String database, Transaction transaction, TransactionMode mode);
-    public <H extends AbstractReadHandle> H evalXQuery(H responseHandle, String xquery, VariableSet vars, 
-        String database, Transaction transaction, TransactionMode mode);
-    public <H extends AbstractReadHandle> H evalJavascript(H responseHandle, String xquery, JSONVariableSet vars, 
-        String database, Transaction transaction, TransactionMode mode);
-    public MultiPartResponsePage evalXQuery(TextWriteHandle xquery, VariableSet vars, 
-        String database, Transaction transaction, TransactionMode mode);
-    public MultiPartResponsePage evalJavascript(TextWriteHandle xquery, JSONVariableSet vars, 
-        String database, Transaction transaction, TransactionMode mode);
-    public MultiPartResponsePage evalXQuery(String xquery, VariableSet vars, 
-        String database, Transaction transaction, TransactionMode mode);
-    public MultiPartResponsePage evalJavascript(String xquery, JSONVariableSet vars, 
-        String database, Transaction transaction, TransactionMode mode);
-    public JSONVariableSet newJSONVariableSet();
-    public XMLVariableSet  newXMLVariableSet();
+    public <T> T evalAs(Class<T> responseType);
+    public <H extends AbstractReadHandle> H eval(H responseHandle);
+    public EvalResults eval();
 }

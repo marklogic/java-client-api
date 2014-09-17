@@ -15,8 +15,33 @@
  */
 package com.marklogic.client.io;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSException;
+import org.w3c.dom.ls.LSInput;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSParser;
+
+import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.io.marker.BufferableHandle;
+import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.ContentHandleFactory;
+import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
+
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Will register all subinterfaces of org.w3c.Node for convenience methods readAs and writeAs.
@@ -26,7 +51,9 @@ public class DOMNodeHandle<T extends Node>
     implements OutputStreamSender, BufferableHandle, ContentHandle<T>,
         XMLReadHandle, XMLWriteHandle
 {
-    private Node                   content;
+	static final private Logger logger = LoggerFactory.getLogger(JAXBHandle.class);
+
+	private T                      content;
     private DocumentBuilderFactory factory;
 
     /**
@@ -41,7 +68,7 @@ public class DOMNodeHandle<T extends Node>
             }
             @Override
             public boolean isHandled(Class<?> type) {
-                return null;
+                return (Boolean) null;
             }
             @Override
             public <C> ContentHandle<C> newHandle(Class<C> type) {
@@ -59,7 +86,7 @@ public class DOMNodeHandle<T extends Node>
      * Initializes the handle with a DOM Node for the content.
      * @param content    a DOM Node
      */
-    public DOMNodeHandle(Node content) {
+    public DOMNodeHandle(T content) {
         this();
         set(content);
     }
@@ -69,7 +96,7 @@ public class DOMNodeHandle<T extends Node>
      * @return    the DOM Node
      */
     @Override
-    public Document get() {
+    public T get() {
         return content;
     }
     /**
@@ -77,7 +104,7 @@ public class DOMNodeHandle<T extends Node>
      * @param content    a DOM Node
      */
     @Override
-    public void set(Document content) {
+    public void set(T content) {
         this.content = content;
     }
 
@@ -157,15 +184,15 @@ public class DOMNodeHandle<T extends Node>
             DOMImplementationLS domImpl = (DOMImplementationLS) factory.newDocumentBuilder().getDOMImplementation();
 
             LSParser parser = domImpl.createLSParser(DOMImplementationLS.MODE_SYNCHRONOUS, null);
-            if (resolver != null) {
-                parser.getDomConfig().setParameter("resource-resolver", resolver);
-            }
+//            if (resolver != null) {
+//                parser.getDomConfig().setParameter("resource-resolver", resolver);
+//            }
 
             LSInput domInput = domImpl.createLSInput();
             domInput.setEncoding("UTF-8");
             domInput.setByteStream(content);
 
-            this.content = parser.parse(domInput);
+            this.content = (T) parser.parse(domInput);
             content.close();
         } catch (IOException e) {
             logger.error("Failed to parse DOM document from input stream",e);

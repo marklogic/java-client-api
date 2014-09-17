@@ -17,6 +17,8 @@ package com.marklogic.client.http;
 
 import java.util.Map;
 
+import com.marklogic.client.io.marker.AbstractReadHandle;
+
 public interface BodyPart {
     //Map<String, List<String>> getHeaders();
     /**
@@ -61,4 +63,3 @@ public interface BodyPart {
     public <H extends AbstractReadHandle> H get(H handle);
     public <T> T getAs(Class<T> clazz);
 }
-

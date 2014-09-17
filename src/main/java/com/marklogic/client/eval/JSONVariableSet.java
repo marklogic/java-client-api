@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.eval;
 
+import com.marklogic.client.io.marker.JSONWriteHandle;
+
 public interface JSONVariableSet extends VariableSet {
     public JSONVariableSet add(String name, JSONWriteHandle value);
     public JSONVariableSet addAs(String name, Object value);
