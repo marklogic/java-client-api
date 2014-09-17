@@ -46,6 +46,7 @@ public class ConditionalDocumentTest {
 	@BeforeClass
 	public static void beforeClass()
 	throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
+		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		Common.connectAdmin();
 		serverConfig = Common.client.newServerConfigManager();
 		serverConfig.readConfiguration();
@@ -97,7 +98,7 @@ public class ConditionalDocumentTest {
 		assertTrue("Write with bad version succeeded", ex != null);
 		assertTrue("Write with bad version had wrong error", statusCode == 412);
 		assertTrue("Write with no version had misleading message", 
-				ex.getMessage().contains("Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri: /test/conditional1.xml"));
+				ex.getMessage().contains("Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /test/conditional1.xml doesn't match if-match: 11111"));
 
 
 		desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
@@ -148,7 +149,7 @@ public class ConditionalDocumentTest {
 		assertTrue("Overwrite with bad version succeeded", ex != null);
 		assertTrue("Write with bad version had wrong error", statusCode == 412);
 		assertTrue("Write with no version had misleading message", 
-				ex.getMessage().contains("Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri: /test/conditional1.xml version:"));
+				ex.getMessage().contains("Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /test/conditional1.xml has current version"));
 
 		desc.setVersion(goodVersion);
 		docMgr.write(desc, contentHandle);
