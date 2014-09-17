@@ -41,18 +41,18 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-//				System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+		//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		System.out.println("In setup");
-//		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
-//		addRangePathIndex(dbName, "string", "com.marklogic.javaclient.Artifact/manufacturer/com.marklogic.javaclient.Company/name", "http://marklogic.com/collation/", "ignore");
-//		BasicJavaClientREST.addRangeElementIndex(dbName, "long", "", "inventory");
+		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+
+		BasicJavaClientREST.addRangeElementIndex(dbName, "long", "", "inventory");
 		BasicJavaClientREST.addRangeElementIndex(dbName, "long", "", "id");
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-//		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		tearDownJavaRESTServer(dbName, fNames, restServerName);
 	}
 	@Before
 	public void setUp() throws Exception {
@@ -69,23 +69,23 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 		Artifact cogs = new Artifact();
 		cogs.setId(counter);
 		if( counter % 5 == 0){
-		cogs.setName("Cogs special");
-		if(counter % 2 ==0){
-			Company acme = new Company();
-			acme.setName("Acme special, Inc.");
-			acme.setWebsite("http://www.acme special.com");
-			acme.setLatitude(41.998+counter);
-			acme.setLongitude(-87.966+counter);
-			cogs.setManufacturer(acme);
+			cogs.setName("Cogs special");
+			if(counter % 2 ==0){
+				Company acme = new Company();
+				acme.setName("Acme special, Inc.");
+				acme.setWebsite("http://www.acme special.com");
+				acme.setLatitude(41.998+counter);
+				acme.setLongitude(-87.966+counter);
+				cogs.setManufacturer(acme);
 
-		}else{
-			Company widgets = new Company();
-			widgets.setName("Widgets counter Inc.");
-			widgets.setWebsite("http://www.widgets counter.com");
-			widgets.setLatitude(41.998+counter);
-			widgets.setLongitude(-87.966+counter);
-			cogs.setManufacturer(widgets);
-		}
+			}else{
+				Company widgets = new Company();
+				widgets.setName("Widgets counter Inc.");
+				widgets.setWebsite("http://www.widgets counter.com");
+				widgets.setLatitude(41.998+counter);
+				widgets.setLongitude(-87.966+counter);
+				cogs.setManufacturer(widgets);
+			}
 		}else{
 			cogs.setName("Cogs "+counter);
 			if(counter % 2 ==0){
@@ -133,16 +133,16 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 		QueryManager queryMgr = client.newQueryManager();
 		String queryAsString = 
 				"{\"$query\":{"
-				+ "\"$and\":[{\"name\":{\"$word\":\"cogs\",\"$exact\": false}}]"
-				+ ",\"$not\":[{\"name\":{\"$word\":\"special\",\"$exact\": false}}]"
-				+ "}}";
+						+ "\"$and\":[{\"name\":{\"$word\":\"cogs\",\"$exact\": false}}]"
+						+ ",\"$not\":[{\"name\":{\"$word\":\"special\",\"$exact\": false}}]"
+						+ "}}";
 
 		RawQueryByExampleDefinition qd = queryMgr.newRawQueryByExampleDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
 		qd.setCollections("odd");
 		products.setPageLength(11);
 		p = products.search(qd, 1);
 		assertEquals("total no of pages",4,p.getTotalPages());
-//		System.out.println(p.getTotalPages());
+		//		System.out.println(p.getTotalPages());
 		long pageNo=1,count=0;
 		do{
 			count =0;
@@ -164,17 +164,17 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 		assertEquals("page number after the loop",4,p.getPageNumber());
 		assertEquals("total no of pages",4,p.getTotalPages());
 	}
-@Test
+	@Test
 	public void testPOJOqbeSearchWithSearchHandle() {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
 		this.loadSimplePojos(products);
-		
+
 		QueryManager queryMgr = client.newQueryManager();
 		String queryAsString = 
 				"{\"$query\":{"
-				+ "\"$and\":[{\"inventory\":{\"$gt\":1010}},{\"inventory\":{\"$le\":1110}}]"
-				+ ",\"$filtered\": true}}";
+						+ "\"$and\":[{\"inventory\":{\"$gt\":1010}},{\"inventory\":{\"$le\":1110}}]"
+						+ ",\"$filtered\": true}}";
 		System.out.println(queryAsString);
 		RawQueryByExampleDefinition qd = queryMgr.newRawQueryByExampleDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
 		qd.setCollections("even");
@@ -208,7 +208,7 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 			for(String fname:facetNames){
 				System.out.println(fname);
 			}
-//			assertEquals("Total results from search handle ",50,results.getTotalResults());
+			//			assertEquals("Total results from search handle ",50,results.getTotalResults());
 			assertTrue("Search Handle metric results ",results.getMetrics().getTotalTime()>0);
 		}while(!p.isLastPage() && pageNo<p.getTotalSize());
 		assertEquals("Page start check",41,p.getStart());
@@ -226,13 +226,13 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 				+ "{\"word-constraint-query\":{\"constraint-name\":\"pojo-name-field\", \"text\":\"special\"}}]},"
 				+ "\"options\":{\"constraint\":{\"name\":\"pojo-name-field\", \"word\":{\"json-property\":\"name\"}}}"
 				+ "}}"; 
-	 
+
 		RawCombinedQueryDefinition qd = queryMgr.newRawCombinedQueryDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
 		JacksonHandle results = new JacksonHandle();
 		p = products.search(qd, 1,results);
 		products.setPageLength(11);
 		assertEquals("total no of pages",1,p.getTotalPages());
-//		System.out.println(p.getTotalPages()+results.get().toString());
+		//		System.out.println(p.getTotalPages()+results.get().toString());
 		long pageNo=1,count=0;
 		do{
 			count =0;
@@ -259,25 +259,24 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 		assertEquals("page number after the loop",1,p.getPageNumber());
 		assertEquals("total no of pages",1,p.getTotalPages());
 	}
-	//Searching for Id as Number in JSON using value query 
+	//Searching for Id as Number in JSON using range query 
 	@Test
 	public void testPOJOcombinedSearchforNumberWithStringHandle() throws JsonProcessingException, IOException {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
 		this.loadSimplePojos(products);
-//		StructuredQueryBuilder qb = new StructuredQueryBuilder();
-//		StructuredQueryDefinition qd =qb.value(qb.jsonProperty("id"), 5,10,15,20,25,30);
-//		StructuredQueryDefinition qd = qb.and(q1,qb.range(qb.pathIndex("com.marklogic.javaclient.Artifact/inventory"), "xs:long",Operator.LE, 1110),qb.collection("even"));
+
 		QueryManager queryMgr = client.newQueryManager();
 		String queryAsString = "{\"search\":{\"query\":{"
-		   		+ "\"range-constraint-query\":{\"constraint-name\":\"id\", \"value\":[5,10,15,20,25,30]}},"
-		   		+ "\"options\":{\"return-metrics\":false, \"constraint\":{\"name\":\"id\", \"range\":{\"type\": \"xs:string\",\"json-property\":\"id\"}}}"
-		   		+ "}}";
+				+ "\"range-constraint-query\":{\"constraint-name\":\"id\", \"value\":[5,10,15,20,25,30]}},"
+				+ "\"options\":{\"return-metrics\":false, \"constraint\":{\"name\":\"id\", \"range\":{\"type\": \"xs:long\",\"json-property\":\"id\"}}}"
+				+ "}}";
 		RawCombinedQueryDefinition qd = queryMgr.newRawCombinedQueryDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
+
 		StringHandle results = new StringHandle();
 		JacksonHandle jh = new JacksonHandle();
 		p = products.search(qd, 1,jh);
-		
+
 		long pageNo=1,count=0;
 		do{
 			count =0;
@@ -290,20 +289,14 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 			}
 			assertEquals("Page total results",count,p.getTotalSize());
 			pageNo=pageNo+p.getPageSize();
-					System.out.println(results.get().toString());
+			System.out.println(results.get().toString());
 		}while(!p.isLastPage() && pageNo<p.getTotalSize());
 		assertFalse("String handle is not empty",results.get().isEmpty());
 		assertTrue("String handle contains results",results.get().contains("results"));
 		assertTrue("String handle contains format",results.get().contains("\"format\":\"json\""));
-//		String expected= jh.get().toString();
-//		System.out.println(results.get().contains("\"format\":\"json\"")+ expected);
 		ObjectMapper mapper = new ObjectMapper();
-//		String expected= "{\"snippet-format\":\"snippet\",\"total\":1,\"start\":1,\"page-length\":50,\"results\":[{\"index\":1,\"uri\":\"com.marklogic.javaclient.Artifact/2.json\",\"path\":\"fn:doc(\\\"com.marklogic.javaclient.Artifact/2.json\\\")\",\"score\":55936,\"confidence\":0.4903799,\"fitness\":0.8035046,\"href\":\"/v1/documents?uri=com.marklogic.javaclient.Artifact%2F2.json\",\"mimetype\":\"application/json\",\"format\":\"json\",\"matches\":[{\"path\":\"fn:doc(\\\"com.marklogic.javaclient.Artifact/2.json\\\")\",\"match-text\":[]}]}],\"qtext\":\"cogs 2\",\"metrics\":{\"query-resolution-time\":\"PT0.004S\",\"snippet-resolution-time\":\"PT0S\",\"total-time\":\"PT0.005S\"}}";
-//		JsonNode expNode = mapper.readTree(expected).get("results").iterator().next().get("matches");
 		JsonNode actNode = mapper.readTree(results.get()).get("total");
-//		System.out.println(expNode.equals(actNode)+"\n"+ expNode.toString()+"\n"+actNode.toString());
-		
 		assertEquals("Total search results resulted are ",6,actNode.asInt() );
 	}
-		
+
 }
