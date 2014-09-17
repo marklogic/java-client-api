@@ -35,7 +35,7 @@ import org.w3c.dom.Document;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.eval.EvalResults;
-import com.marklogic.client.eval.ServerEval;
+import com.marklogic.client.eval.ServerEvaluationManager;
 import com.marklogic.client.io.JAXBDatatypeHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
@@ -56,7 +56,7 @@ public class EvalTest {
     @Test
     public void evalTest1() throws ParserConfigurationException {
         // hello world and response determined by implicit StringHandle which registered with String.class
-        ServerEval query = Common.client.newServerEval().xquery("'hello world'").build();
+        ServerEvaluationManager query = Common.client.newServerEval().xquery("'hello world'");
         String response = query.evalAs(String.class);
         assertEquals("Return should be 'hello world'", "hello world", response);
 
@@ -64,8 +64,7 @@ public class EvalTest {
         query = Common.client.newServerEval()
             .xquery("declare variable $planet external;" +
                     "'hello world from ' || $planet")
-            .addVariable("planet", "Mars")
-            .build();
+            .addVariable("planet", "Mars");
         StringHandle strResponse = query.eval(new StringHandle());
         assertEquals("Return should be 'hello world from Mars'", "hello world from Mars", strResponse.get());
 
@@ -91,8 +90,7 @@ public class EvalTest {
           .addVariable("myBool",    true)
           .addVariable("myInteger", 123)
           .addVariable("myDouble",  1.1)
-          .addVariableAs("myDate",    septFirst)
-          .build();
+          .addVariableAs("myDate",    septFirst);
         EvalResults results = query.eval();
         assertEquals("myString should = 'Mars'", "Mars", results.next().getAs(String.class));
         assertEquals("myArray should = [\"item1\",\"item2\"]", "[\"item1\",\"item2\"]", 
@@ -146,8 +144,7 @@ public class EvalTest {
           .addVariable("myBool",    true)
           .addVariable("myInteger", 123)
           .addVariable("myDouble",  1.1)
-          .addVariableAs("myDate",    new GregorianCalendar(2014, Calendar.SEPTEMBER, 1))
-          .build();
+          .addVariableAs("myDate",    new GregorianCalendar(2014, Calendar.SEPTEMBER, 1));
         results = query.eval();
         assertEquals("myString should = 'Mars'", "Mars", results.next().getAs(String.class));
         assertEquals("myArray should = [\"item1\",\"item2\"]", "[\"item1\",\"item2\"]", 
