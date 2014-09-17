@@ -4,9 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.BufferedReader;
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.File;
 import java.util.Calendar;
 
 import org.junit.After;
@@ -21,11 +19,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
@@ -33,7 +31,6 @@ import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.ReaderHandle;
 
 /*
  * This test is designed to to test all of bulk reads and write of JSON  with JacksonHandle Manager by passing set of uris
@@ -42,7 +39,6 @@ import com.marklogic.client.io.ReaderHandle;
 
 public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 
-	private static final int BATCH_SIZE=100;
 	private static final String DIRECTORY ="/bulkread/";
 	private static String dbName = "TestBulkReadWriteWithJacksonHandleDB";
 	private static String [] fNames = {"TestBulkReadWriteWithJacksonHandleDB-1"};
@@ -72,7 +68,7 @@ public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 	}
 
 	public DocumentMetadataHandle setMetadata(){
-		// create and initialize a handle on the metadata
+		// create and initialize a handle on the meta-data
 		DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
 		metadataHandle.getCollections().addAll("my-collection1","my-collection2");
 		metadataHandle.getPermissions().add("app-user", Capability.UPDATE, Capability.READ);
@@ -86,7 +82,7 @@ public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 	}
 
 	public void validateMetadata(DocumentMetadataHandle mh){
-		// get metadata values
+		// get meta-data values
 		DocumentProperties properties = mh.getProperties();
 		DocumentPermissions permissions = mh.getPermissions();
 		DocumentCollections collections = mh.getCollections();
@@ -118,7 +114,7 @@ public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 	}
 
 	public void validateDefaultMetadata(DocumentMetadataHandle mh){
-		// get metadata values
+		// get meta-data values
 		DocumentProperties properties = mh.getProperties();
 		DocumentPermissions permissions = mh.getPermissions();
 		DocumentCollections collections = mh.getCollections();
@@ -180,20 +176,20 @@ public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 
 		docMgr.write(writeset);
 
-		JacksonHandle r1 = new JacksonHandle();
-		docMgr.read(docId[0], r1);
-		JSONAssert.assertEquals(json1, r1.toString(), true);
+		JacksonHandle jacksonhandle = new JacksonHandle();
+		docMgr.read(docId[0], jacksonhandle);
+		JSONAssert.assertEquals(json1, jacksonhandle.toString(), true);
 		
-		docMgr.read(docId[1], r1);
-		JSONAssert.assertEquals(json2, r1.toString(), true);
+		docMgr.read(docId[1],jacksonhandle);
+		JSONAssert.assertEquals(json2, jacksonhandle.toString(), true);
 		
-		docMgr.read(docId[2], r1);
-		JSONAssert.assertEquals(json3, r1.toString(), true);
+		docMgr.read(docId[2], jacksonhandle);
+		JSONAssert.assertEquals(json3, jacksonhandle.toString(), true);
 	}
 
 	/*
 	 * 
-	 * Use JacksonHandle to load json strings using bulk write set.
+	 * Use JacksonHandle to load JSON strings using bulk write set.
 	 * Test Bulk Read to see you can read the document specific meta-data.
 	 */
 
@@ -208,7 +204,7 @@ public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		docMgr.setMetadataCategories(Metadata.ALL);
 		DocumentWriteSet writeset = docMgr.newWriteSet();
-		// put metadata
+		// put meta-data
 		DocumentMetadataHandle mh = setMetadata();
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -249,7 +245,7 @@ public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 
 	/*
 	 * 
-	 * Use JacksonHandle to load json strings using bulk write set.
+	 * Use JacksonHandle to load JSON strings using bulk write set.
 	 * Test Bulk Read to see you can read all the documents
 	 */
 	@Test
@@ -262,7 +258,7 @@ public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 		String doc4 = new String("{\"animal\": \"lion\", \"says\": \"roar\"}");
 		String doc5 = new String("{\"animal\": \"man\", \"says\": \"hello\"}");	
 
-		// Synthesize input metadata
+		// Synthesize input meta-data
 		DocumentMetadataHandle defaultMetadata1 = 
 				new DocumentMetadataHandle().withQuality(1);
 		DocumentMetadataHandle defaultMetadata2 = 
@@ -307,16 +303,16 @@ public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 		jacksonHandle5.set(manNode);
 		jacksonHandle5.withFormat(Format.JSON);
 
-		// use system default metadata
+		// use system default meta-data
 		batch.add("doc1.json", jacksonHandle1);
 
-		// using batch default metadata
+		// using batch default meta-data
 		batch.addDefault(defaultMetadata1);  
-		batch.add("doc2.json", jacksonHandle2);       // batch default metadata
+		batch.add("doc2.json", jacksonHandle2);       // batch default meta-data
 		batch.add("doc3.json", docSpecificMetadata, jacksonHandle3);
-		batch.add("doc4.json", jacksonHandle4);       // batch default metadata
+		batch.add("doc4.json", jacksonHandle4);       // batch default meta-data
 
-		// replace batch default metadata with new metadata
+		// replace batch default meta-data with new meta-data
 		batch.addDefault(defaultMetadata2); 
 		batch.add("doc5.json", jacksonHandle5);       // batch default 
 
@@ -333,7 +329,7 @@ public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 		validateDefaultMetadata(mh);
 		assertEquals("default quality",0,mh.getQuality());
 
-		// Doc2 should use the first batch default metadata, with quality 1
+		// Doc2 should use the first batch default meta-data, with quality 1
 		page = jdm.read("doc2.json");
 		rec = page.next();
 		jdm.readMetadata(rec.getUri(), mh);
@@ -342,8 +338,8 @@ public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 		assertTrue("default collections reset",mh.getCollections().isEmpty());
 
 		// Doc3 should have the system default document quality (0) because quality
-		// was not included in the document-specific metadata. It should be in the
-		// collection "mySpecificCollection", from the document-specific metadata.
+		// was not included in the document-specific meta-data. It should be in the
+		// collection "mySpecificCollection", from the document-specific meta-data.
 
 		page = jdm.read("doc3.json");
 		rec = page.next();
@@ -360,18 +356,80 @@ public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 		}
 		System.out.println();
 
-		// Doc 4 should also use the 1st batch default metadata, with quality 1
+		// Doc 4 should also use the 1st batch default meta-data, with quality 1
 		page = jdm.read("doc4.json");
 		rec = page.next();
 		jdm.readMetadata(rec.getUri(), mh);
 		assertEquals("default quality",1,mh.getQuality());
 		assertTrue("default collections reset",mh.getCollections().isEmpty());
-		// Doc5 should use the 2nd batch default metadata, with quality 2
+		// Doc5 should use the 2nd batch default meta-data, with quality 2
 		page = jdm.read("doc5.json");
 		rec = page.next();
 		jdm.readMetadata(rec.getUri(), mh);
 		assertEquals("default quality",2,mh.getQuality());
 
+	}
+	
+	/*
+	 * Purpose : To read JSON files from file system and write into DB. 
+	 * Use JacksonHandle to load JSON files using bulk write set.
+	 * Test Bulk Read to see you can read the document specific meta-data.
+	 */
+
+	@Test
+	public void testWriteMultiJSONFilesDefaultMetadata() throws Exception  
+	{
+		String docId[] = {"/original.json","/updated.json","/constraint1.json"};
+		String jsonFilename1 = "json-original.json";
+		String jsonFilename2 = "json-updated.json";
+		String jsonFilename3 = "constraint1.json";
+				
+		File jsonFile1 = new File("src/test/java/com/marklogic/javaclient/data/" + jsonFilename1);
+		File jsonFile2 = new File("src/test/java/com/marklogic/javaclient/data/" + jsonFilename2);
+		File jsonFile3 = new File("src/test/java/com/marklogic/javaclient/data/" + jsonFilename3);
+
+		JSONDocumentManager docMgr = client.newJSONDocumentManager();
+		docMgr.setMetadataCategories(Metadata.ALL);
+		DocumentWriteSet writeset = docMgr.newWriteSet();
+		// put meta-data
+		DocumentMetadataHandle mh = setMetadata();
+		DocumentMetadataHandle mhRead = new DocumentMetadataHandle();
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		JacksonHandle jacksonHandle1 = new JacksonHandle();
+		JacksonHandle jacksonHandle2 = new JacksonHandle();
+		JacksonHandle jacksonHandle3 = new JacksonHandle();
+
+		JsonNode originalNode = mapper.readTree(jsonFile1);
+		jacksonHandle1.set(originalNode);
+		jacksonHandle1.withFormat(Format.JSON);
+
+		JsonNode updatedNode = mapper.readTree(jsonFile2);
+		jacksonHandle2.set(updatedNode);
+		jacksonHandle2.withFormat(Format.JSON);
+
+		JsonNode constraintNode = mapper.readTree(jsonFile3);
+		jacksonHandle3.set(constraintNode);
+		jacksonHandle3.withFormat(Format.JSON);
+
+		writeset.addDefault(mh);
+		writeset.add(docId[0], jacksonHandle1);
+		writeset.add(docId[1], jacksonHandle2);
+		writeset.add(docId[2], jacksonHandle3);
+
+		docMgr.write(writeset);
+
+		DocumentPage page = docMgr.read(docId);
+
+		while(page.hasNext()){
+			DocumentRecord rec = page.next();
+			docMgr.readMetadata(rec.getUri(), mhRead);
+			System.out.println(rec.getUri());
+			validateMetadata(mhRead);
+		}
+		validateMetadata(mhRead);
+		mhRead = null;
 	}
 
 	@AfterClass
