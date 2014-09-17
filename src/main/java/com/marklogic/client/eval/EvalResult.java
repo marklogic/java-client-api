@@ -20,10 +20,10 @@ import com.marklogic.client.io.marker.AbstractReadHandle;
 public interface EvalResult {
     enum Type {
         STRING,
-        NUMBER,
         BOOLEAN,
-        ARRAY,
-        OBJECT,
+        JS_NUMBER,
+        JS_ARRAY,
+        JS_OBJECT,
         NULL,
         XDM_ATOMIC,
         XDM_ATTRIBUTE,
@@ -41,7 +41,6 @@ public interface EvalResult {
         XDM_VARIABLE,
         XS_ANYURI,
         XS_BASE64BINARY,
-        XS_BOOLEAN,
         XS_DATE,
         XS_DATETIME,
         XS_DAYTIMEDURATION,
@@ -57,7 +56,6 @@ public interface EvalResult {
         XS_HEXBINARY,
         XS_INTEGER,
         XS_QNAME,
-        XS_STRING,
         XS_TIME
     };
     public Type getType();
