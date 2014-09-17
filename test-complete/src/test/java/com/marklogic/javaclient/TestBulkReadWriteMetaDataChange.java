@@ -30,7 +30,6 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 
@@ -56,8 +55,8 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In Setup");
 		
-//		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
-//		createRESTUser("app-user", "password", "rest-writer","rest-reader" );
+		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		createRESTUser("app-user", "password", "rest-writer","rest-reader" );
 	}
 
 	/**
@@ -66,8 +65,8 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-//		tearDownJavaRESTServer(dbName, fNames, restServerName);
-//		deleteRESTUser("app-user");
+		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		deleteRESTUser("app-user");
 	}
 
 	/**
@@ -250,7 +249,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 		TextDocumentManager docMgr = client.newTextDocumentManager();
 
 		DocumentWriteSet writeset = docMgr.newWriteSet();
-		// put metadata
+		// put meta-data
 		DocumentMetadataHandle mh = setMetadata();
 		DocumentMetadataHandle mhRead = new DocumentMetadataHandle();		
 		
@@ -269,6 +268,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 			validateMetadata(mhRead);
 		}
 		validateMetadata(mhRead);
+		mhRead = null;
 
 		// Add new meta-data
 		DocumentMetadataHandle mhUpdated = setUpdatedMetadataProperties();
@@ -282,6 +282,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 			validateUpdatedMetadataProperties(mhUpd);
 		}
 		validateUpdatedMetadataProperties(mhUpd);
+		mhUpd = null;
 	}
 	@Test
 	public void testWriteMultipleJacksonPoJoDocsWithMetadata() throws Exception  
@@ -309,7 +310,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 		JsonNode writeDocument2 = writeHandle.getMapper().convertValue(product2, JsonNode.class);
 		JsonNode writeDocument3 = writeHandle.getMapper().convertValue(product3, JsonNode.class);
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
-		DocumentWriteSet writeset =docMgr.newWriteSet();
+		DocumentWriteSet writeset = docMgr.newWriteSet();
 
 		writeset.addDefault(mh);
 		writeset.add(docId[0],writeHandle);
@@ -352,7 +353,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 			TextDocumentManager docMgr = client.newTextDocumentManager();
 			docMgr.setMetadataCategories(Metadata.ALL);
 			DocumentWriteSet writeset = docMgr.newWriteSet();
-			// put metadata
+			// put meta-data
 			DocumentMetadataHandle mh = setMetadata();
 			DocumentMetadataHandle mhRead = new DocumentMetadataHandle();		
 
@@ -371,8 +372,8 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 				mhRead = rec.getMetadata(mhRead);
 				validateMetadata(mhRead);
 			}
-
 			validateMetadata(mhRead);
+			mhRead = null;
 		}
 		catch(Exception exp) {
 			System.out.println(exp.getMessage());
@@ -399,7 +400,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 			docMgr.setMetadataCategories(Metadata.ALL);
 
 			DocumentWriteSet writeset = docMgr.newWriteSet();
-			// put metadata
+			// put meta-data
 			DocumentMetadataHandle mh = setMetadata();
 
 			writeset.addDefault(mh);
@@ -417,6 +418,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 				validateMetadata(mhRead);
 			}
 			validateMetadata(mhRead);
+			mhRead = null;
 		}
 		catch(Exception exp) {
 			System.out.println(exp.getMessage());
@@ -429,7 +431,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 
 
 	/* 
-	 * * Purpose: To validate: DocumentManager readMetadata(String... uris)
+	 * * Purpose: To validate DocumentManager readMetadata(String... uris) without Transaction
 	 * This test verifies document meta-data reads from an open database in the representation provided by the handle to call readMetadata.
 	 * Verified by reading meta-data for individual documents.
 	 */
@@ -437,22 +439,21 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 	@Test	
 	public void testBulkReadMetadataUsingMultipleUriNoTransaction() throws Exception {
 		String docId[] = {"/foo/test/URIFoo1.txt","/foo/test/URIFoo2.txt","/foo/test/URIFoo3.txt"};
+		DocumentMetadataHandle mhRead = new DocumentMetadataHandle();
 
-		try {
+		
 			TextDocumentManager docMgr = client.newTextDocumentManager();
 			docMgr.setMetadataCategories(Metadata.ALL);
 
 			DocumentWriteSet writeset = docMgr.newWriteSet();
-			// put metadata
+			// put meta-data
 			DocumentMetadataHandle mh = setMetadata();
 
 			writeset.addDefault(mh);
 			writeset.add(docId[0], new StringHandle().with("This is so URI foo 1"));
 			writeset.add(docId[1], new StringHandle().with("This is so URI foo 2"));
 			writeset.add(docId[2], new StringHandle().with("This is so URI foo 3"));
-			docMgr.write(writeset);
-
-			DocumentMetadataHandle mhRead = new DocumentMetadataHandle();
+			docMgr.write(writeset);			
 
 			DocumentPage page = docMgr.readMetadata(docId[0], docId[1], docId[2]);
 
@@ -461,16 +462,8 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 				rec.getMetadata(mhRead);
 				validateMetadata(mhRead);
 			}
-
 			validateMetadata(mhRead);
-		}
-		catch(Exception exp) {
-			System.out.println(exp.getMessage());
-			throw exp;
-		}
-		finally {
-			//transaction.rollback();
-		}
+			mhRead = null;				
 	}
 
 	/* 
@@ -483,7 +476,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 		TextDocumentManager docMgr = client.newTextDocumentManager();
 
 		DocumentWriteSet writeset = docMgr.newWriteSet();
-		// put metadata
+		// put meta-data
 		DocumentMetadataHandle mh = setMetadata();
 
 		writeset.addDefault(mh);
