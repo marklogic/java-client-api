@@ -18,8 +18,8 @@ package com.marklogic.client.eval;
 import com.marklogic.client.io.marker.TextWriteHandle;
 
 public interface JavascriptEvalBuilder extends EvalBuilder {
-    public EvalBuilder javascript(String javascript);
-    public EvalBuilder javascript(TextWriteHandle javascript);
+    public JavascriptEvalBuilder javascript(String javascript);
+    public JavascriptEvalBuilder javascript(TextWriteHandle javascript);
 }
 
 

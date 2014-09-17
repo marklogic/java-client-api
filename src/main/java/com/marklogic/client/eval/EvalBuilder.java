@@ -18,7 +18,7 @@ package com.marklogic.client.eval;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 
-public interface EvalBuilder<T extends ServerEval> {
+public interface EvalBuilder {
     public EvalBuilder addVariable(String name, String value);
     public EvalBuilder addVariable(String name, Number value);
     public EvalBuilder addVariable(String name, Boolean value);
@@ -28,5 +28,5 @@ public interface EvalBuilder<T extends ServerEval> {
     public EvalBuilder addVariableAs(String name, Object value);
     public EvalBuilder database(String database);
     public EvalBuilder transaction(Transaction transaction);
-    public T build();
+    public ServerEval build();
 }

@@ -180,6 +180,5 @@ public interface DatabaseClient {
      * @return	the object implementing communication with the server 
      */
     public Object getClientImplementation();
-	public XQueryEvalBuilder newXQueryEvalBuilder();
-	public JavascriptEvalBuilder newJavascriptEvalBuilder();
+	public ServerEval newServerEval();
 }

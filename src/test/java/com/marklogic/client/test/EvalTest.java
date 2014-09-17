@@ -60,12 +60,12 @@ public class EvalTest {
     @Test
     public void evalTest1() throws ParserConfigurationException {
         // hello world and response determined by implicit StringHandle which registered with String.class
-        ServerEval query = Common.client.newXQueryEvalBuilder().xquery("'hello world'").build();
+        ServerEval query = Common.client.newServerEval().xquery("'hello world'").build();
         String response = query.evalAs(String.class);
         assertEquals("Return should be 'hello world'", "hello world", response);
 
         // hello world with a variable and response explicit set to StringHandle
-        query = Common.client.newXQueryEvalBuilder()
+        query = Common.client.newServerEval()
             .xquery("declare variable $planet external;" +
                     "'hello world from ' || $planet")
             .addVariable("planet", "Mars")
@@ -76,7 +76,7 @@ public class EvalTest {
         // accept and return each JSON variable type so use MultiPartResponsePage
         Calendar septFirst = new GregorianCalendar(2014, Calendar.SEPTEMBER, 1);
         septFirst.setTimeZone(new SimpleTimeZone(0, "UTC"));
-        query = Common.client.newXQueryEvalBuilder()
+        query = Common.client.newServerEval()
             .xquery("declare variable $myString as xs:string external;" +
                     "declare variable $myArray as json:array external;" +
                     "declare variable $myObject as json:object external;" +
@@ -133,7 +133,7 @@ public class EvalTest {
                         "declare variable $myDate as xs:date external;" +
                         "$myString, $myArray, $myObject, $myBool, $myInteger, $myDouble, $myDate";
 		Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-		query = Common.client.newXQueryEvalBuilder()
+		query = Common.client.newServerEval()
 		    .xquery(xquery)
           // String is mapped to implicitly use StringHandle
           .addVariableAs("myString",  "Mars")

@@ -31,6 +31,7 @@ import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.eval.JavascriptEvalBuilder;
+import com.marklogic.client.eval.ServerEval;
 import com.marklogic.client.eval.XQueryEvalBuilder;
 import com.marklogic.client.extensions.ResourceManager;
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
@@ -186,13 +187,7 @@ public class DatabaseClientImpl implements DatabaseClient {
 	}
 
 	@Override
-	public XQueryEvalBuilder newXQueryEvalBuilder() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public JavascriptEvalBuilder newJavascriptEvalBuilder() {
+	public ServerEval newServerEval() {
 		// TODO Auto-generated method stub
 		return null;
 	}

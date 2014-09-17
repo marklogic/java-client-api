@@ -16,8 +16,15 @@
 package com.marklogic.client.eval;
 
 import com.marklogic.client.io.marker.AbstractReadHandle;
+import com.marklogic.client.io.marker.TextWriteHandle;
 
 public interface ServerEval {
+	public EvalBuilder xquery(String xquery);
+	public EvalBuilder xquery(TextWriteHandle xquery);
+	public EvalBuilder javascript(String javascript);
+	public EvalBuilder javascript(TextWriteHandle javascript);
+	public EvalBuilder xqueryModule(String modulePath);
+	public EvalBuilder javascriptModule(String modulePath);
     public <T> T evalAs(Class<T> responseType);
     public <H extends AbstractReadHandle> H eval(H responseHandle);
     public EvalResults eval();
