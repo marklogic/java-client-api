@@ -24,8 +24,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
@@ -37,9 +35,7 @@ import org.w3c.dom.Document;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.eval.EvalResults;
-import com.marklogic.client.eval.JSONVariableSet;
 import com.marklogic.client.eval.ServerEval;
-import com.marklogic.client.eval.VariableSet;
 import com.marklogic.client.io.JAXBDatatypeHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
@@ -109,7 +105,7 @@ public class EvalTest {
         assertEquals("myDouble should = 1.1", 1.1, results.next().get(new JacksonHandle()).get().asDouble(), .001);
         // the format we get from javax.xml.datatype.XMLGregorianCalendar.toString()
         assertEquals("myDate should = '2014-09-01T00:00:00'", "2014-09-01T00:00:00",
-          results.next().get(new JAXBDatatypeHandle(Calendar.class)).get().toString());
+          results.next().get(new JAXBDatatypeHandle<Calendar>(Calendar.class)).get().toString());
 
 
         // accept and return each XML variable type so use MultiPartResponsePage
@@ -164,7 +160,7 @@ public class EvalTest {
         assertEquals("myDouble should = 1.1", 1.1, results.next().get(new JacksonHandle()).get().asDouble(), .001);
         // the format what we get from java.util.Calendar.toString()
         assertEquals("myDate should = 'Mon Sep 01 00:00:00 UDT 2014'", "Mon Sep 01 00:00:00 UDT 2014",
-            results.next().get(new JAXBDatatypeHandle(Calendar.class)).get().toString());
+            results.next().get(new JAXBDatatypeHandle<Calendar>(Calendar.class)).get().toString());
     }
 
 }
