@@ -195,7 +195,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public void connect(String host, int port, String user, String password,
+	public void connect(String host, int port, String database, String user, String password,
 			Authentication authenType, SSLContext context,
 			SSLHostnameVerifier verifier) {
 		X509HostnameVerifier x509Verifier = null;
@@ -215,10 +215,10 @@ public class JerseyServices implements RESTServices {
 			throw new IllegalArgumentException(
 					"Null SSLContent but non-null SSLHostnameVerifier for client");
 
-		connect(host, port, user, password, authenType, context, x509Verifier);
+		connect(host, port, database, user, password, authenType, context, x509Verifier);
 	}
 
-	private void connect(String host, int port, String user, String password,
+	private void connect(String host, int port, String database, String user, String password,
 			Authentication authenType, SSLContext context,
 			X509HostnameVerifier verifier) {
 		if (logger.isDebugEnabled())
@@ -327,6 +327,7 @@ public class JerseyServices implements RESTServices {
 		// new UsernamePasswordCredentials(user, password));
 
 		HttpParams httpParams = new BasicHttpParams();
+		if (database != null) httpParams.setParameter("database", database);
 
 		if (authenType != null) {
 			List<String> authpref = new ArrayList<String>();

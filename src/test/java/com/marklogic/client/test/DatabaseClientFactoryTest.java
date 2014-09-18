@@ -15,14 +15,14 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.apache.http.client.HttpClient;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.extra.httpclient.HttpClientConfigurator;
@@ -40,6 +40,20 @@ public class DatabaseClientFactoryTest {
 	@Test
 	public void testConnectStringIntStringStringDigest() {
 		assertNotNull("Factory could not create client with digest connection", Common.client);
+	}
+
+	@Test
+	public void testRuntimeDatabaseSelection() {
+		DatabaseClient tmpClient = DatabaseClientFactory.newClient(
+			Common.HOST, Common.PORT, "Documents", Common.USERNAME, Common.PASSWORD, Authentication.DIGEST
+		);
+		assertNotNull("Factory could not create client with digest connection", tmpClient);
+		String database = 
+			tmpClient.newServerEval()
+				.xquery("xdmp:database-name(xdmp:database())")
+				.evalAs(String.class);
+		assertEquals("Runtime database should is wrong", "Documents", database);
+		tmpClient.release();
 	}
 
 	@Test

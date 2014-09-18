@@ -55,7 +55,7 @@ import com.marklogic.client.util.RequestParameters;
 import com.sun.jersey.api.client.ClientResponse;
 
 public interface RESTServices {
-	public void connect(String host, int port, String user, String password, Authentication type,
+	public void connect(String host, int port, String database, String user, String password, Authentication type,
 			SSLContext context, SSLHostnameVerifier verifier);
 	public DatabaseClient getDatabaseClient();
 	public void setDatabaseClient(DatabaseClient client);
