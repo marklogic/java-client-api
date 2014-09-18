@@ -28,12 +28,15 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
 import com.marklogic.client.pojo.PojoQueryBuilder;
+import com.marklogic.client.pojo.annotation.Id;
 import com.marklogic.client.test.BulkReadWriteTest;
 import com.marklogic.client.test.BulkReadWriteTest.CityWriter;
 
@@ -48,10 +51,11 @@ public class PojoFacadeTest {
     public static void beforeClass() {
         Common.connect();
         cities = Common.client.newPojoRepository(City.class, Integer.class);
-        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
     @AfterClass
     public static void afterClass() {
+        cleanUp();
         Common.release();
     }
 
@@ -297,8 +301,57 @@ public class PojoFacadeTest {
         assertEquals("Should find one city", 1, cities.search(query, 1).getTotalSize());
     }
 
+    static public class Product1 {
+        @Id
+        public int id;
+        public String name;
+    }
+
+    static public class Product2 {
+        @Id
+        @JsonSerialize(using=ToStringSerializer.class)
+        public int id;
+        public String name;
+    }
+
     @Test
-    public void testE_DeletePojos() throws Exception {
+    public void testE_IndexNumberAsString() throws Exception {
+        // without the JsonSerialize annotation, this id indexes as a nubmer and is not searchable
+        Product1 widget1 = new Product1();
+        widget1.id = 1001;
+        widget1.name = "widget1";
+        PojoRepository<Product1, Integer> products1 = Common.client.newPojoRepository(Product1.class, Integer.class);
+        products1.write(widget1);
+
+        Product2 widget2 = new Product2();
+        widget2.id = 2001;
+        widget2.name = "widget2";
+        PojoRepository<Product2, Integer> products2 = Common.client.newPojoRepository(Product2.class, Integer.class);
+        products2.write(widget2);
+
+        StringQueryDefinition query = Common.client.newQueryManager().newStringDefinition();
+        query.setCriteria("1001");
+        PojoPage<Product1> page1 = products1.search(query, 1);
+        assertEquals("Should not find the product by id", 0, page1.getTotalSize());
+
+        // though, of course, we can search on string field
+        query = Common.client.newQueryManager().newStringDefinition();
+        query.setCriteria("widget1");
+        PojoPage<Product1> page2 = products1.search(query, 1);
+        assertEquals("Should find the product by name", 1, page2.getTotalSize());
+        assertEquals("Should find the right product id", 1001, page2.next().id);
+
+        // with the JsonSerialize annotation, the id is indexed as a string and therefore searchable
+        query = Common.client.newQueryManager().newStringDefinition();
+        query.setCriteria("2001");
+        PojoPage<Product2> page3 = products2.search(query, 1);
+        assertEquals("Should find the product by id", 1, page3.getTotalSize());
+        assertEquals("Should find the right product id", 2001, page3.next().id);
+    }
+
+
+    @Test
+    public void testF_DeletePojos() throws Exception {
         cities.delete(1185098, 2239076);
         StringQueryDefinition query = Common.client.newQueryManager().newStringDefinition();
         query.setCriteria("Tungi OR Dalatando OR Chittagong");
@@ -317,5 +370,13 @@ public class PojoFacadeTest {
         if ( "Chittagong".equals(city.getName()) ) {
             BulkReadWriteTest.validateChittagong(city);
         }
+    }
+
+    private static void cleanUp() {
+        PojoRepository<Product1, Integer> products1 = Common.client.newPojoRepository(Product1.class, Integer.class);
+        PojoRepository<Product2, Integer> products2 = Common.client.newPojoRepository(Product2.class, Integer.class);
+        products1.deleteAll();
+        products2.deleteAll();
+        cities.deleteAll();
     }
 }
