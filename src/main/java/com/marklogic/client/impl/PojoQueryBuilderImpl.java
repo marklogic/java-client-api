@@ -61,7 +61,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
     public StructuredQueryDefinition containerQuery(StructuredQueryDefinition query) {
         return super.containerQuery(jsonProperty(classWrapper), query);
     }
-    public PojoQueryBuilder          containerQuery(String pojoProperty) {
+    public PojoQueryBuilder          containerQueryBuilder(String pojoProperty) {
         return new PojoQueryBuilderImpl(getType(pojoProperty), true);
     }
     @Override

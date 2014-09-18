@@ -124,7 +124,7 @@ public interface PojoQueryBuilder<T> {
      * nested objects you may use this method on the each returned PojoQueryBuilder which represents
      * one level deeper.
      * @return a PojoQueryBuilder for nested pojos of the type corresponding with pojoProperty */
-    public PojoQueryBuilder          containerQuery(String pojoProperty);
+    public PojoQueryBuilder          containerQueryBuilder(String pojoProperty);
     public StructuredQueryBuilder.GeospatialIndex
         geoPair(String latitudePropertyName, String longitudePropertyName);
     /**

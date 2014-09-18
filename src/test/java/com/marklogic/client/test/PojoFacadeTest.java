@@ -274,7 +274,7 @@ public class PojoFacadeTest {
         cities.write(buenosAires);
 
         PojoQueryBuilder qb = cities.getQueryBuilder();
-        PojoQueryBuilder countriesQb = qb.containerQuery("country");
+        PojoQueryBuilder countriesQb = qb.containerQueryBuilder("country");
         QueryDefinition query = countriesQb.value("continent", "EU");
         assertEquals("Should not find any countries", 0, cities.search(query, 1).getTotalSize());
 
