@@ -218,10 +218,6 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
                 responseHandle.setQueryCriteria(query);
             }
             docMgr.setResponseFormat(searchBase.getFormat());
-        } else {
-            // TODO: remove this once REST API only considers Content-type header
-            // (not format parameter) for expceted payload format
-            docMgr.setResponseFormat(Format.XML);
         }
 
         String tid = transaction == null ? null : transaction.getTransactionId();
