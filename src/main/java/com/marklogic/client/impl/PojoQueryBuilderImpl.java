@@ -44,165 +44,165 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
         this.wrapQueries = wrapQueries;
     }
 
-    private StructuredQueryBuilder.PathIndex pojoFieldPath(String pojoField) {
-        //return pathIndex("*[local-name()=\"" + classWrapper + "\"]/" + pojoField);
-        return pathIndex(classWrapper + "/" + pojoField);
+    private StructuredQueryBuilder.PathIndex pojoPropertyPath(String pojoProperty) {
+        //return pathIndex("*[local-name()=\"" + classWrapper + "\"]/" + pojoProperty);
+        return pathIndex(classWrapper + "/" + pojoProperty);
     }
  
-    public StructuredQueryDefinition containerQuery(String pojoField, StructuredQueryDefinition query) {
+    public StructuredQueryDefinition containerQuery(String pojoProperty, StructuredQueryDefinition query) {
         if ( wrapQueries ) {
             return super.containerQuery(jsonProperty(classWrapper),
-                super.containerQuery(jsonProperty(pojoField), query));
+                super.containerQuery(jsonProperty(pojoProperty), query));
         } else {
-            return super.containerQuery(jsonProperty(pojoField), query);
+            return super.containerQuery(jsonProperty(pojoProperty), query);
         }
     }
     @Override
     public StructuredQueryDefinition containerQuery(StructuredQueryDefinition query) {
         return super.containerQuery(jsonProperty(classWrapper), query);
     }
-    public PojoQueryBuilder          containerQuery(String pojoField) {
-        return new PojoQueryBuilderImpl(getType(pojoField), true);
+    public PojoQueryBuilder          containerQuery(String pojoProperty) {
+        return new PojoQueryBuilderImpl(getType(pojoProperty), true);
     }
     @Override
     public StructuredQueryBuilder.GeospatialIndex
-        geoPair(String latitudeFieldName, String longitudeFieldName)
+        geoPair(String latitudePropertyName, String longitudePropertyName)
     {
-        return geoElementPair(jsonProperty(classWrapper), jsonProperty(latitudeFieldName), jsonProperty(longitudeFieldName));
+        return geoElementPair(jsonProperty(classWrapper), jsonProperty(latitudePropertyName), jsonProperty(longitudePropertyName));
     }
-    public StructuredQueryBuilder.GeospatialIndex geoField(String pojoField) {
-        return geoElement(jsonProperty(pojoField));
+    public StructuredQueryBuilder.GeospatialIndex geoProperty(String pojoProperty) {
+        return geoElement(jsonProperty(pojoProperty));
     }
-    public StructuredQueryBuilder.GeospatialIndex geoPath(String pojoField) {
-        return geoPath(pojoFieldPath(pojoField));
+    public StructuredQueryBuilder.GeospatialIndex geoPath(String pojoProperty) {
+        return geoPath(pojoPropertyPath(pojoProperty));
     }
-    public StructuredQueryDefinition range(String pojoField,
+    public StructuredQueryDefinition range(String pojoProperty,
         StructuredQueryBuilder.Operator operator, Object... values)
     {
-        return range(pojoFieldPath(pojoField), getRangeIndexType(pojoField), operator, values);
+        return range(pojoPropertyPath(pojoProperty), getRangeIndexType(pojoProperty), operator, values);
     }
-    public StructuredQueryDefinition range(String pojoField, String[] options,
+    public StructuredQueryDefinition range(String pojoProperty, String[] options,
         StructuredQueryBuilder.Operator operator, Object... values)
     {
-        return range(pojoFieldPath(pojoField), getRangeIndexType(pojoField), options,
+        return range(pojoPropertyPath(pojoProperty), getRangeIndexType(pojoProperty), options,
             operator, values);
     }
-    public StructuredQueryDefinition value(String pojoField, String... values) {
+    public StructuredQueryDefinition value(String pojoProperty, String... values) {
         if ( wrapQueries ) {
             return super.containerQuery(jsonProperty(classWrapper),
-                value(jsonProperty(pojoField), values));
+                value(jsonProperty(pojoProperty), values));
         } else {
-            return value(jsonProperty(pojoField), values);
+            return value(jsonProperty(pojoProperty), values);
         }
     }
-    public StructuredQueryDefinition value(String pojoField, Boolean value) {
+    public StructuredQueryDefinition value(String pojoProperty, Boolean value) {
         if ( wrapQueries ) {
             return super.containerQuery(jsonProperty(classWrapper),
-                value(jsonProperty(pojoField), value));
+                value(jsonProperty(pojoProperty), value));
         } else {
-            return value(jsonProperty(pojoField), value);
+            return value(jsonProperty(pojoProperty), value);
         }
     }
-    public StructuredQueryDefinition value(String pojoField, Number... values) {
+    public StructuredQueryDefinition value(String pojoProperty, Number... values) {
         if ( wrapQueries ) {
             return super.containerQuery(jsonProperty(classWrapper),
-                value(jsonProperty(pojoField), values));
+                value(jsonProperty(pojoProperty), values));
         } else {
-            return value(jsonProperty(pojoField), values);
+            return value(jsonProperty(pojoProperty), values);
         }
     }
-    public StructuredQueryDefinition value(String pojoField, String[] options,
+    public StructuredQueryDefinition value(String pojoProperty, String[] options,
         double weight, String... values)
     {
         if ( wrapQueries ) {
             return super.containerQuery(jsonProperty(classWrapper),
-                value(jsonProperty(pojoField), null, options, weight, values));
+                value(jsonProperty(pojoProperty), null, options, weight, values));
         } else {
-            return value(jsonProperty(pojoField), null, options, weight, values);
+            return value(jsonProperty(pojoProperty), null, options, weight, values);
         }
     }
-    public StructuredQueryDefinition value(String pojoField, String[] options,
+    public StructuredQueryDefinition value(String pojoProperty, String[] options,
         double weight, Boolean value)
     {
         if ( wrapQueries ) {
             return super.containerQuery(jsonProperty(classWrapper),
-                value(jsonProperty(pojoField), null, options, weight, value));
+                value(jsonProperty(pojoProperty), null, options, weight, value));
         } else {
-            return value(jsonProperty(pojoField), null, options, weight, value);
+            return value(jsonProperty(pojoProperty), null, options, weight, value);
         }
     }
-    public StructuredQueryDefinition value(String pojoField, String[] options,
+    public StructuredQueryDefinition value(String pojoProperty, String[] options,
         double weight, Number... values)
     {
         if ( wrapQueries ) {
             return super.containerQuery(jsonProperty(classWrapper),
-                value(jsonProperty(pojoField), null, options, weight, values));
+                value(jsonProperty(pojoProperty), null, options, weight, values));
         } else {
-            return value(jsonProperty(pojoField), null, options, weight, values);
+            return value(jsonProperty(pojoProperty), null, options, weight, values);
         }
     }
-    public StructuredQueryDefinition word(String pojoField, String... words) {
+    public StructuredQueryDefinition word(String pojoProperty, String... words) {
         if ( wrapQueries ) {
             return super.containerQuery(jsonProperty(classWrapper),
-                super.word(jsonProperty(pojoField), words));
+                super.word(jsonProperty(pojoProperty), words));
         } else {
-            return super.word(jsonProperty(pojoField), words);
+            return super.word(jsonProperty(pojoProperty), words);
         }
     }
-    public StructuredQueryDefinition word(String pojoField, String[] options,
+    public StructuredQueryDefinition word(String pojoProperty, String[] options,
         double weight, String... words)
     {
         if ( wrapQueries ) {
             return super.containerQuery(jsonProperty(classWrapper),
-                super.word(jsonProperty(pojoField), null, options, weight, words));
+                super.word(jsonProperty(pojoProperty), null, options, weight, words));
         } else {
-            return super.word(jsonProperty(pojoField), null, options, weight, words);
+            return super.word(jsonProperty(pojoProperty), null, options, weight, words);
         }
     }
 
-    public String getRangeIndexType(String fieldName) {
+    public String getRangeIndexType(String propertyName) {
         // map java types to acceptable Range Index types
-        String type = rangeIndextypes.get(fieldName);
+        String type = rangeIndextypes.get(propertyName);
         if ( type == null ) {
-            Class fieldClass = getType(fieldName);
-            if ( String.class.isAssignableFrom(fieldClass) ) {
+            Class propertyClass = getType(propertyName);
+            if ( String.class.isAssignableFrom(propertyClass) ) {
                 type = "xs:string";
-            } else if ( Integer.TYPE.equals(fieldClass) ) {
+            } else if ( Integer.TYPE.equals(propertyClass) ) {
                 type = "xs:int";
-            } else if ( Long.TYPE.equals(fieldClass) ) {
+            } else if ( Long.TYPE.equals(propertyClass) ) {
                 type = "xs:long";
-            } else if ( Float.TYPE.equals(fieldClass) ) {
+            } else if ( Float.TYPE.equals(propertyClass) ) {
                 type = "xs:float";
-            } else if ( Double.TYPE.equals(fieldClass) ) {
+            } else if ( Double.TYPE.equals(propertyClass) ) {
                 type = "xs:double";
-            } else if ( Number.class.isAssignableFrom(fieldClass) ) {
+            } else if ( Number.class.isAssignableFrom(propertyClass) ) {
                 type = "xs:decimal";
-            } else if ( Date.class.isAssignableFrom(fieldClass) ) {
+            } else if ( Date.class.isAssignableFrom(propertyClass) ) {
                 type = "xs:dateTime";
             }
             if ( type == null ) {
-                throw new IllegalArgumentException("Field " + fieldName + " is not a native Java type");
+                throw new IllegalArgumentException("Property " + propertyName + " is not a native Java type");
             }
-            rangeIndextypes.put(fieldName, type);
+            rangeIndextypes.put(propertyName, type);
         }
         return type;
     }
 
-    public Class getType(String fieldName) {
-        Class fieldClass = types.get(fieldName);
-        if ( fieldClass == null ) {
-            // figure out the type of the java field
-            String initCapPojoField = fieldName.substring(0,1).toUpperCase() + 
-                fieldName.substring(1);
+    public Class getType(String propertyName) {
+        Class propertyClass = types.get(propertyName);
+        if ( propertyClass == null ) {
+            // figure out the type of the java property
+            String initCapPojoProperty = propertyName.substring(0,1).toUpperCase() + 
+                propertyName.substring(1);
             try {
-                fieldClass = clazz.getField(fieldName).getType();
+                propertyClass = clazz.getField(propertyName).getType();
             } catch(NoSuchFieldException e) {
                 Method getMethod = null;
                 try {
-                    getMethod = clazz.getMethod("get" + initCapPojoField);
+                    getMethod = clazz.getMethod("get" + initCapPojoProperty);
                 } catch (NoSuchMethodException e2) {
                     try {
-                        getMethod = clazz.getMethod("is" + initCapPojoField);
+                        getMethod = clazz.getMethod("is" + initCapPojoProperty);
                         if ( ! Boolean.class.isAssignableFrom(getMethod.getReturnType()) ) {
                             getMethod = null;
                         }
@@ -210,33 +210,33 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
                 }
                 if ( getMethod != null ) {
                     if ( Modifier.isStatic(getMethod.getModifiers()) ) {
-                        throw new IllegalArgumentException("get" + initCapPojoField +
+                        throw new IllegalArgumentException("get" + initCapPojoProperty +
                             " cannot be static");
                     }
-                    fieldClass = getMethod.getReturnType();
-                    if ( fieldClass == Void.TYPE ) {
-                        throw new IllegalArgumentException("get" + initCapPojoField +
+                    propertyClass = getMethod.getReturnType();
+                    if ( propertyClass == Void.TYPE ) {
+                        throw new IllegalArgumentException("get" + initCapPojoProperty +
                             " must not have return type void");
                     }
                 } else {
-                    String setMethodName = "set" + initCapPojoField;
+                    String setMethodName = "set" + initCapPojoProperty;
                     for ( Method method : clazz.getMethods() ) {
                         if ( setMethodName.equals(method.getName()) ) {
                             Class[] parameters = method.getParameterTypes();
                             if ( parameters != null && parameters.length == 1 ) {
-                                fieldClass = parameters[0];
+                                propertyClass = parameters[0];
                                 break;
                             }
                         }
                     }
                 }
             }
-            if ( fieldClass == null ) {
-                throw new IllegalArgumentException("field " + fieldName + " not found, get" + initCapPojoField +
-                    " not found, and set" + initCapPojoField + " not found in class " + classWrapper);
+            if ( propertyClass == null ) {
+                throw new IllegalArgumentException("property " + propertyName + " not found, get" + initCapPojoProperty +
+                    " not found, and set" + initCapPojoProperty + " not found in class " + classWrapper);
             }
-            types.put(fieldName, fieldClass);
+            types.put(propertyName, propertyClass);
         }
-        return fieldClass;
+        return propertyClass;
     }
 }

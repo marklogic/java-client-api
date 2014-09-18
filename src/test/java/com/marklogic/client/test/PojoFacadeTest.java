@@ -194,7 +194,7 @@ public class PojoFacadeTest {
         // TODO: uncomment tests below once geospatial on JSON is implemented in server
         /*
         query = qb.geospatial(
-            qb.geoField("latLong"),
+            qb.geoProperty("latLong"),
             qb.circle(-34, -58, 1)
         );
         page = cities.search(query, 1);
@@ -292,7 +292,7 @@ public class PojoFacadeTest {
         query = qb.containerQuery(qb.term("SA"));
         assertEquals("Should find two cities", 61, cities.search(query, 1).getTotalSize());
 
-        // all countries containing the field "currencyName" with the term "peso"
+        // all countries containing the property "currencyName" with the term "peso"
         query = countriesQb.word("currencyName", "peso");
         assertEquals("Should find one city", 1, cities.search(query, 1).getTotalSize());
     }

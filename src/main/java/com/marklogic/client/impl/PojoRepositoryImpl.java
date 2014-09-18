@@ -64,8 +64,8 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     private JSONDocumentManager docMgr;
     private PojoQueryBuilder<T> qb;
     private Method idMethod;
-    private Field idField;
-    private String idFieldName;
+    private Field idProperty;
+    private String idPropertyName;
 
     PojoRepositoryImpl(DatabaseClient client, Class<T> entityClass) {
         this.client = client;
@@ -80,7 +80,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         this(client, entityClass);
         this.idClass = idClass;
         findId();
-        if ( idMethod == null && idField == null ) {
+        if ( idMethod == null && idProperty == null ) {
             throw new IllegalArgumentException("Your class " + entityClass.getName() +
                 " does not have a method or field annotated with com.marklogic.client.pojo.annotation.Id");
         }
@@ -250,7 +250,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         docMgr.setSearchView(view);
     }
 
-    public void defineIdField(String fieldName) {
+    public void defineIdProperty(String propertyName) {
     }
  
     public DatabaseClient getDatabaseClient() {
@@ -285,7 +285,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     }
 
     private void findId() {
-        if ( idMethod == null && idField == null ) {
+        if ( idMethod == null && idProperty == null ) {
             for ( Method method : entityClass.getDeclaredMethods() ) {
                 if ( method.isAnnotationPresent(Id.class) ) {
                     Class[] parameters = method.getParameterTypes();
@@ -298,7 +298,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
                         Pattern pattern = Pattern.compile("^(get|is)(.)(.*)");
                         Matcher matcher = pattern.matcher(method.getName());
                         if ( matcher.matches() ) {
-                            idFieldName = matcher.group(2).toLowerCase() + matcher.group(3);
+                            idPropertyName = matcher.group(2).toLowerCase() + matcher.group(3);
                             idMethod = method;
                             break;
                         } else {
@@ -321,7 +321,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
                                 ", annotated with com.marklogic.client.pojo.annotation.Id " + 
                                 " must be public");
                         }
-                        idField = field;
+                        idProperty = field;
                         break;
                     }
                 }
@@ -338,12 +338,12 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
                 throw new IllegalStateException("Error invoking " + entityClass.getName() + " method " +
                     idMethod.getName(), e);
             }
-        } else if ( idField != null ) {
+        } else if ( idProperty != null ) {
             try {
-                return (ID) idField.get(entity);
+                return (ID) idProperty.get(entity);
             } catch (Exception e) {
                 throw new IllegalStateException("Error retrieving " + entityClass.getName() + " field " +
-                    idField.getName(), e);
+                    idProperty.getName(), e);
             }
         } else {
             throw new IllegalArgumentException("Your class " + entityClass.getName() +

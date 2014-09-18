@@ -71,7 +71,7 @@ public interface PojoRepository<T, ID extends Serializable> {
     public long getPageLength(); // default: 50
     public void setPageLength(long length);
     
-    public void defineIdField(String fieldName);
+    public void defineIdProperty(String fieldName);
  
     public DatabaseClient getDatabaseClient();
 }
