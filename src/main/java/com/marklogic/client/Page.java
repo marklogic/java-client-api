@@ -18,9 +18,25 @@ package com.marklogic.client;
 import java.util.Iterator;
 
 /** A generic interface for pagination through large sets of items of type &lt;T&gt;. */
-public interface Page<T> extends Iterable<T> {
-    /** An iterator over the items in this page. */
+public interface Page<T> extends Iterator<T>, Iterable<T> {
+    /** A new iterator over the elements of type T in this Page. Each call to iterator()
+     *  will create a new Iterator which will start at the first record in this Page.  
+     *  Iterators created via this method are indepentent of the internal iterator
+     *  used for {@link hasNext()} and {@link next()}.
+     */
     public Iterator<T> iterator();
+
+    /** Returns true if internal iterator has more elements.
+     *  The internal iterator is separate from any new iterator created by calls to iterator().
+     *  @return true if the internal iterator has more elements
+     */
+    public boolean hasNext();
+
+    /** Returns the next element in the internal iterator, which is separate
+     *  from any new iterator created by calls to iterator().
+     *  @return the next element in the iteration
+     */
+    public T next();
 
     /** The start position of this page within all possible items.  For result sets
      * this is the position of the first result within the result set.

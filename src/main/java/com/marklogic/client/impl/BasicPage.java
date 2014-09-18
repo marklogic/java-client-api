@@ -20,6 +20,7 @@ import com.marklogic.client.Page;
 
 public class BasicPage<T> implements Page<T> {
     private Iterable<T> iterable;
+    private Iterator<T> iterator;
     private long start;
     private Long size = null;
     private long pageSize;
@@ -30,6 +31,7 @@ public class BasicPage<T> implements Page<T> {
 
     public BasicPage(Iterable<T> iterable, long start, long pageSize, long totalSize) {
         this.iterable = iterable;
+        this.iterator = iterable.iterator();
         this.start = start;
         this.pageSize = pageSize;
         this.totalSize = totalSize;
@@ -37,6 +39,18 @@ public class BasicPage<T> implements Page<T> {
 
     public Iterator<T> iterator() {
         return iterable.iterator();
+    }
+    
+    protected Iterator<T> internalIterator() {
+    	return iterator;
+    }
+
+    public boolean hasNext() {
+        return iterator.hasNext();
+    }
+
+    public T next() {
+        return iterator.next();
     }
 
     public long getStart() {

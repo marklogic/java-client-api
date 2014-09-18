@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.document;
+package com.marklogic.client.http;
 
 import com.marklogic.client.Page;
-import com.marklogic.client.io.marker.AbstractReadHandle;
 
-public interface DocumentPage extends Page<DocumentRecord> {
-    public <T extends AbstractReadHandle> T nextContent(T contentHandle);
+public interface MultiPartResponsePage extends Page<BodyPart> {
 }

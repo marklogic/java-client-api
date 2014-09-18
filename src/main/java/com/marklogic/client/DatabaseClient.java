@@ -24,6 +24,7 @@ import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.eval.ServerEvaluationManager;
 import com.marklogic.client.extensions.ResourceManager;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.query.QueryManager;
@@ -177,4 +178,5 @@ public interface DatabaseClient {
      * @return	the object implementing communication with the server 
      */
     public Object getClientImplementation();
+	public ServerEvaluationManager newServerEval();
 }

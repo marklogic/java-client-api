@@ -23,24 +23,14 @@ import com.marklogic.client.io.marker.AbstractReadHandle;
 
 class DocumentPageImpl extends BasicPage<DocumentRecord> implements DocumentPage {
     private Iterable<DocumentRecord> iterable;
-    private Iterator<DocumentRecord> iterator;
 
     public DocumentPageImpl(Iterable<DocumentRecord> iterable, long start, long size, long pageSize, long totalSize) {
         super(iterable, start, pageSize, totalSize);
         this.setSize(size);
         this.iterable = iterable;
-        this.iterator = iterable.iterator();
-    }
-
-    public boolean hasNext() {
-        return iterator.hasNext();
-    }
-
-    public DocumentRecord next() {
-        return iterator.next();
     }
 
     public <T extends AbstractReadHandle> T nextContent(T contentHandle) {
-        return iterator.next().getContent(contentHandle);
+        return internalIterator().next().getContent(contentHandle);
     }
 }
