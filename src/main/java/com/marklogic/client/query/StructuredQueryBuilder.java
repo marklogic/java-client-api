@@ -57,7 +57,7 @@ import com.marklogic.client.util.IterableNamespaceContext;
  * in a variable:
  * <pre>StructuredQueryDefinition andQry = structuredQueryBuilder.and(... query definitions ...);</pre>
  */
-public class StructuredQueryBuilder {
+public class StructuredQueryBuilder implements CombinedQueryBuilder {
 	final static private String SEARCH_API_NS="http://marklogic.com/appservices/search";
 
 	/*
