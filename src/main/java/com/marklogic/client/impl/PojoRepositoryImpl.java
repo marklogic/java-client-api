@@ -167,8 +167,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         ids.add(id);
         PojoPage<T> page = read(ids.toArray((ID[])new Serializable[0]), transaction);
         if ( page == null ) return null;
-        Iterator<T> iterator = page.iterator();
-        if ( iterator.hasNext() ) return iterator.next();
+        if ( page.hasNext() ) return page.next();
         return null;
     }
     public PojoPage<T> read(ID[] ids) {

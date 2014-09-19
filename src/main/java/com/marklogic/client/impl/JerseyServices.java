@@ -15,7 +15,9 @@
  */
 package com.marklogic.client.impl;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.Reader;
@@ -25,6 +27,7 @@ import java.util.Iterator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -700,7 +703,7 @@ public class JerseyServices implements RESTServices {
 		boolean hasMetadata = categories != null && categories.size() > 0;
 		JerseyResultIterator iterator = 
 			getBulkDocumentsImpl(reqlog, transactionId, categories, format, extraParams, withContent, uris);
-		return convertToDocumentPage(iterator, withContent, hasMetadata);
+		return new JerseyDocumentPage(iterator, withContent, hasMetadata);
 	}
 
     @Override
@@ -716,17 +719,40 @@ public class JerseyServices implements RESTServices {
 		JerseyResultIterator iterator = 
 			getBulkDocumentsImpl(reqlog, querydef, start, pageLength, transactionId, 
 				searchHandle, view, categories, format, extraParams);
-		return convertToDocumentPage(iterator, hasContent, hasMetadata);
+		return new JerseyDocumentPage(iterator, hasContent, hasMetadata);
 	}
 
-	private DocumentPage convertToDocumentPage(JerseyResultIterator iterator, boolean hasContent,
-		boolean hasMetadata)
-	{
-		ArrayList<DocumentRecord> records = new ArrayList<DocumentRecord>();
-        if ( iterator == null ) {
-            return new DocumentPageImpl(records, 1, 0, 0, 0);
-        }
-		while (iterator.hasNext()) {
+	private class JerseyDocumentPage extends BasicPage<DocumentRecord> implements DocumentPage {
+		private JerseyResultIterator iterator;
+		private boolean hasMetadata;
+		private boolean hasContent;
+
+		JerseyDocumentPage(JerseyResultIterator iterator, boolean hasContent, boolean hasMetadata) {
+			super(
+				new ArrayList<DocumentRecord>().iterator(),
+				iterator != null ? iterator.getStart() : 1,
+				iterator != null ? iterator.getPageSize() : 0,
+				iterator != null ? iterator.getTotalSize() : 0
+			);
+			if ( iterator == null ) {
+				setSize(0);
+			} else {
+				setSize(iterator.getSize());
+			}
+			this.iterator = iterator;
+			this.hasContent = hasContent;
+			this.hasMetadata = hasMetadata;
+		}
+
+		@Override
+		public boolean hasNext() {
+			if ( iterator == null ) return false;
+			return iterator.hasNext();
+		}
+
+		@Override
+		public DocumentRecord next() {
+			if ( iterator == null ) throw new NoSuchElementException("No documents available");
 			JerseyResult result = iterator.next();
 			DocumentRecord record;
 			if ( hasContent && hasMetadata ) {
@@ -742,10 +768,16 @@ public class JerseyServices implements RESTServices {
 			} else {
 				throw new IllegalStateException("Should never have neither content nor metadata");
 			}
-			records.add(record);
+			return record;
 		}
-		return new DocumentPageImpl(records, iterator.getStart(), 
-            iterator.getSize(), iterator.getPageSize(), iterator.getTotalSize());
+
+		public <T extends AbstractReadHandle> T nextContent(T contentHandle) {
+			return next().getContent(contentHandle);
+		}
+
+		public void close() {
+			if ( iterator != null ) iterator.close();
+		}
 	}
 
 	private JerseyResultIterator getBulkDocumentsImpl(RequestLogger reqlog,
@@ -4121,7 +4153,6 @@ public class JerseyServices implements RESTServices {
         if ( response == null ) return null;
 		MultiPart entity = response.hasEntity() ?
 				response.getEntity(MultiPart.class) : null;
-        response.close();
 		if (entity == null) return null;
         return makeResults(clazz, reqlog, operation, entityType, entity.getBodyParts(), response);
 	}
@@ -4136,8 +4167,8 @@ public class JerseyServices implements RESTServices {
 
 		try {
 			java.lang.reflect.Constructor<U> constructor = 
-				clazz.getConstructor(JerseyServices.class, RequestLogger.class, List.class);
-            JerseyResultIterator result = constructor.newInstance(this, reqlog, partList);
+				clazz.getConstructor(JerseyServices.class, RequestLogger.class, List.class, ClientResponse.class);
+            JerseyResultIterator result = constructor.newInstance(this, reqlog, partList, response);
 			MultivaluedMap<String, String> headers = response.getHeaders();
             if (headers.containsKey("vnd.marklogic.start")) {
                 result.setStart(Long.parseLong(headers.get("vnd.marklogic.start").get(0)));
@@ -4286,10 +4317,10 @@ public class JerseyServices implements RESTServices {
         private long size = -1;
         private long pageSize = -1;
         private long totalSize = -1;
+        private ClientResponse closeable;
 
 		public JerseyResultIterator(RequestLogger reqlog,
-				List<BodyPart> partList, Class<T> clazz) {
-			super();
+				List<BodyPart> partList, Class<T> clazz, ClientResponse closeable) {
             this.clazz = clazz;
             if (partList != null && partList.size() > 0) {
                 this.size = partList.size();
@@ -4297,6 +4328,7 @@ public class JerseyServices implements RESTServices {
                 this.partQueue = new ConcurrentLinkedQueue<BodyPart>(
                         partList).iterator();
 			}
+			this.closeable = closeable;
 		}
 
         public long getStart() {
@@ -4370,6 +4402,9 @@ public class JerseyServices implements RESTServices {
 		public void close() {
 			partQueue = null;
 			reqlog = null;
+			if ( closeable != null ) {
+				closeable.close();
+			}
 		}
 
 		protected void finalize() throws Throwable {
@@ -4383,17 +4418,18 @@ public class JerseyServices implements RESTServices {
 		implements ServiceResultIterator
 	{
 		public JerseyServiceResultIterator(RequestLogger reqlog,
-				List<BodyPart> partList) {
-            super(reqlog, partList, JerseyServiceResult.class);
+				List<BodyPart> partList, ClientResponse closeable) {
+			super(reqlog, partList, JerseyServiceResult.class, closeable);
 		}
 	}
 
 	public class DefaultJerseyResultIterator 
 		extends JerseyResultIterator<JerseyResult>
+		implements Iterator<JerseyResult>
 	{
 		public DefaultJerseyResultIterator(RequestLogger reqlog,
-				List<BodyPart> partList) {
-            super(reqlog, partList, JerseyResult.class);
+				List<BodyPart> partList, ClientResponse closeable) {
+			super(reqlog, partList, JerseyResult.class, closeable);
 		}
 	}
 
