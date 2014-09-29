@@ -72,7 +72,7 @@ public class BulkReadWriteTest {
     public static void beforeClass() throws JAXBException {
         Common.connect();
         context = JAXBContext.newInstance(City.class);
-        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
     @AfterClass
     public static void afterClass() {
@@ -206,16 +206,20 @@ public class BulkReadWriteTest {
         writeSet.add("doc2.json", doc2Metadata, doc2);
 
         docMgr.write(writeSet);
-
-        JacksonHandle content1 = new JacksonHandle();
-        docMgr.read("doc1.json", content1);
-        JacksonHandle content2 = new JacksonHandle();
-        DocumentMetadataHandle metadata2 = new DocumentMetadataHandle();
-        docMgr.read("doc2.json", metadata2, content2);
-
-        assertEquals("Failed to read document 1", "dog", content1.get().get("animal").textValue());
-        assertEquals("Failed to read expected quality", 2, metadata2.getQuality());
-        assertEquals("Failed to read document 2", "cat", content2.get().get("animal").textValue());
+        
+        docMgr.setMetadataCategories(Metadata.QUALITY);
+        docMgr.setNonDocumentFormat(Format.JSON);
+        DocumentPage documents = docMgr.read("doc1.json", "doc2.json");
+        for ( DocumentRecord record : documents ) {
+            JacksonHandle content = record.getContent(new JacksonHandle());
+            JacksonHandle metadata = record.getMetadata(new JacksonHandle());
+            if ( "doc1.json".equals(record.getUri()) ) {
+                assertEquals("Failed to read document 1", "dog", content.get().get("animal").textValue());
+            } else if ( "doc2.json".equals(record.getUri()) ) {
+                assertEquals("Failed to read document 2", "cat", content.get().get("animal").textValue());
+                assertEquals("Failed to read expected quality", 2, metadata.get().get("quality").intValue());
+            }
+        }
     }
 
     private void validateRecord(DocumentRecord record) {
@@ -320,8 +324,6 @@ public class BulkReadWriteTest {
         // Execute the write operation
         jdm.write(batch);
 
-        // need the "synthetic response" format to be XML
-        jdm.setResponseFormat(Format.XML);
         // Check the results
         assertEquals("Doc1 should have the system default quality of 0", 0, 
             jdm.readMetadata("doc1.json", new DocumentMetadataHandle()).getQuality());

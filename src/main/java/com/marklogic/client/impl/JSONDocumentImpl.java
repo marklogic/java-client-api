@@ -30,7 +30,6 @@ public class JSONDocumentImpl
 
 	JSONDocumentImpl(RESTServices services) {
 		super(services,Format.JSON);
-		setResponseFormat(Format.JSON);
 	}
 
 	@Override

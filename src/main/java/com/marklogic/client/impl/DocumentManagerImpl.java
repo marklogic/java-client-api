@@ -87,7 +87,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     private String                forestName;
     private long                  pageLength = DEFAULT_PAGE_LENGTH;
     private QueryView searchView = QueryView.RESULTS;
-    private Format responseFormat = Format.XML;
+    private Format nonDocumentFormat = null;
 
 	DocumentManagerImpl(RESTServices services, Format contentFormat) {
 		super();
@@ -344,7 +344,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
             (transaction == null) ? null : transaction.getTransactionId(),
             // the default for bulk is no metadata, which differs from the normal default of ALL
             isProcessedMetadataModified ? processedMetadata : null,
-            responseFormat,
+            nonDocumentFormat,
             mergeTransformParameters(
                     (transform != null) ? transform : getReadTransform(),
                     null
@@ -384,9 +384,9 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
                 responseHandle.setHandleRegistry(getHandleRegistry());
                 responseHandle.setQueryCriteria(querydef);
             }
-            if ( responseFormat != searchBase.getFormat() ) {
+            if ( nonDocumentFormat != null && nonDocumentFormat != searchBase.getFormat() ) {
                 throw new UnsupportedOperationException("The format supported by your handle:[" + 
-                    searchBase.getFormat() + "] does not match your setResponseFormat:[" + responseFormat + "]");
+                    searchBase.getFormat() + "] does not match the non-document format:[" + nonDocumentFormat + "]");
             }
         }
 
@@ -394,7 +394,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
         // the default for bulk is no metadata, which differs from the normal default of ALL
         Set<Metadata> metadata = isProcessedMetadataModified ? processedMetadata : null;
         return services.getBulkDocuments( requestLogger, querydef, start, getPageLength(), 
-            tid, searchHandle, searchView, metadata, responseFormat, null);
+            tid, searchHandle, searchView, metadata, nonDocumentFormat, null);
 	}
 
     public long getPageLength() {
@@ -413,16 +413,16 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
         this.searchView = view;
     }
 
-    public Format getResponseFormat() {
-        return responseFormat;
+    public Format getNonDocumentFormat() {
+        return nonDocumentFormat;
     }
 
-    public void setResponseFormat(Format responseFormat) {
-        if ( responseFormat != Format.XML && responseFormat != Format.JSON ) {
+    public void setNonDocumentFormat(Format nonDocumentFormat) {
+        if ( nonDocumentFormat != Format.XML && nonDocumentFormat != Format.JSON ) {
             throw new UnsupportedOperationException("Only XML and JSON are valid response formats.  You specified:[" + 
-                responseFormat + "]");
+                nonDocumentFormat + "]");
         }
-        this.responseFormat = responseFormat;
+        this.nonDocumentFormat = nonDocumentFormat;
     }
 
 	public DocumentWriteSet newWriteSet() {

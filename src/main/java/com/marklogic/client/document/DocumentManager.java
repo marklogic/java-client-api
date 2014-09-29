@@ -432,10 +432,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 
     public void setPageLength(long length);
 
-    public Format getResponseFormat();
-
-    public void setResponseFormat(Format format);
-
+    public Format getNonDocumentFormat();
+    
+    public void setNonDocumentFormat(Format nonDocumentFormat);
+    
     public QueryView getSearchView();
 
     public void setSearchView(QueryView view);

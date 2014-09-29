@@ -74,7 +74,6 @@ public class QueryByExampleTest {
         documents = jdm.search(query, 1, new JacksonHandle());
         assertEquals("6 json documents should have matched", documents.getTotalSize(), 6);
         
-        jdm.setResponseFormat(Format.XML);
         documents = jdm.search(query, 1, new SearchHandle());
         assertEquals("6 json documents should have matched", documents.getTotalSize(), 6);
     }
