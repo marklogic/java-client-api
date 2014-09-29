@@ -61,4 +61,7 @@ public interface EvalResult {
     public Type getType();
     public <H extends AbstractReadHandle> H get(H handle);
     public <T> T getAs(Class<T> clazz);
+    public String getString();
+    public Number getNumber();
+    public boolean getBoolean();
 }
