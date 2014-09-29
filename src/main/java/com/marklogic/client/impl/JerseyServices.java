@@ -722,8 +722,9 @@ public class JerseyServices implements RESTServices {
 		return new JerseyDocumentPage(iterator, hasContent, hasMetadata);
 	}
 
-	private class JerseyDocumentPage extends BasicPage<DocumentRecord> implements DocumentPage {
+	private class JerseyDocumentPage extends BasicPage<DocumentRecord> implements DocumentPage, Iterator<DocumentRecord> {
 		private JerseyResultIterator iterator;
+		private Iterator<DocumentRecord> docRecordIterator;
 		private boolean hasMetadata;
 		private boolean hasContent;
 
@@ -734,20 +735,29 @@ public class JerseyServices implements RESTServices {
 				iterator != null ? iterator.getPageSize() : 0,
 				iterator != null ? iterator.getTotalSize() : 0
 			);
+			this.iterator = iterator;
+			this.hasContent = hasContent;
+			this.hasMetadata = hasMetadata;
 			if ( iterator == null ) {
 				setSize(0);
 			} else {
 				setSize(iterator.getSize());
 			}
-			this.iterator = iterator;
-			this.hasContent = hasContent;
-			this.hasMetadata = hasMetadata;
+		}
+
+		@Override
+		public Iterator<DocumentRecord> iterator() {
+			return this;
 		}
 
 		@Override
 		public boolean hasNext() {
 			if ( iterator == null ) return false;
 			return iterator.hasNext();
+		}
+		
+		public void remove() {
+			throw new UnsupportedOperationException();
 		}
 
 		@Override
@@ -812,6 +822,14 @@ public class JerseyServices implements RESTServices {
 		if (pageLength > 0)        params.add("pageLength", Long.toString(pageLength));
 		if (format != null)        params.add("format",     format.toString().toLowerCase());
 		if (transactionId != null) params.add("txid",       transactionId);
+		if ( format == null && searchHandle != null ) {
+			HandleImplementation handleBase = HandleAccessor.as(searchHandle);
+			if ( Format.XML == handleBase.getFormat() ) {
+				params.add("format", "xml");
+			} else if ( Format.JSON == handleBase.getFormat() ) {
+				params.add("format", "json");
+			}
+		}
 
 		JerseySearchRequest request = 
 			generateSearchRequest(reqlog, querydef, MultiPartMediaTypes.MULTIPART_MIXED, params);
