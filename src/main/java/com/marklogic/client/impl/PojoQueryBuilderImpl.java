@@ -17,6 +17,7 @@ package com.marklogic.client.impl;
 
 import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryBuilder.TermQuery;
 import com.marklogic.client.query.StructuredQueryBuilder.TextIndex;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
@@ -24,6 +25,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Date;
 import java.util.HashMap;
+
+import javax.xml.stream.XMLStreamWriter;
  
 public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements PojoQueryBuilder<T> {
     private HashMap<String, Class> types = new HashMap<String, Class>();
@@ -57,12 +60,9 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
             return super.containerQuery(jsonProperty(pojoProperty), query);
         }
     }
-    @Override
-    public StructuredQueryDefinition containerQuery(StructuredQueryDefinition query) {
-        return super.containerQuery(jsonProperty(classWrapper), query);
-    }
-    public PojoQueryBuilder          containerQueryBuilder(String pojoProperty) {
-        return new PojoQueryBuilderImpl(getType(pojoProperty), true);
+    @SuppressWarnings("unchecked")
+    public <C> PojoQueryBuilder<C> containerQueryBuilder(String pojoProperty, Class<C> clazz) {
+        return new PojoQueryBuilderImpl<C>((Class<C>) getType(pojoProperty), true);
     }
     @Override
     public StructuredQueryBuilder.GeospatialIndex
@@ -159,12 +159,39 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
             return super.word(jsonProperty(pojoProperty), null, options, weight, words);
         }
     }
+    @SuppressWarnings("deprecation")
+    public TermQuery term(String... terms) {
+        return new PojoTermQuery(wrapQueries, null, terms);
+    }
+    @SuppressWarnings("deprecation")
+    public TermQuery term(double weight, String... terms) {
+        return new PojoTermQuery(wrapQueries, weight, terms);
+
+    }
+    @SuppressWarnings("deprecation")
+    public class PojoTermQuery extends StructuredQueryBuilder.TermQuery {
+        private AbstractStructuredQuery query; 
+        public PojoTermQuery(boolean wrapQueries, Double weight, String... terms) {
+            super(weight, terms);
+            TermQuery termQuery = new TermQuery(weight, terms);
+            if ( wrapQueries ) {
+                query = (AbstractStructuredQuery) containerQuery(jsonProperty(classWrapper), termQuery);
+            } else {
+                query = termQuery;
+            }
+        }
+
+        @Override
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            query.innerSerialize(serializer);
+        }
+    };
 
     public String getRangeIndexType(String propertyName) {
         // map java types to acceptable Range Index types
         String type = rangeIndextypes.get(propertyName);
         if ( type == null ) {
-            Class propertyClass = getType(propertyName);
+            Class<?> propertyClass = getType(propertyName);
             if ( String.class.isAssignableFrom(propertyClass) ) {
                 type = "xs:string";
             } else if ( Integer.TYPE.equals(propertyClass) ) {
@@ -188,8 +215,8 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
         return type;
     }
 
-    public Class getType(String propertyName) {
-        Class propertyClass = types.get(propertyName);
+    public Class<?> getType(String propertyName) {
+        Class<?> propertyClass = types.get(propertyName);
         if ( propertyClass == null ) {
             // figure out the type of the java property
             String initCapPojoProperty = propertyName.substring(0,1).toUpperCase() + 
@@ -222,7 +249,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
                     String setMethodName = "set" + initCapPojoProperty;
                     for ( Method method : clazz.getMethods() ) {
                         if ( setMethodName.equals(method.getName()) ) {
-                            Class[] parameters = method.getParameterTypes();
+                            Class<?>[] parameters = method.getParameterTypes();
                             if ( parameters != null && parameters.length == 1 ) {
                                 propertyClass = parameters[0];
                                 break;

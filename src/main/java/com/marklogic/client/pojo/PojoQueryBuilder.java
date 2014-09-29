@@ -115,9 +115,6 @@ public interface PojoQueryBuilder<T> extends CombinedQueryBuilder {
     public StructuredQueryDefinition containerQuery(String pojoProperty,
         StructuredQueryDefinition query);
 
-    /** @return a query matching pojos of type T with children matching the specified query */
-    public StructuredQueryDefinition containerQuery(StructuredQueryDefinition query);
-
     /** Use this method to provide a query builder that can query a nested object within your pojo.
      * All other PojoQueryBuilder methods create queries for direct children of T which are native
      * types.  If a child of T is an object, and you need to query one of its children, this method
@@ -125,7 +122,7 @@ public interface PojoQueryBuilder<T> extends CombinedQueryBuilder {
      * nested objects you may use this method on the each returned PojoQueryBuilder which represents
      * one level deeper.
      * @return a PojoQueryBuilder for nested pojos of the type corresponding with pojoProperty */
-    public PojoQueryBuilder          containerQueryBuilder(String pojoProperty);
+    public <C> PojoQueryBuilder<C> containerQueryBuilder(String pojoProperty, Class<C> clazz);
     public StructuredQueryBuilder.GeospatialIndex
         geoPair(String latitudePropertyName, String longitudePropertyName);
     /**

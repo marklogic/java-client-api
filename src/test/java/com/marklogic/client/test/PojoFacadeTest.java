@@ -277,8 +277,8 @@ public class PojoFacadeTest {
         cities.write(abuDhabi);
         cities.write(buenosAires);
 
-        PojoQueryBuilder qb = cities.getQueryBuilder();
-        PojoQueryBuilder countriesQb = qb.containerQueryBuilder("country");
+        PojoQueryBuilder<City> qb = cities.getQueryBuilder();
+        PojoQueryBuilder<Country> countriesQb = qb.containerQueryBuilder("country", Country.class);
         QueryDefinition query = countriesQb.value("continent", "EU");
         assertEquals("Should not find any countries", 0, cities.search(query, 1).getTotalSize());
 
@@ -289,12 +289,12 @@ public class PojoFacadeTest {
         assertEquals("Should find two cities", 2, cities.search(query, 1).getTotalSize());
 
         // all countries containing the term SA
-        query = countriesQb.containerQuery(countriesQb.term("SA"));
+        query = countriesQb.term("SA");
         assertEquals("Should find one city", 1, cities.search(query, 1).getTotalSize());
 
         // all cities containing the term SA
-        query = qb.containerQuery(qb.term("SA"));
-        assertEquals("Should find two cities", 61, cities.search(query, 1).getTotalSize());
+        query = qb.term("SA");
+        assertEquals("Should find sixty one cities", 61, cities.search(query, 1).getTotalSize());
 
         // all countries containing the property "currencyName" with the term "peso"
         query = countriesQb.word("currencyName", "peso");

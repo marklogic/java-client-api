@@ -72,7 +72,6 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         this.entityClass = entityClass;
         this.idClass = null;
         this.docMgr = client.newJSONDocumentManager();
-        this.docMgr.setResponseFormat(Format.JSON);
         this.qb = new PojoQueryBuilderImpl<T>(entityClass);
     }
 
@@ -206,7 +205,6 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         return search(query, start, searchHandle, null);
     }
     public PojoPage<T> search(QueryDefinition query, long start, SearchReadHandle searchHandle, Transaction transaction) {
-        Format docMgrFormat = docMgr.getResponseFormat();
         if ( searchHandle != null ) {
             HandleImplementation searchBase = HandleAccessor.checkHandle(searchHandle, "search");
             if (searchHandle instanceof SearchHandle) {
@@ -216,12 +214,10 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
                 }
                 responseHandle.setQueryCriteria(query);
             }
-            docMgr.setResponseFormat(searchBase.getFormat());
         }
 
         String tid = transaction == null ? null : transaction.getTransactionId();
         DocumentPage docPage = docMgr.search(wrapQuery(query), start, searchHandle, transaction);
-        docMgr.setResponseFormat(docMgrFormat);
         PojoPage<T> pojoPage = new PojoPageImpl(docPage, entityClass);
         return pojoPage;
     }
