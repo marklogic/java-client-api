@@ -39,10 +39,6 @@ public class BasicPage<T> implements Page<T> {
         return iterator;
     }
     
-    protected Iterator<T> internalIterator() {
-    	return iterator;
-    }
-
     public boolean hasNext() {
         return iterator.hasNext();
     }
