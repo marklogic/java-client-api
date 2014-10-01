@@ -28,19 +28,18 @@ import javax.xml.stream.XMLStreamWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
-import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.admin.ExtensionLibrariesManager;
 import com.marklogic.client.admin.NamespacesManager;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ResourceExtensionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.TransformExtensionsManager;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.io.OutputStreamHandle;
 import com.marklogic.client.io.OutputStreamSender;
 
@@ -58,7 +57,6 @@ class ServerConfigurationManagerImpl
 	private Boolean       serverRequestLogging;
 	private Policy        contentVersions;
 	private UpdatePolicy  updatePolicy;
-	private Format        errorFormat;
 
     private RESTServices          services;
 	private HandleFactoryRegistry handleRegistry;
@@ -120,8 +118,6 @@ class ServerConfigurationManagerImpl
 				} else if ("update-policy".equals(localName)) {
 					updatePolicy = Enum.valueOf(UpdatePolicy.class,
 							reader.getElementText().toUpperCase().replace("-", "_"));
-				} else if ("error-format".equals(localName)) {
-					errorFormat = Format.valueOf(reader.getElementText().toUpperCase());
 				}
 			}
 
@@ -192,11 +188,6 @@ class ServerConfigurationManagerImpl
 			if (updatePolicy != null) {
 				serializer.writeStartElement(REST_API_NS, "update-policy");
 				serializer.writeCharacters(updatePolicy.name().toLowerCase().replace("_", "-"));
-				serializer.writeEndElement();
-			}
-			if (errorFormat != null) {
-				serializer.writeStartElement(REST_API_NS, "error-format");
-				serializer.writeCharacters(errorFormat.name().toLowerCase());
 				serializer.writeEndElement();
 			}
 
@@ -322,17 +313,5 @@ class ServerConfigurationManagerImpl
 		TransformExtensionsImpl transformExtensionMgr = new TransformExtensionsImpl(services);
 		transformExtensionMgr.setHandleRegistry(getHandleRegistry());
 		return transformExtensionMgr;
-	}
-	
-	@Override
-	public Format getErrorFormat() {
-		return errorFormat;
-	}
-	@Override
-	public void setErrorFormat(Format errorFormat) {
-		if (errorFormat == Format.JSON || errorFormat == Format.XML) 
-			this.errorFormat = errorFormat;
-		else
-			throw new IllegalArgumentException("The only supported values for error format are JSON and XML.");
 	}
 }

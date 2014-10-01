@@ -126,7 +126,7 @@ import com.sun.jersey.multipart.MultiPartMediaTypes;
 public class JerseyServices implements RESTServices {
 	static final private Logger logger = LoggerFactory
 			.getLogger(JerseyServices.class);
-	static final String ERROR_NS = "http://marklogic.com/rest-api";
+	static final String ERROR_NS = "http://marklogic.com/xdmp/error";
 
 	static final private String DOCUMENT_URI_PREFIX = "/documents?uri=";
 

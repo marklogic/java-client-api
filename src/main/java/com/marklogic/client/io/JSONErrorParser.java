@@ -24,10 +24,10 @@ public class JSONErrorParser implements FailedRequestParser {
 		Map<String, Map<String, String>> errorData;
 		try {
 			errorData = mapper.readValue(content, Map.class);
-			Map<String, String> errorBody = errorData.get("error");
+			Map<String, String> errorBody = errorData.get("errorResponse");
 			failure.setStatusCode(httpStatus);
 			failure.setStatusString(errorBody.get("status"));
-			failure.setMessageCode(errorBody.get("message-code"));
+			failure.setMessageCode(errorBody.get("messageCode"));
 			failure.setMessageString(errorBody.get("message"));
 		} catch (JsonParseException e1) {
 			failure.setStatusCode(httpStatus);
