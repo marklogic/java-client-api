@@ -160,8 +160,8 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST{
 		System.out.println("Default Page length setting on docMgr :"+docMgr.getPageLength());
 		docMgr.setPageLength(1);
 		docMgr.setSearchView(QueryView.RESULTS);
-		docMgr.setResponseFormat(Format.XML);
-		assertEquals("format set on document manager","XML",docMgr.getResponseFormat().toString());
+		docMgr.setNonDocumentFormat(Format.XML);
+		assertEquals("format set on document manager","XML",docMgr.getNonDocumentFormat().toString());
 		assertEquals("Queryview set on document manager ","RESULTS" ,docMgr.getSearchView().toString());
 		assertEquals("Page length ",1,docMgr.getPageLength());
 		// Search for documents where content has bar and get first result record, get search handle on it
@@ -218,7 +218,7 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST{
 		QueryManager queryMgr = client.newQueryManager();
 		StringQueryDefinition qd = queryMgr.newStringDefinition();
 		qd.setCriteria("bar");
-		docMgr.setResponseFormat(Format.JSON);
+		docMgr.setNonDocumentFormat(Format.JSON);
 		SearchHandle results = new SearchHandle();
 		DocumentPage page= docMgr.search(qd, 1,results);
 		MatchDocumentSummary[] summaries = results.getMatchResults();
@@ -244,7 +244,7 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST{
 		qd.setCriteria("bar");
 
 
-		docMgr.setResponseFormat(Format.JSON);
+		docMgr.setNonDocumentFormat(Format.JSON);
 		docMgr.setSearchView(QueryView.METADATA);
 		docMgr.setMetadataCategories(Metadata.PERMISSIONS);
 
@@ -274,7 +274,7 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST{
 		QueryManager queryMgr = client.newQueryManager();
 		StringQueryDefinition qd = queryMgr.newStringDefinition();
 		qd.setCriteria("woof");
-		docMgr.setResponseFormat(Format.JSON);
+		docMgr.setNonDocumentFormat(Format.JSON);
 
 		docMgr.setSearchView(QueryView.FACETS);
 		JacksonHandle jh = new JacksonHandle();
