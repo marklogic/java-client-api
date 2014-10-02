@@ -44,6 +44,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 
 import java.net.InetAddress;
@@ -1316,5 +1318,10 @@ public abstract class ConnectedRESTQA {
 			System.out.println(content);
 		}
 	}
-
+	public static void setupServerRequestLogging(DatabaseClient client,boolean flag) throws Exception {
+		ServerConfigurationManager scm =client.newServerConfigManager();
+		scm.readConfiguration();
+		scm.setServerRequestLogging(flag);
+		scm.writeConfiguration();
+	}
 }
