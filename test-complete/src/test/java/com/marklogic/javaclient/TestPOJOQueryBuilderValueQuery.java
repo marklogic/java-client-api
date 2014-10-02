@@ -46,14 +46,14 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 	@Before
 	public void setUp() throws Exception {
 		client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
-		setupServerRequestLogging(client,true);
+		
 	
 	}
 	@After
 	public void tearDown() throws Exception {
 		// release client
 		client.release();
-		setupServerRequestLogging(client,true);
+		
 	}
 
 	public Artifact getArtifact(int counter){
@@ -190,10 +190,11 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 //Below scenario is verifying value query from PojoBuilder that matches to no document
 	//Issue 127 is logged for the below scenario
 	@Test
-	public void testPOJOValueSearchWithNoResults() {
+	public void testPOJOValueSearchWithNoResults() throws Exception {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
 		this.loadSimplePojos(products);
+		setupServerRequestLogging(client,true);
 		String[] searchOptions ={"case-sensitive","wildcarded","min-occurs=2"};
 		PojoQueryBuilder qb = products.getQueryBuilder();
 		String[] searchNames = {"acme*"};
@@ -201,8 +202,9 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 		JacksonHandle jh = new JacksonHandle();
 		products.setPageLength(5);
 		p = products.search(qd, 1,jh);
+		setupServerRequestLogging(client,false);
 		System.out.println(jh.get().toString());
-		assertEquals("total no of pages",3,p.getTotalPages());
+		assertEquals("total no of pages",0,p.getTotalPages());
 		
 		long pageNo=1,count=0;
 		do{
@@ -218,9 +220,9 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 			assertEquals("Page size",count,p.size());
 			pageNo=pageNo+p.getPageSize();
 		}while(!p.isLastPage() && pageNo<=p.getTotalSize());
-		assertEquals("page number after the loop",3,p.getPageNumber());
-		assertEquals("total no of pages",3,p.getTotalPages());
-		assertEquals("page length from search handle",5,jh.get().path("page-length").asInt());
-		assertEquals("Total results from search handle",11,jh.get().path("total").asInt());
+		assertEquals("page number after the loop",0,p.getPageNumber());
+		assertEquals("total no of pages",0,p.getTotalPages());
+		assertEquals("page length from search handle",0,jh.get().path("page-length").asInt());
+		assertEquals("Total results from search handle",10,jh.get().path("total").asInt());
 	}
 }
