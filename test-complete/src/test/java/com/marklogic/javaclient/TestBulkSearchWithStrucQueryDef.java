@@ -149,8 +149,8 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 		System.out.println("Default Page length setting on docMgr :"+docMgr.getPageLength());
 		docMgr.setPageLength(1);
 		docMgr.setSearchView(QueryView.RESULTS);
-		docMgr.setResponseFormat(Format.XML);
-		assertEquals("format set on document manager","XML",docMgr.getResponseFormat().toString());
+		docMgr.setNonDocumentFormat(Format.XML);
+		assertEquals("format set on document manager","XML",docMgr.getNonDocumentFormat().toString());
 		assertEquals("Queryview set on document manager ","RESULTS" ,docMgr.getSearchView().toString());
 		assertEquals("Page length ",1,docMgr.getPageLength());
 		// Search for documents where content has bar and get first result record, get search handle on it
@@ -211,7 +211,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 		StructuredQueryDefinition qd = qb.and(qb.term("dog1","dog11"));
 		queryMgr.search(qd, new SearchHandle());
 
-		docMgr.setResponseFormat(Format.JSON);
+		docMgr.setNonDocumentFormat(Format.JSON);
 		docMgr.setSearchView(QueryView.METADATA);
 		docMgr.setMetadataCategories(Metadata.PERMISSIONS);
 
@@ -239,7 +239,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 		QueryManager queryMgr = client.newQueryManager();
 		StructuredQueryBuilder qb = new StructuredQueryBuilder();
 		StructuredQueryDefinition qd = qb.and(qb.term("woof"));
-		docMgr.setResponseFormat(Format.JSON);
+		docMgr.setNonDocumentFormat(Format.JSON);
 
 		docMgr.setSearchView(QueryView.FACETS);
 		JacksonHandle jh = new JacksonHandle();
@@ -409,7 +409,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 		RawStructuredQueryDefinition qd =
 				queryMgr.newRawStructuredQueryDefinition(jh);
 		System.out.println(jh.get().toString());
-		docMgr.setResponseFormat(Format.JSON);
+		docMgr.setNonDocumentFormat(Format.JSON);
 		JacksonHandle results = new JacksonHandle();
 		DocumentPage page= docMgr.search(qd, 1,results);
 		DocumentMetadataHandle mh = new DocumentMetadataHandle();
