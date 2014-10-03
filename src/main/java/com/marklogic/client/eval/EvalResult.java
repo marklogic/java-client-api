@@ -15,53 +15,22 @@
  */
 package com.marklogic.client.eval;
 
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 
 public interface EvalResult {
     enum Type {
-        STRING,
-        BOOLEAN,
-        JS_NUMBER,
-        JS_ARRAY,
-        JS_OBJECT,
-        NULL,
-        XDM_ATOMIC,
-        XDM_ATTRIBUTE,
-        XDM_BINARY,
-        XDM_COMMENT,
-        XDM_DOCUMENT,
-        XDM_DURATION,
-        XDM_ELEMENT,
-        XDM_ITEM,
-        XDM_NODE,
-        XDM_PROCESSINGINSTRUCTION,
-        XDM_SEQUENCE,
-        XDM_TEXT,
-        XDM_VALUE,
-        XDM_VARIABLE,
-        XS_ANYURI,
-        XS_BASE64BINARY,
-        XS_DATE,
-        XS_DATETIME,
-        XS_DAYTIMEDURATION,
-        XS_DECIMAL,
-        XS_DOUBLE,
-        XS_DURATION,
-        XS_FLOAT,
-        XS_GDAY,
-        XS_GMONTH,
-        XS_GMONTHDAY,
-        XS_GYEAR,
-        XS_GYEARMONTH,
-        XS_HEXBINARY,
-        XS_INTEGER,
-        XS_QNAME,
-        XS_TIME
+        XML, JSON,
+        STRING, BOOLEAN, NULL, OTHER,
+        ANYURI, BASE64BINARY, DATE, DATETIME, DECIMAL, DOUBLE, DURATION,
+        FLOAT, GDAY, GMONTH, GMONTHDAY, GYEAR, GYEARMONTH, HEXBINARY, INTEGER, QNAME, TIME,
+        ATTRIBUTE, BINARY, COMMENT, PROCESSINGINSTRUCTION, TEXTNODE
     };
     public Type getType();
+    public Format getFormat();
     public <H extends AbstractReadHandle> H get(H handle);
     public <T> T getAs(Class<T> clazz);
     public String getString();
     public Number getNumber();
-    public boolean getBoolean();
+    public Boolean getBoolean();
 }

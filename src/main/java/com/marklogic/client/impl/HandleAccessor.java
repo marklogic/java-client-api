@@ -15,7 +15,17 @@
  */
 package com.marklogic.client.impl;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
+import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 
@@ -59,4 +69,42 @@ public class HandleAccessor {
 	static public HandleImplementation as(Object handle) {
 		return ((HandleImplementation) handle);
 	}
+    static public String contentAsString(AbstractWriteHandle handle) {
+    	try {
+        Object content = sendContent(handle);
+        if ( content == null ) return null;
+        String stringContent = null;
+		if (content instanceof String) {
+            stringContent = (String) content;
+		} else if (content instanceof OutputStreamSender) {
+            ByteArrayOutputStream bytesStream = new ByteArrayOutputStream();
+            ((OutputStreamSender) content).write(bytesStream);
+            stringContent = bytesStream.toString("UTF-8");
+		} else if ( content instanceof byte[] ) {
+            stringContent = new String((byte[]) content, "UTF-8"); 
+		} else if ( content instanceof File ) {
+            content = new FileInputStream((File) content);
+		}
+        if ( content instanceof InputStream ) {
+            StringBuffer sb = new StringBuffer();
+            Reader reader = new InputStreamReader((InputStream) content, "UTF-8");
+            char[] cbuf = new char[8000];
+            int charsRead = -1;
+            while ( (charsRead = reader.read(cbuf)) != -1 ) {
+                sb.append(cbuf, 0, charsRead);
+            }
+            stringContent = sb.toString();
+		}
+		if ( content instanceof File ) {
+			((FileInputStream) content).close();
+		}
+        if ( stringContent == null ) {
+        	throw new UnsupportedOperationException("contentAsString only supports handles with sendContent() " +
+        		"of type String, OutputStreamSender, byte[], File, or InputStream");
+        }
+        return stringContent;
+    	} catch (Exception e) {
+    		throw new MarkLogicIOException(e);
+    	}
+    }
 }

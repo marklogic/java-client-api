@@ -35,7 +35,10 @@ import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.ServerTransform;
+import com.marklogic.client.eval.EvalResultIterator;
+import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
+import com.marklogic.client.impl.ServerEvaluationCallImpl.Context;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
@@ -50,6 +53,7 @@ import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.SuggestDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
+import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
 import com.sun.jersey.api.client.ClientResponse;
@@ -200,7 +204,11 @@ public interface RESTServices {
 			W[] input, String... outputMimetypes)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException;
-
+	public EvalResultIterator postEvalInvoke(RequestLogger reqlog, String code, String modulePath,
+			ServerEvaluationCallImpl.Context evalContext, Map<String, Object> variables,
+			EditableNamespaceContext namespaces, String database, String transactionId) 
+			throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException;
 	public <R extends AbstractReadHandle> R deleteResource(
 			RequestLogger reqlog, String path, RequestParameters params, R output)
 		throws  ResourceNotFoundException, ForbiddenUserException, FailedRequestException;

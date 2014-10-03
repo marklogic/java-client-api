@@ -21,6 +21,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -62,11 +65,16 @@ import org.apache.http.params.HttpProtocolParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
@@ -79,12 +87,19 @@ import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.ServerTransform;
+import com.marklogic.client.eval.EvalResult;
+import com.marklogic.client.eval.EvalResultIterator;
+import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonParserHandle;
 import com.marklogic.client.io.OutputStreamSender;
+import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
@@ -105,6 +120,7 @@ import com.marklogic.client.query.ValueLocator;
 import com.marklogic.client.query.ValueQueryDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
+import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
 import com.sun.jersey.api.client.ClientResponse;
@@ -1789,19 +1805,22 @@ public class JerseyServices implements RESTServices {
 	}
 
 	private Format getHeaderFormat(BodyPart part) {
+        ContentDisposition contentDisposition = part.getContentDisposition();
 		if (part.getHeaders().containsKey("vnd.marklogic.document-format")) {
-			List<String> values = part.getHeaders().get("vnd.marklogic.document-format");
-			if (values != null) {
-				return Format.valueOf(values.get(0).toUpperCase());
+			String value = part.getHeaders().getFirst("vnd.marklogic.document-format");
+			if (value != null) {
+				return Format.valueOf(value.toUpperCase());
 			}
-        } else {
-            ContentDisposition contentDisposition = part.getContentDisposition();
-            if ( contentDisposition != null ) {
-                Map<String, String> parameters = contentDisposition.getParameters();
-                if ( parameters != null && parameters.get("format") != null ) {
-                    return Format.valueOf(parameters.get("format").toUpperCase());
-                }
+		} else if ( contentDisposition != null ) {
+            Map<String, String> parameters = contentDisposition.getParameters();
+            if ( parameters != null && parameters.get("format") != null ) {
+                return Format.valueOf(parameters.get("format").toUpperCase());
             }
+		} else if ( part.getHeaders().containsKey("Content-Type") ) {
+			String value = part.getHeaders().getFirst("Content-Type");
+			if (value != null) {
+				return Format.getFromMimetype(value);
+			}
 		}
 		return null;
 	}
@@ -3544,6 +3563,241 @@ public class JerseyServices implements RESTServices {
 			output);
 	}
 
+	public class JerseyEvalResultIterator implements EvalResultIterator {
+		private JerseyResultIterator iterator;
+
+		JerseyEvalResultIterator(JerseyResultIterator iterator) {
+			this.iterator = iterator;
+		}
+
+		@Override
+		public Iterator<EvalResult> iterator() {
+			return this;
+		}
+
+		@Override
+		public boolean hasNext() {
+			if ( iterator == null ) return false;
+			return iterator.hasNext();
+		}
+		
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public EvalResult next() {
+			if ( iterator == null ) throw new NoSuchElementException("No results available");
+			JerseyResult jerseyResult = iterator.next();
+			EvalResult result = new JerseyEvalResult(jerseyResult);
+			return result;
+		}
+
+		public void close() {
+			if ( iterator != null ) iterator.close();
+		}
+	}
+	public class JerseyEvalResult implements EvalResult {
+		private JerseyResult content;
+
+		public JerseyEvalResult(JerseyResult content) {
+			this.content = content;
+		}
+
+		@Override
+		public Format getFormat() {
+			return content.getFormat();
+		}
+
+		@Override
+		public EvalResult.Type getType() {
+			String contentType = content.getHeader("Content-Type");
+			if ( contentType != null ) {
+				if ( "application/json".equals(contentType) ) {
+					return EvalResult.Type.JSON;
+				} else if ( "text/json".equals(contentType) ) {
+					return EvalResult.Type.JSON;
+				} else if ( "application/xml".equals(contentType) ) {
+					return EvalResult.Type.XML;
+				} else if ( "text/xml".equals(contentType) ) {
+					return EvalResult.Type.XML;
+				}
+			}
+			String xPrimitive = content.getHeader("X-Primitive");
+			if ( xPrimitive == null ) {
+				return EvalResult.Type.NULL;
+			} else if ( "string".equals(xPrimitive) || "untypedAtomic".equals(xPrimitive) ) {
+				return EvalResult.Type.STRING;
+			} else if ( "boolean".equals(xPrimitive) ) {
+				return EvalResult.Type.BOOLEAN;
+			} else if ( "node()".equals(xPrimitive) ) {
+				String xPath = content.getHeader("X-Path");
+				if ( xPath == null ) {
+					return EvalResult.Type.OTHER;
+				} else if ( xPath.endsWith("comment()") ) {
+					return EvalResult.Type.COMMENT;
+				} else if ( xPath.endsWith("processing-instruction()") ) {
+					return EvalResult.Type.PROCESSINGINSTRUCTION;
+				} else if ( content.getHeader("X-Attr") != null ) {
+					return EvalResult.Type.ATTRIBUTE;
+				}
+			} else if ( "text()".equals(xPrimitive) ) {
+				return EvalResult.Type.TEXTNODE;
+			} else if ( "binary()".equals(xPrimitive) ) {
+				return EvalResult.Type.BINARY;
+			} else if ( "duration".equals(xPrimitive) ) {
+				return EvalResult.Type.DURATION;
+			} else if ( "date".equals(xPrimitive) ) {
+				return EvalResult.Type.DATE;
+			} else if ( "anyURI".equals(xPrimitive) ) {
+				return EvalResult.Type.ANYURI;
+			} else if ( "hexBinary".equals(xPrimitive) ) {
+				return EvalResult.Type.HEXBINARY;
+			} else if ( "base64Binary".equals(xPrimitive) ) {
+				return EvalResult.Type.BASE64BINARY;
+			} else if ( "dateTime".equals(xPrimitive) ) {
+				return EvalResult.Type.DATETIME;
+			} else if ( "decimal".equals(xPrimitive) ) {
+				return EvalResult.Type.DECIMAL;
+			} else if ( "double".equals(xPrimitive) ) {
+				return EvalResult.Type.DOUBLE;
+			} else if ( "float".equals(xPrimitive) ) {
+				return EvalResult.Type.FLOAT;
+			} else if ( "gDay".equals(xPrimitive) ) {
+				return EvalResult.Type.GDAY;
+			} else if ( "gMonth".equals(xPrimitive) ) {
+				return EvalResult.Type.GMONTH;
+			} else if ( "gMonthDay".equals(xPrimitive) ) {
+				return EvalResult.Type.GMONTHDAY;
+			} else if ( "gYear".equals(xPrimitive) ) {
+				return EvalResult.Type.GYEAR;
+			} else if ( "gYearMonth".equals(xPrimitive) ) {
+				return EvalResult.Type.GYEARMONTH;
+			} else if ( "integer".equals(xPrimitive) ) {
+				return EvalResult.Type.INTEGER;
+			} else if ( "QName".equals(xPrimitive) ) {
+				return EvalResult.Type.QNAME;
+			} else if ( "time".equals(xPrimitive) ) {
+				return EvalResult.Type.TIME;
+			}
+			return EvalResult.Type.OTHER;
+		}
+
+		@Override
+		public <H extends AbstractReadHandle> H get(H handle) {
+			return content.getContent(handle);
+		}
+
+		@Override
+		public <T> T getAs(Class<T> clazz) {
+			if (clazz == null) throw new IllegalArgumentException("clazz cannot be null");
+
+			ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(clazz);
+			if ( readHandle == null ) return null;
+			readHandle = get(readHandle);
+			if ( readHandle == null ) return null;
+			return readHandle.get();
+		}
+
+		@Override
+		public String getString() {
+			return content.getEntityAs(String.class);
+		}
+
+		@Override
+		public Number getNumber() {
+			if      ( getType() == EvalResult.Type.DECIMAL ) return new BigDecimal(getString());
+			else if ( getType() == EvalResult.Type.DOUBLE )  return new Double(getString());
+			else if ( getType() == EvalResult.Type.FLOAT )   return new Float(getString());
+			// MarkLogic integers can be much larger than Java integers, so we'll use Long instead
+			else if ( getType() == EvalResult.Type.INTEGER ) return new Long(getString());
+			else return new BigDecimal(getString());
+		}
+
+		@Override
+		public Boolean getBoolean() {
+			return new Boolean(getString());
+		}
+
+	}
+
+	@Override
+	public EvalResultIterator postEvalInvoke(
+			RequestLogger reqlog, String code, String modulePath, 
+			ServerEvaluationCallImpl.Context context,
+			Map<String, Object> variables, EditableNamespaceContext namespaces,
+			String database, String transactionId)
+			throws ResourceNotFoundException, ResourceNotResendableException,
+			ForbiddenUserException, FailedRequestException {
+		String formUrlEncodedPayload;
+		String path;
+		RequestParameters params = new RequestParameters();
+		try {
+			StringBuffer sb = new StringBuffer();
+			if ( context == ServerEvaluationCallImpl.Context.ADHOC_XQUERY ) {
+				path = "eval";
+				sb.append("xquery=");
+				sb.append(URLEncoder.encode(code, "UTF-8"));
+			} else if ( context == ServerEvaluationCallImpl.Context.ADHOC_JAVASCRIPT ) {
+				path = "eval";
+				sb.append("javascript=");
+				sb.append(URLEncoder.encode(code, "UTF-8"));
+			} else if ( context == ServerEvaluationCallImpl.Context.INVOKE ) {
+				path = "invoke";
+				params.put("module", modulePath);
+			} else {
+				throw new IllegalStateException("Invalid eval context: " + context);
+			}
+			if ( variables != null && variables.size() > 0 ) {
+				sb.append("&vars=");
+				ObjectNode vars = new ObjectMapper().createObjectNode();
+				for ( String name : variables.keySet() ) {
+					Object valueObject = variables.get(name);
+					// replace any name starting with a namespace prefix with a Clark Notation QName
+					if ( namespaces != null ) {
+						for ( String prefix : namespaces.keySet() ) {
+							if ( name != null && prefix != null &&
+								 name.startsWith(prefix + ":") )
+							{
+								name = "{" + namespaces.get(prefix) + "}" + 
+									name.substring(prefix.length() + 1);
+							}
+						}
+					}
+					if ( valueObject == null )                    vars.putNull(name);
+					else if ( valueObject instanceof BigDecimal ) vars.put(name, (BigDecimal) valueObject);
+					else if ( valueObject instanceof Double )     vars.put(name, (Double) valueObject);
+					else if ( valueObject instanceof Float )      vars.put(name, (Float) valueObject);
+					else if ( valueObject instanceof Integer )    vars.put(name, (Integer) valueObject);
+					else if ( valueObject instanceof Long )       vars.put(name, (Long) valueObject);
+					else if ( valueObject instanceof Short )      vars.put(name, (Short) valueObject);
+					else if ( valueObject instanceof Number )     vars.put(name, new BigDecimal(valueObject.toString()));
+					else if ( valueObject instanceof Boolean )    vars.put(name, (Boolean) valueObject);
+					else if ( valueObject instanceof String )     vars.put(name, (String) valueObject);
+					else if ( valueObject instanceof JacksonHandle ) {
+						vars.set(name, ((JacksonHandle) valueObject).get());
+					} else if ( valueObject instanceof JacksonParserHandle ) {
+						vars.set(name, ((JacksonParserHandle) valueObject).get().readValueAs(JsonNode.class));
+					} else if ( valueObject instanceof AbstractWriteHandle ) {
+						vars.put(name, HandleAccessor.contentAsString((AbstractWriteHandle) valueObject));
+					}
+				}
+				sb.append(URLEncoder.encode(vars.toString(), "UTF-8"));
+			}
+			formUrlEncodedPayload = sb.toString();
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException("UTF-8 is unsupported", e);
+		} catch (IOException e) {
+			throw new MarkLogicIOException(e);
+		}
+		if ( database != null ) params.add("database", database);
+		if ( transactionId != null ) params.add("txid", transactionId);
+		StringHandle input = new StringHandle(formUrlEncodedPayload)
+			.withMimetype("application/x-www-form-urlencoded");
+		return new JerseyEvalResultIterator( postIteratedResourceImpl(DefaultJerseyResultIterator.class,
+			reqlog, path, params, input) );
+	}
+
 	@Override
 	public ServiceResultIterator postIteratedResource(RequestLogger reqlog,
 			String path, RequestParameters params, AbstractWriteHandle input,
@@ -4259,6 +4513,7 @@ public class JerseyServices implements RESTServices {
 		private RequestLogger reqlog;
 		private BodyPart part;
 		private boolean extractedHeaders = false;
+		private MultivaluedMap<String, String> headers = null;
 		private String uri;
 		private Format format;
 		private String mimetype;
@@ -4267,6 +4522,10 @@ public class JerseyServices implements RESTServices {
 		public JerseyResult(RequestLogger reqlog, BodyPart part) {
 			this.reqlog = reqlog;
 			this.part = part;
+		}
+
+		public <T> T getEntityAs(Class<T> clazz) {
+			return part.getEntityAs(clazz);
 		}
 
 		public <R extends AbstractReadHandle> R getContent(R handle) {
@@ -4290,6 +4549,13 @@ public class JerseyServices implements RESTServices {
 			return handle;
 		}
 
+		public <T> T getContentAs(Class<T> clazz) {
+			ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(clazz);
+			readHandle = getContent(readHandle);
+			if ( readHandle == null ) return null;
+			return readHandle.get();
+		}
+
 		public String getUri() {
 			extractHeaders();
 			return uri;
@@ -4309,10 +4575,15 @@ public class JerseyServices implements RESTServices {
 			return length;
 		}
 
+		public String getHeader(String name) {
+			extractHeaders();
+			return headers.getFirst(name);
+		}
+
 		private void extractHeaders() {
 			if (part == null || extractedHeaders)
 				return;
-			MultivaluedMap<String, String> headers = part.getHeaders();
+			headers = part.getHeaders();
 			format = getHeaderFormat(part);
 			mimetype = getHeaderMimetype(headers);
 			length = getHeaderLength(headers);

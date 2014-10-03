@@ -17,8 +17,9 @@ package com.marklogic.client.eval;
 
 import java.util.Iterator;
 
-public interface EvalResults extends Iterable<EvalResult>, Iterator<EvalResult> {
+public interface EvalResultIterator extends Iterable<EvalResult>, Iterator<EvalResult> {
     public Iterator<EvalResult> iterator();
     public boolean hasNext();
     public EvalResult next();
+	public void close();
 }
