@@ -29,12 +29,12 @@ import com.marklogic.client.util.EditableNamespaceContext;
 
 public class ServerEvaluationCallImpl 
     extends AbstractLoggingManager
-	implements ServerEvaluationCall
+    implements ServerEvaluationCall
 {
     public enum Context { ADHOC_XQUERY, ADHOC_JAVASCRIPT, INVOKE };
      
-	private RESTServices             services;
-	private HandleFactoryRegistry    handleRegistry;
+    private RESTServices             services;
+    private HandleFactoryRegistry    handleRegistry;
     private String                   code;
     private String                   modulePath;
     private Context                  evalContext;
@@ -49,19 +49,19 @@ public class ServerEvaluationCallImpl
     }
 
     public ServerEvaluationCall xquery(String xquery) {
-		setContext(Context.ADHOC_XQUERY);
+        setContext(Context.ADHOC_XQUERY);
         code = xquery;
         return this;
     }
 
     public ServerEvaluationCall javascript(String javascript) {
-		setContext(Context.ADHOC_JAVASCRIPT);
+        setContext(Context.ADHOC_JAVASCRIPT);
         code = javascript;
         return this;
     }
 
     public ServerEvaluationCall modulePath(String modulePath) {
-		setContext(Context.INVOKE);
+        setContext(Context.INVOKE);
         this.modulePath = modulePath;
         return this;
     }
@@ -89,17 +89,17 @@ public class ServerEvaluationCallImpl
     /** Like other *As convenience methods throughout the API, the Object value
      *  is managed by the Handle registered for that Class.  */
     public ServerEvaluationCall addVariableAs(String name, Object value) {
-		if (value == null) return this;
+        if (value == null) return this;
 
-		Class<?> as = value.getClass();
-		AbstractWriteHandle writeHandle = null;
-		if (AbstractWriteHandle.class.isAssignableFrom(as)) {
-			writeHandle = (AbstractWriteHandle) value;			
-		} else {
-			ContentHandle<?> contentHandle = handleRegistry.makeHandle(as);
-			Utilities.setHandleContent(contentHandle, value);
-			writeHandle = contentHandle;
-		}
+        Class<?> as = value.getClass();
+        AbstractWriteHandle writeHandle = null;
+        if (AbstractWriteHandle.class.isAssignableFrom(as)) {
+            writeHandle = (AbstractWriteHandle) value;
+        } else {
+            ContentHandle<?> contentHandle = handleRegistry.makeHandle(as);
+            Utilities.setHandleContent(contentHandle, value);
+            writeHandle = contentHandle;
+        }
         return addVariable(name, writeHandle);
     }
 
@@ -114,7 +114,7 @@ public class ServerEvaluationCallImpl
     }
 
     public <T> T evalAs(Class<T> responseType) {
-		if (responseType == null) throw new IllegalArgumentException("responseType cannot be null");
+        if (responseType == null) throw new IllegalArgumentException("responseType cannot be null");
 
         ContentHandle<T> readHandle = handleRegistry.makeHandle(responseType);
         if ( readHandle == null ) return null;
@@ -128,31 +128,31 @@ public class ServerEvaluationCallImpl
     }
 
     public EvalResultIterator eval() {
-    	return services.postEvalInvoke(requestLogger, code, modulePath, evalContext,
+        return services.postEvalInvoke(requestLogger, code, modulePath, evalContext,
             vars, namespaceContext, database, transactionId);
     }
 
-	@Override
-	public ServerEvaluationCall addNamespace(String prefix, String namespaceURI) {
-		if ( namespaceContext == null ) namespaceContext = new EditableNamespaceContext();
+    @Override
+    public ServerEvaluationCall addNamespace(String prefix, String namespaceURI) {
+        if ( namespaceContext == null ) namespaceContext = new EditableNamespaceContext();
         namespaceContext.put(prefix, namespaceURI);
-		return this;
-	}
+        return this;
+    }
 
-	@Override
-	public ServerEvaluationCall namespaceContext(EditableNamespaceContext namespaces) {
-		this.namespaceContext = namespaces;
-		return this;
-	}
+    @Override
+    public ServerEvaluationCall namespaceContext(EditableNamespaceContext namespaces) {
+        this.namespaceContext = namespaces;
+        return this;
+    }
 
-	private void setContext(Context context) {
-		if ( evalContext == null ) {
-			evalContext = context;
-		} else {
-			throw new IllegalStateException("You can only initialize the code to evaluate one time. " +
-				"That means only one call to the xquery, javascript, xqueryModule, or " +
-				"javascriptModule methods per ServerEvaluationCall.");
-		}
-	}
+    private void setContext(Context context) {
+        if ( evalContext == null ) {
+            evalContext = context;
+        } else {
+            throw new IllegalStateException("You can only initialize the code to evaluate one time. " +
+                    "That means only one call to the xquery, javascript, xqueryModule, or " +
+                    "javascriptModule methods per ServerEvaluationCall.");
+        }
+    }
 }
 
