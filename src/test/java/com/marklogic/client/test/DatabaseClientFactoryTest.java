@@ -31,6 +31,7 @@ public class DatabaseClientFactoryTest {
 	@BeforeClass
 	public static void beforeClass() {
 		Common.connect();
+		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
 	@AfterClass
 	public static void afterClass() {
@@ -45,14 +46,15 @@ public class DatabaseClientFactoryTest {
 	@Test
 	public void testRuntimeDatabaseSelection() {
 		DatabaseClient tmpClient = DatabaseClientFactory.newClient(
-			Common.HOST, Common.PORT, "Documents", Common.USERNAME, Common.PASSWORD, Authentication.DIGEST
+			Common.HOST, Common.PORT, "Documents", Common.ADMIN_USERNAME, Common.ADMIN_PASSWORD, Authentication.DIGEST
 		);
 		assertNotNull("Factory could not create client with digest connection", tmpClient);
 		String database = 
 			tmpClient.newServerEval()
+				.database("Documents")
 				.xquery("xdmp:database-name(xdmp:database())")
 				.evalAs(String.class);
-		assertEquals("Runtime database should is wrong", "Documents", database);
+		assertEquals("Runtime database is wrong", "Documents", database);
 		tmpClient.release();
 	}
 
