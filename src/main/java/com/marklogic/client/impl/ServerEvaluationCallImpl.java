@@ -123,8 +123,10 @@ public class ServerEvaluationCallImpl
 
     public <H extends AbstractReadHandle> H eval(H responseHandle) {
         EvalResultIterator iterator = eval();
-        if ( iterator == null || iterator.hasNext() == false ) return null;
-        return iterator.next().get(responseHandle);
+        try {
+            if ( iterator == null || iterator.hasNext() == false ) return null;
+            return iterator.next().get(responseHandle);
+        } finally { iterator.close(); }
     }
 
     public EvalResultIterator eval() {
