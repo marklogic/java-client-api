@@ -3621,6 +3621,14 @@ public class JerseyServices implements RESTServices {
 					return EvalResult.Type.XML;
 				} else if ( "text/xml".equals(contentType) ) {
 					return EvalResult.Type.XML;
+				} else if ( "application/x-unknown-content-type".equals(contentType) &&
+							"binary()".equals(content.getHeader("X-Primitive")) )
+				{
+					return EvalResult.Type.BINARY;
+				} else if ( "application/octet-stream".equals(contentType) &&
+							"node()".equals(content.getHeader("X-Primitive")) )
+				{
+					return EvalResult.Type.BINARY;
 				}
 			}
 			String xPrimitive = content.getHeader("X-Primitive");
