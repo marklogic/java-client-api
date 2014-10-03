@@ -250,7 +250,7 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 				Artifact a =p.next();
 				validateArtifact(a);
 				assertTrue("Verifying document id is part of the search ids",a.getId()%5==0);
-				assertTrue("Verifying document has word counter",a.getManufacturer().getName().contains("counter"));
+				assertTrue("Verifying document has word counter",a.getManufacturer().getName().contains("counter")||a.getManufacturer().getName().contains("special"));
 				count++;
 				System.out.println(a.getId());
 			}
