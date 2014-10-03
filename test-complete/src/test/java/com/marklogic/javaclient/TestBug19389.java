@@ -41,7 +41,8 @@ public class TestBug19389 extends BasicJavaClientREST {
 				
 		// set error format to JSON
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
-		srvMgr.setErrorFormat(Format.JSON);
+//	depricated
+//		srvMgr.setErrorFormat(Format.JSON);
 		srvMgr.writeConfiguration();
 		
 		// create query options manager
