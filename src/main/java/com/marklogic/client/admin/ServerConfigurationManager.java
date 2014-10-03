@@ -19,7 +19,6 @@ import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
-import com.marklogic.client.io.Format;
 
 /**
  * The ServerConfigurationManager reads and writes the configurable properties
@@ -194,20 +193,6 @@ public interface ServerConfigurationManager {
 	 * @return	a new manager for transform extensions
 	 */
 	public TransformExtensionsManager newTransformExtensionsManager();
-	/**
-	 * Sets the serialization format of MarkLogic errors. 
-	 * The Java API only parses errors reported in XML.  JavaScript clients generally use JSON.
-	 * While one REST server cannot support both kinds of clients, 
-	 * two REST servers can share one database.
-	 * @param errorFormat either Format.JSON or Format.XML
-	 */
-	public void setErrorFormat(Format errorFormat);
-	/**
-	 * Returns the configured error format for the REST server instance.  Transparent to the Java API itself.
-	 * @return either Format.JSON or Format.XML
-	 */
-	public Format getErrorFormat();
-	
 	/**
 	 * Creates a manager for writing and reading assets in the REST
 	 * server's modules database.

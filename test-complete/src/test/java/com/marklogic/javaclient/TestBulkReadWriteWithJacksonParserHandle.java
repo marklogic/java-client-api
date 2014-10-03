@@ -503,7 +503,7 @@ public class TestBulkReadWriteWithJacksonParserHandle extends
 		// set  document manager level settings for search response
 		docMgr.setPageLength(25);
 		docMgr.setSearchView(QueryView.RESULTS);
-		docMgr.setResponseFormat(Format.JSON);
+		docMgr.setNonDocumentFormat(Format.JSON);
 
 		// Search for documents where content has bar and get first result record, get search handle on it,Use DOMHandle to read results
 		JacksonParserHandle sh = new JacksonParserHandle();
