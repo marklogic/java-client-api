@@ -76,17 +76,27 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
     public StructuredQueryBuilder.GeospatialIndex geoPath(String pojoProperty) {
         return geoPath(pojoPropertyPath(pojoProperty));
     }
-    public StructuredQueryDefinition range(String pojoProperty,
-        StructuredQueryBuilder.Operator operator, Object... values)
-    {
-        return range(pojoPropertyPath(pojoProperty), getRangeIndexType(pojoProperty), operator, values);
+    @Override
+    public StructuredQueryDefinition geospatial(GeospatialIndex index,
+            String[] options, Region... regions) {
+        return super.geospatial(index, StructuredQueryBuilder.FragmentScope.DOCUMENTS,
+            options, regions);
     }
+    @Override
+    public StructuredQueryDefinition range(String pojoProperty,
+        PojoQueryBuilder.Operator operator, Object... values)
+    {
+        return range(pojoPropertyPath(pojoProperty), getRangeIndexType(pojoProperty), 
+            convertOperator(operator), values);
+    }
+    @Override
     public StructuredQueryDefinition range(String pojoProperty, String[] options,
-        StructuredQueryBuilder.Operator operator, Object... values)
+        PojoQueryBuilder.Operator operator, Object... values)
     {
         return range(pojoPropertyPath(pojoProperty), getRangeIndexType(pojoProperty), options,
-            operator, values);
+            convertOperator(operator), values);
     }
+
     public StructuredQueryDefinition value(String pojoProperty, String... values) {
         if ( wrapQueries ) {
             return super.containerQuery(jsonProperty(classWrapper),
@@ -159,6 +169,18 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
             return super.word(jsonProperty(pojoProperty), null, options, weight, words);
         }
     }
+    private StructuredQueryBuilder.Operator convertOperator(PojoQueryBuilder.Operator operator) {
+        switch (operator) {
+            case LT: return StructuredQueryBuilder.Operator.LT;
+            case LE: return StructuredQueryBuilder.Operator.LE;
+            case GT: return StructuredQueryBuilder.Operator.GT;
+            case GE: return StructuredQueryBuilder.Operator.GE;
+            case EQ: return StructuredQueryBuilder.Operator.EQ;
+            case NE: return StructuredQueryBuilder.Operator.NE;
+            default: throw new IllegalStateException("Unsupported Operator: " + operator);
+        }
+    }
+
     @SuppressWarnings("deprecation")
     public TermQuery term(String... terms) {
         return new PojoTermQuery(wrapQueries, null, terms);

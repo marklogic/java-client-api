@@ -17,13 +17,14 @@ package com.marklogic.client.pojo;
 
 import javax.xml.namespace.QName;
 
-import com.marklogic.client.query.CombinedQueryBuilder;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.util.IterableNamespaceContext;
  
-/** Extends StructuredQueryBuilder with convenience methods specific to working with pojos.
+/** Specific to pojos yet similar to StructuredQueryBuilder, this class generates structured queries.
+ * It adds convenience methods specific to working with pojos and does not replicate 
+ * StructuredQueryBuilder methods that don't make sense for pojos.
  * The goal of {@link com.marklogic.client.pojo the pojo facade} is to simplify working with 
  * custom pojos. PojoQueryBuilder keeps all the powerful queries available via 
  * StructuredQueryBuilder while enabling queries across objects persisted using 
@@ -108,8 +109,13 @@ import com.marklogic.client.util.IterableNamespaceContext;
  *    PojoQueryBuilder countriesQb = citiesQb.containerQuery("country");
  *    QueryDefinition query = countriesQb.value("continent", "EU"); }</pre>
  */
-public interface PojoQueryBuilder<T> extends CombinedQueryBuilder {
+public interface PojoQueryBuilder<T> {
 
+    /** Copied directly from  {@link StructuredQueryBuilder#Operator StructuredQuerybuilder.Operator}**/
+	public enum Operator {
+        LT, LE, GT, GE, EQ, NE;
+    }
+    
     /** @return a query matching pojos of type T containing the pojoProperty with contents
      *          or children matching the specified query */
     public StructuredQueryDefinition containerQuery(String pojoProperty,
@@ -130,12 +136,12 @@ public interface PojoQueryBuilder<T> extends CombinedQueryBuilder {
      */
     public StructuredQueryBuilder.GeospatialIndex
         geoProperty(String pojoProperty);
-    public StructuredQueryBuilder.GeospatialIndex
+public StructuredQueryBuilder.GeospatialIndex
         geoPath(String pojoProperty);
     public StructuredQueryDefinition range(String pojoProperty,
-        StructuredQueryBuilder.Operator operator, Object... values);
+        PojoQueryBuilder.Operator operator, Object... values);
     public StructuredQueryDefinition range(String pojoProperty, String[] options,
-        StructuredQueryBuilder.Operator operator, Object... values);
+        PojoQueryBuilder.Operator operator, Object... values);
     public StructuredQueryDefinition value(String pojoProperty, String... values);
     public StructuredQueryDefinition value(String pojoProperty, Boolean value);
     public StructuredQueryDefinition value(String pojoProperty, Number... values);
@@ -148,5 +154,44 @@ public interface PojoQueryBuilder<T> extends CombinedQueryBuilder {
     public StructuredQueryDefinition word(String pojoProperty, String... words);
     public StructuredQueryDefinition word(String pojoProperty, String[] options,
         double weight, String... words);
+
+    /** Copied directly from  {@link StructuredQueryBuilder#and StructuredQuerybuilder.and}**/
+    public StructuredQueryDefinition and(StructuredQueryDefinition... queries);
+    /** Copied directly from  {@link StructuredQueryBuilder#andNot StructuredQuerybuilder.andNot}**/
+    public StructuredQueryDefinition andNot(StructuredQueryDefinition positive, StructuredQueryDefinition negative);
+    /** Copied directly from  {@link StructuredQueryBuilder#boost StructuredQuerybuilder.boost}**/
+    public StructuredQueryDefinition boost(StructuredQueryDefinition matchingQuery, StructuredQueryDefinition boostingQuery);
+    /** Copied directly from  {@link StructuredQueryBuilder#box StructuredQuerybuilder.box}**/
+    public StructuredQueryBuilder.Region box(double south, double west, double north, double east);
+    /** Copied directly from  {@link StructuredQueryBuilder#build StructuredQuerybuilder.build}**/
+    public RawStructuredQueryDefinition build(StructuredQueryDefinition... queries);
+    /** Copied directly from  {@link StructuredQueryBuilder#circle(double, double, double) StructuredQuerybuilder.circle(double, double, double)}**/
+    public StructuredQueryBuilder.Region circle(double latitude, double longitude, double radius);
+    /** Copied directly from  {@link StructuredQueryBuilder#circle(StructuredQueryBuilder.Point, double) StructuredQuerybuilder.circle(StructuredQueryBuilder.Point, double)}**/
+    public StructuredQueryBuilder.Region circle(StructuredQueryBuilder.Point center, double radius);
+    /** Copied directly from  {@link StructuredQueryBuilder#collection(String...) StructuredQuerybuilder.collection(String...)}**/
+    public StructuredQueryDefinition collection(String... uris);
+    /** Copied from {@link StructuredQueryBuilder#geospatial(StructuredQueryBuilder.GeospatialIndex, StructuredQueryBuilder.FragmentScope, String[], StructuredQueryBuilder.Region...) StructuredQuerybuilder.geospatial(StructuredQueryBuilder.GeospatialIndex, StructuredQueryBuilder.FragmentScope, String[], StructuredQueryBuilder.Region...)} but without StructuredQueryBuilder.FragmentScope**/
+    public StructuredQueryDefinition geospatial(StructuredQueryBuilder.GeospatialIndex index, String[] options, StructuredQueryBuilder.Region... regions);
+    /** Copied directly from  {@link StructuredQueryBuilder#geospatial(StructuredQueryBuilder.GeospatialIndex, StructuredQueryBuilder.Region...) StructuredQuerybuilder.geospatial(StructuredQueryBuilder.GeospatialIndex, StructuredQueryBuilder.Region...)}**/
+    public StructuredQueryDefinition geospatial(StructuredQueryBuilder.GeospatialIndex index, StructuredQueryBuilder.Region... regions);
+    /** Copied directly from  {@link StructuredQueryBuilder#near(int, double, StructuredQueryBuilder.Ordering, StructuredQueryDefinition...) StructuredQuerybuilder.near(int, double, StructuredQueryBuilder.Ordering, StructuredQueryDefinition...)}**/
+    public StructuredQueryDefinition near(int distance, double weight, StructuredQueryBuilder.Ordering order, StructuredQueryDefinition... queries);
+    /** Copied directly from  {@link StructuredQueryBuilder#near(StructuredQueryDefinition...) StructuredQuerybuilder.near(StructuredQueryDefinition...)}**/
+    public StructuredQueryDefinition near(StructuredQueryDefinition... queries);
+    /** Copied directly from  {@link StructuredQueryBuilder#not StructuredQuerybuilder.not}**/
+    public StructuredQueryDefinition not(StructuredQueryDefinition query);
+    /** Copied directly from  {@link StructuredQueryBuilder#notIn StructuredQuerybuilder.and}**/
+    public StructuredQueryDefinition notIn(StructuredQueryDefinition positive, StructuredQueryDefinition negative);
+    /** Copied directly from  {@link StructuredQueryBuilder#or StructuredQuerybuilder.and}**/
+    public StructuredQueryDefinition or(StructuredQueryDefinition... queries);
+    /** Copied directly from  {@link StructuredQueryBuilder#point StructuredQuerybuilder.point}**/
+    public StructuredQueryBuilder.Region point(double latitude, double longitude);
+    /** Copied directly from  {@link StructuredQueryBuilder#polygon StructuredQuerybuilder.polygon}**/
+    public StructuredQueryBuilder.Region polygon(StructuredQueryBuilder.Point... points);
+    /** Copied directly from  {@link StructuredQueryBuilder#term(double, String...) StructuredQuerybuilder.term(double, String...)}**/
+    public StructuredQueryDefinition term(double weight, String... terms);
+    /** Copied directly from  {@link StructuredQueryBuilder#term(String...) StructuredQuerybuilder.term(String...)}**/
+    public StructuredQueryDefinition term(String... terms);
 }
 
