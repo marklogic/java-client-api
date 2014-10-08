@@ -34,7 +34,7 @@ import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder.Operator;
+import com.marklogic.client.pojo.PojoQueryBuilder.Operator;
 import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.pojo.annotation.Id;
 import com.marklogic.client.test.BulkReadWriteTest;
