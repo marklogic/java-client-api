@@ -75,6 +75,44 @@ public abstract class ConnectedRESTQA {
 			e.printStackTrace();
 		}
 	}
+	public static String getBootStrapHostFromML() {
+		InputStream jstream=null;
+		try{
+		DefaultHttpClient client = new DefaultHttpClient();
+		client.getCredentialsProvider().setCredentials(
+				new AuthScope("localhost", 8002),
+				new UsernamePasswordCredentials("admin", "admin"));
+		HttpGet getrequest = new HttpGet("http://localhost:8002/manage/v2/properties?format=json");
+		HttpResponse resp = client.execute(getrequest);
+		jstream =resp.getEntity().getContent();
+		JsonNode jnode= new ObjectMapper().readTree(jstream);
+		String propName ="bootstrap-host";
+		if(!jnode.isNull()){
+
+			if(jnode.has(propName)){
+//				System.out.println(jnode.withArray(propName).get(0).asText());
+			return jnode.withArray(propName).get(0).asText();
+			}
+			else{
+				System.out.println("Missing "+propName+" field from properties end point so sending java conanical host name\n"+jnode.toString());
+				return InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
+				}
+			}
+		else{
+			 System.out.println("Rest endpoint returns empty stream");
+			 return InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
+			}
+
+		}catch (Exception e) {
+			// writing error to Log
+			e.printStackTrace();
+			
+			return "localhost";
+		}
+		finally{
+			jstream =null;
+		}
+	}
 	/*
 	 * 
 	 */
@@ -85,7 +123,8 @@ public abstract class ConnectedRESTQA {
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
 			HttpPost post = new HttpPost("http://localhost:8002"+ "/manage/v2/forests?format=json");
-			String hName =InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
+//			System.out.println( getBootStrapHostFromML());
+			String hName = getBootStrapHostFromML();
 			String JSONString = 
 					"{\"database\":\""+ 
 							dbName + 
@@ -822,6 +861,9 @@ public abstract class ConnectedRESTQA {
 	 * 
 	 */
 	public static void addRangeElementIndex(String dbName,  String type, String namespace, String localname) throws Exception{
+		addRangeElementIndex( dbName,   type,  namespace,  localname, false);
+	}	
+	public static void addRangeElementIndex(String dbName,  String type, String namespace, String localname,boolean positions) throws Exception{
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode mainNode = mapper.createObjectNode();
 		//	ObjectNode childNode = mapper.createObjectNode();
@@ -831,7 +873,7 @@ public abstract class ConnectedRESTQA {
 		childNodeObject.put( "namespace-uri", namespace);
 		childNodeObject.put( "localname", localname);
 		childNodeObject.put( "collation", "");
-		childNodeObject.put("range-value-positions", false);
+		childNodeObject.put("range-value-positions", positions);
 		childNodeObject.put("invalid-values", "reject");
 		childArray.add(childNodeObject);		
 		mainNode.putArray("range-element-index").addAll(childArray);
@@ -939,6 +981,9 @@ public abstract class ConnectedRESTQA {
   }
 	 */
 	public static void addRangePathIndex(String dbName, String type, String pathexpr, String collation, String invalidValues) throws Exception{
+		addRangePathIndex( dbName,  type,  pathexpr,  collation,  invalidValues, false);
+	}
+	public static void addRangePathIndex(String dbName, String type, String pathexpr, String collation, String invalidValues,boolean positions) throws Exception{
 		ObjectMapper mapper = new ObjectMapper();
 		//		ObjectNode mainNode = mapper.createObjectNode();
 		ObjectNode childNode = mapper.createObjectNode();
