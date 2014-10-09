@@ -16,8 +16,7 @@ import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryBuilder.Operator;
+import com.marklogic.client.pojo.PojoQueryBuilder.Operator;
 
 public class TestPOJOQueryBuilderContainerQuery extends BasicJavaClientREST {
 
