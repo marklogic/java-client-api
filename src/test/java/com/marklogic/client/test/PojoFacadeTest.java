@@ -34,6 +34,7 @@ import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.pojo.PojoQueryBuilder.Operator;
 import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.pojo.annotation.Id;
@@ -102,7 +103,7 @@ public class PojoFacadeTest {
         Iterator<City> iterator = page.iterator();
         int numRead = 0;
         while ( iterator.hasNext() ) {
-            City city = iterator.next();
+            iterator.next();
             numRead++;
         }
         assertEquals("Failed to find number of records expected", 3, numRead);
@@ -115,7 +116,7 @@ public class PojoFacadeTest {
         iterator = page.iterator();
         numRead = 0;
         while ( iterator.hasNext() ) {
-            City city = iterator.next();
+            iterator.next();
             numRead++;
         }
         assertEquals("Failed to find number of records expected", 3, numRead);
@@ -178,7 +179,7 @@ public class PojoFacadeTest {
         iterator = page.iterator();
         numRead = 0;
         while ( iterator.hasNext() ) {
-            City city = iterator.next();
+            iterator.next();
             numRead++;
         }
         assertEquals("Failed to find number of records expected", 50, numRead);
@@ -189,13 +190,30 @@ public class PojoFacadeTest {
         iterator = page.iterator();
         numRead = 0;
         while ( iterator.hasNext() ) {
-            City city = iterator.next();
+            iterator.next();
             numRead++;
         }
         assertEquals("Failed to find number of records expected", 21, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
-        // TODO: uncomment tests below once geospatial on JSON is implemented in server
+        // the default options are unfiltered, which I don't want in this case, so the 
+        // work-around is to use stored options which are filtered
+        StructuredQueryBuilder sqb = Common.client.newQueryManager().newStructuredQueryBuilder("facets");
+        query = sqb.geospatial(
+            qb.geoPath("latLong"),
+            qb.circle(-34, -58, 100)
+        );
+        page = cities.search(query, 1);
+        iterator = page.iterator();
+        numRead = 0;
+        while ( iterator.hasNext() ) {
+            iterator.next();
+            numRead++;
+        }
+        assertEquals("Failed to find number of records expected", 4, numRead);
+        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+
+        // TODO: uncomment tests below once https://bugtrack.marklogic.com/29731 is fixed
         /*
         query = qb.geospatial(
             qb.geoProperty("latLong"),
@@ -209,27 +227,11 @@ public class PojoFacadeTest {
             City city = iterator.next();
             numRead++;
         }
-        // this currently doesn't work even in the cts:search layer
+        // this currently doesn't work in the search:search layer
         // when this works we'll find out how many we expect
         assertEquals("Failed to find number of records expected", -1, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
-        query = qb.geospatial(
-            qb.geoPath("latLong"),
-            qb.circle(-34, -58, 100)
-        );
-        page = cities.search(query, 1);
-        iterator = page.iterator();
-        numRead = 0;
-        while ( iterator.hasNext() ) {
-            @SuppressWarnings("unused")
-            City city = iterator.next();
-            numRead++;
-        }
-        // this currently doesn't work even in the cts:search layer
-        // when this works we'll find out how many we expect
-        assertEquals("Failed to find number of records expected", -1, numRead);
-        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
         query = qb.geospatial(
             qb.geoPair("latitude", "longitude"),
@@ -243,7 +245,7 @@ public class PojoFacadeTest {
             City city = iterator.next();
             numRead++;
         }
-        // this currently doesn't work even in the cts:search layer
+        // this currently doesn't work even in the search:search layer
         // when this works we'll find out how many we expect
         assertEquals("Failed to find number of records expected", -1, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
