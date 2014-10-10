@@ -4,8 +4,10 @@ module namespace bootstrap = "http://marklogic.com/rest-api/resource/bootstrap";
 (: Copyright 2002-2010 Mark Logic Corporation.  All Rights Reserved. :)
 
 import module namespace admin = "http://marklogic.com/xdmp/admin" at "/MarkLogic/admin.xqy";
+import module namespace temporal = "http://marklogic.com/xdmp/temporal" at "/MarkLogic/temporal.xqy";
 
 declare namespace dbx = "http://marklogic.com/xdmp/database";
+declare namespace error = "http://marklogic.com/xdmp/error";
 
 declare default function namespace "http://www.w3.org/2005/xpath-functions";
 declare option xdmp:mapping "false";
@@ -30,7 +32,11 @@ as empty-sequence()
             "double",   "",                                   "double",
             "int",      "",                                   "int",
             "string",   "",                                   "grandchild",
-            "string",   "",                                   "string"
+            "string",   "",                                   "string",
+            "dateTime", "",                                   "system-start",
+            "dateTime", "",                                   "system-end",
+            "dateTime", "",                                   "valid-start",
+            "dateTime", "",                                   "valid-end"
             )
         for $i in 1 to (count($new-idx) idiv 3)
         let $offset    := ($i * 3) - 2
@@ -240,6 +246,48 @@ $command as xs:string
         </options>)
     } catch($e) {
         xdmp:log($e)
+    }
+};
+
+declare function bootstrap:temporal-setup() as xs:string*
+{
+    try {
+        let $id := temporal:axis-create(
+            "system-axis",
+            cts:element-reference(xs:QName("system-start"), "type=dateTime"),
+            cts:element-reference(xs:QName("system-end"), "type=dateTime")
+        )
+        return if ( $id ) then "Created system-axis" else ()
+    } catch($e) {
+        if ( "XDMP-ELEMRIDXNOTFOUND" = $e/error:code ) then
+            xdmp:log("Couldn't create system-axis.  Waiting for creation of system-start and system-end " ||
+                "element range indexes...try again")
+        else if ( "TEMPORAL-DUPAXIS" = $e/error:code ) then "system-axis already exists"
+        else xdmp:log($e)
+    },
+    try {
+        let $id := temporal:axis-create(
+            "valid-axis",
+            cts:element-reference(xs:QName("valid-start"), "type=dateTime"),
+            cts:element-reference(xs:QName("valid-end"), "type=dateTime")
+        )
+        return if ( $id ) then "Created valid-axis" else ()
+    } catch($e) {
+        if ( "XDMP-ELEMRIDXNOTFOUND" = $e/error:code ) then
+            xdmp:log("Couldn't create system-axis.  Waiting for creation of valid-start and valid-end " ||
+                "element range indexes...try again")
+        else if ( "TEMPORAL-DUPAXIS" = $e/error:code ) then "valid-axis already exists"
+        else xdmp:log($e)
+    },
+    try {
+        let $id := temporal:collection-create("temporal-collection", "system-axis", "valid-axis")
+        return if ( $id ) then "Created temporal-collection" else ()
+    } catch($e) {
+        if ( "TEMPORAL-AXISNOTFOUND" = $e/error:code ) then 
+            xdmp:log("Couldn't create temporal-collection.  " ||
+                "Waiting for creation of system-axis and valid-axis...try again")
+        else if ( "TEMPORAL-DUPCOLLECTION" = $e/error:code ) then "temporal-collection already exists"
+        else xdmp:log($e)
     }
 };
 
@@ -774,24 +822,33 @@ declare function bootstrap:post(
     $input as document-node()*
 ) as document-node()*
 {
-    for $user in ("rest-admin", "rest-reader", "rest-writer", "valid") 
-    let $user-id := 
-        try {
-            xdmp:user($user)
-        } catch($e) {
-            xdmp:log("User "||$user||" not found.")
-        }
-    return
-        if (exists($user-id)) then xdmp:log("User "|| $user || ", id "||$user-id|| "already exists")
-        else if ($user eq "valid")
-        then bootstrap:security-config('sec:create-user("valid", "valid unprivileged user", "x", (), (), (), ())')
-        else bootstrap:security-config('sec:create-user("'||$user||'", "'||$user||' user", "x", ("'||$user||'"), (), (), () )'),
+    let $responses := (
+        for $user in ("rest-admin", "rest-reader", "rest-writer", "valid") 
+        let $user-id := 
+            try {
+                xdmp:user($user)
+            } catch($e) {
+                xdmp:log("User "||$user||" not found.")
+            }
+        return
+            if (exists($user-id)) then xdmp:log("User "|| $user || ", id "||$user-id|| "already exists")
+            else if ($user eq "valid")
+            then bootstrap:security-config('sec:create-user("valid", "valid unprivileged user", "x", (), (), (), ())')
+            else bootstrap:security-config('sec:create-user("'||$user||'", "'||$user||' user", "x", ("'||$user||'"), (), (), () )'),
 
-    let $dbid := xdmp:database("java-unittest")
-    return (
-        bootstrap:database-configure($dbid),
-        xdmp:log(concat("Configured Java test database:", xdmp:database-name($dbid)))
-        ),
+        let $dbid := xdmp:database("java-unittest")
+        return (
+            bootstrap:database-configure($dbid),
+            xdmp:log(concat("Configured Java test database:", xdmp:database-name($dbid)))
+            ),
 
-    bootstrap:load-data()
+        bootstrap:temporal-setup(),
+        bootstrap:load-data()
+    )
+    return if ( $responses ) then 
+        document{<responses>{
+            for $response in $responses
+            return <response>{$response}</response>
+        }</responses>}
+    else ()
 };
