@@ -54,16 +54,16 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST{
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In setup");
-				setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
-				setupAppServicesConstraint(dbName);
-				createRESTUserWithPermissions("usr1", "password",getPermissionNode("flexrep-eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
+		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		setupAppServicesConstraint(dbName);
+		createRESTUserWithPermissions("usr1", "password",getPermissionNode("flexrep-eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-				tearDownJavaRESTServer(dbName, fNames, restServerName);
-				deleteRESTUser("usr1");
+		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		deleteRESTUser("usr1");
 	}
 
 	@Before
@@ -356,8 +356,8 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST{
 
 		DocumentPage page= docMgr.search(qd, 1,results);
 		System.out.println(this.convertXMLDocumentToString(results.get()));
-		
-//		assertEquals("Total search results after rollback are ","0",results.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total").getNodeValue());
+
+		assertNull("Total search results after rollback are ",results.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total"));
 
 	}
 }
