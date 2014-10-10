@@ -66,7 +66,7 @@ public interface RESTServices {
 	public void release();
 
 	public void deleteDocument(RequestLogger logger, DocumentDescriptor desc, String transactionId,
-			Set<Metadata> categories)
+			Set<Metadata> categories, RequestParameters extraParams)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	public boolean getDocument(RequestLogger logger, DocumentDescriptor desc, String transactionId,

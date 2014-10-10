@@ -474,7 +474,7 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public void deleteDocument(RequestLogger reqlog, DocumentDescriptor desc,
-			String transactionId, Set<Metadata> categories)
+			String transactionId, Set<Metadata> categories, RequestParameters extraParams)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
 		String uri = desc.getUri();
@@ -486,7 +486,7 @@ public class JerseyServices implements RESTServices {
 			logger.debug("Deleting {} in transaction {}", uri, transactionId);
 
 		WebResource webResource = makeDocumentResource(makeDocumentParams(uri,
-				categories, transactionId, null));
+				categories, transactionId, extraParams));
 
 		WebResource.Builder builder = addVersionHeader(desc,
 				webResource.getRequestBuilder(), "If-Match");
