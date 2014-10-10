@@ -194,24 +194,30 @@ as empty-sequence()
         if (empty($index-specs)) then $c
         else admin:database-add-range-field-index($c, $dbid, $index-specs)
 
-    let $index-specs := admin:database-range-path-index(
-      $dbid, 
-      "string",
-      "com.marklogic.client.test.Country/continent",
-      "http://marklogic.com/collation/",
-      fn:false(),
-      "ignore")
-    let $c :=
-        if (empty($index-specs)) then $c
-        else admin:database-add-range-path-index($c, $dbid, $index-specs)
-
-    let $index-specs := admin:database-range-path-index(
-      $dbid, 
-      "unsignedLong",
-      "com.marklogic.client.test.City/population",
-      (),
-      fn:false(),
-      "ignore")
+    let $index-specs := 
+        let $curr-idx := admin:database-get-range-path-indexes($c, $dbid)
+        let $new-idx  := (
+            "string", "com.marklogic.client.test.City/population",
+            "unsignedLong", "com.marklogic.client.test.Country/continent"
+            )
+        for $i in 1 to (count($new-idx) idiv 2)
+        let $offset    := ($i * 2) - 1
+        let $datatype  := subsequence($new-idx, $offset, 1)
+        let $collation :=
+            if ($datatype eq "string")
+            then "http://marklogic.com/collation/"
+            else ""
+        let $path      := subsequence($new-idx, $offset + 1, 1)
+        let $curr      := $curr-idx[
+            string(dbx:scalar-type) eq $datatype and
+            string(dbx:path-expression) eq $path and
+            string(dbx:collation) eq $collation
+            ]
+        return
+            if (exists($curr)) then ()
+            else admin:database-range-path-index(
+                $dbid, $datatype, $path, $collation, false(), "ignore"
+                )
     let $c :=
         if (empty($index-specs)) then $c
         else admin:database-add-range-path-index($c, $dbid, $index-specs)
