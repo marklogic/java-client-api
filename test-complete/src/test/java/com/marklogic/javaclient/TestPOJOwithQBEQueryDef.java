@@ -183,6 +183,7 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 		p = products.search(qd, 1,results);
 		assertEquals("total no of pages",5,p.getTotalPages());
 		System.out.println(p.getTotalPages());
+//		System.out.println(results.getMetrics().getQueryResolutionTime());
 		long pageNo=1,count=0;
 		do{
 			count =0;
@@ -209,7 +210,7 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 				System.out.println(fname);
 			}
 			//			assertEquals("Total results from search handle ",50,results.getTotalResults());
-			assertTrue("Search Handle metric results ",results.getMetrics().getTotalTime()>0);
+//			assertTrue("Search Handle metric results ",results.getMetrics().getTotalTime()>0);
 		}while(!p.isLastPage() && pageNo<p.getTotalSize());
 		assertEquals("Page start check",41,p.getStart());
 		assertEquals("page number after the loop",5,p.getPageNumber());
@@ -254,7 +255,7 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 			assertTrue("Uri in search handle contains Artifact",results.get().withArray("results").get(1).path("uri").asText().contains("Artifact"));
 			//			System.out.println(results.get().toString());
 		}while(!p.isLastPage() && pageNo<p.getTotalSize());
-		assertTrue("search handle has metrics",results.get().has("metrics"));
+		assertFalse("search handle has metrics",results.get().has("metrics"));
 		assertEquals("Total from search handle",11,results.get().get("total").asInt());
 		assertEquals("page number after the loop",1,p.getPageNumber());
 		assertEquals("total no of pages",1,p.getTotalPages());
