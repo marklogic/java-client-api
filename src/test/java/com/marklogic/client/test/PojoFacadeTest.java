@@ -122,6 +122,20 @@ public class PojoFacadeTest {
         assertEquals("Failed to find number of records expected", 3, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
+        // the default options are unfiltered, which I don't want in this case, so the 
+        // work-around is to use stored options which contain <search-option>filtered</search-option>
+        StructuredQueryBuilder sqb = Common.client.newQueryManager().newStructuredQueryBuilder("filtered");
+        query = sqb.and(qb.word("asciiName", new String[] {"wildcarded"}, 1, "Chittagong*"));
+        page = cities.search(query, 1);
+        iterator = page.iterator();
+        numRead = 0;
+        while ( iterator.hasNext() ) {
+            iterator.next();
+            numRead++;
+        }
+        assertEquals("Failed to find number of records expected", 1, numRead);
+        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+
         query = qb.value("continent", "AF");
         page = cities.search(query, 1);
         iterator = page.iterator();
@@ -196,10 +210,7 @@ public class PojoFacadeTest {
         assertEquals("Failed to find number of records expected", 21, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
-        // the default options are unfiltered, which I don't want in this case, so the 
-        // work-around is to use stored options which are filtered
-        StructuredQueryBuilder sqb = Common.client.newQueryManager().newStructuredQueryBuilder("facets");
-        query = sqb.geospatial(
+        query = qb.geospatial(
             qb.geoPath("latLong"),
             qb.circle(-34, -58, 100)
         );
@@ -213,7 +224,7 @@ public class PojoFacadeTest {
         assertEquals("Failed to find number of records expected", 4, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
-        // TODO: uncomment tests below once https://bugtrack.marklogic.com/29731 is fixed
+        // TODO: uncomment tests below once https://bugtrack.marklogic.com/29204 is fixed
         /*
         query = qb.geospatial(
             qb.geoProperty("latLong"),
