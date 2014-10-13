@@ -316,7 +316,7 @@ declare function bootstrap:create-geospatial-path-indexes(
     let $index-specs := 
         let $curr-idx := admin:database-get-geospatial-path-indexes($c, $dbid)
         let $new-idx  := (
-            "//latLong"
+            "com.marklogic.client.test.City/latLong"
             )
         (: no offset necessary now since each new-idx only has one item, but that may change :)
         let $n := 1
