@@ -189,7 +189,7 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 				System.out.println(fname);
 			}
 			assertEquals("Total resulr from search handle ",55,results.getTotalResults());
-			assertTrue("Search Handle metric results ",results.getMetrics().getTotalTime()>0);
+//			assertTrue("Search Handle metric results ",results.getMetrics().getTotalTime()>0);
 		}while(!p.isLastPage() && pageNo<p.getTotalSize());
 		assertEquals("Page start check",45,p.getStart());
 		assertEquals("page number after the loop",5,p.getPageNumber());
@@ -227,7 +227,7 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 			assertTrue("Uri in search handle contains Artifact",results.get().withArray("results").get(1).path("uri").asText().contains("Artifact"));
 			//			System.out.println(results.get().toString());
 		}while(!p.isLastPage() && pageNo<p.getTotalSize());
-		assertTrue("search handle has metrics",results.get().has("metrics"));
+//		assertTrue("search handle has metrics",results.get().has("metrics"));
 		assertEquals("Search text is","cogs",results.get().path("qtext").asText());
 		assertEquals("Total from search handle",110,results.get().get("total").asInt());
 		assertEquals("page number after the loop",10,p.getPageNumber());
@@ -259,21 +259,17 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 			}
 			assertEquals("Page total results",count,p.getTotalSize());
 			pageNo=pageNo+p.getPageSize();
-//				
-					System.out.println(results.get().toString());
+//				System.out.println(results.get().toString());
 		}while(!p.isLastPage() && pageNo<p.getTotalSize());
 		assertFalse("String handle is not empty",results.get().isEmpty());
 		assertTrue("String handle contains results",results.get().contains("results"));
 		assertFalse("String handle contains format",results.get().contains("\"format\":\"json\""));
-//		String expected= jh.get().toString();
-//		System.out.println(results.get().contains("\"format\":\"json\"")+ expected);
+
 		ObjectMapper mapper = new ObjectMapper();
-//		String expected= "{\"snippet-format\":\"snippet\",\"total\":1,\"start\":1,\"page-length\":50,\"results\":[{\"index\":1,\"uri\":\"com.marklogic.javaclient.Artifact/2.json\",\"path\":\"fn:doc(\\\"com.marklogic.javaclient.Artifact/2.json\\\")\",\"score\":55936,\"confidence\":0.4903799,\"fitness\":0.8035046,\"href\":\"/v1/documents?uri=com.marklogic.javaclient.Artifact%2F2.json\",\"mimetype\":\"application/json\",\"format\":\"json\",\"matches\":[{\"path\":\"fn:doc(\\\"com.marklogic.javaclient.Artifact/2.json\\\")\",\"match-text\":[]}]}],\"qtext\":\"cogs 2\",\"metrics\":{\"query-resolution-time\":\"PT0.004S\",\"snippet-resolution-time\":\"PT0S\",\"total-time\":\"PT0.005S\"}}";
-//		JsonNode expNode = mapper.readTree(expected).get("results").iterator().next().get("matches");
 		JsonNode actNode = mapper.readTree(results.get()).get("total");
 //		System.out.println(expNode.equals(actNode)+"\n"+ expNode.toString()+"\n"+actNode.toString());
 		
-		assertEquals("Total search results resulted are ",0,actNode.asInt() );
+		assertNull("Total search results resulted are ",actNode );
 	}
 
 }

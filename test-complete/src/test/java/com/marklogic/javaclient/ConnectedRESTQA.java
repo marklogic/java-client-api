@@ -1312,11 +1312,11 @@ public abstract class ConnectedRESTQA {
 		axisStart.set("element-reference", elementReferenceStart);
 		rootNode.set("axis-start", axisStart);
 
-		// Set axis ens
+		// Set axis end
 		ObjectNode axisEnd = mapper.createObjectNode();
 		ObjectNode elementReferenceEnd = mapper.createObjectNode();
 		elementReferenceEnd.put("namespace-uri", namespaceStart);
-		elementReferenceEnd.put("localname", localnameStart);
+		elementReferenceEnd.put("localname", localnameEnd);
 		elementReferenceEnd.put("scalar-type", "dateTime");
 
 		axisEnd.set("element-reference", elementReferenceEnd);
@@ -1513,8 +1513,7 @@ public abstract class ConnectedRESTQA {
 			System.out.println("==============================================================");
 		}
 	}
-
-
+	
 	public static void loadBug18993(){
 		try{
 			DefaultHttpClient client = new DefaultHttpClient();
