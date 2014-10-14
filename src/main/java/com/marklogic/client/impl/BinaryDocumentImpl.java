@@ -136,7 +136,7 @@ class BinaryDocumentImpl
 		else
 			extraParams.put("range", "bytes="+String.valueOf(start));
 
-		return read(desc, metadataHandle, contentHandle, transform, transaction, extraParams);
+		return read(desc, metadataHandle, contentHandle, transform, transaction, null, extraParams);
 	}
 
 	public MetadataExtraction getMetadataExtraction() {

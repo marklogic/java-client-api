@@ -9,34 +9,15 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.client.entity.*;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.nio.channels.FileChannel;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -50,10 +31,15 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 
 import java.net.InetAddress;
 
+import org.json.JSONObject;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+/**
+ * @author gvaidees
+ *
+ */
 public abstract class ConnectedRESTQA {
 
 	/**
@@ -89,6 +75,44 @@ public abstract class ConnectedRESTQA {
 			e.printStackTrace();
 		}
 	}
+	public static String getBootStrapHostFromML() {
+		InputStream jstream=null;
+		try{
+		DefaultHttpClient client = new DefaultHttpClient();
+		client.getCredentialsProvider().setCredentials(
+				new AuthScope("localhost", 8002),
+				new UsernamePasswordCredentials("admin", "admin"));
+		HttpGet getrequest = new HttpGet("http://localhost:8002/manage/v2/properties?format=json");
+		HttpResponse resp = client.execute(getrequest);
+		jstream =resp.getEntity().getContent();
+		JsonNode jnode= new ObjectMapper().readTree(jstream);
+		String propName ="bootstrap-host";
+		if(!jnode.isNull()){
+
+			if(jnode.has(propName)){
+//				System.out.println(jnode.withArray(propName).get(0).asText());
+			return jnode.withArray(propName).get(0).asText();
+			}
+			else{
+				System.out.println("Missing "+propName+" field from properties end point so sending java conanical host name\n"+jnode.toString());
+				return InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
+				}
+			}
+		else{
+			 System.out.println("Rest endpoint returns empty stream");
+			 return InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
+			}
+
+		}catch (Exception e) {
+			// writing error to Log
+			e.printStackTrace();
+			
+			return "localhost";
+		}
+		finally{
+			jstream =null;
+		}
+	}
 	/*
 	 * 
 	 */
@@ -99,7 +123,8 @@ public abstract class ConnectedRESTQA {
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
 			HttpPost post = new HttpPost("http://localhost:8002"+ "/manage/v2/forests?format=json");
-			String hName =InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
+//			System.out.println( getBootStrapHostFromML());
+			String hName = getBootStrapHostFromML();
 			String JSONString = 
 					"{\"database\":\""+ 
 							dbName + 
@@ -182,7 +207,6 @@ public abstract class ConnectedRESTQA {
 			post.setEntity(new StringEntity(JSONString));
 
 			HttpResponse response = client.execute(post);
-			HttpEntity respEntity = response.getEntity();
 			System.out.println(JSONString);
 			if (response.getStatusLine().getStatusCode() == 400) {
 				// EntityUtils to get the response content
@@ -315,7 +339,7 @@ public abstract class ConnectedRESTQA {
 					String content =  EntityUtils.toString(respEntity);
 					System.out.println(content);
 				}
-				else {System.out.print("No Proper Response");}
+				else {System.out.println("No Proper Response");}
 			}
 		}catch (Exception e) {
 			// writing error to Log
@@ -414,7 +438,7 @@ public abstract class ConnectedRESTQA {
 					String content =  EntityUtils.toString(respEntity);
 					System.out.println(content);
 				}
-				else {System.out.print("No Proper Response");}
+				else {System.out.println("No Proper Response");}
 			}
 		}catch (Exception e) {
 			// writing error to Log
@@ -478,20 +502,20 @@ public abstract class ConnectedRESTQA {
 	 */
 	public static void deleteRESTServer(String restServerName)	{
 		try{
-						DefaultHttpClient client = new DefaultHttpClient();
-			
-						client.getCredentialsProvider().setCredentials(
-								new AuthScope("localhost", 8002),
-								new UsernamePasswordCredentials("admin", "admin"));
-			
-						HttpDelete delete = new HttpDelete("http://localhost:8002/v1/rest-apis/"+restServerName+"&include=modules");
-						HttpResponse response = client.execute(delete);
-						
-						if(response.getStatusLine().getStatusCode()== 202){
-							Thread.sleep(3500);
-							waitForServerRestart();
-						}
-						else System.out.println("Server response "+response.getStatusLine().getStatusCode());
+			DefaultHttpClient client = new DefaultHttpClient();
+
+			client.getCredentialsProvider().setCredentials(
+					new AuthScope("localhost", 8002),
+					new UsernamePasswordCredentials("admin", "admin"));
+
+			HttpDelete delete = new HttpDelete("http://localhost:8002/v1/rest-apis/"+restServerName+"&include=modules");
+			HttpResponse response = client.execute(delete);
+
+			if(response.getStatusLine().getStatusCode()== 202){
+				Thread.sleep(3500);
+				waitForServerRestart();
+			}
+			else System.out.println("Server response "+response.getStatusLine().getStatusCode());
 		}catch (Exception e) {
 			// writing error to Log
 			System.out.println("Inside Deleting Rest server is throwing an error");
@@ -621,7 +645,7 @@ public abstract class ConnectedRESTQA {
 			System.out.println("From Deleting Rest server called funnction is throwing an error");
 			e.printStackTrace(); 
 		}
-		 
+
 		try{
 			for(int i = 0; i < fNames.length; i++){
 				detachForest(dbName, fNames[i]); 
@@ -837,6 +861,9 @@ public abstract class ConnectedRESTQA {
 	 * 
 	 */
 	public static void addRangeElementIndex(String dbName,  String type, String namespace, String localname) throws Exception{
+		addRangeElementIndex( dbName,   type,  namespace,  localname, false);
+	}	
+	public static void addRangeElementIndex(String dbName,  String type, String namespace, String localname,boolean positions) throws Exception{
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode mainNode = mapper.createObjectNode();
 		//	ObjectNode childNode = mapper.createObjectNode();
@@ -846,7 +873,7 @@ public abstract class ConnectedRESTQA {
 		childNodeObject.put( "namespace-uri", namespace);
 		childNodeObject.put( "localname", localname);
 		childNodeObject.put( "collation", "");
-		childNodeObject.put("range-value-positions", false);
+		childNodeObject.put("range-value-positions", positions);
 		childNodeObject.put("invalid-values", "reject");
 		childArray.add(childNodeObject);		
 		mainNode.putArray("range-element-index").addAll(childArray);
@@ -954,6 +981,9 @@ public abstract class ConnectedRESTQA {
   }
 	 */
 	public static void addRangePathIndex(String dbName, String type, String pathexpr, String collation, String invalidValues) throws Exception{
+		addRangePathIndex( dbName,  type,  pathexpr,  collation,  invalidValues, false);
+	}
+	public static void addRangePathIndex(String dbName, String type, String pathexpr, String collation, String invalidValues,boolean positions) throws Exception{
 		ObjectMapper mapper = new ObjectMapper();
 		//		ObjectNode mainNode = mapper.createObjectNode();
 		ObjectNode childNode = mapper.createObjectNode();
@@ -1254,6 +1284,236 @@ public abstract class ConnectedRESTQA {
 		addBuiltInGeoIndex(dbName);
 
 	}
+
+	/*
+	 * Create a temporal axis based on 2 element range indexes, for start and end values (for system or valid axis)
+	 * @dbName Database Name
+	 * @axisName Axis Name (name of axis that needs to be created)
+	 * @namespaceStart Namespace for 'start' element range index
+	 * @localnameStart Local name for 'start' element range index
+	 * @namespaceEnd Namespace for 'end' element range index
+	 * @localnameEnd Local name for 'end' element range index
+	 */
+	public static void addElementRangeIndexTemporalAxis(String dbName, String axisName, 
+		String namespaceStart, String localnameStart, String namespaceEnd, String localnameEnd) throws Exception
+	{
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode rootNode = mapper.createObjectNode();
+
+		rootNode.put( "axis-name", axisName);
+
+		// Set axis start
+		ObjectNode axisStart = mapper.createObjectNode();
+		ObjectNode elementReferenceStart = mapper.createObjectNode();
+		elementReferenceStart.put("namespace-uri", namespaceStart);
+		elementReferenceStart.put("localname", localnameStart);
+		elementReferenceStart.put("scalar-type", "dateTime");
+
+		axisStart.set("element-reference", elementReferenceStart);
+		rootNode.set("axis-start", axisStart);
+
+		// Set axis end
+		ObjectNode axisEnd = mapper.createObjectNode();
+		ObjectNode elementReferenceEnd = mapper.createObjectNode();
+		elementReferenceEnd.put("namespace-uri", namespaceStart);
+		elementReferenceEnd.put("localname", localnameEnd);
+		elementReferenceEnd.put("scalar-type", "dateTime");
+
+		axisEnd.set("element-reference", elementReferenceEnd);
+		rootNode.set("axis-end", axisEnd);
+
+		System.out.println(rootNode.toString());
+
+
+		/***
+		JSONObject rootNode = new JSONObject(jsonOrderedMap);
+
+
+
+		JSONObject axisStart = new JSONObject();
+		JSONObject elementReferenceStart = new JSONObject();
+
+		elementReferenceStart.put("namespace-uri", namespaceStart);
+		elementReferenceStart.put("localname", localnameStart);
+		elementReferenceStart.put("scalar-type", "dateTime");
+
+		axisStart.put("element-reference", elementReferenceStart);
+
+		JSONObject axisEnd = new JSONObject();
+		JSONObject elementReferenceEnd = new JSONObject();
+
+		elementReferenceEnd.put("namespace-uri", namespaceEnd);
+		elementReferenceEnd.put("localname", localnameEnd);
+		elementReferenceEnd.put("scalar-type", "dateTime");
+
+		axisEnd.put("element-reference", elementReferenceEnd);
+
+		rootNode.put("axis-end", axisEnd);
+		rootNode.put("axis-start", axisStart);
+		rootNode.put( "axis-name", axisName);
+
+		System.out.println(rootNode.toString());
+		 ***/
+
+
+		DefaultHttpClient client = new DefaultHttpClient();
+		client.getCredentialsProvider().setCredentials(
+				new AuthScope("localhost", 8002),
+				new UsernamePasswordCredentials("admin", "admin"));
+
+		HttpPost post = new HttpPost("http://localhost:8002/manage/v2/databases/"+ dbName + "/temporal/axes?format=json");
+
+		post.addHeader("Content-type", "application/json");
+		post.addHeader("accept", "application/json");
+		post.setEntity(new StringEntity(rootNode.toString()));
+
+		HttpResponse response = client.execute(post);
+		HttpEntity respEntity = response.getEntity();
+		if( response.getStatusLine().getStatusCode() == 400)
+		{
+			HttpEntity entity = response.getEntity();
+			String responseString = EntityUtils.toString(entity, "UTF-8");
+			System.out.println(responseString);
+		}
+		else if (respEntity != null) {
+			// EntityUtils to get the response content
+			String content =  EntityUtils.toString(respEntity);
+			System.out.println(content);
+			
+			System.out.println("Temporal axis: " + axisName + " created");
+			System.out.println("==============================================================");
+		}
+		else {
+			System.out.println("No Proper Response");
+		}
+	}
+
+	/*
+	 * Delete a temporal axis
+	 * @dbName Database Name
+	 * @axisName Axis Name
+	 */
+	public static void deleteElementRangeIndexTemporalAxis(String dbName, String axisName) throws Exception
+	{
+		DefaultHttpClient client = new DefaultHttpClient();
+		client.getCredentialsProvider().setCredentials(
+				new AuthScope("localhost", 8002),
+				new UsernamePasswordCredentials("admin", "admin"));
+
+		HttpDelete del = new HttpDelete("http://localhost:8002/manage/v2/databases/"+ dbName + "/temporal/axes/" + axisName + "?format=json");
+
+		del.addHeader("Content-type", "application/json");
+		del.addHeader("accept", "application/json");
+
+		HttpResponse response = client.execute(del);
+		HttpEntity respEntity = response.getEntity();
+		if( response.getStatusLine().getStatusCode() == 400)
+		{
+			HttpEntity entity = response.getEntity();
+			String responseString = EntityUtils.toString(entity, "UTF-8");
+			System.out.println(responseString);
+		}
+		else if (respEntity != null) {
+			// EntityUtils to get the response content
+			String content =  EntityUtils.toString(respEntity);
+			System.out.println(content);
+		}
+		else {
+			System.out.println("Axis: " + axisName + " deleted");
+			System.out.println("==============================================================");
+		}
+	}
+
+
+	/*
+	 * Create a temporal collection
+	 * @dbName Database Name
+	 * @collectionName Collection Name (name of temporal collection that needs to be created)
+	 * @systemAxisName Name of System axis
+	 * @validAxisName Name of Valid axis
+	 */
+	public static void addElementRangeIndexTemporalCollection(String dbName, String collectionName, String systemAxisName, String validAxisName) 
+			throws Exception
+	{
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode rootNode = mapper.createObjectNode();
+
+		rootNode.put( "collection-name", collectionName);
+		rootNode.put( "system-axis", systemAxisName);
+		rootNode.put( "valid-axis", validAxisName);
+
+		System.out.println(rootNode.toString());
+
+
+		DefaultHttpClient client = new DefaultHttpClient();
+		client.getCredentialsProvider().setCredentials(
+				new AuthScope("localhost", 8002),
+				new UsernamePasswordCredentials("admin", "admin"));
+
+		HttpPost post = new HttpPost("http://localhost:8002/manage/v2/databases/"+ dbName + "/temporal/collections?format=json");
+
+		post.addHeader("Content-type", "application/json");
+		post.addHeader("accept", "application/json");
+		post.setEntity(new StringEntity(rootNode.toString()));
+
+		HttpResponse response = client.execute(post);
+		HttpEntity respEntity = response.getEntity();
+		if( response.getStatusLine().getStatusCode() == 400)
+		{
+			HttpEntity entity = response.getEntity();
+			String responseString = EntityUtils.toString(entity, "UTF-8");
+			System.out.println(responseString);
+		}
+		else if (respEntity != null) {
+			// EntityUtils to get the response content
+			String content =  EntityUtils.toString(respEntity);
+			System.out.println(content);
+			
+			System.out.println("Temporal collection: " + collectionName + " created");
+			System.out.println("==============================================================");
+		}
+		else {
+			System.out.println("No Proper Response");
+		}
+
+	}
+
+	/*
+	 * Delete a temporal collection
+	 * @dbName Database Name
+	 * @collectionName Collection Name
+	 */
+	public static void deleteElementRangeIndexTemporalCollection(String dbName, String collectionName) throws Exception
+	{
+		DefaultHttpClient client = new DefaultHttpClient();
+		client.getCredentialsProvider().setCredentials(
+				new AuthScope("localhost", 8002),
+				new UsernamePasswordCredentials("admin", "admin"));
+
+		HttpDelete del = new HttpDelete("http://localhost:8002/manage/v2/databases/"+ dbName + "/temporal/collections?collection=" + collectionName + "&format=json");
+
+		del.addHeader("Content-type", "application/json");
+		del.addHeader("accept", "application/json");
+
+		HttpResponse response = client.execute(del);
+		HttpEntity respEntity = response.getEntity();
+		if( response.getStatusLine().getStatusCode() == 400)
+		{
+			HttpEntity entity = response.getEntity();
+			String responseString = EntityUtils.toString(entity, "UTF-8");
+			System.out.println(responseString);
+		}
+		else if (respEntity != null) {
+			// EntityUtils to get the response content
+			String content =  EntityUtils.toString(respEntity);
+			System.out.println(content);
+		}
+		else {
+			System.out.println("Collection: " + collectionName + " deleted");
+			System.out.println("==============================================================");
+		}
+	}
+	
 	public static void loadBug18993(){
 		try{
 			DefaultHttpClient client = new DefaultHttpClient();
@@ -1299,7 +1559,7 @@ public abstract class ConnectedRESTQA {
 		}
 	}
 	public static void setDefaultUser(String usr,String restServerName) throws ClientProtocolException, IOException {
-		
+
 		DefaultHttpClient client = new DefaultHttpClient();
 
 		client.getCredentialsProvider().setCredentials(

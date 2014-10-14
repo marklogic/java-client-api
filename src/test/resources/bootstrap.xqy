@@ -4,17 +4,40 @@ module namespace bootstrap = "http://marklogic.com/rest-api/resource/bootstrap";
 (: Copyright 2002-2010 Mark Logic Corporation.  All Rights Reserved. :)
 
 import module namespace admin = "http://marklogic.com/xdmp/admin" at "/MarkLogic/admin.xqy";
+import module namespace temporal = "http://marklogic.com/xdmp/temporal" at "/MarkLogic/temporal.xqy";
 
 declare namespace dbx = "http://marklogic.com/xdmp/database";
+declare namespace error = "http://marklogic.com/xdmp/error";
 
 declare default function namespace "http://www.w3.org/2005/xpath-functions";
 declare option xdmp:mapping "false";
 
 declare function bootstrap:database-configure(
-  $dbid as xs:unsignedLong)
-as empty-sequence()
+  $dbid as xs:unsignedLong
+) as empty-sequence()
 {
     let $c := admin:get-configuration()
+
+    let $c := bootstrap:create-range-element-indexes($c, $dbid)
+    let $c := bootstrap:create-element-attribute-range-indexes($c, $dbid)
+    let $c := bootstrap:create-element-word-lexicons($c, $dbid)
+    let $c := bootstrap:create-geospatial-element-pair-indexes($c, $dbid)
+    let $c := bootstrap:create-field-range-indexes($c, $dbid)
+    let $c := bootstrap:create-fields($c, $dbid)
+    (: you can't create field and field range index in same transaction :)
+    return admin:save-configuration-without-restart($c),
+
+    let $c := admin:get-configuration()
+    let $c := bootstrap:create-path-range-indexes($c, $dbid)
+    let $c := bootstrap:create-geospatial-path-indexes($c, $dbid)
+    return admin:save-configuration-without-restart($c)
+};
+
+declare function bootstrap:create-range-element-indexes(
+    $c as element(configuration),
+    $dbid as xs:unsignedLong
+) as element(configuration)
+{
     
     (: collection and word lexicons and triple index on :)
     let $c := admin:database-set-collection-lexicon($c, $dbid, true())
@@ -30,7 +53,11 @@ as empty-sequence()
             "double",   "",                                   "double",
             "int",      "",                                   "int",
             "string",   "",                                   "grandchild",
-            "string",   "",                                   "string"
+            "string",   "",                                   "string",
+            "dateTime", "",                                   "system-start",
+            "dateTime", "",                                   "system-end",
+            "dateTime", "",                                   "valid-start",
+            "dateTime", "",                                   "valid-end"
             )
         for $i in 1 to (count($new-idx) idiv 3)
         let $offset    := ($i * 3) - 2
@@ -48,15 +75,25 @@ as empty-sequence()
             string(dbx:collation) eq $collation
             ]
         return
-            if (exists($curr)) then ()
-            else admin:database-range-element-index(
-                $datatype, $ns, $name, $collation, false()
-                )
+            if (exists($curr)) then (
+                xdmp:log(concat("Element range index already exists: ", $name))
+            ) else (
+                admin:database-range-element-index(
+                    $datatype, $ns, $name, $collation, false()
+                ),
+                xdmp:log(concat("Creating element range index: ", $name))
+            )
 
-    let $c :=
+    return
         if (empty($index-specs)) then $c
         else admin:database-add-range-element-index($c, $dbid, $index-specs)
+};
 
+declare function bootstrap:create-element-attribute-range-indexes(
+    $c as element(configuration),
+    $dbid as xs:unsignedLong
+) as element(configuration)
+{
     let $index-specs :=
         let $curr-idx := admin:database-get-range-element-attribute-indexes($c, $dbid)
         let $new-idx  := (
@@ -82,14 +119,24 @@ as empty-sequence()
             string(dbx:collation) eq $collation
             ]
         return
-            if (exists($curr)) then ()
-            else admin:database-range-element-attribute-index(
-                $datatype, $e-ns, $e-name, $a-ns, $a-name, $collation, false()
-                )
-    let $c :=
+            if (exists($curr)) then (
+                xdmp:log(concat("element-attribute range index already exists:[", $e-name, ",", $a-name, "]"))
+            ) else (
+                admin:database-range-element-attribute-index(
+                    $datatype, $e-ns, $e-name, $a-ns, $a-name, $collation, false()
+                ),
+                xdmp:log(concat("Creating element-attribute range index:[", $e-name, ",", $a-name, "]"))
+            )
+    return
         if (empty($index-specs)) then $c
         else admin:database-add-range-element-attribute-index($c, $dbid, $index-specs)
+};
 
+declare function bootstrap:create-element-word-lexicons(
+    $c as element(configuration),
+    $dbid as xs:unsignedLong
+) as element(configuration)
+{
     let $index-specs :=
         let $curr-idx := admin:database-get-element-word-lexicons($c, $dbid)
         let $new-idx  := (
@@ -106,12 +153,22 @@ as empty-sequence()
             string(dbx:collation) eq $collation
             ]
         return
-            if (exists($curr)) then ()
-            else admin:database-element-word-lexicon($ns, $name, $collation)
-    let $c :=
+            if (exists($curr)) then (
+                xdmp:log(concat("element-word index already exists: ", $name))
+            ) else (
+                admin:database-element-word-lexicon($ns, $name, $collation),
+                xdmp:log(concat("Creating element-word index: ", $name))
+            )
+    return
         if (empty($index-specs)) then $c
         else admin:database-add-element-word-lexicon($c, $dbid, $index-specs)
+};
 
+declare function bootstrap:create-geospatial-element-pair-indexes(
+    $c as element(configuration),
+    $dbid as xs:unsignedLong
+) as element(configuration)
+{
     (: create geospatial indexes for geo unit test :)
     let $index-specs :=
         let $curr-idx := admin:database-get-geospatial-element-pair-indexes($c, $dbid)
@@ -138,13 +195,24 @@ as empty-sequence()
             string(dbx:coordinate-system) eq $coord-sys
             ]
         return
-            if (exists($curr)) then ()
-            else admin:database-geospatial-element-pair-index(
-                $p-ns, $p-name, $lat-ns, $lat-name, $lon-ns, $lon-name, $coord-sys, false()
-                )
-    let $c :=
+            if (exists($curr)) then (
+                xdmp:log(concat("Geo-elem-pair-index already exists:[", $p-name, ",", $lat-name, ",", $lon-name, "]"))
+            ) else (
+                admin:database-geospatial-element-pair-index(
+                    $p-ns, $p-name, $lat-ns, $lat-name, $lon-ns, $lon-name, $coord-sys, false()
+                ),
+                xdmp:log(concat("Creating geo-elem-pair-index:[", $p-name, ",", $lat-name, ",", $lon-name, "]"))
+            )
+    return
         if (empty($index-specs)) then $c
         else admin:database-add-geospatial-element-pair-index($c, $dbid, $index-specs)
+};
+
+declare function bootstrap:create-fields(
+    $c as element(configuration),
+    $dbid as xs:unsignedLong
+) as element(configuration)
+{
 
     let $def-specs :=
         let $curr-def := admin:database-get-fields($c, $dbid)
@@ -153,19 +221,22 @@ as empty-sequence()
             string(dbx:field-name) eq $new-def
             ]
         return
-            if (exists($curr)) then ()
-            else admin:database-field($new-def, false())
-    let $c :=
-        if (empty($def-specs)) then $c
-        else (
-            (: you can't create field and field range index in same transaction :)
-            admin:save-configuration-without-restart(
-                admin:database-add-field($c, $dbid, $def-specs)
-                ),
-
-            admin:get-configuration()
+            if (exists($curr)) then (
+                xdmp:log(concat("Field index already exists: ", $new-def))
+            ) else (
+                admin:database-field($new-def, false()),
+                xdmp:log(concat("Creating field: ", $new-def))
             )
+    return
+        if (empty($def-specs)) then $c
+        else admin:database-add-field($c, $dbid, $def-specs)
+};
 
+declare function bootstrap:create-field-range-indexes(
+    $c as element(configuration),
+    $dbid as xs:unsignedLong
+) as element(configuration)
+{
     let $index-specs :=
         let $curr-idx := admin:database-get-range-field-indexes($c, $dbid)
         let $new-idx  := (
@@ -186,37 +257,90 @@ as empty-sequence()
             string(dbx:collation) eq $collation
             ]
         return
-            if (exists($curr)) then ()
-            else admin:database-range-field-index(
-                $datatype, $name, $collation, false()
-                )
-    let $c :=
+            if (exists($curr)) then (
+                xdmp:log(concat("Field range index already exists: ", $name))
+            ) else (
+                admin:database-range-field-index(
+                    $datatype, $name, $collation, false()
+                ),
+                xdmp:log(concat("Creating field range index: ", $name))
+            )
+    return
         if (empty($index-specs)) then $c
         else admin:database-add-range-field-index($c, $dbid, $index-specs)
+};
 
-    let $index-specs := admin:database-range-path-index(
-      $dbid, 
-      "string",
-      "com.marklogic.client.test.Country/continent",
-      "http://marklogic.com/collation/",
-      fn:false(),
-      "ignore")
-    let $c :=
+declare function bootstrap:create-path-range-indexes(
+    $c as element(configuration),
+    $dbid as xs:unsignedLong
+) as element(configuration)
+{
+    let $index-specs := 
+        let $curr-idx := admin:database-get-range-path-indexes($c, $dbid)
+        let $new-idx  := (
+            "long", "com.marklogic.client.test.City/population",
+            "string", "com.marklogic.client.test.Country/continent"
+            )
+        for $i in 1 to (count($new-idx) idiv 2)
+        let $offset    := ($i * 2) - 1
+        let $datatype  := subsequence($new-idx, $offset, 1)
+        let $collation :=
+            if ($datatype eq "string")
+            then "http://marklogic.com/collation/"
+            else ""
+        let $path      := subsequence($new-idx, $offset + 1, 1)
+        let $curr      := $curr-idx[
+            string(dbx:scalar-type) eq $datatype and
+            string(dbx:path-expression) eq $path and
+            string(dbx:collation) eq $collation
+            ]
+        return
+            if (exists($curr)) then (
+                xdmp:log(concat("Path range index already exists: ", $path))
+            ) else (
+                admin:database-range-path-index(
+                    $dbid, $datatype, $path, $collation, false(), "ignore"
+                ),
+                xdmp:log(concat("Creating path range index: ", $path))
+            )
+    return
         if (empty($index-specs)) then $c
         else admin:database-add-range-path-index($c, $dbid, $index-specs)
+};
 
-    let $index-specs := admin:database-range-path-index(
-      $dbid, 
-      "unsignedLong",
-      "com.marklogic.client.test.City/population",
-      (),
-      fn:false(),
-      "ignore")
-    let $c :=
+declare function bootstrap:create-geospatial-path-indexes(
+    $c as element(configuration),
+    $dbid as xs:unsignedLong
+) as element(configuration)
+{
+    let $index-specs := 
+        let $curr-idx := admin:database-get-geospatial-path-indexes($c, $dbid)
+        let $new-idx  := (
+            "com.marklogic.client.test.City/latLong"
+            )
+        (: no offset necessary now since each new-idx only has one item, but that may change :)
+        let $n := 1
+        for $i in 1 to (count($new-idx) idiv $n)
+        let $offset    := ($i * $n) - ($n - 1) 
+        let $path      := subsequence($new-idx, $offset, 1)
+        let $curr      := $curr-idx[
+            string(dbx:path-expression) eq $path and
+            string(dbx:coordinate-system) eq "wgs84" and
+            string(dbx:range-value-positions) eq "false" and
+            string(dbx:point-format) eq "point"
+            ]
+        return
+            if (exists($curr)) then (
+                xdmp:log(concat("Geospatial-path-index already exists:", $path))
+            ) else (
+                admin:database-geospatial-path-index(
+                    $path, "wgs84", false(), "point", "reject"
+                ),
+                xdmp:log(concat("Creating geospatial-path-index:", $path))
+            )
+    return
         if (empty($index-specs)) then $c
-        else admin:database-add-range-path-index($c, $dbid, $index-specs)
-
-    return admin:save-configuration-without-restart($c)
+        else admin:database-add-geospatial-path-index($c, $dbid, $index-specs)
 };
 
 declare function bootstrap:security-config(
@@ -232,6 +356,53 @@ $command as xs:string
         <options xmlns="xdmp:eval">
             <database>{ xdmp:database("Security") }</database>
         </options>)
+    } catch($e) {
+        xdmp:log($e)
+    }
+};
+
+declare function bootstrap:temporal-setup() as xs:string*
+{
+    try {
+        let $id := temporal:axis-create(
+            "system-axis",
+            cts:element-reference(xs:QName("system-start"), "type=dateTime"),
+            cts:element-reference(xs:QName("system-end"), "type=dateTime")
+        )
+        return if ( $id ) then xdmp:log("Created system-axis") else ()
+    } catch($e) {
+        if ( "XDMP-ELEMRIDXNOTFOUND" = $e/error:code ) then
+            xdmp:log("Couldn't create system-axis.  Waiting for creation of system-start and system-end " ||
+                "element range indexes...try again")
+        else if ( "TEMPORAL-DUPAXIS" = $e/error:code ) then xdmp:log("system-axis already exists")
+        else xdmp:log($e)
+    },
+    try {
+        let $id := temporal:axis-create(
+            "valid-axis",
+            cts:element-reference(xs:QName("valid-start"), "type=dateTime"),
+            cts:element-reference(xs:QName("valid-end"), "type=dateTime")
+        )
+        return if ( $id ) then xdmp:log("Created valid-axis") else ()
+    } catch($e) {
+        if ( "XDMP-ELEMRIDXNOTFOUND" = $e/error:code ) then
+            xdmp:log("Couldn't create system-axis.  Waiting for creation of valid-start and valid-end " ||
+                "element range indexes...try again")
+        else if ( "TEMPORAL-DUPAXIS" = $e/error:code ) then xdmp:log("valid-axis already exists")
+        else xdmp:log($e)
+    },
+    try {
+        let $id := temporal:collection-create("temporal-collection", "system-axis", "valid-axis")
+        return if ( $id ) then xdmp:log("Created temporal-collection") else ()
+    } catch($e) {
+        if ( "TEMPORAL-AXISNOTFOUND" = $e/error:code ) then 
+            xdmp:log("Couldn't create temporal-collection.  " ||
+                "Waiting for creation of system-axis and valid-axis...try again")
+        else if ( "TEMPORAL-DUPCOLLECTION" = $e/error:code ) then xdmp:log("temporal-collection already exists")
+        else xdmp:log($e)
+    },
+    try {
+        temporal:set-use-LSQT("temporal-collection", true())
     } catch($e) {
         xdmp:log($e)
     }
@@ -754,7 +925,16 @@ xdmp:document-set-permissions("/sample/tuples-test4.xml",
             ),
     xdmp:document-add-collections("/sample2/suggestion.xml",("http://some.org/suggestions"))
 '
-    )
+    ),
+    xdmp:eval('xquery version "1.0-ml";
+    xdmp:document-insert("/Default/java-unittest/rest-api/options/filtered.xml",
+    <options xmlns="http://marklogic.com/appservices/search">
+        <search-option>filtered</search-option>
+    </options>
+    )', (),
+    <options xmlns="xdmp:eval">
+        <database>{ xdmp:database("java-unittest-modules") }</database>
+    </options>)
 };
 
 declare function bootstrap:load-search-data()
@@ -768,24 +948,33 @@ declare function bootstrap:post(
     $input as document-node()*
 ) as document-node()*
 {
-    for $user in ("rest-admin", "rest-reader", "rest-writer", "valid") 
-    let $user-id := 
-        try {
-            xdmp:user($user)
-        } catch($e) {
-            xdmp:log("User "||$user||" not found.")
-        }
-    return
-        if (exists($user-id)) then xdmp:log("User "|| $user || ", id "||$user-id|| "already exists")
-        else if ($user eq "valid")
-        then bootstrap:security-config('sec:create-user("valid", "valid unprivileged user", "x", (), (), (), ())')
-        else bootstrap:security-config('sec:create-user("'||$user||'", "'||$user||' user", "x", ("'||$user||'"), (), (), () )'),
+    let $responses := (
+        for $user in ("rest-admin", "rest-reader", "rest-writer", "valid") 
+        let $user-id := 
+            try {
+                xdmp:user($user)
+            } catch($e) {
+                xdmp:log("User "||$user||" not found.")
+            }
+        return
+            if (exists($user-id)) then xdmp:log("User "|| $user || ", id "||$user-id|| "already exists")
+            else if ($user eq "valid")
+            then bootstrap:security-config('sec:create-user("valid", "valid unprivileged user", "x", (), (), (), ())')
+            else bootstrap:security-config('sec:create-user("'||$user||'", "'||$user||' user", "x", ("'||$user||'"), (), (), () )'),
 
-    let $dbid := xdmp:database("java-unittest")
-    return (
-        bootstrap:database-configure($dbid),
-        xdmp:log(concat("Configured Java test database:", xdmp:database-name($dbid)))
-        ),
+        let $dbid := xdmp:database("java-unittest")
+        return (
+            bootstrap:database-configure($dbid),
+            xdmp:log(concat("Configured Java test database:", xdmp:database-name($dbid)))
+            ),
 
-    bootstrap:load-data()
+        bootstrap:temporal-setup(),
+        bootstrap:load-data()
+    )
+    return if ( $responses ) then 
+        document{<responses>{
+            for $response in $responses
+            return <response>{$response}</response>
+        }</responses>}
+    else ()
 };
