@@ -20,10 +20,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.XMLConstants;
+import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
@@ -1838,6 +1840,109 @@ public class StructuredQueryBuilder {
         }
     }
 
+    class TemporalAxis implements Axis {
+    	private String name;
+    	TemporalAxis(String name) {
+    		this.name = name;
+    	}
+		public String toString() {
+			return name;
+		}
+    }
+
+    class TemporalPeriod 
+    extends AbstractStructuredQuery implements Period {
+    	private String formattedStart;
+    	private String formattedEnd;
+    	private String[] options;
+    	TemporalPeriod(Calendar start, Calendar end) {
+    		this.formattedStart = DatatypeConverter.printDateTime(start);
+    		this.formattedEnd = DatatypeConverter.printDateTime(end);
+    	}
+    	@Override
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    		serializer.writeStartElement("period");
+			writeText(serializer, "period-start", formattedStart);
+			writeText(serializer, "period-end", formattedEnd);
+    		serializer.writeEndElement();
+        }
+    }
+
+    class TemporalPeriodRangeQuery
+    extends AbstractStructuredQuery {
+    	private Axis[] axes;
+    	private TemporalOperator operator;
+    	private Period[] periods;
+    	private String[] options;
+    	TemporalPeriodRangeQuery(Axis[] axes, TemporalOperator operator, Period[] periods, String... options) {
+    		this.axes = axes;
+    		this.operator = operator;
+    		this.periods = periods;
+    		this.options = options;
+    	}
+    	@Override
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    		serializer.writeStartElement("period-range-query");
+			writeTextList(serializer, "axis", axes);
+			writeText(serializer, "temporal-operator", operator.toString().toLowerCase());
+			for ( Period period : periods ) {
+				((TemporalPeriod) period).innerSerialize(serializer);
+			}
+			writeTextList(serializer, "query-option", options);
+    		serializer.writeEndElement();
+        }
+    }
+
+    class TemporalPeriodCompareQuery
+    extends AbstractStructuredQuery {
+    	private Axis axis1;
+    	private TemporalOperator operator;
+    	private Axis axis2;
+    	private String[] options;
+		TemporalPeriodCompareQuery(Axis axis1, TemporalOperator operator, Axis axis2, String[] options) {
+    		this.axis1 = axis1;
+    		this.operator = operator;
+    		this.axis2 = axis2;
+    		this.options = options;
+    	}
+    	@Override
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    		serializer.writeStartElement("period-compare-query");
+			writeText(serializer, "axis1", axis1);
+			writeText(serializer, "temporal-operator", operator.toString().toLowerCase());
+			writeText(serializer, "axis2", axis2);
+			writeTextList(serializer, "query-option", options);
+    		serializer.writeEndElement();
+        }
+    }
+
+    class TemporalCurrentQuery
+    extends AbstractStructuredQuery {
+    	private String temporalCollection;
+    	private String formattedTimestamp = null;
+    	private double weight;
+    	private String[] options;
+		TemporalCurrentQuery(String temporalCollection, Calendar timestamp, double weight, String[] options) {
+    		this.temporalCollection = temporalCollection;
+			if ( timestamp != null ) {
+				this.formattedTimestamp = DatatypeConverter.printDateTime(timestamp);
+			}
+    		this.weight = weight;
+    		this.options = options;
+    	}
+    	@Override
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    		serializer.writeStartElement("current-query");
+			writeText(serializer, "temporal-collection", temporalCollection);
+			if ( formattedTimestamp != null ) {
+				writeText(serializer, "timestamp", formattedTimestamp);
+			}
+			writeText(serializer, "weight", weight);
+			writeTextList(serializer, "query-option", options);
+    		serializer.writeEndElement();
+        }
+    }
+
     /* ************************************************************************************* */
 
     protected abstract class IndexImpl {
@@ -2522,5 +2627,70 @@ public class StructuredQueryBuilder {
 		return newNamespaces;
 	}
 	
+	public enum TemporalVersions { CURRENT, ALL };
+	public enum TemporalOperator {
+		ALN_EQUALS,
+		ALN_CONTAINS,
+		ALN_CONTAINED_BY,
+		ALN_MEETS,
+		ALN_MET_BY,
+		ALN_BEFORE,
+		ALN_AFTER,
+		ALN_STARTS,
+		ALN_STARTED_BY,
+		ALN_FINISHES,
+		ALN_FINISHED_BY,
+		ALN_OVERLAPS,
+		ALN_OVERLAPPED_BY,
+		ISO_CONTAINS,
+		ISO_OVERLAPS,
+		ISO_SUCCEEDS,
+		ISO_PRECEDES,
+		ISO_IMM_SUCCEEDS,
+		ISO_IMM_PRECEDES,
+		ISO_EQUALS;
+	};
+	public interface Axis {};
+	public interface Period {};
+
+	public StructuredQueryBuilder.Axis axis(String name) {
+		return new TemporalAxis(name);
+	}
 	
+	public StructuredQueryBuilder.Period period(Calendar start, Calendar end) {
+		return new TemporalPeriod(start, end);
+	}
+
+	public StructuredQueryDefinition temporalPeriodRange(Axis axis, TemporalOperator operator, 
+		Period period, String... options) 
+	{
+		if ( axis == null ) throw new IllegalArgumentException("axis cannot be null");
+		if ( period == null ) throw new IllegalArgumentException("period cannot be null");
+		return temporalPeriodRange(new Axis[] {axis}, operator, new Period[] {period}, options);
+	}
+
+	public StructuredQueryDefinition temporalPeriodRange(Axis[] axes, TemporalOperator operator, 
+		Period[] periods, String... options) 
+	{
+		if ( axes == null ) throw new IllegalArgumentException("axes cannot be null");
+		if ( operator == null ) throw new IllegalArgumentException("operator cannot be null");
+		if ( periods == null ) throw new IllegalArgumentException("periods cannot be null");
+		return new TemporalPeriodRangeQuery(axes, operator, periods, options);
+	}
+
+	public StructuredQueryDefinition temporalPeriodCompare(Axis axis1, TemporalOperator operator, 
+		Axis axis2, String... options) 
+	{
+		if ( axis1 == null ) throw new IllegalArgumentException("axis1 cannot be null");
+		if ( operator == null ) throw new IllegalArgumentException("operator cannot be null");
+		if ( axis2 == null ) throw new IllegalArgumentException("axis2 cannot be null");
+		return new TemporalPeriodCompareQuery(axis1, operator, axis2, options);
+	}
+
+	public StructuredQueryDefinition temporalCurrent(String temporalCollection, Calendar timestamp,
+		double weight, String... options)
+	{
+		if ( temporalCollection == null ) throw new IllegalArgumentException("temporalCollection cannot be null");
+		return new TemporalCurrentQuery(temporalCollection, timestamp, weight, options);
+	}
 }

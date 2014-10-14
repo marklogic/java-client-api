@@ -400,6 +400,11 @@ declare function bootstrap:temporal-setup() as xs:string*
                 "Waiting for creation of system-axis and valid-axis...try again")
         else if ( "TEMPORAL-DUPCOLLECTION" = $e/error:code ) then xdmp:log("temporal-collection already exists")
         else xdmp:log($e)
+    },
+    try {
+        temporal:set-use-LSQT("temporal-collection", true())
+    } catch($e) {
+        xdmp:log($e)
     }
 };
 
