@@ -67,23 +67,23 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 		Artifact cogs = new Artifact();
 		cogs.setId(counter);
 		if( counter % 5 == 0){
-		cogs.setName("Cogs special");
-		if(counter % 2 ==0){
-			Company acme = new Company();
-			acme.setName("Acme special, Inc.");
-			acme.setWebsite("http://www.acme special.com");
-			acme.setLatitude(41.998+counter);
-			acme.setLongitude(-87.966+counter);
-			cogs.setManufacturer(acme);
+			cogs.setName("Cogs special");
+			if(counter % 2 ==0){
+				Company acme = new Company();
+				acme.setName("Acme special, Inc.");
+				acme.setWebsite("http://www.acme special.com");
+				acme.setLatitude(41.998+counter);
+				acme.setLongitude(-87.966+counter);
+				cogs.setManufacturer(acme);
 
-		}else{
-			Company widgets = new Company();
-			widgets.setName("Widgets counter Inc.");
-			widgets.setWebsite("http://www.widgets counter.com");
-			widgets.setLatitude(41.998+counter);
-			widgets.setLongitude(-87.966+counter);
-			cogs.setManufacturer(widgets);
-		}
+			}else{
+				Company widgets = new Company();
+				widgets.setName("Widgets counter Inc.");
+				widgets.setWebsite("http://www.widgets counter.com");
+				widgets.setLatitude(41.998+counter);
+				widgets.setLongitude(-87.966+counter);
+				cogs.setManufacturer(widgets);
+			}
 		}else{
 			cogs.setName("Cogs "+counter);
 			if(counter % 2 ==0){
@@ -128,14 +128,14 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
 		this.loadSimplePojos(products);
-	
+
 		StructuredQueryBuilder qb = new StructuredQueryBuilder();
 		StructuredQueryDefinition q1 =qb.andNot(qb.term("cogs"),qb.term("special"));
 		StructuredQueryDefinition qd = qb.and(q1,qb.collection("odd"));
 		products.setPageLength(11);
 		p = products.search(qd, 1);
 		assertEquals("total no of pages",4,p.getTotalPages());
-//		System.out.println(p.getTotalPages());
+		//		System.out.println(p.getTotalPages());
 		long pageNo=1,count=0;
 		do{
 			count =0;
@@ -157,12 +157,12 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 		assertEquals("page number after the loop",4,p.getPageNumber());
 		assertEquals("total no of pages",4,p.getTotalPages());
 	}
-@Test
+	@Test
 	public void testPOJOSearchWithSearchHandle() {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
 		this.loadSimplePojos(products);
-		
+
 		StructuredQueryBuilder qb = new StructuredQueryBuilder();
 		StructuredQueryDefinition q1 =qb.range(qb.pathIndex("com.marklogic.javaclient.Artifact/inventory"), "xs:long",Operator.GT, 1010);
 		StructuredQueryDefinition qd = qb.and(q1,qb.range(qb.pathIndex("com.marklogic.javaclient.Artifact/inventory"), "xs:long",Operator.LE, 1110),qb.collection("even"));
@@ -196,8 +196,9 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 			for(String fname:facetNames){
 				System.out.println(fname);
 			}
+			assertEquals("search handle has facets ",0,results.getFacetNames().length);
 			assertEquals("Total resulr from search handle ",50,results.getTotalResults());
-			assertTrue("Search Handle metric results ",results.getMetrics().getTotalTime()>0);
+			assertNull("Search Handle metric results ",results.getMetrics());
 		}while(!p.isLastPage() && pageNo<p.getTotalSize());
 		assertEquals("Page start check",41,p.getStart());
 		assertEquals("page number after the loop",5,p.getPageNumber());
@@ -236,9 +237,9 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 			assertEquals("Page start from search handls vs page methods",results.get().get("start").asLong(),p.getStart() );
 			assertEquals("Format in the search handle","json",results.get().withArray("results").get(1).path("format").asText());
 			assertTrue("Uri in search handle contains Artifact",results.get().withArray("results").get(1).path("uri").asText().contains("Artifact"));
-			//			System.out.println(results.get().toString());
+			//						System.out.println(results.get().toString());
 		}while(!p.isLastPage() && pageNo<p.getTotalSize());
-		assertTrue("search handle has metrics",results.get().has("metrics"));
+		assertFalse("search handle has metrics",results.get().has("metrics"));
 		assertEquals("Total from search handle",11,results.get().get("total").asInt());
 		assertEquals("page number after the loop",1,p.getPageNumber());
 		assertEquals("total no of pages",1,p.getTotalPages());
@@ -251,12 +252,12 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 		this.loadSimplePojos(products);
 		StructuredQueryBuilder qb = new StructuredQueryBuilder();
 		StructuredQueryDefinition qd =qb.value(qb.jsonProperty("id"), 5,10,15,20,25,30);
-//		StructuredQueryDefinition qd = qb.and(q1,qb.range(qb.pathIndex("com.marklogic.javaclient.Artifact/inventory"), "xs:long",Operator.LE, 1110),qb.collection("even"));
-	
+		//		StructuredQueryDefinition qd = qb.and(q1,qb.range(qb.pathIndex("com.marklogic.javaclient.Artifact/inventory"), "xs:long",Operator.LE, 1110),qb.collection("even"));
+
 		StringHandle results = new StringHandle();
 		JacksonHandle jh = new JacksonHandle();
 		p = products.search(qd, 1,jh);
-		
+
 		long pageNo=1,count=0;
 		do{
 			count =0;
@@ -269,27 +270,27 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 			}
 			assertEquals("Page total results",count,p.getTotalSize());
 			pageNo=pageNo+p.getPageSize();
-//					System.out.println(results.get().toString());
+			//					System.out.println(results.get().toString());
 		}while(!p.isLastPage() && pageNo<p.getTotalSize());
 		assertFalse("String handle is not empty",results.get().isEmpty());
 		assertTrue("String handle contains results",results.get().contains("results"));
 		assertTrue("String handle contains format",results.get().contains("\"format\":\"json\""));
-//		String expected= jh.get().toString();
-//		System.out.println(results.get().contains("\"format\":\"json\"")+ expected);
+		//		String expected= jh.get().toString();
+		//		System.out.println(results.get().contains("\"format\":\"json\"")+ expected);
 		ObjectMapper mapper = new ObjectMapper();
-//		String expected= "{\"snippet-format\":\"snippet\",\"total\":1,\"start\":1,\"page-length\":50,\"results\":[{\"index\":1,\"uri\":\"com.marklogic.javaclient.Artifact/2.json\",\"path\":\"fn:doc(\\\"com.marklogic.javaclient.Artifact/2.json\\\")\",\"score\":55936,\"confidence\":0.4903799,\"fitness\":0.8035046,\"href\":\"/v1/documents?uri=com.marklogic.javaclient.Artifact%2F2.json\",\"mimetype\":\"application/json\",\"format\":\"json\",\"matches\":[{\"path\":\"fn:doc(\\\"com.marklogic.javaclient.Artifact/2.json\\\")\",\"match-text\":[]}]}],\"qtext\":\"cogs 2\",\"metrics\":{\"query-resolution-time\":\"PT0.004S\",\"snippet-resolution-time\":\"PT0S\",\"total-time\":\"PT0.005S\"}}";
-//		JsonNode expNode = mapper.readTree(expected).get("results").iterator().next().get("matches");
+		//		String expected= "{\"snippet-format\":\"snippet\",\"total\":1,\"start\":1,\"page-length\":50,\"results\":[{\"index\":1,\"uri\":\"com.marklogic.javaclient.Artifact/2.json\",\"path\":\"fn:doc(\\\"com.marklogic.javaclient.Artifact/2.json\\\")\",\"score\":55936,\"confidence\":0.4903799,\"fitness\":0.8035046,\"href\":\"/v1/documents?uri=com.marklogic.javaclient.Artifact%2F2.json\",\"mimetype\":\"application/json\",\"format\":\"json\",\"matches\":[{\"path\":\"fn:doc(\\\"com.marklogic.javaclient.Artifact/2.json\\\")\",\"match-text\":[]}]}],\"qtext\":\"cogs 2\",\"metrics\":{\"query-resolution-time\":\"PT0.004S\",\"snippet-resolution-time\":\"PT0S\",\"total-time\":\"PT0.005S\"}}";
+		//		JsonNode expNode = mapper.readTree(expected).get("results").iterator().next().get("matches");
 		JsonNode actNode = mapper.readTree(results.get()).get("total");
-//		System.out.println(expNode.equals(actNode)+"\n"+ expNode.toString()+"\n"+actNode.toString());
-		
+		//		System.out.println(expNode.equals(actNode)+"\n"+ expNode.toString()+"\n"+actNode.toString());
+
 		assertEquals("Total search results resulted are ",6,actNode.asInt() );
 	}
-@Test
+	@Test
 	public void testPOJOSearchWithRawXMLStructQD() {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
 		this.loadSimplePojos(products);
-		
+
 		QueryManager queryMgr = client.newQueryManager();
 		String rawXMLQuery =
 				"<search:query "+
@@ -330,76 +331,76 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 			assertTrue("Uri in search handle contains Artifact",results.get().withArray("results").get(1).path("uri").asText().contains("Artifact"));
 			//			System.out.println(results.get().toString());
 		}while(!p.isLastPage() && pageNo<p.getTotalSize());
-		assertTrue("search handle has metrics",results.get().has("metrics"));
+		assertFalse("search handle has metrics",results.get().has("metrics"));
 		assertEquals("Total from search handle",11,results.get().get("total").asInt());
 		assertEquals("page number after the loop",1,p.getPageNumber());
 		assertEquals("total no of pages",1,p.getTotalPages());
 	}
-@Test
-public void testPOJOSearchWithRawJSONStructQD() {
-	PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
-	PojoPage<Artifact> p;
-	this.loadSimplePojos(products);
-	
-	QueryManager queryMgr = client.newQueryManager();
-	JacksonHandle jh = new JacksonHandle();
-	ObjectMapper mapper = new ObjectMapper();
-	//	constructing JSON representation of Raw JSON Structured Query
+	@Test
+	public void testPOJOSearchWithRawJSONStructQD() {
+		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
+		PojoPage<Artifact> p;
+		this.loadSimplePojos(products);
 
-	ObjectNode txtNode = mapper.createObjectNode();
-	txtNode.putArray("text").add("special");
-	ObjectNode termQNode = mapper.createObjectNode();
-	termQNode.set("term-query", txtNode);
-	ObjectNode queriesArrayNode = mapper.createObjectNode();
-	queriesArrayNode.putArray("queries").add(termQNode);
+		QueryManager queryMgr = client.newQueryManager();
+		JacksonHandle jh = new JacksonHandle();
+		ObjectMapper mapper = new ObjectMapper();
+		//	constructing JSON representation of Raw JSON Structured Query
 
-	ObjectNode txtNode2 = mapper.createObjectNode();
-	txtNode2.putArray("text").add("Widgets");
-	ObjectNode termQNode2 = mapper.createObjectNode();
-	termQNode2.set("term-query", txtNode2);
-	queriesArrayNode.withArray("queries").add(termQNode2);
+		ObjectNode txtNode = mapper.createObjectNode();
+		txtNode.putArray("text").add("special");
+		ObjectNode termQNode = mapper.createObjectNode();
+		termQNode.set("term-query", txtNode);
+		ObjectNode queriesArrayNode = mapper.createObjectNode();
+		queriesArrayNode.putArray("queries").add(termQNode);
 
-	ObjectNode orQueryNode = mapper.createObjectNode();
-	orQueryNode.set("and-query",queriesArrayNode );
+		ObjectNode txtNode2 = mapper.createObjectNode();
+		txtNode2.putArray("text").add("Widgets");
+		ObjectNode termQNode2 = mapper.createObjectNode();
+		termQNode2.set("term-query", txtNode2);
+		queriesArrayNode.withArray("queries").add(termQNode2);
 
-	ObjectNode queryArrayNode = mapper.createObjectNode();
-	queryArrayNode.putArray("queries").add(orQueryNode);
-	ObjectNode mainNode = mapper.createObjectNode();
-	mainNode.set("query", queryArrayNode);
-	jh.set(mainNode);
-	RawStructuredQueryDefinition qd =
-			queryMgr.newRawStructuredQueryDefinition(jh);
+		ObjectNode orQueryNode = mapper.createObjectNode();
+		orQueryNode.set("and-query",queriesArrayNode );
 
-	JacksonHandle results = new JacksonHandle();
-	p = products.search(qd, 1,results);
-	products.setPageLength(11);
-	assertEquals("total no of pages",1,p.getTotalPages());
-	System.out.println(p.getTotalPages()+results.get().toString());
-	long pageNo=1,count=0;
-	do{
-		count =0;
-		p = products.search(qd,pageNo,results);
+		ObjectNode queryArrayNode = mapper.createObjectNode();
+		queryArrayNode.putArray("queries").add(orQueryNode);
+		ObjectNode mainNode = mapper.createObjectNode();
+		mainNode.set("query", queryArrayNode);
+		jh.set(mainNode);
+		RawStructuredQueryDefinition qd =
+				queryMgr.newRawStructuredQueryDefinition(jh);
 
-		while(p.iterator().hasNext()){
-			Artifact a =p.iterator().next();
-			validateArtifact(a);
-			count++;
-			assertTrue("Manufacture name starts with acme",a.getManufacturer().getName().contains("Widgets"));
-			assertTrue("Artifact name contains",a.getName().contains("special"));
+		JacksonHandle results = new JacksonHandle();
+		p = products.search(qd, 1,results);
+		products.setPageLength(11);
+		assertEquals("total no of pages",1,p.getTotalPages());
+		System.out.println(p.getTotalPages()+results.get().toString());
+		long pageNo=1,count=0;
+		do{
+			count =0;
+			p = products.search(qd,pageNo,results);
 
-		}
-		assertEquals("Page size",count,p.size());
-		pageNo=pageNo+p.getPageSize();
+			while(p.iterator().hasNext()){
+				Artifact a =p.iterator().next();
+				validateArtifact(a);
+				count++;
+				assertTrue("Manufacture name starts with acme",a.getManufacturer().getName().contains("Widgets"));
+				assertTrue("Artifact name contains",a.getName().contains("special"));
 
-		assertEquals("Page start from search handls vs page methods",results.get().get("start").asLong(),p.getStart() );
-		assertEquals("Format in the search handle","json",results.get().withArray("results").get(1).path("format").asText());
-		assertTrue("Uri in search handle contains Artifact",results.get().withArray("results").get(1).path("uri").asText().contains("Artifact"));
-		//			System.out.println(results.get().toString());
-	}while(!p.isLastPage() && pageNo<p.getTotalSize());
-	assertTrue("search handle has metrics",results.get().has("metrics"));
-	assertEquals("Total from search handle",11,results.get().get("total").asInt());
-	assertEquals("page number after the loop",1,p.getPageNumber());
-	assertEquals("total no of pages",1,p.getTotalPages());
-}
-		
+			}
+			assertEquals("Page size",count,p.size());
+			pageNo=pageNo+p.getPageSize();
+
+			assertEquals("Page start from search handls vs page methods",results.get().get("start").asLong(),p.getStart() );
+			assertEquals("Format in the search handle","json",results.get().withArray("results").get(1).path("format").asText());
+			assertTrue("Uri in search handle contains Artifact",results.get().withArray("results").get(1).path("uri").asText().contains("Artifact"));
+			System.out.println(results.get().toString());
+		}while(!p.isLastPage() && pageNo<p.getTotalSize());
+		assertFalse("search handle has metrics",results.get().has("metrics"));
+		assertEquals("Total from search handle",11,results.get().get("total").asInt());
+		assertEquals("page number after the loop",1,p.getPageNumber());
+		assertEquals("total no of pages",1,p.getTotalPages());
+	}
+
 }
