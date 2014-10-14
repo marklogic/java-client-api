@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
+import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
@@ -48,11 +49,11 @@ public class BitemporalTest {
 
 	@Test
 	public void test1() {
-		// bootstrap sets up the "temporal-collection" and required underlying axes
+		// bootstrap.xqy sets up the "temporal-collection" and required underlying axes
 		// system-axis and valid-axis which have required underlying range indexes
 		// system-start, system-end, valid-start, and valid-end
 		String temporalCollection = "temporal-collection";
-		String uniqueTerm = "temporalDoc1";
+		String uniqueTerm = "temporalDoc14";
 		String version1 = "<test>" +
 				uniqueTerm + " version1" +
 				"<system-start></system-start>" +
@@ -81,7 +82,7 @@ public class BitemporalTest {
 				"<valid-start>2014-08-19T00:00:05</valid-start>" +
 				"<valid-end>2014-08-19T00:00:06</valid-end>" +
     		"</test>";
-		String docId = "test-temporal1.xml";
+		String docId = "test-temporal14.xml";
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		StringHandle handle1 = new StringHandle(version1).withFormat(Format.XML);
 		docMgr.write(docId, null, handle1, null, null, temporalCollection, null);
@@ -92,13 +93,11 @@ public class BitemporalTest {
 		StringHandle handle4 = new StringHandle(version4).withFormat(Format.XML);
 		docMgr.write(docId, null, handle4, null, null, temporalCollection, null);
 
-		/*
-		DocumentPage readResults = docMgr.read(null, null, temporalCollection, new String[] {docId}); 
+		DocumentPage readResults = docMgr.read(docId); 
 		assertEquals("Wrong number of results", 1, readResults.size());
 		DocumentRecord latestDoc = readResults.next();
 		assertEquals("Document uri wrong", docId, latestDoc.getUri());
-		*/
-
+		
 		QueryManager queryMgr = Common.client.newQueryManager();
 		StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
 		StructuredQueryDefinition termQuery = sqb.term(uniqueTerm);
@@ -106,40 +105,40 @@ public class BitemporalTest {
 		DocumentPage termQueryResults = docMgr.search(termQuery, start);
 		assertEquals("Wrong number of results", 4, termQueryResults.size());
 
-		StructuredQueryDefinition currentQuery = sqb.temporalCurrent(temporalCollection, null, 1);
-		StructuredQueryDefinition currentDocQuery = sqb.and(termQuery, currentQuery);
-		DocumentPage currentDocQueryResults = docMgr.search(currentDocQuery, start);
-		assertEquals("Wrong number of results", 1, currentDocQueryResults.size());
-		DocumentRecord latestDoc = currentDocQueryResults.next();
-		assertEquals("Document uri wrong", docId, latestDoc.getUri());
+//		StructuredQueryDefinition currentQuery = sqb.temporalCurrent(temporalCollection, null, 1);
+//		StructuredQueryDefinition currentDocQuery = sqb.and(termQuery, currentQuery);
+//		DocumentPage currentDocQueryResults = docMgr.search(currentDocQuery, start);
+//		assertEquals("Wrong number of results", 1, currentDocQueryResults.size());
+//		DocumentRecord latestDoc = currentDocQueryResults.next();
+//		assertEquals("Document uri wrong", docId, latestDoc.getUri());
 
 		StructuredQueryBuilder.Axis validAxis = sqb.axis("valid-axis");
 		Calendar start1 = DatatypeConverter.parseDateTime("2014-08-19T00:00:00");
 		Calendar end1 = DatatypeConverter.parseDateTime("2014-08-19T00:00:04");
 		StructuredQueryBuilder.Period period1 = sqb.period(start1, end1);
-		StructuredQueryDefinition periodQuery1 = 
-			sqb.temporalPeriodRange(validAxis, TemporalOperator.ALN_CONTAINED_BY, period1);
-		DocumentPage periodQuery1Results = docMgr.search(currentDocQuery, start);
-		assertEquals("Wrong number of results", 3, periodQuery1Results.size());
+		StructuredQueryDefinition periodQuery1 = sqb.and(sqb.term(uniqueTerm),
+			sqb.temporalPeriodRange(validAxis, TemporalOperator.ALN_CONTAINED_BY, period1));
+		DocumentPage periodQuery1Results = docMgr.search(periodQuery1, start);
+		assertEquals("Wrong number of results", 1, periodQuery1Results.size());
 
-		Calendar start2 = DatatypeConverter.parseDateTime("2014-08-19T00:00:05");
-		Calendar end2 = DatatypeConverter.parseDateTime("2014-08-19T00:00:06");
+		Calendar start2 = DatatypeConverter.parseDateTime("2014-08-19T00:00:04");
+		Calendar end2 = DatatypeConverter.parseDateTime("2014-08-19T00:00:07");
 		StructuredQueryBuilder.Period period2 = sqb.period(start2, end2);
-		StructuredQueryDefinition periodQuery2 = 
-			sqb.temporalPeriodRange(validAxis, TemporalOperator.ALN_CONTAINED_BY, period2);
-		DocumentPage periodQuery2Results = docMgr.search(currentDocQuery, start);
+		StructuredQueryDefinition periodQuery2 = sqb.and(sqb.term(uniqueTerm),
+			sqb.temporalPeriodRange(validAxis, TemporalOperator.ALN_CONTAINED_BY, period2));
+		DocumentPage periodQuery2Results = docMgr.search(periodQuery2, start);
 		assertEquals("Wrong number of results", 1, periodQuery2Results.size());
 		latestDoc = periodQuery2Results.next();
 		assertEquals("Document uri wrong", docId, latestDoc.getUri());
 
 		StructuredQueryBuilder.Axis systemAxis = sqb.axis("system-axis");
-		StructuredQueryDefinition periodCompareQuery1 = 
-			sqb.temporalPeriodCompare(systemAxis, TemporalOperator.ALN_AFTER, validAxis);
+		StructuredQueryDefinition periodCompareQuery1 = sqb.and(sqb.term(uniqueTerm),
+			sqb.temporalPeriodCompare(systemAxis, TemporalOperator.ALN_AFTER, validAxis));
 		DocumentPage periodCompareQuery1Results = docMgr.search(periodCompareQuery1, start);
 		assertEquals("Wrong number of results", 4, periodCompareQuery1Results.size());
 
-		StructuredQueryDefinition periodCompareQuery2 = 
-			sqb.temporalPeriodCompare(systemAxis, TemporalOperator.ALN_BEFORE, validAxis);
+		StructuredQueryDefinition periodCompareQuery2 = sqb.and(sqb.term(uniqueTerm),
+			sqb.temporalPeriodCompare(systemAxis, TemporalOperator.ALN_BEFORE, validAxis));
 		DocumentPage periodCompareQuery2Results = docMgr.search(periodCompareQuery2, start);
 		assertEquals("Wrong number of results", 0, periodCompareQuery2Results.size());
 	}
