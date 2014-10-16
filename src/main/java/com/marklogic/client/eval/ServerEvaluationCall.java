@@ -16,6 +16,7 @@
 package com.marklogic.client.eval;
 
 import com.marklogic.client.Transaction;
+import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
@@ -23,7 +24,9 @@ import com.marklogic.client.util.EditableNamespaceContext;
 
 public interface ServerEvaluationCall {
     public ServerEvaluationCall xquery(String xquery);
+    public ServerEvaluationCall xquery(AbstractWriteHandle xquery);
     public ServerEvaluationCall javascript(String javascript);
+    public ServerEvaluationCall javascript(AbstractWriteHandle xquery);
     public ServerEvaluationCall modulePath(String modulePath);
     public ServerEvaluationCall addVariable(String name, String value);
     public ServerEvaluationCall addVariable(String name, Number value);

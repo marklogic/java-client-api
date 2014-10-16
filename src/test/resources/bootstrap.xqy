@@ -402,7 +402,8 @@ declare function bootstrap:temporal-setup() as xs:string*
         else xdmp:log($e)
     },
     try {
-        temporal:set-use-LSQT("temporal-collection", true())
+        temporal:set-use-lsqt("temporal-collection", true()),
+        temporal:set-lsqt-automation("temporal-collection", true())
     } catch($e) {
         xdmp:log($e)
     }

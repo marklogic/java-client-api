@@ -48,39 +48,60 @@ public class ServerEvaluationCallImpl
         this.handleRegistry = handleRegistry;
     }
 
+    @Override
     public ServerEvaluationCall xquery(String xquery) {
         setContext(Context.ADHOC_XQUERY);
         code = xquery;
         return this;
     }
 
+    @Override
+    public ServerEvaluationCall xquery(AbstractWriteHandle xquery) {
+        setContext(Context.ADHOC_XQUERY);
+        code = HandleAccessor.contentAsString(xquery);
+        return this;
+    }
+
+    @Override
     public ServerEvaluationCall javascript(String javascript) {
         setContext(Context.ADHOC_JAVASCRIPT);
         code = javascript;
         return this;
     }
 
+    @Override
+    public ServerEvaluationCall javascript(AbstractWriteHandle javascript) {
+        setContext(Context.ADHOC_JAVASCRIPT);
+        code = HandleAccessor.contentAsString(javascript);
+        return this;
+    }
+
+    @Override
     public ServerEvaluationCall modulePath(String modulePath) {
         setContext(Context.INVOKE);
         this.modulePath = modulePath;
         return this;
     }
 
+    @Override
     public ServerEvaluationCall addVariable(String name, String value) {
         vars.put(name, value);
         return this;
     }
 
+    @Override
     public ServerEvaluationCall addVariable(String name, Number value) {
         vars.put(name, value);
         return this;
     }
 
+    @Override
     public ServerEvaluationCall addVariable(String name, Boolean value) {
         vars.put(name, value);
         return this;
     }
 
+    @Override
     public ServerEvaluationCall addVariable(String name, AbstractWriteHandle value) {
         vars.put(name, value);
         return this;
@@ -88,6 +109,7 @@ public class ServerEvaluationCallImpl
 
     /** Like other *As convenience methods throughout the API, the Object value
      *  is managed by the Handle registered for that Class.  */
+    @Override
     public ServerEvaluationCall addVariableAs(String name, Object value) {
         if (value == null) return this;
 
@@ -103,16 +125,19 @@ public class ServerEvaluationCallImpl
         return addVariable(name, writeHandle);
     }
 
+    @Override
     public ServerEvaluationCall database(String database) {
         this.database = database;
         return this;
     }
 
+    @Override
     public ServerEvaluationCall transaction(Transaction transaction) {
         if ( transaction != null ) this.transactionId = transaction.getTransactionId();
         return this;
     }
 
+    @Override
     public <T> T evalAs(Class<T> responseType) {
         if (responseType == null) throw new IllegalArgumentException("responseType cannot be null");
 
@@ -121,6 +146,7 @@ public class ServerEvaluationCallImpl
         return eval(readHandle).get();
     }
 
+    @Override
     public <H extends AbstractReadHandle> H eval(H responseHandle) {
         EvalResultIterator iterator = eval();
         try {
@@ -129,6 +155,7 @@ public class ServerEvaluationCallImpl
         } finally { iterator.close(); }
     }
 
+    @Override
     public EvalResultIterator eval() {
         return services.postEvalInvoke(requestLogger, code, modulePath, evalContext,
             vars, namespaceContext, database, transactionId);
@@ -156,5 +183,5 @@ public class ServerEvaluationCallImpl
                     "javascriptModule methods per ServerEvaluationCall.");
         }
     }
-}
 
+}
