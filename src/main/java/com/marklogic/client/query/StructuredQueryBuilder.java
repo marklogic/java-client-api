@@ -678,6 +678,42 @@ public class StructuredQueryBuilder {
     	return new PathIndexImpl(path);
     }
     /**
+     * Identifies a json property whose text has the point format latitude and longitude
+     * coordinates to match with a geospatial query.
+     * @param jsonProperty	the json property containing the geospatial coordinates
+     * @return	the specification for the index on the geospatial coordinates
+     */
+    public GeospatialIndex geoJSONProperty(JSONProperty jsonProperty) {
+        if ( jsonProperty == null ) throw new IllegalArgumentException("jsonProperty cannot be null");
+    	return new GeoJSONPropertyImpl(jsonProperty);
+    }
+    /**
+     * Identifies a parent json property with a child json property whose text has
+     * the latitude and longitude coordinates to match with a geospatial query.
+     * @param parent	the parent of the json property with the coordinates
+     * @param jsonProperty	the json property containing the geospatial coordinates
+     * @return	the specification for the index on the geospatial coordinates
+     */
+    public GeospatialIndex geoJSONProperty(JSONProperty parent, JSONProperty jsonProperty) {
+        if ( parent == null ) throw new IllegalArgumentException("parent cannot be null");
+        if ( jsonProperty == null ) throw new IllegalArgumentException("jsonProperty cannot be null");
+    	return new GeoJSONPropertyImpl(parent, jsonProperty);
+    }
+    /**
+     * Identifies a parent json property with child latitude and longitude json properties
+     * to match with a geospatial query.
+     * @param parent	the parent json property of lat and lon
+     * @param lat	the json property with the latitude coordinate
+     * @param lon	the json property with the longitude coordinate
+     * @return	the specification for the index on the geospatial coordinates
+     */
+    public GeospatialIndex geoJSONPropertyPair(JSONProperty parent, JSONProperty lat, JSONProperty lon) {
+        if ( parent == null ) throw new IllegalArgumentException("parent cannot be null");
+        if ( lat == null )    throw new IllegalArgumentException("lat cannot be null");
+        if ( lon == null )    throw new IllegalArgumentException("lon cannot be null");
+    	return new GeoJSONPropertyPairImpl(parent, lat, lon);
+    }
+    /**
      * Identifies an element whose text has the latitude and longitude
      * coordinates to match with a geospatial query.
      * @param element	the element containing the geospatial coordinates
@@ -1814,7 +1850,11 @@ public class StructuredQueryBuilder {
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	String elemName = null;
-        	if (index instanceof GeoElementImpl)
+        	if (index instanceof GeoJSONPropertyImpl)
+        		elemName = "geo-json-property-query";
+        	else if (index instanceof GeoJSONPropertyPairImpl)
+        		elemName = "geo-json-property-pair-query";
+        	else if (index instanceof GeoElementImpl)
         		elemName = "geo-elem-query";
         	else if (index instanceof GeoElementPairImpl)
         		elemName = "geo-elem-pair-query";
@@ -2002,13 +2042,13 @@ public class StructuredQueryBuilder {
         }
     }
     class JSONPropertyImpl extends IndexImpl implements JSONProperty {
-    	String name;
-    	JSONPropertyImpl(String name) {
-    		this.name = name;
-    	}
+        String name;
+        JSONPropertyImpl(String name) {
+            this.name = name;
+        }
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-    		writeText(serializer, "json-property", name);
+            writeText(serializer, "json-property", name);
         }
     }
     class PathIndexImpl extends IndexImpl implements PathIndex {
@@ -2021,6 +2061,46 @@ public class StructuredQueryBuilder {
     		writeText(serializer, "path-index", path);
         }
     }
+    class GeoJSONPropertyImpl extends IndexImpl implements GeospatialIndex {
+        JSONProperty parent;
+        JSONProperty jsonProperty;
+        GeoJSONPropertyImpl(JSONProperty jsonProperty) {
+            super();
+            this.jsonProperty = jsonProperty;
+        }
+        GeoJSONPropertyImpl(JSONProperty parent, JSONProperty jsonProperty) {
+            this(jsonProperty);
+            this.parent  = parent;
+        }
+        @Override
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            if (parent != null && parent instanceof JSONPropertyImpl) {
+                JSONPropertyImpl parentImpl  = (JSONPropertyImpl) parent;
+                writeText(serializer, "parent-property", parentImpl.name);
+            }
+            JSONPropertyImpl jsonPropertyImpl = (JSONPropertyImpl) jsonProperty;
+            writeText(serializer, "json-property", jsonPropertyImpl.name);
+        }
+    }
+    class GeoJSONPropertyPairImpl extends IndexImpl implements GeospatialIndex {
+        JSONProperty parent;
+        JSONProperty lat;
+        JSONProperty lon;
+        GeoJSONPropertyPairImpl(JSONProperty parent, JSONProperty lat, JSONProperty lon) {
+            this.parent = parent;
+            this.lat    = lat;
+            this.lon    = lon;
+        }
+        @Override
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            JSONPropertyImpl parentImpl = (JSONPropertyImpl) parent;
+            JSONPropertyImpl latImpl    = (JSONPropertyImpl) lat;
+            JSONPropertyImpl lonImpl    = (JSONPropertyImpl) lon;
+            writeText(serializer, "parent-property", parentImpl.name);
+            writeText(serializer, "lat-property", latImpl.name);
+            writeText(serializer, "lon-property", lonImpl.name);
+        }
+    } 
     class GeoElementImpl extends IndexImpl implements GeospatialIndex {
     	Element parent;
     	Element element;

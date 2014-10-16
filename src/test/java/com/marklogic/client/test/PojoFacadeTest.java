@@ -224,11 +224,9 @@ public class PojoFacadeTest {
         assertEquals("Failed to find number of records expected", 4, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
-        // TODO: uncomment tests below once https://bugtrack.marklogic.com/29204 is fixed
-        /*
         query = qb.geospatial(
             qb.geoProperty("latLong"),
-            qb.circle(-34, -58, 1)
+            qb.circle(-34, -58, 100)
         );
         page = cities.search(query, 1);
         iterator = page.iterator();
@@ -240,7 +238,7 @@ public class PojoFacadeTest {
         }
         // this currently doesn't work in the search:search layer
         // when this works we'll find out how many we expect
-        assertEquals("Failed to find number of records expected", -1, numRead);
+        assertEquals("Failed to find number of records expected", 4, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
 
@@ -258,9 +256,8 @@ public class PojoFacadeTest {
         }
         // this currently doesn't work even in the search:search layer
         // when this works we'll find out how many we expect
-        assertEquals("Failed to find number of records expected", -1, numRead);
+        assertEquals("Failed to find number of records expected", 4, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
-        */
     }
 
     @Test

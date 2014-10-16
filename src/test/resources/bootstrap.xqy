@@ -21,15 +21,17 @@ declare function bootstrap:database-configure(
     let $c := bootstrap:create-range-element-indexes($c, $dbid)
     let $c := bootstrap:create-element-attribute-range-indexes($c, $dbid)
     let $c := bootstrap:create-element-word-lexicons($c, $dbid)
+    let $c := bootstrap:create-geospatial-element-indexes($c, $dbid)
+    let $c := bootstrap:create-geospatial-element-child-indexes($c, $dbid)
     let $c := bootstrap:create-geospatial-element-pair-indexes($c, $dbid)
-    let $c := bootstrap:create-field-range-indexes($c, $dbid)
+    let $c := bootstrap:create-geospatial-path-indexes($c, $dbid)
+    let $c := bootstrap:create-path-range-indexes($c, $dbid)
     let $c := bootstrap:create-fields($c, $dbid)
     (: you can't create field and field range index in same transaction :)
     return admin:save-configuration-without-restart($c),
 
     let $c := admin:get-configuration()
-    let $c := bootstrap:create-path-range-indexes($c, $dbid)
-    let $c := bootstrap:create-geospatial-path-indexes($c, $dbid)
+    let $c := bootstrap:create-field-range-indexes($c, $dbid)
     return admin:save-configuration-without-restart($c)
 };
 
@@ -164,6 +166,85 @@ declare function bootstrap:create-element-word-lexicons(
         else admin:database-add-element-word-lexicon($c, $dbid, $index-specs)
 };
 
+declare function bootstrap:create-geospatial-element-indexes(
+    $c as element(configuration),
+    $dbid as xs:unsignedLong
+) as element(configuration)
+{
+    (: create geospatial indexes for geo unit test :)
+    let $index-specs :=
+        let $curr-idx := admin:database-get-geospatial-element-indexes($c, $dbid)
+        let $new-idx  := (
+            "", "latLong", "wgs84", "point"
+            )
+        for $i in 1 to (count($new-idx) idiv 4)
+        let $offset    := ($i * 4) - 3
+        let $element-ns    := subsequence($new-idx, $offset + 0, 1)
+        let $element-name  := subsequence($new-idx, $offset + 1, 1)
+        let $coord-sys := subsequence($new-idx, $offset + 2, 1)
+        let $point-format := subsequence($new-idx, $offset + 3, 1)
+        let $curr      := $curr-idx[
+            string(dbx:namespace-uri) eq $element-ns and
+            tokenize(string(dbx:localname), "\s+") = $element-name and
+            string(dbx:coordinate-system) eq $coord-sys and
+            string(dbx:point-format) eq $point-format
+            ]
+        return
+            if (exists($curr)) then (
+                xdmp:log(concat("Geo-elem-index already exists:[", $element-name, "]"))
+            ) else (
+                admin:database-geospatial-element-index(
+                    $element-ns, $element-name, $coord-sys, false(), $point-format, "reject"
+                ),
+                xdmp:log(concat("Creating geo-elem-index:[", $element-name, "]"))
+            )
+    return
+        if (empty($index-specs)) then $c
+        else admin:database-add-geospatial-element-index($c, $dbid, $index-specs)
+};
+
+declare function bootstrap:create-geospatial-element-child-indexes(
+    $c as element(configuration),
+    $dbid as xs:unsignedLong
+) as element(configuration)
+{
+    (: create geospatial indexes for geo unit test :)
+    let $index-specs :=
+        let $curr-idx := admin:database-get-geospatial-element-child-indexes($c, $dbid)
+        let $p := "http://marklogic.com/ns/test/places"
+        let $new-idx  := (
+            "", "com.marklogic.client.test.City", "", "latLong", "wgs84", "point"
+            )
+        for $i in 1 to (count($new-idx) idiv 6)
+        let $offset := ($i * 6) - 5
+        let $p-ns         := subsequence($new-idx, $offset, 1)
+        let $p-name       := subsequence($new-idx, $offset + 1, 1)
+        let $element-ns   := subsequence($new-idx, $offset + 2, 1)
+        let $element-name := subsequence($new-idx, $offset + 3, 1)
+        let $coord-sys    := subsequence($new-idx, $offset + 4, 1)
+        let $point-format := subsequence($new-idx, $offset + 5, 1)
+        let $curr      := $curr-idx[
+            string(dbx:parent-namespace-uri) eq $p-ns and
+            tokenize(string(dbx:parent-localname), "\s+") = $p-name and
+            string(dbx:namespace-uri) eq $element-ns and
+            tokenize(string(dbx:localname), "\s+") = $element-name and
+            string(dbx:coordinate-system) eq $coord-sys and
+            string(dbx:point-format) eq $point-format
+            ]
+        return
+            if (exists($curr)) then (
+                xdmp:log(concat("Geo-elem-child-index already exists:[", $p-name, ",", $element-name, "]"))
+            ) else (
+                admin:database-geospatial-element-child-index(
+                    $p-ns, $p-name, $element-ns, $element-name, $coord-sys, false(), $point-format, "reject"
+                ),
+                xdmp:log(concat("Creating geo-elem-child-index:[", $p-name, ",", $element-name, "]"))
+            )
+    return
+        if (empty($index-specs)) then $c
+        else admin:database-add-geospatial-element-child-index($c, $dbid, $index-specs)
+};
+
 declare function bootstrap:create-geospatial-element-pair-indexes(
     $c as element(configuration),
     $dbid as xs:unsignedLong
@@ -174,7 +255,8 @@ declare function bootstrap:create-geospatial-element-pair-indexes(
         let $curr-idx := admin:database-get-geospatial-element-pair-indexes($c, $dbid)
         let $p := "http://marklogic.com/ns/test/places"
         let $new-idx  := (
-            $p, "place", $p, "lat", $p, "long", "wgs84"
+            $p, "place", $p, "lat", $p, "long", "wgs84",
+            "", "com.marklogic.client.test.City", "", "latitude", "", "longitude", "wgs84"
             )
         for $i in 1 to (count($new-idx) idiv 7)
         let $offset    := ($i * 7) - 6
@@ -199,13 +281,48 @@ declare function bootstrap:create-geospatial-element-pair-indexes(
                 xdmp:log(concat("Geo-elem-pair-index already exists:[", $p-name, ",", $lat-name, ",", $lon-name, "]"))
             ) else (
                 admin:database-geospatial-element-pair-index(
-                    $p-ns, $p-name, $lat-ns, $lat-name, $lon-ns, $lon-name, $coord-sys, false()
+                    $p-ns, $p-name, $lat-ns, $lat-name, $lon-ns, $lon-name, $coord-sys, "reject"
                 ),
                 xdmp:log(concat("Creating geo-elem-pair-index:[", $p-name, ",", $lat-name, ",", $lon-name, "]"))
             )
     return
         if (empty($index-specs)) then $c
         else admin:database-add-geospatial-element-pair-index($c, $dbid, $index-specs)
+};
+
+declare function bootstrap:create-geospatial-path-indexes(
+    $c as element(configuration),
+    $dbid as xs:unsignedLong
+) as element(configuration)
+{
+    let $index-specs := 
+        let $curr-idx := admin:database-get-geospatial-path-indexes($c, $dbid)
+        let $new-idx  := (
+            "com.marklogic.client.test.City/latLong"
+            )
+        (: no offset necessary now since each new-idx only has one item, but that may change :)
+        let $n := 1
+        for $i in 1 to (count($new-idx) idiv $n)
+        let $offset    := ($i * $n) - ($n - 1) 
+        let $path      := subsequence($new-idx, $offset, 1)
+        let $curr      := $curr-idx[
+            string(dbx:path-expression) eq $path and
+            string(dbx:coordinate-system) eq "wgs84" and
+            string(dbx:range-value-positions) eq "false" and
+            string(dbx:point-format) eq "point"
+            ]
+        return
+            if (exists($curr)) then (
+                xdmp:log(concat("Geospatial-path-index already exists:", $path))
+            ) else (
+                admin:database-geospatial-path-index(
+                    $path, "wgs84", false(), "point", "reject"
+                ),
+                xdmp:log(concat("Creating geospatial-path-index:", $path))
+            )
+    return
+        if (empty($index-specs)) then $c
+        else admin:database-add-geospatial-path-index($c, $dbid, $index-specs)
 };
 
 declare function bootstrap:create-fields(
@@ -306,41 +423,6 @@ declare function bootstrap:create-path-range-indexes(
     return
         if (empty($index-specs)) then $c
         else admin:database-add-range-path-index($c, $dbid, $index-specs)
-};
-
-declare function bootstrap:create-geospatial-path-indexes(
-    $c as element(configuration),
-    $dbid as xs:unsignedLong
-) as element(configuration)
-{
-    let $index-specs := 
-        let $curr-idx := admin:database-get-geospatial-path-indexes($c, $dbid)
-        let $new-idx  := (
-            "com.marklogic.client.test.City/latLong"
-            )
-        (: no offset necessary now since each new-idx only has one item, but that may change :)
-        let $n := 1
-        for $i in 1 to (count($new-idx) idiv $n)
-        let $offset    := ($i * $n) - ($n - 1) 
-        let $path      := subsequence($new-idx, $offset, 1)
-        let $curr      := $curr-idx[
-            string(dbx:path-expression) eq $path and
-            string(dbx:coordinate-system) eq "wgs84" and
-            string(dbx:range-value-positions) eq "false" and
-            string(dbx:point-format) eq "point"
-            ]
-        return
-            if (exists($curr)) then (
-                xdmp:log(concat("Geospatial-path-index already exists:", $path))
-            ) else (
-                admin:database-geospatial-path-index(
-                    $path, "wgs84", false(), "point", "reject"
-                ),
-                xdmp:log(concat("Creating geospatial-path-index:", $path))
-            )
-    return
-        if (empty($index-specs)) then $c
-        else admin:database-add-geospatial-path-index($c, $dbid, $index-specs)
 };
 
 declare function bootstrap:security-config(
