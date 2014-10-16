@@ -3752,7 +3752,8 @@ public class JerseyServices implements RESTServices {
 				sb.append(URLEncoder.encode(code, "UTF-8"));
 			} else if ( context == ServerEvaluationCallImpl.Context.INVOKE ) {
 				path = "invoke";
-				params.put("module", modulePath);
+				sb.append("module=");
+				sb.append(URLEncoder.encode(modulePath, "UTF-8"));
 			} else {
 				throw new IllegalStateException("Invalid eval context: " + context);
 			}

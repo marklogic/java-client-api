@@ -68,10 +68,10 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
     public StructuredQueryBuilder.GeospatialIndex
         geoPair(String latitudePropertyName, String longitudePropertyName)
     {
-        return geoElementPair(jsonProperty(classWrapper), jsonProperty(latitudePropertyName), jsonProperty(longitudePropertyName));
+        return geoJSONPropertyPair(jsonProperty(classWrapper), jsonProperty(latitudePropertyName), jsonProperty(longitudePropertyName));
     }
     public StructuredQueryBuilder.GeospatialIndex geoProperty(String pojoProperty) {
-        return geoElement(jsonProperty(pojoProperty));
+        return geoJSONProperty(jsonProperty(pojoProperty));
     }
     public StructuredQueryBuilder.GeospatialIndex geoPath(String pojoProperty) {
         return geoPath(pojoPropertyPath(pojoProperty));
