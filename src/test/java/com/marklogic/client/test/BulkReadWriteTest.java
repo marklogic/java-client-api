@@ -72,7 +72,7 @@ public class BulkReadWriteTest {
     public static void beforeClass() throws JAXBException {
         Common.connect();
         context = JAXBContext.newInstance(City.class);
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
     @AfterClass
     public static void afterClass() {
