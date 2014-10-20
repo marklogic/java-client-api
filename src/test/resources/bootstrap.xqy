@@ -88,7 +88,11 @@ declare function bootstrap:create-range-element-indexes(
 
     return
         if (empty($index-specs)) then $c
-        else admin:database-add-range-element-index($c, $dbid, $index-specs)
+        else (
+            admin:database-add-range-element-index($c, $dbid, $index-specs),
+            admin:save-configuration-without-restart($c),
+            xdmp:commit()
+        )
 };
 
 declare function bootstrap:create-element-attribute-range-indexes(
@@ -281,7 +285,7 @@ declare function bootstrap:create-geospatial-element-pair-indexes(
                 xdmp:log(concat("Geo-elem-pair-index already exists:[", $p-name, ",", $lat-name, ",", $lon-name, "]"))
             ) else (
                 admin:database-geospatial-element-pair-index(
-                    $p-ns, $p-name, $lat-ns, $lat-name, $lon-ns, $lon-name, $coord-sys, "reject"
+                    $p-ns, $p-name, $lat-ns, $lat-name, $lon-ns, $lon-name, $coord-sys, false(), "reject"
                 ),
                 xdmp:log(concat("Creating geo-elem-pair-index:[", $p-name, ",", $lat-name, ",", $lon-name, "]"))
             )
@@ -451,7 +455,10 @@ declare function bootstrap:temporal-setup() as xs:string*
             cts:element-reference(xs:QName("system-start"), "type=dateTime"),
             cts:element-reference(xs:QName("system-end"), "type=dateTime")
         )
-        return if ( $id ) then xdmp:log("Created system-axis") else ()
+        return if ( $id ) then (
+            xdmp:commit(),
+            xdmp:log("Created system-axis")
+        ) else ()
     } catch($e) {
         if ( "XDMP-ELEMRIDXNOTFOUND" = $e/error:code ) then
             xdmp:log("Couldn't create system-axis.  Waiting for creation of system-start and system-end " ||
@@ -465,17 +472,23 @@ declare function bootstrap:temporal-setup() as xs:string*
             cts:element-reference(xs:QName("valid-start"), "type=dateTime"),
             cts:element-reference(xs:QName("valid-end"), "type=dateTime")
         )
-        return if ( $id ) then xdmp:log("Created valid-axis") else ()
+        return if ( $id ) then (
+            xdmp:commit(),
+            xdmp:log("Created valid-axis")
+        ) else ()
     } catch($e) {
         if ( "XDMP-ELEMRIDXNOTFOUND" = $e/error:code ) then
-            xdmp:log("Couldn't create system-axis.  Waiting for creation of valid-start and valid-end " ||
+            xdmp:log("Couldn't create valid-axis.  Waiting for creation of valid-start and valid-end " ||
                 "element range indexes...try again")
         else if ( "TEMPORAL-DUPAXIS" = $e/error:code ) then xdmp:log("valid-axis already exists")
         else xdmp:log($e)
     },
     try {
-        let $id := temporal:collection-create("temporal-collection", "system-axis", "valid-axis")
-        return if ( $id ) then xdmp:log("Created temporal-collection") else ()
+        let $id := temporal:collection-create("temporal-collection", "system-axis", "valid-axis", "updates-admin-override")
+        return if ( $id ) then (
+            xdmp:commit(),
+            xdmp:log("Created temporal-collection") 
+        ) else ()
     } catch($e) {
         if ( "TEMPORAL-AXISNOTFOUND" = $e/error:code ) then 
             xdmp:log("Couldn't create temporal-collection.  " ||
@@ -485,9 +498,14 @@ declare function bootstrap:temporal-setup() as xs:string*
     },
     try {
         temporal:set-use-lsqt("temporal-collection", true()),
-        temporal:set-lsqt-automation("temporal-collection", true())
+        xdmp:log("set-use-lsqt to true()"),
+        temporal:set-lsqt-automation("temporal-collection", true()),
+        xdmp:log("set-lsqt-automation to true()")
     } catch($e) {
-        xdmp:log($e)
+        if ( "TEMPORAL-COLLECTIONNOTFOUND" = $e/error:code ) then 
+            xdmp:log("Couldn't set use-lsqt to true() and lsqt-automation to true().  " ||
+                "Waiting for creation of temporal-colleciton...try again")
+        else xdmp:log($e)
     }
 };
 
