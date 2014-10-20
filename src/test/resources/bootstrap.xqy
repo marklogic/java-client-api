@@ -429,22 +429,59 @@ declare function bootstrap:create-path-range-indexes(
         else admin:database-add-range-path-index($c, $dbid, $index-specs)
 };
 
-declare function bootstrap:security-config(
+declare function bootstrap:security-config() { 
+    try {
+        bootstrap:security-eval(
+            'sec:create-role("rest-evaluator", "rest-evaluator", ("rest-evaluator", "rest-writer"), (), ())')
+    } catch($e) {
+        if ( "SEC-ROLEEXISTS" = $e/error:code ) then xdmp:log("rest-evaluator role exists")
+        else xdmp:log($e)
+    },
+    bootstrap:security-eval(
+        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdbc-eval", "execute", "rest-evaluator")'),
+    bootstrap:security-eval(
+        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdmp-eval", "execute", "rest-evaluator")'),
+    bootstrap:security-eval(
+        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdbc-eval-in", "execute", "rest-evaluator")'),
+    bootstrap:security-eval(
+        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdmp-eval-in", "execute", "rest-evaluator")'),
+    bootstrap:security-eval(
+        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdbc-invoke", "execute", "rest-evaluator")'),
+    bootstrap:security-eval(
+        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdmp-invoke", "execute", "rest-evaluator")'),
+
+    for $user in ("rest-admin", "rest-reader", "rest-writer", "rest-evaluator", "valid") 
+        let $user-id := 
+            try {
+                xdmp:user($user)
+            } catch($e) {
+                xdmp:log("User "||$user||" not found.")
+            }
+    return (
+        if (exists($user-id)) then (
+            xdmp:log("User "|| $user || ", id "||$user-id|| "already exists")
+        ) else (
+            if ($user eq "valid") then (
+                bootstrap:security-eval('sec:create-user("valid", "valid unprivileged user", "x", (), (), (), ())')
+            ) else (
+                bootstrap:security-eval('sec:create-user("'||$user||'", "'||$user||' user", "x", ("'||$user||'"), (), (), () )')
+            )
+        )
+    )
+};
+
+declare function bootstrap:security-eval(
 $command as xs:string
 ) 
 { 
-    try {
-        xdmp:eval(concat('xquery version "1.0-ml"; ',
-                    'import module namespace sec="http://marklogic.com/xdmp/security" at  ',
-                    '    "/MarkLogic/security.xqy"; ',
-                    $command),
-        (),
-        <options xmlns="xdmp:eval">
-            <database>{ xdmp:database("Security") }</database>
-        </options>)
-    } catch($e) {
-        xdmp:log($e)
-    }
+    xdmp:eval(concat('xquery version "1.0-ml"; ',
+                'import module namespace sec="http://marklogic.com/xdmp/security" at  ',
+                '    "/MarkLogic/security.xqy"; ',
+                $command),
+    (),
+    <options xmlns="xdmp:eval">
+        <database>{ xdmp:database("Security") }</database>
+    </options>)
 };
 
 declare function bootstrap:temporal-setup() as xs:string*
@@ -1050,21 +1087,9 @@ declare function bootstrap:post(
 ) as document-node()*
 {
     let $responses := (
-        for $user in ("rest-admin", "rest-reader", "rest-writer", "valid") 
-        let $user-id := 
-            try {
-                xdmp:user($user)
-            } catch($e) {
-                xdmp:log("User "||$user||" not found.")
-            }
-        return
-            if (exists($user-id)) then xdmp:log("User "|| $user || ", id "||$user-id|| "already exists")
-            else if ($user eq "valid")
-            then bootstrap:security-config('sec:create-user("valid", "valid unprivileged user", "x", (), (), (), ())')
-            else bootstrap:security-config('sec:create-user("'||$user||'", "'||$user||' user", "x", ("'||$user||'"), (), (), () )'),
-
         let $dbid := xdmp:database("java-unittest")
         return (
+            bootstrap:security-config(),
             bootstrap:database-configure($dbid),
             xdmp:log(concat("Configured Java test database:", xdmp:database-name($dbid)))
             ),
