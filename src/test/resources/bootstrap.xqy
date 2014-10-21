@@ -487,13 +487,12 @@ $command as xs:string
 declare function bootstrap:temporal-setup() as xs:string*
 {
     try {
-        let $id := temporal:axis-create(
+        let $id := bootstrap:temporal-eval('temporal:axis-create(
             "system-axis",
             cts:element-reference(xs:QName("system-start"), "type=dateTime"),
             cts:element-reference(xs:QName("system-end"), "type=dateTime")
-        )
+        )')
         return if ( $id ) then (
-            xdmp:commit(),
             xdmp:log("Created system-axis")
         ) else ()
     } catch($e) {
@@ -504,13 +503,12 @@ declare function bootstrap:temporal-setup() as xs:string*
         else xdmp:log($e)
     },
     try {
-        let $id := temporal:axis-create(
+        let $id := bootstrap:temporal-eval('temporal:axis-create(
             "valid-axis",
             cts:element-reference(xs:QName("valid-start"), "type=dateTime"),
             cts:element-reference(xs:QName("valid-end"), "type=dateTime")
-        )
+        )')
         return if ( $id ) then (
-            xdmp:commit(),
             xdmp:log("Created valid-axis")
         ) else ()
     } catch($e) {
@@ -521,9 +519,9 @@ declare function bootstrap:temporal-setup() as xs:string*
         else xdmp:log($e)
     },
     try {
-        let $id := temporal:collection-create("temporal-collection", "system-axis", "valid-axis", "updates-admin-override")
+        let $id := bootstrap:temporal-eval('temporal:collection-create(
+			"temporal-collection", "system-axis", "valid-axis", "updates-admin-override")')
         return if ( $id ) then (
-            xdmp:commit(),
             xdmp:log("Created temporal-collection") 
         ) else ()
     } catch($e) {
@@ -534,9 +532,9 @@ declare function bootstrap:temporal-setup() as xs:string*
         else xdmp:log($e)
     },
     try {
-        temporal:set-use-lsqt("temporal-collection", true()),
+        bootstrap:temporal-eval('temporal:set-use-lsqt("temporal-collection", true())'),
         xdmp:log("set-use-lsqt to true()"),
-        temporal:set-lsqt-automation("temporal-collection", true()),
+        bootstrap:temporal-eval('temporal:set-lsqt-automation("temporal-collection", true())'),
         xdmp:log("set-lsqt-automation to true()")
     } catch($e) {
         if ( "TEMPORAL-COLLECTIONNOTFOUND" = $e/error:code ) then 
@@ -544,6 +542,17 @@ declare function bootstrap:temporal-setup() as xs:string*
                 "Waiting for creation of temporal-colleciton...try again")
         else xdmp:log($e)
     }
+};
+
+
+declare function bootstrap:temporal-eval(
+$command as xs:string
+) 
+{ 
+    xdmp:eval(concat('xquery version "1.0-ml"; ',
+				'import module namespace temporal = "http://marklogic.com/xdmp/temporal" ',
+				'	at "/MarkLogic/temporal.xqy";',
+                $command))
 };
 
 declare function bootstrap:load-data()
