@@ -25,19 +25,34 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
+import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.MatchDocumentSummary;
+import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.TemporalOperator;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class BitemporalTest {
-    @BeforeClass
+	// bootstrap.xqy sets up the "temporal-collection" and required underlying axes
+	// system-axis and valid-axis which have required underlying range indexes
+	// system-start, system-end, valid-start, and valid-end
+	static String temporalCollection = "temporal-collection";
+	static String uniqueTerm = "temporalDoc";
+	
+	@BeforeClass
     public static void beforeClass() {
         Common.connect();
         System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
@@ -45,15 +60,12 @@ public class BitemporalTest {
     @AfterClass
     public static void afterClass() {
         Common.release();
+        cleanUp();
     }
 
 	@Test
 	public void test1() {
-		// bootstrap.xqy sets up the "temporal-collection" and required underlying axes
-		// system-axis and valid-axis which have required underlying range indexes
-		// system-start, system-end, valid-start, and valid-end
-		String temporalCollection = "temporal-collection";
-		String uniqueTerm = "temporalDoc14";
+
 		String version1 = "<test>" +
 				uniqueTerm + " version1" +
 				"<system-start></system-start>" +
@@ -82,7 +94,7 @@ public class BitemporalTest {
 				"<valid-start>2014-08-19T00:00:05</valid-start>" +
 				"<valid-end>2014-08-19T00:00:06</valid-end>" +
     		"</test>";
-		String docId = "test-temporal14.xml";
+		String docId = "test-" + uniqueTerm + ".xml";
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		StringHandle handle1 = new StringHandle(version1).withFormat(Format.XML);
 		docMgr.write(docId, null, handle1, null, null, temporalCollection, null);
@@ -105,12 +117,10 @@ public class BitemporalTest {
 		DocumentPage termQueryResults = docMgr.search(termQuery, start);
 		assertEquals("Wrong number of results", 4, termQueryResults.size());
 
-//		StructuredQueryDefinition currentQuery = sqb.temporalCurrent(temporalCollection, null, 1);
-//		StructuredQueryDefinition currentDocQuery = sqb.and(termQuery, currentQuery);
-//		DocumentPage currentDocQueryResults = docMgr.search(currentDocQuery, start);
-//		assertEquals("Wrong number of results", 1, currentDocQueryResults.size());
-//		DocumentRecord latestDoc = currentDocQueryResults.next();
-//		assertEquals("Document uri wrong", docId, latestDoc.getUri());
+		StructuredQueryDefinition currentQuery = sqb.temporalCurrent(temporalCollection, null, 1);
+		StructuredQueryDefinition currentDocQuery = sqb.and(termQuery, currentQuery);
+		DocumentPage currentDocQueryResults = docMgr.search(currentDocQuery, start);
+		assertEquals("Wrong number of results", 4, currentDocQueryResults.size());
 
 		StructuredQueryBuilder.Axis validAxis = sqb.axis("valid-axis");
 		Calendar start1 = DatatypeConverter.parseDateTime("2014-08-19T00:00:00");
@@ -141,6 +151,22 @@ public class BitemporalTest {
 			sqb.temporalPeriodCompare(systemAxis, TemporalOperator.ALN_BEFORE, validAxis));
 		DocumentPage periodCompareQuery2Results = docMgr.search(periodCompareQuery2, start);
 		assertEquals("Wrong number of results", 0, periodCompareQuery2Results.size());
+
 	}
 
+	static public void cleanUp() {
+		DatabaseClient client = DatabaseClientFactory.newClient(Common.HOST, Common.PORT, "admin", "admin", DatabaseClientFactory.Authentication.DIGEST);
+		QueryManager queryMgr = client.newQueryManager();
+		queryMgr.setPageLength(1000);
+		QueryDefinition query = queryMgr.newStringDefinition();
+		query.setCollections(temporalCollection);
+//		DeleteQueryDefinition deleteQuery = client.newQueryManager().newDeleteDefinition();
+//		deleteQuery.setCollections(temporalCollection);
+//		client.newQueryManager().delete(deleteQuery);
+		SearchHandle handle = queryMgr.search(query, new SearchHandle());
+		MatchDocumentSummary[] docs = handle.getMatchResults();
+		for ( MatchDocumentSummary doc : docs ) {
+			client.newXMLDocumentManager().delete(doc.getUri());
+		}
+	}
 }
