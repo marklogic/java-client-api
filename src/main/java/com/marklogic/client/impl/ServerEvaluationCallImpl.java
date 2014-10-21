@@ -38,7 +38,6 @@ public class ServerEvaluationCallImpl
     private String                   code;
     private String                   modulePath;
     private Context                  evalContext;
-    private String                   database;
     private String                   transactionId;
     private HashMap<String, Object>  vars = new HashMap<String, Object>();
     private EditableNamespaceContext namespaceContext;
@@ -56,7 +55,7 @@ public class ServerEvaluationCallImpl
     }
 
     @Override
-    public ServerEvaluationCall xquery(AbstractWriteHandle xquery) {
+    public ServerEvaluationCall xquery(TextWriteHandle xquery) {
         setContext(Context.ADHOC_XQUERY);
         code = HandleAccessor.contentAsString(xquery);
         return this;
@@ -70,7 +69,7 @@ public class ServerEvaluationCallImpl
     }
 
     @Override
-    public ServerEvaluationCall javascript(AbstractWriteHandle javascript) {
+    public ServerEvaluationCall javascript(TextWriteHandle javascript) {
         setContext(Context.ADHOC_JAVASCRIPT);
         code = HandleAccessor.contentAsString(javascript);
         return this;
@@ -126,12 +125,6 @@ public class ServerEvaluationCallImpl
     }
 
     @Override
-    public ServerEvaluationCall database(String database) {
-        this.database = database;
-        return this;
-    }
-
-    @Override
     public ServerEvaluationCall transaction(Transaction transaction) {
         if ( transaction != null ) this.transactionId = transaction.getTransactionId();
         return this;
@@ -158,7 +151,7 @@ public class ServerEvaluationCallImpl
     @Override
     public EvalResultIterator eval() {
         return services.postEvalInvoke(requestLogger, code, modulePath, evalContext,
-            vars, namespaceContext, database, transactionId);
+            vars, namespaceContext, transactionId);
     }
 
     @Override

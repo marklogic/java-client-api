@@ -46,15 +46,14 @@ public class DatabaseClientFactoryTest {
 	@Test
 	public void testRuntimeDatabaseSelection() {
 		DatabaseClient tmpClient = DatabaseClientFactory.newClient(
-			Common.HOST, Common.PORT, "Documents", Common.ADMIN_USERNAME, Common.ADMIN_PASSWORD, Authentication.DIGEST
+			Common.HOST, Common.PORT, "Triggers", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST
 		);
 		assertNotNull("Factory could not create client with digest connection", tmpClient);
 		String database = 
 			tmpClient.newServerEval()
-				.database("Documents")
 				.xquery("xdmp:database-name(xdmp:database())")
 				.evalAs(String.class);
-		assertEquals("Runtime database is wrong", "Documents", database);
+		assertEquals("Runtime database is wrong", "Triggers", database);
 		tmpClient.release();
 	}
 

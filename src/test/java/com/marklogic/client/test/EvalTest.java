@@ -56,7 +56,7 @@ import com.marklogic.client.io.StringHandle;
 public class EvalTest {
     @BeforeClass
     public static void beforeClass() {
-        Common.connect();
+        Common.connectEval();
         //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
     @AfterClass
@@ -106,6 +106,7 @@ public class EvalTest {
                 DatatypeFactory.newInstance().newXMLGregorianCalendar(septFirst).toString());
         EvalResultIterator results = query.eval();
         try {
+        	// TOOD: uncomment the following when we fix http://bugtrack.marklogic.com/29735
 //            assertEquals("myString should = 'Mars'", "Mars", results.next().getAs(String.class));
 //            assertEquals("myArray should = [\"item1\",\"item2\"]", 
 //                new ObjectMapper().readTree("[\"item1\",\"item2\"]"), 
@@ -137,10 +138,11 @@ public class EvalTest {
         ExtensionLibrariesManager libraries = 
             Common.client.newServerConfigManager().newExtensionLibrariesManager();
         libraries.write("/ext/test/evaltest.xqy", xquery);
-        Common.connect();
+        Common.connectEval();
         runAndTest( Common.client.newServerEval().modulePath("/ext/test/evaltest.xqy") );
         Common.connectAdmin();
         libraries.delete("/ext/test/evaltest.xqy");
+        Common.connectEval();
     }
 
     private void runAndTest(ServerEvaluationCall call) 

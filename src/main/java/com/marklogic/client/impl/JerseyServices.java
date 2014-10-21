@@ -171,6 +171,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	private DatabaseClient databaseClient;
+	private String database = null;
 	private ApacheHttpClient4 client;
 	private WebResource connection;
 
@@ -267,6 +268,8 @@ public class JerseyServices implements RESTServices {
 			client = null;
 		}
 
+		this.database = database;
+
 		String baseUri = ((context == null) ? "http" : "https") + "://" + host
 				+ ":" + port + "/v1/";
 
@@ -346,7 +349,6 @@ public class JerseyServices implements RESTServices {
 		// new UsernamePasswordCredentials(user, password));
 
 		HttpParams httpParams = new BasicHttpParams();
-		if (database != null) httpParams.setParameter("database", database);
 
 		if (authenType != null) {
 			List<String> authpref = new ArrayList<String>();
@@ -3734,7 +3736,7 @@ public class JerseyServices implements RESTServices {
 			RequestLogger reqlog, String code, String modulePath, 
 			ServerEvaluationCallImpl.Context context,
 			Map<String, Object> variables, EditableNamespaceContext namespaces,
-			String database, String transactionId)
+			String transactionId)
 			throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
 		String formUrlEncodedPayload;
@@ -3799,7 +3801,6 @@ public class JerseyServices implements RESTServices {
 		} catch (IOException e) {
 			throw new MarkLogicIOException(e);
 		}
-		if ( database != null ) params.add("database", database);
 		if ( transactionId != null ) params.add("txid", transactionId);
 		StringHandle input = new StringHandle(formUrlEncodedPayload)
 			.withMimetype("application/x-www-form-urlencoded");
@@ -4363,8 +4364,9 @@ public class JerseyServices implements RESTServices {
 	private WebResource.Builder makeBuilder(String path,
 			MultivaluedMap<String, String> params, Object inputMimetype,
 			Object outputMimetype) {
-		WebResource resource = (params == null) ? connection.path(path)
-				: connection.path(path).queryParams(params);
+		if ( params == null ) params = new MultivaluedMapImpl();
+		if ( database != null ) params.add("database", database);
+		WebResource resource = connection.path(path).queryParams(params);
 
 		WebResource.Builder builder = resource.getRequestBuilder();
 

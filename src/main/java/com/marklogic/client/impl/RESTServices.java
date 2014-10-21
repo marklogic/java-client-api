@@ -206,7 +206,7 @@ public interface RESTServices {
 			FailedRequestException;
 	public EvalResultIterator postEvalInvoke(RequestLogger reqlog, String code, String modulePath,
 			ServerEvaluationCallImpl.Context evalContext, Map<String, Object> variables,
-			EditableNamespaceContext namespaces, String database, String transactionId) 
+			EditableNamespaceContext namespaces, String transactionId) 
 			throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException;
 	public <R extends AbstractReadHandle> R deleteResource(
