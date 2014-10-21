@@ -1187,6 +1187,7 @@ public class SearchHandle
 						handleMatch(reader, startElement);
 						break eventType;
 					}
+					break;
 				case XMLStreamConstants.END_ELEMENT:
 					if (snippetName.equals(event.asEndElement().getName())) {
 						break events;
