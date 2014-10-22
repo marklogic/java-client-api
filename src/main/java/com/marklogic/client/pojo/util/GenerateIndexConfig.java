@@ -21,7 +21,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -29,7 +28,6 @@ import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedParameter;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.util.ClassUtil;
@@ -124,7 +122,6 @@ public class GenerateIndexConfig {
             SerializationConfig serializationConfig = new ObjectMapper().getSerializationConfig();
             JavaType javaType = serializationConfig.constructType(clazz);
             BeanDescription beanDescription = serializationConfig.introspect(javaType);
-            AnnotatedClass annotatedClass = beanDescription.getClassInfo();
             List<BeanPropertyDefinition> properties = beanDescription.findProperties();
             GeoPairFound geoPair = new GeoPairFound();
             for ( BeanPropertyDefinition property : properties ) {
@@ -205,9 +202,7 @@ public class GenerateIndexConfig {
 
     private static void generatePathIndexes(List<PathIndexFound> paths, JsonGenerator config) throws IOException {
         config.writeArrayFieldStart("range-path-index");
-        Iterator<PathIndexFound> iterator = paths.iterator();
-        while ( iterator.hasNext() ) {
-            PathIndexFound found = iterator.next();
+        for ( PathIndexFound found : paths ) {
             //System.err.println("found " + found.propertyName + " " + found.foundMessage);
             config.writeStartObject();
             config.writeStringField("path-expression", found.getPath());
@@ -225,11 +220,9 @@ public class GenerateIndexConfig {
         config.writeEndArray();
     }
 
-    private static void generateGeoPathIndexes(List<GeoPathIndexFound> paths, JsonGenerator config) throws IOException {
+    private static void generateGeoPathIndexes(List<GeoPathIndexFound> geoPaths, JsonGenerator config) throws IOException {
         config.writeArrayFieldStart("geospatial-path-index");
-        Iterator<GeoPathIndexFound> iterator = paths.iterator();
-        while ( iterator.hasNext() ) {
-            GeoPathIndexFound found = iterator.next();
+        for ( GeoPathIndexFound found : geoPaths ) {
             //System.err.println("found " + found.propertyName + " " + found.foundMessage);
             config.writeStartObject();
             config.writeStringField("path-expression", found.getPath());
@@ -242,11 +235,9 @@ public class GenerateIndexConfig {
         config.writeEndArray();
     }
 
-    private static void generateGeoPairIndexes(List<GeoPairFound> paths, JsonGenerator config) throws IOException {
+    private static void generateGeoPairIndexes(List<GeoPairFound> geoPairs, JsonGenerator config) throws IOException {
         config.writeArrayFieldStart("geospatial-element-pair-index");
-        Iterator<GeoPairFound> iterator = paths.iterator();
-        while ( iterator.hasNext() ) {
-            GeoPairFound found = iterator.next();
+        for ( GeoPairFound found : geoPairs ) {
             config.writeStartObject();
             config.writeStringField("parent-namespace-uri", "");
             config.writeStringField("parent-localname", found.fullyQualifiedClassName);
