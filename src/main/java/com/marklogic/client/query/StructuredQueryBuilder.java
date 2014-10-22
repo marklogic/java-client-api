@@ -2707,7 +2707,6 @@ public class StructuredQueryBuilder {
 		return newNamespaces;
 	}
 	
-	public enum TemporalVersions { CURRENT, ALL };
 	public enum TemporalOperator {
 		ALN_EQUALS,
 		ALN_CONTAINS,
