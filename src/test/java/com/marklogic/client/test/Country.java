@@ -15,6 +15,9 @@
  */
 package com.marklogic.client.test;
 
+import com.marklogic.client.pojo.annotation.PathIndexProperty;
+import com.marklogic.client.pojo.annotation.PathIndexProperty.ScalarType;
+
 public class Country {
     private String name, continent, currencyCode, currencyName, isoCode;
 
@@ -36,6 +39,7 @@ public class Country {
         return this;
     }
 
+    @PathIndexProperty(scalarType=ScalarType.STRING)
     public String getContinent() {
         return continent;
     }
