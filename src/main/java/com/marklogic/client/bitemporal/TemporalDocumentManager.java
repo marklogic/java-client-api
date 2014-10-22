@@ -36,7 +36,7 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
         Transaction transaction,
         String temporalCollection,
         java.util.Calendar systemTime)
-	throws ForbiddenUserException, FailedRequestException;
+    throws ForbiddenUserException, FailedRequestException;
  
     public void write(DocumentDescriptor desc,
         DocumentMetadataWriteHandle metadataHandle,
@@ -45,7 +45,7 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
         Transaction transaction,
         String temporalCollection,
         java.util.Calendar systemTime)
-	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
  
     public void write(String docId,
         DocumentMetadataWriteHandle metadataHandle,
@@ -54,16 +54,16 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
         Transaction transaction,
         String temporalCollection,
         java.util.Calendar systemTime)
-	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
  
-	/*
+    /*
     public <T extends R> T read(DocumentDescriptor desc,
         DocumentMetadataReadHandle metadataHandle,
         T  contentHandle,
         ServerTransform transform,
         Transaction transaction,
         String temporalCollection)
-	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
  
     public <T extends R> T read(String docId,
         DocumentMetadataReadHandle metadataHandle,
@@ -71,24 +71,24 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
         ServerTransform transform,
         Transaction transaction,
         String temporalCollection)
-	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
  
     public DocumentPage read(ServerTransform transform,
         Transaction transaction,
         String temporalCollection,
         String[] uris)
-	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-	*/
+    throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    */
  
     public void delete(DocumentDescriptor desc,
         Transaction transaction,
         String temporalCollection,
         java.util.Calendar systemTime)
-	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
  
     public void delete(String docId,
         Transaction transaction,
         String temporalCollection,
         java.util.Calendar systemTime)
-	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 }
