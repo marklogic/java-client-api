@@ -215,9 +215,8 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
     public QueryDefinition filteredQuery(StructuredQueryDefinition query) {
         CombinedQueryBuilder cqb = new CombinedQueryBuilderImpl();
         StringHandle options = new StringHandle(
-            "<options xmlns=\"http://marklogic.com/appservices/search\">" + 
-                "<search-option>filtered</search-option>" +
-            "</options>").withFormat(Format.XML);
+            "<options><search-option>filtered</search-option></options>")
+        	.withFormat(Format.XML);
         return cqb.combine(query, options);
     }
 
