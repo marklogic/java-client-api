@@ -440,15 +440,11 @@ declare function bootstrap:security-config() {
     bootstrap:security-eval(
         'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdbc-eval", "execute", "rest-evaluator")'),
     bootstrap:security-eval(
-        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdmp-eval", "execute", "rest-evaluator")'),
-    bootstrap:security-eval(
         'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdbc-eval-in", "execute", "rest-evaluator")'),
-    bootstrap:security-eval(
-        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdmp-eval-in", "execute", "rest-evaluator")'),
     bootstrap:security-eval(
         'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdbc-invoke", "execute", "rest-evaluator")'),
     bootstrap:security-eval(
-        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdmp-invoke", "execute", "rest-evaluator")'),
+        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdbc-invoke-in", "execute", "rest-evaluator")'),
 
     for $user in ("rest-admin", "rest-reader", "rest-writer", "rest-evaluator", "valid") 
         let $user-id := 
