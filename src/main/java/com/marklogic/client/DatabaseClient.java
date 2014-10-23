@@ -178,5 +178,13 @@ public interface DatabaseClient {
      * @return	the object implementing communication with the server 
      */
     public Object getClientImplementation();
+
+    /**
+     * Creates a ServerEvaluationCall for eval and invoke of server-side xquery or 
+     * javascript code.  Eval requires the xdbc:eval privilege and invoke requires the
+     * xdbc:invoke privilege.  If this DatabaseClient is pointed at a database different
+     * than the default for this REST server, you will need the xdbc:eval-in or xdbc:invoke-in
+     * privilege.
+     */
 	public ServerEvaluationCall newServerEval();
 }
