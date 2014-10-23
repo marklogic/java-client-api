@@ -15,7 +15,10 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.pojo.PojoQueryBuilder;
+import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.TermQuery;
 import com.marklogic.client.query.StructuredQueryBuilder.TextIndex;
@@ -207,7 +210,16 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
             query.innerSerialize(serializer);
         }
-    };
+    }
+
+    public QueryDefinition filteredQuery(StructuredQueryDefinition query) {
+        CombinedQueryBuilder cqb = new CombinedQueryBuilderImpl();
+        StringHandle options = new StringHandle(
+            "<options xmlns=\"http://marklogic.com/appservices/search\">" + 
+                "<search-option>filtered</search-option>" +
+            "</options>").withFormat(Format.XML);
+        return cqb.combine(query, options);
+    }
 
     public String getRangeIndexType(String propertyName) {
         // map java types to acceptable Range Index types

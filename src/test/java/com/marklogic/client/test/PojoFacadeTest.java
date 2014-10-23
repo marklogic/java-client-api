@@ -122,8 +122,28 @@ public class PojoFacadeTest {
         assertEquals("Failed to find number of records expected", 3, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
-        // the default options are unfiltered, which I don't want in this case, so the 
-        // work-around is to use stored options which contain <search-option>filtered</search-option>
+        // the default options are unfiltered, which only produce accurate results
+        // when all necessary indexes are in place and we avoid queries that can't resolve directly from indexes
+        // wildcarded queries will produce inaccurate results without a wildcard index in place
+        //  - first lets's see it produce inaccurate results
+        query = qb.word("asciiName", new String[] {"wildcarded"}, 1, "Chittagong*");
+        page = cities.search(query, 1);
+        assertEquals("The estimate number should match everything", 101, page.getTotalSize());
+
+        // - the recommended way to deal with it is to enable indexes
+        //   but assuming you can't or don't want to enable certain indexes
+        //   (wildcard indexes for instance can have a speed impact even on non-wildcard queries)
+        //   it may be better to just filter individual queries
+        // - here we show the new recommended way to run individual queries filtered
+        query = qb.filteredQuery(qb.word("asciiName", new String[] {"wildcarded"}, 1, "Chittagong*"));
+        page = cities.search(query, 1);
+        numRead = 0;
+        while ( numRead < page.size() ) numRead++;
+        assertEquals("Failed to find number of records expected", 1, numRead);
+        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+
+        // - then let's show the old work-around using stored options which contain 
+        //   <search-option>filtered</search-option>
         StructuredQueryBuilder sqb = Common.client.newQueryManager().newStructuredQueryBuilder("filtered");
         query = sqb.and(qb.word("asciiName", new String[] {"wildcarded"}, 1, "Chittagong*"));
         page = cities.search(query, 1);

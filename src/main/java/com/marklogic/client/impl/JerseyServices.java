@@ -2112,6 +2112,14 @@ public class JerseyServices implements RESTServices {
 
                 builder = connection.path("search").queryParams(params)
                     .type("application/xml").accept(mimetype);
+            } else if (queryDef instanceof CombinedQueryDefinition) {
+                structure = ((CombinedQueryDefinition) queryDef).serialize();
+
+                if (logger.isDebugEnabled())
+                    logger.debug("Searching for combined query {}", structure);
+
+                builder = connection.path("search").queryParams(params)
+                    .type("application/xml").accept(mimetype);
             } else if (queryDef instanceof DeleteQueryDefinition) {
                 if (logger.isDebugEnabled())
                     logger.debug("Searching for deletes");
@@ -2147,6 +2155,8 @@ public class JerseyServices implements RESTServices {
                 } else if (queryDef instanceof KeyValueQueryDefinition) {
                     response = doGet(builder);
                 } else if (queryDef instanceof StructuredQueryDefinition) {
+                    response = doPost(reqlog, builder, structure, true);
+                } else if (queryDef instanceof CombinedQueryDefinition) {
                     response = doPost(reqlog, builder, structure, true);
                 } else if (queryDef instanceof DeleteQueryDefinition) {
                     response = doGet(builder);

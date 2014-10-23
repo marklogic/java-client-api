@@ -17,6 +17,7 @@ package com.marklogic.client.pojo;
 
 import javax.xml.namespace.QName;
 
+import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
@@ -193,5 +194,14 @@ public StructuredQueryBuilder.GeospatialIndex
     public StructuredQueryDefinition term(double weight, String... terms);
     /** Copied directly from  {@link StructuredQueryBuilder#term(String...) StructuredQuerybuilder.term(String...)}**/
     public StructuredQueryDefinition term(String... terms);
+
+    /** Wraps the structured query into a combined query with options containing 
+     * <search-option>filtered</search-option> so results are accurate though slower.
+     * 
+     * @return a QueryDefinition that can be used with PojoRepository.search() 
+     *         (a REST combined query under the hood)
+     */
+    public QueryDefinition filteredQuery(StructuredQueryDefinition query);
+
 }
 
