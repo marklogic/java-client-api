@@ -136,7 +136,9 @@ public class ServerEvaluationCallImpl
 
         ContentHandle<T> readHandle = handleRegistry.makeHandle(responseType);
         if ( readHandle == null ) return null;
-        return eval(readHandle).get();
+        readHandle = eval(readHandle); 
+        if ( readHandle == null ) return null;
+        return readHandle.get();
     }
 
     @Override
