@@ -1,0 +1,112 @@
+
+xdmp:document-insert("test1.xml",<foo attr="attribute"><?processing instruction?><!--comment-->test1</foo>);
+xdmp:document-insert("test2.json",object-node {"test":"hello"});
+xdmp:document-insert("/test3.txt",text { "test1" });
+xdmp:document-insert("test4.bin",binary {"ABCD"});
+
+(:returns sequence:)
+fn:doc();
+
+(:returns boolean:)
+fn:exists(fn:doc()),
+
+(:returns unsignedLong 
+fn:count(fn:doc()),
+:)
+(:returns String
+xdmp:database-name(xdmp:database());
+:)
+(:returns attribute:)
+fn:doc("test1.xml")//@attr;
+
+(:returns anyURI:)
+fn:base-uri(fn:doc()/*[@attr eq "attribute"]);
+
+(:returns Double:) 
+math:acos(.5);
+
+(:returns NULL:)
+();
+
+(:returns OTHER:)
+xdmp:functions()[2];
+
+(: returns XML document :)
+cts:search(fn:doc(), cts:directory-query(("/"),"1"));
+
+(:returns DATE:)
+fn:adjust-date-to-timezone(xs:date("2002-03-07"));
+
+(:returns DATETIME:)
+xdmp:parse-dateTime("[Y0001]-[M01]-[D01]T[h01]:[m01]:[s01].[f1][Z]","2010-01-06T17:13:50.873594-08:00");
+
+(:returns DECIMAL:)
+fn:seconds-from-time(xs:time("13:20:10.5"));
+
+(:returns DURATION:)
+fn:timezone-from-date(xs:date("2000-06-12Z"));
+
+(:returns FLOAT:)
+ cts:circle-radius(cts:circle(20, cts:point(37.655983, -122.425525)));
+  
+(:returns Integer
+xdmp:octal-to-integer("12345670");
+:)
+
+(:returns HEXBINARY:)
+data(xdmp:subbinary(binary { xs:hexBinary("DEADBEEF") }, 3, 2));
+
+(:returns INTEGER:)
+fn:day-from-date(xs:date("1999-05-31-05:00"));
+
+(:returns QNAME:)
+xdmp:type(10);
+
+(:returns NCName:)
+let $qn := fn:QName("http://www.w3.org/XML/1998/namespace", "lang")
+return
+fn:prefix-from-QName(fn:node-name( attribute {$qn} {"en"}));
+
+
+(:returns TIME:)
+fn:adjust-time-to-timezone(xs:time("10:00:00"), ());
+
+(:returns BINARY:)
+(xdmp:subbinary(binary { xs:hexBinary("DEADBEEF") }, 3, 2));
+
+
+(:returns TEXTNODE :)
+doc('/test3.xml')//text();
+
+(: returns element NODE:)
+
+for $name in doc('test1.xml')//text()
+return (element {lower-case($name)} {''});
+
+(:returns COMMENT:)
+let $cmt:= <test><!--comment--> <foo/></test>
+return
+$cmt//comment();
+
+(:returns PROCESSINGINSTRUCTION:)
+let $cmt:= <test><?processing instruction?> <foo/></test>
+return
+$cmt//processing-instruction();
+
+(:returns GDAY:)
+xs:gDay("---01");
+
+(:returns GMONTH:)
+xs:gMonth("--01");
+
+(:returns GMONTHDAY:)
+xs:gMonthDay("--12-25-14:00");
+
+(:returns GYEAR:)
+xs:gYear("2005-12:00");
+
+(:returns GYEARMONTH:)
+xs:gYearMonth("1976-02");
+
+(:returns BASE64BINARY:)
+ xs:base64Binary("DEADBEEF");
