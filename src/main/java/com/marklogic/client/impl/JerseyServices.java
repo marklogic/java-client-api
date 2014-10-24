@@ -1737,6 +1737,9 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 		addEncodedParam(docParams, "uri", uri);
+		if ( database != null ) {
+			addEncodedParam(docParams, "database", database);
+		}
 		if (categories == null || categories.size() == 0) {
 			docParams.add("category", "content");
 		} else {
@@ -1993,6 +1996,10 @@ public class JerseyServices implements RESTServices {
 
     private JerseySearchRequest generateSearchRequest(RequestLogger reqlog, QueryDefinition queryDef, 
             String mimetype, MultivaluedMap<String, String> params) {
+        if ( database != null ) {
+            if ( params == null ) params = new MultivaluedMapImpl();
+            addEncodedParam(params, "database", database);
+        }
         return new JerseySearchRequest(reqlog, queryDef, mimetype, params);
     }
 
@@ -4375,7 +4382,9 @@ public class JerseyServices implements RESTServices {
 			MultivaluedMap<String, String> params, Object inputMimetype,
 			Object outputMimetype) {
 		if ( params == null ) params = new MultivaluedMapImpl();
-		if ( database != null ) params.add("database", database);
+		if ( database != null ) {
+			addEncodedParam(params, "database", database);
+		}
 		WebResource resource = connection.path(path).queryParams(params);
 
 		WebResource.Builder builder = resource.getRequestBuilder();
