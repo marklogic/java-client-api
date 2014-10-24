@@ -32,13 +32,6 @@ import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.pojo.annotation.Id;
 import com.marklogic.javaclient.TestPOJOMissingIdGetSetMethod.SmallArtifactMissingGetter;
 
-/*
- * This class has test methods that check POJO's ability to read and report errors
- * (negative test cases).
- * 
- *   NOTE: If this class is renamed, then variable docId (URI) of the POJO documents needs to changed accordingly.
- *   NOTE: Also change the type value present within the json string to proper class name.
- */
 public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 
 	private static String dbName = "TestPOJOWithDocsStoredByOthersDB";
@@ -53,7 +46,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	 * Class member name has been annotated with @Id. 
 	 * annotated.
 	 */
-	public static class SmallArtifact {
+	public static class SmallArtifactIdInSuper {
 		@Id
 		public String name;
 		private long id;
@@ -89,7 +82,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	 * Class member name has been annotated with @Id in the super class. 
 	 * Has an additional string member.
 	 */
-	public static class SmallArtifactSuper extends SmallArtifact {
+	public static class SmallArtifactNoId extends SmallArtifactIdInSuper {
 		private String originCountry;
 
 		public String getOriginCountry() {
@@ -107,7 +100,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	 * Class member name has been annotated with @Id in the super class and also in this class. 
 	 * Has an additional string member.
 	 */
-	public static class SmallArtifactSuperAndSub extends SmallArtifact {
+	public static class SmallArtifactIdInSuperAndSub extends SmallArtifactIdInSuper {
 		@Id
 		public String name;
 		public String getName() {
@@ -242,7 +235,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	/*
 	 * This method is used when there is a need to validate SmallArtifact.
 	 */
-	public void validateSmallArtifact(SmallArtifact artifact) {
+	public void validateSmallArtifact(SmallArtifactIdInSuper artifact) {
 		assertNotNull("Artifact object should never be Null", artifact);
 		assertNotNull("Id should never be Null", artifact.id);
 		assertEquals("Id of the object is ", -99, artifact.getId());
@@ -255,11 +248,11 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	/*
 	 * This method is used when there is a need to validate SmallArtifactSuper to test annotation only in super class.
 	 */
-	public void validateSmallArtifactSuper(SmallArtifactSuper artifact) {
+	public void validateSmallArtifactSuper(SmallArtifactNoId artifact) {
 		assertNotNull("Artifact object should never be Null", artifact);
 		assertNotNull("Id should never be Null", artifact.getId());
 		assertEquals("Id of the object is ", -99, artifact.getId());
-		assertEquals("Name of the object is ", "SmallArtifact",
+		assertEquals("Name of the object is ", "SmallArtifactInSuperOnly",
 				artifact.getName());
 		assertEquals("Inventory of the object is ", 1000,
 				artifact.getInventory());
@@ -271,11 +264,11 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	 * This method is used when there is a need to validate SmallArtifactSuperAndSub to test annotation in super class
 	 * and in sub class.
 	 */
-	public void validateSmallArtifactSuperAndSub(SmallArtifactSuperAndSub artifact) {
+	public void validateSmallArtifactSuperAndSub(SmallArtifactIdInSuperAndSub artifact) {
 		assertNotNull("Artifact object should never be Null", artifact);
 		assertNotNull("Id should never be Null", artifact.getId());
 		assertEquals("Id of the object is ", -100, artifact.getId());
-		assertEquals("Name of the object is ", "SmallArtifact",
+		assertEquals("Name of the object is ", "SmallArtifactInSuperAndSub",
 				artifact.getName());
 		assertEquals("Inventory of the object is ", 1000,
 				artifact.getInventory());
@@ -291,7 +284,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 		assertNotNull("Artifact object should never be Null", artifact);
 		assertNotNull("Id should never be Null", artifact.getId());
 		assertEquals("Id of the object is ", -100, artifact.getId());
-		assertEquals("Name of the object is ", "SmallArtifact",
+		assertEquals("Name of the object is ", "SmallArtifactDiffAccess",
 				artifact.getName());
 		assertEquals("Inventory of the object is ", 1000,
 				artifact.getInventory());
@@ -299,12 +292,40 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 				artifact.getOriginCountry());
 	}
 	
+	
+	/*
+	 * This method is used when there is a need to validate SmallArtifactIdInSuper to test annotation in super class
+	 * and in sub class.
+	 */
+	public void validateSubObjReferencedbySuperClassvariable(SmallArtifactIdInSuper artifact) {
+		assertNotNull("Artifact object should never be Null", artifact);
+		assertNotNull("Id should never be Null", artifact.getId());
+		assertEquals("Id of the object is ", -100, artifact.getId());
+		assertEquals("Name of the object is ", "SmallArtifactNoId",
+				artifact.getName());
+		assertEquals("Inventory of the object is ", 1000,
+				artifact.getInventory());		
+	}
+	
+	/*
+	 * This method is used when there is a need to validate SmallArtifactIdInSuperAndSub to test annotation in super class
+	 * and in sub class.
+	 */
+	public void validateSubObjReferencedbySuperClassvariableOne(SmallArtifactIdInSuperAndSub artifact) {
+		assertNotNull("Artifact object should never be Null", artifact);
+		assertNotNull("Id should never be Null", artifact.getId());
+		assertEquals("Id of the object is ", -100, artifact.getId());
+		assertEquals("Name of the object is ", "SmallArtifactIdInSuperAndSub",
+				artifact.getName());
+		assertEquals("Inventory of the object is ", 1000,
+				artifact.getInventory());		
+	}
 
 	/*
 	 * Purpose : This test is to validate read documents with valid POJO
 	 * specific URI and has invalid POJO collection Uses SmallArtifact class
 	 * which has @Id on the name methods. Test result expectations are: read
-	 * should return a null since the POJO internal collection and document's
+	 * should return a null since the POJO internal content and document's
 	 * are different.
 	 * 
 	 * Current results (10/13/2014) are: 
@@ -313,12 +334,12 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	 */
 
 	@Test
-	public void testPOJOReadDocStoredWithInvalidCollection() throws Exception {
+	public void testPOJOReadDocStoredWithInvalidContent() throws Exception {
 
-		String docId[] = { "com.marklogic.javaclient.TestPOJOWithDocsStoredByOthers$SmallArtifact/SmallArtifact.json" };
+		String docId[] = { "com.marklogic.javaclient.TestPOJOWithDocsStoredByOthers$SmallArtifactIdInSuper/SmallArtifactIdInSuper.json" };
 		String json1 = new String(
 				"{\"junk\":"
-						+ "{\"name\": \"SmallArtifact\",\"id\": -99, \"inventory\": 1000}}");
+						+ "{\"name\": \"SmallArtifactIdInSuper\",\"id\": -99, \"inventory\": 1000}}");
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		docMgr.setMetadataCategories(Metadata.ALL);
 		DocumentWriteSet writeset = docMgr.newWriteSet();
@@ -338,11 +359,11 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 
 		docMgr.write(writeset);
 
-		PojoRepository<SmallArtifact, String> pojoReposSmallArtifact = client
-				.newPojoRepository(SmallArtifact.class, String.class);
-		String artifactName = new String("SmallArtifact");
+		PojoRepository<SmallArtifactIdInSuper, String> pojoReposSmallArtifact = client
+				.newPojoRepository(SmallArtifactIdInSuper.class, String.class);
+		String artifactName = new String("SmallArtifactIdInSuper");
 
-		SmallArtifact artifact1 = pojoReposSmallArtifact.read(artifactName);
+		SmallArtifactIdInSuper artifact1 = pojoReposSmallArtifact.read(artifactName);
 		validateSmallArtifact(artifact1);
 	}
 
@@ -357,10 +378,10 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	@Test
 	public void testPOJOReadDocStoredWithNoBeanProperty() throws Exception {
 
-		String docId[] = { "com.marklogic.javaclient.TestPOJOWithDocsStoredByOthers$SmallArtifact/SmallArtifact.json" };
+		String docId[] = { "com.marklogic.javaclient.TestPOJOWithDocsStoredByOthers$SmallArtifactIdInSuper/SmallArtifactIdInSuper.json" };
 		String json1 = new String(
-				"{\"com.marklogic.javaclient.TestPOJOWithDocsStoredByOthers$SmallArtifact\":"
-						+ "{\"name\": \"SmallArtifact\",\"id\": -99}}");
+				"{\"com.marklogic.javaclient.TestPOJOWithDocsStoredByOthers$SmallArtifactIdInSuper\":"
+						+ "{\"name\": \"SmallArtifactIdInSuper\",\"id\": -99}}");
 
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		docMgr.setMetadataCategories(Metadata.ALL);
@@ -381,16 +402,16 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 
 		docMgr.write(writeset);
 
-		PojoRepository<SmallArtifact, String> pojoReposSmallArtifact = client
-				.newPojoRepository(SmallArtifact.class, String.class);
-		String artifactName = new String("SmallArtifact");
+		PojoRepository<SmallArtifactIdInSuper, String> pojoReposSmallArtifact = client
+				.newPojoRepository(SmallArtifactIdInSuper.class, String.class);
+		String artifactName = new String("SmallArtifactIdInSuper");
 
-		// Validate the SmallArtifact read back.
-		SmallArtifact artifact = pojoReposSmallArtifact.read(artifactName);
+		// Validate the SmallArtifactIdInSuper read back.
+		SmallArtifactIdInSuper artifact = pojoReposSmallArtifact.read(artifactName);
 		assertNotNull("Artifact object should never be Null", artifact);
 		assertNotNull("Id should never be Null", artifact.id);
 		assertEquals("Id of the object is ", -99, artifact.getId());
-		assertEquals("Name of the object is ", "SmallArtifact",
+		assertEquals("Name of the object is ", "SmallArtifactIdInSuper",
 				artifact.getName());
 		assertEquals("Inventory of the object is ", 0, artifact.getInventory());
 	}
@@ -432,12 +453,12 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 
 		docMgr.write(writeset);
 
-		PojoRepository<SmallArtifact, String> pojoReposSmallArtifact = client
-				.newPojoRepository(SmallArtifact.class, String.class);
+		PojoRepository<SmallArtifactIdInSuper, String> pojoReposSmallArtifact = client
+				.newPojoRepository(SmallArtifactIdInSuper.class, String.class);
 		String artifactName = new String("SmallArtifact");
 
 		@SuppressWarnings("unused")
-		SmallArtifact artifact1 = pojoReposSmallArtifact.read(artifactName);	
+		SmallArtifactIdInSuper artifact1 = pojoReposSmallArtifact.read(artifactName);	
 	}
 	
 	/*
@@ -452,11 +473,11 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	@Test
 	public void testPOJOWriteReadSuper() throws Exception {
 		
-	PojoRepository<SmallArtifactSuper, String> pojoReposSmallArtifact = client
-				.newPojoRepository(SmallArtifactSuper.class, String.class);
-		String artifactName = new String("SmallArtifact");
+	PojoRepository<SmallArtifactNoId, String> pojoReposSmallArtifact = client
+				.newPojoRepository(SmallArtifactNoId.class, String.class);
+		String artifactName = new String("SmallArtifactInSuperOnly");
 
-		SmallArtifactSuper art = new SmallArtifactSuper();
+		SmallArtifactNoId art = new SmallArtifactNoId();
 		art.setId(0);
 		art.setInventory(1000);
 		art.setName(artifactName);
@@ -465,7 +486,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 		// Load the object into database
 		pojoReposSmallArtifact.write(art,"com.marklogic.javaclient.TestPOJOMissingIdGetSetMethod$SmallArtifactSuper/SmallArtifactSuper.json");
 						
-		SmallArtifactSuper artifact1 = pojoReposSmallArtifact.read(artifactName);
+		SmallArtifactNoId artifact1 = pojoReposSmallArtifact.read(artifactName);
 		validateSmallArtifactSuper(artifact1);			
 	}
 	
@@ -479,11 +500,11 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	@Test
 	public void testPOJOWriteReadSuperAndSub() throws Exception {
 		
-	PojoRepository<SmallArtifactSuperAndSub, String> pojoReposSmallArtifact = client
-				.newPojoRepository(SmallArtifactSuperAndSub.class, String.class);
-		String artifactName = new String("SmallArtifact");
+	PojoRepository<SmallArtifactIdInSuperAndSub, String> pojoReposSmallArtifact = client
+				.newPojoRepository(SmallArtifactIdInSuperAndSub.class, String.class);
+		String artifactName = new String("SmallArtifactInSuperAndSub");
 
-		SmallArtifactSuperAndSub art = new SmallArtifactSuperAndSub();
+		SmallArtifactIdInSuperAndSub art = new SmallArtifactIdInSuperAndSub();
 		art.setId(-100);
 		art.setInventory(1000);
 		art.setName(artifactName);
@@ -492,7 +513,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 		// Load the object into database
 		pojoReposSmallArtifact.write(art,"com.marklogic.javaclient.TestPOJOMissingIdGetSetMethod$SmallArtifactSuper/SmallArtifactSuper.json");
 						
-		SmallArtifactSuperAndSub artifact1 = pojoReposSmallArtifact.read(artifactName);
+		SmallArtifactIdInSuperAndSub artifact1 = pojoReposSmallArtifact.read(artifactName);
 		validateSmallArtifactSuperAndSub(artifact1);			
 	}
 	
@@ -509,7 +530,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 		
 	PojoRepository<SmallArtifactPublic, String> pojoReposSmallArtifact = client
 				.newPojoRepository(SmallArtifactPublic.class, String.class);
-		String artifactName = new String("SmallArtifact");
+		String artifactName = new String("SmallArtifactDiffAccess");
 
 		SmallArtifactPublic art = new SmallArtifactPublic();
 		art.setId(-100);
@@ -523,4 +544,61 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 		SmallArtifactPublic artifact1 = pojoReposSmallArtifact.read(artifactName);
 		validateSmallArtifactDiffAccessSpec(artifact1);			
 	}
+	
+	/*
+	 * Purpose : This test is to validate creating an sub class which is references by a Super class variable type.
+	 * Both SmallArtifactIdInSuper and SmallArtifactNoId classes are used.
+	 * POJO repository cannot read back the sub class.
+	 * 
+	 *  PojoRepository is on the super class.
+	 */
+	
+	@Test
+	public void testPOJOSubObjReferencedBySuperClassVariable() throws Exception {
+		
+	PojoRepository<SmallArtifactIdInSuper, String> pojoReposSmallArtifact = client
+				.newPojoRepository(SmallArtifactIdInSuper.class, String.class);
+		String artifactName = new String("SmallArtifactNoId");
+
+		SmallArtifactIdInSuper art = new SmallArtifactNoId();
+		art.setId(-100);
+		art.setInventory(1000);
+		art.setName(artifactName);
+				
+		// Load the object into database
+		pojoReposSmallArtifact.write(art,"SubClassObjectReferencedBySuperClassVariable");
+		
+		// POJO repository cannot read back the sub class. Compiler complains.
+		SmallArtifactIdInSuper artifact1 = pojoReposSmallArtifact.read(artifactName);
+		validateSubObjReferencedbySuperClassvariable(artifact1);			
+	}
+	
+	/*
+	 * Purpose : This test is to validate creating an sub class which is references by a Super class variable type.
+	 * Both SmallArtifactIdInSuper and SmallArtifactNoId classes are used.
+	 * This is a variation of testPOJOSubObjReferencedBySuperClassVariable()
+	 * 
+	 * PojoRepository is on the sub class.
+	 */
+	
+	@Test
+	public void testPOJOSubObjReferencedBySuperClassVariableOne() throws Exception {
+		
+	PojoRepository<SmallArtifactIdInSuperAndSub, String> pojoReposSmallArtifact = client
+				.newPojoRepository(SmallArtifactIdInSuperAndSub.class, String.class);
+		String artifactName = new String("SmallArtifactIdInSuperAndSub");
+
+		SmallArtifactIdInSuper art = new SmallArtifactIdInSuperAndSub();
+		art.setId(-100);
+		art.setInventory(1000);
+		art.setName(artifactName);
+				
+		// Load the object into database
+		// POJO repository cannot write using super class reference class. Needs an explicit cast else compiler complains.
+		pojoReposSmallArtifact.write((SmallArtifactIdInSuperAndSub)art,"SubClassObjectReferencedBySuperClassVariableOne");
+				
+		SmallArtifactIdInSuperAndSub artifact1 = pojoReposSmallArtifact.read(artifactName);
+		validateSubObjReferencedbySuperClassvariableOne(artifact1);			
+	}
+	
 }
