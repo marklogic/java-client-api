@@ -8,6 +8,7 @@ import java.io.StringReader;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.json.JSONObject;
@@ -52,14 +53,14 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		 System.out.println("In setup");
-// 	     setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+ 	     setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
 //		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-//		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		tearDownJavaRESTServer(dbName, fNames, restServerName);
 	}
 
 	@Before
@@ -390,4 +391,29 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 	 String response3 = client.newServerEval().xquery(query3).evalAs(String.class);
 	 System.out.println(response3);
 	}
+	//Issue 156 exist for this
+	@Test(expected = com.marklogic.client.FailedRequestException.class)
+	public void testXqueryWithExtVarAsNode() throws Exception {
+		DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		  InputSource is = new InputSource();
+		   is.setCharacterStream(new StringReader("<foo attr=\"attribute\"><?processing instruction?> <!--comment-->test1</foo>"));
+		   Document doc = db.parse(is);
+		    try{
+			String query1 = "declare variable $myXmlNode as node() external;"
+						+"document{ xdmp:unquote($myXmlNode) }";
+			ServerEvaluationCall evl= client.newServerEval().xquery(query1);
+			evl.addVariableAs("myXmlNode",new DOMHandle(doc));
+			EvalResultIterator evr = evl.eval();
+			 while(evr.hasNext())
+				 {
+					 EvalResult er =evr.next();
+					 DOMHandle dh = new DOMHandle();
+					 dh=er.get(dh);
+//					 System.out.println("Type XML  :"+convertXMLDocumentToString(dh.get()));
+					 assertEquals("document has content","<foo attr=\"attribute\"><?processing instruction?><!--comment-->test1</foo>",convertXMLDocumentToString(dh.get()));
+				 }
+		        }catch(Exception e){
+				throw e;
+			}
+		}
 }
