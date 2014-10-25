@@ -54,18 +54,22 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 	public static void setUpBeforeClass() throws Exception {
 		 System.out.println("In setup");
  	     setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
-//		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+ 	     TestEvalXquery.createUserRolesWithPrevilages("test-eval", "xdbc:eval","any-uri");
+ 	     TestEvalXquery.createRESTUser("eval-user", "x", "test-eval");
+		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
 		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		TestEvalXquery.deleteRESTUser("eval-user");
+		TestEvalXquery.deleteUserRole("test-eval");
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		client = DatabaseClientFactory.newClient("localhost", restPort,"admin", "admin", Authentication.DIGEST);
+		client = DatabaseClientFactory.newClient("localhost", restPort,"eval-user", "x", Authentication.DIGEST);
 	}
 
 	@After
@@ -391,7 +395,7 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 	 String response3 = client.newServerEval().xquery(query3).evalAs(String.class);
 	 System.out.println(response3);
 	}
-	//Issue 156 exist for this
+	//Issue 156 exist for this, have test cases where you can pass, element node, text node, binary node as an external variable 
 	@Test(expected = com.marklogic.client.FailedRequestException.class)
 	public void testXqueryWithExtVarAsNode() throws Exception {
 		DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
