@@ -18,10 +18,14 @@ package com.marklogic.client.query;
 import javax.xml.namespace.QName;
 
 /**
+ * @deprecated Use {@link RawQueryByExampleDefinition Query By Example} instead for easy-to-write and much more full-featured key/value search.
+ * <br><br>
+ *
  * An Element Locator specifies an element or element and attribute
  * containing a value as part of a KeyValueQueryDefinition.
  * The element is required.  The attribute is optional.
  */
+@Deprecated
 public interface ElementLocator extends ValueLocator {
     /**
      * Returns the name of the element containing the attribute

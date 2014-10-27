@@ -16,9 +16,13 @@
 package com.marklogic.client.query;
 
 /**
+ * @deprecated Use {@link RawQueryByExampleDefinition Query By Example} instead for easy-to-write and much more full-featured key/value search.
+ * <br><br>
+ *
  * A Key Locator specifies a JSON key containing a value as part
  * of a KeyValueQueryDefinition.
  */
+@Deprecated
 public interface KeyLocator extends ValueLocator {
     /**
      * Returns a JSON key.
