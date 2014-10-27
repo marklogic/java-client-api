@@ -32,7 +32,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.pojo.PojoQueryBuilder.Operator;
@@ -111,7 +111,7 @@ public class PojoFacadeTest {
 
 
         PojoQueryBuilder<City> qb = cities.getQueryBuilder();
-        QueryDefinition query = qb.term("Tungi", "Dalatando", "Chittagong");
+        PojoQueryDefinition query = qb.term("Tungi", "Dalatando", "Chittagong");
         page = cities.search(query, 1);
         iterator = page.iterator();
         numRead = 0;
@@ -309,7 +309,7 @@ public class PojoFacadeTest {
 
         PojoQueryBuilder<City> qb = cities.getQueryBuilder();
         PojoQueryBuilder<Country> countriesQb = qb.containerQueryBuilder("country", Country.class);
-        QueryDefinition query = countriesQb.value("continent", "EU");
+        PojoQueryDefinition query = countriesQb.value("continent", "EU");
         assertEquals("Should not find any countries", 0, cities.search(query, 1).getTotalSize());
 
         query = countriesQb.value("continent", "AS");

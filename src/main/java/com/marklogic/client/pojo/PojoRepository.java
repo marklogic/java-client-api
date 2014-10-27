@@ -18,7 +18,6 @@ package com.marklogic.client.pojo;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.SearchReadHandle;
-import com.marklogic.client.query.QueryDefinition;
 
 import java.io.Serializable;
 
@@ -40,7 +39,7 @@ public interface PojoRepository<T, ID extends Serializable> {
 
     /** @return the number of documents of type T persisted in the database which match
      * the query */
-    public long count(QueryDefinition query);
+    public long count(PojoQueryDefinition query);
   
     /** Deletes from the database the documents with the corresponding ids */
     public void delete(ID... ids);
@@ -61,10 +60,10 @@ public interface PojoRepository<T, ID extends Serializable> {
  
     public PojoPage<T> search(long start, String... collections);
     public PojoPage<T> search(long start, Transaction transaction, String... collections);
-    public PojoPage<T> search(QueryDefinition query, long start);
-    public PojoPage<T> search(QueryDefinition query, long start, Transaction transaction);
-    public PojoPage<T> search(QueryDefinition query, long start, SearchReadHandle searchHandle);
-    public PojoPage<T> search(QueryDefinition query, long start, SearchReadHandle searchHandle, Transaction transaction);
+    public PojoPage<T> search(PojoQueryDefinition query, long start);
+    public PojoPage<T> search(PojoQueryDefinition query, long start, Transaction transaction);
+    public PojoPage<T> search(PojoQueryDefinition query, long start, SearchReadHandle searchHandle);
+    public PojoPage<T> search(PojoQueryDefinition query, long start, SearchReadHandle searchHandle, Transaction transaction);
  
     public PojoQueryBuilder<T> getQueryBuilder();
 

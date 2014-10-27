@@ -15,12 +15,13 @@
  */
 package com.marklogic.client.query;
 
+import com.marklogic.client.pojo.PojoQueryDefinition;
 
 /**
  * A StringQueryDefinition represents the criteria associated with a simple string query.
  */
 public interface StringQueryDefinition
-	extends QueryDefinition, ValueQueryDefinition
+    extends QueryDefinition, ValueQueryDefinition, PojoQueryDefinition
 {
     /**
      * Returns the query criteria, that is the query string.
@@ -36,7 +37,7 @@ public interface StringQueryDefinition
 
     /**
      * Sets the query criteria as a query string and returns the query
-	 * definition as a fluent convenience.
+     * definition as a fluent convenience.
      * @param criteria The query string.
      * @return	This query definition.
      */

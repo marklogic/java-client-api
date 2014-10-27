@@ -201,7 +201,7 @@ public StructuredQueryBuilder.GeospatialIndex
      * @return a QueryDefinition that can be used with PojoRepository.search() 
      *         (a REST combined query under the hood)
      */
-    public QueryDefinition filteredQuery(StructuredQueryDefinition query);
+    public PojoQueryDefinition filteredQuery(StructuredQueryDefinition query);
 
 }
 

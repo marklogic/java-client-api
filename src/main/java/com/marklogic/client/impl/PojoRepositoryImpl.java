@@ -30,8 +30,8 @@ import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.pojo.annotation.Id;
+import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.StructuredQueryDefinition;
@@ -114,7 +114,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     }
 
     public long count() {
-        return count((QueryDefinition) null);
+        return count((PojoQueryDefinition) null);
     }
 
     public long count(String... collections) {
@@ -123,9 +123,9 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
                 return count(qb.collection(collections));
             }
         }
-        return count((QueryDefinition) null);
+        return count((PojoQueryDefinition) null);
     }
-    public long count(QueryDefinition query) {
+    public long count(PojoQueryDefinition query) {
         long pageLength = getPageLength();
         setPageLength(0);
         PojoPage page = search(query, 1);
@@ -195,16 +195,16 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         return search(qb.collection(collections), start, null, transaction);
     }
 
-    public PojoPage<T> search(QueryDefinition query, long start) {
+    public PojoPage<T> search(PojoQueryDefinition query, long start) {
         return search(query, start, null, null);
     }
-    public PojoPage<T> search(QueryDefinition query, long start, Transaction transaction) {
+    public PojoPage<T> search(PojoQueryDefinition query, long start, Transaction transaction) {
         return search(query, start, null, transaction);
     }
-    public PojoPage<T> search(QueryDefinition query, long start, SearchReadHandle searchHandle) {
+    public PojoPage<T> search(PojoQueryDefinition query, long start, SearchReadHandle searchHandle) {
         return search(query, start, searchHandle, null);
     }
-    public PojoPage<T> search(QueryDefinition query, long start, SearchReadHandle searchHandle, Transaction transaction) {
+    public PojoPage<T> search(PojoQueryDefinition query, long start, SearchReadHandle searchHandle, Transaction transaction) {
         if ( searchHandle != null ) {
             HandleImplementation searchBase = HandleAccessor.checkHandle(searchHandle, "search");
             if (searchHandle instanceof SearchHandle) {
@@ -248,7 +248,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         return client;
     }
 
-    private QueryDefinition wrapQuery(QueryDefinition query) {
+    private PojoQueryDefinition wrapQuery(PojoQueryDefinition query) {
         if ( query == null ) {
             return qb.collection(entityClass.getName());
         } else {
