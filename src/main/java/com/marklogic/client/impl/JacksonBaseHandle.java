@@ -46,10 +46,6 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
 
 public abstract class JacksonBaseHandle<T>
         extends BaseHandle<InputStream, OutputStreamSender>
-        implements OutputStreamSender, BufferableHandle, JSONReadHandle, JSONWriteHandle,
-            TextReadHandle, TextWriteHandle,
-            XMLReadHandle, XMLWriteHandle,
-            StructureReadHandle, StructureWriteHandle
 {
     private ObjectMapper mapper;
 

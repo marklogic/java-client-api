@@ -15,29 +15,26 @@
  */
 package com.marklogic.client.io;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.impl.JacksonBaseHandle;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
-import com.marklogic.client.io.marker.GenericReadHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.io.marker.OperationNotSupported;
+import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
+import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.impl.JacksonBaseHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * An adapter for using the streaming capabilities of the Jackson Open Source library.
@@ -46,9 +43,13 @@ import com.marklogic.client.impl.JacksonBaseHandle;
 // TODO: add link to jackson streaming documentation
 public class JacksonParserHandle
     extends JacksonBaseHandle<JsonParser>
-    implements ContentHandle<JsonParser>
+    implements ContentHandle<JsonParser>,
+            OutputStreamSender, BufferableHandle, 
+            JSONReadHandle, JSONWriteHandle,
+            TextReadHandle, TextWriteHandle,
+            XMLReadHandle, XMLWriteHandle,
+            StructureReadHandle, StructureWriteHandle
 {
-    private ObjectMapper mapper;
     private JsonParser parser = null;
     private InputStream content = null;
 
