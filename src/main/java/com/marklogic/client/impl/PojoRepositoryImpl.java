@@ -36,6 +36,8 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.Serializable;
@@ -66,7 +68,20 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     private Method idMethod;
     private Field idProperty;
     private String idPropertyName;
-
+    private ObjectMapper objectMapper = new ObjectMapper()
+        // if we don't do the next two lines Jackson will automatically close our streams which is undesirable
+        .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false)
+        .configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false)
+        // enableDefaultTyping just means include types in the serialized output
+        // we need this to do strongly-typed queries 
+        .enableDefaultTyping(
+            // ObjectMapper.DefaultTyping.NON_FINAL means that typing in serialized output
+            // for all non-final types except the "natural" types (String, Boolean, Integer, Double), 
+            // which can be correctly inferred from JSON; as well as for all arrays of non-final types.
+            ObjectMapper.DefaultTyping.NON_FINAL, 
+            // JsonTypeInfo.As.WRAPPER_OBJECT means add a type wrapper around the data so then
+            // our strongly-typed queries can use parent-child scoped queries or path index queries
+            JsonTypeInfo.As.WRAPPER_OBJECT);
     PojoRepositoryImpl(DatabaseClient client, Class<T> entityClass) {
         this.client = client;
         this.entityClass = entityClass;
@@ -97,8 +112,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     public void write(T entity, Transaction transaction, String... collections) {
         if ( entity == null ) return;
         JacksonDatabindHandle contentHandle = new JacksonDatabindHandle(entity);
-        contentHandle.getMapper().enableDefaultTyping(
-            ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT); 
+        contentHandle.setMapper(objectMapper); 
         DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
         metadataHandle = metadataHandle.withCollections(entityClass.getName());
         if ( collections != null && collections.length > 0 ) {

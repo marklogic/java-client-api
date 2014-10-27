@@ -62,6 +62,7 @@ public abstract class JacksonBaseHandle<T>
     public ObjectMapper getMapper() {
         if (mapper == null) {
             mapper = new ObjectMapper();
+            // if we don't do the next two lines Jackson will automatically close our streams which is undesirable
             mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
             mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
         }
