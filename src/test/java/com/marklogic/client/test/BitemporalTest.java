@@ -117,7 +117,7 @@ public class BitemporalTest {
 		DocumentPage termQueryResults = docMgr.search(termQuery, start);
 		assertEquals("Wrong number of results", 4, termQueryResults.size());
 
-		StructuredQueryDefinition currentQuery = sqb.temporalCurrent(temporalCollection, null, 1);
+		StructuredQueryDefinition currentQuery = sqb.temporalLsqtQuery(temporalCollection, null, 1);
 		StructuredQueryDefinition currentDocQuery = sqb.and(termQuery, currentQuery);
 		DocumentPage currentDocQueryResults = docMgr.search(currentDocQuery, start);
 		assertEquals("Wrong number of results", 4, currentDocQueryResults.size());
