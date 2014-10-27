@@ -39,26 +39,26 @@ import com.marklogic.client.util.IterableNamespaceContext;
  *
  * <p>Where StructuredQueryBuilder accepts StructuredQueryBuilder.TextIndex as a first argument
  * to 
- * {@link #value(StructuredQueryBuilder.TextIndex, String...) value(TextIndex, String...)} 
+ * {@link StructuredQueryBuilder#value(StructuredQueryBuilder.TextIndex, String...) value(TextIndex, String...)} 
  * and 
- * {@link #word(StructuredQueryBuilder.TextIndex, String...) word(TextIndex, String...)}  
+ * {@link StructuredQueryBuilder#word(StructuredQueryBuilder.TextIndex, String...) word(TextIndex, String...)}  
  * methods,
  * PojoQueryBuilder adds shortcut methods which accept as the first argument a String name of the 
  * pojoProperty. Similarly, PojoQueryBuilder accepts String pojoProperty arguments wherever 
  * StructuredQueryBuilder accepts StructuredQueryBuilder.Element,
  * StructuredQueryBuilder.Attribute, and StructuredQueryBuilder.PathIndex
  * as arguments to 
- * {@link #geoAttributePair(StructuredQueryBuilder.Element, StructuredQueryBuilder.Attribute,
+ * {@link StructuredQueryBuilder#geoAttributePair(StructuredQueryBuilder.Element, StructuredQueryBuilder.Attribute,
  *   StructuredQueryBuilder.Attribute)
  *   geoAttributePair(Element, Attribute, Attribute)}, 
- * {@link #geoElement(StructuredQueryBuilder.Element)
+ * {@link StructuredQueryBuilder#geoElement(StructuredQueryBuilder.Element)
  *   geoElement(Element)}, 
- * {@link #geoElement(StructuredQueryBuilder.Element, StructuredQueryBuilder.Element)
+ * {@link StructuredQueryBuilder#geoElement(StructuredQueryBuilder.Element, StructuredQueryBuilder.Element)
  *   geoElement(Element, Element)}, 
- * {@link #geoElementPair(StructuredQueryBuilder.Element, StructuredQueryBuilder.Element,
+ * {@link StructuredQueryBuilder#geoElementPair(StructuredQueryBuilder.Element, StructuredQueryBuilder.Element,
  *   StructuredQueryBuilder.Element)
  *   geoElementPair(Element, Element, Element)}, 
- * {@link #geoPath(StructuredQueryBuilder.PathIndex)
+ * {@link StructuredQueryBuilder#geoPath(StructuredQueryBuilder.PathIndex)
  *   geoPath(PathIndex)}
  * </p>
  *
@@ -112,7 +112,7 @@ import com.marklogic.client.util.IterableNamespaceContext;
  */
 public interface PojoQueryBuilder<T> {
 
-    /** Copied directly from  {@link StructuredQueryBuilder#Operator StructuredQuerybuilder.Operator}**/
+    /** Copied directly from  {@link com.marklogic.client.query.StructuredQueryBuilder.Operator}**/
 	public enum Operator {
         LT, LE, GT, GE, EQ, NE;
     }
