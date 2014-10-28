@@ -38,20 +38,29 @@ import com.marklogic.client.query.StructuredQueryDefinition;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.introspect.AnnotatedParameter;
+import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,10 +77,17 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     private Method idMethod;
     private Field idProperty;
     private String idPropertyName;
+    private static final String ISO_8601_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+    private static SimpleDateFormat simpleDateFormat8601 = new SimpleDateFormat(ISO_8601_FORMAT);
+    static { simpleDateFormat8601.setTimeZone(TimeZone.getTimeZone("UTC")); }
     private ObjectMapper objectMapper = new ObjectMapper()
         // if we don't do the next two lines Jackson will automatically close our streams which is undesirable
         .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false)
         .configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false)
+        // we do the next two so dates are written in xs:dateTime format
+        // which makes them ready for range indexes in MarkLogic Server
+        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+        .setDateFormat(simpleDateFormat8601)
         // enableDefaultTyping just means include types in the serialized output
         // we need this to do strongly-typed queries 
         .enableDefaultTyping(
@@ -290,6 +306,41 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     }
 
     private void findId() {
+        if ( idMethod == null && idProperty == null ) {
+            SerializationConfig serializationConfig = objectMapper.getSerializationConfig();
+            JavaType javaType = serializationConfig.constructType(entityClass);
+            BeanDescription beanDescription = serializationConfig.introspect(javaType);
+            List<BeanPropertyDefinition> properties = beanDescription.findProperties();
+            for ( BeanPropertyDefinition property : properties ) {
+                /* Constructor parameters don't work because they give us no value accessor
+                if ( property.hasConstructorParameter() ) {
+                    AnnotatedParameter parameter = property.getConstructorParameter();
+                    if ( parameter.getAnnotation(Id.class) != null ) {
+                        idPropertyName = property.getName();
+                    }
+                }
+                */
+                if ( property.hasField() ) {
+                    Field field = property.getField().getAnnotated();
+                    if ( field.getAnnotation(Id.class) != null ) {
+                        idPropertyName = property.getName();
+                        idProperty = field;
+                        break;
+                    }
+                }
+                if ( property.hasGetter() ) {
+                    Method getter = property.getGetter().getAnnotated();
+                    if ( getter.getAnnotation(Id.class) != null ) {
+                        idPropertyName = property.getName();
+                        idMethod = getter;
+                        break;
+                    }
+                }
+                // setter only doesn't work because it gives us no value accessor
+            }
+        }
+        // Jackson's introspect approach should find it, but our old approach below 
+        // gives some helpful errors
         if ( idMethod == null && idProperty == null ) {
             for ( Method method : entityClass.getDeclaredMethods() ) {
                 if ( method.isAnnotationPresent(Id.class) ) {
