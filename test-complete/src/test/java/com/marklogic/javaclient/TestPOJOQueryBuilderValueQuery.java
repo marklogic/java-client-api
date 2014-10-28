@@ -19,6 +19,7 @@ import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoQueryBuilder;
+import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.QueryDefinition;
 
@@ -127,7 +128,7 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 		String[] searchOptions ={"case-sensitive","wildcarded","min-occurs=2"};
 		PojoQueryBuilder qb = products.getQueryBuilder();
 		Number[] searchIds = {5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,121,122,123,124,125,126};
-		QueryDefinition qd = qb.value("id",searchOptions,-1.0,searchIds);
+		PojoQueryDefinition qd = qb.value("id",searchOptions,-1.0,searchIds);
 
 		JacksonHandle jh = new JacksonHandle();
 		products.setPageLength(5);
@@ -161,7 +162,7 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 		String[] searchOptions ={"case-sensitive","wildcarded","min-occurs=2"};
 		PojoQueryBuilder qb = products.getQueryBuilder();
 		String[] searchNames = {"Acme spe*","Widgets spe*"};
-		QueryDefinition qd = qb.value("name",searchOptions,100.0,searchNames);
+		PojoQueryDefinition qd = qb.value("name",searchOptions,100.0,searchNames);
 		JacksonHandle jh = new JacksonHandle();
 		products.setPageLength(5);
 		p = products.search(qd, 1,jh);
@@ -198,7 +199,7 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 		String[] searchOptions ={"case-sensitive","wildcarded","min-occurs=2"};
 		PojoQueryBuilder qb = products.getQueryBuilder();
 		String[] searchNames = {"acme*"};
-		QueryDefinition qd = qb.value("name",searchOptions,100.0,searchNames);
+		PojoQueryDefinition qd = qb.value("name",searchOptions,100.0,searchNames);
 		JacksonHandle jh = new JacksonHandle();
 		products.setPageLength(5);
 		p = products.search(qd, 1,jh);
@@ -235,7 +236,7 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 		//			String[] searchOptions ={"case-sensitive","min-occurs=2"};
 		PojoQueryBuilder qb = products.getQueryBuilder();
 		String[] searchNames = {"counter","special"};
-		QueryDefinition qd = qb.word("name",searchNames);
+		PojoQueryDefinition qd = qb.word("name",searchNames);
 		JacksonHandle jh = new JacksonHandle();
 		products.setPageLength(5);
 		p = products.search(qd, 1,jh);
@@ -274,7 +275,7 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 		String[] searchOptions ={"case-sensitive","wildcarded","min-occurs=2"};
 		PojoQueryBuilder qb = products.getQueryBuilder();
 		String[] searchNames = {"count*"};
-		QueryDefinition qd = qb.word("name",searchOptions,0.0,searchNames);
+		PojoQueryDefinition qd = qb.word("name",searchOptions,0.0,searchNames);
 		JacksonHandle jh = new JacksonHandle();
 		products.setPageLength(5);
 		p = products.search(qd, 1,jh);
