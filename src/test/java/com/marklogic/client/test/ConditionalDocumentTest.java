@@ -190,7 +190,7 @@ public class ConditionalDocumentTest {
 		}
 		assertTrue("Delete with no version succeeded", ex != null);
 		assertEquals("Delete with no version had misleading message", 
-				"Local message: Content version required to delete document. Server Message: You do not have permission to this method and URL",
+				"Local message: Content version required to delete document. Server Message: You do not have permission to this method and URL.",
 				ex.getMessage());
 
 		
