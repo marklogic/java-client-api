@@ -24,16 +24,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResult.Type;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 
 
 
@@ -54,9 +57,9 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 	public static void setUpBeforeClass() throws Exception {
 		 System.out.println("In setup");
  	     setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
- 	     TestEvalXquery.createUserRolesWithPrevilages("test-eval", "xdbc:eval","any-uri");
+ 	     TestEvalXquery.createUserRolesWithPrevilages("test-eval", "xdbc:eval","any-uri","xdbc:invoke");
  	     TestEvalXquery.createRESTUser("eval-user", "x", "test-eval");
-		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+//		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
 
 	@AfterClass
@@ -270,6 +273,7 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 	 InputStream inputStream = new FileInputStream("src/test/java/com/marklogic/javaclient/data/xqueries.txt");
 	 InputStreamHandle ish = new InputStreamHandle();
 	 ish.set(inputStream);
+	 
 	try{	 
 		EvalResultIterator evr = client.newServerEval().xquery(ish).eval();
 		this.validateReturnTypes(evr);
@@ -420,4 +424,42 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 				throw e;
 			}
 		}
+
+	//Issue 156 , have test cases where you can pass, element node, text node, binary node, json object, json array  as an external variable 
+	@Test
+	public void testXqueryInvokeModuleRetDiffTypes() throws Exception {
+	
+		InputStream inputStream=null;
+		DatabaseClient	moduleClient = DatabaseClientFactory.newClient("localhost", restPort,(restServerName+"-modules"),"admin", "admin", Authentication.DIGEST);
+	try{
+		inputStream = new FileInputStream("src/test/java/com/marklogic/javaclient/data/xquery-modules-with-diff-variable-types.xqy");
+		InputStreamHandle ish = new InputStreamHandle();
+		ish.set(inputStream);
+		 DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+		 metadataHandle.getPermissions().add("test-eval", Capability.UPDATE, Capability.READ,Capability.EXECUTE);
+		DocumentManager dm = moduleClient.newDocumentManager();
+		dm.write("/data/xquery-modules-with-diff-variable-types.xqy",metadataHandle,ish);
+		DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		InputSource is = new InputSource();
+		is.setCharacterStream(new StringReader("<foo attr=\"attribute\"><?processing instruction?><!--comment-->test1</foo>"));
+		Document doc = db.parse(is);
+		ServerEvaluationCall evl = client.newServerEval().modulePath("/data/xquery-modules-with-diff-variable-types.xqy");
+		evl.addNamespace("test", "http://marklogic.com/test")
+		.addVariable("test:myString", "xml")
+		.addVariable("myBool", true).addVariable("myInteger", (int)31)
+		.addVariable("myDecimal", 10.5).addVariable("myDouble", 1.0471975511966)
+		.addVariable("myFloat",20).addVariableAs("myXmlNode",new DOMHandle(doc))
+		.addVariableAs("myNull",(String) null);
+		EvalResultIterator evr = evl.eval();
+		this.validateReturnTypes(evr);
+		
+	}catch(Exception e){
+		throw e;
+	}
+	finally{
+		if(inputStream != null) {inputStream.close();}
+		moduleClient.release();
+	}
+	
+	}
 }
