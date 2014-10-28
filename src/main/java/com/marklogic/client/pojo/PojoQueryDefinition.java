@@ -13,26 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.test.example.cookbook;
+package com.marklogic.client.pojo;
 
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.query.QueryDefinition;
 
-import java.io.IOException;
-
-import org.junit.Test;
-
-import com.marklogic.client.example.cookbook.KeyValueSearch;
-
-public class KeyValueSearchTest {
-	@Test
-	public void testMain() {
-		boolean succeeded = false;
-		try {
-			KeyValueSearch.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("KeyValueSearch example failed", succeeded);
-	}
-}
+/**
+ * A marker interface identifying QueryDefinition types compatible with 
+ * {@link PojoRepository#search(PojoQueryDefinition, long) PojoRepository.search}
+ * @see PojoRepository#search(PojoQueryDefinition, long)
+ * @see PojoRepository#search(PojoQueryDefinition, long, Transaction)
+ * @see PojoRepository#search(PojoQueryDefinition, long, SearchReadHandle)
+ * @see PojoRepository#search(PojoQueryDefinition, long, SearchReadHandle, Transaction)
+ */
+public interface PojoQueryDefinition extends QueryDefinition {}

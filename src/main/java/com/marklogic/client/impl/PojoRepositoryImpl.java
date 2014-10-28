@@ -30,26 +30,37 @@ import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.pojo.annotation.Id;
+import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.introspect.AnnotatedParameter;
+import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,7 +77,27 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     private Method idMethod;
     private Field idProperty;
     private String idPropertyName;
-
+    private static final String ISO_8601_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+    private static SimpleDateFormat simpleDateFormat8601 = new SimpleDateFormat(ISO_8601_FORMAT);
+    static { simpleDateFormat8601.setTimeZone(TimeZone.getTimeZone("UTC")); }
+    private ObjectMapper objectMapper = new ObjectMapper()
+        // if we don't do the next two lines Jackson will automatically close our streams which is undesirable
+        .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false)
+        .configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false)
+        // we do the next two so dates are written in xs:dateTime format
+        // which makes them ready for range indexes in MarkLogic Server
+        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+        .setDateFormat(simpleDateFormat8601)
+        // enableDefaultTyping just means include types in the serialized output
+        // we need this to do strongly-typed queries 
+        .enableDefaultTyping(
+            // ObjectMapper.DefaultTyping.NON_FINAL means that typing in serialized output
+            // for all non-final types except the "natural" types (String, Boolean, Integer, Double), 
+            // which can be correctly inferred from JSON; as well as for all arrays of non-final types.
+            ObjectMapper.DefaultTyping.NON_FINAL, 
+            // JsonTypeInfo.As.WRAPPER_OBJECT means add a type wrapper around the data so then
+            // our strongly-typed queries can use parent-child scoped queries or path index queries
+            JsonTypeInfo.As.WRAPPER_OBJECT);
     PojoRepositoryImpl(DatabaseClient client, Class<T> entityClass) {
         this.client = client;
         this.entityClass = entityClass;
@@ -97,8 +128,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     public void write(T entity, Transaction transaction, String... collections) {
         if ( entity == null ) return;
         JacksonDatabindHandle contentHandle = new JacksonDatabindHandle(entity);
-        contentHandle.getMapper().enableDefaultTyping(
-            ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT); 
+        contentHandle.setMapper(objectMapper); 
         DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
         metadataHandle = metadataHandle.withCollections(entityClass.getName());
         if ( collections != null && collections.length > 0 ) {
@@ -114,7 +144,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     }
 
     public long count() {
-        return count((QueryDefinition) null);
+        return count((PojoQueryDefinition) null);
     }
 
     public long count(String... collections) {
@@ -123,9 +153,9 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
                 return count(qb.collection(collections));
             }
         }
-        return count((QueryDefinition) null);
+        return count((PojoQueryDefinition) null);
     }
-    public long count(QueryDefinition query) {
+    public long count(PojoQueryDefinition query) {
         long pageLength = getPageLength();
         setPageLength(0);
         PojoPage page = search(query, 1);
@@ -195,16 +225,16 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         return search(qb.collection(collections), start, null, transaction);
     }
 
-    public PojoPage<T> search(QueryDefinition query, long start) {
+    public PojoPage<T> search(PojoQueryDefinition query, long start) {
         return search(query, start, null, null);
     }
-    public PojoPage<T> search(QueryDefinition query, long start, Transaction transaction) {
+    public PojoPage<T> search(PojoQueryDefinition query, long start, Transaction transaction) {
         return search(query, start, null, transaction);
     }
-    public PojoPage<T> search(QueryDefinition query, long start, SearchReadHandle searchHandle) {
+    public PojoPage<T> search(PojoQueryDefinition query, long start, SearchReadHandle searchHandle) {
         return search(query, start, searchHandle, null);
     }
-    public PojoPage<T> search(QueryDefinition query, long start, SearchReadHandle searchHandle, Transaction transaction) {
+    public PojoPage<T> search(PojoQueryDefinition query, long start, SearchReadHandle searchHandle, Transaction transaction) {
         if ( searchHandle != null ) {
             HandleImplementation searchBase = HandleAccessor.checkHandle(searchHandle, "search");
             if (searchHandle instanceof SearchHandle) {
@@ -248,7 +278,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         return client;
     }
 
-    private QueryDefinition wrapQuery(QueryDefinition query) {
+    private PojoQueryDefinition wrapQuery(PojoQueryDefinition query) {
         if ( query == null ) {
             return qb.collection(entityClass.getName());
         } else {
@@ -276,6 +306,41 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     }
 
     private void findId() {
+        if ( idMethod == null && idProperty == null ) {
+            SerializationConfig serializationConfig = objectMapper.getSerializationConfig();
+            JavaType javaType = serializationConfig.constructType(entityClass);
+            BeanDescription beanDescription = serializationConfig.introspect(javaType);
+            List<BeanPropertyDefinition> properties = beanDescription.findProperties();
+            for ( BeanPropertyDefinition property : properties ) {
+                /* Constructor parameters don't work because they give us no value accessor
+                if ( property.hasConstructorParameter() ) {
+                    AnnotatedParameter parameter = property.getConstructorParameter();
+                    if ( parameter.getAnnotation(Id.class) != null ) {
+                        idPropertyName = property.getName();
+                    }
+                }
+                */
+                if ( property.hasField() ) {
+                    Field field = property.getField().getAnnotated();
+                    if ( field.getAnnotation(Id.class) != null ) {
+                        idPropertyName = property.getName();
+                        idProperty = field;
+                        break;
+                    }
+                }
+                if ( property.hasGetter() ) {
+                    Method getter = property.getGetter().getAnnotated();
+                    if ( getter.getAnnotation(Id.class) != null ) {
+                        idPropertyName = property.getName();
+                        idMethod = getter;
+                        break;
+                    }
+                }
+                // setter only doesn't work because it gives us no value accessor
+            }
+        }
+        // Jackson's introspect approach should find it, but our old approach below 
+        // gives some helpful errors
         if ( idMethod == null && idProperty == null ) {
             for ( Method method : entityClass.getDeclaredMethods() ) {
                 if ( method.isAnnotationPresent(Id.class) ) {

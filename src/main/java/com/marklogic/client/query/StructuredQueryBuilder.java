@@ -1956,13 +1956,13 @@ public class StructuredQueryBuilder {
         }
     }
 
-    class TemporalCurrentQuery
+    class TemporalLsqtQuery
     extends AbstractStructuredQuery {
     	private String temporalCollection;
     	private String formattedTimestamp = null;
     	private double weight;
     	private String[] options;
-		TemporalCurrentQuery(String temporalCollection, Calendar timestamp, double weight, String[] options) {
+		TemporalLsqtQuery(String temporalCollection, Calendar timestamp, double weight, String[] options) {
     		this.temporalCollection = temporalCollection;
 			if ( timestamp != null ) {
 				this.formattedTimestamp = DatatypeConverter.printDateTime(timestamp);
@@ -1972,7 +1972,7 @@ public class StructuredQueryBuilder {
     	}
     	@Override
     	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-    		serializer.writeStartElement("current-query");
+    		serializer.writeStartElement("lsqt-query");
 			writeText(serializer, "temporal-collection", temporalCollection);
 			if ( formattedTimestamp != null ) {
 				writeText(serializer, "timestamp", formattedTimestamp);
@@ -2766,10 +2766,10 @@ public class StructuredQueryBuilder {
 		return new TemporalPeriodCompareQuery(axis1, operator, axis2, options);
 	}
 
-	public StructuredQueryDefinition temporalCurrent(String temporalCollection, Calendar timestamp,
+	public StructuredQueryDefinition temporalLsqtQuery(String temporalCollection, Calendar timestamp,
 		double weight, String... options)
 	{
 		if ( temporalCollection == null ) throw new IllegalArgumentException("temporalCollection cannot be null");
-		return new TemporalCurrentQuery(temporalCollection, timestamp, weight, options);
+		return new TemporalLsqtQuery(temporalCollection, timestamp, weight, options);
 	}
 }

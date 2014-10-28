@@ -15,24 +15,22 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.pojo.PojoQueryBuilder;
-import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryBuilder.TermQuery;
-import com.marklogic.client.query.StructuredQueryBuilder.TextIndex;
-import com.marklogic.client.query.StructuredQueryDefinition;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Date;
 import java.util.HashMap;
 
 import javax.xml.stream.XMLStreamWriter;
+
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.pojo.PojoQueryBuilder;
+import com.marklogic.client.pojo.PojoQueryDefinition;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryDefinition;
  
 public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements PojoQueryBuilder<T> {
-    private HashMap<String, Class> types = new HashMap<String, Class>();
+    private HashMap<String, Class<?>> types = new HashMap<String, Class<?>>();
     private HashMap<String, String> rangeIndextypes = new HashMap<String, String>();
     private Class<?> clazz;
     private String classWrapper;
@@ -212,7 +210,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
         }
     }
 
-    public QueryDefinition filteredQuery(StructuredQueryDefinition query) {
+    public PojoQueryDefinition filteredQuery(StructuredQueryDefinition query) {
         CombinedQueryBuilder cqb = new CombinedQueryBuilderImpl();
         StringHandle options = new StringHandle(
             "<options><search-option>filtered</search-option></options>")

@@ -20,7 +20,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
+import java.util.TimeZone;
 
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
@@ -32,7 +35,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.pojo.PojoQueryBuilder.Operator;
@@ -40,6 +43,7 @@ import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.pojo.annotation.Id;
 import com.marklogic.client.test.BulkReadWriteTest;
 import com.marklogic.client.test.BulkReadWriteTest.CityWriter;
+import com.marklogic.client.test.PojoFacadeTest.TimeTest;
 
 import static com.marklogic.client.test.BulkReadWriteTest.DIRECTORY;
 
@@ -111,7 +115,7 @@ public class PojoFacadeTest {
 
 
         PojoQueryBuilder<City> qb = cities.getQueryBuilder();
-        QueryDefinition query = qb.term("Tungi", "Dalatando", "Chittagong");
+        PojoQueryDefinition query = qb.term("Tungi", "Dalatando", "Chittagong");
         page = cities.search(query, 1);
         iterator = page.iterator();
         numRead = 0;
@@ -309,7 +313,7 @@ public class PojoFacadeTest {
 
         PojoQueryBuilder<City> qb = cities.getQueryBuilder();
         PojoQueryBuilder<Country> countriesQb = qb.containerQueryBuilder("country", Country.class);
-        QueryDefinition query = countriesQb.value("continent", "EU");
+        PojoQueryDefinition query = countriesQb.value("continent", "EU");
         assertEquals("Should not find any countries", 0, cities.search(query, 1).getTotalSize());
 
         query = countriesQb.value("continent", "AS");
@@ -379,9 +383,43 @@ public class PojoFacadeTest {
         assertEquals("Should find the right product id", 2001, page3.next().id);
     }
 
+    public static class TimeTest {     
+    	@Id public String id;
+        public Calendar timeTest;
+
+        public TimeTest() {}
+        public TimeTest(String id, Calendar timeTest) {
+            this.id = id;
+            this.timeTest = timeTest;
+        }
+    }
 
     @Test
-    public void testF_DeletePojos() throws Exception {
+    public void testF_DateTime() {
+        PojoRepository<TimeTest, String> times = Common.client.newPojoRepository(TimeTest.class, String.class);
+
+        GregorianCalendar septFirst = new GregorianCalendar(TimeZone.getTimeZone("CET"));
+        septFirst.set(2014, Calendar.SEPTEMBER, 1, 12, 0, 0);
+
+        TimeTest timeTest1 = new TimeTest("1", septFirst);
+        times.write(timeTest1);
+
+        TimeTest timeTest1FromDb = times.read("1");
+        assertEquals("Times should be equal", timeTest1.timeTest.getTime().getTime(), 
+        	timeTest1FromDb.timeTest.getTime().getTime());
+
+        GregorianCalendar septFirstGMT = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
+        septFirstGMT.set(2014, Calendar.SEPTEMBER, 1, 12, 0, 0);
+
+        TimeTest timeTest2 = new TimeTest("2", septFirstGMT);
+        times.write(timeTest2);
+
+        TimeTest timeTest2FromDb = times.read("2");
+        assertEquals("Times should be equal", timeTest2.timeTest, timeTest2FromDb.timeTest);
+    }
+
+    @Test
+    public void testG_DeletePojos() throws Exception {
         cities.delete(1185098, 2239076);
         StringQueryDefinition query = Common.client.newQueryManager().newStringDefinition();
         query.setCriteria("Tungi OR Dalatando OR Chittagong");
@@ -407,6 +445,8 @@ public class PojoFacadeTest {
         PojoRepository<Product2, Integer> products2 = Common.client.newPojoRepository(Product2.class, Integer.class);
         products1.deleteAll();
         products2.deleteAll();
+        PojoRepository<TimeTest, String> timeTests = Common.client.newPojoRepository(TimeTest.class, String.class);
+        timeTests.deleteAll();
         cities.deleteAll();
     }
 }

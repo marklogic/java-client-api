@@ -15,7 +15,6 @@
  */
 package com.marklogic.client.io;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,11 +26,19 @@ import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
+import com.marklogic.client.io.marker.JSONReadHandle;
+import com.marklogic.client.io.marker.JSONWriteHandle;
+import com.marklogic.client.io.marker.StructureReadHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
+import com.marklogic.client.io.marker.TextReadHandle;
+import com.marklogic.client.io.marker.TextWriteHandle;
+import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.io.marker.XMLWriteHandle;
 import com.marklogic.client.impl.JacksonBaseHandle;
 
 /**
@@ -41,9 +48,14 @@ import com.marklogic.client.impl.JacksonBaseHandle;
  */
 public class JacksonDatabindHandle<T>
         extends JacksonBaseHandle<T>
-        implements ContentHandle<T>
+        implements ContentHandle<T>,
+            OutputStreamSender, BufferableHandle, 
+            JSONReadHandle, JSONWriteHandle,
+            TextReadHandle, TextWriteHandle,
+            XMLReadHandle, XMLWriteHandle,
+            StructureReadHandle, StructureWriteHandle
 {
-    private Class contentClass;
+    private Class<?> contentClass;
     private T content;
 
     /**
@@ -82,7 +94,7 @@ public class JacksonDatabindHandle<T>
      * Provides a handle on JSON content as a Jackson tree.
      * @param content    the JSON root node of the tree.
      */
-    public JacksonDatabindHandle(T content) {
+	public JacksonDatabindHandle(T content) {
         this((Class<T>) content.getClass());
         set(content);
     }
@@ -93,7 +105,7 @@ public class JacksonDatabindHandle<T>
      * @param format	the format of the content
      * @return	this handle
      */
-    public JacksonDatabindHandle withFormat(Format format) {
+    public JacksonDatabindHandle<T> withFormat(Format format) {
         setFormat(format);
         return this;
     }
@@ -182,7 +194,7 @@ public class JacksonDatabindHandle<T>
         @Override
         public <C> ContentHandle<C> newHandle(Class<C> type) {
             if ( ! isHandled(type) ) return null;
-            JacksonDatabindHandle handle = new JacksonDatabindHandle<C>(type);
+            JacksonDatabindHandle<C> handle = new JacksonDatabindHandle<C>(type);
             if ( mapper != null ) handle.setMapper(mapper);
             return handle;
         }
