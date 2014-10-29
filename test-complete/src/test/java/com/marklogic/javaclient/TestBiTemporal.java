@@ -55,8 +55,6 @@ import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder.TemporalOperator;
 
-// BUGS: 30098, 30092, 
-
 public class TestBiTemporal extends BasicJavaClientREST{
 
 	private static String dbName = "TestBiTemporalJava";
@@ -90,6 +88,8 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 
+		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+		
 		System.out.println("In setup");
 		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
 		
@@ -487,7 +487,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	
 	@Test
 	public void testInsertXMLSingleDocumentUsingTemplate() throws Exception { 
-		System.out.println("Inside testInsertXMLSingleDocumentUsingDescriptor");
+		System.out.println("Inside testInsertXMLSingleDocumentUsingTemplate");
 
 		String docId = "javaSingleXMLDoc.xml";
 		DOMHandle handle = getXMLDocumentHandle(
@@ -851,6 +851,14 @@ public class TestBiTemporal extends BasicJavaClientREST{
   		metadataHandle = new DocumentMetadataHandle();
   		record.getMetadata(metadataHandle);
   		Iterator<String> resCollections = metadataHandle.getCollections().iterator();
+  		
+  		if (record.getUri().equals(docId)) {
+  			// Must belong to latest collection as well. So, count must be 4
+  			assert(resCollections.equals(4));
+  		}
+  		else {
+  			assert(resCollections.equals(3));
+  		}
   		while (resCollections.hasNext()) {
   			String collection = resCollections.next();
   			System.out.println("Collection = " + collection);
@@ -859,6 +867,11 @@ public class TestBiTemporal extends BasicJavaClientREST{
   					!collection.equals(updateCollectionName) && !collection.equals(insertCollectionName) && 
   					!collection.equals(temporalCollectionName)) {
   				assertFalse("Collection not what is expected: " + collection, true);
+  			}
+  			
+  			if (collection.equals(latestCollectionName)) {
+  				// If there is a latest collection, docId must match the URI
+  				assert(record.getUri().equals(docId));
   			}
   		}
   			
@@ -1183,8 +1196,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	  					(actualPermissions.contains("app-user:[") && actualPermissions.contains("READ") && 
 	  					 actualPermissions.contains("UPDATE") && actualPermissions.contains("EXECUTE")));
 	  			
-	  			// BUG: Returns a 99, when it should be 11
-					// assertEquals(quality, 11);
+					assertEquals(quality, 11);
   		  }	 
 	      
 	      if (validStartDate.contains("2008-12-31T23:59:59") && validEndDate.contains("2011-12-31T23:59:59")) {	      	
@@ -1218,8 +1230,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	  					(actualPermissions.contains("app-user:[") && actualPermissions.contains("READ") && 
 	  					 actualPermissions.contains("UPDATE") && actualPermissions.contains("EXECUTE")));
 
-	  			// BUG: Returns a 99, when it should be 11
-					// assertEquals(quality, 11);
+					assertEquals(quality, 11);
       		
       		validateMetadata(metadataHandle);
   		  }	 
@@ -1253,8 +1264,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	  					(actualPermissions.contains("app-user:[") && actualPermissions.contains("READ") && 
 	  					 actualPermissions.contains("UPDATE") && actualPermissions.contains("EXECUTE")));
 
-	  			// BUG: Returns a 99, when it should be 11
-					// assertEquals(quality, 11);
+					assertEquals(quality, 11);
   		  }	  
   		}
     }
@@ -1383,8 +1393,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	  					 actualPermissions.contains("UPDATE")));
 	  			assertFalse("Document permissions difference in app-user permission", actualPermissions.contains("EXECUTE"));
 
-	  			// BUG: Returns a 0, when it should be 99
-					// assertEquals(quality, 99);
+					assertEquals(quality, 99);
   		  }	      		
 
 	      if (validStartDate.contains("2001-01-01T00:00:00") && validEndDate.contains("2003-01-01T00:00:00")) {
@@ -1416,8 +1425,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	  					(actualPermissions.contains("app-user:[") && actualPermissions.contains("READ") && 
 	  					 actualPermissions.contains("UPDATE") && actualPermissions.contains("EXECUTE")));
 
-	  			// BUG: Returns a 0, when it should be 11
-					// assertEquals(quality, 11);
+					assertEquals(quality, 11);
   		  }	 
 	      
 	      if (validStartDate.contains("2008-12-31T23:59:59") && validEndDate.contains("2011-12-31T23:59:59")) {
@@ -1450,8 +1458,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	  					(actualPermissions.contains("app-user:[") && actualPermissions.contains("READ") && 
 	  					 actualPermissions.contains("UPDATE") && actualPermissions.contains("EXECUTE")));
 
-	  			// BUG: Returns a 0, when it should be 11
-					// assertEquals(quality, 11);
+					assertEquals(quality, 11);
 					
 	  			// Properties should still be associated this document
 	  			// BUG ... This should be commented out when properties are not deleted when document is deleted
@@ -1486,8 +1493,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	  					(actualPermissions.contains("app-user:[") && actualPermissions.contains("READ") && 
 	  					 actualPermissions.contains("UPDATE") && actualPermissions.contains("EXECUTE")));
 
-	  			// BUG: Returns a 0, when it should be 11
-					// assertEquals(quality, 11);
+					assertEquals(quality, 11);
   		  }	 
   		}
     }
@@ -1696,7 +1702,6 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	  					(actualPermissions.contains("app-user:[") && actualPermissions.contains("READ") && 
 	  					 actualPermissions.contains("UPDATE") && actualPermissions.contains("EXECUTE")));
 	  			
-	  			// BUG: Returns a 99, when it should be 11
 					// assertEquals(quality, 11);
   		  }	 
 	      
@@ -1731,7 +1736,6 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	  					(actualPermissions.contains("app-user:[") && actualPermissions.contains("READ") && 
 	  					 actualPermissions.contains("UPDATE") && actualPermissions.contains("EXECUTE")));
 
-	  			// BUG: Returns a 99, when it should be 11
 					// assertEquals(quality, 11);
       		
       		validateMetadata(metadataHandle);
@@ -1766,7 +1770,6 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	  					(actualPermissions.contains("app-user:[") && actualPermissions.contains("READ") && 
 	  					 actualPermissions.contains("UPDATE") && actualPermissions.contains("EXECUTE")));
 
-	  			// BUG: Returns a 99, when it should be 11
 					// assertEquals(quality, 11);
   		  }	  
   		}
@@ -1896,7 +1899,6 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	  					 actualPermissions.contains("UPDATE")));
 	  			assertFalse("Document permissions difference in app-user permission", actualPermissions.contains("EXECUTE"));
 
-	  			// BUG: Returns a 0, when it should be 99
 					// assertEquals(quality, 99);
   		  }	      		
 
@@ -1929,7 +1931,6 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	  					(actualPermissions.contains("app-user:[") && actualPermissions.contains("READ") && 
 	  					 actualPermissions.contains("UPDATE") && actualPermissions.contains("EXECUTE")));
 
-	  			// BUG: Returns a 0, when it should be 11
 					// assertEquals(quality, 11);
   		  }	 
 	      
@@ -1963,7 +1964,6 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	  					(actualPermissions.contains("app-user:[") && actualPermissions.contains("READ") && 
 	  					 actualPermissions.contains("UPDATE") && actualPermissions.contains("EXECUTE")));
 
-	  			// BUG: Returns a 0, when it should be 11
 					// assertEquals(quality, 11);
 					
 	  			// Properties should still be associated this document
@@ -1999,7 +1999,6 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	  					(actualPermissions.contains("app-user:[") && actualPermissions.contains("READ") && 
 	  					 actualPermissions.contains("UPDATE") && actualPermissions.contains("EXECUTE")));
 
-	  			// BUG: Returns a 0, when it should be 11
 					// assertEquals(quality, 11);
   		  }	 
   		}
@@ -2078,6 +2077,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	}
 	
 	@Test
+	// BUG: REST API bug around transactions fails this test
 	public void testTransactionCommit() throws Exception { 
 
 		System.out.println("Inside testTransactionCommit");
@@ -2114,6 +2114,15 @@ public class TestBiTemporal extends BasicJavaClientREST{
 			assertEquals("Document uri wrong after insert", docId, latestDoc.getUri());
 		}
 		
+		// Make sure document is not visible to any other transaction
+		readResults = docMgr.read(docId); 
+		System.out.println("Number of results = " + readResults.size());
+		if (readResults.size() != 0) {
+			transaction.rollback();
+			
+			assertEquals("Wrong number of results", 1, readResults.size());
+		}
+		
 		try {
 	  	updateJSONSingleDocument(docId, transaction);		
 		}
@@ -2137,7 +2146,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 			assertEquals("Wrong number of results", 1, termQueryResults.getTotalSize());
 		}
 
-		// There should be 1 document in docId collection
+		// There should be 4 documents in docId collection
 		queryMgr = client.newQueryManager();
 		sqb = queryMgr.newStructuredQueryBuilder();
 		termQuery = sqb.collection(docId);
@@ -2150,6 +2159,22 @@ public class TestBiTemporal extends BasicJavaClientREST{
 			transaction.rollback();
 			
 			assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
+		}
+		
+		// Search for documents using doc uri collection and no transaction object passed.
+		// There should be 0 documents in docId collection
+		queryMgr = client.newQueryManager();
+		sqb = queryMgr.newStructuredQueryBuilder();
+		termQuery = sqb.collection(docId);
+		
+		start = 1;
+		termQueryResults = docMgr.search(termQuery, start);
+		System.out.println("Number of results = " + termQueryResults.getTotalSize());
+
+		if (termQueryResults.getTotalSize() != 0) {
+			transaction.rollback();
+			
+			assertEquals("Wrong number of results", 0, termQueryResults.getTotalSize());
 		}
 
 		try {
@@ -2190,6 +2215,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	}
 	
 	@Test
+	// BUG: REST API bug around transactions fails this test
 	public void testTransactionRollback() throws Exception { 
 
 		System.out.println("Inside testTransaction");
@@ -2573,7 +2599,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	      		(validStartDate.contains("2001-01-01T00:00:00") && validEndDate.contains("2011-12-31T23:59:59")));	 
 
 	      assertTrue("System start date check failed", 
-	      		(systemStartDate.contains("2005-01-01T00:00:01") && !systemEndDate.contains("2010-01-01T00:00:01")));  			      
+	      		(systemStartDate.contains("2005-01-01T00:00:01") && systemEndDate.contains("2010-01-01T00:00:01")));  			      
     
   		}
     }
@@ -2584,6 +2610,8 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	
 	@Test
 	public void testLsqtQuery() throws Exception {
+
+		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		// Read documents based on document URI and ALN Contains. We are just looking for count of documents to be correct
 		String docId = "javaSingleJSONDoc.json";
 		
@@ -2659,6 +2687,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
   		}
     }
 		
+    // BUG. I believe Java API is doing a get instead of a POST that returns all documents in doc uri collection
 		System.out.println("Number of results using SQB = " + count);
 		assertEquals("Wrong number of results", 3, count);		
 	}
@@ -2755,10 +2784,9 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		
 		assertTrue("Exception not thrown for invalid temporal collection", exceptionThrown);	
 	}
-	
 
 	@Test
-	// Negative test .. check if this is needed
+	// Negative test. Doc URI Id is the same as the temporal collection name
 	public void testInsertDocumentUsingDocumentURIAsCollectionName() throws Exception {
 		// Now insert a JSON document
 		String jsonDocId = "javaSingleJSONDoc.json";
@@ -2789,15 +2817,68 @@ public class TestBiTemporal extends BasicJavaClientREST{
 			System.out.println(ex.getFailedRequest().getStatusCode());
 			System.out.println(ex.getFailedRequest().getMessageCode());
 			
-			// BUG: Right now this returns 500 error. Bug is open to fix this
-			// assert(ex.getFailedRequest().getMessageCode().equals("TEMPORAL-SYSTEMTIME-BACKWARDS"));
-			// assert(ex.getFailedRequest().getStatusCode() == 400);
+			assert(ex.getFailedRequest().getMessageCode().equals("TEMPORAL-URIALREADYEXISTS"));
+			assert(ex.getFailedRequest().getStatusCode() == 400);
 		}
 
 		ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents", jsonDocId);
 		
-		// Looks like this should fail. But is not failing
+		assertTrue("Exception not thrown for invalid temporal collection", exceptionThrown);	
+	}
+
+	@Test
+	// Negative test. Doc URI Id is the same as the temporal collection name
+	// BUG 30173 exists for this non failure. 
+	public void testCreateCollectionUsingSameNameAsDocURI() throws Exception {
+		// Now insert a JSON document
+		String jsonDocId = "javaSingleJSONDoc.json";
+		
+		System.out.println("Inside testInserDocumentUsingDocumentURIAsCollectionName");
+		
+		// Insert a document called as insertJSONSingleDocument
+		insertJSONSingleDocument(jsonDocId, null);
+		
+		boolean exceptionThrown = false;
+	  try {
+			// Create collection a collection with same name as doci URI
+			ConnectedRESTQA.addElementRangeIndexTemporalCollection(dbName, jsonDocId, axisSystemName, axisValidName);
+		}
+		catch (com.marklogic.client.FailedRequestException ex) {
+			exceptionThrown = true;		
+			System.out.println(ex.getFailedRequest().getStatusCode());
+			System.out.println(ex.getFailedRequest().getMessageCode());
+			
+			// assert(ex.getFailedRequest().getMessageCode().equals("TEMPORAL-URIALREADYEXISTS"));
+			// assert(ex.getFailedRequest().getStatusCode() == 400);
+		}
 		// assertTrue("Exception not thrown for invalid temporal collection", exceptionThrown);	
+		
+		// Create a document using the collection created above
+		// So, we are creating a document under a collection whose name is the same as an existing temporal doc uri
+		JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
+				"2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON", jsonDocId);
+				
+		JSONDocumentManager docMgr = client.newJSONDocumentManager();
+    docMgr.setMetadataCategories(Metadata.ALL);
+
+		// put meta-data
+		DocumentMetadataHandle mh = setMetadata(false);				
+
+		exceptionThrown = false;
+	  try {
+	    docMgr.write("1.json", mh, handle, null, null, jsonDocId, null);		
+		}
+		catch (com.marklogic.client.FailedRequestException ex) {
+			exceptionThrown = true;		
+			System.out.println(ex.getFailedRequest().getStatusCode());
+			System.out.println(ex.getFailedRequest().getMessageCode());
+			
+			// assert(ex.getFailedRequest().getMessageCode().equals("TEMPORAL-URIALREADYEXISTS"));
+			// assert(ex.getFailedRequest().getStatusCode() == 400);
+		}
+
+		ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents", jsonDocId);
+		assertTrue("Exception not thrown for invalid temporal collection", exceptionThrown);	
 	}
 	
 	public void bulkWrite() throws Exception { 
