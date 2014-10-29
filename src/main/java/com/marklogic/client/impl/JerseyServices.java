@@ -492,7 +492,6 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = addVersionHeader(desc,
 				webResource.getRequestBuilder(), "If-Match");
-		builder = addTransactionCookie(builder, transactionId);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -620,7 +619,6 @@ public class JerseyServices implements RESTServices {
 		WebResource.Builder builder = makeDocumentResource(
 				makeDocumentParams(uri, categories, transactionId, extraParams))
 				.accept(mimetype);
-		builder = addTransactionCookie(builder, transactionId);
 
 		if (extraParams != null && extraParams.containsKey("range"))
 			builder = builder.header("range", extraParams.get("range").get(0));
@@ -897,7 +895,6 @@ public class JerseyServices implements RESTServices {
 		docParams.add("format", metadataFormat);
 
 		WebResource.Builder builder = makeDocumentResource(docParams).getRequestBuilder();
-		builder = addTransactionCookie(builder, transactionId);
 		builder = addVersionHeader(desc, builder, "If-None-Match");
 
 		MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
@@ -1051,7 +1048,6 @@ public class JerseyServices implements RESTServices {
 					transactionId);
 
 		WebResource.Builder builder = webResource.getRequestBuilder();
-		builder = addTransactionCookie(builder, transactionId);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -1237,7 +1233,6 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = webResource.type(
 				(mimetype != null) ? mimetype : MediaType.WILDCARD);
-		builder = addTransactionCookie(builder, transactionId);
 		if (uri != null) {
 			builder = addVersionHeader(desc, builder, "If-Match");
 		}
@@ -1394,7 +1389,6 @@ public class JerseyServices implements RESTServices {
 			makeDocumentParams(uri, categories, transactionId, extraParams, true);
 
 		WebResource.Builder builder = makeDocumentResource(docParams).getRequestBuilder();
-		builder = addTransactionCookie(builder, transactionId);
 		if (uri != null) {
 			builder = addVersionHeader(desc, builder, "If-Match");
 		}
@@ -1632,7 +1626,6 @@ public class JerseyServices implements RESTServices {
 				.queryParams(transParams);
 
 		WebResource.Builder builder = webResource.getRequestBuilder();
-		builder = addTransactionCookie(builder, transactionId);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -1898,22 +1891,6 @@ public class JerseyServices implements RESTServices {
 		descriptor.setVersion(version);
 	}
 
-	private WebResource.Builder addTransactionCookie(
-			WebResource.Builder builder, String transactionId) {
-		if (transactionId != null) {
-			int pos = transactionId.indexOf("_");
-			if (pos != -1) {
-				String hostId = transactionId.substring(0, pos);
-				builder.cookie(new Cookie("HostId", hostId));
-			} else {
-				throw new IllegalArgumentException(
-						"transaction id without host id separator: "+transactionId
-						);
-			}
-		}
-		return builder;
-	}
-
 	private WebResource.Builder addVersionHeader(DocumentDescriptor desc,
 			WebResource.Builder builder, String name) {
 		if (desc != null && desc instanceof DocumentDescriptorImpl
@@ -2138,9 +2115,6 @@ public class JerseyServices implements RESTServices {
                         + queryDef.getClass().getName());
             }
 
-            if (params.containsKey("txid")) {
-                builder = addTransactionCookie(builder, params.getFirst("txid"));
-            }
         }
 
         ClientResponse getResponse() {
@@ -2233,7 +2207,6 @@ public class JerseyServices implements RESTServices {
 		WebResource webResource = connection.path("search").queryParams(params);
 
 		WebResource.Builder builder = webResource.getRequestBuilder();
-		builder = addTransactionCookie(builder, transactionId);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -2396,9 +2369,8 @@ public class JerseyServices implements RESTServices {
 			uri += "/" + valDef.getName();
 		}
 
-		WebResource.Builder builder = connection.path(uri)
-				.queryParams(docParams).accept(mimetype);
-		builder = addTransactionCookie(builder, transactionId);
+		WebResource.Builder builder = connection.path(uri).queryParams(docParams).accept(mimetype);
+
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -2477,7 +2449,6 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = connection.path(uri)
 				.queryParams(docParams).accept(mimetype);
-		builder = addTransactionCookie(builder, transactionId);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -2546,7 +2517,6 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = connection.path(uri)
 				.queryParams(docParams).accept(mimetype);
-		builder = addTransactionCookie(builder, transactionId);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
