@@ -3,17 +3,17 @@ declare variable $test:myString as xs:string external;
 declare variable $myArray as json:array external;
 declare variable $myObject as json:object external;
 declare variable $myAnyUri as xs:anyURI external;
-declare variable $myBinary as xs:hexBinary external;
+declare variable $myBinary as binary() external;
 declare variable $myBase64Binary as xs:base64Binary external;
 declare variable $myHexBinary as xs:hexBinary external;
 declare variable $myDuration as xs:duration external;
 declare variable $myQName as xs:QName external;
-declare variable $myDocument as xs:string external;
-declare variable $myAttribute as xs:string external;
-declare variable $myComment as xs:string external;
-declare variable $myElement as xs:string external;
-declare variable $myProcessingInstruction as xs:string external;
-declare variable $myText as xs:string external;
+declare variable $myDocument as document-node() external;
+declare variable $myComment as document-node() external;
+(: declare variable $myComment as comment() external; :)
+declare variable $myElement as element() external;
+declare variable $myProcessingInstruction as document-node() external;
+declare variable $myText as text() external;
 declare variable $myBool as xs:boolean external;
 declare variable $myInteger as xs:integer external;
 declare variable $myBigInteger as xs:string external;
@@ -29,18 +29,9 @@ declare variable $myDate as xs:date external;
 declare variable $myDateTime as xs:dateTime external;
 declare variable $myTime as xs:time external;
 declare variable $myNull external;
-let $myBinary := binary{$myBinary}
-let $myDocument := 
-    xdmp:unquote($myDocument) 
-let $myAttribute := 
-    xdmp:unquote($myAttribute)/*/@* 
-let $myComment := 
-    xdmp:unquote($myComment)/comment() 
-let $myElement := 
-    xdmp:unquote($myElement)/element() 
-let $myProcessingInstruction := 
-    xdmp:unquote($myProcessingInstruction)/processing-instruction() 
-let $myText := text {$myText} 
+let $myAttribute             := $myElement/@* 
+let $myComment               := $myComment/comment() 
+let $myProcessingInstruction := $myProcessingInstruction/processing-instruction() 
 let $myCtsQuery := cts:word-query('a') 
 return (
     $test:myString, $myArray, $myObject, $myAnyUri, 
