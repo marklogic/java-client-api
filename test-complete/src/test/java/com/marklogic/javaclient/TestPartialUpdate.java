@@ -1027,12 +1027,6 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	/* Purpose: This test is used to validate all of the patch builder functions on a JSON
 	 * document using JSONPath expressions.
 	 * 
-	 * Functions tested are: delete, replaceApply, replaceFragment, replaceInsertFragment and replaceValue.
-	*/
-	
-	/* Purpose: This test is used to validate all of the patch builder functions on a JSON
-	 * document using JSONPath expressions.
-	 * 
 	 * Function tested: delete.
 	*/
 	@Test	
