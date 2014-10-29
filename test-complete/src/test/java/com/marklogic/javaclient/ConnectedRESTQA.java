@@ -1412,6 +1412,25 @@ public abstract class ConnectedRESTQA {
 	public static void addElementRangeIndexTemporalAxis(String dbName, String axisName, 
 		String namespaceStart, String localnameStart, String namespaceEnd, String localnameEnd) throws Exception
 	{
+		/**
+		 {
+		 		"axis-name": "eri-json-system",
+		 		"axis-start": {
+        	"element-reference": {
+          	"namespace-uri": "",
+          	"localname": "eri-system-start",
+          	"scalar-type": "dateTime"
+        	}
+      	},
+      	"axis-end": {
+        	"element-reference": {
+          	"namespace-uri": "",
+          	"localname": "eri-system-end",
+          	"scalar-type": "dateTime"
+        	}
+      	}
+    	}  
+		 */
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode rootNode = mapper.createObjectNode();
 
@@ -1438,38 +1457,6 @@ public abstract class ConnectedRESTQA {
 		rootNode.set("axis-end", axisEnd);
 
 		System.out.println(rootNode.toString());
-
-
-		/***
-		JSONObject rootNode = new JSONObject(jsonOrderedMap);
-
-
-
-		JSONObject axisStart = new JSONObject();
-		JSONObject elementReferenceStart = new JSONObject();
-
-		elementReferenceStart.put("namespace-uri", namespaceStart);
-		elementReferenceStart.put("localname", localnameStart);
-		elementReferenceStart.put("scalar-type", "dateTime");
-
-		axisStart.put("element-reference", elementReferenceStart);
-
-		JSONObject axisEnd = new JSONObject();
-		JSONObject elementReferenceEnd = new JSONObject();
-
-		elementReferenceEnd.put("namespace-uri", namespaceEnd);
-		elementReferenceEnd.put("localname", localnameEnd);
-		elementReferenceEnd.put("scalar-type", "dateTime");
-
-		axisEnd.put("element-reference", elementReferenceEnd);
-
-		rootNode.put("axis-end", axisEnd);
-		rootNode.put("axis-start", axisStart);
-		rootNode.put( "axis-name", axisName);
-
-		System.out.println(rootNode.toString());
-		 ***/
-
 
 		DefaultHttpClient client = new DefaultHttpClient();
 		client.getCredentialsProvider().setCredentials(
