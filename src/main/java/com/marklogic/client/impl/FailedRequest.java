@@ -99,14 +99,14 @@ public class FailedRequest {
 		FailedRequest failure;
 		
 		// by default XML is supported
-		if (contentType.equals(MediaType.APPLICATION_XML_TYPE)) {
+		if (contentType.isCompatible(MediaType.APPLICATION_XML_TYPE)) {
 			
 			FailedRequestParser xmlParser = new FailedRequestXMLParser();
 			
 			failure  =  xmlParser.parseFailedRequest(httpStatus, content);
 			
 		}
-		else if (contentType.equals(MediaType.APPLICATION_JSON_TYPE)) {
+		else if (contentType.isCompatible(MediaType.APPLICATION_JSON_TYPE)) {
 			failure = jsonFailedRequest(httpStatus, content);						
 		}
 		else {
