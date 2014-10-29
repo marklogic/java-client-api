@@ -57,7 +57,7 @@ public class EvalTest {
     @BeforeClass
     public static void beforeClass() {
         Common.connectEval();
-        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
     @AfterClass
     public static void afterClass() {
@@ -167,9 +167,9 @@ public class EvalTest {
             .addVariable("myDuration", "P100D")
             .addVariable("myDocument", new DOMHandle(document))
             .addVariable("myQName", "myPrefix:a")
-            .addVariable("myAttribute", "<a a=\"a\"/>")
+            //.addVariable("myAttribute", "<a a=\"a\"/>")
             .addVariable("myComment", "<!--a-->")
-            .addVariable("myElement", "<a/>")
+            .addVariable("myElement", "<a a=\"a\"/>")
             .addVariable("myProcessingInstruction", "<?a?>")
             .addVariable("myText", "a")
             // the next three use built-in methods of ServerEvaluationCall
@@ -249,7 +249,7 @@ public class EvalTest {
             assertEquals("myComment should be Type.COMMENT", EvalResult.Type.COMMENT, result.getType());
             assertEquals("myComment should be Format.TEXT", Format.TEXT, result.getFormat());
             result = results.next();
-            assertEquals("myElement should = <a/>", "<a/>", result.getString());
+            assertEquals("myElement looks wrong", "<a a=\"a\"/>", result.getString());
             assertEquals("myElement should be Type.XML", EvalResult.Type.XML, result.getType());
             assertEquals("myElement should be Format.XML", Format.XML, result.getFormat());
             result = results.next();

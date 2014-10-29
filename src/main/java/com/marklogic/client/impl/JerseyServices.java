@@ -3627,17 +3627,12 @@ public class JerseyServices implements RESTServices {
 				return EvalResult.Type.STRING;
 			} else if ( "boolean".equals(xPrimitive) ) {
 				return EvalResult.Type.BOOLEAN;
-			} else if ( "node()".equals(xPrimitive) ) {
-				String xPath = content.getHeader("X-Path");
-				if ( xPath == null ) {
-					return EvalResult.Type.OTHER;
-				} else if ( xPath.endsWith("comment()") ) {
-					return EvalResult.Type.COMMENT;
-				} else if ( xPath.endsWith("processing-instruction()") ) {
-					return EvalResult.Type.PROCESSINGINSTRUCTION;
-				} else if ( content.getHeader("X-Attr") != null ) {
-					return EvalResult.Type.ATTRIBUTE;
-				}
+			} else if ( "attribute()".equals(xPrimitive) ) {
+				return EvalResult.Type.ATTRIBUTE;
+			} else if ( "comment()".equals(xPrimitive) ) {
+				return EvalResult.Type.COMMENT;
+			} else if ( "processing-instruction()".equals(xPrimitive) ) {
+				return EvalResult.Type.PROCESSINGINSTRUCTION;
 			} else if ( "text()".equals(xPrimitive) ) {
 				return EvalResult.Type.TEXTNODE;
 			} else if ( "binary()".equals(xPrimitive) ) {
