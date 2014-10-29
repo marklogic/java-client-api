@@ -18,8 +18,6 @@ package com.marklogic.client.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
@@ -33,7 +31,6 @@ import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.config.QueryOptions.Facets;
 import com.marklogic.client.admin.config.QueryOptionsBuilder;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.io.QueryOptionsHandle;
 
 @SuppressWarnings("deprecation")
@@ -43,6 +40,7 @@ public class FailedRequestTest {
 	public void testFailedRequest()
 	throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
 		Common.connect();
+		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		QueryOptionsManager mgr = Common.client.newServerConfigManager()
 				.newQueryOptionsManager();
 
