@@ -91,7 +91,7 @@ public class EvalTest {
                     "var myInteger;" +
                     "var myDouble;" +
                     "var myDate;" +
-                    "[myString, myArray, myObject, myBool, myInteger, myDouble, myDate]")
+                    "xdmp.arrayValues([myString, myArray, myObject, myBool, myInteger, myDouble, myDate])")
             // String is directly supported in any EvalBuilder
             .addVariable("myString",  "Mars")
             // ArrayNode extends JSONNode which is mapped to implicitly use JacksonHandle
@@ -106,23 +106,22 @@ public class EvalTest {
                 DatatypeFactory.newInstance().newXMLGregorianCalendar(septFirst).toString());
         EvalResultIterator results = query.eval();
         try {
-        	// TOOD: uncomment the following when we fix http://bugtrack.marklogic.com/29735
-//            assertEquals("myString should = 'Mars'", "Mars", results.next().getAs(String.class));
-//            assertEquals("myArray should = [\"item1\",\"item2\"]", 
-//                new ObjectMapper().readTree("[\"item1\",\"item2\"]"), 
-//                results.next().getAs(JsonNode.class));
-//            assertEquals("myObject should = {\"item1\":\"value1\"}", 
-//                new ObjectMapper().readTree("{\"item1\":\"value1\"}"), 
-//                results.next().getAs(JsonNode.class));
-//            assertEquals("myBool should = true", true, results.next().getBoolean());
-//            assertEquals("myInteger should = 123", 123, 
-//                results.next().getNumber().intValue());
-//            assertEquals("myDouble should = 1.1", 1.1, 
-//                results.next().getNumber().doubleValue(), .001);
-//            // the same format we sent in (from javax.xml.datatype.XMLGregorianCalendar.toString())
-//            assertEquals("myDate should = '2014-09-01T00:00:00.000+02:00'", "2014-09-01T00:00:00.000+02:00",
-//              results.next().getString());
-        } finally { results.close(); }
+            assertEquals("myString looks wrong", "Mars", results.next().getAs(String.class));
+            assertEquals("myArray looks wrong", 
+                new ObjectMapper().readTree("[\"item1\",\"item2\"]"), 
+                results.next().getAs(JsonNode.class));
+            assertEquals("myObject looks wrong", 
+                new ObjectMapper().readTree("{\"item1\":\"value1\"}"), 
+                results.next().getAs(JsonNode.class));
+            assertEquals("myBool looks wrong", true, results.next().getBoolean());
+            assertEquals("myInteger looks wrong", 123, 
+                results.next().getNumber().intValue());
+            assertEquals("myDouble looks wrong", 1.1, 
+                results.next().getNumber().doubleValue(), .001);
+            // the same format we sent in (from javax.xml.datatype.XMLGregorianCalendar.toString())
+            assertEquals("myDate looks wrong", "2014-09-01T00:00:00.000+02:00",
+              results.next().getString());
+      } finally { results.close(); }
 
         // accept and return each XML variable type so use MultiPartResponsePage
         InputStreamHandle xquery = new InputStreamHandle(
