@@ -22,6 +22,7 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.pojo.PojoPage;
+import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryManager;
@@ -137,7 +138,7 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 						+ ",\"$not\":[{\"name\":{\"$word\":\"special\",\"$exact\": false}}]"
 						+ "}}";
 
-		RawQueryByExampleDefinition qd = queryMgr.newRawQueryByExampleDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
+		PojoQueryDefinition qd = (PojoQueryDefinition)queryMgr.newRawQueryByExampleDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
 		qd.setCollections("odd");
 		products.setPageLength(11);
 		p = products.search(qd, 1);
@@ -176,7 +177,7 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 						+ "\"$and\":[{\"inventory\":{\"$gt\":1010}},{\"inventory\":{\"$le\":1110}}]"
 						+ ",\"$filtered\": true}}";
 		System.out.println(queryAsString);
-		RawQueryByExampleDefinition qd = queryMgr.newRawQueryByExampleDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
+		PojoQueryDefinition qd = (PojoQueryDefinition)queryMgr.newRawQueryByExampleDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
 		qd.setCollections("even");
 		SearchHandle results = new SearchHandle();
 		products.setPageLength(10);
@@ -228,7 +229,7 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 				+ "\"options\":{\"constraint\":{\"name\":\"pojo-name-field\", \"word\":{\"json-property\":\"name\"}}}"
 				+ "}}"; 
 
-		RawCombinedQueryDefinition qd = queryMgr.newRawCombinedQueryDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
+		PojoQueryDefinition qd = (PojoQueryDefinition)queryMgr.newRawCombinedQueryDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
 		JacksonHandle results = new JacksonHandle();
 		p = products.search(qd, 1,results);
 		products.setPageLength(11);
@@ -272,7 +273,7 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 				+ "\"range-constraint-query\":{\"constraint-name\":\"id\", \"value\":[5,10,15,20,25,30]}},"
 				+ "\"options\":{\"return-metrics\":false, \"constraint\":{\"name\":\"id\", \"range\":{\"type\": \"xs:long\",\"json-property\":\"id\"}}}"
 				+ "}}";
-		RawCombinedQueryDefinition qd = queryMgr.newRawCombinedQueryDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
+		PojoQueryDefinition qd = (PojoQueryDefinition)queryMgr.newRawCombinedQueryDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
 
 		StringHandle results = new StringHandle();
 		JacksonHandle jh = new JacksonHandle();

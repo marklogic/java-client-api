@@ -1,7 +1,11 @@
 package com.marklogic.javaclient;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
 import org.junit.After;
@@ -110,6 +114,58 @@ public class TestPOJOSpecialCharRead extends BasicJavaClientREST {
 		 }
 		 public SpArtifactWithGetSetId setInventory(int inventory) {
 			 this.inventory= inventory; return this;
+		 }
+	 }
+	 
+	 /*
+	  * This class is used to test writing and reading byte array
+	  * Class member id has been annotated with @Id.
+	  */
+	 public static class ByteArrayId {
+         @Id
+		 public byte id;
+         public byte[] byteName;
+         
+		public byte getId() {
+			return id;
+		}
+
+		public void setId(byte id) {
+			this.id = id;
+		}
+
+		public byte[] getByteName() {
+			 return byteName;
+		 }
+		 
+		 public void setByteName(byte[] byteName) {
+			 this.byteName = byteName;
+		 }
+	 }
+	 
+	 /*
+	  * This class is used to test writing and reading byte array
+	  * Class member  byte[] byteName has been annotated with @Id.
+	  */
+	 public static class AnnotateByteArray {         
+		 public byte id;
+		 @Id
+         public byte[] byteName;
+         
+		public byte getId() {
+			return id;
+		}
+
+		public void setId(byte id) {
+			this.id = id;
+		}
+
+		public byte[] getByteName() {
+			 return byteName;
+		 }
+		 
+		 public void setByteName(byte[] byteName) {
+			 this.byteName = byteName;
 		 }
 	 }
 
@@ -341,6 +397,27 @@ public class TestPOJOSpecialCharRead extends BasicJavaClientREST {
 		assertEquals("Web site of the object is ","http://www.acme-2000.com", artifact.getManufacturer().getWebsite());
 		assertEquals(-87.966, artifact.getManufacturer().getLongitude(), 0.00);
 		assertEquals(41.998, artifact.getManufacturer().getLatitude(), 0.00);
+	}
+	
+	/*
+	 * This method is used when there is a need to validate byte array reads using @Id on id field.
+	 */
+	public void validateByteArray(ByteArrayId artifact, byte[] arrayOrig, byte bTest) {
+		assertNotNull("Artifact object should never be Null", artifact);
+		assertNotNull("Id should never be Null",artifact.id);
+		assertTrue(Arrays.equals(artifact.getByteName(), arrayOrig));
+		assertEquals("Id of the object is ",bTest, artifact.getId());		
+	}
+	
+	/*
+	 * This method is used when there is a need to validate byte array reads 
+	 * using @Id on a byte[] array class member.
+	 */
+	public void validateAnnotatedByteArray(AnnotateByteArray artifact, byte[] arrayOrig, byte bTest) {
+		assertNotNull("Artifact object should never be Null", artifact);
+		assertNotNull("Id should never be Null",artifact.id);
+		assertTrue(Arrays.equals(artifact.getByteName(), arrayOrig));
+		assertEquals("Id of the object is ",bTest, artifact.getId());		
 	}
 	
 	/*
@@ -655,6 +732,54 @@ public class TestPOJOSpecialCharRead extends BasicJavaClientREST {
 			searchSpArtifact = iter.next();
 			validateSpecialArtifactWithSpecialCharacter(searchSpArtifact, artifactName, longId);
 		}		
+	}
+	
+	/*
+     * Purpose : This test is to validate write and read byte array
+     * Uses Id class member which has @Id.
+     */
+    
+	@Test
+	public void testPOJORepoReadWriteByteArray() {
+		PojoRepository<ByteArrayId,Byte> pojoReposProductsString = client.newPojoRepository(ByteArrayId.class, Byte.class);		
+		
+		// Load the object into database
+		String artifactName = new String("Byte Array");	
+		byte[] testByteArray = artifactName.getBytes();
+		ByteArrayId byteArrayIdObj = new ByteArrayId();
+		byte b = 8;
+		
+		byteArrayIdObj.setByteName(testByteArray);
+		byteArrayIdObj.setId((byte) 8);
+		pojoReposProductsString.write(byteArrayIdObj,"odd","numbers");
+		
+		// Validate the artifact read back.
+		ByteArrayId artifact1 = pojoReposProductsString.read(b);
+		validateByteArray(artifact1, testByteArray, b);
+	}
+	
+	/*
+     * Purpose : This test is to validate write and read byte array with Annotation
+     * Uses byte[] byteName class member which has @Id.
+     */
+    
+	@Test
+	public void testPOJORepoReadWriteAnnotatedByteArray() {
+		PojoRepository<AnnotateByteArray,byte[]> pojoReposProductsString = client.newPojoRepository(AnnotateByteArray.class, byte[].class);		
+		
+		// Load the object into database
+		String artifactName = new String("Byte Array");	
+		byte[] testByteArray = artifactName.getBytes();
+		AnnotateByteArray byteArrayIdObj = new AnnotateByteArray();
+		byte b = 8;
+		
+		byteArrayIdObj.setByteName(testByteArray);
+		byteArrayIdObj.setId((byte) 8);
+		pojoReposProductsString.write(byteArrayIdObj,"odd","numbers");
+		
+		// Validate the artifact read back.
+		AnnotateByteArray artifact1 = pojoReposProductsString.read(testByteArray);
+		validateAnnotatedByteArray(artifact1, testByteArray, b);
 	}
 	
 }

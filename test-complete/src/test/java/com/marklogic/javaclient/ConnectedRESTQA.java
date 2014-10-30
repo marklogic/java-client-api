@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 
 import java.net.InetAddress;
 
@@ -207,12 +208,18 @@ public abstract class ConnectedRESTQA {
 			post.setEntity(new StringEntity(JSONString));
 
 			HttpResponse response = client.execute(post);
-			System.out.println(JSONString);
+//			System.out.println(JSONString);
 			if (response.getStatusLine().getStatusCode() == 400) {
 				// EntityUtils to get the response content
-
-				System.out.println("AppServer already exist, so changing the content database to new DB");
-				associateRESTServerWithDB(restServerName,dbName);
+				System.out.println("AppServer already exist");
+				if(dbName.equals("Documents")){
+					System.out.println("and Context database is Documents DB");
+				}
+				else{
+					System.out.println("and changing context database to "+dbName);
+					associateRESTServerWithDB(restServerName,dbName);
+				}
+				
 			}
 		}catch (Exception e) {
 			// writing error to Log
@@ -288,8 +295,96 @@ public abstract class ConnectedRESTQA {
 		createRESTUser("rest-writer","x","rest-writer");
 		createRESTUser("rest-reader","x","rest-reader");
 	}
+	public static void setupJavaRESTServer(String dbName, String fName, String restServerName, int restPort,boolean attachRestContextDB)throws Exception{
+
+		createDB(dbName); 
+		createForest(fName,dbName); 
+		Thread.sleep(1500);
+		if(attachRestContextDB){
+		assocRESTServer(restServerName, dbName,restPort);
+		}
+		else{
+			assocRESTServer(restServerName, "Documents",restPort);
+		}
+		createRESTUser("rest-admin","x","rest-admin");
+		createRESTUser("rest-writer","x","rest-writer");
+		createRESTUser("rest-reader","x","rest-reader");
+	}
+	
+	/*Create a role with given privilages
+	 * 
+	 */
+	public static void createUserRolesWithPrevilages(String roleName, String... privNames ){
+		try{
+			DefaultHttpClient client = new DefaultHttpClient();
+			client.getCredentialsProvider().setCredentials(
+					new AuthScope("localhost", 8002),
+					new UsernamePasswordCredentials("admin", "admin"));
+			HttpGet getrequest = new HttpGet("http://localhost:8002/manage/v2/roles/"+roleName);
+			HttpResponse resp = client.execute(getrequest);
+
+			if( resp.getStatusLine().getStatusCode() == 200)
+			{
+				System.out.println("Role already exist");
+			}
+			else {
+				System.out.println("Role dont exist, will create now");
+				String[] roleNames ={"rest-reader","rest-writer"};
+				client = new DefaultHttpClient();
+				client.getCredentialsProvider().setCredentials(
+						new AuthScope("localhost", 8002),
+						new UsernamePasswordCredentials("admin", "admin"));
+
+				ObjectMapper mapper = new ObjectMapper();
+				ObjectNode mainNode = mapper.createObjectNode();
+				
+				ArrayNode roleArray = mapper.createArrayNode();
+				ArrayNode privArray = mapper.createArrayNode();
+				ArrayNode permArray = mapper.createArrayNode();
+				mainNode.put("name",roleName);
+				mainNode.put("description", "role discription");
+				
+				for(String rolename: roleNames)
+					roleArray.add(rolename);
+				mainNode.withArray("role").addAll(roleArray);
+				for(String privName: privNames){
+					ObjectNode privNode = mapper.createObjectNode();
+					privNode.put("privilege-name", privName);
+					privNode.put("action", "http://marklogic.com/xdmp/privileges/"+privName.replace(":", "-"));
+					privNode.put("kind", "execute");
+					privArray.add(privNode);
+				}
+				mainNode.withArray("privilege").addAll(privArray);
+				permArray.add(getPermissionNode(roleNames[0],Capability.READ).get("permission").get(0));
+				permArray.add(getPermissionNode(roleNames[1],Capability.READ).get("permission").get(0));
+				permArray.add(getPermissionNode(roleNames[1],Capability.EXECUTE).get("permission").get(0));
+				permArray.add(getPermissionNode(roleNames[1],Capability.UPDATE).get("permission").get(0));
+				mainNode.withArray("permission").addAll(permArray);
+				System.out.println(mainNode.toString());
+				HttpPost post = new HttpPost("http://localhost:8002"+ "/manage/v2/roles?format=json");
+				post.addHeader("Content-type", "application/json");
+				post.setEntity(new StringEntity(mainNode.toString()));
+
+				HttpResponse response = client.execute(post);
+				HttpEntity respEntity = response.getEntity();
+				if( response.getStatusLine().getStatusCode() == 400)
+				{
+					System.out.println("creation of role got a problem");
+				}
+				else if (respEntity != null) {
+					// EntityUtils to get the response content
+					String content =  EntityUtils.toString(respEntity);
+					System.out.println(content);
+				}
+				else {System.out.println("No Proper Response");}
+			}
+		}catch (Exception e) {
+			// writing error to Log
+			e.printStackTrace();
+		}
+	}
 	/*
-	 * This function creates a REST server with default content DB, Module DB
+	 * This function creates a REST user with given roles 
 	 */
 
 	public static void createRESTUser(String usrName, String pass, String... roleNames ){
@@ -466,7 +561,26 @@ public abstract class ConnectedRESTQA {
 		}
 
 	}
+	public static void deleteUserRole(String roleName){
+		try{
+			DefaultHttpClient client = new DefaultHttpClient();
 
+			client.getCredentialsProvider().setCredentials(
+					new AuthScope("localhost", 8002),
+					new UsernamePasswordCredentials("admin", "admin"));
+
+			HttpDelete delete = new HttpDelete("http://localhost:8002/manage/v2/roles/"+roleName);
+
+			HttpResponse response = client.execute(delete);
+			if(response.getStatusLine().getStatusCode()== 202){
+				Thread.sleep(3500);
+			}
+		}catch (Exception e) {
+			// writing error to Log
+			e.printStackTrace();
+		}
+
+	}
 	public static void setupJavaRESTServerWithDB( String restServerName, int restPort)throws Exception{		 
 		createRESTServerWithDB(restServerName, restPort);
 		createRESTUser("rest-admin","x","rest-admin");
@@ -635,7 +749,7 @@ public abstract class ConnectedRESTQA {
 		}
 	}
 	/*
-	 * This function deletes rest server first and deletes forests and databases in separate calls
+	 * This function move rest server first to documents and deletes forests and databases in separate calls
 	 */
 	public static void tearDownJavaRESTServer(String dbName, String [] fNames, String restServerName) throws Exception{
 
@@ -664,6 +778,7 @@ public abstract class ConnectedRESTQA {
 
 		deleteDB(dbName); 
 	}
+	
 
 	/*
 	 * This function deletes rest server along with default forest and database 
@@ -1297,6 +1412,25 @@ public abstract class ConnectedRESTQA {
 	public static void addElementRangeIndexTemporalAxis(String dbName, String axisName, 
 		String namespaceStart, String localnameStart, String namespaceEnd, String localnameEnd) throws Exception
 	{
+		/**
+		 {
+		 		"axis-name": "eri-json-system",
+		 		"axis-start": {
+        	"element-reference": {
+          	"namespace-uri": "",
+          	"localname": "eri-system-start",
+          	"scalar-type": "dateTime"
+        	}
+      	},
+      	"axis-end": {
+        	"element-reference": {
+          	"namespace-uri": "",
+          	"localname": "eri-system-end",
+          	"scalar-type": "dateTime"
+        	}
+      	}
+    	}  
+		 */
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode rootNode = mapper.createObjectNode();
 
@@ -1323,38 +1457,6 @@ public abstract class ConnectedRESTQA {
 		rootNode.set("axis-end", axisEnd);
 
 		System.out.println(rootNode.toString());
-
-
-		/***
-		JSONObject rootNode = new JSONObject(jsonOrderedMap);
-
-
-
-		JSONObject axisStart = new JSONObject();
-		JSONObject elementReferenceStart = new JSONObject();
-
-		elementReferenceStart.put("namespace-uri", namespaceStart);
-		elementReferenceStart.put("localname", localnameStart);
-		elementReferenceStart.put("scalar-type", "dateTime");
-
-		axisStart.put("element-reference", elementReferenceStart);
-
-		JSONObject axisEnd = new JSONObject();
-		JSONObject elementReferenceEnd = new JSONObject();
-
-		elementReferenceEnd.put("namespace-uri", namespaceEnd);
-		elementReferenceEnd.put("localname", localnameEnd);
-		elementReferenceEnd.put("scalar-type", "dateTime");
-
-		axisEnd.put("element-reference", elementReferenceEnd);
-
-		rootNode.put("axis-end", axisEnd);
-		rootNode.put("axis-start", axisStart);
-		rootNode.put( "axis-name", axisName);
-
-		System.out.println(rootNode.toString());
-		 ***/
-
 
 		DefaultHttpClient client = new DefaultHttpClient();
 		client.getCredentialsProvider().setCredentials(
