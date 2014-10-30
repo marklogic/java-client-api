@@ -103,7 +103,7 @@ public class BasicPage<T> implements Page<T> {
     }
 
     public boolean hasPreviousPage() {
-        return getPageNumber() > 0;
+        return getPageNumber() > 1;
     }
 
     public long getPageNumber() {
