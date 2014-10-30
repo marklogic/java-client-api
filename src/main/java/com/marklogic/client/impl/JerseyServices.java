@@ -820,8 +820,14 @@ public class JerseyServices implements RESTServices {
 		for (String uri: uris) {
 			params.add("uri", uri);
 		}
-		return getIteratedResourceImpl(DefaultJerseyResultIterator.class,
+		JerseyResultIterator iterator = getIteratedResourceImpl(DefaultJerseyResultIterator.class,
 			reqlog, path, params, MultiPartMediaTypes.MULTIPART_MIXED);
+		if ( iterator.getStart() == -1 ) iterator.setStart(1);
+		if ( iterator.getSize() != -1 ) {
+			if ( iterator.getPageSize() == -1 ) iterator.setPageSize(iterator.getSize());
+			if ( iterator.getTotalSize() == -1 )  iterator.setTotalSize(iterator.getSize());
+		}
+		return iterator;
 	}
 
 	private JerseyResultIterator getBulkDocumentsImpl(RequestLogger reqlog,

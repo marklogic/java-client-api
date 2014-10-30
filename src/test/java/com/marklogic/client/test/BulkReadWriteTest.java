@@ -161,12 +161,22 @@ public class BulkReadWriteTest {
 
         DocumentPage page = docMgr.read(DIRECTORY + "1016670.xml", DIRECTORY + "108410.xml", DIRECTORY + "1205733.xml");
         int numRead = 0;
-        while ( page.hasNext() ) {
-            DocumentRecord record = page.next();
+        for ( DocumentRecord record : page ) {
             validateRecord(record);
             numRead++;
         }
+        assertEquals("Should have results", true, page.hasContent());
         assertEquals("Failed to read number of records expected", 3, numRead);
+        assertEquals("Failed to report number of records expected", 3, page.size());
+        assertEquals("No previous page", false, page.hasPreviousPage());
+        assertEquals("Only one page", false, page.hasNextPage());
+        assertEquals("Only one page", true, page.isFirstPage());
+        assertEquals("Only one page", true, page.isLastPage());
+        assertEquals("Wrong page", 1, page.getPageNumber());
+        assertEquals("Wrong page size", 3, page.getPageSize());
+        assertEquals("Wrong start", 1, page.getStart());
+        assertEquals("Wrong totalPages", 1, page.getTotalPages());
+        assertEquals("Wrong estimate", 3, page.getTotalSize());
     }
 
     @Test
@@ -177,14 +187,24 @@ public class BulkReadWriteTest {
         int pageLength = 100;
         docMgr.setPageLength(pageLength);
         DocumentPage page = docMgr.search(new StructuredQueryBuilder().directory(1, DIRECTORY), 1, searchHandle);
-        //DocumentPage page = docMgr.search(new StructuredQueryBuilder().directory(1, DIRECTORY), 1);
-        while ( page.hasNext() ) {
-            DocumentRecord record = page.next();
+        for ( DocumentRecord record : page ) {
             validateRecord(record);
         }
         assertEquals("Failed to find number of records expected", RECORDS_EXPECTED, page.getTotalSize());
         assertEquals("SearchHandle failed to report number of records expected", RECORDS_EXPECTED, searchHandle.getTotalResults());
         assertEquals("SearchHandle failed to report pageLength expected", pageLength, searchHandle.getPageLength());
+        assertEquals("Should have results", true, page.hasContent());
+        int expected = RECORDS_EXPECTED > pageLength ? pageLength : RECORDS_EXPECTED;
+        assertEquals("Failed to report number of records expected", expected, page.size());
+        assertEquals("No previous page", false, page.hasPreviousPage());
+        assertEquals("Only one page", RECORDS_EXPECTED > pageLength, page.hasNextPage());
+        assertEquals("Only one page", true, page.isFirstPage());
+        assertEquals("Only one page", page.hasNextPage() == false, page.isLastPage());
+        assertEquals("Wrong page", 1, page.getPageNumber());
+        assertEquals("Wrong page size", pageLength, page.getPageSize());
+        assertEquals("Wrong start", 1, page.getStart());
+        double totalPagesExpected = Math.ceil((double) RECORDS_EXPECTED/(double) pageLength);
+        assertEquals("Wrong totalPages", totalPagesExpected, page.getTotalPages(), .01);
     }
 
     //public void testMixedLoad() {
