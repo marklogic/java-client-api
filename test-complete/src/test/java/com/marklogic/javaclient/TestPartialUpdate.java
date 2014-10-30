@@ -26,7 +26,10 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
+
+import org.json.JSONException;
 import org.junit.*;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 public class TestPartialUpdate extends BasicJavaClientREST {
 	private static String dbName = "TestPartialUpdateDB";
@@ -842,7 +845,228 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		// release client
 		client.release();		
-	}	
+	}
+	
+	/* Purpose: This test is used to validate all of the patch builder functions on a JSON
+	 * document using JSONPath expressions.
+	 * 
+	 * Function tested: replaceValue.
+	*/
+	@Test	
+	public void testPartialUpdateReplaceValueJSON() throws IOException, JSONException
+	{	
+		System.out.println("Running testPartialUpdateReplaceValueJSON");
+
+		String[] filenames = {"json-original.json"};
+
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+
+		// write docs
+		for(String filename : filenames)
+		{
+			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
+		}
+
+		String docId = "/partial-update/json-original.json";
+		JSONDocumentManager docMgr = client.newJSONDocumentManager();
+		DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
+		patchBldr.pathLanguage(PathLanguage.JSONPATH);
+		
+		//Replace the third employee's first name. Change it to Jack. Issue #161 - Using filters causes Bad Request Exceptions.
+		patchBldr.replaceValue("$.employees[2].firstName", "Jack");
+
+		DocumentPatchHandle patchHandle = patchBldr.build();
+		docMgr.patch(docId, patchHandle);
+
+		String content = docMgr.read(docId, new StringHandle()).get();
+
+		System.out.println(content);
+
+		String exp="{\"employees\": [{\"firstName\":\"John\", \"lastName\":\"Doe\"}," +
+                   "{\"firstName\":\"Ann\", \"lastName\":\"Smith\"}," +
+                   "{\"firstName\":\"Jack\", \"lastName\":\"Foo\"}]}";
+		JSONAssert.assertEquals(exp, content, false);
+
+		// release client
+		client.release();		
+	}
+	
+	/* Purpose: This test is used to validate all of the patch builder functions on a JSON
+	 * document using JSONPath expressions.
+	 * 
+	 * Functions tested : replaceFragment.
+	*/
+	@Test	
+	public void testPartialUpdateReplaceFragmentJSON() throws IOException, JSONException
+	{	
+		System.out.println("Running testPartialUpdateReplaceValueJSON");
+
+		String[] filenames = {"json-original.json"};
+
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+
+		// write docs
+		for(String filename : filenames)
+		{
+			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
+		}
+
+		String docId = "/partial-update/json-original.json";
+		JSONDocumentManager docMgr = client.newJSONDocumentManager();
+		DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
+		patchBldr.pathLanguage(PathLanguage.JSONPATH);
+				
+		//Replace the third employee. Issue #161 - Using filters causes Bad Request Exceptions.
+		patchBldr.replaceFragment("$.employees[2]", "{\"firstName\":\"Albert\", \"lastName\":\"Einstein\"}");
+
+		DocumentPatchHandle patchHandle = patchBldr.build();
+		docMgr.patch(docId, patchHandle);
+
+		String content = docMgr.read(docId, new StringHandle()).get();
+
+		System.out.println(content);
+
+		String exp="{\"employees\": [{\"firstName\":\"John\", \"lastName\":\"Doe\"}," +
+                   "{\"firstName\":\"Ann\", \"lastName\":\"Smith\"}," +
+                   "{\"firstName\":\"Albert\", \"lastName\":\"Einstein\"}]}";
+		JSONAssert.assertEquals(exp, content, false);
+
+		// release client
+		client.release();		
+	}
+	
+	/* Purpose: This test is used to validate all of the patch builder functions on a JSON
+	 * document using JSONPath expressions.
+	 * 
+	 * Functions tested : replaceInsertFragment. An new fragment is inserted when unknown index is used.
+	*/
+	@Test	
+	public void testPartialUpdateReplaceInsertFragmentNewJSON() throws IOException, JSONException
+	{	
+		System.out.println("Running testPartialUpdateReplaceInsertFragmentExistingJSON");
+
+		String[] filenames = {"json-original.json"};
+
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+
+		// write docs
+		for(String filename : filenames)
+		{
+			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
+		}
+
+		String docId = "/partial-update/json-original.json";
+		JSONDocumentManager docMgr = client.newJSONDocumentManager();
+		DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
+		patchBldr.pathLanguage(PathLanguage.JSONPATH);
+				
+		//Mark an unknown location in argument 1, and then insert new node relative to argument 2.
+		patchBldr.replaceInsertFragment("$.employees[3]", "$.employees[0]", Position.BEFORE,"{\"firstName\":\"Albert\", \"lastName\":\"Einstein\"}");
+
+		DocumentPatchHandle patchHandle = patchBldr.build();
+		docMgr.patch(docId, patchHandle);
+
+		String content = docMgr.read(docId, new StringHandle()).get();
+
+		System.out.println(content);
+
+		String exp="{\"employees\": [{\"firstName\":\"John\", \"lastName\":\"Doe\"}," +
+                   "{\"firstName\":\"Ann\", \"lastName\":\"Smith\"}," +
+                   "{\"firstName\":\"Albert\", \"lastName\":\"Einstein\"}," +
+                   "{\"firstName\":\"Bob\", \"lastName\":\"Foo\"}]}";
+		JSONAssert.assertEquals(exp, content, false);
+
+		// release client
+		client.release();		
+	}
+	
+	/* Purpose: This test is used to validate all of the patch builder functions on a JSON
+	 * document using JSONPath expressions.
+	 * 
+	 * Functions tested : replaceInsertFragment. An existing fragment replaced with another fragment.
+	*/
+	@Test	
+	public void testPartialUpdateReplaceInsertFragmentExistingJSON() throws IOException, JSONException
+	{	
+		System.out.println("Running testPartialUpdateReplaceInsertFragmentExistingJSON");
+
+		String[] filenames = {"json-original.json"};
+
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+
+		// write docs
+		for(String filename : filenames)
+		{
+			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
+		}
+
+		String docId = "/partial-update/json-original.json";
+		JSONDocumentManager docMgr = client.newJSONDocumentManager();
+		DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
+		patchBldr.pathLanguage(PathLanguage.JSONPATH);
+				
+		//Replace the third employee. Issue #161 - Using filters causes Bad Request Exceptions.
+		patchBldr.replaceInsertFragment("$.employees[2]", "$.employees[2]", Position.LAST_CHILD,"{\"firstName\":\"Albert\", \"lastName\":\"Einstein\"}");
+
+		DocumentPatchHandle patchHandle = patchBldr.build();
+		docMgr.patch(docId, patchHandle);
+
+		String content = docMgr.read(docId, new StringHandle()).get();
+
+		System.out.println(content);
+
+		String exp="{\"employees\": [{\"firstName\":\"John\", \"lastName\":\"Doe\"}," +
+                   "{\"firstName\":\"Ann\", \"lastName\":\"Smith\"}," +
+                   "{\"firstName\":\"Albert\", \"lastName\":\"Einstein\"}]}";
+		JSONAssert.assertEquals(exp, content, false);
+
+		// release client
+		client.release();		
+	}
+	
+	/* Purpose: This test is used to validate all of the patch builder functions on a JSON
+	 * document using JSONPath expressions.
+	 * 
+	 * Function tested: delete.
+	*/
+	@Test	
+	public void testPartialUpdateDeleteJSON() throws IOException, JSONException
+	{	
+		System.out.println("Running testPartialUpdateReplaceValueJSON");
+
+		String[] filenames = {"json-original.json"};
+
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+
+		// write docs
+		for(String filename : filenames)
+		{
+			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
+		}
+
+		String docId = "/partial-update/json-original.json";
+		JSONDocumentManager docMgr = client.newJSONDocumentManager();
+		DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
+		patchBldr.pathLanguage(PathLanguage.JSONPATH);
+		
+		//Delete the third employee's first name. Issue #161 - Using filters causes Bad Request Exceptions.
+		patchBldr.delete("$.employees[2].firstName",  DocumentMetadataPatchBuilder.Cardinality.ZERO_OR_MORE);
+
+		DocumentPatchHandle patchHandle = patchBldr.build();
+		docMgr.patch(docId, patchHandle);
+
+		String content = docMgr.read(docId, new StringHandle()).get();
+
+		System.out.println(content);
+
+		String exp="{\"employees\": [{\"firstName\":\"John\", \"lastName\":\"Doe\"}," +
+                   "{\"firstName\":\"Ann\", \"lastName\":\"Smith\"}," +
+                   "{\"lastName\":\"Foo\"}]}";
+		JSONAssert.assertEquals(exp, content, false);
+
+		// release client
+		client.release();		
+	}
 	
 	@AfterClass
 	public static void tearDown() throws Exception
