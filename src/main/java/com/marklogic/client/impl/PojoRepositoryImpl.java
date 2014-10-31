@@ -16,6 +16,7 @@
 package com.marklogic.client.impl;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentWriteSet;
@@ -35,11 +36,13 @@ import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.StructuredQueryDefinition;
+import com.sun.jersey.api.client.ClientHandlerException;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -136,8 +139,30 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         }
         DocumentWriteSet writeSet = docMgr.newWriteSet();
         writeSet.add(createUri(entity), metadataHandle, contentHandle);
-        docMgr.write(writeSet, transaction);
+        try {
+            docMgr.write(writeSet, transaction);
+        } catch(ClientHandlerException e) {
+            checkForEmptyBeans(e);
+            throw e;
+        }
     }
+
+    private void checkForEmptyBeans(Throwable e) {
+        Throwable cause = e.getCause();
+        if ( cause != null ) {
+            if ( cause instanceof JsonMappingException && 
+                 cause.getMessage() != null &&
+                 cause.getMessage().contains("SerializationFeature.FAIL_ON_EMPTY_BEANS") )
+            {
+                throw new MarkLogicBindingException(
+                    "Each of your pojo beans and descendent beans must have public fields or paired get/set methods",
+                    cause);
+            } else {
+                checkForEmptyBeans(cause);
+            }
+        }
+    }
+
 
     public boolean exists(ID id) {
         return docMgr.exists(createUri(id)) != null;
@@ -271,11 +296,12 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         docMgr.setSearchView(view);
     }
 
-    public void defineIdProperty(String propertyName) {
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
     }
- 
-    public DatabaseClient getDatabaseClient() {
-        return client;
+
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
     }
 
     private PojoQueryDefinition wrapQuery(PojoQueryDefinition query) {

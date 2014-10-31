@@ -29,7 +29,12 @@ public class MarkLogicBindingException extends RuntimeException {
 	static final private Logger logger = LoggerFactory
 			.getLogger(MarkLogicBindingException.class);
 	
+	public MarkLogicBindingException(String message, Throwable e) {
+		super(message, e);
+	}
+
 	public MarkLogicBindingException(Exception e) {
+		super(e);
 		e.printStackTrace();
 	}
 

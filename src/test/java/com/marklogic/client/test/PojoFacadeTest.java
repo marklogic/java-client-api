@@ -15,10 +15,9 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -31,21 +30,32 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentRecord;
+import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.document.TextDocumentManager;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.pojo.PojoQueryDefinition;
+import com.marklogic.client.query.MatchDocumentSummary;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.pojo.PojoQueryBuilder.Operator;
 import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.pojo.annotation.Id;
+import com.marklogic.client.impl.PojoRepositoryImpl;
 import com.marklogic.client.test.BulkReadWriteTest;
 import com.marklogic.client.test.BulkReadWriteTest.CityWriter;
 import com.marklogic.client.test.PojoFacadeTest.TimeTest;
-
-import static com.marklogic.client.test.BulkReadWriteTest.DIRECTORY;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PojoFacadeTest {
@@ -56,7 +66,7 @@ public class PojoFacadeTest {
     public static void beforeClass() {
         Common.connect();
         cities = Common.client.newPojoRepository(City.class, Integer.class);
-        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
     @AfterClass
     public static void afterClass() {
@@ -79,6 +89,112 @@ public class PojoFacadeTest {
         }
     }
     
+    public interface Citizen{
+        public String getNationality();
+        public void setNationality(String countryName);
+    }
+    public static class Address {
+        public String streetName,state,country;
+        public long zip;
+        public double lattitude,longitude;
+        public void setStreetName(String stName){
+            this.streetName=stName;
+        }
+        public void setState(String stateName){
+            this.state=stateName;
+        }
+        public void setCountry(String countryName){
+            this.country=countryName;
+        }
+        public void setZip(long zipCode){
+            this.zip=zipCode;
+        }
+        public void setLattitude(double lat){
+            this.lattitude=lat;
+        }
+        public void setLongitude(double longitude){
+            this.longitude=longitude;
+        }
+    }
+    public static class Person implements Citizen {
+        String name,emailId,nationality;
+        long phone;
+        Address address;
+        public void setName(String name){this.name=name;}
+        public void setAddress(Address address){this.address = address;}
+        public void setEmailId(String emailId){ this.emailId = emailId;}
+        public void setPhone(long ph){this.phone=ph;}
+
+        @Override
+        public void setNationality(String countryName){
+            this.nationality= countryName;
+        }
+        @Override
+        public String getNationality(){
+            return this.nationality;
+        }
+        public String getName(){
+            return this.name;
+        }
+        public Address getAddress(){
+            return this.address;
+        }
+        public String getEmailId(){
+            return this.emailId;
+        }
+        public long getPhone(){
+            return this.phone;
+        }
+    }
+    public enum std_status{senior,junior,fresher };
+    public static class Student extends Person{
+        @Id
+        public long studId;
+        std_status classStatus;
+
+        public void setStudId(long id){
+            this.studId=id;
+        }
+        public void setclassStatus(std_status classStatus){
+            this.classStatus = classStatus;
+        }
+        public std_status getclassStatus(){
+            return this.classStatus;
+        }
+        public long getStudId(){
+            return this.studId;
+        }
+    }
+
+    @Test
+    public void testIssue_93() throws Exception {
+        PojoRepository<Student,Long> students = Common.client.newPojoRepository(Student.class, Long.class);
+        long id=1;
+        Student stud = new Student();
+        stud.setName("Student1");
+        stud.setStudId(id);
+        Address adr = new Address();
+        adr.setCountry("USA");
+        adr.setState("CA");
+        adr.setZip(94070);
+        adr.setStreetName("1 tassman");
+        stud.setAddress(adr);
+        stud.setEmailId("stud@gmail.com");
+        stud.setPhone(6602345);
+        stud.setNationality("Indian");
+        stud.setclassStatus(std_status.junior);
+
+        ObjectMapper objectMapper = ((PojoRepositoryImpl) students).getObjectMapper();
+        String value = objectMapper.writeValueAsString(stud);
+        Student stud2 = objectMapper.readValue(value, Student.class);
+        students.write(stud, "students");
+
+        Student student1 = students.read(id);
+        assertEquals("Student id", student1.getStudId(), stud.getStudId());
+        assertEquals("Zip code", student1.getAddress().zip, stud.getAddress().zip);
+        assertEquals("class status", student1.getclassStatus(), stud.getclassStatus());
+    } 
+
     @Test
     public void testA_LoadPojos() throws Exception {
         BulkReadWriteTest.loadCities(new PojoCityWriter());
@@ -384,7 +500,7 @@ public class PojoFacadeTest {
     }
 
     public static class TimeTest {     
-    	@Id public String id;
+        @Id public String id;
         public Calendar timeTest;
 
         public TimeTest() {}
@@ -406,7 +522,7 @@ public class PojoFacadeTest {
 
         TimeTest timeTest1FromDb = times.read("1");
         assertEquals("Times should be equal", timeTest1.timeTest.getTime().getTime(), 
-        	timeTest1FromDb.timeTest.getTime().getTime());
+            timeTest1FromDb.timeTest.getTime().getTime());
 
         GregorianCalendar septFirstGMT = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
         septFirstGMT.set(2014, Calendar.SEPTEMBER, 1, 12, 0, 0);
@@ -447,6 +563,8 @@ public class PojoFacadeTest {
         products2.deleteAll();
         PojoRepository<TimeTest, String> timeTests = Common.client.newPojoRepository(TimeTest.class, String.class);
         timeTests.deleteAll();
+        PojoRepository<Student, Long> students = Common.client.newPojoRepository(Student.class, Long.class);
+        students.deleteAll();
         cities.deleteAll();
     }
 }
