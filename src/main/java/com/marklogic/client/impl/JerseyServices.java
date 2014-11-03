@@ -841,7 +841,7 @@ public class JerseyServices implements RESTServices {
 		addCategoryParams(categories, params, withContent);
 		if (searchHandle != null && view != null) params.add("view", view.toString().toLowerCase());
 		if (start > 1)             params.add("start",      Long.toString(start));
-		if (pageLength > 0)        params.add("pageLength", Long.toString(pageLength));
+		if (pageLength >= 0)       params.add("pageLength", Long.toString(pageLength));
 		if (format != null)        params.add("format",     format.toString().toLowerCase());
 		if (transactionId != null) params.add("txid",       transactionId);
 		if ( format == null && searchHandle != null ) {
