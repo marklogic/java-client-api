@@ -14,8 +14,8 @@ function putMethod(context, params, input) {
 function deleteMethod(context, params) {
 };
 
-exports.get = getMethod;
-exports.post = postMethod;
-exports.put = putMethod;
-exports.delete = deleteMethod;
+exports.GET = getMethod;
+exports.POST = postMethod;
+exports.PUT = putMethod;
+exports.DELETE = deleteMethod;
 
