@@ -193,14 +193,15 @@ class ResourceExtensionsImpl
 				}
 			}
 		}
-        String contentType = null;
-        if ( metadata.getScriptLanguage() == null ) {
-            throw new IllegalArgumentException("scriptLanguage cannot be null");
-        } else if ( metadata.getScriptLanguage() == ScriptLanguage.JAVASCRIPT ) {
-            contentType = "application/vnd.marklogic-javascript";
-        } else if ( metadata.getScriptLanguage() == ScriptLanguage.XQUERY ) {
-            contentType = "application/xquery";
-        } 
+		String contentType = null;
+		if ( metadata == null ) {
+		} else if ( metadata.getScriptLanguage() == null ) {
+			throw new IllegalArgumentException("scriptLanguage cannot be null");
+		} else if ( metadata.getScriptLanguage() == ScriptLanguage.JAVASCRIPT ) {
+			contentType = "application/vnd.marklogic-javascript";
+		} else if ( metadata.getScriptLanguage() == ScriptLanguage.XQUERY ) {
+			contentType = "application/xquery";
+		} 
 
 		services.putValue(requestLogger, "config/resources", resourceName, extraParams,
 				contentType, sourceBase);

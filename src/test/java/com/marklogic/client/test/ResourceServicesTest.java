@@ -16,8 +16,7 @@
 package com.marklogic.client.test;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -145,6 +144,25 @@ public class ResourceServicesTest {
 		assertXpathEvaluatesTo("true", "/deleted-doc/param", result);
 
 		extensionMgr.deleteServices(ResourceExtensionsTest.RESOURCE_NAME);
+	}
+
+	@Test
+	/** Avoid regression on https://github.com/marklogic/java-client-api/issues/172 */
+	public void test_172() {
+		ResourceExtensionsManager extensionMgr =
+			Common.client.newServerConfigManager().newResourceExtensionsManager();
+		Common.client.release();
+		String expectedMessage = "You cannot use this connected object anymore--connection has already been released";
+		try { extensionMgr.writeServices(ResourceExtensionsTest.RESOURCE_NAME, null, null);
+		} catch (IllegalStateException e) { assertEquals("Wrong error", expectedMessage, e.getMessage()); }
+		try { extensionMgr.readServices(ResourceExtensionsTest.RESOURCE_NAME, new StringHandle());
+		} catch (IllegalStateException e) { assertEquals("Wrong error", expectedMessage, e.getMessage()); }
+		try { extensionMgr.listServices(new DOMHandle());
+		} catch (IllegalStateException e) { assertEquals("Wrong error", expectedMessage, e.getMessage()); }
+		try { extensionMgr.deleteServices(ResourceExtensionsTest.RESOURCE_NAME);
+		} catch (IllegalStateException e) { assertEquals("Wrong error", expectedMessage, e.getMessage()); }
+		// since we released the existing connection, connect again in case this isn't always the last test
+		Common.connectAdmin();
 	}
 
 	static class SimpleResourceManager extends ResourceManager {

@@ -174,6 +174,7 @@ public class JerseyServices implements RESTServices {
 	private String database = null;
 	private ApacheHttpClient4 client;
 	private WebResource connection;
+	private boolean released = false;
 
 	private Random randRetry    = new Random();
 
@@ -430,8 +431,16 @@ public class JerseyServices implements RESTServices {
 		this.databaseClient = client;
 	}
 
+	private WebResource getConnection() {
+		if ( connection != null ) return connection;
+		else if ( released ) throw new IllegalStateException(
+				"You cannot use this connected object anymore--connection has already been released");
+		else throw new MarkLogicInternalException("Cannot proceed--connection is null for unknown reason");
+	}
+
 	@Override
 	public void release() {
+		released = true;
 		if (databaseClient != null) {
 			databaseClient = null;
 		}
@@ -459,7 +468,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	private int makeFirstRequest(int retry) {
-		ClientResponse response = connection.path("ping").head();
+		ClientResponse response = getConnection().path("ping").head();
 		int statusCode = response.getClientResponseStatus().getStatusCode();
 		if (statusCode != ClientResponse.Status.SERVICE_UNAVAILABLE.getStatusCode()) {
 			response.close();
@@ -1040,7 +1049,7 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public boolean exists(String uri) throws ForbiddenUserException,
 			FailedRequestException {
-		return headImpl(null, uri, null, connection.path(uri)) == null ? false : true;
+		return headImpl(null, uri, null, getConnection().path(uri)) == null ? false : true;
 	}
 	
 	public ClientResponse headImpl(RequestLogger reqlog, String uri,
@@ -1538,8 +1547,8 @@ public class JerseyServices implements RESTServices {
 				transParams.add("timeLimit", String.valueOf(timeLimit));
 		}
 
-		WebResource resource = (transParams != null) ? connection.path(
-				"transactions").queryParams(transParams) : connection
+		WebResource resource = (transParams != null) ? getConnection().path(
+				"transactions").queryParams(transParams) : getConnection()
 				.path("transactions");
 
 		ClientResponse response = null;
@@ -1628,7 +1637,7 @@ public class JerseyServices implements RESTServices {
 		MultivaluedMap<String, String> transParams = new MultivaluedMapImpl();
 		transParams.add("result", result);
 
-		WebResource webResource = connection.path("transactions/" + transactionId)
+		WebResource webResource = getConnection().path("transactions/" + transactionId)
 				.queryParams(transParams);
 
 		WebResource.Builder builder = webResource.getRequestBuilder();
@@ -1759,7 +1768,7 @@ public class JerseyServices implements RESTServices {
 
 	private WebResource makeDocumentResource(
 			MultivaluedMap<String, String> queryParams) {
-		return connection.path("documents").queryParams(queryParams);
+		return getConnection().path("documents").queryParams(queryParams);
 	}
 
 	private boolean isExternalDescriptor(ContentDescriptor desc) {
@@ -2058,7 +2067,7 @@ public class JerseyServices implements RESTServices {
                 String path = (queryDef instanceof RawQueryByExampleDefinition) ?
                     "qbe" : "search";
 
-                WebResource resource = connection.path(path).queryParams(params);
+                WebResource resource = getConnection().path(path).queryParams(params);
                 builder = (payloadMimetype != null) ?
                     resource.type(payloadMimetype).accept(mimetype) :
                     resource.accept(mimetype);
@@ -2071,7 +2080,7 @@ public class JerseyServices implements RESTServices {
                     addEncodedParam(params, "q", text);
                 }
 
-                builder = connection.path("search").queryParams(params)
+                builder = getConnection().path("search").queryParams(params)
                     .type("application/xml").accept(mimetype);
             } else if (queryDef instanceof KeyValueQueryDefinition) {
                 if (logger.isDebugEnabled())
@@ -2092,7 +2101,7 @@ public class JerseyServices implements RESTServices {
                     addEncodedParam(params, "value", entry.getValue());
                 }
 
-                builder = connection.path("keyvalue").queryParams(params)
+                builder = getConnection().path("keyvalue").queryParams(params)
                     .accept(mimetype);
             } else if (queryDef instanceof StructuredQueryDefinition) {
                 structure = ((StructuredQueryDefinition) queryDef).serialize();
@@ -2100,7 +2109,7 @@ public class JerseyServices implements RESTServices {
                 if (logger.isDebugEnabled())
                     logger.debug("Searching for structure {}", structure);
 
-                builder = connection.path("search").queryParams(params)
+                builder = getConnection().path("search").queryParams(params)
                     .type("application/xml").accept(mimetype);
             } else if (queryDef instanceof CombinedQueryDefinition) {
                 structure = ((CombinedQueryDefinition) queryDef).serialize();
@@ -2108,13 +2117,13 @@ public class JerseyServices implements RESTServices {
                 if (logger.isDebugEnabled())
                     logger.debug("Searching for combined query {}", structure);
 
-                builder = connection.path("search").queryParams(params)
+                builder = getConnection().path("search").queryParams(params)
                     .type("application/xml").accept(mimetype);
             } else if (queryDef instanceof DeleteQueryDefinition) {
                 if (logger.isDebugEnabled())
                     logger.debug("Searching for deletes");
 
-                builder = connection.path("search").queryParams(params)
+                builder = getConnection().path("search").queryParams(params)
                     .accept(mimetype);
             } else {
                 throw new UnsupportedOperationException("Cannot search with "
@@ -2210,7 +2219,7 @@ public class JerseyServices implements RESTServices {
 			params.add("txid", transactionId);
 		}
 
-		WebResource webResource = connection.path("search").queryParams(params);
+		WebResource webResource = getConnection().path("search").queryParams(params);
 
 		WebResource.Builder builder = webResource.getRequestBuilder();
 
@@ -2375,7 +2384,7 @@ public class JerseyServices implements RESTServices {
 			uri += "/" + valDef.getName();
 		}
 
-		WebResource.Builder builder = connection.path(uri).queryParams(docParams).accept(mimetype);
+		WebResource.Builder builder = getConnection().path(uri).queryParams(docParams).accept(mimetype);
 
 
 		ClientResponse response = null;
@@ -2453,7 +2462,7 @@ public class JerseyServices implements RESTServices {
 
 		String uri = "values";
 
-		WebResource.Builder builder = connection.path(uri)
+		WebResource.Builder builder = getConnection().path(uri)
 				.queryParams(docParams).accept(mimetype);
 
 		ClientResponse response = null;
@@ -2521,7 +2530,7 @@ public class JerseyServices implements RESTServices {
 
 		String uri = "config/query";
 
-		WebResource.Builder builder = connection.path(uri)
+		WebResource.Builder builder = getConnection().path(uri)
 				.queryParams(docParams).accept(mimetype);
 
 		ClientResponse response = null;
@@ -2587,7 +2596,7 @@ public class JerseyServices implements RESTServices {
 		if (logger.isDebugEnabled())
 			logger.debug("Getting {}/{}", type, key);
 
-		WebResource.Builder builder = connection.path(type + "/" + key).accept(
+		WebResource.Builder builder = getConnection().path(type + "/" + key).accept(
 				mimetype);
 
 		ClientResponse response = null;
@@ -2669,8 +2678,8 @@ public class JerseyServices implements RESTServices {
 		MultivaluedMap<String, String> requestParams = convertParams(extraParams);
 
 		WebResource.Builder builder = (requestParams == null) ?
-				connection.path(type).accept(mimetype) :
-				connection.path(type).queryParams(requestParams).accept(mimetype);
+				getConnection().path(type).accept(mimetype) :
+				getConnection().path(type).queryParams(requestParams).accept(mimetype);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -2839,8 +2848,8 @@ public class JerseyServices implements RESTServices {
 				if (builder == null) {
 					connectPath = (key != null) ? type + "/" + key : type;
 					WebResource resource = (requestParams == null) ?
-						connection.path(connectPath) :
-						connection.path(connectPath).queryParams(requestParams);
+						getConnection().path(connectPath) :
+						getConnection().path(connectPath).queryParams(requestParams);
 					builder = (mimetype == null) ?
 						resource.getRequestBuilder() : resource.type(mimetype);
 				}
@@ -2852,8 +2861,8 @@ public class JerseyServices implements RESTServices {
 				if (builder == null) {
 					connectPath = type;
 					WebResource resource = (requestParams == null) ?
-						connection.path(connectPath) :
-						connection.path(connectPath).queryParams(requestParams);
+						getConnection().path(connectPath) :
+						getConnection().path(connectPath).queryParams(requestParams);
 					builder = (mimetype == null) ?
 						resource.getRequestBuilder() : resource.type(mimetype);
 				}
@@ -2924,7 +2933,7 @@ public class JerseyServices implements RESTServices {
 		if (logger.isDebugEnabled())
 			logger.debug("Deleting {}/{}", type, key);
 
-		WebResource builder = connection.path(type + "/" + key);
+		WebResource builder = getConnection().path(type + "/" + key);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -2985,7 +2994,7 @@ public class JerseyServices implements RESTServices {
 		if (logger.isDebugEnabled())
 			logger.debug("Deleting {}", type);
 
-		WebResource builder = connection.path(type);
+		WebResource builder = getConnection().path(type);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -4356,7 +4365,7 @@ public class JerseyServices implements RESTServices {
 		if ( database != null ) {
 			addEncodedParam(params, "database", database);
 		}
-		WebResource resource = connection.path(path).queryParams(params);
+		WebResource resource = getConnection().path(path).queryParams(params);
 
 		WebResource.Builder builder = resource.getRequestBuilder();
 
@@ -4802,7 +4811,7 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 		WebResource.Builder builder = null;
-		builder = connection.path("suggest").queryParams(params)
+		builder = getConnection().path("suggest").queryParams(params)
 				.accept("application/xml");
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -4875,7 +4884,7 @@ public class JerseyServices implements RESTServices {
 			transform.merge(params);
 		}
 		WebResource.Builder builder = null;
-		builder = connection.path("alert/match").queryParams(params)
+		builder = getConnection().path("alert/match").queryParams(params)
 				.accept("application/xml").type(mimeType);
 		
 		ClientResponse response = null;
@@ -4973,7 +4982,7 @@ public class JerseyServices implements RESTServices {
 			if (logger.isDebugEnabled())
 				logger.debug("Searching for structure {}", structure);
 
-			builder = connection.path("alert/match").queryParams(params)
+			builder = getConnection().path("alert/match").queryParams(params)
 					.type("application/xml").accept("application/xml");
 		} else if (queryDef instanceof StringQueryDefinition) {
 			String text = ((StringQueryDefinition) queryDef).getCriteria();
@@ -4984,7 +4993,7 @@ public class JerseyServices implements RESTServices {
 				addEncodedParam(params, "q", text);
 			}
 
-			builder = connection.path("alert/match").queryParams(params)
+			builder = getConnection().path("alert/match").queryParams(params)
 					.accept("application/xml");
 		} else if (queryDef instanceof StructuredQueryDefinition) {
 			structure = ((StructuredQueryDefinition) queryDef).serialize();
@@ -4993,7 +5002,7 @@ public class JerseyServices implements RESTServices {
 				logger.debug("Searching for structure {} in transaction {}",
 						structure);
 
-			builder = connection.path("alert/match").queryParams(params)
+			builder = getConnection().path("alert/match").queryParams(params)
 					.type("application/xml").accept("application/xml");
 		} else {
 			throw new UnsupportedOperationException("Cannot match with "
@@ -5081,7 +5090,7 @@ public class JerseyServices implements RESTServices {
 		if (transform != null) {
 			transform.merge(params);
 		}
-		WebResource.Builder builder = connection.path("alert/match").queryParams(params)
+		WebResource.Builder builder = getConnection().path("alert/match").queryParams(params)
 				.accept("application/xml");
 		
 		ClientResponse response = null;
