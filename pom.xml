@@ -45,10 +45,6 @@
 					<show>public</show>
 					<doctitle>${javadoc-title}</doctitle>
 					<use/>
-					<!-- Disable Java 8 overly strict javadoc linter 
-						 http://blog.joda.org/2014/02/turning-off-doclint-in-jdk-8-javadoc.html
-					-->
-					<additionalparam>-Xdoclint:none</additionalparam>
 				</configuration>
 				<executions>
 					<execution>
@@ -165,6 +161,20 @@
         </plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>Java 8</id>
+			<activation>
+				<jdk>1.8</jdk>
+			</activation>
+			<properties>
+				<!-- Disable Java 8 overly strict javadoc linter when building with Java 8
+					http://blog.joda.org/2014/02/turning-off-doclint-in-jdk-8-javadoc.html
+					-->
+				<additionalparam>-Xdoclint:none</additionalparam>
+			</properties>
+		</profile>
+	</profiles>
 	<dependencies>
 		<!-- direct build / run dependencies -->
         <!--
