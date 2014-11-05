@@ -126,7 +126,31 @@ public interface TransformExtensionsManager {
 	 */
 	public <T extends TextReadHandle> T readXQueryTransform(String transformName, T sourceHandle)
     	throws FailedRequestException, ResourceNotFoundException, ForbiddenUserException;
+	
+  /**
+   * Reads the source for a transform implemented in Javascript
+   * in a textual representation provided as an object of an IO class.
+   * 
+   * The IO class must have been registered before creating the database client.
+   * By default, standard Java IO classes for document content are registered.
+   * 
+   * @param transformName	the name of the transform
+   * @param as	the IO class for reading the source code as text
+   * @return	an object of the IO class with the Javascript source code
+   */
+public <T> T readJavascriptTransformAs(String transformName, Class<T> as)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
+/**
+   * Reads the source for a transform implemented in Javascript.
+   * @param transformName	the name of the transform
+   * @param sourceHandle	a handle for reading the text of the Javascript implementation.
+   * @return	the Javascript source code
+ */
+public <T extends TextReadHandle> T readJavascriptTransform(String transformName, T sourceHandle)
+  	throws FailedRequestException, ResourceNotFoundException, ForbiddenUserException;
+	
+	
 	/**
      * Installs a transform implemented in XSL
 	 * in an XML representation provided as an object of an IO class.
@@ -229,6 +253,49 @@ public interface TransformExtensionsManager {
      */
     @Deprecated
     public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String,String> paramTypes)
+    	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+
+  	/**
+       * Installs a transform implemented in XQuery
+  	 * in a textual representation provided as an object of an IO class.
+       * 
+       * The IO class must have been registered before creating the database client.
+       * By default, standard Java IO classes for document content are registered.
+       * 
+       * @param transformName	the name of the transform
+       * @param source	an IO representation of the source code
+  	 */
+    
+  	public void writeJavascriptTransformAs(String transformName, Object source)
+  		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+  	/**
+       * Installs a transform implemented in Javascript
+   	   * in a textual representation provided as an object of an IO class.
+       * 
+       * The IO class must have been registered before creating the database client.
+       * By default, standard Java IO classes for document content are registered.
+       * 
+       * @param transformName	the name of the transform
+       * @param metadata	the metadata about the transform
+       * @param source	an IO representation of the source code
+  	 */
+  	public void writeJavascriptTransformAs(String transformName, ExtensionMetadata metadata, Object source)
+  		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+
+    /**
+     * Installs a transform implemented in Javascript.
+     * @param transformName	the name of the resource
+     * @param sourceHandle	a handle on the source for the Javascript implementation
+     */
+    public void writeJavascriptTransform(String transformName, TextWriteHandle sourceHandle)
+    	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+    /**
+     * Installs a transform implemented in Javascript.
+     * @param transformName	the name of the resource
+     * @param sourceHandle	a handle on the source for the Javascript implementation
+     * @param metadata	the metadata about the transform
+     */
+    public void writeJavascriptTransform(String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata)
     	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
     /**
