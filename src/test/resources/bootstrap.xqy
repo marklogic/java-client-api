@@ -442,6 +442,8 @@ declare function bootstrap:security-config() {
     bootstrap:security-eval(
         'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdbc-eval-in", "execute", "rest-evaluator")'),
     bootstrap:security-eval(
+        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdmp-eval", "execute", "rest-evaluator")'),
+    bootstrap:security-eval(
         'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdmp-eval-in", "execute", "rest-evaluator")'),
     bootstrap:security-eval(
         'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdbc-invoke", "execute", "rest-evaluator")'),
