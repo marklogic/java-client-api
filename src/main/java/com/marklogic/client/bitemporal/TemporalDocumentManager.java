@@ -20,22 +20,57 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentDescriptor;
-import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
-import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
+import com.marklogic.client.util.RequestParameters;
 
 public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends AbstractWriteHandle> {
+	public DocumentDescriptor create(DocumentUriTemplate template,
+      DocumentMetadataWriteHandle metadataHandle,
+      W contentHandle,
+      ServerTransform transform,
+      Transaction transaction,
+      String temporalCollection)
+  throws ForbiddenUserException, FailedRequestException;
+
+  public void write(DocumentDescriptor desc,
+      DocumentMetadataWriteHandle metadataHandle,
+      W contentHandle,
+      ServerTransform transform,
+      Transaction transaction,
+      String temporalCollection)
+  throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+
+  public void write(String docId,
+      DocumentMetadataWriteHandle metadataHandle,
+      W contentHandle,
+      ServerTransform transform,
+      Transaction transaction,
+      String temporalCollection)
+  throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+  
+  public void delete(DocumentDescriptor desc,
+      Transaction transaction,
+      String temporalCollection)
+  throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+
+  public void delete(String docId,
+      Transaction transaction,
+      String temporalCollection)
+  throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+	
+	  // The following methods take a system time which is an advanced concept in bitemporal feature. 
     public DocumentDescriptor create(DocumentUriTemplate template,
         DocumentMetadataWriteHandle metadataHandle,
         W contentHandle,
         ServerTransform transform,
         Transaction transaction,
         String temporalCollection,
-        java.util.Calendar systemTime)
+        java.util.Calendar systemTime,
+    		RequestParameters extraParams)
     throws ForbiddenUserException, FailedRequestException;
  
     public void write(DocumentDescriptor desc,
@@ -44,7 +79,8 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
         ServerTransform transform,
         Transaction transaction,
         String temporalCollection,
-        java.util.Calendar systemTime)
+        java.util.Calendar systemTime,
+    		RequestParameters extraParams)
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
  
     public void write(String docId,
@@ -53,9 +89,22 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
         ServerTransform transform,
         Transaction transaction,
         String temporalCollection,
+        java.util.Calendar systemTime,
+    		RequestParameters extraParams)
+    throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    
+    public void delete(DocumentDescriptor desc,
+        Transaction transaction,
+        String temporalCollection,
         java.util.Calendar systemTime)
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
  
+    public void delete(String docId,
+        Transaction transaction,
+        String temporalCollection,
+        java.util.Calendar systemTime)
+    throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+    
     /*
     public <T extends R> T read(DocumentDescriptor desc,
         DocumentMetadataReadHandle metadataHandle,
@@ -80,15 +129,4 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
     */
  
-    public void delete(DocumentDescriptor desc,
-        Transaction transaction,
-        String temporalCollection,
-        java.util.Calendar systemTime)
-    throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
- 
-    public void delete(String docId,
-        Transaction transaction,
-        String temporalCollection,
-        java.util.Calendar systemTime)
-    throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 }
