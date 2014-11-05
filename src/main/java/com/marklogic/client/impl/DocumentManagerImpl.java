@@ -617,19 +617,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     {
 		write(uri, metadataHandle, contentHandle, transform, transaction, temporalCollection, null, getWriteParams());
     }
-	@Override
-    public void write(String uri,
-        DocumentMetadataWriteHandle metadataHandle,
-        W contentHandle,
-        ServerTransform transform,
-        Transaction transaction,
-        String temporalCollection,
-        Calendar systemTime)
-	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException
-    {
-		write(uri, metadataHandle, contentHandle, transform, transaction, temporalCollection, systemTime, getWriteParams());
-    }
-
+	
 	  public void write(String uri,
 	      DocumentMetadataWriteHandle metadataHandle,
 	      W contentHandle,
@@ -642,7 +630,8 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		write(new DocumentDescriptorImpl(uri, true), metadataHandle, contentHandle, transform, 
 			transaction, temporalCollection, null, extraParams);
 	  }
-	
+
+		@Override
     public void write(String uri,
         DocumentMetadataWriteHandle metadataHandle,
         W contentHandle,
@@ -710,20 +699,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 		write(desc, metadataHandle, contentHandle, transform, transaction, temporalCollection, 
 			null, getWriteParams());
 	}
-	@Override
-    public void write(DocumentDescriptor desc,
-        DocumentMetadataWriteHandle metadataHandle,
-        W contentHandle,
-        ServerTransform transform,
-        Transaction transaction,
-        String temporalCollection,
-        java.util.Calendar systemTime)
-	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException
-    {
-		write(desc, metadataHandle, contentHandle, transform, transaction, temporalCollection, 
-			systemTime, getWriteParams());
-	}
-
+	
 	public void write(DocumentDescriptor desc,
         DocumentMetadataWriteHandle metadataHandle,
         W contentHandle,
@@ -737,6 +713,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 	}
 	
 	@SuppressWarnings("rawtypes")
+	@Override
     public void write(DocumentDescriptor desc,
         DocumentMetadataWriteHandle metadataHandle,
         W contentHandle,
@@ -934,19 +911,7 @@ throws ForbiddenUserException, FailedRequestException
 	return create(template, metadataHandle, contentHandle, transform, transaction, 
 		temporalCollection, null, getWriteParams());
   }
-	@Override
-    public DocumentDescriptor create(DocumentUriTemplate template,
-        DocumentMetadataWriteHandle metadataHandle,
-        W contentHandle,
-        ServerTransform transform,
-        Transaction transaction,
-        String temporalCollection,
-        java.util.Calendar systemTime)
-	throws ForbiddenUserException, FailedRequestException
-    {
-		return create(template, metadataHandle, contentHandle, transform, transaction, 
-			temporalCollection, systemTime, getWriteParams());
-    }
+	
   public DocumentDescriptor create(DocumentUriTemplate template,
       DocumentMetadataWriteHandle metadataHandle,
       W contentHandle,

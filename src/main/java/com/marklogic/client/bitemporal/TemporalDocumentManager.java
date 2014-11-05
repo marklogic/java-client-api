@@ -25,6 +25,7 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
+import com.marklogic.client.util.RequestParameters;
 
 public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends AbstractWriteHandle> {
 	public DocumentDescriptor create(DocumentUriTemplate template,
@@ -68,7 +69,8 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
         ServerTransform transform,
         Transaction transaction,
         String temporalCollection,
-        java.util.Calendar systemTime)
+        java.util.Calendar systemTime,
+    		RequestParameters extraParams)
     throws ForbiddenUserException, FailedRequestException;
  
     public void write(DocumentDescriptor desc,
@@ -77,7 +79,8 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
         ServerTransform transform,
         Transaction transaction,
         String temporalCollection,
-        java.util.Calendar systemTime)
+        java.util.Calendar systemTime,
+    		RequestParameters extraParams)
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
  
     public void write(String docId,
@@ -86,7 +89,8 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
         ServerTransform transform,
         Transaction transaction,
         String temporalCollection,
-        java.util.Calendar systemTime)
+        java.util.Calendar systemTime,
+    		RequestParameters extraParams)
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
     
     public void delete(DocumentDescriptor desc,
