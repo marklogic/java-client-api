@@ -148,7 +148,29 @@ class TransformExtensionsImpl
 
 		return handle.get();
 	}
+	
+	@Override
+	public <T> T readJavascriptTransformAs(String transformName, Class<T> as)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+		if (!TextReadHandle.class.isAssignableFrom(handle.getClass())) {
+			throw new IllegalArgumentException(
+					"Handle "+handle.getClass().getName()+
+					" cannot be used to read transform source as "+as.getName()
+					);
+		}
 
+		readJavascriptTransform(transformName, (TextReadHandle) handle);
+
+		return handle.get();
+	}
+
+	@Override
+	public <T extends TextReadHandle> T readJavascriptTransform(String transformName, T sourceHandle)
+	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		return readTransform(transformName, "application/javascript", sourceHandle);
+	}
+	
 	@Override
 	public <T extends TextReadHandle> T readXQueryTransform(String transformName, T sourceHandle)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
@@ -218,28 +240,7 @@ class TransformExtensionsImpl
 	@Override
 	public void writeXSLTransformAs(String transformName, ExtensionMetadata metadata, Object source)
 	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
-		if (source == null) {
-			throw new IllegalArgumentException("no source to write");
-		}
-
-		Class<?> as = source.getClass();
-
-		XMLWriteHandle sourceHandle = null;
-		if (TextWriteHandle.class.isAssignableFrom(as)) {
-			sourceHandle = (XMLWriteHandle) source;
-		} else {
-			ContentHandle<?> handle = getHandleRegistry().makeHandle(as);
-			if (!XMLWriteHandle.class.isAssignableFrom(handle.getClass())) {
-				throw new IllegalArgumentException(
-						"Handle "+handle.getClass().getName()+
-						" cannot be used to write transform source as "+as.getName()
-						);
-			}
-			Utilities.setHandleContent(handle, source);
-			sourceHandle = (XMLWriteHandle) handle;
-		}
-
-		writeXSLTransform(transformName, sourceHandle, metadata);
+		writeTextHandleTransformAs(transformName, metadata, source, "xquery");
 	}
 
 	@Override
@@ -258,7 +259,63 @@ class TransformExtensionsImpl
 		String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String, String> paramTypes)
 	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		writeTransform(transformName, "application/xquery", sourceHandle, metadata, paramTypes);
+	}	
+
+	@Override
+	public void writeJavascriptTransformAs(String transformName, Object source)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
+		writeJavascriptTransformAs(transformName, null, source);
 	}
+	@Override
+	public void writeJavascriptTransformAs(String transformName, ExtensionMetadata metadata, Object source)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {		
+		writeTextHandleTransformAs(transformName, metadata, source, "javascript");
+	}
+	
+	// This method used by writeJavascriptTransformAs and writeXQueryTransformAs
+	private void writeTextHandleTransformAs(String transformName, ExtensionMetadata metadata, Object source, String transformType)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
+		if (source == null) {
+			throw new IllegalArgumentException("no source to write");
+		}
+
+		Class<?> as = source.getClass();
+
+		TextWriteHandle sourceHandle = null;
+		if (TextWriteHandle.class.isAssignableFrom(as)) {
+			sourceHandle = (TextWriteHandle) source;
+		} else {
+			ContentHandle<?> handle = getHandleRegistry().makeHandle(as);
+			if (!TextWriteHandle.class.isAssignableFrom(handle.getClass())) {
+				throw new IllegalArgumentException(
+						"Handle "+handle.getClass().getName()+
+						" cannot be used to write transform source as "+as.getName()
+						);
+			}
+			Utilities.setHandleContent(handle, source);
+			sourceHandle = (TextWriteHandle) handle;
+		}
+
+		if (transformType.equals("javascript")) {
+		  writeJavascriptTransform(transformName, sourceHandle, metadata);
+		}
+		else if (transformType.equals("xquery")) {
+		  writeXQueryTransform(transformName, sourceHandle, metadata);			
+		}
+	}
+	
+	@Override
+	public void writeJavascriptTransform(String transformName, TextWriteHandle sourceHandle)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
+		writeTransform(transformName, "application/javascript", sourceHandle, null, null);
+	}
+	@Override
+	public void writeJavascriptTransform(
+		String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata)
+	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
+		writeTransform(transformName, "application/javascript", sourceHandle, metadata, null);
+	}
+		
 	@Override
 	public void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle)
 	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
@@ -296,6 +353,9 @@ class TransformExtensionsImpl
 		} else if ("application/xslt+xml".equals(sourceMimetype)) {
 			if (Format.XML != sourceFormat)
 				sourceBase.setFormat(Format.XML);
+		} else if ("application/javascript".equals(sourceMimetype)) {
+			if (Format.JSON != sourceFormat)
+				sourceBase.setFormat(Format.JSON);
 		} else {
 			throw new MarkLogicInternalException(
 				"Unsupported mimetype for source: "+sourceMimetype);
