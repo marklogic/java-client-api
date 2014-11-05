@@ -1353,7 +1353,7 @@ public class StructuredQueryBuilder {
 
         @Override
     	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-			writeQuery(serializer, "properties-query", (AbstractStructuredQuery) query);
+			writeQuery(serializer, "properties-fragment-query", (AbstractStructuredQuery) query);
         }
     }
 
@@ -1378,7 +1378,7 @@ public class StructuredQueryBuilder {
 
         @Override
     	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-			writeQuery(serializer, "locks-query", (AbstractStructuredQuery) query);
+			writeQuery(serializer, "locks-fragment-query", (AbstractStructuredQuery) query);
         }
     }
 
