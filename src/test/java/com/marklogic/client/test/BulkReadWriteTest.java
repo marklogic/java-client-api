@@ -38,6 +38,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
@@ -46,6 +50,8 @@ import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.eval.EvalResultIterator;
+import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
@@ -53,6 +59,7 @@ import com.marklogic.client.io.JAXBHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 
@@ -394,6 +401,67 @@ public class BulkReadWriteTest {
         }
     }
 
+    @Test
+    public void test_171() throws Exception{
+        DatabaseClient client = DatabaseClientFactory.newClient(
+        // the following line breaks things but should not: https://github.com/marklogic/java-client-api/issues/171
+        // TODO: uncomment the following line when https://bugtrack.marklogic.com/30299 is fixed
+        //Common.HOST, Common.PORT, "Documents", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
+            Common.HOST, Common.PORT, Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
+        int count=1;
+        boolean tstatus =true;
+        String directory = "/test_171/";
+        Transaction t1 = client.openTransaction();
+        try{
+            QueryManager queryMgr = client.newQueryManager();
+            DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
+            deleteQuery.setDirectory(directory);
+            queryMgr.delete(deleteQuery);
+
+            XMLDocumentManager docMgr = client.newXMLDocumentManager();
+            HashMap<String,String> map= new HashMap<String,String>();
+            DocumentWriteSet writeset =docMgr.newWriteSet();
+            for(int i =0;i<2;i++) {
+                String contents = "<xml>test" + i + "</xml>";
+                String docId = directory + "sec"+i+".xml";
+                writeset.add(docId, new StringHandle(contents).withFormat(Format.XML));
+                map.put(docId, contents);
+                if(count%100 == 0){
+                    docMgr.write(writeset,t1);
+                    writeset = docMgr.newWriteSet();
+                }
+                count++;
+            }
+            if(count%100 > 0){
+                docMgr.write(writeset,t1);
+            }
+
+            QueryDefinition directoryQuery = queryMgr.newStringDefinition();
+            directoryQuery.setDirectory(directory);
+            SearchHandle outOfTransactionResults = queryMgr.search(directoryQuery, new SearchHandle());
+
+            SearchHandle inTransactionResults    = queryMgr.search(directoryQuery, new SearchHandle(), t1);
+
+            assertEquals("Count of documents outside of the transaction",0,outOfTransactionResults.getTotalResults());
+            assertEquals("Count of documents inside of the transaction", 2,   inTransactionResults.getTotalResults());
+
+            //String query = "(fn:count(xdmp:directory('" + directory + "')))";
+            //ServerEvaluationCall evl= client.newServerEval().xquery(query);
+            //EvalResultIterator evr = evl.eval();
+            //assertEquals("Count of documents outside of the transaction",0,evr.next().getNumber().intValue());
+            //evl= client.newServerEval().xquery(query).transaction(t1);
+            //evr = evl.eval();
+            //assertEquals("Count of documents outside of the transaction",103,evr.next().getNumber().intValue());
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+            tstatus=true;
+            throw e;
+        }finally{
+            if(tstatus){
+                t1.rollback();
+            }
+        }
+    } 
 
     private static void addCountry(String line, Map<String, Country> countries) {
         // skip comment lines
