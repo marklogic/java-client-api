@@ -59,8 +59,8 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		 System.out.println("In setup");
- 	     setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
- 	     TestEvalXquery.createUserRolesWithPrevilages("test-eval", "xdbc:eval","any-uri","xdbc:invoke");
+ 	     setupJavaRESTServer(dbName, fNames[0], restServerName,restPort,false);
+ 	     TestEvalXquery.createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in","xdmp:eval-in","xdbc:invoke-in","any-uri","xdbc:invoke");
  	     TestEvalXquery.createRESTUser("eval-user", "x", "test-eval");
 //		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
@@ -75,7 +75,7 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 
 	@Before
 	public void setUp() throws Exception {
-		client = DatabaseClientFactory.newClient("localhost", restPort,"eval-user", "x", Authentication.DIGEST);
+		client = DatabaseClientFactory.newClient("localhost", restPort,dbName,"eval-user", "x", Authentication.DIGEST);
 	}
 
 	@After
@@ -85,24 +85,14 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
     	client.release();
 	}
 /* 
- This method is validating all the return values from java script
+ This method is validating all the return values from java script, this method has more types than we test them here
   */
 	void validateReturnTypes(EvalResultIterator evr) throws Exception{
 		
 		 while(evr.hasNext())
 		 {
 			 EvalResult er =evr.next();
-			 if(er.getType().equals(Type.XML)){
-				 DOMHandle dh = new DOMHandle();
-				 dh=er.get(dh);
-				 if(dh.get().getDocumentElement().hasChildNodes()){
-//				 System.out.println("Type XML  :"+convertXMLDocumentToString(dh.get()));
-				 assertEquals("document has content","<foo attr=\"attribute\"><?processing instruction?><!--comment-->test1</foo>",convertXMLDocumentToString(dh.get()));
-				 }else{
-					 assertEquals("element node ","<test1/>",convertXMLDocumentToString(dh.get()));
-				 }
-			 }
-			 else if(er.getType().equals(Type.JSON)){
+			if(er.getType().equals(Type.JSON)){
 				 
 					 JacksonHandle jh = new JacksonHandle();
 					 jh=er.get(jh);
@@ -159,7 +149,7 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 //				 System.out.println("type boolean:"+er.getBoolean());
 			 }
 			 else if(er.getType().equals(Type.INTEGER)){
-//				 System.out.println("type Integer: "+er.getNumber().longValue());
+				 System.out.println("type Integer: "+er.getNumber().longValue());
 				 assertEquals("count of documents ",31,er.getNumber().intValue()); 
 			 }
 			 else if(er.getType().equals(Type.STRING)){
@@ -188,7 +178,7 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 				 
 			 }else if(er.getType().equals(Type.DECIMAL)){
 //				 System.out.println("Testing is Decimal? "+er.getAs(String.class));
-				 assertEquals("Returns me a Decimal :","10.5",er.getAs(String.class));
+				 assertEquals("Returns me a Decimal :","1.0471975511966",er.getAs(String.class));
 				 
 			 }else if(er.getType().equals(Type.DOUBLE)){
 //				 System.out.println("Testing is Double? "+er.getAs(String.class));
@@ -317,7 +307,7 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 		 
 	 }
 	}
-	//This test is intended to test eval(T handle), passing input stream handle with xqueries that retruns different types, formats
+	//This test is intended to test eval(T handle), passing input stream handle with javascript that retruns different types, formats
 	@Test
 	public void testJSReturningDifferentTypesOrder2() throws Exception {
 	
@@ -376,22 +366,23 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 						+"var myBool ;"
 						+"var myInteger;"
 						+"var myDecimal;"
-						+"var myDouble ;"
-						+"var myFloat;"
 						+"var myJsonObject;"
 						+"var myNull;"
 						+ "var myJsonArray;"
 						+ "var myJsonNull;"
-						+ "results.push(myString,myBool,myInteger,myDecimal,myDouble,myFloat,myNull,myJsonObject,myJsonArray,myJsonNull);"
+						+ "results.push(myString,myBool,myInteger,myDecimal,myJsonObject,myJsonArray);"
 						+"xdmp.arrayValues(results)";
 		
 		ServerEvaluationCall evl= client.newServerEval().javascript(query1);
 		evl.addVariable("myString", "xml")
-		.addVariable("myBool", true).addVariable("myInteger", (int)31)
-		.addVariable("myDecimal", 10.5).addVariable("myDouble", 1.0471975511966)
-		.addVariable("myFloat",20).addVariableAs("myJsonObject",new ObjectMapper().createObjectNode().put("foo", "v1").putNull("testNull"))
-		.addVariableAs("myNull",(String) null).addVariableAs("myJsonArray",new ObjectMapper().createArrayNode().add(1).add(2).add(3))
-		.addVariableAs("myJsonNull",new ObjectMapper().createObjectNode().nullNode() );
+		.addVariable("myBool", true)
+		.addVariable("myInteger", (int)31)
+		.addVariable("myDecimal", (double)1.0471975511966)
+		.addVariableAs("myJsonObject",new ObjectMapper().createObjectNode().put("foo", "v1").putNull("testNull"))
+		.addVariableAs("myNull",(String) null)
+		.addVariableAs("myJsonArray",new ObjectMapper().createArrayNode().add(1).add(2).add(3))
+		.addVariableAs("myJsonNull",new ObjectMapper().createObjectNode().nullNode() )
+		;
 		System.out.println(query1);
 		EvalResultIterator evr = evl.eval();
 		this.validateReturnTypes(evr);
