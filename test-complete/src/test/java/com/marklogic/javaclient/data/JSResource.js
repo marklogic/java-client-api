@@ -9,6 +9,7 @@ function get(context, params) {
 return {
 	"argument1": x,
 	"argument2": arg2,
+	"database-name":xdmp.databaseName(xdmp.database()),
 	"document-count":fn.count(fn.doc()),
     "content": "This is a JSON document",
     "document-content": fn.doc(),

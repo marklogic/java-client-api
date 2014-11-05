@@ -154,7 +154,9 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort,false);
+		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
+	    createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
 		//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 
 	}
@@ -167,7 +169,7 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 
 	@Before
 	public void setUp() throws Exception {
-		client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
+		client = DatabaseClientFactory.newClient("localhost", restPort,dbName, "eval-user", "x", Authentication.DIGEST);
 		resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
 		ExtensionMetadata resextMetadata = new ExtensionMetadata();
 		resextMetadata.setTitle("BasicJSTest");
@@ -203,7 +205,7 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 		TestJSExtension tjs= new TestJSExtension(client);
 		String expectedResponse="{\"response\":[200, \"OK\"]}";
 		JSONAssert.assertEquals(expectedResponse, tjs.putJSON("helloJS.json"), false);
-		String expAftrPut ="{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\", \"document-count\":1, \"content\":\"This is a JSON document\", \"document-content\":{\"argument1\":\"hello\", \"argument2\":\"Earth\", \"content\":\"This is a JSON document\", \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}, \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}";
+		String expAftrPut ="{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\",\"database-name\":\"TestJSResourceExtensionDB\", \"document-count\":1, \"content\":\"This is a JSON document\", \"document-content\":{\"argument1\":\"hello\", \"argument2\":\"Earth\", \"content\":\"This is a JSON document\", \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}, \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}";
 		JSONAssert.assertEquals(expAftrPut, tjs.getJSON("helloJS.json"), false);
 		JSONAssert.assertEquals(expectedResponse, tjs.postJSON("helloJS.json"), false);
 		String expAftrPost ="{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\", \"document-count\":1, \"content\":\"This is a JSON document\", \"document-content\":{\"argument1\":\"hello\", \"argument2\":\"Earth\", \"content\":\"This is a JSON document\", \"array\":[1, 2, 3], \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}, \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}";
@@ -235,7 +237,7 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 		assertEquals("Total documents loaded are",150,jh.get().get("document-count").intValue());
 
 		String expAftrPut ="{\"argument1\":\"hello\", \"argument2\":\"Earth\", \"content\":\"This is a JSON document\", \"array\":[1, 2, 3], \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}";
-		String expected ="{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\", \"document-count\":0, \"content\":\"This is a JSON document\", \"document-content\":null, \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}";
+		String expected ="{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\", \"database-name\":\"TestJSResourceExtensionDB\", \"document-count\":0, \"content\":\"This is a JSON document\", \"document-content\":null, \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}";
 //		verify by reading all the documents to see put and post services correctly inserted documents and delete them
 	    for(int j=0;j<150;j++){
 	    jh.set(jh2.getMapper().readTree(tjs.getJSON("helloJS"+j+".json")));	
