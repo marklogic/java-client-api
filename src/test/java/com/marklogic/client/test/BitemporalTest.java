@@ -97,13 +97,13 @@ public class BitemporalTest {
 		String docId = "test-" + uniqueTerm + ".xml";
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		StringHandle handle1 = new StringHandle(version1).withFormat(Format.XML);
-		docMgr.write(docId, null, handle1, null, null, temporalCollection, null);
+		docMgr.write(docId, null, handle1, null, null, temporalCollection);
 		StringHandle handle2 = new StringHandle(version2).withFormat(Format.XML);
-		docMgr.write(docId, null, handle2, null, null, temporalCollection, null);
+		docMgr.write(docId, null, handle2, null, null, temporalCollection);
 		StringHandle handle3 = new StringHandle(version3).withFormat(Format.XML);
-		docMgr.write(docId, null, handle3, null, null, temporalCollection, null);
+		docMgr.write(docId, null, handle3, null, null, temporalCollection);
 		StringHandle handle4 = new StringHandle(version4).withFormat(Format.XML);
-		docMgr.write(docId, null, handle4, null, null, temporalCollection, null);
+		docMgr.write(docId, null, handle4, null, null, temporalCollection);
 
 		DocumentPage readResults = docMgr.read(docId); 
 		assertEquals("Wrong number of results", 1, readResults.size());
