@@ -50,7 +50,7 @@ public class DatabaseClientFactoryTest {
 	@BeforeClass
 	public static void beforeClass() {
 		Common.connectEval();
-		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
 	@AfterClass
 	public static void afterClass() {
