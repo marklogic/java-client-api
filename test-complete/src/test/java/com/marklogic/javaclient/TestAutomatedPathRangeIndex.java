@@ -18,11 +18,14 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.pojo.annotation.PathIndexProperty;
+import com.marklogic.client.pojo.annotation.PathIndexProperty.ScalarType;
 import com.marklogic.client.pojo.util.GenerateIndexConfig;
 
 /*
@@ -33,6 +36,7 @@ import com.marklogic.client.pojo.util.GenerateIndexConfig;
  * daytimeduration* - This needs Java SE 8. Not tested in this class
  * URI
  * Numerals as Strings*
+ * 
  */
 
 public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
@@ -42,7 +46,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 
 	private static int restPort = 8011;
 	private DatabaseClient client;
-
+	
 	/*
 	 * This class is similar to the Artifact class. It is used to test path
 	 * range index using the name field which has been annotated with @Id also.
@@ -57,8 +61,8 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-		System.out.println("In tear down");
-		//tearDownJavaRESTServer(dbName, fNames, restServerName);
+		System.out.println("In tear down");	    
+		tearDownJavaRESTServer(dbName, fNames, restServerName);
 	}
 
 	@Before
@@ -72,13 +76,13 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 		 //release client
 		 client.release();
 	}
-
+	
 	/*
 	 * This Method takes the property name and value strings and verifies if
 	 * propName exist and then extracts it from the response.
 	 * The propValue string needs to be available in the extracted JsonNode's path-expression property.
 	 */
-	public static void validateRangePathIndexInDatabase(String dbName, String propName, String propValue) throws IOException {
+	public static void validateRangePathIndexInDatabase(String propName, String propValue) throws IOException {
 		InputStream jsonstream = null;
 		boolean propFound = false;
 		String propertyAvailable = null;
@@ -123,7 +127,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	 * propName exist and then extracts it from the response.
 	 * The propValue string needs to be available in the extracted JsonNode's path-expression property.
 	 */
-	public static void validateMultipleRangePathIndexInDatabase(String dbName, String propName, String[] propValue) throws IOException {
+	public static void validateMultipleRangePathIndexInDatabase(String propName, String[] propValue) throws IOException {
 		InputStream jsonstream = null;
 		boolean propFound = false;
 		String propertyAvailable1 = null;
@@ -188,7 +192,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 			if (!jnode.isNull()) {
 				setPathRangeIndexInDatabase(dbName, jnode);
 				succeeded = true;
-				validateRangePathIndexInDatabase(dbName, "range-path-index", "com.marklogic.javaclient.ArtifactIndexedOnInt/inventory");
+				validateRangePathIndexInDatabase("range-path-index", "com.marklogic.javaclient.ArtifactIndexedOnInt/inventory");
 			} else {
 				assertTrue(
 						"testArtifactIndexedOnInt - No Json node available to insert into database",
@@ -222,7 +226,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 			if (!jnode.isNull()) {
 				setPathRangeIndexInDatabase(dbName, jnode);
 				succeeded = true;
-				validateRangePathIndexInDatabase(dbName, "range-path-index", "com.marklogic.javaclient.ArtifactIndexedOnString/name");
+				validateRangePathIndexInDatabase("range-path-index", "com.marklogic.javaclient.ArtifactIndexedOnString/name");
 			} else {
 				assertTrue(
 						"testArtifactIndexedOnString - No Json node available to insert into database",
@@ -256,7 +260,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 			if (!jnode.isNull()) {
 				setPathRangeIndexInDatabase(dbName, jnode);
 				succeeded = true;
-				validateRangePathIndexInDatabase(dbName, "range-path-index", "com.marklogic.javaclient.ArtifactIndexedOnDateTime/expiryDate");
+				validateRangePathIndexInDatabase("range-path-index", "com.marklogic.javaclient.ArtifactIndexedOnDateTime/expiryDate");
 			} else {
 				assertTrue(
 						"testArtifactIndexedOnDateTime - No Json node available to insert into database",
@@ -290,7 +294,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 			if (!jnode.isNull()) {
 				setPathRangeIndexInDatabase(dbName, jnode);
 				succeeded = true;
-				validateRangePathIndexInDatabase(dbName, "range-path-index", "com.marklogic.javaclient.ArtifactIndexedOnUri/artifactUri");
+				validateRangePathIndexInDatabase("range-path-index", "com.marklogic.javaclient.ArtifactIndexedOnUri/artifactUri");
 			} else {
 				assertTrue(
 						"testArtifactIndexedOnUri - No Json node available to insert into database",
@@ -324,7 +328,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 			if (!jnode.isNull()) {
 				setPathRangeIndexInDatabase(dbName, jnode);
 				succeeded = true;
-				validateRangePathIndexInDatabase(dbName, "range-path-index", "com.marklogic.javaclient.ArtifactIndexedOnIntAsString/inventory");
+				validateRangePathIndexInDatabase("range-path-index", "com.marklogic.javaclient.ArtifactIndexedOnIntAsString/inventory");
 			} else {
 				assertTrue(
 						"testArtifactIndexedOnIntAsString - No Json node available to insert into database",
@@ -361,7 +365,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 			if (!jnode.isNull()) {
 				setPathRangeIndexInDatabase(dbName, jnode);
 				succeeded = true;
-				validateMultipleRangePathIndexInDatabase(dbName, "range-path-index", propValueStrArray);
+				validateMultipleRangePathIndexInDatabase("range-path-index", propValueStrArray);
 			} else {
 				assertTrue(
 						"testArtifactIndexedOnIntAsString - No Json node available to insert into database",
@@ -374,6 +378,131 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 			try {
 				jsonFile.delete();
 			} catch (Exception e) {				
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	@Test
+	public void testArtifactIndexedOnStringInSuperClass() throws Exception {
+		boolean succeeded = false;
+		File jsonFile = null;
+		try {
+			GenerateIndexConfig.main(new String[] { "-classes",
+					"com.marklogic.javaclient.ArtifactIndexedOnStringSub",
+					"-file", "TestAutomatedPathRangeIndexStringInSuperClass.json" });
+
+			jsonFile = new File("TestAutomatedPathRangeIndexStringInSuperClass.json");
+			//Array to hold the range path index values. Refer to the class for the annotated class members.
+			String[] propValueStrArray = {"com.marklogic.javaclient.ArtifactIndexedOnStringSub/name",
+					                      "com.marklogic.javaclient.ArtifactIndexedOnStringSub/artifactWeight"};			
+			ObjectMapper mapper = new ObjectMapper();
+			JsonNode jnode = mapper.readValue(jsonFile, JsonNode.class);
+
+			if (!jnode.isNull()) {
+				setPathRangeIndexInDatabase(dbName, jnode);
+				succeeded = true;
+				validateMultipleRangePathIndexInDatabase("range-path-index", propValueStrArray);
+			} else {
+				assertTrue(
+						"testArtifactIndexedOnStringInSuperClass - No Json node available to insert into database",
+						succeeded);
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				jsonFile.delete();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	@Test
+	public void testArtifactMultipleIndexedOnInt() throws Exception {
+		boolean succeeded = false;
+		File jsonFile = null;
+		try {
+			GenerateIndexConfig.main(new String[] { "-classes",
+					"com.marklogic.javaclient.ArtifactMultipleIndexedOnInt",
+					"-file", "TestAutomatedPathRangeMultipleIndexOnInt.json" });
+
+			jsonFile = new File("TestAutomatedPathRangeMultipleIndexOnInt.json");
+			ObjectMapper mapper = new ObjectMapper();
+			JsonNode jnode = mapper.readValue(jsonFile, JsonNode.class);
+
+			if (!jnode.isNull()) {
+				setPathRangeIndexInDatabase(dbName, jnode);
+				succeeded = true;
+				validateRangePathIndexInDatabase("range-path-index", "com.marklogic.javaclient.ArtifactMultipleIndexedOnInt/inventory");
+			} else {
+				assertTrue(
+						"testArtifactMultipleIndexedOnInt - No Json node available to insert into database",
+						succeeded);
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				jsonFile.delete();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+
+	/*
+	 * Test for unsupported data type: This was meant as a negative test case.
+	 * The annotation declared on user defined data type will ONLY accept types
+	 * from scalarType class. Assigning a scalarType.Company to the class member
+	 * in the annotation like below, WILL NOT COMPILE:
+	 * 
+	 * @PathIndexProperty(scalarType = ScalarType.Company) public Company
+	 * manufacture;
+	 * 
+	 * However, for the following, we can declare for example for class property
+	 * Company (which is user defined type), the scalarType.STRING in the class.
+	 * 
+	 * @PathIndexProperty(scalarType = ScalarType.STRING) public Company
+	 * manufacture;
+	 * 
+	 * MarkLogic server accepts this range path index and this was verified
+	 * manually through the MarkLogic administration GUI on the database also. 
+	 */
+	
+	@Test
+	public void testArtifactIndexedOnUnSupportedAsString() throws Exception {
+		boolean succeeded = false;
+		File jsonFile = null;
+		try {
+			GenerateIndexConfig.main(new String[] { "-classes",
+					"com.marklogic.javaclient.ArtifactIndexedUnSupportedDataType",
+					"-file", "TestArtifactIndexedOnUnSupportedAsString.json" });
+
+			jsonFile = new File("TestArtifactIndexedOnUnSupportedAsString.json");
+			ObjectMapper mapper = new ObjectMapper();
+			JsonNode jnode = mapper.readValue(jsonFile, JsonNode.class);
+
+			if (!jnode.isNull()) {
+				setPathRangeIndexInDatabase(dbName, jnode);
+				succeeded = true;
+				validateRangePathIndexInDatabase("range-path-index", "com.marklogic.javaclient.ArtifactIndexedUnSupportedDataType/manufacturer");
+			} else {
+				assertTrue(
+						"testArtifactIndexedOnUnSupportedAsString - No Json node available to insert into database",
+						succeeded);
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				jsonFile.delete();
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
