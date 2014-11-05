@@ -165,6 +165,8 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
 		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		deleteRESTUser("eval-user");
+		deleteUserRole("test-eval");
 	}
 
 	@Before
