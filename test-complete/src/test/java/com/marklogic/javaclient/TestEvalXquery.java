@@ -56,7 +56,7 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		 System.out.println("In setup");
- 	     setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		 TestEvalXquery.setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
  	     TestEvalXquery.createUserRolesWithPrevilages("test-eval", "xdbc:eval","any-uri","xdbc:invoke");
  	     TestEvalXquery.createRESTUser("eval-user", "x", "test-eval");
 //		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
@@ -141,10 +141,10 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 				 
 			 }else if(er.getType().equals(Type.DATE)){
 //				 System.out.println("Testing is DATE? "+er.getAs(String.class));
-				 assertEquals("Returns me a date :","2002-03-07-07:00",er.getAs(String.class));
+				 assertEquals("Returns me a date :","2002-03-07-08:00",er.getAs(String.class));
 			 }else if(er.getType().equals(Type.DATETIME)){
 //				 System.out.println("Testing is DATETIME? "+er.getAs(String.class));
-				 assertEquals("Returns me a dateTime :","2010-01-06T18:13:50.874-07:00",er.getAs(String.class));
+				 assertEquals("Returns me a dateTime :","2010-01-06T17:13:50.874-08:00",er.getAs(String.class));
 				 
 			 }else if(er.getType().equals(Type.DECIMAL)){
 //				 System.out.println("Testing is Decimal? "+er.getAs(String.class));
@@ -302,11 +302,11 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 						+"declare variable $myDecimal as xs:decimal external;"
 						+"declare variable $myDouble as xs:double external;"
 						+"declare variable $myFloat as xs:float external;"
-						+"declare variable $myXmlNode as xs:string external;"
+						+"declare variable $myXmlNode as document-node() external;"
 						+"declare variable $myNull  external;"
-						+"( $test:myString, $myBool,$myInteger,$myDecimal,$myDouble,$myFloat, document{ xdmp:unquote($myXmlNode) },"
-						+"xdmp:unquote($myXmlNode)//comment(),xdmp:unquote($myXmlNode)//text(),xdmp:unquote($myXmlNode)//*,"
-						+"xdmp:unquote($myXmlNode)/@attr, xdmp:unquote($myXmlNode)//processing-instruction())";
+						+"( $test:myString, $myBool,$myInteger,$myDecimal,$myDouble,$myFloat, document{ ($myXmlNode) },"
+						+"($myXmlNode)//comment(),($myXmlNode)//text(),($myXmlNode)//*,"
+						+"($myXmlNode)/@attr, ($myXmlNode)//processing-instruction())";
 		
 		ServerEvaluationCall evl= client.newServerEval().xquery(query1);
 		evl.addNamespace("test", "http://marklogic.com/test")
