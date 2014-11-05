@@ -41,6 +41,7 @@ import org.junit.Test;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager.Metadata;
@@ -184,6 +185,30 @@ public class BulkReadWriteTest {
         assertEquals("Wrong start", 1, page.getStart());
         assertEquals("Wrong totalPages", 1, page.getTotalPages());
         assertEquals("Wrong estimate", 3, page.getTotalSize());
+
+        // test reading a valid plus a non-existent document
+        page = docMgr.read(DIRECTORY + "1016670.xml", "nonExistant.doc");
+        assertEquals("Should have results", true, page.hasContent());
+        assertEquals("Failed to report number of records expected", 1, page.size());
+        assertEquals("Wrong only doc", DIRECTORY + "1016670.xml", page.next().getUri());
+
+        // test reading multiple non-existent documents
+        boolean exceptionThrown = false;
+        try {
+            docMgr.read("nonExistant.doc", "nonExistant2.doc");
+        } catch (ResourceNotFoundException e) {
+            exceptionThrown = true;
+        }
+        assertTrue("ResourceNotFoundException should have been thrown", exceptionThrown);
+
+        // test reading a non-existent document (not actually a bulk operation)
+        exceptionThrown = false;
+        try {
+            docMgr.read("nonExistant.doc", new StringHandle());
+        } catch (ResourceNotFoundException e) {
+            exceptionThrown = true;
+        }
+        assertTrue("ResourceNotFoundException should have been thrown", exceptionThrown);
     }
 
     @Test

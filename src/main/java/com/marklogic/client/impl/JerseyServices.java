@@ -831,6 +831,11 @@ public class JerseyServices implements RESTServices {
 		}
 		JerseyResultIterator iterator = getIteratedResourceImpl(DefaultJerseyResultIterator.class,
 			reqlog, path, params, MultiPartMediaTypes.MULTIPART_MIXED);
+		if ( iterator == null ) {
+			StringBuffer uriString = new StringBuffer();
+			for ( String uri : uris ) uriString.append(" \"" + uri + "\"");
+			throw new ResourceNotFoundException("Could not find any documents with uris:" + uriString);
+		}
 		if ( iterator.getStart() == -1 ) iterator.setStart(1);
 		if ( iterator.getSize() != -1 ) {
 			if ( iterator.getPageSize() == -1 ) iterator.setPageSize(iterator.getSize());

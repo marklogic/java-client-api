@@ -15,6 +15,9 @@
  */
 package com.marklogic.client.pojo;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.SearchReadHandle;
 
@@ -78,84 +81,113 @@ public interface PojoRepository<T, ID extends Serializable> {
      *  {@link com.fasterxml.jackson.databind.ObjectMapper ObjectMapper} to generate the
      *  serialized JSON format.
      */
-    public void write(T entity);
+    public void write(T entity)
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /** Does everything in {@link #write(Object) write(T)} but also adds your collections to the 
      * persisted instance.
      */
-    public void write(T entity, String... collections);
+    public void write(T entity, String... collections)
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /** Does everything in {@link #write(Object) write(T)} but in your 
      * <a href="http://docs.marklogic.com/guide/app-dev/transactions">
      * multi-statement transaction</a> context.
      */
-    public void write(T entity, Transaction transaction);
+    public void write(T entity, Transaction transaction)
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /** Does everything in {@link #write(Object) write(T)} but also adds your collections to the 
      * persisted instance and performs the write in your
      * <a href="http://docs.marklogic.com/guide/app-dev/transactions">
      * multi-statement transaction</a> context.
      * .
      */
-    public void write(T entity, Transaction transaction, String... collections);
+    public void write(T entity, Transaction transaction, String... collections)
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** @return true if a document exists in the database with the id */
-    public boolean exists(ID id);
+    public boolean exists(ID id)
+    	throws ForbiddenUserException, FailedRequestException;
 
     /** @return in the context of transaction, true if a document exists in the database with 
      * the id */
-    public boolean exists(ID id, Transaction transaction);
+    public boolean exists(ID id, Transaction transaction)
+    	throws ForbiddenUserException, FailedRequestException;
 
     /** @return the number of documents of type T persisted in the database */
-    public long count();
+    public long count()
+    	throws ForbiddenUserException, FailedRequestException;
 
     /** @return in the context of transaction, the number of documents of type T persisted in 
      * the database */
-    public long count(Transaction transaction);
+    public long count(Transaction transaction)
+    	throws ForbiddenUserException, FailedRequestException;
 
     /** @return the number of documents of type T persisted in the database with at least 
      * one of the criteria collections*/
-    public long count(String... collection);
+    public long count(String... collection)
+    	throws ForbiddenUserException, FailedRequestException;
 
     /** @return in the context of transaction, the number of documents of type T persisted in 
      * the database with at least one of the criteria collections*/
-    public long count(String[] collections, Transaction transaction);
+    public long count(String[] collections, Transaction transaction)
+    	throws ForbiddenUserException, FailedRequestException;
 
     /** @return the number of documents of type T persisted in the database which match
      * the query */
-    public long count(PojoQueryDefinition query);
+    public long count(PojoQueryDefinition query)
+    	throws ForbiddenUserException, FailedRequestException;
   
     /** @return in the context of transaction, the number of documents of type T persisted in the 
      * database which match the query */
-    public long count(PojoQueryDefinition query, Transaction transaction);
+    public long count(PojoQueryDefinition query, Transaction transaction)
+    	throws ForbiddenUserException, FailedRequestException;
   
     /** Deletes from the database the documents with the corresponding ids */
-    public void delete(ID... ids);
+    public void delete(ID... ids)
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** As part of transaction, deletes from the database the documents with the corresponding ids */
-    public void delete(ID[] ids, Transaction transaction);
+    public void delete(ID[] ids, Transaction transaction)
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** Deletes from the database all documents of type T persisted by the pojo facade */
-    public void deleteAll();
+    public void deleteAll()
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** As part of transaction, deletes from the database all documents of type T persisted by 
      * the pojo facade */
-    public void deleteAll(Transaction transaction);
+    public void deleteAll(Transaction transaction)
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /* REST API does not currently support DELETE /search with multiple collection arguments
-    public void deleteAll(String... collections);
+    public void deleteAll(String... collections)
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     */
   
-    public T read(ID id);
-    public T read(ID id, Transaction transaction);
-    public PojoPage<T> read(ID[] ids);
-    public PojoPage<T> read(ID[] ids, Transaction transaction);
-    public PojoPage<T> readAll(long start);
-    public PojoPage<T> readAll(long start, Transaction transaction);
+    public T read(ID id)
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public T read(ID id, Transaction transaction)
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public PojoPage<T> read(ID[] ids)
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public PojoPage<T> read(ID[] ids, Transaction transaction)
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public PojoPage<T> readAll(long start)
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public PojoPage<T> readAll(long start, Transaction transaction)
+    	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
  
-    public PojoPage<T> search(long start, String... collections);
-    public PojoPage<T> search(long start, Transaction transaction, String... collections);
-    public PojoPage<T> search(PojoQueryDefinition query, long start);
-    public PojoPage<T> search(PojoQueryDefinition query, long start, Transaction transaction);
-    public PojoPage<T> search(PojoQueryDefinition query, long start, SearchReadHandle searchHandle);
-    public PojoPage<T> search(PojoQueryDefinition query, long start, SearchReadHandle searchHandle, Transaction transaction);
+    public PojoPage<T> search(long start, String... collections)
+    	throws ForbiddenUserException, FailedRequestException;
+    public PojoPage<T> search(long start, Transaction transaction, String... collections)
+    	throws ForbiddenUserException, FailedRequestException;
+    public PojoPage<T> search(PojoQueryDefinition query, long start)
+    	throws ForbiddenUserException, FailedRequestException;
+    public PojoPage<T> search(PojoQueryDefinition query, long start, Transaction transaction)
+    	throws ForbiddenUserException, FailedRequestException;
+    public PojoPage<T> search(PojoQueryDefinition query, long start, SearchReadHandle searchHandle)
+    	throws ForbiddenUserException, FailedRequestException;
+    public PojoPage<T> search(PojoQueryDefinition query, long start, SearchReadHandle searchHandle, Transaction transaction)
+    	throws ForbiddenUserException, FailedRequestException;
  
     public PojoQueryBuilder<T> getQueryBuilder();
 
