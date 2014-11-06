@@ -3642,7 +3642,7 @@ public class JerseyServices implements RESTServices {
 			}
 			String xPrimitive = content.getHeader("X-Primitive");
 			if ( xPrimitive == null ) {
-				return EvalResult.Type.NULL;
+				return EvalResult.Type.OTHER;
 			} else if ( "string".equals(xPrimitive) || "untypedAtomic".equals(xPrimitive) ) {
 				return EvalResult.Type.STRING;
 			} else if ( "boolean".equals(xPrimitive) ) {
@@ -3691,6 +3691,8 @@ public class JerseyServices implements RESTServices {
 				return EvalResult.Type.QNAME;
 			} else if ( "time".equals(xPrimitive) ) {
 				return EvalResult.Type.TIME;
+			} else if ( "null".equals(xPrimitive) ) {
+				return EvalResult.Type.NULL;
 			}
 			return EvalResult.Type.OTHER;
 		}
