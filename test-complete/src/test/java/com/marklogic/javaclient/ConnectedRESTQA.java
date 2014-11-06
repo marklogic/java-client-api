@@ -1736,4 +1736,32 @@ public abstract class ConnectedRESTQA {
 		scm.setServerRequestLogging(flag);
 		scm.writeConfiguration();
 	}
+	
+	/*
+	 * This method inserts a path range index, in a JsonNode object, into the database.
+	 * 
+	 */
+	public static void setPathRangeIndexInDatabase(String dbName, JsonNode jnode) throws IOException
+	{
+		try {			
+			DefaultHttpClient client = new DefaultHttpClient();
+			client.getCredentialsProvider().setCredentials(
+					new AuthScope("localhost", 8002),
+					new UsernamePasswordCredentials("admin", "admin"));
+			
+				HttpPut put = new HttpPut("http://localhost:8002"+ "/manage/v2/databases/"+dbName+"/properties?format=json");
+				put.addHeader("Content-type", "application/json");
+				put.setEntity(new StringEntity(jnode.toString()));
+
+				HttpResponse response = client.execute(put);
+				HttpEntity respEntity = response.getEntity();
+				if(respEntity != null){
+					String content =  EntityUtils.toString(respEntity);
+					System.out.println(content);
+				}
+			}catch (Exception e) {
+			// writing error to Log
+			e.printStackTrace();
+		}
+	}
 }

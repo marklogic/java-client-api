@@ -22,6 +22,7 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.pojo.PojoPage;
+import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryManager;
@@ -165,7 +166,7 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 
 		StructuredQueryBuilder qb = new StructuredQueryBuilder();
 		StructuredQueryDefinition q1 =qb.range(qb.pathIndex("com.marklogic.javaclient.Artifact/inventory"), "xs:long",Operator.GT, 1010);
-		StructuredQueryDefinition qd = qb.and(q1,qb.range(qb.pathIndex("com.marklogic.javaclient.Artifact/inventory"), "xs:long",Operator.LE, 1110),qb.collection("even"));
+		PojoQueryDefinition qd = qb.and(q1,qb.range(qb.pathIndex("com.marklogic.javaclient.Artifact/inventory"), "xs:long",Operator.LE, 1110),qb.collection("even"));
 		SearchHandle results = new SearchHandle();
 		products.setPageLength(10);
 		p = products.search(qd, 1,results);
@@ -212,7 +213,7 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 		;
 		StructuredQueryBuilder qb = new StructuredQueryBuilder();
 		StructuredQueryDefinition q1 =qb.containerQuery(qb.jsonProperty("name"),qb.term("special") );
-		StructuredQueryDefinition qd = qb.and(q1,qb.word(qb.jsonProperty("name"), "acme"));
+		PojoQueryDefinition qd = qb.and(q1,qb.word(qb.jsonProperty("name"), "acme"));
 		JacksonHandle results = new JacksonHandle();
 		p = products.search(qd, 1,results);
 		products.setPageLength(11);
@@ -251,7 +252,7 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 		PojoPage<Artifact> p;
 		this.loadSimplePojos(products);
 		StructuredQueryBuilder qb = new StructuredQueryBuilder();
-		StructuredQueryDefinition qd =qb.value(qb.jsonProperty("id"), 5,10,15,20,25,30);
+		PojoQueryDefinition qd =qb.value(qb.jsonProperty("id"), 5,10,15,20,25,30);
 		//		StructuredQueryDefinition qd = qb.and(q1,qb.range(qb.pathIndex("com.marklogic.javaclient.Artifact/inventory"), "xs:long",Operator.LE, 1110),qb.collection("even"));
 
 		StringHandle results = new StringHandle();
@@ -303,8 +304,8 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 						"</search:term-query> </search:and-query>"+
 						"</search:query>";
 		StringHandle rh = new StringHandle(rawXMLQuery);
-		RawStructuredQueryDefinition qd =
-				queryMgr.newRawStructuredQueryDefinition(rh);
+		PojoQueryDefinition qd =
+				(PojoQueryDefinition)queryMgr.newRawStructuredQueryDefinition(rh);
 		JacksonHandle results = new JacksonHandle();
 		p = products.search(qd, 1,results);
 		products.setPageLength(11);
@@ -368,8 +369,8 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 		ObjectNode mainNode = mapper.createObjectNode();
 		mainNode.set("query", queryArrayNode);
 		jh.set(mainNode);
-		RawStructuredQueryDefinition qd =
-				queryMgr.newRawStructuredQueryDefinition(jh);
+		PojoQueryDefinition qd =
+				(PojoQueryDefinition)queryMgr.newRawStructuredQueryDefinition(jh);
 
 		JacksonHandle results = new JacksonHandle();
 		p = products.search(qd, 1,results);

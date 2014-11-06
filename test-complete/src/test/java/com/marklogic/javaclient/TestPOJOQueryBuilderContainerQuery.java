@@ -14,6 +14,7 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoQueryBuilder;
+import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.pojo.PojoQueryBuilder.Operator;
@@ -124,7 +125,7 @@ public class TestPOJOQueryBuilderContainerQuery extends BasicJavaClientREST {
 		this.loadSimplePojos(products);
 		String[] searchOptions ={"case-sensitive","wildcarded","min-occurs=2"};
 		PojoQueryBuilder qb = products.getQueryBuilder();
-	  	QueryDefinition qd = qb.containerQuery("manufacturer", qb.term("counter"));
+	  	PojoQueryDefinition qd = qb.containerQuery("manufacturer", qb.term("counter"));
 		JacksonHandle jh = new JacksonHandle();
 		products.setPageLength(5);
 		p = products.search(qd, 1,jh);
@@ -161,7 +162,7 @@ public class TestPOJOQueryBuilderContainerQuery extends BasicJavaClientREST {
 		String[] searchOptions ={"case-sensitive","wildcarded","max-occurs=1"};
 		PojoQueryBuilder qb = products.getQueryBuilder();
 		String[] searchNames = {"special"};
-		QueryDefinition qd =qb.containerQueryBuilder("manufacturer", Company.class).word("name",searchOptions,1.0,searchNames);
+		PojoQueryDefinition qd =qb.containerQueryBuilder("manufacturer", Company.class).word("name",searchOptions,1.0,searchNames);
 		
 		JacksonHandle jh = new JacksonHandle();
 		products.setPageLength(11);
@@ -196,7 +197,7 @@ public class TestPOJOQueryBuilderContainerQuery extends BasicJavaClientREST {
 		PojoPage<Artifact> p;
 		this.loadSimplePojos(products);
 		PojoQueryBuilder qb = products.getQueryBuilder();
-		QueryDefinition qd = qb.range("inventory", Operator.GE,1055);
+		PojoQueryDefinition qd = qb.range("inventory", Operator.GE,1055);
 		JacksonHandle jh = new JacksonHandle();
 		products.setPageLength(56);
 		p = products.search(qd, 1,jh);
@@ -230,7 +231,7 @@ public class TestPOJOQueryBuilderContainerQuery extends BasicJavaClientREST {
 		String[] searchOptions ={"uncached","min-occurs=1"};
 		PojoQueryBuilder qb = products.getQueryBuilder();
 		String[] searchNames = {"counter","special"};
-		QueryDefinition qd = qb.range("inventory",searchOptions,Operator.LE,1054);
+		PojoQueryDefinition qd = qb.range("inventory",searchOptions,Operator.LE,1054);
 		JacksonHandle jh = new JacksonHandle();
 		products.setPageLength(55);
 		p = products.search(qd, 1,jh);
@@ -268,7 +269,7 @@ public class TestPOJOQueryBuilderContainerQuery extends BasicJavaClientREST {
 		String[] rangeOptions ={"uncached","min-occurs=1"};
 		PojoQueryBuilder qb = products.getQueryBuilder();
 		String[] searchNames = {"Acm*"};
-		QueryDefinition qd = qb.and(qb.andNot(qb.word("name",searchOptions, 1.0,searchNames),
+		PojoQueryDefinition qd = qb.and(qb.andNot(qb.word("name",searchOptions, 1.0,searchNames),
 											  qb.containerQueryBuilder("manufacturer", Company.class).value("name","Acme special, Inc.") ),
 									qb.range("inventory",rangeOptions,Operator.LT,1101));
 				
