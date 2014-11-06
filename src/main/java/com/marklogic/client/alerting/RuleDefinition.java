@@ -262,12 +262,15 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 					"description", RequestConstants.RESTAPI_NS);
 			serializer.writeCharacters(getDescription());
 			serializer.writeEndElement();
+			serializer.flush();
 
 			// logger.debug("Send: " + new String(queryPayload));
 			XMLEventWriter eventWriter = factory.createXMLEventWriter(out);
 			for (XMLEvent event : this.queryPayload) {
 				eventWriter.add(event);
 			}
+			eventWriter.flush();
+			out.flush();
 
 			writeMetadataElement(serializer);
 
