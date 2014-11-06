@@ -57,7 +57,7 @@ public class EvalTest {
     @BeforeClass
     public static void beforeClass() {
         Common.connectEval();
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
     @AfterClass
     public static void afterClass() {
@@ -326,6 +326,9 @@ public class EvalTest {
             result = results.next();
             assertEquals("myCtsQuery should be Type.OTHER", EvalResult.Type.OTHER, result.getType());
             assertEquals("myCtsQuery should be Format.TEXT", Format.TEXT, result.getFormat());
+            result = results.next();
+            assertEquals("myFunction should be Type.OTHER", EvalResult.Type.OTHER, result.getType());
+            assertEquals("myFunction should be Format.TEXT", Format.TEXT, result.getFormat());
         } finally { results.close(); }
     }
 

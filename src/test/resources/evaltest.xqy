@@ -33,11 +33,12 @@ let $myAttribute             := $myElement/@*
 let $myComment               := $myComment/comment() 
 let $myProcessingInstruction := $myProcessingInstruction/processing-instruction() 
 let $myCtsQuery := cts:word-query('a') 
+let $myFunction := xdmp:functions()[2]
 return (
     $test:myString, $myArray, $myObject, $myAnyUri, 
     $myBinary, $myBase64Binary, $myHexBinary, $myDuration, $myQName,
     $myDocument, $myAttribute, $myComment, $myElement, $myProcessingInstruction, $myText, 
     $myBool, $myInteger, $myBigInteger, $myDecimal, $myDouble, $myFloat,
     $myGDay, $myGMonth, $myGMonthDay, $myGYear, $myGYearMonth, $myDate, $myDateTime, $myTime,
-    $myNull, $myCtsQuery
+    $myNull, $myCtsQuery, $myFunction
 )
