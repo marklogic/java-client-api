@@ -74,6 +74,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	private final static String axisValidName = "javaERIValidAxis";
 	
 	private final static String temporalCollectionName = "javaERITemporalCollection";
+	private final static String temporalLsqtCollectionName = "javaERILsqtTemporalCollection";
 	
 	private final static String systemNodeName = "System";
 	private final static String validNodeName = "Valid";
@@ -102,6 +103,8 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		ConnectedRESTQA.addElementRangeIndexTemporalAxis(dbName, axisSystemName, "", systemStartERIName, "", systemEndERIName);
 		ConnectedRESTQA.addElementRangeIndexTemporalAxis(dbName, axisValidName, "", validStartERIName, "", validEndERIName);
 		ConnectedRESTQA.addElementRangeIndexTemporalCollection(dbName, temporalCollectionName, axisSystemName, axisValidName);
+		ConnectedRESTQA.addElementRangeIndexTemporalCollection(dbName, temporalLsqtCollectionName, axisSystemName, axisValidName);
+		ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName, temporalLsqtCollectionName, true);
 	}
 
 	@AfterClass
@@ -112,6 +115,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		tearDownJavaRESTServer(dbName, fNames, restServerName);
 		
 		// Temporal collection needs to be delete before temporal axis associated with it can be deleted
+		ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents", temporalLsqtCollectionName);
 		ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents", temporalCollectionName);
 		ConnectedRESTQA.deleteElementRangeIndexTemporalAxis("Documents", axisValidName);
 		ConnectedRESTQA.deleteElementRangeIndexTemporalAxis("Documents", axisSystemName);
@@ -241,7 +245,8 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	}
 	
 	// This covers passing transforms and descriptor
-	private void insertXMLSingleDocument(String docId, String transformName) throws Exception { 
+	private void insertXMLSingleDocument(String temporalCollection,
+			String docId, String transformName) throws Exception { 
 		System.out.println("Inside insertXMLSingleDocument");
 
 		DOMHandle handle = getXMLDocumentHandle(
@@ -270,17 +275,18 @@ public class TestBiTemporal extends BasicJavaClientREST{
 			transformer.put("name", "Lang");
 			transformer.put("value", "English");
 
-  		docMgr.write(desc, mh, handle, transformer, null, temporalCollectionName, null);
+  		docMgr.write(desc, mh, handle, transformer, null, temporalCollection);
 		}
 		else {
-      docMgr.write(desc, mh, handle, null, null, temporalCollectionName, null);
+      docMgr.write(desc, mh, handle, null, null, temporalCollection);
   		
       // docMgr.write(docId, mh, handle, null, null, temporalCollectionName, DatatypeConverter.parseDateTime("2004-06-015T00:00:01"));
 		}
 	}
 
 	// This covers passing transforms and descriptor
-	private void updateXMLSingleDocument(String docId, String transformName) throws Exception { 
+	private void updateXMLSingleDocument(String temporalCollection,
+			String docId, String transformName) throws Exception { 
 		System.out.println("Inside updateXMLSingleDocument");
 
 		// Update the document
@@ -309,15 +315,15 @@ public class TestBiTemporal extends BasicJavaClientREST{
 			transformer.put("name", "Lang");
 			transformer.put("value", "English");
 
-  		docMgr.write(desc, mh, handle, transformer, null, temporalCollectionName, null);
+  		docMgr.write(desc, mh, handle, transformer, null, temporalCollection);
 		}
 		else {
-		  docMgr.write(desc, mh, handle, null, null, temporalCollectionName, null);
+		  docMgr.write(desc, mh, handle, null, null, temporalCollection);
 		}
   }
 
 	// This covers passing descriptor
-	public void deleteXMLSingleDocument(String docId) throws Exception { 
+	public void deleteXMLSingleDocument(String temporalCollection, String docId) throws Exception { 
 
 		System.out.println("Inside deleteXMLSingleDocument");		
 				
@@ -325,7 +331,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 
     // docMgr.delete(docId, null, temporalCollectionName, DatatypeConverter.parseDateTime("2014-06-015T00:00:01"));
 		DocumentDescriptor desc = docMgr.newDescriptor(docId);
-    docMgr.delete(desc, null, temporalCollectionName, null);    
+    docMgr.delete(desc, null, temporalCollection, null);    
 	}
 	
 	private DOMHandle getXMLDocumentHandle(
@@ -372,14 +378,21 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		return handle;
 	}
 
-	public void insertJSONSingleDocument(
-			String docId, Transaction transaction) throws Exception { 
+	public void insertJSONSingleDocument(String temporalCollection,
+			String docId, Transaction transaction, java.util.Calendar systemTime) throws Exception { 
 
-		insertJSONSingleDocument(docId, transaction, null);
+		insertJSONSingleDocument(temporalCollection, docId, null, transaction, systemTime);
+	}
+
+	public void insertJSONSingleDocument(String temporalCollection,
+			String docId, String transformName) throws Exception { 
+
+		insertJSONSingleDocument(temporalCollection, docId, transformName, null, null);
 	}
 	
-	public void insertJSONSingleDocument(
-			String docId, Transaction transaction, java.util.Calendar systemTime) throws Exception { 
+	public void insertJSONSingleDocument(String temporalCollection,
+			String docId, String transformName,
+			Transaction transaction, java.util.Calendar systemTime) throws Exception { 
 
 		System.out.println("Inside insertJSONSingleDocument");
 		
@@ -390,18 +403,48 @@ public class TestBiTemporal extends BasicJavaClientREST{
     docMgr.setMetadataCategories(Metadata.ALL);
 
 		// put meta-data
-		DocumentMetadataHandle mh = setMetadata(false);				
+		DocumentMetadataHandle mh = setMetadata(false);
 		
-    docMgr.write(docId, mh, handle, null, transaction, temporalCollectionName, systemTime);		
+		if (transformName != null) {
+			TransformExtensionsManager transMgr = 
+					client.newServerConfigManager().newTransformExtensionsManager();
+			ExtensionMetadata metadata = new ExtensionMetadata();
+			metadata.setTitle("Adding sjs Transform");
+			metadata.setDescription("This plugin adds 2 properties to JSON document");
+			metadata.setProvider("MarkLogic");
+			metadata.setVersion("0.1");
+			// get the transform file
+			File transformFile = new File("src/test/java/com/marklogic/javaclient/transforms/" + transformName + ".js");
+			FileHandle transformHandle = new FileHandle(transformFile);
+			transMgr.writeJavascriptTransform(transformName, transformHandle, metadata);
+			ServerTransform transformer = new ServerTransform(transformName);
+			transformer.put("name", "Lang");
+			transformer.put("value", "English");
+
+			if (systemTime != null) {
+  		  docMgr.write(docId, mh, handle, transformer, null, temporalCollection, systemTime, null);
+			}
+			else {
+  		  docMgr.write(docId, mh, handle, transformer, null, temporalCollection);
+			}
+		}
+		else {
+			if (systemTime != null) {
+			  docMgr.write(docId, mh, handle, null, transaction, temporalCollection, systemTime, null);
+			}
+			else {
+			  docMgr.write(docId, mh, handle, null, transaction, temporalCollection);
+			}
+		}
 	}
 
-	public void updateJSONSingleDocument(
-			String docId, Transaction transaction) throws Exception { 
+	public void updateJSONSingleDocument(String temporalCollection,
+			String docId) throws Exception { 
 
-		updateJSONSingleDocument(docId, transaction, null);
+		updateJSONSingleDocument(temporalCollection, docId, null, null);
 	}
 	
-	public void updateJSONSingleDocument(
+	public void updateJSONSingleDocument(String temporalCollection,
 			String docId, Transaction transaction, java.util.Calendar systemTime) throws Exception { 
 
 		System.out.println("Inside updateJSONSingleDocumentString");
@@ -413,23 +456,28 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		docMgr.setMetadataCategories(Metadata.ALL);
 		DocumentMetadataHandle mh = setMetadata(true);  // cannot set properties during update
-		docMgr.write(docId, mh, handle, null, transaction, temporalCollectionName, systemTime);
+		docMgr.write(docId, mh, handle, null, transaction, temporalCollection, systemTime, null);
 	}
 
-	public void deleteJSONSingleDocument(
+	public void deleteJSONSingleDocument(String temporalCollection,
 			String docId, Transaction transaction) throws Exception { 
-		deleteJSONSingleDocument(docId, transaction, null);
+		deleteJSONSingleDocument(temporalCollection, docId, transaction, null);
 	}
 
-	public void deleteJSONSingleDocument(
+	public void deleteJSONSingleDocument(String temporalCollection,
 			String docId, Transaction transaction, java.util.Calendar systemTime) throws Exception { 
 
 		System.out.println("Inside deleteJSONSingleDocument");		
 				
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 
-    // docMgr.delete(docId, null, temporalCollectionName, DatatypeConverter.parseDateTime("2014-06-015T00:00:01"));
-    docMgr.delete(docId, transaction, temporalCollectionName, systemTime);    
+		// Doing the logic here to exercise the overloaded methods 
+		if (systemTime != null) {
+      docMgr.delete(docId, transaction, temporalCollection, systemTime);
+		}
+		else {
+      docMgr.delete(docId, transaction, temporalCollection);
+		}
 	}
 
 
@@ -503,7 +551,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
     template.setDirectory(dirName);
 		DocumentMetadataHandle mh = setMetadata(false);
 		
-    docMgr.create(template, mh, handle, null, null, temporalCollectionName, null);
+    docMgr.create(template, mh, handle, null, null, temporalCollectionName);
 
 		// Make sure there are no documents associated with "latest" collection
 		QueryManager queryMgr = client.newQueryManager();
@@ -543,10 +591,10 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		System.out.println("Inside testXMLWriteSingleDocument");
 		String docId = "javaSingleXMLDoc.xml";
 		
-		insertXMLSingleDocument(docId, null);
+		insertXMLSingleDocument(temporalCollectionName, docId, null);
 		boolean exceptionThrown = false;
 		try {
-		  updateXMLSingleDocument(docId, "add-element-xquery-invalid-bitemp-transform");
+		  updateXMLSingleDocument(temporalCollectionName, docId, "add-element-xquery-invalid-bitemp-transform");
 		}
 		catch (com.marklogic.client.FailedRequestException ex) {
 			exceptionThrown = true;		
@@ -577,7 +625,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		// Check insert works
 		//=============================================================================		
 		// Insert XML document
-		insertXMLSingleDocument(xmlDocId, "add-element-xquery-transform");  // Transforming during insert
+		insertXMLSingleDocument(temporalCollectionName, xmlDocId, "add-element-xquery-transform");  // Transforming during insert
 		
     // Verify that the document was inserted 
 		XMLDocumentManager xmlDocMgr = client.newXMLDocumentManager();
@@ -587,7 +635,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		
 		// Now insert a JSON document
 		String jsonDocId = "javaSingleJSONDoc.json";
-		insertJSONSingleDocument(jsonDocId, null);
+		insertJSONSingleDocument(temporalCollectionName, jsonDocId, null);
 		
     // Verify that the document was inserted 
 		JSONDocumentManager jsonDocMgr = client.newJSONDocumentManager();
@@ -599,7 +647,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		// Check update works
 		//=============================================================================
 		// Update XML document
-		updateXMLSingleDocument(xmlDocId, null);   // Not transforming during update
+		updateXMLSingleDocument(temporalCollectionName, xmlDocId, null);   // Not transforming during update
 
 		// Make sure there are 2 documents in latest collection
 		QueryManager queryMgr = client.newQueryManager();
@@ -650,7 +698,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	    }
 		 
 			// Update JSON document
-			updateJSONSingleDocument(jsonDocId, null);
+			updateJSONSingleDocument(temporalCollectionName, jsonDocId);
 	
 			// Make sure there are still 2 documents in latest collection
 			queryMgr = client.newQueryManager();
@@ -708,7 +756,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 			// Check delete works
 			//=============================================================================
 			// Delete one of the document
-			deleteXMLSingleDocument(xmlDocId);
+			deleteXMLSingleDocument(temporalCollectionName, xmlDocId);
 	
 			// Make sure there are still 4 documents in xmlDocId collection
 			queryMgr = client.newQueryManager();
@@ -766,7 +814,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		System.out.println("Inside testJSONConsolidated");
 		
 		String docId = "javaSingleJSONDoc.json";
-		insertJSONSingleDocument(docId, null);
+		insertJSONSingleDocument(temporalCollectionName, docId, null);
 		
     // Verify that the document was inserted 
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
@@ -789,7 +837,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		
 		//================================================================
 		// Update the document
-		updateJSONSingleDocument(docId, null);
+		updateJSONSingleDocument(temporalCollectionName, docId);
 		
     // Verify that the document was updated 
 		// Make sure there is 1 document in latest collection
@@ -889,7 +937,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		// Check delete works
 		//=============================================================================
 		// Delete one of the document
-		deleteJSONSingleDocument(docId, null);
+		deleteJSONSingleDocument(temporalCollectionName, docId, null);
 		
 		// Make sure there are still 4 documents in docId collection
 		queryMgr = client.newQueryManager();
@@ -946,7 +994,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		String docId = "javaSingleJSONDoc.json";
 		
 		Calendar firstInsertTime = DatatypeConverter.parseDateTime("2010-01-01T00:00:01");
-		insertJSONSingleDocument(docId, null, firstInsertTime);
+		insertJSONSingleDocument(temporalLsqtCollectionName, docId, null, null, firstInsertTime);
 		
     // Verify that the document was inserted 
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
@@ -994,7 +1042,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
   			
   			if (!collection.equals(docId) &&
   					!collection.equals(insertCollectionName) && 
-  					!collection.equals(temporalCollectionName) &&
+  					!collection.equals(temporalLsqtCollectionName) &&
   					!collection.equals(latestCollectionName)) {
   				assertFalse("Collection not what is expected: " + collection, true);
   			}
@@ -1030,7 +1078,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		// Check update works
 		//=============================================================================
 		Calendar updateTime = DatatypeConverter.parseDateTime("2011-01-01T00:00:01");
-		updateJSONSingleDocument(docId, null, updateTime);
+		updateJSONSingleDocument(temporalLsqtCollectionName, docId, null, updateTime);
 		
     // Verify that the document was updated 
 		// Make sure there is 1 document in latest collection
@@ -1067,7 +1115,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		// Make sure there are 4 documents in temporal collection
 		queryMgr = client.newQueryManager();
 		sqb = queryMgr.newStructuredQueryBuilder();
-		termQuery = sqb.collection(temporalCollectionName);
+		termQuery = sqb.collection(temporalLsqtCollectionName);
 
 		start = 1;
 		termQueryResults = docMgr.search(termQuery, start);
@@ -1145,7 +1193,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
       			
       			if (!collection.equals(docId) &&
       					!collection.equals(updateCollectionName) && 
-      					!collection.equals(temporalCollectionName)) {
+      					!collection.equals(temporalLsqtCollectionName)) {
       				assertFalse("Collection not what is expected: " + collection, true);
       			}
       		}
@@ -1178,7 +1226,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
       			
       			if (!collection.equals(docId) &&
       					!collection.equals(insertCollectionName) && 
-      					!collection.equals(temporalCollectionName)) {
+      					!collection.equals(temporalLsqtCollectionName)) {
       				assertFalse("Collection not what is expected: " + collection, true);
       			}
       		}
@@ -1212,7 +1260,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
       			
       			if (!collection.equals(docId) &&
       					!collection.equals(insertCollectionName) && 
-      					!collection.equals(temporalCollectionName) &&
+      					!collection.equals(temporalLsqtCollectionName) &&
       					!collection.equals(latestCollectionName)) {
       				assertFalse("Collection not what is expected: " + collection, true);
       			}
@@ -1246,7 +1294,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
       			
       			if (!collection.equals(docId) &&
       					!collection.equals(insertCollectionName) && 
-      					!collection.equals(temporalCollectionName)) {
+      					!collection.equals(temporalLsqtCollectionName)) {
       				assertFalse("Collection not what is expected: " + collection, true);
       			}
       		}      		
@@ -1274,7 +1322,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		//=============================================================================
 		// Delete one of the document
 		Calendar deleteTime = DatatypeConverter.parseDateTime("2012-01-01T00:00:01");
-		deleteJSONSingleDocument(docId, null, deleteTime);
+		deleteJSONSingleDocument(temporalLsqtCollectionName, docId, null, deleteTime);
 		
 		// Make sure there are still 4 documents in docId collection
 		queryMgr = client.newQueryManager();
@@ -1306,7 +1354,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		// Make sure there are 4 documents in temporal collection
 		queryMgr = client.newQueryManager();
 		sqb = queryMgr.newStructuredQueryBuilder();
-		termQuery = sqb.collection(temporalCollectionName);
+		termQuery = sqb.collection(temporalLsqtCollectionName);
 
 		start = 1;
 		docMgr.setMetadataCategories(Metadata.ALL);
@@ -1374,7 +1422,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
       			
       			if (!collection.equals(docId) &&
       					!collection.equals(updateCollectionName) && 
-      					!collection.equals(temporalCollectionName)) {
+      					!collection.equals(temporalLsqtCollectionName)) {
       				assertFalse("Collection not what is expected: " + collection, true);
       			}
       		}
@@ -1407,7 +1455,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
       			
       			if (!collection.equals(docId) &&
       					!collection.equals(insertCollectionName) && 
-      					!collection.equals(temporalCollectionName)) {
+      					!collection.equals(temporalLsqtCollectionName)) {
       				assertFalse("Collection not what is expected: " + collection, true);
       			}
       		}
@@ -1442,7 +1490,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
       			
       			if (!collection.equals(docId) &&
       					!collection.equals(insertCollectionName) && 
-      					!collection.equals(temporalCollectionName)) {
+      					!collection.equals(temporalLsqtCollectionName)) {
       				assertFalse("Collection not what is expected: " + collection, true);
       			}
       		}
@@ -1475,7 +1523,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
       			
       			if (!collection.equals(docId) &&
       					!collection.equals(insertCollectionName) && 
-      					!collection.equals(temporalCollectionName)) {
+      					!collection.equals(temporalLsqtCollectionName)) {
       				assertFalse("Collection not what is expected: " + collection, true);
       			}
       		}      		
@@ -1516,7 +1564,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		String docId = "javaSingleJSONDoc.json";
 		
 		Calendar firstInsertTime = DatatypeConverter.parseDateTime("2010-01-01T00:00:01");
-		insertJSONSingleDocument(docId, null, firstInsertTime);
+		insertJSONSingleDocument(docId, firstInsertTime);
 		
     // Verify that the document was inserted 
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
@@ -1536,7 +1584,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		// Check update works
 		//=============================================================================
 		Calendar updateTime = DatatypeConverter.parseDateTime("2011-01-01T00:00:01");
-		updateJSONSingleDocument(docId, null, updateTime);
+		updateJSONSingleDocument(temporalCollectionName, docId, null, updateTime);
 		
     // Verify that the document was updated 
 		// Make sure there is 1 document in latest collection
@@ -2014,39 +2062,22 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		***/
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	@Test
 	public void testSystemTimeUsingInvalidTime() throws Exception { 
 
-		System.out.println("Inside testSystemTime");
+		System.out.println("Inside testSystemTimeUsingInvalidTime");
 		
 		String docId = "javaSingleJSONDoc.json";
 		
 		Calendar firstInsertTime = DatatypeConverter.parseDateTime("2010-01-01T00:00:01");
-		insertJSONSingleDocument(docId, null, firstInsertTime);
+		insertJSONSingleDocument(temporalLsqtCollectionName, docId, null, null, firstInsertTime);
 		
 		// Update by passing a system time that is less than previous one
 		Calendar updateTime = DatatypeConverter.parseDateTime("2010-01-01T00:00:00");
 		
 		boolean exceptionThrown = false;
 		try {
-		  updateJSONSingleDocument(docId, null, updateTime);
+		  updateJSONSingleDocument(temporalLsqtCollectionName, docId, null, updateTime);
 		}
 		catch (com.marklogic.client.FailedRequestException ex) {
 			System.out.println(ex.getMessage());
@@ -2064,7 +2095,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 
 		exceptionThrown = false;
 		try {
-			deleteJSONSingleDocument(docId, null, deleteTime);
+			deleteJSONSingleDocument(temporalLsqtCollectionName, docId, null, deleteTime);
 		}
 		catch (com.marklogic.client.FailedRequestException ex) {
 			System.out.println(ex.getMessage());
@@ -2076,147 +2107,131 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		}		
 	}
 	
-	@Test
+	// @Test
 	// BUG: REST API bug around transactions fails this test
-	public void testTransactionCommit() throws Exception { 
+	public void TransactionCommit() throws Exception { 
 
 		System.out.println("Inside testTransactionCommit");
 		
 		String docId = "javaSingleJSONDoc.json";
 		
 		Transaction transaction = client.openTransaction("Transaction for BiTemporal");
-		try {
-		  insertJSONSingleDocument(docId, transaction);
-		}
-		catch (Exception ex) {
-			transaction.rollback();
+		try {					
+	    // Verify that the document was inserted 
+			JSONDocumentManager docMgr = client.newJSONDocumentManager();
+			DocumentPage readResults = docMgr.read(transaction, docId); 
+	
+			System.out.println("Number of results = " + readResults.size());
+			if (readResults.size() != 1) {
+				transaction.rollback();
+				
+				assertEquals("Wrong number of results", 1, readResults.size());
+			}
 			
-			assertTrue("insertJSONSingleDocument failed in testTransactionCommit", false);
-		}
-		
-    // Verify that the document was inserted 
-		JSONDocumentManager docMgr = client.newJSONDocumentManager();
-		DocumentPage readResults = docMgr.read(transaction, docId); 
-
-		System.out.println("Number of results = " + readResults.size());
-		if (readResults.size() != 1) {
-			transaction.rollback();
+			DocumentRecord latestDoc = readResults.next();
+			System.out.println("URI after insert = " + latestDoc.getUri());
 			
-			assertEquals("Wrong number of results", 1, readResults.size());
-		}
-		
-		DocumentRecord latestDoc = readResults.next();
-		System.out.println("URI after insert = " + latestDoc.getUri());
-		
-		if (!docId.equals(latestDoc.getUri())) {
-			transaction.rollback();
+			if (!docId.equals(latestDoc.getUri())) {
+				transaction.rollback();
+				
+				assertEquals("Document uri wrong after insert", docId, latestDoc.getUri());
+			}
 			
-			assertEquals("Document uri wrong after insert", docId, latestDoc.getUri());
-		}
-		
-		// Make sure document is not visible to any other transaction
-		readResults = docMgr.read(docId); 
-		System.out.println("Number of results = " + readResults.size());
-		if (readResults.size() != 0) {
-			transaction.rollback();
+			// Make sure document is not visible to any other transaction
+			readResults = docMgr.read(docId); 
+			System.out.println("Number of results = " + readResults.size());
+			if (readResults.size() != 0) {
+				transaction.rollback();
+				
+				assertEquals("Wrong number of results", 1, readResults.size());
+			}
 			
-			assertEquals("Wrong number of results", 1, readResults.size());
-		}
-		
-		try {
-	  	updateJSONSingleDocument(docId, transaction);		
-		}
-		catch (Exception ex) {
-			transaction.rollback();
+		  updateJSONSingleDocument(temporalCollectionName, docId, transaction, null);		
+	
+			QueryManager queryMgr = client.newQueryManager();
+			StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+			StructuredQueryDefinition termQuery = sqb.collection(latestCollectionName);
 			
-			assertTrue("updateJSONSingleDocument failed in testTransactionCommit", false);
-		}
-
-		QueryManager queryMgr = client.newQueryManager();
-		StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
-		StructuredQueryDefinition termQuery = sqb.collection(latestCollectionName);
-		
-		long start = 1;
-		DocumentPage termQueryResults = docMgr.search(termQuery, start, transaction);
-		System.out.println("Number of results = " + termQueryResults.getTotalSize());
-		
-		if ( termQueryResults.getTotalSize() != 1) {
-			transaction.rollback();
+			long start = 1;
+			DocumentPage termQueryResults = docMgr.search(termQuery, start, transaction);
+			System.out.println("Number of results = " + termQueryResults.getTotalSize());
 			
-			assertEquals("Wrong number of results", 1, termQueryResults.getTotalSize());
-		}
-
-		// There should be 4 documents in docId collection
-		queryMgr = client.newQueryManager();
-		sqb = queryMgr.newStructuredQueryBuilder();
-		termQuery = sqb.collection(docId);
-		
-		start = 1;
-		termQueryResults = docMgr.search(termQuery, start, transaction);
-		System.out.println("Number of results = " + termQueryResults.getTotalSize());
-
-		if (termQueryResults.getTotalSize() != 4) {
-			transaction.rollback();
+			if ( termQueryResults.getTotalSize() != 1) {
+				transaction.rollback();
+				
+				assertEquals("Wrong number of results", 1, termQueryResults.getTotalSize());
+			}
+	
+			// There should be 4 documents in docId collection
+			queryMgr = client.newQueryManager();
+			sqb = queryMgr.newStructuredQueryBuilder();
+			termQuery = sqb.collection(docId);
 			
-			assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
-		}
-		
-		// Search for documents using doc uri collection and no transaction object passed.
-		// There should be 0 documents in docId collection
-		queryMgr = client.newQueryManager();
-		sqb = queryMgr.newStructuredQueryBuilder();
-		termQuery = sqb.collection(docId);
-		
-		start = 1;
-		termQueryResults = docMgr.search(termQuery, start);
-		System.out.println("Number of results = " + termQueryResults.getTotalSize());
-
-		if (termQueryResults.getTotalSize() != 0) {
-			transaction.rollback();
+			start = 1;
+			termQueryResults = docMgr.search(termQuery, start, transaction);
+			System.out.println("Number of results = " + termQueryResults.getTotalSize());
+	
+			if (termQueryResults.getTotalSize() != 4) {
+				transaction.rollback();
+				
+				assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
+			}
 			
+			// Search for documents using doc uri collection and no transaction object passed.
+			// There should be 0 documents in docId collection
+			queryMgr = client.newQueryManager();
+			sqb = queryMgr.newStructuredQueryBuilder();
+			termQuery = sqb.collection(docId);
+			
+			start = 1;
+			termQueryResults = docMgr.search(termQuery, start);
+			System.out.println("Number of results = " + termQueryResults.getTotalSize());
+	
+			if (termQueryResults.getTotalSize() != 0) {
+				transaction.rollback();
+				
+				assertEquals("Wrong number of results", 0, termQueryResults.getTotalSize());
+			}
+			
+		 deleteJSONSingleDocument(temporalCollectionName, docId, transaction);
+	
+			// There should be no documents in latest collection
+			queryMgr = client.newQueryManager();
+			sqb = queryMgr.newStructuredQueryBuilder();
+			termQuery = sqb.collection(latestCollectionName);
+			
+			start = 1;
+			termQueryResults = docMgr.search(termQuery, start, transaction);
+			System.out.println("Number of results = " + termQueryResults.getTotalSize());
+	
+			if ( termQueryResults.getTotalSize() != 0) {
+				transaction.rollback();
+				
+				assertEquals("Wrong number of results", 0, termQueryResults.getTotalSize());
+			}
+			
+			transaction.commit();
+			
+			// There should still be no documents in latest collection
+			queryMgr = client.newQueryManager();
+			sqb = queryMgr.newStructuredQueryBuilder();
+			termQuery = sqb.collection(latestCollectionName);
+			
+			start = 1;
+			termQueryResults = docMgr.search(termQuery, start);
+			System.out.println("Number of results = " + termQueryResults.getTotalSize());
 			assertEquals("Wrong number of results", 0, termQueryResults.getTotalSize());
 		}
-
-		try {
-	  	deleteJSONSingleDocument(docId, transaction);		
-		}
 		catch (Exception ex) {
 			transaction.rollback();
 			
-			assertTrue("deleteJSONSingleDocument failed in testTransactionCommit", false);
+			assertTrue("testTransactionCommit failed", false);
 		}
-
-		// There should be no documents in latest collection
-		queryMgr = client.newQueryManager();
-		sqb = queryMgr.newStructuredQueryBuilder();
-		termQuery = sqb.collection(latestCollectionName);
-		
-		start = 1;
-		termQueryResults = docMgr.search(termQuery, start, transaction);
-		System.out.println("Number of results = " + termQueryResults.getTotalSize());
-
-		if ( termQueryResults.getTotalSize() != 0) {
-			transaction.rollback();
-			
-			assertEquals("Wrong number of results", 0, termQueryResults.getTotalSize());
-		}
-		
-		transaction.commit();
-		
-		// There should still be no documents in latest collection
-		queryMgr = client.newQueryManager();
-		sqb = queryMgr.newStructuredQueryBuilder();
-		termQuery = sqb.collection(latestCollectionName);
-		
-		start = 1;
-		termQueryResults = docMgr.search(termQuery, start);
-		System.out.println("Number of results = " + termQueryResults.getTotalSize());
-		assertEquals("Wrong number of results", 0, termQueryResults.getTotalSize());
 	}
 	
-	@Test
+	// @Test
 	// BUG: REST API bug around transactions fails this test
-	public void testTransactionRollback() throws Exception { 
+	public void TransactionRollback() throws Exception { 
 
 		System.out.println("Inside testTransaction");
 		
@@ -2225,7 +2240,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		Transaction transaction = client.openTransaction("Transaction for BiTemporal");
 		
 		try {
-	  	insertJSONSingleDocument(docId, transaction);
+	  	insertJSONSingleDocument(temporalCollectionName, docId, null, transaction, null);
 		}
 		catch (Exception ex) {
 			transaction.rollback();
@@ -2253,7 +2268,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		}
 		
 		try {
-		  updateJSONSingleDocument(docId, transaction);
+		  updateJSONSingleDocument(temporalCollectionName, docId, transaction, null);
 		}
 		catch (Exception ex) {
 			transaction.rollback();
@@ -2293,7 +2308,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		transaction = client.openTransaction("Transaction Rollback for BiTemporal Delete");
 		
 		try {
-	  	insertJSONSingleDocument(docId, transaction);
+	  	insertJSONSingleDocument(temporalCollectionName, docId, null, transaction, null);
 		}
 		catch (Exception ex) {
 			transaction.rollback();
@@ -2321,7 +2336,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		}
 		
 		try {
-		  deleteJSONSingleDocument(docId, transaction);
+		  deleteJSONSingleDocument(temporalCollectionName, docId, transaction);
 		}
 		catch (Exception ex) {
 			transaction.rollback();
@@ -2361,8 +2376,8 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		// Read documents based on document URI and ALN Contains. We are just looking for count of documents to be correct
 
 		String docId = "javaSingleJSONDoc.json";
-		insertJSONSingleDocument(docId, null);
-		updateJSONSingleDocument(docId, null);
+		insertJSONSingleDocument(temporalCollectionName, docId, null);
+		updateJSONSingleDocument(temporalCollectionName, docId);
 		
 		// Fetch documents associated with a search term (such as XML) in Address element 
 		QueryManager queryMgr = client.newQueryManager();
@@ -2443,8 +2458,8 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		// for count of documents to be correct
 
 		String docId = "javaSingleJSONDoc.json";
-		insertJSONSingleDocument(docId, null);
-		updateJSONSingleDocument(docId, null);
+		insertJSONSingleDocument(temporalCollectionName, docId, null);
+		updateJSONSingleDocument(temporalCollectionName, docId);
 		
 		// Fetch documents associated with a search term (such as XML) in Address element 
 		QueryManager queryMgr = client.newQueryManager();
@@ -2528,10 +2543,10 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		String docId = "javaSingleJSONDoc.json";
 		
 		Calendar insertTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:01");
-		insertJSONSingleDocument(docId, null, insertTime);
+		insertJSONSingleDocument(temporalCollectionName, docId, null, null, insertTime);
 
 		Calendar updateTime = DatatypeConverter.parseDateTime("2010-01-01T00:00:01");
-		updateJSONSingleDocument(docId, null, updateTime);
+		updateJSONSingleDocument(temporalCollectionName, docId, null, updateTime);
 		
 		// Fetch documents associated with a search term (such as XML) in Address element 
 		QueryManager queryMgr = client.newQueryManager();
@@ -2612,84 +2627,108 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	public void testLsqtQuery() throws Exception {
 
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-		// Read documents based on document URI and ALN Contains. We are just looking for count of documents to be correct
-		String docId = "javaSingleJSONDoc.json";
 		
-		Calendar insertTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:01");
-		insertJSONSingleDocument(docId, null, insertTime);
-
-		Calendar updateTime = DatatypeConverter.parseDateTime("2010-01-01T00:00:01");
-		updateJSONSingleDocument(docId, null, updateTime);
+		ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName, temporalCollectionName, true);
 		
-		// Fetch documents associated with a search term (such as XML) in Address element 
-		QueryManager queryMgr = client.newQueryManager();
-		StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
-
-		Calendar queryTime = DatatypeConverter.parseDateTime("2015-01-01T00:00:01");
-		StructuredQueryDefinition periodQuery = sqb.temporalLsqtQuery(temporalCollectionName, 
-				queryTime, 0, new String[]{});
+		try {
+			// Read documents based on document URI and ALN Contains. We are just looking for count of documents to be correct
+			String docId = "javaSingleJSONDoc.json";
+			
+			Calendar insertTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:01");
+			insertJSONSingleDocument(temporalCollectionName, docId, null, null, insertTime);
+	
+			Calendar updateTime = DatatypeConverter.parseDateTime("2010-01-01T00:00:01");
+			updateJSONSingleDocument(temporalCollectionName, docId, null, updateTime);
+			
+			// Fetch documents associated with a search term (such as XML) in Address element 
+			QueryManager queryMgr = client.newQueryManager();
+			StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+	
+			Calendar queryTime = DatatypeConverter.parseDateTime("2007-01-01T00:00:01");
+			StructuredQueryDefinition periodQuery = sqb.temporalLsqtQuery(temporalCollectionName, 
+					queryTime, 0, new String[]{});
+			
+			long start = 1;
+			JSONDocumentManager docMgr = client.newJSONDocumentManager();
+			docMgr.setMetadataCategories(Metadata.ALL);	// Get all metadata
+			DocumentPage termQueryResults = docMgr.search(periodQuery, start);
+			
+			long count = 0;
+	    while (termQueryResults.hasNext()) {
+	    	++count;
+	    	DocumentRecord record = termQueryResults.next();
+	  		System.out.println("URI = " + record.getUri());
+	  		
+	  		DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+	  		record.getMetadata(metadataHandle);
+	  		Iterator<String> resCollections = metadataHandle.getCollections().iterator();
+	  		while (resCollections.hasNext()) {
+	  			System.out.println("Collection = " + resCollections.next()); 
+	  		}
+	
+	  		if (record.getFormat() == Format.XML) {
+	  			DOMHandle recordHandle = new DOMHandle(); 				
+	  			record.getContent (recordHandle);
+		  	  System.out.println("Content = " + recordHandle.toString());   		
+	  		}
+	  		else {
+		  		JacksonDatabindHandle<ObjectNode> recordHandle =  new JacksonDatabindHandle<ObjectNode>(ObjectNode.class);  				
+		  		record.getContent (recordHandle);
+		  	  System.out.println("Content = " + recordHandle.toString()); 
+	
+		  	  JsonFactory factory = new JsonFactory(); 
+		      ObjectMapper mapper = new ObjectMapper(factory);
+		      TypeReference<HashMap<String,Object>> typeRef 
+		              = new TypeReference<HashMap<String,Object>>() {};
+	
+		      HashMap<String,Object> docObject = mapper.readValue(recordHandle.toString(), typeRef); 
+		      
+		      @SuppressWarnings("unchecked")
+		      HashMap<String, Object> systemNode = (HashMap<String, Object>)(docObject.get(systemNodeName));
+		      
+		      String systemStartDate = (String)systemNode.get(systemStartERIName);
+		      String systemEndDate = (String)systemNode.get(systemEndERIName);
+		      System.out.println("systemStartDate = " + systemStartDate);
+		      System.out.println("systemEndDate = " + systemEndDate);
+	
+		      @SuppressWarnings("unchecked")
+		      HashMap<String, Object> validNode = (HashMap<String, Object>)(docObject.get(validNodeName));
+		      
+		      String validStartDate = (String)validNode.get(validStartERIName);
+		      String validEndDate = (String)validNode.get(validEndERIName);
+		      System.out.println("validStartDate = " + validStartDate);
+		      System.out.println("validEndDate = " + validEndDate);
+	
+		      // assertTrue("Valid start date check failed", 
+		      //		(validStartDate.equals("2008-12-31T23:59:59") && validEndDate.equals("2011-12-31T23:59:59")) ||
+		      //		(validStartDate.equals("2003-01-01T00:00:00") && validEndDate.equals("2008-12-31T23:59:59")) ||
+		      //		(validStartDate.equals("2001-01-01T00:00:00") && validEndDate.equals("2003-01-01T00:00:00")));	     
+	  		}
+	    }
+			
+	    // BUG. I believe Java API is doing a get instead of a POST that returns all documents in doc uri collection
+			System.out.println("Number of results using SQB = " + count);
+			assertEquals("Wrong number of results", 3, count);
+	  }
+		catch (Exception ex) {
+			throw ex;
+		}
 		
-		long start = 1;
-		JSONDocumentManager docMgr = client.newJSONDocumentManager();
-		docMgr.setMetadataCategories(Metadata.ALL);	// Get all metadata
-		DocumentPage termQueryResults = docMgr.search(periodQuery, start);
+		finally {
+			ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName, temporalCollectionName, false);
+		}
+	}
+
+	@Test
+	// Negative test
+	public void testJSONTransforms() throws Exception {
+		// Now insert a JSON document
+		System.out.println("In testJSONTransforms .. testing JSON transforms");
+		String jsonDocId = "javaSingleJSONDoc.json";
 		
-		long count = 0;
-    while (termQueryResults.hasNext()) {
-    	++count;
-    	DocumentRecord record = termQueryResults.next();
-  		System.out.println("URI = " + record.getUri());
-  		
-  		DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
-  		record.getMetadata(metadataHandle);
-  		Iterator<String> resCollections = metadataHandle.getCollections().iterator();
-  		while (resCollections.hasNext()) {
-  			System.out.println("Collection = " + resCollections.next()); 
-  		}
+		insertJSONSingleDocument(temporalCollectionName, jsonDocId, "timestampTransform");
 
-  		if (record.getFormat() == Format.XML) {
-  			DOMHandle recordHandle = new DOMHandle(); 				
-  			record.getContent (recordHandle);
-	  	  System.out.println("Content = " + recordHandle.toString());   		
-  		}
-  		else {
-	  		JacksonDatabindHandle<ObjectNode> recordHandle =  new JacksonDatabindHandle<ObjectNode>(ObjectNode.class);  				
-	  		record.getContent (recordHandle);
-	  	  System.out.println("Content = " + recordHandle.toString()); 
-
-	  	  JsonFactory factory = new JsonFactory(); 
-	      ObjectMapper mapper = new ObjectMapper(factory);
-	      TypeReference<HashMap<String,Object>> typeRef 
-	              = new TypeReference<HashMap<String,Object>>() {};
-
-	      HashMap<String,Object> docObject = mapper.readValue(recordHandle.toString(), typeRef); 
-	      
-	      @SuppressWarnings("unchecked")
-	      HashMap<String, Object> systemNode = (HashMap<String, Object>)(docObject.get(systemNodeName));
-	      
-	      String systemStartDate = (String)systemNode.get(systemStartERIName);
-	      String systemEndDate = (String)systemNode.get(systemEndERIName);
-	      System.out.println("systemStartDate = " + systemStartDate);
-	      System.out.println("systemEndDate = " + systemEndDate);
-
-	      @SuppressWarnings("unchecked")
-	      HashMap<String, Object> validNode = (HashMap<String, Object>)(docObject.get(validNodeName));
-	      
-	      String validStartDate = (String)validNode.get(validStartERIName);
-	      String validEndDate = (String)validNode.get(validEndERIName);
-	      System.out.println("validStartDate = " + validStartDate);
-	      System.out.println("validEndDate = " + validEndDate);
-
-	      // assertTrue("Valid start date check failed", 
-	      //		(validStartDate.equals("2008-12-31T23:59:59") && validEndDate.equals("2011-12-31T23:59:59")) ||
-	      //		(validStartDate.equals("2003-01-01T00:00:00") && validEndDate.equals("2008-12-31T23:59:59")) ||
-	      //		(validStartDate.equals("2001-01-01T00:00:00") && validEndDate.equals("2003-01-01T00:00:00")));	     
-  		}
-    }
-		
-    // BUG. I believe Java API is doing a get instead of a POST that returns all documents in doc uri collection
-		System.out.println("Number of results using SQB = " + count);
-		assertEquals("Wrong number of results", 3, count);		
+		System.out.println("Out testJSONTransforms .. testing JSON transforms");	
 	}
 	
 	@Test
@@ -2700,7 +2739,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		
 		boolean exceptionThrown = false;
 		try {
-		  insertJSONSingleDocument(jsonDocId, null);
+		  insertJSONSingleDocument(temporalCollectionName, jsonDocId, null);
 		}
 		catch (com.marklogic.client.FailedRequestException ex) {
 			exceptionThrown = true;		
@@ -2712,7 +2751,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 			// assert(ex.getFailedRequest().getStatusCode() == 400);
 		}
 		
-		assertTrue("Exception not thrown for invalid transform", exceptionThrown);	
+		assertTrue("Exception not thrown for invalid extension", exceptionThrown);	
 	}
 
 	@Test
@@ -2735,7 +2774,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		DocumentMetadataHandle mh = setMetadata(false);				
 
 	  try {
-	    docMgr.write(jsonDocId, mh, handle, null, null, "invalidCollection", null);		
+	    docMgr.write(jsonDocId, mh, handle, null, null, "invalidCollection");		
 		}
 		catch (com.marklogic.client.FailedRequestException ex) {
 			exceptionThrown = true;		
@@ -2770,7 +2809,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		DocumentMetadataHandle mh = setMetadata(false);				
 
 	  try {
-	    docMgr.write(jsonDocId, mh, handle, null, null, latestCollectionName, null);		
+	    docMgr.write(jsonDocId, mh, handle, null, null, latestCollectionName);		
 		}
 		catch (com.marklogic.client.FailedRequestException ex) {
 			exceptionThrown = true;		
@@ -2797,7 +2836,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		ConnectedRESTQA.addElementRangeIndexTemporalCollection(dbName, jsonDocId, axisSystemName, axisValidName);
 		
 		// Insert a document called as insertJSONSingleDocument
-		insertJSONSingleDocument(jsonDocId, null);
+		insertJSONSingleDocument(temporalCollectionName, jsonDocId, null);
 		
 		JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
 				"2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON", jsonDocId);
@@ -2810,7 +2849,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 
 		boolean exceptionThrown = false;
 	  try {
-	    docMgr.write(jsonDocId, mh, handle, null, null, jsonDocId, null);		
+	    docMgr.write(jsonDocId, mh, handle, null, null, jsonDocId);		
 		}
 		catch (com.marklogic.client.FailedRequestException ex) {
 			exceptionThrown = true;		
@@ -2836,7 +2875,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		System.out.println("Inside testInserDocumentUsingDocumentURIAsCollectionName");
 		
 		// Insert a document called as insertJSONSingleDocument
-		insertJSONSingleDocument(jsonDocId, null);
+		insertJSONSingleDocument(temporalCollectionName, jsonDocId, null);
 		
 		boolean exceptionThrown = false;
 	  try {
@@ -2866,7 +2905,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 
 		exceptionThrown = false;
 	  try {
-	    docMgr.write("1.json", mh, handle, null, null, jsonDocId, null);		
+	    docMgr.write("1.json", mh, handle, null, null, jsonDocId);		
 		}
 		catch (com.marklogic.client.FailedRequestException ex) {
 			exceptionThrown = true;		
