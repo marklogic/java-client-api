@@ -18,6 +18,8 @@ package com.marklogic.client.impl;
 import java.util.HashMap;
 
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.eval.ServerEvaluationCall;
@@ -131,7 +133,9 @@ public class ServerEvaluationCallImpl
     }
 
     @Override
-    public <T> T evalAs(Class<T> responseType) {
+    public <T> T evalAs(Class<T> responseType) 
+        throws ForbiddenUserException, FailedRequestException
+    {
         if (responseType == null) throw new IllegalArgumentException("responseType cannot be null");
 
         ContentHandle<T> readHandle = handleRegistry.makeHandle(responseType);
@@ -142,7 +146,9 @@ public class ServerEvaluationCallImpl
     }
 
     @Override
-    public <H extends AbstractReadHandle> H eval(H responseHandle) {
+    public <H extends AbstractReadHandle> H eval(H responseHandle) 
+        throws ForbiddenUserException, FailedRequestException
+    {
         EvalResultIterator iterator = eval();
         try {
             if ( iterator == null || iterator.hasNext() == false ) return null;
@@ -151,7 +157,9 @@ public class ServerEvaluationCallImpl
     }
 
     @Override
-    public EvalResultIterator eval() {
+    public EvalResultIterator eval() 
+        throws ForbiddenUserException, FailedRequestException
+    {
         return services.postEvalInvoke(requestLogger, code, modulePath, evalContext,
             vars, namespaceContext, transactionId);
     }

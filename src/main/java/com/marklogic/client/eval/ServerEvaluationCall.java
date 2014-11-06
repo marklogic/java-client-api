@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.eval;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
@@ -37,7 +39,10 @@ public interface ServerEvaluationCall {
     public ServerEvaluationCall transaction(Transaction transaction);
     public ServerEvaluationCall addNamespace(String prefix, String namespaceURI);
     public ServerEvaluationCall namespaceContext(EditableNamespaceContext namespaces);
-    public <T> T evalAs(Class<T> responseType);
-    public <H extends AbstractReadHandle> H eval(H responseHandle);
-    public EvalResultIterator eval();
+    public <T> T evalAs(Class<T> responseType)
+        throws ForbiddenUserException, FailedRequestException;
+    public <H extends AbstractReadHandle> H eval(H responseHandle)
+        throws ForbiddenUserException, FailedRequestException;
+    public EvalResultIterator eval()
+        throws ForbiddenUserException, FailedRequestException;
 }
