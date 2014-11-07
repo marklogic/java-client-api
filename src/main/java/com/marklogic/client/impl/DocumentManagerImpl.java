@@ -568,42 +568,42 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 	@Override
 	public void write(String uri, W contentHandle)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
-		write(uri, null, contentHandle, null, null, null, null);
+		write(uri, null, contentHandle, null, null, null);
 	}
 	@Override
 	public void write(String uri, W contentHandle, ServerTransform transform)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
-		write(uri, null, contentHandle, transform, null, null, null);
+		write(uri, null, contentHandle, transform, null);
 	}
 	@Override
 	public void write(String uri, DocumentMetadataWriteHandle metadata, W contentHandle)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
-		write(uri, metadata, contentHandle, null, null, null, null);
+		write(uri, metadata, contentHandle, null, null);
 	}
 	@Override
 	public void write(String uri, DocumentMetadataWriteHandle metadata, W contentHandle, ServerTransform transform)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
-		write(uri, metadata, contentHandle, transform, null, null, null);
+		write(uri, metadata, contentHandle, transform, null, null);
 	}
 	@Override
 	public void write(String uri, W contentHandle, Transaction transaction)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
-		write(uri, null, contentHandle, null, transaction, null, null);
+		write(uri, null, contentHandle, null, transaction, null);
 	}
 	@Override
 	public void write(String uri, W contentHandle, ServerTransform transform, Transaction transaction)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
-		write(uri, null, contentHandle, transform, transaction, null, null);
+		write(uri, null, contentHandle, transform, transaction, null);
 	}
 	@Override
 	public void write(String uri, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
-		write(uri, metadataHandle, contentHandle, null, transaction, null, null);
+		write(uri, metadataHandle, contentHandle, null, transaction, null);
 	}
 	@Override
 	public void write(String uri, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform, Transaction transaction)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
-		write(uri, metadataHandle, contentHandle, transform, transaction, null, null);
+		write(uri, metadataHandle, contentHandle, transform, transaction, null);
 	}
 
 	@Override
@@ -768,12 +768,12 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 	}
 	@Override
     public void delete(DocumentDescriptor desc) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		delete(desc, null, null, null);
+		delete(desc, null, null);
     }
 	@Override
     public void delete(DocumentDescriptor desc, Transaction transaction)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		delete(desc, transaction, null, null);
+		delete(desc, transaction, null);
 	}
 
 	@Override
@@ -782,7 +782,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 			String temporalCollection)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
 	{
-		delete(new DocumentDescriptorImpl(uri, true), transaction, temporalCollection, null);
+		delete(new DocumentDescriptorImpl(uri, true), transaction, temporalCollection);
 	}
 	@Override
 	public void delete(String uri,
@@ -855,49 +855,49 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 	@Override
 	public DocumentDescriptor create(DocumentUriTemplate template, W contentHandle)
 	throws ForbiddenUserException, FailedRequestException {
-		return create(template, null, contentHandle, null, null, null, null);
+		return create(template, null, contentHandle, null, null, null);
 	}
 	@Override
 	public DocumentDescriptor create(DocumentUriTemplate template, W contentHandle, 
 			ServerTransform transform)
 	throws ForbiddenUserException, FailedRequestException {
-		return create(template, null, contentHandle, transform, null, null, null);
+		return create(template, null, contentHandle, transform, null, null);
 	}
 	@Override
 	public DocumentDescriptor create(DocumentUriTemplate template, W contentHandle,
 			Transaction transaction)
 	throws ForbiddenUserException, FailedRequestException {
-		return create(template, null, contentHandle, null, transaction, null, null);
+		return create(template, null, contentHandle, null, transaction, null);
 	}
 	@Override
 	public DocumentDescriptor create(DocumentUriTemplate template, W contentHandle,
 			ServerTransform transform, Transaction transaction)
 	throws ForbiddenUserException, FailedRequestException {
-		return create(template, null, contentHandle, transform, transaction, null, null);
+		return create(template, null, contentHandle, transform, transaction, null);
 	}
 	@Override
 	public DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle,
 			W contentHandle)
 	throws ForbiddenUserException, FailedRequestException {
-		return create(template, metadataHandle, contentHandle, null, null, null, null);
+		return create(template, metadataHandle, contentHandle, null, null, null);
 	}
 	@Override
 	public DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle,
 			W contentHandle, ServerTransform transform)
 	throws ForbiddenUserException, FailedRequestException {
-		return create(template, metadataHandle, contentHandle, transform, null, null, null);
+		return create(template, metadataHandle, contentHandle, transform, null, null);
 	}
 	@Override
 	public DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle,
 			W contentHandle, Transaction transaction)
 	throws ForbiddenUserException, FailedRequestException {
-		return create(template, metadataHandle, contentHandle, null, transaction, null, null);
+		return create(template, metadataHandle, contentHandle, null, transaction, null);
 	}
 	@Override
 	public DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle,
 			W contentHandle, ServerTransform transform, Transaction transaction)
 	throws ForbiddenUserException, FailedRequestException {
-		return create(template, metadataHandle, contentHandle, transform, transaction, null, null);
+		return create(template, metadataHandle, contentHandle, transform, transaction, null);
 	}
 	@Override
   public DocumentDescriptor create(DocumentUriTemplate template,
