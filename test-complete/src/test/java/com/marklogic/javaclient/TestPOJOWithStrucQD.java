@@ -286,7 +286,7 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 
 		assertEquals("Total search results resulted are ",6,actNode.asInt() );
 	}
-	@Test
+	@Test(expected = ClassCastException.class)
 	public void testPOJOSearchWithRawXMLStructQD() {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
@@ -337,7 +337,7 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 		assertEquals("page number after the loop",1,p.getPageNumber());
 		assertEquals("total no of pages",1,p.getTotalPages());
 	}
-	@Test
+	@Test(expected = ClassCastException.class)
 	public void testPOJOSearchWithRawJSONStructQD() {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
