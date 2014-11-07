@@ -573,12 +573,12 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 	@Override
 	public void write(String uri, W contentHandle, ServerTransform transform)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
-		write(uri, null, contentHandle, transform, null);
+		write(uri, null, contentHandle, transform, null, null);
 	}
 	@Override
 	public void write(String uri, DocumentMetadataWriteHandle metadata, W contentHandle)
 	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException {
-		write(uri, metadata, contentHandle, null, null);
+		write(uri, metadata, contentHandle, null, null, null);
 	}
 	@Override
 	public void write(String uri, DocumentMetadataWriteHandle metadata, W contentHandle, ServerTransform transform)
