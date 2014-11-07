@@ -246,6 +246,29 @@ public abstract class ConnectedRESTQA {
 		}
 	}
 	/*
+	 * Associate REST server with default user 
+	 * this is created for the sake of runtime DB selection
+	 */
+	public static void associateRESTServerWithDefaultUser(String restServerName,String userName,String authType)throws Exception{
+		DefaultHttpClient client = new DefaultHttpClient();
+
+		client.getCredentialsProvider().setCredentials(
+				new AuthScope("localhost", 8002),
+				new UsernamePasswordCredentials("admin", "admin"));
+		String  body = "{ \"default-user\":\""+userName+"\",\"authentication\": \""+authType+"\",\"group-name\": \"Default\"}";
+
+		HttpPut put = new HttpPut("http://localhost:8002/manage/v2/servers/"+restServerName+"/properties?server-type=http");
+		put.addHeader("Content-type", "application/json");
+		put.setEntity(new StringEntity(body));
+
+		HttpResponse response2 = client.execute(put);
+		HttpEntity respEntity = response2.getEntity();
+		if(respEntity != null){
+			String content =  EntityUtils.toString(respEntity);
+			System.out.println(content);
+		}
+	}
+	/*
 	 * Creating RESTServer With default content and module database
 	 */
 	public static void createRESTServerWithDB(String restServerName,int restPort)	{
