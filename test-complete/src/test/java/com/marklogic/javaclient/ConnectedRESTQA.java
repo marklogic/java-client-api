@@ -1593,9 +1593,14 @@ public abstract class ConnectedRESTQA {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode rootNode = mapper.createObjectNode();
 		rootNode.put( "lsqt-enabled", enable);
+		
+		// Set system time values
+		ObjectNode automation = mapper.createObjectNode();
+		automation.put("enabled", true);
+		
+		rootNode.set("automation", automation);
 
 		System.out.println(rootNode.toString());
-
 
 		DefaultHttpClient client = new DefaultHttpClient();
 		client.getCredentialsProvider().setCredentials(
