@@ -91,8 +91,8 @@ public abstract class ConnectedRESTQA {
 		if(!jnode.isNull()){
 
 			if(jnode.has(propName)){
-//				System.out.println(jnode.withArray(propName).get(0).asText());
-			return jnode.withArray(propName).get(0).asText();
+			System.out.println("Bootstrap Host: " + jnode.withArray(propName).get(0).get("bootstrap-host-name").asText());
+			return jnode.withArray(propName).get(0).get("bootstrap-host-name").asText();
 			}
 			else{
 				System.out.println("Missing "+propName+" field from properties end point so sending java conanical host name\n"+jnode.toString());
@@ -233,6 +233,29 @@ public abstract class ConnectedRESTQA {
 				new AuthScope("localhost", 8002),
 				new UsernamePasswordCredentials("admin", "admin"));
 		String  body = "{\"content-database\": \""+dbName+"\",\"group-name\": \"Default\"}";
+
+		HttpPut put = new HttpPut("http://localhost:8002/manage/v2/servers/"+restServerName+"/properties?server-type=http");
+		put.addHeader("Content-type", "application/json");
+		put.setEntity(new StringEntity(body));
+
+		HttpResponse response2 = client.execute(put);
+		HttpEntity respEntity = response2.getEntity();
+		if(respEntity != null){
+			String content =  EntityUtils.toString(respEntity);
+			System.out.println(content);
+		}
+	}
+	/*
+	 * Associate REST server with default user 
+	 * this is created for the sake of runtime DB selection
+	 */
+	public static void associateRESTServerWithDefaultUser(String restServerName,String userName,String authType)throws Exception{
+		DefaultHttpClient client = new DefaultHttpClient();
+
+		client.getCredentialsProvider().setCredentials(
+				new AuthScope("localhost", 8002),
+				new UsernamePasswordCredentials("admin", "admin"));
+		String  body = "{ \"default-user\":\""+userName+"\",\"authentication\": \""+authType+"\",\"group-name\": \"Default\"}";
 
 		HttpPut put = new HttpPut("http://localhost:8002/manage/v2/servers/"+restServerName+"/properties?server-type=http");
 		put.addHeader("Content-type", "application/json");
@@ -1559,6 +1582,56 @@ public abstract class ConnectedRESTQA {
 		post.setEntity(new StringEntity(rootNode.toString()));
 
 		HttpResponse response = client.execute(post);
+		HttpEntity respEntity = response.getEntity();
+		if( response.getStatusLine().getStatusCode() == 400)
+		{
+			HttpEntity entity = response.getEntity();
+			String responseString = EntityUtils.toString(entity, "UTF-8");
+			System.out.println(responseString);
+		}
+		else if (respEntity != null) {
+			// EntityUtils to get the response content
+			String content =  EntityUtils.toString(respEntity);
+			System.out.println(content);
+			
+			System.out.println("Temporal collection: " + collectionName + " created");
+			System.out.println("==============================================================");
+		}
+		else {
+			System.out.println("No Proper Response");
+		}
+
+	}
+
+	/*
+	 * Create a temporal collection
+	 * @dbName Database Name
+	 * @collectionName Collection Name (name of temporal collection that needs to be created)
+	 * @systemAxisName Name of System axis
+	 * @validAxisName Name of Valid axis
+	 */
+	public static void updateTemporalCollectionForLSQT(String dbName, String collectionName, boolean enable) 
+			throws Exception
+	{
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode rootNode = mapper.createObjectNode();
+		rootNode.put( "lsqt-enabled", enable);
+
+		System.out.println(rootNode.toString());
+
+
+		DefaultHttpClient client = new DefaultHttpClient();
+		client.getCredentialsProvider().setCredentials(
+				new AuthScope("localhost", 8002),
+				new UsernamePasswordCredentials("admin", "admin"));
+
+		HttpPut put = new HttpPut("http://localhost:8002/manage/v2/databases/"+ dbName + "/temporal/collections/lsqt/properties?collection=" + collectionName);
+
+		put.addHeader("Content-type", "application/json");
+		put.addHeader("accept", "application/json");
+		put.setEntity(new StringEntity(rootNode.toString()));
+
+		HttpResponse response = client.execute(put);
 		HttpEntity respEntity = response.getEntity();
 		if( response.getStatusLine().getStatusCode() == 400)
 		{
