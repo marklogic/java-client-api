@@ -181,7 +181,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
 
     @Override
     public long count(String... collections) {
-        return count((PojoQueryDefinition) null, null);
+        return count(collections, null);
     }
 
     @Override
