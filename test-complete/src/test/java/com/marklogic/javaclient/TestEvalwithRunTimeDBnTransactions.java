@@ -69,7 +69,7 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 	public void tearDown() throws Exception {
 		client.release();
 	}
-//issue 169, loop the eval query more than 150 times and should not stuck
+// loop the eval query more than 150 times and should not stuck
 	@Test
 	public void test1MultipleEvalQueries() throws Exception {
 	
@@ -84,7 +84,8 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 	    docMgr.write("/binary4mbdoc",handle1);
 	    String query = "declare variable $myInteger as xs:integer external;"
 	    		+ "(fn:doc()/binary(),$myInteger,xdmp:database-name(xdmp:database()))";
-	    for(int i=0 ; i<=20;i++){
+	   long sizeOfBinary =docMgr.read("/binary4mbdoc",new InputStreamHandle()).getByteLength();
+	    for(int i=0 ; i<=330;i++){
 	    	ServerEvaluationCall evl= client.newServerEval().xquery(query);
 	    	evl.addVariable("myInteger", (int)i);
 	    	EvalResultIterator evr = evl.eval();
@@ -94,7 +95,7 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 					 assertEquals("itration number",i,er.getNumber().intValue());
 				 }else if(er.getType().equals(Type.BINARY)){
 					 FileHandle readHandle1 = new FileHandle();
-					 assertEquals("size of the binary ",er.get(readHandle1).get().length(),docMgr.read("/binary4mbdoc",new InputStreamHandle()).getByteLength());
+					 assertEquals("size of the binary ",er.get(readHandle1).get().length(),sizeOfBinary);
 					 
 				 }else if(er.getType().equals(Type.STRING)){
 					 assertEquals("database name ","TestEvalXqueryWithTransDB",er.getString());
