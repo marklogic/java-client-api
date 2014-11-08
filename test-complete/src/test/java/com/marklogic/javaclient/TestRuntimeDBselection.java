@@ -56,9 +56,9 @@ public class TestRuntimeDBselection extends BasicJavaClientREST {
 		associateRESTServerWithDefaultUser(restServerName,"nobody","digest");
 	}
 	//Issue 184 exists 
-	@Test(expected=FailedRequestException.class)
+	@Test
 	public void testRuntimeDBclientWithDifferentAuthType() throws Exception {
-		
+		associateRESTServerWithDefaultUser(restServerName,"nobody","basic");
 		client = DatabaseClientFactory.newClient("localhost", restPort,dbName,"eval-user","x",Authentication.BASIC);
 		String insertJSON = "xdmp:document-insert(\"test2.json\",object-node {\"test\":\"hello\"})";
 		client.newServerEval().xquery(insertJSON).eval();
@@ -70,7 +70,7 @@ public class TestRuntimeDBselection extends BasicJavaClientREST {
 		int response2 = client.newServerEval().xquery(query1).eval().next().getNumber().intValue();
 		assertEquals("count of documents ",0,response2);
 		client.release();
-		
+		associateRESTServerWithDefaultUser(restServerName,"nobody","digest");
 	}
 
 }
