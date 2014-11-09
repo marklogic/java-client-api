@@ -57,7 +57,7 @@ public abstract class ConnectedRESTQA {
 					new UsernamePasswordCredentials("admin", "admin"));
 
 			HttpPost post = new HttpPost("http://localhost:8002"+ "/manage/v2/databases?format=json");
-			String JSONString = "[{\"name\":\""+ dbName + "\"}]";
+			String JSONString = "[{\"database-name\":\""+ dbName + "\"}]";
 
 			post.addHeader("Content-type", "application/json");
 			post.setEntity( new StringEntity(JSONString));
@@ -364,7 +364,7 @@ public abstract class ConnectedRESTQA {
 				ArrayNode roleArray = mapper.createArrayNode();
 				ArrayNode privArray = mapper.createArrayNode();
 				ArrayNode permArray = mapper.createArrayNode();
-				mainNode.put("name",roleName);
+				mainNode.put("role-name",roleName);
 				mainNode.put("description", "role discription");
 				
 				for(String rolename: roleNames)
@@ -434,7 +434,7 @@ public abstract class ConnectedRESTQA {
 				ObjectNode mainNode = mapper.createObjectNode();
 				//			ObjectNode childNode = mapper.createObjectNode();
 				ArrayNode childArray = mapper.createArrayNode();
-				mainNode.put("name",usrName);
+				mainNode.put("user-name",usrName);
 				mainNode.put("description", "user discription");
 				mainNode.put("password", pass);
 				for(String rolename: roleNames)
@@ -531,7 +531,7 @@ public abstract class ConnectedRESTQA {
 				ObjectNode mainNode = mapper.createObjectNode();
 				//			ObjectNode childNode = mapper.createObjectNode();
 				ArrayNode childArray = mapper.createArrayNode();
-				mainNode.put("name",usrName);
+				mainNode.put("user-name",usrName);
 				mainNode.put("description", "user discription");
 				mainNode.put("password", pass);
 				for(String rolename: roleNames)
