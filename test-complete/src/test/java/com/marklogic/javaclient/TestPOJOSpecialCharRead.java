@@ -471,7 +471,8 @@ public class TestPOJOSpecialCharRead extends BasicJavaClientREST {
 		// Delete the object
 		pojoReposProducts.delete(longId);
 		
-		// Validate the artifact read back.
+		// Validate the artifact read back. ResourceNotFoundException will be thrown.
+		@SuppressWarnings("unused")
 		Artifact artifact = pojoReposProducts.read(longId);
 	}
 	
