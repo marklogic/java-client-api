@@ -990,6 +990,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	public void testSystemTime() throws Exception { 
 
 		System.out.println("Inside testSystemTime");
+		ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName, temporalLsqtCollectionName, true);
 		
 		String docId = "javaSingleJSONDoc.json";
 		
@@ -2066,6 +2067,7 @@ public class TestBiTemporal extends BasicJavaClientREST{
 	public void testSystemTimeUsingInvalidTime() throws Exception { 
 
 		System.out.println("Inside testSystemTimeUsingInvalidTime");
+		ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName, temporalLsqtCollectionName, true);
 		
 		String docId = "javaSingleJSONDoc.json";
 		
@@ -2105,11 +2107,13 @@ public class TestBiTemporal extends BasicJavaClientREST{
 			
 			exceptionThrown = true;
 		}		
+		
+		assertTrue("Exception not thrown for invalid extension", exceptionThrown);
 	}
 	
-	// @Test
+	@Test
 	// BUG: REST API bug around transactions fails this test
-	public void TransactionCommit() throws Exception { 
+	public void testTransactionCommit() throws Exception { 
 
 		System.out.println("Inside testTransactionCommit");
 		
@@ -2117,6 +2121,8 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		
 		Transaction transaction = client.openTransaction("Transaction for BiTemporal");
 		try {					
+		  insertJSONSingleDocument(temporalCollectionName, docId, null, transaction, null);
+		  
 	    // Verify that the document was inserted 
 			JSONDocumentManager docMgr = client.newJSONDocumentManager();
 			DocumentPage readResults = docMgr.read(transaction, docId); 
@@ -2138,13 +2144,14 @@ public class TestBiTemporal extends BasicJavaClientREST{
 			}
 			
 			// Make sure document is not visible to any other transaction
-			readResults = docMgr.read(docId); 
-			System.out.println("Number of results = " + readResults.size());
-			if (readResults.size() != 0) {
-				transaction.rollback();
-				
-				assertEquals("Wrong number of results", 1, readResults.size());
+			boolean exceptionThrown = false;
+			try {
+			  readResults = docMgr.read(docId); 
 			}
+			catch (Exception ex) {
+				exceptionThrown = true;
+			}
+			assertTrue("Exception not thrown during read using no transaction handle", exceptionThrown);	
 			
 		  updateJSONSingleDocument(temporalCollectionName, docId, transaction, null);		
 	
@@ -2229,9 +2236,9 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		}
 	}
 	
-	// @Test
+	@Test
 	// BUG: REST API bug around transactions fails this test
-	public void TransactionRollback() throws Exception { 
+	public void testTransactionRollback() throws Exception { 
 
 		System.out.println("Inside testTransaction");
 		
@@ -2295,10 +2302,15 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		transaction.rollback();
 
     // Verify that the document is not there after rollback
-		readResults = docMgr.read(docId); 
+		boolean exceptionThrown = false;
+		try {
+		  readResults = docMgr.read(docId); 
+		}
+		catch (Exception ex) {
+			exceptionThrown = true;
+		}
 
-		System.out.println("Number of results = " + readResults.size());
-		assertEquals("Wrong number of results", 0, readResults.size());
+		assertTrue("Exception not thrown during read on non-existing uri", exceptionThrown);	
 		
 		//=======================================================================
 		// Now try rollback with delete
@@ -2363,10 +2375,13 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		transaction.rollback();
 		
 	  // Verify that the document was rolled back and count is 0
-		readResults = docMgr.read(docId); 
-
-		System.out.println("Number of results = " + readResults.size());
-		assertEquals("Wrong number of results", 0, readResults.size());
+		exceptionThrown = false;
+		try {
+		  readResults = docMgr.read(docId); 
+		}
+		catch (Exception ex) {
+			exceptionThrown = true;
+		}
 		
 		System.out.println("Done");
 	}
@@ -2541,12 +2556,13 @@ public class TestBiTemporal extends BasicJavaClientREST{
 		// Read documents based on document URI and ALN Contains. We are just looking for count of documents to be correct
 
 		String docId = "javaSingleJSONDoc.json";
+		ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName, temporalLsqtCollectionName, true);
 		
 		Calendar insertTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:01");
-		insertJSONSingleDocument(temporalCollectionName, docId, null, null, insertTime);
+		insertJSONSingleDocument(temporalLsqtCollectionName, docId, null, null, insertTime);
 
 		Calendar updateTime = DatatypeConverter.parseDateTime("2010-01-01T00:00:01");
-		updateJSONSingleDocument(temporalCollectionName, docId, null, updateTime);
+		updateJSONSingleDocument(temporalLsqtCollectionName, docId, null, updateTime);
 		
 		// Fetch documents associated with a search term (such as XML) in Address element 
 		QueryManager queryMgr = client.newQueryManager();
@@ -2628,95 +2644,88 @@ public class TestBiTemporal extends BasicJavaClientREST{
 
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		
-		ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName, temporalCollectionName, true);
+		ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName, temporalLsqtCollectionName, true);
 		
-		try {
-			// Read documents based on document URI and ALN Contains. We are just looking for count of documents to be correct
-			String docId = "javaSingleJSONDoc.json";
-			
-			Calendar insertTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:01");
-			insertJSONSingleDocument(temporalCollectionName, docId, null, null, insertTime);
-	
-			Calendar updateTime = DatatypeConverter.parseDateTime("2010-01-01T00:00:01");
-			updateJSONSingleDocument(temporalCollectionName, docId, null, updateTime);
-			
-			// Fetch documents associated with a search term (such as XML) in Address element 
-			QueryManager queryMgr = client.newQueryManager();
-			StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
-	
-			Calendar queryTime = DatatypeConverter.parseDateTime("2007-01-01T00:00:01");
-			StructuredQueryDefinition periodQuery = sqb.temporalLsqtQuery(temporalCollectionName, 
-					queryTime, 0, new String[]{});
-			
-			long start = 1;
-			JSONDocumentManager docMgr = client.newJSONDocumentManager();
-			docMgr.setMetadataCategories(Metadata.ALL);	// Get all metadata
-			DocumentPage termQueryResults = docMgr.search(periodQuery, start);
-			
-			long count = 0;
-	    while (termQueryResults.hasNext()) {
-	    	++count;
-	    	DocumentRecord record = termQueryResults.next();
-	  		System.out.println("URI = " + record.getUri());
-	  		
-	  		DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
-	  		record.getMetadata(metadataHandle);
-	  		Iterator<String> resCollections = metadataHandle.getCollections().iterator();
-	  		while (resCollections.hasNext()) {
-	  			System.out.println("Collection = " + resCollections.next()); 
-	  		}
-	
-	  		if (record.getFormat() == Format.XML) {
-	  			DOMHandle recordHandle = new DOMHandle(); 				
-	  			record.getContent (recordHandle);
-		  	  System.out.println("Content = " + recordHandle.toString());   		
-	  		}
-	  		else {
-		  		JacksonDatabindHandle<ObjectNode> recordHandle =  new JacksonDatabindHandle<ObjectNode>(ObjectNode.class);  				
-		  		record.getContent (recordHandle);
-		  	  System.out.println("Content = " + recordHandle.toString()); 
-	
-		  	  JsonFactory factory = new JsonFactory(); 
-		      ObjectMapper mapper = new ObjectMapper(factory);
-		      TypeReference<HashMap<String,Object>> typeRef 
-		              = new TypeReference<HashMap<String,Object>>() {};
-	
-		      HashMap<String,Object> docObject = mapper.readValue(recordHandle.toString(), typeRef); 
-		      
-		      @SuppressWarnings("unchecked")
-		      HashMap<String, Object> systemNode = (HashMap<String, Object>)(docObject.get(systemNodeName));
-		      
-		      String systemStartDate = (String)systemNode.get(systemStartERIName);
-		      String systemEndDate = (String)systemNode.get(systemEndERIName);
-		      System.out.println("systemStartDate = " + systemStartDate);
-		      System.out.println("systemEndDate = " + systemEndDate);
-	
-		      @SuppressWarnings("unchecked")
-		      HashMap<String, Object> validNode = (HashMap<String, Object>)(docObject.get(validNodeName));
-		      
-		      String validStartDate = (String)validNode.get(validStartERIName);
-		      String validEndDate = (String)validNode.get(validEndERIName);
-		      System.out.println("validStartDate = " + validStartDate);
-		      System.out.println("validEndDate = " + validEndDate);
-	
-		      // assertTrue("Valid start date check failed", 
-		      //		(validStartDate.equals("2008-12-31T23:59:59") && validEndDate.equals("2011-12-31T23:59:59")) ||
-		      //		(validStartDate.equals("2003-01-01T00:00:00") && validEndDate.equals("2008-12-31T23:59:59")) ||
-		      //		(validStartDate.equals("2001-01-01T00:00:00") && validEndDate.equals("2003-01-01T00:00:00")));	     
-	  		}
-	    }
-			
-	    // BUG. I believe Java API is doing a get instead of a POST that returns all documents in doc uri collection
-			System.out.println("Number of results using SQB = " + count);
-			assertEquals("Wrong number of results", 3, count);
-	  }
-		catch (Exception ex) {
-			throw ex;
-		}
+		// Read documents based on document URI and ALN Contains. We are just looking for count of documents to be correct
+		String docId = "javaSingleJSONDoc.json";
 		
-		finally {
-			ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName, temporalCollectionName, false);
-		}
+		Calendar insertTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:01");
+		insertJSONSingleDocument(temporalLsqtCollectionName, docId, null, null, insertTime);
+
+		Calendar updateTime = DatatypeConverter.parseDateTime("2010-01-01T00:00:01");
+		updateJSONSingleDocument(temporalLsqtCollectionName, docId, null, updateTime);
+		
+		Thread.sleep(2000);
+		
+		// Fetch documents associated with a search term (such as XML) in Address element 
+		QueryManager queryMgr = client.newQueryManager();
+		StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+
+		Calendar queryTime = DatatypeConverter.parseDateTime("2007-01-01T00:00:01");
+		StructuredQueryDefinition periodQuery = sqb.temporalLsqtQuery(temporalLsqtCollectionName, 
+				queryTime, 0, new String[]{});
+		
+		long start = 1;
+		JSONDocumentManager docMgr = client.newJSONDocumentManager();
+		docMgr.setMetadataCategories(Metadata.ALL);	// Get all metadata
+		DocumentPage termQueryResults = docMgr.search(periodQuery, start);
+		
+		long count = 0;
+    while (termQueryResults.hasNext()) {
+    	++count;
+    	DocumentRecord record = termQueryResults.next();
+  		System.out.println("URI = " + record.getUri());
+  		
+  		DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+  		record.getMetadata(metadataHandle);
+  		Iterator<String> resCollections = metadataHandle.getCollections().iterator();
+  		while (resCollections.hasNext()) {
+  			System.out.println("Collection = " + resCollections.next()); 
+  		}
+
+  		if (record.getFormat() == Format.XML) {
+  			DOMHandle recordHandle = new DOMHandle(); 				
+  			record.getContent (recordHandle);
+	  	  System.out.println("Content = " + recordHandle.toString());   		
+  		}
+  		else {
+	  		JacksonDatabindHandle<ObjectNode> recordHandle =  new JacksonDatabindHandle<ObjectNode>(ObjectNode.class);  				
+	  		record.getContent (recordHandle);
+	  	  System.out.println("Content = " + recordHandle.toString()); 
+
+	  	  JsonFactory factory = new JsonFactory(); 
+	      ObjectMapper mapper = new ObjectMapper(factory);
+	      TypeReference<HashMap<String,Object>> typeRef 
+	              = new TypeReference<HashMap<String,Object>>() {};
+
+	      HashMap<String,Object> docObject = mapper.readValue(recordHandle.toString(), typeRef); 
+	      
+	      @SuppressWarnings("unchecked")
+	      HashMap<String, Object> systemNode = (HashMap<String, Object>)(docObject.get(systemNodeName));
+	      
+	      String systemStartDate = (String)systemNode.get(systemStartERIName);
+	      String systemEndDate = (String)systemNode.get(systemEndERIName);
+	      System.out.println("systemStartDate = " + systemStartDate);
+	      System.out.println("systemEndDate = " + systemEndDate);
+
+	      @SuppressWarnings("unchecked")
+	      HashMap<String, Object> validNode = (HashMap<String, Object>)(docObject.get(validNodeName));
+	      
+	      String validStartDate = (String)validNode.get(validStartERIName);
+	      String validEndDate = (String)validNode.get(validEndERIName);
+	      System.out.println("validStartDate = " + validStartDate);
+	      System.out.println("validEndDate = " + validEndDate);
+
+	      // assertTrue("Valid start date check failed", 
+	      //		(validStartDate.equals("2008-12-31T23:59:59") && validEndDate.equals("2011-12-31T23:59:59")) ||
+	      //		(validStartDate.equals("2003-01-01T00:00:00") && validEndDate.equals("2008-12-31T23:59:59")) ||
+	      //		(validStartDate.equals("2001-01-01T00:00:00") && validEndDate.equals("2003-01-01T00:00:00")));	     
+  		}
+    }
+		
+    // BUG. I believe Java API is doing a get instead of a POST that returns all documents in doc uri collection
+		System.out.println("Number of results using SQB = " + count);
+		assertEquals("Wrong number of results", 1, count);
 	}
 
 	@Test
@@ -2918,146 +2927,5 @@ public class TestBiTemporal extends BasicJavaClientREST{
 
 		ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents", jsonDocId);
 		assertTrue("Exception not thrown for invalid temporal collection", exceptionThrown);	
-	}
-	
-	public void bulkWrite() throws Exception { 
-		
-    GenericDocumentManager docMgr = client.newDocumentManager();
-    // docMgr.setMetadataCategories(Metadata.ALL);
-		DocumentWriteSet writeset = docMgr.newWriteSet();
-
-		// put meta-data
-		DocumentMetadataHandle mh = setMetadata(false);
-		writeset.addDefault(mh);	
-		
-		// Setup for JSON document
-		/**
-		 * 
-		 {
-		 		"System": {
-		 			systemStartERIName : "",
-		 			systemEndERIName : "",
-		 		},
-		 		"Valid": {
-		 			validStartERIName: "2001-01-01T00:00:00",
-		 			validEndERIName: "2011-12-31T59:59:59"
-		 		},
-		 		"Address": "999 Skyway Park",
-		 		"uri": "javaDoc1.json"
-		 }
-		 */
-		
-		String docId[] = { "javaDoc1.json",  "javaDoc2.xml"};
-		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode rootNode = mapper.createObjectNode();
-
-		// Set system time values
-		ObjectNode system = mapper.createObjectNode();
-		
-		system.put(systemStartERIName, "");
-		system.put(systemEndERIName, "");
-		rootNode.set(systemNodeName, system);
-
-		// Set valid time values
-		ObjectNode valid = mapper.createObjectNode();
-		
-		valid.put(validStartERIName, "2001-01-01T00:00:00");
-		valid.put(validEndERIName, "2011-12-31T59:59:59");
-		rootNode.set(validNodeName, valid);
-		
-		// Set Address
-		rootNode.put(addressNodeName, "999 Skyway Park");
-		
-		// Set uri
-		rootNode.put(uriNodeName, docId[0]);
-		
-		System.out.println(rootNode.toString());
-
-		JacksonDatabindHandle<ObjectNode> handle1 = new JacksonDatabindHandle<ObjectNode>(ObjectNode.class).withFormat(Format.JSON);		
-		handle1.set(rootNode);
-	  writeset.add(docId[0], handle1);
-	  
-		// Setup for XML document
-		/**
-		 <root>
-		   <system>
-		     <systemStartERIName></systemStartERIName>
-		     <systemEndERIName></systemEndERIName>
-		   </system>
-		   <Valid>
-		     <validStartERIName>2001-01-01T00:00:00</systemStartERIName>
-		     <validStartERIName>2011-12-31T59:59:59</systemEndERIName>
-		   </Valid>
-		   </Address>888 SKyway Park"</Address>
-		   <uri>javaDoc2.xml</uri>
-		 </root>
-		 */
-		
-		Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-		Element root = domDocument.createElement("root");
-		
-		// System start and End time
-		Node systemNode = root.appendChild(domDocument.createElement("system"));
-		systemNode.appendChild(domDocument.createElement(systemStartERIName));
-		systemNode.appendChild(domDocument.createElement(systemEndERIName));
-
-		// Valid start and End time
-		Node validNode = root.appendChild(domDocument.createElement("valid"));
-		
-		Node validStartNode = validNode.appendChild(domDocument.createElement(validStartERIName));
-		validStartNode.appendChild(domDocument.createTextNode("2001-01-01T00:00:00"));
-		validNode.appendChild(validStartNode);
-
-		Node validEndNode = validNode.appendChild(domDocument.createElement(validEndERIName));
-		validEndNode.appendChild(domDocument.createTextNode("2011-12-31T59:59:59"));
-		validNode.appendChild(validEndNode);
-		
-		// Address
-		Node addressNode = root.appendChild(domDocument.createElement("Address"));
-		addressNode.appendChild(domDocument.createTextNode("888 SKyway Park"));
-
-		// Address
-		Node uriNode = root.appendChild(domDocument.createElement("uri"));
-		uriNode.appendChild(domDocument.createTextNode(docId[1]));
-		domDocument.appendChild(root);
-
-		String domString = ((DOMImplementationLS) DocumentBuilderFactory
-				.newInstance()
-				.newDocumentBuilder()
-				.getDOMImplementation()
-				).createLSSerializer().writeToString(domDocument);
-
-		System.out.println(domString);
-
-		writeset.add(docId[1], new DOMHandle().with(domDocument));
-    docMgr.write(writeset);
-    
-				
-		/***
-		assertTrue("Did not return a iPhone 6", product1.getName().equalsIgnoreCase("iPhone 6"));
-		assertTrue("Did not return a Mobile Phone", product1.getIndustry().equalsIgnoreCase("Mobile Phone"));
-		assertTrue("Did not return a Mobile Phone", product1.getDescription().equalsIgnoreCase("New iPhone 6"));
-		
-		docMgr.readMetadata(docId[0], mhRead);
-		validateMetadata(mhRead);					
-		
-		docMgr.read(docId[1],jacksonDBReadHandle);
-		Product product2 = (Product) jacksonDBReadHandle.get();
-		assertTrue("Did not return a iMac", product2.getName().equalsIgnoreCase("iMac"));
-		assertTrue("Did not return a Desktop", product2.getIndustry().equalsIgnoreCase("Desktop"));
-		assertTrue("Did not return a Air Book OS X", product2.getDescription().equalsIgnoreCase("Air Book OS X"));
-		
-		docMgr.readMetadata(docId[1], mhRead);
-		validateMetadata(mhRead);			
-		
-		docMgr.read(docId[2], jacksonDBReadHandle);
-		Product product3 = (Product) jacksonDBReadHandle.get();
-		assertTrue("Did not return a iPad", product3.getName().equalsIgnoreCase("iPad"));
-		assertTrue("Did not return a Tablet", product3.getIndustry().equalsIgnoreCase("Tablet"));
-		assertTrue("Did not return a iPad Mini", product3.getDescription().equalsIgnoreCase("iPad Mini"));
-		
-		docMgr.readMetadata(docId[2], mhRead);
-		validateMetadata(mhRead);		
-		***/
 	}
 }

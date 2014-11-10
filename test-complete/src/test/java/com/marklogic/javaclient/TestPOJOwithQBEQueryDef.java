@@ -45,7 +45,6 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 		//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		System.out.println("In setup");
 		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
-
 		BasicJavaClientREST.addRangeElementIndex(dbName, "long", "", "inventory");
 		BasicJavaClientREST.addRangeElementIndex(dbName, "long", "", "id");
 	}
@@ -126,7 +125,7 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 			}
 		}
 	}
-	@Test
+	@Test(expected=ClassCastException.class)
 	public void testPOJOqbeSearchWithoutSearchHandle() {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
@@ -165,7 +164,7 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 		assertEquals("page number after the loop",4,p.getPageNumber());
 		assertEquals("total no of pages",4,p.getTotalPages());
 	}
-	@Test
+	@Test(expected=ClassCastException.class)
 	public void testPOJOqbeSearchWithSearchHandle() {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
@@ -217,7 +216,7 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 		assertEquals("page number after the loop",5,p.getPageNumber());
 		assertEquals("total no of pages",5,p.getTotalPages());
 	}
-	@Test
+	@Test(expected=ClassCastException.class)
 	public void testPOJOCombinedSearchWithJacksonHandle() {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
@@ -262,7 +261,7 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 		assertEquals("total no of pages",1,p.getTotalPages());
 	}
 	//Searching for Id as Number in JSON using range query 
-	@Test
+	@Test(expected=ClassCastException.class)
 	public void testPOJOcombinedSearchforNumberWithStringHandle() throws JsonProcessingException, IOException {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
