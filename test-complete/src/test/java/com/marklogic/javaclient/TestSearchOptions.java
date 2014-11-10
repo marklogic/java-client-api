@@ -125,9 +125,9 @@ public class TestSearchOptions extends BasicJavaClientREST {
 
 		// get the result
 		Document resultDoc = resultsHandle.get();
-		//System.out.println(convertXMLDocumentToString(resultDoc));
+		System.out.println(convertXMLDocumentToString(resultDoc));
 
-		assertXpathEvaluatesTo("3", "string(//*[local-name()='response']//@*[local-name()='total'])", resultDoc);
+		assertXpathEvaluatesTo("1", "string(//*[local-name()='response']//@*[local-name()='start'])", resultDoc);
 		assertXpathExists("//*[local-name()='metrics']", resultDoc);
 
 		// release client
