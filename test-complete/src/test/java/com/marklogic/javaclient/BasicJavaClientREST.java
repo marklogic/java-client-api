@@ -675,6 +675,49 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 	    
 	    docStream.close();
 	}
+	
+	  /* Read a binary file, and return its contents as an array of bytes.
+	   *
+	   */ 
+	
+	  byte[] readBinaryFile(String binaryFile)
+	  {
+		System.out.println("Read binary file : " + binaryFile);
+	    
+		File file = new File(binaryFile);
+	    System.out.println("File size is : " + file.length());
+	    
+	    byte[] byteArray = new byte[(int)file.length()];
+	    
+	    try {
+	      InputStream input = null;
+	      try {
+	        int totalBytesRead = 0;
+	        input = new BufferedInputStream(new FileInputStream(file));
+	        while(totalBytesRead < byteArray.length){
+	          int bytesRemaining = byteArray.length - totalBytesRead;
+	          //input.read() returns -1, 0, or more :
+	          int bytesRead = input.read(byteArray, totalBytesRead, bytesRemaining); 
+	          if (bytesRead > 0){
+	            totalBytesRead = totalBytesRead + bytesRead;
+	          }
+	        }
+	        
+	        System.out.println("Number of bytes read: " + totalBytesRead);
+	      }
+	      finally {
+	    	  System.out.println("Closing input stream.");
+	        input.close();
+	      }
+	    }
+	    catch (FileNotFoundException fnfex) {
+	    	 System.out.println("File not found Exception.");
+	    }
+	    catch (IOException ioex) {
+	    	 System.out.println(ioex);
+	    }
+	    return byteArray;
+	  }
 
 	/**
 	 * Read document using ReaderHandle
@@ -1070,19 +1113,30 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 	{   
 	    // create doc manager
 	    DocumentManager docMgr = null;
+	    byte[] contentInByte = null;
+	    // variable to hold QA data directory path
+	    String dirpath = new String("src/test/java/com/marklogic/javaclient/data/");
+	    
 	    docMgr = documentManagerSelector(client, docMgr, type);	
-				
-	    // acquire the content
-	    FileReader content = new FileReader("src/test/java/com/marklogic/javaclient/data/" + filename);
-	    //String contentInString = new String(content);
-	    BufferedReader br = new BufferedReader(content);
-	    String readContent = "";
-	    String line = null;
-	    while ((line = br.readLine()) != null)
+	    
+	    if(type.equalsIgnoreCase("BINARY"))
+	    {
+	    	contentInByte = readBinaryFile(dirpath + filename);
+	    }
+	    else
+	    {				
+	    	// acquire the content
+	    	FileReader content = new FileReader(dirpath + filename);
+	    	//String contentInString = new String(content);
+	    	BufferedReader br = new BufferedReader(content);
+	    	String readContent = "";
+	    	String line = null;
+	    	while ((line = br.readLine()) != null)
 	    		readContent = readContent + line; 
-	    br.close();
+	    	br.close();
 
-	    byte[] contentInByte = (byte[])readContent.getBytes();
+	    	contentInByte = (byte[])readContent.getBytes();
+	    }
 	    // create an identifier for the document
 	    String docId = uri;
 	    // create a handle on the content
