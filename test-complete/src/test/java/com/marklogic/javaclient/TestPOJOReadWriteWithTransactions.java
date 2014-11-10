@@ -83,9 +83,9 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 			for(int i=1;i<112;i++){
 				products.write(this.getArtifact(i),t);
 			}
-			//		assertEquals("Total number of object recods",111, products.count());
+			assertEquals("Total number of object recods",111, products.count(t));
 			for(long i=1;i<112;i++){
-				//			assertTrue("Product id "+i+" does not exist",products.exists(i));
+				assertTrue("Product id "+i+" does not exist",products.exists(i,t));
 				this.validateArtifact(products.read(i,t));
 			}
 
@@ -116,19 +116,27 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 			}
 		}catch(Exception e){throw e;}
 		finally{t.commit();}
-		assertEquals("Total number of object recods",110, products.count("numbers"));
-		assertEquals("Collection even count",55,products.count("even"));
-		assertEquals("Collection odd count",55,products.count("odd"));
+//		assertEquals("Total number of object recods",110, products.count("numbers"));
+//		assertEquals("Collection even count",55,products.count("even"));
+//		assertEquals("Collection odd count",55,products.count("odd"));
 		for(long i=112;i<222;i++){
 			// validate all the records inserted are readable
 			assertTrue("Product id "+i+" does not exist",products.exists(i));
 			this.validateArtifact(products.read(i));
 		}
-		//		t= client.openTransaction();
-
-		products.delete((long)112);
-		assertFalse("Product id 112 exists ?",products.exists((long)112));
-		products.deleteAll();
+		Transaction t2= client.openTransaction();
+		try{
+		Long[] ids = {(long)112,(long)113};
+		products.delete(ids,t2);
+		assertFalse("Product id 112 exists ?",products.exists((long)112,t2));
+//		assertTrue("Product id 112 exists ?",products.exists((long)112));
+		products.deleteAll(t2);
+		for(long i=112;i<222;i++){
+			assertFalse("Product id "+i+" exists ?",products.exists(i,t2));
+//			assertTrue("Product id "+i+" exists ?",products.exists(i));
+		}
+		}catch(Exception e){throw e;}
+		finally{t2.commit();}
 		//see any document exists
 		for(long i=112;i<222;i++){
 			assertFalse("Product id "+i+" exists ?",products.exists(i));
@@ -138,7 +146,8 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 		products.deleteAll();
 	}
 	//This test is to read objects into pojo page based on Ids 
-	// until #103 is resolved	@Test
+	// until #103 is resolved	
+	@Test
 	public void testPOJOWriteWithPojoPage() {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		//Load more than 110 objects into different collections
@@ -154,33 +163,35 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 				products.write(this.getArtifact(i),"odd","numbers");
 			}
 		}
-		assertEquals("Total number of object recods",111, products.count("numbers"));
-		assertEquals("Collection even count",56,products.count("even"));
-		assertEquals("Collection odd count",55,products.count("odd"));
+//		assertEquals("Total number of object recods",111, products.count("numbers"));
+//		assertEquals("Collection even count",56,products.count("even"));
+//		assertEquals("Collection odd count",55,products.count("odd"));
 
 		System.out.println("Default Page length setting on docMgr :"+products.getPageLength());
 		assertEquals("Default setting for page length",50,products.getPageLength());
 		products.setPageLength(100);
-		//			assertEquals("explicit setting for page length",1,products.getPageLength());
-		PojoPage<Artifact> p= products.read(ids);
+		assertEquals("explicit setting for page length",100,products.getPageLength());
+		PojoPage<Artifact> p= products.search(1, "numbers");
 		// test for page methods
-		//Issue-	assertEquals("Number of records",1,p.size());
-		System.out.println("Page size"+p.size());
-		//			assertEquals("Starting record in first page ",1,p.getStart());
-		System.out.println("Starting record in first page "+p.getStart());
+		assertEquals("Number of records",100,p.size());
+//		System.out.println("Page size"+p.size());
+		assertEquals("Starting record in first page ",1,p.getStart());
+//		System.out.println("Starting record in first page "+p.getStart());
 
-		//			assertEquals("Total number of estimated results:",111,p.getTotalSize());
-		System.out.println("Total number of estimated results:"+p.getTotalSize());
-		//			assertEquals("Total number of estimated pages :",111,p.getTotalPages());
-		System.out.println("Total number of estimated pages :"+p.getTotalPages());
-		assertFalse("Is this First page :",p.isFirstPage());//this is bug
+		assertEquals("Total number of estimated results:",111,p.getTotalSize());
+//		System.out.println("Total number of estimated results:"+p.getTotalSize());
+		assertEquals("Total number of estimated pages :",2,p.getTotalPages());
+//		System.out.println("Total number of estimated pages :"+p.getTotalPages());
+		System.out.println("is this firstPage or LastPage:"+p.isFirstPage()+"  "+p.isLastPage()+"has  previous page"+p.hasPreviousPage());
+		assertTrue("Is this First page :",p.isFirstPage());//this is bug
 		assertFalse("Is this Last page :",p.isLastPage());
 		assertTrue("Is this First page has content:",p.hasContent());
 		//		Need the Issue #75 to be fixed  
-		assertTrue("Is first page has previous page ?",p.hasPreviousPage());
+		assertFalse("Is first page has previous page ?",p.hasPreviousPage());
 		long pageNo=1,count=0;
 		do{
 			count=0;
+			p= products.search(pageNo, "numbers");
 			if(pageNo >1){ 
 				assertFalse("Is this first Page", p.isFirstPage());
 				assertTrue("Is page has previous page ?",p.hasPreviousPage());
@@ -191,14 +202,13 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 				count++;
 			}
 			//			assertEquals("document count", p.size(),count);
-			System.out.println("Is this Last page :"+p.hasContent()+p.isLastPage());
+			System.out.println("Is this Last page :"+p.hasContent()+p.isLastPage()+p.getPageNumber());
 			pageNo = pageNo + p.getPageSize();
-		}while((p.isLastPage()) && p.hasContent());
-		assertTrue("page count is 111 ",pageNo == p.getTotalPages());
+		}while(pageNo< p.getTotalSize());
 		assertTrue("Page has previous page ?",p.hasPreviousPage());
-		assertEquals("page size", 1,p.getPageSize());
+		assertEquals("page size", 11,p.size());
 		assertEquals("document count", 111,p.getTotalSize());
-		assertFalse("Page has any records ?",p.hasContent());
+		assertTrue("Page has any records ?",p.hasContent());
 
 
 		products.deleteAll();
