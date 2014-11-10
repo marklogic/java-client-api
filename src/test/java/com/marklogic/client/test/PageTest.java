@@ -46,6 +46,15 @@ public class PageTest {
         assertEquals("Unexpected isFirstPage", true, page.isFirstPage());
         assertEquals("Unexpected isLastPage", false, page.isLastPage());
 
+        page = new TestPage(iterator, 1, 1, 100);
+        assertEquals("Unexpected size", 1, page.size());
+        assertEquals("Unexpected totalPages", 100, page.getTotalPages());
+        assertEquals("Unexpected hasContent", true, page.hasContent());
+        assertEquals("Unexpected hasNextPage", true, page.hasNextPage());
+        assertEquals("Unexpected pageNumber", 1, page.getPageNumber());
+        assertEquals("Unexpected isFirstPage", true, page.isFirstPage());
+        assertEquals("Unexpected isLastPage", false, page.isLastPage());
+        
         page = new TestPage(iterator, 2, 10, 100);
         assertEquals("Unexpected size", 10, page.size());
         assertEquals("Unexpected totalPages", 10, page.getTotalPages());
@@ -60,8 +69,8 @@ public class PageTest {
         assertEquals("Unexpected totalPages", 10, page.getTotalPages());
         assertEquals("Unexpected hasContent", true, page.hasContent());
         assertEquals("Unexpected hasNextPage", true, page.hasNextPage());
-        assertEquals("Unexpected pageNumber", 2, page.getPageNumber());
-        assertEquals("Unexpected isFirstPage", false, page.isFirstPage());
+        assertEquals("Unexpected pageNumber", 1, page.getPageNumber());
+        assertEquals("Unexpected isFirstPage", true, page.isFirstPage());
         assertEquals("Unexpected isLastPage", false, page.isLastPage());
 
         page = new TestPage(iterator, 12, 10, 100);
@@ -71,6 +80,15 @@ public class PageTest {
         assertEquals("Unexpected hasNextPage", true, page.hasNextPage());
         assertEquals("Unexpected pageNumber", 2, page.getPageNumber());
         assertEquals("Unexpected isFirstPage", false, page.isFirstPage());
+        assertEquals("Unexpected isLastPage", false, page.isLastPage());
+
+        page = new TestPage(iterator, 20, 20, 100);
+        assertEquals("Unexpected size", 20, page.size());
+        assertEquals("Unexpected totalPages", 5, page.getTotalPages());
+        assertEquals("Unexpected hasContent", true, page.hasContent());
+        assertEquals("Unexpected hasNextPage", true, page.hasNextPage());
+        assertEquals("Unexpected pageNumber", 1, page.getPageNumber());
+        assertEquals("Unexpected isFirstPage", true, page.isFirstPage());
         assertEquals("Unexpected isLastPage", false, page.isLastPage());
 
         page = new TestPage(iterator, 22, 20, 100);

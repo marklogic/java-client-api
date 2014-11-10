@@ -107,7 +107,10 @@ public class BasicPage<T> implements Page<T> {
     }
 
     public long getPageNumber() {
-        return (long) Math.floor((double) start / (double) getPageSize()) + 1;
+        double _start = (double) start;
+        double _pageSize = (double) getPageSize();
+        if ( _start % _pageSize == 0 ) return new Double(_start / _pageSize).longValue();
+        else return (long) Math.floor(_start / _pageSize) + 1;
     }
 
     public boolean isFirstPage() {
