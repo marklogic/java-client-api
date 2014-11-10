@@ -14,6 +14,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
 
 public class TestRuntimeDBselection extends BasicJavaClientREST {
 	private static String dbName = "TestRuntimeDB";
@@ -72,5 +73,21 @@ public class TestRuntimeDBselection extends BasicJavaClientREST {
 		client.release();
 		associateRESTServerWithDefaultUser(restServerName,"nobody","digest");
 	}
-
+	//issue 141 user with no privileges for eval
+	@Test(expected=FailedRequestException.class)
+	public void testRuntimeDBclientWithNoPrivUser() throws Exception {
+		
+		client = DatabaseClientFactory.newClient("localhost", restPort,dbName,"rest-admin","x",Authentication.BASIC);
+		String insertJSON = "xdmp:document-insert(\"test2.json\",object-node {\"test\":\"hello\"})";
+		client.newServerEval().xquery(insertJSON).eval();
+		String query1 = "fn:count(fn:doc())";
+		int response = client.newServerEval().xquery(query1).eval().next().getNumber().intValue();
+		assertEquals("count of documents ",1,response);
+		String query2 ="declareUpdate();xdmp.documentDelete(\"test2.json\");";
+		client.newServerEval().javascript(query2).eval();
+		int response2 = client.newServerEval().xquery(query1).eval().next().getNumber().intValue();
+		assertEquals("count of documents ",0,response2);
+		client.release();
+		
+	}
 }
