@@ -17,6 +17,7 @@ import org.junit.Test;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.pojo.annotation.Id;
@@ -391,10 +392,10 @@ public class TestPOJOSpecialCharRead extends BasicJavaClientREST {
 		assertNotNull("Artifact object should never be Null", artifact);
 		assertNotNull("Id should never be Null",artifact.id);
 		assertEquals("Id of the object is ",longId, artifact.getId());
-		assertEquals("Name of the object is ","Cogs -2000", artifact.getName());
+		assertEquals("Name of the object is ","Cogs", artifact.getName());
 		assertEquals("Inventory of the object is ",1000, artifact.getInventory());
-		assertEquals("Company name of the object is ","Acme -2000, Inc.", artifact.getManufacturer().getName());
-		assertEquals("Web site of the object is ","http://www.acme-2000.com", artifact.getManufacturer().getWebsite());
+		assertEquals("Company name of the object is ","Acme Inc.", artifact.getManufacturer().getName());
+		assertEquals("Web site of the object is ","http://www.acme.com", artifact.getManufacturer().getWebsite());
 		assertEquals(-87.966, artifact.getManufacturer().getLongitude(), 0.00);
 		assertEquals(41.998, artifact.getManufacturer().getLatitude(), 0.00);
 	}
@@ -456,9 +457,10 @@ public class TestPOJOSpecialCharRead extends BasicJavaClientREST {
 	/*
      * Purpose : This test is to validate delete documents using delete(Id)
      * POJO instance @Id field value with Negative numbers.
+     * Expect ResourceNotFoundException when there are no URI found. As per Git # 188.
      */
     
-	@Test
+	@Test(expected=ResourceNotFoundException.class)
 	public void testPOJORepoDeleteWithNegativeId() {
 		PojoRepository<Artifact,Long> pojoReposProducts = client.newPojoRepository(Artifact.class, Long.class);		
 		
@@ -469,17 +471,18 @@ public class TestPOJOSpecialCharRead extends BasicJavaClientREST {
 		// Delete the object
 		pojoReposProducts.delete(longId);
 		
-		// Validate the artifact read back.
+		// Validate the artifact read back. ResourceNotFoundException will be thrown.
+		@SuppressWarnings("unused")
 		Artifact artifact = pojoReposProducts.read(longId);
-		assertNull(artifact);				
 	}
 	
 	/*
      * Purpose : This test is to validate delete documents using delete(ID....)
      * POJO instance @Id field value with Negative numbers.
+     * Expect ResourceNotFoundException when there are no URI found. As per Git # 188.
      */
 
-	@Test
+	@Test(expected=ResourceNotFoundException.class)
 	public void testPOJORepoDeleteWithNegativeIdArray() {
 		long longId1 = getOneNegativeLongId();
 		long longId2 = getOneNegativeLongId();
@@ -502,8 +505,7 @@ public class TestPOJOSpecialCharRead extends BasicJavaClientREST {
 		pojoReposProducts.delete(longId1,longId2);
 		
 		// Validate the artifacts read back is zero.
-		pojoArtifactPage = pojoReposProducts.read(pojoReposProductsIdLongArray);
-		assertEquals("Total number of object records", 0, pojoArtifactPage.getPageSize());		
+		pojoArtifactPage = pojoReposProducts.read(pojoReposProductsIdLongArray);		
 	}
 	
 	/*
@@ -534,22 +536,18 @@ public class TestPOJOSpecialCharRead extends BasicJavaClientREST {
 		
 		System.out.println("The number of pages covering all possible items "+ pojoArtifactPage.getTotalPages());
 		assertEquals("The number of pages covering all possible items ", 1, pojoArtifactPage.getTotalPages());
-		
-		// Not sure about this feature. Should page number at the last or at the start. O/P is 2 now.
+				
 		System.out.println("The page number within the count of all possible pages "+ pojoArtifactPage.getPageNumber());
 		assertEquals("The page number within the count of all possible pages ", 1, pojoArtifactPage.getPageNumber());
-		
-		// Not sure about this feature. User cannot set the max # of items allowed in one page. O/P is -1 now.
+				
 		System.out.println("The page size which is the maximum number of items allowed in one page "+ pojoArtifactPage.getPageSize());
-		//assertEquals("The page size which is the maximum number of items allowed in one page ", 1, pojoArtifactPage.getPageSize());
-		
-		//Not sure about this feature. Start position of this page within all possible items. O/P is -1 now.
+		assertEquals("The page size which is the maximum number of items allowed in one page ", 2, pojoArtifactPage.getPageSize());
+				
 		System.out.println("The start position of this page within all possible items "+ pojoArtifactPage.getStart());
-		//assertEquals("The start position of this page within all possible items ", 1, pojoArtifactPage.getStart());
+		assertEquals("The start position of this page within all possible items ", 1, pojoArtifactPage.getStart());
 		
-		//Not sure about this feature. O/P is -1 now.
 		System.out.println("The total count (potentially an estimate) of all possible items in the set "+ pojoArtifactPage.getTotalSize());
-		//assertEquals("The total count (potentially an estimate) of all possible items in the set ", 1, pojoArtifactPage.getTotalSize());
+		assertEquals("The total count (potentially an estimate) of all possible items in the set ", 2, pojoArtifactPage.getTotalSize());
 					
 		Iterator<Artifact> itr = pojoArtifactPage.iterator();
 		Artifact artifact = null;

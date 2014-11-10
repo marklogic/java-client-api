@@ -52,7 +52,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 			stringException = "Client is not available - " + e;
 		}
 		
-		String expectedException = "Client is not available - java.lang.NullPointerException";
+		String expectedException = "Client is not available - java.lang.IllegalStateException: You cannot use this connected object anymore--connection has already been released";
 		assertEquals("Exception is not thrown", expectedException, stringException);
 	}
 

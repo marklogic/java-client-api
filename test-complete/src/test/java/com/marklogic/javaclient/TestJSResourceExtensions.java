@@ -207,12 +207,12 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 		TestJSExtension tjs= new TestJSExtension(client);
 		String expectedResponse="{\"response\":[200, \"OK\"]}";
 		JSONAssert.assertEquals(expectedResponse, tjs.putJSON("helloJS.json"), false);
-		String expAftrPut ="{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\",\"database-name\":\"TestJSResourceExtensionDB\", \"document-count\":1, \"content\":\"This is a JSON document\", \"document-content\":{\"argument1\":\"hello\", \"argument2\":\"Earth\", \"content\":\"This is a JSON document\", \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}, \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}";
+		String expAftrPut ="{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\",\"database-name\":\"TestJSResourceExtensionDB\", \"document-count\":1, \"content\":\"This is a JSON document\", \"document-content\":{\"argument1\":\"hello\", \"argument2\":\"Earth\", \"content\":\"This is a JSON document\", \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}, \"response\":[200, \"OK\"], \"outputTypes\":[\"application/json\"]}";
 		JSONAssert.assertEquals(expAftrPut, tjs.getJSON("helloJS.json"), false);
 		JSONAssert.assertEquals(expectedResponse, tjs.postJSON("helloJS.json"), false);
-		String expAftrPost ="{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\", \"document-count\":1, \"content\":\"This is a JSON document\", \"document-content\":{\"argument1\":\"hello\", \"argument2\":\"Earth\", \"content\":\"This is a JSON document\", \"array\":[1, 2, 3], \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}, \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}";
+		String expAftrPost ="{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\", \"document-count\":1, \"content\":\"This is a JSON document\", \"document-content\":{\"argument1\":\"hello\", \"argument2\":\"Earth\", \"content\":\"This is a JSON document\", \"array\":[1, 2, 3], \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}, \"response\":[200, \"OK\"], \"outputTypes\":[\"application/json\"]}";
 		JSONAssert.assertEquals(expAftrPost, tjs.getJSON("helloJS.json"), false);
-		String expected ="{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\", \"document-count\":0, \"content\":\"This is a JSON document\", \"document-content\":null, \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}";
+		String expected ="{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\", \"document-count\":0, \"content\":\"This is a JSON document\", \"document-content\":null, \"response\":[200, \"OK\"], \"outputTypes\":[\"application/json\"]}";
 //		JSONAssert.assertEquals(expected, tjs.getJSON(), false);
 	
 		JSONAssert.assertEquals(expectedResponse, tjs.deleteJSON("helloJS.json"), false);
@@ -239,14 +239,14 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 		assertEquals("Total documents loaded are",150,jh.get().get("document-count").intValue());
 
 		String expAftrPut ="{\"argument1\":\"hello\", \"argument2\":\"Earth\", \"content\":\"This is a JSON document\", \"array\":[1, 2, 3], \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}";
-		String expected ="{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\", \"database-name\":\"TestJSResourceExtensionDB\", \"document-count\":0, \"content\":\"This is a JSON document\", \"document-content\":null, \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}";
+		String expected ="{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\", \"database-name\":\"TestJSResourceExtensionDB\", \"document-count\":0, \"content\":\"This is a JSON document\", \"document-content\":null, \"response\":[200, \"OK\"], \"outputTypes\":[\"application/json\"]}";
 //		verify by reading all the documents to see put and post services correctly inserted documents and delete them
 	    for(int j=0;j<150;j++){
 	    jh.set(jh2.getMapper().readTree(tjs.getJSON("helloJS"+j+".json")));	
 	    JSONAssert.assertEquals(expAftrPut,jh.get().get("document-content").findParent("array").toString(), false);
 	    JSONAssert.assertEquals(expectedResponse, tjs.deleteJSON("helloJS"+j+".json"), false);
 	    }
-//		System.out.println(tjs.getJSON());
+		System.out.println(tjs.getJSON("helloJS.json"));
 		JSONAssert.assertEquals(expected, tjs.getJSON("helloJS.json"), false);
 
 	}

@@ -132,8 +132,8 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 				 System.out.println("Testing is empty sequence is NUll?"+er.getAs(String.class));
 			 }else if(er.getType().equals(Type.OTHER)){
 				//There is git issue 151
-				 System.out.println("Testing is Others? "+er.getAs(String.class));
-//				 assertEquals("Returns OTHERs","xdmp:forest-restart#1",er.getString());
+//				 System.out.println("Testing is Others? "+er.getAs(String.class));
+				  assertTrue("Returns OTHERs",(er.getString().contains("xdmp:forest-restart#1") || er.getString().contains("PT0S")));
 				 
 			 }else if(er.getType().equals(Type.ANYURI)){
 //				 System.out.println("Testing is AnyUri? "+er.getAs(String.class));
