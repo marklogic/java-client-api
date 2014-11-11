@@ -29,6 +29,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -60,9 +61,12 @@ import com.marklogic.client.io.JAXBHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.QueryManager.QueryView;
 
 /** Loads data from cities15000.txt which contains every city above 15000 people, and adds
  * data from countryInfo.txt.
@@ -423,6 +427,84 @@ public class BulkReadWriteTest {
                 assertEquals("Doc 8 should have the system default quality of 0", 0,
                     metadata.getQuality());
             }
+        }
+    }
+
+    @Test
+    public void test_78() {
+        String DIRECTORY ="/test_78/";
+        int BATCH_SIZE=10;
+        int count =1;
+        TextDocumentManager docMgr = Common.client.newTextDocumentManager();
+        DocumentWriteSet writeset =docMgr.newWriteSet();
+        for(int i =0;i<11;i++){
+            writeset.add(DIRECTORY+"Textfoo"+i+".txt", new StringHandle().with("bar can be foo"+i));
+            if(count%BATCH_SIZE == 0){
+                docMgr.write(writeset);
+                writeset = docMgr.newWriteSet();
+            }
+            count++;
+        }
+        if(count%BATCH_SIZE > 0){
+            docMgr.write(writeset);
+        }
+        //using QueryManger for query definition and set the search criteria
+        QueryManager queryMgr = Common.client.newQueryManager();
+        try {
+	        StringQueryDefinition qd = queryMgr.newStringDefinition();
+	        qd.setCriteria("bar");
+	        qd.setDirectory(DIRECTORY);
+	        // set  document manager level settings for search response
+	        System.out.println("Default Page length setting on docMgr :"+docMgr.getPageLength());
+	        docMgr.setPageLength(1);
+	        docMgr.setSearchView(QueryView.RESULTS);
+	        docMgr.setNonDocumentFormat(Format.XML);
+	        assertEquals("format set on document manager","XML",docMgr.getNonDocumentFormat().toString());
+	        assertEquals("Queryview set on document manager ","RESULTS" ,docMgr.getSearchView().toString());
+	        assertEquals("Page length ",1,docMgr.getPageLength());
+	        // Search for documents where content has bar and get first result record, get search handle on it
+	        SearchHandle sh = new SearchHandle();
+	        DocumentPage page= docMgr.search(qd, 1);
+	        // test for page methods
+	        assertEquals("Number of records",1,page.size());
+	        assertEquals("Starting record in first page ",1,page.getStart());
+	        assertEquals("Total number of estimated results:",11,page.getTotalSize());
+	        assertEquals("Total number of estimated pages :",11,page.getTotalPages());
+	        assertTrue("Is this First page :",page.isFirstPage());
+	        assertFalse("Is this Last page :",page.isLastPage());
+	        assertTrue("Is this First page has content:",page.hasContent());
+	        assertFalse("Is first page has previous page ?",page.hasPreviousPage());
+	        //      
+	        long start=1;
+	        do{
+	            count=0;
+	            page = docMgr.search(qd, start,sh);
+	            if(start >1){ 
+	                assertFalse("Is this first Page", page.isFirstPage());
+	                assertTrue("Is page has previous page ?",page.hasPreviousPage());
+	            }
+	            while(page.hasNext()){
+	                page.next();
+	                count++;
+	            }
+	            MatchDocumentSummary[] mds= sh.getMatchResults();
+	            assertEquals("Matched document count",1,mds.length);
+	            //since we set the query view to get only results, facet count supposed be 0
+	            assertEquals("Matched Facet count",0,sh.getFacetNames().length);
+	
+	            assertEquals("document count", page.size(),count);
+	            if (!page.isLastPage()) start = start + page.getPageSize();
+	        }while(!page.isLastPage());
+	        assertEquals("page count is 11 ",start, page.getTotalPages());
+	        assertTrue("Page has previous page ?",page.hasPreviousPage());
+	        assertEquals("page size", 1,page.getPageSize());
+	        assertEquals("document count", 11,page.getTotalSize());
+	        page= docMgr.search(qd, 12);
+	        assertFalse("Page has any records ?",page.hasContent());
+    	} finally {
+	        DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
+	        deleteQuery.setDirectory(DIRECTORY);
+	        queryMgr.delete(deleteQuery);
         }
     }
 

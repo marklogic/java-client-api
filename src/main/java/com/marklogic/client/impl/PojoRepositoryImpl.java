@@ -181,7 +181,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
 
     @Override
     public long count(String... collections) {
-        return count((PojoQueryDefinition) null, null);
+        return count(collections, null);
     }
 
     @Override
@@ -207,7 +207,8 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     @Override
     public long count(PojoQueryDefinition query, Transaction transaction) {
         long pageLength = getPageLength();
-        setPageLength(0);
+        // set below to 0 when we get a fix for https://bugtrack.marklogic.com/30470
+        setPageLength(1);
         PojoPage<T> page = search(query, 1, transaction);
         setPageLength(pageLength);
         return page.getTotalSize();

@@ -173,7 +173,10 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST{
 		assertEquals("Total number of estimated results:",101,page.getTotalSize());
 		assertEquals("Total number of estimated pages :",101,page.getTotalPages());
 		// till the issue #78 get fixed
-		assertFalse("Is this First page :",page.isFirstPage());//this is bug
+		System.out.println("Is this First page :"+page.isFirstPage()+page.getPageNumber());//this is bug
+		System.out.println("Is this Last page :"+page.isLastPage());
+		System.out.println("Is this First page has content:"+page.hasContent());
+		assertTrue("Is this First page :",page.isFirstPage());//this is bug
 		assertFalse("Is this Last page :",page.isLastPage());
 		assertTrue("Is this First page has content:",page.hasContent());
 		//		Need the Issue #75 to be fixed  
