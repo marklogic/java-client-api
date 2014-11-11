@@ -64,6 +64,7 @@ import com.sun.jersey.api.client.ClientHandlerException;
 public class PojoRepositoryImpl<T, ID extends Serializable>
     implements PojoRepository<T, ID>
 {
+    private static final Pattern getterPattern = Pattern.compile("^(get|is)(.)(.*)");
     private final String EXTENSION = ".json";
 
     private DatabaseClient client;
@@ -416,6 +417,14 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
                         idMethod = getter;
                         break;
                     }
+                    if ( property.hasSetter() ) {
+                        Method setter = property.getSetter().getAnnotated();
+                        if ( setter.getAnnotation(Id.class) != null ) {
+                            idPropertyName = property.getName();
+                            idMethod = getter;
+                            break;
+                        }
+                    }
                 }
                 // setter only doesn't work because it gives us no value accessor
             }
@@ -427,26 +436,37 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
                 if ( method.isAnnotationPresent(Id.class) ) {
                     Class<?>[] parameters = method.getParameterTypes();
                     if ( ! Modifier.isPublic(method.getModifiers()) ) {
-                        throw new IllegalStateException("Your getter method, " + method.getName() +
+                        throw new IllegalStateException("Your method, " + method.getName() +
                             ", annotated with com.marklogic.client.pojo.annotation.Id " + 
                             " must be public");
                     }
                     if ( parameters == null || parameters.length == 0 ) {
-                        Pattern pattern = Pattern.compile("^(get|is)(.)(.*)");
-                        Matcher matcher = pattern.matcher(method.getName());
+                        Matcher matcher = getterPattern.matcher(method.getName());
                         if ( matcher.matches() ) {
                             idPropertyName = matcher.group(2).toLowerCase() + matcher.group(3);
                             idMethod = method;
                             break;
                         } else {
-                            throw new IllegalStateException("Your getter method, " + method.getName() +
+                            throw new IllegalStateException("Your no-args method, " + method.getName() +
                                 ", annotated with com.marklogic.client.pojo.annotation.Id " + 
                                 " must be a proper getter method and begin with \"get\" or \"is\"");
                         }
                     } else {
-                        throw new IllegalStateException("Your getter method, " + method.getName() +
-                            ", annotated with com.marklogic.client.pojo.annotation.Id " + 
-                            " must not require any arguments");
+                        Matcher getterMatcher = getterPattern.matcher(method.getName());
+                        if ( getterMatcher.matches() ) {
+                            throw new IllegalStateException("Your getter method, " + method.getName() +
+                                ", annotated with com.marklogic.client.pojo.annotation.Id " + 
+                                " must not require any arguments");
+                        } else if ( method.getName().startsWith("set") ) {
+                            throw new MarkLogicInternalException("Your setter method, " + method.getName() +
+                                ", annotated with com.marklogic.client.pojo.annotation.Id " +
+                                "was not found by Jackson for some reason.  Please report this to " +
+                                "MarkLogic support.");
+                        } else {
+                            throw new IllegalStateException("Your setter method, " + method.getName() +
+                                ", annotated with com.marklogic.client.pojo.annotation.Id " + 
+                                " must be a proper setter method (beginning with \"set\")");
+                        }
                     }
                 }
             }
