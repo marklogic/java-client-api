@@ -23,10 +23,15 @@ public class TestBytesHandle extends BasicJavaClientREST{
 private static String dbName = "BytesHandleDB";
 private static String [] fNames = {"BytesHandleDB-1"};
 private static String restServerName = "REST-Java-Client-API-Server";
+//Additional port to test for Uber port
+private static int uberPort = 8000;
+
 @BeforeClass
 public static void setUp() throws Exception{
 	System.out.println("In setup");
 	setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+	createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
+    createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
 	}
 
 @Test
@@ -39,10 +44,10 @@ public void testXmlCRUD() throws IOException , SAXException, ParserConfiguration
 	XMLUnit.setNormalizeWhitespace(true);
 	
 	// connect the client
-	DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x",Authentication.DIGEST);
+	DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x",Authentication.DIGEST);
 	
 	// write docs
-	writeDocumentUsingBytesHandle(client, filename, uri, null,"XML");//***********
+	writeDocumentUsingBytesHandle(client, filename, uri, null,"XML");
 	
 	//read docs
 	BytesHandle contentHandle = readDocumentUsingBytesHandle(client, uri + filename,"XML");
@@ -101,7 +106,7 @@ public void testTextCRUD() throws IOException, ParserConfigurationException, SAX
 	System.out.println("Runing test TextCRUD");
 	
 	// connect the client
-	DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+	DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 	
 	// write docs
 	writeDocumentUsingBytesHandle(client, filename, uri, "Text");
@@ -161,7 +166,7 @@ public void testJsonCRUD() throws IOException, ParserConfigurationException, SAX
 	ObjectMapper mapper = new ObjectMapper();
 	
 	// connect the client
-	DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+	DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 	// write docs
 	writeDocumentUsingBytesHandle(client, filename, uri, "JSON");
@@ -220,7 +225,7 @@ public void testBinaryCRUD() throws IOException, ParserConfigurationException, S
 	System.out.println("Running testBinaryCRUD");
 
 	// connect the client
-	DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+	DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 	
 	// write docs
 	writeDocumentUsingBytesHandle(client, filename, uri, "Binary");
@@ -250,8 +255,8 @@ public void testBinaryCRUD() throws IOException, ParserConfigurationException, S
     
     // get the binary size
 	long sizeUpdate = getBinarySizeFromByte(fileReadUpdate);
-	long expectedSizeUpdate = 3290;
-	//long expectedSizeUpdate = 3322;
+	//long expectedSizeUpdate = 3290;
+	long expectedSizeUpdate = 3322;
 	assertEquals("Binary size difference", expectedSizeUpdate, sizeUpdate);
 	
 	// delete the document
