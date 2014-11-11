@@ -247,21 +247,21 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 
 		//		System.out.println(jh.get().toString());
 		assertTrue("Searh response has entry for facets",jh.get().has("facets"));
-		assertTrue("Searh response has entry for facets",jh.get().has("results"));//Issue 84 is tracking this
-		assertTrue("Searh response has entry for facets",jh.get().has("metrics"));
+		assertFalse("Searh response has entry for facets",jh.get().has("results"));//Issue 84 is tracking this
+		assertFalse("Searh response has entry for facets",jh.get().has("metrics"));
 
 		docMgr.setSearchView(QueryView.RESULTS);
 		docMgr.search(qd, 1,jh);
 
 		assertFalse("Searh response has entry for facets",jh.get().has("facets"));
 		assertTrue("Searh response has entry for facets",jh.get().has("results"));
-		assertTrue("Searh response has entry for facets",jh.get().has("metrics"));//Issue 84 is tracking this
+		assertFalse("Searh response has entry for facets",jh.get().has("metrics"));//Issue 84 is tracking this
 
 		docMgr.setSearchView(QueryView.METADATA);
 		docMgr.search(qd, 1,jh);
 
 		assertFalse("Searh response has entry for facets",jh.get().has("facets"));
-		assertTrue("Searh response has entry for facets",jh.get().has("results"));
+		assertFalse("Searh response has entry for facets",jh.get().has("results"));
 		assertTrue("Searh response has entry for facets",jh.get().has("metrics"));
 
 		docMgr.setSearchView(QueryView.ALL);
@@ -318,7 +318,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 		finally{t.rollback();}
 
 		docMgr.search(qd, 1,results);
-		assertEquals("Total search results after rollback are ","0",results.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total").getNodeValue());
+		assertNull("Total search results after rollback are ",results.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total"));
 
 	}
 	//This test is to verify RAW XML structured Query
