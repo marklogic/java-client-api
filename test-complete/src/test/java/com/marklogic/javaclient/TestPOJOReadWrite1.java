@@ -223,11 +223,11 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		System.out.println("Total number of estimated results:"+p.getTotalSize());
 		assertEquals("Total number of estimated pages :",111,p.getTotalPages());
 		System.out.println("Total number of estimated pages :"+p.getTotalPages());
-		assertFalse("Is this First page :",p.isFirstPage());//this is bug
+		assertTrue("Is this First page :",p.isFirstPage());
 		assertFalse("Is this Last page :",p.isLastPage());
 		assertTrue("Is this First page has content:",p.hasContent());
 		//		Need the Issue #75 to be fixed  
-		assertTrue("Is first page has previous page ?",p.hasPreviousPage());
+		assertFalse("Is first page has previous page ?",p.hasPreviousPage());
 		long pageNo=1,count=0;
 		do{
 			count=0;
