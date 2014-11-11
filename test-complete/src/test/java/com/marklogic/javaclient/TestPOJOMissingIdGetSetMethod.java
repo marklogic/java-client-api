@@ -212,11 +212,11 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 	/*
 	 * This method is used when there is a need to validate SmallArtifactMissingSetter.
 	 */
-	public void validateMissingArtifactSetter(SmallArtifactMissingSetter artifact) {
+	public void validateMissingArtifactSetter(SmallArtifactMissingSetter artifact, String name) {
 		assertNotNull("Artifact object should never be Null", artifact);
 		assertNotNull("Id should never be Null", artifact.id);
 		assertEquals("Id of the object is ", -99, artifact.getId());
-		assertEquals("Name of the object is ", "SmallArtifact",
+		assertEquals("Name of the object is ", name,
 				artifact.getName());
 		assertEquals("Inventory of the object is ", 1000,
 				artifact.getInventory());
@@ -250,7 +250,7 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 		String docId[] = { "com.marklogic.javaclient.TestPOJOMissingIdGetSetMethod$SmallArtifactMissingSetter/SmallArtifactMissingSetter.json" };
 		String json1 = new String(
 				"{\"com.marklogic.javaclient.TestPOJOMissingIdGetSetMethod$SmallArtifactMissingSetter\":"
-						+ "{\"name\": \"SmallArtifact\",\"id\": -99, \"inventory\": 1000}}");
+						+ "{\"name\": \"SmallArtifactMissingSetter\",\"id\": -99, \"inventory\": 1000}}");
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		docMgr.setMetadataCategories(Metadata.ALL);
 		DocumentWriteSet writeset = docMgr.newWriteSet();
@@ -275,10 +275,10 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 
 		PojoRepository<SmallArtifactMissingSetter, String> pojoReposSmallArtifact = client
 				.newPojoRepository(SmallArtifactMissingSetter.class, String.class);
-		String artifactName = new String("SmallArtifact");
+		String artifactName = new String("SmallArtifactMissingSetter");
 
 		SmallArtifactMissingSetter artifact1 = pojoReposSmallArtifact.read(artifactName);
-		validateMissingArtifactSetter(artifact1);
+		validateMissingArtifactSetter(artifact1, artifactName);
 	}
 
 	/*
@@ -372,7 +372,7 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 		
 		PojoRepository<SmallArtifactMissingSetter, String> pojoReposSmallArtifact = client
 				.newPojoRepository(SmallArtifactMissingSetter.class, String.class);
-		String artifactName = new String("SmallArtifact");
+		String artifactName = new String("SmallArtifactMissingSetter");
 
 		SmallArtifactMissingSetter art = new SmallArtifactMissingSetter();
 		art.setId(-99);
@@ -383,7 +383,7 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 		pojoReposSmallArtifact.write(art,"com.marklogic.javaclient.TestPOJOMissingIdGetSetMethod$SmallArtifactMissingSetter/SmallArtifactMissingSetter.json");
 						
 		SmallArtifactMissingSetter artifact1 = pojoReposSmallArtifact.read(artifactName);
-		validateMissingArtifactSetter(artifact1);	
+		validateMissingArtifactSetter(artifact1, artifactName);	
 	}
 	
 	/*
