@@ -107,7 +107,7 @@ public interface DatabaseClient {
      * Creates a manager for configuring the REST server for the database. The
      * ServerConfigurationManager can persist query options and transforms or
      * set properties of the server. The application must have rest-admin
-     * privilieges to use the ServerConfigurationManager.
+     * privileges to use the ServerConfigurationManager.
      * 
      * @return	a manager for the server properties or administrative resources
      */
