@@ -154,8 +154,6 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		// System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire",
-		// "debug");
 		System.out.println("In setup");
 		setupJavaRESTServer(dbName, fNames[0], restServerName, restPort);
 	}
@@ -239,9 +237,6 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 	 * Purpose : This test is to validate read documents stored with JacksonHandle with valid POJO
 	 * specific URI. Uses SmallArtifactMissingSetter class
 	 * which has @Id only on the setter method. 
-	 * 
-	 * Current results (10/13/2014) are: read returns a null
-	 * 	 
 	 */
 
 	@Test
@@ -284,12 +279,7 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 	/*
 	 * Purpose : This test is to validate read documents stored with JacksonHandle with valid POJO
 	 * specific URI. Uses SmallArtifactMissingGetter class
-	 * which has @Id only on the setter method. 
-	 * 
-	 * Current results (10/13/2014) are: 
-	 * java.lang.IllegalArgumentException: Your getter method, setName, annotated with 
-	 * com.marklogic.client.pojo.annotation.Id must not require any arguments.
-	 * Issue 136 might solve this also.
+	 * which has @Id only on the setter method.
 	 */
 
 	@Test
@@ -332,12 +322,7 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 	/*
 	 * Purpose : This test is to validate read documents with valid POJO
 	 * specific URI. Uses SmallArtifactMissingGetter class
-	 * which has @Id only on the setter method. 
-	 * 
-	 * Current results (10/13/2014) are: 
-	 * java.lang.IllegalArgumentException: Your getter method, setName, annotated with 
-	 * com.marklogic.client.pojo.annotation.Id must not require any arguments.
-	 * Issue 136 might solve this also.
+	 * which has @Id only on the setter method.
 	 */
 	@Test
 	public void testPOJOWriteReadMissingGetter() throws Exception {
@@ -347,7 +332,7 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 		String artifactName = new String("SmallArtifact");
 
 		SmallArtifactMissingGetter art = new SmallArtifactMissingGetter();
-		art.setId(0);
+		art.setId(-99L);
 		art.setInventory(1000);
 		art.setName(artifactName);
 		
@@ -361,10 +346,7 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 	/*
 	 * Purpose : This test is to validate read documents stored with valid POJO
 	 * specific URI. Uses SmallArtifactMissingSetter class
-	 * which has @Id only on the setter method. 
-	 * 
-	 * Current results (10/13/2014) are: Works fine
-	 * 	 
+	 * which has @Id only on the setter method.
 	 */
 
 	@Test
@@ -375,7 +357,7 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 		String artifactName = new String("SmallArtifactMissingSetter");
 
 		SmallArtifactMissingSetter art = new SmallArtifactMissingSetter();
-		art.setId(-99);
+		art.setId(-99L);
 		art.setInventory(1000);
 		art.setName(artifactName);
 		
@@ -389,10 +371,7 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 	/*
 	 * Purpose : This test is to validate read documents stored with JacksonHandle with valid POJO
 	 * specific URI. Uses SmallArtifactMissGetSet class
-	 * which has no @Id on any of its class members. 
-	 * 
-	 * Current results (10/13/2014) are: IllegalArgumentException
-	 * 	 
+	 * which has no @Id on any of its class members.
 	 */
 
 	@Test(expected=IllegalArgumentException.class)
