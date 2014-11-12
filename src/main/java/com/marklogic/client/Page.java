@@ -46,10 +46,20 @@ public interface Page<T> extends Iterable<T> {
      * @return the page size */
     public long getPageSize();
 
-    /** The total count (potentially an estimate) of all possible items in the set.
-     *  For result sets this is the number of items within the result set.
-     *  For search result sets this is the estimated number of matching items.
-     * @return the total count of possible items */
+    /** The total count (most likely an
+     * <a href="http://docs.marklogic.com/xdmp:estimate">estimate</a>) of all
+     * possible items in the set.  If this number is larger than getPageSize()
+     * then hasNextPage() should be true and you most likely can retrieve
+     * additional pages to get the remaining available items in the set.
+     * For result sets this is the number of items within the result set.
+     * For search result sets this is the estimated number of matching items.
+     * That means you may see this number change as you paginate through a 
+     * search result set and the server updates the estimate with something
+     * more accurate.
+     * @return the total count of possible items 
+     * @see <a href="http://docs.marklogic.com/xdmp:estimate">xdmp:estimate</a>
+     * @see <a href="http://docs.marklogic.com/search:estimate">search:estimate</a>
+     */
     public long getTotalSize();
 
     /** The count of items in this page, which is always less than getPageSize().  
@@ -60,9 +70,16 @@ public interface Page<T> extends Iterable<T> {
     public long size();
 
 
-    /** The number of pages covering all possible items. 
-     * @return the number of pages.  Literally, 
-     * <pre>{@code (long) Math.ceil((double) getTotalSize() / (double) getPageSize()); }</pre>
+    /** The number of pages covering all possible items. Since this is calculated
+     * based on {@link #getTotalSize()}, it is often an
+     * <a href="http://docs.marklogic.com/xdmp:estimate">estimate</a>
+     * just like getTotalSize().
+     * That means you may see this number change as you paginate through a search
+     * result set and the server updates the estimate with something more accurate.
+     * @return the number of pages.  In pseudo-code:
+     * <pre>{@code if ( getPageSize() == 0 ) return 0;
+     *Math.ceil( getTotalSize() /  getPageSize() ); 
+     * }</pre>
      */
     public long getTotalPages();
 
@@ -81,16 +98,20 @@ public interface Page<T> extends Iterable<T> {
      */
     public boolean hasPreviousPage();
 
-    /** The page number within the count of all possible pages.  
-     * @return {@code (long) Math.floor((double) start / (double) getPageSize()) + 1; }
+    /** The page number within the count of all possible pages.
+     * @return the page number.  In pseudo-code:
+     * <pre>{@code if ( getPageSize() == 0 ) return 0;
+     *if ( getStart() % getPageSize() == 0 ) return getStart() / getPageSize();
+     *else return Math.floor(getStart() / getPageSize()) + 1;
+     * }</pre>
      */
     public long getPageNumber();
 
-    /** @return true if {@code getPageNumber() == 1 }
+    /** @return true if {@code getPageSize()==0 or getPageNumber()==1 }
      */
     public boolean isFirstPage();
 
-    /** @return true if {@code getPageNumber() == getTotalPages() }
+    /** @return true if {@code getPageSize()==0 or getPageNumber()==getTotalPages() }
      */
     public boolean isLastPage();
 }
