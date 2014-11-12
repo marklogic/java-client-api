@@ -81,7 +81,9 @@ public class BasicPage<T> implements Page<T> {
 
     public long size() {
         if ( size != null ) return size.longValue();
-        if ( hasNextPage() ) {
+        if ( getPageSize() == 0 ) {
+            return 0;
+        } else if ( hasNextPage() ) {
             return getPageSize();
         } else if ((getTotalSize() % getPageSize()) == 0) {
             return getPageSize();
@@ -91,6 +93,7 @@ public class BasicPage<T> implements Page<T> {
     }
 
     public long getTotalPages() {
+        if ( getPageSize() == 0 ) return 0;
         return (long) Math.ceil((double) getTotalSize() / (double) getPageSize());
     }
 
@@ -107,6 +110,7 @@ public class BasicPage<T> implements Page<T> {
     }
 
     public long getPageNumber() {
+        if ( getPageSize() == 0 ) return 0;
         double _start = (double) start;
         double _pageSize = (double) getPageSize();
         if ( _start % _pageSize == 0 ) return new Double(_start / _pageSize).longValue();
@@ -114,10 +118,12 @@ public class BasicPage<T> implements Page<T> {
     }
 
     public boolean isFirstPage() {
+        if ( getPageSize() == 0 ) return true;
         return getPageNumber() == 1;
     }
 
     public boolean isLastPage() {
+        if ( getPageSize() == 0 ) return true;
         return getPageNumber() == getTotalPages();
     }
 }

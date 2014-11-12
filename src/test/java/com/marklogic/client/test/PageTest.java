@@ -54,7 +54,17 @@ public class PageTest {
         assertEquals("Unexpected pageNumber", 1, page.getPageNumber());
         assertEquals("Unexpected isFirstPage", true, page.isFirstPage());
         assertEquals("Unexpected isLastPage", false, page.isLastPage());
-        
+
+        page = new TestPage(iterator, 10, 0, 101);
+        assertEquals("Unexpected size", 0, page.size());
+        assertEquals("Unexpected totalSize", 101, page.getTotalSize());
+        assertEquals("Unexpected totalPages", 0, page.getTotalPages());
+        assertEquals("Unexpected hasContent", false, page.hasContent());
+        assertEquals("Unexpected hasNextPage", false, page.hasNextPage());
+        assertEquals("Unexpected pageNumber", 0, page.getPageNumber());
+        assertEquals("Unexpected isFirstPage", true, page.isFirstPage());
+        assertEquals("Unexpected isLastPage", true, page.isLastPage());
+
         page = new TestPage(iterator, 2, 10, 100);
         assertEquals("Unexpected size", 10, page.size());
         assertEquals("Unexpected totalPages", 10, page.getTotalPages());
