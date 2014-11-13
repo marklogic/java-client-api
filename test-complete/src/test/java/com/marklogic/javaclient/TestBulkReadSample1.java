@@ -1,7 +1,6 @@
 package com.marklogic.javaclient;
 
 import java.io.File;
-
 import java.util.HashMap;
 
 import com.marklogic.client.DatabaseClient;
@@ -18,7 +17,6 @@ import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.DOMHandle;
-
 import com.marklogic.client.io.JacksonHandle;
 
 
@@ -27,6 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.*;
+import org.junit.runners.MethodSorters;
 
 import static org.junit.Assert.*;
 
@@ -41,7 +40,7 @@ import static org.junit.Assert.*;
  */
 
 
-
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestBulkReadSample1 extends BasicJavaClientREST  {
 
 	private static final int BATCH_SIZE=100;
@@ -80,7 +79,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST  {
      * Test Bulk Read to see you can read all the documents?
      */
 	@Test  
-	public void testReadMultipleTextDoc() 
+	public void test1ReadMultipleTextDoc() 
 	  {
 		int count=1;
 	    TextDocumentManager docMgr = client.newTextDocumentManager();
@@ -116,7 +115,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST  {
     * Verified by reading individual documents
     */
 @Test  
-	public void testReadMultipleXMLDoc() throws Exception  
+	public void test2ReadMultipleXMLDoc() throws Exception  
 	  {
 		int count=1;
 	    XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -158,7 +157,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST  {
      * 
 	 */
 	@Test 
-	public void testReadMultipleBinaryDoc() throws Exception  
+	public void test3ReadMultipleBinaryDoc() throws Exception  
 	  {
 		 String docId[] = {"Sega-4MB.jpg"};
 		 int count=1;
@@ -213,7 +212,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST  {
 	 * This test has a bug logged in github with tracking Issue#33
  */
 	@Test
-	public void testWriteMultipleJSONDocs() throws Exception  
+	public void test4WriteMultipleJSONDocs() throws Exception  
 	  {
 		 int count=1;	 
  		 JSONDocumentManager docMgr = client.newJSONDocumentManager();
@@ -257,13 +256,16 @@ public class TestBulkReadSample1 extends BasicJavaClientREST  {
    
 
 	    }
+	
+	
+
 /*
  * This test uses GenericManager to load all different document types
  * This test has a bug logged in github with tracking Issue#33
  * 
  */
 @Test 
-	public void testWriteGenericDocMgr() throws Exception  
+	public void test5WriteGenericDocMgr() throws Exception  
 	  {
 		
 		GenericDocumentManager docMgr = client.newDocumentManager();
@@ -281,13 +283,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST  {
 		  }
 //		 for(String uri:uris){System.out.println(uri);}
 		  DocumentPage page = docMgr.read(uris);
-		  if(!page.hasNext()){
-			testReadMultipleTextDoc();
-			testReadMultipleXMLDoc();
-			testReadMultipleBinaryDoc();
-			testWriteMultipleJSONDocs();
-			page = docMgr.read(uris);
-			}
+		
 		  while(page.hasNext()){
 		    	DocumentRecord rec = page.next();
 		     	switch(rec.getFormat())
@@ -307,6 +303,51 @@ public class TestBulkReadSample1 extends BasicJavaClientREST  {
 		 assertEquals("binary document count", 25,countJpg);
 		 assertEquals("Json document count", 25,countJson);
 	    }
+//test for Issue# 107
+@Test 
+public void test6CloseMethodforReadMultipleDoc() throws Exception  
+  {
+	 int count=1;	
+	 DocumentPage page;
+	 JSONDocumentManager docMgr = client.newJSONDocumentManager();
+	 DocumentWriteSet writeset =docMgr.newWriteSet();
+	 
+	 HashMap<String,String> map= new HashMap<String,String>();
+	for(int j=0;j<102;j++){ 
+	 for(int i =0;i<10;i++){
+	 JsonNode jn = new ObjectMapper().readTree("{\"animal"+i+"\":\"dog"+i+"\", \"says\":\"woof\"}");
+	 JacksonHandle jh = new JacksonHandle();
+	 jh.set(jn);
+	 writeset.add(DIRECTORY+j+"/dog"+i+".json",jh);
+	 map.put(DIRECTORY+j+"/dog"+i+".json", jn.toString());
+	   } 
+	    docMgr.write(writeset);
+	    writeset = docMgr.newWriteSet();
+	 }
+	 
+	 String uris[] = new String[100];
+	 for(int j=0;j<102;j++){ 
+	 for(int i =0;i<10;i++){
+		 uris[i]=DIRECTORY+j+"/dog"+i+".json";
+	 }
+	 count=0;
+	 page = docMgr.read(uris);
+	
+	 DocumentRecord rec;
+	 JacksonHandle jh = new JacksonHandle();
+	 while(page.hasNext()){
+    	rec = page.next();
+    	validateRecord(rec,Format.JSON);
+    	rec.getContent(jh);
+    	assertEquals("Comparing the content :",map.get(rec.getUri()),jh.get().toString());
+    	count++;
+  } page.close();
+//	 validateRecord(rec,Format.JSON);
+ assertEquals("document count", 10,count);
+	 }
+
+  }
+
 	@AfterClass
 	public static void tearDown() throws Exception
 	{

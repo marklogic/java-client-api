@@ -40,6 +40,8 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 	private static String restServerName = "REST-Java-Client-API-Server";
 	private static int restPort = 8011;
 	private  DatabaseClient client ;
+	// Additional port to test for Uber port
+    private static int uberPort = 8000;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -58,7 +60,9 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 	public void setUp() throws Exception {
 //		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		// create new connection for each test below
-		client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
+		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
+	    createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
+		client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 	}
 
 	@After

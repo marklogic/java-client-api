@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.util.Calendar;
 
 import org.junit.After;
@@ -13,7 +12,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -154,61 +152,52 @@ public class TestBulkReadWriteWithJacksonDataBind extends
 
 	/*
 	 * This method is place holder to test JacksonDatabindHandle handling file writing / reading (Streams)
-	 * Need to be completed once JacksonDatabindHandle has the necessary support.
+	 *
 	 */
 	@Test
 	public void testWriteMultipleJSONFiles() throws Exception {
 		
-		String docId[] = {"/apple.json","/microsoft.json","/hp.json"};
+		String docId = "/";
 		
-		// Work yet to be done
-		// Each of these files can contain multiple products. Need to Read these files and then the JSON content.
-		
-		String jsonFilename1 = "AppleProducts.json";
-		String jsonFilename2 = "MicrosoftProducts.json";
-		String jsonFilename3 = "HpProducts.json";
-				
-		File jsonFile1 = new File("src/test/java/com/marklogic/javaclient/data/" + jsonFilename1);
-		File jsonFile2 = new File("src/test/java/com/marklogic/javaclient/data/" + jsonFilename2);
-		File jsonFile3 = new File("src/test/java/com/marklogic/javaclient/data/" + jsonFilename3);
+		//These files need to be in src/test/java/com/marklogic/javaclient/data/ folder.
+		String jsonFilename1 = "product-apple.json";
+		String jsonFilename2 = "product-microsoft.json";
+		String jsonFilename3 = "product-hp.json";
 
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		docMgr.setMetadataCategories(Metadata.ALL);
-		DocumentWriteSet writeset = docMgr.newWriteSet();
 		// put meta-data
 		DocumentMetadataHandle mh = setMetadata();
-		DocumentMetadataHandle mhRead = new DocumentMetadataHandle();
-
-		JsonFactory f = new JsonFactory();	
 		
-		JacksonDatabindHandle<File> handle1 = new JacksonDatabindHandle<File>(File.class);
-		JacksonDatabindHandle<File> handle2 = new JacksonDatabindHandle<File>(File.class);
-		JacksonDatabindHandle<File> handle3 = new JacksonDatabindHandle<File>(File.class);
-		
-		// Add meta-data
-		writeset.addDefault(mh);
-		
-		handle1.set(jsonFile1);
-		handle2.set(jsonFile2);
-		handle3.set(jsonFile3);
-		
-		writeset.add(docId[0], handle1);
-		writeset.add(docId[1], handle2);
-		writeset.add(docId[2], handle3);
-
-		docMgr.write(writeset);
+		//Read from file system 3 files and write them into the database.
+		writeDocumentUsingOutputStreamHandle(client, jsonFilename1, docId, mh, "JSON");
+		writeDocumentUsingOutputStreamHandle(client, jsonFilename2, docId, mh, "JSON");
+		writeDocumentUsingOutputStreamHandle(client, jsonFilename3, docId, mh, "JSON");
 		
 		//Read it back into JacksonDatabindHandle Product
 		JacksonDatabindHandle<Product> handleRead = new JacksonDatabindHandle<Product>(Product.class);
 		
-		// Do we iterate individually ? 
-		docMgr.read(docId[0], handleRead);
+		// Read into JacksonDatabindHandle
+		docMgr.read(docId+jsonFilename1, handleRead);
 		Product product1 = (Product) handleRead.get();
+		
+		docMgr.read(docId+jsonFilename2, handleRead);
+		Product product2 = (Product) handleRead.get();
+		
+		docMgr.read(docId+jsonFilename3, handleRead);
+		Product product3 = (Product) handleRead.get();
 				
 		assertTrue("Did not return a iPhone 6", product1.getName().equalsIgnoreCase("iPhone 6"));
-		assertTrue("Did not return a Mobile Phone", product1.getIndustry().equalsIgnoreCase("Mobile Phone"));
-		assertTrue("Did not return a Mobile Phone", product1.getDescription().equalsIgnoreCase("New iPhone 6"));
+		assertTrue("Did not return a Mobile Phone", product1.getIndustry().equalsIgnoreCase("Mobile Hardware"));
+		assertTrue("Did not return a Mobile Phone", product1.getDescription().equalsIgnoreCase("Bending Iphone"));
 		
+		assertTrue("Did not return a iPhone 6", product2.getName().equalsIgnoreCase("Windows 10"));
+		assertTrue("Did not return a Mobile Phone", product2.getIndustry().equalsIgnoreCase("Software"));
+		assertTrue("Did not return a Mobile Phone", product2.getDescription().equalsIgnoreCase("OS Server"));
+		
+		assertTrue("Did not return a iPhone 6", product3.getName().equalsIgnoreCase("Elite Book"));
+		assertTrue("Did not return a Mobile Phone", product3.getIndustry().equalsIgnoreCase("PC Hardware"));
+		assertTrue("Did not return a Mobile Phone", product3.getDescription().equalsIgnoreCase("Very cool laptop"));		
 	}
 	
 	@Test

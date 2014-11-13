@@ -154,8 +154,6 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		// System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire",
-		// "debug");
 		System.out.println("In setup");
 		setupJavaRESTServer(dbName, fNames[0], restServerName, restPort);
 	}
@@ -212,11 +210,11 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 	/*
 	 * This method is used when there is a need to validate SmallArtifactMissingSetter.
 	 */
-	public void validateMissingArtifactSetter(SmallArtifactMissingSetter artifact) {
+	public void validateMissingArtifactSetter(SmallArtifactMissingSetter artifact, String name) {
 		assertNotNull("Artifact object should never be Null", artifact);
 		assertNotNull("Id should never be Null", artifact.id);
 		assertEquals("Id of the object is ", -99, artifact.getId());
-		assertEquals("Name of the object is ", "SmallArtifact",
+		assertEquals("Name of the object is ", name,
 				artifact.getName());
 		assertEquals("Inventory of the object is ", 1000,
 				artifact.getInventory());
@@ -239,9 +237,6 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 	 * Purpose : This test is to validate read documents stored with JacksonHandle with valid POJO
 	 * specific URI. Uses SmallArtifactMissingSetter class
 	 * which has @Id only on the setter method. 
-	 * 
-	 * Current results (10/13/2014) are: read returns a null
-	 * 	 
 	 */
 
 	@Test
@@ -250,7 +245,7 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 		String docId[] = { "com.marklogic.javaclient.TestPOJOMissingIdGetSetMethod$SmallArtifactMissingSetter/SmallArtifactMissingSetter.json" };
 		String json1 = new String(
 				"{\"com.marklogic.javaclient.TestPOJOMissingIdGetSetMethod$SmallArtifactMissingSetter\":"
-						+ "{\"name\": \"SmallArtifact\",\"id\": -99, \"inventory\": 1000}}");
+						+ "{\"name\": \"SmallArtifactMissingSetter\",\"id\": -99, \"inventory\": 1000}}");
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		docMgr.setMetadataCategories(Metadata.ALL);
 		DocumentWriteSet writeset = docMgr.newWriteSet();
@@ -275,21 +270,16 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 
 		PojoRepository<SmallArtifactMissingSetter, String> pojoReposSmallArtifact = client
 				.newPojoRepository(SmallArtifactMissingSetter.class, String.class);
-		String artifactName = new String("SmallArtifact");
+		String artifactName = new String("SmallArtifactMissingSetter");
 
 		SmallArtifactMissingSetter artifact1 = pojoReposSmallArtifact.read(artifactName);
-		validateMissingArtifactSetter(artifact1);
+		validateMissingArtifactSetter(artifact1, artifactName);
 	}
 
 	/*
 	 * Purpose : This test is to validate read documents stored with JacksonHandle with valid POJO
 	 * specific URI. Uses SmallArtifactMissingGetter class
-	 * which has @Id only on the setter method. 
-	 * 
-	 * Current results (10/13/2014) are: 
-	 * java.lang.IllegalArgumentException: Your getter method, setName, annotated with 
-	 * com.marklogic.client.pojo.annotation.Id must not require any arguments.
-	 * Issue 136 might solve this also.
+	 * which has @Id only on the setter method.
 	 */
 
 	@Test
@@ -332,12 +322,7 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 	/*
 	 * Purpose : This test is to validate read documents with valid POJO
 	 * specific URI. Uses SmallArtifactMissingGetter class
-	 * which has @Id only on the setter method. 
-	 * 
-	 * Current results (10/13/2014) are: 
-	 * java.lang.IllegalArgumentException: Your getter method, setName, annotated with 
-	 * com.marklogic.client.pojo.annotation.Id must not require any arguments.
-	 * Issue 136 might solve this also.
+	 * which has @Id only on the setter method.
 	 */
 	@Test
 	public void testPOJOWriteReadMissingGetter() throws Exception {
@@ -347,7 +332,7 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 		String artifactName = new String("SmallArtifact");
 
 		SmallArtifactMissingGetter art = new SmallArtifactMissingGetter();
-		art.setId(0);
+		art.setId(-99L);
 		art.setInventory(1000);
 		art.setName(artifactName);
 		
@@ -361,10 +346,7 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 	/*
 	 * Purpose : This test is to validate read documents stored with valid POJO
 	 * specific URI. Uses SmallArtifactMissingSetter class
-	 * which has @Id only on the setter method. 
-	 * 
-	 * Current results (10/13/2014) are: Works fine
-	 * 	 
+	 * which has @Id only on the setter method.
 	 */
 
 	@Test
@@ -372,10 +354,10 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 		
 		PojoRepository<SmallArtifactMissingSetter, String> pojoReposSmallArtifact = client
 				.newPojoRepository(SmallArtifactMissingSetter.class, String.class);
-		String artifactName = new String("SmallArtifact");
+		String artifactName = new String("SmallArtifactMissingSetter");
 
 		SmallArtifactMissingSetter art = new SmallArtifactMissingSetter();
-		art.setId(-99);
+		art.setId(-99L);
 		art.setInventory(1000);
 		art.setName(artifactName);
 		
@@ -383,16 +365,13 @@ public class TestPOJOMissingIdGetSetMethod extends BasicJavaClientREST {
 		pojoReposSmallArtifact.write(art,"com.marklogic.javaclient.TestPOJOMissingIdGetSetMethod$SmallArtifactMissingSetter/SmallArtifactMissingSetter.json");
 						
 		SmallArtifactMissingSetter artifact1 = pojoReposSmallArtifact.read(artifactName);
-		validateMissingArtifactSetter(artifact1);	
+		validateMissingArtifactSetter(artifact1, artifactName);	
 	}
 	
 	/*
 	 * Purpose : This test is to validate read documents stored with JacksonHandle with valid POJO
 	 * specific URI. Uses SmallArtifactMissGetSet class
-	 * which has no @Id on any of its class members. 
-	 * 
-	 * Current results (10/13/2014) are: IllegalArgumentException
-	 * 	 
+	 * which has no @Id on any of its class members.
 	 */
 
 	@Test(expected=IllegalArgumentException.class)
