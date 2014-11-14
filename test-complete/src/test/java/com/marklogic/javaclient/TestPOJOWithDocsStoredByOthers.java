@@ -541,7 +541,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	}
 	
 	/*
-	 * Purpose : This test is to validate creating an sub class which is references by a Super class variable type.
+	 * Purpose : This test is to validate creating an sub class which is referenced by a Super class variable type.
 	 * Both SmallArtifactIdInSuper and SmallArtifactNoId classes are used.
 	 * POJO repository cannot read back the sub class.
 	 * 
@@ -569,7 +569,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	}
 	
 	/*
-	 * Purpose : This test is to validate creating an sub class which is references by a Super class variable type.
+	 * Purpose : This test is to validate creating an sub class which is referenced by a Super class variable type.
 	 * Both SmallArtifactIdInSuper and SmallArtifactNoId classes are used.
 	 * This is a variation of testPOJOSubObjReferencedBySuperClassVariable()
 	 * 
