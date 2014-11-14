@@ -55,10 +55,6 @@ public abstract class JacksonBaseHandle<T>
         super.setFormat(Format.JSON);
     }
 
-    /**
-     * Returns the mapper used to construct node objects from JSON.
-     * @return    the JSON mapper.
-     */
     public ObjectMapper getMapper() {
         if (mapper == null) {
             mapper = new ObjectMapper();
@@ -69,15 +65,6 @@ public abstract class JacksonBaseHandle<T>
         return mapper;
     }
 
-    /**
-     * Enables clients to use any mapper, including databinding mappers for formats other than JSON.
-     * Use at your own risk!  Note that you may want to configure your mapper as we do to not close
-     * streams which we may need to reuse if we have to resend a network request:
-     * <code>
-     *      mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
-     *      mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
-     * </code>
-     **/
     public void setMapper(ObjectMapper mapper) {
         this.mapper = mapper;
     }

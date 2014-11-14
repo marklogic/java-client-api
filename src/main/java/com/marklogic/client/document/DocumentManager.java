@@ -29,7 +29,10 @@ import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
+import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
 
 /**
@@ -416,38 +419,178 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      */
     public DocumentPage read(ServerTransform transform, Transaction transaction, String... uris);
 
+    /**
+     * Reads from the database the metadata for a list of documents matching the
+     * provided uris.  Allows iteration across the metadata for matching documents
+     * (only if setMetadataCategories has been called to request metadata).  To find
+     * out how many of your uris matched, call the
+     * {@link DocumentPage#size() DocumentPage.size()} method.
+     *
+     * @param uris the database uris identifying documents
+     * @return the DocumentPage of metadata from matching documents
+     */
     public DocumentPage readMetadata(String... uris);
 
+    /**
+     * Reads from the database the metadata for a list of documents matching the
+     * provided uris.  Allows iteration across the metadata for matching documents
+     * (only if setMetadataCategories has been called to request metadata).  To find
+     * out how many of your uris matched, call the
+     * {@link DocumentPage#size() DocumentPage.size()} method.
+     *
+     * @param transaction the transaction in which this read is participating
+     * @param uris the database uris identifying documents
+     * @return the DocumentPage of metadata from matching documents
+     */
     public DocumentPage readMetadata(Transaction transaction, String... uris);
 
+    /**
+     * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long) QueryManager.search}
+     * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
+     * documents in each DocumentPage. If setMetadataCategories has
+     * been called, populates metadata for each result in the format specified by
+     * {@link #setNonDocumentFormat setNonDocumentFormat}.
+     * @param querydef	the definition of query criteria and query options
+     * @param start	the offset of the first document in the page (where 1 is the first result)
+     * @return the DocumentPage of matching documents and metadata
+     */
     public DocumentPage search(QueryDefinition querydef, long start);
 
+    /**
+     * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction) QueryManager.search}
+     * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
+     * documents in each DocumentPage. If setMetadataCategories has
+     * been called, populates metadata for each result in the format specified by
+     * {@link #setNonDocumentFormat setNonDocumentFormat}.
+     * @param querydef	the definition of query criteria and query options
+     * @param start	the offset of the first document in the page (where 1 is the first result)
+     * @param transaction	an open transaction for matching documents
+     * @return the DocumentPage of matching documents and metadata
+     */
     public DocumentPage search(QueryDefinition querydef, long start, Transaction transaction);
 
+    /**
+     * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long) QueryManager.search}
+     * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
+     * documents in each DocumentPage.  If searchHandle is not null,
+     * requests a search response and populates searchHandle with it. If setMetadataCategories has
+     * been called, populates metadata for each result in the format specified by
+     * {@link #setNonDocumentFormat setNonDocumentFormat}.
+     * @param querydef	the definition of query criteria and query options
+     * @param start	the offset of the first document in the page (where 1 is the first result)
+     * @param searchHandle	a handle for reading the search response which will include view types
+     *     specified by {@link #setSearchView setSearchView} and format specified by
+     *     {@link #setNonDocumentFormat setNonDocumentFormat}
+     * @return the DocumentPage of matching documents and metadata
+     */
     public DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle);
 
+    /**
+     * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction)}
+     * but return complete documents via iterable DocumentPage.  Retrieves up to getPageLength()
+     * documents in each DocumentPage.  If searchHandle is not null,
+     * requests a search response and populates searchHandle with it. If setMetadataCategories has
+     * been called, populates metadata for each result in the format specified by
+     * {@link #setNonDocumentFormat setNonDocumentFormat}.
+     * @param querydef	the definition of query criteria and query options
+     * @param start	the offset of the first document in the page (where 1 is the first result)
+     * @param searchHandle	a handle for reading the search response which will include view types
+     *     specified by {@link #setSearchView setSearchView} and format specified by
+     *     {@link #setNonDocumentFormat setNonDocumentFormat}
+     * @param transaction	an open transaction for matching documents
+     * @return the DocumentPage of matching documents and metadata
+     */
     public DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle, Transaction transaction);
 
+    /** Get the maximum number of records to return in a page from calls to {@link #search search}
+     *  @return the maximum number of records to return in a page from calls to
+     *      {@link #search search} */
     public long getPageLength();
 
+    /**
+     * Specifies the maximum number of documents that can appear in any page of the query results,
+     * overriding any maximum specified in the query options.
+     * @param length	the maximum number of records to return in a page from calls to
+     *     {@link #search search}
+     */
     public void setPageLength(long length);
 
+    /**
+     * Returns the format (if set) for the search response from
+     * {@link #search(QueryDefinition, long, SearchReadHandle) search} and
+     * metadata available from {@link DocumentRecord#getMetadata(DocumentMetadataReadHandle)
+     * DocumentPage.next().getMetadata(handle)} (assuming 
+     * {@link #setMetadataCategories setMetadataCategories} has been called
+     * to request specific metadata). If setNonDocumentFormat has not been called,
+     * the server default format will be used.
+     * @return the format, if set, null otherwise
+     */
     public Format getNonDocumentFormat();
-    
+
+    /**
+     * Specifies the format for the search response from
+     * {@link #search(QueryDefinition, long, SearchReadHandle) search} and
+     * metadata available from {@link DocumentRecord#getMetadata(DocumentMetadataReadHandle)
+     * DocumentPage.next().getMetadata(handle)} (assuming 
+     * {@link #setMetadataCategories setMetadataCategories} has been called
+     * to request specific metadata). If setNonDocumentFormat is not is called,
+     * the server default format will be used.
+     * @param nonDocumentFormat the format to use
+     */
     public void setNonDocumentFormat(Format nonDocumentFormat);
-    
+
+    /**
+     * Returns the view types included in a SearchReadHandle populated by calls to
+     * {@link #search(QueryDefinition, long, SearchReadHandle) search}
+     * @return	the view types included in a SearchReadHandle populated by calls to
+     *     {@link #search(QueryDefinition, long, SearchReadHandle) search}
+     */
     public QueryView getSearchView();
 
+    /**
+     * Specifies the view types included in a SearchReadHandle populated by calls to
+     * {@link #search(QueryDefinition, long, SearchReadHandle) search}
+     * @param view	the view types included in a SearchReadHandle populated by calls to
+     *     {@link #search(QueryDefinition, long, SearchReadHandle) search}
+     */
     public void setSearchView(QueryView view);
 
     public DocumentWriteSet newWriteSet();
 
+    /**
+     * Write a set of documents and metadata to the server via REST API bulk capabilities.
+     * @param writeSet	the set of documents and metadata to write
+     * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk">REST API -&gt; Reading
+     *      and Writing Multiple Documents</a>
+     */
     public void write(DocumentWriteSet writeSet);
 
+    /**
+     * Write a set of documents and metadata to the server via REST API bulk capabilities.
+     * @param writeSet	the set of documents and metadata to write
+     * @param transform	a server transform to modify the contents of each document
+     * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk">REST API -&gt; Reading
+     *      and Writing Multiple Documents</a>
+     */
     public void write(DocumentWriteSet writeSet, ServerTransform transform);
 
+    /**
+     * Write a set of documents and metadata to the server via REST API bulk capabilities.
+     * @param writeSet	the set of documents and metadata to write
+     * @param transaction	an open transaction under which the documents will be written
+     * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk">REST API -&gt; Reading
+     *      and Writing Multiple Documents</a>
+     */
     public void write(DocumentWriteSet writeSet, Transaction transaction);
 
+    /**
+     * Write a set of documents and metadata to the server via REST API bulk capabilities.
+     * @param writeSet	the set of documents and metadata to write
+     * @param transform	a server transform to modify the contents of each document
+     * @param transaction	an open transaction under which the documents will be written
+     * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk">REST API -&gt; Reading
+     *      and Writing Multiple Documents</a>
+     */
     public void write(DocumentWriteSet writeSet, ServerTransform transform, Transaction transaction);
 
     /**

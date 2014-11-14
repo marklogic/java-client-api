@@ -38,9 +38,9 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * An adapter for using the streaming capabilities of the Jackson Open Source library.
- * Enables low-level reading and writing of JSON documents.
+ * Enables low-level efficient reading and writing of JSON documents.
+ * @see <a href="http://wiki.fasterxml.com/JacksonStreamingApi">Jackson Streaming API</a>
  */
-// TODO: add link to jackson streaming documentation
 public class JacksonParserHandle
     extends JacksonBaseHandle<JsonParser>
     implements ContentHandle<JsonParser>,
@@ -98,6 +98,7 @@ public class JacksonParserHandle
 
     /**
      * JsonParser allows streaming access to content as it arrives.
+     * @return the JsonParser over the content (usually received from the server)
      */
     public JsonParser get() {
         if ( parser == null ) {
@@ -125,6 +126,31 @@ public class JacksonParserHandle
             content = (InputStream) parser.getInputSource();
         }
     }
+
+    /**
+     * Provides access to the ObjectMapper used internally so you can configure
+     * it to fit your JSON.
+     * @return the ObjectMapper instance
+     */
+    @Override
+    public ObjectMapper getMapper() { return super.getMapper(); }
+    /**
+     * Enables clients to specify their own ObjectMapper instance, including databinding mappers
+     * for formats other than JSON.
+     * For <a href="https://github.com/FasterXML/jackson-dataformat-csv">example</a>:<pre>{@code
+     *ObjectMapper mapper = new CsvMapper();
+     *mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+     *mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
+     *handle.setMapper(mapper);
+     * }</pre>
+     *
+     * Use at your own risk!  Note that you most likely want to set to false the two options we
+     * demonstrate above (JsonGenerator.Feature.AUTO_CLOSE_TARGET and JsonParser.Feature.AUTO_CLOSE_SOURCE)
+     * as we do so your mapper will not close streams which we may need to reuse if we have to
+     * resend a network request.
+     **/
+    @Override
+    public void setMapper(ObjectMapper mapper) { super.setMapper(mapper); }
 
     @Override
     protected void receiveContent(InputStream content) {
