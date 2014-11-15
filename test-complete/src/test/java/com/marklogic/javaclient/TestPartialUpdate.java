@@ -122,8 +122,9 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		fragmentNode = mapper.createObjectNode();
 		fragmentNode.put("insertedKey", 9);
 		String fragment = mapper.writeValueAsString(fragmentNode);
-
-		patchBldr.insertFragment("$.employees", Position.LAST_CHILD, fragment);
+		
+		String jsonpath = new String("$.employees[2]"); 
+		patchBldr.insertFragment(jsonpath, Position.AFTER, fragment);
 		DocumentPatchHandle patchHandle = patchBldr.build();
 		docMgr.patch(docId, patchHandle);
 
@@ -535,7 +536,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	@Test	
 	public void testPartialUpdateCombinationJSON() throws Exception{
 		System.out.println("Running testPartialUpdateCombinationJSON");
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		String[] filenames = {"json-original.json"};
@@ -573,7 +574,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		client.release();	
 
 	}
-
+	
 	@Test	
 	public void testPartialUpdateMetadata() throws Exception{
 		System.out.println("Running testPartialUpdateMetadata");
@@ -711,7 +712,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		fragmentNode.put("insertedKey", 9);
 		String fragment = mapper.writeValueAsString(fragmentNode);
 
-		patchBldr.insertFragment("$.employees", Position.LAST_CHILD, fragment);
+		patchBldr.insertFragment("$.employees[2]", Position.AFTER, fragment);
 		DocumentPatchHandle patchHandle = patchBldr.build();
 
 		docMgr.patch(desc, patchHandle);
@@ -795,7 +796,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		fragmentNode.put("insertedKey", 9);
 		String fragment = mapper.writeValueAsString(fragmentNode);
 		patchBldr.pathLanguage(PathLanguage.JSONPATH);
-		patchBldr.insertFragment("$.employees", Position.LAST_CHILD, fragment);
+		patchBldr.insertFragment("$.employees[2]", Position.AFTER, fragment);
 		DocumentPatchHandle patchHandle = patchBldr.build();
 		//		Transaction t = client.openTransaction("Tranc");
 		docMgr.patch(desc, patchHandle);//,t);
