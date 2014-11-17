@@ -20,17 +20,52 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
 import java.util.Set;
 
+/**
+ * Builds a set of {@link DocumentWriteOperation DocumentWriteOperations} to be sent
+ * to the server through the REST API as a bulk write request.
+ * @see DocumentManager#write(DocumentWriteSet)
+ * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_54649">
+ *     REST API Guide -&gt; Writing Multiple Documents</a>
+ */
 public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
+    /** Sets the default metadata for this write set for all documents added after this call */
     public DocumentWriteSet addDefault(DocumentMetadataWriteHandle metadataHandle);
 
+    /** Removes the default metadata for this write set for all documents added after this call */
     public DocumentWriteSet disableDefault();
 
+    /**
+     * Adds to this write set a document with the given docId (server uri)
+     * and contents provided by the handle
+     * @param docId	the URI identifier for the document
+     * @param contentHandle	a handle for writing the content of the document
+     */
     public DocumentWriteSet add(String docId, AbstractWriteHandle contentHandle);
 
+    /**
+     * Adds to this write set a document with the given docId (server uri),
+     * metadata, and contents provided by the handle
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param contentHandle	a handle for writing the content of the document
+     */
     public DocumentWriteSet add(String docId, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle);
 
+    /**
+     * Adds to this write set a document with the given uri template, and
+     * contents provided by the handle
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param contentHandle	a handle for writing the content of the document
+     */
     public DocumentWriteSet add(DocumentDescriptor desc, AbstractWriteHandle contentHandle);
 
+    /**
+     * Adds to this write set a document with the given uri template, metadata,
+     * and contents provided by the handle
+     * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param contentHandle	a handle for writing the content of the document
+     */
     public DocumentWriteSet add(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle);
 }
 
