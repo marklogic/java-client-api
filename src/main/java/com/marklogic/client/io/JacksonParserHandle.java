@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.impl.JacksonBaseHandle;
 import com.marklogic.client.io.marker.BufferableHandle;
