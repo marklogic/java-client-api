@@ -37,7 +37,7 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
    * bitemporal data management</a>.
    * @param template	the template for constructing the document uri
    * @param metadataHandle	a handle for writing the metadata of the document
-   * @param content	an IO representation of the document content
+   * @param contentHandle	an IO representation of the document content
    * @param transform	a server transform to modify the document content
    * @param transaction	an open transaction under which the document may have been created or deleted
    * @param temporalCollection	the name of the temporal collection existing in the database into
@@ -60,7 +60,7 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
    * bitemporal data management</a>.
    * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
    * @param metadataHandle	a handle for writing the metadata of the document
-   * @param content	an IO representation of the document content
+   * @param contentHandle	an IO representation of the document content
    * @param transform	a server transform to modify the document content
    * @param transaction	an open transaction under which the document may have been created or deleted
    * @param temporalCollection	the name of the temporal collection existing in the database into
@@ -82,7 +82,7 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
    * bitemporal data management</a>.
    * @param docId	the URI identifier for the document
    * @param metadataHandle	a handle for writing the metadata of the document
-   * @param content	an IO representation of the document content
+   * @param contentHandle	an IO representation of the document content
    * @param transform	a server transform to modify the document content
    * @param transaction	an open transaction under which the document may have been created or deleted
    * @param temporalCollection	the name of the temporal collection existing in the database into
@@ -134,7 +134,7 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
      * at a specific system time
      * @param template	the template for constructing the document uri
      * @param metadataHandle	a handle for writing the metadata of the document
-     * @param content	an IO representation of the document content
+     * @param contentHandle	an IO representation of the document content
      * @param transform	a server transform to modify the document content
      * @param transaction	an open transaction under which the document may have been created or deleted
      * @param temporalCollection	the name of the temporal collection existing in the database into
@@ -159,7 +159,7 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
      * at a specific system time
      * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
      * @param metadataHandle	a handle for writing the metadata of the document
-     * @param content	an IO representation of the document content
+     * @param contentHandle	an IO representation of the document content
      * @param transform	a server transform to modify the document content
      * @param transaction	an open transaction under which the document may have been created or deleted
      * @param temporalCollection	the name of the temporal collection existing in the database into
@@ -183,7 +183,7 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
      * at a specific system time
      * @param docId	the URI identifier for the document
      * @param metadataHandle	a handle for writing the metadata of the document
-     * @param content	an IO representation of the document content
+     * @param contentHandle	an IO representation of the document content
      * @param transform	a server transform to modify the document content
      * @param transaction	an open transaction under which the document may have been created or deleted
      * @param temporalCollection	the name of the temporal collection existing in the database into
