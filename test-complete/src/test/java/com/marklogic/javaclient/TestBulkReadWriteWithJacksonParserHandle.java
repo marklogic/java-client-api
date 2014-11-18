@@ -55,7 +55,7 @@ import com.marklogic.client.query.QueryManager.QueryView;
 public class TestBulkReadWriteWithJacksonParserHandle extends
 		BasicJavaClientREST {
 
-	private static final String DIRECTORY = "/bulkread/";
+	private static final String DIRECTORY = "/";
 	private static String dbName = "TestBulkJacksonParserDB";
 	private static String[] fNames = { "TestBulkJacksonParserDB-1" };
 	private static String restServerName = "REST-Java-Client-API-Server";
@@ -491,6 +491,30 @@ public class TestBulkReadWriteWithJacksonParserHandle extends
 	@Test
 	public void testBulkSearchQBEWithJSONResponseFormat() throws IOException, ParserConfigurationException, SAXException, TransformerException {
 		int count;
+		String docId[] = { "/a.json", "/b.json", "/c.json" };
+		String json1 = new String("{\"animal\":\"dog\", \"says\":\"woof\"}");
+		String json2 = new String("{\"animal\":\"cat\", \"says\":\"meow\"}");
+		String json3 = new String("{\"animal\":\"rat\", \"says\":\"keek\"}");
+		
+		JsonFactory f = new JsonFactory();    
+
+		JSONDocumentManager docMgr1 = client.newJSONDocumentManager();
+		docMgr1.setMetadataCategories(Metadata.ALL);
+		DocumentWriteSet writeset = docMgr1.newWriteSet();
+		
+		JacksonParserHandle jacksonParserHandle1 = new JacksonParserHandle();
+		JacksonParserHandle jacksonParserHandle2 = new JacksonParserHandle();
+		JacksonParserHandle jacksonParserHandle3 = new JacksonParserHandle();
+		
+		jacksonParserHandle1.set(f.createParser(json1));
+		jacksonParserHandle2.set(f.createParser(json2));
+		jacksonParserHandle3.set(f.createParser(json3));
+
+		writeset.add(docId[0], jacksonParserHandle1);
+		writeset.add(docId[1], jacksonParserHandle2);
+		writeset.add(docId[2], jacksonParserHandle3);
+        // Write to database.
+		docMgr1.write(writeset);	
 
 		//Creating a xml document manager for bulk search
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -533,11 +557,10 @@ public class TestBulkReadWriteWithJacksonParserHandle extends
 			pageNo = pageNo + page.getPageSize();
 		}while(!page.isLastPage() &&  page.hasContent() );
 
-		assertEquals("page count is  ",5,page.getTotalPages());
-		assertTrue("Page has previous page ?",page.hasPreviousPage());
+		assertEquals("page count is  ",1,page.getTotalPages());
+		assertFalse("Page has previous page ?",page.hasPreviousPage());
 		assertEquals("page size", 25,page.getPageSize());
-		assertEquals("document count", 102,page.getTotalSize());
-
+		assertEquals("document count", 1,page.getTotalSize());
 	}
 		
 	@AfterClass

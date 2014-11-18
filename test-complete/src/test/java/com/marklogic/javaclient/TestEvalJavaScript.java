@@ -62,7 +62,7 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
  	     setupJavaRESTServer(dbName, fNames[0], restServerName,restPort,false);
  	     TestEvalXquery.createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in","xdmp:eval-in","xdbc:invoke-in","any-uri","xdbc:invoke");
  	     TestEvalXquery.createRESTUser("eval-user", "x", "test-eval");
-//		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
 
 	@AfterClass
@@ -370,7 +370,7 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 						+"var myNull;"
 						+ "var myJsonArray;"
 						+ "var myJsonNull;"
-						+ "results.push(myString,myBool,myInteger,myDecimal,myJsonObject,myJsonArray);"
+						+ "results.push(myString,myBool,myInteger,myDecimal,myJsonObject,myJsonArray,myNull);"
 						+"xdmp.arrayValues(results)";
 		
 		ServerEvaluationCall evl= client.newServerEval().javascript(query1);
@@ -383,7 +383,7 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 		.addVariableAs("myJsonArray",new ObjectMapper().createArrayNode().add(1).add(2).add(3))
 		.addVariableAs("myJsonNull",new ObjectMapper().createObjectNode().nullNode() )
 		;
-		System.out.println(query1);
+		System.out.println(new ObjectMapper().createObjectNode().nullNode().toString());
 		EvalResultIterator evr = evl.eval();
 		this.validateReturnTypes(evr);
 		

@@ -4,8 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -13,11 +14,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.JSONDocumentManager;
@@ -28,6 +29,7 @@ import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonDatabindHandle;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
 
 /*
@@ -37,12 +39,25 @@ import com.marklogic.client.io.marker.ContentHandleFactory;
 
 public class TestBulkReadWriteWithJacksonDataBind extends
 		BasicJavaClientREST {	
-	private static final String DIRECTORY = "/bulkread/";
+	private static final String DIRECTORY = "/";
 	private static String dbName = "TestBulkJacksonDataBindDB";
 	private static String[] fNames = { "TestBulkJacksonDataBindDB-1" };
 	private static String restServerName = "REST-Java-Client-API-Server";
 	private static int restPort = 8011;
 	private DatabaseClient client;
+	
+	public static class ContentCheck
+	{
+		String content;
+
+		public String getContent() {
+			return content;
+		}
+
+		public void setContent(String content) {
+			this.content = content;
+		}
+	}
 
 	@BeforeClass
 	public static void setUp() throws Exception {
@@ -154,61 +169,52 @@ public class TestBulkReadWriteWithJacksonDataBind extends
 
 	/*
 	 * This method is place holder to test JacksonDatabindHandle handling file writing / reading (Streams)
-	 * Need to be completed once JacksonDatabindHandle has the necessary support.
+	 *
 	 */
 	@Test
 	public void testWriteMultipleJSONFiles() throws Exception {
 		
-		String docId[] = {"/apple.json","/microsoft.json","/hp.json"};
+		String docId = "/";
 		
-		// Work yet to be done
-		// Each of these files can contain multiple products. Need to Read these files and then the JSON content.
-		
-		String jsonFilename1 = "AppleProducts.json";
-		String jsonFilename2 = "MicrosoftProducts.json";
-		String jsonFilename3 = "HpProducts.json";
-				
-		File jsonFile1 = new File("src/test/java/com/marklogic/javaclient/data/" + jsonFilename1);
-		File jsonFile2 = new File("src/test/java/com/marklogic/javaclient/data/" + jsonFilename2);
-		File jsonFile3 = new File("src/test/java/com/marklogic/javaclient/data/" + jsonFilename3);
+		//These files need to be in src/test/java/com/marklogic/javaclient/data/ folder.
+		String jsonFilename1 = "product-apple.json";
+		String jsonFilename2 = "product-microsoft.json";
+		String jsonFilename3 = "product-hp.json";
 
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		docMgr.setMetadataCategories(Metadata.ALL);
-		DocumentWriteSet writeset = docMgr.newWriteSet();
 		// put meta-data
 		DocumentMetadataHandle mh = setMetadata();
-		DocumentMetadataHandle mhRead = new DocumentMetadataHandle();
-
-		JsonFactory f = new JsonFactory();	
 		
-		JacksonDatabindHandle<File> handle1 = new JacksonDatabindHandle<File>(File.class);
-		JacksonDatabindHandle<File> handle2 = new JacksonDatabindHandle<File>(File.class);
-		JacksonDatabindHandle<File> handle3 = new JacksonDatabindHandle<File>(File.class);
-		
-		// Add meta-data
-		writeset.addDefault(mh);
-		
-		handle1.set(jsonFile1);
-		handle2.set(jsonFile2);
-		handle3.set(jsonFile3);
-		
-		writeset.add(docId[0], handle1);
-		writeset.add(docId[1], handle2);
-		writeset.add(docId[2], handle3);
-
-		docMgr.write(writeset);
+		//Read from file system 3 files and write them into the database.
+		writeDocumentUsingOutputStreamHandle(client, jsonFilename1, docId, mh, "JSON");
+		writeDocumentUsingOutputStreamHandle(client, jsonFilename2, docId, mh, "JSON");
+		writeDocumentUsingOutputStreamHandle(client, jsonFilename3, docId, mh, "JSON");
 		
 		//Read it back into JacksonDatabindHandle Product
 		JacksonDatabindHandle<Product> handleRead = new JacksonDatabindHandle<Product>(Product.class);
 		
-		// Do we iterate individually ? 
-		docMgr.read(docId[0], handleRead);
+		// Read into JacksonDatabindHandle
+		docMgr.read(docId+jsonFilename1, handleRead);
 		Product product1 = (Product) handleRead.get();
+		
+		docMgr.read(docId+jsonFilename2, handleRead);
+		Product product2 = (Product) handleRead.get();
+		
+		docMgr.read(docId+jsonFilename3, handleRead);
+		Product product3 = (Product) handleRead.get();
 				
 		assertTrue("Did not return a iPhone 6", product1.getName().equalsIgnoreCase("iPhone 6"));
-		assertTrue("Did not return a Mobile Phone", product1.getIndustry().equalsIgnoreCase("Mobile Phone"));
-		assertTrue("Did not return a Mobile Phone", product1.getDescription().equalsIgnoreCase("New iPhone 6"));
+		assertTrue("Did not return a Mobile Phone", product1.getIndustry().equalsIgnoreCase("Mobile Hardware"));
+		assertTrue("Did not return a Mobile Phone", product1.getDescription().equalsIgnoreCase("Bending Iphone"));
 		
+		assertTrue("Did not return a iPhone 6", product2.getName().equalsIgnoreCase("Windows 10"));
+		assertTrue("Did not return a Mobile Phone", product2.getIndustry().equalsIgnoreCase("Software"));
+		assertTrue("Did not return a Mobile Phone", product2.getDescription().equalsIgnoreCase("OS Server"));
+		
+		assertTrue("Did not return a iPhone 6", product3.getName().equalsIgnoreCase("Elite Book"));
+		assertTrue("Did not return a Mobile Phone", product3.getIndustry().equalsIgnoreCase("PC Hardware"));
+		assertTrue("Did not return a Mobile Phone", product3.getDescription().equalsIgnoreCase("Very cool laptop"));		
 	}
 	
 	@Test
@@ -272,7 +278,7 @@ public class TestBulkReadWriteWithJacksonDataBind extends
 		docMgr.readMetadata(docId[2], mhRead);
 		validateMetadata(mhRead);					
 	}
-
+	
 	/*
 	 * Purpose: To test newFactory method with custom Pojo instances.
 	 */
@@ -362,21 +368,145 @@ public class TestBulkReadWriteWithJacksonDataBind extends
 		docMgr.readMetadata(docId[2], mhRead);
 		validateMetadata(mhRead);					
 	}
+
+	/*
+	 * Purpose: To test Git Issue # 89.
+	 * Issue Description: If you read more than 100 JSON objects, the Client API stops reading them.
+	 * 
+	 * Use one Jackson Handles instance.
+	 */
+	@Test
+	public void testSingleJacksonHandlerHundredJsonDocs() throws Exception {
+		
+		JacksonHandle jh = new JacksonHandle();
+		jh.withFormat(Format.JSON);
+		JSONDocumentManager docMgr = client.newJSONDocumentManager();
+		docMgr.setMetadataCategories(Metadata.ALL);
+		docMgr.setNonDocumentFormat(Format.JSON);
+		DocumentWriteSet writeset = docMgr.newWriteSet();
+		// put meta-data
+		DocumentMetadataHandle mh = setMetadata();
+		writeset.addDefault(mh);
+		
+		JacksonDatabindHandle<String> handle1 = new JacksonDatabindHandle<String>(String.class);
+
+		Map<String, String> jsonMap = new HashMap<String, String>();
+		String[] uris = new String[150];
+				
+		String dir = new String("/");
+		String mapDocId = null;
+		StringBuffer mapDocContent = new StringBuffer();
+		for (int i=0;i<102;i++)
+		{
+			mapDocId = dir + Integer.toString(i);
+			mapDocContent.append("{\"content\":\"");
+			mapDocContent.append(Integer.toString(i));
+			mapDocContent.append("\"}");
+			
+			jsonMap.put(mapDocId, mapDocContent.toString());
+			
+			handle1.set(mapDocContent.toString());
+			writeset.add(mapDocId, handle1);
+			
+			uris[i] = mapDocId;
+						
+			mapDocContent.setLength(0);
+			mapDocId = null;
+			docMgr.write(writeset);
+			writeset.clear();
+		}
+		
+		int count=0;
+		
+		 DocumentPage page = docMgr.read(uris);
+		 DocumentRecord rec;
+				  
+		 while(page.hasNext()){
+	    rec = page.next();
+	    
+	    assertNotNull("DocumentRecord should never be null", rec);
+		assertNotNull("Document uri should never be null", rec.getUri());
+		assertTrue("Document uri should start with " + DIRECTORY, rec.getUri().startsWith(DIRECTORY));
+	    
+		rec.getContent(jh);
+		//Verify the contents: comparing Map with JacksonHandle's.
+	    assertEquals("Comparing the content :",jsonMap.get(rec.getUri()),jh.get().toString());
+	    count++;
+	  }
+     assertEquals("document count", 102,count);
+							
+	}
+	/*
+	 * Purpose: To test Git Issue # 89.
+	 * Issue Description: If you read more than 100 JSON objects, the Client API stops reading them.
+	 * 
+	 * Use multiple Jackson Handle instances.
+	 */
+	@Test
+	public void testMultipleJacksonHandleHundredJsonDocs1() throws Exception {
+		
+		JSONDocumentManager docMgr = client.newJSONDocumentManager();
+		docMgr.setMetadataCategories(Metadata.ALL);
+		docMgr.setNonDocumentFormat(Format.JSON);
+		DocumentWriteSet writeset = docMgr.newWriteSet();
+		// put meta-data
+		DocumentMetadataHandle mh = setMetadata();
+		writeset.addDefault(mh);
+		
+		JacksonDatabindHandle<String> handle1 = new JacksonDatabindHandle<String>(String.class);
+
+		Map<String, String> jsonMap = new HashMap<String, String>();
+		String[] uris = new String[150];
+				
+		String dir = new String("/");
+		String mapDocId = null;
+		StringBuffer mapDocContent = new StringBuffer();
+		for (int i=0;i<102;i++)
+		{
+			mapDocId = dir + Integer.toString(i);
+			mapDocContent.append("{\"content\":\"");
+			mapDocContent.append(Integer.toString(i));
+			mapDocContent.append("\"}");
+			
+			jsonMap.put(mapDocId, mapDocContent.toString());
+			
+			handle1.set(mapDocContent.toString());
+			writeset.add(mapDocId, handle1);
+			
+			uris[i] = mapDocId;
+						
+			mapDocContent.setLength(0);
+			mapDocId = null;
+			docMgr.write(writeset);
+			writeset.clear();
+		}
+		
+		int count=0;
+		
+		 DocumentPage page = docMgr.read(uris);
+		 DocumentRecord rec;
+		 
+		 JacksonHandle jh = new JacksonHandle();
+		 jh.withFormat(Format.JSON);
+		 while(page.hasNext()){
+	    rec = page.next();
+	    
+	    assertNotNull("DocumentRecord should never be null", rec);
+		assertNotNull("Document uri should never be null", rec.getUri());
+		assertTrue("Document uri should start with " + DIRECTORY, rec.getUri().startsWith(DIRECTORY));
+	    
+		rec.getContent(jh);
+		//Verify the contents: comparing Map with JacksonHandle's.
+	    assertEquals("Comparing the content :",jsonMap.get(rec.getUri()),jh.get().toString());
+	    count++;
+	  }
+     assertEquals("document count", 102,count);
+							
+	}
 	
 	@AfterClass
 	public static void tearDown() throws Exception {
 		System.out.println("In tear down");
 		tearDownJavaRESTServer(dbName, fNames, restServerName);
-	}
-
-	public void validateRecord(DocumentRecord record, Format type) {
-
-		assertNotNull("DocumentRecord should never be null", record);
-		assertNotNull("Document uri should never be null", record.getUri());
-		assertTrue("Document uri should start with " + DIRECTORY, record
-				.getUri().startsWith(DIRECTORY));
-		assertEquals("All records are expected to be in same format", type,
-				record.getFormat());
-
 	}
 }

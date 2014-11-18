@@ -32,9 +32,9 @@ public class TestPOJOQueryBuilderContainerQuery extends BasicJavaClientREST {
 //						System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		System.out.println("In setup");
 		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
-		BasicJavaClientREST.setDatabaseProperties(dbName, "trailing-wildcard-searches", true);
-		BasicJavaClientREST.setDatabaseProperties(dbName, "word-positions", true);
-		BasicJavaClientREST.setDatabaseProperties(dbName, "element-word-positions", true);
+//		BasicJavaClientREST.setDatabaseProperties(dbName, "trailing-wildcard-searches", true);
+//		BasicJavaClientREST.setDatabaseProperties(dbName, "word-positions", true);
+//		BasicJavaClientREST.setDatabaseProperties(dbName, "element-word-positions", true);
 		BasicJavaClientREST.addRangePathIndex(dbName, "long", "com.marklogic.javaclient.Artifact/inventory", "", "reject",true);
 	}
 
@@ -162,14 +162,14 @@ public class TestPOJOQueryBuilderContainerQuery extends BasicJavaClientREST {
 		String[] searchOptions ={"case-sensitive","wildcarded","max-occurs=1"};
 		PojoQueryBuilder qb = products.getQueryBuilder();
 		String[] searchNames = {"special"};
-		PojoQueryDefinition qd =qb.containerQueryBuilder("manufacturer", Company.class).word("name",searchOptions,1.0,searchNames);
+		PojoQueryDefinition qd =qb.filteredQuery(qb.containerQueryBuilder("manufacturer", Company.class).word("name",searchOptions,1.0,searchNames));
 		
 		JacksonHandle jh = new JacksonHandle();
 		products.setPageLength(11);
 		p = products.search(qd, 1,jh);
 ;
 		System.out.println(jh.get().toString());
-		long pageNo=1,count=0;
+		long pageNo=1,count=0,total=0;
 		do{
 			count =0;
 			p = products.search(qd,pageNo);
@@ -177,16 +177,17 @@ public class TestPOJOQueryBuilderContainerQuery extends BasicJavaClientREST {
 				Artifact a =p.next();
 				validateArtifact(a);
 				assertTrue("Verifying document id is part of the search ids",a.getId()%5==0);
-				count++;
+				assertTrue("Verifying name is part of the search",a.getManufacturer().getName().contains("special"));
+				count++;total++;
 				System.out.println(a.getName());
 			}
 			assertEquals("Page size",count,p.size());
 			pageNo=pageNo+p.getPageSize();
 		}while(!p.isLastPage() && pageNo<=p.getTotalSize());
-		assertEquals("page number after the loop",1,p.getPageNumber());
-		assertEquals("total no of pages",1,p.getTotalPages());
+//		assertEquals("page number after the loop",1,p.getPageNumber());
+//		assertEquals("total no of pages",1,p.getTotalPages());
 		assertEquals("page length from search handle",11,jh.get().path("page-length").asInt());
-		assertEquals("Total results from search handle",11,jh.get().path("total").asInt());
+		assertEquals("Total results from search handle",11,total);
 	}
 	
 	//Below scenario is verifying range query from PojoBuilder 
@@ -269,15 +270,15 @@ public class TestPOJOQueryBuilderContainerQuery extends BasicJavaClientREST {
 		String[] rangeOptions ={"uncached","min-occurs=1"};
 		PojoQueryBuilder qb = products.getQueryBuilder();
 		String[] searchNames = {"Acm*"};
-		PojoQueryDefinition qd = qb.and(qb.andNot(qb.word("name",searchOptions, 1.0,searchNames),
+		PojoQueryDefinition qd = qb.filteredQuery(qb.and(qb.andNot(qb.word("name",searchOptions, 1.0,searchNames),
 											  qb.containerQueryBuilder("manufacturer", Company.class).value("name","Acme special, Inc.") ),
-									qb.range("inventory",rangeOptions,Operator.LT,1101));
+									qb.range("inventory",rangeOptions,Operator.LT,1101)));
 				
 		JacksonHandle jh = new JacksonHandle();
 		products.setPageLength(25);
 		p = products.search(qd, 1,jh);
 		System.out.println(jh.get().toString());
-		long pageNo=1,count=0;
+		long pageNo=1,count=0,total=0;
 		do{
 			count =0;
 			p = products.search(qd,pageNo);
@@ -286,16 +287,17 @@ public class TestPOJOQueryBuilderContainerQuery extends BasicJavaClientREST {
 				validateArtifact(a);
 				assertTrue("Verifying document id is part of the search ids",a.getId()<1101);
 				assertFalse("Verifying document has word counter",a.getManufacturer().getName().contains("special"));
-				count++;
+				count++;total++;
 
 			}
 			assertEquals("Page size",count,p.size());
 			pageNo=pageNo+p.getPageSize();
 		}while(!p.isLastPage() && pageNo<=p.getTotalSize());
-		assertEquals("page number after the loop",2,p.getPageNumber());
-		assertEquals("total no of pages",2,p.getTotalPages());
+		System.out.println(pageNo);
+		assertEquals("page has results",25,jh.get().path("results").size());
+		assertEquals("Page no after the loop",51,pageNo);
 		assertEquals("page length from search handle",25,jh.get().path("page-length").asInt());
-		assertEquals("Total results from search handle",40,jh.get().path("total").asInt());
+		assertEquals("Total results from search handle",40,total);
 	}
 
 }

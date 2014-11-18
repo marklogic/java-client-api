@@ -16,21 +16,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.document.DocumentManager.Metadata;
-import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.pojo.annotation.Id;
-import com.marklogic.javaclient.TestPOJOMissingIdGetSetMethod.SmallArtifactMissingGetter;
 
 public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 
@@ -251,7 +246,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	public void validateSmallArtifactSuper(SmallArtifactNoId artifact) {
 		assertNotNull("Artifact object should never be Null", artifact);
 		assertNotNull("Id should never be Null", artifact.getId());
-		assertEquals("Id of the object is ", -99, artifact.getId());
+		assertEquals("Id of the object is ", 0, artifact.getId());
 		assertEquals("Name of the object is ", "SmallArtifactInSuperOnly",
 				artifact.getName());
 		assertEquals("Inventory of the object is ", 1000,
@@ -333,7 +328,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	 * Issue 136 might solve this also.
 	 */
 
-	@Test
+	@Test(expected=IllegalArgumentException.class)
 	public void testPOJOReadDocStoredWithInvalidContent() throws Exception {
 
 		String docId[] = { "com.marklogic.javaclient.TestPOJOWithDocsStoredByOthers$SmallArtifactIdInSuper/SmallArtifactIdInSuper.json" };
@@ -420,11 +415,11 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	 * Purpose : This test is to validate read documents with valid POJO
 	 * specific URI and has invalid data-types for one of the bean property.
 	 * Uses SmallArtifact class which has @Id on the name methods. Test result
-	 * expectations are: read should return exception.
+	 * expectations are: read should return ResourceNotFoundException exception.
 	 * Field inventory has a String 
 	 */
 
-	@Test(/*expected=MarkLogicIOException.class*/)
+	@Test(expected=ResourceNotFoundException.class)
 	public void testPOJOReadDocStoredWithInvalidDataType() throws Exception {
 
 		String docId[] = { "com.marklogic.javaclient.TestPOJOWithDocsStoredByOthers$SmallArtifact/SmallArtifact.json" };
@@ -546,7 +541,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	}
 	
 	/*
-	 * Purpose : This test is to validate creating an sub class which is references by a Super class variable type.
+	 * Purpose : This test is to validate creating an sub class which is referenced by a Super class variable type.
 	 * Both SmallArtifactIdInSuper and SmallArtifactNoId classes are used.
 	 * POJO repository cannot read back the sub class.
 	 * 
@@ -574,7 +569,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	}
 	
 	/*
-	 * Purpose : This test is to validate creating an sub class which is references by a Super class variable type.
+	 * Purpose : This test is to validate creating an sub class which is referenced by a Super class variable type.
 	 * Both SmallArtifactIdInSuper and SmallArtifactNoId classes are used.
 	 * This is a variation of testPOJOSubObjReferencedBySuperClassVariable()
 	 * 

@@ -27,7 +27,8 @@ import static org.junit.Assert.*;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.*;
-
+import org.junit.runners.MethodSorters;
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestRawCombinedQuery extends BasicJavaClientREST {
 	private static String dbName = "TestRawCombinedQueryDB";
 	private static String [] fNames = {"TestRawCombinedQueryDB-1"};
@@ -101,7 +102,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawCombinedQueryXML() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test1RawCombinedQueryXML() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryXML");
 
@@ -153,7 +154,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawCombinedQueryXMLWithOptions() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test2RawCombinedQueryXMLWithOptions() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryXMLWithOptions");
 
@@ -205,7 +206,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawCombinedQueryXMLWithOverwriteOptions() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test3RawCombinedQueryXMLWithOverwriteOptions() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryXMLWithOverwriteOptions");
 
@@ -256,7 +257,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawCombinedQueryJSONWithOverwriteOptions() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test4RawCombinedQueryJSONWithOverwriteOptions() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryJSONWithOverwriteOptions");
 
@@ -311,7 +312,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawCombinedQueryJSON() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test5RawCombinedQueryJSON() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryJSON");
 
@@ -363,7 +364,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawCombinedQueryWildcard() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test6RawCombinedQueryWildcard() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryWildcard");
 
@@ -416,7 +417,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawCombinedQueryCollection() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test7RawCombinedQueryCollection() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryCollection");
 
@@ -479,7 +480,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawCombinedQueryCombo() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test8RawCombinedQueryCombo() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryCombo");
 
@@ -542,7 +543,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawCombinedQueryField() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test9RawCombinedQueryField() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryField");
 
@@ -587,7 +588,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawCombinedQueryPathIndex() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test10RawCombinedQueryPathIndex() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryPathIndex");
 
@@ -630,7 +631,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawCombinedQueryComboJSON() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test11RawCombinedQueryComboJSON() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryComboJSON");
 
@@ -694,15 +695,14 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 		String resultDoc = resultsHandle.get();
 
 		System.out.println(resultDoc);
-
-		assertTrue("Returned result is not correct", resultDoc.contains("<search:result index=\"1\" uri=\"/collection-constraint/constraint1.xml\" path=\"fn:doc(&quot;/collection-constraint/constraint1.xml&quot;)\" score=\"28672\" confidence=\"0.6951694\" fitness=\"0.9213214\" href=\"/v1/documents?uri=%2Fcollection-constraint%2Fconstraint1.xml\" mimetype=\"text/xml\" format=\"xml\">"));
+		assertTrue("Returned result is not correct", resultDoc.contains("<search:result index=\"1\" uri=\"/collection-constraint/constraint1.xml\" path=\"fn:doc(&quot;/collection-constraint/constraint1.xml&quot;)\" score=\"28672\" confidence=\"0.6951694\" fitness=\"0.9213214\" href=\"/v1/documents?uri=%2Fcollection-constraint%2Fconstraint1.xml\" mimetype=\"application/xml\" format=\"xml\">"));
 
 		// release client
 		client.release();		
 	}
 
 	@Test	
-	public void testRawCombinedQueryFieldJSON() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test12RawCombinedQueryFieldJSON() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryFieldJSON");
 
