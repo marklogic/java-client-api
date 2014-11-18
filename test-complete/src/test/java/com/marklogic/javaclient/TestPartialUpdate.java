@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.admin.ExtensionLibrariesManager;
 import com.marklogic.client.document.DocumentDescriptor;
@@ -93,6 +94,28 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		assertTrue("fragment is not inserted", content.contains("<modified>2013-03-21</modified></root>"));
 
+		// release client
+		client.release();		
+	}
+	
+	/* Used to test Git issue # 94 along with uber-app server. use a bad user to authenticate client.
+	 * Should be throwing FailedRequestException Exception.
+	 * Message : Local message: write failed: Unauthorized. Server Message: Unauthorized
+	 */
+	@Test(expected=FailedRequestException.class)	
+	public void testJSONParserException() throws IOException
+	{	
+		System.out.println("Running testPartialUpdateJSON");
+
+		String[] filenames = {"json-original.json"};
+
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "bad-eval-user", "x", Authentication.DIGEST);
+
+		// write docs
+		for(String filename : filenames)
+		{
+			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
+		}		
 		// release client
 		client.release();		
 	}
@@ -533,6 +556,10 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 	}
 
+	/* We have Git issue #199 that tracks multiple patch on same JSONPath index.
+	 * This test uses different path index. This test was modified to account for the 
+	 * correct path index elements. 
+	 */
 	@Test	
 	public void testPartialUpdateCombinationJSON() throws Exception{
 		System.out.println("Running testPartialUpdateCombinationJSON");
@@ -558,7 +585,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		fragmentNode = mapper.createObjectNode();
 		fragmentNode.put("insertedKey", 9);
 		String fragment = mapper.writeValueAsString(fragmentNode);
-		patchBldr.insertFragment("$.employees", Position.LAST_CHILD, fragment).delete("$.employees[2]").replaceApply("$.employees[1].firstName", patchBldr.call().concatenateAfter("Hi"));
+		// Original - patchBldr.insertFragment("$.employees", Position.LAST_CHILD, fragment).delete("$.employees[2]").replaceApply("$.employees[1].firstName", patchBldr.call().concatenateAfter("Hi"));
+		patchBldr.insertFragment("$.employees[0]", Position.AFTER, fragment).delete("$.employees[2]").replaceApply("$.employees[1].firstName", patchBldr.call().concatenateAfter("Hi"));
 		DocumentPatchHandle patchHandle = patchBldr.build();
 		docMgr.patch(docId, patchHandle);
 
@@ -566,7 +594,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		System.out.println("After" + content);
 
-		assertTrue("fragment is not inserted", content.contains("{\"insertedKey\":9}]"));
+		assertTrue("fragment is not inserted", content.contains("{\"insertedKey\":9}"));
 		assertTrue("fragment is not inserted", content.contains("{\"firstName\":\"AnnHi\", \"lastName\":\"Smith\"}"));
 		assertFalse("fragment is not deleted",content.contains("{\"firstName\":\"Bob\", \"lastName\":\"Foo\"}"));
 		
