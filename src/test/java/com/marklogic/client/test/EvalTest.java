@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.TimeZone;
 
 import javax.xml.bind.DatatypeConverter;
@@ -41,7 +42,13 @@ import org.xml.sax.SAXException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.admin.ExtensionLibrariesManager;
+import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.eval.ServerEvaluationCall;
@@ -49,7 +56,11 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.QueryManager;
 
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -331,5 +342,56 @@ public class EvalTest {
             assertEquals("myFunction should be Format.TEXT", Format.TEXT, result.getFormat());
         } finally { results.close(); }
     }
-
+    @Test
+    public void test_171() throws Exception{
+        //DatabaseClient client = Common.newEvalClient();
+        DatabaseClient client = DatabaseClientFactory.newClient(
+   Common.HOST, Common.PORT, "Documents", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
+        int count=1;
+        boolean tstatus =true;
+        String directory = "/test_171/";
+        Transaction t1 = client.openTransaction();
+        try{
+            QueryManager queryMgr = client.newQueryManager();
+            DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
+            deleteQuery.setDirectory(directory);
+            queryMgr.delete(deleteQuery);
+ 
+            XMLDocumentManager docMgr = client.newXMLDocumentManager();
+            HashMap<String,String> map= new HashMap<String,String>();
+            DocumentWriteSet writeset =docMgr.newWriteSet();
+            for(int i =0;i<2;i++) {
+                String contents = "<xml>test" + i + "</xml>";
+                String docId = directory + "sec"+i+".xml";
+                writeset.add(docId, new StringHandle(contents).withFormat(Format.XML));
+                map.put(docId, contents);
+                if(count%100 == 0){
+                    docMgr.write(writeset,t1);
+                    writeset = docMgr.newWriteSet();
+                }
+                count++;
+            }
+            if(count%100 > 0){
+                docMgr.write(writeset,t1);
+            }
+ 
+            QueryDefinition directoryQuery = queryMgr.newStringDefinition();
+            directoryQuery.setDirectory(directory);
+            SearchHandle outOfTransactionResults = queryMgr.search(directoryQuery, new SearchHandle());
+ 
+            SearchHandle inTransactionResults = queryMgr.search(directoryQuery, new SearchHandle(), t1);
+ 
+            assertEquals("Count of documents outside of the transaction",0,outOfTransactionResults.getTotalResults());
+            assertEquals("Count of documents inside of the transaction", 2, inTransactionResults.getTotalResults());
+ 
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+            tstatus=true;
+            throw e;
+        }finally{
+            if(tstatus){
+                t1.rollback();
+            }
+        }
+    } 
 }
