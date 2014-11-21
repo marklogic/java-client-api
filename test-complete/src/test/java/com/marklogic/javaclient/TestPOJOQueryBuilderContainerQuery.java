@@ -167,8 +167,8 @@ public class TestPOJOQueryBuilderContainerQuery extends BasicJavaClientREST {
 		JacksonHandle jh = new JacksonHandle();
 		products.setPageLength(11);
 		p = products.search(qd, 1,jh);
-;
-		System.out.println(jh.get().toString());
+		assertEquals("page number after the loop",1,p.getPageNumber());
+//		assertEquals("total no of pages",1,p.getTotalPages());
 		long pageNo=1,count=0,total=0;
 		do{
 			count =0;
@@ -184,8 +184,8 @@ public class TestPOJOQueryBuilderContainerQuery extends BasicJavaClientREST {
 			assertEquals("Page size",count,p.size());
 			pageNo=pageNo+p.getPageSize();
 		}while(!p.isLastPage() && pageNo<=p.getTotalSize());
-//		assertEquals("page number after the loop",1,p.getPageNumber());
-//		assertEquals("total no of pages",1,p.getTotalPages());
+		assertEquals("page number after the loop",0,p.getPageNumber());
+		assertEquals("total no of pages",0,p.getTotalPages());
 		assertEquals("page length from search handle",11,jh.get().path("page-length").asInt());
 		assertEquals("Total results from search handle",11,total);
 	}
