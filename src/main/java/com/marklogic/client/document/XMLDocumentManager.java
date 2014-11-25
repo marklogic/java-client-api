@@ -15,13 +15,16 @@
  */
 package com.marklogic.client.document;
 
+import com.marklogic.client.bitemporal.TemporalDocumentManager;
 import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * A XML Document Manager supports database operations on XML documents.
  */
-public interface XMLDocumentManager extends DocumentManager<XMLReadHandle, XMLWriteHandle> {
+public interface XMLDocumentManager 
+	extends DocumentManager<XMLReadHandle, XMLWriteHandle>, TemporalDocumentManager<XMLReadHandle, XMLWriteHandle> 
+{
     /**
      * The DocumentRepair enumeration specifies whether an XML document is repaired as much as possible or not at all.
      */

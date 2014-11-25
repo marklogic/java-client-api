@@ -47,7 +47,6 @@ public class AllCookbookExamples {
 		DocumentFormats.run(           props );
 		DocumentOutputStream.run(      props );
 		JAXBDocument.run(              props );
-		KeyValueSearch.run(            props );
 		QueryOptions.run(              props );
  		StringSearch.run(              props );
  		StructuredSearch.run(          props );

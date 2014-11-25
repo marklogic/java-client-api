@@ -1035,7 +1035,9 @@ public class SearchHandle
 	    private void handleResponse(XMLEventReader reader, StartElement element)
 	    throws XMLStreamException {
 	    	tempSnippetType  = getAttribute(element, "snippet-format");
-	        tempTotalResults = Long.parseLong(getAttribute(element, "total"));
+	    	if ( getAttribute(element, "total") != null ) {
+	    		tempTotalResults = Long.parseLong(getAttribute(element, "total"));
+	    	}
 	        tempPageLength   = Integer.parseInt(getAttribute(element, "page-length"));
 	        tempStart        = Long.parseLong(getAttribute(element, "start"));
 
@@ -1190,6 +1192,7 @@ public class SearchHandle
 						handleMatch(reader, startElement);
 						break eventType;
 					}
+					break;
 				case XMLStreamConstants.END_ELEMENT:
 					if (snippetName.equals(event.asEndElement().getName())) {
 						break events;

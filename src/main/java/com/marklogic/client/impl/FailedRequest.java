@@ -24,6 +24,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.io.JSONErrorParser;
@@ -65,19 +66,38 @@ public class FailedRequest {
 			try {
 				builder = factory.newDocumentBuilder();
 				Document doc = builder.parse(is);
-				String statusCode = doc
-						.getElementsByTagNameNS(JerseyServices.ERROR_NS,
-								"status-code").item(0).getTextContent();
-				failure.setStatusCode(Integer.parseInt(statusCode));
-				failure.setStatusString(doc
-						.getElementsByTagNameNS(JerseyServices.ERROR_NS,
-								"status").item(0).getTextContent());
-				failure.setMessageCode(doc
-						.getElementsByTagNameNS(JerseyServices.ERROR_NS,
-								"message-code").item(0).getTextContent());
-				failure.setMessageString(doc
-						.getElementsByTagNameNS(JerseyServices.ERROR_NS,
-								"message").item(0).getTextContent());
+				String statusCode = null;
+				NodeList statusCodes = doc.getElementsByTagNameNS(JerseyServices.ERROR_NS, "status-code");
+				if ( statusCodes != null && statusCodes.getLength() > 0 ) {
+					statusCode = statusCodes.item(0).getTextContent();
+				}
+				if ( statusCode != null ) {
+					failure.setStatusCode(Integer.parseInt(statusCode));
+				} else {
+					failure.setStatusCode(httpStatus);
+				}
+				NodeList statuses = doc.getElementsByTagNameNS(JerseyServices.ERROR_NS, "status");
+				if ( statuses != null && statuses.getLength() > 0 ) {
+					failure.setStatusString( statuses.item(0).getTextContent() );
+				}
+				NodeList messageCodes = doc.getElementsByTagNameNS(JerseyServices.ERROR_NS, "message-code");
+				if ( messageCodes != null && messageCodes.getLength() > 0 ) {
+					failure.setMessageCode( messageCodes.item(0).getTextContent() );
+				}
+				// the following is for eval errors
+				String formatString = null;
+				NodeList formatStrings = doc.getElementsByTagNameNS(JerseyServices.ERROR_NS, "format-string");
+				if ( formatStrings != null && formatStrings.getLength() > 0 ) {
+					formatString = formatStrings.item(0).getTextContent();
+				}
+				if ( formatString != null ) {
+					failure.setMessageString(formatString);
+				} else {
+					NodeList messageStrings = doc.getElementsByTagNameNS(JerseyServices.ERROR_NS, "message");
+					if ( messageStrings != null && messageStrings.getLength() > 0 ) {
+						failure.setMessageString( messageStrings.item(0).getTextContent() );
+					}
+				}
 			} catch (ParserConfigurationException e) {
 				failure.setStatusCode(httpStatus);
 				failure.setMessageString("Request failed. Unable to parse server error.");
@@ -99,14 +119,14 @@ public class FailedRequest {
 		FailedRequest failure;
 		
 		// by default XML is supported
-		if (contentType.equals(MediaType.APPLICATION_XML_TYPE)) {
+		if (contentType.isCompatible(MediaType.APPLICATION_XML_TYPE)) {
 			
 			FailedRequestParser xmlParser = new FailedRequestXMLParser();
 			
 			failure  =  xmlParser.parseFailedRequest(httpStatus, content);
 			
 		}
-		else if (contentType.equals(MediaType.APPLICATION_JSON_TYPE)) {
+		else if (contentType.isCompatible(MediaType.APPLICATION_JSON_TYPE)) {
 			failure = jsonFailedRequest(httpStatus, content);						
 		}
 		else {

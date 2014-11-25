@@ -36,6 +36,7 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.KeyValueQueryDefinition;
 import com.marklogic.client.query.QueryManager;
@@ -155,5 +156,51 @@ public class TransformTest {
 		assertEquals("Values query read transform failed",value,"true");
 
 // TODO: QBE tests with XQuery and XSLT
+	}
+
+	@Test
+	public void test118() {
+		String naiveTransform = "xquery version \"1.0-ml\";\n" + 
+
+			"module namespace ex = \"http://marklogic.com/rest-api/transform/test118\";\n" + 
+
+			"declare function ex:transform(\n" + 
+			"  $context as map:map,\n" + 
+			"  $params as map:map,\n" + 
+			"  $content as document-node())\n" + 
+			"as document-node() {\n" + 
+			" document{\n" + 
+
+			"<search:response snippet-format=\"highlight\" total=\"1\" start=\"1\" page-length=\"1\" " + 
+			"  xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns=\"\" " + 
+			"  xmlns:search=\"http://marklogic.com/appservices/search\">\n" + 
+			"  <search:result index=\"1\" uri=\"/doc/2.xml\" path=\"fn:doc('/doc/2.xml')\" score=\"92160\" " + 
+			"    confidence=\"0.674626\" fitness=\"0.674626\">\n" + 
+			"    <search:snippet>\n" + 
+			"      <headline>Q1 <match>outlook</match></headline>\n" + 
+			"    </search:snippet>\n" + 
+			"    <search:metadata>\n" + 
+			"       <id>a</id>\n" + 
+			"    </search:metadata>\n" + 
+			"  </search:result>\n" + 
+			"  <search:qtext>outlook snippet:highlight</search:qtext>\n" + 
+			"  <search:metrics>\n" + 
+			"    <search:query-resolution-time>PT0.008042S</search:query-resolution-time>\n" + 
+			"    <search:facet-resolution-time>PT0.000323S</search:facet-resolution-time>\n" + 
+			"    <search:snippet-resolution-time>PT0.018339S</search:snippet-resolution-time>\n" + 
+			"    <search:total-time>PT0.027161S</search:total-time>\n" + 
+			"  </search:metrics>\n" + 
+			"</search:response>}\n" + 
+			"};";
+		TransformExtensionsManager extensionMgr =
+			Common.client.newServerConfigManager().newTransformExtensionsManager();
+
+		extensionMgr.writeXQueryTransform( "test118", new StringHandle().with(naiveTransform));
+		QueryManager q = Common.client.newQueryManager();
+		StringQueryDefinition s = q.newStringDefinition("");
+		s.setCriteria("a");
+		s.setResponseTransform(new ServerTransform("test118"));
+		q.search(s, new SearchHandle());
+		// if the previous line throws no exception, then 118 is resolved 
 	}
 }

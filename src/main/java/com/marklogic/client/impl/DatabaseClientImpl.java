@@ -30,6 +30,7 @@ import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.util.RequestLogger;
+import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.extensions.ResourceManager;
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.admin.ServerConfigurationManager;
@@ -181,5 +182,10 @@ public class DatabaseClientImpl implements DatabaseClient {
 	// undocumented backdoor access to JerseyServices
 	public RESTServices getServices() {
 		return services;
+	}
+
+	@Override
+	public ServerEvaluationCall newServerEval() {
+		return new ServerEvaluationCallImpl(services, getHandleRegistry());
 	}
 }

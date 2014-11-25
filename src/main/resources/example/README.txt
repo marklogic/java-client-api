@@ -1,5 +1,5 @@
 MarkLogic Java API Examples
-October 2013
+October 2014
 
 == Cookbook =============
 
@@ -8,16 +8,9 @@ for common tasks using the MarkLogic Java API.
 
 Before using the examples, perform the following actions:
 
-1.  Install MarkLogic 7 for your chosen platform.
+1.  Install MarkLogic 8 for your chosen platform.
 
-2.  Set up a new REST API instance for your database.  You can use Information
-Studio at:
-
-        http://YOUR_HOST:8000/appservices/
-
-    to create a new RESTful Server for a database.
-
-3.  Edit Example.properties to specify the connection parameters for the
+2.  Edit Example.properties to specify the connection parameters for the
 REST API instance.
 
     You must identify users for the rest-writer and rest-admin roles.  To
@@ -27,9 +20,7 @@ REST API instance.
 
     If you make the user name the same as the role name and set the
     password to "x" you will not need to modify those values in the
-    properties file.  Change the example.port property to
-    the port number of the REST Server you created in step 2 of these
-    instructions.
+    properties file.
 
 The examples illustrate the following common tasks:
 
@@ -44,7 +35,6 @@ The examples illustrate the following common tasks:
 *  DocumentFormats            work with binary, JSON, text, and XML documents
 *  DocumentOutputStream       supply content while writing to the database
 *  JAXBDocument               write and read a POJO using JAXB
-*  KeyValueSearch             search for documents based on values
 *  QueryOptions               configure search with saved options
 *  StringSearch               search with string criteria and saved options
 *  StructuredSearch           search with a criteria structure and saved

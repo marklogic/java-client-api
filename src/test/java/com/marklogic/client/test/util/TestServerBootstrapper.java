@@ -113,6 +113,9 @@ public class TestServerBootstrapper {
 	
 	public static void main(String[] args) throws ClientProtocolException,
 			IOException {
+		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+		//System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
+
 		TestServerBootstrapper bootstrapper = new TestServerBootstrapper();
 
 		if ((args.length == 1) && (args[0].equals("teardown"))) {

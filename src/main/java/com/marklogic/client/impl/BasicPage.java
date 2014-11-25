@@ -19,7 +19,7 @@ import java.util.Iterator;
 import com.marklogic.client.Page;
 
 public class BasicPage<T> implements Page<T> {
-    private Iterable<T> iterable;
+    private Iterator<T> iterator;
     private long start;
     private Long size = null;
     private long pageSize;
@@ -28,15 +28,23 @@ public class BasicPage<T> implements Page<T> {
     protected BasicPage(Class<T> type) {
     }
 
-    public BasicPage(Iterable<T> iterable, long start, long pageSize, long totalSize) {
-        this.iterable = iterable;
+    public BasicPage(Iterator<T> iterator, long start, long pageSize, long totalSize) {
+        this.iterator = iterator;
         this.start = start;
         this.pageSize = pageSize;
         this.totalSize = totalSize;
     }
 
     public Iterator<T> iterator() {
-        return iterable.iterator();
+        return iterator;
+    }
+    
+    public boolean hasNext() {
+        return iterator.hasNext();
+    }
+
+    public T next() {
+        return iterator.next();
     }
 
     public long getStart() {
@@ -73,7 +81,9 @@ public class BasicPage<T> implements Page<T> {
 
     public long size() {
         if ( size != null ) return size.longValue();
-        if ( hasNextPage() ) {
+        if ( getPageSize() == 0 ) {
+            return 0;
+        } else if ( hasNextPage() ) {
             return getPageSize();
         } else if ((getTotalSize() % getPageSize()) == 0) {
             return getPageSize();
@@ -83,6 +93,7 @@ public class BasicPage<T> implements Page<T> {
     }
 
     public long getTotalPages() {
+        if ( getPageSize() == 0 ) return 0;
         return (long) Math.ceil((double) getTotalSize() / (double) getPageSize());
     }
 
@@ -95,18 +106,24 @@ public class BasicPage<T> implements Page<T> {
     }
 
     public boolean hasPreviousPage() {
-        return getPageNumber() > 0;
+        return getPageNumber() > 1;
     }
 
     public long getPageNumber() {
-        return (long) Math.floor((double) start / (double) getPageSize()) + 1;
+        if ( getPageSize() == 0 ) return 0;
+        double _start = (double) start;
+        double _pageSize = (double) getPageSize();
+        if ( _start % _pageSize == 0 ) return new Double(_start / _pageSize).longValue();
+        else return (long) Math.floor(_start / _pageSize) + 1;
     }
 
     public boolean isFirstPage() {
+        if ( getPageSize() == 0 ) return true;
         return getPageNumber() == 1;
     }
 
     public boolean isLastPage() {
+        if ( getPageSize() == 0 ) return true;
         return getPageNumber() == getTotalPages();
     }
 }

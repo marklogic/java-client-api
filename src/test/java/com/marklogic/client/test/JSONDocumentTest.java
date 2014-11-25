@@ -63,7 +63,8 @@ public class JSONDocumentTest {
 			+ "      \"capabilities\":[\"update\",\"read\"]}],\n"
 			+ "   \"properties\":[\n" 
 			+ "    {\"first\":\"value one\",\n"
-			+ "     \"second\":2}]," 
+			+ "     \"second\":2,"
+			+ "     \"third\":3}]," 
 			+ "  \"quality\":3}\n";
 
 	static final private Logger logger = LoggerFactory
@@ -143,28 +144,30 @@ public class JSONDocumentTest {
 		fragmentNode = mapper.createObjectNode();
 		fragmentNode.put("insertedKey", 9);
 		fragment = mapper.writeValueAsString(fragmentNode);
-		patchBldr.insertFragment("$.arrayKey", Position.BEFORE, fragment);
+		patchBldr.insertFragment("$.[\"arrayKey\"]", Position.BEFORE, fragment);
 
-		// patchBldr.delete("$.arrayKey.[*][?(@.string=\"3\")]");
+		//patchBldr.delete("$.arrayKey.[*][?(@.string=\"3\")]");
 
 		fragmentNode = mapper.createObjectNode();
 		fragmentNode.put("appendedKey", "appended item");
 		fragment = mapper.writeValueAsString(fragmentNode);
-		patchBldr.insertFragment("$.arrayKey", Position.LAST_CHILD,
+		patchBldr.insertFragment("$.[\"arrayKey\"]", Position.LAST_CHILD,
 				Cardinality.ZERO_OR_ONE, fragment);
 
 		DocumentPatchHandle patchHandle = patchBldr.pathLanguage(
 				PathLanguage.JSONPATH).build();
 
-		logger.debug("Patch:" + patchHandle.toString());
+		logger.debug("Patch1:" + patchHandle.toString());
 		docMgr.patch(docId, patchHandle);
 
 		ObjectNode expectedNode = mapper.createObjectNode();
 		expectedNode.put("stringKey", "replaced value");
 		expectedNode.put("numberKey", 9);
+		ObjectNode replacedChildNode = mapper.createObjectNode();
+		replacedChildNode.put("replacedChildKey", "replaced object value");
 		ObjectNode childNode = mapper.createObjectNode();
-		childNode.put("replacedChildKey", "replaced object value");
-		expectedNode.put("objectKey", childNode);
+		childNode.set("childObjectKey", replacedChildNode);
+		expectedNode.set("objectKey", childNode);
 		expectedNode.put("insertedKey", 9);
 		ArrayNode childArray = mapper.createArrayNode();
 		childArray.add("item value");
@@ -175,14 +178,14 @@ public class JSONDocumentTest {
 		childNode = mapper.createObjectNode();
 		childNode.put("appendedKey", "appended item");
 		childArray.add(childNode);
-		expectedNode.put("arrayKey", childArray);
+		expectedNode.set("arrayKey", childArray);
 
 		String docText = docMgr.read(docId, new StringHandle()).get();
 		assertNotNull("Read null string for patched JSON content", docText);
 		
-		logger.debug("Before:" + content);
-		logger.debug("After:"+docText);
-		logger.debug("Expected:" + mapper.writeValueAsString(expectedNode));
+		logger.debug("Before1:" + content);
+		logger.debug("After1:"+docText);
+		logger.debug("Expected1:" + mapper.writeValueAsString(expectedNode));
 		
 		JsonNode readNode = mapper.readTree(docText);
 		assertTrue("Patched JSON document without expected result",
@@ -197,6 +200,7 @@ public class JSONDocumentTest {
 		ObjectNode sourceNode = makeContent(mapper);
 		String content = mapper.writeValueAsString(sourceNode);
 
+		logger.debug("Before2: " + content);
 		JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
 		
 		// add metadata patch here. This will be failing now.
@@ -217,6 +221,7 @@ public class JSONDocumentTest {
 				.replaceCollection("collection4before",
 						"collection4after")
 				.replacePermission("app-user", Capability.UPDATE)
+				.deleteCollection("collection1")
 				.deleteProperty("first")
 				.replacePropertyApply("second", patchBldr.call().add(3))
 				.setQuality(4).build();
@@ -226,11 +231,12 @@ public class JSONDocumentTest {
 		String metadata = docMgr.readMetadata(docId,
 				new StringHandle().withFormat(Format.XML)).get();
 
+		logger.debug("After2:" + metadata);
 		assertTrue("Could not read document metadata after write default",
 				metadata != null);
 
 		assertTrue("Could not read document metadata after write default", metadata != null);
-		assertXpathEvaluatesTo("4","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",metadata);
+		assertXpathEvaluatesTo("3","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection'])",metadata);
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='collections']/*[local-name()='collection' and string(.)='collection4after'])",metadata);
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission' and string(*[local-name()='role-name'])='app-user']/*[local-name()='capability'])",metadata);
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",metadata);
@@ -264,7 +270,7 @@ public class JSONDocumentTest {
 		fragmentNode = mapper.createObjectNode();
 		fragmentNode.put("insertedKey", 9);
 		fragment = mapper.writeValueAsString(fragmentNode);
-		patchBldr.insertFragment("/node()/node('arrayKey')", Position.BEFORE,
+		patchBldr.insertFragment("/array-node('arrayKey')", Position.BEFORE,
 				fragment);
 
 		//patchBldr.replaceApply("/node()/arrayKey/node()[string(.) eq '3']",
@@ -273,20 +279,22 @@ public class JSONDocumentTest {
 		fragmentNode = mapper.createObjectNode();
 		fragmentNode.put("appendedKey", "appended item");
 		fragment = mapper.writeValueAsString(fragmentNode);
-		patchBldr.insertFragment("/node()/node('arrayKey')",
+		patchBldr.insertFragment("/array-node('arrayKey')",
 				Position.LAST_CHILD, Cardinality.ZERO_OR_ONE, fragment);
 
 		DocumentPatchHandle patchHandle = patchBldr.build();
 
-		logger.debug("Sending patch " + patchBldr.build().toString());
+		logger.debug("Sending patch 3:" + patchBldr.build().toString());
 		docMgr.patch(docId, patchHandle);
 
 		ObjectNode expectedNode = mapper.createObjectNode();
 		expectedNode.put("stringKey", "replaced value");
 		expectedNode.put("numberKey",  9);
+		ObjectNode replacedChildNode = mapper.createObjectNode();
+		replacedChildNode.put("replacedChildKey", "replaced object value");
 		ObjectNode childNode = mapper.createObjectNode();
-		childNode.put("replacedChildKey", "replaced object value");
-		expectedNode.put("objectKey", childNode);
+		childNode.set("childObjectKey", replacedChildNode);
+		expectedNode.set("objectKey", childNode);
 		expectedNode.put("insertedKey", 9);
 		ArrayNode childArray = mapper.createArrayNode();
 		childArray.add("item value");
@@ -297,7 +305,7 @@ public class JSONDocumentTest {
 		childNode = mapper.createObjectNode();
 		childNode.put("appendedKey", "appended item");
 		childArray.add(childNode);
-		expectedNode.put("arrayKey", childArray);
+		expectedNode.set("arrayKey", childArray);
 
 		String docText = docMgr.read(docId, new StringHandle()).get();
 		
@@ -305,9 +313,9 @@ public class JSONDocumentTest {
 		JsonNode readNode = mapper.readTree(docText);
 		
 
-		logger.debug("Before:" + content);
-		logger.debug("After:"+docText);
-		logger.debug("Expected:" + mapper.writeValueAsString(expectedNode));
+		logger.debug("Before3:" + content);
+		logger.debug("After3:"+docText);
+		logger.debug("Expected3:" + mapper.writeValueAsString(expectedNode));
 		
 		
 		assertTrue("Patched JSON document without expected result",
@@ -344,19 +352,22 @@ public class JSONDocumentTest {
 						"collection4after")
 				.replacePermission("app-user", Capability.UPDATE)
 				.deleteProperty("first")
+				.replacePropertyValue("third", 17)
 				.replacePropertyApply("second", patchBldr.call().add(3))
 				.setQuality(4).build();
 
-		logger.debug("Patch: "+ patchHandle.toString());
-		logger.debug("Before: "+ content);
+		String jsonMetadata = docMgr.readMetadata(docId,
+				new StringHandle().withFormat(Format.JSON)).get();
+		logger.debug("Before4: "+ jsonMetadata);
+		logger.debug("Patch4: "+ patchHandle.toString());
 		docMgr.patch(docId, patchHandle);
 
 		String metadata = docMgr.readMetadata(docId,
 				new StringHandle().withFormat(Format.XML)).get();
-		String jsonMetadata = docMgr.readMetadata(docId,
+		jsonMetadata = docMgr.readMetadata(docId,
 				new StringHandle().withFormat(Format.JSON)).get();
 
-		logger.debug("After: "+ jsonMetadata);
+		logger.debug("After4: "+ jsonMetadata);
 
 		
 		assertTrue("Could not read document metadata after write default",
@@ -369,6 +380,8 @@ public class JSONDocumentTest {
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",metadata);
 		assertXpathEvaluatesTo("5","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='second'])",metadata);
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='4'])",metadata);
+		//TODO: uncomment next line once we fix https://bugtrack.marklogic.com/29865
+		//assertXpathEvaluatesTo("17","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='third'])",metadata);
 
 		docMgr.delete(docId);
 	}
@@ -379,14 +392,14 @@ public class JSONDocumentTest {
 		sourceNode.put("numberKey", 7);
 		ObjectNode childNode = mapper.createObjectNode();
 		childNode.put("childObjectKey", "child object value");
-		sourceNode.put("objectKey", childNode);
+		sourceNode.set("objectKey", childNode);
 		ArrayNode childArray = mapper.createArrayNode();
 		childArray.add("item value");
 		childArray.add(3);
 		childNode = mapper.createObjectNode();
 		childNode.put("itemObjectKey", "item object value");
 		childArray.add(childNode);
-		sourceNode.put("arrayKey", childArray);
+		sourceNode.set("arrayKey", childArray);
 
 		return sourceNode;
 	}

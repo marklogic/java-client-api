@@ -15,16 +15,22 @@
  */
 package com.marklogic.client.impl;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -59,11 +65,16 @@ import org.apache.http.params.HttpProtocolParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
@@ -76,12 +87,19 @@ import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.ServerTransform;
+import com.marklogic.client.eval.EvalResult;
+import com.marklogic.client.eval.EvalResultIterator;
+import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonParserHandle;
 import com.marklogic.client.io.OutputStreamSender;
+import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
@@ -102,6 +120,7 @@ import com.marklogic.client.query.ValueLocator;
 import com.marklogic.client.query.ValueQueryDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
+import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
 import com.sun.jersey.api.client.ClientResponse;
@@ -123,7 +142,7 @@ import com.sun.jersey.multipart.MultiPartMediaTypes;
 public class JerseyServices implements RESTServices {
 	static final private Logger logger = LoggerFactory
 			.getLogger(JerseyServices.class);
-	static final String ERROR_NS = "http://marklogic.com/rest-api";
+	static final String ERROR_NS = "http://marklogic.com/xdmp/error";
 
 	static final private String DOCUMENT_URI_PREFIX = "/documents?uri=";
 
@@ -152,8 +171,10 @@ public class JerseyServices implements RESTServices {
 	}
 
 	private DatabaseClient databaseClient;
+	private String database = null;
 	private ApacheHttpClient4 client;
 	private WebResource connection;
+	private boolean released = false;
 
 	private Random randRetry    = new Random();
 
@@ -195,7 +216,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public void connect(String host, int port, String user, String password,
+	public void connect(String host, int port, String database, String user, String password,
 			Authentication authenType, SSLContext context,
 			SSLHostnameVerifier verifier) {
 		X509HostnameVerifier x509Verifier = null;
@@ -215,10 +236,10 @@ public class JerseyServices implements RESTServices {
 			throw new IllegalArgumentException(
 					"Null SSLContent but non-null SSLHostnameVerifier for client");
 
-		connect(host, port, user, password, authenType, context, x509Verifier);
+		connect(host, port, database, user, password, authenType, context, x509Verifier);
 	}
 
-	private void connect(String host, int port, String user, String password,
+	private void connect(String host, int port, String database, String user, String password,
 			Authentication authenType, SSLContext context,
 			X509HostnameVerifier verifier) {
 		if (logger.isDebugEnabled())
@@ -247,6 +268,8 @@ public class JerseyServices implements RESTServices {
 			client.destroy();
 			client = null;
 		}
+
+		this.database = database;
 
 		String baseUri = ((context == null) ? "http" : "https") + "://" + host
 				+ ":" + port + "/v1/";
@@ -408,8 +431,16 @@ public class JerseyServices implements RESTServices {
 		this.databaseClient = client;
 	}
 
+	private WebResource getConnection() {
+		if ( connection != null ) return connection;
+		else if ( released ) throw new IllegalStateException(
+				"You cannot use this connected object anymore--connection has already been released");
+		else throw new MarkLogicInternalException("Cannot proceed--connection is null for unknown reason");
+	}
+
 	@Override
 	public void release() {
+		released = true;
 		if (databaseClient != null) {
 			databaseClient = null;
 		}
@@ -437,7 +468,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	private int makeFirstRequest(int retry) {
-		ClientResponse response = connection.path("ping").head();
+		ClientResponse response = getConnection().path("ping").head();
 		int statusCode = response.getClientResponseStatus().getStatusCode();
 		if (statusCode != ClientResponse.Status.SERVICE_UNAVAILABLE.getStatusCode()) {
 			response.close();
@@ -454,7 +485,7 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public void deleteDocument(RequestLogger reqlog, DocumentDescriptor desc,
-			String transactionId, Set<Metadata> categories)
+			String transactionId, Set<Metadata> categories, RequestParameters extraParams)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
 		String uri = desc.getUri();
@@ -466,11 +497,10 @@ public class JerseyServices implements RESTServices {
 			logger.debug("Deleting {} in transaction {}", uri, transactionId);
 
 		WebResource webResource = makeDocumentResource(makeDocumentParams(uri,
-				categories, transactionId, null));
+				categories, transactionId, extraParams));
 
 		WebResource.Builder builder = addVersionHeader(desc,
 				webResource.getRequestBuilder(), "If-Match");
-		builder = addTransactionCookie(builder, transactionId);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -598,7 +628,6 @@ public class JerseyServices implements RESTServices {
 		WebResource.Builder builder = makeDocumentResource(
 				makeDocumentParams(uri, categories, transactionId, extraParams))
 				.accept(mimetype);
-		builder = addTransactionCookie(builder, transactionId);
 
 		if (extraParams != null && extraParams.containsKey("range"))
 			builder = builder.header("range", extraParams.get("range").get(0));
@@ -699,7 +728,7 @@ public class JerseyServices implements RESTServices {
 		boolean hasMetadata = categories != null && categories.size() > 0;
 		JerseyResultIterator iterator = 
 			getBulkDocumentsImpl(reqlog, transactionId, categories, format, extraParams, withContent, uris);
-		return convertToDocumentPage(iterator, withContent, hasMetadata);
+		return new JerseyDocumentPage(iterator, withContent, hasMetadata);
 	}
 
     @Override
@@ -715,17 +744,50 @@ public class JerseyServices implements RESTServices {
 		JerseyResultIterator iterator = 
 			getBulkDocumentsImpl(reqlog, querydef, start, pageLength, transactionId, 
 				searchHandle, view, categories, format, extraParams);
-		return convertToDocumentPage(iterator, hasContent, hasMetadata);
+		return new JerseyDocumentPage(iterator, hasContent, hasMetadata);
 	}
 
-	private DocumentPage convertToDocumentPage(JerseyResultIterator iterator, boolean hasContent,
-		boolean hasMetadata)
-	{
-		ArrayList<DocumentRecord> records = new ArrayList<DocumentRecord>();
-        if ( iterator == null ) {
-            return new DocumentPageImpl(records, 1, 0, 0, 0);
-        }
-		while (iterator.hasNext()) {
+	private class JerseyDocumentPage extends BasicPage<DocumentRecord> implements DocumentPage, Iterator<DocumentRecord> {
+		private JerseyResultIterator iterator;
+		private Iterator<DocumentRecord> docRecordIterator;
+		private boolean hasMetadata;
+		private boolean hasContent;
+
+		JerseyDocumentPage(JerseyResultIterator iterator, boolean hasContent, boolean hasMetadata) {
+			super(
+				new ArrayList<DocumentRecord>().iterator(),
+				iterator != null ? iterator.getStart() : 1,
+				iterator != null ? iterator.getPageSize() : 0,
+				iterator != null ? iterator.getTotalSize() : 0
+			);
+			this.iterator = iterator;
+			this.hasContent = hasContent;
+			this.hasMetadata = hasMetadata;
+			if ( iterator == null ) {
+				setSize(0);
+			} else {
+				setSize(iterator.getSize());
+			}
+		}
+
+		@Override
+		public Iterator<DocumentRecord> iterator() {
+			return this;
+		}
+
+		@Override
+		public boolean hasNext() {
+			if ( iterator == null ) return false;
+			return iterator.hasNext();
+		}
+		
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public DocumentRecord next() {
+			if ( iterator == null ) throw new NoSuchElementException("No documents available");
 			JerseyResult result = iterator.next();
 			DocumentRecord record;
 			if ( hasContent && hasMetadata ) {
@@ -741,10 +803,16 @@ public class JerseyServices implements RESTServices {
 			} else {
 				throw new IllegalStateException("Should never have neither content nor metadata");
 			}
-			records.add(record);
+			return record;
 		}
-		return new DocumentPageImpl(records, iterator.getStart(), 
-            iterator.getSize(), iterator.getPageSize(), iterator.getTotalSize());
+
+		public <T extends AbstractReadHandle> T nextContent(T contentHandle) {
+			return next().getContent(contentHandle);
+		}
+
+		public void close() {
+			if ( iterator != null ) iterator.close();
+		}
 	}
 
 	private JerseyResultIterator getBulkDocumentsImpl(RequestLogger reqlog,
@@ -761,8 +829,19 @@ public class JerseyServices implements RESTServices {
 		for (String uri: uris) {
 			params.add("uri", uri);
 		}
-		return getIteratedResourceImpl(DefaultJerseyResultIterator.class,
+		JerseyResultIterator iterator = getIteratedResourceImpl(DefaultJerseyResultIterator.class,
 			reqlog, path, params, MultiPartMediaTypes.MULTIPART_MIXED);
+		if ( iterator == null ) {
+			StringBuffer uriString = new StringBuffer();
+			for ( String uri : uris ) uriString.append(" \"" + uri + "\"");
+			throw new ResourceNotFoundException("Could not find any documents with uris:" + uriString);
+		}
+		if ( iterator.getStart() == -1 ) iterator.setStart(1);
+		if ( iterator.getSize() != -1 ) {
+			if ( iterator.getPageSize() == -1 ) iterator.setPageSize(iterator.getSize());
+			if ( iterator.getTotalSize() == -1 )  iterator.setTotalSize(iterator.getSize());
+		}
+		return iterator;
 	}
 
 	private JerseyResultIterator getBulkDocumentsImpl(RequestLogger reqlog,
@@ -776,9 +855,17 @@ public class JerseyServices implements RESTServices {
 		addCategoryParams(categories, params, withContent);
 		if (searchHandle != null && view != null) params.add("view", view.toString().toLowerCase());
 		if (start > 1)             params.add("start",      Long.toString(start));
-		if (pageLength > 0)        params.add("pageLength", Long.toString(pageLength));
+		if (pageLength >= 0)       params.add("pageLength", Long.toString(pageLength));
 		if (format != null)        params.add("format",     format.toString().toLowerCase());
 		if (transactionId != null) params.add("txid",       transactionId);
+		if ( format == null && searchHandle != null ) {
+			HandleImplementation handleBase = HandleAccessor.as(searchHandle);
+			if ( Format.XML == handleBase.getFormat() ) {
+				params.add("format", "xml");
+			} else if ( Format.JSON == handleBase.getFormat() ) {
+				params.add("format", "json");
+			}
+		}
 
 		JerseySearchRequest request = 
 			generateSearchRequest(reqlog, querydef, MultiPartMediaTypes.MULTIPART_MIXED, params);
@@ -793,9 +880,9 @@ public class JerseyServices implements RESTServices {
                     if ( partList != null && partList.size() > 0 ) {
                         BodyPart searchResponsePart = partList.get(0);
                         HandleImplementation handleBase = HandleAccessor.as(searchHandle);
-
-                        InputStream stream = searchResponsePart.getEntityAs(InputStream.class);
-                        handleBase.receiveContent(stream);
+                        handleBase.receiveContent(
+                            searchResponsePart.getEntityAs(handleBase.receiveAs())
+                        );
                         partList = partList.subList(1, partList.size());
                     }
                     return makeResults(JerseyServiceResultIterator.class, reqlog, "read", "resource", partList, response);
@@ -828,7 +915,6 @@ public class JerseyServices implements RESTServices {
 		docParams.add("format", metadataFormat);
 
 		WebResource.Builder builder = makeDocumentResource(docParams).getRequestBuilder();
-		builder = addTransactionCookie(builder, transactionId);
 		builder = addVersionHeader(desc, builder, "If-None-Match");
 
 		MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
@@ -968,7 +1054,7 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public boolean exists(String uri) throws ForbiddenUserException,
 			FailedRequestException {
-		return headImpl(null, uri, null, connection.path(uri)) == null ? false : true;
+		return headImpl(null, uri, null, getConnection().path(uri)) == null ? false : true;
 	}
 	
 	public ClientResponse headImpl(RequestLogger reqlog, String uri,
@@ -982,7 +1068,6 @@ public class JerseyServices implements RESTServices {
 					transactionId);
 
 		WebResource.Builder builder = webResource.getRequestBuilder();
-		builder = addTransactionCookie(builder, transactionId);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -1168,7 +1253,6 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = webResource.type(
 				(mimetype != null) ? mimetype : MediaType.WILDCARD);
-		builder = addTransactionCookie(builder, transactionId);
 		if (uri != null) {
 			builder = addVersionHeader(desc, builder, "If-Match");
 		}
@@ -1325,7 +1409,6 @@ public class JerseyServices implements RESTServices {
 			makeDocumentParams(uri, categories, transactionId, extraParams, true);
 
 		WebResource.Builder builder = makeDocumentResource(docParams).getRequestBuilder();
-		builder = addTransactionCookie(builder, transactionId);
 		if (uri != null) {
 			builder = addVersionHeader(desc, builder, "If-Match");
 		}
@@ -1469,8 +1552,8 @@ public class JerseyServices implements RESTServices {
 				transParams.add("timeLimit", String.valueOf(timeLimit));
 		}
 
-		WebResource resource = (transParams != null) ? connection.path(
-				"transactions").queryParams(transParams) : connection
+		WebResource resource = (transParams != null) ? getConnection().path(
+				"transactions").queryParams(transParams) : getConnection()
 				.path("transactions");
 
 		ClientResponse response = null;
@@ -1559,11 +1642,10 @@ public class JerseyServices implements RESTServices {
 		MultivaluedMap<String, String> transParams = new MultivaluedMapImpl();
 		transParams.add("result", result);
 
-		WebResource webResource = connection.path("transactions/" + transactionId)
+		WebResource webResource = getConnection().path("transactions/" + transactionId)
 				.queryParams(transParams);
 
 		WebResource.Builder builder = webResource.getRequestBuilder();
-		builder = addTransactionCookie(builder, transactionId);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -1668,6 +1750,9 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 		addEncodedParam(docParams, "uri", uri);
+		if ( database != null ) {
+			addEncodedParam(docParams, "database", database);
+		}
 		if (categories == null || categories.size() == 0) {
 			docParams.add("category", "content");
 		} else {
@@ -1688,7 +1773,7 @@ public class JerseyServices implements RESTServices {
 
 	private WebResource makeDocumentResource(
 			MultivaluedMap<String, String> queryParams) {
-		return connection.path("documents").queryParams(queryParams);
+		return getConnection().path("documents").queryParams(queryParams);
 	}
 
 	private boolean isExternalDescriptor(ContentDescriptor desc) {
@@ -1738,19 +1823,22 @@ public class JerseyServices implements RESTServices {
 	}
 
 	private Format getHeaderFormat(BodyPart part) {
+        ContentDisposition contentDisposition = part.getContentDisposition();
 		if (part.getHeaders().containsKey("vnd.marklogic.document-format")) {
-			List<String> values = part.getHeaders().get("vnd.marklogic.document-format");
-			if (values != null) {
-				return Format.valueOf(values.get(0).toUpperCase());
+			String value = part.getHeaders().getFirst("vnd.marklogic.document-format");
+			if (value != null) {
+				return Format.valueOf(value.toUpperCase());
 			}
-        } else {
-            ContentDisposition contentDisposition = part.getContentDisposition();
-            if ( contentDisposition != null ) {
-                Map<String, String> parameters = contentDisposition.getParameters();
-                if ( parameters != null && parameters.get("format") != null ) {
-                    return Format.valueOf(parameters.get("format").toUpperCase());
-                }
+		} else if ( contentDisposition != null ) {
+            Map<String, String> parameters = contentDisposition.getParameters();
+            if ( parameters != null && parameters.get("format") != null ) {
+                return Format.valueOf(parameters.get("format").toUpperCase());
             }
+		} else if ( part.getHeaders().containsKey("Content-Type") ) {
+			String value = part.getHeaders().getFirst("Content-Type");
+			if (value != null) {
+				return Format.getFromMimetype(value);
+			}
 		}
 		return null;
 	}
@@ -1821,22 +1909,6 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 		descriptor.setVersion(version);
-	}
-
-	private WebResource.Builder addTransactionCookie(
-			WebResource.Builder builder, String transactionId) {
-		if (transactionId != null) {
-			int pos = transactionId.indexOf("_");
-			if (pos != -1) {
-				String hostId = transactionId.substring(0, pos);
-				builder.cookie(new Cookie("HostId", hostId));
-			} else {
-				throw new IllegalArgumentException(
-						"transaction id without host id separator: "+transactionId
-						);
-			}
-		}
-		return builder;
 	}
 
 	private WebResource.Builder addVersionHeader(DocumentDescriptor desc,
@@ -1921,6 +1993,10 @@ public class JerseyServices implements RESTServices {
 
     private JerseySearchRequest generateSearchRequest(RequestLogger reqlog, QueryDefinition queryDef, 
             String mimetype, MultivaluedMap<String, String> params) {
+        if ( database != null ) {
+            if ( params == null ) params = new MultivaluedMapImpl();
+            addEncodedParam(params, "database", database);
+        }
         return new JerseySearchRequest(reqlog, queryDef, mimetype, params);
     }
 
@@ -1996,7 +2072,7 @@ public class JerseyServices implements RESTServices {
                 String path = (queryDef instanceof RawQueryByExampleDefinition) ?
                     "qbe" : "search";
 
-                WebResource resource = connection.path(path).queryParams(params);
+                WebResource resource = getConnection().path(path).queryParams(params);
                 builder = (payloadMimetype != null) ?
                     resource.type(payloadMimetype).accept(mimetype) :
                     resource.accept(mimetype);
@@ -2009,7 +2085,7 @@ public class JerseyServices implements RESTServices {
                     addEncodedParam(params, "q", text);
                 }
 
-                builder = connection.path("search").queryParams(params)
+                builder = getConnection().path("search").queryParams(params)
                     .type("application/xml").accept(mimetype);
             } else if (queryDef instanceof KeyValueQueryDefinition) {
                 if (logger.isDebugEnabled())
@@ -2030,7 +2106,7 @@ public class JerseyServices implements RESTServices {
                     addEncodedParam(params, "value", entry.getValue());
                 }
 
-                builder = connection.path("keyvalue").queryParams(params)
+                builder = getConnection().path("keyvalue").queryParams(params)
                     .accept(mimetype);
             } else if (queryDef instanceof StructuredQueryDefinition) {
                 structure = ((StructuredQueryDefinition) queryDef).serialize();
@@ -2038,22 +2114,27 @@ public class JerseyServices implements RESTServices {
                 if (logger.isDebugEnabled())
                     logger.debug("Searching for structure {}", structure);
 
-                builder = connection.path("search").queryParams(params)
+                builder = getConnection().path("search").queryParams(params)
+                    .type("application/xml").accept(mimetype);
+            } else if (queryDef instanceof CombinedQueryDefinition) {
+                structure = ((CombinedQueryDefinition) queryDef).serialize();
+
+                if (logger.isDebugEnabled())
+                    logger.debug("Searching for combined query {}", structure);
+
+                builder = getConnection().path("search").queryParams(params)
                     .type("application/xml").accept(mimetype);
             } else if (queryDef instanceof DeleteQueryDefinition) {
                 if (logger.isDebugEnabled())
                     logger.debug("Searching for deletes");
 
-                builder = connection.path("search").queryParams(params)
+                builder = getConnection().path("search").queryParams(params)
                     .accept(mimetype);
             } else {
                 throw new UnsupportedOperationException("Cannot search with "
                         + queryDef.getClass().getName());
             }
 
-            if (params.containsKey("txid")) {
-                builder = addTransactionCookie(builder, params.getFirst("txid"));
-            }
         }
 
         ClientResponse getResponse() {
@@ -2075,6 +2156,8 @@ public class JerseyServices implements RESTServices {
                 } else if (queryDef instanceof KeyValueQueryDefinition) {
                     response = doGet(builder);
                 } else if (queryDef instanceof StructuredQueryDefinition) {
+                    response = doPost(reqlog, builder, structure, true);
+                } else if (queryDef instanceof CombinedQueryDefinition) {
                     response = doPost(reqlog, builder, structure, true);
                 } else if (queryDef instanceof DeleteQueryDefinition) {
                     response = doGet(builder);
@@ -2141,10 +2224,9 @@ public class JerseyServices implements RESTServices {
 			params.add("txid", transactionId);
 		}
 
-		WebResource webResource = connection.path("search").queryParams(params);
+		WebResource webResource = getConnection().path("search").queryParams(params);
 
 		WebResource.Builder builder = webResource.getRequestBuilder();
-		builder = addTransactionCookie(builder, transactionId);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -2307,9 +2389,8 @@ public class JerseyServices implements RESTServices {
 			uri += "/" + valDef.getName();
 		}
 
-		WebResource.Builder builder = connection.path(uri)
-				.queryParams(docParams).accept(mimetype);
-		builder = addTransactionCookie(builder, transactionId);
+		WebResource.Builder builder = getConnection().path(uri).queryParams(docParams).accept(mimetype);
+
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -2386,9 +2467,8 @@ public class JerseyServices implements RESTServices {
 
 		String uri = "values";
 
-		WebResource.Builder builder = connection.path(uri)
+		WebResource.Builder builder = getConnection().path(uri)
 				.queryParams(docParams).accept(mimetype);
-		builder = addTransactionCookie(builder, transactionId);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -2455,9 +2535,8 @@ public class JerseyServices implements RESTServices {
 
 		String uri = "config/query";
 
-		WebResource.Builder builder = connection.path(uri)
+		WebResource.Builder builder = getConnection().path(uri)
 				.queryParams(docParams).accept(mimetype);
-		builder = addTransactionCookie(builder, transactionId);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -2522,7 +2601,7 @@ public class JerseyServices implements RESTServices {
 		if (logger.isDebugEnabled())
 			logger.debug("Getting {}/{}", type, key);
 
-		WebResource.Builder builder = connection.path(type + "/" + key).accept(
+		WebResource.Builder builder = getConnection().path(type + "/" + key).accept(
 				mimetype);
 
 		ClientResponse response = null;
@@ -2604,8 +2683,8 @@ public class JerseyServices implements RESTServices {
 		MultivaluedMap<String, String> requestParams = convertParams(extraParams);
 
 		WebResource.Builder builder = (requestParams == null) ?
-				connection.path(type).accept(mimetype) :
-				connection.path(type).queryParams(requestParams).accept(mimetype);
+				getConnection().path(type).accept(mimetype) :
+				getConnection().path(type).queryParams(requestParams).accept(mimetype);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -2774,8 +2853,8 @@ public class JerseyServices implements RESTServices {
 				if (builder == null) {
 					connectPath = (key != null) ? type + "/" + key : type;
 					WebResource resource = (requestParams == null) ?
-						connection.path(connectPath) :
-						connection.path(connectPath).queryParams(requestParams);
+						getConnection().path(connectPath) :
+						getConnection().path(connectPath).queryParams(requestParams);
 					builder = (mimetype == null) ?
 						resource.getRequestBuilder() : resource.type(mimetype);
 				}
@@ -2787,8 +2866,8 @@ public class JerseyServices implements RESTServices {
 				if (builder == null) {
 					connectPath = type;
 					WebResource resource = (requestParams == null) ?
-						connection.path(connectPath) :
-						connection.path(connectPath).queryParams(requestParams);
+						getConnection().path(connectPath) :
+						getConnection().path(connectPath).queryParams(requestParams);
 					builder = (mimetype == null) ?
 						resource.getRequestBuilder() : resource.type(mimetype);
 				}
@@ -2859,7 +2938,7 @@ public class JerseyServices implements RESTServices {
 		if (logger.isDebugEnabled())
 			logger.debug("Deleting {}/{}", type, key);
 
-		WebResource builder = connection.path(type + "/" + key);
+		WebResource builder = getConnection().path(type + "/" + key);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -2920,7 +2999,7 @@ public class JerseyServices implements RESTServices {
 		if (logger.isDebugEnabled())
 			logger.debug("Deleting {}", type);
 
-		WebResource builder = connection.path(type);
+		WebResource builder = getConnection().path(type);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -3493,6 +3572,246 @@ public class JerseyServices implements RESTServices {
 			output);
 	}
 
+	public class JerseyEvalResultIterator implements EvalResultIterator {
+		private JerseyResultIterator iterator;
+
+		JerseyEvalResultIterator(JerseyResultIterator iterator) {
+			this.iterator = iterator;
+		}
+
+		@Override
+		public Iterator<EvalResult> iterator() {
+			return this;
+		}
+
+		@Override
+		public boolean hasNext() {
+			if ( iterator == null ) return false;
+			return iterator.hasNext();
+		}
+		
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public EvalResult next() {
+			if ( iterator == null ) throw new NoSuchElementException("No results available");
+			JerseyResult jerseyResult = iterator.next();
+			EvalResult result = new JerseyEvalResult(jerseyResult);
+			return result;
+		}
+
+		public void close() {
+			if ( iterator != null ) iterator.close();
+		}
+	}
+	public class JerseyEvalResult implements EvalResult {
+		private JerseyResult content;
+
+		public JerseyEvalResult(JerseyResult content) {
+			this.content = content;
+		}
+
+		@Override
+		public Format getFormat() {
+			return content.getFormat();
+		}
+
+		@Override
+		public EvalResult.Type getType() {
+			String contentType = content.getHeader("Content-Type");
+			if ( contentType != null ) {
+				if ( "application/json".equals(contentType) ) {
+					return EvalResult.Type.JSON;
+				} else if ( "text/json".equals(contentType) ) {
+					return EvalResult.Type.JSON;
+				} else if ( "application/xml".equals(contentType) ) {
+					return EvalResult.Type.XML;
+				} else if ( "text/xml".equals(contentType) ) {
+					return EvalResult.Type.XML;
+				} else if ( "application/x-unknown-content-type".equals(contentType) &&
+							"binary()".equals(content.getHeader("X-Primitive")) )
+				{
+					return EvalResult.Type.BINARY;
+				} else if ( "application/octet-stream".equals(contentType) &&
+							"node()".equals(content.getHeader("X-Primitive")) )
+				{
+					return EvalResult.Type.BINARY;
+				}
+			}
+			String xPrimitive = content.getHeader("X-Primitive");
+			if ( xPrimitive == null ) {
+				return EvalResult.Type.OTHER;
+			} else if ( "string".equals(xPrimitive) || "untypedAtomic".equals(xPrimitive) ) {
+				return EvalResult.Type.STRING;
+			} else if ( "boolean".equals(xPrimitive) ) {
+				return EvalResult.Type.BOOLEAN;
+			} else if ( "attribute()".equals(xPrimitive) ) {
+				return EvalResult.Type.ATTRIBUTE;
+			} else if ( "comment()".equals(xPrimitive) ) {
+				return EvalResult.Type.COMMENT;
+			} else if ( "processing-instruction()".equals(xPrimitive) ) {
+				return EvalResult.Type.PROCESSINGINSTRUCTION;
+			} else if ( "text()".equals(xPrimitive) ) {
+				return EvalResult.Type.TEXTNODE;
+			} else if ( "binary()".equals(xPrimitive) ) {
+				return EvalResult.Type.BINARY;
+			} else if ( "duration".equals(xPrimitive) ) {
+				return EvalResult.Type.DURATION;
+			} else if ( "date".equals(xPrimitive) ) {
+				return EvalResult.Type.DATE;
+			} else if ( "anyURI".equals(xPrimitive) ) {
+				return EvalResult.Type.ANYURI;
+			} else if ( "hexBinary".equals(xPrimitive) ) {
+				return EvalResult.Type.HEXBINARY;
+			} else if ( "base64Binary".equals(xPrimitive) ) {
+				return EvalResult.Type.BASE64BINARY;
+			} else if ( "dateTime".equals(xPrimitive) ) {
+				return EvalResult.Type.DATETIME;
+			} else if ( "decimal".equals(xPrimitive) ) {
+				return EvalResult.Type.DECIMAL;
+			} else if ( "double".equals(xPrimitive) ) {
+				return EvalResult.Type.DOUBLE;
+			} else if ( "float".equals(xPrimitive) ) {
+				return EvalResult.Type.FLOAT;
+			} else if ( "gDay".equals(xPrimitive) ) {
+				return EvalResult.Type.GDAY;
+			} else if ( "gMonth".equals(xPrimitive) ) {
+				return EvalResult.Type.GMONTH;
+			} else if ( "gMonthDay".equals(xPrimitive) ) {
+				return EvalResult.Type.GMONTHDAY;
+			} else if ( "gYear".equals(xPrimitive) ) {
+				return EvalResult.Type.GYEAR;
+			} else if ( "gYearMonth".equals(xPrimitive) ) {
+				return EvalResult.Type.GYEARMONTH;
+			} else if ( "integer".equals(xPrimitive) ) {
+				return EvalResult.Type.INTEGER;
+			} else if ( "QName".equals(xPrimitive) ) {
+				return EvalResult.Type.QNAME;
+			} else if ( "time".equals(xPrimitive) ) {
+				return EvalResult.Type.TIME;
+			} else if ( "null".equals(xPrimitive) ) {
+				return EvalResult.Type.NULL;
+			}
+			return EvalResult.Type.OTHER;
+		}
+
+		@Override
+		public <H extends AbstractReadHandle> H get(H handle) {
+			return content.getContent(handle);
+		}
+
+		@Override
+		public <T> T getAs(Class<T> clazz) {
+			if (clazz == null) throw new IllegalArgumentException("clazz cannot be null");
+
+			ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(clazz);
+			if ( readHandle == null ) return null;
+			readHandle = get(readHandle);
+			if ( readHandle == null ) return null;
+			return readHandle.get();
+		}
+
+		@Override
+		public String getString() {
+			return content.getEntityAs(String.class);
+		}
+
+		@Override
+		public Number getNumber() {
+			if      ( getType() == EvalResult.Type.DECIMAL ) return new BigDecimal(getString());
+			else if ( getType() == EvalResult.Type.DOUBLE )  return new Double(getString());
+			else if ( getType() == EvalResult.Type.FLOAT )   return new Float(getString());
+			// MarkLogic integers can be much larger than Java integers, so we'll use Long instead
+			else if ( getType() == EvalResult.Type.INTEGER ) return new Long(getString());
+			else return new BigDecimal(getString());
+		}
+
+		@Override
+		public Boolean getBoolean() {
+			return new Boolean(getString());
+		}
+
+	}
+
+	@Override
+	public EvalResultIterator postEvalInvoke(
+			RequestLogger reqlog, String code, String modulePath, 
+			ServerEvaluationCallImpl.Context context,
+			Map<String, Object> variables, EditableNamespaceContext namespaces,
+			String transactionId)
+			throws ResourceNotFoundException, ResourceNotResendableException,
+			ForbiddenUserException, FailedRequestException {
+		String formUrlEncodedPayload;
+		String path;
+		RequestParameters params = new RequestParameters();
+		try {
+			StringBuffer sb = new StringBuffer();
+			if ( context == ServerEvaluationCallImpl.Context.ADHOC_XQUERY ) {
+				path = "eval";
+				sb.append("xquery=");
+				sb.append(URLEncoder.encode(code, "UTF-8"));
+			} else if ( context == ServerEvaluationCallImpl.Context.ADHOC_JAVASCRIPT ) {
+				path = "eval";
+				sb.append("javascript=");
+				sb.append(URLEncoder.encode(code, "UTF-8"));
+			} else if ( context == ServerEvaluationCallImpl.Context.INVOKE ) {
+				path = "invoke";
+				sb.append("module=");
+				sb.append(URLEncoder.encode(modulePath, "UTF-8"));
+			} else {
+				throw new IllegalStateException("Invalid eval context: " + context);
+			}
+			if ( variables != null && variables.size() > 0 ) {
+				sb.append("&vars=");
+				ObjectNode vars = new ObjectMapper().createObjectNode();
+				for ( String name : variables.keySet() ) {
+					Object valueObject = variables.get(name);
+					// replace any name starting with a namespace prefix with a Clark Notation QName
+					if ( namespaces != null ) {
+						for ( String prefix : namespaces.keySet() ) {
+							if ( name != null && prefix != null &&
+								 name.startsWith(prefix + ":") )
+							{
+								name = "{" + namespaces.get(prefix) + "}" + 
+									name.substring(prefix.length() + 1);
+							}
+						}
+					}
+					if ( valueObject == null )                    vars.putNull(name);
+					else if ( valueObject instanceof BigDecimal ) vars.put(name, (BigDecimal) valueObject);
+					else if ( valueObject instanceof Double )     vars.put(name, (Double) valueObject);
+					else if ( valueObject instanceof Float )      vars.put(name, (Float) valueObject);
+					else if ( valueObject instanceof Integer )    vars.put(name, (Integer) valueObject);
+					else if ( valueObject instanceof Long )       vars.put(name, (Long) valueObject);
+					else if ( valueObject instanceof Short )      vars.put(name, (Short) valueObject);
+					else if ( valueObject instanceof Number )     vars.put(name, new BigDecimal(valueObject.toString()));
+					else if ( valueObject instanceof Boolean )    vars.put(name, (Boolean) valueObject);
+					else if ( valueObject instanceof String )     vars.put(name, (String) valueObject);
+					else if ( valueObject instanceof JacksonHandle ) {
+						vars.set(name, ((JacksonHandle) valueObject).get());
+					} else if ( valueObject instanceof JacksonParserHandle ) {
+						vars.set(name, ((JacksonParserHandle) valueObject).get().readValueAs(JsonNode.class));
+					} else if ( valueObject instanceof AbstractWriteHandle ) {
+						vars.put(name, HandleAccessor.contentAsString((AbstractWriteHandle) valueObject));
+					}
+				}
+				sb.append(URLEncoder.encode(vars.toString(), "UTF-8"));
+			}
+			formUrlEncodedPayload = sb.toString();
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException("UTF-8 is unsupported", e);
+		} catch (IOException e) {
+			throw new MarkLogicIOException(e);
+		}
+		if ( transactionId != null ) params.add("txid", transactionId);
+		StringHandle input = new StringHandle(formUrlEncodedPayload)
+			.withMimetype("application/x-www-form-urlencoded");
+		return new JerseyEvalResultIterator( postIteratedResourceImpl(DefaultJerseyResultIterator.class,
+			reqlog, path, params, input) );
+	}
+
 	@Override
 	public ServiceResultIterator postIteratedResource(RequestLogger reqlog,
 			String path, RequestParameters params, AbstractWriteHandle input,
@@ -4049,8 +4368,11 @@ public class JerseyServices implements RESTServices {
 	private WebResource.Builder makeBuilder(String path,
 			MultivaluedMap<String, String> params, Object inputMimetype,
 			Object outputMimetype) {
-		WebResource resource = (params == null) ? connection.path(path)
-				: connection.path(path).queryParams(params);
+		if ( params == null ) params = new MultivaluedMapImpl();
+		if ( database != null ) {
+			addEncodedParam(params, "database", database);
+		}
+		WebResource resource = getConnection().path(path).queryParams(params);
 
 		WebResource.Builder builder = resource.getRequestBuilder();
 
@@ -4120,7 +4442,6 @@ public class JerseyServices implements RESTServices {
         if ( response == null ) return null;
 		MultiPart entity = response.hasEntity() ?
 				response.getEntity(MultiPart.class) : null;
-        response.close();
 		if (entity == null) return null;
         return makeResults(clazz, reqlog, operation, entityType, entity.getBodyParts(), response);
 	}
@@ -4135,8 +4456,8 @@ public class JerseyServices implements RESTServices {
 
 		try {
 			java.lang.reflect.Constructor<U> constructor = 
-				clazz.getConstructor(JerseyServices.class, RequestLogger.class, List.class);
-            JerseyResultIterator result = constructor.newInstance(this, reqlog, partList);
+				clazz.getConstructor(JerseyServices.class, RequestLogger.class, List.class, ClientResponse.class);
+            JerseyResultIterator result = constructor.newInstance(this, reqlog, partList, response);
 			MultivaluedMap<String, String> headers = response.getHeaders();
             if (headers.containsKey("vnd.marklogic.start")) {
                 result.setStart(Long.parseLong(headers.get("vnd.marklogic.start").get(0)));
@@ -4209,6 +4530,7 @@ public class JerseyServices implements RESTServices {
 		private RequestLogger reqlog;
 		private BodyPart part;
 		private boolean extractedHeaders = false;
+		private MultivaluedMap<String, String> headers = null;
 		private String uri;
 		private Format format;
 		private String mimetype;
@@ -4217,6 +4539,10 @@ public class JerseyServices implements RESTServices {
 		public JerseyResult(RequestLogger reqlog, BodyPart part) {
 			this.reqlog = reqlog;
 			this.part = part;
+		}
+
+		public <T> T getEntityAs(Class<T> clazz) {
+			return part.getEntityAs(clazz);
 		}
 
 		public <R extends AbstractReadHandle> R getContent(R handle) {
@@ -4240,6 +4566,13 @@ public class JerseyServices implements RESTServices {
 			return handle;
 		}
 
+		public <T> T getContentAs(Class<T> clazz) {
+			ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(clazz);
+			readHandle = getContent(readHandle);
+			if ( readHandle == null ) return null;
+			return readHandle.get();
+		}
+
 		public String getUri() {
 			extractHeaders();
 			return uri;
@@ -4259,10 +4592,15 @@ public class JerseyServices implements RESTServices {
 			return length;
 		}
 
+		public String getHeader(String name) {
+			extractHeaders();
+			return headers.getFirst(name);
+		}
+
 		private void extractHeaders() {
 			if (part == null || extractedHeaders)
 				return;
-			MultivaluedMap<String, String> headers = part.getHeaders();
+			headers = part.getHeaders();
 			format = getHeaderFormat(part);
 			mimetype = getHeaderMimetype(headers);
 			length = getHeaderLength(headers);
@@ -4285,10 +4623,10 @@ public class JerseyServices implements RESTServices {
         private long size = -1;
         private long pageSize = -1;
         private long totalSize = -1;
+        private ClientResponse closeable;
 
 		public JerseyResultIterator(RequestLogger reqlog,
-				List<BodyPart> partList, Class<T> clazz) {
-			super();
+				List<BodyPart> partList, Class<T> clazz, ClientResponse closeable) {
             this.clazz = clazz;
             if (partList != null && partList.size() > 0) {
                 this.size = partList.size();
@@ -4296,6 +4634,7 @@ public class JerseyServices implements RESTServices {
                 this.partQueue = new ConcurrentLinkedQueue<BodyPart>(
                         partList).iterator();
 			}
+			this.closeable = closeable;
 		}
 
         public long getStart() {
@@ -4369,6 +4708,9 @@ public class JerseyServices implements RESTServices {
 		public void close() {
 			partQueue = null;
 			reqlog = null;
+			if ( closeable != null ) {
+				closeable.close();
+			}
 		}
 
 		protected void finalize() throws Throwable {
@@ -4382,17 +4724,18 @@ public class JerseyServices implements RESTServices {
 		implements ServiceResultIterator
 	{
 		public JerseyServiceResultIterator(RequestLogger reqlog,
-				List<BodyPart> partList) {
-            super(reqlog, partList, JerseyServiceResult.class);
+				List<BodyPart> partList, ClientResponse closeable) {
+			super(reqlog, partList, JerseyServiceResult.class, closeable);
 		}
 	}
 
 	public class DefaultJerseyResultIterator 
 		extends JerseyResultIterator<JerseyResult>
+		implements Iterator<JerseyResult>
 	{
 		public DefaultJerseyResultIterator(RequestLogger reqlog,
-				List<BodyPart> partList) {
-            super(reqlog, partList, JerseyResult.class);
+				List<BodyPart> partList, ClientResponse closeable) {
+			super(reqlog, partList, JerseyResult.class, closeable);
 		}
 	}
 
@@ -4475,7 +4818,7 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 		WebResource.Builder builder = null;
-		builder = connection.path("suggest").queryParams(params)
+		builder = getConnection().path("suggest").queryParams(params)
 				.accept("application/xml");
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -4548,7 +4891,7 @@ public class JerseyServices implements RESTServices {
 			transform.merge(params);
 		}
 		WebResource.Builder builder = null;
-		builder = connection.path("alert/match").queryParams(params)
+		builder = getConnection().path("alert/match").queryParams(params)
 				.accept("application/xml").type(mimeType);
 		
 		ClientResponse response = null;
@@ -4646,7 +4989,7 @@ public class JerseyServices implements RESTServices {
 			if (logger.isDebugEnabled())
 				logger.debug("Searching for structure {}", structure);
 
-			builder = connection.path("alert/match").queryParams(params)
+			builder = getConnection().path("alert/match").queryParams(params)
 					.type("application/xml").accept("application/xml");
 		} else if (queryDef instanceof StringQueryDefinition) {
 			String text = ((StringQueryDefinition) queryDef).getCriteria();
@@ -4657,7 +5000,7 @@ public class JerseyServices implements RESTServices {
 				addEncodedParam(params, "q", text);
 			}
 
-			builder = connection.path("alert/match").queryParams(params)
+			builder = getConnection().path("alert/match").queryParams(params)
 					.accept("application/xml");
 		} else if (queryDef instanceof StructuredQueryDefinition) {
 			structure = ((StructuredQueryDefinition) queryDef).serialize();
@@ -4666,7 +5009,7 @@ public class JerseyServices implements RESTServices {
 				logger.debug("Searching for structure {} in transaction {}",
 						structure);
 
-			builder = connection.path("alert/match").queryParams(params)
+			builder = getConnection().path("alert/match").queryParams(params)
 					.type("application/xml").accept("application/xml");
 		} else {
 			throw new UnsupportedOperationException("Cannot match with "
@@ -4754,7 +5097,7 @@ public class JerseyServices implements RESTServices {
 		if (transform != null) {
 			transform.merge(params);
 		}
-		WebResource.Builder builder = connection.path("alert/match").queryParams(params)
+		WebResource.Builder builder = getConnection().path("alert/match").queryParams(params)
 				.accept("application/xml");
 		
 		ClientResponse response = null;

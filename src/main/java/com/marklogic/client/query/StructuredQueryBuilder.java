@@ -20,10 +20,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.XMLConstants;
+import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
@@ -676,6 +678,42 @@ public class StructuredQueryBuilder {
     	return new PathIndexImpl(path);
     }
     /**
+     * Identifies a json property whose text has the point format latitude and longitude
+     * coordinates to match with a geospatial query.
+     * @param jsonProperty	the json property containing the geospatial coordinates
+     * @return	the specification for the index on the geospatial coordinates
+     */
+    public GeospatialIndex geoJSONProperty(JSONProperty jsonProperty) {
+        if ( jsonProperty == null ) throw new IllegalArgumentException("jsonProperty cannot be null");
+    	return new GeoJSONPropertyImpl(jsonProperty);
+    }
+    /**
+     * Identifies a parent json property with a child json property whose text has
+     * the latitude and longitude coordinates to match with a geospatial query.
+     * @param parent	the parent of the json property with the coordinates
+     * @param jsonProperty	the json property containing the geospatial coordinates
+     * @return	the specification for the index on the geospatial coordinates
+     */
+    public GeospatialIndex geoJSONProperty(JSONProperty parent, JSONProperty jsonProperty) {
+        if ( parent == null ) throw new IllegalArgumentException("parent cannot be null");
+        if ( jsonProperty == null ) throw new IllegalArgumentException("jsonProperty cannot be null");
+    	return new GeoJSONPropertyImpl(parent, jsonProperty);
+    }
+    /**
+     * Identifies a parent json property with child latitude and longitude json properties
+     * to match with a geospatial query.
+     * @param parent	the parent json property of lat and lon
+     * @param lat	the json property with the latitude coordinate
+     * @param lon	the json property with the longitude coordinate
+     * @return	the specification for the index on the geospatial coordinates
+     */
+    public GeospatialIndex geoJSONPropertyPair(JSONProperty parent, JSONProperty lat, JSONProperty lon) {
+        if ( parent == null ) throw new IllegalArgumentException("parent cannot be null");
+        if ( lat == null )    throw new IllegalArgumentException("lat cannot be null");
+        if ( lon == null )    throw new IllegalArgumentException("lon cannot be null");
+    	return new GeoJSONPropertyPairImpl(parent, lat, lon);
+    }
+    /**
      * Identifies an element whose text has the latitude and longitude
      * coordinates to match with a geospatial query.
      * @param element	the element containing the geospatial coordinates
@@ -916,7 +954,7 @@ public class StructuredQueryBuilder {
     /* ************************************************************************************* */
 
     // TODO IN A FUTURE RELEASE:  remove the deprecated innerSerialize() method
-	private abstract class AbstractStructuredQuery
+	protected abstract class AbstractStructuredQuery
     extends AbstractQueryDefinition
     implements StructuredQueryDefinition {
 		public AbstractStructuredQuery() {
@@ -937,7 +975,7 @@ public class StructuredQueryBuilder {
         	return extractQueryContent(serializeQueries(this));
         }
 
-        abstract void innerSerialize(XMLStreamWriter serializer) throws Exception;
+        public abstract void innerSerialize(XMLStreamWriter serializer) throws Exception;
     }
 
     // TODO IN A FUTURE RELEASE:  change the visibility of the deprecated
@@ -964,7 +1002,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	writeQueryList(serializer, "and-query", convertQueries(queries));
         }
     }
@@ -988,7 +1026,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	writeQueryList(serializer, "or-query", convertQueries(queries));
         }
     }
@@ -1012,7 +1050,7 @@ public class StructuredQueryBuilder {
         }
 
     	@Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	writeQuery(serializer, "not-query", (AbstractStructuredQuery) query);
         }
     }
@@ -1034,7 +1072,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("not-in-query");
         	writeQuery(serializer, "positive-query", (AbstractStructuredQuery) positive);
         	writeQuery(serializer, "negative-query", (AbstractStructuredQuery) negative);
@@ -1064,7 +1102,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("and-not-query");
         	writeQuery(serializer, "positive-query", (AbstractStructuredQuery) positive);
         	writeQuery(serializer, "negative-query", (AbstractStructuredQuery) negative);
@@ -1089,7 +1127,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("boost-query");
         	writeQuery(serializer, "matching-query", (AbstractStructuredQuery) matchingQuery);
         	writeQuery(serializer, "boosting-query", (AbstractStructuredQuery) boostingQuery);
@@ -1118,7 +1156,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("document-query");
         	writeTextList(serializer, "uri", uris);
         	serializer.writeEndElement();
@@ -1147,7 +1185,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+		public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("term-query");
         	writeTextList(serializer, "text", terms);
         	writeText(serializer, "weight", weight);
@@ -1185,7 +1223,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("near-query");
         	writeQueryList(serializer, queries);
             if (order != null) {
@@ -1220,7 +1258,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("collection-query");
         	writeTextList(serializer, "uri", uris);
         	serializer.writeEndElement();
@@ -1258,7 +1296,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("directory-query");
         	if (depth != null) {
         		serializer.writeAttribute("depth", Integer.toString(depth));
@@ -1289,7 +1327,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
 			writeQuery(serializer, "document-fragment-query", (AbstractStructuredQuery) query);
         }
     }
@@ -1314,8 +1352,8 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
-			writeQuery(serializer, "properties-query", (AbstractStructuredQuery) query);
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+			writeQuery(serializer, "properties-fragment-query", (AbstractStructuredQuery) query);
         }
     }
 
@@ -1339,8 +1377,8 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
-			writeQuery(serializer, "locks-query", (AbstractStructuredQuery) query);
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+			writeQuery(serializer, "locks-fragment-query", (AbstractStructuredQuery) query);
         }
     }
 
@@ -1367,7 +1405,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("container-constraint-query");
         	writeText(serializer, "constraint-name", name);
         	writeQuery(serializer, query);
@@ -1397,7 +1435,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("element-constraint-query");
         	writeText(serializer, "constraint-name", name);
         	writeQuery(serializer, query);
@@ -1427,7 +1465,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("properties-constraint-query");
         	writeText(serializer, "constraint-name", name);
         	writeQuery(serializer, query);
@@ -1457,7 +1495,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("collection-constraint-query");
         	writeText(serializer, "constraint-name", name);
         	writeTextList(serializer, "uri", uris);
@@ -1494,7 +1532,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("value-constraint-query");
         	writeText(serializer, "constraint-name", name);
         	writeTextList(serializer, "text", values);
@@ -1532,7 +1570,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("word-constraint-query");
         	writeText(serializer, "constraint-name", name);
         	writeTextList(serializer, "text", words);
@@ -1565,7 +1603,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("range-constraint-query");
         	writeText(serializer, "constraint-name", name);
         	writeTextList(serializer, "value", values);
@@ -1596,7 +1634,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("geospatial-constraint-query");
         	writeText(serializer, "constraint-name", name);
             for (Region region : regions) {
@@ -1628,7 +1666,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("custom-constraint-query");
         	writeText(serializer, "constraint-name", name);
         	writeTextList(serializer, "text", terms);
@@ -1645,7 +1683,7 @@ public class StructuredQueryBuilder {
     		this.query = query;
     	}
     	@Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
     		serializer.writeStartElement("container-query");
     		((IndexImpl) index).innerSerialize(serializer);
     		writeQuery(serializer, query);
@@ -1668,7 +1706,7 @@ public class StructuredQueryBuilder {
     		this.weight  = weight;
     		this.values  = values;
 		}
-        void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
     		((IndexImpl) index).innerSerialize(serializer);
     		if (scope != null) {
     			if (scope == FragmentScope.DOCUMENT) {
@@ -1700,7 +1738,7 @@ public class StructuredQueryBuilder {
             this.weight  = weight;
             this.values  = values;
         }
-        void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
             serializer.writeStartElement("value-query");
             ((IndexImpl) index).innerSerialize(serializer);
             if (scope != null) {
@@ -1739,7 +1777,7 @@ public class StructuredQueryBuilder {
     		super(index, scope, options, weight, values);
     	}
     	@Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
     		serializer.writeStartElement("word-query");
     		super.innerSerialize(serializer);
     		serializer.writeEndElement();
@@ -1773,7 +1811,7 @@ public class StructuredQueryBuilder {
    			}
     	}
     	@Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
     		serializer.writeStartElement("range-query");
     		if (type != null) {
     			serializer.writeAttribute("type", type);
@@ -1810,9 +1848,13 @@ public class StructuredQueryBuilder {
     		this.options = options;
         }
         @Override
-        void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	String elemName = null;
-        	if (index instanceof GeoElementImpl)
+        	if (index instanceof GeoJSONPropertyImpl)
+        		elemName = "geo-json-property-query";
+        	else if (index instanceof GeoJSONPropertyPairImpl)
+        		elemName = "geo-json-property-pair-query";
+        	else if (index instanceof GeoElementImpl)
         		elemName = "geo-elem-query";
         	else if (index instanceof GeoElementPairImpl)
         		elemName = "geo-elem-pair-query";
@@ -1838,10 +1880,113 @@ public class StructuredQueryBuilder {
         }
     }
 
+    class TemporalAxis implements Axis {
+    	private String name;
+    	TemporalAxis(String name) {
+    		this.name = name;
+    	}
+		public String toString() {
+			return name;
+		}
+    }
+
+    class TemporalPeriod 
+    extends AbstractStructuredQuery implements Period {
+    	private String formattedStart;
+    	private String formattedEnd;
+    	private String[] options;
+    	TemporalPeriod(Calendar start, Calendar end) {
+    		this.formattedStart = DatatypeConverter.printDateTime(start);
+    		this.formattedEnd = DatatypeConverter.printDateTime(end);
+    	}
+    	@Override
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    		serializer.writeStartElement("period");
+			writeText(serializer, "period-start", formattedStart);
+			writeText(serializer, "period-end", formattedEnd);
+    		serializer.writeEndElement();
+        }
+    }
+
+    class TemporalPeriodRangeQuery
+    extends AbstractStructuredQuery {
+    	private Axis[] axes;
+    	private TemporalOperator operator;
+    	private Period[] periods;
+    	private String[] options;
+    	TemporalPeriodRangeQuery(Axis[] axes, TemporalOperator operator, Period[] periods, String... options) {
+    		this.axes = axes;
+    		this.operator = operator;
+    		this.periods = periods;
+    		this.options = options;
+    	}
+    	@Override
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    		serializer.writeStartElement("period-range-query");
+			writeTextList(serializer, "axis", axes);
+			writeText(serializer, "temporal-operator", operator.toString().toLowerCase());
+			for ( Period period : periods ) {
+				((TemporalPeriod) period).innerSerialize(serializer);
+			}
+			writeTextList(serializer, "query-option", options);
+    		serializer.writeEndElement();
+        }
+    }
+
+    class TemporalPeriodCompareQuery
+    extends AbstractStructuredQuery {
+    	private Axis axis1;
+    	private TemporalOperator operator;
+    	private Axis axis2;
+    	private String[] options;
+		TemporalPeriodCompareQuery(Axis axis1, TemporalOperator operator, Axis axis2, String[] options) {
+    		this.axis1 = axis1;
+    		this.operator = operator;
+    		this.axis2 = axis2;
+    		this.options = options;
+    	}
+    	@Override
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    		serializer.writeStartElement("period-compare-query");
+			writeText(serializer, "axis1", axis1);
+			writeText(serializer, "temporal-operator", operator.toString().toLowerCase());
+			writeText(serializer, "axis2", axis2);
+			writeTextList(serializer, "query-option", options);
+    		serializer.writeEndElement();
+        }
+    }
+
+    class TemporalLsqtQuery
+    extends AbstractStructuredQuery {
+    	private String temporalCollection;
+    	private String formattedTimestamp = null;
+    	private double weight;
+    	private String[] options;
+		TemporalLsqtQuery(String temporalCollection, Calendar timestamp, double weight, String[] options) {
+    		this.temporalCollection = temporalCollection;
+			if ( timestamp != null ) {
+				this.formattedTimestamp = DatatypeConverter.printDateTime(timestamp);
+			}
+    		this.weight = weight;
+    		this.options = options;
+    	}
+    	@Override
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    		serializer.writeStartElement("lsqt-query");
+			writeText(serializer, "temporal-collection", temporalCollection);
+			if ( formattedTimestamp != null ) {
+				writeText(serializer, "timestamp", formattedTimestamp);
+			}
+			writeText(serializer, "weight", weight);
+			writeTextList(serializer, "query-option", options);
+    		serializer.writeEndElement();
+        }
+    }
+
     /* ************************************************************************************* */
 
-    abstract class IndexImpl {
-        abstract void innerSerialize(XMLStreamWriter serializer) throws Exception;
+    protected abstract class IndexImpl {
+    	protected abstract void innerSerialize(XMLStreamWriter serializer) throws Exception;
     }
     class ElementImpl extends IndexImpl implements Element {
     	String name;
@@ -1853,7 +1998,7 @@ public class StructuredQueryBuilder {
     		this.name = name;
     	}
         @Override
-        void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializeNamedIndex(serializer, "element", qname, name);
         }
     }
@@ -1867,7 +2012,7 @@ public class StructuredQueryBuilder {
     		this.name = name;
     	}
         @Override
-        void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializeNamedIndex(serializer, "attribute", qname, name);
         }
     }
@@ -1879,7 +2024,7 @@ public class StructuredQueryBuilder {
     		this.attribute = attribute;
     	}
         @Override
-        void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	((IndexImpl) element).innerSerialize(serializer);
         	((IndexImpl) attribute).innerSerialize(serializer);
         }
@@ -1890,20 +2035,20 @@ public class StructuredQueryBuilder {
     		this.name = name;
     	}
         @Override
-        void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("field");
         	serializer.writeAttribute("name", name);
         	serializer.writeEndElement();
         }
     }
     class JSONPropertyImpl extends IndexImpl implements JSONProperty {
-    	String name;
-    	JSONPropertyImpl(String name) {
-    		this.name = name;
-    	}
+        String name;
+        JSONPropertyImpl(String name) {
+            this.name = name;
+        }
         @Override
-        void innerSerialize(XMLStreamWriter serializer) throws Exception {
-    		writeText(serializer, "json-property", name);
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            writeText(serializer, "json-property", name);
         }
     }
     class PathIndexImpl extends IndexImpl implements PathIndex {
@@ -1912,10 +2057,50 @@ public class StructuredQueryBuilder {
     		this.path = path;
     	}
         @Override
-        void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
     		writeText(serializer, "path-index", path);
         }
     }
+    class GeoJSONPropertyImpl extends IndexImpl implements GeospatialIndex {
+        JSONProperty parent;
+        JSONProperty jsonProperty;
+        GeoJSONPropertyImpl(JSONProperty jsonProperty) {
+            super();
+            this.jsonProperty = jsonProperty;
+        }
+        GeoJSONPropertyImpl(JSONProperty parent, JSONProperty jsonProperty) {
+            this(jsonProperty);
+            this.parent  = parent;
+        }
+        @Override
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            if (parent != null && parent instanceof JSONPropertyImpl) {
+                JSONPropertyImpl parentImpl  = (JSONPropertyImpl) parent;
+                writeText(serializer, "parent-property", parentImpl.name);
+            }
+            JSONPropertyImpl jsonPropertyImpl = (JSONPropertyImpl) jsonProperty;
+            writeText(serializer, "json-property", jsonPropertyImpl.name);
+        }
+    }
+    class GeoJSONPropertyPairImpl extends IndexImpl implements GeospatialIndex {
+        JSONProperty parent;
+        JSONProperty lat;
+        JSONProperty lon;
+        GeoJSONPropertyPairImpl(JSONProperty parent, JSONProperty lat, JSONProperty lon) {
+            this.parent = parent;
+            this.lat    = lat;
+            this.lon    = lon;
+        }
+        @Override
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            JSONPropertyImpl parentImpl = (JSONPropertyImpl) parent;
+            JSONPropertyImpl latImpl    = (JSONPropertyImpl) lat;
+            JSONPropertyImpl lonImpl    = (JSONPropertyImpl) lon;
+            writeText(serializer, "parent-property", parentImpl.name);
+            writeText(serializer, "lat-property", latImpl.name);
+            writeText(serializer, "lon-property", lonImpl.name);
+        }
+    } 
     class GeoElementImpl extends IndexImpl implements GeospatialIndex {
     	Element parent;
     	Element element;
@@ -1928,7 +2113,7 @@ public class StructuredQueryBuilder {
     		this.parent  = parent;
     	}
         @Override
-        void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	if (parent != null && parent instanceof ElementImpl) {
         		ElementImpl parentImpl  = (ElementImpl) parent;
         		serializeNamedIndex(serializer, "parent",  parentImpl.qname,  parentImpl.name);
@@ -1955,7 +2140,7 @@ public class StructuredQueryBuilder {
     		this.lon    = lon;
     	}
         @Override
-        void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	ElementImpl parentImpl = (ElementImpl) parent;
         	ElementImpl latImpl    = (ElementImpl) lat;
         	ElementImpl lonImpl    = (ElementImpl) lon;
@@ -1974,7 +2159,7 @@ public class StructuredQueryBuilder {
     		this.lon    = lon;
     	}
         @Override
-        void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	ElementImpl   parentImpl = (ElementImpl) parent;
         	AttributeImpl latImpl    = (AttributeImpl) lat;
         	AttributeImpl lonImpl    = (AttributeImpl) lon;
@@ -1990,7 +2175,7 @@ public class StructuredQueryBuilder {
     		this.pathIndex = pathIndex;
     	}
     	@Override
-    	void innerSerialize(XMLStreamWriter serializer) throws Exception {
+    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	PathIndexImpl pathIndexImpl = (PathIndexImpl) pathIndex;
         	pathIndexImpl.innerSerialize(serializer);       	;
     	}
@@ -2014,7 +2199,7 @@ public class StructuredQueryBuilder {
     // TODO IN A FUTURE RELEASE:  separate a public Point interface
     // from a package PointImpl class
 
-    abstract class RegionImpl  {
+    protected abstract class RegionImpl  {
         /**
          * @deprecated Returns the region as a partial string.  This method will be removed in a future
          * release.
@@ -2024,7 +2209,7 @@ public class StructuredQueryBuilder {
         public String serialize() {
         	return extractQueryContent(serializeRegions(this));
         }
-        abstract void innerSerialize(XMLStreamWriter serializer) throws Exception;
+    	protected abstract void innerSerialize(XMLStreamWriter serializer) throws Exception;
     }
 
     /**
@@ -2054,7 +2239,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("point");
         	writeText(serializer, "latitude", String.valueOf(lat));
         	writeText(serializer, "longitude", String.valueOf(lon));
@@ -2085,7 +2270,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("circle");
         	writeText(serializer, "radius", String.valueOf(radius));
         	center.innerSerialize(serializer);
@@ -2113,7 +2298,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("box");
         	writeText(serializer, "south", String.valueOf(south));
         	writeText(serializer, "west",  String.valueOf(west));
@@ -2140,7 +2325,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
         	serializer.writeStartElement("polygon");
             for (Point point: points) {
             	point.innerSerialize(serializer);
@@ -2522,5 +2707,144 @@ public class StructuredQueryBuilder {
 		return newNamespaces;
 	}
 	
+	/**
+	 * The Allen and ISO SQL 2011 temporal operators available for use in
+	 * {@link #temporalPeriodRange temporalPeriodRange}
+	 * or {@link #temporalPeriodCompare temporalPeriodCompare} queries.
+	 * @see <a href="http://docs.marklogic.com/guide/temporal/searching#id_78584">
+	 * Temporal Developer's Guide -&gt; Period Comparison Operators</a>
+	 */
+	public enum TemporalOperator {
+		ALN_EQUALS,
+		ALN_CONTAINS,
+		ALN_CONTAINED_BY,
+		ALN_MEETS,
+		ALN_MET_BY,
+		ALN_BEFORE,
+		ALN_AFTER,
+		ALN_STARTS,
+		ALN_STARTED_BY,
+		ALN_FINISHES,
+		ALN_FINISHED_BY,
+		ALN_OVERLAPS,
+		ALN_OVERLAPPED_BY,
+		ISO_CONTAINS,
+		ISO_OVERLAPS,
+		ISO_SUCCEEDS,
+		ISO_PRECEDES,
+		ISO_IMM_SUCCEEDS,
+		ISO_IMM_PRECEDES,
+		ISO_EQUALS;
+	};
+	/**
+	 * An axis for use in {@link #temporalPeriodRange temporalPeriodRange}
+	 * or {@link #temporalPeriodCompare temporalPeriodCompare} queries.
+	 */
+	public interface Axis {};
+	/**
+	 * A temporal period for use in {@link #temporalPeriodRange temporalPeriodRange}
+	 * queries.
+	 */
+	public interface Period {};
+
+	/**
+	 * Identify an axis for use in {@link #temporalPeriodRange temporalPeriodRange}
+	 * or {@link #temporalPeriodCompare temporalPeriodCompare} queries.
+	 * @param name the name of the axis as configured in the server
+	 */
+	public StructuredQueryBuilder.Axis axis(String name) {
+		return new TemporalAxis(name);
+	}
 	
+	/**
+	 * Construct a temporal period for use in {@link #temporalPeriodRange temporalPeriodRange}
+	 * queries.
+	 * @param start the start date/time for this period
+	 * @param end   the end date/time for this period
+	 */
+	public StructuredQueryBuilder.Period period(Calendar start, Calendar end) {
+		return new TemporalPeriod(start, end);
+	}
+
+	/**
+	 * Matches documents that have a value in the specified axis that matches the specified
+	 * period using the specified operator.
+	 * @param axis the axis of document temporal values used to determine which documents have
+	 *        values that match this query
+	 * @param operator the operator used to determine if values in the axis match the specified period
+	 * @param period the period considered using the operator
+	 * @param options string options from the list for
+	 *     <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query calls</a>
+	 * @see <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query</a>
+	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_91434">
+	 *      Structured Queries: period-range-query</a>
+	 */
+	public StructuredQueryDefinition temporalPeriodRange(Axis axis, TemporalOperator operator, 
+		Period period, String... options) 
+	{
+		if ( axis == null ) throw new IllegalArgumentException("axis cannot be null");
+		if ( period == null ) throw new IllegalArgumentException("period cannot be null");
+		return temporalPeriodRange(new Axis[] {axis}, operator, new Period[] {period}, options);
+	}
+
+	/**
+	 * @param axes the set of axes of document temporal values used to determine which documents have
+	 *        values that match this query
+	 * @param operator the operator used to determine if values in the axis match the specified period
+	 * @param periods the periods considered using the operator.  When multiple periods are specified,
+	 *     the query matches if a value matches any period.
+	 * @param options string options from the list for
+	 *     <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query calls</a>
+	 * @see <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query</a>
+	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_91434">
+	 *      Structured Queries: period-range-query</a>
+	 */
+	public StructuredQueryDefinition temporalPeriodRange(Axis[] axes, TemporalOperator operator, 
+		Period[] periods, String... options) 
+	{
+		if ( axes == null ) throw new IllegalArgumentException("axes cannot be null");
+		if ( operator == null ) throw new IllegalArgumentException("operator cannot be null");
+		if ( periods == null ) throw new IllegalArgumentException("periods cannot be null");
+		return new TemporalPeriodRangeQuery(axes, operator, periods, options);
+	}
+
+	/**
+	 * Matches documents that have a relevant pair of period values. Values from axis1 must match
+	 * values from axis2 using the specified operator.
+	 * @param axis1 the first axis of document temporal values 
+	 *        values that match this query
+	 * @param operator the operator used to determine if values in the axis match the specified period
+	 * @param axis2 the second axis of document temporal values 
+	 * @param options string options from the list for
+	 *     <a href="http://docs.marklogic.com/cts:period-compare-query">cts:period-compare-query calls</a>
+	 * @see <a href="http://docs.marklogic.com/cts:period-compare-query">cts:period-compare-query</a>
+	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_19798">
+	 *      Structured Queries: period-compare-query</a>
+	 */
+	public StructuredQueryDefinition temporalPeriodCompare(Axis axis1, TemporalOperator operator, 
+		Axis axis2, String... options) 
+	{
+		if ( axis1 == null ) throw new IllegalArgumentException("axis1 cannot be null");
+		if ( operator == null ) throw new IllegalArgumentException("operator cannot be null");
+		if ( axis2 == null ) throw new IllegalArgumentException("axis2 cannot be null");
+		return new TemporalPeriodCompareQuery(axis1, operator, axis2, options);
+	}
+
+	/**
+	 * Matches documents with LSQT prior to timestamp
+	 * @param temporalCollection the temporal collection to query
+	 * @param timestamp documents with lsqt prior to this timestamp will match
+	 * @param weight the weight for for this query
+	 * @param options string options from the list for
+	 *     <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query calls</a>
+	 * @see <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query</a>
+	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_85930">
+	 *      Structured Queries: lsqt-query</a>
+	 */
+	public StructuredQueryDefinition temporalLsqtQuery(String temporalCollection, Calendar timestamp,
+		double weight, String... options)
+	{
+		if ( temporalCollection == null ) throw new IllegalArgumentException("temporalCollection cannot be null");
+		return new TemporalLsqtQuery(temporalCollection, timestamp, weight, options);
+	}
 }

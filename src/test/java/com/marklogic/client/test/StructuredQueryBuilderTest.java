@@ -238,7 +238,7 @@ public class StructuredQueryBuilderTest {
         			+ "xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" "
         			+ "xmlns:search=\"http://marklogic.com/appservices/search\" "
 					+ "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
-    				+ "<properties-query><directory-query><uri>/dir1</uri><uri>dir2</uri><infinite>false</infinite></directory-query></properties-query></query>", q);
+    				+ "<properties-fragment-query><directory-query><uri>/dir1</uri><uri>dir2</uri><infinite>false</infinite></directory-query></properties-fragment-query></query>", q);
         }
         
         t = qb.directory(4, "/dir1", "dir2");
@@ -260,7 +260,7 @@ public class StructuredQueryBuilderTest {
         			+ "xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" "
         			+ "xmlns:search=\"http://marklogic.com/appservices/search\" "
 					+ "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
-    				+ "<locks-query><term-query><text>one</text></term-query></locks-query></query>", q);
+    				+ "<locks-fragment-query><term-query><text>one</text></term-query></locks-fragment-query></query>", q);
         }
 
         t = qb.elementConstraint("name", qb.term("one"));

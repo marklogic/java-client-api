@@ -32,7 +32,6 @@ public class TestFileHandle extends BasicJavaClientREST {
 		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testXmlCRUD() throws IOException, SAXException, ParserConfigurationException
 	{	
@@ -91,7 +90,7 @@ public class TestFileHandle extends BasicJavaClientREST {
 	    String exception = "";
 	    try
 	    {
-	    	FileHandle deleteHandle = readDocumentUsingFileHandle(client, uri + filename, "XML");
+	    	readDocumentUsingFileHandle(client, uri + filename, "XML");
 	    } catch (Exception e) { exception = e.toString(); }
 //	  
 	    String expectedException = "Could not read non-existent document";
@@ -104,7 +103,6 @@ public class TestFileHandle extends BasicJavaClientREST {
 		client.release();
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testTextCRUD() throws IOException
 	{	
@@ -157,7 +155,7 @@ public class TestFileHandle extends BasicJavaClientREST {
 	    String exception = "";
 	    try
 	    {
-	    	FileHandle deleteHandle = readDocumentUsingFileHandle(client, uri + filename, "Text");
+	    	readDocumentUsingFileHandle(client, uri + filename, "Text");
 	    } catch (Exception e) { exception = e.toString(); }
 //	    
 	    String expectedException = "Could not read non-existent document";
@@ -167,8 +165,7 @@ public class TestFileHandle extends BasicJavaClientREST {
 		// release client
 		client.release();
 	}
-
-	@SuppressWarnings("deprecation")
+	
 	@Test
 	public void testJsonCRUD() throws IOException
 	{	
@@ -225,7 +222,7 @@ public class TestFileHandle extends BasicJavaClientREST {
 	    String exception = "";
 	    try
 	    {
-	    	FileHandle deleteHandle = readDocumentUsingFileHandle(client, uri + filename, "JSON");
+	    	readDocumentUsingFileHandle(client, uri + filename, "JSON");
 	    } catch (Exception e) { exception = e.toString(); }
 
 
@@ -237,8 +234,6 @@ public class TestFileHandle extends BasicJavaClientREST {
 		client.release();
 	}
 	
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testBinaryCRUD() throws IOException
 	{	
 		String filename = "Pandakarlino.jpg";
@@ -290,17 +285,9 @@ public class TestFileHandle extends BasicJavaClientREST {
 	    String exception = "";
 	    try
 	    {
-	    	FileHandle deleteHandle = readDocumentUsingFileHandle(client, uri + filename, "Binary");
+	    	readDocumentUsingFileHandle(client, uri + filename, "Binary");
 	    } catch (Exception e) { exception = e.toString(); }
-//	    
-//<<<<<<< .mine
-//	    String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent documentServer Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-bin-filehandle/Pandakarlino.jpg";
-//	    assertEquals("Document is not deleted", expectedException, exception);
-//=======
-//	    //String expectedException = "com.marklogic.client.ResourceNotFoundException: Could not read non-existent document";
-//	    //assertEquals("Document is not deleted", expectedException, exception);
-//>>>>>>> .r106786
-
+	    
 	    String expectedException = "Could not read non-existent document";
 	    boolean documentIsDeleted = exception.contains(expectedException);
 	    assertTrue("Document is not deleted", documentIsDeleted);

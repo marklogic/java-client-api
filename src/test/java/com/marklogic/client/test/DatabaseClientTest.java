@@ -23,11 +23,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.alerting.RuleManager;
 import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.eval.ServerEvaluationCall;
+import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.util.RequestLogger;
 
@@ -81,6 +84,24 @@ public class DatabaseClientTest {
 	public void testNewQueryManager() {
 		QueryManager mgr = Common.client.newQueryManager();
 		assertNotNull("Client could not create query manager", mgr);
+	}
+
+	@Test
+	public void testNewRuleManager() {
+		RuleManager mgr = Common.client.newRuleManager();
+		assertNotNull("Client could not create rule manager", mgr);
+	}
+
+	@Test
+	public void testNewPojoRepository() {
+		PojoRepository<City, Integer> mgr = Common.client.newPojoRepository(City.class, Integer.class);
+		assertNotNull("Client could not create pojo repository", mgr);
+	}
+
+	@Test
+	public void testNewServerEvaluationCall() {
+		ServerEvaluationCall mgr = Common.client.newServerEval();
+		assertNotNull("Client could not create ServerEvaluationCall", mgr);
 	}
 
 	@Test

@@ -222,7 +222,14 @@ public class DOM4JHandle
 			throw new MarkLogicIOException(e);
 		} catch (DocumentException e) {
 			throw new MarkLogicIOException(e);
+		} finally {
+			try {
+				content.close();
+			} catch (IOException e) {
+				// ignore.
+			}
 		}
+
 	}
 
 	@Override

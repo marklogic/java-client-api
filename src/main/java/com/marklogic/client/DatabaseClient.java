@@ -24,6 +24,7 @@ import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.extensions.ResourceManager;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.query.QueryManager;
@@ -106,7 +107,7 @@ public interface DatabaseClient {
      * Creates a manager for configuring the REST server for the database. The
      * ServerConfigurationManager can persist query options and transforms or
      * set properties of the server. The application must have rest-admin
-     * privilieges to use the ServerConfigurationManager.
+     * privileges to use the ServerConfigurationManager.
      * 
      * @return	a manager for the server properties or administrative resources
      */
@@ -177,4 +178,13 @@ public interface DatabaseClient {
      * @return	the object implementing communication with the server 
      */
     public Object getClientImplementation();
+
+    /**
+     * Creates a ServerEvaluationCall for eval and invoke of server-side xquery or 
+     * javascript code.  Eval requires the xdbc:eval privilege and invoke requires the
+     * xdbc:invoke privilege.  If this DatabaseClient is pointed at a database different
+     * than the default for this REST server, you will need the xdbc:eval-in or xdbc:invoke-in
+     * privilege.
+     */
+	public ServerEvaluationCall newServerEval();
 }

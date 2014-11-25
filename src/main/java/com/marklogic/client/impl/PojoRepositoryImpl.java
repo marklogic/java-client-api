@@ -15,64 +15,94 @@
  */
 package com.marklogic.client.impl;
 
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonDatabindHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoQueryBuilder;
+import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.pojo.annotation.Id;
 import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
-import com.marklogic.client.query.StructuredQueryDefinition;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.sun.jersey.api.client.ClientHandlerException;
 
 public class PojoRepositoryImpl<T, ID extends Serializable>
     implements PojoRepository<T, ID>
 {
+    private static final Pattern getterPattern = Pattern.compile("^(get|is)(.)(.*)");
     private final String EXTENSION = ".json";
 
     private DatabaseClient client;
     private Class<T> entityClass;
+    @SuppressWarnings("unused")
     private Class<ID> idClass;
     private JSONDocumentManager docMgr;
     private PojoQueryBuilder<T> qb;
     private Method idMethod;
-    private Field idField;
-    private String idFieldName;
-
+    private Field idProperty;
+    @SuppressWarnings("unused")
+    private String idPropertyName;
+    private static final String ISO_8601_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+    private static SimpleDateFormat simpleDateFormat8601 = new SimpleDateFormat(ISO_8601_FORMAT);
+    static { simpleDateFormat8601.setTimeZone(TimeZone.getTimeZone("UTC")); }
+    private ObjectMapper objectMapper = new ObjectMapper()
+        // if we don't do the next two lines Jackson will automatically close our streams which is undesirable
+        .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false)
+        .configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false)
+        // we do the next two so dates are written in xs:dateTime format
+        // which makes them ready for range indexes in MarkLogic Server
+        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+        .setDateFormat(simpleDateFormat8601)
+        // enableDefaultTyping just means include types in the serialized output
+        // we need this to do strongly-typed queries 
+        .enableDefaultTyping(
+            // ObjectMapper.DefaultTyping.NON_FINAL means that typing in serialized output
+            // for all non-final types except the "natural" types (String, Boolean, Integer, Double), 
+            // which can be correctly inferred from JSON; as well as for all arrays of non-final types.
+            ObjectMapper.DefaultTyping.NON_FINAL, 
+            // JsonTypeInfo.As.WRAPPER_OBJECT means add a type wrapper around the data so then
+            // our strongly-typed queries can use parent-child scoped queries or path index queries
+            JsonTypeInfo.As.WRAPPER_OBJECT);
     PojoRepositoryImpl(DatabaseClient client, Class<T> entityClass) {
         this.client = client;
         this.entityClass = entityClass;
         this.idClass = null;
         this.docMgr = client.newJSONDocumentManager();
-        this.docMgr.setResponseFormat(Format.JSON);
         this.qb = new PojoQueryBuilderImpl<T>(entityClass);
     }
 
@@ -80,26 +110,29 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         this(client, entityClass);
         this.idClass = idClass;
         findId();
-        if ( idMethod == null && idField == null ) {
+        if ( idMethod == null && idProperty == null ) {
             throw new IllegalArgumentException("Your class " + entityClass.getName() +
                 " does not have a method or field annotated with com.marklogic.client.pojo.annotation.Id");
         }
     }
 
+    @Override
     public void write(T entity) {
-        write(entity, null, null);
+        write(entity, null, (String[]) null);
     }
+    @Override
     public void write(T entity, String... collections) {
         write(entity, null, collections);
     }
+    @Override
     public void write(T entity, Transaction transaction) {
-        write(entity, transaction, null);
+        write(entity, transaction, (String[]) null);
     }
+    @Override
     public void write(T entity, Transaction transaction, String... collections) {
         if ( entity == null ) return;
-        JacksonDatabindHandle contentHandle = new JacksonDatabindHandle(entity);
-        contentHandle.getMapper().enableDefaultTyping(
-            ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT); 
+        JacksonDatabindHandle<T> contentHandle = new JacksonDatabindHandle<T>(entity);
+        contentHandle.setMapper(objectMapper); 
         DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
         metadataHandle = metadataHandle.withCollections(entityClass.getName());
         if ( collections != null && collections.length > 0 ) {
@@ -107,45 +140,107 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         }
         DocumentWriteSet writeSet = docMgr.newWriteSet();
         writeSet.add(createUri(entity), metadataHandle, contentHandle);
-        docMgr.write(writeSet, transaction);
+        try {
+            docMgr.write(writeSet, transaction);
+        } catch(ClientHandlerException e) {
+            checkForEmptyBeans(e);
+            throw e;
+        }
     }
 
+    private void checkForEmptyBeans(Throwable e) {
+        Throwable cause = e.getCause();
+        if ( cause != null ) {
+            if ( cause instanceof JsonMappingException && 
+                 cause.getMessage() != null &&
+                 cause.getMessage().contains("SerializationFeature.FAIL_ON_EMPTY_BEANS") )
+            {
+                throw new MarkLogicBindingException(
+                    "Each of your pojo beans and descendent beans must have public fields or paired get/set methods",
+                    cause);
+            } else {
+                checkForEmptyBeans(cause);
+            }
+        }
+    }
+
+
+    @Override
     public boolean exists(ID id) {
         return docMgr.exists(createUri(id)) != null;
     }
 
-    public long count() {
-        return count((QueryDefinition) null);
+    @Override
+    public boolean exists(ID id, Transaction transaction) {
+        return docMgr.exists(createUri(id), transaction) != null;
     }
 
+    @Override
+    public long count() {
+        return count((PojoQueryDefinition) null, null);
+    }
+
+    @Override
     public long count(String... collections) {
+        return count(collections, null);
+    }
+
+    @Override
+    public long count(PojoQueryDefinition query) {
+        return count((PojoQueryDefinition) null, null);
+    }
+  
+    @Override
+    public long count(Transaction transaction) {
+        return count((PojoQueryDefinition) null, transaction);
+    }
+
+    @Override
+    public long count(String[] collections, Transaction transaction) {
         if ( collections != null && collections.length > 0 ) {
             if ( collections.length > 1 || collections[0] != null ) {
-                return count(qb.collection(collections));
+                return count(qb.collection(collections), transaction);
             }
         }
-        return count((QueryDefinition) null);
+        return count((PojoQueryDefinition) null, transaction);
     }
-    public long count(QueryDefinition query) {
+
+    @Override
+    public long count(PojoQueryDefinition query, Transaction transaction) {
         long pageLength = getPageLength();
-        setPageLength(0);
-        PojoPage page = search(query, 1);
+        // set below to 0 when we get a fix for https://bugtrack.marklogic.com/30470
+        setPageLength(1);
+        PojoPage<T> page = search(query, 1, transaction);
         setPageLength(pageLength);
         return page.getTotalSize();
     }
-  
+
+    @Override
     public void delete(ID... ids) {
+        delete(ids, null);
+    }
+
+    @Override
+    public void delete(ID[] ids, Transaction transaction) {
         for ( ID id : ids ) {
-            docMgr.delete(createUri(id));
+            docMgr.delete(createUri(id), transaction);
         }
     }
+
+    @Override
     public void deleteAll() {
+        deleteAll(null);
+    }
+
+    @Override
+    public void deleteAll(Transaction transaction) {
         QueryManager queryMgr = client.newQueryManager();
         DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
         deleteQuery.setCollections(entityClass.getName());
-        queryMgr.delete(deleteQuery);
+        queryMgr.delete(deleteQuery, transaction);
     }
     /* REST API does not currently support DELETE /search with multiple collection arguments
+    @Override
     public void deleteAll(String... collections) {
         if ( collections == null || collections.length == 0 ) {
             throw new IllegalArgumentException("You must specify at least one collection");
@@ -159,85 +254,92 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     }
     */
   
+    @Override
     public T read(ID id) {
         return read(id, null);
     }
+    @Override
     public T read(ID id, Transaction transaction) {
         ArrayList<ID> ids = new ArrayList<ID>();
         ids.add(id);
+        @SuppressWarnings("unchecked")
         PojoPage<T> page = read(ids.toArray((ID[])new Serializable[0]), transaction);
         if ( page == null ) return null;
-        Iterator<T> iterator = page.iterator();
-        if ( iterator.hasNext() ) return iterator.next();
+        if ( page.hasNext() ) return page.next();
         return null;
     }
+    @Override
     public PojoPage<T> read(ID[] ids) {
         return read(ids, null);
     }
+    @Override
     public PojoPage<T> read(ID[] ids, Transaction transaction) {
         ArrayList<String> uris = new ArrayList<String>();
         for ( ID id : ids ) {
             uris.add(createUri(id));
         }
         DocumentPage docPage = (DocumentPage) docMgr.read(transaction, uris.toArray(new String[0]));
-        PojoPage<T> pojoPage = new PojoPageImpl(docPage, entityClass);
+        PojoPage<T> pojoPage = new PojoPageImpl<T>(docPage, entityClass);
         return pojoPage;
     }
+    @Override
     public PojoPage<T> readAll(long start) {
         return search(null, start, null, null);
     }
+    @Override
     public PojoPage<T> readAll(long start, Transaction transaction) {
         return search(null, start, null, transaction);
     }
 
+    @Override
     public PojoPage<T> search(long start, String... collections) {
         return search(qb.collection(collections), start, null, null);
     }
+    @Override
     public PojoPage<T> search(long start, Transaction transaction, String... collections) {
         return search(qb.collection(collections), start, null, transaction);
     }
 
-    public PojoPage<T> search(QueryDefinition query, long start) {
+    @Override
+    public PojoPage<T> search(PojoQueryDefinition query, long start) {
         return search(query, start, null, null);
     }
-    public PojoPage<T> search(QueryDefinition query, long start, Transaction transaction) {
+    @Override
+    public PojoPage<T> search(PojoQueryDefinition query, long start, Transaction transaction) {
         return search(query, start, null, transaction);
     }
-    public PojoPage<T> search(QueryDefinition query, long start, SearchReadHandle searchHandle) {
+    @Override
+    public PojoPage<T> search(PojoQueryDefinition query, long start, SearchReadHandle searchHandle) {
         return search(query, start, searchHandle, null);
     }
-    public PojoPage<T> search(QueryDefinition query, long start, SearchReadHandle searchHandle, Transaction transaction) {
-        Format docMgrFormat = docMgr.getResponseFormat();
+    @Override
+    public PojoPage<T> search(PojoQueryDefinition query, long start, SearchReadHandle searchHandle, Transaction transaction) {
         if ( searchHandle != null ) {
-            HandleImplementation searchBase = HandleAccessor.checkHandle(searchHandle, "search");
+            HandleAccessor.checkHandle(searchHandle, "search");
             if (searchHandle instanceof SearchHandle) {
                 SearchHandle responseHandle = (SearchHandle) searchHandle;
                 if ( docMgr instanceof DocumentManagerImpl ) {
-                    responseHandle.setHandleRegistry(((DocumentManagerImpl) docMgr).getHandleRegistry());
+                    responseHandle.setHandleRegistry(((DocumentManagerImpl<?, ?>) docMgr).getHandleRegistry());
                 }
                 responseHandle.setQueryCriteria(query);
             }
-            docMgr.setResponseFormat(searchBase.getFormat());
-        } else {
-            // TODO: remove this once REST API only considers Content-type header
-            // (not format parameter) for expceted payload format
-            docMgr.setResponseFormat(Format.XML);
         }
 
-        String tid = transaction == null ? null : transaction.getTransactionId();
         DocumentPage docPage = docMgr.search(wrapQuery(query), start, searchHandle, transaction);
-        docMgr.setResponseFormat(docMgrFormat);
-        PojoPage<T> pojoPage = new PojoPageImpl(docPage, entityClass);
+        PojoPage<T> pojoPage = new PojoPageImpl<T>(docPage, entityClass);
         return pojoPage;
     }
  
-    public PojoQueryBuilder getQueryBuilder() {
+    @Override
+    public PojoQueryBuilder<T> getQueryBuilder() {
         return qb;
     }
 
+    @Override
     public long getPageLength() {
         return docMgr.getPageLength();
     }
+    @Override
     public void setPageLength(long length) {
         docMgr.setPageLength(length);
     }
@@ -250,14 +352,15 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         docMgr.setSearchView(view);
     }
 
-    public void defineIdField(String fieldName) {
-    }
- 
-    public DatabaseClient getDatabaseClient() {
-        return client;
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
     }
 
-    private QueryDefinition wrapQuery(QueryDefinition query) {
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    private PojoQueryDefinition wrapQuery(PojoQueryDefinition query) {
         if ( query == null ) {
             return qb.collection(entityClass.getName());
         } else {
@@ -285,31 +388,85 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     }
 
     private void findId() {
-        if ( idMethod == null && idField == null ) {
+        if ( idMethod == null && idProperty == null ) {
+            SerializationConfig serializationConfig = objectMapper.getSerializationConfig();
+            JavaType javaType = serializationConfig.constructType(entityClass);
+            BeanDescription beanDescription = serializationConfig.introspect(javaType);
+            List<BeanPropertyDefinition> properties = beanDescription.findProperties();
+            for ( BeanPropertyDefinition property : properties ) {
+                /* Constructor parameters don't work because they give us no value accessor
+                if ( property.hasConstructorParameter() ) {
+                    AnnotatedParameter parameter = property.getConstructorParameter();
+                    if ( parameter.getAnnotation(Id.class) != null ) {
+                        idPropertyName = property.getName();
+                    }
+                }
+                */
+                if ( property.hasField() ) {
+                    Field field = property.getField().getAnnotated();
+                    if ( field.getAnnotation(Id.class) != null ) {
+                        idPropertyName = property.getName();
+                        idProperty = field;
+                        break;
+                    }
+                }
+                if ( property.hasGetter() ) {
+                    Method getter = property.getGetter().getAnnotated();
+                    if ( getter.getAnnotation(Id.class) != null ) {
+                        idPropertyName = property.getName();
+                        idMethod = getter;
+                        break;
+                    }
+                    if ( property.hasSetter() ) {
+                        Method setter = property.getSetter().getAnnotated();
+                        if ( setter.getAnnotation(Id.class) != null ) {
+                            idPropertyName = property.getName();
+                            idMethod = getter;
+                            break;
+                        }
+                    }
+                }
+                // setter only doesn't work because it gives us no value accessor
+            }
+        }
+        // Jackson's introspect approach should find it, but our old approach below 
+        // gives some helpful errors
+        if ( idMethod == null && idProperty == null ) {
             for ( Method method : entityClass.getDeclaredMethods() ) {
                 if ( method.isAnnotationPresent(Id.class) ) {
-                    Class[] parameters = method.getParameterTypes();
+                    Class<?>[] parameters = method.getParameterTypes();
                     if ( ! Modifier.isPublic(method.getModifiers()) ) {
-                        throw new IllegalStateException("Your getter method, " + method.getName() +
+                        throw new IllegalStateException("Your method, " + method.getName() +
                             ", annotated with com.marklogic.client.pojo.annotation.Id " + 
                             " must be public");
                     }
                     if ( parameters == null || parameters.length == 0 ) {
-                        Pattern pattern = Pattern.compile("^(get|is)(.)(.*)");
-                        Matcher matcher = pattern.matcher(method.getName());
+                        Matcher matcher = getterPattern.matcher(method.getName());
                         if ( matcher.matches() ) {
-                            idFieldName = matcher.group(2).toLowerCase() + matcher.group(3);
+                            idPropertyName = matcher.group(2).toLowerCase() + matcher.group(3);
                             idMethod = method;
                             break;
                         } else {
-                            throw new IllegalStateException("Your getter method, " + method.getName() +
+                            throw new IllegalStateException("Your no-args method, " + method.getName() +
                                 ", annotated with com.marklogic.client.pojo.annotation.Id " + 
                                 " must be a proper getter method and begin with \"get\" or \"is\"");
                         }
                     } else {
-                        throw new IllegalStateException("Your getter method, " + method.getName() +
-                            ", annotated with com.marklogic.client.pojo.annotation.Id " + 
-                            " must not require any arguments");
+                        Matcher getterMatcher = getterPattern.matcher(method.getName());
+                        if ( getterMatcher.matches() ) {
+                            throw new IllegalStateException("Your getter method, " + method.getName() +
+                                ", annotated with com.marklogic.client.pojo.annotation.Id " + 
+                                " must not require any arguments");
+                        } else if ( method.getName().startsWith("set") ) {
+                            throw new MarkLogicInternalException("Your setter method, " + method.getName() +
+                                ", annotated with com.marklogic.client.pojo.annotation.Id " +
+                                "was not found by Jackson for some reason.  Please report this to " +
+                                "MarkLogic support.");
+                        } else {
+                            throw new IllegalStateException("Your setter method, " + method.getName() +
+                                ", annotated with com.marklogic.client.pojo.annotation.Id " + 
+                                " must be a proper setter method (beginning with \"set\")");
+                        }
                     }
                 }
             }
@@ -321,7 +478,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
                                 ", annotated with com.marklogic.client.pojo.annotation.Id " + 
                                 " must be public");
                         }
-                        idField = field;
+                        idProperty = field;
                         break;
                     }
                 }
@@ -329,6 +486,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         }
     }
 
+    @SuppressWarnings("unchecked")
     private ID getId(T entity) {
         findId();
         if ( idMethod != null ) {
@@ -338,12 +496,12 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
                 throw new IllegalStateException("Error invoking " + entityClass.getName() + " method " +
                     idMethod.getName(), e);
             }
-        } else if ( idField != null ) {
+        } else if ( idProperty != null ) {
             try {
-                return (ID) idField.get(entity);
+                return (ID) idProperty.get(entity);
             } catch (Exception e) {
                 throw new IllegalStateException("Error retrieving " + entityClass.getName() + " field " +
-                    idField.getName(), e);
+                    idProperty.getName(), e);
             }
         } else {
             throw new IllegalArgumentException("Your class " + entityClass.getName() +

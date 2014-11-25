@@ -3,8 +3,6 @@ package com.marklogic.javaclient;
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -12,7 +10,6 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.javaclient.BasicJavaClientREST;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
@@ -33,8 +30,6 @@ public class TestDOMHandle extends BasicJavaClientREST {
 		setupJavaRESTServer(dbName, fNames[0],  restServerName,8011);
 	}
 	
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testXmlCRUD() throws IOException, SAXException, ParserConfigurationException
 	{	
 		String filename = "xml-original-test.xml";
@@ -83,7 +78,7 @@ public class TestDOMHandle extends BasicJavaClientREST {
 	    String exception = "";
 	    try
 	    {
-	    	InputStreamHandle deleteHandle = readDocumentUsingInputStreamHandle(client, uri + filename, "XML");
+	    	readDocumentUsingInputStreamHandle(client, uri + filename, "XML");
 	    } catch (Exception e) { exception = e.toString(); }
 	    
 	    String expectedException = "Could not read non-existent document";

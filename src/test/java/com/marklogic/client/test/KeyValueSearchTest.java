@@ -42,6 +42,8 @@ public class KeyValueSearchTest {
 	public static void beforeClass()
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		Common.connect();
+		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+
 	}
 
 	@AfterClass

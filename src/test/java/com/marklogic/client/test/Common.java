@@ -43,6 +43,8 @@ public class Common {
 	final public static String PASSWORD = "x";
 	final public static String ADMIN_USERNAME = "rest-admin";
 	final public static String ADMIN_PASSWORD = "x";
+	final public static String EVAL_USERNAME = "rest-evaluator";
+	final public static String EVAL_PASSWORD = "x";
 	final public static String HOST     = "localhost";
 	final public static int    PORT     = 8012;
 
@@ -58,9 +60,17 @@ public class Common {
 	public static void connectAdmin() {
 		client = newAdminClient();
 	}
+	public static void connectEval() {
+		client = newEvalClient();
+	}
 	public static DatabaseClient newClient() {
 		return DatabaseClientFactory.newClient(
 				Common.HOST, Common.PORT, Common.USERNAME, Common.PASSWORD, Authentication.DIGEST
+				);
+	}
+	public static DatabaseClient newEvalClient() {
+		return DatabaseClientFactory.newClient(
+				Common.HOST, Common.PORT, Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST
 				);
 	}
 	public static DatabaseClient newAdminClient() {

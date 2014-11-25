@@ -27,8 +27,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 		System.out.println("In setup");
 		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	}
-
-	@SuppressWarnings("deprecation")
+	
 	@Test
 	public void testMatchedMimetypeOnXML() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
@@ -71,7 +70,6 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test	
 	public void testUnknownMimetypeOnXML() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
@@ -114,8 +112,6 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testUnmatchedMimetypeOnXML() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnmatchedMimetypeOnXML");
@@ -157,8 +153,6 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testUnsupportedMimetypeOnXML() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnsupportedMimetypeOnXML");
@@ -200,8 +194,6 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testMatchedMimetypeOnJSON() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testMatchedMimetypeOnJSON");
@@ -243,8 +235,6 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testUnknownMimetypeOnJSON() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnknownMimetypeOnJSON");
@@ -278,7 +268,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     	// read document mimetype
     	docMgr.read(docId, handle);
     	String format = handle.getFormat().name();
-    	String expectedFormat = "BINARY";
+    	String expectedFormat = "JSON";
     	
     	assertEquals("Format does not match", expectedFormat, format);
 		
@@ -286,8 +276,6 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testUnmatchedMimetypeOnJSON() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnmatchedMimetypeOnJSON");
@@ -321,7 +309,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     	// read document mimetype
     	docMgr.read(docId, handle);
     	String format = handle.getFormat().name();
-    	String expectedFormat = "TEXT";
+    	String expectedFormat = "JSON";
     	
     	assertEquals("Format does not match", expectedFormat, format);
 		
@@ -329,8 +317,6 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testUnsupportedMimetypeOnJSON() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnsupportedMimetypeOnJSON");
@@ -372,8 +358,6 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testMatchedMimetypeOnBinary() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testMatchedMimetypeOnBinary");
@@ -415,8 +399,6 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testUnknownMimetypeOnBinary() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnknownMimetypeOnBinary");
@@ -458,8 +440,6 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testUnmatchedMimetypeOnBinary() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnmatchedMimetypeOnBinary");
@@ -493,7 +473,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     	// read document mimetype
     	docMgr.read(docId, handle);
     	String format = handle.getFormat().name();
-    	String expectedFormat = "TEXT";
+    	String expectedFormat = "BINARY";
     	
     	assertEquals("Format does not match", expectedFormat, format);
 		
@@ -501,8 +481,6 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testUnsupportedMimetypeOnBinary() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnsupportedMimetypeOnBinary");
@@ -544,8 +522,6 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testMatchedMimetypeOnText() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testMatchedMimetypeOnText");
@@ -587,8 +563,6 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testUnknownMimetypeOnText() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnknownMimetypeOnText");
@@ -630,8 +604,6 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testUnmatchedMimetypeOnText() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnmatchedMimetypeOnText");
@@ -665,7 +637,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
     	// read document mimetype
     	docMgr.read(docId, handle);
     	String format = handle.getFormat().name();
-    	String expectedFormat = "BINARY";
+    	String expectedFormat = "TEXT";
     	
     	assertEquals("Format does not match", expectedFormat, format);
 		
@@ -673,8 +645,6 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testUnsupportedMimetypeOnText() throws IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnsupportedMimetypeOnText");

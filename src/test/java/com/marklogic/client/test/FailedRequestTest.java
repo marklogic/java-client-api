@@ -18,8 +18,6 @@ package com.marklogic.client.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
@@ -33,33 +31,16 @@ import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.config.QueryOptions.Facets;
 import com.marklogic.client.admin.config.QueryOptionsBuilder;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.io.QueryOptionsHandle;
 
 @SuppressWarnings("deprecation")
 public class FailedRequestTest {
 
-	@Before
-	@After
-	public void setXMLErrors()
-	throws FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException {
-
-		Common.connectAdmin();
-		ServerConfigurationManager serverConfig = Common.client
-				.newServerConfigManager();
-		serverConfig = Common.client.newServerConfigManager();
-
-		serverConfig.setErrorFormat(Format.XML);
-		serverConfig.writeConfiguration();
-
-		serverConfig.readConfiguration();
-
-	}
-
 	@Test
 	public void testFailedRequest()
 	throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
 		Common.connect();
+		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		QueryOptionsManager mgr = Common.client.newServerConfigManager()
 				.newQueryOptionsManager();
 
@@ -67,7 +48,7 @@ public class FailedRequestTest {
 			mgr.writeOptions("testempty", new QueryOptionsHandle());
 		} catch (ForbiddenUserException e) {
 			assertEquals(
-					"Local message: User is not allowed to write /config/query. Server Message: You do not have permission to this method and URL",
+					"Local message: User is not allowed to write /config/query. Server Message: You do not have permission to this method and URL.",
 					e.getMessage());
 			assertEquals(403, e.getFailedRequest().getStatusCode());
 			assertEquals("Forbidden", e.getFailedRequest().getStatus());
@@ -100,28 +81,6 @@ public class FailedRequestTest {
 
 	}
 
-	@Test
-	public void testJSONFailedRequest()
-	throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
-		Common.connectAdmin();
-		ServerConfigurationManager serverConfig = Common.client
-				.newServerConfigManager();
-
-		serverConfig.setErrorFormat(Format.JSON);
-		serverConfig.writeConfiguration();
-
-		serverConfig.readConfiguration();
-		assertEquals(Format.JSON, serverConfig.getErrorFormat());
-
-		try {
-			serverConfig.setErrorFormat(Format.BINARY);
-			fail("Error format cannot be binary");
-		} catch (IllegalArgumentException e) {
-			// pass
-		}
-
-		testFailedRequest();
-	}
 
 	@Test
 	public void testErrorOnNonREST()

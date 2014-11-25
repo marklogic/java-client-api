@@ -45,11 +45,8 @@ import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
 public abstract class JacksonBaseHandle<T>
-        extends BaseHandle<InputStream, OutputStreamSender>
-        implements OutputStreamSender, BufferableHandle, JSONReadHandle, JSONWriteHandle,
-            TextReadHandle, TextWriteHandle,
-            XMLReadHandle, XMLWriteHandle,
-            StructureReadHandle, StructureWriteHandle
+    extends BaseHandle<InputStream, OutputStreamSender>
+	implements OutputStreamSender
 {
     private ObjectMapper mapper;
 
@@ -58,41 +55,29 @@ public abstract class JacksonBaseHandle<T>
         super.setFormat(Format.JSON);
     }
 
-    /**
-     * Returns the mapper used to construct node objects from JSON.
-     * @return    the JSON mapper.
-     */
     public ObjectMapper getMapper() {
         if (mapper == null) {
             mapper = new ObjectMapper();
+            // if we don't do the next two lines Jackson will automatically close our streams which is undesirable
             mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
             mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
         }
         return mapper;
     }
 
-    /**
-     * Enables clients to use any mapper, including databinding mappers for formats other than JSON.
-     * Use at your own risk!  Note that you may want to configure your mapper as we do to not close
-     * streams which we may need to reuse if we have to resend a network request:
-     * <code>
-     *      mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
-     *      mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
-     * </code>
-     **/
     public void setMapper(ObjectMapper mapper) {
         this.mapper = mapper;
     }
 
     public abstract void set(T content);
-    @Override
+    
     public void fromBuffer(byte[] buffer) {
         if (buffer == null || buffer.length == 0)
             set(null);
         else
             receiveContent(new ByteArrayInputStream(buffer));
     }
-    @Override
+    
     public byte[] toBuffer() {
         try {
             if ( ! hasContent() )
@@ -110,7 +95,7 @@ public abstract class JacksonBaseHandle<T>
     /**
      * Returns the JSON as a string.
      */
-    @Override
+    
     public String toString() {
         try {
             return new String(toBuffer(),"UTF-8");
@@ -119,11 +104,11 @@ public abstract class JacksonBaseHandle<T>
         }
     }
 
-    @Override
+    
     protected Class<InputStream> receiveAs() {
         return InputStream.class;
     }
-    @Override
+    
     protected OutputStreamSender sendContent() {
         if ( ! hasContent() ) {
             throw new IllegalStateException("No document to write");

@@ -32,7 +32,6 @@ public class TestBug19389 extends BasicJavaClientREST {
 	  setupAppServicesConstraint(dbName);
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testBug19389() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -42,7 +41,8 @@ public class TestBug19389 extends BasicJavaClientREST {
 				
 		// set error format to JSON
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
-		srvMgr.setErrorFormat(Format.JSON);
+//	depricated
+//		srvMgr.setErrorFormat(Format.JSON);
 		srvMgr.writeConfiguration();
 		
 		// create query options manager

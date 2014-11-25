@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.io;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -24,19 +25,19 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import com.marklogic.client.query.AggregateResult;
-import com.marklogic.client.query.ValuesMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.query.CountedDistinctValue;
 import com.marklogic.client.impl.ValuesBuilder;
-import com.marklogic.client.query.ValuesDefinition;
-import com.marklogic.client.query.ValuesResults;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.ValuesReadHandle;
+import com.marklogic.client.query.AggregateResult;
+import com.marklogic.client.query.CountedDistinctValue;
+import com.marklogic.client.query.ValuesDefinition;
+import com.marklogic.client.query.ValuesMetrics;
+import com.marklogic.client.query.ValuesResults;
 
 /**
  * A ValuesHandle represents a list of values or of tuples
@@ -114,7 +115,13 @@ public class ValuesHandle
         } catch (JAXBException e) {
 			logger.error("Failed to unmarshall values",e);
 			throw new MarkLogicIOException(e);
-        }
+        } finally {
+			try {
+				content.close();
+			} catch (IOException e) {
+				// ignore.
+			}
+		}
     }
 
     /**

@@ -18,6 +18,11 @@ package com.marklogic.client.test;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.marklogic.client.pojo.annotation.Id;
+import com.marklogic.client.pojo.annotation.PathIndexProperty;
+import com.marklogic.client.pojo.annotation.PathIndexProperty.ScalarType;
+import com.marklogic.client.pojo.annotation.GeospatialPathIndexProperty;
+import com.marklogic.client.pojo.annotation.GeospatialLatitude;
+import com.marklogic.client.pojo.annotation.GeospatialLongitude;
 
 @XmlRootElement
 public class City {
@@ -33,6 +38,7 @@ public class City {
     private String continent;
     private String currencyCode;
     private String currencyName;
+    @PathIndexProperty(scalarType=ScalarType.LONG)
     private long population;
     private int elevation;
     private Country country;
@@ -74,6 +80,7 @@ public class City {
         return this;
     }
 
+    @GeospatialLatitude
     public double getLatitude() {
         return latitude;
     }
@@ -87,11 +94,13 @@ public class City {
         return longitude;
     }
 
+    @GeospatialLongitude
     public City setLongitude(double longitude) {
         this.longitude = longitude;
         return this;
     }
 
+    @GeospatialPathIndexProperty
     public String getLatLong() {
         return latLong;
     }

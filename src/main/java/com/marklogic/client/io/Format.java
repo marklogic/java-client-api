@@ -62,4 +62,15 @@ public enum Format {
         	throw new MarkLogicInternalException("Unknown format "+this.toString());
     	}
     }
+	
+	public static Format getFromMimetype(String mimeType) {
+		if      ( mimeType == null ) return UNKNOWN;
+		else if ( "application/xml".equals(mimeType) ) return XML;
+		else if ( "text/xml".equals(mimeType) ) return XML;
+		else if ( "application/json".equals(mimeType) ) return JSON;
+		else if ( "text/xml".equals(mimeType) ) return JSON;
+		else if ( "application/octet-stream".equals(mimeType) ) return BINARY;
+		else if ( mimeType.startsWith("text/") ) return TEXT;
+		else return UNKNOWN;
+	}
 }

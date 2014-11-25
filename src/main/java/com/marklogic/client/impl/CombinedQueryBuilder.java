@@ -13,26 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.test.example.cookbook;
+package com.marklogic.client.impl;
 
-import static org.junit.Assert.assertTrue;
+import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
+import com.marklogic.client.query.StructuredQueryDefinition;
 
-import java.io.IOException;
-
-import org.junit.Test;
-
-import com.marklogic.client.example.cookbook.KeyValueSearch;
-
-public class KeyValueSearchTest {
-	@Test
-	public void testMain() {
-		boolean succeeded = false;
-		try {
-			KeyValueSearch.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("KeyValueSearch example failed", succeeded);
-	}
+public interface CombinedQueryBuilder {
+    CombinedQueryDefinition combine(StructuredQueryDefinition query, String qtext);
+    CombinedQueryDefinition combine(StructuredQueryDefinition query, QueryOptionsWriteHandle options);
+    CombinedQueryDefinition combine(StructuredQueryDefinition query, QueryOptionsWriteHandle options, String qtext);
 }
+

@@ -18,10 +18,13 @@ package com.marklogic.client.document;
 import com.marklogic.client.Page;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 
-public interface DocumentPage extends Iterable<DocumentRecord>, Page<DocumentRecord> {
-    public boolean hasNext();
+import java.io.Closeable;
 
-    public DocumentRecord next();
-
+/** Allows iteration over documents in the page.  When you finish with this instance 
+ * you must call close() to free the underlying resources. */
+public interface DocumentPage extends Page<DocumentRecord>, Closeable {
+    /** Convenience method combines the functionality of Page.next() and DocumentRecord.getContent(). */
     public <T extends AbstractReadHandle> T nextContent(T contentHandle);
+    /** Frees the underlying resources, including the http connection. */
+    public void close();
 }

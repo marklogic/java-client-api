@@ -16,7 +16,6 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.InputStreamHandle;
 import org.junit.*;
 public class TestBytesHandle extends BasicJavaClientREST{
 
@@ -24,12 +23,17 @@ public class TestBytesHandle extends BasicJavaClientREST{
 private static String dbName = "BytesHandleDB";
 private static String [] fNames = {"BytesHandleDB-1"};
 private static String restServerName = "REST-Java-Client-API-Server";
+//Additional port to test for Uber port
+private static int uberPort = 8000;
+
 @BeforeClass
 public static void setUp() throws Exception{
 	System.out.println("In setup");
 	setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+	createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
+    createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
 	}
-@SuppressWarnings("null")
+
 @Test
 public void testXmlCRUD() throws IOException , SAXException, ParserConfigurationException{
 
@@ -40,10 +44,10 @@ public void testXmlCRUD() throws IOException , SAXException, ParserConfiguration
 	XMLUnit.setNormalizeWhitespace(true);
 	
 	// connect the client
-	DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x",Authentication.DIGEST);
+	DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x",Authentication.DIGEST);
 	
 	// write docs
-	writeDocumentUsingBytesHandle(client, filename, uri, null,"XML");//***********
+	writeDocumentUsingBytesHandle(client, filename, uri, null,"XML");
 	
 	//read docs
 	BytesHandle contentHandle = readDocumentUsingBytesHandle(client, uri + filename,"XML");
@@ -82,7 +86,7 @@ public void testXmlCRUD() throws IOException , SAXException, ParserConfiguration
 	String exception = "";
     try
     {
-    	BytesHandle deleteHandle = readDocumentUsingBytesHandle(client, uri+filename, "XML");
+    	readDocumentUsingBytesHandle(client, uri+filename, "XML");
     } catch (Exception e) { exception = e.toString(); }
     
     String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-xml-domhandle/xml-original-test.xml";
@@ -95,7 +99,6 @@ public void testXmlCRUD() throws IOException , SAXException, ParserConfiguration
     
     }
 
-@SuppressWarnings("deprecation")
 @Test
 public void testTextCRUD() throws IOException, ParserConfigurationException, SAXException{
 	String filename = "text-original.txt";
@@ -103,7 +106,7 @@ public void testTextCRUD() throws IOException, ParserConfigurationException, SAX
 	System.out.println("Runing test TextCRUD");
 	
 	// connect the client
-	DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+	DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 	
 	// write docs
 	writeDocumentUsingBytesHandle(client, filename, uri, "Text");
@@ -143,7 +146,7 @@ public void testTextCRUD() throws IOException, ParserConfigurationException, SAX
     String exception = "";
     try
     {
-    	InputStreamHandle deleteHandle = readDocumentUsingInputStreamHandle(client, uri + filename, "Text");
+    	readDocumentUsingInputStreamHandle(client, uri + filename, "Text");
     } catch (Exception e) { exception = e.toString(); }
     
     String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-text-Byteshandle/text-original.txt";
@@ -154,7 +157,6 @@ public void testTextCRUD() throws IOException, ParserConfigurationException, SAX
 
 }
 
-@SuppressWarnings("deprecation")
 @Test
 public void testJsonCRUD() throws IOException, ParserConfigurationException, SAXException{
 	String filename = "json-original.json";
@@ -164,7 +166,7 @@ public void testJsonCRUD() throws IOException, ParserConfigurationException, SAX
 	ObjectMapper mapper = new ObjectMapper();
 	
 	// connect the client
-	DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+	DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 	// write docs
 	writeDocumentUsingBytesHandle(client, filename, uri, "JSON");
@@ -206,7 +208,7 @@ public void testJsonCRUD() throws IOException, ParserConfigurationException, SAX
     String exception = "";
     try
     {
-    	InputStreamHandle deleteHandle = readDocumentUsingInputStreamHandle(client, uri + filename, "JSON");
+    	readDocumentUsingInputStreamHandle(client, uri + filename, "JSON");
     } catch (Exception e) { exception = e.toString(); }
     
     String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-json-Byteshandle/json-original.json";
@@ -216,7 +218,6 @@ public void testJsonCRUD() throws IOException, ParserConfigurationException, SAX
 	client.release();
 }
 
-@SuppressWarnings("deprecation")
 @Test
 public void testBinaryCRUD() throws IOException, ParserConfigurationException, SAXException{
 	String filename = "Pandakarlino.jpg";
@@ -224,7 +225,7 @@ public void testBinaryCRUD() throws IOException, ParserConfigurationException, S
 	System.out.println("Running testBinaryCRUD");
 
 	// connect the client
-	DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+	DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 	
 	// write docs
 	writeDocumentUsingBytesHandle(client, filename, uri, "Binary");
@@ -254,8 +255,8 @@ public void testBinaryCRUD() throws IOException, ParserConfigurationException, S
     
     // get the binary size
 	long sizeUpdate = getBinarySizeFromByte(fileReadUpdate);
-	long expectedSizeUpdate = 3290;
-	//long expectedSizeUpdate = 3322;
+	//long expectedSizeUpdate = 3290;
+	long expectedSizeUpdate = 3322;
 	assertEquals("Binary size difference", expectedSizeUpdate, sizeUpdate);
 	
 	// delete the document
@@ -267,7 +268,7 @@ public void testBinaryCRUD() throws IOException, ParserConfigurationException, S
     String exception = "";
     try
     {
-    	InputStreamHandle deleteHandle = readDocumentUsingInputStreamHandle(client, uri + filename, "Binary");
+    	readDocumentUsingInputStreamHandle(client, uri + filename, "Binary");
     } catch (Exception e) { exception = e.toString(); }
     
     String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-bin-Bytehandle/Pandakarlino.jpg";

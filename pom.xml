@@ -4,11 +4,11 @@
 	<groupId>com.marklogic</groupId>
 	<artifactId>client-api-java</artifactId>
 	<packaging>jar</packaging>
-	<version>3.0.0-EA2</version>
+	<version>3.0.0-EA3</version>
 	<name>client-api-java</name>
 	<url>http://developer.marklogic.com</url>
 	<properties>
-		<javadoc-title>${project.name} 2.0 ${maven.build.timestamp}</javadoc-title>
+		<javadoc-title>${project.name} 3.0.0</javadoc-title>
 		<maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <github.global.server>github</github.global.server>
@@ -138,7 +138,7 @@
             <plugin>
                 <groupId>com.github.github</groupId>
                 <artifactId>site-maven-plugin</artifactId>
-                <version>0.9</version>
+                <version>0.10</version>
                 <configuration>
                     <message>Maven artifacts for ${project.version}</message>
                     <merge>true</merge>
@@ -161,8 +161,44 @@
         </plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>Java 8</id>
+			<activation>
+				<jdk>1.8</jdk>
+			</activation>
+			<properties>
+				<!-- Disable Java 8 overly strict javadoc linter when building with Java 8
+					http://blog.joda.org/2014/02/turning-off-doclint-in-jdk-8-javadoc.html
+					-->
+				<additionalparam>-Xdoclint:none</additionalparam>
+			</properties>
+		</profile>
+	</profiles>
 	<dependencies>
 		<!-- direct build / run dependencies -->
+        <!--
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-client</artifactId>
+			<version>1.17</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.jersey.contribs</groupId>
+			<artifactId>jersey-apache-client4</artifactId>
+			<version>1.17</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.jersey.contribs</groupId>
+			<artifactId>jersey-multipart</artifactId>
+			<version>1.17</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-multipart</artifactId>
+			<version>2.12</version>
+		</dependency>
+        -->
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-client</artifactId>
@@ -181,7 +217,7 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.0.12</version>
+			<version>1.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-logging</groupId>
@@ -202,11 +238,6 @@
 			<groupId>org.jvnet.mimepull</groupId>
 			<artifactId>mimepull</artifactId>
 			<version>1.9.4</version>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-core</artifactId>
-			<version>1.0.12</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

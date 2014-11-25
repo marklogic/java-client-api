@@ -39,7 +39,6 @@ public class TestDocumentEncoding extends BasicJavaClientREST
 		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testEncoding() throws IOException, TransformerException, ParserConfigurationException
 	{

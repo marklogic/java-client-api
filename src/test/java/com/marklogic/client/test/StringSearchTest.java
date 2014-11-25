@@ -61,6 +61,7 @@ public class StringSearchTest {
     @BeforeClass
     public static void beforeClass() {
         Common.connectAdmin();
+        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
 
     @AfterClass
@@ -77,6 +78,7 @@ public class StringSearchTest {
 
         StringQueryDefinition qdef = queryMgr.newStringDefinition(optionsName);
         qdef.setCriteria("grandchild1 OR grandchild4");
+        qdef.setDirectory("/sample/");
 
         SearchHandle results = queryMgr.search(qdef, new SearchHandle());
         assertNotNull(results);
@@ -99,6 +101,7 @@ public class StringSearchTest {
 
         StringQueryDefinition qdef = queryMgr.newStringDefinition();
         qdef.setCriteria("10");
+        qdef.setDirectory("/sample/");
 
         SearchHandle handle = new SearchHandle();
         handle = queryMgr.search(qdef, handle);
@@ -126,6 +129,7 @@ public class StringSearchTest {
 
         StringQueryDefinition qdef = queryMgr.newStringDefinition(optionsName);
         qdef.setCriteria("grandchild1 OR grandchild4");
+        qdef.setDirectory("/sample/");
 
         queryMgr.setView(QueryView.FACETS);
         SearchHandle results = queryMgr.search(qdef, new SearchHandle());
@@ -159,6 +163,7 @@ public class StringSearchTest {
 
         StringQueryDefinition qdef = queryMgr.newStringDefinition();
         qdef.setCriteria("criteriaThatShouldNotMatchAnyDocument");
+        qdef.setDirectory("/sample/");
 
         SearchHandle results = queryMgr.search(qdef, new SearchHandle());
         assertNotNull(results);
@@ -176,6 +181,7 @@ public class StringSearchTest {
 
         StringQueryDefinition qdef = queryMgr.newStringDefinition(optionsName);
         qdef.setCriteria("grandchild1 OR grandchild4");
+        qdef.setDirectory("/sample/");
 
         queryMgr.setView(QueryView.FACETS);
 

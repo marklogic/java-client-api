@@ -1,34 +1,17 @@
 package com.marklogic.javaclient;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringWriter;
-
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.stream.StreamResult;
-
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.InputSourceHandle;
 import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.StringHandle;
 import com.marklogic.javaclient.BasicJavaClientREST;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
@@ -49,8 +32,6 @@ public class TestInputSourceHandle extends BasicJavaClientREST {
 		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	}
 	
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testXmlCRUD() throws IOException, SAXException, ParserConfigurationException, TransformerException
 	{	
 		String filename = "xml-original-test.xml";
@@ -109,7 +90,7 @@ public class TestInputSourceHandle extends BasicJavaClientREST {
 	    String exception = "";
 	    try
 	    {
-	    	InputStreamHandle deleteHandle = readDocumentUsingInputStreamHandle(client, uri + filename, "XML");
+	    	readDocumentUsingInputStreamHandle(client, uri + filename, "XML");
 	    } catch (Exception e) { exception = e.toString(); }
 	    
 	    String expectedException = "Could not read non-existent document";

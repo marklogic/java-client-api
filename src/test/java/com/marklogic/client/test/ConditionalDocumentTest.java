@@ -132,7 +132,7 @@ public class ConditionalDocumentTest {
 		assertTrue("Overwrite without version succeeded", ex != null);
 		assertTrue("Write with no version had wrong error", statusCode == 403);
 		assertEquals("Write with no version had misleading message", 
-				"Local message: Content version required to write document. Server Message: You do not have permission to this method and URL",
+				"Local message: Content version required to write document. Server Message: You do not have permission to this method and URL.",
 				ex.getMessage());
 		
 		ex = null;
@@ -190,7 +190,7 @@ public class ConditionalDocumentTest {
 		}
 		assertTrue("Delete with no version succeeded", ex != null);
 		assertEquals("Delete with no version had misleading message", 
-				"Local message: Content version required to delete document. Server Message: You do not have permission to this method and URL",
+				"Local message: Content version required to delete document. Server Message: You do not have permission to this method and URL.",
 				ex.getMessage());
 
 		

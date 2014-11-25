@@ -29,6 +29,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -38,6 +39,11 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
@@ -46,6 +52,8 @@ import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.eval.EvalResultIterator;
+import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
@@ -53,8 +61,12 @@ import com.marklogic.client.io.JAXBHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.MatchDocumentSummary;
+import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.QueryManager.QueryView;
 
 /** Loads data from cities15000.txt which contains every city above 15000 people, and adds
  * data from countryInfo.txt.
@@ -161,12 +173,46 @@ public class BulkReadWriteTest {
 
         DocumentPage page = docMgr.read(DIRECTORY + "1016670.xml", DIRECTORY + "108410.xml", DIRECTORY + "1205733.xml");
         int numRead = 0;
-        while ( page.hasNext() ) {
-            DocumentRecord record = page.next();
+        for ( DocumentRecord record : page ) {
             validateRecord(record);
             numRead++;
         }
+        assertEquals("Should have results", true, page.hasContent());
         assertEquals("Failed to read number of records expected", 3, numRead);
+        assertEquals("Failed to report number of records expected", 3, page.size());
+        assertEquals("No previous page", false, page.hasPreviousPage());
+        assertEquals("Only one page", false, page.hasNextPage());
+        assertEquals("Only one page", true, page.isFirstPage());
+        assertEquals("Only one page", true, page.isLastPage());
+        assertEquals("Wrong page", 1, page.getPageNumber());
+        assertEquals("Wrong page size", 3, page.getPageSize());
+        assertEquals("Wrong start", 1, page.getStart());
+        assertEquals("Wrong totalPages", 1, page.getTotalPages());
+        assertEquals("Wrong estimate", 3, page.getTotalSize());
+
+        // test reading a valid plus a non-existent document
+        page = docMgr.read(DIRECTORY + "1016670.xml", "nonExistant.doc");
+        assertEquals("Should have results", true, page.hasContent());
+        assertEquals("Failed to report number of records expected", 1, page.size());
+        assertEquals("Wrong only doc", DIRECTORY + "1016670.xml", page.next().getUri());
+
+        // test reading multiple non-existent documents
+        boolean exceptionThrown = false;
+        try {
+            docMgr.read("nonExistant.doc", "nonExistant2.doc");
+        } catch (ResourceNotFoundException e) {
+            exceptionThrown = true;
+        }
+        assertTrue("ResourceNotFoundException should have been thrown", exceptionThrown);
+
+        // test reading a non-existent document (not actually a bulk operation)
+        exceptionThrown = false;
+        try {
+            docMgr.read("nonExistant.doc", new StringHandle());
+        } catch (ResourceNotFoundException e) {
+            exceptionThrown = true;
+        }
+        assertTrue("ResourceNotFoundException should have been thrown", exceptionThrown);
     }
 
     @Test
@@ -177,14 +223,24 @@ public class BulkReadWriteTest {
         int pageLength = 100;
         docMgr.setPageLength(pageLength);
         DocumentPage page = docMgr.search(new StructuredQueryBuilder().directory(1, DIRECTORY), 1, searchHandle);
-        //DocumentPage page = docMgr.search(new StructuredQueryBuilder().directory(1, DIRECTORY), 1);
-        while ( page.hasNext() ) {
-            DocumentRecord record = page.next();
+        for ( DocumentRecord record : page ) {
             validateRecord(record);
         }
         assertEquals("Failed to find number of records expected", RECORDS_EXPECTED, page.getTotalSize());
         assertEquals("SearchHandle failed to report number of records expected", RECORDS_EXPECTED, searchHandle.getTotalResults());
         assertEquals("SearchHandle failed to report pageLength expected", pageLength, searchHandle.getPageLength());
+        assertEquals("Should have results", true, page.hasContent());
+        int expected = RECORDS_EXPECTED > pageLength ? pageLength : RECORDS_EXPECTED;
+        assertEquals("Failed to report number of records expected", expected, page.size());
+        assertEquals("No previous page", false, page.hasPreviousPage());
+        assertEquals("Only one page", RECORDS_EXPECTED > pageLength, page.hasNextPage());
+        assertEquals("Only one page", true, page.isFirstPage());
+        assertEquals("Only one page", page.hasNextPage() == false, page.isLastPage());
+        assertEquals("Wrong page", 1, page.getPageNumber());
+        assertEquals("Wrong page size", pageLength, page.getPageSize());
+        assertEquals("Wrong start", 1, page.getStart());
+        double totalPagesExpected = Math.ceil((double) RECORDS_EXPECTED/(double) pageLength);
+        assertEquals("Wrong totalPages", totalPagesExpected, page.getTotalPages(), .01);
     }
 
     //public void testMixedLoad() {
@@ -206,16 +262,20 @@ public class BulkReadWriteTest {
         writeSet.add("doc2.json", doc2Metadata, doc2);
 
         docMgr.write(writeSet);
-
-        JacksonHandle content1 = new JacksonHandle();
-        docMgr.read("doc1.json", content1);
-        JacksonHandle content2 = new JacksonHandle();
-        DocumentMetadataHandle metadata2 = new DocumentMetadataHandle();
-        docMgr.read("doc2.json", metadata2, content2);
-
-        assertEquals("Failed to read document 1", "dog", content1.get().get("animal").textValue());
-        assertEquals("Failed to read expected quality", 2, metadata2.getQuality());
-        assertEquals("Failed to read document 2", "cat", content2.get().get("animal").textValue());
+        
+        docMgr.setMetadataCategories(Metadata.QUALITY);
+        docMgr.setNonDocumentFormat(Format.JSON);
+        DocumentPage documents = docMgr.read("doc1.json", "doc2.json");
+        for ( DocumentRecord record : documents ) {
+            JacksonHandle content = record.getContent(new JacksonHandle());
+            JacksonHandle metadata = record.getMetadata(new JacksonHandle());
+            if ( "doc1.json".equals(record.getUri()) ) {
+                assertEquals("Failed to read document 1", "dog", content.get().get("animal").textValue());
+            } else if ( "doc2.json".equals(record.getUri()) ) {
+                assertEquals("Failed to read document 2", "cat", content.get().get("animal").textValue());
+                assertEquals("Failed to read expected quality", 2, metadata.get().get("quality").intValue());
+            }
+        }
     }
 
     private void validateRecord(DocumentRecord record) {
@@ -320,8 +380,6 @@ public class BulkReadWriteTest {
         // Execute the write operation
         jdm.write(batch);
 
-        // need the "synthetic response" format to be XML
-        jdm.setResponseFormat(Format.XML);
         // Check the results
         assertEquals("Doc1 should have the system default quality of 0", 0, 
             jdm.readMetadata("doc1.json", new DocumentMetadataHandle()).getQuality());
@@ -372,6 +430,145 @@ public class BulkReadWriteTest {
         }
     }
 
+    @Test
+    public void test_78() {
+        String DIRECTORY ="/test_78/";
+        int BATCH_SIZE=10;
+        int count =1;
+        TextDocumentManager docMgr = Common.client.newTextDocumentManager();
+        DocumentWriteSet writeset =docMgr.newWriteSet();
+        for(int i =0;i<11;i++){
+            writeset.add(DIRECTORY+"Textfoo"+i+".txt", new StringHandle().with("bar can be foo"+i));
+            if(count%BATCH_SIZE == 0){
+                docMgr.write(writeset);
+                writeset = docMgr.newWriteSet();
+            }
+            count++;
+        }
+        if(count%BATCH_SIZE > 0){
+            docMgr.write(writeset);
+        }
+        //using QueryManger for query definition and set the search criteria
+        QueryManager queryMgr = Common.client.newQueryManager();
+        try {
+	        StringQueryDefinition qd = queryMgr.newStringDefinition();
+	        qd.setCriteria("bar");
+	        qd.setDirectory(DIRECTORY);
+	        // set  document manager level settings for search response
+	        System.out.println("Default Page length setting on docMgr :"+docMgr.getPageLength());
+	        docMgr.setPageLength(1);
+	        docMgr.setSearchView(QueryView.RESULTS);
+	        docMgr.setNonDocumentFormat(Format.XML);
+	        assertEquals("format set on document manager","XML",docMgr.getNonDocumentFormat().toString());
+	        assertEquals("Queryview set on document manager ","RESULTS" ,docMgr.getSearchView().toString());
+	        assertEquals("Page length ",1,docMgr.getPageLength());
+	        // Search for documents where content has bar and get first result record, get search handle on it
+	        SearchHandle sh = new SearchHandle();
+	        DocumentPage page= docMgr.search(qd, 1);
+	        // test for page methods
+	        assertEquals("Number of records",1,page.size());
+	        assertEquals("Starting record in first page ",1,page.getStart());
+	        assertEquals("Total number of estimated results:",11,page.getTotalSize());
+	        assertEquals("Total number of estimated pages :",11,page.getTotalPages());
+	        assertTrue("Is this First page :",page.isFirstPage());
+	        assertFalse("Is this Last page :",page.isLastPage());
+	        assertTrue("Is this First page has content:",page.hasContent());
+	        assertFalse("Is first page has previous page ?",page.hasPreviousPage());
+	        //      
+	        long start=1;
+	        do{
+	            count=0;
+	            page = docMgr.search(qd, start,sh);
+	            if(start >1){ 
+	                assertFalse("Is this first Page", page.isFirstPage());
+	                assertTrue("Is page has previous page ?",page.hasPreviousPage());
+	            }
+	            while(page.hasNext()){
+	                page.next();
+	                count++;
+	            }
+	            MatchDocumentSummary[] mds= sh.getMatchResults();
+	            assertEquals("Matched document count",1,mds.length);
+	            //since we set the query view to get only results, facet count supposed be 0
+	            assertEquals("Matched Facet count",0,sh.getFacetNames().length);
+	
+	            assertEquals("document count", page.size(),count);
+	            if (!page.isLastPage()) start = start + page.getPageSize();
+	        }while(!page.isLastPage());
+	        assertEquals("page count is 11 ",start, page.getTotalPages());
+	        assertTrue("Page has previous page ?",page.hasPreviousPage());
+	        assertEquals("page size", 1,page.getPageSize());
+	        assertEquals("document count", 11,page.getTotalSize());
+	        page= docMgr.search(qd, 12);
+	        assertFalse("Page has any records ?",page.hasContent());
+    	} finally {
+	        DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
+	        deleteQuery.setDirectory(DIRECTORY);
+	        queryMgr.delete(deleteQuery);
+        }
+    }
+
+    @Test
+    public void test_171() throws Exception{
+        DatabaseClient client = DatabaseClientFactory.newClient(
+        // the following line breaks things but should not: https://github.com/marklogic/java-client-api/issues/171
+        // TODO: uncomment the following line when https://bugtrack.marklogic.com/30299 is fixed
+        //Common.HOST, Common.PORT, "Documents", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
+            Common.HOST, Common.PORT, Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
+        int count=1;
+        boolean tstatus =true;
+        String directory = "/test_171/";
+        Transaction t1 = client.openTransaction();
+        try{
+            QueryManager queryMgr = client.newQueryManager();
+            DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
+            deleteQuery.setDirectory(directory);
+            queryMgr.delete(deleteQuery);
+
+            XMLDocumentManager docMgr = client.newXMLDocumentManager();
+            HashMap<String,String> map= new HashMap<String,String>();
+            DocumentWriteSet writeset =docMgr.newWriteSet();
+            for(int i =0;i<2;i++) {
+                String contents = "<xml>test" + i + "</xml>";
+                String docId = directory + "sec"+i+".xml";
+                writeset.add(docId, new StringHandle(contents).withFormat(Format.XML));
+                map.put(docId, contents);
+                if(count%100 == 0){
+                    docMgr.write(writeset,t1);
+                    writeset = docMgr.newWriteSet();
+                }
+                count++;
+            }
+            if(count%100 > 0){
+                docMgr.write(writeset,t1);
+            }
+
+            QueryDefinition directoryQuery = queryMgr.newStringDefinition();
+            directoryQuery.setDirectory(directory);
+            SearchHandle outOfTransactionResults = queryMgr.search(directoryQuery, new SearchHandle());
+
+            SearchHandle inTransactionResults    = queryMgr.search(directoryQuery, new SearchHandle(), t1);
+
+            assertEquals("Count of documents outside of the transaction",0,outOfTransactionResults.getTotalResults());
+            assertEquals("Count of documents inside of the transaction", 2,   inTransactionResults.getTotalResults());
+
+            //String query = "(fn:count(xdmp:directory('" + directory + "')))";
+            //ServerEvaluationCall evl= client.newServerEval().xquery(query);
+            //EvalResultIterator evr = evl.eval();
+            //assertEquals("Count of documents outside of the transaction",0,evr.next().getNumber().intValue());
+            //evl= client.newServerEval().xquery(query).transaction(t1);
+            //evr = evl.eval();
+            //assertEquals("Count of documents outside of the transaction",103,evr.next().getNumber().intValue());
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+            tstatus=true;
+            throw e;
+        }finally{
+            if(tstatus){
+                t1.rollback();
+            }
+        }
+    } 
 
     private static void addCountry(String line, Map<String, Country> countries) {
         // skip comment lines

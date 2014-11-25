@@ -18,31 +18,41 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
+
 import org.junit.*;
 public class TestValueConstraint extends BasicJavaClientREST {
-	
+
 	static final private String[] filenames = {"value-constraint-doc.xml", "value-constraint-doc2.xml"};
-	
+
 	private static String dbName = "ValueConstraintDB";
 	private static String [] fNames = {"ValueConstraintDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
-	
-@BeforeClass	public static void setUp() throws Exception
+	private static int restPort = 8011;
+
+	@BeforeClass	
+	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
 		setupJavaRESTServer(dbName, fNames[0],  restServerName,8011);
 	}
 	
-@SuppressWarnings("deprecation")
-@Test	public void testElementValueConstraint() throws FileNotFoundException
+	@After
+	public void testCleanUp() throws Exception
+	{
+		clearDB(restPort);
+		System.out.println("Running clear script");
+	}
+
+	@Test	
+	public void testElementValueConstraint() throws FileNotFoundException
 	{
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
-		
+
 		// create doc manager
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
 		String docId = null;
-		
+
 		// create handle
 		ReaderHandle handle = new ReaderHandle();
 
@@ -51,18 +61,18 @@ public class TestValueConstraint extends BasicJavaClientREST {
 		{	
 			// acquire the content
 			BufferedReader docStream = new BufferedReader(new FileReader("src/test/java/com/marklogic/javaclient/data/" + filename));
-			
-		    // create an identifier for the document
-		    docId = "/value-constraint/" + filename;
-		    
-		    handle.set(docStream);
-		    
-		    // write the document content
-		    docMgr.write(docId, handle);
-		    
-		    System.out.println("Write " + docId + " to database");
+
+			// create an identifier for the document
+			docId = "/value-constraint/" + filename;
+
+			handle.set(docStream);
+
+			// write the document content
+			docMgr.write(docId, handle);
+
+			System.out.println("Write " + docId + " to database");
 		}
-	    
+
 		// create a manager for writing query options
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
@@ -82,13 +92,13 @@ public class TestValueConstraint extends BasicJavaClientREST {
 		builder.append("    </value>\n");
 		builder.append("  </constraint>\n");
 		builder.append("</options>\n");
-		
+
 		// initialize a handle with the query options
 		StringHandle writeHandle = new StringHandle(builder.toString());
-				
+
 		// write the query options to the database
 		optionsMgr.writeOptions("valueConstraintOpt", writeHandle);
-				
+
 		// create a manager for searching
 		QueryManager queryMgr = client.newQueryManager();
 
@@ -101,7 +111,7 @@ public class TestValueConstraint extends BasicJavaClientREST {
 
 		// run the search
 		queryMgr.search(querydef, resultsHandle);
-						
+
 		// iterate over the result documents
 		MatchDocumentSummary[] docSummaries = resultsHandle.getMatchResults();
 		String searchMatch = "";
@@ -112,19 +122,19 @@ public class TestValueConstraint extends BasicJavaClientREST {
 			MatchLocation[] locations = docSummary.getMatchLocations();
 			searchMatch = "Matched " + locations.length + " locations in "+ uri;			
 		}
-		
+
 		String expectedSearchMatch = "Matched 1 locations in /value-constraint/value-constraint-doc2.xml";
 		assertEquals("Search match difference", expectedSearchMatch, searchMatch);
-		
+
 		// release client
 		client.release();
 	}
-	
-@SuppressWarnings("deprecation")
-@Test	public void testAttributeValueConstraint() throws FileNotFoundException
+
+	@Test	
+	public void testAttributeValueConstraint() throws FileNotFoundException
 	{
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
-		
+
 		// create doc manager
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
@@ -139,16 +149,16 @@ public class TestValueConstraint extends BasicJavaClientREST {
 		{	
 			// acquire the content
 			BufferedReader docStream = new BufferedReader(new FileReader("src/test/java/com/marklogic/javaclient/data/" + filename));
-			
-		    // create an identifier for the document
-		    docId = "/value-constraint/" + filename;
-		    
-		    handle.set(docStream);
-		    
-		    // write the document content
-		    docMgr.write(docId, handle);
-		    
-		    System.out.println("Write " + docId + " to database");
+
+			// create an identifier for the document
+			docId = "/value-constraint/" + filename;
+
+			handle.set(docStream);
+
+			// write the document content
+			docMgr.write(docId, handle);
+
+			System.out.println("Write " + docId + " to database");
 		}	    
 		// create a manager for writing query options
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
@@ -169,13 +179,13 @@ public class TestValueConstraint extends BasicJavaClientREST {
 		builder.append("    </value>\n");
 		builder.append("  </constraint>\n");
 		builder.append("</options>\n");
-		
+
 		// initialize a handle with the query options
 		StringHandle writeHandle = new StringHandle(builder.toString());
-				
+
 		// write the query options to the database
 		optionsMgr.writeOptions("valueConstraintOpt", writeHandle);
-				
+
 		// create a manager for searching
 		QueryManager queryMgr = client.newQueryManager();
 
@@ -188,7 +198,7 @@ public class TestValueConstraint extends BasicJavaClientREST {
 
 		// run the search
 		queryMgr.search(querydef, resultsHandle);
-						
+
 		// iterate over the result documents
 		MatchDocumentSummary[] docSummaries = resultsHandle.getMatchResults();
 		String searchMatch = "";
@@ -199,15 +209,16 @@ public class TestValueConstraint extends BasicJavaClientREST {
 			MatchLocation[] locations = docSummary.getMatchLocations();
 			searchMatch = "Matched " + locations.length + " locations in "+ uri;			
 		}
-		
+
 		String expectedSearchMatch = "Matched 1 locations in /value-constraint/value-constraint-doc.xml";
 		assertEquals("Search match difference", expectedSearchMatch, searchMatch);
-		
+
 		// release client
 		client.release();
 	}
-	
-@AfterClass	public static void tearDown() throws Exception
+
+	@AfterClass	
+	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
 		tearDownJavaRESTServer(dbName, fNames,  restServerName);

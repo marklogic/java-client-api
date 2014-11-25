@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.admin.ExtensionMetadata;
+import com.marklogic.client.admin.ExtensionMetadata.ScriptLanguage;
 import com.marklogic.client.admin.ResourceExtensionsManager;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.ContentHandle;
@@ -134,7 +135,7 @@ class ResourceExtensionsImpl
 
 		sourceBase.receiveContent(
 				services.getValue(requestLogger, "config/resources", resourceName, true,
-				"application/xquery", sourceBase.receiveAs())
+				sourceBase.getMimetype(), sourceBase.receiveAs())
 				);
 
 		return sourceHandle;
@@ -192,9 +193,18 @@ class ResourceExtensionsImpl
 				}
 			}
 		}
+		String contentType = null;
+		if ( metadata == null ) {
+		} else if ( metadata.getScriptLanguage() == null ) {
+			throw new IllegalArgumentException("scriptLanguage cannot be null");
+		} else if ( metadata.getScriptLanguage() == ScriptLanguage.JAVASCRIPT ) {
+			contentType = "application/vnd.marklogic-javascript";
+		} else if ( metadata.getScriptLanguage() == ScriptLanguage.XQUERY ) {
+			contentType = "application/xquery";
+		} 
 
 		services.putValue(requestLogger, "config/resources", resourceName, extraParams,
-				"application/xquery", sourceBase);
+				contentType, sourceBase);
 	}
 
 	@Override

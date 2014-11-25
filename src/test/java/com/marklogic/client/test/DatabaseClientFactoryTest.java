@@ -15,22 +15,42 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+
+import java.io.IOException;
 
 import org.apache.http.client.HttpClient;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentPatchBuilder;
+import com.marklogic.client.document.DocumentUriTemplate;
+import com.marklogic.client.document.GenericDocumentManager;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.extra.httpclient.HttpClientConfigurator;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.DocumentPatchHandle;
+import com.marklogic.client.query.MatchDocumentSummary;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 
 public class DatabaseClientFactoryTest {
 	@BeforeClass
 	public static void beforeClass() {
-		Common.connect();
+		Common.connectEval();
+		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
 	@AfterClass
 	public static void afterClass() {
@@ -40,6 +60,90 @@ public class DatabaseClientFactoryTest {
 	@Test
 	public void testConnectStringIntStringStringDigest() {
 		assertNotNull("Factory could not create client with digest connection", Common.client);
+	}
+
+	@Test
+	public void testRuntimeDatabaseSelection() throws SAXException, IOException {
+		DatabaseClient tmpClient = DatabaseClientFactory.newClient(
+			Common.HOST, Common.PORT, "Triggers", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST
+		);
+		assertNotNull("Factory could not create client", tmpClient);
+		String database = 
+			tmpClient.newServerEval()
+				.xquery("xdmp:database-name(xdmp:database())")
+				.evalAs(String.class);
+		assertEquals("Runtime database is wrong", "Triggers", database);
+		tmpClient.release();
+
+		tmpClient = DatabaseClientFactory.newClient(
+			Common.HOST, Common.PORT, "Documents", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST
+		);
+		assertNotNull("Factory could not create client", tmpClient);
+		XMLDocumentManager runtimeDbDocMgr = tmpClient.newXMLDocumentManager();
+		// test that doc creation happens in the Documents db
+		String docContents = "<a>hello</a>";
+		DocumentUriTemplate template = runtimeDbDocMgr.newDocumentUriTemplate(".xml").withDirectory("/test/");
+		StringHandle handle = new StringHandle(docContents).withFormat(Format.XML);
+		DocumentDescriptor createDesc = runtimeDbDocMgr.create(template, handle);
+		String docUri = createDesc.getUri();
+		// a reusable server eval call from the java-unittest db which just gets the doc contents in the Documents db
+		ServerEvaluationCall getHello =
+			Common.client.newServerEval()
+				.javascript("xdmp.eval('fn.doc(\"" + docUri + "\")', " + 
+					"null, {database:xdmp.database(\"Documents\")})");
+		// make sure we can see the doc
+		String value = getHello.evalAs(String.class);
+		assertXMLEqual("Doc contents incorrect", docContents, value);
+
+		// test that the doc exists via the DocumentManager api
+		DocumentDescriptor existsDesc = runtimeDbDocMgr.exists(docUri);
+		assertNotNull("Doc " + docUri + " should exist in the Documents db", existsDesc);
+
+		// test overwriting the contents of the doc
+		String docContents2 = "<a>hello2</a>";
+		runtimeDbDocMgr.write(docUri, new StringHandle(docContents2).withFormat(Format.XML));
+
+		// use read to make sure the doc got the update
+		String value2 = runtimeDbDocMgr.readAs(docUri, String.class);
+		assertXMLEqual("Doc contents incorrect", docContents2, value2);
+
+		// test searching
+		QueryManager runtimeDbQueryMgr = tmpClient.newQueryManager();
+		StringQueryDefinition query = runtimeDbQueryMgr.newStringDefinition();
+		query.setCriteria("hello2");
+		query.setDirectory("/test/");
+		MatchDocumentSummary match = runtimeDbQueryMgr.findOne(query);
+		assertNotNull("Should get a doc back", match);
+		assertEquals("URL doesn't match", docUri, match.getUri());
+
+		// test patching 
+		String newValue = "new value";
+		String docContents3 = "<a>" + newValue + "</a>";
+		DocumentPatchBuilder patchBldr = runtimeDbDocMgr.newPatchBuilder();
+		patchBldr.replaceValue("/a", newValue);
+		DocumentPatchHandle patchHandle = patchBldr.build();
+		runtimeDbDocMgr.patch(docUri, patchHandle);
+
+		// use bulk read to make sure the doc got the update
+		DocumentPage docs = runtimeDbDocMgr.read(docUri);
+		assertNotNull("Should get a doc back", docs);
+		assertTrue("Should get a doc back", docs.hasNext());
+		String value3 = docs.next().getContent(new StringHandle()).get();
+		assertXMLEqual("Doc contents incorrect", docContents3, value3);
+
+		// test deleting the doc
+		runtimeDbDocMgr.delete(docUri);
+		boolean deleted = false;
+		try {
+			runtimeDbDocMgr.readAs(docUri, String.class);
+		} catch (ResourceNotFoundException e) {
+			deleted = true;
+		}
+		assertTrue("Doc still exists", deleted);
+		String value4 = getHello.evalAs(String.class);
+		assertEquals("Eval response wrong", null, value4);
+
+		tmpClient.release();
 	}
 
 	@Test
