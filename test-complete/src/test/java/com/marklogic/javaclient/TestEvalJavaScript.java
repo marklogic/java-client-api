@@ -370,7 +370,7 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 						+"var myNull;"
 						+ "var myJsonArray;"
 						+ "var myJsonNull;"
-						+ "results.push(myString,myBool,myInteger,myDecimal,myJsonObject,myJsonArray,myNull);"
+						+ "results.push(myString,myBool,myInteger,myDecimal,myJsonObject,myJsonArray,myNull,myJsonNull);"
 						+"xdmp.arrayValues(results)";
 		
 		ServerEvaluationCall evl= client.newServerEval().javascript(query1);
