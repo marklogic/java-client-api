@@ -342,6 +342,13 @@ public class TestJacksonDateTimeFormat extends BasicJavaClientREST {
 		validateSpecialArtifactDateTime(artifact, artifactName, longId, calTime);
 		
 		pojoReposProducts.delete(calTime);
+		// Introduce a wait for the document to be deleted.
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		// Validate the artifact read back.
 		long count = pojoReposProducts.count();
 			

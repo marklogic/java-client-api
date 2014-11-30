@@ -309,7 +309,7 @@ public class AlertingTest {
 		BytesHandle bHandle = ruleManager.readRule("javatestrule",
 				new BytesHandle().withFormat(Format.JSON));
 		assertEquals(
-				"{\"rule\":{\"name\":\"javatestrule\", \"description\":\"rule to demonstrate REST alerting\", \"search\":{\"qtext\":[\"favorited:true\"], \"options\":{\"constraint\":[{\"name\":\"favorited\", \"value\":{\"element\":{\"ns\":\"\", \"name\":\"favorited\"}}}]}}, \"rule-metadata\":null}}\n",
+				"{\"rule\":{\"name\":\"javatestrule\", \"description\":\"rule to demonstrate REST alerting\", \"search\":{\"qtext\":[\"favorited:true\"], \"options\":{\"constraint\":[{\"name\":\"favorited\", \"value\":{\"element\":{\"ns\":\"\", \"name\":\"favorited\"}}}]}}, \"rule-metadata\":null}}",
 				new String(bHandle.get()));
 
 		ruleManager.delete("javatestrule");

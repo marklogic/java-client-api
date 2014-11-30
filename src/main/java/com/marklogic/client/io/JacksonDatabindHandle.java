@@ -42,9 +42,9 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
 import com.marklogic.client.impl.JacksonBaseHandle;
 
 /**
- * An adapter for using the Jackson Open Source library for JSON; represents 
- * JSON content as a Jackson JsonNode for reading or writing.  Enables reading and 
- * writing JSON documents, JSON structured search, and other JSON input and output.  
+ * An adapter for using the Jackson Open Source library for JSON; represents
+ * JSON content for reading or writing as objects of the specified POJO class.
+ * Enables reading and writing JSON directly to or from POJOs.
  */
 public class JacksonDatabindHandle<T>
         extends JacksonBaseHandle<T>
@@ -83,7 +83,7 @@ public class JacksonDatabindHandle<T>
     /**
      * Specify the type of content this JacksonDatabindHandle will manage.
      * 
-     * @param contentClass the class of your custom Pojo for databinding
+     * @param contentClass the class of your custom POJO for databinding
      */
     public JacksonDatabindHandle(Class<T> contentClass) {
         super();
@@ -91,8 +91,8 @@ public class JacksonDatabindHandle<T>
            setResendable(true);
     }
     /**
-     * Provides a handle on JSON content as a Jackson tree.
-     * @param content    the JSON root node of the tree.
+     * Provides a handle on POJO content.
+     * @param content    the POJO which should be serialized
      */
 	public JacksonDatabindHandle(T content) {
         this((Class<T>) content.getClass());
@@ -111,30 +111,57 @@ public class JacksonDatabindHandle<T>
     }
 
     /**
-     * Returns the root node of the JSON tree.
-     * @return    the JSON root node.
+     * Returns the content.
+     * @return the content you provided if you called {@link #JacksonDatabindHandle(Object)}
+     *         or {@link #set(Object)} or if the content is being de-serialized, a pojo of
+     *         the specified type populated with the data
      */
     @Override
     public T get() {
         return content;
     }
     /**
-     * Assigns your custom Pojo as the content.
-     * @param content your custom Pojo
+     * Assigns your custom POJO as the content.
+     * @param content your custom POJO
      */
     @Override
     public void set(T content) {
         this.content = content;
     }
     /**
-     * Assigns a JSON tree as the content and returns the handle.
-     * @param content    the JSON root node.
-     * @return    the handle on the JSON tree.
+     * Assigns a your custom POJO as the content and returns the handle.
+     * @param content    your custom POJO
+     * @return    the handle
      */
     public JacksonDatabindHandle<T> with(T content) {
         set(content);
         return this;
     }
+
+    /**
+     * Provides access to the ObjectMapper used internally so you can configure
+     * it to fit your JSON.
+     * @return the ObjectMapper instance
+     */
+    @Override
+    public ObjectMapper getMapper() { return super.getMapper(); }
+    /**
+     * Enables clients to specify their own ObjectMapper instance, including databinding mappers
+     * for formats other than JSON.
+     * For <a href="https://github.com/FasterXML/jackson-dataformat-csv">example</a>:<pre>{@code
+     *ObjectMapper mapper = new CsvMapper();
+     *mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+     *mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
+     *handle.setMapper(mapper);
+     * }</pre>
+     *
+     * Use at your own risk!  Note that you most likely want to set to false the two options we
+     * demonstrate above (JsonGenerator.Feature.AUTO_CLOSE_TARGET and JsonParser.Feature.AUTO_CLOSE_SOURCE)
+     * as we do so your mapper will not close streams which we may need to reuse if we have to
+     * resend a network request.
+     **/
+    @Override
+    public void setMapper(ObjectMapper mapper) { super.setMapper(mapper); }
 
     @Override
     protected void receiveContent(InputStream content) {

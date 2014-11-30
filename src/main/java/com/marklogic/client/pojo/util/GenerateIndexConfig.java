@@ -46,9 +46,9 @@ import com.marklogic.client.pojo.annotation.PathIndexProperty;
  *       -classes "com.marklogic.client.test.City com.marklogic.client.test.Country" 
  *       -file cityIndexes.json
  *
- *     curl -i --digest --user admin:admin 
- *       -H 'Content-Type: application/json' 
- *       -d '@cityIndexes.json' 
+ *     curl -i --digest --user admin:admin \
+ *       -H 'Content-Type: application/json' \
+ *       -d '@cityIndexes.json' \
  *       -X PUT 'http://localhost:8002/manage/LATEST/databases/java-unittest/properties'
  * </pre>
  */

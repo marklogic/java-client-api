@@ -2707,6 +2707,13 @@ public class StructuredQueryBuilder {
 		return newNamespaces;
 	}
 	
+	/**
+	 * The Allen and ISO SQL 2011 temporal operators available for use in
+	 * {@link #temporalPeriodRange temporalPeriodRange}
+	 * or {@link #temporalPeriodCompare temporalPeriodCompare} queries.
+	 * @see <a href="http://docs.marklogic.com/guide/temporal/searching#id_78584">
+	 * Temporal Developer's Guide -&gt; Period Comparison Operators</a>
+	 */
 	public enum TemporalOperator {
 		ALN_EQUALS,
 		ALN_CONTAINS,
@@ -2729,17 +2736,49 @@ public class StructuredQueryBuilder {
 		ISO_IMM_PRECEDES,
 		ISO_EQUALS;
 	};
+	/**
+	 * An axis for use in {@link #temporalPeriodRange temporalPeriodRange}
+	 * or {@link #temporalPeriodCompare temporalPeriodCompare} queries.
+	 */
 	public interface Axis {};
+	/**
+	 * A temporal period for use in {@link #temporalPeriodRange temporalPeriodRange}
+	 * queries.
+	 */
 	public interface Period {};
 
+	/**
+	 * Identify an axis for use in {@link #temporalPeriodRange temporalPeriodRange}
+	 * or {@link #temporalPeriodCompare temporalPeriodCompare} queries.
+	 * @param name the name of the axis as configured in the server
+	 */
 	public StructuredQueryBuilder.Axis axis(String name) {
 		return new TemporalAxis(name);
 	}
 	
+	/**
+	 * Construct a temporal period for use in {@link #temporalPeriodRange temporalPeriodRange}
+	 * queries.
+	 * @param start the start date/time for this period
+	 * @param end   the end date/time for this period
+	 */
 	public StructuredQueryBuilder.Period period(Calendar start, Calendar end) {
 		return new TemporalPeriod(start, end);
 	}
 
+	/**
+	 * Matches documents that have a value in the specified axis that matches the specified
+	 * period using the specified operator.
+	 * @param axis the axis of document temporal values used to determine which documents have
+	 *        values that match this query
+	 * @param operator the operator used to determine if values in the axis match the specified period
+	 * @param period the period considered using the operator
+	 * @param options string options from the list for
+	 *     <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query calls</a>
+	 * @see <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query</a>
+	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_91434">
+	 *      Structured Queries: period-range-query</a>
+	 */
 	public StructuredQueryDefinition temporalPeriodRange(Axis axis, TemporalOperator operator, 
 		Period period, String... options) 
 	{
@@ -2748,6 +2787,18 @@ public class StructuredQueryBuilder {
 		return temporalPeriodRange(new Axis[] {axis}, operator, new Period[] {period}, options);
 	}
 
+	/**
+	 * @param axes the set of axes of document temporal values used to determine which documents have
+	 *        values that match this query
+	 * @param operator the operator used to determine if values in the axis match the specified period
+	 * @param periods the periods considered using the operator.  When multiple periods are specified,
+	 *     the query matches if a value matches any period.
+	 * @param options string options from the list for
+	 *     <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query calls</a>
+	 * @see <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query</a>
+	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_91434">
+	 *      Structured Queries: period-range-query</a>
+	 */
 	public StructuredQueryDefinition temporalPeriodRange(Axis[] axes, TemporalOperator operator, 
 		Period[] periods, String... options) 
 	{
@@ -2757,6 +2808,19 @@ public class StructuredQueryBuilder {
 		return new TemporalPeriodRangeQuery(axes, operator, periods, options);
 	}
 
+	/**
+	 * Matches documents that have a relevant pair of period values. Values from axis1 must match
+	 * values from axis2 using the specified operator.
+	 * @param axis1 the first axis of document temporal values 
+	 *        values that match this query
+	 * @param operator the operator used to determine if values in the axis match the specified period
+	 * @param axis2 the second axis of document temporal values 
+	 * @param options string options from the list for
+	 *     <a href="http://docs.marklogic.com/cts:period-compare-query">cts:period-compare-query calls</a>
+	 * @see <a href="http://docs.marklogic.com/cts:period-compare-query">cts:period-compare-query</a>
+	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_19798">
+	 *      Structured Queries: period-compare-query</a>
+	 */
 	public StructuredQueryDefinition temporalPeriodCompare(Axis axis1, TemporalOperator operator, 
 		Axis axis2, String... options) 
 	{
@@ -2766,6 +2830,17 @@ public class StructuredQueryBuilder {
 		return new TemporalPeriodCompareQuery(axis1, operator, axis2, options);
 	}
 
+	/**
+	 * Matches documents with LSQT prior to timestamp
+	 * @param temporalCollection the temporal collection to query
+	 * @param timestamp documents with lsqt prior to this timestamp will match
+	 * @param weight the weight for for this query
+	 * @param options string options from the list for
+	 *     <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query calls</a>
+	 * @see <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query</a>
+	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_85930">
+	 *      Structured Queries: lsqt-query</a>
+	 */
 	public StructuredQueryDefinition temporalLsqtQuery(String temporalCollection, Calendar timestamp,
 		double weight, String... options)
 	{

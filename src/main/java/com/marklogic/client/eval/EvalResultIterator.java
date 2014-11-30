@@ -17,6 +17,9 @@ package com.marklogic.client.eval;
 
 import java.util.Iterator;
 
+/** An Iterator to walk through all results returned from calls to
+ * {@link ServerEvaluationCall#eval()}.
+ */
 public interface EvalResultIterator extends Iterable<EvalResult>, Iterator<EvalResult> {
     public Iterator<EvalResult> iterator();
     public boolean hasNext();

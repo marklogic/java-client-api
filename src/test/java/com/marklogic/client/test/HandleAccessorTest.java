@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 
 import org.junit.Test;
 
@@ -37,10 +38,11 @@ public class HandleAccessorTest {
         // I'm purposely using a string with a non-ascii character to test 
         // charset issues
         String hola = "¡Hola!";
+        System.out.println("Default Java Charset: " + Charset.defaultCharset());
         assertEquals("String content mismatch", hola, 
             HandleAccessor.contentAsString(new StringHandle(hola)));
         assertEquals("byte[] content mismatch", hola, 
-            HandleAccessor.contentAsString(new BytesHandle(hola.getBytes())));
+            HandleAccessor.contentAsString(new BytesHandle(hola.getBytes("UTF-8"))));
         URL filePath = this.getClass().getClassLoader().getResource("hola.txt");
         assertEquals("Reader content mismatch", hola, 
             HandleAccessor.contentAsString(new ReaderHandle(new StringReader(hola))));
