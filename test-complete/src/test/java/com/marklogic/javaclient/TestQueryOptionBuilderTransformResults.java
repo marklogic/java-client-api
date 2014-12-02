@@ -109,7 +109,7 @@ public class TestQueryOptionBuilderTransformResults extends BasicJavaClientREST 
 		
 		JsonNode jn = new ObjectMapper().readTree(resultDoc); 
 //		System.out.println(resultDoc);
-		System.out.println(jn.get("results").findValue("uri").textValue().contains("/trans-res-with-snip-func/constraint3.xml"));
+		System.out.println(jn.get("results").findValue("uri").textValue());
 		String expectedResult = "{\"snippet-format\":\"snippet\",\"total\":1,\"start\":1,\"page-length\":10,\"results\":[{\"index\":1,\"uri\":\"/trans-res-with-snip-func/constraint3.xml\"";
 		
 		
