@@ -343,6 +343,7 @@ public void testXQueryModuleCRUDXmlFileNegative() {
 	try{
 	libsMgr.write(Path, f);
 	}catch(ResourceNotFoundException e){
+		//Issue 210 logged for meaningful error
 		assertEquals("Local message: Could not write resource at /foo/my/path/to/my/module.xqy. Server Message: Request failed. Error body not received from server" , e.getMessage());
 	}
 	// delete it
