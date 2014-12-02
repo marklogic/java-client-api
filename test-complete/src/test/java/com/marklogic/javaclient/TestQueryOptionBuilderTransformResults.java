@@ -9,6 +9,9 @@ import java.io.IOException;
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.io.Format;
@@ -50,7 +53,7 @@ public class TestQueryOptionBuilderTransformResults extends BasicJavaClientREST 
 	}
 
 	@Test	
-	public void testTransformResuleWithSnippetFunction() throws FileNotFoundException, XpathException, TransformerException
+	public void testTransformResuleWithSnippetFunction() throws XpathException, TransformerException, JsonProcessingException, IOException
 	{	
 		System.out.println("Running testTransformResuleWithSnippetFunction");
 
@@ -103,10 +106,14 @@ public class TestQueryOptionBuilderTransformResults extends BasicJavaClientREST 
 
 		// get the result
 		String resultDoc = resultsHandle.get();
-		System.out.println(resultDoc);
-
+		
+		JsonNode jn = new ObjectMapper().readTree(resultDoc); 
+//		System.out.println(resultDoc);
+		System.out.println(jn.get("results").findValue("uri").textValue().contains("/trans-res-with-snip-func/constraint3.xml"));
 		String expectedResult = "{\"snippet-format\":\"snippet\",\"total\":1,\"start\":1,\"page-length\":10,\"results\":[{\"index\":1,\"uri\":\"/trans-res-with-snip-func/constraint3.xml\"";
-		assertTrue("Result is wrong", resultDoc.contains(expectedResult));
+		
+		
+		assertTrue("Result is wrong",jn.get("results").findValue("uri").textValue().contains("/trans-res-with-snip-func/constraint3.xml"));
 
 		// release client
 		client.release();	
