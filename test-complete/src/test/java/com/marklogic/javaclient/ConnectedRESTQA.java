@@ -1326,7 +1326,7 @@ public abstract class ConnectedRESTQA {
 						//            			System.out.println("Hurray" +fnchild.has(propName));
 						if(!fnchild.has(propName)){
 							((ObjectNode)fnchild).putArray(propName).addAll(objNode.withArray(propName));
-							System.out.println("Adding child array include node" + jnode.toString());
+//							System.out.println("Adding child array include node" + jnode.toString());
 						}
 						else{
 							JsonNode member = fnchild.withArray(propName);

@@ -93,7 +93,7 @@ public class TestKeyValueSearch extends BasicJavaClientREST {
 
 		assertXpathEvaluatesTo("0012", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
 
-		String expectedSearchReport = "(cts:search(fn:collection(), cts:element-value-query(fn:QName(\"\",\"id\"), \"0012\", (\"case-sensitive\",\"diacritic-sensitive\",\"punctuation-sensitive\",\"whitespace-sensitive\",\"unstemmed\",\"unwildcarded\",\"lexicon-expand=heuristic\",\"lang=en\"), 1), (\"score-logtfidf\"), 1))[1 to 10]";
+		String expectedSearchReport = "(cts:search(fn:collection(), cts:element-value-query(fn:QName(\"\",\"id\"), \"0012\", (\"case-sensitive\",\"diacritic-sensitive\",\"punctuation-sensitive\",\"whitespace-sensitive\",\"unstemmed\",\"unwildcarded\",\"lang=en\"), 1), (\"score-logtfidf\",cts:score-order(\"descending\")), 1))[1 to 10]";
 
 		assertXpathEvaluatesTo(expectedSearchReport, "string(//*[local-name()='report'])", resultDoc);
 

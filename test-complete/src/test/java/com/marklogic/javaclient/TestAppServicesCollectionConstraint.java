@@ -166,7 +166,7 @@ public  void testCleanUp() throws Exception
 //		assertXpathEvaluatesTo("For 1945", "string(//*[local-name()='result'][1]//*[local-name()='title'])", resultDoc);
 		assertXpathNotExists("//search:facet-value[@count='1']", resultDoc);
 	    
-		String expectedSearchReport = "(cts:search(fn:collection(), cts:collection-query(\"http://test.com/set3\"), (\"score-logtfidf\"), 1))[1 to 10]";
+		String expectedSearchReport = "(cts:search(fn:collection(), cts:collection-query(\"http://test.com/set3\"), (\"score-logtfidf\",cts:score-order(\"descending\")), 1))[1 to 10]";
 		
 		assertXpathEvaluatesTo(expectedSearchReport, "string(//*[local-name()='report'])", resultDoc);
 		

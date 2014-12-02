@@ -6,6 +6,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.QueryManager.QueryView;
 
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -100,7 +101,7 @@ public  void testCleanUp() throws Exception
 		setQueryOption(client, queryOptionName);
 		
 		QueryManager queryMgr = client.newQueryManager();
-		
+		queryMgr.setView(QueryView.ALL);
 		// create query def
 		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
 		querydef.setCriteria("geo-elem:\"-12,-5\"");
@@ -114,8 +115,8 @@ public  void testCleanUp() throws Exception
 
 		System.out.println("testPointNegativeLangLat Result : "+convertXMLDocumentToString(resultDoc));
 		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("-12,-5", "string(//*[local-name()='result'][1]//*[local-name()='highlight'])", resultDoc);
-		
+//		assertXpathEvaluatesTo("-12,-5", "string(//*[local-name()='result'][1]//*[local-name()='highlight'])", resultDoc);
+		assertXpathEvaluatesTo("-12,-5", "string(//*[local-name()='qtext'])", resultDoc);
 		// release client
 		client.release();		
 	}
