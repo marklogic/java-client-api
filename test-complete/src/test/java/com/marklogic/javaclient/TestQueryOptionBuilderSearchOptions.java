@@ -102,7 +102,7 @@ public class TestQueryOptionBuilderSearchOptions extends BasicJavaClientREST {
 		Document resultDoc = resultsHandle.get();
 		//System.out.println(convertXMLDocumentToString(resultDoc));
 
-		String expectedSearchReport = "(cts:search(fn:collection(), cts:word-query(\"bush\", (\"lang=en\"), 1), (\"checked\",\"filtered\",\"score-simple\"), 1))[1 to 10]";
+		String expectedSearchReport = "(cts:search(fn:collection(), cts:word-query(\"bush\", (\"lang=en\"), 1), (\"checked\",\"filtered\",\"score-simple\",cts:score-order(\"descending\")), 1))[1 to 10]";
 
 		assertXpathEvaluatesTo(expectedSearchReport, "string(//*[local-name()='report'])", resultDoc);
 
@@ -173,7 +173,7 @@ public class TestQueryOptionBuilderSearchOptions extends BasicJavaClientREST {
 		Document resultDoc = resultsHandle.get();
 		//System.out.println(convertXMLDocumentToString(resultDoc));
 
-		String expectedSearchReport = "(cts:search(fn:collection(), cts:word-query(\"bush\", (\"lang=en\"), 1), (\"unchecked\",\"unfiltered\",\"score-logtfidf\"), 1))[1 to 10]";
+		String expectedSearchReport = "(cts:search(fn:collection(), cts:word-query(\"bush\", (\"lang=en\"), 1), (\"unchecked\",\"unfiltered\",\"score-logtfidf\",cts:score-order(\"descending\")), 1))[1 to 10]";
 
 		assertXpathEvaluatesTo(expectedSearchReport, "string(//*[local-name()='report'])", resultDoc);
 

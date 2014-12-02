@@ -352,7 +352,7 @@ public class TestJacksonDateTimeFormat extends BasicJavaClientREST {
 		// Validate the artifact read back.
 		long count = pojoReposProducts.count();
 			
-		assertEquals("Artifact with calendar as Id found - Delete did not work",0L, count);		
+		assertEquals("Artifact with calendar as Id found - Delete did not work",0, count);		
 	}
 	
 	@Test
