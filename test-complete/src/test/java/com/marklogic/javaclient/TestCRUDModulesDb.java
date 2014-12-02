@@ -29,7 +29,7 @@ public class TestCRUDModulesDb extends BasicJavaClientREST {
 @After
 public  void testCleanUp() throws Exception
 {
-	clearDB(8011);
+//	clearDB(8011);
 	System.out.println("Running clear script");
 }
 @Test
@@ -343,13 +343,13 @@ public void testXQueryModuleCRUDXmlFileNegative() {
 	try{
 	libsMgr.write(Path, f);
 	}catch(ResourceNotFoundException e){
-		assertEquals("Negative test Passed as","Local message: Could not write resource at /foo/my/path/to/my/module.xqy. Server Message: /v1/foo/my/path/to/my/module.xqy" , e.getMessage());
+		assertEquals("Local message: Could not write resource at /foo/my/path/to/my/module.xqy. Server Message: Request failed. Error body not received from server" , e.getMessage());
 	}
 	// delete it
 	try{
 		libsMgr.delete(Path);
 	}catch(Exception e){
-		assertEquals("", "Local message: Could not delete resource at /foo/my/path/to/my/module.xqy. Server Message: /v1/foo/my/path/to/my/module.xqy", e.getMessage());
+		assertEquals("", "Local message: Could not delete resource at /foo/my/path/to/my/module.xqy. Server Message: Request failed. Error body not received from server", e.getMessage());
 	}
 		
 }
