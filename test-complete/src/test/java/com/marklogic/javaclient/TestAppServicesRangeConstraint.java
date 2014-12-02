@@ -80,7 +80,7 @@ public  void testCleanUp() throws Exception
 		assertXpathEvaluatesTo("Vannevar served as a prominent policymaker and public intellectual.", "string(//*[local-name()='result'][1]//*[local-name()='p'])", resultDoc);
 		assertXpathEvaluatesTo("The Bush article described a device called a Memex.", "string(//*[local-name()='result'][2]//*[local-name()='p'])", resultDoc);
 	    
-		String expectedSearchReport = "(cts:search(fn:collection(), cts:or-query((cts:element-range-query(fn:QName(\"http://purl.org/dc/elements/1.1/\",\"date\"), \"=\", xs:date(\"2006-02-02\"), (), 1), cts:word-query(\"policymaker\", (\"lang=en\"), 1))), (\"score-logtfidf\"), 1))[1 to 10]";
+		String expectedSearchReport = "(cts:search(fn:collection(), cts:or-query((cts:element-range-query(fn:QName(\"http://purl.org/dc/elements/1.1/\",\"date\"), \"=\", xs:date(\"2006-02-02\"), (), 1), cts:word-query(\"policymaker\", (\"lang=en\"), 1)), ()), (\"score-logtfidf\",cts:score-order(\"descending\")), 1))[1 to 10]";
 		
 		assertXpathEvaluatesTo(expectedSearchReport, "string(//*[local-name()='report'])", resultDoc);
 		
