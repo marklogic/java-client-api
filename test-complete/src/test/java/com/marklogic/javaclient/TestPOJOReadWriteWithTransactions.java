@@ -8,7 +8,9 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
@@ -19,7 +21,7 @@ import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
-
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 
 	private static String dbName = "TestPOJORWTransDB";
@@ -75,7 +77,7 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 	//This test is to persist a simple design model objects in ML, read from ML, delete all
 	// Issue 104 for unable to have transaction in count,exists, delete methods
 	@Test
-	public void testPOJOWriteWithTransaction() throws Exception {
+	public void test0POJOWriteWithTransaction() throws Exception {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		Transaction t= client.openTransaction();
 		//Load more than 100 objects
@@ -101,7 +103,7 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 	}
 	//This test is to persist objects into different collections, read documents based on Id and delete single object based on Id
 	@Test
-	public void testPOJOWriteWithTransCollection() throws Exception {
+	public void test1POJOWriteWithTransCollection() throws Exception {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		//Load more than 110 objects into different collections
 		Transaction t= client.openTransaction();
@@ -116,9 +118,9 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 			}
 		}catch(Exception e){throw e;}
 		finally{t.commit();}
-//		assertEquals("Total number of object recods",110, products.count("numbers"));
-//		assertEquals("Collection even count",55,products.count("even"));
-//		assertEquals("Collection odd count",55,products.count("odd"));
+		assertEquals("Total number of object recods",110, products.count("numbers"));
+		assertEquals("Collection even count",55,products.count("even"));
+		assertEquals("Collection odd count",55,products.count("odd"));
 		for(long i=112;i<222;i++){
 			// validate all the records inserted are readable
 			assertTrue("Product id "+i+" does not exist",products.exists(i));
@@ -148,7 +150,7 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 	//This test is to read objects into pojo page based on Ids 
 	// until #103 is resolved	
 	@Test
-	public void testPOJOWriteWithPojoPage() {
+	public void test2POJOWriteWithPojoPage() {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		//Load more than 110 objects into different collections
 		products.deleteAll();
@@ -163,9 +165,9 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 				products.write(this.getArtifact(i),"odd","numbers");
 			}
 		}
-//		assertEquals("Total number of object recods",111, products.count("numbers"));
-//		assertEquals("Collection even count",56,products.count("even"));
-//		assertEquals("Collection odd count",55,products.count("odd"));
+		assertEquals("Total number of object recods",111, products.count("numbers"));
+		assertEquals("Collection even count",56,products.count("even"));
+		assertEquals("Collection odd count",55,products.count("odd"));
 
 		System.out.println("Default Page length setting on docMgr :"+products.getPageLength());
 		assertEquals("Default setting for page length",50,products.getPageLength());
@@ -219,7 +221,7 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 		//see if it complains when there are no records
 	}
 	@Test
-	public void testPOJOWriteWithPojoPageReadAll() throws Exception {
+	public void test3POJOWriteWithPojoPageReadAll() throws Exception {
 		
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		//Load more than 110 objects into different collections
@@ -235,12 +237,8 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 					products.write(this.getArtifact(i),t,"odd","numbers");
 				}
 			}
-			//issue# 104
-			//		assertEquals("Total number of object recods",111, products.count("numbers"));
-			//		assertEquals("Collection even count",56,products.count("even"));
-			//		assertEquals("Collection odd count",55,products.count("odd"));
-
-			System.out.println("Default Page length setting on docMgr :"+products.getPageLength());
+			
+//			System.out.println("Default Page length setting on docMgr :"+products.getPageLength());
 			assertEquals("Default setting for page length",50,products.getPageLength());
 			products.setPageLength(25);
 			assertEquals("explicit setting for page length",25,products.getPageLength());
@@ -259,7 +257,7 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 			assertFalse("Is this Last page :",p.isLastPage());
 			assertTrue("Is this First page has content:",p.hasContent());
 			//		Need the Issue #75 to be fixed  
-			assertTrue("Is first page has previous page ?",p.hasPreviousPage());
+			assertFalse("Is first page has previous page ?",p.hasPreviousPage());
 			long pageNo=1,count=0;
 			do{
 				count=0;
@@ -293,7 +291,7 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 	}
 
 //	@Test
-	public void testPOJOSearchWithCollectionsandTransaction() throws Exception {
+	public void test4POJOSearchWithCollectionsandTransaction() throws Exception {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
 		products.deleteAll();
@@ -367,7 +365,7 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 		assertFalse("all the documents are deleted",products.exists((long)12));
 	}
 @Test
-	public void testPOJOSearchWithQueryDefinitionandTransaction() throws Exception {
+	public void test5POJOSearchWithQueryDefinitionandTransaction() throws Exception {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
 		products.deleteAll();
