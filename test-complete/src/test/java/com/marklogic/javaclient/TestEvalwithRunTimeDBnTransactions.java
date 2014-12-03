@@ -189,6 +189,7 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 			}finally{
 				if(tstatus){
 					t1.rollback();
+					client2.release();
 				}
 			}
 	}
