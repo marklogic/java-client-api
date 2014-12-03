@@ -44,7 +44,7 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In Setup");
 		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
-		createRESTUser("app-user", "password","rest-writer","rest-reader"  );
+		createRESTUser("app-user", "password","rest-writer","rest-reader","flexrep-eval"  );
 		createRESTUserWithPermissions("usr1", "password",getPermissionNode("flexrep-eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
 		
 	}
@@ -333,7 +333,7 @@ public void testBulkWritewithTransactionsNoCommit() throws Exception {
 
 	int count=1;
 	boolean tstatus =true;
-	DatabaseClient c = DatabaseClientFactory.newClient("localhost", restPort, "app-user", "password", Authentication.DIGEST);
+	DatabaseClient c = DatabaseClientFactory.newClient("localhost", restPort, "usr1", "password", Authentication.DIGEST);
 	Transaction t1 = client.openTransaction();
 	try{ 
 	XMLDocumentManager docMgr = client.newXMLDocumentManager();

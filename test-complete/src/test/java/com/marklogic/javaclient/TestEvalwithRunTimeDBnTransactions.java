@@ -46,7 +46,7 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		 System.out.println("In setup");
-		 setupJavaRESTServer(dbName, fNames[0], restServerName,restPort,false);
+		 setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
  	     createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
  	     createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
 //		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
@@ -62,7 +62,7 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 
 	@Before
 	public void setUp() throws Exception {
-		client = DatabaseClientFactory.newClient("localhost", restPort,dbName,"eval-user", "x", Authentication.DIGEST);
+		client = DatabaseClientFactory.newClient("localhost", restPort,"eval-user", "x", Authentication.DIGEST);
 	}
 
 	@After
@@ -110,7 +110,7 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 		fis.close();	
 		}
 	}
-	//issue 170,171 are blocking the test progress in here
+	//issue 170 are blocking the test progress in here
 	@Test
 	public void test2XqueryEvalTransactions() throws Exception{
 		int count=1;
@@ -150,4 +150,47 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 			}
 		}
 }
+	//issue 171 are blocking the test progress in here
+		@Test
+		public void test3XqueryEvalTransactionsWithRunTimeDB() throws Exception{
+			int count=1;
+			boolean tstatus =true;
+			associateRESTServerWithDB(restServerName,"Documents");
+			DatabaseClient client2 =DatabaseClientFactory.newClient("localhost", restPort,dbName,"eval-user", "x", Authentication.DIGEST);
+			Transaction t1 = client2.openTransaction();
+			try{ 
+			XMLDocumentManager docMgr = client2.newXMLDocumentManager();
+			HashMap<String,String> map= new HashMap<String,String>();
+			DocumentWriteSet writeset =docMgr.newWriteSet();
+			for(int i =0;i<102;i++){
+				writeset.add("/sec"+i+".xml", new DOMHandle(getDocumentContent("This is so sec"+i)));
+				map.put("/sec"+i+".xml", convertXMLDocumentToString(getDocumentContent("This is so sec"+i)));
+				if(count%100 == 0){
+					docMgr.write(writeset,t1);
+					writeset = docMgr.newWriteSet();
+				}
+				count++;
+			}
+			if(count%100 > 0){
+				docMgr.write(writeset,t1);
+			}
+			 String query = "declare variable $myInteger as xs:integer external;"
+			    		+ "(fn:count(fn:doc()))";
+			 ServerEvaluationCall evl= client2.newServerEval().xquery(query);
+		     EvalResultIterator evr = evl.eval();
+		     assertEquals("Count of documents outside of the transaction",1,evr.next().getNumber().intValue());
+		     evl= client2.newServerEval().xquery(query).transaction(t1);
+		     evr = evl.eval();
+		     assertEquals("Count of documents outside of the transaction",103,evr.next().getNumber().intValue());
+			}catch(Exception e){
+				System.out.println(e.getMessage());
+				tstatus=true;
+				throw e;
+			}finally{
+				if(tstatus){
+					t1.rollback();
+					client2.release();
+				}
+			}
+	}
 }
