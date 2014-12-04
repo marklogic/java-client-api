@@ -3284,6 +3284,42 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
+  // Negative test
+  public void testInsertJSONDocumentUsingAsRESTReader() throws Exception {
+    // Now insert a JSON document
+    String jsonDocId = "javaSingleJSONDoc.json";
+
+    boolean exceptionThrown = false;
+
+    System.out
+        .println("Inside testInsertJSONDocumentUsingNonExistingTemporalCollection");
+
+    JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
+        "2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON",
+        jsonDocId);
+
+    JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
+    docMgr.setMetadataCategories(Metadata.ALL);
+
+    // put meta-data
+    DocumentMetadataHandle mh = setMetadata(false);
+
+    try {
+      docMgr.write(jsonDocId, mh, handle, null, null, temporalCollectionName);
+    } catch (com.marklogic.client.ForbiddenUserException ex) {
+      exceptionThrown = true;
+      System.out.println(ex.getFailedRequest().getStatusCode());
+      System.out.println(ex.getFailedRequest().getMessageCode());
+      
+      assert(ex.getFailedRequest().getMessageCode().equals("SEC-PRIV"));
+      assert(ex.getFailedRequest().getStatusCode() == 403);
+    }
+
+    assertTrue("Exception not thrown for invalid temporal collection",
+        exceptionThrown);
+  }
+
+  @Test
   // Negative test. Doc URI Id is the same as the temporal collection name
   public void testInsertDocumentUsingDocumentURIAsCollectionName()
       throws Exception {
