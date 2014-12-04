@@ -2491,7 +2491,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
           transaction, null);
 
       // Verify that the document was inserted
-      JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
+      JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
       DocumentPage readResults = docMgr.read(transaction, docId);
 
       System.out.println("Number of results = " + readResults.size());
@@ -2524,7 +2524,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
       updateJSONSingleDocument(temporalCollectionName, docId, transaction, null);
 
-      QueryManager queryMgr = readerClient.newQueryManager();
+      QueryManager queryMgr = writerClient.newQueryManager();
       StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
       StructuredQueryDefinition termQuery = sqb
           .collection(latestCollectionName);
@@ -2543,7 +2543,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       }
 
       // There should be 4 documents in docId collection
-      queryMgr = readerClient.newQueryManager();
+      queryMgr = writerClient.newQueryManager();
       sqb = queryMgr.newStructuredQueryBuilder();
       termQuery = sqb.collection(docId);
 
@@ -2562,7 +2562,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       // Search for documents using doc uri collection and no transaction object
       // passed.
       // There should be 0 documents in docId collection
-      queryMgr = readerClient.newQueryManager();
+      queryMgr = writerClient.newQueryManager();
       sqb = queryMgr.newStructuredQueryBuilder();
       termQuery = sqb.collection(docId);
 
@@ -2581,7 +2581,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       deleteJSONSingleDocument(temporalCollectionName, docId, transaction);
 
       // There should be no documents in latest collection
-      queryMgr = readerClient.newQueryManager();
+      queryMgr = writerClient.newQueryManager();
       sqb = queryMgr.newStructuredQueryBuilder();
       termQuery = sqb.collection(latestCollectionName);
 
@@ -2600,7 +2600,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       transaction.commit();
 
       // There should still be no documents in latest collection
-      queryMgr = readerClient.newQueryManager();
+      queryMgr = writerClient.newQueryManager();
       sqb = queryMgr.newStructuredQueryBuilder();
       termQuery = sqb.collection(latestCollectionName);
 
@@ -2639,7 +2639,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     }
 
     // Verify that the document was inserted
-    JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
+    JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
     DocumentPage readResults = docMgr.read(transaction, docId);
 
     System.out.println("Number of results = " + readResults.size());
@@ -2669,7 +2669,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // Verify that the document is visible and count is 4
     // Fetch documents associated with a search term (such as XML) in Address
     // element
-    QueryManager queryMgr = readerClient.newQueryManager();
+    QueryManager queryMgr = writerClient.newQueryManager();
     StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
 
     StructuredQueryDefinition termQuery = sqb.collection(docId);
@@ -2718,7 +2718,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     }
 
     // Verify that the document was inserted
-    docMgr = readerClient.newJSONDocumentManager();
+    docMgr = writerClient.newJSONDocumentManager();
     readResults = docMgr.read(transaction, docId);
 
     System.out.println("Number of results = " + readResults.size());
@@ -2748,7 +2748,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // Verify that the document is visible and count is 1
     // Fetch documents associated with a search term (such as XML) in Address
     // element
-    queryMgr = readerClient.newQueryManager();
+    queryMgr = writerClient.newQueryManager();
     sqb = queryMgr.newStructuredQueryBuilder();
 
     termQuery = sqb.collection(docId);
@@ -3340,7 +3340,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         "2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON",
         jsonDocId);
 
-    JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
+    JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
     docMgr.setMetadataCategories(Metadata.ALL);
 
     // put meta-data
@@ -3402,7 +3402,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         "2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON",
         jsonDocId);
 
-    JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
+    JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
     docMgr.setMetadataCategories(Metadata.ALL);
 
     // put meta-data
