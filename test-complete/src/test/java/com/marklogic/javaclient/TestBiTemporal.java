@@ -86,11 +86,6 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-
-//    System.setProperty(
-//        "org.apache.commons.logging.simplelog.log.org.apache.http.wire",
-//        "debug");
-//
     System.out.println("In setup");
     setupJavaRESTServer(dbName, fNames[0], restServerName, restPort);
 
@@ -203,31 +198,85 @@ public class TestBiTemporal extends BasicJavaClientREST {
     System.out.println(actualPermissions);
   }
 
-  public void validateDefaultMetadata(DocumentMetadataHandle mh) {
-    // get metadata values
-    DocumentProperties properties = mh.getProperties();
-    DocumentPermissions permissions = mh.getPermissions();
+  private void validateLSQTQueryData(DatabaseClient client)  throws Exception  {
+    // Fetch documents associated with a search term (such as XML) in Address
+    // element
+    QueryManager queryMgr = client.newQueryManager();
+    StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
 
-    // Properties
-    String actualProperties = getDocumentPropertiesString(properties);
-    boolean result = actualProperties.contains("size:0|");
-    System.out.println(actualProperties + result);
-    assertTrue("Document default last modified properties count1?", result);
+    Calendar queryTime = DatatypeConverter.parseDateTime("2007-01-01T00:00:01");
+    StructuredQueryDefinition periodQuery = sqb.temporalLsqtQuery(
+        temporalLsqtCollectionName, queryTime, 0, new String[] {});
 
-    // Permissions
-    String actualPermissions = getDocumentPermissionsString(permissions);
+    long start = 1;
+    JSONDocumentManager docMgr = client.newJSONDocumentManager();
+    docMgr.setMetadataCategories(Metadata.ALL); // Get all metadata
+    DocumentPage termQueryResults = docMgr.search(periodQuery, start);
 
-    System.out.println("Permissions: " + actualPermissions);
+    long count = 0;
+    while (termQueryResults.hasNext()) {
+      ++count;
+      DocumentRecord record = termQueryResults.next();
+      System.out.println("URI = " + record.getUri());
 
-    assertTrue("Document permissions difference in size value",
-        actualPermissions.contains("size:2"));
-    // assertTrue("Document permissions difference in flexrep-eval permission",
-    // actualPermissions.contains("flexrep-eval:[READ]"));
-    assertTrue("Document permissions difference in rest-reader permission",
-        actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission",
-        actualPermissions.contains("rest-writer:[UPDATE]"));
+      DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+      record.getMetadata(metadataHandle);
+      Iterator<String> resCollections = metadataHandle.getCollections()
+          .iterator();
+      while (resCollections.hasNext()) {
+        System.out.println("Collection = " + resCollections.next());
+      }
+
+      if (record.getFormat() == Format.XML) {
+        DOMHandle recordHandle = new DOMHandle();
+        record.getContent(recordHandle);
+        System.out.println("Content = " + recordHandle.toString());
+      } else {
+        JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<ObjectNode>(
+            ObjectNode.class);
+        record.getContent(recordHandle);
+        System.out.println("Content = " + recordHandle.toString());
+
+        JsonFactory factory = new JsonFactory();
+        ObjectMapper mapper = new ObjectMapper(factory);
+        TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
+        };
+
+        HashMap<String, Object> docObject = mapper.readValue(
+            recordHandle.toString(), typeRef);
+
+        @SuppressWarnings("unchecked")
+        HashMap<String, Object> systemNode = (HashMap<String, Object>) (docObject
+            .get(systemNodeName));
+
+        String systemStartDate = (String) systemNode.get(systemStartERIName);
+        String systemEndDate = (String) systemNode.get(systemEndERIName);
+        System.out.println("systemStartDate = " + systemStartDate);
+        System.out.println("systemEndDate = " + systemEndDate);
+
+        @SuppressWarnings("unchecked")
+        HashMap<String, Object> validNode = (HashMap<String, Object>) (docObject
+            .get(validNodeName));
+
+        String validStartDate = (String) validNode.get(validStartERIName);
+        String validEndDate = (String) validNode.get(validEndERIName);
+        System.out.println("validStartDate = " + validStartDate);
+        System.out.println("validEndDate = " + validEndDate);
+
+        assertTrue("Valid start date check failed",
+          (validStartDate.equals("2001-01-01T00:00:00") &&
+           validEndDate.equals("2011-12-31T23:59:59") &&
+           systemStartDate.equals("2005-01-01T00:00:01-08:00") &&
+           systemEndDate.equals("2010-01-01T00:00:01-08:00")));
+      }
+    }
+
+    // BUG. I believe Java API is doing a get instead of a POST that returns all
+    // documents in doc uri collection
+    System.out.println("Number of results using SQB = " + count);
+    assertEquals("Wrong number of results", 1, count);
   }
+
 
   // This covers passing transforms and descriptor
   private void insertXMLSingleDocument(String temporalCollection, String docId,
@@ -2477,7 +2526,6 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
-  // BUG: REST API bug around transactions fails this test
   public void testTransactionCommit() throws Exception {
 
     System.out.println("Inside testTransactionCommit");
@@ -2618,7 +2666,6 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
-  // BUG: REST API bug around transactions fails this test
   public void testTransactionRollback() throws Exception {
 
     System.out.println("Inside testTransaction");
@@ -3067,10 +3114,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
     System.out.println("Number of results using SQB = " + count);
     assertEquals("Wrong number of results", 1, count);
   }
-
+  
   @Test
   public void testLsqtQuery() throws Exception {
-
     System.setProperty(
         "org.apache.commons.logging.simplelog.log.org.apache.http.wire",
         "debug");
@@ -3093,85 +3139,46 @@ public class TestBiTemporal extends BasicJavaClientREST {
         updateTime);
 
     Thread.sleep(2000);
+    
+    validateLSQTQueryData(readerClient);
+  }
 
-    // Fetch documents associated with a search term (such as XML) in Address
-    // element
-    QueryManager queryMgr = readerClient.newQueryManager();
-    StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+  @Test
+  public void testLsqtQueryAsAdmin() throws Exception {
+    System.setProperty(
+        "org.apache.commons.logging.simplelog.log.org.apache.http.wire",
+        "debug");
 
-    Calendar queryTime = DatatypeConverter.parseDateTime("2007-01-01T00:00:01");
-    StructuredQueryDefinition periodQuery = sqb.temporalLsqtQuery(
-        temporalLsqtCollectionName, queryTime, 0, new String[] {});
+    ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
+        temporalLsqtCollectionName, true);
 
-    long start = 1;
-    JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
-    docMgr.setMetadataCategories(Metadata.ALL); // Get all metadata
-    DocumentPage termQueryResults = docMgr.search(periodQuery, start);
+    // Read documents based on document URI and ALN Contains. We are just
+    // looking for count of documents to be correct
+    String docId = "javaSingleJSONDoc.json";
 
-    long count = 0;
-    while (termQueryResults.hasNext()) {
-      ++count;
-      DocumentRecord record = termQueryResults.next();
-      System.out.println("URI = " + record.getUri());
+    Calendar insertTime = DatatypeConverter
+        .parseDateTime("2005-01-01T00:00:01");
 
-      DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
-      record.getMetadata(metadataHandle);
-      Iterator<String> resCollections = metadataHandle.getCollections()
-          .iterator();
-      while (resCollections.hasNext()) {
-        System.out.println("Collection = " + resCollections.next());
-      }
+    JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
+        "2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON",
+        docId);
 
-      if (record.getFormat() == Format.XML) {
-        DOMHandle recordHandle = new DOMHandle();
-        record.getContent(recordHandle);
-        System.out.println("Content = " + recordHandle.toString());
-      } else {
-        JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<ObjectNode>(
-            ObjectNode.class);
-        record.getContent(recordHandle);
-        System.out.println("Content = " + recordHandle.toString());
+    JSONDocumentManager docMgr = adminClient.newJSONDocumentManager();
+    docMgr.setMetadataCategories(Metadata.ALL);
 
-        JsonFactory factory = new JsonFactory();
-        ObjectMapper mapper = new ObjectMapper(factory);
-        TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
-        };
+    // put meta-data
+    DocumentMetadataHandle mh = setMetadata(false);
+    docMgr.write(docId, mh, handle, null, null, temporalLsqtCollectionName,
+            insertTime, null);
 
-        HashMap<String, Object> docObject = mapper.readValue(
-            recordHandle.toString(), typeRef);
+    Calendar updateTime = DatatypeConverter
+        .parseDateTime("2010-01-01T00:00:01");
+    docMgr.write(docId, mh, handle, null, null, temporalLsqtCollectionName,
+        updateTime, null);
 
-        @SuppressWarnings("unchecked")
-        HashMap<String, Object> systemNode = (HashMap<String, Object>) (docObject
-            .get(systemNodeName));
-
-        String systemStartDate = (String) systemNode.get(systemStartERIName);
-        String systemEndDate = (String) systemNode.get(systemEndERIName);
-        System.out.println("systemStartDate = " + systemStartDate);
-        System.out.println("systemEndDate = " + systemEndDate);
-
-        @SuppressWarnings("unchecked")
-        HashMap<String, Object> validNode = (HashMap<String, Object>) (docObject
-            .get(validNodeName));
-
-        String validStartDate = (String) validNode.get(validStartERIName);
-        String validEndDate = (String) validNode.get(validEndERIName);
-        System.out.println("validStartDate = " + validStartDate);
-        System.out.println("validEndDate = " + validEndDate);
-
-        // assertTrue("Valid start date check failed",
-        // (validStartDate.equals("2008-12-31T23:59:59") &&
-        // validEndDate.equals("2011-12-31T23:59:59")) ||
-        // (validStartDate.equals("2003-01-01T00:00:00") &&
-        // validEndDate.equals("2008-12-31T23:59:59")) ||
-        // (validStartDate.equals("2001-01-01T00:00:00") &&
-        // validEndDate.equals("2003-01-01T00:00:00")));
-      }
-    }
-
-    // BUG. I believe Java API is doing a get instead of a POST that returns all
-    // documents in doc uri collection
-    System.out.println("Number of results using SQB = " + count);
-    assertEquals("Wrong number of results", 1, count);
+    Thread.sleep(2000);
+    
+    validateLSQTQueryData(adminClient);
   }
 
   @Test
@@ -3201,9 +3208,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
       System.out.println(ex.getFailedRequest().getStatusCode());
       System.out.println(ex.getFailedRequest().getMessageCode());
 
-      // BUG: Right now this returns 500 error. Bug is open to fix this
-      // assert(ex.getFailedRequest().getMessageCode().equals("TEMPORAL-SYSTEMTIME-BACKWARDS"));
-      // assert(ex.getFailedRequest().getStatusCode() == 400);
+      assert(ex.getFailedRequest().getStatusCode() == 400);
+      assert(ex.getFailedRequest().getMessageCode().equals("XDMP-NOMATCH"));
     }
 
     assertTrue("Exception not thrown for invalid extension", exceptionThrown);
@@ -3239,7 +3245,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       System.out.println(ex.getFailedRequest().getMessageCode());
 
       // BUG: Right now this returns 500 error. Bug is open to fix this
-      // assert(ex.getFailedRequest().getMessageCode().equals("TEMPORAL-SYSTEMTIME-BACKWARDS"));
+      // assert(ex.getFailedRequest().getMessageCode().equals("XDMP-NOMATCH"));
       // assert(ex.getFailedRequest().getStatusCode() == 400);
     }
 
