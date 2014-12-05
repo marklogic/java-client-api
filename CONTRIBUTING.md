@@ -42,7 +42,7 @@ to what might be causing the problem (line of code or commit)
 
 #### Fill in the CLA
 
-Before we can accept your pull request, you need to sign the [Contributor 
+Before we can accept your pull request, we need you to sign the [Contributor 
 License Agreement](http://developer.marklogic.com/products/cla). 
 
 #### Fork the Java Client API
@@ -113,21 +113,21 @@ run `git shortlog` or `git log --oneline`.
 
 Use `git rebase` (not `git merge`) to sync your work from time to time.
 
-```sh
-$ git fetch upstream
-$ git rebase upstream/dev
-```
-
+    $ git fetch upstream
+    $ git rebase upstream/dev
 
 #### Test your code
 
-*insert testing instructions here*
+Be sure to run the tests before submitting your pull request. PRs with failing 
+tests won't be accepted. 
+
+    $ mvn test-compile
+    $ sh src/test/resources/boot-test.sh
+    $ mvn test
 
 #### Push your changes
 
-```sh
-$ git push origin my-feature-branch
-```
+    $ git push origin my-feature-branch
 
 #### Submit the pull request
 
@@ -144,31 +144,24 @@ That's it! Thank you for your contribution!
 
 #### After your pull request is merged
 
-After your pull request is merged, you can safely delete your branch and pull the changes
-from the main (upstream) repository:
+After your pull request is merged, you can safely delete your branch and pull 
+the changes from the main (upstream) repository:
 
-* Delete the remote branch on GitHub either through the GitHub web UI or your local shell as follows:
+* Delete the remote branch on GitHub either through the GitHub web UI or your 
+local shell as follows:
 
-    ```shell
-    git push origin --delete my-feature-branch
-    ```
+    $ git push origin --delete my-feature-branch
 
 * Check out the dev branch:
 
-    ```shell
-    git checkout dev -f
-    ```
+    $ git checkout dev -f
 
 * Delete the local branch:
 
-    ```shell
-    git branch -D my-feature-branch
-    ```
+    $ git branch -D my-feature-branch
 
 * Update your dev with the latest upstream version:
 
-    ```shell
-    git pull --ff upstream dev
-    ```
+    $ git pull --ff upstream dev
 
 [issue tracker]: https://github.com/marklogic/java-client-api/issues
