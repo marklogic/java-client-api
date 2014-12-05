@@ -638,14 +638,18 @@ public class TestBiTemporal extends BasicJavaClientREST {
     try {
       updateXMLSingleDocument(temporalCollectionName, docId,
           "add-element-xquery-invalid-bitemp-transform");
-    } catch (com.marklogic.client.FailedRequestException ex) {
+    } catch (com.marklogic.client.FailedRequestException ex) {      
+      String message = ex.getFailedRequest().getMessageCode();
+      int statusCode = ex.getFailedRequest().getStatusCode(); 
+
       exceptionThrown = true;
-      System.out.println(ex.getFailedRequest().getStatusCode());
-      System.out.println(ex.getFailedRequest().getMessageCode());
+      
+      System.out.println(message);
+      System.out.println(statusCode);
 
       // BUG: Right now this returns 500 error. Bug is open to fix this
-      // assert(ex.getFailedRequest().getMessageCode().equals("TEMPORAL-SYSTEMTIME-BACKWARDS"));
-      // assert(ex.getFailedRequest().getStatusCode() == 400);
+      // assertTrue("Error Message", message.equals("TEMPORAL-COLLECTIONLATEST"));
+      // assertTrue("Status code", (statusCode == 400));
     }
 
     assertTrue("Exception not thrown for invalid transform", exceptionThrown);
@@ -2480,13 +2484,17 @@ public class TestBiTemporal extends BasicJavaClientREST {
     boolean exceptionThrown = false;
     try {
       insertJSONSingleDocument(temporalCollectionName, jsonDocId, null);
-    } catch (com.marklogic.client.FailedRequestException ex) {
-      exceptionThrown = true;
-      System.out.println(ex.getFailedRequest().getStatusCode());
-      System.out.println(ex.getFailedRequest().getMessageCode());
+    } catch (com.marklogic.client.FailedRequestException ex) {      
+      String message = ex.getFailedRequest().getMessageCode();
+      int statusCode = ex.getFailedRequest().getStatusCode(); 
 
-      assert(ex.getFailedRequest().getStatusCode() == 400);
-      assert(ex.getFailedRequest().getMessageCode().equals("XDMP-NOMATCH"));
+      exceptionThrown = true;
+      
+      System.out.println(message);
+      System.out.println(statusCode);
+
+      assertTrue("Error Message", message.equals("XDMP-NOMATCH"));
+      assertTrue("Status code", (statusCode == 400));
     }
 
     assertTrue("Exception not thrown for invalid extension", exceptionThrown);
@@ -2517,13 +2525,17 @@ public class TestBiTemporal extends BasicJavaClientREST {
     try {
       docMgr.write(jsonDocId, mh, handle, null, null, "invalidCollection");
     } catch (com.marklogic.client.FailedRequestException ex) {
-      exceptionThrown = true;
-      System.out.println(ex.getFailedRequest().getStatusCode());
-      System.out.println(ex.getFailedRequest().getMessageCode());
 
-      // BUG: Right now this returns 500 error. Bug is open to fix this
-      // assert(ex.getFailedRequest().getMessageCode().equals("XDMP-NOMATCH"));
-      // assert(ex.getFailedRequest().getStatusCode() == 400);
+      String message = ex.getFailedRequest().getMessageCode();
+      int statusCode = ex.getFailedRequest().getStatusCode(); 
+
+      exceptionThrown = true;
+      
+      System.out.println(message);
+      System.out.println(statusCode);
+
+      assertTrue("Error Message", message.equals("TEMPORAL-COLLECTIONNOTFOUND"));
+      assertTrue("Status code", (statusCode == 400));      
     }
 
     assertTrue("Exception not thrown for invalid temporal collection",
@@ -2553,15 +2565,19 @@ public class TestBiTemporal extends BasicJavaClientREST {
     try {
       docMgr.write(jsonDocId, mh, handle, null, null, latestCollectionName);
     } catch (com.marklogic.client.FailedRequestException ex) {
-      exceptionThrown = true;
-      System.out.println(ex.getFailedRequest().getStatusCode());
-      System.out.println(ex.getFailedRequest().getMessageCode());
+      String message = ex.getFailedRequest().getMessageCode();
+      int statusCode = ex.getFailedRequest().getStatusCode(); 
 
-      // BUG: Right now this returns 500 error. Bug is open to fix this
-      // assert(ex.getFailedRequest().getMessageCode().equals("TEMPORAL-SYSTEMTIME-BACKWARDS"));
-      // assert(ex.getFailedRequest().getStatusCode() == 400);
+      exceptionThrown = true;
+      
+      System.out.println(message);
+      System.out.println(statusCode);
+
+      assertTrue("Error Message", message.equals("TEMPORAL-COLLECTIONLATEST"));
+      assertTrue("Status code", (statusCode == 400));
     }
 
+    
     assertTrue("Exception not thrown for invalid temporal collection",
         exceptionThrown);
   }
@@ -2590,12 +2606,16 @@ public class TestBiTemporal extends BasicJavaClientREST {
     try {
       docMgr.write(jsonDocId, mh, handle, null, null, temporalCollectionName);
     } catch (com.marklogic.client.ForbiddenUserException ex) {
+      String message = ex.getFailedRequest().getMessageCode();
+      int statusCode = ex.getFailedRequest().getStatusCode(); 
+
       exceptionThrown = true;
-      System.out.println(ex.getFailedRequest().getStatusCode());
-      System.out.println(ex.getFailedRequest().getMessageCode());
       
-      assert(ex.getFailedRequest().getMessageCode().equals("SEC-PRIV"));
-      assert(ex.getFailedRequest().getStatusCode() == 403);
+      System.out.println(message);
+      System.out.println(statusCode);
+
+      assertTrue("Error Message", message.equals("SEC-PRIV"));
+      assertTrue("Status code", (statusCode == 403));
     }
 
     assertTrue("Exception not thrown for invalid temporal collection",
@@ -2633,13 +2653,17 @@ public class TestBiTemporal extends BasicJavaClientREST {
     try {
       docMgr.write(jsonDocId, mh, handle, null, null, jsonDocId);
     } catch (com.marklogic.client.FailedRequestException ex) {
-      exceptionThrown = true;
-      System.out.println(ex.getFailedRequest().getStatusCode());
-      System.out.println(ex.getFailedRequest().getMessageCode());
+      String message = ex.getFailedRequest().getMessageCode();
+      int statusCode = ex.getFailedRequest().getStatusCode(); 
 
-      assert (ex.getFailedRequest().getMessageCode()
-          .equals("TEMPORAL-URIALREADYEXISTS"));
-      assert (ex.getFailedRequest().getStatusCode() == 400);
+      exceptionThrown = true;
+      
+      System.out.println(message);
+      System.out.println(statusCode);
+
+      // BUG: Should be 400 error and TEMPORAL-CANNOT-URI 
+      // assertTrue("Error Message", message.equals("TEMPORAL-URIALREADYEXISTS"));
+      // assertTrue("Status code", (statusCode == 400));
     }
 
     ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
