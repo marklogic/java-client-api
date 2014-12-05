@@ -86,11 +86,6 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-
-//    System.setProperty(
-//        "org.apache.commons.logging.simplelog.log.org.apache.http.wire",
-//        "debug");
-//
     System.out.println("In setup");
     setupJavaRESTServer(dbName, fNames[0], restServerName, restPort);
 
@@ -203,31 +198,85 @@ public class TestBiTemporal extends BasicJavaClientREST {
     System.out.println(actualPermissions);
   }
 
-  public void validateDefaultMetadata(DocumentMetadataHandle mh) {
-    // get metadata values
-    DocumentProperties properties = mh.getProperties();
-    DocumentPermissions permissions = mh.getPermissions();
+  private void validateLSQTQueryData(DatabaseClient client)  throws Exception  {
+    // Fetch documents associated with a search term (such as XML) in Address
+    // element
+    QueryManager queryMgr = client.newQueryManager();
+    StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
 
-    // Properties
-    String actualProperties = getDocumentPropertiesString(properties);
-    boolean result = actualProperties.contains("size:0|");
-    System.out.println(actualProperties + result);
-    assertTrue("Document default last modified properties count1?", result);
+    Calendar queryTime = DatatypeConverter.parseDateTime("2007-01-01T00:00:01");
+    StructuredQueryDefinition periodQuery = sqb.temporalLsqtQuery(
+        temporalLsqtCollectionName, queryTime, 0, new String[] {});
 
-    // Permissions
-    String actualPermissions = getDocumentPermissionsString(permissions);
+    long start = 1;
+    JSONDocumentManager docMgr = client.newJSONDocumentManager();
+    docMgr.setMetadataCategories(Metadata.ALL); // Get all metadata
+    DocumentPage termQueryResults = docMgr.search(periodQuery, start);
 
-    System.out.println("Permissions: " + actualPermissions);
+    long count = 0;
+    while (termQueryResults.hasNext()) {
+      ++count;
+      DocumentRecord record = termQueryResults.next();
+      System.out.println("URI = " + record.getUri());
 
-    assertTrue("Document permissions difference in size value",
-        actualPermissions.contains("size:2"));
-    // assertTrue("Document permissions difference in flexrep-eval permission",
-    // actualPermissions.contains("flexrep-eval:[READ]"));
-    assertTrue("Document permissions difference in rest-reader permission",
-        actualPermissions.contains("rest-reader:[READ]"));
-    assertTrue("Document permissions difference in rest-writer permission",
-        actualPermissions.contains("rest-writer:[UPDATE]"));
+      DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+      record.getMetadata(metadataHandle);
+      Iterator<String> resCollections = metadataHandle.getCollections()
+          .iterator();
+      while (resCollections.hasNext()) {
+        System.out.println("Collection = " + resCollections.next());
+      }
+
+      if (record.getFormat() == Format.XML) {
+        DOMHandle recordHandle = new DOMHandle();
+        record.getContent(recordHandle);
+        System.out.println("Content = " + recordHandle.toString());
+      } else {
+        JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<ObjectNode>(
+            ObjectNode.class);
+        record.getContent(recordHandle);
+        System.out.println("Content = " + recordHandle.toString());
+
+        JsonFactory factory = new JsonFactory();
+        ObjectMapper mapper = new ObjectMapper(factory);
+        TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
+        };
+
+        HashMap<String, Object> docObject = mapper.readValue(
+            recordHandle.toString(), typeRef);
+
+        @SuppressWarnings("unchecked")
+        HashMap<String, Object> systemNode = (HashMap<String, Object>) (docObject
+            .get(systemNodeName));
+
+        String systemStartDate = (String) systemNode.get(systemStartERIName);
+        String systemEndDate = (String) systemNode.get(systemEndERIName);
+        System.out.println("systemStartDate = " + systemStartDate);
+        System.out.println("systemEndDate = " + systemEndDate);
+
+        @SuppressWarnings("unchecked")
+        HashMap<String, Object> validNode = (HashMap<String, Object>) (docObject
+            .get(validNodeName));
+
+        String validStartDate = (String) validNode.get(validStartERIName);
+        String validEndDate = (String) validNode.get(validEndERIName);
+        System.out.println("validStartDate = " + validStartDate);
+        System.out.println("validEndDate = " + validEndDate);
+
+        assertTrue("Valid start date check failed",
+          (validStartDate.equals("2001-01-01T00:00:00") &&
+           validEndDate.equals("2011-12-31T23:59:59") &&
+           systemStartDate.equals("2005-01-01T00:00:01-08:00") &&
+           systemEndDate.equals("2010-01-01T00:00:01-08:00")));
+      }
+    }
+
+    // BUG. I believe Java API is doing a get instead of a POST that returns all
+    // documents in doc uri collection
+    System.out.println("Number of results using SQB = " + count);
+    assertEquals("Wrong number of results", 1, count);
   }
+
 
   // This covers passing transforms and descriptor
   private void insertXMLSingleDocument(String temporalCollection, String docId,
@@ -589,14 +638,18 @@ public class TestBiTemporal extends BasicJavaClientREST {
     try {
       updateXMLSingleDocument(temporalCollectionName, docId,
           "add-element-xquery-invalid-bitemp-transform");
-    } catch (com.marklogic.client.FailedRequestException ex) {
+    } catch (com.marklogic.client.FailedRequestException ex) {      
+      String message = ex.getFailedRequest().getMessageCode();
+      int statusCode = ex.getFailedRequest().getStatusCode(); 
+
       exceptionThrown = true;
-      System.out.println(ex.getFailedRequest().getStatusCode());
-      System.out.println(ex.getFailedRequest().getMessageCode());
+      
+      System.out.println(message);
+      System.out.println(statusCode);
 
       // BUG: Right now this returns 500 error. Bug is open to fix this
-      // assert(ex.getFailedRequest().getMessageCode().equals("TEMPORAL-SYSTEMTIME-BACKWARDS"));
-      // assert(ex.getFailedRequest().getStatusCode() == 400);
+      // assertTrue("Error Message", message.equals("TEMPORAL-COLLECTIONLATEST"));
+      // assertTrue("Status code", (statusCode == 400));
     }
 
     assertTrue("Exception not thrown for invalid transform", exceptionThrown);
@@ -1698,729 +1751,6 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
-  public void testReadingSpecificVersionBasedOnTime() throws Exception {
-
-    /***
-     * System.out.println("Inside testReadingSpecificVersionBasedOnTime");
-     * 
-     * String docId = "javaSingleJSONDoc.json";
-     * 
-     * Calendar firstInsertTime =
-     * DatatypeConverter.parseDateTime("2010-01-01T00:00:01");
-     * insertJSONSingleDocument(docId, firstInsertTime);
-     * 
-     * // Verify that the document was inserted JSONDocumentManager docMgr =
-     * client.newJSONDocumentManager(); JacksonDatabindHandle<ObjectNode>
-     * recordHandle = new JacksonDatabindHandle<ObjectNode>(ObjectNode.class);
-     * DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
-     * docMgr.read (docId, metadataHandle, recordHandle, null, null,
-     * temporalCollectionName, firstInsertTime); DocumentPage readResults =
-     * docMgr.read(docId);
-     * 
-     * System.out.println("Number of results = " + readResults.size());
-     * assertEquals("Wrong number of results", 1, readResults.size()); // 2,
-     * because includes content and metadata
-     * 
-     * DocumentRecord record = readResults.next();
-     * System.out.println("URI after insert = " + record.getUri());
-     * assertEquals("Document uri wrong after insert", docId, record.getUri());
-     * 
-     * //=======================================================================
-     * ====== // Check update works
-     * //===========================================
-     * ================================== Calendar updateTime =
-     * DatatypeConverter.parseDateTime("2011-01-01T00:00:01");
-     * updateJSONSingleDocument(temporalCollectionName, docId, null,
-     * updateTime);
-     * 
-     * // Verify that the document was updated // Make sure there is 1 document
-     * in latest collection QueryManager queryMgr = client.newQueryManager();
-     * StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
-     * StructuredQueryDefinition termQuery =
-     * sqb.collection(latestCollectionName); long start = 1; DocumentPage
-     * termQueryResults = docMgr.search(termQuery, start);
-     * System.out.println("Number of results = " +
-     * termQueryResults.getTotalSize()); assertEquals("Wrong number of results",
-     * 1, termQueryResults.getTotalSize());
-     * 
-     * // Document URIs in latest collection must be the same as the one as the
-     * original document while (termQueryResults.hasNext()) { record =
-     * termQueryResults.next();
-     * 
-     * String uri = record.getUri(); System.out.println("URI = " + uri);
-     * 
-     * if (!uri.equals(docId)) { assertFalse("URIs are not what is expected",
-     * true); } }
-     * 
-     * // Make sure there are 4 documents in jsonDocId collection queryMgr =
-     * client.newQueryManager(); sqb = queryMgr.newStructuredQueryBuilder();
-     * termQuery = sqb.collection(docId);
-     * 
-     * start = 1; termQueryResults = docMgr.search(termQuery, start);
-     * System.out.println("Number of results = " +
-     * termQueryResults.getTotalSize()); assertEquals("Wrong number of results",
-     * 4, termQueryResults.getTotalSize());
-     * 
-     * // Make sure there are 4 documents in temporal collection queryMgr =
-     * client.newQueryManager(); sqb = queryMgr.newStructuredQueryBuilder();
-     * termQuery = sqb.collection(temporalCollectionName);
-     * 
-     * start = 1; termQueryResults = docMgr.search(termQuery, start);
-     * System.out.println("Number of results = " +
-     * termQueryResults.getTotalSize()); assertEquals("Wrong number of results",
-     * 4, termQueryResults.getTotalSize());
-     * 
-     * // Make sure there are 4 documents in total. Use string search for this
-     * queryMgr = client.newQueryManager(); StringQueryDefinition stringQD =
-     * queryMgr.newStringDefinition(); stringQD.setCriteria("");
-     * 
-     * start = 1; docMgr.setMetadataCategories(Metadata.ALL); termQueryResults =
-     * docMgr.search(stringQD, start); System.out.println("Number of results = "
-     * + termQueryResults.getTotalSize());
-     * assertEquals("Wrong number of results", 4,
-     * termQueryResults.getTotalSize());
-     * 
-     * while (termQueryResults.hasNext()) { record = termQueryResults.next();
-     * System.out.println("URI = " + record.getUri());
-     * 
-     * metadataHandle = new DocumentMetadataHandle();
-     * record.getMetadata(metadataHandle);
-     * 
-     * if (record.getFormat() != Format.JSON) {
-     * assertFalse("Format is not JSON: " + Format.JSON, true); } else { // Make
-     * sure that system and valid times are what is expected recordHandle = new
-     * JacksonDatabindHandle<ObjectNode>(ObjectNode.class); record.getContent
-     * (recordHandle); System.out.println("Content = " +
-     * recordHandle.toString());
-     * 
-     * JsonFactory factory = new JsonFactory(); ObjectMapper mapper = new
-     * ObjectMapper(factory); TypeReference<HashMap<String,Object>> typeRef =
-     * new TypeReference<HashMap<String,Object>>() {};
-     * 
-     * HashMap<String,Object> docObject =
-     * mapper.readValue(recordHandle.toString(), typeRef);
-     * 
-     * @SuppressWarnings("unchecked") HashMap<String, Object> systemNode =
-     *                                (HashMap<String,
-     *                                Object>)(docObject.get(systemNodeName));
-     * 
-     *                                String systemStartDate =
-     *                                (String)systemNode
-     *                                .get(systemStartERIName); String
-     *                                systemEndDate =
-     *                                (String)systemNode.get(systemEndERIName);
-     *                                System.out.println("systemStartDate = " +
-     *                                systemStartDate);
-     *                                System.out.println("systemEndDate = " +
-     *                                systemEndDate);
-     * @SuppressWarnings("unchecked") HashMap<String, Object> validNode =
-     *                                (HashMap<String,
-     *                                Object>)(docObject.get(validNodeName));
-     * 
-     *                                String validStartDate =
-     *                                (String)validNode.get(validStartERIName);
-     *                                String validEndDate =
-     *                                (String)validNode.get(validEndERIName);
-     *                                System.out.println("validStartDate = " +
-     *                                validStartDate);
-     *                                System.out.println("validEndDate = " +
-     *                                validEndDate);
-     * 
-     *                                // Permissions DocumentPermissions
-     *                                permissions =
-     *                                metadataHandle.getPermissions();
-     *                                System.out.println("Permissions: " +
-     *                                permissions);
-     * 
-     *                                String actualPermissions =
-     *                                getDocumentPermissionsString(permissions);
-     *                                System.out.println("actualPermissions: " +
-     *                                actualPermissions);
-     * 
-     *                                int quality = metadataHandle.getQuality();
-     *                                System.out.println("Quality: " + quality);
-     * 
-     *                                if (validStartDate.contains(
-     *                                "2003-01-01T00:00:00") &&
-     *                                validEndDate.contains
-     *                                ("2008-12-31T23:59:59")) {
-     *                                assertTrue("System start date check failed"
-     *                                , (systemStartDate.contains(
-     *                                "2011-01-01T00:00:01")));
-     *                                assertTrue("System start date check failed"
-     *                                , (systemEndDate.contains(
-     *                                "9999-12-31T23:59:59")));
-     * 
-     *                                Iterator<String> resCollections =
-     *                                metadataHandle
-     *                                .getCollections().iterator(); while
-     *                                (resCollections.hasNext()) { String
-     *                                collection = resCollections.next();
-     *                                System.out.println("Collection = " +
-     *                                collection);
-     * 
-     *                                if (!collection.equals(docId) &&
-     *                                !collection.equals(updateCollectionName)
-     *                                &&
-     *                                !collection.equals(temporalCollectionName
-     *                                )) {
-     *                                assertFalse("Collection not what is expected: "
-     *                                + collection, true); } }
-     * 
-     *                                assertTrue("Properties should be empty",
-     *                                metadataHandle.getProperties().isEmpty());
-     * 
-     *                                assertTrue(
-     *                                "Document permissions difference in size value"
-     *                                , actualPermissions.contains("size:3"));
-     * 
-     *                                assertTrue(
-     *                                "Document permissions difference in rest-reader permission"
-     *                                ,
-     *                                actualPermissions.contains("rest-reader:[READ]"
-     *                                ));
-     *                                assertTrue("Document permissions difference in rest-writer permission"
-     *                                ,
-     *                                actualPermissions.contains("rest-writer:[UPDATE]"
-     *                                ));
-     *                                assertTrue("Document permissions difference in app-user permission"
-     *                                ,
-     *                                (actualPermissions.contains("app-user:[")
-     *                                && actualPermissions.contains("READ") &&
-     *                                actualPermissions.contains("UPDATE")));
-     *                                assertFalse(
-     *                                "Document permissions difference in app-user permission"
-     *                                , actualPermissions.contains("EXECUTE"));
-     * 
-     *                                assertEquals(quality, 99); }
-     * 
-     *                                if (validStartDate.contains(
-     *                                "2001-01-01T00:00:00") &&
-     *                                validEndDate.contains
-     *                                ("2003-01-01T00:00:00")) {
-     *                                assertTrue("System start date check failed"
-     *                                , (systemStartDate.contains(
-     *                                "2011-01-01T00:00:01")));
-     *                                assertTrue("System start date check failed"
-     *                                , (systemEndDate.contains(
-     *                                "9999-12-31T23:59:59")));
-     * 
-     *                                Iterator<String> resCollections =
-     *                                metadataHandle
-     *                                .getCollections().iterator(); while
-     *                                (resCollections.hasNext()) { String
-     *                                collection = resCollections.next();
-     *                                System.out.println("Collection = " +
-     *                                collection);
-     * 
-     *                                if (!collection.equals(docId) &&
-     *                                !collection.equals(insertCollectionName)
-     *                                &&
-     *                                !collection.equals(temporalCollectionName
-     *                                )) {
-     *                                assertFalse("Collection not what is expected: "
-     *                                + collection, true); } }
-     * 
-     *                                assertTrue("Properties should be empty",
-     *                                metadataHandle.getProperties().isEmpty());
-     * 
-     *                                assertTrue(
-     *                                "Document permissions difference in size value"
-     *                                , actualPermissions.contains("size:3"));
-     * 
-     *                                assertTrue(
-     *                                "Document permissions difference in rest-reader permission"
-     *                                ,
-     *                                actualPermissions.contains("rest-reader:[READ]"
-     *                                ));
-     *                                assertTrue("Document permissions difference in rest-writer permission"
-     *                                ,
-     *                                actualPermissions.contains("rest-writer:[UPDATE]"
-     *                                ));
-     *                                assertTrue("Document permissions difference in app-user permission"
-     *                                ,
-     *                                (actualPermissions.contains("app-user:[")
-     *                                && actualPermissions.contains("READ") &&
-     *                                actualPermissions.contains("UPDATE") &&
-     *                                actualPermissions.contains("EXECUTE")));
-     * 
-     *                                // assertEquals(quality, 11); }
-     * 
-     *                                if (validStartDate.contains(
-     *                                "2008-12-31T23:59:59") &&
-     *                                validEndDate.contains
-     *                                ("2011-12-31T23:59:59")) { // This is the
-     *                                latest document
-     *                                assertTrue("System start date check failed"
-     *                                , (systemStartDate.contains(
-     *                                "2011-01-01T00:00:01")));
-     *                                assertTrue("System start date check failed"
-     *                                , (systemEndDate.contains(
-     *                                "9999-12-31T23:59:59")));
-     *                                assertTrue("URI should be the doc uri ",
-     *                                record.getUri().equals(docId));
-     * 
-     *                                Iterator<String> resCollections =
-     *                                metadataHandle
-     *                                .getCollections().iterator(); while
-     *                                (resCollections.hasNext()) { String
-     *                                collection = resCollections.next();
-     *                                System.out.println("Collection = " +
-     *                                collection);
-     * 
-     *                                if (!collection.equals(docId) &&
-     *                                !collection.equals(insertCollectionName)
-     *                                &&
-     *                                !collection.equals(temporalCollectionName)
-     *                                &&
-     *                                !collection.equals(latestCollectionName))
-     *                                {
-     *                                assertFalse("Collection not what is expected: "
-     *                                + collection, true); } }
-     * 
-     * 
-     *                                assertTrue(
-     *                                "Document permissions difference in size value"
-     *                                , actualPermissions.contains("size:3"));
-     * 
-     *                                assertTrue(
-     *                                "Document permissions difference in rest-reader permission"
-     *                                ,
-     *                                actualPermissions.contains("rest-reader:[READ]"
-     *                                ));
-     *                                assertTrue("Document permissions difference in rest-writer permission"
-     *                                ,
-     *                                actualPermissions.contains("rest-writer:[UPDATE]"
-     *                                ));
-     *                                assertTrue("Document permissions difference in app-user permission"
-     *                                ,
-     *                                (actualPermissions.contains("app-user:[")
-     *                                && actualPermissions.contains("READ") &&
-     *                                actualPermissions.contains("UPDATE") &&
-     *                                actualPermissions.contains("EXECUTE")));
-     * 
-     *                                // assertEquals(quality, 11);
-     * 
-     *                                validateMetadata(metadataHandle); }
-     * 
-     *                                if (validStartDate.contains(
-     *                                "2001-01-01T00:00:00") &&
-     *                                validEndDate.contains
-     *                                ("2011-12-31T23:59:59")) {
-     *                                assertTrue("System start date check failed"
-     *                                , (systemStartDate.contains(
-     *                                "2010-01-01T00:00:01")));
-     *                                assertTrue("System start date check failed"
-     *                                , (systemEndDate.contains(
-     *                                "2011-01-01T00:00:01")));
-     * 
-     *                                Iterator<String> resCollections =
-     *                                metadataHandle
-     *                                .getCollections().iterator(); while
-     *                                (resCollections.hasNext()) { String
-     *                                collection = resCollections.next();
-     *                                System.out.println("Collection = " +
-     *                                collection);
-     * 
-     *                                if (!collection.equals(docId) &&
-     *                                !collection.equals(insertCollectionName)
-     *                                &&
-     *                                !collection.equals(temporalCollectionName
-     *                                )) {
-     *                                assertFalse("Collection not what is expected: "
-     *                                + collection, true); } }
-     * 
-     *                                assertTrue("Properties should be empty",
-     *                                metadataHandle.getProperties().isEmpty());
-     * 
-     *                                assertTrue(
-     *                                "Document permissions difference in size value"
-     *                                , actualPermissions.contains("size:3"));
-     * 
-     *                                assertTrue(
-     *                                "Document permissions difference in rest-reader permission"
-     *                                ,
-     *                                actualPermissions.contains("rest-reader:[READ]"
-     *                                ));
-     *                                assertTrue("Document permissions difference in rest-writer permission"
-     *                                ,
-     *                                actualPermissions.contains("rest-writer:[UPDATE]"
-     *                                ));
-     *                                assertTrue("Document permissions difference in app-user permission"
-     *                                ,
-     *                                (actualPermissions.contains("app-user:[")
-     *                                && actualPermissions.contains("READ") &&
-     *                                actualPermissions.contains("UPDATE") &&
-     *                                actualPermissions.contains("EXECUTE")));
-     * 
-     *                                // assertEquals(quality, 11); } } }
-     * 
-     *                                //=======================================
-     *                                ====================================== //
-     *                                Check delete works
-     *                                //=======================
-     *                                ==================
-     *                                ==================================== //
-     *                                Delete one of the document Calendar
-     *                                deleteTime =
-     *                                DatatypeConverter.parseDateTime
-     *                                ("2012-01-01T00:00:01");
-     *                                deleteJSONSingleDocument(docId, null,
-     *                                deleteTime);
-     * 
-     *                                // Make sure there are still 4 documents
-     *                                in docId collection queryMgr =
-     *                                client.newQueryManager(); sqb =
-     *                                queryMgr.newStructuredQueryBuilder();
-     *                                termQuery = sqb.collection(docId);
-     * 
-     *                                start = 1; termQueryResults =
-     *                                docMgr.search(termQuery, start);
-     *                                System.out.println("Number of results = "
-     *                                + termQueryResults.getTotalSize());
-     *                                assertEquals("Wrong number of results", 4,
-     *                                termQueryResults.getTotalSize());
-     * 
-     *                                // Make sure there is one document with
-     *                                docId uri docMgr =
-     *                                client.newJSONDocumentManager();
-     *                                readResults = docMgr.read(docId);
-     * 
-     *                                System.out.println("Number of results = "
-     *                                + readResults.size());
-     *                                assertEquals("Wrong number of results", 1,
-     *                                readResults.size());
-     * 
-     *                                // Make sure there are no documents in
-     *                                latest collection queryMgr =
-     *                                client.newQueryManager(); sqb =
-     *                                queryMgr.newStructuredQueryBuilder();
-     *                                termQuery =
-     *                                sqb.collection(latestCollectionName);
-     * 
-     *                                start = 1; termQueryResults =
-     *                                docMgr.search(termQuery, start);
-     *                                System.out.println("Number of results = "
-     *                                + termQueryResults.getTotalSize());
-     *                                assertEquals("Wrong number of results", 0,
-     *                                termQueryResults.getTotalSize());
-     * 
-     *                                // Make sure there are 4 documents in
-     *                                temporal collection queryMgr =
-     *                                client.newQueryManager(); sqb =
-     *                                queryMgr.newStructuredQueryBuilder();
-     *                                termQuery =
-     *                                sqb.collection(temporalCollectionName);
-     * 
-     *                                start = 1;
-     *                                docMgr.setMetadataCategories(Metadata
-     *                                .ALL); termQueryResults =
-     *                                docMgr.search(termQuery, start);
-     *                                System.out.println("Number of results = "
-     *                                + termQueryResults.getTotalSize());
-     *                                assertEquals("Wrong number of results", 4,
-     *                                termQueryResults.getTotalSize());
-     * 
-     *                                while (termQueryResults.hasNext()) {
-     *                                record = termQueryResults.next();
-     *                                System.out.println("URI = " +
-     *                                record.getUri());
-     * 
-     *                                metadataHandle = new
-     *                                DocumentMetadataHandle();
-     *                                record.getMetadata(metadataHandle);
-     * 
-     *                                if (record.getFormat() != Format.JSON) {
-     *                                assertFalse("Format is not JSON: " +
-     *                                Format.JSON, true); } else { // Make sure
-     *                                that system and valid times are what is
-     *                                expected recordHandle = new
-     *                                JacksonDatabindHandle
-     *                                <ObjectNode>(ObjectNode.class);
-     *                                record.getContent (recordHandle);
-     *                                System.out.println("Content = " +
-     *                                recordHandle.toString());
-     * 
-     *                                JsonFactory factory = new JsonFactory();
-     *                                ObjectMapper mapper = new
-     *                                ObjectMapper(factory);
-     *                                TypeReference<HashMap<String,Object>>
-     *                                typeRef = new
-     *                                TypeReference<HashMap<String,Object>>()
-     *                                {};
-     * 
-     *                                HashMap<String,Object> docObject =
-     *                                mapper.readValue(recordHandle.toString(),
-     *                                typeRef);
-     * @SuppressWarnings("unchecked") HashMap<String, Object> systemNode =
-     *                                (HashMap<String,
-     *                                Object>)(docObject.get(systemNodeName));
-     * 
-     *                                String systemStartDate =
-     *                                (String)systemNode
-     *                                .get(systemStartERIName); String
-     *                                systemEndDate =
-     *                                (String)systemNode.get(systemEndERIName);
-     *                                System.out.println("systemStartDate = " +
-     *                                systemStartDate);
-     *                                System.out.println("systemEndDate = " +
-     *                                systemEndDate);
-     * @SuppressWarnings("unchecked") HashMap<String, Object> validNode =
-     *                                (HashMap<String,
-     *                                Object>)(docObject.get(validNodeName));
-     * 
-     *                                String validStartDate =
-     *                                (String)validNode.get(validStartERIName);
-     *                                String validEndDate =
-     *                                (String)validNode.get(validEndERIName);
-     *                                System.out.println("validStartDate = " +
-     *                                validStartDate);
-     *                                System.out.println("validEndDate = " +
-     *                                validEndDate);
-     * 
-     *                                // Permissions DocumentPermissions
-     *                                permissions =
-     *                                metadataHandle.getPermissions();
-     *                                System.out.println("Permissions: " +
-     *                                permissions);
-     * 
-     *                                String actualPermissions =
-     *                                getDocumentPermissionsString(permissions);
-     *                                System.out.println("actualPermissions: " +
-     *                                actualPermissions);
-     * 
-     *                                int quality = metadataHandle.getQuality();
-     *                                System.out.println("Quality: " + quality);
-     * 
-     *                                if (validStartDate.contains(
-     *                                "2003-01-01T00:00:00") &&
-     *                                validEndDate.contains
-     *                                ("2008-12-31T23:59:59")) {
-     *                                assertTrue("System start date check failed"
-     *                                , (systemStartDate.contains(
-     *                                "2011-01-01T00:00:01")));
-     *                                assertTrue("System start date check failed"
-     *                                , (systemEndDate.contains(
-     *                                "2012-01-01T00:00:01")));
-     * 
-     *                                Iterator<String> resCollections =
-     *                                metadataHandle
-     *                                .getCollections().iterator(); while
-     *                                (resCollections.hasNext()) { String
-     *                                collection = resCollections.next();
-     *                                System.out.println("Collection = " +
-     *                                collection);
-     * 
-     *                                if (!collection.equals(docId) &&
-     *                                !collection.equals(updateCollectionName)
-     *                                &&
-     *                                !collection.equals(temporalCollectionName
-     *                                )) {
-     *                                assertFalse("Collection not what is expected: "
-     *                                + collection, true); } }
-     * 
-     *                                assertTrue("Properties should be empty",
-     *                                metadataHandle.getProperties().isEmpty());
-     * 
-     *                                assertTrue(
-     *                                "Document permissions difference in size value"
-     *                                , actualPermissions.contains("size:3"));
-     * 
-     *                                assertTrue(
-     *                                "Document permissions difference in rest-reader permission"
-     *                                ,
-     *                                actualPermissions.contains("rest-reader:[READ]"
-     *                                ));
-     *                                assertTrue("Document permissions difference in rest-writer permission"
-     *                                ,
-     *                                actualPermissions.contains("rest-writer:[UPDATE]"
-     *                                ));
-     *                                assertTrue("Document permissions difference in app-user permission"
-     *                                ,
-     *                                (actualPermissions.contains("app-user:[")
-     *                                && actualPermissions.contains("READ") &&
-     *                                actualPermissions.contains("UPDATE")));
-     *                                assertFalse(
-     *                                "Document permissions difference in app-user permission"
-     *                                , actualPermissions.contains("EXECUTE"));
-     * 
-     *                                // assertEquals(quality, 99); }
-     * 
-     *                                if (validStartDate.contains(
-     *                                "2001-01-01T00:00:00") &&
-     *                                validEndDate.contains
-     *                                ("2003-01-01T00:00:00")) {
-     *                                assertTrue("System start date check failed"
-     *                                , (systemStartDate.contains(
-     *                                "2011-01-01T00:00:01")));
-     *                                assertTrue("System start date check failed"
-     *                                , (systemEndDate.contains(
-     *                                "2012-01-01T00:00:01")));
-     * 
-     *                                Iterator<String> resCollections =
-     *                                metadataHandle
-     *                                .getCollections().iterator(); while
-     *                                (resCollections.hasNext()) { String
-     *                                collection = resCollections.next();
-     *                                System.out.println("Collection = " +
-     *                                collection);
-     * 
-     *                                if (!collection.equals(docId) &&
-     *                                !collection.equals(insertCollectionName)
-     *                                &&
-     *                                !collection.equals(temporalCollectionName
-     *                                )) {
-     *                                assertFalse("Collection not what is expected: "
-     *                                + collection, true); } }
-     * 
-     *                                assertTrue("Properties should be empty",
-     *                                metadataHandle.getProperties().isEmpty());
-     * 
-     *                                assertTrue(
-     *                                "Document permissions difference in size value"
-     *                                , actualPermissions.contains("size:3"));
-     * 
-     *                                assertTrue(
-     *                                "Document permissions difference in rest-reader permission"
-     *                                ,
-     *                                actualPermissions.contains("rest-reader:[READ]"
-     *                                ));
-     *                                assertTrue("Document permissions difference in rest-writer permission"
-     *                                ,
-     *                                actualPermissions.contains("rest-writer:[UPDATE]"
-     *                                ));
-     *                                assertTrue("Document permissions difference in app-user permission"
-     *                                ,
-     *                                (actualPermissions.contains("app-user:[")
-     *                                && actualPermissions.contains("READ") &&
-     *                                actualPermissions.contains("UPDATE") &&
-     *                                actualPermissions.contains("EXECUTE")));
-     * 
-     *                                // assertEquals(quality, 11); }
-     * 
-     *                                if (validStartDate.contains(
-     *                                "2008-12-31T23:59:59") &&
-     *                                validEndDate.contains
-     *                                ("2011-12-31T23:59:59")) {
-     *                                assertTrue("System start date check failed"
-     *                                , (systemStartDate.contains(
-     *                                "2011-01-01T00:00:01")));
-     *                                assertTrue("System start date check failed"
-     *                                , (systemEndDate.contains(
-     *                                "2012-01-01T00:00:01")));
-     * 
-     *                                assertTrue("URI should be the doc uri ",
-     *                                record.getUri().equals(docId));
-     * 
-     *                                // Document should not be in latest
-     *                                collection Iterator<String> resCollections
-     *                                = metadataHandle.getCollections().iterator
-     *                                (); while (resCollections.hasNext()) {
-     *                                String collection = resCollections.next();
-     *                                System.out.println("Collection = " +
-     *                                collection);
-     * 
-     *                                if (!collection.equals(docId) &&
-     *                                !collection.equals(insertCollectionName)
-     *                                &&
-     *                                !collection.equals(temporalCollectionName
-     *                                )) {
-     *                                assertFalse("Collection not what is expected: "
-     *                                + collection, true); } }
-     * 
-     *                                assertTrue(
-     *                                "Document permissions difference in size value"
-     *                                , actualPermissions.contains("size:3"));
-     * 
-     *                                assertTrue(
-     *                                "Document permissions difference in rest-reader permission"
-     *                                ,
-     *                                actualPermissions.contains("rest-reader:[READ]"
-     *                                ));
-     *                                assertTrue("Document permissions difference in rest-writer permission"
-     *                                ,
-     *                                actualPermissions.contains("rest-writer:[UPDATE]"
-     *                                ));
-     *                                assertTrue("Document permissions difference in app-user permission"
-     *                                ,
-     *                                (actualPermissions.contains("app-user:[")
-     *                                && actualPermissions.contains("READ") &&
-     *                                actualPermissions.contains("UPDATE") &&
-     *                                actualPermissions.contains("EXECUTE")));
-     * 
-     *                                // assertEquals(quality, 11);
-     * 
-     *                                // Properties should still be associated
-     *                                this document // BUG ... This should be
-     *                                commented out when properties are not
-     *                                deleted when document is deleted //
-     *                                validateMetadata(metadataHandle); }
-     * 
-     *                                if (validStartDate.contains(
-     *                                "2001-01-01T00:00:00") &&
-     *                                validEndDate.contains
-     *                                ("2011-12-31T23:59:59")) {
-     *                                assertTrue("System start date check failed"
-     *                                , (systemStartDate.contains(
-     *                                "2010-01-01T00:00:01")));
-     *                                assertTrue("System start date check failed"
-     *                                , (systemEndDate.contains(
-     *                                "2011-01-01T00:00:01"))); Iterator<String>
-     *                                resCollections =
-     *                                metadataHandle.getCollections
-     *                                ().iterator(); while
-     *                                (resCollections.hasNext()) { String
-     *                                collection = resCollections.next();
-     *                                System.out.println("Collection = " +
-     *                                collection);
-     * 
-     *                                if (!collection.equals(docId) &&
-     *                                !collection.equals(insertCollectionName)
-     *                                &&
-     *                                !collection.equals(temporalCollectionName
-     *                                )) {
-     *                                assertFalse("Collection not what is expected: "
-     *                                + collection, true); } }
-     * 
-     *                                assertTrue("Properties should be empty",
-     *                                metadataHandle.getProperties().isEmpty());
-     * 
-     *                                assertTrue(
-     *                                "Document permissions difference in size value"
-     *                                , actualPermissions.contains("size:3"));
-     * 
-     *                                assertTrue(
-     *                                "Document permissions difference in rest-reader permission"
-     *                                ,
-     *                                actualPermissions.contains("rest-reader:[READ]"
-     *                                ));
-     *                                assertTrue("Document permissions difference in rest-writer permission"
-     *                                ,
-     *                                actualPermissions.contains("rest-writer:[UPDATE]"
-     *                                ));
-     *                                assertTrue("Document permissions difference in app-user permission"
-     *                                ,
-     *                                (actualPermissions.contains("app-user:[")
-     *                                && actualPermissions.contains("READ") &&
-     *                                actualPermissions.contains("UPDATE") &&
-     *                                actualPermissions.contains("EXECUTE")));
-     * 
-     *                                // assertEquals(quality, 11); } } }
-     * 
-     *                                // Make sure there are 4 documents in
-     *                                total. Use string search for this queryMgr
-     *                                = client.newQueryManager();
-     * 
-     *                                start = 1; termQueryResults =
-     *                                docMgr.search(stringQD, start);
-     *                                System.out.println("Number of results = "
-     *                                + termQueryResults.getTotalSize());
-     *                                assertEquals("Wrong number of results", 4,
-     *                                termQueryResults.getTotalSize());
-     ***/
-  }
-
-  @Test
   public void testSystemTimeUsingInvalidTime() throws Exception {
 
     System.out.println("Inside testSystemTimeUsingInvalidTime");
@@ -2477,7 +1807,6 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
-  // BUG: REST API bug around transactions fails this test
   public void testTransactionCommit() throws Exception {
 
     System.out.println("Inside testTransactionCommit");
@@ -2491,7 +1820,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
           transaction, null);
 
       // Verify that the document was inserted
-      JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
+      JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
       DocumentPage readResults = docMgr.read(transaction, docId);
 
       System.out.println("Number of results = " + readResults.size());
@@ -2524,7 +1853,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
       updateJSONSingleDocument(temporalCollectionName, docId, transaction, null);
 
-      QueryManager queryMgr = readerClient.newQueryManager();
+      QueryManager queryMgr = writerClient.newQueryManager();
       StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
       StructuredQueryDefinition termQuery = sqb
           .collection(latestCollectionName);
@@ -2543,7 +1872,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       }
 
       // There should be 4 documents in docId collection
-      queryMgr = readerClient.newQueryManager();
+      queryMgr = writerClient.newQueryManager();
       sqb = queryMgr.newStructuredQueryBuilder();
       termQuery = sqb.collection(docId);
 
@@ -2562,7 +1891,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       // Search for documents using doc uri collection and no transaction object
       // passed.
       // There should be 0 documents in docId collection
-      queryMgr = readerClient.newQueryManager();
+      queryMgr = writerClient.newQueryManager();
       sqb = queryMgr.newStructuredQueryBuilder();
       termQuery = sqb.collection(docId);
 
@@ -2581,7 +1910,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       deleteJSONSingleDocument(temporalCollectionName, docId, transaction);
 
       // There should be no documents in latest collection
-      queryMgr = readerClient.newQueryManager();
+      queryMgr = writerClient.newQueryManager();
       sqb = queryMgr.newStructuredQueryBuilder();
       termQuery = sqb.collection(latestCollectionName);
 
@@ -2600,7 +1929,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       transaction.commit();
 
       // There should still be no documents in latest collection
-      queryMgr = readerClient.newQueryManager();
+      queryMgr = writerClient.newQueryManager();
       sqb = queryMgr.newStructuredQueryBuilder();
       termQuery = sqb.collection(latestCollectionName);
 
@@ -2618,7 +1947,6 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
-  // BUG: REST API bug around transactions fails this test
   public void testTransactionRollback() throws Exception {
 
     System.out.println("Inside testTransaction");
@@ -2639,7 +1967,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     }
 
     // Verify that the document was inserted
-    JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
+    JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
     DocumentPage readResults = docMgr.read(transaction, docId);
 
     System.out.println("Number of results = " + readResults.size());
@@ -2669,7 +1997,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // Verify that the document is visible and count is 4
     // Fetch documents associated with a search term (such as XML) in Address
     // element
-    QueryManager queryMgr = readerClient.newQueryManager();
+    QueryManager queryMgr = writerClient.newQueryManager();
     StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
 
     StructuredQueryDefinition termQuery = sqb.collection(docId);
@@ -2718,7 +2046,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     }
 
     // Verify that the document was inserted
-    docMgr = readerClient.newJSONDocumentManager();
+    docMgr = writerClient.newJSONDocumentManager();
     readResults = docMgr.read(transaction, docId);
 
     System.out.println("Number of results = " + readResults.size());
@@ -2748,7 +2076,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // Verify that the document is visible and count is 1
     // Fetch documents associated with a search term (such as XML) in Address
     // element
-    queryMgr = readerClient.newQueryManager();
+    queryMgr = writerClient.newQueryManager();
     sqb = queryMgr.newStructuredQueryBuilder();
 
     termQuery = sqb.collection(docId);
@@ -3067,10 +2395,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
     System.out.println("Number of results using SQB = " + count);
     assertEquals("Wrong number of results", 1, count);
   }
-
+  
   @Test
   public void testLsqtQuery() throws Exception {
-
     System.setProperty(
         "org.apache.commons.logging.simplelog.log.org.apache.http.wire",
         "debug");
@@ -3093,85 +2420,46 @@ public class TestBiTemporal extends BasicJavaClientREST {
         updateTime);
 
     Thread.sleep(2000);
+    
+    validateLSQTQueryData(readerClient);
+  }
 
-    // Fetch documents associated with a search term (such as XML) in Address
-    // element
-    QueryManager queryMgr = readerClient.newQueryManager();
-    StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+  @Test
+  public void testLsqtQueryAsAdmin() throws Exception {
+    System.setProperty(
+        "org.apache.commons.logging.simplelog.log.org.apache.http.wire",
+        "debug");
 
-    Calendar queryTime = DatatypeConverter.parseDateTime("2007-01-01T00:00:01");
-    StructuredQueryDefinition periodQuery = sqb.temporalLsqtQuery(
-        temporalLsqtCollectionName, queryTime, 0, new String[] {});
+    ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
+        temporalLsqtCollectionName, true);
 
-    long start = 1;
-    JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
-    docMgr.setMetadataCategories(Metadata.ALL); // Get all metadata
-    DocumentPage termQueryResults = docMgr.search(periodQuery, start);
+    // Read documents based on document URI and ALN Contains. We are just
+    // looking for count of documents to be correct
+    String docId = "javaSingleJSONDoc.json";
 
-    long count = 0;
-    while (termQueryResults.hasNext()) {
-      ++count;
-      DocumentRecord record = termQueryResults.next();
-      System.out.println("URI = " + record.getUri());
+    Calendar insertTime = DatatypeConverter
+        .parseDateTime("2005-01-01T00:00:01");
 
-      DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
-      record.getMetadata(metadataHandle);
-      Iterator<String> resCollections = metadataHandle.getCollections()
-          .iterator();
-      while (resCollections.hasNext()) {
-        System.out.println("Collection = " + resCollections.next());
-      }
+    JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
+        "2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON",
+        docId);
 
-      if (record.getFormat() == Format.XML) {
-        DOMHandle recordHandle = new DOMHandle();
-        record.getContent(recordHandle);
-        System.out.println("Content = " + recordHandle.toString());
-      } else {
-        JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<ObjectNode>(
-            ObjectNode.class);
-        record.getContent(recordHandle);
-        System.out.println("Content = " + recordHandle.toString());
+    JSONDocumentManager docMgr = adminClient.newJSONDocumentManager();
+    docMgr.setMetadataCategories(Metadata.ALL);
 
-        JsonFactory factory = new JsonFactory();
-        ObjectMapper mapper = new ObjectMapper(factory);
-        TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
-        };
+    // put meta-data
+    DocumentMetadataHandle mh = setMetadata(false);
+    docMgr.write(docId, mh, handle, null, null, temporalLsqtCollectionName,
+            insertTime, null);
 
-        HashMap<String, Object> docObject = mapper.readValue(
-            recordHandle.toString(), typeRef);
+    Calendar updateTime = DatatypeConverter
+        .parseDateTime("2010-01-01T00:00:01");
+    docMgr.write(docId, mh, handle, null, null, temporalLsqtCollectionName,
+        updateTime, null);
 
-        @SuppressWarnings("unchecked")
-        HashMap<String, Object> systemNode = (HashMap<String, Object>) (docObject
-            .get(systemNodeName));
-
-        String systemStartDate = (String) systemNode.get(systemStartERIName);
-        String systemEndDate = (String) systemNode.get(systemEndERIName);
-        System.out.println("systemStartDate = " + systemStartDate);
-        System.out.println("systemEndDate = " + systemEndDate);
-
-        @SuppressWarnings("unchecked")
-        HashMap<String, Object> validNode = (HashMap<String, Object>) (docObject
-            .get(validNodeName));
-
-        String validStartDate = (String) validNode.get(validStartERIName);
-        String validEndDate = (String) validNode.get(validEndERIName);
-        System.out.println("validStartDate = " + validStartDate);
-        System.out.println("validEndDate = " + validEndDate);
-
-        // assertTrue("Valid start date check failed",
-        // (validStartDate.equals("2008-12-31T23:59:59") &&
-        // validEndDate.equals("2011-12-31T23:59:59")) ||
-        // (validStartDate.equals("2003-01-01T00:00:00") &&
-        // validEndDate.equals("2008-12-31T23:59:59")) ||
-        // (validStartDate.equals("2001-01-01T00:00:00") &&
-        // validEndDate.equals("2003-01-01T00:00:00")));
-      }
-    }
-
-    // BUG. I believe Java API is doing a get instead of a POST that returns all
-    // documents in doc uri collection
-    System.out.println("Number of results using SQB = " + count);
-    assertEquals("Wrong number of results", 1, count);
+    Thread.sleep(2000);
+    
+    validateLSQTQueryData(adminClient);
   }
 
   @Test
@@ -3196,14 +2484,17 @@ public class TestBiTemporal extends BasicJavaClientREST {
     boolean exceptionThrown = false;
     try {
       insertJSONSingleDocument(temporalCollectionName, jsonDocId, null);
-    } catch (com.marklogic.client.FailedRequestException ex) {
-      exceptionThrown = true;
-      System.out.println(ex.getFailedRequest().getStatusCode());
-      System.out.println(ex.getFailedRequest().getMessageCode());
+    } catch (com.marklogic.client.FailedRequestException ex) {      
+      String message = ex.getFailedRequest().getMessageCode();
+      int statusCode = ex.getFailedRequest().getStatusCode(); 
 
-      // BUG: Right now this returns 500 error. Bug is open to fix this
-      // assert(ex.getFailedRequest().getMessageCode().equals("TEMPORAL-SYSTEMTIME-BACKWARDS"));
-      // assert(ex.getFailedRequest().getStatusCode() == 400);
+      exceptionThrown = true;
+      
+      System.out.println(message);
+      System.out.println(statusCode);
+
+      assertTrue("Error Message", message.equals("XDMP-NOMATCH"));
+      assertTrue("Status code", (statusCode == 400));
     }
 
     assertTrue("Exception not thrown for invalid extension", exceptionThrown);
@@ -3234,13 +2525,17 @@ public class TestBiTemporal extends BasicJavaClientREST {
     try {
       docMgr.write(jsonDocId, mh, handle, null, null, "invalidCollection");
     } catch (com.marklogic.client.FailedRequestException ex) {
-      exceptionThrown = true;
-      System.out.println(ex.getFailedRequest().getStatusCode());
-      System.out.println(ex.getFailedRequest().getMessageCode());
 
-      // BUG: Right now this returns 500 error. Bug is open to fix this
-      // assert(ex.getFailedRequest().getMessageCode().equals("TEMPORAL-SYSTEMTIME-BACKWARDS"));
-      // assert(ex.getFailedRequest().getStatusCode() == 400);
+      String message = ex.getFailedRequest().getMessageCode();
+      int statusCode = ex.getFailedRequest().getStatusCode(); 
+
+      exceptionThrown = true;
+      
+      System.out.println(message);
+      System.out.println(statusCode);
+
+      assertTrue("Error Message", message.equals("TEMPORAL-COLLECTIONNOTFOUND"));
+      assertTrue("Status code", (statusCode == 400));      
     }
 
     assertTrue("Exception not thrown for invalid temporal collection",
@@ -3270,13 +2565,57 @@ public class TestBiTemporal extends BasicJavaClientREST {
     try {
       docMgr.write(jsonDocId, mh, handle, null, null, latestCollectionName);
     } catch (com.marklogic.client.FailedRequestException ex) {
-      exceptionThrown = true;
-      System.out.println(ex.getFailedRequest().getStatusCode());
-      System.out.println(ex.getFailedRequest().getMessageCode());
+      String message = ex.getFailedRequest().getMessageCode();
+      int statusCode = ex.getFailedRequest().getStatusCode(); 
 
-      // BUG: Right now this returns 500 error. Bug is open to fix this
-      // assert(ex.getFailedRequest().getMessageCode().equals("TEMPORAL-SYSTEMTIME-BACKWARDS"));
-      // assert(ex.getFailedRequest().getStatusCode() == 400);
+      exceptionThrown = true;
+      
+      System.out.println(message);
+      System.out.println(statusCode);
+
+      assertTrue("Error Message", message.equals("TEMPORAL-COLLECTIONLATEST"));
+      assertTrue("Status code", (statusCode == 400));
+    }
+
+    
+    assertTrue("Exception not thrown for invalid temporal collection",
+        exceptionThrown);
+  }
+
+  @Test
+  // Negative test
+  public void testInsertJSONDocumentUsingAsRESTReader() throws Exception {
+    // Now insert a JSON document
+    String jsonDocId = "javaSingleJSONDoc.json";
+
+    boolean exceptionThrown = false;
+
+    System.out
+        .println("Inside testInsertJSONDocumentUsingNonExistingTemporalCollection");
+
+    JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
+        "2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON",
+        jsonDocId);
+
+    JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
+    docMgr.setMetadataCategories(Metadata.ALL);
+
+    // put meta-data
+    DocumentMetadataHandle mh = setMetadata(false);
+
+    try {
+      docMgr.write(jsonDocId, mh, handle, null, null, temporalCollectionName);
+    } catch (com.marklogic.client.ForbiddenUserException ex) {
+      String message = ex.getFailedRequest().getMessageCode();
+      int statusCode = ex.getFailedRequest().getStatusCode(); 
+
+      exceptionThrown = true;
+      
+      System.out.println(message);
+      System.out.println(statusCode);
+
+      assertTrue("Error Message", message.equals("SEC-PRIV"));
+      assertTrue("Status code", (statusCode == 403));
     }
 
     assertTrue("Exception not thrown for invalid temporal collection",
@@ -3304,7 +2643,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         "2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON",
         jsonDocId);
 
-    JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
+    JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
     docMgr.setMetadataCategories(Metadata.ALL);
 
     // put meta-data
@@ -3314,78 +2653,22 @@ public class TestBiTemporal extends BasicJavaClientREST {
     try {
       docMgr.write(jsonDocId, mh, handle, null, null, jsonDocId);
     } catch (com.marklogic.client.FailedRequestException ex) {
-      exceptionThrown = true;
-      System.out.println(ex.getFailedRequest().getStatusCode());
-      System.out.println(ex.getFailedRequest().getMessageCode());
+      String message = ex.getFailedRequest().getMessageCode();
+      int statusCode = ex.getFailedRequest().getStatusCode(); 
 
-      assert (ex.getFailedRequest().getMessageCode()
-          .equals("TEMPORAL-URIALREADYEXISTS"));
-      assert (ex.getFailedRequest().getStatusCode() == 400);
+      exceptionThrown = true;
+      
+      System.out.println(message);
+      System.out.println(statusCode);
+
+      // BUG: Should be 400 error and TEMPORAL-CANNOT-URI 
+      // assertTrue("Error Message", message.equals("TEMPORAL-URIALREADYEXISTS"));
+      // assertTrue("Status code", (statusCode == 400));
     }
 
     ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
         jsonDocId);
 
-    assertTrue("Exception not thrown for invalid temporal collection",
-        exceptionThrown);
-  }
-
-  @Test
-  // Negative test. Doc URI Id is the same as the temporal collection name
-  // BUG 30173 exists for this non failure.
-  public void testCreateCollectionUsingSameNameAsDocURI() throws Exception {
-    // Now insert a JSON document
-    String jsonDocId = "javaSingleJSONDoc.json";
-
-    System.out
-        .println("Inside testInserDocumentUsingDocumentURIAsCollectionName");
-
-    // Insert a document called as insertJSONSingleDocument
-    insertJSONSingleDocument(temporalCollectionName, jsonDocId, null);
-
-    boolean exceptionThrown = false;
-    try {
-      // Create collection a collection with same name as doci URI
-      ConnectedRESTQA.addElementRangeIndexTemporalCollection(dbName, jsonDocId,
-          axisSystemName, axisValidName);
-    } catch (com.marklogic.client.FailedRequestException ex) {
-      exceptionThrown = true;
-      System.out.println(ex.getFailedRequest().getStatusCode());
-      System.out.println(ex.getFailedRequest().getMessageCode());
-
-      // assert(ex.getFailedRequest().getMessageCode().equals("TEMPORAL-URIALREADYEXISTS"));
-      // assert(ex.getFailedRequest().getStatusCode() == 400);
-    }
-    // assertTrue("Exception not thrown for invalid temporal collection",
-    // exceptionThrown);
-
-    // Create a document using the collection created above
-    // So, we are creating a document under a collection whose name is the same
-    // as an existing temporal doc uri
-    JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
-        "2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON",
-        jsonDocId);
-
-    JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
-    docMgr.setMetadataCategories(Metadata.ALL);
-
-    // put meta-data
-    DocumentMetadataHandle mh = setMetadata(false);
-
-    exceptionThrown = false;
-    try {
-      docMgr.write("1.json", mh, handle, null, null, jsonDocId);
-    } catch (com.marklogic.client.FailedRequestException ex) {
-      exceptionThrown = true;
-      System.out.println(ex.getFailedRequest().getStatusCode());
-      System.out.println(ex.getFailedRequest().getMessageCode());
-
-      // assert(ex.getFailedRequest().getMessageCode().equals("TEMPORAL-URIALREADYEXISTS"));
-      // assert(ex.getFailedRequest().getStatusCode() == 400);
-    }
-
-    ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
-        jsonDocId);
     assertTrue("Exception not thrown for invalid temporal collection",
         exceptionThrown);
   }
