@@ -1,124 +1,159 @@
-= Contributor License Agreement ("Agreement")
+# Contributing to the Java Client API
 
-Thank you for your interest in an open source project administered by
-the MarkLogic Corporation (the "Project"). This Agreement states the
-terms under which you, the person listed below, may contribute to the
-Project any software, modifications or additions, bug fixes,
-documentation, or any other materials that you provide (whether
-electronically, verbally, or in written form) to MarkLogic
-Corporation ("MarkLogic" or "us") related to the Project (each a
-"Contribution"). This license is for your protection as well as the
-protection of MarkLogic and its licensees. This Agreement does not
-otherwise change your rights to use your own Contributions for any
-other purpose. Please complete the following information about you and
-the Contributions and either (a) sign electronically by filling out
-the form below or (b) sign and submit the form to the contact
-information below.
+The Java Client API welcomes new contributors. This document will guide you 
+through the process.
 
-If you develop software or create software code as a part of your
-employment, or if your employer is in the business of developing
-software, or otherwise may claim rights in the Contributions, please
-provide information about your employer's policy on contributing to
-open source projects below, including the name of the supervisor to
-contact in connection with such contributions.
+ - [Question or Problem?](#question)
+ - [Issues and Bugs](#issue)
+ - [Feature Requests](#feature)
+ - [Submission Guidelines](#submit)
+ 
+## <a name="question"></a> Got a Question or Problem?
 
-If you have questions about this Agreement, please contact us at
-opensource@marklogic.com.
+If you have questions about how to use the Java Client API, you can ask on 
+[StackOverflow](http://stackoverflow.com/tags/marklogic), tagging the question 
+with MarkLogic.
 
-.You and MarkLogic acknowledge and agree:
-. Control of the Project. We, in our sole discretion, determine the
-  Contributions that will be included in the Project. You understand
-  that this Agreement, and your submission of any Contribution, does
-  not guarantee that any such Contributions will be included in the
-  Project.
-. License Grants. You hereby grant to MarkLogic, a perpetual,
-  non-exclusive, irrevocable, worldwide, royalty-free and fully
-  paid-up, sublicenseable, and transferable license under all of your
-  relevant intellectual property rights (including copyright, patent,
-  trade secret, and any other rights), to use, copy, modify, prepare
-  derivative works of, distribute and publicly perform and publicly
-  display your Contributions on any licensing terms, in our sole
-  discretion, including without limitation: (a) the GNU General Public
-  License, the GNU Lesser General Public License, the Common Public
-  License, the MIT License, the Apache License, or the Berkeley
-  Software Distribution license; and (b) binary, proprietary, or
-  commercial licenses. You hereby grant to MarkLogic and to recipients
-  of the Project a perpetual, worldwide, non-exclusive, fully-paid up
-  and royalty-free, irrevocable patent license to make, have made, use,
-  offer to sell, sell, import, and otherwise transfer the Project,
-  where such license applies only to those patent claims licensable by
-  you that are necessarily infringed by your Contributions alone or by
-  combination of your Contributions with the Project.
-. Ownership. Except for the licenses granted herein, you reserve all
-  right, title, and interest in and to your Contributions.
-. Your Representations. You represent that you are able and entitled to
-  grant us the above license rights. You represent that your
-  Contributions are your original works of authorship, and to your
-  knowledge, no other person claims, or has the right to claim, any
-  right in any intellectual property right, including without
-  limitation invention or patent rights, related to your Contributions.
-  You also represent that you are not legally obligated, whether by
-  entering into an agreement or otherwise, in any way that conflicts
-  with the terms of the foregoing license grant. If your employer has
-  rights to intellectual property that you create, you represent that
-  you have received permission to make your Contributions on behalf of
-  that employer, or that your employer has waived such rights for your
-  Contributions.
-. No Implied Warranties. MarkLogic acknowledges that, except as
-  explicitly described in this Agreement, your Contribution is
-  provided on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
-  ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, WITHOUT LIMITATION,
-  ANY WARRANTIES OR CONDITIONS OF TITLE, NON-INFRINGEMENT,
-  MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+## <a name="issue"></a> Found an Issue?
+If you find a bug in the source code or a mistake in the documentation, you can help us by
+submitting an issue to our [GitHub Issue Tracker][issue tracker]. Even better 
+you can submit a Pull Request with a fix for the issue you filed.
 
-== Complete and sign
+## <a name="feature"></a> Want a Feature?
+You can request a new feature by submitting an issue to our 
+[GitHub Issue Tracker][issue tracker].  If you would like to implement a new 
+feature then first create a new issue and discuss it with one of our project 
+maintainers.
 
-----
-Full name:      ____________________________________________________________
+## <a name="submit"></a> Submission Guidelines
 
-Email address:  ____________________________________________________________
+### Submitting an Issue
+If your issue appears to be a bug, and hasn't been reported, open a new issue.
+Providing the following information will increase the chances of your issue 
+being dealt with quickly:
 
-Postal address:
+* **Overview of the Issue** - if an error is being thrown a stack trace helps
+* **Motivation for or Use Case** - explain why this is a bug for you
+* **Environment** - Mac, windows? Firefox, Chrome? details help
+* **Suggest a Fix** - if you can't fix the bug yourself, perhaps you can point 
+to what might be causing the problem (line of code or commit)
 
-               Street: _____________________________________________________
+### Submitting a Pull Request
 
-                       _____________________________________________________
+#### Fill in the CLA
 
-                 City: _____________________________________________________
+Before we can accept your pull request, we need you to sign the [Contributor 
+License Agreement](http://developer.marklogic.com/products/cla). 
 
-    State or province: _____________________________________________________
+#### Fork the Java Client API
 
-          Postal code: _____________________________________________________
+Fork the project [on GitHub](https://github.com/marklogic/java-client-api/fork) 
+and clone your copy.
 
-              Country: _____________________________________________________
+    $ git clone git@github.com:username/java-client-api.git
+    $ cd java-client-api
+    $ git remote add upstream git://github.com/marklogic/java-client-api.git
 
-Phone number:   ____________________________________________________________
+All bug fixes and new features go into the dev branch.
+
+We ask that you open an issue in the [issue tracker][] and get agreement from
+at least one of the project maintainers before you start coding.
+
+Nothing is more frustrating than seeing your hard work go to waste because
+your vision does not align with that of a project maintainer.
+
+#### Create a branch for your changes
+
+Okay, so you have decided to fix something. Create a feature branch
+and start hacking:
+
+    $ git checkout -b my-feature-branch -t origin/dev
+
+#### Commit your changes
+
+Make sure git knows your name and email address:
+
+    $ git config --global user.name "J. Random User"
+    $ git config --global user.email "j.random.user@example.com"
+
+Writing good commit logs is important. A commit log should describe what
+changed and why. Follow these guidelines when writing one:
+
+1. The first line should be 50 characters or less and contain a short
+   description of the change including the Issue number prefixed by a hash (#).
+2. Keep the second line blank.
+3. Wrap all other lines at 72 columns.
+
+A good commit log looks like this:
+
+```
+Fixing Issue #123: make the whatchamajigger work in MarkLogic 8
+
+Body of commit message is a few lines of text, explaining things
+in more detail, possibly giving some background about the issue
+being fixed, etc etc.
+
+The body of the commit message can be several paragraphs, and
+please do proper word-wrap and keep columns shorter than about
+72 characters or so. That way `git log` will show things
+nicely even when it is indented.
+```
+
+The header line should be meaningful; it is what other people see when they
+run `git shortlog` or `git log --oneline`.
+
+#### Rebase your repo
+
+Use `git rebase` (not `git merge`) to sync your work from time to time.
+
+    $ git fetch upstream
+    $ git rebase upstream/dev
+
+#### Test your code
+
+Be sure to run the tests before submitting your pull request. PRs with failing 
+tests won't be accepted. 
+
+    $ mvn test-compile
+    $ sh src/test/resources/boot-test.sh
+    $ mvn test
+
+#### Push your changes
+
+    $ git push origin my-feature-branch
+
+#### Submit the pull request
+
+Go to https://github.com/username/java-client-api and select your feature 
+branch. Click the 'Pull Request' button and fill out the form.
+
+Pull requests are usually reviewed within a few days. If you get comments that 
+need to be to addressed, apply your changes in a separate commit and push that 
+to your feature branch. Post a comment in the pull request afterwards; GitHub 
+does not send out notifications when you add commits to existing pull requests.
+
+That's it! Thank you for your contribution!
 
 
-Corporate contributor information:
+#### After your pull request is merged
 
-                ____________________________________________________________
+After your pull request is merged, you can safely delete your branch and pull 
+the changes from the main (upstream) repository:
 
-                ____________________________________________________________
+* Delete the remote branch on GitHub either through the GitHub web UI or your 
+local shell as follows:
 
-                ____________________________________________________________
+    $ git push origin --delete my-feature-branch
 
-                ____________________________________________________________
+* Check out the dev branch:
 
+    $ git checkout dev -f
 
-Signature:      ____________________________________________________________
+* Delete the local branch:
 
-----
+    $ git branch -D my-feature-branch
 
-== Signing Alternatives
+* Update your dev with the latest upstream version:
 
-You may print the document and send the original to:
-
-MarkLogic Corporation +
-Attn: Contract Administrator +
-999 Skyway Road, +
-San Carlos, CA 94070 +
-USA +
-
-You may also send a scanned PDF of the form to
-opensource@marklogic.com.
+    $ git pull --ff upstream dev
+[issue tracker]: https://github.com/marklogic/java-client-api/issues
