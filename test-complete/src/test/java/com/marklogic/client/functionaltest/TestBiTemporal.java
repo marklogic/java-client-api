@@ -968,13 +968,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
       Iterator<String> resCollections = metadataHandle.getCollections()
           .iterator();
 
-      if (record.getUri().equals(docId)) {
-        // Must belong to latest collection as well. So, count must be 4
-        assert (resCollections.equals(4));
-      } else {
-        assert (resCollections.equals(3));
-      }
+      int count = 0;
       while (resCollections.hasNext()) {
+        ++count;
         String collection = resCollections.next();
         System.out.println("Collection = " + collection);
 
@@ -988,8 +984,15 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
         if (collection.equals(latestCollectionName)) {
           // If there is a latest collection, docId must match the URI
-          assert (record.getUri().equals(docId));
+          assertTrue("Document URI", record.getUri().equals(docId));
         }
+      }
+
+      if (record.getUri().equals(docId)) {
+        // Must belong to latest collection as well. So, count must be 4
+        assertTrue("Count of collections", (count == 4));
+      } else {
+        assertTrue("Count of collections", (count == 3));
       }
 
       if (record.getFormat() != Format.JSON) {
@@ -1773,13 +1776,16 @@ public class TestBiTemporal extends BasicJavaClientREST {
       updateJSONSingleDocument(temporalLsqtCollectionName, docId, null,
           updateTime);
     } catch (com.marklogic.client.FailedRequestException ex) {
-      System.out.println(ex.getMessage());
-
-      assert (ex.getFailedRequest().getMessageCode()
-          .equals("TEMPORAL-SYSTEMTIME-BACKWARDS"));
-      assert (ex.getFailedRequest().getStatusCode() == 400);
+      String message = ex.getFailedRequest().getMessageCode();
+      int statusCode = ex.getFailedRequest().getStatusCode(); 
 
       exceptionThrown = true;
+      
+      System.out.println(message);
+      System.out.println(statusCode);
+
+      assertTrue("Error Message", message.equals("TEMPORAL-SYSTEMTIME-BACKWARDS"));
+      assertTrue("Status code", (statusCode == 400));
     }
 
     assertTrue("Exception not thrown during invalid update of system time",
@@ -1794,13 +1800,16 @@ public class TestBiTemporal extends BasicJavaClientREST {
       deleteJSONSingleDocument(temporalLsqtCollectionName, docId, null,
           deleteTime);
     } catch (com.marklogic.client.FailedRequestException ex) {
-      System.out.println(ex.getMessage());
-
-      assert (ex.getFailedRequest().getMessageCode()
-          .equals("TEMPORAL-SYSTEMTIME-BACKWARDS"));
-      assert (ex.getFailedRequest().getStatusCode() == 400);
+      String message = ex.getFailedRequest().getMessageCode();
+      int statusCode = ex.getFailedRequest().getStatusCode(); 
 
       exceptionThrown = true;
+      
+      System.out.println(message);
+      System.out.println(statusCode);
+
+      assertTrue("Error Message", message.equals("TEMPORAL-SYSTEMTIME-BACKWARDS"));
+      assertTrue("Status code", (statusCode == 400));
     }
 
     assertTrue("Exception not thrown for invalid extension", exceptionThrown);
