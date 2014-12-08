@@ -271,12 +271,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
       }
     }
 
-    // BUG. I believe Java API is doing a get instead of a POST that returns all
-    // documents in doc uri collection
     System.out.println("Number of results using SQB = " + count);
     assertEquals("Wrong number of results", 1, count);
   }
-
 
   // This covers passing transforms and descriptor
   private void insertXMLSingleDocument(String temporalCollection, String docId,
@@ -334,9 +331,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     docMgr.setMetadataCategories(Metadata.ALL);
 
     DocumentDescriptor desc = docMgr.newDescriptor(docId);
-    DocumentMetadataHandle mh = setMetadata(true); // cannot set properties
-                                                   // during update
-
+    DocumentMetadataHandle mh = setMetadata(true); 
     if (transformName != null) {
       TransformExtensionsManager transMgr = adminClient.newServerConfigManager()
           .newTransformExtensionsManager();
@@ -504,8 +499,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
     JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
     docMgr.setMetadataCategories(Metadata.ALL);
-    DocumentMetadataHandle mh = setMetadata(true); // cannot set properties
-                                                   // during update
+    DocumentMetadataHandle mh = setMetadata(true);
+    
     docMgr.write(docId, mh, handle, null, transaction, temporalCollection,
         systemTime, null);
   }
@@ -576,6 +571,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
+  // Insert a temporal document using DocumentUriTemplate
   public void testInsertXMLSingleDocumentUsingTemplate() throws Exception {
     System.out.println("Inside testInsertXMLSingleDocumentUsingTemplate");
 
@@ -627,6 +623,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
+  // Insert a temporal document and update it using an invalid transform.
+  // The transform in this case creates a duplicate element against which as range index
+  // has been setup
   public void testInsertAndUpdateXMLSingleDocumentUsingInvalidTransform()
       throws Exception {
 
@@ -657,10 +656,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
   @Test
   // This test validates the following -
   // 1. Inserts, updates and delete and and also makes sure number of documents
-  // in
-  // doc uri collection, latest collection are accurate after those operations.
-  // Do this
-  // for more than one document URI (we do this with JSON and XML)
+  //    in doc uri collection, latest collection are accurate after those operations.
+  //    Do this for more than one document URI (we do this with JSON and XML)
   // 2. Make sure things are correct with transforms
   public void testConsolidated() throws Exception {
 
@@ -869,6 +866,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
+  // Test bitemporal create, update and delete works with a JSON document
   public void testJSONConsolidated() throws Exception {
 
     System.out.println("Inside testJSONConsolidated");
@@ -1061,7 +1059,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
-  // Test if system time can be set. We do this with insert, update and delete
+  // Test bitemporal create, update and delete works with a JSON document while passing
+  // system time. The temporal collection needs to be enabled for lsqt and we have enabled
+  // automation for lsqt (lsqt will be advanced every second and system time will be set with 
+  // a lag of 1 second)
   public void testSystemTime() throws Exception {
 
     System.out.println("Inside testSystemTime");
@@ -1084,13 +1085,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
     DocumentPage readResults = docMgr.read(docId);
 
     System.out.println("Number of results = " + readResults.size());
-    assertEquals("Wrong number of results", 1, readResults.size()); // 2,
-                                                                    // because
-                                                                    // includes
-                                                                    // content
-                                                                    // and
-                                                                    // metadata
-
+    assertEquals("Wrong number of results", 1, readResults.size()); 
+    
     DocumentRecord record = readResults.next();
     System.out.println("URI after insert = " + record.getUri());
     assertEquals("Document uri wrong after insert", docId, record.getUri());
@@ -1692,10 +1688,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
           assertEquals(quality, 11);
 
-          // Properties should still be associated this document
-          // BUG ... This should be commented out when properties are not
-          // deleted when document is deleted
-          // validateMetadata(metadataHandle);
+          validateMetadata(metadataHandle);
         }
 
         if (validStartDate.contains("2001-01-01T00:00:00")
@@ -1753,6 +1746,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
+  // Create a bitemporal document and update the document with a system time that is less than
+  // the one used durign creation
   public void testSystemTimeUsingInvalidTime() throws Exception {
 
     System.out.println("Inside testSystemTimeUsingInvalidTime");
@@ -1815,6 +1810,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
+  // Test transaction commit with bitemporal documents
   public void testTransactionCommit() throws Exception {
 
     System.out.println("Inside testTransactionCommit");
@@ -1955,9 +1951,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
+  // Test transaction rollback with bitemporal documents
   public void testTransactionRollback() throws Exception {
 
-    System.out.println("Inside testTransaction");
+    System.out.println("Inside testTransactionRollback");
 
     String docId = "javaSingleJSONDoc.json";
 
@@ -2114,8 +2111,11 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
+  // Test Period Range Query using ALN_CONTAINS. We use a single axis during query
   public void testPeriodRangeQuerySingleAxisBasedOnALNContains()
       throws Exception {
+    System.out.println("Inside testPeriodRangeQuerySingleAxisBasedOnALNContains");
+    
     // Read documents based on document URI and ALN Contains. We are just
     // looking for count of documents to be correct
 
@@ -2204,8 +2204,14 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
+  // Test Period Range Query usig ALN_CONTAINS. We use 2 axes during query
+  // Note that the query will be done for every axis across every period. And
+  // the results will be an OR of the result of each of the query done for every axis 
+  // across every period
   public void testPeriodRangeQueryMultiplesAxesBasedOnALNContains()
       throws Exception {
+    System.out.println("Inside testPeriodRangeQueryMultiplesAxesBasedOnALNContains");
+    
     // Read documents based on document URI and ALN_OVERLAPS. We are just
     // looking
     // for count of documents to be correct
@@ -2240,8 +2246,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
         sqb.temporalPeriodRange(axes, TemporalOperator.ALN_CONTAINS, periods));
 
     // Note that the query will be done for every axis across every period. And
-    // the results will be an OR of
-    // the result of each of the query done for every axis across every period
+    // the results will be an OR of the result of each of the query done for every axis 
+    // across every period
     long start = 1;
     JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
     docMgr.setMetadataCategories(Metadata.ALL); // Get all metadata
@@ -2302,11 +2308,13 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
-  public void testPeriodCompareQuerySingleAxisBasedOnALNContains()
+  // Test Period Compare Query using ALN_CONTAINS as the operator
+  public void testPeriodCompareQueryBasedOnALNContains()
       throws Exception {
+    System.out.println("Inside testPeriodCompareQueryBasedOnALNContains");
+    
     // Read documents based on document URI and ALN Contains. We are just
     // looking for count of documents to be correct
-
     String docId = "javaSingleJSONDoc.json";
     ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
         temporalLsqtCollectionName, true);
@@ -2405,6 +2413,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
   
   @Test
+  // Test LSQT Query using temporalLsqtQuery. Do the query as REST reader
   public void testLsqtQuery() throws Exception {
     System.setProperty(
         "org.apache.commons.logging.simplelog.log.org.apache.http.wire",
@@ -2433,6 +2442,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
+  // Test LSQT Query using temporalLsqtQuery. Do the query as REST admin
   public void testLsqtQueryAsAdmin() throws Exception {
     System.setProperty(
         "org.apache.commons.logging.simplelog.log.org.apache.http.wire",
@@ -2471,8 +2481,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
-  // Negative test
-  public void testJSONTransforms() throws Exception {
+  // Test inserting a temporal document and transform it using server-side Javascript
+  public void testJSTransforms() throws Exception {
     // Now insert a JSON document
     System.out.println("In testJSONTransforms .. testing JSON transforms");
     String jsonDocId = "javaSingleJSONDoc.json";
@@ -2485,6 +2495,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
   @Test
   // Negative test
+  // Test inserting a JSON temporal document by specifying XML as the extension
   public void testInsertJSONDocumentUsingXMLExtension() throws Exception {
     // Now insert a JSON document
     String jsonDocId = "javaSingleJSONDoc.xml";
@@ -2510,6 +2521,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
   @Test
   // Negative test
+  // Test inserting a temporal document into a non-existing temporal document
   public void testInsertJSONDocumentUsingNonExistingTemporalCollection()
       throws Exception {
     // Now insert a JSON document
@@ -2552,6 +2564,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
   @Test
   // Negative test
+  // Test inserting a temporal document into the "latest" collection. Operation should fail
   public void testDocumentUsingCollectionNamedLatest() throws Exception {
     // Now insert a JSON document
     String jsonDocId = "javaSingleJSONDoc.json";
@@ -2592,6 +2605,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
   @Test
   // Negative test
+  // Test inserting a temporal document as REST reader who does not have the privilege for the 
+  // operation
   public void testInsertJSONDocumentUsingAsRESTReader() throws Exception {
     // Now insert a JSON document
     String jsonDocId = "javaSingleJSONDoc.json";
@@ -2631,7 +2646,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
-  // Negative test. Doc URI Id is the same as the temporal collection name
+  // Negative test. 
+  // Insert a temporal document whose Doc URI Id is the same as the temporal collection name
   public void testInsertDocumentUsingDocumentURIAsCollectionName()
       throws Exception {
     // Now insert a JSON document
