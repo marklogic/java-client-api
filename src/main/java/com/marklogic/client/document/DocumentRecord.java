@@ -28,12 +28,16 @@ import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
  *docMgr.setNonDocumentFormat(Format.XML);
  *docMgr.setMetadataCategories(Metadata.COLLECTIONS);
  *DocumentPage documents = docMgr.read("doc1.json", "doc2.json");
- *for ( DocumentRecord record : documents ) {
- *    String uri = record.getUri();
- *    JacksonHandle content = record.getContent(new JacksonHandle());
- *    DocumentMetadataHandle metadata = record.getMetadata(new DocumentMetadataHandle());
- *    DocumentCollections collections = metadata.getCollections();
- *    // ... do something ...
+ *try {
+ *    for ( DocumentRecord record : documents ) {
+ *        String uri = record.getUri();
+ *        JacksonHandle content = record.getContent(new JacksonHandle());
+ *        DocumentMetadataHandle metadata = record.getMetadata(new DocumentMetadataHandle());
+ *        DocumentCollections collections = metadata.getCollections();
+ *        // ... do something ...
+ *    }
+ *} finally {
+ *    documents.close();
  *}
  *  }</pre>
  */
