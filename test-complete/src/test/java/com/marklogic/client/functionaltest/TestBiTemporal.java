@@ -58,9 +58,11 @@ public class TestBiTemporal extends BasicJavaClientREST {
   private static String[] fNames = { "TestBiTemporalJava-1" };
   private static String restServerName = "REST-Java-Client-API-Server";
   private static int restPort = 8011;
+  private static int uberPort = 8000;
   private DatabaseClient adminClient = null;
   private DatabaseClient writerClient = null;
   private DatabaseClient readerClient = null;
+  private DatabaseClient evalClient = null;
 
   private final static String dateTimeDataTypeString = "dateTime";
 
@@ -134,12 +136,16 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
   @Before
   public void setUp() throws Exception {
-    adminClient = DatabaseClientFactory.newClient("localhost", restPort,
+    createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
+    createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
+    adminClient = DatabaseClientFactory.newClient("localhost", restPort, dbName,
         "rest-admin", "x", Authentication.DIGEST);
-    writerClient = DatabaseClientFactory.newClient("localhost", restPort,
+    writerClient = DatabaseClientFactory.newClient("localhost", restPort, dbName,
         "rest-writer", "x", Authentication.DIGEST);
-    readerClient = DatabaseClientFactory.newClient("localhost", restPort,
-        "rest-reader", "x", Authentication.DIGEST);
+    readerClient = DatabaseClientFactory.newClient("localhost", restPort, dbName,
+        "rest-reader", "x", Authentication.DIGEST);   
+    evalClient = DatabaseClientFactory.newClient("localhost", uberPort, dbName,
+        "eval-user", "x", Authentication.DIGEST);           
   }
 
   @After
@@ -169,9 +175,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
       metadataHandle.setQuality(11);
     }
-
-    // metadataHandle.getPermissions().add("app-user", Capability.UPDATE,
-    // Capability.READ);
+    
     metadataHandle.getProperties().put("myString", "foo");
     metadataHandle.getProperties().put("myInteger", 10);
     metadataHandle.getProperties().put("myDecimal", 34.56678);
@@ -312,9 +316,6 @@ public class TestBiTemporal extends BasicJavaClientREST {
       docMgr.write(desc, mh, handle, transformer, null, temporalCollection);
     } else {
       docMgr.write(desc, mh, handle, null, null, temporalCollection);
-
-      // docMgr.write(docId, mh, handle, null, null, temporalCollectionName,
-      // DatatypeConverter.parseDateTime("2004-06-015T00:00:01"));
     }
   }
 
@@ -365,8 +366,6 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
     XMLDocumentManager docMgr = writerClient.newXMLDocumentManager();
 
-    // docMgr.delete(docId, null, temporalCollectionName,
-    // DatatypeConverter.parseDateTime("2014-06-015T00:00:01"));
     DocumentDescriptor desc = docMgr.newDescriptor(docId);
     docMgr.delete(desc, null, temporalCollection, null);
   }
@@ -480,6 +479,23 @@ public class TestBiTemporal extends BasicJavaClientREST {
       }
     }
   }
+  
+
+  public void insertJSONSingleDocumentAsEvalUser(String temporalCollection, String docId) throws Exception {
+
+    System.out.println("Inside insertJSONSingleDocumentAsEvalUser");
+
+    JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
+        "2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON",
+        docId);
+
+    JSONDocumentManager docMgr = evalClient.newJSONDocumentManager();
+    docMgr.setMetadataCategories(Metadata.ALL);
+
+    // put meta-data
+    DocumentMetadataHandle mh = setMetadata(false);
+    docMgr.write(docId, mh, handle, null, null, temporalCollection);
+  }
 
   public void updateJSONSingleDocument(String temporalCollection, String docId)
       throws Exception {
@@ -487,10 +503,26 @@ public class TestBiTemporal extends BasicJavaClientREST {
     updateJSONSingleDocument(temporalCollection, docId, null, null);
   }
 
+  public void updateJSONSingleDocumentAsEvalUser(String temporalCollection, String docId) throws Exception {
+
+    System.out.println("Inside updateJSONSingleDocumentString");
+
+    // Update the temporal document
+    JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
+        "2003-01-01T00:00:00", "2008-12-31T23:59:59",
+        "1999 Skyway Park - Updated - JSON", docId);
+
+    JSONDocumentManager docMgr = evalClient.newJSONDocumentManager();
+    docMgr.setMetadataCategories(Metadata.ALL);
+    DocumentMetadataHandle mh = setMetadata(true);
+    
+    docMgr.write(docId, mh, handle, null, null, temporalCollection);
+  }
+
   public void updateJSONSingleDocument(String temporalCollection, String docId,
       Transaction transaction, java.util.Calendar systemTime) throws Exception {
 
-    System.out.println("Inside updateJSONSingleDocumentString");
+    System.out.println("Inside updateJSONSingleDocument");
 
     // Update the temporal document
     JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
@@ -508,6 +540,16 @@ public class TestBiTemporal extends BasicJavaClientREST {
   public void deleteJSONSingleDocument(String temporalCollection, String docId,
       Transaction transaction) throws Exception {
     deleteJSONSingleDocument(temporalCollection, docId, transaction, null);
+  }
+
+  public void deleteJSONSingleDocumentAsEvalUser(String temporalCollection, String docId) throws Exception {
+
+    System.out.println("Inside deleteJSONSingleDocumentAsEvalUser");
+
+    JSONDocumentManager docMgr = evalClient.newJSONDocumentManager();
+
+    // Doing the logic here to exercise the overloaded methods
+    docMgr.delete(docId, null, temporalCollection);
   }
 
   public void deleteJSONSingleDocument(String temporalCollection, String docId,
@@ -691,10 +733,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // Check update works
     // =============================================================================
     // Update XML document
-    updateXMLSingleDocument(temporalCollectionName, xmlDocId, null); // Not
-                                                                     // transforming
-                                                                     // during
-                                                                     // update
+    updateXMLSingleDocument(temporalCollectionName, xmlDocId, null);
 
     // Make sure there are 2 documents in latest collection
     QueryManager queryMgr = readerClient.newQueryManager();
@@ -867,15 +906,16 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
   @Test
   // Test bitemporal create, update and delete works with a JSON document
+  // All database operations in this method are done using 'eval-user' against port 8000 
   public void testJSONConsolidated() throws Exception {
 
     System.out.println("Inside testJSONConsolidated");
 
     String docId = "javaSingleJSONDoc.json";
-    insertJSONSingleDocument(temporalCollectionName, docId, null);
+    insertJSONSingleDocumentAsEvalUser(temporalCollectionName, docId);
 
     // Verify that the document was inserted
-    JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
+    JSONDocumentManager docMgr = evalClient.newJSONDocumentManager();
     DocumentPage readResults = docMgr.read(docId);
 
     System.out.println("Number of results = " + readResults.size());
@@ -896,11 +936,11 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
     // ================================================================
     // Update the document
-    updateJSONSingleDocument(temporalCollectionName, docId);
+    updateJSONSingleDocumentAsEvalUser(temporalCollectionName, docId);
 
     // Verify that the document was updated
     // Make sure there is 1 document in latest collection
-    QueryManager queryMgr = readerClient.newQueryManager();
+    QueryManager queryMgr = evalClient.newQueryManager();
     StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
     StructuredQueryDefinition termQuery = sqb.collection(latestCollectionName);
     long start = 1;
@@ -923,7 +963,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     }
 
     // Make sure there are 4 documents in jsonDocId collection
-    queryMgr = readerClient.newQueryManager();
+    queryMgr = evalClient.newQueryManager();
     sqb = queryMgr.newStructuredQueryBuilder();
     termQuery = sqb.collection(docId);
 
@@ -934,7 +974,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
 
     // Make sure there are 4 documents in temporal collection
-    queryMgr = readerClient.newQueryManager();
+    queryMgr = evalClient.newQueryManager();
     sqb = queryMgr.newStructuredQueryBuilder();
     termQuery = sqb.collection(temporalCollectionName);
 
@@ -945,7 +985,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
 
     // Make sure there are 4 documents in total. Use string search for this
-    queryMgr = readerClient.newQueryManager();
+    queryMgr = evalClient.newQueryManager();
     StringQueryDefinition stringQD = queryMgr.newStringDefinition();
     stringQD.setCriteria("");
 
@@ -1006,10 +1046,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // Check delete works
     // =============================================================================
     // Delete one of the document
-    deleteJSONSingleDocument(temporalCollectionName, docId, null);
+    deleteJSONSingleDocumentAsEvalUser(temporalCollectionName, docId);
 
     // Make sure there are still 4 documents in docId collection
-    queryMgr = readerClient.newQueryManager();
+    queryMgr = evalClient.newQueryManager();
     sqb = queryMgr.newStructuredQueryBuilder();
     termQuery = sqb.collection(docId);
 
@@ -1020,14 +1060,14 @@ public class TestBiTemporal extends BasicJavaClientREST {
     assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
 
     // Make sure there is one document with docId uri
-    docMgr = readerClient.newJSONDocumentManager();
+    docMgr = evalClient.newJSONDocumentManager();
     readResults = docMgr.read(docId);
 
     System.out.println("Number of results = " + readResults.size());
     assertEquals("Wrong number of results", 1, readResults.size());
 
     // Make sure there are no documents in latest collection
-    queryMgr = readerClient.newQueryManager();
+    queryMgr = evalClient.newQueryManager();
     sqb = queryMgr.newStructuredQueryBuilder();
     termQuery = sqb.collection(latestCollectionName);
 
@@ -1038,7 +1078,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     assertEquals("Wrong number of results", 0, termQueryResults.getTotalSize());
 
     // Make sure there are 4 documents in temporal collection
-    queryMgr = readerClient.newQueryManager();
+    queryMgr = evalClient.newQueryManager();
     sqb = queryMgr.newStructuredQueryBuilder();
     termQuery = sqb.collection(temporalCollectionName);
 
@@ -1049,7 +1089,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
 
     // Make sure there are 4 documents in total. Use string search for this
-    queryMgr = readerClient.newQueryManager();
+    queryMgr = evalClient.newQueryManager();
 
     start = 1;
     termQueryResults = docMgr.search(stringQD, start);
@@ -2286,8 +2326,6 @@ public class TestBiTemporal extends BasicJavaClientREST {
         @SuppressWarnings("unchecked")
         HashMap<String, Object> validNode = (HashMap<String, Object>) (docObject
             .get(validNodeName));
-        // HashMap<?, ?> validNode = (HashMap<?,
-        // ?>)(docObject.get(validNodeName));
 
         String validStartDate = (String) validNode.get(validStartERIName);
         String validEndDate = (String) validNode.get(validEndERIName);
