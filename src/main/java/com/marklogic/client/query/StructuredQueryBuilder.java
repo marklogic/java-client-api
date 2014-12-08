@@ -1740,6 +1740,19 @@ public class StructuredQueryBuilder {
         }
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
             serializer.writeStartElement("value-query");
+            if ( values != null ) {
+                for ( Object value: values ) {
+                    if ( value == null ) {
+                        serializer.writeAttribute("type", "null");
+                    } else if ( value instanceof String ) {
+                        serializer.writeAttribute("type", "string");
+                    } else if ( value instanceof Number ) {
+                        serializer.writeAttribute("type", "number");
+                    } else if ( value instanceof Boolean ) {
+                        serializer.writeAttribute("type", "boolean");
+                    }
+                }
+            }
             ((IndexImpl) index).innerSerialize(serializer);
             if (scope != null) {
                 if (scope == FragmentScope.DOCUMENT) {
@@ -1753,13 +1766,8 @@ public class StructuredQueryBuilder {
             if ( values != null ) {
                 for ( Object value: values ) {
                     if ( value == null ) {
-                        serializer.writeEmptyElement("null");
-                    } else if ( value instanceof String ) {
+                    } else {
                         writeText(serializer, "text", value);
-                    } else if ( value instanceof Number ) {
-                        writeText(serializer, "number", value);
-                    } else if ( value instanceof Boolean ) {
-                        writeText(serializer, "boolean", value);
                     }
                 }
             }
