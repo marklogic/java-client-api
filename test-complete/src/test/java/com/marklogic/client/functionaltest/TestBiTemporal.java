@@ -647,9 +647,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
       System.out.println(message);
       System.out.println(statusCode);
 
-      // BUG: Right now this returns 500 error. Bug is open to fix this
-      // assertTrue("Error Message", message.equals("TEMPORAL-COLLECTIONLATEST"));
-      // assertTrue("Status code", (statusCode == 400));
+      assertTrue("Error Message", message.equals("XDMP-MULTIMATCH"));
+      assertTrue("Status code", (statusCode == 400));
     }
 
     assertTrue("Exception not thrown for invalid transform", exceptionThrown);
@@ -2670,9 +2669,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
       System.out.println(message);
       System.out.println(statusCode);
 
-      // BUG: Should be 400 error and TEMPORAL-CANNOT-URI 
-      // assertTrue("Error Message", message.equals("TEMPORAL-URIALREADYEXISTS"));
-      // assertTrue("Status code", (statusCode == 400));
+      assertTrue("Error Message", message.equals("TEMPORAL-CANNOT-URI"));
+      assertTrue("Status code", (statusCode == 400));
     }
 
     ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
