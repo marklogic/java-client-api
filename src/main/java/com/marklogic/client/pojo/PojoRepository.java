@@ -247,7 +247,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      PojoPage pagination methods will not be helpful as they would be from calls to search.
      */
     public PojoPage<T> read(ID[] ids)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+        throws ForbiddenUserException, FailedRequestException;
     /** Within an open transaction,
      * read one page of persisted pojos and unmarshall their data into new pojo instances.
      * If at least one instance is found but others are not, ignores the instances not found.
@@ -263,7 +263,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      is returned just like calls to {@link #search(PojoQueryDefinition, long) search}
      */
     public PojoPage<T> read(ID[] ids, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+        throws ForbiddenUserException, FailedRequestException;
     /** Read one page of persisted pojos of the type managed by this
      * PojoRepository and unmarshall their data into new pojo instances.
      * @param start the offset of the first document in the page (where 1 is the first result)
@@ -271,8 +271,9 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      type populated with the persisted data.
      *      Since this call may match a large set, only one page of {@link #getPageLength()}
      *      is returned just like calls to {@link #search(PojoQueryDefinition, long) search}.
-     */    public PojoPage<T> readAll(long start)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+     */    
+    public PojoPage<T> readAll(long start)
+        throws ForbiddenUserException, FailedRequestException;
     /** Within an open transaction, read one page of persisted pojos of the type managed by this
      * PojoRepository and unmarshall their data into new pojo instances.
      * @param start the offset of the first document in the page (where 1 is the first result)
@@ -285,7 +286,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      is returned just like calls to {@link #search(PojoQueryDefinition, long) search}.
      */
     public PojoPage<T> readAll(long start, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+        throws ForbiddenUserException, FailedRequestException;
 
     /** Find all persisted pojos of the type managed by this
      * PojoRepository also in one of the specified collections and unmarshall their data

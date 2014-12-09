@@ -196,10 +196,10 @@ public abstract class ConnectedRESTQA {
 			HttpPost post = new HttpPost("http://localhost:8002"+ "/v1/rest-apis?format=json");
 			//			
 			String JSONString = 
-					"{ \"rest-api\": {\"database\":\""+ 
-							dbName + 
-							"\",\"name\":\""+
+					"{ \"rest-api\": {\"name\":\""+
 							restServerName +
+							"\",\"database\":\""+ 
+							dbName + 
 							"\",\"port\":\""+
 							restPort+
 							"\"}}";
