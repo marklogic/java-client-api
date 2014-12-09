@@ -43,6 +43,7 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentWriteSet;
@@ -208,8 +209,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     @Override
     public long count(PojoQueryDefinition query, Transaction transaction) {
         long pageLength = getPageLength();
-        // set below to 0 when we get a fix for https://bugtrack.marklogic.com/30470
-        setPageLength(1);
+        setPageLength(0);
         PojoPage<T> page = search(query, 1, transaction);
         setPageLength(pageLength);
         return page.getTotalSize();
@@ -264,9 +264,11 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         ids.add(id);
         @SuppressWarnings("unchecked")
         PojoPage<T> page = read(ids.toArray((ID[])new Serializable[0]), transaction);
-        if ( page == null ) return null;
-        if ( page.hasNext() ) return page.next();
-        return null;
+        if ( page == null || page.hasNext() == false ) {
+            throw new ResourceNotFoundException("Could not find document of type " +
+                entityClass.getName() + " with id " + id);
+        }
+        return page.next();
     }
     @Override
     public PojoPage<T> read(ID[] ids) {

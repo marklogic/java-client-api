@@ -16,6 +16,7 @@
 package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -207,6 +208,8 @@ public class PojoFacadeTest {
         assertEquals("Wrong only doc", 1185098, page.next().getGeoNameId());
 
         // test reading only a non-existent document
+        // since this is single document read, we are consistent with search and an error is thrown
+        // on non-matching uri
         boolean exceptionThrown = false;
         try {
             cities.read(-1);
@@ -215,14 +218,18 @@ public class PojoFacadeTest {
         }
         assertTrue("ResourceNotFoundException should have been thrown", exceptionThrown);
 
-        // test reading multiple non-existent documents
+        // test reading multiple non-existent documents, https://github.com/marklogic/java-client-api/issues/185
+        // since this is a bulk API, we are consistent with search and no errors are thrown
+        // on non-matching uris
         exceptionThrown = false;
         try {
-            cities.read(new Integer[]{-1, -2});
+            page = cities.read(new Integer[]{-1, -2});
+            assertEquals(0, page.size());
         } catch (ResourceNotFoundException e) {
             exceptionThrown = true;
+            e.printStackTrace();
         }
-        assertTrue("ResourceNotFoundException should have been thrown", exceptionThrown);
+        assertFalse("ResourceNotFoundException should not have been thrown", exceptionThrown);
     }
 
     @SuppressWarnings("unused")
