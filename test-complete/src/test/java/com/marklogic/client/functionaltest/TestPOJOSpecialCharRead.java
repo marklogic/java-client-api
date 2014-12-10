@@ -482,7 +482,7 @@ public class TestPOJOSpecialCharRead extends BasicJavaClientREST {
      * Expect ResourceNotFoundException when there are no URI found. As per Git # 188.
      */
 
-	@Test(expected=ResourceNotFoundException.class)
+	@Test
 	public void testPOJORepoDeleteWithNegativeIdArray() {
 		long longId1 = getOneNegativeLongId();
 		long longId2 = getOneNegativeLongId();
@@ -499,10 +499,16 @@ public class TestPOJOSpecialCharRead extends BasicJavaClientREST {
 		// Validate the artifacts read back.
 		pojoArtifactPage = pojoReposProducts.read(pojoReposProductsIdLongArray);
 		
-		System.out.println("The count of items in this page "+ pojoArtifactPage.size());
+		
 		assertEquals("The count of items in this page ", 2, pojoArtifactPage.size());
 				
 		pojoReposProducts.delete(longId1,longId2);
+		
+		pojoArtifactPage = pojoReposProducts.read(pojoReposProductsIdLongArray);
+		
+		assertEquals("The count of items in this page ", 0, pojoArtifactPage.size());
+				
+		System.out.println("The count of items in this page "+ pojoArtifactPage.size());
 		
 		// Validate the artifacts read back is zero.
 		pojoArtifactPage = pojoReposProducts.read(pojoReposProductsIdLongArray);		

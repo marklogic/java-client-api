@@ -79,7 +79,17 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     @SuppressWarnings("unused")
     private String idPropertyName;
     private static final String ISO_8601_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
-    private static SimpleDateFormat simpleDateFormat8601 = new SimpleDateFormat(ISO_8601_FORMAT);
+    private static SimpleDateFormat simpleDateFormat8601;
+    static {
+        try {
+            simpleDateFormat8601 = new SimpleDateFormat(ISO_8601_FORMAT);
+        // Java 1.6 doesn't yet know about X (ISO 8601 format)
+        } catch (IllegalArgumentException e) {
+            if ( "Illegal pattern character 'X'".equals(e.getMessage()) ) {
+                simpleDateFormat8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            }
+        }
+    }
     static { simpleDateFormat8601.setTimeZone(TimeZone.getTimeZone("UTC")); }
     private ObjectMapper objectMapper = new ObjectMapper()
         // if we don't do the next two lines Jackson will automatically close our streams which is undesirable

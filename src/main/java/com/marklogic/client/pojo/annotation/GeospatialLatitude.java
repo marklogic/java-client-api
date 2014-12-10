@@ -19,8 +19,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /** Use this annotation in combination with {@link GeospatialLongitude} on a
- * sibling property to specify that a Geospatial Element Pair Index should
- * be created for these pojo properties. The value should follow the rules
+ * sibling property to specify that a Geospatial Element Pair Index is needed
+ * for these pojo properties. The value should follow the rules
  * for any Geospatial Element Pair Index in MarkLogic Server with coordinate
  * system "wgs84".
  *

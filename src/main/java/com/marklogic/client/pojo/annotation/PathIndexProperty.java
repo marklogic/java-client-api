@@ -19,7 +19,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /** Use this annotation to specify that a Path Index (required for range
- * queries) should be created for this pojo property.  A path index is
+ * queries) is needed for this pojo property.  A path index is
  * used rather than an element range index because we can restrict matches
  * to only properties that are direct children of this class type.  We
  * do this by including the class name in the path specification on the
