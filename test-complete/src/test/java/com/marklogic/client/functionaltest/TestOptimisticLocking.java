@@ -19,6 +19,7 @@ import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.ServerConfigurationManager.Policy;
+import com.marklogic.client.admin.ServerConfigurationManager.UpdatePolicy;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.document.XMLDocumentManager;
@@ -42,6 +43,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 	@After
 	public  void testCleanUp() throws Exception
 	{
+		
 		clearDB(restPort);
 		System.out.println("Running clear script");
 	}
@@ -649,6 +651,19 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		ServerConfigurationManager configMgr = client.newServerConfigManager();
+
+		// read the server configuration from the database
+		configMgr.readConfiguration();
+
+		// require content versions for updates and deletes
+		// use Policy.OPTIONAL to allow but not require versions
+		configMgr.setUpdatePolicy(UpdatePolicy.VERSION_OPTIONAL);
+
+		// write the server configuration to the database
+		configMgr.writeConfiguration();
+		client.release();
 		tearDownJavaRESTServer(dbName, fNames, restServerName);
 
 	}
