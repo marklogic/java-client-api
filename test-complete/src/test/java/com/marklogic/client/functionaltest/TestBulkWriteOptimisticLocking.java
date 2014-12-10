@@ -54,7 +54,7 @@ public class TestBulkWriteOptimisticLocking extends BasicJavaClientREST {
 		System.out.println("In setup");
 		setupJavaRESTServer(dbName, fNames[0], restServerName, restPort);
 	}
-
+/*
 	@Before
 	public void testSetup() throws Exception {
 		// create new connection for each test below
@@ -71,7 +71,7 @@ public class TestBulkWriteOptimisticLocking extends BasicJavaClientREST {
 		// use UpdatePolicy.VERSION_OPTIONAL to allow but not
 		// require identifier use. Use UpdatePolicy.MERGE_METADATA
 		// (the default) to deactive identifier use
-		configMgr.setUpdatePolicy(UpdatePolicy.VERSION_REQUIRED);
+//		configMgr.setUpdatePolicy(UpdatePolicy.VERSION_REQUIRED);
 
 		// write the server configuration to the database
 		configMgr.writeConfiguration();
@@ -84,6 +84,20 @@ public class TestBulkWriteOptimisticLocking extends BasicJavaClientREST {
 	@After
 	public void testCleanUp() throws Exception {
 		System.out.println("Running clear script");
+		ServerConfigurationManager configMgr = client.newServerConfigManager();
+
+		// read the server configuration from the database
+		configMgr.readConfiguration();
+
+		// require content versions for updates and deletes
+		// use UpdatePolicy.VERSION_OPTIONAL to allow but not
+		// require identifier use. Use UpdatePolicy.MERGE_METADATA
+		// (the default) to deactive identifier use
+		configMgr.setUpdatePolicy(UpdatePolicy.VERSION_OPTIONAL);
+
+		// write the server configuration to the database
+		configMgr.writeConfiguration();
+
 		// release client
 		client.release();
 	}
@@ -218,7 +232,7 @@ public class TestBulkWriteOptimisticLocking extends BasicJavaClientREST {
 		// release the client
 		client.release();
 	}
-	/*
+	*
 	*
 	* Use UpdatePolicy.VERSION_OPTIONAL and write test methods
 	*
