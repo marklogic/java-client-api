@@ -54,6 +54,7 @@ import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.eval.ServerEvaluationCall;
+import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
@@ -597,6 +598,63 @@ public class BulkReadWriteTest {
             }
         }
     } 
+
+    @Test
+    public void test_218() throws Exception{
+        int count=1;
+        boolean committed = false;
+        String directory = "/test_bulk_218/";
+        DatabaseClient client2 = DatabaseClientFactory.newClient(
+            Common.HOST, Common.PORT, "Documents", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
+        Transaction t1 = client2.openTransaction();
+        QueryManager queryMgr2 = client2.newQueryManager();
+        QueryManager queryMgr1 = Common.client.newQueryManager();
+
+        try{
+            XMLDocumentManager docMgr = client2.newXMLDocumentManager();
+            DocumentWriteSet writeset =docMgr.newWriteSet();
+            for(int i =0;i<12;i++){
+                String contents = "<xml>test" + i + "</xml>";
+                String docId = directory + "sec"+i+".xml";
+                writeset.add(docId, new StringHandle(contents).withFormat(Format.XML));
+                if(count%10 == 0){
+                    docMgr.write(writeset,t1);
+                    writeset = docMgr.newWriteSet();
+                }
+                count++;
+            }
+            if(count%10 > 0){
+                docMgr.write(writeset,t1);
+            }
+            t1.commit();
+            committed=true;
+
+            QueryDefinition directoryQuery = queryMgr2.newStringDefinition();
+            directoryQuery.setDirectory(directory);
+
+            QueryDefinition directoryQuery1 = queryMgr1.newStringDefinition();
+            directoryQuery1.setDirectory(directory);
+
+            SearchHandle inRuntimeDbResults = queryMgr2.search(directoryQuery, new SearchHandle());
+            SearchHandle inDefaultDbResults = queryMgr1.search(directoryQuery1, new SearchHandle());
+
+            assertEquals("Count of documents in runtime db", 12, inRuntimeDbResults.getTotalResults());
+            assertEquals("Count of documents in default db", 0,  inDefaultDbResults.getTotalResults());
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+            if(! committed){
+                t1.rollback();
+            }
+            throw e;
+        } finally {
+
+            DeleteQueryDefinition deleteQuery = queryMgr2.newDeleteDefinition();
+            deleteQuery.setDirectory(directory);
+            queryMgr2.delete(deleteQuery);
+
+            client2.release();
+        }
+    }
 
     private static void addCountry(String line, Map<String, Country> countries) {
         // skip comment lines

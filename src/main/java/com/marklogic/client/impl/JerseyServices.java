@@ -1540,13 +1540,15 @@ public class JerseyServices implements RESTServices {
 		if (logger.isDebugEnabled())
 			logger.debug("Opening transaction");
 
-		MultivaluedMap<String, String> transParams = null;
+		MultivaluedMap<String, String> transParams = new MultivaluedMapImpl();
 		if (name != null || timeLimit > 0) {
-			transParams = new MultivaluedMapImpl();
 			if (name != null)
 				addEncodedParam(transParams, "name", name);
 			if (timeLimit > 0)
 				transParams.add("timeLimit", String.valueOf(timeLimit));
+		}
+		if ( database != null ) {
+			addEncodedParam(transParams, "database", database);
 		}
 
 		WebResource resource = (transParams != null) ? getConnection().path(
