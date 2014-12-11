@@ -211,7 +211,7 @@ public class BulkReadWriteTest {
         } catch (ResourceNotFoundException e) {
             exceptionThrown = true;
         }
-        assertTrue("ResourceNotFoundException should have been thrown", exceptionThrown);
+        assertFalse("ResourceNotFoundException should not have been thrown", exceptionThrown);
 
         // test reading a non-existent document (not actually a bulk operation)
         exceptionThrown = false;
