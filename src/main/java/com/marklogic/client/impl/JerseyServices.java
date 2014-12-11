@@ -2220,6 +2220,9 @@ public class JerseyServices implements RESTServices {
 		if (transactionId != null) {
 			params.add("txid", transactionId);
 		}
+		if ( database != null ) {
+			addEncodedParam(params, "database", database);
+		}
 
 		WebResource webResource = getConnection().path("search").queryParams(params);
 
