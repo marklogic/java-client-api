@@ -4439,8 +4439,9 @@ public class JerseyServices implements RESTServices {
         if ( response == null ) return null;
 		MultiPart entity = response.hasEntity() ?
 				response.getEntity(MultiPart.class) : null;
-		if (entity == null) return null;
-        return makeResults(clazz, reqlog, operation, entityType, entity.getBodyParts(), response);
+
+        List<BodyPart> partList = (entity == null) ? null : entity.getBodyParts();
+        return makeResults(clazz, reqlog, operation, entityType, partList, response);
 	}
 
 	private <U extends JerseyResultIterator> U makeResults(
@@ -4449,7 +4450,6 @@ public class JerseyServices implements RESTServices {
 		logRequest(reqlog, "%s for %s", operation, entityType);
 
         if ( response == null ) return null;
-		if (partList == null || partList.size() == 0) return null;
 
 		try {
 			java.lang.reflect.Constructor<U> constructor = 
@@ -4630,7 +4630,9 @@ public class JerseyServices implements RESTServices {
                 this.size = partList.size();
                 this.partQueue = new ConcurrentLinkedQueue<BodyPart>(
                         partList).iterator();
-			}
+            } else {
+                this.size = 0;
+            }
 			this.closeable = closeable;
 		}
 

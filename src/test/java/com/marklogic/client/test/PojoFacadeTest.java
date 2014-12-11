@@ -188,6 +188,7 @@ public class PojoFacadeTest {
     @Test
     public void testA_LoadPojos() throws Exception {
         BulkReadWriteTest.loadCities(new PojoCityWriter());
+        assertEquals("total docs = MAX_TO_WRITE + Chittigong", MAX_TO_WRITE + 1, cities.count());
     }
 
     @Test
