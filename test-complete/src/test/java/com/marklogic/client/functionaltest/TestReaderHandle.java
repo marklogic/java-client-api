@@ -232,7 +232,7 @@ public class TestReaderHandle extends BasicJavaClientREST {
 		client.release();
 	}
 
-	@Test	
+	//@Test Issue 225 	
 	public void testBinaryCRUD() throws IOException
 	{	
 		String filename = "Pandakarlino.jpg";
