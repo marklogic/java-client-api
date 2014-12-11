@@ -549,13 +549,10 @@ public class BulkReadWriteTest {
     @Test
     public void test_171() throws Exception{
         DatabaseClient client = DatabaseClientFactory.newClient(
-        // the following line breaks things but should not: https://github.com/marklogic/java-client-api/issues/171
-        // TODO: uncomment the following line when https://bugtrack.marklogic.com/30299 is fixed
-        //Common.HOST, Common.PORT, "Documents", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
-            Common.HOST, Common.PORT, Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
+            Common.HOST, Common.PORT, "Documents", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
         int count=1;
         boolean tstatus =true;
-        String directory = "/test_171/";
+        String directory = "/test_bulk_171/";
         Transaction t1 = client.openTransaction();
         try{
             QueryManager queryMgr = client.newQueryManager();
@@ -590,13 +587,6 @@ public class BulkReadWriteTest {
             assertEquals("Count of documents outside of the transaction",0,outOfTransactionResults.getTotalResults());
             assertEquals("Count of documents inside of the transaction", 2,   inTransactionResults.getTotalResults());
 
-            //String query = "(fn:count(xdmp:directory('" + directory + "')))";
-            //ServerEvaluationCall evl= client.newServerEval().xquery(query);
-            //EvalResultIterator evr = evl.eval();
-            //assertEquals("Count of documents outside of the transaction",0,evr.next().getNumber().intValue());
-            //evl= client.newServerEval().xquery(query).transaction(t1);
-            //evr = evl.eval();
-            //assertEquals("Count of documents outside of the transaction",103,evr.next().getNumber().intValue());
         }catch(Exception e){
             System.out.println(e.getMessage());
             tstatus=true;
