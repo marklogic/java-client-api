@@ -68,7 +68,7 @@ public class EvalTest {
     @BeforeClass
     public static void beforeClass() {
         Common.connectEval();
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
     @AfterClass
     public static void afterClass() {
@@ -344,12 +344,11 @@ public class EvalTest {
     }
     @Test
     public void test_171() throws Exception{
-        //DatabaseClient client = Common.newEvalClient();
         DatabaseClient client = DatabaseClientFactory.newClient(
-   Common.HOST, Common.PORT, "Documents", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
+            Common.HOST, Common.PORT, "Documents", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
         int count=1;
         boolean tstatus =true;
-        String directory = "/test_171/";
+        String directory = "/test_eval_171/";
         Transaction t1 = client.openTransaction();
         try{
             QueryManager queryMgr = client.newQueryManager();
@@ -375,14 +374,13 @@ public class EvalTest {
                 docMgr.write(writeset,t1);
             }
  
-            QueryDefinition directoryQuery = queryMgr.newStringDefinition();
-            directoryQuery.setDirectory(directory);
-            SearchHandle outOfTransactionResults = queryMgr.search(directoryQuery, new SearchHandle());
- 
-            SearchHandle inTransactionResults = queryMgr.search(directoryQuery, new SearchHandle(), t1);
- 
-            assertEquals("Count of documents outside of the transaction",0,outOfTransactionResults.getTotalResults());
-            assertEquals("Count of documents inside of the transaction", 2, inTransactionResults.getTotalResults());
+            String query = "(fn:count(xdmp:directory('" + directory + "')))";
+            ServerEvaluationCall evl= client.newServerEval().xquery(query);
+            EvalResultIterator evr = evl.eval();
+            assertEquals("Count of documents outside of the transaction",0,evr.next().getNumber().intValue());
+            evl= client.newServerEval().xquery(query).transaction(t1);
+            evr = evl.eval();
+            assertEquals("Count of documents outside of the transaction",2,evr.next().getNumber().intValue());
  
         }catch(Exception e){
             System.out.println(e.getMessage());
