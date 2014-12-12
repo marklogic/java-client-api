@@ -51,6 +51,11 @@ import com.marklogic.client.pojo.annotation.PathIndexProperty;
  *       -d '@cityIndexes.json' \
  *       -X PUT 'http://localhost:8002/manage/LATEST/databases/java-unittest/properties'
  * </pre>
+ * <b>WARNING!</b> Applying this generated index file via maangement API will overwrite
+ * existing indexes!  Only use this as-is if there are no other indexes on your
+ * database that you want to keep.  To add these indexes to other indexes please get
+ * the configuration for existing indexes from the management API and add these to that
+ * file before applying.
  */
 public class GenerateIndexConfig {
     /**
