@@ -28,13 +28,13 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 	public static void setUpBeforeClass() throws Exception {
 		//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		System.out.println("In setup");
-//		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-//		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		tearDownJavaRESTServer(dbName, fNames, restServerName);
 	}
 
 	@Before
@@ -140,7 +140,7 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		products.delete((long)112);
 		products.deleteAll();
 	}
-	//This test is to read objects into pojo page based on Ids 
+	//This test is to read objects into pojo page based on Ids ,it has a scenario for Issue 192
 		// until #103 is resolved	
 	@Test
 		public void testPOJOWriteWithPojoPage() {
