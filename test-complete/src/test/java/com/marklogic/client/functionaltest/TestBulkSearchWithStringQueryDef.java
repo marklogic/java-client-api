@@ -234,6 +234,20 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST{
 		}
 
 	}
+	//Testing issue 192
+	@Test
+	public void testBulkSearchSQDwithNoResults() throws Exception {
+		loadTxtDocuments();
+		TextDocumentManager docMgr = client.newTextDocumentManager();
+		QueryManager queryMgr = client.newQueryManager();
+		StringQueryDefinition qd = queryMgr.newStringDefinition();
+		qd.setCriteria("zzzz");
+		SearchHandle results = new SearchHandle();
+		DocumentPage page= docMgr.search(qd, 1,results);
+		assertFalse("Should return no results",page.hasNext());
+
+
+	}
 	//This test has set response to JSON and pass StringHandle with format as JSON, expectint it to work, logged an issue 82
 	@Test
 	public void testBulkSearchSQDwithResponseFormatandStringHandle() throws Exception{
