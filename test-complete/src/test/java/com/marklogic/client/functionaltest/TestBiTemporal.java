@@ -466,14 +466,14 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
       if (systemTime != null) {
         docMgr.write(docId, mh, handle, transformer, null, temporalCollection,
-            systemTime, null);
+            systemTime);
       } else {
         docMgr.write(docId, mh, handle, transformer, null, temporalCollection);
       }
     } else {
       if (systemTime != null) {
         docMgr.write(docId, mh, handle, null, transaction, temporalCollection,
-            systemTime, null);
+            systemTime);
       } else {
         docMgr.write(docId, mh, handle, null, transaction, temporalCollection);
       }
@@ -534,7 +534,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     DocumentMetadataHandle mh = setMetadata(true);
     
     docMgr.write(docId, mh, handle, null, transaction, temporalCollection,
-        systemTime, null);
+        systemTime);
   }
 
   public void deleteJSONSingleDocument(String temporalCollection, String docId,
@@ -2506,12 +2506,12 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // put meta-data
     DocumentMetadataHandle mh = setMetadata(false);
     docMgr.write(docId, mh, handle, null, null, temporalLsqtCollectionName,
-            insertTime, null);
+            insertTime);
 
     Calendar updateTime = DatatypeConverter
         .parseDateTime("2010-01-01T00:00:01");
     docMgr.write(docId, mh, handle, null, null, temporalLsqtCollectionName,
-        updateTime, null);
+        updateTime);
 
     Thread.sleep(2000);
     
