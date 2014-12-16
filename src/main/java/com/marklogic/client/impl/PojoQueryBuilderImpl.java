@@ -227,11 +227,19 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
                 type = "xs:string";
             } else if ( Integer.TYPE.equals(propertyClass) ) {
                 type = "xs:int";
+            } else if ( Integer.class.isAssignableFrom(propertyClass) ) {
+                type = "xs:int";
             } else if ( Long.TYPE.equals(propertyClass) ) {
+                type = "xs:long";
+            } else if ( Long.class.isAssignableFrom(propertyClass) ) {
                 type = "xs:long";
             } else if ( Float.TYPE.equals(propertyClass) ) {
                 type = "xs:float";
+            } else if ( Float.class.isAssignableFrom(propertyClass) ) {
+                type = "xs:float";
             } else if ( Double.TYPE.equals(propertyClass) ) {
+                type = "xs:double";
+            } else if ( Double.class.isAssignableFrom(propertyClass) ) {
                 type = "xs:double";
             } else if ( Number.class.isAssignableFrom(propertyClass) ) {
                 type = "xs:decimal";
