@@ -15,6 +15,9 @@
  */
 package com.marklogic.client.test;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Calendar;
@@ -28,11 +31,6 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertArrayEquals;
-
-import org.junit.FixMethodOrder;
-import org.junit.runners.MethodSorters;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -56,18 +54,23 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EvalTest {
+    private static GregorianCalendar septFirst = new GregorianCalendar(TimeZone.getTimeZone("CET"));
+    private static ExtensionLibrariesManager libMgr;
+
     @BeforeClass
     public static void beforeClass() {
+        Common.connectAdmin();
+        libMgr = Common.client.newServerConfigManager().newExtensionLibrariesManager();
         Common.connectEval();
+
+        septFirst.set(2014, Calendar.SEPTEMBER, 1, 0, 0, 0);
+        septFirst.set(Calendar.MILLISECOND, 0);
         //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
     @AfterClass
@@ -76,33 +79,74 @@ public class EvalTest {
     }
 
     @Test
-    public void evalTest1() throws ParserConfigurationException, DatatypeConfigurationException, JsonProcessingException, IOException, SAXException {
-        // hello world and response determined by implicit StringHandle which registered with String.class
-        ServerEvaluationCall query = Common.client.newServerEval().xquery("'hello world'");
+    public void evalHelloWorld() {
+        // javascript hello world and response determined by implicit StringHandle which registered with String.class
+        ServerEvaluationCall query = Common.client.newServerEval().javascript("'hello world'");
         String response = query.evalAs(String.class);
         assertEquals("Return should be 'hello world'", "hello world", response);
 
-        // hello world with a variable and response explicit set to StringHandle
+        // xquery hello world with a variable and response explicit set to StringHandle
         query = Common.client.newServerEval()
             .xquery("declare variable $planet external;" +
                     "'hello world from ' || $planet")
             .addVariable("planet", "Mars");
         StringHandle strResponse = query.eval(new StringHandle());
         assertEquals("Return should be 'hello world from Mars'", "hello world from Mars", strResponse.get());
+    }
 
-        // accept and return each JSON variable type so use MultiPartResponsePage
-        GregorianCalendar septFirst = new GregorianCalendar(TimeZone.getTimeZone("CET"));
-        septFirst.set(2014, Calendar.SEPTEMBER, 1, 0, 0, 0);
-        septFirst.set(Calendar.MILLISECOND, 0);
-        query = Common.client.newServerEval()
-            .javascript("var myString;" +
-                    "var myArray;" +
-                    "var myObject;" +
-                    "var myBool;" +
-                    "var myInteger;" +
-                    "var myDouble;" +
-                    "var myDate;" +
-                    "xdmp.arrayValues([myString, myArray, myObject, myBool, myInteger, myDouble, myDate])")
+    @Test
+    public void evalAndInvokeJavascript() throws DatatypeConfigurationException, JsonProcessingException, IOException {
+        String javascript =
+            "var myString;" +
+            "var myArray;" +
+            "var myObject;" +
+            "var myBool;" +
+            "var myInteger;" +
+            "var myDouble;" +
+            "var myDate;" +
+            "xdmp.arrayValues([myString, myArray, myObject, myBool, myInteger, myDouble, myDate])";
+        // first run it as ad-hoc eval
+        runAndTestJavascript( Common.client.newServerEval().javascript(javascript) );
+
+        // run the same code, this time as a module we'll invoke
+        StringHandle javascriptModule = new StringHandle( javascript );
+        javascriptModule.setFormat(Format.TEXT);
+
+        // libMgr is connected with  admin privileges (as rest-admin user)
+        libMgr.write("/ext/test/evaltest.sjs", javascriptModule);
+        // now module is installed, let's invoke it
+        runAndTestJavascript( Common.client.newServerEval().modulePath("/ext/test/evaltest.sjs") );
+        // clean up module we no longer need
+        libMgr.delete("/ext/test/evaltest.sjs");
+    }
+
+    @Test
+    public void evalAndInvokeXQuery()
+        throws ParserConfigurationException, DatatypeConfigurationException, JsonProcessingException,
+        IOException, SAXException
+    {
+        InputStreamHandle xquery = new InputStreamHandle(
+            this.getClass().getClassLoader().getResourceAsStream("evaltest.xqy"));
+        // first read it locally and run it as ad-hoc eval
+        runAndTestXQuery( Common.client.newServerEval().xquery(xquery) );
+
+        // run the same code, this time as a module we'll invoke
+        xquery = new InputStreamHandle(
+            this.getClass().getClassLoader().getResourceAsStream("evaltest.xqy"));
+        xquery.setFormat(Format.TEXT);
+
+        // libMgr is connected with  admin privileges (as rest-admin user)
+        libMgr.write("/ext/test/evaltest.xqy", xquery);
+        // now module is installed, let's invoke it
+        runAndTestXQuery( Common.client.newServerEval().modulePath("/ext/test/evaltest.xqy") );
+        // clean up module we no longer need
+        libMgr.delete("/ext/test/evaltest.xqy");
+    }
+
+    private void runAndTestJavascript(ServerEvaluationCall call)
+        throws DatatypeConfigurationException, JsonProcessingException, IOException
+    {
+        call = call
             // String is directly supported in any EvalBuilder
             .addVariable("myString",  "Mars")
             // ArrayNode extends JSONNode which is mapped to implicitly use JacksonHandle
@@ -115,7 +159,7 @@ public class EvalTest {
             .addVariable("myDouble",  1.1)
             .addVariable("myDate", 
                 DatatypeFactory.newInstance().newXMLGregorianCalendar(septFirst).toString());
-        EvalResultIterator results = query.eval();
+        EvalResultIterator results = call.eval();
         try {
             assertEquals("myString looks wrong", "Mars", results.next().getAs(String.class));
             assertEquals("myArray looks wrong", 
@@ -134,34 +178,11 @@ public class EvalTest {
               results.next().getString());
       } finally { results.close(); }
 
-        // accept and return each XML variable type so use MultiPartResponsePage
-        InputStreamHandle xquery = new InputStreamHandle(
-            this.getClass().getClassLoader().getResourceAsStream("evaltest.xqy"));
-        // first read it locally and run it as ad-hoc eval
-        runAndTest( Common.client.newServerEval().xquery(xquery) );
-
-        // run the same code, this time as a module we'll invoke
-        xquery = new InputStreamHandle(
-            this.getClass().getClassLoader().getResourceAsStream("evaltest.xqy"));
-        xquery.setFormat(Format.TEXT);
-        Common.connectAdmin();
-        ExtensionLibrariesManager libraries = 
-            Common.client.newServerConfigManager().newExtensionLibrariesManager();
-        libraries.write("/ext/test/evaltest.xqy", xquery);
-        Common.connectEval();
-        runAndTest( Common.client.newServerEval().modulePath("/ext/test/evaltest.xqy") );
-        Common.connectAdmin();
-        libraries.delete("/ext/test/evaltest.xqy");
-        Common.connectEval();
     }
 
-    private void runAndTest(ServerEvaluationCall call) 
+    private void runAndTestXQuery(ServerEvaluationCall call) 
             throws JsonProcessingException, IOException, SAXException, ParserConfigurationException, DatatypeConfigurationException 
     {
-        GregorianCalendar septFirst = new GregorianCalendar(TimeZone.getTimeZone("CET"));
-        septFirst.set(2014, Calendar.SEPTEMBER, 1, 0, 0, 0);
-        septFirst.set(Calendar.MILLISECOND, 0);
-
         Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder()
             .parse(this.getClass().getClassLoader().getResourceAsStream("1-empty-1.0.xml"));
         call = call.addNamespace("myPrefix", "http://marklogic.com/test")
