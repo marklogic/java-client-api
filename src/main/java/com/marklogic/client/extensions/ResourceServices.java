@@ -42,12 +42,6 @@ public interface ResourceServices {
 	public String getResourceName();
 
 	/**
-	 * Returns the script language of the resource.
-	 * @return	the script language
-	 */
-	public ExtensionMetadata.ScriptLanguage getScriptLanguage();
-
-	/**
 	 * Reads resource content by calling a GET service.
 	 * @param params	the parameters for the call
 	 * @param output	a handle on the content returned by the call

@@ -90,7 +90,7 @@ public class JavascriptResourceExtension {
 			super();
 
 			// a Resource Manager must be initialized by a Database Client
-			client.init(NAME, this, ExtensionMetadata.JAVASCRIPT);
+			client.init(NAME, this);
 
 			// the Dictionary Manager delegates some services to a document manager
 			docMgr = client.newXMLDocumentManager();
