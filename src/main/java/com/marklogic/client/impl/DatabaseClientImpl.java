@@ -137,12 +137,6 @@ public class DatabaseClientImpl implements DatabaseClient {
 
 	@Override
     public <T extends ResourceManager> T init(String resourceName, T resourceManager) {
-		return init(resourceName, resourceManager, null);
-	}
-
-	@Override
-    public <T extends ResourceManager> T init(String resourceName, T resourceManager, 
-	  ExtensionMetadata.ScriptLanguage scriptLanguage) {
 		if (resourceManager == null)
 			throw new IllegalArgumentException("Cannot initialize null resource manager");
 		if (resourceName == null)
@@ -151,7 +145,7 @@ public class DatabaseClientImpl implements DatabaseClient {
 			throw new IllegalArgumentException("Cannot initialize resource manager with empty resource name");
 
 		((ResourceManagerImplementation) resourceManager).init(
-				new ResourceServicesImpl(services,resourceName,scriptLanguage)
+				new ResourceServicesImpl(services,resourceName)
 				);
 
 		return resourceManager;
