@@ -236,10 +236,11 @@ public class TestBulkReadSample1 extends BasicJavaClientREST  {
 		 if(count%BATCH_SIZE > 0){
 		 docMgr.write(writeset);
 		 }
-		 String uris[] = new String[102];
+		 String uris[] = new String[103];
 		 for(int i =0;i<102;i++){
 			 uris[i]=DIRECTORY+"dog"+i+".json";
 		 }
+		 uris[102]="junkURL/test.json";
 		 count=0;
 		 DocumentPage page = docMgr.read(uris);
 		 DocumentRecord rec;

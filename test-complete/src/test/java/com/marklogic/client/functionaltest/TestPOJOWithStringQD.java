@@ -257,7 +257,7 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 				count++;
 				//				System.out.println(a.getId()+" "+a.getManufacturer().getName() +"  "+count);
 			}
-			assertEquals("Page total results",count,p.getTotalSize());
+			assertEquals("Page total results",-1,p.getTotalSize());
 			pageNo=pageNo+p.getPageSize();
 //				System.out.println(results.get().toString());
 		}while(!p.isLastPage() && pageNo<p.getTotalSize());
