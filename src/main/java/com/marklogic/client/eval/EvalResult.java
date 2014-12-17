@@ -28,7 +28,7 @@ public interface EvalResult {
     /** Convenience enum useful for strongly-typed comparison to ensure
      * the result is of the type expected.  This list captures most of 
      * the types expected from the X-Primitive header.
-     * @see <a href="http://docs.marklogic.com/guide/rest-dev">REST GUIDE</a> -&gt; eval endpoint
+     * @see <a href="http://docs.marklogic.com/guide/rest-dev">REST GUIDE -&gt; eval endpoint</a>
      */
     enum Type {
         XML, JSON,
@@ -39,14 +39,14 @@ public interface EvalResult {
     };
     /** The {@link Type} of this result from the X-Primitive header
      * provided by the REST API eval endpoint.
-     * @see <a href="http://docs.marklogic.com/guide/rest-dev">REST GUIDE</a> -&gt; eval endpoint
+     * @see <a href="http://docs.marklogic.com/guide/rest-dev">REST GUIDE -&gt; eval endpoint</a>
      * @return the type of this result
      */
     public Type getType();
 
     /** The format of this result from the Content-Type header
      * provided by the REST API eval endpoint.
-     * @see <a href="http://docs.marklogic.com/guide/rest-dev">REST GUIDE</a> -&gt; eval endpoint
+     * @see <a href="http://docs.marklogic.com/guide/rest-dev">REST GUIDE -&gt; eval endpoint</a>
      * @return the format of this result
      */
     public Format getFormat();
