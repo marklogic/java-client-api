@@ -27,17 +27,12 @@ import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
-import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
@@ -64,7 +59,7 @@ public class BitemporalTest {
     }
 
 	@Test
-	public void test1() {
+	public void test1() throws Exception {
 
 		String version1 = "<test>" +
 				uniqueTerm + " version1" +
@@ -117,6 +112,8 @@ public class BitemporalTest {
 		DocumentPage termQueryResults = docMgr.search(termQuery, start);
 		assertEquals("Wrong number of results", 4, termQueryResults.size());
 
+		// sleep for 2 seconds
+		Thread.sleep(2000);
 		StructuredQueryDefinition currentQuery = sqb.temporalLsqtQuery(temporalCollection, null, 1);
 		StructuredQueryDefinition currentDocQuery = sqb.and(termQuery, currentQuery);
 		DocumentPage currentDocQueryResults = docMgr.search(currentDocQuery, start);
