@@ -46,11 +46,12 @@ public class BitemporalTest {
 	// system-start, system-end, valid-start, and valid-end
 	static String temporalCollection = "temporal-collection";
 	static String uniqueTerm = "temporalDoc";
-	
+	static String docId = "test-" + uniqueTerm + ".xml";
+
 	@BeforeClass
     public static void beforeClass() {
         Common.connect();
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
     @AfterClass
     public static void afterClass() {
@@ -89,7 +90,6 @@ public class BitemporalTest {
 				"<valid-start>2014-08-19T00:00:05</valid-start>" +
 				"<valid-end>2014-08-19T00:00:06</valid-end>" +
     		"</test>";
-		String docId = "test-" + uniqueTerm + ".xml";
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		StringHandle handle1 = new StringHandle(version1).withFormat(Format.XML);
 		docMgr.write(docId, null, handle1, null, null, temporalCollection);
@@ -156,7 +156,7 @@ public class BitemporalTest {
 		QueryManager queryMgr = client.newQueryManager();
 		queryMgr.setPageLength(1000);
 		QueryDefinition query = queryMgr.newStringDefinition();
-		query.setCollections(temporalCollection);
+		query.setCollections(docId);
 //		DeleteQueryDefinition deleteQuery = client.newQueryManager().newDeleteDefinition();
 //		deleteQuery.setCollections(temporalCollection);
 //		client.newQueryManager().delete(deleteQuery);
