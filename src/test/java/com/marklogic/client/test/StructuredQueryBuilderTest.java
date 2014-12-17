@@ -326,7 +326,7 @@ public class StructuredQueryBuilderTest {
         			+ "xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" "
         			+ "xmlns:search=\"http://marklogic.com/appservices/search\" "
 					+ "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
-    				+ "<value-query><element ns=\"\" name=\"name\"></element><text>one</text></value-query></query>", q);
+    				+ "<value-query type=\"string\"><element ns=\"\" name=\"name\"></element><text>one</text></value-query></query>", q);
         }
 
         t = qb.valueConstraint("name", 2.0, "one");
@@ -348,7 +348,7 @@ public class StructuredQueryBuilderTest {
         			+ "xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" "
         			+ "xmlns:search=\"http://marklogic.com/appservices/search\" "
 					+ "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
-    				+ "<value-query><element ns=\"\" name=\"name\"></element><text>one</text><weight>2.0</weight></value-query></query>", q);
+    				+ "<value-query type=\"string\"><element ns=\"\" name=\"name\"></element><text>one</text><weight>2.0</weight></value-query></query>", q);
         }
 
         t = qb.wordConstraint("name", "one");
