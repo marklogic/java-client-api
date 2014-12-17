@@ -150,7 +150,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
             metadataHandle = metadataHandle.withCollections(collections);
         }
         DocumentWriteSet writeSet = docMgr.newWriteSet();
-        writeSet.add(createUri(entity), metadataHandle, contentHandle);
+        writeSet.add(getDocumentUri(entity), metadataHandle, contentHandle);
         try {
             docMgr.write(writeSet, transaction);
         } catch(ClientHandlerException e) {
@@ -384,7 +384,8 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         }
     }
 
-    private String createUri(T entity) {
+    @Override
+    public String getDocumentUri(T entity) {
         return createUri(getId(entity));
     }
 

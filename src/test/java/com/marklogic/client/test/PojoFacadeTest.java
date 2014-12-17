@@ -379,6 +379,10 @@ public class PojoFacadeTest {
         City abuDhabi = cities.read(292968);
         City buenosAires = cities.read(3435910);
 
+        // test that we're generating the uris we expect
+        assertEquals("com.marklogic.client.test.City/292223.json",
+            cities.getDocumentUri(dubai));
+
         Country ae = new Country()
             .setIsoCode("AE")
             .setName("United Arab Emirates")
