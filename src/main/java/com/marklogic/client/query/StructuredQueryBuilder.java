@@ -1740,17 +1740,15 @@ public class StructuredQueryBuilder {
         }
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
             serializer.writeStartElement("value-query");
-            if ( values != null ) {
-                for ( Object value: values ) {
-                    if ( value == null ) {
-                        serializer.writeAttribute("type", "null");
-                    } else if ( value instanceof String ) {
-                        serializer.writeAttribute("type", "string");
-                    } else if ( value instanceof Number ) {
-                        serializer.writeAttribute("type", "number");
-                    } else if ( value instanceof Boolean ) {
-                        serializer.writeAttribute("type", "boolean");
-                    }
+            if ( values != null && values.length > 0 ) {
+                if ( values[0] == null ) {
+                    serializer.writeAttribute("type", "null");
+                } else if ( values[0] instanceof String ) {
+                    serializer.writeAttribute("type", "string");
+                } else if ( values[0] instanceof Number ) {
+                    serializer.writeAttribute("type", "number");
+                } else if ( values[0] instanceof Boolean ) {
+                    serializer.writeAttribute("type", "boolean");
                 }
             }
             ((IndexImpl) index).innerSerialize(serializer);
