@@ -41,7 +41,7 @@ import java.io.Serializable;
  *    ...
  *    DatabaseClient client = ...;
  *    PojoRepository<MyClass, Integer> myClassRepo = 
- *        client.newPojoRepository(MyClass.class, Integer);</pre>
+ *        client.newPojoRepository(MyClass.class, Integer.class);</pre>
  *
  * Where MyClass is your custom pojo type, and myId is the bean property of type Integer
  * marked with the 

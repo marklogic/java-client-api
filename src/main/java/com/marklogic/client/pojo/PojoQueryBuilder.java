@@ -107,7 +107,7 @@ import com.marklogic.client.util.IterableNamespaceContext;
  * <pre>{@code    PojoRepository<City, Integer> cities = 
  *      databaseClient.newPojoRepository(City.class, Integer.class);
  *    PojoQueryBuilder citiesQb = cities.getQueryBuilder();
- *    PojoQueryBuilder countriesQb = citiesQb.containerQuery("country");
+ *    PojoQueryBuilder countriesQb = citiesQb.containerQueryBuilder("country");
  *    QueryDefinition query = countriesQb.value("continent", "EU"); }</pre>
  */
 public interface PojoQueryBuilder<T> {
