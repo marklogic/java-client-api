@@ -363,17 +363,6 @@ public class PojoFacadeTest {
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
         query = qb.geospatial(
-            qb.geoProperty("latLong"),
-            qb.circle(-34, -58, 100)
-        );
-        page = cities.search(query, 1);
-        numRead = 0;
-        for ( City city : page ) numRead++;
-        assertEquals("Failed to find number of records expected", 4, numRead);
-        assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
-
-
-        query = qb.geospatial(
             qb.geoPair("latitude", "longitude"),
             qb.circle(-34, -58, 100)
         );

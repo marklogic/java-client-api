@@ -31,7 +31,7 @@ import com.marklogic.client.util.IterableNamespaceContext;
  * StructuredQueryBuilder while enabling queries across objects persisted using 
  * {@link PojoRepository}.
  *
- * <p>For methods which accept a "pojoProperty" argument and for {@link #geoProperty geoProperty}, we are refering to 
+ * <p>For methods which accept a "pojoProperty" argument we are refering to
  * properties appropriate for 
  * <a href="http://docs.oracle.com/javase/tutorial/javabeans/">JavaBeans</a>,
  * including properties accessible via public getters and setters, or public fields.</p>
@@ -135,8 +135,10 @@ public interface PojoQueryBuilder<T> {
     /**
      * @param pojoProperty the name of a field or JavaBean property (accessed via getter or setter) on class T
      */
+    /* no reason to expose geoProperty for now because it's redundant with geoPath
     public StructuredQueryBuilder.GeospatialIndex
         geoProperty(String pojoProperty);
+    */
 public StructuredQueryBuilder.GeospatialIndex
         geoPath(String pojoProperty);
     public StructuredQueryDefinition range(String pojoProperty,
