@@ -295,7 +295,7 @@ public class TestPOJOQueryBuilderGeoQueries extends BasicJavaClientREST {
 		
 		PojoQueryBuilder qb = products.getQueryBuilder();
 		PojoQueryBuilder containerQb = qb.containerQueryBuilder("manufacturer",GeoCompany.class);
-	  	PojoQueryDefinition qd =containerQb.filteredQuery(containerQb.geospatial(containerQb.geoProperty("latlongPoint"),containerQb.circle(36.1215, 115.1739, 1)));
+	  	PojoQueryDefinition qd =containerQb.filteredQuery(containerQb.geospatial(containerQb.geoPath("latlongPoint"),containerQb.circle(36.1215, 115.1739, 1)));
 
 		JacksonHandle jh = new JacksonHandle();
 		products.setPageLength(5);
