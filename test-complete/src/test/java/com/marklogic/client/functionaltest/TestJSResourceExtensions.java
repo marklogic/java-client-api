@@ -68,7 +68,7 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 		public TestJSExtension(DatabaseClient client) {
 			super();
 			// a Resource Manager must be initialized by a Database Client
-			client.init(NAME, this, ExtensionMetadata.JAVASCRIPT);
+			client.init(NAME, this);
 
 			//  delegates some services to a document manager
 			docMgr = client.newJSONDocumentManager();
