@@ -1887,7 +1887,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
       // Make sure document is not visible to any other transaction
       boolean exceptionThrown = false;
       try {
-        readResults = docMgr.read(docId);
+        JacksonDatabindHandle<ObjectNode> contentHandle = new JacksonDatabindHandle<ObjectNode>(
+            ObjectNode.class);
+        DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+        docMgr.read(docId, metadataHandle, contentHandle);        
       } catch (Exception ex) {
         exceptionThrown = true;
       }
@@ -2069,7 +2072,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // Verify that the document is not there after rollback
     boolean exceptionThrown = false;
     try {
-      readResults = docMgr.read(docId);
+      JacksonDatabindHandle<ObjectNode> contentHandle = new JacksonDatabindHandle<ObjectNode>(
+          ObjectNode.class);
+      DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+      docMgr.read(docId, metadataHandle, contentHandle);
     } catch (Exception ex) {
       exceptionThrown = true;
     }
