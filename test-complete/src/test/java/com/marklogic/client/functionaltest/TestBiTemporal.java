@@ -1860,7 +1860,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     Transaction transaction = writerClient
         .openTransaction("Transaction for BiTemporal");
     try {
-      insertJSONSingleDocument(temporalCollectionName, docId, null,
+      insertJSONSingleDocument(temporalCollectionName, docId, null, 
           transaction, null);
 
       // Verify that the document was inserted
@@ -1891,9 +1891,14 @@ public class TestBiTemporal extends BasicJavaClientREST {
       } catch (Exception ex) {
         exceptionThrown = true;
       }
-      assertTrue(
-          "Exception not thrown during read using no transaction handle",
-          exceptionThrown);
+      
+      if (!exceptionThrown) {
+        transaction.rollback();
+        
+        assertTrue(
+            "Exception not thrown during read using no transaction handle",
+            exceptionThrown);
+      }
 
       updateJSONSingleDocument(temporalCollectionName, docId, transaction, null);
 
@@ -2069,8 +2074,12 @@ public class TestBiTemporal extends BasicJavaClientREST {
       exceptionThrown = true;
     }
 
-    assertTrue("Exception not thrown during read on non-existing uri",
-        exceptionThrown);
+    if (!exceptionThrown) {
+      transaction.rollback();
+    
+      assertTrue("Exception not thrown during read on non-existing uri",
+          exceptionThrown);
+    }
 
     // =======================================================================
     // Now try rollback with delete
