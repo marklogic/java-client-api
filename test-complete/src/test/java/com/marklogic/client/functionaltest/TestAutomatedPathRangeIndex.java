@@ -1,21 +1,7 @@
-/*
- * Copyright 2014-2015 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.marklogic.client.functionaltest;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -34,25 +20,30 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.pojo.annotation.PathIndexProperty;
-import com.marklogic.client.pojo.annotation.PathIndexProperty.ScalarType;
+import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.pojo.PojoPage;
+import com.marklogic.client.pojo.PojoQueryBuilder;
+import com.marklogic.client.pojo.PojoQueryBuilder.Operator;
+import com.marklogic.client.pojo.PojoQueryDefinition;
+import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.pojo.util.GenerateIndexConfig;
 
 /*
  * Purpose : To test the following data type range path index can be created in a database.
- * int
- * String
- * dateTime
- * daytimeduration* - This needs Java SE 8. Not tested in this class
- * URI
- * Numerals as Strings*
  * 
+ * int - Verifies that the configuration file is generated, which is then used by MarkLogic Admin user to generate range index. 
+ * String - Verifies that the configuration file is generated.
+ * dateTime- Verifies that the configuration file is generated.
+ * daytimeduration* - This needs Java SE 8. Not tested in this class
+ * URI- Verifies that the configuration file is generated.
+ * Numerals as Strings* - Verifies that the configuration file is generated.
+ * Integer - This class has additional range index search test methods for Integer type (Git issue # 222). 
+ * Float - Same as for Integer type. This class has additional range index search test methods for Float type (Git issue # 222).
  */
 
 public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
@@ -63,15 +54,13 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	private static int restPort = 8011;
 	private DatabaseClient client;
 	
-	/*
-	 * This class is similar to the Artifact class. It is used to test path
-	 * range index using the name field which has been annotated with @Id also.
-	 */
-
+	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {		
 		System.out.println("In setup");
 		setupJavaRESTServer(dbName, fNames[0], restServerName, restPort);
+		//
+		BasicJavaClientREST.addRangePathIndex(dbName, "long", "com.marklogic.client.functionaltest.ArtifactIndexedOnInteger/inventory", "", "reject",true);
 
 	}
 
@@ -225,7 +214,88 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 			}
 		}
 	}
+	
+	/*
+	 * This method validates configuration file creation and also the search. Git Issue #238
+	 */
+	
+	@Test
+	public void testArtifactIndexedOnInteger() throws Exception {
+		boolean succeeded = false;
+		File jsonFile = null;
+		PojoRepository<ArtifactIndexedOnInteger,String> products = client.newPojoRepository(ArtifactIndexedOnInteger.class, String.class);
+		PojoPage<ArtifactIndexedOnInteger> pojoPage;
+		
+		// Load POJO into database.
+		loadSimplePojos(products);
+		
+		PojoQueryBuilder<ArtifactIndexedOnInteger> qb = products.getQueryBuilder();
+		try {
+			GenerateIndexConfig.main(new String[] { "-classes",
+					"com.marklogic.client.functionaltest.ArtifactIndexedOnInteger",
+					"-file", "TestAutomatedPathRangeIndexInteger.json" });
 
+			jsonFile = new File("TestAutomatedPathRangeIndexInteger.json");
+			ObjectMapper mapper = new ObjectMapper();
+			JsonNode jnode = mapper.readValue(jsonFile, JsonNode.class);
+
+			if (!jnode.isNull()) {
+				setPathRangeIndexInDatabase(dbName, jnode);
+				succeeded = true;
+				validateRangePathIndexInDatabase("range-path-index", "com.marklogic.client.functionaltest.ArtifactIndexedOnInteger/inventory");
+			} else {
+				assertTrue(
+						"testArtifactIndexedOnInteger - No Json node available to insert into database",
+						succeeded);
+			}
+
+			PojoQueryDefinition qd = qb.range("inventory", Operator.GE,1055);
+			
+			JacksonHandle jh = new JacksonHandle();
+			products.setPageLength(56);
+			
+			// The sleep below is a temporary fix.
+			/* The following exception was seen when there was no sleep. (broken into multiple lines for easy reading):
+			 * 
+			 * com.marklogic.client.FailedRequestException: 
+			 * Local message: search failed: Bad Request. Server Message: XDMP-PATHRIDXNOTFOUND: 
+			 * cts:search(fn:collection(), cts:and-query((cts:path-range-query("com.marklogic.client.functionaltest.ArtifactIndexedOnInteger/inv...", ">=", xs:int("1055"), (), 1), 
+			 * cts:collection-query("com.marklogic.client.functionaltest.ArtifactIndexedOnInteger")), ()), ("unfiltered", cts:score-order("descending")), xs:double("0"), ()) 
+			 * -- No int path range index for com.marklogic.client.functionaltest.ArtifactIndexedOnInteger/inventory
+			 *  
+			 */
+			Thread.sleep(5000);
+			pojoPage = products.search(qd, 1,jh);
+			
+			assertEquals("total no of pages",1,pojoPage.getTotalPages());
+
+			long pageNo=1,count=0;
+			do{
+				count = 0;
+				pojoPage = products.search(qd,pageNo);
+				while(pojoPage.hasNext()){
+					ArtifactIndexedOnInteger a = pojoPage.next();
+					validateArtifact(a);
+					assertTrue("Verifying document id is part of the search ids",a.getId()>=55);
+					count++;
+				}
+				assertEquals("Page size",count,pojoPage.size());
+				pageNo=pageNo+pojoPage.getPageSize();
+			}while(!pojoPage.isLastPage() && pageNo<=pojoPage.getTotalSize());
+			
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				jsonFile.delete();
+			} catch (Exception e) {				
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	
 	@Test
 	public void testArtifactIndexedOnString() throws Exception {
 		boolean succeeded = false;
@@ -280,6 +350,40 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 			} else {
 				assertTrue(
 						"testArtifactIndexedOnDateTime - No Json node available to insert into database",
+						succeeded);
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				jsonFile.delete();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	@Test
+	public void testArtifactIndexedOnFloat() throws Exception {
+		boolean succeeded = false;
+		File jsonFile = null;
+		try {
+			GenerateIndexConfig.main(new String[] { "-classes",
+					"com.marklogic.client.functionaltest.ArtifactIndexedOnFloat",
+					"-file", "TestAutomatedPathRangeIndexFloat.json" });
+
+			jsonFile = new File("TestAutomatedPathRangeIndexFloat.json");
+			ObjectMapper mapper = new ObjectMapper();
+			JsonNode jnode = mapper.readValue(jsonFile, JsonNode.class);
+
+			if (!jnode.isNull()) {
+				setPathRangeIndexInDatabase(dbName, jnode);
+				succeeded = true;
+				validateRangePathIndexInDatabase("range-path-index", "com.marklogic.client.functionaltest.ArtifactIndexedOnFloat/price");
+			} else {
+				assertTrue(
+						"testArtifactIndexedOFloat - No Json node available to insert into database",
 						succeeded);
 			}
 
@@ -523,4 +627,80 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 			}
 		}
 	}
+	
+	/*
+	 * The following three methods are used to validate "search on range index" when POJO class ArtifactIndexedOnInteger
+	 * has been annotated for path range index as below:
+	 * 
+	 *  @PathIndexProperty(scalarType = ScalarType.INT)
+	 *  private Integer inventory;
+	 *  
+	 *  These methods are used to validate Git Issue # 222.
+	 *
+	 */
+	public void loadSimplePojos(PojoRepository<ArtifactIndexedOnInteger,String> products)
+	{
+		for(int i=1;i<111;i++){
+			if(i%2==0){
+				products.write(this.getArtifact(i),"even","numbers");
+			}
+			else {
+				products.write(this.getArtifact(i),"odd","numbers");
+			}
+		}
+	}
+
+	public ArtifactIndexedOnInteger getArtifact(int counter){
+
+		ArtifactIndexedOnInteger cogs = new ArtifactIndexedOnInteger();
+		cogs.setId(counter);
+		if( counter % 5 == 0){
+			cogs.setName("Cogs special");
+			if(counter % 2 ==0){
+				Company acme = new Company();
+				acme.setName("Acme special, Inc.");
+				acme.setWebsite("http://www.acme special.com");
+				acme.setLatitude(41.998+counter);
+				acme.setLongitude(-87.966+counter);
+				cogs.setManufacturer(acme);
+
+			}else{
+				Company widgets = new Company();
+				widgets.setName("Widgets counter Inc.");
+				widgets.setWebsite("http://www.widgets counter.com");
+				widgets.setLatitude(41.998+counter);
+				widgets.setLongitude(-87.966+counter);
+				cogs.setManufacturer(widgets);
+			}
+		}else{
+			cogs.setName("Cogs "+counter);
+			if(counter % 2 ==0){
+				Company acme = new Company();
+				acme.setName("Acme "+counter+", Inc.");
+				acme.setWebsite("http://www.acme"+counter+".com");
+				acme.setLatitude(41.998+counter);
+				acme.setLongitude(-87.966+counter);
+				cogs.setManufacturer(acme);
+
+			}else{
+				Company widgets = new Company();
+				widgets.setName("Widgets "+counter+", Inc.");
+				widgets.setWebsite("http://www.widgets"+counter+".com");
+				widgets.setLatitude(41.998+counter);
+				widgets.setLongitude(-87.966+counter);
+				cogs.setManufacturer(widgets);
+			}
+		}
+		cogs.setInventory(1000+counter);
+		cogs.setInventory1(1000+counter);
+		return cogs;
+	}
+	
+	public void validateArtifact(ArtifactIndexedOnInteger art)
+	{
+		assertNotNull("Artifact object should never be Null",art);
+		assertNotNull("Id should never be Null",art.id);
+		assertTrue("Inventry is always greater than 1000", art.getInventory()>1000);
+	}
+	
 }
