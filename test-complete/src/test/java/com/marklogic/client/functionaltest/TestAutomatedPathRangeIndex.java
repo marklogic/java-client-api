@@ -223,6 +223,25 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	public void testArtifactIndexedOnInteger() throws Exception {
 		boolean succeeded = false;
 		File jsonFile = null;
+		try{GenerateIndexConfig.main(new String[] { "-classes",
+				"com.marklogic.client.functionaltest.ArtifactIndexedOnInteger",
+				"-file", "TestAutomatedPathRangeIndexInteger.json" });
+
+		jsonFile = new File("TestAutomatedPathRangeIndexInteger.json");
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode jnode = mapper.readValue(jsonFile, JsonNode.class);
+
+		if (!jnode.isNull()) {
+			setPathRangeIndexInDatabase(dbName, jnode);
+			succeeded = true;
+			validateRangePathIndexInDatabase("range-path-index", "com.marklogic.client.functionaltest.ArtifactIndexedOnInteger/inventory");
+		} else {
+			assertTrue(
+					"testArtifactIndexedOnInteger - No Json node available to insert into database",
+					succeeded);
+		}
+		}catch(Exception e){ System.out.println(e.getMessage());}
+		
 		PojoRepository<ArtifactIndexedOnInteger,String> products = client.newPojoRepository(ArtifactIndexedOnInteger.class, String.class);
 		PojoPage<ArtifactIndexedOnInteger> pojoPage;
 		
@@ -231,24 +250,6 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 		
 		PojoQueryBuilder<ArtifactIndexedOnInteger> qb = products.getQueryBuilder();
 		try {
-			GenerateIndexConfig.main(new String[] { "-classes",
-					"com.marklogic.client.functionaltest.ArtifactIndexedOnInteger",
-					"-file", "TestAutomatedPathRangeIndexInteger.json" });
-
-			jsonFile = new File("TestAutomatedPathRangeIndexInteger.json");
-			ObjectMapper mapper = new ObjectMapper();
-			JsonNode jnode = mapper.readValue(jsonFile, JsonNode.class);
-
-			if (!jnode.isNull()) {
-				setPathRangeIndexInDatabase(dbName, jnode);
-				succeeded = true;
-				validateRangePathIndexInDatabase("range-path-index", "com.marklogic.client.functionaltest.ArtifactIndexedOnInteger/inventory");
-			} else {
-				assertTrue(
-						"testArtifactIndexedOnInteger - No Json node available to insert into database",
-						succeeded);
-			}
-
 			PojoQueryDefinition qd = qb.range("inventory", Operator.GE,1055);
 			
 			JacksonHandle jh = new JacksonHandle();
@@ -262,9 +263,9 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 			 * cts:search(fn:collection(), cts:and-query((cts:path-range-query("com.marklogic.client.functionaltest.ArtifactIndexedOnInteger/inv...", ">=", xs:int("1055"), (), 1), 
 			 * cts:collection-query("com.marklogic.client.functionaltest.ArtifactIndexedOnInteger")), ()), ("unfiltered", cts:score-order("descending")), xs:double("0"), ()) 
 			 * -- No int path range index for com.marklogic.client.functionaltest.ArtifactIndexedOnInteger/inventory
-			 *  
+			 * Thread.sleep(5000); 
 			 */
-			Thread.sleep(5000);
+			
 			pojoPage = products.search(qd, 1,jh);
 			
 			assertEquals("total no of pages",1,pojoPage.getTotalPages());
@@ -284,7 +285,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 			}while(!pojoPage.isLastPage() && pageNo<=pojoPage.getTotalSize());
 			
 			
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			try {
