@@ -18,6 +18,7 @@ package com.marklogic.client.functionaltest;
 
 import static org.junit.Assert.*;
 
+import java.util.Calendar;
 import java.util.Iterator;
 
 import org.junit.After;
@@ -30,8 +31,13 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.functionaltest.TestPOJOgetDocumentUri.CalendarPOJO;
+import com.marklogic.client.functionaltest.TestPOJOgetDocumentUri.DoublePOJO;
+import com.marklogic.client.functionaltest.TestPOJOgetDocumentUri.IntegerPOJO;
+import com.marklogic.client.functionaltest.TestPOJOgetDocumentUri.StringPOJO;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
+import com.marklogic.client.pojo.annotation.Id;
 
 public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 	private static String dbName = "TestPOJORWDB";
@@ -39,6 +45,74 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 	private static String restServerName = "REST-Java-Client-API-Server";
 	private static int restPort = 8011;
 	private  DatabaseClient client ;
+	/*
+	 * @Id annotation on String type 
+	 */
+	public static class StringPOJO {
+		@Id	    
+		public String name;
+		public String getName() {
+			return name;
+		}
+		public StringPOJO setName(String name) {
+			this.name = name; 
+			return this;
+		}
+	}
+	/*
+	 * @Id annotation on Integer type.
+	 */
+	public static class IntegerPOJO {
+		@Id	    
+		public Integer id;
+		public Integer getId() {
+			return id;
+		}
+		public IntegerPOJO setId(Integer id) {
+			this.id = id; 
+			return this;
+		}
+	}
+	
+	/*
+	 * @Id annotation on Calender type.
+	 */
+	public static class CalendarPOJO {
+		@Id	    
+		public Calendar dateId;
+		public Calendar getDateId() {
+			return dateId;
+		}
+		public CalendarPOJO setDateId(Calendar dateId) {
+			this.dateId = dateId; 
+			return this;
+		}
+	}
+	/*
+	 * @Id annotation on double type.
+	 */
+	public static class DoublePOJO {
+		@Id	    
+		public double doubleId;
+		public double getDoubleId() {
+			return doubleId;
+		}
+		public DoublePOJO setDoubleId(double doubleId) {
+			this.doubleId = doubleId; 
+			return this;
+		}
+	}
+	public static class NumberPOJO {
+		@Id	    
+		public Number nId;
+		public Number getNumberId() {
+			return nId;
+		}
+		public NumberPOJO setNumberId(Number nId) {
+			this.nId =nId; 
+			return this;
+		}
+	}
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -266,4 +340,47 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		
 		
 	}
+@Test
+public void testPOJOgetDocumentUri(){
+	PojoRepository<StringPOJO,String> strPojoRepo = client.newPojoRepository(StringPOJO.class, String.class);
+	StringPOJO sobj = new StringPOJO();
+	String uri ="StringUri";
+	sobj.setName("StringUri");
+	strPojoRepo.write(sobj);
+	System.out.println(strPojoRepo.getDocumentUri(sobj));
+	assertEquals("Uri mismatch","com.marklogic.client.functionaltest.TestPOJOReadWrite1$StringPOJO/StringUri.json",strPojoRepo.getDocumentUri(sobj));
+
+	PojoRepository<IntegerPOJO,Integer> intPojoRepo = client.newPojoRepository(IntegerPOJO.class, Integer.class);
+	IntegerPOJO iobj = new IntegerPOJO();
+	iobj.setId(-12);
+	intPojoRepo.write(iobj);
+	System.out.println(intPojoRepo.getDocumentUri(iobj));
+	assertEquals("Uri mismatch","com.marklogic.client.functionaltest.TestPOJOReadWrite1$IntegerPOJO/-12.json",intPojoRepo.getDocumentUri(iobj));
+
+	PojoRepository<CalendarPOJO,Calendar> calPojoRepo = client.newPojoRepository(CalendarPOJO.class, Calendar.class);
+	CalendarPOJO cobj = new CalendarPOJO();
+	Calendar cal = Calendar.getInstance();
+	cobj.setDateId(cal);
+	calPojoRepo.write(cobj);
+	System.out.println(calPojoRepo.getDocumentUri(cobj));
+	assertTrue("Uri mismatch",calPojoRepo.getDocumentUri(cobj).contains("com.marklogic.client.functionaltest.TestPOJOReadWrite1$CalendarPOJO"));
+	
+	PojoRepository<DoublePOJO,Double> dPojoRepo = client.newPojoRepository(DoublePOJO.class, Double.class);
+	DoublePOJO dobj = new DoublePOJO();
+	double dvar= 2.015;
+	dobj.setDoubleId(dvar);
+	dPojoRepo.write(dobj);
+	System.out.println(dPojoRepo.getDocumentUri(dobj));
+	assertEquals("Uri mismatch","com.marklogic.client.functionaltest.TestPOJOReadWrite1$DoublePOJO/2.015.json",dPojoRepo.getDocumentUri(dobj));
+	
+	PojoRepository<NumberPOJO,Number> nPojoRepo = client.newPojoRepository(NumberPOJO.class, Number.class);
+	NumberPOJO nobj = new NumberPOJO();
+	Number nvar =99;
+	nvar.intValue();
+	nobj.setNumberId(nvar);
+	nPojoRepo.write(nobj);
+	System.out.println(nPojoRepo.getDocumentUri(nobj));
+	assertEquals("Uri mismatch","com.marklogic.client.functionaltest.TestPOJOReadWrite1$NumberPOJO/99.json",nPojoRepo.getDocumentUri(nobj));
+
+}
 }
