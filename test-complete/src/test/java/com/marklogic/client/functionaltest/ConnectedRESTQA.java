@@ -30,9 +30,12 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.client.entity.*;
+import org.apache.logging.log4j.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
@@ -53,6 +56,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+
 /**
  * @author gvaidees
  *
@@ -63,7 +67,10 @@ public abstract class ConnectedRESTQA {
 	 * Use Rest call to create a database.
 	 *  @param dbName
 	 */
+	private static final Logger logger = LogManager.getLogger(ConnectedRESTQA.class);
+	
 
+	
 	public static void createDB(String dbName)	{
 		try {	
 
@@ -325,7 +332,12 @@ public abstract class ConnectedRESTQA {
 	 * 
 	 */
 	public static void setupJavaRESTServer(String dbName, String fName, String restServerName, int restPort)throws Exception{
-
+		 
+		
+		Calendar  cal = Calendar.getInstance();
+		Date d = cal.getTime();
+		long before =cal.getTimeInMillis();
+		logger.info("###Entering Application SETUP.###"+d);
 		createDB(dbName); 
 		createForest(fName,dbName); 
 		Thread.sleep(1500); 
@@ -333,6 +345,13 @@ public abstract class ConnectedRESTQA {
 		createRESTUser("rest-admin","x","rest-admin");
 		createRESTUser("rest-writer","x","rest-writer");
 		createRESTUser("rest-reader","x","rest-reader");
+		cal = Calendar.getInstance();
+		long after =cal.getTimeInMillis();
+		long diff = after - before;
+		
+		String msg = "###Ending Application SETUP.###:"+diff/1000+" seconds";
+		logger.info(msg);
+		
 	}
 	public static void setupJavaRESTServer(String dbName, String fName, String restServerName, int restPort,boolean attachRestContextDB)throws Exception{
 
@@ -791,7 +810,11 @@ public abstract class ConnectedRESTQA {
 	 * This function move rest server first to documents and deletes forests and databases in separate calls
 	 */
 	public static void tearDownJavaRESTServer(String dbName, String [] fNames, String restServerName) throws Exception{
-
+		Calendar  cal = Calendar.getInstance();
+		Date d = cal.getTime();
+		long before =cal.getTimeInMillis();
+		logger.info("###Entering Application Teardown.###"+d);
+		
 		try{
 			associateRESTServerWithDB(restServerName,"Documents"); 
 		}catch(Exception e){
@@ -815,7 +838,14 @@ public abstract class ConnectedRESTQA {
 			e.printStackTrace();
 		}
 
-		deleteDB(dbName); 
+		deleteDB(dbName);
+		cal = Calendar.getInstance();
+		long after =cal.getTimeInMillis();
+		long diff = after - before;
+		
+		String msg = "###Ending Application SETUP.###:-"+diff/1000+" seconds";
+		logger.info(msg);
+		
 	}
 	
 
