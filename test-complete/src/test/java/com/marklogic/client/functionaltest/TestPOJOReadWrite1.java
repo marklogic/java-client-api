@@ -31,10 +31,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.functionaltest.TestPOJOgetDocumentUri.CalendarPOJO;
-import com.marklogic.client.functionaltest.TestPOJOgetDocumentUri.DoublePOJO;
-import com.marklogic.client.functionaltest.TestPOJOgetDocumentUri.IntegerPOJO;
-import com.marklogic.client.functionaltest.TestPOJOgetDocumentUri.StringPOJO;
+
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.pojo.annotation.Id;
