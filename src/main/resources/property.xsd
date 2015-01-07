@@ -1,4 +1,4 @@
-<!-- Copyright 2002-2013-2014 MarkLogic Corporation.  All Rights Reserved. -->
+<!-- Copyright 2002-2015 MarkLogic Corporation.  All Rights Reserved. -->
 <xs:schema targetNamespace="http://marklogic.com/xdmp/property"
  xsi:schemaLocation="http://www.w3.org/2001/XMLSchema XMLSchema.xsd
                      http://marklogic.com/xdmp/security security.xsd"
