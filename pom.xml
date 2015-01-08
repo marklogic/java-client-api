@@ -39,7 +39,7 @@
 					<bottom><![CDATA[Copyright &#169; 2013-2015 MarkLogic Corporation.]]></bottom>
 					<excludePackageNames>*.impl:*.jaxb:*.test:*.test.*</excludePackageNames>
 					<links>
-						<link>http://docs.oracle.com/javase/6/docs/api/</link>
+						<link>http://docs.oracle.com/javase/8/docs/api/</link>
 					</links>
 					<overview>${basedir}/src/main/javadoc/overview.html</overview>
 					<show>public</show>
