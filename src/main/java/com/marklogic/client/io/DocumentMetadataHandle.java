@@ -62,8 +62,7 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.util.NameMap;
 
 /**
- * A DocumentMetadataHandle represents the metadata for a database document
- * as a POJO (Plain Old Java Object).  
+ * A DocumentMetadataHandle represents the metadata for a database document.
  */
 public class DocumentMetadataHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
