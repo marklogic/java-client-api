@@ -8,7 +8,7 @@
 	<name>client-api-java</name>
 	<url>http://developer.marklogic.com</url>
 	<properties>
-		<javadoc-title>${project.name} 2.0 ${maven.build.timestamp}</javadoc-title>
+		<javadoc-title>${project.name} ${project.version} ${maven.build.timestamp}</javadoc-title>
 		<maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <github.global.server>github</github.global.server>
