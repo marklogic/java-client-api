@@ -13,6 +13,8 @@ import module namespace semmod = "http://marklogic.com/rest-api/models/semantics
 
 declare namespace search = "http://marklogic.com/appservices/search";
 
+declare namespace rapi = "http://marklogic.com/rest-api";
+
 declare default function namespace "http://www.w3.org/2005/xpath-functions";
 declare option xdmp:mapping "false";
 
@@ -62,7 +64,8 @@ declare function graph:get(
         )
 };
 
-declare function graph:post(
+declare %rapi:transaction-mode("update")
+function graph:post(
     $context as map:map,
     $params  as map:map,
     $input   as document-node()*

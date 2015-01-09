@@ -16,7 +16,8 @@ declare namespace rapi = "http://marklogic.com/rest-api";
 declare default function namespace "http://www.w3.org/2005/xpath-functions";
 declare option xdmp:mapping "false";
 
-declare function docsplit:post(
+declare %rapi:transaction-mode("update")
+function docsplit:post(
     $context as map:map,
     $params  as map:map,
     $input   as document-node()*
