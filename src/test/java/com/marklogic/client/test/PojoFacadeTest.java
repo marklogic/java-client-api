@@ -34,8 +34,12 @@ import org.junit.runners.MethodSorters;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.impl.PojoRepositoryImpl;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.pojo.PojoQueryBuilder.Operator;
@@ -284,8 +288,11 @@ public class PojoFacadeTest {
         assertEquals("Failed to find number of records expected", 1, numRead);
         assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
 
-        // - then let's show the old work-around using stored options which contain 
-        //   <search-option>filtered</search-option>
+        // - then let's show the old work-around using stored options
+        QueryOptionsManager queryOptionsMgr =
+            Common.newAdminClient().newServerConfigManager().newQueryOptionsManager();
+        queryOptionsMgr.writeOptions("filtered", 
+            new StringHandle("{\"options\":{\"search-option\":\"filtered\"}}").withFormat(Format.JSON));
         StructuredQueryBuilder sqb = Common.client.newQueryManager().newStructuredQueryBuilder("filtered");
         query = sqb.and(qb.word("asciiName", new String[] {"wildcarded"}, 1, "Chittagong*"));
         page = cities.search(query, 1);
