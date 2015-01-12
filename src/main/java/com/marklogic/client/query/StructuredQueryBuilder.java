@@ -401,9 +401,9 @@ public class StructuredQueryBuilder {
         return new ValueQuery(index, null, null, null, values);
     }
     /**
-     * Matches an element, attribute, json key, or field
-     * that has a value with the same boolean value as at least one
-     * of the criteria values.
+     * Matches a json key that has a value with the same boolean value
+     * as at least one of the criteria values.  Note this method will not match
+     * any XML node.
      * @param index	the value container
      * @param value	either true or false
      * @return	the StructuredQueryDefinition for the value query
@@ -412,9 +412,9 @@ public class StructuredQueryBuilder {
         return new ValueQuery(index, null, null, null, new Object[] {value});
     }
     /**
-     * Matches an element, attribute, json key, or field
-     * that has a value with the same numeric value as at least one
-     * of the criteria values.
+     * Matches an json key that has a value with the same numeric
+     * value as at least one of the criteria values.  Note this method will not
+     * match any XML node.
      * @param index	the value container
      * @param values	the possible values to match
      * @return	the StructuredQueryDefinition for the value query
@@ -437,9 +437,9 @@ public class StructuredQueryBuilder {
         return new ValueQuery(index, scope, options, weight, values);
     }
     /**
-     * Matches an element, attribute, json key, or field
-     * that has a value with the same boolean value as at least one
-     * of the criteria values.
+     * Matches an json key that has a value with the same boolean
+     * value as at least one of the criteria values.  Note this method will not
+     * match any XML node.
      * @param index	the value container
      * @param scope	whether the query matches the document content or properties
      * @param options	options for fine tuning the query
@@ -451,9 +451,9 @@ public class StructuredQueryBuilder {
         return new ValueQuery(index, scope, options, weight, new Object[] {value});
     }
     /**
-     * Matches an element, attribute, json key, or field
-     * that has a value with the same numeric value as at least one
-     * of the criteria values.
+     * Matches an json key that has a value with the same numeric
+     * value as at least one of the criteria values.  Note this method will not
+     * match any XML node.
      * @param index	the value container
      * @param scope	whether the query matches the document content or properties
      * @param options	options for fine tuning the query
