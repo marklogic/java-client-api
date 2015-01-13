@@ -140,6 +140,40 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 			}
 		}
 	}
+	
+	public ArtifactIndexedOnString getArtifactIndexedOnString(int counter){
+
+		ArtifactIndexedOnString cogs = new ArtifactIndexedOnString();
+		cogs.setId(counter);
+		if( counter % 5 == 0){
+			cogs.setName("Cogs special");
+			if(counter % 2 ==0){
+				Company acme = new Company();
+				acme.setName("Acme special, Inc.");
+				cogs.setManufacturer(acme);
+
+			} else {
+				Company widgets = new Company();
+				widgets.setName("Widgets counter Inc.");
+				cogs.setManufacturer(widgets);
+			}
+		} else {
+			cogs.setName("Cogs " + counter);
+			if(counter % 2 ==0){
+				Company acme = new Company();
+				acme.setName("Acme "+counter+", Inc.");
+				cogs.setManufacturer(acme);
+
+			} else {
+				Company widgets = new Company();
+				widgets.setName("Widgets "+counter+", Inc.");
+				cogs.setManufacturer(widgets);
+			}
+		}
+		cogs.setInventory(1000 + counter);
+		return cogs;
+	}
+	
 	@Test
 	public void testPOJOSearchWithoutSearchHandle() {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
@@ -302,6 +336,60 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 
 		assertEquals("Total search results resulted are ",6,actNode.asInt() );
 	}
+	
+	/* Searching for string in JSON using value query.
+	 * Purpose: To validate QueryBuilder's new value methods.
+	 * We need to use PathIndexProperty on String for StructuredQueryBuilder.JSONProperty.Therefore  
+	 * use ArtifactIndexedOnString.class here.
+	 * Method used : value(StructuredQueryBuilder.TextIndex index, String... values)
+	 */
+	
+		@Test
+		public void testQueryBuilderValueWithString() throws JsonProcessingException, IOException {
+			
+			PojoRepository<ArtifactIndexedOnString,String> products = client.newPojoRepository(ArtifactIndexedOnString.class, String.class);
+			PojoPage<ArtifactIndexedOnString> p;
+			StructuredQueryBuilder qb = new StructuredQueryBuilder();
+			
+			for(int i=1;i<111;i++){
+				if(i%2==0){
+					products.write(this.getArtifactIndexedOnString(i),"even","numbers");
+				}
+				else {
+					products.write(this.getArtifactIndexedOnString(i),"odd","numbers");
+				}
+			}
+			
+			PojoQueryDefinition qd = qb.value(qb.jsonProperty("name"), "Cogs 11","Cogs 22", "Cogs 33","Cogs 44", "Cogs 55", "Cogs 66", "Cogs 77");
+
+			StringHandle results = new StringHandle();
+			JacksonHandle jh = new JacksonHandle();
+			p = products.search(qd, 1,jh);
+
+			long pageNo=1,count=0;
+			
+			do {
+				count = 0;
+				p = products.search(qd,pageNo,results.withFormat(Format.JSON));
+
+				while(p.iterator().hasNext()){
+					ArtifactIndexedOnString a = p.iterator().next();
+					//validateArtifact(a);
+					count++;
+				}
+				assertEquals("Page total results",count,p.getTotalSize());
+				pageNo=pageNo+p.getPageSize();
+				
+			} while(!p.isLastPage() && pageNo<p.getTotalSize());
+			assertFalse("String handle is not empty",results.get().isEmpty());
+			assertTrue("String handle contains results",results.get().contains("results"));
+			assertTrue("String handle contains format",results.get().contains("\"format\":\"json\""));
+			
+			ObjectMapper mapper = new ObjectMapper();
+			JsonNode actNode = mapper.readTree(results.get()).get("total");
+			assertEquals("Total search results resulted are ",6,actNode.asInt() );
+		}
+		
 	@Test(expected = ClassCastException.class)
 	public void testPOJOSearchWithRawXMLStructQD() {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
