@@ -20,4 +20,7 @@ import com.marklogic.client.Page;
 /** Enables pagination over objects retrieved from the server and deserialized by 
  * PojoRepository read and search methods.
  */
-public interface PojoPage<T> extends Page<T> {}
+public interface PojoPage<T> extends Page<T> {
+    /** Frees the underlying resources, including the http connection. */
+    public void close();
+}

@@ -59,6 +59,11 @@ public class PojoPageImpl<T> extends BasicPage<T> implements PojoPage<T>, Iterat
     }
 
     @Override
+    public void close() {
+        docPage.close();
+    }
+
+    @Override
     public void remove() {
         throw new UnsupportedOperationException();
     }
