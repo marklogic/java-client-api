@@ -35,15 +35,18 @@ return {
   }
 };
 function post(context, params, input) { 
-  
-    var argUrl = params.uri;
-    var inputObject = input;
-    var sibling = cts.doc(argUrl).root.content;
-	var newNode = new NodeBuilder();
-	newNode.addNode(inputObject);
-	var named = newNode.toNode().xpath(".//array-node()");
-    xdmp.nodeInsertAfter(sibling,named );
-
+    
+   var argUrl = params.uri;
+        	
+    xdmp.eval(" \
+    declareUpdate(); \
+    var argUrl; \
+    var sibling=cts.doc(argUrl).root.content; \
+    var inputObject; \
+    var newNode = new NodeBuilder(); \
+	newNode.addNode(inputObject); \
+	var named = newNode.toNode().xpath('.//array-node()'); xdmp.nodeInsertAfter(sibling,named);\
+ ",{"inputObject":input,"argUrl":argUrl},{"isolation":"different-transaction"});
    return ({"response": xdmp.getResponseCode()})
 
  };
@@ -52,9 +55,10 @@ function post(context, params, input) {
 function put(context, params, input) {
     var argUrl = params.uri;
     var inputObject = input;
-    xdmp.documentInsert(argUrl,input);
- //   xdmp.eval("declareUpdate(); var argUrl; var input;xdmp.documentInsert(argUrl,input)",({"argUrl":argUrl,"input":inputObject}));
- //   var count = xdmp.eval("fn.count(fn.doc())");
+   //xdmp.documentInsert(argUrl,input);
+  xdmp.eval("declareUpdate(); var argUrl; var input;xdmp.documentInsert(argUrl,input)",{"argUrl":argUrl,"input":inputObject},{"isolation":"different-transaction"});
+  var count = xdmp.eval("fn.count(fn.doc())");
+  xdmp.log(count);
    return ({"response": xdmp.getResponseCode()})
 };
 
