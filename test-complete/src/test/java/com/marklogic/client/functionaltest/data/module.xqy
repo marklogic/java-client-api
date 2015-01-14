@@ -1,3 +1,4 @@
+xquery version "1.0-ml";
 (:
   Copyright 2014-2015 MarkLogic Corporation
  
@@ -14,7 +15,7 @@
   limitations under the License.
 :)
 
-xquery version "1.0-ml";
+
 
 module namespace my = "http://my.test.module";
 declare function my:useless()
