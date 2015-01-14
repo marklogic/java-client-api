@@ -17,7 +17,9 @@
 package com.marklogic.client.functionaltest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Calendar;
 import java.util.TimeZone;
@@ -34,6 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.JSONDocumentManager;
@@ -360,15 +363,18 @@ public class TestJacksonDateTimeFormat extends BasicJavaClientREST {
 		pojoReposProducts.delete(calTime);
 		// Introduce a wait for the document to be deleted.
 		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
+			artifact = pojoReposProducts.read(calTime);
+			assertFalse("Test Expecting exception",true);
+		} catch (ResourceNotFoundException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			assertTrue("expected exception",true);
+		}catch (Exception e){
+			assertFalse("Test got unexpected",true);
 		}
 		// Validate the artifact read back.
-		long count = pojoReposProducts.count();
-			
-		assertEquals("Artifact with calendar as Id found - Delete did not work",0, count);		
+//		long count = pojoReposProducts.count();
+//		
+//		assertEquals("Artifact with calendar as Id found - Delete did not work",0, count);		
 	}
 	
 	@Test
