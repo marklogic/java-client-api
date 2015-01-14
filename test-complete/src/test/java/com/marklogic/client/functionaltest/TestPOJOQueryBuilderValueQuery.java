@@ -236,7 +236,7 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 			assertEquals("Page size",count,p.size());
 			pageNo=pageNo+p.getPageSize();
 		}while(!p.isLastPage() && pageNo<=p.getTotalSize());
-		assertEquals("page number after the loop",0,p.getPageNumber());
+		assertEquals("page number after the loop",1,p.getPageNumber());
 		assertEquals("total no of pages",0,p.getTotalPages());
 		assertEquals("page length from search handle",5,jh.get().path("page-length").asInt());
 //		assertEquals("Total results from search handle",10,jh.get().path("total").asInt());
