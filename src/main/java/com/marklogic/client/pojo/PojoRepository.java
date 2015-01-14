@@ -75,6 +75,11 @@ import java.io.Serializable;
  * serialized and deserialized, but cannot be written, read, or searched directly.  If you 
  * wish to directly write, read, or search another class, create a new instance of 
  * PojoRepository specific to that class.
+ *
+ * Since PojoRepository stores in JSON format, which limits number precision to 15
+ * significant digits (IEEE754 double precision), you will lose precision on numbers
+ * longer than 15 significant digits.  If you desire larger numbers with no loss of
+ * precision, use Strings to persist those numbers.
  */
 public interface PojoRepository<T, ID extends Serializable> {
     /** Write this instance to the database.  Uses the field marked with {@literal @}Id 
