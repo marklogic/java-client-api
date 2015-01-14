@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2002-2013-2014 MarkLogic Corporation.  All Rights Reserved. -->
+<!-- Copyright 2002-2015 MarkLogic Corporation.  All Rights Reserved. -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://marklogic.com/appservices/search" xmlns:search="http://marklogic.com/appservices/search">
   <!--
     Notice: The *.rnc are the normative human-edited versions
@@ -18,6 +18,7 @@
       <xs:element ref="search:debug"/>
       <xs:element ref="search:default-suggestion-source"/>
       <xs:element ref="search:extract-metadata"/>
+      <xs:element ref="search:extract-document-data"/>
       <xs:element ref="search:fragment-scope"/>
       <xs:element ref="search:forest"/>
       <xs:element ref="search:grammar"/>
@@ -64,7 +65,7 @@
   <xs:element name="attribute">
     <xs:complexType>
       <xs:attribute name="name" use="required" type="xs:NCName"/>
-      <xs:attribute name="ns" use="required" type="xs:anyURI"/>
+      <xs:attribute name="ns" type="xs:anyURI"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="bucket">
@@ -156,18 +157,55 @@
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="search:constraint-value"/>
         <xs:element ref="search:qname"/>
-        <xs:element ref="search:json-key"/>
+        <xs:element ref="search:json-property"/>
       </xs:choice>
     </xs:complexType>
   </xs:element>
+  <xs:element name="extract-document-data">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="search:extract-path"/>
+      </xs:choice>
+      <xs:attribute name="selected">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="all"/>
+            <xs:enumeration value="include"/>
+            <xs:enumeration value="include-with-ancestors"/>
+            <xs:enumeration value="exclude"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="extract-path" type="xs:token"/>
   <xs:element name="Geospatial" abstract="true"/>
+  <xs:group name="GeoPropDef">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="search:parent-property"/>
+        <xs:element ref="search:json-property"/>
+        <xs:element ref="search:geo-option"/>
+        <xs:element ref="search:fragment-scope"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:group>
+  <xs:element name="parent-property" type="xs:string"/>
+  <xs:element name="geo-json-property" substitutionGroup="search:Geospatial">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="search:GeoPropDef"/>
+        <xs:group ref="search:GeoFacetDef"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
   <xs:group name="GeoElemDef">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="search:parent"/>
         <xs:element name="element">
           <xs:complexType>
-            <xs:attribute name="ns" use="required" type="xs:anyURI"/>
+            <xs:attribute name="ns" type="xs:anyURI"/>
             <xs:attribute name="name" use="required" type="xs:NCName"/>
           </xs:complexType>
         </xs:element>
@@ -178,7 +216,7 @@
   </xs:group>
   <xs:element name="parent">
     <xs:complexType>
-      <xs:attribute name="ns" use="required" type="xs:anyURI"/>
+      <xs:attribute name="ns" type="xs:anyURI"/>
       <xs:attribute name="name" use="required" type="xs:NCName"/>
     </xs:complexType>
   </xs:element>
@@ -186,6 +224,27 @@
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="search:GeoElemDef"/>
+        <xs:group ref="search:GeoFacetDef"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:group name="GeoPropPairDef">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="search:parent-property"/>
+        <xs:element ref="search:lat-property"/>
+        <xs:element ref="search:lon-property"/>
+        <xs:element ref="search:geo-option"/>
+        <xs:element ref="search:fragment-scope"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:group>
+  <xs:element name="lat-property" type="xs:string"/>
+  <xs:element name="lon-property" type="xs:string"/>
+  <xs:element name="geo-json-property-pair" substitutionGroup="search:Geospatial">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="search:GeoPropPairDef"/>
         <xs:group ref="search:GeoFacetDef"/>
       </xs:choice>
     </xs:complexType>
@@ -203,13 +262,13 @@
   </xs:group>
   <xs:element name="lat">
     <xs:complexType>
-      <xs:attribute name="ns" use="required" type="xs:anyURI"/>
+      <xs:attribute name="ns" type="xs:anyURI"/>
       <xs:attribute name="name" use="required" type="xs:NCName"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="lon">
     <xs:complexType>
-      <xs:attribute name="ns" use="required" type="xs:anyURI"/>
+      <xs:attribute name="ns" type="xs:anyURI"/>
       <xs:attribute name="name" use="required" type="xs:NCName"/>
     </xs:complexType>
   </xs:element>
@@ -304,17 +363,33 @@
       <xs:attribute name="ref"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="distinct-value">
-    <xs:complexType mixed="true">
-      <xs:attribute name="frequency" type="xs:unsignedLong"/>
-    </xs:complexType>
-  </xs:element>
+  <xs:simpleType name="AnySimpleType">
+    <xs:union memberTypes="xs:string xs:boolean xs:decimal xs:float xs:double xs:duration xs:dateTime xs:time xs:date xs:gYearMonth xs:gYear xs:gMonthDay xs:gDay xs:gMonth xs:hexBinary xs:base64Binary xs:anyURI xs:QName"/>
+  </xs:simpleType>
+  <xs:group name="DistinctValue">
+    <xs:sequence>
+      <xs:element name="distinct-value">
+        <xs:complexType>
+          <xs:simpleContent>
+            <xs:extension base="search:AnySimpleType">
+              <xs:attribute name="frequency" type="xs:unsignedLong"/>
+            </xs:extension>
+          </xs:simpleContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="TuplesDistinctValue">
+    <xs:sequence>
+      <xs:element name="distinct-value" type="search:AnySimpleType"/>
+    </xs:sequence>
+  </xs:group>
   <xs:group name="Element">
     <xs:sequence>
       <xs:element name="element">
         <xs:complexType>
           <xs:attribute name="name" use="required" type="xs:NCName"/>
-          <xs:attribute name="ns" use="required" type="xs:anyURI"/>
+          <xs:attribute name="ns" type="xs:anyURI"/>
         </xs:complexType>
       </xs:element>
     </xs:sequence>
@@ -324,7 +399,7 @@
       <xs:sequence>
         <xs:choice>
           <xs:group ref="search:Element"/>
-          <xs:element ref="search:json-key"/>
+          <xs:element ref="search:json-property"/>
         </xs:choice>
         <xs:element minOccurs="0" ref="search:fragment-scope"/>
       </xs:sequence>
@@ -337,7 +412,7 @@
         <xs:element minOccurs="0" ref="search:fragment-scope"/>
       </xs:sequence>
       <xs:attribute name="name" use="required" type="xs:NCName"/>
-      <xs:attribute name="ns" use="required" type="xs:anyURI"/>
+      <xs:attribute name="ns" type="xs:anyURI"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="facet-option" type="xs:string"/>
@@ -411,7 +486,7 @@
       </xs:attribute>
     </xs:complexType>
   </xs:element>
-  <xs:element name="json-key" type="xs:string"/>
+  <xs:element name="json-property" type="xs:string"/>
   <xs:element name="ValuesAccessor" abstract="true">
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -426,7 +501,15 @@
         <xs:element ref="search:annotation"/>
         <xs:element ref="search:values-option"/>
       </xs:choice>
-      <xs:attribute name="name" use="required" type="search:qtext-token"/>
+      <xs:attribute name="name"  use="required" type="search:qtext-token"/>
+      <xs:attribute name="style" use="optional">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="default"/>
+            <xs:enumeration value="consistent"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
     </xs:complexType>
   </xs:element>
   <xs:element name="values" substitutionGroup="search:ValuesAccessor"/>
@@ -488,7 +571,7 @@
             <xs:group ref="search:Element"/>
             <xs:element ref="search:attribute"/>
           </xs:choice>
-          <xs:element ref="search:json-key"/>
+          <xs:element ref="search:json-property"/>
           <xs:element ref="search:field"/>
           <xs:element ref="search:path-index"/>
         </xs:choice>
@@ -508,8 +591,9 @@
   </xs:group>
   <xs:element name="range-option" type="xs:string"/>
   <xs:attributeGroup name="RangeIndexAttrs">
-    <xs:attribute name="type" use="required" type="xs:QName"/>
+    <xs:attribute name="type" type="xs:QName"/>
     <xs:attribute name="collation" type="xs:anyURI"/>
+    <xs:attribute name="nullable" type="xs:boolean"/>
   </xs:attributeGroup>
   <xs:element name="range">
     <xs:complexType>
@@ -549,7 +633,7 @@
             <xs:element ref="search:attribute"/>
           </xs:choice>
           <xs:element ref="search:field"/>
-          <xs:element ref="search:json-key"/>
+          <xs:element ref="search:json-property"/>
         </xs:choice>
         <xs:element ref="search:score"/>
         <xs:element ref="search:annotation"/>
@@ -617,7 +701,7 @@
             <xs:group ref="search:Element"/>
             <xs:element ref="search:attribute"/>
           </xs:choice>
-          <xs:element ref="search:json-key"/>
+          <xs:element ref="search:json-property"/>
           <xs:element ref="search:field"/>
         </xs:choice>
         <xs:element ref="search:fragment-scope"/>
@@ -640,11 +724,24 @@
             <xs:group ref="search:TextIndexDef"/>
             <xs:group ref="search:TextIndexMod"/>
           </xs:choice>
+          <xs:attributeGroup ref="search:ValueIndexAttrs"/>
         </xs:complexType>
       </xs:element>
     </xs:sequence>
   </xs:group>
   <xs:element name="weight" type="xs:double"/>
+  <xs:attributeGroup name="ValueIndexAttrs">
+    <xs:attribute name="type">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="boolean"/>
+          <xs:enumeration value="null"/>
+          <xs:enumeration value="number"/>
+          <xs:enumeration value="string"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
   <xs:attributeGroup name="WordIndexAttrs">
     <xs:attribute name="collation" type="xs:anyURI"/>
   </xs:attributeGroup>
@@ -684,6 +781,11 @@
       <xs:any namespace="http://marklogic.com/cts" processContents="skip"/>
     </xs:sequence>
   </xs:complexType>
+  <xs:group name="any-qry-element">
+    <xs:sequence>
+      <xs:any namespace="http://marklogic.com/cts/query" processContents="skip"/>
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="apply-attrs">
     <xs:attribute name="apply" use="required" type="xs:NCName"/>
     <xs:attribute name="ns" type="xs:anyURI"/>
@@ -736,7 +838,7 @@
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:constraint"/>
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:warning"/>
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:report"/>
-        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:plan"/>
+        <xs:element minOccurs="0" ref="search:plan"/>
         <xs:element name="metrics">
           <xs:complexType>
             <xs:all>
@@ -750,14 +852,16 @@
         </xs:element>
       </xs:sequence>
       <xs:attribute name="snippet-format" type="xs:NCName"/>
-      <xs:attribute name="total" use="required" type="xs:unsignedLong"/>
-      <xs:attribute name="start" use="required" type="xs:unsignedLong"/>
-      <xs:attribute name="page-length" use="required" type="xs:unsignedLong"/>
+      <xs:attribute name="total" type="xs:unsignedLong"/>
+      <xs:attribute name="start" type="xs:unsignedLong"/>
+      <xs:attribute name="page-length" type="xs:unsignedLong"/>
+      <xs:attribute name="lsqt-query-timestamp" type="xs:dateTime"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="result">
     <xs:complexType>
       <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:similar"/>
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:snippet"/>
         <xs:element minOccurs="0" ref="search:metadata"/>
       </xs:sequence>
@@ -767,8 +871,10 @@
       <xs:attribute name="score" use="required" type="xs:integer"/>
       <xs:attribute name="confidence" use="required" type="xs:double"/>
       <xs:attribute name="fitness" use="required" type="xs:double"/>
+      <xs:anyAttribute processContents="skip"/>
     </xs:complexType>
   </xs:element>
+  <xs:element name="similar" type="xs:string"/>
   <xs:element name="snippet">
     <xs:complexType>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -802,8 +908,10 @@
   </xs:element>
   <xs:element name="attribute-meta">
     <xs:complexType mixed="true">
-      <xs:attribute name="name" use="required"/>
-      <xs:attribute name="parent-name" use="required"/>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+      <xs:attribute name="ns" type="xs:anyURI"/>
+      <xs:attribute name="parent-name" use="required" type="xs:NCName"/>
+      <xs:attribute name="parent-ns" type="xs:anyURI"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="warning">
@@ -831,12 +939,13 @@
   <xs:element name="values-response">
     <xs:complexType>
       <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" ref="search:types"/>
         <xs:choice minOccurs="0" maxOccurs="unbounded">
-          <xs:element ref="search:distinct-value"/>
+          <xs:group ref="search:DistinctValue"/>
           <xs:element ref="search:tuple"/>
         </xs:choice>
-        <xs:element minOccurs="0" ref="search:aggregate-result"/>
-        <xs:element name="metrics">
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:aggregate-result"/>
+        <xs:element minOccurs="0" name="metrics">
           <xs:complexType>
             <xs:all>
               <xs:element minOccurs="0" ref="search:values-resolution-time"/>
@@ -850,6 +959,20 @@
       <xs:attribute name="type" type="xs:QName"/>
     </xs:complexType>
   </xs:element>
+  <xs:element name="types">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:type"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="type">
+    <xs:simpleType>
+      <xs:restriction base="xs:QName">
+        <xs:minLength value="1"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:element>
   <xs:element name="aggregate-result">
     <xs:complexType mixed="true">
       <xs:attribute name="name" use="required" type="search:qtext-token"/>
@@ -859,9 +982,7 @@
   <xs:element name="aggregate-resolution-time" type="xs:duration"/>
   <xs:element name="tuple">
     <xs:complexType>
-      <xs:sequence>
-        <xs:element maxOccurs="unbounded" ref="search:distinct-value"/>
-      </xs:sequence>
+      <xs:group maxOccurs="unbounded" ref="search:TuplesDistinctValue"/>
       <xs:attribute name="frequency" type="xs:unsignedLong"/>
     </xs:complexType>
   </xs:element>
@@ -1003,7 +1124,7 @@
       <xs:attributeGroup ref="search:any-attribute"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="properties-query" substitutionGroup="search:QueryType">
+  <xs:element name="properties-fragment-query" substitutionGroup="search:QueryType">
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="search:QueryType"/>
@@ -1011,7 +1132,7 @@
       <xs:attributeGroup ref="search:any-attribute"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="locks-query" substitutionGroup="search:QueryType">
+  <xs:element name="locks-fragment-query" substitutionGroup="search:QueryType">
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="search:QueryType"/>
@@ -1080,7 +1201,7 @@
       <xs:sequence>
         <xs:choice>
           <xs:group ref="search:Element"/>
-          <xs:element ref="search:json-key"/>
+          <xs:element ref="search:json-property"/>
         </xs:choice>
         <xs:element minOccurs="0" ref="search:fragment-scope"/>
         <xs:element ref="search:QueryType"/>
@@ -1109,7 +1230,9 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="search:constraint-name"/>
-        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:text"/>
+        <xs:choice>
+          <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:text"/>
+        </xs:choice>
         <xs:element minOccurs="0" ref="search:weight"/>
       </xs:sequence>
       <xs:attributeGroup ref="search:any-attribute"/>
@@ -1119,9 +1242,12 @@
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="search:TextIndexDef"/>
-        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:text"/>
+        <xs:choice>
+          <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:text"/>
+        </xs:choice>
         <xs:group ref="search:TextIndexMod"/>
       </xs:sequence>
+      <xs:attributeGroup ref="search:ValueIndexAttrs"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="word-constraint-query" substitutionGroup="search:QueryType">
@@ -1193,10 +1319,26 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="GeospatialQuery" abstract="true" substitutionGroup="search:QueryType"/>
+  <xs:element name="geo-json-property-query" substitutionGroup="search:GeospatialQuery">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:group ref="search:GeoPropDef"/>
+        <xs:group minOccurs="0" maxOccurs="unbounded" ref="search:RegionType"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="geo-elem-query" substitutionGroup="search:GeospatialQuery">
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="search:GeoElemDef"/>
+        <xs:group minOccurs="0" maxOccurs="unbounded" ref="search:RegionType"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="geo-json-property-pair-query" substitutionGroup="search:GeospatialQuery">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:group ref="search:GeoPropPairDef"/>
         <xs:group minOccurs="0" maxOccurs="unbounded" ref="search:RegionType"/>
       </xs:sequence>
     </xs:complexType>
@@ -1282,6 +1424,46 @@
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:text"/>
       </xs:sequence>
       <xs:attributeGroup ref="search:any-attribute"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="temporal-option" type="xs:string"/>
+  <xs:element name="temporal-operator" type="xs:string"/>
+  <xs:element name="period">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="period-start" type="xs:dateTime"/>
+        <xs:element minOccurs="0" name="period-end" type="xs:dateTime"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="lsqt-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+          <xs:element name="temporal-collection" type="xs:string"/>
+          <xs:element name="timestamp" minOccurs="0" type="xs:dateTime"/>
+          <xs:element ref="search:weight" minOccurs="0"/>
+          <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:temporal-option"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="period-compare-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="axis1" type="xs:string"/>
+        <xs:element ref="search:temporal-operator"/>
+        <xs:element name="axis2" type="xs:string"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:temporal-option"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="period-range-query" substitutionGroup="search:QueryType">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="1" maxOccurs="unbounded" name="axis" type="xs:string"/>
+        <xs:element ref="search:temporal-operator"/>
+        <xs:element minOccurs="1" maxOccurs="unbounded" ref="search:period"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:temporal-option"/>
+      </xs:sequence>
     </xs:complexType>
   </xs:element>
 </xs:schema>

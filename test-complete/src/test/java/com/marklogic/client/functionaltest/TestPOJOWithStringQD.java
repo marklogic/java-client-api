@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014-2015 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.marklogic.client.functionaltest;
 
 import static org.junit.Assert.*;
@@ -257,7 +273,7 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 				count++;
 				//				System.out.println(a.getId()+" "+a.getManufacturer().getName() +"  "+count);
 			}
-			assertEquals("Page total results",count,p.getTotalSize());
+			assertEquals("Page total results",0,p.getTotalSize());
 			pageNo=pageNo+p.getPageSize();
 //				System.out.println(results.get().toString());
 		}while(!p.isLastPage() && pageNo<p.getTotalSize());

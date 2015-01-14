@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -150,7 +150,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
             metadataHandle = metadataHandle.withCollections(collections);
         }
         DocumentWriteSet writeSet = docMgr.newWriteSet();
-        writeSet.add(createUri(entity), metadataHandle, contentHandle);
+        writeSet.add(getDocumentUri(entity), metadataHandle, contentHandle);
         try {
             docMgr.write(writeSet, transaction);
         } catch(ClientHandlerException e) {
@@ -384,7 +384,8 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         }
     }
 
-    private String createUri(T entity) {
+    @Override
+    public String getDocumentUri(T entity) {
         return createUri(getId(entity));
     }
 

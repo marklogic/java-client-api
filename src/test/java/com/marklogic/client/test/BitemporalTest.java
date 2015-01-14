@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,17 +27,12 @@ import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
-import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
@@ -51,11 +46,12 @@ public class BitemporalTest {
 	// system-start, system-end, valid-start, and valid-end
 	static String temporalCollection = "temporal-collection";
 	static String uniqueTerm = "temporalDoc";
-	
+	static String docId = "test-" + uniqueTerm + ".xml";
+
 	@BeforeClass
     public static void beforeClass() {
         Common.connect();
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
     @AfterClass
     public static void afterClass() {
@@ -64,7 +60,7 @@ public class BitemporalTest {
     }
 
 	@Test
-	public void test1() {
+	public void test1() throws Exception {
 
 		String version1 = "<test>" +
 				uniqueTerm + " version1" +
@@ -94,7 +90,6 @@ public class BitemporalTest {
 				"<valid-start>2014-08-19T00:00:05</valid-start>" +
 				"<valid-end>2014-08-19T00:00:06</valid-end>" +
     		"</test>";
-		String docId = "test-" + uniqueTerm + ".xml";
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		StringHandle handle1 = new StringHandle(version1).withFormat(Format.XML);
 		docMgr.write(docId, null, handle1, null, null, temporalCollection);
@@ -117,6 +112,8 @@ public class BitemporalTest {
 		DocumentPage termQueryResults = docMgr.search(termQuery, start);
 		assertEquals("Wrong number of results", 4, termQueryResults.size());
 
+		// sleep for 2 seconds
+		Thread.sleep(2000);
 		StructuredQueryDefinition currentQuery = sqb.temporalLsqtQuery(temporalCollection, null, 1);
 		StructuredQueryDefinition currentDocQuery = sqb.and(termQuery, currentQuery);
 		DocumentPage currentDocQueryResults = docMgr.search(currentDocQuery, start);
@@ -159,7 +156,7 @@ public class BitemporalTest {
 		QueryManager queryMgr = client.newQueryManager();
 		queryMgr.setPageLength(1000);
 		QueryDefinition query = queryMgr.newStringDefinition();
-		query.setCollections(temporalCollection);
+		query.setCollections(docId);
 //		DeleteQueryDefinition deleteQuery = client.newQueryManager().newDeleteDefinition();
 //		deleteQuery.setCollections(temporalCollection);
 //		client.newQueryManager().delete(deleteQuery);

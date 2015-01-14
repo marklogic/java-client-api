@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,13 +29,11 @@ class ResourceServicesImpl
 {
 	private String       resourceName;
 	private RESTServices services;
-	private ExtensionMetadata.ScriptLanguage scriptLanguage = ExtensionMetadata.XQUERY;
 
-	ResourceServicesImpl(RESTServices services, String resourceName, ExtensionMetadata.ScriptLanguage scriptLanguage) {
+	ResourceServicesImpl(RESTServices services, String resourceName) {
 		super();
 		this.services     = services;
 		this.resourceName = resourceName;
-		if ( scriptLanguage != null ) this.scriptLanguage = scriptLanguage;
 	}
 
 	@Override
@@ -44,11 +42,6 @@ class ResourceServicesImpl
 	}
 	private String getResourcePath() {
 		return "resources/"+getResourceName();
-	}
-
-	@Override
-	public ExtensionMetadata.ScriptLanguage getScriptLanguage() {
-		return scriptLanguage;
 	}
 
 	@Override

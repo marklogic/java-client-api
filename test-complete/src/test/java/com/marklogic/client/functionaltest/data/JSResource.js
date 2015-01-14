@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014-2015 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // module that exports get, post, put and delete 
 function get(context, params) { 
  context.outputTypes = ["application/json"];
@@ -19,15 +35,18 @@ return {
   }
 };
 function post(context, params, input) { 
-  
-    var argUrl = params.uri;
-    var inputObject = input;
-    var sibling = cts.doc(argUrl).root.content;
-	var newNode = new NodeBuilder();
-	newNode.addNode(inputObject);
-	var named = newNode.toNode().xpath(".//array-node()");
-    xdmp.nodeInsertAfter(sibling,named );
-
+    
+   var argUrl = params.uri;
+        	
+    xdmp.eval(" \
+    declareUpdate(); \
+    var argUrl; \
+    var sibling=cts.doc(argUrl).root.content; \
+    var inputObject; \
+    var newNode = new NodeBuilder(); \
+	newNode.addNode(inputObject); \
+	var named = newNode.toNode().xpath('.//array-node()'); xdmp.nodeInsertAfter(sibling,named);\
+ ",{"inputObject":input,"argUrl":argUrl},{"isolation":"different-transaction"});
    return ({"response": xdmp.getResponseCode()})
 
  };
@@ -36,9 +55,10 @@ function post(context, params, input) {
 function put(context, params, input) {
     var argUrl = params.uri;
     var inputObject = input;
-    xdmp.documentInsert(argUrl,input);
- //   xdmp.eval("declareUpdate(); var argUrl; var input;xdmp.documentInsert(argUrl,input)",({"argUrl":argUrl,"input":inputObject}));
- //   var count = xdmp.eval("fn.count(fn.doc())");
+   //xdmp.documentInsert(argUrl,input);
+  xdmp.eval("declareUpdate(); var argUrl; var input;xdmp.documentInsert(argUrl,input)",{"argUrl":argUrl,"input":inputObject},{"isolation":"different-transaction"});
+  var count = xdmp.eval("fn.count(fn.doc())");
+  xdmp.log(count);
    return ({"response": xdmp.getResponseCode()})
 };
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,44 +15,46 @@
  */
 package com.marklogic.client.test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.runners.MethodSorters;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StringQueryDefinition;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DeleteSearchTest {
-	@SuppressWarnings("unused")
-	private static final Logger logger = (Logger) LoggerFactory
-			.getLogger(QueryOptionsHandleTest.class);
-	
+    private static final String directory = "/delete/test/";
+    private static final String filename = "testWrite1.xml";
+    private static final String docId = directory + filename;
+
     @BeforeClass
-    public static void beforeClass()
-    throws ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+    public static void beforeClass() throws Exception {
         Common.connectAdmin();
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        writeDoc();
+    }
 
-        String docId = "/delete/test/testWrite1.xml";
-
+    public static void writeDoc() throws Exception {
         Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
         Element root = domDocument.createElement("root");
         root.setAttribute("xml:lang", "en");
@@ -75,23 +77,29 @@ public class DeleteSearchTest {
     }
 
     @Test
-    public void testSearch() throws IOException {
+    public void test_A_Delete() throws IOException {
+        GenericDocumentManager docMgr = Common.client.newDocumentManager();
+        DocumentDescriptor desc = docMgr.exists(docId);
+        assertNotNull("Should find document before delete", desc);
+        assertEquals(desc.getUri(), docId);
+
         QueryManager queryMgr = Common.client.newQueryManager();
-        StringQueryDefinition qdef = queryMgr.newStringDefinition(null);
-        qdef.setDirectory("/delete/test/");
+        DeleteQueryDefinition qdef = queryMgr.newDeleteDefinition();
+        qdef.setDirectory(directory);
 
-        SearchHandle handle = new SearchHandle();
-        handle = queryMgr.search(qdef, handle);
+        queryMgr.delete(qdef);
 
-        assertNotNull(handle);
+        desc = docMgr.exists(docId);
+        assertNull("Should not find document after delete", desc);
     }
 
     @Test
-    public void testDelete() throws IOException {
-        QueryManager queryMgr = Common.client.newQueryManager();
-        DeleteQueryDefinition qdef = queryMgr.newDeleteDefinition();
-        qdef.setDirectory("/delete/test/");
-
-        queryMgr.delete(qdef);
+    public void test_B_RuntimeDb() throws Exception {
+        Common.release();
+        // connect to a runtime db
+        Common.client = DatabaseClientFactory.newClient(
+            Common.HOST, Common.PORT, "Documents", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
+        writeDoc();
+        test_A_Delete();
     }
 }

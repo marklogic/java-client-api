@@ -1,7 +1,24 @@
+/*
+ * Copyright 2014-2015 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.marklogic.client.functionaltest;
 
 import static org.junit.Assert.*;
 
+import java.util.Calendar;
 import java.util.Iterator;
 
 import org.junit.After;
@@ -13,8 +30,11 @@ import org.junit.Test;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.ResourceNotFoundException;
+
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
+import com.marklogic.client.pojo.annotation.Id;
 
 public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 	private static String dbName = "TestPOJORWDB";
@@ -22,6 +42,74 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 	private static String restServerName = "REST-Java-Client-API-Server";
 	private static int restPort = 8011;
 	private  DatabaseClient client ;
+	/*
+	 * @Id annotation on String type 
+	 */
+	public static class StringPOJO {
+		@Id	    
+		public String name;
+		public String getName() {
+			return name;
+		}
+		public StringPOJO setName(String name) {
+			this.name = name; 
+			return this;
+		}
+	}
+	/*
+	 * @Id annotation on Integer type.
+	 */
+	public static class IntegerPOJO {
+		@Id	    
+		public Integer id;
+		public Integer getId() {
+			return id;
+		}
+		public IntegerPOJO setId(Integer id) {
+			this.id = id; 
+			return this;
+		}
+	}
+	
+	/*
+	 * @Id annotation on Calender type.
+	 */
+	public static class CalendarPOJO {
+		@Id	    
+		public Calendar dateId;
+		public Calendar getDateId() {
+			return dateId;
+		}
+		public CalendarPOJO setDateId(Calendar dateId) {
+			this.dateId = dateId; 
+			return this;
+		}
+	}
+	/*
+	 * @Id annotation on double type.
+	 */
+	public static class DoublePOJO {
+		@Id	    
+		public double doubleId;
+		public double getDoubleId() {
+			return doubleId;
+		}
+		public DoublePOJO setDoubleId(double doubleId) {
+			this.doubleId = doubleId; 
+			return this;
+		}
+	}
+	public static class NumberPOJO {
+		@Id	    
+		public Number nId;
+		public Number getNumberId() {
+			return nId;
+		}
+		public NumberPOJO setNumberId(Number nId) {
+			this.nId =nId; 
+			return this;
+		}
+	}
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -87,6 +175,25 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		}
 		
 	}
+	//Issue 192 describes the use case 
+	@Test(expected = ResourceNotFoundException.class)
+	public void testPOJOReadInvalidId() {
+		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
+		products.deleteAll();
+		//Load more than 100 objects
+		for(int i=1;i<112;i++){
+			products.write(this.getArtifact(i));
+		}
+		assertEquals("Total number of object recods",111, products.count());
+		for(long i=1143;i<1193;i++){
+				this.validateArtifact(products.read(i));
+		}
+		products.deleteAll();
+		for(long i=1;i<112;i++){
+			assertFalse("Product id exists ?",products.exists(i));
+		}
+		
+	}
 	//This test is to persist objects into different collections, read documents based on Id and delete single object based on Id
 	@Test
 	public void testPOJOWriteWithCollection() {
@@ -120,13 +227,14 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		products.delete((long)112);
 		products.deleteAll();
 	}
-	//This test is to read objects into pojo page based on Ids 
-		// until #103 is resolved	@Test
+	//This test is to read objects into pojo page based on Ids ,it has a scenario for Issue 192
+		// until #103 is resolved	
+	@Test
 		public void testPOJOWriteWithPojoPage() {
 			PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 			//Load more than 110 objects into different collections
 			products.deleteAll();
-			Long[] ids= new Long[111];
+			Long[] ids= new Long[112];
 			int j=0;
 			for(int i=222;i<333;i++){
 				ids[j] =(long) i;j++;
@@ -137,53 +245,25 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 					products.write(this.getArtifact(i),"odd","numbers");
 				}
 			}
+			ids[j]=(long)1234234;j++;
 			assertEquals("Total number of object recods",111, products.count("numbers"));
 			assertEquals("Collection even count",56,products.count("even"));
 			assertEquals("Collection odd count",55,products.count("odd"));
 			
 			System.out.println("Default Page length setting on docMgr :"+products.getPageLength());
 			assertEquals("Default setting for page length",50,products.getPageLength());
-			products.setPageLength(100);
+		
 //			assertEquals("explicit setting for page length",1,products.getPageLength());
 			PojoPage<Artifact> p= products.read(ids);
 			// test for page methods
-		//Issue-	assertEquals("Number of records",1,p.size());
-			System.out.println("Page size"+p.size());
-//			assertEquals("Starting record in first page ",1,p.getStart());
-			System.out.println("Starting record in first page "+p.getStart());
-			
-//			assertEquals("Total number of estimated results:",111,p.getTotalSize());
-			System.out.println("Total number of estimated results:"+p.getTotalSize());
-//			assertEquals("Total number of estimated pages :",111,p.getTotalPages());
+			System.out.println("Total number of estimated results:"+p.getTotalSize()+ids.length);
 			System.out.println("Total number of estimated pages :"+p.getTotalPages());
-			assertFalse("Is this First page :",p.isFirstPage());//this is bug
-			assertFalse("Is this Last page :",p.isLastPage());
-			assertTrue("Is this First page has content:",p.hasContent());
-			//		Need the Issue #75 to be fixed  
-			assertTrue("Is first page has previous page ?",p.hasPreviousPage());
 			long pageNo=1,count=0;
-			do{
-				count=0;
-				if(pageNo >1){ 
-					assertFalse("Is this first Page", p.isFirstPage());
-					assertTrue("Is page has previous page ?",p.hasPreviousPage());
-				}
-				Iterator<Artifact> itr = p.iterator();
-			while(itr.hasNext()){
-				this.validateArtifact(p.iterator().next());
+			while(p.hasNext()){
+				this.validateArtifact(p.next());
 				count++;
 			}
-//			assertEquals("document count", p.size(),count);
-			System.out.println("Is this Last page :"+p.hasContent()+p.isLastPage());
-			pageNo = pageNo + p.getPageSize();
-			}while((p.isLastPage()) && p.hasContent());
-			assertTrue("page count is 111 ",pageNo == p.getTotalPages());
-			assertTrue("Page has previous page ?",p.hasPreviousPage());
-			assertEquals("page size", 1,p.getPageSize());
-			assertEquals("document count", 111,p.getTotalSize());
-			assertFalse("Page has any records ?",p.hasContent());
-			
-			
+			assertEquals("document count", 111,count);
 			products.deleteAll();
 			//see any document exists
 			for(long i=112;i<222;i++){
@@ -257,4 +337,47 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		
 		
 	}
+@Test
+public void testPOJOgetDocumentUri(){
+	PojoRepository<StringPOJO,String> strPojoRepo = client.newPojoRepository(StringPOJO.class, String.class);
+	StringPOJO sobj = new StringPOJO();
+	String uri ="StringUri";
+	sobj.setName("StringUri");
+	strPojoRepo.write(sobj);
+	System.out.println(strPojoRepo.getDocumentUri(sobj));
+	assertEquals("Uri mismatch","com.marklogic.client.functionaltest.TestPOJOReadWrite1$StringPOJO/StringUri.json",strPojoRepo.getDocumentUri(sobj));
+
+	PojoRepository<IntegerPOJO,Integer> intPojoRepo = client.newPojoRepository(IntegerPOJO.class, Integer.class);
+	IntegerPOJO iobj = new IntegerPOJO();
+	iobj.setId(-12);
+	intPojoRepo.write(iobj);
+	System.out.println(intPojoRepo.getDocumentUri(iobj));
+	assertEquals("Uri mismatch","com.marklogic.client.functionaltest.TestPOJOReadWrite1$IntegerPOJO/-12.json",intPojoRepo.getDocumentUri(iobj));
+
+	PojoRepository<CalendarPOJO,Calendar> calPojoRepo = client.newPojoRepository(CalendarPOJO.class, Calendar.class);
+	CalendarPOJO cobj = new CalendarPOJO();
+	Calendar cal = Calendar.getInstance();
+	cobj.setDateId(cal);
+	calPojoRepo.write(cobj);
+	System.out.println(calPojoRepo.getDocumentUri(cobj));
+	assertTrue("Uri mismatch",calPojoRepo.getDocumentUri(cobj).contains("com.marklogic.client.functionaltest.TestPOJOReadWrite1$CalendarPOJO"));
+	
+	PojoRepository<DoublePOJO,Double> dPojoRepo = client.newPojoRepository(DoublePOJO.class, Double.class);
+	DoublePOJO dobj = new DoublePOJO();
+	double dvar= 2.015;
+	dobj.setDoubleId(dvar);
+	dPojoRepo.write(dobj);
+	System.out.println(dPojoRepo.getDocumentUri(dobj));
+	assertEquals("Uri mismatch","com.marklogic.client.functionaltest.TestPOJOReadWrite1$DoublePOJO/2.015.json",dPojoRepo.getDocumentUri(dobj));
+	
+	PojoRepository<NumberPOJO,Number> nPojoRepo = client.newPojoRepository(NumberPOJO.class, Number.class);
+	NumberPOJO nobj = new NumberPOJO();
+	Number nvar =99;
+	nvar.intValue();
+	nobj.setNumberId(nvar);
+	nPojoRepo.write(nobj);
+	System.out.println(nPojoRepo.getDocumentUri(nobj));
+	assertEquals("Uri mismatch","com.marklogic.client.functionaltest.TestPOJOReadWrite1$NumberPOJO/99.json",nPojoRepo.getDocumentUri(nobj));
+
+}
 }

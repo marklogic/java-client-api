@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -882,7 +882,9 @@ public class JerseyServices implements RESTServices {
                         );
                         partList = partList.subList(1, partList.size());
                     }
-                    return makeResults(JerseyServiceResultIterator.class, reqlog, "read", "resource", partList, response);
+                    Closeable closeable = new MultipartCloseable(response, entity);
+                    return makeResults(JerseyServiceResultIterator.class, reqlog, "read", "resource",
+                        partList, response, closeable);
                 }
             }
         }
@@ -1019,6 +1021,7 @@ public class JerseyServices implements RESTServices {
 		contentBase.receiveContent((reqlog != null) ? reqlog
 				.copyContent(contentEntity) : contentEntity);
 
+		try { entity.close(); } catch (IOException e) {}
 		response.close();
 
 		return true;
@@ -1540,13 +1543,15 @@ public class JerseyServices implements RESTServices {
 		if (logger.isDebugEnabled())
 			logger.debug("Opening transaction");
 
-		MultivaluedMap<String, String> transParams = null;
+		MultivaluedMap<String, String> transParams = new MultivaluedMapImpl();
 		if (name != null || timeLimit > 0) {
-			transParams = new MultivaluedMapImpl();
 			if (name != null)
 				addEncodedParam(transParams, "name", name);
 			if (timeLimit > 0)
 				transParams.add("timeLimit", String.valueOf(timeLimit));
+		}
+		if ( database != null ) {
+			addEncodedParam(transParams, "database", database);
 		}
 
 		WebResource resource = (transParams != null) ? getConnection().path(
@@ -2219,6 +2224,9 @@ public class JerseyServices implements RESTServices {
 
 		if (transactionId != null) {
 			params.add("txid", transactionId);
+		}
+		if ( database != null ) {
+			addEncodedParam(params, "database", database);
 		}
 
 		WebResource webResource = getConnection().path("search").queryParams(params);
@@ -4440,21 +4448,23 @@ public class JerseyServices implements RESTServices {
 		MultiPart entity = response.hasEntity() ?
 				response.getEntity(MultiPart.class) : null;
 
-        List<BodyPart> partList = (entity == null) ? null : entity.getBodyParts();
-        return makeResults(clazz, reqlog, operation, entityType, partList, response);
+		List<BodyPart> partList = (entity == null) ? null : entity.getBodyParts();
+		Closeable closeable = new MultipartCloseable(response, entity);
+		return makeResults(clazz, reqlog, operation, entityType, partList, response, closeable);
 	}
 
 	private <U extends JerseyResultIterator> U makeResults(
 			Class<U> clazz, RequestLogger reqlog,
-			String operation, String entityType, List<BodyPart> partList, ClientResponse response) {
+			String operation, String entityType, List<BodyPart> partList, ClientResponse response,
+			Closeable closeable) {
 		logRequest(reqlog, "%s for %s", operation, entityType);
 
         if ( response == null ) return null;
 
 		try {
 			java.lang.reflect.Constructor<U> constructor = 
-				clazz.getConstructor(JerseyServices.class, RequestLogger.class, List.class, ClientResponse.class);
-            JerseyResultIterator result = constructor.newInstance(this, reqlog, partList, response);
+				clazz.getConstructor(JerseyServices.class, RequestLogger.class, List.class, Closeable.class);
+			JerseyResultIterator result = constructor.newInstance(this, reqlog, partList, closeable);
 			MultivaluedMap<String, String> headers = response.getHeaders();
             if (headers.containsKey("vnd.marklogic.start")) {
                 result.setStart(Long.parseLong(headers.get("vnd.marklogic.start").get(0)));
@@ -4521,6 +4531,20 @@ public class JerseyServices implements RESTServices {
 			(i == 6) ? DELAY_CEILING - min  :
 				       (1 << i) * DELAY_MULTIPLIER;
 		return min + randRetry.nextInt(range);
+	}
+
+	public class MultipartCloseable implements Closeable {
+		private ClientResponse response;
+		private MultiPart multiPart;
+
+		public MultipartCloseable(ClientResponse response, MultiPart multiPart) {
+			this.response = response;
+			this.multiPart = multiPart;
+		}
+		public void close() throws IOException {
+			if ( multiPart != null ) multiPart.close();
+			if ( response   != null ) response.close();
+		}
 	}
 
 	public class JerseyResult {
@@ -4620,10 +4644,10 @@ public class JerseyServices implements RESTServices {
         private long size = -1;
         private long pageSize = -1;
         private long totalSize = -1;
-        private ClientResponse closeable;
+        private Closeable closeable;
 
 		public JerseyResultIterator(RequestLogger reqlog,
-				List<BodyPart> partList, Class<T> clazz, ClientResponse closeable) {
+				List<BodyPart> partList, Class<T> clazz, Closeable closeable) {
             this.clazz = clazz;
             this.reqlog = reqlog;
             if (partList != null && partList.size() > 0) {
@@ -4677,7 +4701,6 @@ public class JerseyServices implements RESTServices {
 			if (partQueue == null)
 				return false;
 			boolean hasNext = partQueue.hasNext();
-			if (!partQueue.hasNext()) close();
 			return hasNext;
 		}
 
@@ -4691,9 +4714,6 @@ public class JerseyServices implements RESTServices {
 				return constructor.newInstance(new JerseyServices(), reqlog, partQueue.next());
 			} catch (Throwable t) {
 				throw new IllegalStateException("Error instantiating " + clazz.getName());
-			} finally {
-				if (!partQueue.hasNext())
-					close();
 			}
 		}
 
@@ -4708,7 +4728,7 @@ public class JerseyServices implements RESTServices {
 			partQueue = null;
 			reqlog = null;
 			if ( closeable != null ) {
-				closeable.close();
+				try { closeable.close(); } catch (IOException e) {}
 			}
 		}
 
@@ -4723,7 +4743,7 @@ public class JerseyServices implements RESTServices {
 		implements ServiceResultIterator
 	{
 		public JerseyServiceResultIterator(RequestLogger reqlog,
-				List<BodyPart> partList, ClientResponse closeable) {
+				List<BodyPart> partList, Closeable closeable) {
 			super(reqlog, partList, JerseyServiceResult.class, closeable);
 		}
 	}
@@ -4733,7 +4753,7 @@ public class JerseyServices implements RESTServices {
 		implements Iterator<JerseyResult>
 	{
 		public DefaultJerseyResultIterator(RequestLogger reqlog,
-				List<BodyPart> partList, ClientResponse closeable) {
+				List<BodyPart> partList, Closeable closeable) {
 			super(reqlog, partList, JerseyResult.class, closeable);
 		}
 	}

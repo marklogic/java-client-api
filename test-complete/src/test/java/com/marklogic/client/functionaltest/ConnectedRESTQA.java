@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014-2015 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.marklogic.client.functionaltest;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -14,9 +30,12 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.client.entity.*;
+import org.apache.logging.log4j.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
@@ -37,6 +56,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+
 /**
  * @author gvaidees
  *
@@ -47,7 +67,10 @@ public abstract class ConnectedRESTQA {
 	 * Use Rest call to create a database.
 	 *  @param dbName
 	 */
+	private static final Logger logger = LogManager.getLogger(ConnectedRESTQA.class);
+	
 
+	
 	public static void createDB(String dbName)	{
 		try {	
 
@@ -309,14 +332,37 @@ public abstract class ConnectedRESTQA {
 	 * 
 	 */
 	public static void setupJavaRESTServer(String dbName, String fName, String restServerName, int restPort)throws Exception{
-
-		createDB(dbName); 
-		createForest(fName,dbName); 
-		Thread.sleep(1500); 
+		 
+		
+		Calendar  cal = Calendar.getInstance();
+		Date d = cal.getTime();
+		long beforeSetup =cal.getTimeInMillis();
+		long before =cal.getTimeInMillis();
+		logger.info("### Starting TESTCASE SETUP. ### "+d);
+		
+		createDB(dbName);
+		logTestMessages("CREATE-DB",before);
+		
+		before =Calendar.getInstance().getTimeInMillis();
+		createForest(fName,dbName);
+		logTestMessages("CREATE-FOREST",before);
+		
+		before =Calendar.getInstance().getTimeInMillis();		 
 		assocRESTServer(restServerName, dbName,restPort);
+		logTestMessages("REST-SERVER-ASSOCIATION",before);
+		
+		before =Calendar.getInstance().getTimeInMillis();
 		createRESTUser("rest-admin","x","rest-admin");
 		createRESTUser("rest-writer","x","rest-writer");
 		createRESTUser("rest-reader","x","rest-reader");
+		logTestMessages("REST-USER-CREATION-CHK",before);
+		cal = Calendar.getInstance();
+		long after =cal.getTimeInMillis();
+		long diff = after - beforeSetup;
+		
+		String msg = "### Ending TESTCASE SETUP ###: "+diff/1000+" seconds";
+		logger.info(msg);
+		
 	}
 	public static void setupJavaRESTServer(String dbName, String fName, String restServerName, int restPort,boolean attachRestContextDB)throws Exception{
 
@@ -771,18 +817,34 @@ public abstract class ConnectedRESTQA {
 			e.printStackTrace();
 		}
 	}
+	
+	public static void logTestMessages(String txt, long before)
+	{
+		Calendar  cal = Calendar.getInstance();
+		long after =cal.getTimeInMillis();
+		long diff = after - before;
+		String msg = "### "+txt+" ### "+diff/1000+" seconds";
+		logger.info(msg);
+	}
 	/*
 	 * This function move rest server first to documents and deletes forests and databases in separate calls
 	 */
 	public static void tearDownJavaRESTServer(String dbName, String [] fNames, String restServerName) throws Exception{
-
+		Calendar  cal = Calendar.getInstance();
+		Date d = cal.getTime();
+		long beforeTeardown =cal.getTimeInMillis();
+		logger.info("### StartingTestCase TEARDOWN ### "+d);
+		
+		long before =cal.getTimeInMillis();
 		try{
 			associateRESTServerWithDB(restServerName,"Documents"); 
 		}catch(Exception e){
 			System.out.println("From Deleting Rest server called funnction is throwing an error");
 			e.printStackTrace(); 
 		}
-
+		logTestMessages("REST-SERVER-ASSOCIATION",before);
+		
+		before =Calendar.getInstance().getTimeInMillis();
 		try{
 			for(int i = 0; i < fNames.length; i++){
 				detachForest(dbName, fNames[i]); 
@@ -790,7 +852,9 @@ public abstract class ConnectedRESTQA {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-
+		logTestMessages("DETACH-FOREST-FROM-DB",before);
+		
+		before =Calendar.getInstance().getTimeInMillis();
 		try{
 			for(int i = 0; i < fNames.length; i++){
 				deleteForest(fNames[i]); 
@@ -798,8 +862,14 @@ public abstract class ConnectedRESTQA {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-
-		deleteDB(dbName); 
+		logTestMessages("DELETE-FOREST",before);
+		
+		before =Calendar.getInstance().getTimeInMillis();
+		deleteDB(dbName);
+		logTestMessages("DELETE-DB",before);
+		
+		logTestMessages(" Ending TESTCASE TEARDOWN ",beforeTeardown);
+		
 	}
 	
 

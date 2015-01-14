@@ -1,8 +1,10 @@
 target/
 .classpath
 .project
+.gradle
 .settings/
 *.class
+test-complete/build/
 
 # Package Files #
 *.jar

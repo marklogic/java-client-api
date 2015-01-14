@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2002-2014 MarkLogic Corporation.  All Rights Reserved. -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://marklogic.com/appservices/search" xmlns:search="http://marklogic.com/appservices/search" xmlns:query-plan="http://marklogic.com/cts/query">
+<!-- Copyright 2002-2015 MarkLogic Corporation.  All Rights Reserved. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://marklogic.com/appservices/search" xmlns:search="http://marklogic.com/appservices/search">
   <!--
     Notice: The *.rnc are the normative human-edited versions
     Do not directly edit the *.xsd versions, any changes will be lost when rebuilding
@@ -724,11 +724,24 @@
             <xs:group ref="search:TextIndexDef"/>
             <xs:group ref="search:TextIndexMod"/>
           </xs:choice>
+          <xs:attributeGroup ref="search:ValueIndexAttrs"/>
         </xs:complexType>
       </xs:element>
     </xs:sequence>
   </xs:group>
   <xs:element name="weight" type="xs:double"/>
+  <xs:attributeGroup name="ValueIndexAttrs">
+    <xs:attribute name="type">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="boolean"/>
+          <xs:enumeration value="null"/>
+          <xs:enumeration value="number"/>
+          <xs:enumeration value="string"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
   <xs:attributeGroup name="WordIndexAttrs">
     <xs:attribute name="collation" type="xs:anyURI"/>
   </xs:attributeGroup>
@@ -1163,9 +1176,6 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="text" type="xs:string"/>
-  <xs:element name="number" type="xs:double"/>
-  <xs:element name="null" type="xs:string"/>
-  <xs:element name="boolean" type="xs:boolean"/>
   <xs:element name="constraint-name" type="search:qtext-token"/>
   <xs:element name="container-constraint-query" substitutionGroup="search:QueryType">
     <xs:complexType>
@@ -1222,9 +1232,6 @@
         <xs:element ref="search:constraint-name"/>
         <xs:choice>
           <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:text"/>
-          <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:number"/>
-          <xs:element minOccurs="0" maxOccurs="2" ref="search:boolean"/>
-          <xs:element minOccurs="0" maxOccurs="1" ref="search:null"/>
         </xs:choice>
         <xs:element minOccurs="0" ref="search:weight"/>
       </xs:sequence>
@@ -1237,12 +1244,10 @@
         <xs:group ref="search:TextIndexDef"/>
         <xs:choice>
           <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:text"/>
-          <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:number"/>
-          <xs:element minOccurs="0" maxOccurs="2" ref="search:boolean"/>
-          <xs:element minOccurs="0" maxOccurs="1" ref="search:null"/>
         </xs:choice>
         <xs:group ref="search:TextIndexMod"/>
       </xs:sequence>
+      <xs:attributeGroup ref="search:ValueIndexAttrs"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="word-constraint-query" substitutionGroup="search:QueryType">
@@ -1428,7 +1433,6 @@
       <xs:sequence>
         <xs:element name="period-start" type="xs:dateTime"/>
         <xs:element minOccurs="0" name="period-end" type="xs:dateTime"/>
-        <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:temporal-option"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

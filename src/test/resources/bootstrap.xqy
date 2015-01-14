@@ -1072,16 +1072,7 @@ xdmp:document-set-permissions("/sample/tuples-test4.xml",
             ),
     xdmp:document-add-collections("/sample2/suggestion.xml",("http://some.org/suggestions"))
 '
-    ),
-    xdmp:eval('xquery version "1.0-ml";
-    xdmp:document-insert("/Default/java-unittest/rest-api/options/filtered.xml",
-    <options xmlns="http://marklogic.com/appservices/search">
-        <search-option>filtered</search-option>
-    </options>
-    )', (),
-    <options xmlns="xdmp:eval">
-        <database>{ xdmp:database("java-unittest-modules") }</database>
-    </options>)
+    )
 };
 
 declare function bootstrap:load-search-data()

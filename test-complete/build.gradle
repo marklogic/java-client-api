@@ -22,5 +22,7 @@ dependencies {
 	compile('xmlunit:xmlunit:1.5')
 	compile('junit:junit:4.11')
     compile('org.skyscreamer:jsonassert:1.2.3')
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.1'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.1'
 }
 

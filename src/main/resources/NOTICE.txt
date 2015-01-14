@@ -5,7 +5,7 @@
    =========================================================================
 
 MarkLogic Java API
-Copyright 2012-2013-2014 MarkLogic Corporation
+Copyright 2012-2015 MarkLogic Corporation
 This product licensed under Apache License, Version 2.0
 See ASL-v2_0.txt
 

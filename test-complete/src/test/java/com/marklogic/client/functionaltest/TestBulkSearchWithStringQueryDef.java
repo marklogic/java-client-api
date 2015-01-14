@@ -1,13 +1,33 @@
+/*
+ * Copyright 2014-2015 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.marklogic.client.functionaltest;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.HashMap;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -31,6 +51,7 @@ import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SearchHandle;
@@ -38,7 +59,9 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.MatchLocation;
+import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.StringQueryDefinition;
 
@@ -234,6 +257,20 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST{
 		}
 
 	}
+	//Testing issue 192
+	@Test
+	public void testBulkSearchSQDwithNoResults() throws Exception {
+		loadTxtDocuments();
+		TextDocumentManager docMgr = client.newTextDocumentManager();
+		QueryManager queryMgr = client.newQueryManager();
+		StringQueryDefinition qd = queryMgr.newStringDefinition();
+		qd.setCriteria("zzzz");
+		SearchHandle results = new SearchHandle();
+		DocumentPage page= docMgr.search(qd, 1,results);
+		assertFalse("Should return no results",page.hasNext());
+
+
+	}
 	//This test has set response to JSON and pass StringHandle with format as JSON, expectint it to work, logged an issue 82
 	@Test
 	public void testBulkSearchSQDwithResponseFormatandStringHandle() throws Exception{
@@ -360,8 +397,10 @@ public class TestBulkSearchWithStringQueryDef extends BasicJavaClientREST{
 		DocumentPage page= docMgr.search(qd, 1,results);
 		System.out.println(this.convertXMLDocumentToString(results.get()));
 
-		assertNull("Total search results after rollback are ",results.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total"));
+		assertEquals("Total search results after rollback are ",results.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total").getNodeValue(),"0");
 
 	}
+	
+	
+	
 }
-

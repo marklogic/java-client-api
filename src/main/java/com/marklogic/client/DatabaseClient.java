@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,17 +134,6 @@ public interface DatabaseClient {
      * @return	the initialized resource manager
      */
     public <T extends ResourceManager> T init(String resourceName, T resourceManager);
-
-    /**
-     * Initializes a manager for a extension resource.
-     * 
-     * @param resourceName	the name of the extension resource
-     * @param resourceManager	the manager for the extension resource
-     * @param scriptLanguage	the script language for the extension resource, either XQUERY (default) or JAVASCRIPT
-     * @return	the initialized resource manager
-     */
-    public <T extends ResourceManager> T init(String resourceName, T resourceManager, 
-	  ExtensionMetadata.ScriptLanguage scriptLanguage);
 
     /**
      * Creates a logger for document and query requests.  To merge the logging output

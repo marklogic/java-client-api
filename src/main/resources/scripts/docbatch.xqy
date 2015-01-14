@@ -1,6 +1,6 @@
 xquery version "1.0-ml";
 
-(: Copyright 2011-2013-2014 MarkLogic Corporation.  All Rights Reserved. :)
+(: Copyright 2011-2015 MarkLogic Corporation.  All Rights Reserved. :)
 
 module namespace docbatch = "http://marklogic.com/rest-api/resource/docbatch";
 
@@ -19,7 +19,8 @@ declare namespace rapi = "http://marklogic.com/rest-api";
 declare default function namespace "http://www.w3.org/2005/xpath-functions";
 declare option xdmp:mapping "false";
 
-declare function docbatch:post(
+declare %rapi:transaction-mode("update")
+function docbatch:post(
     $context as map:map,
     $params  as map:map,
     $input   as document-node()*

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2014-2015 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.marklogic.client.functionaltest;
 
 import static org.junit.Assert.*;
@@ -466,14 +482,14 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
       if (systemTime != null) {
         docMgr.write(docId, mh, handle, transformer, null, temporalCollection,
-            systemTime, null);
+            systemTime);
       } else {
         docMgr.write(docId, mh, handle, transformer, null, temporalCollection);
       }
     } else {
       if (systemTime != null) {
         docMgr.write(docId, mh, handle, null, transaction, temporalCollection,
-            systemTime, null);
+            systemTime);
       } else {
         docMgr.write(docId, mh, handle, null, transaction, temporalCollection);
       }
@@ -534,7 +550,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     DocumentMetadataHandle mh = setMetadata(true);
     
     docMgr.write(docId, mh, handle, null, transaction, temporalCollection,
-        systemTime, null);
+        systemTime);
   }
 
   public void deleteJSONSingleDocument(String temporalCollection, String docId,
@@ -1860,7 +1876,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     Transaction transaction = writerClient
         .openTransaction("Transaction for BiTemporal");
     try {
-      insertJSONSingleDocument(temporalCollectionName, docId, null,
+      insertJSONSingleDocument(temporalCollectionName, docId, null, 
           transaction, null);
 
       // Verify that the document was inserted
@@ -1887,13 +1903,21 @@ public class TestBiTemporal extends BasicJavaClientREST {
       // Make sure document is not visible to any other transaction
       boolean exceptionThrown = false;
       try {
-        readResults = docMgr.read(docId);
+        JacksonDatabindHandle<ObjectNode> contentHandle = new JacksonDatabindHandle<ObjectNode>(
+            ObjectNode.class);
+        DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+        docMgr.read(docId, metadataHandle, contentHandle);        
       } catch (Exception ex) {
         exceptionThrown = true;
       }
-      assertTrue(
-          "Exception not thrown during read using no transaction handle",
-          exceptionThrown);
+      
+      if (!exceptionThrown) {
+        transaction.rollback();
+        
+        assertTrue(
+            "Exception not thrown during read using no transaction handle",
+            exceptionThrown);
+      }
 
       updateJSONSingleDocument(temporalCollectionName, docId, transaction, null);
 
@@ -2064,13 +2088,20 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // Verify that the document is not there after rollback
     boolean exceptionThrown = false;
     try {
-      readResults = docMgr.read(docId);
+      JacksonDatabindHandle<ObjectNode> contentHandle = new JacksonDatabindHandle<ObjectNode>(
+          ObjectNode.class);
+      DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+      docMgr.read(docId, metadataHandle, contentHandle);
     } catch (Exception ex) {
       exceptionThrown = true;
     }
 
-    assertTrue("Exception not thrown during read on non-existing uri",
-        exceptionThrown);
+    if (!exceptionThrown) {
+      transaction.rollback();
+    
+      assertTrue("Exception not thrown during read on non-existing uri",
+          exceptionThrown);
+    }
 
     // =======================================================================
     // Now try rollback with delete
@@ -2506,12 +2537,12 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // put meta-data
     DocumentMetadataHandle mh = setMetadata(false);
     docMgr.write(docId, mh, handle, null, null, temporalLsqtCollectionName,
-            insertTime, null);
+            insertTime);
 
     Calendar updateTime = DatatypeConverter
         .parseDateTime("2010-01-01T00:00:01");
     docMgr.write(docId, mh, handle, null, null, temporalLsqtCollectionName,
-        updateTime, null);
+        updateTime);
 
     Thread.sleep(2000);
     
