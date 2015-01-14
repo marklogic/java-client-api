@@ -868,13 +868,7 @@ public abstract class ConnectedRESTQA {
 		deleteDB(dbName);
 		logTestMessages("DELETE-DB",before);
 		
-				
-		cal = Calendar.getInstance();
-		long after =cal.getTimeInMillis();
-		long diff = after - beforeTeardown;
-		
-		String msg = "### Ending TestCase TEARDOWN ### "+diff/1000+" seconds";
-		logger.info(msg);
+		logTestMessages(" Ending TESTCASE TEARDOWN ",beforeTeardown);
 		
 	}
 	

@@ -16,14 +16,17 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.HashMap;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -55,6 +58,7 @@ import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.query.MatchDocumentSummary;
+import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
@@ -334,7 +338,8 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 		finally{t.rollback();}
 
 		docMgr.search(qd, 1,results);
-		assertNull("Total search results after rollback are ",results.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total"));
+		System.out.println(convertXMLDocumentToString(results.get()));
+		assertEquals("Total search results after rollback are ",results.get().getElementsByTagNameNS("*", "response").item(0).getAttributes().getNamedItem("total").getNodeValue(),"0");
 
 	}
 	//This test is to verify RAW XML structured Query
@@ -453,5 +458,120 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 		}
 		System.out.println(results.get().toString());
 		assertEquals("Total search results before transaction rollback are ","204",results.get().get("total").asText());
+	}
+	/* Searching for boolean and string in XML element using value query.
+	 * Purpose: To validate QueryBuilder's new value methods (in 8.0) in XML document using an element.
+	 * 
+	 * Load a file that has a boolean value in a XML attribute and use query def to search on that boolean value
+	 *  
+	 * Methods used : value(StructuredQueryBuilder.TextIndex index, boolean)
+	 *                value(StructuredQueryBuilder.TextIndex index, String)
+	 */
+	@Test  
+	public void testQueryBuilderValueWithBooleanAndString() throws XpathException, SAXException, IOException {
+		
+		String docId[] = {"play-persons.xml"};
+		
+		TextDocumentManager docMgr = client.newTextDocumentManager();
+		QueryManager queryMgr = client.newQueryManager();
+		DocumentWriteSet writeset = docMgr.newWriteSet();
+		
+		// Put meta-data
+		
+		DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+		metadataHandle.getCollections().addAll("my-collection1","my-collection2");
+		metadataHandle.getPermissions().add("app-user", Capability.UPDATE, Capability.READ);
+		metadataHandle.getProperties().put("reviewed", true);
+		metadataHandle.getProperties().put("myString", "foo");
+		metadataHandle.getProperties().put("myInteger", 10);
+		metadataHandle.getProperties().put("myDecimal", 34.56678);
+		metadataHandle.getProperties().put("myCalendar", Calendar.getInstance().get(Calendar.YEAR));
+		metadataHandle.setQuality(23);
+
+		writeset.addDefault(metadataHandle);
+		
+		// Create a new document using StringHandle
+		StringBuffer strBuf = new StringBuffer(); 
+		
+		strBuf.append("<PLAY>");
+		strBuf.append("<TITLE>All's Well That Ends Well</TITLE>");
+		strBuf.append("<PERSONAE>");
+		strBuf.append("<TITLE>Dramatis Personae</TITLE>");
+		
+		strBuf.append("<PGROUP>");
+		strBuf.append("<subgroup>true</subgroup>");
+		
+		strBuf.append("<PERSONA>KING OF FRANCE</PERSONA>");
+		strBuf.append("<PERSONA>DUKE OF FLORENCE</PERSONA>");
+		strBuf.append("<PERSONA>BERTRAM, Count of Rousillon.</PERSONA>");
+		strBuf.append("<PERSONA>LAFEU, an old lord.</PERSONA>");
+		strBuf.append("</PGROUP>");
+		
+		strBuf.append("<PGROUP>");
+		strBuf.append("<subgroup>false</subgroup>");
+		
+		strBuf.append("<PERSONA>PAROLLES, a follower of Bertram.</PERSONA>");
+		strBuf.append("<PERSONA>A Page. </PERSONA>");
+		strBuf.append("</PGROUP>");
+		
+		strBuf.append("<PGROUP>");
+		strBuf.append("<subgroup>false</subgroup>");
+		strBuf.append("<PERSONA>COUNTESS OF ROUSILLON, mother to Bertram. </PERSONA>");
+		strBuf.append("<PERSONA>HELENA, a gentlewoman protected by the Countess.</PERSONA>");
+		strBuf.append("<PERSONA>An old Widow of Florence. </PERSONA>");
+		strBuf.append("<PERSONA>DIANA, daughter to the Widow.</PERSONA>");
+		strBuf.append("</PGROUP>");
+		
+		strBuf.append("<PGROUP>");
+		strBuf.append("<subgroup>false</subgroup>");
+		strBuf.append("<PERSONA>VIOLENTA</PERSONA>");
+		strBuf.append("<PERSONA>MARIANA</PERSONA>");
+		strBuf.append("<GRPDESCR>neighbours and friends to the Widow.</GRPDESCR>");
+		strBuf.append("</PGROUP>");
+		
+		strBuf.append("<PERSONA>Lords, Officers, Soldiers, &amp;c., French and Florentine.</PERSONA>");
+		strBuf.append("</PERSONAE>");
+		strBuf.append("</PLAY>");
+				
+		writeset.add("/1/"+docId[0], new StringHandle().with(strBuf.toString()));
+		docMgr.write(writeset);
+				
+		docMgr.write(writeset);
+
+		// Search for the range with attribute value true in rangeRelativeBucketConstraintOpt.xml document.
+		StructuredQueryBuilder qb = new StructuredQueryBuilder();
+		
+		// Build an object that represents StructuredQueryBuilder.ElementAttribute for use in values method
+		// that is of type StructuredQueryBuilder.TextIndex
+		
+		QueryDefinition qd = qb.value(qb.element("subgroup"), false);
+				
+		// Create handle for the result
+		StringHandle resultsHandle = new StringHandle().withFormat(Format.XML);
+		queryMgr.search(qd, resultsHandle);
+
+		// Get the result
+		String resultDoc = resultsHandle.get();
+		
+		System.out.println(resultDoc);
+		//Verify that search response has found 1 element attribute 
+		assertXpathEvaluatesTo("fn:doc(\"/1/play-persons.xml\")", "string(//*[local-name()='response']//*[local-name()='result']//@*[local-name()='path'])", resultDoc);
+		assertXpathEvaluatesTo("3", "count(//*[local-name()='response']//*[local-name()='match'])", resultDoc);
+		
+		// Search for the following royal (XML ELEMENT) in all-well.xml document.
+		StructuredQueryBuilder qbStr = new StructuredQueryBuilder();
+		QueryDefinition qdStr = qbStr.value(qbStr.element("PERSONA"), "KING OF FRANCE","DUKE OF FLORENCE", "BERTRAM, Count of Rousillon.","LAFEU, an old lord.");
+
+		// Create handle for the result
+		StringHandle resultsHandleStr = new StringHandle().withFormat(Format.XML);
+		queryMgr.search(qdStr, resultsHandleStr);
+
+		// Get the result
+		String resultDocStr = resultsHandleStr.get();
+
+		System.out.println(resultDocStr);
+		//Verify that search response has found 4 PERSONA elements under /PLAY/PERSONAE
+		assertXpathEvaluatesTo("fn:doc(\"/1/play-persons.xml\")", "string(//*[local-name()='response']//*[local-name()='result']//@*[local-name()='path'])", resultDocStr);
+		assertXpathEvaluatesTo("4", "count(//*[local-name()='response']//*[local-name()='match'])", resultDocStr);
 	}
 }

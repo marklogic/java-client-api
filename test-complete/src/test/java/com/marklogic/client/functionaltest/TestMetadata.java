@@ -94,7 +94,7 @@ public class TestMetadata extends BasicJavaClientREST{
 		assertTrue("Document property reviewed not found or not correct", actualProperties.contains("reviewed:true"));
 		assertTrue("Document property myInteger not found or not correct", actualProperties.contains("myInteger:10"));
 		assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("myDecimal:34.56678"));
-		assertTrue("Document property myCalendar not found or not correct", actualProperties.contains("myCalendar:2014"));
+		assertTrue("Document property myCalendar not found or not correct", actualProperties.contains("myCalendar:2015"));
 		assertTrue("Document property myString not found or not correct", actualProperties.contains("myString:foo"));
 
 		// Permissions
@@ -165,7 +165,7 @@ public class TestMetadata extends BasicJavaClientREST{
 		assertTrue("Document property reviewed not found or not correct", actualProperties.contains("reviewed:true"));
 		assertTrue("Document property myInteger not found or not correct", actualProperties.contains("myInteger:10"));
 		assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("myDecimal:34.56678"));
-		assertTrue("Document property myCalendar not found or not correct", actualProperties.contains("myCalendar:2014"));
+		assertTrue("Document property myCalendar not found or not correct", actualProperties.contains("myCalendar:2015"));
 		assertTrue("Document property myString not found or not correct", actualProperties.contains("myString:foo"));
 
 		// Permissions
@@ -238,7 +238,7 @@ public class TestMetadata extends BasicJavaClientREST{
 		assertTrue("Document property reviewed not found or not correct", actualProperties.contains("reviewed:true"));
 		assertTrue("Document property myInteger not found or not correct", actualProperties.contains("myInteger:10"));
 		assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("myDecimal:34.56678"));
-		assertTrue("Document property myCalendar not found or not correct", actualProperties.contains("myCalendar:2014"));
+		assertTrue("Document property myCalendar not found or not correct", actualProperties.contains("myCalendar:2015"));
 		assertTrue("Document property myString not found or not correct", actualProperties.contains("myString:foo"));
 
 		// Permissions
@@ -308,7 +308,7 @@ public class TestMetadata extends BasicJavaClientREST{
 		assertTrue("Document property reviewed not found or not correct", actualProperties.contains("reviewed:true"));
 		assertTrue("Document property myInteger not found or not correct", actualProperties.contains("myInteger:10"));
 		assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("myDecimal:34.56678"));
-		assertTrue("Document property myCalendar not found or not correct", actualProperties.contains("myCalendar:2014"));
+		assertTrue("Document property myCalendar not found or not correct", actualProperties.contains("myCalendar:2015"));
 		assertTrue("Document property myString not found or not correct", actualProperties.contains("myString:foo"));
 
 		// Permissions
