@@ -254,7 +254,7 @@ public interface PojoRepository<T, ID extends Serializable> {
     public PojoPage<T> read(ID[] ids)
         throws ForbiddenUserException, FailedRequestException;
     /** Within an open transaction,
-     * read one page of persisted pojos and unmarshall their data into new pojo instances.
+     * read multiple persisted pojos and unmarshall their data into new pojo instances.
      * If at least one instance is found but others are not, ignores the instances not found.
      * While this returns a PojoPage, the PageSize will match the number of instances found,
      * and will ignore getPageLength().  To paginate, send a smaller set of ids at a time.
@@ -263,9 +263,9 @@ public interface PojoRepository<T, ID extends Serializable> {
      * @param transaction the transaction in which this read is participating
      *      (will open a read lock on each document matched that is released when the
      *      transaction is committed or rolled back)
-     * @return a page of instances of the correct type populated with the persisted data.
-     *      Since this call may match a large set, only one page of {@link #getPageLength()}
-     *      is returned just like calls to {@link #search(PojoQueryDefinition, long) search}
+     * @return a set of instances of the correct type populated with the persisted data.
+     *      Since this call produces a finite set, only one page is returned and therefore
+     *      PojoPage pagination methods will not be helpful as they would be from calls to search.
      */
     public PojoPage<T> read(ID[] ids, Transaction transaction)
         throws ForbiddenUserException, FailedRequestException;
