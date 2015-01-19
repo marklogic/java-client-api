@@ -285,7 +285,7 @@ public class TestPOJOWithStringQD extends BasicJavaClientREST {
 		JsonNode actNode = mapper.readTree(results.get()).get("total");
 //		System.out.println(expNode.equals(actNode)+"\n"+ expNode.toString()+"\n"+actNode.toString());
 		
-		assertNull("Total search results resulted are ",actNode );
+		assertEquals("Total search results resulted are ",actNode.asInt(),0 );
 	}
 
 }
