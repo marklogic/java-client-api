@@ -2,13 +2,39 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.marklogic</groupId>
-	<artifactId>client-api-java</artifactId>
+	<artifactId>java-client-api</artifactId>
 	<packaging>jar</packaging>
 	<version>2.0-SNAPSHOT</version>
-	<name>client-api-java</name>
-	<url>http://developer.marklogic.com</url>
+	<name>MarkLogic Java Client API</name>
+	<description>The official MarkLogic Java client API.</description>
+	<url>https://github.com/marklogic/java-client-api</url>
+	<licenses>
+		<license>
+			<name>The Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<name>MarkLogic</name>
+			<email>java-sig@marklogic.com</email>
+			<organization>MarkLogic</organization>
+			<organizationUrl>https://www.marklogic.com</organizationUrl>
+		</developer>
+		<developer>
+			<name>MarkLogic Github Contributors</name>
+			<email>general@developer.marklogic.com</email>
+			<organization>Github Contributors</organization>
+			<organizationUrl>https://github.com/marklogic/java-client-api/graphs/contributors</organizationUrl>
+		</developer>
+	</developers>
+	<scm>
+			<connection>scm:git:git@github.com:marklogic/java-client-api.git</connection>
+			<developerConnection>scm:git:git@github.com:marklogic/java-client-api.git</developerConnection>
+		<url>git@github.com:marklogic/java-client-api.git</url>
+	</scm>
 	<properties>
-		<javadoc-title>${project.name} 2.0 ${maven.build.timestamp}</javadoc-title>
+		<javadoc-title>${project.name} ${project.version} ${maven.build.timestamp}</javadoc-title>
 		<maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
