@@ -41,7 +41,8 @@ import com.marklogic.client.query.StructuredQueryBuilder.TemporalOperator;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class BitemporalTest {
-	// bootstrap.xqy sets up the "temporal-collection" and required underlying axes
+	// src/test/resources/bootstrap.xqy is run by src/test/resources/boot-test.sh
+	// and sets up the "temporal-collection" and required underlying axes
 	// system-axis and valid-axis which have required underlying range indexes
 	// system-start, system-end, valid-start, and valid-end
 	static String temporalCollection = "temporal-collection";
@@ -66,29 +67,29 @@ public class BitemporalTest {
 				uniqueTerm + " version1" +
 				"<system-start></system-start>" +
 				"<system-end></system-end>" +
-				"<valid-start>2014-08-19T00:00:00</valid-start>" +
-				"<valid-end>2014-08-19T00:00:01</valid-end>" +
+				"<valid-start>2014-08-19T00:00:00Z</valid-start>" +
+				"<valid-end>2014-08-19T00:00:01Z</valid-end>" +
     		"</test>";
 		String version2 = "<test>" +
 				uniqueTerm + " version2" +
 				"<system-start></system-start>" +
 				"<system-end></system-end>" +
-				"<valid-start>2014-08-19T00:00:02</valid-start>" +
-				"<valid-end>2014-08-19T00:00:03</valid-end>" +
+				"<valid-start>2014-08-19T00:00:02Z</valid-start>" +
+				"<valid-end>2014-08-19T00:00:03Z</valid-end>" +
     		"</test>";
 		String version3 = "<test>" +
 				uniqueTerm + " version3" +
 				"<system-start></system-start>" +
 				"<system-end></system-end>" +
-				"<valid-start>2014-08-19T00:00:03</valid-start>" +
-				"<valid-end>2014-08-19T00:00:04</valid-end>" +
+				"<valid-start>2014-08-19T00:00:03Z</valid-start>" +
+				"<valid-end>2014-08-19T00:00:04Z</valid-end>" +
     		"</test>";
 		String version4 = "<test>" +
 				uniqueTerm + " version4" +
 				"<system-start></system-start>" +
 				"<system-end></system-end>" +
-				"<valid-start>2014-08-19T00:00:05</valid-start>" +
-				"<valid-end>2014-08-19T00:00:06</valid-end>" +
+				"<valid-start>2014-08-19T00:00:05Z</valid-start>" +
+				"<valid-end>2014-08-19T00:00:06Z</valid-end>" +
     		"</test>";
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		StringHandle handle1 = new StringHandle(version1).withFormat(Format.XML);
@@ -112,7 +113,9 @@ public class BitemporalTest {
 		DocumentPage termQueryResults = docMgr.search(termQuery, start);
 		assertEquals("Wrong number of results", 4, termQueryResults.size());
 
-		// sleep for 2 seconds
+		// temporal-collection is configured to automatically advance lsqt every 1 second
+		// so we'll sleep for 2 seconds to make sure lsqt has advanced beyond the lsqt
+		// when we inserted our documents
 		Thread.sleep(2000);
 		StructuredQueryDefinition currentQuery = sqb.temporalLsqtQuery(temporalCollection, null, 1);
 		StructuredQueryDefinition currentDocQuery = sqb.and(termQuery, currentQuery);
@@ -120,16 +123,16 @@ public class BitemporalTest {
 		assertEquals("Wrong number of results", 4, currentDocQueryResults.size());
 
 		StructuredQueryBuilder.Axis validAxis = sqb.axis("valid-axis");
-		Calendar start1 = DatatypeConverter.parseDateTime("2014-08-19T00:00:00");
-		Calendar end1 = DatatypeConverter.parseDateTime("2014-08-19T00:00:04");
+		Calendar start1 = DatatypeConverter.parseDateTime("2014-08-19T00:00:00Z");
+		Calendar end1   = DatatypeConverter.parseDateTime("2014-08-19T00:00:04Z");
 		StructuredQueryBuilder.Period period1 = sqb.period(start1, end1);
 		StructuredQueryDefinition periodQuery1 = sqb.and(sqb.term(uniqueTerm),
 			sqb.temporalPeriodRange(validAxis, TemporalOperator.ALN_CONTAINED_BY, period1));
 		DocumentPage periodQuery1Results = docMgr.search(periodQuery1, start);
 		assertEquals("Wrong number of results", 1, periodQuery1Results.size());
 
-		Calendar start2 = DatatypeConverter.parseDateTime("2014-08-19T00:00:04");
-		Calendar end2 = DatatypeConverter.parseDateTime("2014-08-19T00:00:07");
+		Calendar start2 = DatatypeConverter.parseDateTime("2014-08-19T00:00:04Z");
+		Calendar end2   = DatatypeConverter.parseDateTime("2014-08-19T00:00:07Z");
 		StructuredQueryBuilder.Period period2 = sqb.period(start2, end2);
 		StructuredQueryDefinition periodQuery2 = sqb.and(sqb.term(uniqueTerm),
 			sqb.temporalPeriodRange(validAxis, TemporalOperator.ALN_CONTAINED_BY, period2));
