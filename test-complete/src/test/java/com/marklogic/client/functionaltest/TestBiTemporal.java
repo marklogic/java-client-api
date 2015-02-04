@@ -1816,6 +1816,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
         .parseDateTime("2010-01-01T00:00:01");
     insertJSONSingleDocument(temporalLsqtCollectionName, docId, null, null,
         firstInsertTime);
+    
+    // Sleep for 2 seconds for LSQT to be advanced
+    Thread.sleep(2000);
 
     // Update by passing a system time that is less than previous one
     Calendar updateTime = DatatypeConverter
