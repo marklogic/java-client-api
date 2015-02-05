@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.eval.ServerEvaluationCall;
+import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
@@ -172,29 +173,37 @@ public class BulkReadWriteTest {
         XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 
         DocumentPage page = docMgr.read(DIRECTORY + "1016670.xml", DIRECTORY + "108410.xml", DIRECTORY + "1205733.xml");
-        int numRead = 0;
-        for ( DocumentRecord record : page ) {
-            validateRecord(record);
-            numRead++;
+        try {
+            int numRead = 0;
+            for ( DocumentRecord record : page ) {
+                validateRecord(record);
+                numRead++;
+            }
+            assertEquals("Should have results", true, page.hasContent());
+            assertEquals("Failed to read number of records expected", 3, numRead);
+            assertEquals("Failed to report number of records expected", 3, page.size());
+            assertEquals("No previous page", false, page.hasPreviousPage());
+            assertEquals("Only one page", false, page.hasNextPage());
+            assertEquals("Only one page", true, page.isFirstPage());
+            assertEquals("Only one page", true, page.isLastPage());
+            assertEquals("Wrong page", 1, page.getPageNumber());
+            assertEquals("Wrong page size", 3, page.getPageSize());
+            assertEquals("Wrong start", 1, page.getStart());
+            assertEquals("Wrong totalPages", 1, page.getTotalPages());
+            assertEquals("Wrong estimate", 3, page.getTotalSize());
+        } finally {
+            page.close();
         }
-        assertEquals("Should have results", true, page.hasContent());
-        assertEquals("Failed to read number of records expected", 3, numRead);
-        assertEquals("Failed to report number of records expected", 3, page.size());
-        assertEquals("No previous page", false, page.hasPreviousPage());
-        assertEquals("Only one page", false, page.hasNextPage());
-        assertEquals("Only one page", true, page.isFirstPage());
-        assertEquals("Only one page", true, page.isLastPage());
-        assertEquals("Wrong page", 1, page.getPageNumber());
-        assertEquals("Wrong page size", 3, page.getPageSize());
-        assertEquals("Wrong start", 1, page.getStart());
-        assertEquals("Wrong totalPages", 1, page.getTotalPages());
-        assertEquals("Wrong estimate", 3, page.getTotalSize());
 
         // test reading a valid plus a non-existent document
         page = docMgr.read(DIRECTORY + "1016670.xml", "nonExistant.doc");
-        assertEquals("Should have results", true, page.hasContent());
-        assertEquals("Failed to report number of records expected", 1, page.size());
-        assertEquals("Wrong only doc", DIRECTORY + "1016670.xml", page.next().getUri());
+        try {
+            assertEquals("Should have results", true, page.hasContent());
+            assertEquals("Failed to report number of records expected", 1, page.size());
+            assertEquals("Wrong only doc", DIRECTORY + "1016670.xml", page.next().getUri());
+        } finally {
+            page.close();
+        }
 
         // test reading multiple non-existent documents
         boolean exceptionThrown = false;
@@ -203,7 +212,7 @@ public class BulkReadWriteTest {
         } catch (ResourceNotFoundException e) {
             exceptionThrown = true;
         }
-        assertTrue("ResourceNotFoundException should have been thrown", exceptionThrown);
+        assertFalse("ResourceNotFoundException should not have been thrown", exceptionThrown);
 
         // test reading a non-existent document (not actually a bulk operation)
         exceptionThrown = false;
@@ -223,24 +232,28 @@ public class BulkReadWriteTest {
         int pageLength = 100;
         docMgr.setPageLength(pageLength);
         DocumentPage page = docMgr.search(new StructuredQueryBuilder().directory(1, DIRECTORY), 1, searchHandle);
-        for ( DocumentRecord record : page ) {
-            validateRecord(record);
+        try {
+            for ( DocumentRecord record : page ) {
+                validateRecord(record);
+            }
+            assertEquals("Failed to find number of records expected", RECORDS_EXPECTED, page.getTotalSize());
+            assertEquals("SearchHandle failed to report number of records expected", RECORDS_EXPECTED, searchHandle.getTotalResults());
+            assertEquals("SearchHandle failed to report pageLength expected", pageLength, searchHandle.getPageLength());
+            assertEquals("Should have results", true, page.hasContent());
+            int expected = RECORDS_EXPECTED > pageLength ? pageLength : RECORDS_EXPECTED;
+            assertEquals("Failed to report number of records expected", expected, page.size());
+            assertEquals("No previous page", false, page.hasPreviousPage());
+            assertEquals("Only one page", RECORDS_EXPECTED > pageLength, page.hasNextPage());
+            assertEquals("Only one page", true, page.isFirstPage());
+            assertEquals("Only one page", page.hasNextPage() == false, page.isLastPage());
+            assertEquals("Wrong page", 1, page.getPageNumber());
+            assertEquals("Wrong page size", pageLength, page.getPageSize());
+            assertEquals("Wrong start", 1, page.getStart());
+            double totalPagesExpected = Math.ceil((double) RECORDS_EXPECTED/(double) pageLength);
+            assertEquals("Wrong totalPages", totalPagesExpected, page.getTotalPages(), .01);
+        } finally {
+            page.close();
         }
-        assertEquals("Failed to find number of records expected", RECORDS_EXPECTED, page.getTotalSize());
-        assertEquals("SearchHandle failed to report number of records expected", RECORDS_EXPECTED, searchHandle.getTotalResults());
-        assertEquals("SearchHandle failed to report pageLength expected", pageLength, searchHandle.getPageLength());
-        assertEquals("Should have results", true, page.hasContent());
-        int expected = RECORDS_EXPECTED > pageLength ? pageLength : RECORDS_EXPECTED;
-        assertEquals("Failed to report number of records expected", expected, page.size());
-        assertEquals("No previous page", false, page.hasPreviousPage());
-        assertEquals("Only one page", RECORDS_EXPECTED > pageLength, page.hasNextPage());
-        assertEquals("Only one page", true, page.isFirstPage());
-        assertEquals("Only one page", page.hasNextPage() == false, page.isLastPage());
-        assertEquals("Wrong page", 1, page.getPageNumber());
-        assertEquals("Wrong page size", pageLength, page.getPageSize());
-        assertEquals("Wrong start", 1, page.getStart());
-        double totalPagesExpected = Math.ceil((double) RECORDS_EXPECTED/(double) pageLength);
-        assertEquals("Wrong totalPages", totalPagesExpected, page.getTotalPages(), .01);
     }
 
     //public void testMixedLoad() {
@@ -262,19 +275,23 @@ public class BulkReadWriteTest {
         writeSet.add("doc2.json", doc2Metadata, doc2);
 
         docMgr.write(writeSet);
-        
+
         docMgr.setMetadataCategories(Metadata.QUALITY);
         docMgr.setNonDocumentFormat(Format.JSON);
         DocumentPage documents = docMgr.read("doc1.json", "doc2.json");
-        for ( DocumentRecord record : documents ) {
-            JacksonHandle content = record.getContent(new JacksonHandle());
-            JacksonHandle metadata = record.getMetadata(new JacksonHandle());
-            if ( "doc1.json".equals(record.getUri()) ) {
-                assertEquals("Failed to read document 1", "dog", content.get().get("animal").textValue());
-            } else if ( "doc2.json".equals(record.getUri()) ) {
-                assertEquals("Failed to read document 2", "cat", content.get().get("animal").textValue());
-                assertEquals("Failed to read expected quality", 2, metadata.get().get("quality").intValue());
+        try {
+            for ( DocumentRecord record : documents ) {
+                JacksonHandle content = record.getContent(new JacksonHandle());
+                JacksonHandle metadata = record.getMetadata(new JacksonHandle());
+                if ( "doc1.json".equals(record.getUri()) ) {
+                    assertEquals("Failed to read document 1", "dog", content.get().get("animal").textValue());
+                } else if ( "doc2.json".equals(record.getUri()) ) {
+                    assertEquals("Failed to read document 2", "cat", content.get().get("animal").textValue());
+                    assertEquals("Failed to read expected quality", 2, metadata.get().get("quality").intValue());
+                }
             }
+        } finally {
+            documents.close();
         }
     }
 
@@ -398,35 +415,42 @@ public class BulkReadWriteTest {
         // let's check getting content with just quality in the metadata 
         jdm.setMetadataCategories(Metadata.QUALITY);
         DocumentPage documents = jdm.read("doc4.json", "doc5.json");
-
-        for ( DocumentRecord doc: documents ) {
-            DocumentMetadataHandle metadata = doc.getMetadata(new DocumentMetadataHandle());
-            StringHandle content = doc.getContent(new StringHandle());
-            if ( "doc4.json".equals(doc.getUri()) ) {
-                assertEquals("Doc4 should also use the 1st batch default metadata, with quality 1", 1,
-                    metadata.getQuality());
-                assertTrue("Doc 4 contents are wrong", content.get().matches("\\{\"number\": ?4\\}"));
-            } else if ( "doc5.json".equals(doc.getUri()) ) {
-                assertEquals("Doc5 should use the 2nd batch default metadata, with quality 2", 2,
-                    metadata.getQuality());
-                assertTrue("Doc 5 contents are wrong", content.get().matches("\\{\"number\": ?5\\}"));
+        try {
+            for ( DocumentRecord doc: documents ) {
+                DocumentMetadataHandle metadata = doc.getMetadata(new DocumentMetadataHandle());
+                StringHandle content = doc.getContent(new StringHandle());
+                if ( "doc4.json".equals(doc.getUri()) ) {
+                    assertEquals("Doc4 should also use the 1st batch default metadata, with quality 1", 1,
+                            metadata.getQuality());
+                    assertTrue("Doc 4 contents are wrong", content.get().matches("\\{\"number\": ?4\\}"));
+                } else if ( "doc5.json".equals(doc.getUri()) ) {
+                    assertEquals("Doc5 should use the 2nd batch default metadata, with quality 2", 2,
+                            metadata.getQuality());
+                    assertTrue("Doc 5 contents are wrong", content.get().matches("\\{\"number\": ?5\\}"));
+                }
             }
+        } finally {
+            documents.close();
         }
 
         // now try with just metadata
         documents = jdm.readMetadata("doc6.json", "doc7.json", "doc8.json");
-        for ( DocumentRecord doc: documents ) {
-            DocumentMetadataHandle metadata = doc.getMetadata(new DocumentMetadataHandle());
-            if ( "doc6.json".equals(doc.getUri()) ) {
-                assertEquals("Doc 6 should have the system default quality of 0", 0,
-                    metadata.getQuality());
-            } else if ( "doc7.json".equals(doc.getUri()) ) {
-                assertEquals("Doc7 should also use the 1st batch default metadata, with quality 1", 1,
-                    metadata.getQuality());
-            } else if ( "doc8.json".equals(doc.getUri()) ) {
-                assertEquals("Doc 8 should have the system default quality of 0", 0,
-                    metadata.getQuality());
+        try {
+            for ( DocumentRecord doc: documents ) {
+                DocumentMetadataHandle metadata = doc.getMetadata(new DocumentMetadataHandle());
+                if ( "doc6.json".equals(doc.getUri()) ) {
+                    assertEquals("Doc 6 should have the system default quality of 0", 0,
+                        metadata.getQuality());
+                } else if ( "doc7.json".equals(doc.getUri()) ) {
+                    assertEquals("Doc7 should also use the 1st batch default metadata, with quality 1", 1,
+                        metadata.getQuality());
+                } else if ( "doc8.json".equals(doc.getUri()) ) {
+                    assertEquals("Doc 8 should have the system default quality of 0", 0,
+                        metadata.getQuality());
+                }
             }
+        } finally {
+            documents.close();
         }
     }
 
@@ -465,42 +489,57 @@ public class BulkReadWriteTest {
 	        // Search for documents where content has bar and get first result record, get search handle on it
 	        SearchHandle sh = new SearchHandle();
 	        DocumentPage page= docMgr.search(qd, 1);
-	        // test for page methods
-	        assertEquals("Number of records",1,page.size());
-	        assertEquals("Starting record in first page ",1,page.getStart());
-	        assertEquals("Total number of estimated results:",11,page.getTotalSize());
-	        assertEquals("Total number of estimated pages :",11,page.getTotalPages());
-	        assertTrue("Is this First page :",page.isFirstPage());
-	        assertFalse("Is this Last page :",page.isLastPage());
-	        assertTrue("Is this First page has content:",page.hasContent());
-	        assertFalse("Is first page has previous page ?",page.hasPreviousPage());
-	        //      
+            try {
+                // test for page methods
+                assertEquals("Number of records",1,page.size());
+                assertEquals("Starting record in first page ",1,page.getStart());
+                assertEquals("Total number of estimated results:",11,page.getTotalSize());
+                assertEquals("Total number of estimated pages :",11,page.getTotalPages());
+                assertTrue("Is this First page :",page.isFirstPage());
+                assertFalse("Is this Last page :",page.isLastPage());
+                assertTrue("Is this First page has content:",page.hasContent());
+                assertFalse("Is first page has previous page ?",page.hasPreviousPage());
+            } finally {
+                page.close();
+            }
+
 	        long start=1;
 	        do{
 	            count=0;
 	            page = docMgr.search(qd, start,sh);
-	            if(start >1){ 
-	                assertFalse("Is this first Page", page.isFirstPage());
-	                assertTrue("Is page has previous page ?",page.hasPreviousPage());
-	            }
-	            while(page.hasNext()){
-	                page.next();
-	                count++;
-	            }
-	            MatchDocumentSummary[] mds= sh.getMatchResults();
-	            assertEquals("Matched document count",1,mds.length);
-	            //since we set the query view to get only results, facet count supposed be 0
-	            assertEquals("Matched Facet count",0,sh.getFacetNames().length);
-	
-	            assertEquals("document count", page.size(),count);
-	            if (!page.isLastPage()) start = start + page.getPageSize();
+                try {
+                    if(start >1){ 
+                        assertFalse("Is this first Page", page.isFirstPage());
+                        assertTrue("Is page has previous page ?",page.hasPreviousPage());
+                    }
+                    while(page.hasNext()){
+                        page.next();
+                        count++;
+                    }
+                    MatchDocumentSummary[] mds= sh.getMatchResults();
+                    assertEquals("Matched document count",1,mds.length);
+                    //since we set the query view to get only results, facet count supposed be 0
+                    assertEquals("Matched Facet count",0,sh.getFacetNames().length);
+
+                    assertEquals("document count", page.size(),count);
+                    if (page.isLastPage()) { 
+                        assertEquals("page count is 11 ",start, page.getTotalPages());
+                        assertTrue("Page has previous page ?",page.hasPreviousPage());
+                        assertEquals("page size", 1,page.getPageSize());
+                        assertEquals("document count", 11,page.getTotalSize());
+                    } else {
+                        start = start + page.getPageSize();
+                    }
+                } finally {
+                    page.close();
+                }
 	        }while(!page.isLastPage());
-	        assertEquals("page count is 11 ",start, page.getTotalPages());
-	        assertTrue("Page has previous page ?",page.hasPreviousPage());
-	        assertEquals("page size", 1,page.getPageSize());
-	        assertEquals("document count", 11,page.getTotalSize());
 	        page= docMgr.search(qd, 12);
-	        assertFalse("Page has any records ?",page.hasContent());
+            try {
+                assertFalse("Page has any records ?",page.hasContent());
+            } finally {
+                page.close();
+            }
     	} finally {
 	        DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
 	        deleteQuery.setDirectory(DIRECTORY);
@@ -511,13 +550,10 @@ public class BulkReadWriteTest {
     @Test
     public void test_171() throws Exception{
         DatabaseClient client = DatabaseClientFactory.newClient(
-        // the following line breaks things but should not: https://github.com/marklogic/java-client-api/issues/171
-        // TODO: uncomment the following line when https://bugtrack.marklogic.com/30299 is fixed
-        //Common.HOST, Common.PORT, "Documents", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
-            Common.HOST, Common.PORT, Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
+            Common.HOST, Common.PORT, "Documents", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
         int count=1;
         boolean tstatus =true;
-        String directory = "/test_171/";
+        String directory = "/test_bulk_171/";
         Transaction t1 = client.openTransaction();
         try{
             QueryManager queryMgr = client.newQueryManager();
@@ -552,13 +588,6 @@ public class BulkReadWriteTest {
             assertEquals("Count of documents outside of the transaction",0,outOfTransactionResults.getTotalResults());
             assertEquals("Count of documents inside of the transaction", 2,   inTransactionResults.getTotalResults());
 
-            //String query = "(fn:count(xdmp:directory('" + directory + "')))";
-            //ServerEvaluationCall evl= client.newServerEval().xquery(query);
-            //EvalResultIterator evr = evl.eval();
-            //assertEquals("Count of documents outside of the transaction",0,evr.next().getNumber().intValue());
-            //evl= client.newServerEval().xquery(query).transaction(t1);
-            //evr = evl.eval();
-            //assertEquals("Count of documents outside of the transaction",103,evr.next().getNumber().intValue());
         }catch(Exception e){
             System.out.println(e.getMessage());
             tstatus=true;
@@ -569,6 +598,63 @@ public class BulkReadWriteTest {
             }
         }
     } 
+
+    @Test
+    public void test_218() throws Exception{
+        int count=1;
+        boolean committed = false;
+        String directory = "/test_bulk_218/";
+        DatabaseClient client2 = DatabaseClientFactory.newClient(
+            Common.HOST, Common.PORT, "Documents", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
+        Transaction t1 = client2.openTransaction();
+        QueryManager queryMgr2 = client2.newQueryManager();
+        QueryManager queryMgr1 = Common.client.newQueryManager();
+
+        try{
+            XMLDocumentManager docMgr = client2.newXMLDocumentManager();
+            DocumentWriteSet writeset =docMgr.newWriteSet();
+            for(int i =0;i<12;i++){
+                String contents = "<xml>test" + i + "</xml>";
+                String docId = directory + "sec"+i+".xml";
+                writeset.add(docId, new StringHandle(contents).withFormat(Format.XML));
+                if(count%10 == 0){
+                    docMgr.write(writeset,t1);
+                    writeset = docMgr.newWriteSet();
+                }
+                count++;
+            }
+            if(count%10 > 0){
+                docMgr.write(writeset,t1);
+            }
+            t1.commit();
+            committed=true;
+
+            QueryDefinition directoryQuery = queryMgr2.newStringDefinition();
+            directoryQuery.setDirectory(directory);
+
+            QueryDefinition directoryQuery1 = queryMgr1.newStringDefinition();
+            directoryQuery1.setDirectory(directory);
+
+            SearchHandle inRuntimeDbResults = queryMgr2.search(directoryQuery, new SearchHandle());
+            SearchHandle inDefaultDbResults = queryMgr1.search(directoryQuery1, new SearchHandle());
+
+            assertEquals("Count of documents in runtime db", 12, inRuntimeDbResults.getTotalResults());
+            assertEquals("Count of documents in default db", 0,  inDefaultDbResults.getTotalResults());
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+            if(! committed){
+                t1.rollback();
+            }
+            throw e;
+        } finally {
+
+            DeleteQueryDefinition deleteQuery = queryMgr2.newDeleteDefinition();
+            deleteQuery.setDirectory(directory);
+            queryMgr2.delete(deleteQuery);
+
+            client2.release();
+        }
+    }
 
     private static void addCountry(String line, Map<String, Country> countries) {
         // skip comment lines

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicInternalException;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentWriteSet;
@@ -78,7 +79,17 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     @SuppressWarnings("unused")
     private String idPropertyName;
     private static final String ISO_8601_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
-    private static SimpleDateFormat simpleDateFormat8601 = new SimpleDateFormat(ISO_8601_FORMAT);
+    private static SimpleDateFormat simpleDateFormat8601;
+    static {
+        try {
+            simpleDateFormat8601 = new SimpleDateFormat(ISO_8601_FORMAT);
+        // Java 1.6 doesn't yet know about X (ISO 8601 format)
+        } catch (IllegalArgumentException e) {
+            if ( "Illegal pattern character 'X'".equals(e.getMessage()) ) {
+                simpleDateFormat8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            }
+        }
+    }
     static { simpleDateFormat8601.setTimeZone(TimeZone.getTimeZone("UTC")); }
     private ObjectMapper objectMapper = new ObjectMapper()
         // if we don't do the next two lines Jackson will automatically close our streams which is undesirable
@@ -139,7 +150,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
             metadataHandle = metadataHandle.withCollections(collections);
         }
         DocumentWriteSet writeSet = docMgr.newWriteSet();
-        writeSet.add(createUri(entity), metadataHandle, contentHandle);
+        writeSet.add(getDocumentUri(entity), metadataHandle, contentHandle);
         try {
             docMgr.write(writeSet, transaction);
         } catch(ClientHandlerException e) {
@@ -208,8 +219,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     @Override
     public long count(PojoQueryDefinition query, Transaction transaction) {
         long pageLength = getPageLength();
-        // set below to 0 when we get a fix for https://bugtrack.marklogic.com/30470
-        setPageLength(1);
+        setPageLength(0);
         PojoPage<T> page = search(query, 1, transaction);
         setPageLength(pageLength);
         return page.getTotalSize();
@@ -264,9 +274,11 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         ids.add(id);
         @SuppressWarnings("unchecked")
         PojoPage<T> page = read(ids.toArray((ID[])new Serializable[0]), transaction);
-        if ( page == null ) return null;
-        if ( page.hasNext() ) return page.next();
-        return null;
+        if ( page == null || page.hasNext() == false ) {
+            throw new ResourceNotFoundException("Could not find document of type " +
+                entityClass.getName() + " with id " + id);
+        }
+        return page.next();
     }
     @Override
     public PojoPage<T> read(ID[] ids) {
@@ -372,7 +384,8 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         }
     }
 
-    private String createUri(T entity) {
+    @Override
+    public String getDocumentUri(T entity) {
         return createUri(getId(entity));
     }
 

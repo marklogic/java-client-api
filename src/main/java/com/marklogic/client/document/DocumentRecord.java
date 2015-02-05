@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,12 +28,16 @@ import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
  *docMgr.setNonDocumentFormat(Format.XML);
  *docMgr.setMetadataCategories(Metadata.COLLECTIONS);
  *DocumentPage documents = docMgr.read("doc1.json", "doc2.json");
- *for ( DocumentRecord record : documents ) {
- *    String uri = record.getUri();
- *    JacksonHandle content = record.getContent(new JacksonHandle());
- *    DocumentMetadataHandle metadata = record.getMetadata(new DocumentMetadataHandle());
- *    DocumentCollections collections = metadata.getCollections();
- *    // ... do something ...
+ *try {
+ *    for ( DocumentRecord record : documents ) {
+ *        String uri = record.getUri();
+ *        JacksonHandle content = record.getContent(new JacksonHandle());
+ *        DocumentMetadataHandle metadata = record.getMetadata(new DocumentMetadataHandle());
+ *        DocumentCollections collections = metadata.getCollections();
+ *        // ... do something ...
+ *    }
+ *} finally {
+ *    documents.close();
  *}
  *  }</pre>
  */

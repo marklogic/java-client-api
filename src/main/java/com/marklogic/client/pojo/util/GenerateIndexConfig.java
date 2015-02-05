@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,10 +37,18 @@ import com.marklogic.client.pojo.annotation.GeospatialPathIndexProperty;
 import com.marklogic.client.pojo.annotation.Id;
 import com.marklogic.client.pojo.annotation.PathIndexProperty;
 
-/** Generates a MarkLogic index configuration file in JSON format describing the indexes 
+/** <p>Generates a MarkLogic index configuration file in JSON format describing the indexes 
  * required by the annotations on the specific classes.  
  * The output can be used by an administrator to create indexes in the database
- * using the Management REST API, for example:
+ * using the Management REST API.</p>
+ *
+ * <p><b>WARNING!</b> Applying this generated index file via management API will overwrite
+ * existing indexes!  Only use this as-is if there are no other indexes on your
+ * database that you want to keep.  To add these indexes to other indexes please get
+ * the configuration for existing indexes from the management API and add these to that
+ * file before applying.</p>
+ *
+ * <p>Usage example:</p>
  * <pre>
  *     java com.marklogic.client.pojo.util.GenerateIndexConfig 
  *       -classes "com.marklogic.client.test.City com.marklogic.client.test.Country" 

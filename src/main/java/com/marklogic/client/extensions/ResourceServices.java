@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,12 +40,6 @@ public interface ResourceServices {
 	 * @return	the resource name
 	 */
 	public String getResourceName();
-
-	/**
-	 * Returns the script language of the resource.
-	 * @return	the script language
-	 */
-	public ExtensionMetadata.ScriptLanguage getScriptLanguage();
 
 	/**
 	 * Reads resource content by calling a GET service.

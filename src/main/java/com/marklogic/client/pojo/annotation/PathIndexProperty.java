@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /** Use this annotation to specify that a Path Index (required for range
- * queries) should be created for this pojo property.  A path index is
+ * queries) is needed for this pojo property.  A path index is
  * used rather than an element range index because we can restrict matches
  * to only properties that are direct children of this class type.  We
  * do this by including the class name in the path specification on the

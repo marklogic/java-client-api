@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,11 @@ public class PojoPageImpl<T> extends BasicPage<T> implements PojoPage<T>, Iterat
         handle.getMapper().enableDefaultTyping(
             ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT);
         return docPage.nextContent(handle).get();
+    }
+
+    @Override
+    public void close() {
+        docPage.close();
     }
 
     @Override

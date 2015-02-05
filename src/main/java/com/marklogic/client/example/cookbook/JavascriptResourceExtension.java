@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ public class JavascriptResourceExtension {
 			super();
 
 			// a Resource Manager must be initialized by a Database Client
-			client.init(NAME, this, ExtensionMetadata.JAVASCRIPT);
+			client.init(NAME, this);
 
 			// the Dictionary Manager delegates some services to a document manager
 			docMgr = client.newXMLDocumentManager();

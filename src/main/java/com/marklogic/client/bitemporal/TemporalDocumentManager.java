@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,7 +127,6 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
   throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     // The following methods take a system time which is an advanced concept in bitemporal feature. 
-    //TODO: remove all extraParams
     /**
      * Just like {@link #create(DocumentUriTemplate, DocumentMetadataWriteHandle,
      * AbstractWriteHandle, ServerTransform, Transaction, String) create} but create document
@@ -140,7 +139,6 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
      * @param temporalCollection	the name of the temporal collection existing in the database into
      *    which this document should be written
      * @param systemTime	the application-specified system time with which this document will be marked
-     * @param extraParams	this param is going away in 8.0-1
      * @return the database uri that identifies the created document
      */
     public DocumentDescriptor create(DocumentUriTemplate template,
@@ -149,8 +147,7 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
         ServerTransform transform,
         Transaction transaction,
         String temporalCollection,
-        java.util.Calendar systemTime,
-    		RequestParameters extraParams)
+        java.util.Calendar systemTime)
     throws ForbiddenUserException, FailedRequestException;
 
     /**
@@ -165,7 +162,6 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
      * @param temporalCollection	the name of the temporal collection existing in the database into
      *    which this document should be written
      * @param systemTime	the application-specified system time with which this document will be marked
-     * @param extraParams	this param is going away in 8.0-1
      */
     public void write(DocumentDescriptor desc,
         DocumentMetadataWriteHandle metadataHandle,
@@ -173,8 +169,7 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
         ServerTransform transform,
         Transaction transaction,
         String temporalCollection,
-        java.util.Calendar systemTime,
-    		RequestParameters extraParams)
+        java.util.Calendar systemTime)
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     /**
@@ -189,7 +184,6 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
      * @param temporalCollection	the name of the temporal collection existing in the database into
      *    which this document should be written
      * @param systemTime	the application-specified system time with which this document will be marked
-     * @param extraParams	this param is going away in 8.0-1
      */
     public void write(String docId,
         DocumentMetadataWriteHandle metadataHandle,
@@ -197,8 +191,7 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
         ServerTransform transform,
         Transaction transaction,
         String temporalCollection,
-        java.util.Calendar systemTime,
-    		RequestParameters extraParams)
+        java.util.Calendar systemTime)
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -401,9 +401,9 @@ public class StructuredQueryBuilder {
         return new ValueQuery(index, null, null, null, values);
     }
     /**
-     * Matches an element, attribute, json key, or field
-     * that has a value with the same boolean value as at least one
-     * of the criteria values.
+     * Matches a json key that has a value with the same boolean value
+     * as at least one of the criteria values.  Note this method will not match
+     * any XML node.
      * @param index	the value container
      * @param value	either true or false
      * @return	the StructuredQueryDefinition for the value query
@@ -412,9 +412,9 @@ public class StructuredQueryBuilder {
         return new ValueQuery(index, null, null, null, new Object[] {value});
     }
     /**
-     * Matches an element, attribute, json key, or field
-     * that has a value with the same numeric value as at least one
-     * of the criteria values.
+     * Matches an json key that has a value with the same numeric
+     * value as at least one of the criteria values.  Note this method will not
+     * match any XML node.
      * @param index	the value container
      * @param values	the possible values to match
      * @return	the StructuredQueryDefinition for the value query
@@ -437,9 +437,9 @@ public class StructuredQueryBuilder {
         return new ValueQuery(index, scope, options, weight, values);
     }
     /**
-     * Matches an element, attribute, json key, or field
-     * that has a value with the same boolean value as at least one
-     * of the criteria values.
+     * Matches an json key that has a value with the same boolean
+     * value as at least one of the criteria values.  Note this method will not
+     * match any XML node.
      * @param index	the value container
      * @param scope	whether the query matches the document content or properties
      * @param options	options for fine tuning the query
@@ -451,9 +451,9 @@ public class StructuredQueryBuilder {
         return new ValueQuery(index, scope, options, weight, new Object[] {value});
     }
     /**
-     * Matches an element, attribute, json key, or field
-     * that has a value with the same numeric value as at least one
-     * of the criteria values.
+     * Matches an json key that has a value with the same numeric
+     * value as at least one of the criteria values.  Note this method will not
+     * match any XML node.
      * @param index	the value container
      * @param scope	whether the query matches the document content or properties
      * @param options	options for fine tuning the query
@@ -1740,6 +1740,17 @@ public class StructuredQueryBuilder {
         }
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
             serializer.writeStartElement("value-query");
+            if ( values != null && values.length > 0 ) {
+                if ( values[0] == null ) {
+                    serializer.writeAttribute("type", "null");
+                } else if ( values[0] instanceof String ) {
+                    serializer.writeAttribute("type", "string");
+                } else if ( values[0] instanceof Number ) {
+                    serializer.writeAttribute("type", "number");
+                } else if ( values[0] instanceof Boolean ) {
+                    serializer.writeAttribute("type", "boolean");
+                }
+            }
             ((IndexImpl) index).innerSerialize(serializer);
             if (scope != null) {
                 if (scope == FragmentScope.DOCUMENT) {
@@ -1753,13 +1764,8 @@ public class StructuredQueryBuilder {
             if ( values != null ) {
                 for ( Object value: values ) {
                     if ( value == null ) {
-                        serializer.writeEmptyElement("null");
-                    } else if ( value instanceof String ) {
+                    } else {
                         writeText(serializer, "text", value);
-                    } else if ( value instanceof Number ) {
-                        writeText(serializer, "number", value);
-                    } else if ( value instanceof Boolean ) {
-                        writeText(serializer, "boolean", value);
                     }
                 }
             }

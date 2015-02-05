@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,22 @@ import com.marklogic.client.io.marker.AbstractReadHandle;
 
 import java.io.Closeable;
 
-/** Allows iteration over documents in the page.  When you finish with this instance 
- * you must call close() to free the underlying resources. */
+/** Allows iteration over documents in the page as {@link DocumentRecord} instances.
+ * <pre>{@code
+ *long start = 1;
+ *DocumentPage page = documentManager.search(query, start);
+ *try {
+ *    for (DocumentRecord record : page) {
+ *        String uri = record.getUri();
+ *        // ... do something ...
+ *    }
+ *} finally {
+ *    page.close();
+ *}
+ *}</pre>
+ * <b>NOTICE!</b> When you finish with this instance 
+ * you must call close() to free the underlying resources.
+ */
 public interface DocumentPage extends Page<DocumentRecord>, Closeable {
     /** Convenience method combines the functionality of Page.next() and DocumentRecord.getContent(). */
     public <T extends AbstractReadHandle> T nextContent(T contentHandle);

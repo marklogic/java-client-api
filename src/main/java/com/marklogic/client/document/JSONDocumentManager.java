@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,9 @@ public interface JSONDocumentManager
     /**
 	 * Returns the language code for JSON documents written by the manager.
 	 * @return	the language code assigned to documents
+	 * @deprecated as a result of adding native json support, the lang param in the REST API is deprecated
 	 */
+	@Deprecated
 	public String getLanguage();
 	/**
 	 * Specifies the language code for JSON documents written by the manager.  The IANA codes
@@ -43,6 +45,8 @@ public interface JSONDocumentManager
 	 * the <a href="http://www.w3.org/TR/REC-xml/#sec-lang-tag">xml:lang</a> attribute.
 	 * 
 	 * @param language	the language code assigned to documents
+	 * @deprecated as a result of adding native json support, the lang param in the REST API is deprecated
 	 */
+	@Deprecated
     public void setLanguage(String language);
 }

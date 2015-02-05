@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package com.marklogic.client.pojo.annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-/** Use this annotation to specify that a Geospatial Path Index should
- * be created for this pojo property. The value should follow the rules
+/** Use this annotation to specify that a Geospatial Path Index is needed
+ * for this pojo property. The value should follow the rules
  * for any Geospatial Path Index in MarkLogic Server with coordinate
  * system "wgs84" and point format "point". Specifically, the value 
  * should be in "{latititude} {longitude}" point format where {latitude}

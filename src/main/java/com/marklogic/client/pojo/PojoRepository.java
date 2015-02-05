@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import java.io.Serializable;
  *    ...
  *    DatabaseClient client = ...;
  *    PojoRepository<MyClass, Integer> myClassRepo = 
- *        client.newPojoRepository(MyClass.class, Integer);</pre>
+ *        client.newPojoRepository(MyClass.class, Integer.class);</pre>
  *
  * Where MyClass is your custom pojo type, and myId is the bean property of type Integer
  * marked with the 
@@ -75,6 +75,11 @@ import java.io.Serializable;
  * serialized and deserialized, but cannot be written, read, or searched directly.  If you 
  * wish to directly write, read, or search another class, create a new instance of 
  * PojoRepository specific to that class.
+ *
+ * Since PojoRepository stores in JSON format, which limits number precision to 15
+ * significant digits (IEEE754 double precision), you will lose precision on numbers
+ * longer than 15 significant digits.  If you desire larger numbers with no loss of
+ * precision, use Strings to persist those numbers.
  */
 public interface PojoRepository<T, ID extends Serializable> {
     /** Write this instance to the database.  Uses the field marked with {@literal @}Id 
@@ -247,9 +252,9 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      PojoPage pagination methods will not be helpful as they would be from calls to search.
      */
     public PojoPage<T> read(ID[] ids)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+        throws ForbiddenUserException, FailedRequestException;
     /** Within an open transaction,
-     * read one page of persisted pojos and unmarshall their data into new pojo instances.
+     * read multiple persisted pojos and unmarshall their data into new pojo instances.
      * If at least one instance is found but others are not, ignores the instances not found.
      * While this returns a PojoPage, the PageSize will match the number of instances found,
      * and will ignore getPageLength().  To paginate, send a smaller set of ids at a time.
@@ -258,12 +263,12 @@ public interface PojoRepository<T, ID extends Serializable> {
      * @param transaction the transaction in which this read is participating
      *      (will open a read lock on each document matched that is released when the
      *      transaction is committed or rolled back)
-     * @return a page of instances of the correct type populated with the persisted data.
-     *      Since this call may match a large set, only one page of {@link #getPageLength()}
-     *      is returned just like calls to {@link #search(PojoQueryDefinition, long) search}
+     * @return a set of instances of the correct type populated with the persisted data.
+     *      Since this call produces a finite set, only one page is returned and therefore
+     *      PojoPage pagination methods will not be helpful as they would be from calls to search.
      */
     public PojoPage<T> read(ID[] ids, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+        throws ForbiddenUserException, FailedRequestException;
     /** Read one page of persisted pojos of the type managed by this
      * PojoRepository and unmarshall their data into new pojo instances.
      * @param start the offset of the first document in the page (where 1 is the first result)
@@ -271,8 +276,9 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      type populated with the persisted data.
      *      Since this call may match a large set, only one page of {@link #getPageLength()}
      *      is returned just like calls to {@link #search(PojoQueryDefinition, long) search}.
-     */    public PojoPage<T> readAll(long start)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+     */    
+    public PojoPage<T> readAll(long start)
+        throws ForbiddenUserException, FailedRequestException;
     /** Within an open transaction, read one page of persisted pojos of the type managed by this
      * PojoRepository and unmarshall their data into new pojo instances.
      * @param start the offset of the first document in the page (where 1 is the first result)
@@ -285,7 +291,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      is returned just like calls to {@link #search(PojoQueryDefinition, long) search}.
      */
     public PojoPage<T> readAll(long start, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+        throws ForbiddenUserException, FailedRequestException;
 
     /** Find all persisted pojos of the type managed by this
      * PojoRepository also in one of the specified collections and unmarshall their data
@@ -373,6 +379,14 @@ public interface PojoRepository<T, ID extends Serializable> {
      */
     public PojoPage<T> search(PojoQueryDefinition query, long start, SearchReadHandle searchHandle, Transaction transaction)
         throws ForbiddenUserException, FailedRequestException;
+
+    /*
+     * Get the generated uri for this pojo.  This can be helpful if you need to know
+     * the location of the persisted pojo in the server.  This method does not contact
+     * the server, it just returns the uri it would generate with {@link #write write}.
+     * @return the uri generated by PojoRepository when writing this pojo
+     */
+    public String getDocumentUri(T pojo);
  
     /** Get a PojoQueryBuilder for the type managed by this PojoRepository.
      * @return a PojoQueryBuilder for the type managed by this PojoRepository

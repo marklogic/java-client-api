@@ -18,9 +18,9 @@ The Java API supports the following core features of the MarkLogic database:
 
 For people working with MarkLogic 8 EA
 
-mvn test-compile
-sh src/test/resources/boot-test.sh
-mvn test
+    $ mvn test-compile
+    $ sh src/test/resources/boot-test.sh
+    $ mvn test
 
 ### Learning More
 
@@ -50,7 +50,7 @@ You can build the API in the same way as any Maven project on git:
 
 You might want to skip the tests until you have configured a test database and REST server:
 
-> mvn package -Dmaven.test.skip=true
+    $ mvn package -Dmaven.test.skip=true
 
 ## Support
 The MarkLogic Java Client API is maintained by MarkLogic Engineering and distributed under the [Apache 2.0 license](https://github.com/marklogic/java-client-api/blob/master/LICENSE). It is designed for use in production applications with MarkLogic Server. Everyone is encouraged to file bug reports, feature requests, and pull requests through GitHub. This input is critical and will be carefully considered, but we can’t promise a specific resolution or timeframe for any request. In addition, MarkLogic provides technical support for [release tags](https://github.com/marklogic/java-client-api/releases) of the Java Client API to licensed customers under the terms outlined in the [Support Handbook](http://www.marklogic.com/files/Mark_Logic_Support_Handbook.pdf). For more information or to sign up for support, visit [help.marklogic.com](http://help.marklogic.com).

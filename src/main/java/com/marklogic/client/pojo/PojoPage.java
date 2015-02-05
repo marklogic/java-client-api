@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,4 +20,7 @@ import com.marklogic.client.Page;
 /** Enables pagination over objects retrieved from the server and deserialized by 
  * PojoRepository read and search methods.
  */
-public interface PojoPage<T> extends Page<T> {}
+public interface PojoPage<T> extends Page<T> {
+    /** Frees the underlying resources, including the http connection. */
+    public void close();
+}

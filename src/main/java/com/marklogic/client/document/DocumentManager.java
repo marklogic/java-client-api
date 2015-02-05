@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1138,18 +1138,18 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
     public Format getContentFormat();
 
     /**
-     * Returns the categories of metadata to read, write, or patch.
+     * Returns the categories of metadata to read, write, patch, or search.
      * 
      * @return	the set of metadata categories
      */
     public Set<Metadata> getMetadataCategories();
     /**
-     * Specifies the categories of metadata to read, write, or patch.
+     * Specifies the categories of metadata to read, write, patch, or search.
      * @param categories	the set of metadata categories
      */
     public void setMetadataCategories(Set<Metadata> categories);
     /**
-     * Specifies the categories of metadata to read, write, or patch.
+     * Specifies the categories of metadata to read, write, patch, or search.
      * @param categories	the set of metadata categories
      */
     public void setMetadataCategories(Metadata... categories);

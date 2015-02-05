@@ -2,7 +2,7 @@
 function getMethod(context, params) { 
     //context.outputTypes = ["application/json"];
     //return { "response": "This is a JSON document" }
-    return "hello " + params["planet"];
+    return fn.normalizeSpace(" hello  " + params["planet"]);
 };
 
 function postMethod(context, params, input) {

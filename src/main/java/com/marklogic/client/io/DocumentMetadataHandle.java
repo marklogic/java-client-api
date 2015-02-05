@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,8 +62,7 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.util.NameMap;
 
 /**
- * A DocumentMetadataHandle represents the metadata for a database document
- * as a POJO (Plain Old Java Object).  
+ * A DocumentMetadataHandle represents the metadata for a database document.
  */
 public class DocumentMetadataHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
