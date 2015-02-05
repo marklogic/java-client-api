@@ -338,7 +338,7 @@ public abstract class ConnectedRESTQA {
 		Date d = cal.getTime();
 		long beforeSetup =cal.getTimeInMillis();
 		long before =cal.getTimeInMillis();
-		logger.info("### Starting TESTCASE SETUP. ### "+d);
+		logger.info("### Starting TESTCASE SETUP."+ dbName+"### "+d);
 		
 		createDB(dbName);
 		logTestMessages("CREATE-DB",before);
@@ -360,8 +360,8 @@ public abstract class ConnectedRESTQA {
 		long after =cal.getTimeInMillis();
 		long diff = after - beforeSetup;
 		
-		String msg = "### Ending TESTCASE SETUP ###: "+diff/1000+" seconds";
-		logger.info(msg);
+//		String msg = "### Ending TESTCASE SETUP ###: "+diff/1000+" seconds";
+//		logger.info(msg);
 		
 	}
 	public static void setupJavaRESTServer(String dbName, String fName, String restServerName, int restPort,boolean attachRestContextDB)throws Exception{
@@ -673,7 +673,7 @@ public abstract class ConnectedRESTQA {
 
 			HttpResponse response = client.execute(delete);
 			if(response.getStatusLine().getStatusCode()== 202){
-				Thread.sleep(3500);
+				Thread.sleep(9500);
 			}
 		}catch (Exception e) {
 			// writing error to Log
@@ -802,15 +802,15 @@ public abstract class ConnectedRESTQA {
 				try{
 					HttpGet getrequest = new HttpGet("http://localhost:8001/admin/v1/timestamp");
 					HttpResponse response = client.execute(getrequest);
-					if(response.getStatusLine().getStatusCode() == 503){Thread.sleep(4000);}
+					if(response.getStatusLine().getStatusCode() == 503){Thread.sleep(5000);}
 					else if(response.getStatusLine().getStatusCode() == 200){
 						break;
 					}
 					else {
 						System.out.println("Waiting for response from server, Trial :"+response.getStatusLine().getStatusCode()+count);
-						Thread.sleep(2000);
+						Thread.sleep(6000);
 					}
-				}catch(Exception e){Thread.sleep(2000);}
+				}catch(Exception e){Thread.sleep(6000);}
 			}
 		}catch(Exception e){
 			System.out.println("Inside wait for server restart is throwing an error");
@@ -820,11 +820,11 @@ public abstract class ConnectedRESTQA {
 	
 	public static void logTestMessages(String txt, long before)
 	{
-		Calendar  cal = Calendar.getInstance();
-		long after =cal.getTimeInMillis();
-		long diff = after - before;
-		String msg = "### "+txt+" ### "+diff/1000+" seconds";
-		logger.info(msg);
+//		Calendar  cal = Calendar.getInstance();
+//		long after =cal.getTimeInMillis();
+//		long diff = after - before;
+//		String msg = "### "+txt+" ### "+diff/1000+" seconds";
+//		logger.info(msg);
 	}
 	/*
 	 * This function move rest server first to documents and deletes forests and databases in separate calls
@@ -833,7 +833,7 @@ public abstract class ConnectedRESTQA {
 		Calendar  cal = Calendar.getInstance();
 		Date d = cal.getTime();
 		long beforeTeardown =cal.getTimeInMillis();
-		logger.info("### StartingTestCase TEARDOWN ### "+d);
+		logger.info("### StartingTestCase TEARDOWN "+dbName+" ### "+d);
 		
 		long before =cal.getTimeInMillis();
 		try{
