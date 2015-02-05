@@ -1,10 +1,8 @@
-Step 1:  Build dev source code by doing the following on your dev branch
+Step 1:  Build dev source code by doing the following on your dev branch 
 ~/java-client-api$
 mvn clean
 mvn compile
 mvn –Dmaven.test.skip=true install
-
-you can avoid  the above steps by updating build.gradle to use appropriate client dependencies from maven central.
 
 Step2:   Go to the test complete directory 
 
