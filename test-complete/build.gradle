@@ -3,22 +3,22 @@
 apply plugin: 'java'
 
 test {
-  tasks.withType(Compile) {
+	tasks.withType(Compile) {
             options.encoding = 'UTF-8'
   }
 
-  exclude 'com/marklogic/client/functionaltest/TestSSLConnection.class'
-  exclude 'com/marklogic/client/functionaltest/TestBug18993.class'
+	exclude 'com/marklogic/client/functionaltest/TestSSLConnection.class'
+	exclude 'com/marklogic/client/functionaltest/TestBug18993.class'
 }
 
 /* The code repositories to consult for dependencies */
 repositories {
-    mavenLocal()
-    mavenCentral()
+	mavenLocal()
+	mavenCentral()
 }
 
 dependencies {
-  compile('com.marklogic:client-api-java:3.0-SNAPSHOT')
+	compile('com.marklogic:java-client-api:4.0-SNAPSHOT')
 	compile('xmlunit:xmlunit:1.5')
 	compile('junit:junit:4.11')
     compile('org.skyscreamer:jsonassert:1.2.3')
