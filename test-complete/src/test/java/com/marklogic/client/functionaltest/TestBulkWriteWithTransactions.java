@@ -409,7 +409,7 @@ public void testBulkWritewithTransactionCommitTimeOut() throws Exception {
 	int count=1;
 	String docId[] = {"Sega-4MB.jpg"};
 	//	boolean tstatus =false;
-	Transaction t= client.openTransaction("timeoutTrans",3);
+	Transaction t= client.openTransaction("timeoutTrans",1);
 	BinaryDocumentManager docMgr = client.newBinaryDocumentManager();
 
 	DocumentWriteSet writeset =docMgr.newWriteSet();
