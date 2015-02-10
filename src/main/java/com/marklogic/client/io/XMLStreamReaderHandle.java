@@ -46,7 +46,7 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * An XML Stream Reader Handle represents XML content as an XML stream reader
  * for reading as a StAX pull stream.
  * 
- * When finished with the stream reader, close the stream reader to release
+ * When finished with the stream reader, call {@link #close} to release
  * the response.
  */
 public class XMLStreamReaderHandle
@@ -59,6 +59,7 @@ public class XMLStreamReaderHandle
 
 	private XMLResolver     resolver;
 	private XMLStreamReader content;
+	private InputStream contentSource;
 	private XMLInputFactory factory;
 
 	/**
@@ -99,7 +100,7 @@ public class XMLStreamReaderHandle
 	 * Returns an XML Stream Reader for for reading a resource from the database
 	 * as a StAX pull stream.
 	 * 
-     * When finished with the stream reader, close the stream reader to release
+	 * When finished with the stream reader, call {@link #close} to release
      * the response.
 	 * 
 	 * @return	the XML stream reader
@@ -168,6 +169,16 @@ public class XMLStreamReaderHandle
 		}
 	}
 	/**
+	 * Closes the XMLStreamReader and the InputStream, if any, used to populate
+	 * the XMLStreamReader.  This method should always be called when finished
+	 * with the stream reader.
+	 */
+	public void close() throws XMLStreamException, IOException {
+		if ( content != null ) content.close();
+		if ( contentSource != null ) contentSource.close();
+	}
+
+	/**
 	 * Buffers the StAX stream and returns the buffer as an XML string.
 	 */
 	@Override
@@ -227,6 +238,7 @@ public class XMLStreamReaderHandle
 				factory.setXMLResolver(resolver);
 
 			this.content = factory.createXMLStreamReader(content, "UTF-8");
+			this.contentSource = content;
 		} catch (XMLStreamException e) {
 			logger.error("Failed to parse StAX stream from input stream",e);
 			throw new MarkLogicInternalException(e);
