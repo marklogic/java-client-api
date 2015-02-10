@@ -137,7 +137,8 @@ public class XMLDocumentTest {
 		assertTrue("Failed to process XML document with SAX",
 				counter.get("elementCount") == 2 && counter.get("attributeCount") == 2);
 
-		XMLStreamReader streamReader = docMgr.read(docId, new XMLStreamReaderHandle()).get();
+		XMLStreamReaderHandle streamReaderHandle = docMgr.read(docId, new XMLStreamReaderHandle());
+		XMLStreamReader streamReader = streamReaderHandle.get();
 		int elementCount = 0;
 		int attributeCount = 0;
 		while (streamReader.hasNext()) {
@@ -148,7 +149,7 @@ public class XMLDocumentTest {
 			if (elementAttributeCount > 0)
 				attributeCount += elementAttributeCount;
 		}
-		streamReader.close();
+		streamReaderHandle.close();
 		assertTrue("Failed to process XML document with StAX stream reader",
 				elementCount == 2 && attributeCount == 2);
 
