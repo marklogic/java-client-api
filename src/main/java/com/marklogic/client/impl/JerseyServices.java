@@ -15,8 +15,10 @@
  */
 package com.marklogic.client.impl;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.InputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -813,6 +815,7 @@ public class JerseyServices implements RESTServices {
 		contentBase.receiveContent((reqlog != null) ? reqlog
 				.copyContent(contentEntity) : contentEntity);
 
+		try { entity.close(); } catch (IOException e) {}
 		response.close();
 
 		return true;
@@ -3771,7 +3774,8 @@ public class JerseyServices implements RESTServices {
 			return null;
 		}
 
-		return new JerseyResultIterator(reqlog, response, partList);
+		Closeable closeable = new MultipartCloseable(response, entity);
+		return new JerseyResultIterator(reqlog, response, partList, closeable);
 	}
 
 	private boolean isStreaming(Object value) {
@@ -3824,6 +3828,20 @@ public class JerseyServices implements RESTServices {
 			(i == 6) ? DELAY_CEILING - min  :
 				       (1 << i) * DELAY_MULTIPLIER;
 		return min + randRetry.nextInt(range);
+	}
+
+	public class MultipartCloseable implements Closeable {
+		private ClientResponse response;
+		private MultiPart multiPart;
+
+		public MultipartCloseable(ClientResponse response, MultiPart multiPart) {
+			this.response = response;
+			this.multiPart = multiPart;
+		}
+		public void close() throws IOException {
+			if ( multiPart != null ) multiPart.close();
+			if ( response != null ) response.close();
+		}
 	}
 
 	public class JerseyResult implements ServiceResult {
@@ -3895,9 +3913,10 @@ public class JerseyServices implements RESTServices {
 		private RequestLogger reqlog;
 		private ClientResponse response;
 		private Iterator<BodyPart> partQueue;
+		private Closeable closeable;
 
 		public JerseyResultIterator(RequestLogger reqlog,
-				ClientResponse response, List<BodyPart> partList) {
+				ClientResponse response, List<BodyPart> partList, Closeable closeable) {
 			super();
 			if (response != null) {
 				if (partList != null && partList.size() > 0) {
@@ -3906,9 +3925,14 @@ public class JerseyServices implements RESTServices {
 					this.partQueue = new ConcurrentLinkedQueue<BodyPart>(
 							partList).iterator();
 				} else {
-					response.close();
+					if ( closeable != null ) {
+						try { closeable.close(); } catch (IOException e) {}
+					} else if ( response != null ) {
+						response.close();
+					}
 				}
 			}
+			this.closeable = closeable;
 		}
 
 		@Override
@@ -3944,12 +3968,11 @@ public class JerseyServices implements RESTServices {
 
 		@Override
 		public void close() {
-			if (response != null) {
-				response.close();
-				response = null;
-			}
 			partQueue = null;
 			reqlog = null;
+			if ( closeable != null ) {
+				try { closeable.close(); } catch (IOException e) {}
+			}
 		}
 
 		@Override
