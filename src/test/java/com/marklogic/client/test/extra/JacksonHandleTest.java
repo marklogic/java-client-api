@@ -39,6 +39,7 @@ public class JacksonHandleTest {
 	@BeforeClass
 	public static void beforeClass() {
 		Common.connect();
+		// System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
 	@AfterClass
 	public static void afterClass() {
@@ -92,8 +93,7 @@ public class JacksonHandleTest {
 		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
 		
 		for (int i=0;i<105;i++) {
-			for (QueryDefinition t : new QueryDefinition[] { qb.term("leaf3"),
-					qb.build(qb.value(qb.element("leaf"), "leaf3")) }) {
+			for (QueryDefinition t : new QueryDefinition[] { qb.term("leaf3") }) {
 				JacksonHandle results = queryMgr.search(t, new JacksonHandle());
 				assertNotNull(results);
 				JsonNode jsonResults =results.get();
