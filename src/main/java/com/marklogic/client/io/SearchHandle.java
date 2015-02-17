@@ -1032,7 +1032,9 @@ public class SearchHandle
 	    private void handleResponse(XMLEventReader reader, StartElement element)
 	    throws XMLStreamException {
 	    	tempSnippetType  = getAttribute(element, "snippet-format");
-	        tempTotalResults = Long.parseLong(getAttribute(element, "total"));
+	    	if ( getAttribute(element, "total") != null ) {
+	    		tempTotalResults = Long.parseLong(getAttribute(element, "total"));
+	    	}
 	        tempPageLength   = Integer.parseInt(getAttribute(element, "page-length"));
 	        tempStart        = Long.parseLong(getAttribute(element, "start"));
 
