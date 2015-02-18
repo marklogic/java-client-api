@@ -2057,11 +2057,6 @@ public class JerseyServices implements RESTServices {
                 else if (payloadFormat != Format.XML && payloadFormat != Format.JSON)
                     throw new IllegalArgumentException(
                             "Cannot perform raw search for "+payloadFormat.name());
-                // Fix bug https://github.com/marklogic/java-client-api/issues/29
-                // by not specifying format parameter when payloadFormat differs
-                // may remove when https://bugtrack.marklogic.com/27638 is resolved
-                else if (payloadFormat == Format.JSON && "xml".equals(params.getFirst("format")))
-                    params.remove("format");
 
                 String payloadMimetype = baseHandle.getMimetype();
                 if (payloadFormat != null) {
