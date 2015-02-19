@@ -657,20 +657,20 @@ public class DocumentMetadataHandle
 	private void sendMetadataImpl(OutputStream out) {
 		try {
 			XMLOutputFactory factory = XMLOutputFactory.newInstance();
-			factory.setProperty("javax.xml.stream.isRepairingNamespaces", true);
 
 			valueSerializer = null;
 
 			XMLStreamWriter serializer = factory.createXMLStreamWriter(out, "UTF-8");
 
-			serializer.setPrefix("rapi", REST_API_NS);
-			serializer.setPrefix("prop", PROPERTY_API_NS);
-			serializer.setPrefix("xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
-			serializer.setPrefix("xs",   XMLConstants.W3C_XML_SCHEMA_NS_URI);
-
 			serializer.writeStartDocument("utf-8", "1.0");
 
 			serializer.writeStartElement("rapi", "metadata", REST_API_NS);
+			serializer.writeNamespace("rapi", REST_API_NS);
+			serializer.writeNamespace("prop", PROPERTY_API_NS);
+			if ( properties != null ) {
+				serializer.writeNamespace("xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+				serializer.writeNamespace("xs",   XMLConstants.W3C_XML_SCHEMA_NS_URI);
+			}
 
 			sendCollectionsImpl(serializer);
 			sendPermissionsImpl(serializer);
