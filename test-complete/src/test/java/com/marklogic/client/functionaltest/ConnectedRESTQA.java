@@ -820,11 +820,11 @@ public abstract class ConnectedRESTQA {
 	
 	public static void logTestMessages(String txt, long before)
 	{
-//		Calendar  cal = Calendar.getInstance();
-//		long after =cal.getTimeInMillis();
-//		long diff = after - before;
-//		String msg = "### "+txt+" ### "+diff/1000+" seconds";
-//		logger.info(msg);
+		Calendar  cal = Calendar.getInstance();
+		long after =cal.getTimeInMillis();
+		long diff = after - before;
+		String msg = "### "+txt+" ### "+diff/1000+" seconds";
+		logger.info(msg);
 	}
 	/*
 	 * This function move rest server first to documents and deletes forests and databases in separate calls
