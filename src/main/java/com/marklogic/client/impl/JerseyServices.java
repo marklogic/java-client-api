@@ -67,6 +67,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -3741,8 +3742,9 @@ public class JerseyServices implements RESTServices {
 			ServerEvaluationCallImpl.Context context,
 			Map<String, Object> variables, EditableNamespaceContext namespaces,
 			String transactionId)
-			throws ResourceNotFoundException, ResourceNotResendableException,
-			ForbiddenUserException, FailedRequestException {
+		throws ResourceNotFoundException, ResourceNotResendableException,
+			ForbiddenUserException, FailedRequestException
+	{
 		String formUrlEncodedPayload;
 		String path;
 		RequestParameters params = new RequestParameters();
@@ -3764,40 +3766,86 @@ public class JerseyServices implements RESTServices {
 				throw new IllegalStateException("Invalid eval context: " + context);
 			}
 			if ( variables != null && variables.size() > 0 ) {
-				sb.append("&vars=");
-				ObjectNode vars = new ObjectMapper().createObjectNode();
+				int i=0;
 				for ( String name : variables.keySet() ) {
-					Object valueObject = variables.get(name);
-					// replace any name starting with a namespace prefix with a Clark Notation QName
+					String namespace = "";
+					String localname = name;
 					if ( namespaces != null ) {
 						for ( String prefix : namespaces.keySet() ) {
 							if ( name != null && prefix != null &&
 								 name.startsWith(prefix + ":") )
 							{
-								name = "{" + namespaces.get(prefix) + "}" + 
-									name.substring(prefix.length() + 1);
+								localname = name.substring(prefix.length() + 1);
+								namespace = namespaces.get(prefix);
 							}
 						}
 					}
-					if ( valueObject == null )                    vars.putNull(name);
-					else if ( valueObject instanceof BigDecimal ) vars.put(name, (BigDecimal) valueObject);
-					else if ( valueObject instanceof Double )     vars.put(name, (Double) valueObject);
-					else if ( valueObject instanceof Float )      vars.put(name, (Float) valueObject);
-					else if ( valueObject instanceof Integer )    vars.put(name, (Integer) valueObject);
-					else if ( valueObject instanceof Long )       vars.put(name, (Long) valueObject);
-					else if ( valueObject instanceof Short )      vars.put(name, (Short) valueObject);
-					else if ( valueObject instanceof Number )     vars.put(name, new BigDecimal(valueObject.toString()));
-					else if ( valueObject instanceof Boolean )    vars.put(name, (Boolean) valueObject);
-					else if ( valueObject instanceof String )     vars.put(name, (String) valueObject);
-					else if ( valueObject instanceof JacksonHandle ) {
-						vars.set(name, ((JacksonHandle) valueObject).get());
-					} else if ( valueObject instanceof JacksonParserHandle ) {
-						vars.set(name, ((JacksonParserHandle) valueObject).get().readValueAs(JsonNode.class));
+					// set the variable namespace
+					sb.append("&evn" + i + "=");
+					sb.append(URLEncoder.encode(namespace, "UTF-8"));
+					// set the variable localname
+					sb.append("&evl" + i + "=");
+					sb.append(URLEncoder.encode(localname, "UTF-8"));
+
+					String value;
+					String type = null;
+					Object valueObject = variables.get(name);
+					if ( valueObject == null ) {
+						throw new IllegalStateException("null values not currently supported, but your variable " +
+						"\"" + name + "\" has a null value");
+					} else if ( valueObject instanceof JacksonHandle ||
+								valueObject instanceof JacksonParserHandle ) {
+						JsonNode jsonNode = null;
+						if ( valueObject instanceof JacksonHandle ) {
+							jsonNode = ((JacksonHandle) valueObject).get();
+						} else if ( valueObject instanceof JacksonParserHandle ) {
+							jsonNode = ((JacksonParserHandle) valueObject).get().readValueAs(JsonNode.class);
+						}
+						value = jsonNode.toString();
+						type = getJsonType(jsonNode);
 					} else if ( valueObject instanceof AbstractWriteHandle ) {
-						vars.put(name, HandleAccessor.contentAsString((AbstractWriteHandle) valueObject));
+						value = HandleAccessor.contentAsString((AbstractWriteHandle) valueObject);
+						HandleImplementation valueBase = HandleAccessor.as((AbstractWriteHandle) valueObject);
+						Format format = valueBase.getFormat();
+						//TODO: figure out what type should be
+						// I see element() and document-node() are two valid types
+						if ( format == Format.XML ) {
+							type = "document-node()";
+						} else if ( format == Format.JSON ) {
+							JsonNode jsonNode = new JacksonParserHandle().getMapper().readTree(value);
+							type = getJsonType(jsonNode);
+						} else if ( format == Format.TEXT ) {
+							/* Comment next line until 32608 is resolved
+							type = "text()";
+							// until then, use the following line */
+							type = "xs:untypedAtomic";
+						} else if ( format == Format.BINARY ) {
+							throw new UnsupportedOperationException("Binary format is not supported for variables");
+						} else {
+							throw new UnsupportedOperationException("Undefined format is not supported for variables. " +
+								"Please set the format on your handle for variable " + name + ".");
+						}
+					} else if ( valueObject instanceof String ||
+								valueObject instanceof Boolean ||
+								valueObject instanceof Number ) {
+						value = valueObject.toString();
+						// when we send type "xs:untypedAtomic" via XDBC, the server attempts to intelligently decide
+						// how to cast the type
+						type = "xs:untypedAtomic";
+					} else {
+						throw new IllegalArgumentException("Variable with name=" +
+							name + " is of unsupported type" +
+							valueObject.getClass() + ". Supported types are String, Boolean, Number, " +
+							"or AbstractWriteHandle");
 					}
+
+					// set the variable value
+					sb.append("&evv" + i + "=");
+					sb.append(URLEncoder.encode(value, "UTF-8"));
+					// set the variable type
+					sb.append("&evt" + i + "=" + type);
+					i++;
 				}
-				sb.append(URLEncoder.encode(vars.toString(), "UTF-8"));
 			}
 			formUrlEncodedPayload = sb.toString();
 		} catch (UnsupportedEncodingException e) {
@@ -3810,6 +3858,18 @@ public class JerseyServices implements RESTServices {
 			.withMimetype("application/x-www-form-urlencoded");
 		return new JerseyEvalResultIterator( postIteratedResourceImpl(DefaultJerseyResultIterator.class,
 			reqlog, path, params, input) );
+	}
+
+	private String getJsonType(JsonNode jsonNode) {
+		if ( jsonNode instanceof ArrayNode ) {
+			return "json:array";
+		} else if ( jsonNode instanceof ObjectNode ) {
+			return "json:object";
+		} else {
+			throw new IllegalArgumentException("When using JacksonHandle or " +
+					"JacksonParserHandle with ServerEvaluationCall the content must be " +
+					"a valid array or object");
+		}
 	}
 
 	@Override

@@ -202,7 +202,7 @@ public class EvalTest {
             .addVariable("myComment", "<!--a-->")
             .addVariable("myElement", "<a a=\"a\"/>")
             .addVariable("myProcessingInstruction", "<?a?>")
-            .addVariable("myText", "a")
+            .addVariable("myText", new StringHandle("a").withFormat(Format.TEXT))
             // the next three use built-in methods of ServerEvaluationCall
             .addVariable("myBool",    true)
             .addVariable("myInteger", 1234567890123456789l)
@@ -218,8 +218,8 @@ public class EvalTest {
             .addVariable("myDate", "2014-09-01")
             .addVariable("myDateTime", 
                 DatatypeFactory.newInstance().newXMLGregorianCalendar(septFirst).toString())
-            .addVariable("myTime", "00:01:01")
-            .addVariable("myNull", (String) null);
+            .addVariable("myTime", "00:01:01");
+            //.addVariable("myNull", (String) null);
         EvalResultIterator results = call.eval();
         try {
             EvalResult result = results.next();
