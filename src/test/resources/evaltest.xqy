@@ -28,7 +28,7 @@ declare variable $myGYearMonth as xs:gYearMonth external;
 declare variable $myDate as xs:date external;
 declare variable $myDateTime as xs:dateTime external;
 declare variable $myTime as xs:time external;
-declare variable $myNull external;
+(: declare variable $myNull external; :)
 let $myAttribute             := $myElement/@* 
 let $myComment               := $myComment/comment() 
 let $myProcessingInstruction := $myProcessingInstruction/processing-instruction() 
@@ -40,5 +40,5 @@ return (
     $myDocument, $myAttribute, $myComment, $myElement, $myProcessingInstruction, $myText, 
     $myBool, $myInteger, $myBigInteger, $myDecimal, $myDouble, $myFloat,
     $myGDay, $myGMonth, $myGMonthDay, $myGYear, $myGYearMonth, $myDate, $myDateTime, $myTime,
-    $myNull, $myCtsQuery, $myFunction
+    (: $myNull, :) $myCtsQuery, $myFunction
 )
