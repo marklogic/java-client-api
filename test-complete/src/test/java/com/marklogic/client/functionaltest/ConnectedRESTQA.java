@@ -360,8 +360,8 @@ public abstract class ConnectedRESTQA {
 		long after =cal.getTimeInMillis();
 		long diff = after - beforeSetup;
 		
-//		String msg = "### Ending TESTCASE SETUP ###: "+diff/1000+" seconds";
-//		logger.info(msg);
+		String msg = "### Ending TESTCASE SETUP ###: "+diff/1000+" seconds";
+		logger.info(msg);
 		
 	}
 	public static void setupJavaRESTServer(String dbName, String fName, String restServerName, int restPort,boolean attachRestContextDB)throws Exception{
