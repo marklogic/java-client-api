@@ -160,7 +160,7 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 				 assertEquals("Returns me a date :","2002-03-07-07:00",er.getAs(String.class));
 			 }else if(er.getType().equals(Type.DATETIME)){
 //				 System.out.println("Testing is DATETIME? "+er.getAs(String.class));
-				 assertEquals("Returns me a dateTime :","2010-01-06T17:13:50.874-08:00",er.getAs(String.class));
+				 assertEquals("Returns me a dateTime :","2010-01-06T18:13:50.874-07:00",er.getAs(String.class));
 				 
 			 }else if(er.getType().equals(Type.DECIMAL)){
 //				 System.out.println("Testing is Decimal? "+er.getAs(String.class));
