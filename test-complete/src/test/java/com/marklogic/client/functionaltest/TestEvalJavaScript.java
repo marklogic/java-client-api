@@ -76,7 +76,7 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 	public static void setUpBeforeClass() throws Exception {
 		 System.out.println("In setup");
  	     setupJavaRESTServer(dbName, fNames[0], restServerName,restPort,false);
- 	     TestEvalXquery.createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in","xdmp:eval-in","xdbc:invoke-in","any-uri","xdbc:invoke");
+ 	     TestEvalXquery.createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in","xdmp:eval-in","xdmp:invoke-in","xdmp:invoke","xdbc:invoke-in","any-uri","xdbc:invoke");
  	     TestEvalXquery.createRESTUser("eval-user", "x", "test-eval");
 		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
