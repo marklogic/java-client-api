@@ -76,11 +76,6 @@ higher from:
 
     http://www.xom.nu/
 
-To compile the Jackson example (which uses the tree model), first download
-the core and databinding libraries at 2.0.4 or higher as linked from:
-
-    http://wiki.fasterxml.com/JacksonHome
-
 To compile the Apache HTTPClient example, you use the Apache HTTPClient
 bundled with the MarkLogic Java API in the lib subdirectory.
 
