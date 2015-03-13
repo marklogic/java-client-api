@@ -76,8 +76,8 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 	public static void setUpBeforeClass() throws Exception {
 		 System.out.println("In setup");
  	     setupJavaRESTServer(dbName, fNames[0], restServerName,restPort,false);
- 	     TestEvalXquery.createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in","xdmp:eval-in","xdmp:invoke-in","xdmp:invoke","xdbc:invoke-in","any-uri","xdbc:invoke");
- 	     TestEvalXquery.createRESTUser("eval-user", "x", "test-eval");
+ 	     TestEvalXquery.createUserRolesWithPrevilages("test-js-eval", "xdbc:eval", "xdbc:eval-in","xdmp:eval-in","xdmp:invoke-in","xdmp:invoke","xdbc:invoke-in","any-uri","xdbc:invoke");
+ 	     TestEvalXquery.createRESTUser("eval-user", "x", "test-js-eval");
 		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
 
@@ -86,7 +86,7 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 		System.out.println("In tear down" );
 		tearDownJavaRESTServer(dbName, fNames, restServerName);
 		TestEvalXquery.deleteRESTUser("eval-user");
-		TestEvalXquery.deleteUserRole("test-eval");
+		TestEvalXquery.deleteUserRole("test-js-eval");
 	}
 
 	@Before
@@ -436,7 +436,7 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 		InputStreamHandle ish = new InputStreamHandle();
 		ish.set(inputStream);
 		 DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
-		 metadataHandle.getPermissions().add("test-eval", Capability.UPDATE, Capability.READ,Capability.EXECUTE);
+		 metadataHandle.getPermissions().add("test-js-eval", Capability.UPDATE, Capability.READ,Capability.EXECUTE);
 		DocumentManager dm = moduleClient.newDocumentManager();
 		dm.write("/data/javascriptQueries.sjs",metadataHandle,ish);
 		DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
