@@ -1837,7 +1837,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       System.out.println(message);
       System.out.println(statusCode);
 
-      assertTrue("Error Message", message.equals("TEMPORAL-SYSTEMTIME-BACKWARDS"));
+      assertTrue("Error Message", message.equals("TEMPORAL-OPNOTAFTERLSQT"));
       assertTrue("Status code", (statusCode == 400));
     }
 
