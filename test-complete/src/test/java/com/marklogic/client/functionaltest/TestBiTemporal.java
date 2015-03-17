@@ -136,6 +136,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
     // Delete database first. Otherwise axis and collection cannot be deleted
     tearDownJavaRESTServer(dbName, fNames, restServerName);
+    deleteRESTUser("eval-user");
+    deleteUserRole("test-eval");
 
     // Temporal collection needs to be delete before temporal axis associated
     // with it can be deleted
