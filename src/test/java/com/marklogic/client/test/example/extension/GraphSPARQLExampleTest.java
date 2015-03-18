@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import com.marklogic.client.test.Common;
 import com.marklogic.client.example.extension.GraphSPARQLExample;
 
 public class GraphSPARQLExampleTest {
@@ -17,7 +18,7 @@ public class GraphSPARQLExampleTest {
 
 		boolean succeeded = false;
 		try {
-			GraphSPARQLExample.main(new String[0]);
+			GraphSPARQLExample.run(Common.newClient(), Common.newAdminClient());
 			succeeded = true;
 		} catch (IOException e) {
 			e.printStackTrace();
