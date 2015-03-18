@@ -33,11 +33,19 @@ public class GraphSPARQLExample {
 	public static void main(String... args) throws IOException {
 		ExampleProperties props = Util.loadProperties();
 
-		installExtensions(props);
-
 		DatabaseClient appClient = DatabaseClientFactory.newClient(
 				props.host, props.port,
 				props.writerUser, props.writerPassword, props.authType);
+		DatabaseClient adminClient = DatabaseClientFactory.newClient(
+				props.host, props.port,
+				props.adminUser, props.adminPassword, props.authType);
+		run(appClient, adminClient);
+		appClient.release();
+		adminClient.release();
+	}
+
+	public static void run(DatabaseClient appClient, DatabaseClient adminClient) throws IOException {
+		installExtensions(adminClient);
 
 		insertGraph(appClient);
 
@@ -45,9 +53,7 @@ public class GraphSPARQLExample {
 
 		deleteGraph(appClient);
 
-		appClient.release();
-
-		uninstallExtensions(props);
+		uninstallExtensions(adminClient);
 	}
 	public static void runQuery(DatabaseClient appClient) throws IOException {
 		SPARQLManager sparqlMgr = new SPARQLManager(appClient);
@@ -92,33 +98,21 @@ public class GraphSPARQLExample {
 
 		System.out.println("deleted graph");
 	}
-	public static void installExtensions(ExampleProperties props) throws IOException {
-		DatabaseClient adminClient = DatabaseClientFactory.newClient(
-				props.host, props.port,
-				props.adminUser, props.adminPassword, props.authType);
-
+	public static void installExtensions(DatabaseClient adminClient) throws IOException {
 		System.out.println("installing extensions");
 
 		GraphManager.install(adminClient);
 		SPARQLManager.install(adminClient);
 
 		System.out.println("installed extensions");
-
-		adminClient.release();
 	}
-	public static void uninstallExtensions(ExampleProperties props) throws IOException {
-		DatabaseClient adminClient = DatabaseClientFactory.newClient(
-				props.host, props.port,
-				props.adminUser, props.adminPassword, props.authType);
-
+	public static void uninstallExtensions(DatabaseClient adminClient) throws IOException {
 		System.out.println("uninstalling extensions");
 
 		GraphManager.uninstall(adminClient);
 		SPARQLManager.uninstall(adminClient);
 
 		System.out.println("uninstalled extensions");
-
-		adminClient.release();
 	}
 }
 
