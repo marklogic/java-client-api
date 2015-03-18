@@ -56,6 +56,9 @@ The examples illustrate the following common tasks:
 Each example is a Java application that you can compile and run using the jar
 file for the Java API and its dependencies.
 
+Note:  To run GraphSPARQLExample, you must enable a triple index on your database
+(Documents database by default).
+
 Note:  To run SSLClientCreator, you must modify the REST server by specifying
 an SSL certificate template.  The other examples do not use SSL.
 
