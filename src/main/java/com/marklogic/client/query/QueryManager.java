@@ -119,7 +119,7 @@ public interface QueryManager {
      * @deprecated Use {@link RawQueryByExampleDefinition Query By Example} instead for easy-to-write and much more full-featured key/value search.
      * <br><br>
      *
-     * Creates a query definition based on a locator such as a JSON key,
+     * Creates a query definition based on a locator such as a JSON property,
      * element name, or element and attribute name and the default query
      * options.
      * @return	the key-value query definition
