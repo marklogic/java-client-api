@@ -85,8 +85,12 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
     public DocumentUriTemplate newDocumentUriTemplate(String extension);
 
     /**
-     * Creates a builder for specifying changes to the metadata of a document.
-     * @param pathFormat	whether the patch specifies metadata with JSON or XML paths
+     * For XMLDocumentManager or JSONDocumentManager, creates a builder for specifying changes
+     * to the document and metadata of a document.  For GenericDocumentManager,
+     * TextDocumentManager, and BinaryDocumentManager, creates a builder for specifying
+     * changes to only the metadata of a document since binary and text documents cannot
+     * be changed with patches.
+     * @param pathFormat	whether the patch specifies with JSON or XML paths
      * @return	the patch builder
      */
     public DocumentMetadataPatchBuilder newPatchBuilder(Format pathFormat);
