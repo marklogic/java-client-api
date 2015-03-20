@@ -1,5 +1,4 @@
-/*
- * Copyright 2012-2015 MarkLogic Corporation
+/* * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +89,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * TextDocumentManager, and BinaryDocumentManager, creates a builder for specifying
      * changes to only the metadata of a document since binary and text documents cannot
      * be changed with patches.
-     * @param pathFormat	whether the patch specifies with JSON or XML paths
+     * @param pathFormat	the patch path language. Set to JSON for JSONPath or XML for XPath.
      * @return	the patch builder
      */
     public DocumentMetadataPatchBuilder newPatchBuilder(Format pathFormat);
