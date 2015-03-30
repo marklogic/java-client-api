@@ -196,7 +196,7 @@ public class TestResponseTransform extends BasicJavaClientREST {
 			System.out.println(exception);
 		}
 
-		String expectedException = "Local message: search failed: Bad Request. Server Message: XDMP-MODNOTFOUND: (err:XQST0059) Module /marklogic.rest.transform/foo/assets/transform.xqy not found";
+		String expectedException = "Local message: search failed: Bad Request. Server Message: RESTAPI-INVALIDREQ: (err:FOER0000) Invalid request:  reason: Extension foo does not exist.";
 		assertTrue("exception is not thrown", exception.contains(expectedException));
 		//bug 22356
 		assertTrue("Value should be null", resultsHandle.get()==null);

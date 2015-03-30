@@ -1448,7 +1448,7 @@ public abstract class ConnectedRESTQA {
 		setDatabaseFieldProperties(dbName,field_name,"included-element",childNode);
 
 	}
-	public static void includeElementFieldWithWeight(String dbName, String field_name, String namespace, String elementName, double weight) throws Exception{
+	public static void includeElementFieldWithWeight(String dbName, String field_name, String namespace, String elementName, double weight, String attrNS_URI, String attr_localname, String attr_value) throws Exception{
 
 		ObjectMapper mapper = new ObjectMapper();
 		//			ObjectNode mainNode = mapper.createObjectNode();
@@ -1458,10 +1458,12 @@ public abstract class ConnectedRESTQA {
 		childNodeObject.put( "namespace-uri", namespace);
 		childNodeObject.put( "localname", elementName);
 		childNodeObject.put("weight", weight);
+		// These 3 are new fields that have been added as of 8.0.2 from 03/20/2015 in the Management API.
+		childNodeObject.put( "attribute-namespace-uri", attrNS_URI);
+		childNodeObject.put( "attribute-localname", attr_localname);
+		childNodeObject.put( "attribute-value", attr_value);				
 		arrNode.add(childNodeObject);
-		childNode.putArray("included-element").addAll(arrNode);
-		//			mainNode.put("included-elements", childNode);
-		//			System.out.println( childNode.toString());
+		childNode.putArray("included-element").addAll(arrNode);		
 		setDatabaseFieldProperties(dbName,field_name,"included-element",childNode);
 
 	}
@@ -1476,7 +1478,7 @@ public abstract class ConnectedRESTQA {
 		addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
 		enableTrailingWildcardSearches(dbName);
 		addFieldExcludeRoot(dbName, "para");
-		includeElementFieldWithWeight(dbName, "para", "", "p", 5);
+		includeElementFieldWithWeight(dbName, "para", "", "p", 5,"","","");
 		addRangePathIndex(dbName, "string", "/Employee/fn", "http://marklogic.com/collation/", "ignore");
 		addRangePathIndex(dbName, "int", "/root/popularity", "", "ignore");
 		addRangePathIndex(dbName, "decimal", "//@amt", "", "ignore");
