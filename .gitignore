@@ -6,6 +6,11 @@ target/
 *.class
 test-complete/build/
 
+# Ignore IntelliJ IDEA files
+*.ipr
+*.iws
+*.iml
+
 # Package Files #
 *.jar
 *.war
