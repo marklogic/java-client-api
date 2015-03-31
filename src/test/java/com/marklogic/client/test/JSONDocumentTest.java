@@ -16,8 +16,7 @@
 package com.marklogic.client.test;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,14 +41,7 @@ import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.DocumentPatchBuilder.PathLanguage;
 import com.marklogic.client.document.DocumentPatchBuilder.Position;
 import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.DocumentMetadataHandle.Capability;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.ReaderHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.marker.DocumentPatchHandle;
+import com.marklogic.client.io.*;
 
 public class JSONDocumentTest {
 
@@ -321,6 +313,43 @@ public class JSONDocumentTest {
 		assertTrue("Patched JSON document without expected result",
 				expectedNode.equals(readNode));
 
+		docMgr.delete(docId);
+	}
+	
+	@Test
+	public void testXPathReplaceInsertPatch() throws IOException {
+		String docId = "/test/testXPathReplaceInsertPatch.json";
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode sourceNode = makeContent(mapper);
+
+		JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
+		docMgr.write(docId, new JacksonHandle().with(sourceNode));
+
+		// ~~ Prepare the patch
+		DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
+		patchBldr.replaceValue("/newKey", Cardinality.ZERO_OR_MORE, "a new value");
+
+		ObjectNode fragmentDidNotYetExists = mapper.createObjectNode();
+		fragmentDidNotYetExists.put("somethingNew", "the bar for the foo");
+		patchBldr.replaceInsertFragment("/foo", "/numberKey", Position.AFTER, fragmentDidNotYetExists);
+
+		ObjectNode fragmentDidAlreadyExist = mapper.createObjectNode();
+		fragmentDidAlreadyExist.put("somethingReplaced", "please make me not nested");
+		patchBldr.replaceInsertFragment("/stringKey", "/numberKey", Position.AFTER, fragmentDidAlreadyExist);
+
+		DocumentPatchHandle patchHandle = patchBldr.build();
+		logger.debug("Sending patch: " + patchHandle.toString());
+		docMgr.patch(docId, patchHandle);
+
+		// ~~ Assertions on the patched document
+		JsonNode docNode = docMgr.read(docId, new JacksonHandle()).get();
+		assertEquals("the bar for the foo", docNode.get("somethingNew").asText());
+		// The following assertion will fail currently (work around would be to use a TextNode, 
+		// but then there would be different behaviour for replace vs. insert)
+		assertEquals("please make me not nested", docNode.get("stringKey").asText());
+		assertFalse(docNode.has("newKey"));
+
+		// ~~ Delete the patchwork
 		docMgr.delete(docId);
 	}
 	
