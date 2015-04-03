@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-	compile('com.marklogic:java-client-api:3.0.1')
+	compile('com.marklogic:java-client-api:3.0-SNAPSHOT')
 	compile('xmlunit:xmlunit:1.5')
 	compile('junit:junit:4.11')
 	compile('org.skyscreamer:jsonassert:1.2.3')
