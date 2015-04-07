@@ -1226,5 +1226,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		deleteRESTUser("eval-user");
+		deleteUserRole("test-eval");
 	}
 }

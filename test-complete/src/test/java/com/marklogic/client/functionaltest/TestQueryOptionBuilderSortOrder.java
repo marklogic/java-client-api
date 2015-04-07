@@ -499,5 +499,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 	{
 		System.out.println("In tear down");
 		tearDownJavaRESTServer(dbName, fNames,restServerName);
+		deleteRESTUser("eval-user");
+		deleteUserRole("test-eval");
 	}
 }
