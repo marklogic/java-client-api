@@ -153,8 +153,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   @Override
   public DocumentDescriptor exists(String uri, Transaction transaction)
       throws ForbiddenUserException, FailedRequestException {
-    return services.head(requestLogger, uri, (transaction == null) ? null
-        : transaction.getTransactionId());
+    return services.head(requestLogger, uri, transaction);
   }
 
   // shortcut readers
@@ -386,7 +385,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     boolean wasModified = services.getDocument(
         requestLogger,
         desc,
-        (transaction != null) ? transaction.getTransactionId() : null,
+        transaction,
         (metadataHandle != null) ? processedMetadata : null,
         mergeTransformParameters((transform != null) ? transform
             : getReadTransform(), extraParams), metadataHandle, contentHandle);
@@ -439,7 +438,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 
     return services.getBulkDocuments(
         requestLogger,
-        (transaction == null) ? null : transaction.getTransactionId(),
+        transaction,
         // the default for bulk is no metadata, which differs from the normal
         // default of ALL
         isProcessedMetadataModified ? processedMetadata : null,
@@ -498,7 +497,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     Set<Metadata> metadata = isProcessedMetadataModified ? processedMetadata
         : null;
     return services.getBulkDocuments(requestLogger, querydef, start,
-        getPageLength(), tid, searchHandle, searchView, metadata,
+        getPageLength(), transaction, searchHandle, searchView, metadata,
         nonDocumentFormat, null);
   }
 
@@ -552,7 +551,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     Format defaultFormat = contentFormat;
     services.postBulkDocuments(requestLogger, writeSet,
         (transform != null) ? transform : getWriteTransform(),
-        (transaction == null) ? null : transaction.getTransactionId(),
+        transaction,
         defaultFormat, null);
   }
 
@@ -825,7 +824,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     services.putDocument(
         requestLogger,
         desc,
-        (transaction == null) ? null : transaction.getTransactionId(),
+        transaction,
         (metadataHandle != null) ? processedMetadata : null,
         mergeTransformParameters((transform != null) ? transform
             : getWriteTransform(), extraParams), metadataHandle, contentHandle);
@@ -896,8 +895,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     RequestParameters extraParams = addTemporalParams(new RequestParameters(),
         temporalCollection, systemTime);
 
-    services.deleteDocument(requestLogger, desc, (transaction == null) ? null
-        : transaction.getTransactionId(), null, extraParams);
+    services.deleteDocument(requestLogger, desc, transaction, null, extraParams);
   }
 
   // shortcut creators
@@ -1049,7 +1047,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     return services.postDocument(
         requestLogger,
         template,
-        (transaction == null) ? null : transaction.getTransactionId(),
+        transaction,
         (metadataHandle != null) ? processedMetadata : null,
         mergeTransformParameters((transform != null) ? transform
             : getWriteTransform(), extraParams), metadataHandle, contentHandle);
@@ -1109,9 +1107,8 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 
     DocumentPatchHandleImpl builtPatch = (patch instanceof DocumentPatchHandleImpl) ? (DocumentPatchHandleImpl) patch
         : null;
-    services.patchDocument(requestLogger, desc, (transaction == null) ? null
-        : transaction.getTransactionId(),
-        (builtPatch != null) ? builtPatch.getMetadata() : processedMetadata,
+    services.patchDocument(requestLogger, desc, transaction,
+    	(builtPatch != null) ? builtPatch.getMetadata() : processedMetadata,
         (builtPatch != null) ? builtPatch.isOnContent() : true, patch);
   }
 
@@ -1167,8 +1164,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       logger.info("Resetting metadata for {}", uri);
 
     services.deleteDocument(requestLogger,
-        new DocumentDescriptorImpl(uri, true), (transaction == null) ? null
-            : transaction.getTransactionId(), processedMetadata,
+        new DocumentDescriptorImpl(uri, true), transaction, processedMetadata,
         getWriteParams());
   }
 

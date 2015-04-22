@@ -50,7 +50,7 @@ public class ExtensionLibrariesManagerImpl
 	public ExtensionLibraryDescriptor[] list(String directory)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		
-		XMLEventReaderHandle handle = services.getResource(requestLogger, directory, null, new XMLEventReaderHandle());
+		XMLEventReaderHandle handle = services.getResource(requestLogger, directory, null, null, new XMLEventReaderHandle());
 		
 		XMLEventReader reader = handle.get();
 		List<ExtensionLibraryDescriptor> modules = new ArrayList<ExtensionLibraryDescriptor>();
@@ -89,7 +89,7 @@ public class ExtensionLibrariesManagerImpl
 	@Override
 	public <T extends AbstractReadHandle> T read(String modulePath, T readHandle)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		return services.getResource(requestLogger, modulePath, null, readHandle);
+		return services.getResource(requestLogger, modulePath, null, null, readHandle);
 	}
 	@Override
 	public <T extends AbstractReadHandle> T read(ExtensionLibraryDescriptor modulesDescriptor, T readHandle)
@@ -129,7 +129,7 @@ public class ExtensionLibrariesManagerImpl
 	@Override
 	public void write(String modulePath, AbstractWriteHandle contentHandle)
 	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
-		services.putResource(requestLogger, modulePath, null, contentHandle, null);
+		services.putResource(requestLogger, modulePath, null, null, contentHandle, null);
 	}
 	@Override
 	public void write(ExtensionLibraryDescriptor modulesDescriptor, AbstractWriteHandle contentHandle)
@@ -138,13 +138,13 @@ public class ExtensionLibrariesManagerImpl
 		for (Permission perm : modulesDescriptor.getPermissions()) {
 			requestParams.add("perm:" + perm.getRoleName(), perm.getCapability());
 		}
-		services.putResource(requestLogger, modulesDescriptor.getPath(), requestParams, contentHandle, null);
+		services.putResource(requestLogger, modulesDescriptor.getPath(), null, requestParams, contentHandle, null);
 	}
 
 	@Override
 	public void delete(String modulePath)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		services.deleteResource(requestLogger, modulePath, null, null);
+		services.deleteResource(requestLogger, modulePath, null, null, null);
 	}
 	@Override
 	public void delete(ExtensionLibraryDescriptor modulesDescriptor)

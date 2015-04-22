@@ -25,10 +25,12 @@ class TransactionImpl implements Transaction {
 
 	private RESTServices services;
 	private String       transactionId;
+	private String       hostId;
 
-	TransactionImpl(RESTServices services, String transactionId) {
+	TransactionImpl(RESTServices services, String transactionId, String hostId) {
 		this.services = services;
 		this.transactionId = transactionId;
+		this.hostId = hostId;
 	}
 
 	public String getTransactionId() {
@@ -36,6 +38,13 @@ class TransactionImpl implements Transaction {
 	}
 	public void setTransactionId(String transactionId) {
 		this.transactionId = transactionId;
+	}
+
+	public String getHostId() {
+		return hostId;
+	}
+	protected void setHostId(String hostId) {
+		this.hostId = hostId;
 	}
 
 	@Override
@@ -62,12 +71,12 @@ class TransactionImpl implements Transaction {
 
 	@Override
 	public void commit() throws ForbiddenUserException, FailedRequestException {
-		services.commitTransaction(getTransactionId());
+		services.commitTransaction(this);
 	}
 
 	@Override
 	public void rollback() throws ForbiddenUserException, FailedRequestException {
-		services.rollbackTransaction(getTransactionId());
+		services.rollbackTransaction(this);
 	}
 
 }

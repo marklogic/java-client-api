@@ -32,6 +32,15 @@ public interface Transaction {
 	public String getTransactionId();
 
 	/**
+	 * Returns the host identifier for the transaction that binds this
+	 * transaction with the host e-node for the transaction.  Ordinarily, you
+	 * will not need to do anything with the host id.  Instead, you pass the
+	 * Transaction object to methods.
+	 * @return	the host identifier
+	 */
+	public String getHostId();
+
+	/**
 	 * Reads the status for the transaction including whether the transaction
 	 * has timed out.
 	 * @param handle	a JSON or XML handle on the content of the status report

@@ -89,6 +89,7 @@ public class AlertingTest {
 		XMLUnit.setIgnoreWhitespace(true);
 		Common.connectAdmin();
 
+
 		queryOptionsManager = Common.client.newServerConfigManager()
 				.newQueryOptionsManager();
 		File options = new File("src/test/resources/alerting-options.xml");
