@@ -195,8 +195,7 @@ public class QueryManagerImpl
 
         String mimetype = searchFormat.getDefaultMimetype();
 
-        String tid = transaction == null ? null : transaction.getTransactionId();
-        searchBase.receiveContent(services.search(requestLogger, searchBase.receiveAs(), querydef, mimetype, start, pageLen, view, tid));
+        searchBase.receiveContent(services.search(requestLogger, searchBase.receiveAs(), querydef, mimetype, start, pageLen, view, transaction));
         return searchHandle;
     }
 
@@ -206,8 +205,7 @@ public class QueryManagerImpl
     }
     @Override
     public void delete(DeleteQueryDefinition querydef, Transaction transaction) {
-        String tid = transaction == null ? null : transaction.getTransactionId();
-        services.deleteSearch(requestLogger, querydef, tid);
+        services.deleteSearch(requestLogger, querydef, transaction);
     }
 
     @Override
@@ -250,7 +248,7 @@ public class QueryManagerImpl
         String tid = transaction == null ? null : transaction.getTransactionId();
         valuesBase.receiveContent(
         	services.values(
-        		valuesBase.receiveAs(), valdef, mimetype, start, pageLength, tid
+        		valuesBase.receiveAs(), valdef, mimetype, start, pageLength, transaction
         		)
         	);
         return valueHandle;
@@ -296,7 +294,7 @@ public class QueryManagerImpl
         String tid = transaction == null ? null : transaction.getTransactionId();
         valuesBase.receiveContent(
         	services.values(
-        		valuesBase.receiveAs(), valdef, mimetype, start, pageLength, tid
+        		valuesBase.receiveAs(), valdef, mimetype, start, pageLength, transaction
         		)
         	);
         return tupleHandle;
@@ -327,7 +325,7 @@ public class QueryManagerImpl
         String mimetype = valuesFormat.getDefaultMimetype();
 
         String tid = transaction == null ? null : transaction.getTransactionId();
-        valuesBase.receiveContent(services.valuesList(valuesBase.receiveAs(), valdef, mimetype, tid));
+        valuesBase.receiveContent(services.valuesList(valuesBase.receiveAs(), valdef, mimetype, transaction));
         return valuesHandle;
     }
 
@@ -356,7 +354,7 @@ public class QueryManagerImpl
         String mimetype = optionsFormat.getDefaultMimetype();
 
         String tid = transaction == null ? null : transaction.getTransactionId();
-        optionsBase.receiveContent(services.optionsList(optionsBase.receiveAs(), mimetype, tid));
+        optionsBase.receiveContent(services.optionsList(optionsBase.receiveAs(), mimetype, transaction));
         return optionsHandle;
     }
 
