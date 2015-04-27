@@ -1,8 +1,5 @@
 target/
-.classpath
-.project
 .gradle
-.settings/
 *.class
 test-complete/build/
 
