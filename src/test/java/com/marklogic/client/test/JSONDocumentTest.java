@@ -35,6 +35,7 @@ import org.xml.sax.SAXException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentMetadataPatchBuilder.Cardinality;
@@ -153,6 +154,9 @@ public class JSONDocumentTest {
 		fragment = mapper.writeValueAsString(fragmentNode);
 		patchBldr.insertFragment("$.[\"arrayKey\"]", Position.LAST_CHILD,
 				Cardinality.ZERO_OR_ONE, fragment);
+		patchBldr.replaceValue("$.booleanKey", true);
+		patchBldr.replaceValue("$.numberKey2", 2);
+		patchBldr.replaceValue("$.nullKey", null);
 
 		DocumentPatchHandle patchHandle = patchBldr.pathLanguage(
 				PathLanguage.JSONPATH).build();
@@ -179,6 +183,10 @@ public class JSONDocumentTest {
 		childNode.put("appendedKey", "appended item");
 		childArray.add(childNode);
 		expectedNode.set("arrayKey", childArray);
+		expectedNode.put("booleanKey", true);
+		expectedNode.put("numberKey2", 2);
+		expectedNode.putNull("nullKey");
+
 
 		String docText = docMgr.read(docId, new StringHandle()).get();
 		assertNotNull("Read null string for patched JSON content", docText);
@@ -272,6 +280,9 @@ public class JSONDocumentTest {
 		fragment = mapper.writeValueAsString(fragmentNode);
 		patchBldr.insertFragment("/array-node('arrayKey')", Position.BEFORE,
 				fragment);
+		patchBldr.replaceValue("/booleanKey", true);
+		patchBldr.replaceValue("/numberKey2", 2);
+		patchBldr.replaceValue("/nullKey", null);
 
 		//patchBldr.replaceApply("/node()/arrayKey/node()[string(.) eq '3']",
 		//		patchBldr.call().add(2));
@@ -306,18 +317,19 @@ public class JSONDocumentTest {
 		childNode.put("appendedKey", "appended item");
 		childArray.add(childNode);
 		expectedNode.set("arrayKey", childArray);
+		expectedNode.put("booleanKey", true);
+		expectedNode.put("numberKey2", 2);
+		expectedNode.putNull("nullKey");
 
 		String docText = docMgr.read(docId, new StringHandle()).get();
-		
+
 		assertNotNull("Read null string for patched JSON content", docText);
 		JsonNode readNode = mapper.readTree(docText);
-		
 
 		logger.debug("Before3:" + content);
 		logger.debug("After3:"+docText);
 		logger.debug("Expected3:" + mapper.writeValueAsString(expectedNode));
-		
-		
+
 		assertTrue("Patched JSON document without expected result",
 				expectedNode.equals(readNode));
 
@@ -400,6 +412,9 @@ public class JSONDocumentTest {
 		childNode.put("itemObjectKey", "item object value");
 		childArray.add(childNode);
 		sourceNode.set("arrayKey", childArray);
+		sourceNode.put("booleanKey", false);
+		sourceNode.put("numberKey2", 1);
+		sourceNode.put("nullKey", 0);
 
 		return sourceNode;
 	}
