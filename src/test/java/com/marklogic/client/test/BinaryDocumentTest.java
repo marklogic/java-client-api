@@ -41,6 +41,7 @@ public class BinaryDocumentTest {
 	@BeforeClass
 	public static void beforeClass() {
 		Common.connect();
+		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
 	@AfterClass
 	public static void afterClass() {
@@ -80,7 +81,7 @@ public class BinaryDocumentTest {
 		docMgr.setMetadataCategories(Metadata.PROPERTIES);
 		Document metadataDocument = docMgr.readMetadata(docId, new DOMHandle()).get();
 		assertXpathEvaluatesTo("image/png","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='content-type'])", metadataDocument);
-		assertXpathEvaluatesTo("none","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='filter-capabilities'])", metadataDocument);
+		assertXpathEvaluatesTo("text HD-HTML","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='filter-capabilities'])", metadataDocument);
 		assertXpathEvaluatesTo("815","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='size'])", metadataDocument);
 	}
 }
