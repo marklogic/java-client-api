@@ -75,7 +75,7 @@ public class RawQueryDefinitionTest {
 	public static void beforeClass() {
 		Common.connectAdmin();
 		queryMgr = Common.client.newQueryManager();
-		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
 
 	@AfterClass
@@ -460,16 +460,13 @@ public class RawQueryDefinitionTest {
 				Document root = extracted.next().getAs(Document.class);
 				assertEquals("root", root.getFirstChild().getNodeName());
 				NodeList children = root.getFirstChild().getChildNodes();
-				assertEquals(6, children.getLength());
+				assertEquals(3, children.getLength());
 				Node item1 = children.item(0);
 				assertEquals("1", item1.getAttributes().getNamedItem("id").getNodeValue());
-				assertEquals(Document.TEXT_NODE, children.item(1).getNodeType());
-				Node item2 = children.item(2);
+				Node item2 = children.item(1);
 				assertEquals("2", item2.getAttributes().getNamedItem("id").getNodeValue());
-				assertEquals(Document.TEXT_NODE, children.item(3).getNodeType());
-				Node item3 = children.item(4);
+				Node item3 = children.item(2);
 				assertEquals("3", item3.getAttributes().getNamedItem("id").getNodeValue());
-				assertEquals(Document.TEXT_NODE, children.item(5).getNodeType());
 				continue;
 			} else if ( Format.JSON == summary.getFormat() ) {
 				// we don't test for context because it isn't sent in this case
@@ -501,16 +498,13 @@ public class RawQueryDefinitionTest {
 					Document root = parseXml(extractedItems.get(0).textValue());
 					assertEquals("root", root.getFirstChild().getNodeName());
 					NodeList children = root.getFirstChild().getChildNodes();
-					assertEquals(6, children.getLength());
+					assertEquals(3, children.getLength());
 					Node item1 = children.item(0);
 					assertEquals("1", item1.getAttributes().getNamedItem("id").getNodeValue());
-					assertEquals(Document.TEXT_NODE, children.item(1).getNodeType());
-					Node item2 = children.item(2);
+					Node item2 = children.item(1);
 					assertEquals("2", item2.getAttributes().getNamedItem("id").getNodeValue());
-					assertEquals(Document.TEXT_NODE, children.item(3).getNodeType());
-					Node item3 = children.item(4);
+					Node item3 = children.item(2);
 					assertEquals("3", item3.getAttributes().getNamedItem("id").getNodeValue());
-					assertEquals(Document.TEXT_NODE, children.item(5).getNodeType());
 					continue;
 				}
 			} else if ( "json".equals(format) ) {
