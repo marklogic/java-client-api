@@ -75,7 +75,7 @@ public class RawQueryDefinitionTest {
 	public static void beforeClass() {
 		Common.connectAdmin();
 		queryMgr = Common.client.newQueryManager();
-		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
 
 	@AfterClass
