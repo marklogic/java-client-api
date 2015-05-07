@@ -15,12 +15,14 @@
  */
 package com.marklogic.client.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 
 import com.marklogic.client.MarkLogicIOException;
@@ -52,9 +54,35 @@ public class HandleAccessor {
 		return ((HandleImplementation) handle).receiveAs();
 	}
 	static public <R extends AbstractReadHandle> void receiveContent(R handle, Object content) {
-		if (handle == null)
-			return;
-		((HandleImplementation) handle).receiveContent(content);
+		if (handle == null) return;
+		HandleImplementation handleImpl = (HandleImplementation) handle;
+		if ( content == null ) {
+			handleImpl.receiveContent(content);
+		} else if ( handleImpl.receiveAs() != null &&
+			handleImpl.receiveAs().isAssignableFrom(content.getClass()) )
+		{
+			handleImpl.receiveContent(content);
+		} else if ( content instanceof String ) {
+			if ( InputStream.class.isAssignableFrom(handleImpl.receiveAs()) ) {
+				handleImpl.receiveContent( new ByteArrayInputStream(getBytes((String) content)) );
+			} else if ( Reader.class.isAssignableFrom(handleImpl.receiveAs()) ) {
+				handleImpl.receiveContent( new StringReader((String) content) );
+			} else if ( byte[].class.isAssignableFrom(handleImpl.receiveAs()) ) {
+				handleImpl.receiveContent( getBytes((String) content) );
+			} else if ( String.class.isAssignableFrom(handleImpl.receiveAs()) ) {
+				handleImpl.receiveContent( content );
+			}
+		} else {
+			handleImpl.receiveContent(content);
+		}
+	}
+	static private byte[] getBytes(String content) {
+		if ( content == null ) return null;
+		try {
+			return content.getBytes("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return content.getBytes();
+		}
 	}
 	static public <W extends AbstractWriteHandle> Object sendContent(W handle) {
 		if (handle == null)
