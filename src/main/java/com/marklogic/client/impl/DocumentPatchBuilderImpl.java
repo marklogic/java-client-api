@@ -86,7 +86,8 @@ implements DocumentPatchBuilder
 		String      selectPath;
 		Cardinality cardinality;
 		boolean     isFragment = true;
-		String      input;
+		Object      input;
+		String      inputAsString;
 		ContentReplaceOperation(String selectPath, Cardinality cardinality, boolean isFragment,
 				Object input
 				) {
@@ -94,15 +95,23 @@ implements DocumentPatchBuilder
 			this.selectPath  = selectPath;
 			this.cardinality = cardinality;
 			this.isFragment  = isFragment;
-			this.input       = (input instanceof String) ?
-					(String) input : input.toString();
+			this.input       = input;
+			this.inputAsString = null;
+			if (input != null) {
+				inputAsString = (input instanceof String)  ? (String) input : input.toString();
+			}
 		}
 		@Override
 		public void write(JSONStringWriter serializer) {
 			writeStartReplace(serializer, selectPath, cardinality);
 			serializer.writeStartEntry("content");
 			if (isFragment) {
-				serializer.writeFragment(input);
+				serializer.writeFragment(inputAsString);
+			} else if (input instanceof Boolean) {
+				serializer.writeBooleanValue(input);
+			}
+			else if (input instanceof Number) {
+				serializer.writeNumberValue(input);
 			} else {
 				serializer.writeStringValue(input);
 			}
@@ -115,9 +124,9 @@ implements DocumentPatchBuilder
 			writeStartReplace(out, selectPath, cardinality);
 			if (isFragment) {
 				serializer.writeCharacters(""); // force the tag close
-				out.getWriter().write(input);
+				out.getWriter().write(inputAsString);
 			} else {
-				serializer.writeCharacters(input);
+				serializer.writeCharacters(inputAsString);
 			}
 			serializer.writeEndElement();
 		}
