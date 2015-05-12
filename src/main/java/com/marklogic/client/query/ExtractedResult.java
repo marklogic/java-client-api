@@ -38,7 +38,7 @@ import com.marklogic.client.io.Format;
  *        ExtractedResult extracted = summary.getExtracted();
  *        if ( Format.XML == summary.getFormat() ) {
  *            for (ExtractedItem item : extracted) {
- *                Document extractItem = extracted.next().getAs(Document.class);
+ *                Document extractItem = item.getAs(Document.class);
  *                ...
  *            }
  *        }
