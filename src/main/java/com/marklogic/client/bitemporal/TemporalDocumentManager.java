@@ -19,6 +19,7 @@ import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentUriTemplate;
@@ -42,9 +43,10 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
    * @param transaction	an open transaction under which the document may have been created or deleted
    * @param temporalCollection	the name of the temporal collection existing in the database into
    *    which this document should be written
-   * @return the database uri that identifies the created document
+   * @return the TemporalDescriptor including the database uri that identifies the created document,
+   *    as well as the temporal system time when the document was created
    */
-  public DocumentDescriptor create(DocumentUriTemplate template,
+  public TemporalDescriptor create(DocumentUriTemplate template,
       DocumentMetadataWriteHandle metadataHandle,
       W contentHandle,
       ServerTransform transform,
@@ -65,8 +67,9 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
    * @param transaction	an open transaction under which the document may have been created or deleted
    * @param temporalCollection	the name of the temporal collection existing in the database into
    *    which this document should be written
+   * @return the TemporalDescriptor with the temporal system time when the document was written
    */
-  public void write(DocumentDescriptor desc,
+  public TemporalDescriptor write(DocumentDescriptor desc,
       DocumentMetadataWriteHandle metadataHandle,
       W contentHandle,
       ServerTransform transform,
@@ -87,8 +90,9 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
    * @param transaction	an open transaction under which the document may have been created or deleted
    * @param temporalCollection	the name of the temporal collection existing in the database into
    *    which this document should be written
+   * @return the TemporalDescriptor with the temporal system time when the document was written
    */
-  public void write(String docId,
+  public TemporalDescriptor write(String docId,
       DocumentMetadataWriteHandle metadataHandle,
       W contentHandle,
       ServerTransform transform,
@@ -105,8 +109,9 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
    * @param transaction	an open transaction under which the document may have been created or deleted
    * @param temporalCollection	the name of the temporal collection existing in the database in
    *    which this document should be marked as deleted
+   * @return the TemporalDescriptor with the temporal system time when the document was deleted
    */
-  public void delete(DocumentDescriptor desc,
+  public TemporalDescriptor delete(DocumentDescriptor desc,
       Transaction transaction,
       String temporalCollection)
   throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
@@ -120,8 +125,9 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
    * @param transaction	an open transaction under which the document may have been created or deleted
    * @param temporalCollection	the name of the temporal collection existing in the database in
    *    which this document should be marked as deleted
+   * @return the TemporalDescriptor with the temporal system time when the document was deleted
    */
-  public void delete(String docId,
+  public TemporalDescriptor delete(String docId,
       Transaction transaction,
       String temporalCollection)
   throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
@@ -139,9 +145,10 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
      * @param temporalCollection	the name of the temporal collection existing in the database into
      *    which this document should be written
      * @param systemTime	the application-specified system time with which this document will be marked
-     * @return the database uri that identifies the created document
+     * @return the database uri that identifies the created document,
+     *    as well as the temporal system time when the document was created
      */
-    public DocumentDescriptor create(DocumentUriTemplate template,
+    public TemporalDescriptor create(DocumentUriTemplate template,
         DocumentMetadataWriteHandle metadataHandle,
         W contentHandle,
         ServerTransform transform,
@@ -162,8 +169,9 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
      * @param temporalCollection	the name of the temporal collection existing in the database into
      *    which this document should be written
      * @param systemTime	the application-specified system time with which this document will be marked
+     * @return the TemporalDescriptor with the temporal system time when the document was written
      */
-    public void write(DocumentDescriptor desc,
+    public TemporalDescriptor write(DocumentDescriptor desc,
         DocumentMetadataWriteHandle metadataHandle,
         W contentHandle,
         ServerTransform transform,
@@ -184,8 +192,9 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
      * @param temporalCollection	the name of the temporal collection existing in the database into
      *    which this document should be written
      * @param systemTime	the application-specified system time with which this document will be marked
+     * @return the TemporalDescriptor with the temporal system time when the document was written
      */
-    public void write(String docId,
+    public TemporalDescriptor write(String docId,
         DocumentMetadataWriteHandle metadataHandle,
         W contentHandle,
         ServerTransform transform,
@@ -202,8 +211,9 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
      * @param temporalCollection	the name of the temporal collection existing in the database in
      *    which this document should be marked as deleted
      * @param systemTime	the application-specified system time with which this document will be marked
+     * @return the TemporalDescriptor with the temporal system time when the document was deleted
      */
-    public void delete(DocumentDescriptor desc,
+    public TemporalDescriptor delete(DocumentDescriptor desc,
         Transaction transaction,
         String temporalCollection,
         java.util.Calendar systemTime)
@@ -217,8 +227,9 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
      * @param temporalCollection	the name of the temporal collection existing in the database in
      *    which this document should be marked as deleted
      * @param systemTime	the application-specified system time with which this document will be marked
+     * @return the TemporalDescriptor with the temporal system time when the document was deleted
      */
-    public void delete(String docId,
+    public TemporalDescriptor delete(String docId,
         Transaction transaction,
         String temporalCollection,
         java.util.Calendar systemTime)

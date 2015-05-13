@@ -16,6 +16,8 @@
 package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Calendar;
 
@@ -27,6 +29,7 @@ import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.XMLDocumentManager;
@@ -48,11 +51,13 @@ public class BitemporalTest {
 	static String temporalCollection = "temporal-collection";
 	static String uniqueTerm = "temporalDoc";
 	static String docId = "test-" + uniqueTerm + ".xml";
+	static XMLDocumentManager docMgr;
 
 	@BeforeClass
     public static void beforeClass() {
         Common.connect();
-        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        docMgr = Common.client.newXMLDocumentManager();
     }
     @AfterClass
     public static void afterClass() {
@@ -61,7 +66,24 @@ public class BitemporalTest {
     }
 
 	@Test
-	public void test1() throws Exception {
+	public void testCreate() throws Exception {
+		String contents = "<test>" +
+				"<system-start></system-start>" +
+				"<system-end></system-end>" +
+				"<valid-start>2014-08-19T00:00:00Z</valid-start>" +
+				"<valid-end>2014-08-19T00:00:01Z</valid-end>" +
+    		"</test>";
+		TemporalDescriptor desc = docMgr.create(docMgr.newDocumentUriTemplate("xml"), 
+			null, new StringHandle(contents), null, null, temporalCollection);
+		assertNotNull("Missing TemporalDescriptor from create", desc);
+		assertNotNull(desc.getUri());
+		assertTrue(desc.getUri().endsWith(".xml"));
+		Calendar lastWriteTime = desc.getTemporalSystemTime();
+		assertNotNull(lastWriteTime);
+    }
+
+	@Test
+	public void testOther() throws Exception {
 
 		String version1 = "<test>" +
 				uniqueTerm + " version1" +
@@ -91,7 +113,8 @@ public class BitemporalTest {
 				"<valid-start>2014-08-19T00:00:05Z</valid-start>" +
 				"<valid-end>2014-08-19T00:00:06Z</valid-end>" +
     		"</test>";
-		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+
+		// write four versions of the same document
 		StringHandle handle1 = new StringHandle(version1).withFormat(Format.XML);
 		docMgr.write(docId, null, handle1, null, null, temporalCollection);
 		StringHandle handle2 = new StringHandle(version2).withFormat(Format.XML);
@@ -99,13 +122,19 @@ public class BitemporalTest {
 		StringHandle handle3 = new StringHandle(version3).withFormat(Format.XML);
 		docMgr.write(docId, null, handle3, null, null, temporalCollection);
 		StringHandle handle4 = new StringHandle(version4).withFormat(Format.XML);
-		docMgr.write(docId, null, handle4, null, null, temporalCollection);
+		TemporalDescriptor desc = docMgr.write(docId, null, handle4, null, null, temporalCollection);
+		assertNotNull("Missing TemporalDescriptor from write", desc);
+		assertEquals(docId, desc.getUri());
+		Calendar lastWriteTime = desc.getTemporalSystemTime();
+		assertNotNull(lastWriteTime);
 
+		// make sure non-temporal document read only returns the latest version
 		DocumentPage readResults = docMgr.read(docId); 
 		assertEquals("Wrong number of results", 1, readResults.size());
 		DocumentRecord latestDoc = readResults.next();
 		assertEquals("Document uri wrong", docId, latestDoc.getUri());
 		
+		// make sure a simple term query returns all versions
 		QueryManager queryMgr = Common.client.newQueryManager();
 		StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
 		StructuredQueryDefinition termQuery = sqb.term(uniqueTerm);
@@ -117,23 +146,41 @@ public class BitemporalTest {
 		// so we'll sleep for 2 seconds to make sure lsqt has advanced beyond the lsqt
 		// when we inserted our documents
 		Thread.sleep(2000);
-		StructuredQueryDefinition currentQuery = sqb.temporalLsqtQuery(temporalCollection, null, 1);
+
+		// query with lsqt of last inserted document
+		// will match the first three versions -- not the last because it's equal to
+		// not greater than the timestamp of this lsqt query
+		StructuredQueryDefinition currentQuery = sqb.temporalLsqtQuery(temporalCollection, lastWriteTime, 1);
 		StructuredQueryDefinition currentDocQuery = sqb.and(termQuery, currentQuery);
 		DocumentPage currentDocQueryResults = docMgr.search(currentDocQuery, start);
+		assertEquals("Wrong number of results", 3, currentDocQueryResults.size());
+
+		// query with null lsqt indicating current time
+		// will match all four versions
+		currentQuery = sqb.temporalLsqtQuery(temporalCollection, null, 1);
+		currentDocQuery = sqb.and(termQuery, currentQuery);
+		currentDocQueryResults = docMgr.search(currentDocQuery, start);
 		assertEquals("Wrong number of results", 4, currentDocQueryResults.size());
 
 		StructuredQueryBuilder.Axis validAxis = sqb.axis("valid-axis");
+
+		// create a time axis to query the versions against
 		Calendar start1 = DatatypeConverter.parseDateTime("2014-08-19T00:00:00Z");
 		Calendar end1   = DatatypeConverter.parseDateTime("2014-08-19T00:00:04Z");
 		StructuredQueryBuilder.Period period1 = sqb.period(start1, end1);
+
+		// find all documents contained in the time range of our query axis
 		StructuredQueryDefinition periodQuery1 = sqb.and(sqb.term(uniqueTerm),
 			sqb.temporalPeriodRange(validAxis, TemporalOperator.ALN_CONTAINED_BY, period1));
 		DocumentPage periodQuery1Results = docMgr.search(periodQuery1, start);
 		assertEquals("Wrong number of results", 1, periodQuery1Results.size());
 
+		// create a second time axis to query the versions against
 		Calendar start2 = DatatypeConverter.parseDateTime("2014-08-19T00:00:04Z");
 		Calendar end2   = DatatypeConverter.parseDateTime("2014-08-19T00:00:07Z");
 		StructuredQueryBuilder.Period period2 = sqb.period(start2, end2);
+
+		// find all documents contained in the time range of our second query axis
 		StructuredQueryDefinition periodQuery2 = sqb.and(sqb.term(uniqueTerm),
 			sqb.temporalPeriodRange(validAxis, TemporalOperator.ALN_CONTAINED_BY, period2));
 		DocumentPage periodQuery2Results = docMgr.search(periodQuery2, start);
@@ -141,16 +188,24 @@ public class BitemporalTest {
 		latestDoc = periodQuery2Results.next();
 		assertEquals("Document uri wrong", docId, latestDoc.getUri());
 
+		// find all documents where valid time is after system time in the document
 		StructuredQueryBuilder.Axis systemAxis = sqb.axis("system-axis");
 		StructuredQueryDefinition periodCompareQuery1 = sqb.and(sqb.term(uniqueTerm),
 			sqb.temporalPeriodCompare(systemAxis, TemporalOperator.ALN_AFTER, validAxis));
 		DocumentPage periodCompareQuery1Results = docMgr.search(periodCompareQuery1, start);
 		assertEquals("Wrong number of results", 4, periodCompareQuery1Results.size());
 
+		// find all documents where valid time is before system time in the document
 		StructuredQueryDefinition periodCompareQuery2 = sqb.and(sqb.term(uniqueTerm),
 			sqb.temporalPeriodCompare(systemAxis, TemporalOperator.ALN_BEFORE, validAxis));
 		DocumentPage periodCompareQuery2Results = docMgr.search(periodCompareQuery2, start);
 		assertEquals("Wrong number of results", 0, periodCompareQuery2Results.size());
+
+		// check that we get a system time when we delete
+		desc = docMgr.delete(docId, null, temporalCollection);
+		assertNotNull("Missing TemporalDescriptor from delete", desc);
+		assertEquals(docId, desc.getUri());
+		assertNotNull("Missing temporalSystemTime from delete", desc.getTemporalSystemTime());
 
 	}
 
