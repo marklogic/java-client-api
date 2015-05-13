@@ -30,6 +30,7 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentUriTemplate;
@@ -66,7 +67,7 @@ public interface RESTServices {
 	public void setDatabaseClient(DatabaseClient client);
 	public void release();
 
-	public void deleteDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,
+	public TemporalDescriptor deleteDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,
 			Set<Metadata> categories, RequestParameters extraParams)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
@@ -94,13 +95,13 @@ public interface RESTServices {
 			ServerTransform transform, Transaction transaction, Format defaultFormat, T output)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
-	public void putDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,
+	public TemporalDescriptor putDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,
 			Set<Metadata> categories, RequestParameters extraParams,
 			DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle)
 		throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException;
 
-	public DocumentDescriptor postDocument(RequestLogger logger, DocumentUriTemplate template,
+	public DocumentDescriptorImpl postDocument(RequestLogger logger, DocumentUriTemplate template,
 			Transaction transaction, Set<Metadata> categories, RequestParameters extraParams,
 			DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle)
 		throws ResourceNotFoundException, ForbiddenUserException,
