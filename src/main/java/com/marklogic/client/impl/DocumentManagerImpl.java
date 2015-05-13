@@ -32,6 +32,7 @@ import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.bitemporal.TemporalDocumentManager;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager;
@@ -679,30 +680,30 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   }
 
   @Override
-  public void write(String uri, DocumentMetadataWriteHandle metadataHandle,
+  public TemporalDescriptor write(String uri, DocumentMetadataWriteHandle metadataHandle,
       W contentHandle, ServerTransform transform, Transaction transaction,
       String temporalCollection) throws ResourceNotFoundException,
       ForbiddenUserException, FailedRequestException {
-    write(uri, metadataHandle, contentHandle, transform, transaction,
+    return write(uri, metadataHandle, contentHandle, transform, transaction,
         temporalCollection, null);
   }
 
   @Override
-  public void write(String uri, DocumentMetadataWriteHandle metadataHandle,
+  public TemporalDescriptor write(String uri, DocumentMetadataWriteHandle metadataHandle,
       W contentHandle, ServerTransform transform, Transaction transaction,
       String temporalCollection, Calendar systemTime)
       throws ResourceNotFoundException, ForbiddenUserException,
       FailedRequestException {
-    write(new DocumentDescriptorImpl(uri, true), metadataHandle, contentHandle,
+    return write(new DocumentDescriptorImpl(uri, true), metadataHandle, contentHandle,
         transform, transaction, temporalCollection, systemTime, getWriteParams());
   }
 
-  public void write(String uri, DocumentMetadataWriteHandle metadataHandle,
+  protected TemporalDescriptor write(String uri, DocumentMetadataWriteHandle metadataHandle,
       W contentHandle, ServerTransform transform, Transaction transaction,
       String temporalCollection, Calendar systemTime,
       RequestParameters extraParams) throws ResourceNotFoundException,
       ForbiddenUserException, FailedRequestException {
-    write(new DocumentDescriptorImpl(uri, true), metadataHandle, contentHandle,
+    return write(new DocumentDescriptorImpl(uri, true), metadataHandle, contentHandle,
         transform, transaction, temporalCollection, systemTime, extraParams);
   }
 
@@ -770,28 +771,28 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   }
 
   @Override
-  public void write(DocumentDescriptor desc,
+  public TemporalDescriptor write(DocumentDescriptor desc,
       DocumentMetadataWriteHandle metadataHandle, W contentHandle,
       ServerTransform transform, Transaction transaction,
       String temporalCollection) throws ResourceNotFoundException,
       ForbiddenUserException, FailedRequestException {
-    write(desc, metadataHandle, contentHandle, transform, transaction,
+    return write(desc, metadataHandle, contentHandle, transform, transaction,
         temporalCollection, null);
   }
 
   @Override
-  public void write(DocumentDescriptor desc,
+  public TemporalDescriptor write(DocumentDescriptor desc,
       DocumentMetadataWriteHandle metadataHandle, W contentHandle,
       ServerTransform transform, Transaction transaction,
       String temporalCollection, Calendar systemTime)
       throws ResourceNotFoundException, ForbiddenUserException,
       FailedRequestException {
-    write(desc, metadataHandle, contentHandle, transform, transaction,
+    return write(desc, metadataHandle, contentHandle, transform, transaction,
         temporalCollection, null, getWriteParams());
   }
 
   @SuppressWarnings("rawtypes")
-  public void write(DocumentDescriptor desc,
+  protected TemporalDescriptor write(DocumentDescriptor desc,
       DocumentMetadataWriteHandle metadataHandle, W contentHandle,
       ServerTransform transform, Transaction transaction,
       String temporalCollection, java.util.Calendar systemTime,
@@ -821,7 +822,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 
     extraParams = addTemporalParams(extraParams, temporalCollection, systemTime);
 
-    services.putDocument(
+    return services.putDocument(
         requestLogger,
         desc,
         transaction,
@@ -833,55 +834,55 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   @Override
   public void delete(String uri) throws ResourceNotFoundException,
       ForbiddenUserException, FailedRequestException {
-    delete(uri, null);
+    delete(uri, null, null, null);
   }
 
   @Override
   public void delete(String uri, Transaction transaction)
       throws ResourceNotFoundException, ForbiddenUserException,
       FailedRequestException {
-    delete(new DocumentDescriptorImpl(uri, true), transaction);
+    delete(new DocumentDescriptorImpl(uri, true), transaction, null, null);
   }
 
   @Override
   public void delete(DocumentDescriptor desc) throws ResourceNotFoundException,
       ForbiddenUserException, FailedRequestException {
-    delete(desc, null, null);
+    delete(desc, null, null, null);
   }
 
   @Override
   public void delete(DocumentDescriptor desc, Transaction transaction)
       throws ResourceNotFoundException, ForbiddenUserException,
       FailedRequestException {
-    delete(desc, transaction, null);
+    delete(desc, transaction, null, null);
   }
 
   @Override
-  public void delete(String uri, Transaction transaction,
+  public TemporalDescriptor delete(String uri, Transaction transaction,
       String temporalCollection) throws ResourceNotFoundException,
       ForbiddenUserException, FailedRequestException {
-    delete(new DocumentDescriptorImpl(uri, true), transaction,
-        temporalCollection);
+    return delete(new DocumentDescriptorImpl(uri, true), transaction,
+        temporalCollection, null);
   }
 
   @Override
-  public void delete(String uri, Transaction transaction,
+  public TemporalDescriptor delete(String uri, Transaction transaction,
       String temporalCollection, java.util.Calendar systemTime)
       throws ResourceNotFoundException, ForbiddenUserException,
       FailedRequestException {
-    delete(new DocumentDescriptorImpl(uri, true), transaction,
+    return delete(new DocumentDescriptorImpl(uri, true), transaction,
         temporalCollection, systemTime);
   }
 
   @Override
-  public void delete(DocumentDescriptor desc, Transaction transaction,
+  public TemporalDescriptor delete(DocumentDescriptor desc, Transaction transaction,
       String temporalCollection) throws ResourceNotFoundException,
       ForbiddenUserException, FailedRequestException {
-    delete(desc, transaction, temporalCollection, null);
+    return delete(desc, transaction, temporalCollection, null);
   }
 
   @Override
-  public void delete(DocumentDescriptor desc, Transaction transaction,
+  public TemporalDescriptor delete(DocumentDescriptor desc, Transaction transaction,
       String temporalCollection, java.util.Calendar systemTime)
       throws ResourceNotFoundException, ForbiddenUserException,
       FailedRequestException {
@@ -895,7 +896,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     RequestParameters extraParams = addTemporalParams(new RequestParameters(),
         temporalCollection, systemTime);
 
-    services.deleteDocument(requestLogger, desc, transaction, null, extraParams);
+    return services.deleteDocument(requestLogger, desc, transaction, null, extraParams);
   }
 
   // shortcut creators
@@ -941,35 +942,35 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   @Override
   public DocumentDescriptor create(DocumentUriTemplate template, W contentHandle)
       throws ForbiddenUserException, FailedRequestException {
-    return create(template, null, contentHandle, null, null, null, null);
+    return create(template, null, contentHandle, null, null, null, null, null);
   }
 
   @Override
   public DocumentDescriptor create(DocumentUriTemplate template,
       W contentHandle, ServerTransform transform)
       throws ForbiddenUserException, FailedRequestException {
-    return create(template, null, contentHandle, transform, null, null, null);
+    return create(template, null, contentHandle, transform, null, null, null, null);
   }
 
   @Override
   public DocumentDescriptor create(DocumentUriTemplate template,
       W contentHandle, Transaction transaction) throws ForbiddenUserException,
       FailedRequestException {
-    return create(template, null, contentHandle, null, transaction, null, null);
+    return create(template, null, contentHandle, null, transaction, null, null, null);
   }
 
   @Override
   public DocumentDescriptor create(DocumentUriTemplate template,
       W contentHandle, ServerTransform transform, Transaction transaction)
       throws ForbiddenUserException, FailedRequestException {
-    return create(template, null, contentHandle, transform, transaction, null, null);
+    return create(template, null, contentHandle, transform, transaction, null, null, null);
   }
 
   @Override
   public DocumentDescriptor create(DocumentUriTemplate template,
       DocumentMetadataWriteHandle metadataHandle, W contentHandle)
       throws ForbiddenUserException, FailedRequestException {
-    return create(template, metadataHandle, contentHandle, null, null, null, null);
+    return create(template, metadataHandle, contentHandle, null, null, null, null, null);
   }
 
   @Override
@@ -978,7 +979,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       ServerTransform transform) throws ForbiddenUserException,
       FailedRequestException {
     return create(template, metadataHandle, contentHandle, transform, null,
-        null, null);
+        null, null, null);
   }
 
   @Override
@@ -987,7 +988,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       Transaction transaction) throws ForbiddenUserException,
       FailedRequestException {
     return create(template, metadataHandle, contentHandle, null, transaction,
-        null, null);
+        null, null, null);
   }
 
   @Override
@@ -996,36 +997,36 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       ServerTransform transform, Transaction transaction)
       throws ForbiddenUserException, FailedRequestException {
     return create(template, metadataHandle, contentHandle, transform,
-        transaction, null, null);
+        transaction, null, null, null);
   }
 
   @Override
-  public DocumentDescriptor create(DocumentUriTemplate template,
+  public TemporalDescriptor create(DocumentUriTemplate template,
       DocumentMetadataWriteHandle metadataHandle, W contentHandle,
       ServerTransform transform, Transaction transaction,
       String temporalCollection) throws ForbiddenUserException,
       FailedRequestException {
     return create(template, metadataHandle, contentHandle, transform,
-        transaction, temporalCollection, null);
+        transaction, temporalCollection, null, null);
   }
 
   @Override
-  public DocumentDescriptor create(DocumentUriTemplate template,
+  public TemporalDescriptor create(DocumentUriTemplate template,
       DocumentMetadataWriteHandle metadataHandle, W contentHandle,
       ServerTransform transform, Transaction transaction,
       String temporalCollection, Calendar systemTime) {
     return create(template, metadataHandle, contentHandle, transform,
-        transaction, temporalCollection, null, getWriteParams());
+        transaction, temporalCollection, null, null);
   }
 
   @SuppressWarnings("rawtypes")
-  public DocumentDescriptor create(DocumentUriTemplate template,
+  protected DocumentDescriptorImpl create(DocumentUriTemplate template,
       DocumentMetadataWriteHandle metadataHandle, W contentHandle,
       ServerTransform transform, Transaction transaction,
       String temporalCollection, Calendar systemTime,
       RequestParameters extraParams) {
-    if (logger.isInfoEnabled())
-      logger.info("Creating content");
+    if ( logger.isInfoEnabled() ) logger.info("Creating content");
+    if ( extraParams == null ) extraParams = getWriteParams();
 
     if (metadataHandle != null) {
       HandleImplementation metadataBase = HandleAccessor.checkHandle(

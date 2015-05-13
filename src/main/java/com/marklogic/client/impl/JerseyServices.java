@@ -25,6 +25,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.HashMap;
@@ -44,6 +45,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.StreamingOutput;
+import javax.xml.bind.DatatypeConverter;
 
 import org.apache.http.HttpHost;
 import org.apache.http.HttpVersion;
@@ -81,6 +83,7 @@ import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.document.ContentDescriptor;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager.Metadata;
@@ -488,7 +491,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public void deleteDocument(RequestLogger reqlog, DocumentDescriptor desc,
+	public TemporalDescriptor deleteDocument(RequestLogger reqlog, DocumentDescriptor desc,
 			Transaction transaction, Set<Metadata> categories, RequestParameters extraParams)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
@@ -511,6 +514,7 @@ public class JerseyServices implements RESTServices {
 		long startTime = System.currentTimeMillis();
 		int nextDelay = 0;
 		int retry = 0;
+		MultivaluedMap<String, String> responseHeaders = null;
 		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
 			if (nextDelay > 0) {
 				try {
@@ -529,7 +533,7 @@ public class JerseyServices implements RESTServices {
 				break;
 			}
 
-			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			responseHeaders = response.getHeaders();
 			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
 			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
 
@@ -571,9 +575,12 @@ public class JerseyServices implements RESTServices {
 		if (status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("delete failed: "
 					+ status.getReasonPhrase(), extractErrorFields(response));
+		responseHeaders = response.getHeaders();
+		TemporalDescriptor temporalDesc = updateTemporalSystemTime(desc, responseHeaders);
 
 		response.close();
 		logRequest(reqlog, "deleted %s document", uri);
+		return temporalDesc;
 	}
 
 	@Override
@@ -1128,7 +1135,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public void putDocument(RequestLogger reqlog, DocumentDescriptor desc,
+	public TemporalDescriptor putDocument(RequestLogger reqlog, DocumentDescriptor desc,
 			Transaction transaction, Set<Metadata> categories,
 			RequestParameters extraParams,
 			DocumentMetadataWriteHandle metadataHandle,
@@ -1162,20 +1169,21 @@ public class JerseyServices implements RESTServices {
 		}
 
 		if (metadataBase != null && contentBase != null) {
-			putPostDocumentImpl(reqlog, "put", desc, transaction, categories,
+			return putPostDocumentImpl(reqlog, "put", desc, transaction, categories,
 					extraParams, metadataMimetype, metadataHandle,
 					contentMimetype, contentHandle);
 		} else if (metadataBase != null) {
-			putPostDocumentImpl(reqlog, "put", desc, transaction, categories, false,
+			return putPostDocumentImpl(reqlog, "put", desc, transaction, categories, false,
 					extraParams, metadataMimetype, metadataHandle);
 		} else if (contentBase != null) {
-			putPostDocumentImpl(reqlog, "put", desc, transaction, null, true, 
+			return putPostDocumentImpl(reqlog, "put", desc, transaction, null, true, 
 					extraParams, contentMimetype, contentHandle);
 		}
+		throw new IllegalArgumentException("Either metadataHandle or contentHandle must not be null");
 	}
 
 	@Override
-	public DocumentDescriptor postDocument(RequestLogger reqlog, DocumentUriTemplate template,
+	public DocumentDescriptorImpl postDocument(RequestLogger reqlog, DocumentUriTemplate template,
 			Transaction transaction, Set<Metadata> categories, RequestParameters extraParams,
 			DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
@@ -1228,7 +1236,7 @@ public class JerseyServices implements RESTServices {
 		return desc;
 	}
 
-	private void putPostDocumentImpl(RequestLogger reqlog, String method, DocumentDescriptor desc,
+	private TemporalDescriptor putPostDocumentImpl(RequestLogger reqlog, String method, DocumentDescriptor desc,
 			Transaction transaction, Set<Metadata> categories, boolean isOnContent, RequestParameters extraParams,
 			String mimetype, AbstractWriteHandle handle)
 	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
@@ -1385,11 +1393,12 @@ public class JerseyServices implements RESTServices {
 				updateDescriptor(desc, responseHeaders);
 			}
 		}
-
+		TemporalDescriptor temporalDesc = updateTemporalSystemTime(desc, responseHeaders);
 		response.close();
+		return temporalDesc;
 	}
 
-	private void putPostDocumentImpl(RequestLogger reqlog, String method, DocumentDescriptor desc,
+	private TemporalDescriptor putPostDocumentImpl(RequestLogger reqlog, String method, DocumentDescriptor desc,
 			Transaction transaction, Set<Metadata> categories, RequestParameters extraParams,
 			String metadataMimetype, DocumentMetadataWriteHandle metadataHandle, String contentMimetype,
 			AbstractWriteHandle contentHandle)
@@ -1524,8 +1533,9 @@ public class JerseyServices implements RESTServices {
 				updateDescriptor(desc, responseHeaders);
 			}
 		}
-
+		TemporalDescriptor temporalDesc = updateTemporalSystemTime(desc, responseHeaders);
 		response.close();
+		return temporalDesc;
 	}
 
 	@Override
@@ -1803,6 +1813,31 @@ public class JerseyServices implements RESTServices {
 		updateFormat(desc, headers);
 		updateMimetype(desc, headers);
 		updateLength(desc, headers);
+	}
+
+	private TemporalDescriptor updateTemporalSystemTime(DocumentDescriptor desc,
+			MultivaluedMap<String, String> headers)
+	{
+		if (headers == null) return null;
+		
+		DocumentDescriptorImpl temporalDescriptor;
+		if ( desc instanceof DocumentDescriptorImpl ) {
+			temporalDescriptor = (DocumentDescriptorImpl) desc;
+		} else {
+			temporalDescriptor = new DocumentDescriptorImpl(desc.getUri(), false);
+		}
+		temporalDescriptor.setTemporalSystemTime(getHeaderTemporalSystemTime(headers));
+		return temporalDescriptor;
+	}
+
+	private Calendar getHeaderTemporalSystemTime(MultivaluedMap<String, String> headers) {
+		if (headers.containsKey("x-marklogic-system-time")) {
+			List<String> values = headers.get("x-marklogic-system-time");
+			if (values != null) {
+				return DatatypeConverter.parseDateTime(values.get(0));
+			}
+		}
+		return null;
 	}
 
 	private void copyDescriptor(DocumentDescriptor desc,
