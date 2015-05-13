@@ -531,29 +531,40 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     this.nonDocumentFormat = nonDocumentFormat;
   }
 
+  @Override
   public DocumentWriteSet newWriteSet() {
     return new DocumentWriteSetImpl();
   }
 
+  @Override
   public void write(DocumentWriteSet writeSet) {
     write(writeSet, null, null);
   }
 
+  @Override
   public void write(DocumentWriteSet writeSet, ServerTransform transform) {
-    write(writeSet, transform, null);
+    write(writeSet, transform, null, null);
   }
 
+  @Override
   public void write(DocumentWriteSet writeSet, Transaction transaction) {
-    write(writeSet, null, transaction);
+    write(writeSet, null, transaction, null);
   }
 
+  @Override
   public void write(DocumentWriteSet writeSet, ServerTransform transform,
       Transaction transaction) {
+    write(writeSet, null, transaction, null);
+  }
+
+  @Override
+  public void write(DocumentWriteSet writeSet, ServerTransform transform,
+      Transaction transaction, String temporalCollection) {
     Format defaultFormat = contentFormat;
     services.postBulkDocuments(requestLogger, writeSet,
         (transform != null) ? transform : getWriteTransform(),
         transaction,
-        defaultFormat, null);
+        defaultFormat, null, temporalCollection);
   }
 
   // shortcut writers

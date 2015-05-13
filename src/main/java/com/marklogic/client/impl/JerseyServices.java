@@ -3561,16 +3561,17 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public void postBulkDocuments(
 			RequestLogger reqlog, DocumentWriteSet writeSet,
-			ServerTransform transform, Format defaultFormat, Transaction transaction)
+			ServerTransform transform, Transaction transaction, Format defaultFormat)
 		throws ForbiddenUserException,  FailedRequestException
 	{
-		postBulkDocuments(reqlog, writeSet, transform, transaction, defaultFormat, null);
+		postBulkDocuments(reqlog, writeSet, transform, transaction, defaultFormat, null, null);
 	}
 
 	@Override
 	public <R extends AbstractReadHandle> R postBulkDocuments(
 			RequestLogger reqlog, DocumentWriteSet writeSet,
-			ServerTransform transform, Transaction transaction, Format defaultFormat, R output)
+			ServerTransform transform, Transaction transaction, Format defaultFormat, R output,
+			String temporalCollection)
 		throws ForbiddenUserException,  FailedRequestException
 	{
 		ArrayList<AbstractWriteHandle> writeHandles = new ArrayList<AbstractWriteHandle>();
@@ -3627,6 +3628,7 @@ public class JerseyServices implements RESTServices {
 			transform.merge(params);
 		}
 		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
+		if (temporalCollection != null) params.add("temporal-collection", temporalCollection);
 		return postResource(
 			reqlog,
 			"documents",
@@ -4929,10 +4931,22 @@ public class JerseyServices implements RESTServices {
 			return metadata.getContent(metadataHandle);
 		}
 
+		public <T> T getMetadataAs(Class<T> as) {
+			if ( as == null ) throw new IllegalStateException(
+				"getMetadataAs cannot accept null");
+			return metadata.getContentAs(as);
+		}
+
 		public <T extends AbstractReadHandle> T getContent(T contentHandle) {
 			if ( content == null ) throw new IllegalStateException(
 				"getContent called when no content is available");
 			return content.getContent(contentHandle);
+		}
+
+		public <T> T getContentAs(Class<T> as) {
+			if ( as == null ) throw new IllegalStateException(
+				"getContentAs cannot accept null");
+			return content.getContentAs(as);
 		}
 	}
 

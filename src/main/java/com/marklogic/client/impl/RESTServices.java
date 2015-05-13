@@ -89,10 +89,11 @@ public interface RESTServices {
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
 	public void postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
-			ServerTransform transform, Format defaultFormat, Transaction transaction)
+			ServerTransform transform, Transaction transaction, Format defaultFormat)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 	public <T extends AbstractReadHandle> T postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
-			ServerTransform transform, Transaction transaction, Format defaultFormat, T output)
+			ServerTransform transform, Transaction transaction, Format defaultFormat, T output,
+			String temporalCollection)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
 	public TemporalDescriptor putDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,

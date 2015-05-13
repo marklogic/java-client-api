@@ -61,6 +61,14 @@ public interface DocumentRecord {
      *     REST API Dev Guide -&gt; Working with Metadata</a>
      */
     public <T extends DocumentMetadataReadHandle> T getMetadata(T metadataHandle);
+    /**
+     * Reads the metadata from the multipart response into the representation
+     * specified by the IO class.
+     *
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     */
+    public <T> T getMetadataAs(Class<T> as);
 
     /**
      * Given a handle, populates the handle with the document contents directly from
@@ -68,4 +76,12 @@ public interface DocumentRecord {
      * a handle that is appropriate for the {@link #getFormat format} of this document.
      */
     public <T extends AbstractReadHandle> T getContent(T contentHandle);
+    /**
+     * Reads the document content from the multipart response into the representation
+     * specified by the IO class.
+     *
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     */
+    public <T> T getContentAs(Class<T> as);
 }
