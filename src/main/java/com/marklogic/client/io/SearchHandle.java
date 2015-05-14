@@ -523,8 +523,9 @@ public class SearchHandle
         private EventRange            metadataEvents;
     	private EventRange            relevanceEvents;
     	private ArrayList<String>     similarUris;
+        private String                extractSelected;
 
-    	public MatchDocumentSummaryImpl(String uri, int score, double confidence, double fitness, String path, String mimeType, Format format) {
+        public MatchDocumentSummaryImpl(String uri, int score, double confidence, double fitness, String path, String mimeType, Format format, String extractSelected) {
             this.uri = uri;
             this.score = score;
             conf = confidence;
@@ -532,6 +533,7 @@ public class SearchHandle
             this.path = path;
             this.mimeType = mimeType;
             this.format = format;
+            this.extractSelected = extractSelected;
         }
 
         @Override
@@ -575,65 +577,66 @@ public class SearchHandle
             QName elementName = element.getName();
             if ( "extracted-none".equals(elementName.getLocalPart()) ) {
                 result.isEmpty = true;
-            }
-            @SuppressWarnings("unchecked")
-            Iterator<Attribute> attributes = element.getAttributes();
-            while ( attributes.hasNext() ) {
-                Attribute attr = attributes.next();
-                String attrName = attr.getName().getLocalPart();
-                if ( "context".equals(attrName) ) {
-                    result.context = attr.getValue();
-                } else if ( "format".equals(attrName) ) {
-                    result.format = Format.valueOf(attr.getValue().toUpperCase());
-                } else if ( "kind".equals(attrName) ) {
-                    result.kind = attr.getValue();
-                }
-            }
-            int startChildren = start + 1;
-            int endChildren = end - 1;
-            // now get the children (extracted items) as strings
-            EventRange extractedItemEvents = new EventRange(startChildren, endChildren);
-            if ( Format.XML == getFormat() ) {
-                result.setItems( populateExtractedItems(getSlice(events, extractedItemEvents)) );
-            // if result.context is populated, this is not a root document node
-            } else if ( Format.JSON == getFormat() && ! result.isEmpty && result.context != null ) {
-                String json = events.get(startChildren).toString();
-                try {
-                    JsonNode jsonArray = new ObjectMapper().readTree(json);
-                    ArrayList<String> items = new ArrayList<String>(jsonArray.size());
-                    for ( JsonNode item : jsonArray ) {
-                        items.add( item.toString() );
-                    }
-                    result.setItems( items );
-                } catch (Throwable e) {
-                    throw new MarkLogicIOException("Cannot parse JSON '" + json + "' for " +
-                        result.context, e);
-                }
             } else {
-                ArrayList<String> items = new ArrayList<String>(1);
-                items.add( events.get(startChildren).toString() );
-                result.setItems( items );
+                @SuppressWarnings("unchecked")
+                Iterator<Attribute> attributes = element.getAttributes();
+                while ( attributes.hasNext() ) {
+                    Attribute attr = attributes.next();
+                    String attrName = attr.getName().getLocalPart();
+                    if ( "kind".equals(attrName) ) {
+                        result.kind = attr.getValue();
+                    }
+                }
+                int startChildren = start + 1;
+                int endChildren = end - 1;
+                // now get the children (extracted items) as strings
+                EventRange extractedItemEvents = new EventRange(startChildren, endChildren);
+                if ( Format.XML == getFormat() ) {
+                    result.setItems( populateExtractedItems(getSlice(events, extractedItemEvents)) );
+                // if extractSelected is "include", this is not a root document node
+                } else if ( Format.JSON == getFormat() && "include".equals(extractSelected) ) {
+                    String json = events.get(startChildren).toString();
+                    try {
+                        JsonNode jsonArray = new ObjectMapper().readTree(json);
+                        ArrayList<String> items = new ArrayList<String>(jsonArray.size());
+                        for ( JsonNode item : jsonArray ) {
+                            items.add( item.toString() );
+                        }
+                        result.setItems( items );
+                    } catch (Throwable e) {
+                        throw new MarkLogicIOException("Cannot parse JSON '" + json + "' for " +
+                            getPath(), e);
+                    }
+                } else {
+                    ArrayList<String> items = new ArrayList<String>(1);
+                    items.add( events.get(startChildren).toString() );
+                    result.setItems( items );
+                }
             }
         }
 
         private List<String> populateExtractedItems(List<XMLEvent> events) {
             List<String> items = new ArrayList<String>();
             List<XMLEvent> itemEvents = new ArrayList<XMLEvent>();
-            QName startName = null;
+            List<QName> startNames = new ArrayList<QName>();
             for ( XMLEvent event : events ) {
                 itemEvents.add(event);
                 switch (event.getEventType()) {
                     case XMLStreamConstants.START_ELEMENT: {
-                        if (startName == null ) {
-                            startName = event.asStartElement().getName();
-                        }
+                        startNames.add(event.asStartElement().getName());
                         break;
                     }
                     case XMLStreamConstants.END_ELEMENT: {
-                        if (startName.equals(event.asEndElement().getName())) {
-                            startName = null;
-                            items.add(Utilities.eventsToString(itemEvents));
-                            itemEvents = new ArrayList<XMLEvent>();
+                        QName startName = startNames.remove(startNames.size() - 1);
+                        if (startNames.size() == 0 ) {
+                            if ( startName.equals(event.asEndElement().getName())) {
+                                items.add(Utilities.eventsToString(itemEvents));
+                                itemEvents = new ArrayList<XMLEvent>();
+                            } else {
+                                throw new IllegalStateException("Error parsing xml \"" +
+                                    Utilities.eventsToString(itemEvents) + "\", element " + startName +
+                                    " doesn't end as expected");
+                            }
                         }
                         break;
                     }
@@ -1060,6 +1063,7 @@ public class SearchHandle
 	    private LinkedHashMap<String, EventRange>  tempConstraints;
 
 	    private String tempSnippetType;
+	    private String tempExtractSelected;
 	    private ArrayList<String>      qtextList;
 
 	    private EventRange tempQueryEvents;
@@ -1133,6 +1137,7 @@ public class SearchHandle
 	    	}
 	        tempPageLength   = Integer.parseInt(getAttribute(element, "page-length"));
 	        tempStart        = Long.parseLong(getAttribute(element, "start"));
+	        tempExtractSelected = getAttribute(element, "selected");
 
 	        collectTop(reader, element);
 	    }
@@ -1173,7 +1178,7 @@ public class SearchHandle
 	        double fitness = Double.parseDouble(getAttribute(element, "fitness"));
 
 	        currSummary = new MatchDocumentSummaryImpl(
-		        	ruri, score, confidence, fitness, path, mimeType, format);
+				ruri, score, confidence, fitness, path, mimeType, format, tempExtractSelected);
 
 	        if (tempSummary == null) {
 	        	tempSummary = new ArrayList<MatchDocumentSummary>();
@@ -1611,8 +1616,6 @@ public class SearchHandle
 
     static private class ExtractedResultImpl implements ExtractedResult {
         boolean isEmpty = false;
-        Format format;
-        String context;
         String kind;
         private List<String> itemStrings;
         private List<ExtractedItem> items;
@@ -1620,12 +1623,6 @@ public class SearchHandle
 
         public boolean isEmpty() {
             return isEmpty;
-        }
-        public Format getFormat() {
-            return format;
-        }
-        public String getContext() {
-            return context;
         }
         public String getKind() {
             return kind;
@@ -1661,8 +1658,6 @@ public class SearchHandle
             StringBuffer sb = new StringBuffer();
             sb.append("ExtractedResult: ");
             sb.append(isEmpty == true ? "isEmpty:[true] " : "");
-            sb.append(format != null ? "format:[" + format.toString() + "] " : "");
-            sb.append(context != null ? "context:[" + context + "] " : "");
             sb.append(kind != null ? "kind:[" + kind + "] " : "");
             for ( int i=1; i <= itemStrings.size(); i++ ) {
                 String item = itemStrings.get(i - 1);
