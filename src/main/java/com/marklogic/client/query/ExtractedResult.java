@@ -50,14 +50,6 @@ import com.marklogic.client.io.Format;
  **/
 public interface ExtractedResult extends Iterable<ExtractedItem> {
 
-    /** The format of the extracted data.  Not always available, returns null if
-     * unavailable. **/
-    public Format getFormat();
-
-    /** The xquery to retrieve the parent document.  Not always available, returns
-     * null if unavailable. **/
-    public String getContext();
-
     /** The xquery type of the extracted data.  For XML it will be "element".  For
      * JSON it will be "object" or "array".  Not always available, returns null if
      * unavailable. **/

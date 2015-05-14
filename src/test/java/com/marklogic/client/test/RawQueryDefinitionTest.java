@@ -75,7 +75,7 @@ public class RawQueryDefinitionTest {
 	public static void beforeClass() {
 		Common.connectAdmin();
 		queryMgr = Common.client.newQueryManager();
-		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
 
 	@AfterClass
@@ -366,8 +366,7 @@ public class RawQueryDefinitionTest {
 		for (MatchDocumentSummary summary : summaries) {
 			ExtractedResult extracted = summary.getExtracted();
 			if ( Format.XML == summary.getFormat() ) {
-				assertEquals("fn:doc(\"/sample/first.xml\")", extracted.getContext());
-				// we don't test for format or kind because they aren't sent in this case
+				// we don't test for kind because it isn't sent in this case
 				assertEquals(3, extracted.size());
 				Document item1 = extracted.next().getAs(Document.class);
 				assertEquals("1", item1.getFirstChild().getAttributes().getNamedItem("id").getNodeValue());
@@ -377,8 +376,7 @@ public class RawQueryDefinitionTest {
 				assertEquals("3", item3.getFirstChild().getAttributes().getNamedItem("id").getNodeValue());
 				continue;
 			} else if ( Format.JSON == summary.getFormat() ) {
-				assertEquals("fn:doc(\"/basic1.json\")", extracted.getContext());
-				// we don't test for format or kind because they aren't sent in this case
+				// we don't test for kind because it isn't sent in this case
 				assertEquals(3, extracted.size());
 				for ( ExtractedItem item : extracted ) {
 					String stringJsonItem = item.getAs(String.class);
@@ -405,11 +403,11 @@ public class RawQueryDefinitionTest {
 		for (int i=0; i < jsonSummaries.size(); i++ ) {
 			JsonNode summary = jsonSummaries.get(i);
 			String format = summary.get("format").textValue();
+			String docPath = summary.get("path").textValue();
+			assertNotNull(docPath);
 			JsonNode extracted = summary.get("extracted");
 			if ( "xml".equals(format) ) {
-				String context = extracted.get("context").textValue();
-				if ( context.contains("/sample/first.xml") ) {
-					assertEquals("fn:doc(\"/sample/first.xml\")", context);
+				if ( docPath.contains("/sample/first.xml") ) {
 					JsonNode extractedItems = extracted.path("content");
 					assertEquals(3, extractedItems.size());
 					assertEquals(3, extractedItems.size());
@@ -422,9 +420,7 @@ public class RawQueryDefinitionTest {
 					continue;
 				}
 			} else if ( "json".equals(format) ) {
-			    String context = extracted.get("context").textValue();
-				if ( context.contains("/basic1.json") ) {
-					assertEquals("fn:doc(\"/basic1.json\")", context);
+				if ( docPath.contains("/basic1.json") ) {
 					JsonNode items = extracted.get("content");
 					assertNotNull(items);
 					assertEquals(3, items.size());
@@ -452,9 +448,6 @@ public class RawQueryDefinitionTest {
 		for (MatchDocumentSummary summary : summaries) {
 			ExtractedResult extracted = summary.getExtracted();
 			if ( Format.XML == summary.getFormat() ) {
-				// TODO: find out why we don't get the context attribute in this case?
-				//assertEquals("fn:doc(\"/sample/first.xml\")", extracted.getContext());
-				assertEquals(Format.XML, extracted.getFormat());
 				assertEquals("element", extracted.getKind());
 				assertEquals(1, extracted.size());
 				Document root = extracted.next().getAs(Document.class);
@@ -469,8 +462,6 @@ public class RawQueryDefinitionTest {
 				assertEquals("3", item3.getAttributes().getNamedItem("id").getNodeValue());
 				continue;
 			} else if ( Format.JSON == summary.getFormat() ) {
-				// we don't test for context because it isn't sent in this case
-				assertEquals(Format.JSON, extracted.getFormat());
 				assertEquals("object", extracted.getKind());
 				String jsonDocument = extracted.next().getAs(String.class);
 				assertEquals("{\"a\":{\"b1\":{\"c\":\"jsonValue1\"}, \"b2\":[\"b2 val1\", \"b2 val2\"]}}",
@@ -489,6 +480,7 @@ public class RawQueryDefinitionTest {
 			JsonNode summary = jsonSummaries.get(i);
 			String format = summary.get("format").textValue();
 			String docPath = summary.get("path").textValue();
+			assertNotNull(docPath);
 			JsonNode extracted = summary.get("extracted");
 			if ( "xml".equals(format) ) {
 				if ( docPath.contains("/sample/first.xml") ) {
@@ -510,7 +502,6 @@ public class RawQueryDefinitionTest {
 			} else if ( "json".equals(format) ) {
 				if ( docPath.contains("/basic1.json") ) {
 					assertEquals("fn:doc(\"/basic1.json\")", docPath);
-					assertEquals("json", extracted.get("format").textValue());
 					assertEquals("object", extracted.get("kind").textValue());
 					JsonNode items = extracted.get("content");
 					assertNotNull(items);
@@ -541,16 +532,6 @@ public class RawQueryDefinitionTest {
 		for (MatchDocumentSummary summary : summaries) {
 			ExtractedResult extracted = summary.getExtracted();
 			assertTrue(extracted.isEmpty());
-			if ( Format.XML == summary.getFormat() ) {
-				assertEquals("fn:doc(\"/sample/first.xml\")", extracted.getContext());
-				// we don't test for format or kind because they aren't sent in this case
-				continue;
-			} else if ( Format.JSON == summary.getFormat() ) {
-				assertEquals("fn:doc(\"/basic1.json\")", extracted.getContext());
-				// we don't test for format or kind because they aren't sent in this case
-				continue;
-			}
-			fail("unexpected search result:" + summary.getUri());
 		}
 
 		// test JSON response with XML and JSON document matches with path that does not match
@@ -560,21 +541,9 @@ public class RawQueryDefinitionTest {
 		assertEquals(2, jsonSummaries.size());
 		for (int i=0; i < jsonSummaries.size(); i++ ) {
 			JsonNode summary = jsonSummaries.get(i);
-			String format = summary.get("format").textValue();
 			JsonNode extractedNone = summary.get("extracted-none");
 			assertNotNull(extractedNone);
-			if ( "xml".equals(format) ) {
-			    String context = extractedNone.get("context").textValue();
-				assertEquals("fn:doc(\"/sample/first.xml\")", context);
-				assertEquals(1, extractedNone.size());
-				continue;
-			} else if ( "json".equals(format) ) {
-			    String context = extractedNone.get("context").textValue();
-				assertEquals("fn:doc(\"/basic1.json\")", context);
-				assertEquals(1, extractedNone.size());
-				continue;
-			}
-			fail("unexpected search result:" + summary);
+			assertEquals(0, extractedNone.size());
 		}
 	}
 
