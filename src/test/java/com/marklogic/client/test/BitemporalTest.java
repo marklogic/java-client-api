@@ -18,6 +18,7 @@ package com.marklogic.client.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Calendar;
 
@@ -149,16 +150,16 @@ public class BitemporalTest {
 			Document doc = record.getContentAs(Document.class);
 			if ( record.getUri().startsWith(prefix + "_1") ) {
 				assertXpathEvaluatesTo("2014-08-19T00:00:00Z", "//valid-start", doc);
-				break;
+				continue;
 			} else if ( record.getUri().startsWith(prefix + "_2") ) {
 				assertXpathEvaluatesTo("2014-08-19T00:00:02Z", "//valid-start", doc);
-				break;
+				continue;
 			} else if ( record.getUri().startsWith(prefix + "_3") ) {
 				assertXpathEvaluatesTo("2014-08-19T00:00:03Z", "//valid-start", doc);
-				break;
+				continue;
 			} else if ( record.getUri().startsWith(prefix + "_4") ) {
-				assertXpathEvaluatesTo("2014-08-19T00:00:06Z", "//valid-start", doc);
-				break;
+				assertXpathEvaluatesTo("2014-08-19T00:00:05Z", "//valid-start", doc);
+				continue;
 			}
 			throw new IllegalStateException("Unexpected doc:[" + record.getUri() + "]");
 		}
@@ -267,8 +268,14 @@ public class BitemporalTest {
 			sqb.temporalPeriodRange(validAxis, TemporalOperator.ALN_CONTAINED_BY, period2));
 		DocumentPage periodQuery2Results = docMgr.search(periodQuery2, start);
 		assertEquals("Wrong number of results", 3, periodQuery2Results.size());
-		latestDoc = periodQuery2Results.next();
-		assertEquals("Document uri wrong", docId, latestDoc.getUri());
+		for ( DocumentRecord result : periodQuery2Results ) {
+			if ( docId.equals(result.getUri()) ) {
+				continue;
+			} else if ( result.getUri().startsWith("test_" + uniqueBulkTerm + "_4") ) {
+				continue;
+			}
+			fail("Unexpected uri for ALN_CONTAINED_BY test:" + result.getUri());
+		}
 
 		// find all documents where valid time is after system time in the document
 		StructuredQueryBuilder.Axis systemAxis = sqb.axis("system-axis");
