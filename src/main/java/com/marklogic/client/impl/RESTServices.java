@@ -122,6 +122,8 @@ public interface RESTServices {
 
     public void deleteSearch(RequestLogger logger, DeleteQueryDefinition queryDef, Transaction transaction)
             throws ForbiddenUserException, FailedRequestException;
+    public void delete(RequestLogger logger, Transaction transaction, String... uris)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     public Transaction openTransaction(String name, int timeLimit)
 		throws ForbiddenUserException, FailedRequestException;

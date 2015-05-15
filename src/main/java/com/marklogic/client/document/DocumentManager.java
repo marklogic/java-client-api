@@ -853,6 +853,25 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
     public void delete(String docId, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
+     * Deletes the documents' metadata and content
+     *
+     * To call delete(), an application must authenticate as rest-writer or rest-admin.
+     *
+     * @param uris	the identifiers for the documents to delete
+     */
+    public void delete(String... uris)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    /**
+     * Deletes the documents' metadata and content from an open database transaction
+     *
+     * To call delete(), an application must authenticate as rest-writer or rest-admin.
+     *
+     * @param transaction	an open transaction
+     * @param uris	the identifiers for the documents to delete
+     */
+    public void delete(Transaction transaction, String... uris)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    /**
      * Deletes the document metadata and content from the database
      * 
      * To call delete(), an application must authenticate as rest-writer or rest-admin.
