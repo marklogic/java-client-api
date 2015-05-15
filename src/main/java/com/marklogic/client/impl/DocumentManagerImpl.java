@@ -844,6 +844,22 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   }
 
   @Override
+  public void delete(String... uris)
+      throws ResourceNotFoundException, ForbiddenUserException,
+      FailedRequestException
+  {
+    services.delete(requestLogger, null, uris);
+  }
+
+  @Override
+  public void delete(Transaction transaction, String... uris)
+      throws ResourceNotFoundException, ForbiddenUserException,
+      FailedRequestException
+  {
+    services.delete(requestLogger, transaction, uris);
+  }
+
+  @Override
   public void delete(DocumentDescriptor desc) throws ResourceNotFoundException,
       ForbiddenUserException, FailedRequestException {
     delete(desc, null, null);

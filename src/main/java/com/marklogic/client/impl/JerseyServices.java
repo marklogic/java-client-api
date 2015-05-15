@@ -2290,11 +2290,22 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException("delete failed: "
 					+ status.getReasonPhrase(), extractErrorFields(response));
 		}
-		
+
+		response.close();
+
 		logRequest(
 				reqlog,
 				"deleted search results in %s transaction",
 				getTransactionId(transaction));
+	}
+
+	@Override
+	public void delete(RequestLogger logger, Transaction transaction, String... uris)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		addEncodedParam(((RequestParametersImplementation) params).getMapImpl(), "uri", uris);
+		deleteResource(logger, "documents", transaction, params, null);
 	}
 
 	@Override
@@ -4450,15 +4461,20 @@ public class JerseyServices implements RESTServices {
 			ClientResponse.Status status, String operation, String entityType,
 			String path, ResponseStatus expected) {
 		if (!expected.isExpected(status)) {
+			FailedRequest failure = extractErrorFields(response);
 			if (status == ClientResponse.Status.NOT_FOUND) {
 				throw new ResourceNotFoundException("Could not " + operation
 						+ " " + entityType + " at " + path,
-						extractErrorFields(response));
+						failure);
 			}
 			if (status == ClientResponse.Status.FORBIDDEN) {
+				if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
+					throw new FailedRequestException("Content version required to " +
+						operation + " " + entityType + " at " + path, failure);
+				}
 				throw new ForbiddenUserException("User is not allowed to "
 						+ operation + " " + entityType + " at " + path,
-						extractErrorFields(response));
+						failure);
 			}
 			throw new FailedRequestException("failed to " + operation + " "
 					+ entityType + " at " + path + ": "
