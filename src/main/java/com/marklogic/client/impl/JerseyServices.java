@@ -776,6 +776,8 @@ public class JerseyServices implements RESTServices {
 			this.hasMetadata = hasMetadata;
 			if ( iterator == null ) {
 				setSize(0);
+			} else if ( hasContent && hasMetadata ) {
+				setSize(iterator.getSize() / 2);
 			} else {
 				setSize(iterator.getSize());
 			}

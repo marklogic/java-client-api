@@ -451,7 +451,6 @@ public class BulkReadWriteTest {
         } finally {
             documents.close();
         }
-        jdm.setMetadataCategories();
         String[] uris = new String[] { "doc1.json", "doc2.json", "doc3.json", "doc4.json", "doc5.json",
             "doc6.json", "doc7.json", "doc8.json"};
         Transaction t1 = Common.client.openTransaction();
