@@ -24,9 +24,11 @@ import java.io.BufferedReader;
 import java.io.StringReader;
 
 import javax.xml.bind.JAXBContext;
+
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.document.BinaryDocumentManager;
@@ -44,6 +46,7 @@ import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.FailedRequestException;
+
 
 
 
@@ -133,7 +136,11 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 		assertEquals("Text document write difference", "This is so foo1", docMgr.read(docId[0], new StringHandle()).get());
 		assertEquals("Text document write difference", "This is so foo2", docMgr.read(docId[1], new StringHandle()).get());
 		assertEquals("Text document write difference", "This is so foo3", docMgr.read(docId[2], new StringHandle()).get());
+		
+		//Bulk delete on TextDocumentManager
+		docMgr.delete(docId[0],docId[1],docId[2]);
 	}
+	
 	/*
 	 * This test uses DOMHandle to load 3 xml documents, writes to database using bulk write set.
 	 * Verified by reading individual documents
@@ -162,6 +169,9 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 		assertEquals("xml document write difference", "This is so foo2", dh.get().getChildNodes().item(0).getTextContent());
 		docMgr.read(docId[2], dh);
 		assertEquals("xml document write difference", "This is so foo3", dh.get().getChildNodes().item(0).getTextContent());
+		
+		//Bulk delete on XMLDocumentManager
+		docMgr.delete(docId[0],docId[1],docId[2]);
 	}
 	/*
 	 * This test uses FileHandle to load 3 binary documents with same URI, writes to database using bulk write set.
@@ -217,6 +227,14 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 		System.out.println(file2.getName()+":"+fsize2+" "+readHandle2.get().getName()+":"+readHandle2.get().length());
 		assertEquals("Size of the  File 1"+docId[0],fsize1,readHandle1.get().length());
 		assertEquals("Size of the  File 1"+docId[1],fsize2,readHandle2.get().length());
+		
+		//Bulk delete test - Git 284
+		String doc0 = "/1/"+docId[0];
+		String doc1 = "/2/"+docId[0];
+		String doc2 = "/1/"+docId[1];
+		String doc3 = "/2/"+docId[1];
+		
+		docMgr.delete(doc0,doc1,doc2,doc3);
 	}
 
 	/*
@@ -285,7 +303,6 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 		assertEquals("xml document write difference", "Very cool Ipad", dh.get().getChildNodes().item(0).getChildNodes().item(1).getTextContent());
 		docMgr.read(docId[2], dh);
 		assertEquals("xml document write difference", "Very cool Ipod", dh.get().getChildNodes().item(0).getChildNodes().item(1).getTextContent());
-
 	}
 	/*
 	 * This test uses GenericManager to load all different document types
@@ -352,6 +369,10 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 		assertEquals("Json document write difference", "{\"animal\":\"dog\", \"says\":\"woof\"}", br.readLine() );
 		br.close();
 		fis.close();
+		
+		//Bulk delete on GenericDocumentManager - Git 284
+		String doc1 = "/generic/"+docId[0];
+		docMgr.delete(doc1,"/generic/foo.xml","/generic/foo1.txt", "/generic/dog.json");
 	}
 
 	@Test
@@ -395,7 +416,55 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 		docMgr.read(docId[2], jh);
 		exp="{\"name\":\"iPod\",\"industry\":\"Hardware\",\"description\":\"Very cool Ipod\"}";
 		JSONAssert.assertEquals(exp,jh.get().toString() , false);
+		
+		//Test bulk delete on JSONDocumentManager
+		docMgr.delete(docId[0],docId[1],docId[2]); 
 
+	}
+	
+	@Test(expected=ResourceNotFoundException.class)
+	public void testJAXBDocsBulkDelete() throws Exception  
+	{
+		String docId[] ={"/jaxb/iphone.xml","/jaxb/ipad.xml","/jaxb/ipod.xml"};
+		Product product1 = new Product();
+		product1.setName("iPhone");
+		product1.setIndustry("Hardware");
+		product1.setDescription("Very cool Iphone");
+		Product product2 = new Product();
+		product2.setName("iPad");
+		product2.setIndustry("Hardware");
+		product2.setDescription("Very cool Ipad");
+		Product product3 = new Product();
+		product3.setName("iPod");
+		product3.setIndustry("Hardware");
+		product3.setDescription("Very cool Ipod");
+		JAXBContext context = JAXBContext.newInstance(Product.class);
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+		DocumentWriteSet writeset =docMgr.newWriteSet();
+		
+		writeset.add(docId[0],new JAXBHandle<Product>(context).with(product1));
+		writeset.add(docId[1],new JAXBHandle<Product>(context).with(product2));
+		writeset.add(docId[2],new JAXBHandle<Product>(context).with(product3));
+
+		docMgr.write(writeset);
+
+		DOMHandle dh = new DOMHandle();
+		docMgr.read(docId[0], dh);
+
+		assertEquals("xml document write difference", "Very cool Iphone",dh.get().getChildNodes().item(0).getChildNodes().item(1).getTextContent());
+		docMgr.read(docId[1], dh);
+		assertEquals("xml document write difference", "Very cool Ipad", dh.get().getChildNodes().item(0).getChildNodes().item(1).getTextContent());
+		docMgr.read(docId[2], dh);
+		assertEquals("xml document write difference", "Very cool Ipod", dh.get().getChildNodes().item(0).getChildNodes().item(1).getTextContent());
+		
+		//Bulk delete on XMLDocumentManager
+		docMgr.delete(docId[0],docId[1],docId[2]);
+				
+		// Try reading back the deleted document. 
+		DOMHandle rhDeleted = new DOMHandle();
+		
+		//Make sure that bulk delete indeed worked. Should throw ResourceNotFoundException.
+		docMgr.read("/generic/"+docId[0],rhDeleted);		
 	}
 	@AfterClass
 	public static void tearDown() throws Exception
