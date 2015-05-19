@@ -35,6 +35,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,6 +51,7 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.JacksonParserHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.query.QueryManager;
@@ -378,5 +380,65 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 		assertEquals("document count", 102,page.getTotalSize());
 
 	}
+	
+	/*
+	 * This test method verifies if JacksonParserHandle class supports SearchReadHandle.
+	 * Verifies Git Issue 116. The test functionality is same as testBulkSearchQBEWithJSONResponseFormat.
+	 */
+	
+	@Test
+	public void testBulkSearchQBEResponseInParserHandle() throws IOException, ParserConfigurationException, SAXException, TransformerException {
+		int count;
 
+		//Creating a xml document manager for bulk search
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+		//using QBE for query definition and set the search criteria
+
+		QueryManager queryMgr = client.newQueryManager();
+		String queryAsString = "{\"$query\": { \"says\": {\"$word\":\"woof\",\"$exact\": false}}}";
+		RawQueryByExampleDefinition qd = queryMgr.newRawQueryByExampleDefinition(new StringHandle(queryAsString).withFormat(Format.JSON));
+
+		// set  document manager level settings for search response
+		docMgr.setPageLength(25);
+		docMgr.setSearchView(QueryView.RESULTS);
+		docMgr.setNonDocumentFormat(Format.JSON);
+
+		// Search for documents where content has bar and get first result record, get JacksonParserHandle on it,Use DOMHandle to read results
+		JacksonParserHandle  sh = new JacksonParserHandle();
+		DocumentPage page;
+
+		long pageNo=1;
+		do{
+			count=0;
+			page = docMgr.search(qd, pageNo,sh);
+			if(pageNo >1){ 
+				assertFalse("Is this first Page", page.isFirstPage());
+				assertTrue("Is page has previous page ?",page.hasPreviousPage());
+			}
+			while(page.hasNext()){
+				DocumentRecord rec = page.next();
+				rec.getFormat();
+				validateRecord(rec,Format.JSON);
+				System.out.println(rec.getContent(new StringHandle()).get().toString());
+				count++;
+			}
+			
+			assertEquals("document count", page.size(),count);
+			pageNo = pageNo + page.getPageSize();
+		}while(!page.isLastPage() &&  page.hasContent() );
+		
+		ObjectMapper mapper = new ObjectMapper();
+		JsonParser  jsonParser = sh.get();
+		
+		JsonNode jnode = null;
+		jnode = mapper.readValue(jsonParser,JsonNode.class);
+		
+		assertTrue("Page start in results and on page", jnode.get("start").asLong() == page.getStart());
+
+		assertEquals("page count is  ",5,page.getTotalPages());
+		assertTrue("Page has previous page ?",page.hasPreviousPage());
+		assertEquals("page size", 25,page.getPageSize());
+		assertEquals("document count", 102,page.getTotalSize());
+
+	}
 }
