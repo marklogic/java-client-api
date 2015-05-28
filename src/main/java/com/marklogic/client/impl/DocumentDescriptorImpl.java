@@ -15,20 +15,16 @@
  */
 package com.marklogic.client.impl;
 
-import java.util.Calendar;
-
-import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.io.Format;
 
-public class DocumentDescriptorImpl implements DocumentDescriptor, TemporalDescriptor {
+public class DocumentDescriptorImpl implements DocumentDescriptor {
 	private String  uri;
 	private Format  format;
 	private String  mimetype;
 	private long    byteLength = UNKNOWN_LENGTH;
 	private long    version    = UNKNOWN_VERSION;
 	private boolean isInternal = false;
-	private Calendar temporalSystemTime;
 
 	public DocumentDescriptorImpl(boolean isInternal) {
 		super();
@@ -96,14 +92,5 @@ public class DocumentDescriptorImpl implements DocumentDescriptor, TemporalDescr
 	}
 	protected boolean isInternal() {
 		return isInternal;
-	}
-
-	@Override
-	public Calendar getTemporalSystemTime() {
-		return temporalSystemTime;
-	}
-
-	protected void setTemporalSystemTime(Calendar dateTime) {
-		this.temporalSystemTime = dateTime;
 	}
 }
