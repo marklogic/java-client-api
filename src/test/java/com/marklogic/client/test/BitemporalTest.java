@@ -94,7 +94,8 @@ public class BitemporalTest {
 		assertNotNull("Missing TemporalDescriptor from create", desc);
 		assertNotNull(desc.getUri());
 		assertTrue(desc.getUri().endsWith(".xml"));
-		Calendar lastWriteTime = desc.getTemporalSystemTime();
+		String lastWriteTimestamp = desc.getTemporalSystemTime();
+		Calendar lastWriteTime = DatatypeConverter.parseDateTime(lastWriteTimestamp);
 		assertNotNull(lastWriteTime);
     }
 
@@ -203,13 +204,19 @@ public class BitemporalTest {
 		StringHandle handle2 = new StringHandle(version2).withFormat(Format.XML);
 		docMgr.write(docId, null, handle2, null, null, temporalCollection);
 		StringHandle handle3 = new StringHandle(version3).withFormat(Format.XML);
-		docMgr.write(docId, null, handle3, null, null, temporalCollection);
-		StringHandle handle4 = new StringHandle(version4).withFormat(Format.XML);
-		TemporalDescriptor desc = docMgr.write(docId, null, handle4, null, null, temporalCollection);
+		TemporalDescriptor desc = docMgr.write(docId, null, handle3, null, null, temporalCollection);
 		assertNotNull("Missing TemporalDescriptor from write", desc);
 		assertEquals(docId, desc.getUri());
-		Calendar lastWriteTime = desc.getTemporalSystemTime();
-		assertNotNull(lastWriteTime);
+		String thirdWriteTimestamp = desc.getTemporalSystemTime();
+		Calendar thirdWriteTime = DatatypeConverter.parseDateTime(thirdWriteTimestamp);
+		assertNotNull(thirdWriteTime);
+		// add one millisecond since server precision is more precise, so Java truncates
+		// fractions of a second here.  Adding one millisecond ensures we're above the 
+		// system time for the last write for the document
+		thirdWriteTime.roll(Calendar.MILLISECOND, true);
+
+		StringHandle handle4 = new StringHandle(version4).withFormat(Format.XML);
+		docMgr.write(docId, null, handle4, null, null, temporalCollection);
 
 		// make sure non-temporal document read only returns the latest version
 		DocumentPage readResults = docMgr.read(docId); 
@@ -233,14 +240,14 @@ public class BitemporalTest {
 		// query with lsqt of last inserted document
 		// will match the first three versions -- not the last because it's equal to
 		// not greater than the timestamp of this lsqt query
-		StructuredQueryDefinition currentQuery = sqb.temporalLsqtQuery(temporalCollection, lastWriteTime, 1);
+		StructuredQueryDefinition currentQuery = sqb.temporalLsqtQuery(temporalCollection, thirdWriteTime, 1);
 		StructuredQueryDefinition currentDocQuery = sqb.and(termsQuery, currentQuery);
 		DocumentPage currentDocQueryResults = docMgr.search(currentDocQuery, start);
 		assertEquals("Wrong number of results", 11, currentDocQueryResults.size());
 
-		// query with null lsqt indicating current time
+		// query with blank lsqt indicating current time
 		// will match all four versions
-		currentQuery = sqb.temporalLsqtQuery(temporalCollection, null, 1);
+		currentQuery = sqb.temporalLsqtQuery(temporalCollection, "", 1);
 		currentDocQuery = sqb.and(termsQuery, currentQuery);
 		currentDocQueryResults = docMgr.search(currentDocQuery, start);
 		assertEquals("Wrong number of results", 12, currentDocQueryResults.size());
