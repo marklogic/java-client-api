@@ -1831,11 +1831,11 @@ public class JerseyServices implements RESTServices {
 		return temporalDescriptor;
 	}
 
-	private Calendar getHeaderTemporalSystemTime(MultivaluedMap<String, String> headers) {
+	private String getHeaderTemporalSystemTime(MultivaluedMap<String, String> headers) {
 		if (headers.containsKey("x-marklogic-system-time")) {
 			List<String> values = headers.get("x-marklogic-system-time");
 			if (values != null) {
-				return DatatypeConverter.parseDateTime(values.get(0));
+				return values.get(0);
 			}
 		}
 		return null;

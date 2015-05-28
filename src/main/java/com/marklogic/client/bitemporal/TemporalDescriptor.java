@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.bitemporal;
 
-import java.util.Calendar;
+import javax.xml.bind.DatatypeConverter;
 import com.marklogic.client.document.DocumentDescriptor;
 
 public interface TemporalDescriptor extends DocumentDescriptor {
@@ -27,7 +27,12 @@ public interface TemporalDescriptor extends DocumentDescriptor {
 
     /**
      * Returns the temporal system time when the document was written or deleted.
+     * The time is returned in ISO 8601 format like all MarkLogic timestamps.  It
+     * can be parsed by
+     * {@link DatatypeConverter#parseDateTime DatatypeConverter.parseDateTime}
+     * but will lose precision since java.util.Calendar only supports millisecond
+     * precision.
      * @return  the temporal system time
      */
-    public Calendar getTemporalSystemTime();
+    public String getTemporalSystemTime();
 }

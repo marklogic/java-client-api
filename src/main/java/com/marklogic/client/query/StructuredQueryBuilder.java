@@ -1901,9 +1901,9 @@ public class StructuredQueryBuilder {
     	private String formattedStart;
     	private String formattedEnd;
     	private String[] options;
-    	TemporalPeriod(Calendar start, Calendar end) {
-    		this.formattedStart = DatatypeConverter.printDateTime(start);
-    		this.formattedEnd = DatatypeConverter.printDateTime(end);
+    	TemporalPeriod(String start, String end) {
+    		this.formattedStart = start;
+    		this.formattedEnd = end;
     	}
     	@Override
     	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
@@ -1968,10 +1968,10 @@ public class StructuredQueryBuilder {
     	private String formattedTimestamp = null;
     	private double weight;
     	private String[] options;
-		TemporalLsqtQuery(String temporalCollection, Calendar timestamp, double weight, String[] options) {
+		TemporalLsqtQuery(String temporalCollection, String timestamp, double weight, String[] options) {
     		this.temporalCollection = temporalCollection;
 			if ( timestamp != null ) {
-				this.formattedTimestamp = DatatypeConverter.printDateTime(timestamp);
+				this.formattedTimestamp = timestamp;
 			}
     		this.weight = weight;
     		this.options = options;
@@ -1980,7 +1980,7 @@ public class StructuredQueryBuilder {
     	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
     		serializer.writeStartElement("lsqt-query");
 			writeText(serializer, "temporal-collection", temporalCollection);
-			if ( formattedTimestamp != null ) {
+			if ( formattedTimestamp != null && formattedTimestamp.length() > 0 ) {
 				writeText(serializer, "timestamp", formattedTimestamp);
 			}
 			writeText(serializer, "weight", weight);
@@ -2769,6 +2769,17 @@ public class StructuredQueryBuilder {
 	 * @param end   the end date/time for this period
 	 */
 	public StructuredQueryBuilder.Period period(Calendar start, Calendar end) {
+		return new TemporalPeriod(DatatypeConverter.printDateTime(start),
+			DatatypeConverter.printDateTime(end));
+	}
+
+	/**
+	 * Construct a temporal period for use in {@link #temporalPeriodRange temporalPeriodRange}
+	 * queries.
+	 * @param start the start date/time for this period, in ISO 8601 format
+	 * @param end   the end date/time for this period, in ISO 8601 format
+	 */
+	public StructuredQueryBuilder.Period period(String start, String end) {
 		return new TemporalPeriod(start, end);
 	}
 
@@ -2839,7 +2850,7 @@ public class StructuredQueryBuilder {
 	/**
 	 * Matches documents with LSQT prior to timestamp
 	 * @param temporalCollection the temporal collection to query
-	 * @param timestamp documents with lsqt prior to this timestamp will match
+	 * @param time documents with lsqt equal to or prior to this timestamp will match
 	 * @param weight the weight for for this query
 	 * @param options string options from the list for
 	 *     <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query calls</a>
@@ -2847,7 +2858,26 @@ public class StructuredQueryBuilder {
 	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_85930">
 	 *      Structured Queries: lsqt-query</a>
 	 */
-	public StructuredQueryDefinition temporalLsqtQuery(String temporalCollection, Calendar timestamp,
+	public StructuredQueryDefinition temporalLsqtQuery(String temporalCollection, Calendar time,
+		double weight, String... options)
+	{
+		if ( temporalCollection == null ) throw new IllegalArgumentException("temporalCollection cannot be null");
+		return new TemporalLsqtQuery(temporalCollection, DatatypeConverter.printDateTime(time), weight, options);
+	}
+
+	/**
+	 * Matches documents with LSQT prior to timestamp
+	 * @param temporalCollection the temporal collection to query
+	 * @param timestamp timestamp in ISO 8601 format - documents with lsqt equal to or
+	 *        prior to this timestamp will match
+	 * @param weight the weight for for this query
+	 * @param options string options from the list for
+	 *     <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query calls</a>
+	 * @see <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query</a>
+	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_85930">
+	 *      Structured Queries: lsqt-query</a>
+	 */
+	public StructuredQueryDefinition temporalLsqtQuery(String temporalCollection, String timestamp,
 		double weight, String... options)
 	{
 		if ( temporalCollection == null ) throw new IllegalArgumentException("temporalCollection cannot be null");
