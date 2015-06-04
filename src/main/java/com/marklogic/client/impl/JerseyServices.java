@@ -42,6 +42,7 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.http.HttpHost;
@@ -78,6 +79,7 @@ import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.document.ContentDescriptor;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager.Metadata;
@@ -381,6 +383,7 @@ public class JerseyServices implements RESTServices {
 		configProps
 				.put(ApacheHttpClient4Config.PROPERTY_PREEMPTIVE_BASIC_AUTHENTICATION,
 						false);
+		configProps.put(ApacheHttpClient4Config.PROPERTY_DISABLE_COOKIES, true);
 		configProps.put(ApacheHttpClient4Config.PROPERTY_CONNECTION_MANAGER,
 				connMgr);
 		// ignored?
@@ -485,7 +488,7 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public void deleteDocument(RequestLogger reqlog, DocumentDescriptor desc,
-			String transactionId, Set<Metadata> categories, RequestParameters extraParams)
+			Transaction transaction, Set<Metadata> categories, RequestParameters extraParams)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
 		String uri = desc.getUri();
@@ -494,10 +497,10 @@ public class JerseyServices implements RESTServices {
 					"Document delete for document identifier without uri");
 
 		if (logger.isDebugEnabled())
-			logger.debug("Deleting {} in transaction {}", uri, transactionId);
+			logger.debug("Deleting {} in transaction {}", uri, getTransactionId(transaction));
 
 		WebResource webResource = makeDocumentResource(makeDocumentParams(uri,
-				categories, transactionId, extraParams));
+				categories, transaction, extraParams));
 
 		WebResource.Builder builder = addVersionHeader(desc,
 				webResource.getRequestBuilder(), "If-Match");
@@ -574,7 +577,7 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public boolean getDocument(RequestLogger reqlog, DocumentDescriptor desc,
-			String transactionId, Set<Metadata> categories,
+			Transaction transaction, Set<Metadata> categories,
 			RequestParameters extraParams,
 			DocumentMetadataReadHandle metadataHandle,
 			AbstractReadHandle contentHandle) throws ResourceNotFoundException,
@@ -598,13 +601,13 @@ public class JerseyServices implements RESTServices {
 		}
 
 		if (metadataBase != null && contentBase != null) {
-			return getDocumentImpl(reqlog, desc, transactionId, categories,
+			return getDocumentImpl(reqlog, desc, transaction, categories,
 					extraParams, metadataFormat, metadataHandle, contentHandle);
 		} else if (metadataBase != null) {
-			return getDocumentImpl(reqlog, desc, transactionId, categories,
+			return getDocumentImpl(reqlog, desc, transaction, categories,
 					extraParams, metadataMimetype, metadataHandle);
 		} else if (contentBase != null) {
-			return getDocumentImpl(reqlog, desc, transactionId, null,
+			return getDocumentImpl(reqlog, desc, transaction, null,
 					extraParams, contentMimetype, contentHandle);
 		}
 
@@ -612,7 +615,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	private boolean getDocumentImpl(RequestLogger reqlog,
-			DocumentDescriptor desc, String transactionId,
+			DocumentDescriptor desc, Transaction transaction,
 			Set<Metadata> categories, RequestParameters extraParams,
 			String mimetype, AbstractReadHandle handle)
 			throws ResourceNotFoundException, ForbiddenUserException,
@@ -623,10 +626,10 @@ public class JerseyServices implements RESTServices {
 					"Document read for document identifier without uri");
 
 		if (logger.isDebugEnabled())
-			logger.debug("Getting {} in transaction {}", uri, transactionId);
+			logger.debug("Getting {} in transaction {}", uri, getTransactionId(transaction));
 
 		WebResource.Builder builder = makeDocumentResource(
-				makeDocumentParams(uri, categories, transactionId, extraParams))
+				makeDocumentParams(uri, categories, transaction, extraParams))
 				.accept(mimetype);
 
 		if (extraParams != null && extraParams.containsKey("range"))
@@ -692,7 +695,7 @@ public class JerseyServices implements RESTServices {
 		logRequest(
 				reqlog,
 				"read %s document from %s transaction with %s mime type and %s metadata categories",
-				uri, (transactionId != null) ? transactionId : "no",
+				uri, (transaction != null) ? transaction.getTransactionId() : "no",
 				(mimetype != null) ? mimetype : "no",
 				stringJoin(categories, ", ", "no"));
 
@@ -722,12 +725,12 @@ public class JerseyServices implements RESTServices {
 
     @Override
 	public DocumentPage getBulkDocuments(RequestLogger reqlog,
-			String transactionId, Set<Metadata> categories, 
+			Transaction transaction, Set<Metadata> categories, 
 			Format format, RequestParameters extraParams, boolean withContent, String... uris)
 			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		boolean hasMetadata = categories != null && categories.size() > 0;
 		JerseyResultIterator iterator = 
-			getBulkDocumentsImpl(reqlog, transactionId, categories, format, extraParams, withContent, uris);
+			getBulkDocumentsImpl(reqlog, transaction, categories, format, extraParams, withContent, uris);
 		return new JerseyDocumentPage(iterator, withContent, hasMetadata);
 	}
 
@@ -735,14 +738,14 @@ public class JerseyServices implements RESTServices {
 	public DocumentPage getBulkDocuments(RequestLogger reqlog,
 			QueryDefinition querydef,
 			long start, long pageLength,
-			String transactionId,
+			Transaction transaction,
 			SearchReadHandle searchHandle, QueryView view,
 			Set<Metadata> categories, Format format, RequestParameters extraParams)
 			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		boolean hasMetadata = categories != null && categories.size() > 0;
 		boolean hasContent = true;
 		JerseyResultIterator iterator = 
-			getBulkDocumentsImpl(reqlog, querydef, start, pageLength, transactionId, 
+			getBulkDocumentsImpl(reqlog, querydef, start, pageLength, transaction, 
 				searchHandle, view, categories, format, extraParams);
 		return new JerseyDocumentPage(iterator, hasContent, hasMetadata);
 	}
@@ -765,6 +768,8 @@ public class JerseyServices implements RESTServices {
 			this.hasMetadata = hasMetadata;
 			if ( iterator == null ) {
 				setSize(0);
+			} else if ( hasContent && hasMetadata ) {
+				setSize(iterator.getSize() / 2);
 			} else {
 				setSize(iterator.getSize());
 			}
@@ -816,21 +821,20 @@ public class JerseyServices implements RESTServices {
 	}
 
 	private JerseyResultIterator getBulkDocumentsImpl(RequestLogger reqlog,
-			String transactionId, Set<Metadata> categories, 
+			Transaction transaction, Set<Metadata> categories, 
 			Format format, RequestParameters extraParams, boolean withContent, String... uris)
 			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 
 		String path = "documents";
 		RequestParameters params = new RequestParameters();
 		if ( extraParams != null ) params.putAll(extraParams);
-		if (transactionId != null) params.add("txid",       transactionId);
 		addCategoryParams(categories, params, withContent);
 		if (format != null)        params.add("format",     format.toString().toLowerCase());
 		for (String uri: uris) {
 			params.add("uri", uri);
 		}
 		JerseyResultIterator iterator = getIteratedResourceImpl(DefaultJerseyResultIterator.class,
-			reqlog, path, params, MultiPartMediaTypes.MULTIPART_MIXED);
+			reqlog, path, transaction, params, MultiPartMediaTypes.MULTIPART_MIXED);
 		if ( iterator != null ) {
 			if ( iterator.getStart() == -1 ) iterator.setStart(1);
 			if ( iterator.getSize() != -1 ) {
@@ -843,7 +847,7 @@ public class JerseyServices implements RESTServices {
 
 	private JerseyResultIterator getBulkDocumentsImpl(RequestLogger reqlog,
 			QueryDefinition querydef, long start, long pageLength,
-			String transactionId, SearchReadHandle searchHandle, QueryView view,
+			Transaction transaction, SearchReadHandle searchHandle, QueryView view,
             Set<Metadata> categories, Format format, RequestParameters extraParams)
 			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
@@ -854,7 +858,6 @@ public class JerseyServices implements RESTServices {
 		if (start > 1)             params.add("start",      Long.toString(start));
 		if (pageLength >= 0)       params.add("pageLength", Long.toString(pageLength));
 		if (format != null)        params.add("format",     format.toString().toLowerCase());
-		if (transactionId != null) params.add("txid",       transactionId);
 		if ( format == null && searchHandle != null ) {
 			HandleImplementation handleBase = HandleAccessor.as(searchHandle);
 			if ( Format.XML == handleBase.getFormat() ) {
@@ -865,7 +868,7 @@ public class JerseyServices implements RESTServices {
 		}
 
 		JerseySearchRequest request = 
-			generateSearchRequest(reqlog, querydef, MultiPartMediaTypes.MULTIPART_MIXED, params);
+			generateSearchRequest(reqlog, querydef, MultiPartMediaTypes.MULTIPART_MIXED, transaction, params);
         ClientResponse response = request.getResponse();
         if ( response == null ) return null;
         MultiPart entity = null;
@@ -892,7 +895,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	private boolean getDocumentImpl(RequestLogger reqlog,
-			DocumentDescriptor desc, String transactionId,
+			DocumentDescriptor desc, Transaction transaction,
 			Set<Metadata> categories, RequestParameters extraParams,
 			String metadataFormat, DocumentMetadataReadHandle metadataHandle,
 			AbstractReadHandle contentHandle) throws ResourceNotFoundException,
@@ -907,10 +910,10 @@ public class JerseyServices implements RESTServices {
 
 		if (logger.isDebugEnabled())
 			logger.debug("Getting multipart for {} in transaction {}", uri,
-					transactionId);
+					getTransactionId(transaction));
 
 		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
-				categories, transactionId, extraParams, true);
+				categories, transaction, extraParams, true);
 		docParams.add("format", metadataFormat);
 
 		WebResource.Builder builder = makeDocumentResource(docParams).getRequestBuilder();
@@ -975,7 +978,7 @@ public class JerseyServices implements RESTServices {
 		logRequest(
 				reqlog,
 				"read %s document from %s transaction with %s metadata categories and content",
-				uri, (transactionId != null) ? transactionId : "no",
+				uri, (transaction != null) ? transaction.getTransactionId() : "no",
 				stringJoin(categories, ", ", "no"));
 
 		MultiPart entity = response.hasEntity() ?
@@ -1029,10 +1032,10 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public DocumentDescriptor head(RequestLogger reqlog, String uri,
-			String transactionId) throws ForbiddenUserException,
+			Transaction transaction) throws ForbiddenUserException,
 			FailedRequestException {
-		ClientResponse response = headImpl(reqlog, uri, transactionId, makeDocumentResource(makeDocumentParams(uri,
-				null, transactionId, null)));
+		ClientResponse response = headImpl(reqlog, uri, transaction, makeDocumentResource(makeDocumentParams(uri,
+				null, transaction, null)));
 		
 		// 404
 		if (response == null) return null;
@@ -1041,7 +1044,7 @@ public class JerseyServices implements RESTServices {
 
 		response.close();
 		logRequest(reqlog, "checked %s document from %s transaction", uri,
-				(transactionId != null) ? transactionId : "no");
+				(transaction != null) ? transaction.getTransactionId() : "no");
 
 		DocumentDescriptorImpl desc = new DocumentDescriptorImpl(uri, false);
 
@@ -1058,16 +1061,17 @@ public class JerseyServices implements RESTServices {
 	}
 	
 	public ClientResponse headImpl(RequestLogger reqlog, String uri,
-			String transactionId, WebResource webResource) {
+			Transaction transaction, WebResource webResource) {
 		if (uri == null)
 			throw new IllegalArgumentException(
 					"Existence check for document identifier without uri");
 
 		if (logger.isDebugEnabled())
 			logger.debug("Requesting head for {} in transaction {}", uri,
-					transactionId);
+					getTransactionId(transaction));
 
 		WebResource.Builder builder = webResource.getRequestBuilder();
+		addHostCookie(builder, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -1126,7 +1130,7 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public void putDocument(RequestLogger reqlog, DocumentDescriptor desc,
-			String transactionId, Set<Metadata> categories,
+			Transaction transaction, Set<Metadata> categories,
 			RequestParameters extraParams,
 			DocumentMetadataWriteHandle metadataHandle,
 			AbstractWriteHandle contentHandle)
@@ -1159,21 +1163,21 @@ public class JerseyServices implements RESTServices {
 		}
 
 		if (metadataBase != null && contentBase != null) {
-			putPostDocumentImpl(reqlog, "put", desc, transactionId, categories,
+			putPostDocumentImpl(reqlog, "put", desc, transaction, categories,
 					extraParams, metadataMimetype, metadataHandle,
 					contentMimetype, contentHandle);
 		} else if (metadataBase != null) {
-			putPostDocumentImpl(reqlog, "put", desc, transactionId, categories, false,
+			putPostDocumentImpl(reqlog, "put", desc, transaction, categories, false,
 					extraParams, metadataMimetype, metadataHandle);
 		} else if (contentBase != null) {
-			putPostDocumentImpl(reqlog, "put", desc, transactionId, null, true, 
+			putPostDocumentImpl(reqlog, "put", desc, transaction, null, true, 
 					extraParams, contentMimetype, contentHandle);
 		}
 	}
 
 	@Override
 	public DocumentDescriptor postDocument(RequestLogger reqlog, DocumentUriTemplate template,
-			String transactionId, Set<Metadata> categories, RequestParameters extraParams,
+			Transaction transaction, Set<Metadata> categories, RequestParameters extraParams,
 			DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		DocumentDescriptorImpl desc = new DocumentDescriptorImpl(false);
@@ -1215,10 +1219,10 @@ public class JerseyServices implements RESTServices {
 			extraParams.add("directory", directory);
 
 		if (metadataBase != null && contentBase != null) {
-			putPostDocumentImpl(reqlog, "post", desc, transactionId, categories, extraParams,
+			putPostDocumentImpl(reqlog, "post", desc, transaction, categories, extraParams,
 					metadataMimetype, metadataHandle, contentMimetype, contentHandle);
 		} else if (contentBase != null) {
-			putPostDocumentImpl(reqlog, "post", desc, transactionId, null, true, extraParams,
+			putPostDocumentImpl(reqlog, "post", desc, transaction, null, true, extraParams,
 					contentMimetype, contentHandle);
 		}
 
@@ -1226,7 +1230,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	private void putPostDocumentImpl(RequestLogger reqlog, String method, DocumentDescriptor desc,
-			String transactionId, Set<Metadata> categories, boolean isOnContent, RequestParameters extraParams,
+			Transaction transaction, Set<Metadata> categories, boolean isOnContent, RequestParameters extraParams,
 			String mimetype, AbstractWriteHandle handle)
 	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
@@ -1236,19 +1240,19 @@ public class JerseyServices implements RESTServices {
 
 		if (logger.isDebugEnabled())
 			logger.debug("Sending {} document in transaction {}",
-					(uri != null) ? uri : "new", transactionId);
+					(uri != null) ? uri : "new", getTransactionId(transaction));
 
 		logRequest(
 				reqlog,
 				"writing %s document from %s transaction with %s mime type and %s metadata categories",
 				(uri != null) ? uri : "new",
-				(transactionId != null) ? transactionId : "no",
+				(transaction != null) ? transaction.getTransactionId() : "no",
 				(mimetype != null) ? mimetype : "no",
 				stringJoin(categories, ", ", "no"));
 
 		WebResource webResource = makeDocumentResource(
 				makeDocumentParams(
-						uri, categories, transactionId, extraParams, isOnContent
+						uri, categories, transaction, extraParams, isOnContent
 						));
 
 		WebResource.Builder builder = webResource.type(
@@ -1387,7 +1391,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	private void putPostDocumentImpl(RequestLogger reqlog, String method, DocumentDescriptor desc,
-			String transactionId, Set<Metadata> categories, RequestParameters extraParams,
+			Transaction transaction, Set<Metadata> categories, RequestParameters extraParams,
 			String metadataMimetype, DocumentMetadataWriteHandle metadataHandle, String contentMimetype,
 			AbstractWriteHandle contentHandle)
 	throws ResourceNotFoundException, ResourceNotResendableException,
@@ -1396,17 +1400,17 @@ public class JerseyServices implements RESTServices {
 
 		if (logger.isDebugEnabled())
 			logger.debug("Sending {} multipart document in transaction {}",
-					(uri != null) ? uri : "new", transactionId);
+					(uri != null) ? uri : "new", getTransactionId(transaction));
 
 		logRequest(
 				reqlog,
 				"writing %s document from %s transaction with %s metadata categories and content",
 				(uri != null) ? uri : "new",
-				(transactionId != null) ? transactionId : "no",
+				(transaction != null) ? transaction.getTransactionId() : "no",
 				stringJoin(categories, ", ", "no"));
 
 		MultivaluedMap<String, String> docParams =
-			makeDocumentParams(uri, categories, transactionId, extraParams, true);
+			makeDocumentParams(uri, categories, transaction, extraParams, true);
 
 		WebResource.Builder builder = makeDocumentResource(docParams).getRequestBuilder();
 		if (uri != null) {
@@ -1526,19 +1530,19 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public void patchDocument(RequestLogger reqlog, DocumentDescriptor desc, String transactionId,
+	public void patchDocument(RequestLogger reqlog, DocumentDescriptor desc, Transaction transaction,
 			Set<Metadata> categories, boolean isOnContent, DocumentPatchHandle patchHandle)
 	throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
 		HandleImplementation patchBase = HandleAccessor.checkHandle(
 				patchHandle, "patch");
 
-		putPostDocumentImpl(reqlog, "patch", desc, transactionId, categories, isOnContent, null,
+		putPostDocumentImpl(reqlog, "patch", desc, transaction, categories, isOnContent, null,
 				patchBase.getMimetype(), patchHandle);
 	}
 
 	@Override
-	public String openTransaction(String name, int timeLimit)
+	public Transaction openTransaction(String name, int timeLimit)
 			throws ForbiddenUserException, FailedRequestException {
 		if (logger.isDebugEnabled())
 			logger.debug("Opening transaction");
@@ -1605,6 +1609,13 @@ public class JerseyServices implements RESTServices {
 					+ status.getReasonPhrase(), extractErrorFields(response));
 
 		String location = response.getHeaders().getFirst("Location");
+		String hostId = null;
+		for ( NewCookie newCookie : response.getCookies() ) {
+			if ( "HostId".equalsIgnoreCase(newCookie.getName()) ) {
+				hostId =  newCookie.getValue();
+				break;
+			}
+		}
 		response.close();
 		if (location == null)
 			throw new MarkLogicInternalException(
@@ -1613,41 +1624,43 @@ public class JerseyServices implements RESTServices {
 			throw new MarkLogicInternalException(
 					"transaction open produced invalid location: " + location);
 
-		return location.substring(location.lastIndexOf("/") + 1);
+		String transactionId = location.substring(location.lastIndexOf("/") + 1);
+		return new TransactionImpl(this, transactionId, hostId);
 	}
 
 	@Override
-	public void commitTransaction(String transactionId)
+	public void commitTransaction(Transaction transaction)
 			throws ForbiddenUserException, FailedRequestException {
-		completeTransaction(transactionId, "commit");
+		completeTransaction(transaction, "commit");
 	}
 
 	@Override
-	public void rollbackTransaction(String transactionId)
+	public void rollbackTransaction(Transaction transaction)
 			throws ForbiddenUserException, FailedRequestException {
-		completeTransaction(transactionId, "rollback");
+		completeTransaction(transaction, "rollback");
 	}
 
-	private void completeTransaction(String transactionId, String result)
+	private void completeTransaction(Transaction transaction, String result)
 			throws ForbiddenUserException, FailedRequestException {
 		if (result == null)
 			throw new MarkLogicInternalException(
 					"transaction completion without operation");
-		if (transactionId == null)
+		if (transaction == null)
 			throw new MarkLogicInternalException(
 					"transaction completion without id: " + result);
 
 		if (logger.isDebugEnabled())
-			logger.debug("Completing transaction {} with {}", transactionId,
+			logger.debug("Completing transaction {} with {}", transaction.getTransactionId(),
 					result);
 
 		MultivaluedMap<String, String> transParams = new MultivaluedMapImpl();
 		transParams.add("result", result);
 
-		WebResource webResource = getConnection().path("transactions/" + transactionId)
+		WebResource webResource = getConnection().path("transactions/" + transaction.getTransactionId())
 				.queryParams(transParams);
 
 		WebResource.Builder builder = webResource.getRequestBuilder();
+		addHostCookie(builder, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -1733,14 +1746,14 @@ public class JerseyServices implements RESTServices {
 	}
 
 	private MultivaluedMap<String, String> makeDocumentParams(String uri,
-			Set<Metadata> categories, String transactionId,
+			Set<Metadata> categories, Transaction transaction,
 			RequestParameters extraParams) {
-		return makeDocumentParams(uri, categories, transactionId, extraParams,
+		return makeDocumentParams(uri, categories, transaction, extraParams,
 				false);
 	}
 
 	private MultivaluedMap<String, String> makeDocumentParams(String uri,
-			Set<Metadata> categories, String transactionId,
+			Set<Metadata> categories, Transaction transaction,
 			RequestParameters extraParams, boolean withContent) {
 		MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
 		if (extraParams != null && extraParams.size() > 0) {
@@ -1767,8 +1780,8 @@ public class JerseyServices implements RESTServices {
 					docParams.add("category", category.name().toLowerCase());
 			}
 		}
-		if (transactionId != null) {
-			docParams.add("txid", transactionId);
+		if (transaction != null) {
+			docParams.add("txid", transaction.getTransactionId());
 		}
 		return docParams;
 	}
@@ -1928,7 +1941,7 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public <T> T search(RequestLogger reqlog, Class<T> as, QueryDefinition queryDef, String mimetype,
-			long start, long len, QueryView view, String transactionId
+			long start, long len, QueryView view, Transaction transaction
 	) throws ForbiddenUserException, FailedRequestException {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
@@ -1938,10 +1951,6 @@ public class JerseyServices implements RESTServices {
 
 		if (len > 0) {
 			params.add("pageLength", Long.toString(len));
-		}
-
-		if (transactionId != null) {
-			params.add("txid", transactionId);
 		}
 
 		if (view != null && view != QueryView.DEFAULT) {
@@ -1956,12 +1965,12 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 
-		T entity = search(reqlog, as, queryDef, mimetype, params);
+		T entity = search(reqlog, as, queryDef, mimetype, transaction, params);
 
 		logRequest(
 				reqlog,
 				"searched starting at %s with length %s in %s transaction with %s mime type",
-				start, len, transactionId, mimetype);
+				start, len, getTransactionId(transaction), mimetype);
 		
 		return entity;
 	}
@@ -1975,13 +1984,13 @@ public class JerseyServices implements RESTServices {
 			params.add("view", view);
 		}
 
-		return search(reqlog, as, queryDef, mimetype, params);
+		return search(reqlog, as, queryDef, mimetype, null, params);
 	}
 	private <T> T search(RequestLogger reqlog, Class<T> as, QueryDefinition queryDef, String mimetype,
-			MultivaluedMap<String, String> params
+			 Transaction transaction, MultivaluedMap<String, String> params
 	) throws ForbiddenUserException, FailedRequestException {
 
-        JerseySearchRequest request = generateSearchRequest(reqlog, queryDef, mimetype, params);
+        JerseySearchRequest request = generateSearchRequest(reqlog, queryDef, mimetype, transaction, params);
 
         ClientResponse response = request.getResponse();		
         if ( response == null ) return null;
@@ -1994,12 +2003,12 @@ public class JerseyServices implements RESTServices {
 	}
 
     private JerseySearchRequest generateSearchRequest(RequestLogger reqlog, QueryDefinition queryDef, 
-            String mimetype, MultivaluedMap<String, String> params) {
+            String mimetype, Transaction transaction, MultivaluedMap<String, String> params) {
         if ( database != null ) {
             if ( params == null ) params = new MultivaluedMapImpl();
             addEncodedParam(params, "database", database);
         }
-        return new JerseySearchRequest(reqlog, queryDef, mimetype, params);
+        return new JerseySearchRequest(reqlog, queryDef, mimetype, transaction, params);
     }
 
     private class JerseySearchRequest {
@@ -2007,16 +2016,18 @@ public class JerseyServices implements RESTServices {
         QueryDefinition queryDef;
         String mimetype;
         MultivaluedMap<String, String> params;
+        Transaction transaction;
 
 		WebResource.Builder builder = null;
 		String structure = null;
 		HandleImplementation baseHandle = null;
 
         JerseySearchRequest(RequestLogger reqlog, QueryDefinition queryDef, String mimetype, 
-                MultivaluedMap<String, String> params) {
+                Transaction transaction, MultivaluedMap<String, String> params) {
             this.reqlog = reqlog;
             this.queryDef = queryDef;
             this.mimetype = mimetype;
+            this.transaction = transaction;
             this.params = params != null ? params : new MultivaluedMapImpl();
             addParams();
             init();
@@ -2038,6 +2049,10 @@ public class JerseyServices implements RESTServices {
             ServerTransform transform = queryDef.getResponseTransform();
             if (transform != null) {
                 transform.merge(params);
+            }
+
+            if (transaction != null) {
+                params.add("txid", transaction.getTransactionId());
             }
         }
 
@@ -2132,6 +2147,7 @@ public class JerseyServices implements RESTServices {
                         + queryDef.getClass().getName());
             }
 
+            addHostCookie(builder, transaction);
         }
 
         ClientResponse getResponse() {
@@ -2207,7 +2223,7 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public void deleteSearch(RequestLogger reqlog, DeleteQueryDefinition queryDef,
-			String transactionId) throws ForbiddenUserException,
+			Transaction transaction) throws ForbiddenUserException,
 			FailedRequestException {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
@@ -2217,8 +2233,8 @@ public class JerseyServices implements RESTServices {
 
 		addEncodedParam(params, "collection", queryDef.getCollections());
 
-		if (transactionId != null) {
-			params.add("txid", transactionId);
+		if (transaction != null) {
+			params.add("txid", transaction.getTransactionId());
 		}
 		if ( database != null ) {
 			addEncodedParam(params, "database", database);
@@ -2227,6 +2243,7 @@ public class JerseyServices implements RESTServices {
 		WebResource webResource = getConnection().path("search").queryParams(params);
 
 		WebResource.Builder builder = webResource.getRequestBuilder();
+		addHostCookie(builder, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -2275,16 +2292,27 @@ public class JerseyServices implements RESTServices {
 			throw new FailedRequestException("delete failed: "
 					+ status.getReasonPhrase(), extractErrorFields(response));
 		}
-		
+
+		response.close();
+
 		logRequest(
 				reqlog,
 				"deleted search results in %s transaction",
-				transactionId);
+				getTransactionId(transaction));
+	}
+
+	@Override
+	public void delete(RequestLogger logger, Transaction transaction, String... uris)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		addEncodedParam(((RequestParametersImplementation) params).getMapImpl(), "uri", uris);
+		deleteResource(logger, "documents", transaction, params, null);
 	}
 
 	@Override
 	public <T> T values(Class<T> as, ValuesDefinition valDef, String mimetype,
-		long start, long pageLength, String transactionId
+		long start, long pageLength, Transaction transaction
 	) throws ForbiddenUserException, FailedRequestException {
 		MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
 
@@ -2380,8 +2408,8 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 
-		if (transactionId != null) {
-			docParams.add("txid", transactionId);
+		if (transaction != null) {
+			docParams.add("txid", transaction.getTransactionId());
 		}
 
 		String uri = "values";
@@ -2390,6 +2418,7 @@ public class JerseyServices implements RESTServices {
 		}
 
 		WebResource.Builder builder = getConnection().path(uri).queryParams(docParams).accept(mimetype);
+		addHostCookie(builder, transaction);
 
 
 		ClientResponse response = null;
@@ -2452,7 +2481,7 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public <T> T valuesList(Class<T> as, ValuesListDefinition valDef,
-			String mimetype, String transactionId)
+			String mimetype, Transaction transaction)
 			throws ForbiddenUserException, FailedRequestException {
 		MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
 
@@ -2461,14 +2490,15 @@ public class JerseyServices implements RESTServices {
 			addEncodedParam(docParams, "options", optionsName);
 		}
 
-		if (transactionId != null) {
-			docParams.add("txid", transactionId);
+		if (transaction != null) {
+			docParams.add("txid", transaction.getTransactionId());
 		}
 
 		String uri = "values";
 
 		WebResource.Builder builder = getConnection().path(uri)
 				.queryParams(docParams).accept(mimetype);
+		addHostCookie(builder, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -2525,18 +2555,19 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public <T> T optionsList(Class<T> as, String mimetype, String transactionId)
+	public <T> T optionsList(Class<T> as, String mimetype, Transaction transaction)
 			throws ForbiddenUserException, FailedRequestException {
 		MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
 
-		if (transactionId != null) {
-			docParams.add("txid", transactionId);
+		if (transaction != null) {
+			docParams.add("txid", transaction.getTransactionId());
 		}
 
 		String uri = "config/query";
 
 		WebResource.Builder builder = getConnection().path(uri)
 				.queryParams(docParams).accept(mimetype);
+		addHostCookie(builder, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -3052,9 +3083,10 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public <R extends AbstractReadHandle> R getResource(RequestLogger reqlog,
-			String path, RequestParameters params, R output)
+			String path, Transaction transaction, RequestParameters params, R output)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
+		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
 				"read");
 
@@ -3062,6 +3094,7 @@ public class JerseyServices implements RESTServices {
 		Class as = outputBase.receiveAs();
 
 		WebResource.Builder builder = makeGetBuilder(path, params, mimetype);
+		addHostCookie(builder, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -3116,18 +3149,20 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public ServiceResultIterator getIteratedResource(RequestLogger reqlog,
-			String path, RequestParameters params, String... mimetypes)
+			String path, Transaction transaction, RequestParameters params, String... mimetypes)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
-		return getIteratedResourceImpl(JerseyServiceResultIterator.class, reqlog, path, params, mimetypes);
+		return getIteratedResourceImpl(JerseyServiceResultIterator.class, reqlog, path, transaction, params, mimetypes);
 	}
 
 	private <U extends JerseyResultIterator> U getIteratedResourceImpl(Class<U> clazz, RequestLogger reqlog,
-			String path, RequestParameters params, String... mimetypes)
+			String path, Transaction transaction, RequestParameters params, String... mimetypes)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
+		if (transaction != null) params.add("txid", transaction.getTransactionId());
 
 		WebResource.Builder builder = makeGetBuilder(path, params, null);
+		addHostCookie(builder, transaction);
 
 		MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
 
@@ -3178,10 +3213,11 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public <R extends AbstractReadHandle> R putResource(RequestLogger reqlog,
-			String path, RequestParameters params, AbstractWriteHandle input,
+			String path, Transaction transaction, RequestParameters params, AbstractWriteHandle input,
 			R output) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
+		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 		HandleImplementation inputBase = HandleAccessor.checkHandle(input,
 				"write");
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
@@ -3198,6 +3234,7 @@ public class JerseyServices implements RESTServices {
 		}
 		WebResource.Builder builder = makePutBuilder(path, params,
 				inputMimetype, outputMimeType);
+		addHostCookie(builder, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -3259,13 +3296,14 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R putResource(
-			RequestLogger reqlog, String path, RequestParameters params,
+			RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
 			W[] input, R output) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
 		if (input == null || input.length == 0)
 			throw new IllegalArgumentException(
 					"input not specified for multipart");
+		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
 				"read");
@@ -3291,6 +3329,7 @@ public class JerseyServices implements RESTServices {
 
 			WebResource.Builder builder = makePutBuilder(path, params,
 					multiPart, outputMimetype);
+			addHostCookie(builder, transaction);
 
 			response = doPut(builder, multiPart, hasStreamingPart);
 			status = response.getClientResponseStatus();
@@ -3337,8 +3376,8 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public <R extends AbstractReadHandle> R postResource(RequestLogger reqlog,
-			String path, RequestParameters params, AbstractWriteHandle input,
-			R output) throws ResourceNotFoundException,
+			String path, Transaction transaction, RequestParameters params,
+			AbstractWriteHandle input, R output) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
 		HandleImplementation inputBase = HandleAccessor.checkHandle(input,
@@ -3353,6 +3392,7 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = makePostBuilder(path, params,
 				inputMimetype, outputMimetype);
+		addHostCookie(builder, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -3414,16 +3454,16 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R postResource(
-			RequestLogger reqlog, String path, RequestParameters params,
+			RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
 			W[] input, R output) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
-		return postResource(reqlog, path, params, input, null, output);
+		return postResource(reqlog, path, transaction, params, input, null, output);
 	}
 
 	@Override
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R postResource(
-			RequestLogger reqlog, String path, RequestParameters params,
+			RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
 			W[] input, Map<String, List<String>>[] headers, R output) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
@@ -3450,6 +3490,7 @@ public class JerseyServices implements RESTServices {
 
 			WebResource.Builder builder = makePostBuilder(path, params,
 					multiPart, outputMimetype);
+			addHostCookie(builder, transaction);
 
 			response = doPost(builder, multiPart, hasStreamingPart);
 			status = response.getClientResponseStatus();
@@ -3497,16 +3538,16 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public void postBulkDocuments(
 			RequestLogger reqlog, DocumentWriteSet writeSet,
-			ServerTransform transform, Format defaultFormat, String transactionId)
+			ServerTransform transform, Format defaultFormat, Transaction transaction)
 		throws ForbiddenUserException,  FailedRequestException
 	{
-		postBulkDocuments(reqlog, writeSet, transform, transactionId, defaultFormat, null);
+		postBulkDocuments(reqlog, writeSet, transform, transaction, defaultFormat, null);
 	}
 
 	@Override
 	public <R extends AbstractReadHandle> R postBulkDocuments(
 			RequestLogger reqlog, DocumentWriteSet writeSet,
-			ServerTransform transform, String transactionId, Format defaultFormat, R output)
+			ServerTransform transform, Transaction transaction, Format defaultFormat, R output)
 		throws ForbiddenUserException,  FailedRequestException
 	{
 		ArrayList<AbstractWriteHandle> writeHandles = new ArrayList<AbstractWriteHandle>();
@@ -3562,10 +3603,11 @@ public class JerseyServices implements RESTServices {
 		if (transform != null) {
 			transform.merge(params);
 		}
-		if ( transactionId != null ) params.add("txid", transactionId);
+		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 		return postResource(
 			reqlog,
 			"documents",
+			transaction,
 			params, 
 			(AbstractWriteHandle[]) writeHandles.toArray(new AbstractWriteHandle[0]),
 			(Map<String, List<String>>[]) headerList.toArray(new HashMap[0]),
@@ -3740,9 +3782,10 @@ public class JerseyServices implements RESTServices {
 			RequestLogger reqlog, String code, String modulePath, 
 			ServerEvaluationCallImpl.Context context,
 			Map<String, Object> variables, EditableNamespaceContext namespaces,
-			String transactionId)
-			throws ResourceNotFoundException, ResourceNotResendableException,
-			ForbiddenUserException, FailedRequestException {
+			Transaction transaction)
+		throws ResourceNotFoundException, ResourceNotResendableException,
+			ForbiddenUserException, FailedRequestException
+	{
 		String formUrlEncodedPayload;
 		String path;
 		RequestParameters params = new RequestParameters();
@@ -3805,29 +3848,29 @@ public class JerseyServices implements RESTServices {
 		} catch (IOException e) {
 			throw new MarkLogicIOException(e);
 		}
-		if ( transactionId != null ) params.add("txid", transactionId);
 		StringHandle input = new StringHandle(formUrlEncodedPayload)
 			.withMimetype("application/x-www-form-urlencoded");
 		return new JerseyEvalResultIterator( postIteratedResourceImpl(DefaultJerseyResultIterator.class,
-			reqlog, path, params, input) );
+			reqlog, path, transaction, params, input) );
 	}
 
 	@Override
 	public ServiceResultIterator postIteratedResource(RequestLogger reqlog,
-			String path, RequestParameters params, AbstractWriteHandle input,
+			String path, Transaction transaction, RequestParameters params, AbstractWriteHandle input,
 			String... outputMimetypes) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
 		return postIteratedResourceImpl(JerseyServiceResultIterator.class,
-			reqlog, path, params, input, outputMimetypes);
+			reqlog, path, transaction, params, input, outputMimetypes);
 	}
 
 	private <U extends JerseyResultIterator> U postIteratedResourceImpl(
 			Class<U> clazz, RequestLogger reqlog,
-			String path, RequestParameters params, AbstractWriteHandle input,
-			String... outputMimetypes) throws ResourceNotFoundException,
+			String path, Transaction transaction, RequestParameters params,
+			AbstractWriteHandle input, String... outputMimetypes) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
+		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 		HandleImplementation inputBase = HandleAccessor.checkHandle(input,
 				"write");
 
@@ -3835,6 +3878,7 @@ public class JerseyServices implements RESTServices {
 		boolean isResendable = inputBase.isResendable();
 
 		WebResource.Builder builder = makePostBuilder(path, params, inputMimetype, null);
+		addHostCookie(builder, transaction);
 
 		MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
 
@@ -3892,19 +3936,20 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public <W extends AbstractWriteHandle> ServiceResultIterator postIteratedResource(
-			RequestLogger reqlog, String path, RequestParameters params,
+			RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
 			W[] input, String... outputMimetypes)
 			throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
 		return postIteratedResourceImpl(JerseyServiceResultIterator.class,
-			reqlog, path, params, input, outputMimetypes);
+			reqlog, path, transaction, params, input, outputMimetypes);
 	}
 
 	private <W extends AbstractWriteHandle, U extends JerseyResultIterator> U postIteratedResourceImpl(
-			Class<U> clazz, RequestLogger reqlog, String path, RequestParameters params,
-			W[] input, String... outputMimetypes)
+			Class<U> clazz, RequestLogger reqlog, String path, Transaction transaction,
+			RequestParameters params, W[] input, String... outputMimetypes)
 			throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
+		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
 		long startTime = System.currentTimeMillis();
@@ -3926,6 +3971,7 @@ public class JerseyServices implements RESTServices {
 					params,
 					multiPart,
 					Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
+			addHostCookie(builder, transaction);
 
 			response = doPost(builder, multiPart, hasStreamingPart);
 			status = response.getClientResponseStatus();
@@ -3965,9 +4011,10 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public <R extends AbstractReadHandle> R deleteResource(
-			RequestLogger reqlog, String path, RequestParameters params,
+			RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
 			R output) throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
+		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
 				"read");
 
@@ -3979,6 +4026,7 @@ public class JerseyServices implements RESTServices {
 		}
 		WebResource.Builder builder = makeDeleteBuilder(reqlog, path, params,
 				outputMimeType);
+		addHostCookie(builder, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -4297,6 +4345,16 @@ public class JerseyServices implements RESTServices {
 				.replace("+", "%20");
 	}
 
+	private void addHostCookie(WebResource.Builder builder, Transaction transaction) {
+		if (transaction != null) {
+			if ( builder != null ) {
+				builder.cookie(new Cookie("HostId", transaction.getHostId()));
+			} else {
+				throw new MarkLogicInternalException("no builder available to set 'HostId' cookie");
+			}
+		}
+	}
+
 	private <W extends AbstractWriteHandle> boolean addParts(
 			MultiPart multiPart, RequestLogger reqlog, W[] input) {
 		return addParts(multiPart, reqlog, null, input, null);
@@ -4405,15 +4463,20 @@ public class JerseyServices implements RESTServices {
 			ClientResponse.Status status, String operation, String entityType,
 			String path, ResponseStatus expected) {
 		if (!expected.isExpected(status)) {
+			FailedRequest failure = extractErrorFields(response);
 			if (status == ClientResponse.Status.NOT_FOUND) {
 				throw new ResourceNotFoundException("Could not " + operation
 						+ " " + entityType + " at " + path,
-						extractErrorFields(response));
+						failure);
 			}
 			if (status == ClientResponse.Status.FORBIDDEN) {
+				if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
+					throw new FailedRequestException("Content version required to " +
+						operation + " " + entityType + " at " + path, failure);
+				}
 				throw new ForbiddenUserException("User is not allowed to "
 						+ operation + " " + entityType + " at " + path,
-						extractErrorFields(response));
+						failure);
 			}
 			throw new FailedRequestException("failed to " + operation + " "
 					+ entityType + " at " + path + ": "
@@ -5170,4 +5233,8 @@ public class JerseyServices implements RESTServices {
 		return entity;
 	}
 
+	private String getTransactionId(Transaction transaction) {
+		if ( transaction == null ) return null;
+		return transaction.getTransactionId();
+	}
 }

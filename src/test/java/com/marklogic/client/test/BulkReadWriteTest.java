@@ -256,7 +256,6 @@ public class BulkReadWriteTest {
         }
     }
 
-    //public void testMixedLoad() {
     @Test
     public void testD_JsonLoad() {
         JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
@@ -342,7 +341,7 @@ public class BulkReadWriteTest {
     }
 
     @Test
-    public void testF_DefaultMetadata() {
+    public void testF_DefaultMetadata() throws Throwable {
         // Synthesize input content
         StringHandle doc1 = new StringHandle(
                 "{\"number\": 1}").withFormat(Format.JSON);
@@ -451,6 +450,23 @@ public class BulkReadWriteTest {
             }
         } finally {
             documents.close();
+        }
+        String[] uris = new String[] { "doc1.json", "doc2.json", "doc3.json", "doc4.json", "doc5.json",
+            "doc6.json", "doc7.json", "doc8.json"};
+        Transaction t1 = Common.client.openTransaction();
+        try {
+            // delete from within the transaction
+            jdm.delete(t1, uris);
+            // read from outside any transaction (the docs are still there)
+            documents = jdm.read(uris);
+            documents.close();
+            assertEquals(8, documents.size());
+            // read from inside the transaction (the docs are gone)
+            documents = jdm.read(t1, uris);
+            documents.close();
+            assertEquals(0, documents.size());
+        } finally {
+            t1.commit();
         }
     }
 
@@ -712,9 +728,5 @@ public class BulkReadWriteTest {
         DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
         deleteQuery.setDirectory("/cities/");
         queryMgr.delete(deleteQuery);
-        JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
-        for ( int i=1; i <= 8; i++ ) {
-            docMgr.delete("doc" + i + ".json");
-        }
     }
 }

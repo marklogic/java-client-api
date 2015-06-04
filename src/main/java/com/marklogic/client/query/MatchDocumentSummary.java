@@ -44,6 +44,7 @@ public interface MatchDocumentSummary {
      */
     public double getConfidence();
 
+    public ExtractedResult getExtracted();
     /**
      * Returns the fitness of the document.
      * @return The fitness.

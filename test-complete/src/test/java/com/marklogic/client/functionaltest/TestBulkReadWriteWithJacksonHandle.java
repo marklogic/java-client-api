@@ -249,7 +249,8 @@ public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 		docMgr.write(writeset);
 
 		DocumentPage page = docMgr.read(docId);
-
+		// Issue #294 DocumentPage.size() should return correct size
+		assertTrue("DocumentPage Size did not return expected value:: returned==  "+page.size(), page.size() == 3 );
 		while(page.hasNext()){
 			DocumentRecord rec = page.next();
 			docMgr.readMetadata(rec.getUri(), mh);

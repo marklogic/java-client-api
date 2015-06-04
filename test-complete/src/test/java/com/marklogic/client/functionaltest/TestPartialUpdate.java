@@ -109,7 +109,40 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		System.out.println(content);
 
 		assertTrue("fragment is not inserted", content.contains("<modified>2013-03-21</modified></root>"));
+		
+		// Check boolean replaces with XML documents.
+		String xmlDocId = "/replaceBoolXml";
+		
+		String xmlStr1 = new String("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+		String xmlStr2 = new String("<resources><screen name=\"screen_small\">true</screen><screen name=\"adjust_view_bounds\">false</screen></resources>");
+		StringBuffer xmlStrbuf = new StringBuffer().append(xmlStr1).append(xmlStr2);
+		
+		StringHandle contentHandle = new StringHandle();
+		contentHandle.set(xmlStrbuf.toString());
 
+        // write the document content
+        docMgr.write(xmlDocId, contentHandle);
+
+        // Read it back to make sure the write worked.
+        String contentXml = docMgr.read(xmlDocId, new StringHandle()).get();
+
+		assertTrue("XML Replace fragment is not inserted", contentXml.contains(xmlStr2));
+		
+		DocumentPatchBuilder patchBldrBool = docMgr.newPatchBuilder();
+		patchBldrBool.pathLanguage(PathLanguage.XPATH);
+		
+		// Flip the boolean values for both screen types
+		patchBldrBool.replaceValue("/resources/screen[@name=\"screen_small\"]", false);
+		patchBldrBool.replaceValue("/resources/screen[@name=\"adjust_view_bounds\"]", new Boolean(true));
+		
+		DocumentPatchHandle patchHandleBool = patchBldrBool.build();
+		docMgr.patch(xmlDocId, patchHandleBool);
+
+		String content1 = docMgr.read(xmlDocId, new StringHandle()).get();
+		System.out.println(content1);
+		String xmlStr2Mod = new String("<resources><screen name=\"screen_small\">false</screen><screen name=\"adjust_view_bounds\">true</screen></resources>");
+		
+		assertTrue("XML fragment is not replaced", content1.contains(xmlStr2Mod));
 		// release client
 		client.release();		
 	}
@@ -157,13 +190,24 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
 		patchBldr.pathLanguage(PathLanguage.JSONPATH);
+		
 		ObjectNode fragmentNode = mapper.createObjectNode();
-		fragmentNode = mapper.createObjectNode();
+		ObjectNode fragmentNode1 = mapper.createObjectNode();
+		ObjectNode fragmentNode2 = mapper.createObjectNode();
+						
 		fragmentNode.put("insertedKey", 9);
+		fragmentNode1.put("original", true);
+		fragmentNode2.put("modified", false);
+		
 		String fragment = mapper.writeValueAsString(fragmentNode);
+		String fragment1 = mapper.writeValueAsString(fragmentNode1);
+		String fragment2 = mapper.writeValueAsString(fragmentNode2);
 		
 		String jsonpath = new String("$.employees[2]"); 
 		patchBldr.insertFragment(jsonpath, Position.AFTER, fragment);
+		patchBldr.insertFragment("$.employees[2]", Position.AFTER, fragment1);
+		patchBldr.insertFragment("$.employees[0]", Position.AFTER, fragment2);
+		
 		DocumentPatchHandle patchHandle = patchBldr.build();
 		docMgr.patch(docId, patchHandle);
 
@@ -171,8 +215,28 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		System.out.println(content);
 
-		assertTrue("fragment is not inserted", content.contains("{\"insertedKey\":9}]"));
+		assertTrue("fragment is not inserted", content.contains("{\"insertedKey\":9}"));
+		assertTrue("Original fragment is not inserted or incorrect", content.contains("{\"original\":true}"));
+		assertTrue("Modified fragment is not inserted or incorrect", content.contains("{\"modified\":false}"));
+		
+		// Test for replaceValue with booleans.
+		DocumentPatchBuilder patchBldrBool = docMgr.newPatchBuilder();
+		patchBldrBool.pathLanguage(PathLanguage.JSONPATH);
+		
+		//Replace original to false and modified to true.
+		patchBldrBool.replaceValue("$.employees[5].original", false);
+		patchBldrBool.replaceValue("$.employees[1].modified", new Boolean(true));
 
+		DocumentPatchHandle patchHandleBool = patchBldrBool.build();
+		docMgr.patch(docId, patchHandleBool);
+
+		String content1 = docMgr.read(docId, new StringHandle()).get();
+
+		System.out.println(content1);
+		// Make sure the inserted content is present.
+		assertTrue("Original fragment is not replaced", content1.contains("{\"original\":false}"));
+		assertTrue("Modified fragment is not replaced", content1.contains("{\"modified\":true}"));
+		
 		// release client
 		client.release();		
 	}
@@ -1226,5 +1290,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		deleteRESTUser("eval-user");
+		deleteUserRole("test-eval");
 	}
 }

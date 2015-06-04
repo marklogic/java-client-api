@@ -21,32 +21,45 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.StringReader;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.TuplesHandle;
 import com.marklogic.client.io.ValuesHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.CountedDistinctValue;
+import com.marklogic.client.query.ExtractedItem;
+import com.marklogic.client.query.ExtractedResult;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.QueryManager;
@@ -81,6 +94,8 @@ public class RawQueryDefinitionTest {
 		Common.client.newServerConfigManager().setServerRequestLogging(true);
 		Common.release();
 		Common.connect();
+		JSONDocumentManager jsonDocMgr = Common.client.newJSONDocumentManager();
+		jsonDocMgr.write("/basic1.json", new FileHandle(new File("src/test/resources/basic1.json")));
 		// write three files for alert tests.
 		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 		docMgr.write("/alert/first.xml", new FileHandle(new File("src/test/resources/alertFirst.xml")));
@@ -96,6 +111,7 @@ public class RawQueryDefinitionTest {
 	String qtext1 = "<search:qtext>false</search:qtext>";
 	String qtext2 = "<search:qtext>favorited:true</search:qtext>";
 	String qtext3 = "<search:qtext>leaf3</search:qtext>";
+	String qtext4 = "<search:qtext>leaf3 OR jsonValue1</search:qtext>";
 
 	StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(null);
 
@@ -328,5 +344,213 @@ public class RawQueryDefinitionTest {
 				new TuplesHandle());
 		Tuple[] tuples = tuplesResults.getTuples();
 		assertNotNull(tuples);
+	}
+
+	@Test
+	public void testExtractDocumentData() throws Exception {
+		String options = 
+			"<search:options>" +
+				"<search:extract-document-data>" +
+					"<search:extract-path>/root/child</search:extract-path>" +
+					"<search:extract-path>/a/*</search:extract-path>" +
+				"</search:extract-document-data>" +
+			"</search:options>";
+		// test XML response with extracted XML and JSON matches
+		String combinedSearch = head + qtext4 + options + tail;
+		RawCombinedQueryDefinition rawCombinedQueryDefinition = 
+			queryMgr.newRawCombinedQueryDefinition(new StringHandle(combinedSearch).withMimetype("application/xml"));
+		SearchHandle results = queryMgr.search(rawCombinedQueryDefinition, new SearchHandle());
+		MatchDocumentSummary[] summaries = results.getMatchResults();
+		assertNotNull(summaries);
+		assertEquals(2, summaries.length);
+		for (MatchDocumentSummary summary : summaries) {
+			ExtractedResult extracted = summary.getExtracted();
+			if ( Format.XML == summary.getFormat() ) {
+				// we don't test for kind because it isn't sent in this case
+				assertEquals(3, extracted.size());
+				Document item1 = extracted.next().getAs(Document.class);
+				assertEquals("1", item1.getFirstChild().getAttributes().getNamedItem("id").getNodeValue());
+				Document item2 = extracted.next().getAs(Document.class);
+				assertEquals("2", item2.getFirstChild().getAttributes().getNamedItem("id").getNodeValue());
+				Document item3 = extracted.next().getAs(Document.class);
+				assertEquals("3", item3.getFirstChild().getAttributes().getNamedItem("id").getNodeValue());
+				continue;
+			} else if ( Format.JSON == summary.getFormat() ) {
+				// we don't test for kind because it isn't sent in this case
+				assertEquals(3, extracted.size());
+				for ( ExtractedItem item : extracted ) {
+					String stringJsonItem = item.getAs(String.class);
+					JsonNode nodeJsonItem = item.getAs(JsonNode.class);
+					if ( nodeJsonItem.has("b1") ) {
+						assertEquals("{\"b1\":{\"c\":\"jsonValue1\"}}", stringJsonItem);
+						continue;
+					} else if ( nodeJsonItem.has("b2") ) {
+						assertTrue(stringJsonItem.matches("\\{\"b2\":\"b2 val[12]\"}"));
+						continue;
+					}
+					fail("unexpected extracted item:" + stringJsonItem);
+				}
+				continue;
+			}
+			fail("unexpected search result:" + summary.getUri());
+		}
+
+		// test JSON response with extracted XML and JSON matches
+		JsonNode jsonResults = queryMgr.search(rawCombinedQueryDefinition, new JacksonHandle()).get();
+		JsonNode jsonSummaries = jsonResults.get("results");
+		assertNotNull(jsonSummaries);
+		assertEquals(2, jsonSummaries.size());
+		for (int i=0; i < jsonSummaries.size(); i++ ) {
+			JsonNode summary = jsonSummaries.get(i);
+			String format = summary.get("format").textValue();
+			String docPath = summary.get("path").textValue();
+			assertNotNull(docPath);
+			JsonNode extracted = summary.get("extracted");
+			if ( "xml".equals(format) ) {
+				if ( docPath.contains("/sample/first.xml") ) {
+					JsonNode extractedItems = extracted.path("content");
+					assertEquals(3, extractedItems.size());
+					assertEquals(3, extractedItems.size());
+					Document item1 = parseXml(extractedItems.get(0).textValue());
+					assertEquals("1", item1.getFirstChild().getAttributes().getNamedItem("id").getNodeValue());
+					Document item2 = parseXml(extractedItems.get(1).textValue());
+					assertEquals("2", item2.getFirstChild().getAttributes().getNamedItem("id").getNodeValue());
+					Document item3 = parseXml(extractedItems.get(2).textValue());
+					assertEquals("3", item3.getFirstChild().getAttributes().getNamedItem("id").getNodeValue());
+					continue;
+				}
+			} else if ( "json".equals(format) ) {
+				if ( docPath.contains("/basic1.json") ) {
+					JsonNode items = extracted.get("content");
+					assertNotNull(items);
+					assertEquals(3, items.size());
+					assertTrue(items.get(0).has("b1"));
+					assertTrue(items.get(1).has("b2"));
+					assertTrue(items.get(2).has("b2"));
+					continue;
+				}
+			}
+			fail("unexpected search result:" + summary);
+		}
+
+		// test XML response with full document XML and JSON matches
+		options = 
+			"<search:options>" +
+				"<search:extract-document-data selected=\"all\"/>" +
+			"</search:options>";
+		combinedSearch = head + qtext4 + options + tail;
+		rawCombinedQueryDefinition = 
+			queryMgr.newRawCombinedQueryDefinition(new StringHandle(combinedSearch).withMimetype("application/xml"));
+		results = queryMgr.search(rawCombinedQueryDefinition, new SearchHandle());
+		summaries = results.getMatchResults();
+		assertNotNull(summaries);
+		assertEquals(2, summaries.length);
+		for (MatchDocumentSummary summary : summaries) {
+			ExtractedResult extracted = summary.getExtracted();
+			if ( Format.XML == summary.getFormat() ) {
+				assertEquals("element", extracted.getKind());
+				assertEquals(1, extracted.size());
+				Document root = extracted.next().getAs(Document.class);
+				assertEquals("root", root.getFirstChild().getNodeName());
+				NodeList children = root.getFirstChild().getChildNodes();
+				assertEquals(3, children.getLength());
+				Node item1 = children.item(0);
+				assertEquals("1", item1.getAttributes().getNamedItem("id").getNodeValue());
+				Node item2 = children.item(1);
+				assertEquals("2", item2.getAttributes().getNamedItem("id").getNodeValue());
+				Node item3 = children.item(2);
+				assertEquals("3", item3.getAttributes().getNamedItem("id").getNodeValue());
+				continue;
+			} else if ( Format.JSON == summary.getFormat() ) {
+				assertEquals("object", extracted.getKind());
+				String jsonDocument = extracted.next().getAs(String.class);
+				assertEquals("{\"a\":{\"b1\":{\"c\":\"jsonValue1\"}, \"b2\":[\"b2 val1\", \"b2 val2\"]}}",
+					jsonDocument);
+				continue;
+			}
+			fail("unexpected search result:" + summary.getUri());
+		}
+
+		// test JSON response with full document XML matches
+		jsonResults = queryMgr.search(rawCombinedQueryDefinition, new JacksonHandle()).get();
+		jsonSummaries = jsonResults.get("results");
+		assertNotNull(jsonSummaries);
+		assertEquals(2, jsonSummaries.size());
+		for (int i=0; i < jsonSummaries.size(); i++ ) {
+			JsonNode summary = jsonSummaries.get(i);
+			String format = summary.get("format").textValue();
+			String docPath = summary.get("path").textValue();
+			assertNotNull(docPath);
+			JsonNode extracted = summary.get("extracted");
+			if ( "xml".equals(format) ) {
+				if ( docPath.contains("/sample/first.xml") ) {
+					assertEquals("fn:doc(\"/sample/first.xml\")", docPath);
+					JsonNode extractedItems = extracted.path("content");
+					assertEquals(1, extractedItems.size());
+					Document root = parseXml(extractedItems.get(0).textValue());
+					assertEquals("root", root.getFirstChild().getNodeName());
+					NodeList children = root.getFirstChild().getChildNodes();
+					assertEquals(3, children.getLength());
+					Node item1 = children.item(0);
+					assertEquals("1", item1.getAttributes().getNamedItem("id").getNodeValue());
+					Node item2 = children.item(1);
+					assertEquals("2", item2.getAttributes().getNamedItem("id").getNodeValue());
+					Node item3 = children.item(2);
+					assertEquals("3", item3.getAttributes().getNamedItem("id").getNodeValue());
+					continue;
+				}
+			} else if ( "json".equals(format) ) {
+				if ( docPath.contains("/basic1.json") ) {
+					assertEquals("fn:doc(\"/basic1.json\")", docPath);
+					assertEquals("object", extracted.get("kind").textValue());
+					JsonNode items = extracted.get("content");
+					assertNotNull(items);
+					assertEquals(1, items.size());
+					assertTrue(items.path(0).has("a"));
+					assertTrue(items.path(0).path("a").has("b1"));
+					assertTrue(items.path(0).path("a").path("b1").has("c"));
+					continue;
+				}
+			}
+			fail("unexpected search result:" + summary);
+		}
+
+		// test XML response with XML and JSON document matches with path that does not match
+		options = 
+			"<search:options>" +
+				"<search:extract-document-data>" +
+					"<search:extract-path>/somethingThatShouldNeverMatch</search:extract-path>" +
+				"</search:extract-document-data>" +
+			"</search:options>";
+		combinedSearch = head + qtext4 + options + tail;
+		rawCombinedQueryDefinition = 
+			queryMgr.newRawCombinedQueryDefinition(new StringHandle(combinedSearch).withMimetype("application/xml"));
+		results = queryMgr.search(rawCombinedQueryDefinition, new SearchHandle());
+		summaries = results.getMatchResults();
+		assertNotNull(summaries);
+		assertEquals(2, summaries.length);
+		for (MatchDocumentSummary summary : summaries) {
+			ExtractedResult extracted = summary.getExtracted();
+			assertTrue(extracted.isEmpty());
+		}
+
+		// test JSON response with XML and JSON document matches with path that does not match
+		jsonResults = queryMgr.search(rawCombinedQueryDefinition, new JacksonHandle()).get();
+		jsonSummaries = jsonResults.get("results");
+		assertNotNull(jsonSummaries);
+		assertEquals(2, jsonSummaries.size());
+		for (int i=0; i < jsonSummaries.size(); i++ ) {
+			JsonNode summary = jsonSummaries.get(i);
+			JsonNode extractedNone = summary.get("extracted-none");
+			assertNotNull(extractedNone);
+			assertEquals(0, extractedNone.size());
+		}
+	}
+
+	private static Document parseXml(String xml) throws Exception {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder = factory.newDocumentBuilder();
+		Document document = builder.parse(new InputSource(new StringReader(xml)));
+		return document;
 	}
 }

@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.io;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -41,13 +42,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.impl.HandleAccessor;
 import com.marklogic.client.impl.Utilities;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.SearchReadHandle;
+import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
+import com.marklogic.client.query.ExtractedItem;
+import com.marklogic.client.query.ExtractedResult;
 import com.marklogic.client.query.FacetHeatmapValue;
 import com.marklogic.client.query.FacetResult;
 import com.marklogic.client.query.FacetValue;
@@ -510,11 +519,13 @@ public class SearchHandle
         private Format format = null;
 
         private ArrayList<EventRange> snippetEvents;
+        private EventRange            extractedEvents;
         private EventRange            metadataEvents;
     	private EventRange            relevanceEvents;
     	private ArrayList<String>     similarUris;
+        private String                extractSelected;
 
-    	public MatchDocumentSummaryImpl(String uri, int score, double confidence, double fitness, String path, String mimeType, Format format) {
+        public MatchDocumentSummaryImpl(String uri, int score, double confidence, double fitness, String path, String mimeType, Format format, String extractSelected) {
             this.uri = uri;
             this.score = score;
             conf = confidence;
@@ -522,6 +533,7 @@ public class SearchHandle
             this.path = path;
             this.mimeType = mimeType;
             this.format = format;
+            this.extractSelected = extractSelected;
         }
 
         @Override
@@ -547,6 +559,90 @@ public class SearchHandle
         @Override
         public String getPath() {
             return path;
+        }
+
+        @Override
+        public ExtractedResult getExtracted() {
+            ExtractedResultImpl result = new ExtractedResultImpl();
+            populateExtractedResult( result, events, extractedEvents );
+            return result;
+        }
+
+        private void populateExtractedResult(ExtractedResultImpl result, List<XMLEvent> events, 
+            EventRange extractedEvents)
+        {
+            int start = extractedEvents.first;
+            int end   = extractedEvents.next;
+            StartElement element = events.get(start).asStartElement();
+            QName elementName = element.getName();
+            if ( "extracted-none".equals(elementName.getLocalPart()) ) {
+                result.isEmpty = true;
+            } else {
+                @SuppressWarnings("unchecked")
+                Iterator<Attribute> attributes = element.getAttributes();
+                while ( attributes.hasNext() ) {
+                    Attribute attr = attributes.next();
+                    String attrName = attr.getName().getLocalPart();
+                    if ( "kind".equals(attrName) ) {
+                        result.kind = attr.getValue();
+                    }
+                }
+                int startChildren = start + 1;
+                int endChildren = end - 1;
+                // now get the children (extracted items) as strings
+                EventRange extractedItemEvents = new EventRange(startChildren, endChildren);
+                if ( Format.XML == getFormat() ) {
+                    result.setItems( populateExtractedItems(getSlice(events, extractedItemEvents)) );
+                // if extractSelected is "include", this is not a root document node
+                } else if ( Format.JSON == getFormat() && "include".equals(extractSelected) ) {
+                    String json = events.get(startChildren).toString();
+                    try {
+                        JsonNode jsonArray = new ObjectMapper().readTree(json);
+                        ArrayList<String> items = new ArrayList<String>(jsonArray.size());
+                        for ( JsonNode item : jsonArray ) {
+                            items.add( item.toString() );
+                        }
+                        result.setItems( items );
+                    } catch (Throwable e) {
+                        throw new MarkLogicIOException("Cannot parse JSON '" + json + "' for " +
+                            getPath(), e);
+                    }
+                } else {
+                    ArrayList<String> items = new ArrayList<String>(1);
+                    items.add( events.get(startChildren).toString() );
+                    result.setItems( items );
+                }
+            }
+        }
+
+        private List<String> populateExtractedItems(List<XMLEvent> events) {
+            List<String> items = new ArrayList<String>();
+            List<XMLEvent> itemEvents = new ArrayList<XMLEvent>();
+            List<QName> startNames = new ArrayList<QName>();
+            for ( XMLEvent event : events ) {
+                itemEvents.add(event);
+                switch (event.getEventType()) {
+                    case XMLStreamConstants.START_ELEMENT: {
+                        startNames.add(event.asStartElement().getName());
+                        break;
+                    }
+                    case XMLStreamConstants.END_ELEMENT: {
+                        QName startName = startNames.remove(startNames.size() - 1);
+                        if (startNames.size() == 0 ) {
+                            if ( startName.equals(event.asEndElement().getName())) {
+                                items.add(Utilities.eventsToString(itemEvents));
+                                itemEvents = new ArrayList<XMLEvent>();
+                            } else {
+                                throw new IllegalStateException("Error parsing xml \"" +
+                                    Utilities.eventsToString(itemEvents) + "\", element " + startName +
+                                    " doesn't end as expected");
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+            return items;
         }
 
         @Override
@@ -967,6 +1063,7 @@ public class SearchHandle
 	    private LinkedHashMap<String, EventRange>  tempConstraints;
 
 	    private String tempSnippetType;
+	    private String tempExtractSelected;
 	    private ArrayList<String>      qtextList;
 
 	    private EventRange tempQueryEvents;
@@ -1040,6 +1137,7 @@ public class SearchHandle
 	    	}
 	        tempPageLength   = Integer.parseInt(getAttribute(element, "page-length"));
 	        tempStart        = Long.parseLong(getAttribute(element, "start"));
+	        tempExtractSelected = getAttribute(element, "selected");
 
 	        collectTop(reader, element);
 	    }
@@ -1080,7 +1178,7 @@ public class SearchHandle
 	        double fitness = Double.parseDouble(getAttribute(element, "fitness"));
 
 	        currSummary = new MatchDocumentSummaryImpl(
-		        	ruri, score, confidence, fitness, path, mimeType, format);
+				ruri, score, confidence, fitness, path, mimeType, format, tempExtractSelected);
 
 	        if (tempSummary == null) {
 	        	tempSummary = new ArrayList<MatchDocumentSummary>();
@@ -1092,6 +1190,8 @@ public class SearchHandle
 	    private void collectResult(XMLEventReader reader, StartElement element)
 	    throws XMLStreamException {
 	    	QName snippetName       = new QName(SEARCH_NS, "snippet");
+	    	QName extractedName     = new QName(SEARCH_NS, "extracted");
+	    	QName extractedNoneName = new QName(SEARCH_NS, "extracted-none");
 	    	QName metadataName      = new QName(SEARCH_NS, "metadata");
 	    	QName similarName       = new QName(SEARCH_NS, "similar");
 	    	QName relevanceInfoName = new QName(QUERY_NS,  "relevance-info");
@@ -1109,6 +1209,10 @@ public class SearchHandle
 	    			QName startName = startElement.getName();
 	    			if (snippetName.equals(startName)) {
 	    				handleSnippet(reader, startElement);
+	    			} else if (extractedName.equals(startName)) {
+	    				handleExtracted(reader, startElement);
+	    			} else if (extractedNoneName.equals(startName)) {
+	    				handleExtracted(reader, startElement);
 	    			} else if (metadataName.equals(startName)) {
 	    				handleMetadata(reader, startElement);
 	    			} else if (similarName.equals(startName)) {
@@ -1144,6 +1248,10 @@ public class SearchHandle
 				tempEvents.addAll(eventBuf);
 	    		addSnippet(new EventRange(first, tempEvents.size()));
     		}
+	    }
+	    private void handleExtracted(XMLEventReader reader, StartElement element)
+	    throws XMLStreamException {
+	    	currSummary.extractedEvents = consumeEvents(reader, element);
 	    }
 	    private void handleMetadata(XMLEventReader reader, StartElement element)
 	    throws XMLStreamException {
@@ -1486,4 +1594,76 @@ public class SearchHandle
 	    	return new EventRange(first, tempEvents.size());
 	    }
 	}
+
+    static private class ExtractedItemImpl implements ExtractedItem {
+        String item;
+
+        public ExtractedItemImpl(String item) {
+            this.item = item;
+        }
+
+        public <T extends StructureReadHandle> T get(T handle) {
+            HandleAccessor.receiveContent(handle, item);
+            return handle;
+        }
+        public <T> T getAs(Class<T> as) {
+            ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(as);
+            if ( readHandle == null ) return null;
+            HandleAccessor.receiveContent(readHandle, item);
+            return readHandle.get();
+        }
+    }
+
+    static private class ExtractedResultImpl implements ExtractedResult {
+        boolean isEmpty = false;
+        String kind;
+        private List<String> itemStrings;
+        private List<ExtractedItem> items;
+        private Iterator<ExtractedItem> internalIterator;
+
+        public boolean isEmpty() {
+            return isEmpty;
+        }
+        public String getKind() {
+            return kind;
+        }
+        public int size() {
+            if ( items == null ) return 0;
+            return items.size();
+        }
+
+        public Iterator<ExtractedItem> iterator() {
+            return items.iterator();
+        }
+
+        private void setItems(List<String> itemStrings) {
+            if ( itemStrings == null ) return;
+            this.itemStrings = itemStrings;
+            items = new ArrayList<ExtractedItem>(itemStrings.size());
+            for ( String itemString : itemStrings ) {
+                items.add( new ExtractedItemImpl(itemString) );
+            }
+            internalIterator = items.iterator();
+        }
+
+        public boolean hasNext() {
+            return internalIterator.hasNext();
+        }
+
+        public ExtractedItem next() {
+            return internalIterator.next();
+        }
+
+        public String toString() {
+            StringBuffer sb = new StringBuffer();
+            sb.append("ExtractedResult: ");
+            sb.append(isEmpty == true ? "isEmpty:[true] " : "");
+            sb.append(kind != null ? "kind:[" + kind + "] " : "");
+            for ( int i=1; i <= itemStrings.size(); i++ ) {
+                String item = itemStrings.get(i - 1);
+                sb.append("item_" + i + ":[" + item + "] ");
+            }
+            return sb.toString();
+        }
+    };
 }

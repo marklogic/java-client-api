@@ -51,7 +51,7 @@ class ResourceServicesImpl
 	@Override
 	public <R extends AbstractReadHandle> R get(RequestParameters params, Transaction transaction, R output) {
 		return services.getResource(requestLogger, getResourcePath(), 
-				prepareParams(params, transaction), output);
+				transaction, prepareParams(params), output);
 	}
 	@Override
 	public ServiceResultIterator get(RequestParameters params, String... outputMimetypes) {
@@ -60,7 +60,7 @@ class ResourceServicesImpl
 	@Override
 	public ServiceResultIterator get(RequestParameters params, Transaction transaction, String... outputMimetypes) {
 		return services.getIteratedResource(requestLogger, getResourcePath(), 
-				prepareParams(params, transaction), outputMimetypes);
+				transaction, prepareParams(params), outputMimetypes);
 	}
 
 	@Override
@@ -70,7 +70,7 @@ class ResourceServicesImpl
 	@Override
 	public <R extends AbstractReadHandle> R put(RequestParameters params, AbstractWriteHandle input, Transaction transaction, R output) {
 		return services.putResource(requestLogger, getResourcePath(), 
-				prepareParams(params, transaction), input, output);
+				transaction, prepareParams(params), input, output);
 	}
 	@Override
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R put(RequestParameters params, W[] input, R output) {
@@ -79,7 +79,7 @@ class ResourceServicesImpl
 	@Override
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R put(RequestParameters params, W[] input, Transaction transaction, R output) {
 		return services.putResource(requestLogger, getResourcePath(),
-				prepareParams(params, transaction), input, output);
+				transaction, prepareParams(params), input, output);
 	}
 
 	@Override
@@ -89,7 +89,7 @@ class ResourceServicesImpl
 	@Override
 	public <R extends AbstractReadHandle> R post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, R output) {
 		return services.postResource(
-				requestLogger, getResourcePath(), prepareParams(params, transaction), input, output);
+				requestLogger, getResourcePath(), transaction, prepareParams(params), input, output);
 	}
 	@Override
 	public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, String... outputMimetypes) {
@@ -98,7 +98,7 @@ class ResourceServicesImpl
 	@Override
 	public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, String... outputMimetypes) {
 		return services.postIteratedResource(
-				requestLogger, getResourcePath(), prepareParams(params, transaction), input, outputMimetypes);
+				requestLogger, getResourcePath(), transaction, prepareParams(params), input, outputMimetypes);
 	}
 	@Override
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R post(RequestParameters params, W[] input, R output) {
@@ -107,7 +107,7 @@ class ResourceServicesImpl
 	@Override
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R post(RequestParameters params, W[] input, Transaction transaction, R output) {
 		return services.postResource(
-				requestLogger, getResourcePath(), prepareParams(params, transaction), input, output);
+				requestLogger, getResourcePath(), transaction, prepareParams(params), input, output);
 	}
 	@Override
 	public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, String... outputMimetypes) {
@@ -116,7 +116,7 @@ class ResourceServicesImpl
 	@Override
 	public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, Transaction transaction, String... outputMimetypes) {
 		return services.postIteratedResource(
-				requestLogger, getResourcePath(), prepareParams(params, transaction), input, outputMimetypes);
+				requestLogger, getResourcePath(), transaction, prepareParams(params), input, outputMimetypes);
 	}
 
 	@Override
@@ -126,7 +126,7 @@ class ResourceServicesImpl
 	@Override
 	public <R extends AbstractReadHandle> R delete(RequestParameters params, Transaction transaction, R output) {
 		return services.deleteResource(requestLogger,
-				getResourcePath(), prepareParams(params, transaction), output);
+				getResourcePath(), transaction, prepareParams(params), output);
 	}
 
 	@Override
@@ -134,16 +134,7 @@ class ResourceServicesImpl
     	return requestLogger;
     }
 
-	private RequestParameters prepareParams(RequestParameters params, Transaction transaction) {
-		if (params == null && transaction == null)
-			return null;
-		if (transaction == null)
-			return params.copy("rs");
-
-		RequestParameters requestParams =
-			(params != null) ? params.copy("rs") : new RequestParameters();
-		requestParams.add("txid", transaction.getTransactionId());
-
-		return requestParams;
+	private RequestParameters prepareParams(RequestParameters params) {
+		return params != null ? params.copy("rs") : null;
 	}
 }

@@ -278,6 +278,9 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 		StringHandle sh=docMgr.read(docId[0],new StringHandle());
 		System.out.println(sh.get());
 		DocumentPage page = docMgr.read(docId);
+		// Issue #294 DocumentPage.size() should return correct size
+		assertTrue("DocumentPage Size did not return expected value:: returned==  "+page.size(), page.size() == 3 );
+
 		while(page.hasNext()){
 			DocumentRecord rec = page.next();
 			System.out.println(rec.getUri());
@@ -383,6 +386,8 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 			transaction = client.openTransaction();
 
 			DocumentPage page = docMgr.read(transaction, docId[0], docId[1], docId[2]);
+			// Issue #294 DocumentPage.size() should return correct size
+			assertTrue("DocumentPage Size did not return expected value:: returned==  "+page.size(), page.size() == 3 );
 
 			while(page.hasNext()){
 				DocumentRecord rec = page.next();
@@ -473,6 +478,8 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 			docMgr.write(writeset);			
 
 			DocumentPage page = docMgr.readMetadata(docId[0], docId[1], docId[2]);
+			// Issue #294 DocumentPage.size() should return correct size
+			assertTrue("DocumentPage Size did not return expected value:: returned==  "+page.size(), page.size() == 3 );
 
 			while(page.hasNext()){
 				DocumentRecord rec = page.next();
@@ -510,6 +517,9 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 		docMgr.writeMetadata(docId[2], mhUpdated);
 
 		DocumentPage page = docMgr.read(docId);
+		// Issue #294 DocumentPage.size() should return correct size
+		assertTrue("DocumentPage Size did not return expected value:: returned==  "+page.size(), page.size() == 3 );
+
 		DocumentMetadataHandle metadataHandleRead = new DocumentMetadataHandle();
 
 		while(page.hasNext()){

@@ -40,7 +40,7 @@ public class ServerEvaluationCallImpl
     private String                   code;
     private String                   modulePath;
     private Context                  evalContext;
-    private String                   transactionId;
+    private Transaction              transaction;
     private HashMap<String, Object>  vars = new HashMap<String, Object>();
     private EditableNamespaceContext namespaceContext;
 
@@ -128,7 +128,7 @@ public class ServerEvaluationCallImpl
 
     @Override
     public ServerEvaluationCall transaction(Transaction transaction) {
-        if ( transaction != null ) this.transactionId = transaction.getTransactionId();
+        if ( transaction != null ) this.transaction = transaction;
         return this;
     }
 
@@ -161,7 +161,7 @@ public class ServerEvaluationCallImpl
         throws ForbiddenUserException, FailedRequestException
     {
         return services.postEvalInvoke(requestLogger, code, modulePath, evalContext,
-            vars, namespaceContext, transactionId);
+            vars, namespaceContext, transaction);
     }
 
     @Override
