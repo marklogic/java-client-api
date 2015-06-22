@@ -27,10 +27,13 @@ import com.marklogic.client.io.marker.GenericReadHandle;
 import com.marklogic.client.io.marker.GenericWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
+import com.marklogic.client.io.marker.QuadsWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
+import com.marklogic.client.io.marker.TriplesReadHandle;
+import com.marklogic.client.io.marker.TriplesWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
@@ -50,7 +53,9 @@ public class BytesHandle
 		JSONReadHandle, JSONWriteHandle, 
 		TextReadHandle, TextWriteHandle,
 		XMLReadHandle, XMLWriteHandle,
-		StructureReadHandle, StructureWriteHandle
+		StructureReadHandle, StructureWriteHandle,
+		QuadsWriteHandle,
+		TriplesReadHandle, TriplesWriteHandle
 {
 	private byte[] content;
 
