@@ -75,8 +75,7 @@ public class DocumentMetadataHandle
 	final static private String PROPERTY_API_NS = "http://marklogic.com/xdmp/property";
 
 	/**
-	 * A DocumentCollections represents the collections for a database document
-	 * as a POJO (Plain Old Java Object).  
+	 * Represents the collections for a database document.
 	 */
 	public interface DocumentCollections extends Set<String> {
 		/**
@@ -99,8 +98,7 @@ public class DocumentMetadataHandle
 	}
 
 	/**
-	 * A DocumentPermissions represents the permissions for a database document
-	 * as a POJO (Plain Old Java Object).  
+	 * Represents the permissions for a database document.
 	 */
 	public interface DocumentPermissions extends Map<String,Set<Capability>> {
 	    /**
@@ -158,8 +156,7 @@ public class DocumentMetadataHandle
 	}
 
 	/**
-	 * A DocumentProperties represents the properties for a database document
-	 * as a POJO (Plain Old Java Object).  
+	 * Represents the properties for a database document.
 	 */
 	public interface DocumentProperties extends NameMap<Object> {
 		/**
