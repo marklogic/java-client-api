@@ -4,11 +4,11 @@
 	<groupId>com.marklogic</groupId>
 	<artifactId>client-api-java</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.0.6</version>
 	<name>client-api-java</name>
 	<url>http://developer.marklogic.com</url>
     <properties>
-		<javadoc-title>${project.name} 1.0 ${maven.build.timestamp}</javadoc-title>
+		<javadoc-title>${project.name} 1.0.6</javadoc-title>
 		<maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
