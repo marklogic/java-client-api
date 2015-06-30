@@ -29,28 +29,6 @@ import com.marklogic.client.semantics.SPARQLBindings;
  * {@link https://docs.marklogic.com/guide/semantics Semantics Developer's Guide}
  */
 public class SPARQLBindingsImpl extends TreeMap<String, List<SPARQLBinding>> implements SPARQLBindings {
-    private class BindingImpl implements SPARQLBinding {
-        private String name;
-        private String value;
-        private String type;
-        private Locale languageTag;
-
-        public BindingImpl(String name, String value, String type) {
-            this.name = name;
-            this.value = value;
-            this.type = type;
-        }
-        public BindingImpl(String name, String value, Locale languageTag) {
-            this.name = name;
-            this.value = value;
-            this.languageTag = languageTag;
-        }
-        public String getName()        { return name;        }
-        public String getValue()       { return value;       }
-        public String getType()        { return type;        }
-        public Locale getLanguageTag() { return languageTag; }
-    }
-
     public SPARQLBindings bind(String name, String value) {
         return bind(name, value, (String) null);
     }
@@ -58,14 +36,14 @@ public class SPARQLBindingsImpl extends TreeMap<String, List<SPARQLBinding>> imp
     public SPARQLBindings bind(String name, String value, String type) {
         if ( name == null  ) throw new IllegalArgumentException("name cannot be null");
         if ( value == null ) throw new IllegalArgumentException("value cannot be null");
-        add(new BindingImpl(name, value, type));
+        add(new SPARQLBindingImpl(name, value, type));
         return this;
     }
 
     public SPARQLBindings bind(String name, String value, Locale languageTag) {
         if ( name == null  ) throw new IllegalArgumentException("name cannot be null");
         if ( value == null ) throw new IllegalArgumentException("value cannot be null");
-        add(new BindingImpl(name, value, languageTag));
+        add(new SPARQLBindingImpl(name, value, languageTag));
         return this;
     }
 

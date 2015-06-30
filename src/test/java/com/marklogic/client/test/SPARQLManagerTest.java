@@ -29,6 +29,7 @@ import com.marklogic.client.semantics.SPARQLBinding;
 import com.marklogic.client.semantics.SPARQLBindings;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.semantics.SPARQLQueryManager;
+import com.marklogic.client.semantics.SPARQLTuple;
 import com.marklogic.client.semantics.SPARQLTupleResults;
 
 public class SPARQLManagerTest {
@@ -53,11 +54,11 @@ public class SPARQLManagerTest {
         SPARQLTupleResults results = smgr.executeSelect(qdef2);
         String[] bindingNames = results.getBindingNames();
         int i=0;
-        for ( SPARQLBindings tuple : results ) {
+        for ( SPARQLTuple tuple : results ) {
             i++;
             System.out.println("Result number " + i);
             for ( String bindingName: bindingNames ) {
-                SPARQLBinding binding = tuple.get(bindingName).get(0);
+                SPARQLBinding binding = tuple.get(bindingName);
                 System.out.println(bindingName +
                     ":" + binding.getType() +
                     "@" + binding.getLanguageTag() +
