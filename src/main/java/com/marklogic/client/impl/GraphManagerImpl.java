@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.impl;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import com.marklogic.client.Transaction;
