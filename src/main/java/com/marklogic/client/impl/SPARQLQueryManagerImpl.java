@@ -30,6 +30,7 @@ import com.marklogic.client.semantics.SPARQLBinding;
 import com.marklogic.client.semantics.SPARQLBindings;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.semantics.SPARQLQueryManager;
+import com.marklogic.client.semantics.SPARQLTuple;
 import com.marklogic.client.semantics.SPARQLTupleResults;
 import com.marklogic.client.util.RequestParameters;
 

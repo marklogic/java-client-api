@@ -22,10 +22,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.SortedMap;
 import java.util.Set;
+import java.util.TreeMap;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.query.Tuple;
-import com.marklogic.client.semantics.SPARQLBindings;
+import com.marklogic.client.semantics.SPARQLTuple;
 import com.marklogic.client.semantics.SPARQLTupleResults;
 import com.marklogic.client.semantics.SPARQLBinding;
 import com.marklogic.client.impl.TuplesBuilder;
@@ -42,7 +43,7 @@ public class SPARQLTupleResultsImpl
     extends BaseHandle<InputStream, OperationNotSupported>
     implements SPARQLTupleResults, SPARQLReadHandle
 {
-    private List<SPARQLBindings> bindings;
+    private List<SPARQLTuple> bindings;
     private String[] bindingNames;
     private MyJacksonHandle jacksonHandle;
 
@@ -73,11 +74,13 @@ public class SPARQLTupleResultsImpl
         return InputStream.class;
     }
 
+    private class SPARQLTupleImpl extends TreeMap<String, SPARQLBinding> implements SPARQLTuple {}
+
     @Override
     protected void receiveContent(InputStream content) {
         init();
         // TODO: finish
-        ArrayList tmpBindings = new ArrayList<SPARQLBindings>();
+        ArrayList tmpTuple = new ArrayList<SPARQLTuple>();
         jacksonHandle.receiveContent2(content);
         JsonNode response = jacksonHandle.get();
         if ( ! response.has("head") ) throw new IllegalStateException("malformed response: no head field");
@@ -96,7 +99,7 @@ public class SPARQLTupleResultsImpl
         int i=0;
         for ( JsonNode tuple : bindingsNode ) {
             i++;
-            SPARQLBindings bindings = new SPARQLBindingsImpl();
+            SPARQLTuple bindings = new SPARQLTupleImpl();
             Iterator<String> keys = tuple.fieldNames();
             while ( keys.hasNext() ) {
                 String key = keys.next();
@@ -109,20 +112,20 @@ public class SPARQLTupleResultsImpl
                 if ( valueNode.has("xml:lang") ) {
                     String languageTag = valueNode.get("xml:lang").textValue();
                     Locale locale = Locale.forLanguageTag(languageTag);
-                    bindings = bindings.bind(key, value, locale);
+                    bindings.put(key, new SPARQLBindingImpl(key, value, locale));
                 } else if ( valueNode.has("type") ) {
                     String type = valueNode.get("type").textValue();
-                    bindings = bindings.bind(key, value, type);
+                    bindings.put(key, new SPARQLBindingImpl(key, value, type));
                 }
             }
-            tmpBindings.add(bindings);
+            tmpTuple.add(bindings);
         }
         this.bindingNames = tmpBindingNames;
-        this.bindings = new ArrayList<SPARQLBindings>(tmpBindings);
+        this.bindings = new ArrayList<SPARQLTuple>(tmpTuple);
     }
 
     @Override
-    public Iterator<SPARQLBindings> iterator() {
+    public Iterator<SPARQLTuple> iterator() {
         if ( bindings == null ) throw new IllegalStateException("this has not been populated yet");
         return bindings.iterator();
     }

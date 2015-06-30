@@ -15,13 +15,12 @@
  */
 package com.marklogic.client.semantics;
 
-import com.marklogic.client.io.marker.SPARQLReadHandle;
+import java.util.Map;
 
 /**
- * A tuples result from {@link SPARQLQueryManager#executeSelect}
+ * Represents one tuple (row) in a results set from a SPARQL query.
  * For details about semantics in MarkLogic see
  * {@link https://docs.marklogic.com/guide/semantics Semantics Developer's Guide}
  */
-public interface SPARQLTupleResults extends Iterable<SPARQLTuple>, SPARQLReadHandle {
-    public String[] getBindingNames();
+public interface SPARQLTuple extends Map<String, SPARQLBinding> {
 }
