@@ -20,5 +20,5 @@ package com.marklogic.client.io.marker;
  * For details about semantics in MarkLogic see
  * {@link https://docs.marklogic.com/guide/semantics Semantics Developer's Guide}
  */
-public interface SPARQLReadHandle {
+public interface SPARQLReadHandle extends AbstractReadHandle {
 }

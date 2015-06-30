@@ -190,12 +190,12 @@ public class DatabaseClientImpl implements DatabaseClient {
 	@Override
 	public GraphManager newGraphManager() {
 		// TODO Auto-generated method stub
-		return new GraphManagerImpl<TriplesReadHandle, TriplesWriteHandle>();
+		return new GraphManagerImpl<TriplesReadHandle, TriplesWriteHandle>(services);
 	}
 
 	@Override
 	public SPARQLQueryManager newSPARQLQueryManager() {
 		// TODO Auto-generated method stub
-		return new SPARQLQueryManagerImpl();
+		return new SPARQLQueryManagerImpl(services);
 	}
 }

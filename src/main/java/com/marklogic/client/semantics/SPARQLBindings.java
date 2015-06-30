@@ -15,11 +15,17 @@
  */
 package com.marklogic.client.semantics;
 
-import com.marklogic.client.util.RequestParameters;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * Represents binding names and values to go with a SPARQL Query.
  * For details about semantics in MarkLogic see
  * {@link https://docs.marklogic.com/guide/semantics Semantics Developer's Guide}
  */
-public class SPARQLBindings extends RequestParameters {};
+public interface SPARQLBindings extends Map<String, List<SPARQLBinding>> {
+    public SPARQLBindings bind(String name, String value);
+    public SPARQLBindings bind(String name, String value, String type);
+    public SPARQLBindings bind(String name, String value, Locale languageTag);
+};

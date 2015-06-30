@@ -39,4 +39,9 @@ public enum SPARQLRuleset {
     SUBPROPERTY_OF,
     SYMMETRIC_PROPERTY,
     TRANSITIVE_PROPERTY;
+    
+    public static SPARQLRuleset ruleset(String name){
+        // TODO: implement
+        return null;
+    }
 }

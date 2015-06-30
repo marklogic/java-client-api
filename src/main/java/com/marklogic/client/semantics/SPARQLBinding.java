@@ -15,22 +15,17 @@
  */
 package com.marklogic.client.semantics;
 
-import java.util.Map;
-import java.util.Set;
-
-import com.marklogic.client.semantics.Capability;
+import java.util.Locale;
 
 /**
- * A Map of permissions for a graph, where the keys are roles and the values
- * are the Set of capabilities available to that role (one of READ, UPDATE, or EXECUTE).
+ * Represents a binding name, value, and type or language tag.
  * For details about semantics in MarkLogic see
  * {@link https://docs.marklogic.com/guide/semantics Semantics Developer's Guide}
  */
-public interface GraphPermissions extends Map<String, Set<Capability>> {
-    /** Add the specified role and capabilities.
-     * @param role the name of the role receiving these capabilities
-     * @param capabilities the capabilities (read, update, or execute) granted to this role
-     * @return the new GraphPermissions object with these permissions added
-     */
-    public GraphPermissions permission(String role, Capability... capabilities);
+public interface SPARQLBinding {
+    public String getName();
+    public String getValue();
+    public String getType();
+    public Locale getLanguageTag();
 }
+

@@ -15,8 +15,10 @@
  */
 package com.marklogic.client.semantics;
 
+import java.util.Locale;
+
 import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.semantics.GraphPermissions.Capability;
+import com.marklogic.client.semantics.Capability;
 
 /**
  * Represents a SPARQL query.
@@ -24,13 +26,15 @@ import com.marklogic.client.semantics.GraphPermissions.Capability;
  * {@link https://docs.marklogic.com/guide/semantics Semantics Developer's Guide}
  */
 public interface SPARQLQueryDefinition extends QueryDefinition {
-    public void setQueryString(String queryString);
-    public String getQueryString();
-    public SPARQLQueryDefinition withQueryString(String queryString);
+    public void setSparql(String sparql);
+    public String getSparql();
+    public SPARQLQueryDefinition withSparql(String sparql);
 
     public void setBindings(SPARQLBindings bindings);
     public SPARQLBindings getBindings();
-    public SPARQLQueryDefinition withBinding(String name, Object value);
+    public SPARQLQueryDefinition withBinding(String name, String value);
+    public SPARQLQueryDefinition withBinding(String name, String value, String type);
+    public SPARQLQueryDefinition withBinding(String name, String value, Locale languageTag);
     public SPARQLQueryDefinition clearBindings();
 
     public void setUpdatePermissions(GraphPermissions permissions);
@@ -46,4 +50,5 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
     public void setRulesets(SPARQLRuleset... ruleset);
     public SPARQLRuleset[] getRulesets();
     public SPARQLQueryDefinition withRuleset(SPARQLRuleset ruleset);
+    public SPARQLQueryDefinition withStructuredQuery(QueryDefinition structuredQuery);
 }

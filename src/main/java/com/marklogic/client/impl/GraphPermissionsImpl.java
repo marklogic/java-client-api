@@ -13,12 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.semantics;
+package com.marklogic.client.impl;
 
-/**
- * A tuples result from {@link SPARQLQueryManager#executeSelect}
- * For details about semantics in MarkLogic see
- * {@link https://docs.marklogic.com/guide/semantics Semantics Developer's Guide}
- */
-public interface SPARQLTuplesResult {
+import java.util.HashMap;
+import java.util.Set;
+
+import com.marklogic.client.semantics.Capability;
+import com.marklogic.client.semantics.GraphPermissions;
+
+public class GraphPermissionsImpl extends HashMap<String, Set<Capability>> implements GraphPermissions {
+
+	public GraphPermissionsImpl(String role, Capability... capabilities) {
+		// TODO Auto-generated method stub
+		super();
+	}
+	
+	@Override
+	public GraphPermissions permission(String role, Capability... capabilities) {
+		// TODO Auto-generated method stub
+		return this;
+	}
 }
