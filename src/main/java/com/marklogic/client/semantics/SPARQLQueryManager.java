@@ -18,6 +18,7 @@ package com.marklogic.client.semantics;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.SPARQLReadHandle;
 import com.marklogic.client.io.marker.TriplesReadHandle;
+import com.marklogic.client.semantics.Capability;
 
 public interface SPARQLQueryManager  {
     // Make a new query definition 
@@ -28,8 +29,8 @@ public interface SPARQLQueryManager  {
     public <T extends SPARQLReadHandle> T executeQuery(SPARQLQueryDefinition qdef, T handle, Transaction tx);
 
     // Higher-level query methods that return useful Java objects 
-    public SPARQLTuplesResult executeSelect(SPARQLQueryDefinition qdef);
-    public SPARQLTuplesResult executeSelect(SPARQLQueryDefinition qdef, long start, long pageLength, Transaction tx);
+    public SPARQLTupleResults executeSelect(SPARQLQueryDefinition qdef);
+    public SPARQLTupleResults executeSelect(SPARQLQueryDefinition qdef, long start, long pageLength, Transaction tx);
     public <T extends TriplesReadHandle> T executeConstruct(SPARQLQueryDefinition qdef, T triplesReadHandle);
     public <T extends TriplesReadHandle> T executeConstruct(SPARQLQueryDefinition qdef, T triplesReadHandle, Transaction tx);
     public <T extends TriplesReadHandle> T executeDescribe(SPARQLQueryDefinition qdef, T triplesReadHandle);
@@ -38,4 +39,11 @@ public interface SPARQLQueryManager  {
     public Boolean executeAsk(SPARQLQueryDefinition qdef, Transaction tx);
     public void executeUpdate(SPARQLQueryDefinition qdef);
     public void executeUpdate(SPARQLQueryDefinition qdef, Transaction tx);
+
+    /** Create a GraphPermissions builder object with the specified role and capabilities.
+     * @param role the name of the role receiving these capabilities
+     * @param capabilities the capabilities (read, update, or execute) granted to this role
+     * @return the new GraphPermissions object with these capabilities set
+     */
+    public GraphPermissions permission(String role, Capability... capabilities);
 }

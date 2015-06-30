@@ -21,6 +21,7 @@ import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.QuadsWriteHandle;
 import com.marklogic.client.io.marker.TriplesReadHandle;
 import com.marklogic.client.io.marker.TriplesWriteHandle;
+import com.marklogic.client.semantics.Capability;
 
 /**
  * A manager for CRUD operations on semantic graphs.
@@ -53,6 +54,13 @@ public interface GraphManager {
     public void writePermissions(String uri, GraphPermissions permissions, Transaction transaction);
     public void mergePermissions(String uri, GraphPermissions permissions);
     public void mergePermissions(String uri, GraphPermissions permissions, Transaction transcation);
+
+    /** Create a GraphPermissions builder object with the specified role and capabilities.
+     * @param role the name of the role receiving these capabilities
+     * @param capabilities the capabilities (read, update, or execute) granted to this role
+     * @return the new GraphPermissions object with these capabilities set
+     */
+    public GraphPermissions permission(String role, Capability... capabilities);
 
     public void merge(String uri, TriplesWriteHandle handle);
     public void merge(String uri, TriplesWriteHandle handle, Transaction transaction);

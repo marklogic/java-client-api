@@ -15,10 +15,14 @@
  */
 package com.marklogic.client.semantics;
 
-import java.util.Map;
-
 import com.marklogic.client.io.marker.SPARQLReadHandle;
+import com.marklogic.client.query.Tuple;
 
-// a result that contains variables and bindings
-public interface SPARQLTupleResults extends SPARQLReadHandle, Iterable<Map> {
+/**
+ * A tuples result from {@link SPARQLQueryManager#executeSelect}
+ * For details about semantics in MarkLogic see
+ * {@link https://docs.marklogic.com/guide/semantics Semantics Developer's Guide}
+ */
+public interface SPARQLTupleResults extends Iterable<SPARQLBindings>, SPARQLReadHandle {
+    public String[] getBindingNames();
 }
