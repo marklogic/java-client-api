@@ -126,6 +126,7 @@ import com.marklogic.client.query.ValueLocator;
 import com.marklogic.client.query.ValueQueryDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
+import com.marklogic.client.semantics.GraphPermissions;
 import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
@@ -5339,6 +5340,38 @@ public class JerseyServices implements RESTServices {
 			response.close();
 		
 		return entity;
+	}
+
+	@Override
+	public <R extends AbstractReadHandle> R getGraphUris(RequestLogger reqlog, R output)
+		throws ResourceNotFoundException, ForbiddenUserException,
+		FailedRequestException
+	{
+		return getResource(reqlog, "graphs", null, null, output);
+	}
+
+	@Override
+	public <R extends AbstractReadHandle> R readGraph(RequestLogger reqlog, String uri, R output,
+		Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		params.add("graph", uri);
+		return getResource(reqlog, "graphs", transaction, params, output);
+	}
+
+	@Override
+	public <R extends AbstractReadHandle> R writeGraph(RequestLogger reqlog, String uri,
+		AbstractWriteHandle input, GraphPermissions permissions, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		if ( uri != null ) {
+			params.add("graph", uri);
+		} else {
+			params.add("default", "");
+		}
+		return putResource(reqlog, "graphs", transaction, params, input, null);
 	}
 
 	private String getTransactionId(Transaction transaction) {
