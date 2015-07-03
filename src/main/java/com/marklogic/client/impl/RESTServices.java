@@ -55,6 +55,7 @@ import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.SuggestDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
+import com.marklogic.client.semantics.GraphPermissions;
 import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
@@ -273,6 +274,15 @@ public interface RESTServices {
 	public InputStream match(String[] docIds, String[] candidateRules, ServerTransform transform);
 	public InputStream match(QueryDefinition queryDef, long start, long pageLength, String[] candidateRules, ServerTransform transform);
 	
+	public <R extends AbstractReadHandle> R getGraphUris(RequestLogger reqlog, R output)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public <R extends AbstractReadHandle> R readGraph(RequestLogger reqlog, String uri, R output,
+		Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public <R extends AbstractReadHandle> R writeGraph(RequestLogger reqlog, String uri,
+		AbstractWriteHandle input, GraphPermissions permissions, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+
 	/**
 	 * Wraps a HEAD request for a simple URI
 	 * @param uri URL to which to make a HEAD request

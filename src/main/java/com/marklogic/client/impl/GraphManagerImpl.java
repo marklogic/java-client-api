@@ -15,10 +15,16 @@
  */
 package com.marklogic.client.impl;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.io.ReaderHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.QuadsWriteHandle;
 import com.marklogic.client.io.marker.TriplesReadHandle;
 import com.marklogic.client.io.marker.TriplesWriteHandle;
@@ -53,21 +59,21 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
 
     @Override
     public Iterator listGraphUris() {
-        // TODO: implement
-        return new ArrayList().iterator();
+        final int bufferSize = 10;
+        final String uriString = services.getGraphUris(requestLogger, new StringHandle()).get();
+        String[] uris = uriString.split("\n");
+        return Arrays.asList(uris).iterator();
     }
 
     @Override
     public TriplesReadHandle read(String uri, TriplesReadHandle handle) {
-        // TODO Auto-generated method stub
-        return handle;
+        return read(uri, handle, null);
     }
 
     @Override
     public TriplesReadHandle read(String uri, TriplesReadHandle handle,
             Transaction transaction) {
-        // TODO Auto-generated method stub
-        return handle;
+        return services.readGraph(requestLogger, uri, handle, transaction);
     }
 
     @Override
@@ -189,29 +195,25 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
 
     @Override
     public void write(String uri, TriplesWriteHandle handle) {
-        // TODO Auto-generated method stub
-        
+        write(uri, handle, null, null);
     }
 
     @Override
     public void write(String uri, TriplesWriteHandle handle,
             Transaction transaction) {
-        // TODO Auto-generated method stub
-        
+        write(uri, handle, null, transaction);
     }
 
     @Override
     public void write(String uri, TriplesWriteHandle handle,
             GraphPermissions permissions) {
-        // TODO Auto-generated method stub
-        
+        write(uri, handle, permissions, null);
     }
 
     @Override
     public void write(String uri, TriplesWriteHandle handle,
             GraphPermissions permissions, Transaction transaction) {
-        // TODO Auto-generated method stub
-        
+        services.writeGraph(requestLogger, uri, handle, permissions, transaction);
     }
 
     @Override
@@ -278,8 +280,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
 
     @Override
     public void replaceGraphs(QuadsWriteHandle handle) {
-        // TODO Auto-generated method stub
-        
+        services.writeGraph(requestLogger, null, handle, null, null);
     }
 
     @Override

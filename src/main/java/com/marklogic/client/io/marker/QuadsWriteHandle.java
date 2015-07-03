@@ -20,6 +20,6 @@ package com.marklogic.client.io.marker;
  * For details about semantics in MarkLogic see
  * {@link https://docs.marklogic.com/guide/semantics Semantics Developer's Guide}
  */
-public interface QuadsWriteHandle {
+public interface QuadsWriteHandle extends AbstractWriteHandle {
 }
 
