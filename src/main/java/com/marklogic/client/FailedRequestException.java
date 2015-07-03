@@ -15,6 +15,8 @@
  */
 package com.marklogic.client;
 
+import java.io.IOException;
+
 import com.marklogic.client.impl.FailedRequest;
 
 /**
@@ -29,7 +31,12 @@ public class FailedRequestException extends MarkLogicServerException {
 		super(message);
 	}
 	
+	public FailedRequestException(String localMessage, Throwable cause) {
+		super(localMessage, cause);
+	}
+
 	public FailedRequestException(String localMessage, FailedRequest failedRequest) {
 		super(localMessage, failedRequest);
 	}
+
 }
