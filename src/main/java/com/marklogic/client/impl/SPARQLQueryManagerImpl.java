@@ -82,8 +82,7 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
                         } else if ( binding.getLanguageTag() != null ) {
                             typeOrLang = "@" + binding.getLanguageTag().toLanguageTag();
                         }
-                        String value = URLEncoder.encode(binding.getValue(), "UTF-8");
-                        params.add(paramName + typeOrLang, value);
+                        params.add(paramName + typeOrLang, binding.getValue());
                     }
                 }
                 String formUrlEncodedPayload = sb.toString();
