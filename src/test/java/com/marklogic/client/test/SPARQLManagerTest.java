@@ -66,18 +66,17 @@ public class SPARQLManagerTest {
         SPARQLQueryManager smgr = Common.client.newSPARQLQueryManager();
         SPARQLQueryDefinition qdef1 = smgr.newQueryDefinition("select ?s ?p ?o { ?s ?p ?o } limit 1");
         JsonNode jsonResults = smgr.executeQuery(qdef1, new JacksonHandle()).get();
-        String expected =
+        String expectedFirstResult =
             "{s:{value:'http://example.org/s1', type:'uri'}," +
             "p:{value:'http://example.org/p1', type:'uri'}," +
             "o:{value:'http://example.org/o1', type:'uri'}}";
         int numResults = jsonResults.path("results").path("bindings").size();
         // because we said 'limit 1' we should only get one result
-        //assertEquals(1, numResults);
+        assertEquals(1, numResults);
         JsonNode firstResult = jsonResults.path("results").path("bindings").path(0);
-        assertEquals(mapper.readTree(expected), firstResult);
+        assertEquals(mapper.readTree(expectedFirstResult), firstResult);
 
         SPARQLQueryDefinition qdef2 = smgr.newQueryDefinition("select ?s ?p ?o { ?s ?p ?o } limit 100");
-        // here I'll test Jena or Sesame
         SPARQLTupleResults results = smgr.executeSelect(qdef2);
         String[] bindingNames = results.getBindingNames();
         int i=0;
@@ -114,15 +113,22 @@ public class SPARQLManagerTest {
         // or use a builder
         qdef4 = qdef4.withBinding("c", "http://example.org/o2").withBinding("d", "http://example.org/o3");
 
+        JsonNode jsonResults2 = smgr.executeQuery(qdef4, new JacksonHandle()).get();
+
+        int numResults2 = jsonResults2.path("results").path("bindings").size();
+        // because we said 'filter (?s = ?b)' we should only get one result
+        assertEquals(1, numResults2);
+        JsonNode firstResult2 = jsonResults2.path("results").path("bindings").path(0);
+        assertEquals(mapper.readTree(expectedFirstResult), firstResult2);
+
         /*
         // to configure inference
         qdef4 = qdef4.withRuleset(SPARQLRuleset.RDFS_PLUS);
         // or a custom ruleset
         qdef4 = qdef4.withRuleset(SPARQLRuleset.ruleset("custom.rules"));
-        */
-
         // use a start and page length, and no transaction
         SPARQLTupleResults results2 = smgr.executeSelect(qdef4, 1, 100, null);
+        */
 
         // To invoke an update
         SPARQLQueryDefinition qdef5 = smgr.newQueryDefinition("insert data { ... }");
