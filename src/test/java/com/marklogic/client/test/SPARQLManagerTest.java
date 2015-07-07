@@ -16,6 +16,7 @@
 package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -39,12 +40,13 @@ import com.marklogic.client.semantics.SPARQLTuple;
 import com.marklogic.client.semantics.SPARQLTupleResults;
 
 public class SPARQLManagerTest {
-    private static String graphUri = "http://example.org/g1";
+    private static String graphUri = "http://marklogic.com/java/SPARQLManagerTest";
     private static String triple1 = "<http://example.org/s1> <http://example.org/p1> <http://example.org/o1>.";
     private static String triple2 = "<http://example.org/s2> <http://example.org/p2> <http://example.org/o2>.";
     private static ObjectMapper mapper = new ObjectMapper()
         .configure(Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
         .configure(Feature.ALLOW_SINGLE_QUOTES, true);
+    private static SPARQLQueryManager smgr = Common.client.newSPARQLQueryManager();
 
 
     @BeforeClass
@@ -63,7 +65,6 @@ public class SPARQLManagerTest {
 
     @Test
     public void testSPARQL() throws Exception {
-        SPARQLQueryManager smgr = Common.client.newSPARQLQueryManager();
         SPARQLQueryDefinition qdef1 = smgr.newQueryDefinition("select ?s ?p ?o { ?s ?p ?o } limit 1");
         JsonNode jsonResults = smgr.executeQuery(qdef1, new JacksonHandle()).get();
         String expectedFirstResult =
@@ -141,5 +142,30 @@ public class SPARQLManagerTest {
 
         SPARQLQueryDefinition qdef7 = smgr.newQueryDefinition("insert data { ... }").withUpdatePermission("rest-reader", Capability.UPDATE).withStructuredQuery(structuredQuery);
 
+    }
+
+    @Test
+    public void testPagination() throws Exception {
+        SPARQLQueryDefinition qdef1 = smgr.newQueryDefinition(
+            "SELECT ?s ?p ?o FROM <" + graphUri + "> { ?s ?p ?o }");
+        long start = 1;
+        long pageLength = 1;
+        SPARQLTupleResults results = smgr.executeSelect(qdef1, start, pageLength);
+        // because we set pageLength to 1 we should only get one result
+        assertEquals(pageLength, results.size());
+        String uri1 = results.iterator().next().get("s").getValue();
+
+        pageLength = 2;
+        results = smgr.executeSelect(qdef1, start, pageLength);
+        assertEquals(pageLength, results.size());
+
+        start = 2;
+        pageLength = 2;
+        results = smgr.executeSelect(qdef1, start, pageLength);
+        // because we skipped the first result (by setting start=2) there are not enough 
+        // results for a full page, so size() only returns 1
+        assertEquals(1, results.size());
+        String uri2 = results.iterator().next().get("s").getValue();
+        assertNotEquals(uri1, uri2);
     }
 }

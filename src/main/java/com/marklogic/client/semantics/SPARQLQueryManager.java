@@ -30,6 +30,7 @@ public interface SPARQLQueryManager  {
 
     // Higher-level query methods that return useful Java objects 
     public SPARQLTupleResults executeSelect(SPARQLQueryDefinition qdef);
+    public SPARQLTupleResults executeSelect(SPARQLQueryDefinition qdef, long start, long pageLength);
     public SPARQLTupleResults executeSelect(SPARQLQueryDefinition qdef, long start, long pageLength, Transaction tx);
     public <T extends TriplesReadHandle> T executeConstruct(SPARQLQueryDefinition qdef, T triplesReadHandle);
     public <T extends TriplesReadHandle> T executeConstruct(SPARQLQueryDefinition qdef, T triplesReadHandle, Transaction tx);

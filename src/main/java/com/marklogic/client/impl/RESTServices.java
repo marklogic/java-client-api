@@ -56,6 +56,7 @@ import com.marklogic.client.query.SuggestDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
 import com.marklogic.client.semantics.GraphPermissions;
+import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
@@ -282,6 +283,9 @@ public interface RESTServices {
 	public <R extends AbstractReadHandle> R writeGraph(RequestLogger reqlog, String uri,
 		AbstractWriteHandle input, GraphPermissions permissions, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public <R extends AbstractReadHandle> R executeSparql(RequestLogger reqlog, 
+		SPARQLQueryDefinition qdef, R output, long start, long pageLength,
+		Transaction transaction, boolean isUpdate);
 
 	/**
 	 * Wraps a HEAD request for a simple URI

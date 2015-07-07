@@ -24,4 +24,5 @@ import com.marklogic.client.io.marker.SPARQLReadHandle;
  */
 public interface SPARQLTupleResults extends Iterable<SPARQLTuple>, SPARQLReadHandle {
     public String[] getBindingNames();
+    public long size();
 }
