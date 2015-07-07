@@ -1,0 +1,603 @@
+
+prefix bb: <http://marklogic.com/baseball/players#> 
+prefix bbr: <http://marklogic.com/baseball/rules#> 
+prefix xs: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+
+#bb:pX  bb:playerid "XX"^^xs:integer .
+#bb:XX  bb:lastname     "LASTNAME" .
+#bb:XX  bb:firstname    "FIRSTNAME" .
+#bb:XX  bb:position     "POSITION" .
+#bb:XX  bb:number       "NUMBER"^^xs:integer .
+#bb:XX  bb:team         "Athletics" .
+#bb:XX  bb:birthdate    "1989-10-26"^^xs:date .
+#bb:XX  bb:bats         "right" .
+#bb:XX  bb:throws       "right" .
+#bb:XX  bb:height       "" .
+#bb:XX  bb:weight       "220"^^xs:integer .
+#bb:XXX a       bbr:player .
+#bb:XXX a       bbr:pitcher .
+#bb:XXX a       bbr:starter .
+#bb:XXX a       bbr:setup .
+
+
+#	Pitchers 	B/T 	Ht 	Wt 	DOB
+#52 	Pedro Baez 	R-R 	6'2" 	230 	Mar 11, 1988
+bb:201	bb:playerid	"201"^^xs:integer .
+bb:201	bb:number	"52"^^xs:integer .
+bb:201	bb:lastname	"Baez" .
+bb:201	bb:firstname	"Pedro" .
+bb:201	bb:position	"pitcher" .
+bb:201	bb:team	bbr:Dodgers .
+bb:201	bb:bats	"right" .
+bb:201	bb:throws	"right" .
+bb:201	bb:weight	"230"^^xs:integer .
+bb:201	bb:date-of-birth	"1988-03-11"^^xs:date .
+bb:201	rdf:type		bbr:pitcher .
+bb:201	rdf:type		bbr:setup .
+
+#64 	Daniel Coulombe 	L-L 	5'10" 	185 	Oct 26, 1989
+bb:202	bb:playerid	"202"^^xs:integer .
+bb:202	bb:number	"64"^^xs:integer .
+bb:202	bb:lastname	"Coulombe" .
+bb:202	bb:firstname	"Daniel" .
+bb:202	bb:position	"pitcher" .
+bb:202	bb:team	bbr:Dodgers .
+bb:202	bb:bats	"left" .
+bb:202	bb:throws	"left" .
+bb:202	bb:weight	"185"^^xs:integer .
+bb:202	bb:date-of-birth	"1989-10-26"^^xs:date .
+bb:202	rdf:type		bbr:pitcher .
+bb:202	rdf:type		bbr:setup .
+
+#60 	Jose Dominguez 	R-R 	6'0" 	200 	Aug 7, 1990
+bb:203	bb:playerid	"203"^^xs:integer .
+bb:203	bb:number	"60"^^xs:integer .
+bb:203	bb:lastname	"Dominguez" .
+bb:203	bb:firstname	"Jose" .
+bb:203	bb:position	"pitcher" .
+bb:203	bb:team	bbr:Dodgers .
+bb:203	bb:bats	"right" .
+bb:203	bb:throws	"right" .
+bb:203	bb:weight	"200"^^xs:integer .
+bb:203	bb:date-of-birth	"1990-08-07"^^xs:date .
+bb:203	rdf:type		bbr:pitcher .
+bb:203	rdf:type		bbr:setup .
+
+#77 	Carlos Frias 	R-R 	6'4" 	170 	Nov 13, 1989
+bb:204	bb:playerid	"204"^^xs:integer .
+bb:204	bb:number	"77"^^xs:integer .
+bb:204	bb:lastname	"Frias" .
+bb:204	bb:firstname	"Carlos" .
+bb:204	bb:position	"pitcher" .
+bb:204	bb:team	bbr:Dodgers .
+bb:204	bb:bats	"right" .
+bb:204	bb:throws	"right" .
+bb:204	bb:weight	"170"^^xs:integer .
+bb:204	bb:date-of-birth	"1989-11-13"^^xs:date .
+bb:204	rdf:type		bbr:pitcher .
+bb:204	rdf:type		bbr:setup .
+
+#81 	Onelki Garcia 	L-L 	6'3" 	225 	Aug 2, 1989
+bb:205	bb:playerid	"205"^^xs:integer .
+bb:205	bb:number	"81"^^xs:integer .
+bb:205	bb:lastname	"Garcia" .
+bb:205	bb:firstname	"Onelki" .
+bb:205	bb:position	"pitcher" .
+bb:205	bb:team	bbr:Dodgers .
+bb:205	bb:bats	"left" .
+bb:205	bb:throws	"left" .
+bb:205	bb:weight	"225"^^xs:integer .
+bb:205	bb:date-of-birth	"1989-08-02"^^xs:date .
+bb:205	rdf:type		bbr:pitcher .
+bb:205	rdf:type		bbr:setup .
+
+#63 	Yimi Garcia 	R-R 	6'1" 	175 	Aug 18, 1990
+bb:206	bb:playerid	"206"^^xs:integer .
+bb:206	bb:number	"63"^^xs:integer .
+bb:206	bb:lastname	"Garcia" .
+bb:206	bb:firstname	"Yimi" .
+bb:206	bb:position	"pitcher" .
+bb:206	bb:team	bbr:Dodgers .
+bb:206	bb:bats	"right" .
+bb:206	bb:throws	"right" .
+bb:206	bb:weight	"175"^^xs:integer .
+bb:206	bb:date-of-birth	"1990-08-18"^^xs:date .
+bb:206	rdf:type		bbr:pitcher .
+bb:206	rdf:type		bbr:setup .
+
+#21 	Zack Greinke 	R-R 	6'2" 	195 	Oct 21, 1983
+bb:207	bb:playerid	"207"^^xs:integer .
+bb:207	bb:number	"21"^^xs:integer .
+bb:207	bb:lastname	"Greinke" .
+bb:207	bb:firstname	"Zack" .
+bb:207	bb:position	"pitcher" .
+bb:207	bb:team	bbr:Dodgers .
+bb:207	bb:bats	"right" .
+bb:207	bb:throws	"right" .
+bb:207	bb:weight	"195"^^xs:integer .
+bb:207	bb:date-of-birth	"1983-10-21"^^xs:date .
+bb:207	rdf:type		bbr:pitcher .
+bb:207	rdf:type		bbr:setup .
+
+#14 	Dan Haren 	R-R 	6'5" 	215 	Sep 17, 1980
+bb:208	bb:playerid	"208"^^xs:integer .
+bb:208	bb:number	"14"^^xs:integer .
+bb:208	bb:lastname	"Haren" .
+bb:208	bb:firstname	"Dan" .
+bb:208	bb:position	"pitcher" .
+bb:208	bb:team	bbr:Dodgers .
+bb:208	bb:bats	"right" .
+bb:208	bb:throws	"right" .
+bb:208	bb:weight	"215"^^xs:integer .
+bb:208	bb:date-of-birth	"1980-09-17"^^xs:date .
+bb:208	rdf:type		bbr:pitcher .
+bb:208	rdf:type		bbr:setup .
+
+#56 	J.P. Howell 	L-L 	6'0" 	185 	Apr 25, 1983
+bb:209	bb:playerid	"209"^^xs:integer .
+bb:209	bb:number	"56"^^xs:integer .
+bb:209	bb:lastname	"Howell" .
+bb:209	bb:firstname	"J.P." .
+bb:209	bb:position	"pitcher" .
+bb:209	bb:team	bbr:Dodgers .
+bb:209	bb:bats	"left" .
+bb:209	bb:throws	"left" .
+bb:209	bb:weight	"185"^^xs:integer .
+bb:209	bb:date-of-birth	"1983-04-25"^^xs:date .
+bb:209	rdf:type		bbr:pitcher .
+bb:209	rdf:type		bbr:setup .
+
+#74 	Kenley Jansen 	S-R 	6'5" 	265 	Sep 30, 1987
+bb:210	bb:playerid	"210"^^xs:integer .
+bb:210	bb:number	"74"^^xs:integer .
+bb:210	bb:lastname	"Jansen" .
+bb:210	bb:firstname	"Kenley" .
+bb:210	bb:position	"pitcher" .
+bb:210	bb:team	bbr:Dodgers .
+bb:210	bb:bats	"switch" .
+bb:210	bb:throws	"right" .
+bb:210	bb:weight	"265"^^xs:integer .
+bb:210	bb:date-of-birth	"1987-09-30"^^xs:date .
+bb:210	rdf:type		bbr:pitcher .
+bb:210	rdf:type		bbr:closer .
+
+#22 	Clayton Kershaw 	L-L 	6'3" 	225 	Mar 19, 1988
+bb:211	bb:playerid	"211"^^xs:integer .
+bb:211	bb:number	"22"^^xs:integer .
+bb:211	bb:lastname	"Kershaw" .
+bb:211	bb:firstname	"Clayton" .
+bb:211	bb:position	"pitcher" .
+bb:211	bb:team	bbr:Dodgers .
+bb:211	bb:bats	"left" .
+bb:211	bb:throws	"left" .
+bb:211	bb:weight	"225"^^xs:integer .
+bb:211	bb:date-of-birth	"1988-03-19"^^xs:date .
+bb:211	rdf:type		bbr:pitcher .
+bb:211	rdf:type		bbr:setup .
+
+#43 	Brandon League 	R-R 	6'2" 	215 	Mar 16, 1983
+bb:212	bb:playerid	"212"^^xs:integer .
+bb:212	bb:number	"43"^^xs:integer .
+bb:212	bb:lastname	"League" .
+bb:212	bb:firstname	"Brandon" .
+bb:212	bb:position	"pitcher" .
+bb:212	bb:team	bbr:Dodgers .
+bb:212	bb:bats	"right" .
+bb:212	bb:throws	"right" .
+bb:212	bb:weight	"215"^^xs:integer .
+bb:212	bb:date-of-birth	"1983-03-16"^^xs:date .
+bb:212	rdf:type		bbr:pitcher .
+bb:212	rdf:type		bbr:setup .
+
+#36 	Matt Magill 	R-R 	6'3" 	210 	Nov 10, 1989
+bb:213	bb:playerid	"213"^^xs:integer .
+bb:213	bb:number	"36"^^xs:integer .
+bb:213	bb:lastname	"Magill" .
+bb:213	bb:firstname	"Matt" .
+bb:213	bb:position	"pitcher" .
+bb:213	bb:team	bbr:Dodgers .
+bb:213	bb:bats	"right" .
+bb:213	bb:throws	"right" .
+bb:213	bb:weight	"210"^^xs:integer .
+bb:213	bb:date-of-birth	"1989-11-10"^^xs:date .
+bb:213	rdf:type		bbr:pitcher .
+bb:213	rdf:type		bbr:setup .
+
+#76 	Jarret Martin 	L-L 	6'3" 	230 	Aug 14, 1989
+bb:214	bb:playerid	"214"^^xs:integer .
+bb:214	bb:number	"76"^^xs:integer .
+bb:214	bb:lastname	"Martin" .
+bb:214	bb:firstname	"Jarret" .
+bb:214	bb:position	"pitcher" .
+bb:214	bb:team	bbr:Dodgers .
+bb:214	bb:bats	"left" .
+bb:214	bb:throws	"left" .
+bb:214	bb:weight	"230"^^xs:integer .
+bb:214	bb:date-of-birth	"1989-08-14"^^xs:date .
+bb:214	rdf:type		bbr:pitcher .
+bb:214	rdf:type		bbr:setup .
+
+#75 	Paco Rodriguez 	L-L 	6'3" 	220 	Apr 16, 1991
+bb:215	bb:playerid	"215"^^xs:integer .
+bb:215	bb:number	"75"^^xs:integer .
+bb:215	bb:lastname	"Rodriguez" .
+bb:215	bb:firstname	"Paco" .
+bb:215	bb:position	"pitcher" .
+bb:215	bb:team	bbr:Dodgers .
+bb:215	bb:bats	"left" .
+bb:215	bb:throws	"left" .
+bb:215	bb:weight	"220"^^xs:integer .
+bb:215	bb:date-of-birth	"1991-04-16"^^xs:date .
+bb:215	rdf:type		bbr:pitcher .
+bb:215	rdf:type		bbr:setup .
+
+#99 	Hyun-Jin Ryu 	R-L 	6'2" 	255 	Mar 25, 1987
+bb:216	bb:playerid	"216"^^xs:integer .
+bb:216	bb:number	"99"^^xs:integer .
+bb:216	bb:lastname	"Ryu" .
+bb:216	bb:firstname	"Hyun-Jin" .
+bb:216	bb:position	"pitcher" .
+bb:216	bb:team	bbr:Dodgers .
+bb:216	bb:bats	"right" .
+bb:216	bb:throws	"left" .
+bb:216	bb:weight	"255"^^xs:integer .
+bb:216	bb:date-of-birth	"1987-03-25"^^xs:date .
+bb:216	rdf:type		bbr:pitcher .
+bb:216	rdf:type		bbr:setup .
+
+#00 	Brian Wilson 	R-R 	6'1" 	205 	Mar 16, 1982
+bb:217	bb:playerid	"217"^^xs:integer .
+bb:217	bb:lastname	"Wilson" .
+bb:217	bb:firstname	"Brian" .
+bb:217	bb:position	"pitcher" .
+bb:217	bb:team	bbr:Dodgers .
+bb:217	bb:bats	"right" .
+bb:217	bb:throws	"right" .
+bb:217	bb:weight	"205"^^xs:integer .
+bb:217	bb:date-of-birth	"1982-03-16"^^xs:date .
+bb:217	rdf:type		bbr:pitcher .
+bb:217	rdf:type		bbr:setup .
+
+#44 	Chris Withrow 	R-R 	6'4" 	215 	Apr 1, 1989
+bb:218	bb:playerid	"218"^^xs:integer .
+bb:218	bb:number	"44"^^xs:integer .
+bb:218	bb:lastname	"Withrow" .
+bb:218	bb:firstname	"Chris" .
+bb:218	bb:position	"pitcher" .
+bb:218	bb:team	bbr:Dodgers .
+bb:218	bb:bats	"right" .
+bb:218	bb:throws	"right" .
+bb:218	bb:weight	"215"^^xs:integer .
+bb:218	bb:date-of-birth	"1989-04-01"^^xs:date .
+bb:218	rdf:type		bbr:pitcher .
+bb:218	rdf:type		bbr:setup .
+
+# 	Catchers 	B/T 	Ht 	Wt 	DOB
+#31 	Drew Butera 	R-R 	6'1" 	200 	Aug 9, 1983
+bb:219	bb:playerid	"219"^^xs:integer .
+bb:219	bb:number	"31"^^xs:integer .
+bb:219	bb:lastname	"Butera" .
+bb:219	bb:firstname	"Drew" .
+bb:219	bb:position	"catcher" .
+bb:219	bb:team	bbr:Dodgers .
+bb:219	bb:bats	"right" .
+bb:219	bb:throws	"right" .
+bb:219	bb:weight	"200"^^xs:integer .
+bb:219	bb:date-of-birth	"1983-08-09"^^xs:date .
+bb:219	rdf:type		bbr:catcher .
+
+#17 	A.J. Ellis 	R-R 	6'3" 	220 	Apr 9, 1981
+bb:220	bb:playerid	"220"^^xs:integer .
+bb:220	bb:number	"17"^^xs:integer .
+bb:220	bb:lastname	"Ellis" .
+bb:220	bb:firstname	"A.J." .
+bb:220	bb:position	"catcher" .
+bb:220	bb:team	bbr:Dodgers .
+bb:220	bb:bats	"right" .
+bb:220	bb:throws	"right" .
+bb:220	bb:weight	"220"^^xs:integer .
+bb:220	bb:date-of-birth	"1981-04-09"^^xs:date .
+bb:220	rdf:type		bbr:catcher .
+
+#26 	Tim Federowicz 	R-R 	5'10" 	215 	Aug 5, 1987
+bb:221	bb:playerid	"221"^^xs:integer .
+bb:221	bb:number	"26"^^xs:integer .
+bb:221	bb:lastname	"Federowicz" .
+bb:221	bb:firstname	"Tim" .
+bb:221	bb:position	"catcher" .
+bb:221	bb:team	bbr:Dodgers .
+bb:221	bb:bats	"right" .
+bb:221	bb:throws	"right" .
+bb:221	bb:weight	"215"^^xs:integer .
+bb:221	bb:date-of-birth	"1987-08-05"^^xs:date .
+bb:221	rdf:type		bbr:catcher .
+
+# 	Infielders 	B/T 	Ht 	Wt 	DOB
+#11 	Erisbel Arruebarrena 	R-R 	6'0" 	200 	Mar 25, 1990
+bb:222	bb:playerid	"222"^^xs:integer .
+bb:222	bb:number	"11"^^xs:integer .
+bb:222	bb:lastname	"Arruebarrena" .
+bb:222	bb:firstname	"Erisbel" .
+bb:222	bb:position	"infielder" .
+bb:222	bb:team	bbr:Dodgers .
+bb:222	bb:bats	"right" .
+bb:222	bb:throws	"right" .
+bb:222	bb:weight	"200"^^xs:integer .
+bb:222	bb:date-of-birth	"1990-03-25"^^xs:date .
+bb:222	rdf:type		bbr:infielder .
+
+#30 	Darwin Barney 	R-R 	5'10" 	185 	Nov 8, 1985
+bb:223	bb:playerid	"223"^^xs:integer .
+bb:223	bb:number	"30"^^xs:integer .
+bb:223	bb:lastname	"Barney" .
+bb:223	bb:firstname	"Darwin" .
+bb:223	bb:position	"infielder" .
+bb:223	bb:team	bbr:Dodgers .
+bb:223	bb:bats	"right" .
+bb:223	bb:throws	"right" .
+bb:223	bb:weight	"185"^^xs:integer .
+bb:223	bb:date-of-birth	"1985-11-08"^^xs:date .
+bb:223	rdf:type		bbr:infielder .
+
+#23 	Adrian Gonzalez 	L-L 	6'2" 	225 	May 8, 1982
+bb:224	bb:playerid	"224"^^xs:integer .
+bb:224	bb:number	"23"^^xs:integer .
+bb:224	bb:lastname	"Gonzalez" .
+bb:224	bb:firstname	"Adrian" .
+bb:224	bb:position	"infielder" .
+bb:224	bb:team	bbr:Dodgers .
+bb:224	bb:bats	"left" .
+bb:224	bb:throws	"left" .
+bb:224	bb:weight	"225"^^xs:integer .
+bb:224	bb:date-of-birth	"1982-05-08"^^xs:date .
+bb:224	rdf:type		bbr:infielder .
+
+#9 	Dee Gordon 	L-R 	5'11" 	170 	Apr 22, 1988
+bb:225	bb:playerid	"225"^^xs:integer .
+bb:225	bb:number	"9"^^xs:integer .
+bb:225	bb:lastname	"Gordon" .
+bb:225	bb:firstname	"Dee" .
+bb:225	bb:position	"infielder" .
+bb:225	bb:team	bbr:Dodgers .
+bb:225	bb:bats	"left" .
+bb:225	bb:throws	"right" .
+bb:225	bb:weight	"170"^^xs:integer .
+bb:225	bb:date-of-birth	"1988-04-22"^^xs:date .
+bb:225	rdf:type		bbr:infielder .
+
+#7 	Alex Guerrero 	R-R 	5'10" 	205 	Nov 20, 1986
+bb:226	bb:playerid	"226"^^xs:integer .
+bb:226	bb:number	"7"^^xs:integer .
+bb:226	bb:lastname	"Guerrero" .
+bb:226	bb:firstname	"Alex" .
+bb:226	bb:position	"infielder" .
+bb:226	bb:team	bbr:Dodgers .
+bb:226	bb:bats	"right" .
+bb:226	bb:throws	"right" .
+bb:226	bb:weight	"205"^^xs:integer .
+bb:226	bb:date-of-birth	"1986-11-20"^^xs:date .
+bb:226	rdf:type		bbr:infielder .
+
+#	Ryan Jackson 	R-R 	6'3" 	180 	May 10, 1988
+bb:227	bb:playerid	"227"^^xs:integer .
+bb:227	bb:lastname	"Jackson" .
+bb:227	bb:firstname	"Ryan" .
+bb:227	bb:position	"infielder" .
+bb:227	bb:team	bbr:Dodgers .
+bb:227	bb:bats	"right" .
+bb:227	bb:throws	"right" .
+bb:227	bb:weight	"180"^^xs:integer .
+bb:227	bb:date-of-birth	"1988-05-10"^^xs:date .
+bb:227	rdf:type		bbr:infielder .
+
+#72 	Miguel Rojas 	R-R 	6'0" 	150 	Feb 24, 1989
+bb:228	bb:playerid	"228"^^xs:integer .
+bb:228	bb:number	"72"^^xs:integer .
+bb:228	bb:lastname	"Rojas" .
+bb:228	bb:firstname	"Miguel" .
+bb:228	bb:position	"infielder" .
+bb:228	bb:team	bbr:Dodgers .
+bb:228	bb:bats	"right" .
+bb:228	bb:throws	"right" .
+bb:228	bb:weight	"150"^^xs:integer .
+bb:228	bb:date-of-birth	"1989-02-24"^^xs:date .
+bb:228	rdf:type		bbr:infielder .
+
+#10 	Justin Turner 	R-R 	6'0" 	210 	Nov 23, 1984
+bb:229	bb:playerid	"229"^^xs:integer .
+bb:229	bb:number	"10"^^xs:integer .
+bb:229	bb:lastname	"Turner" .
+bb:229	bb:firstname	"Justin" .
+bb:229	bb:position	"infielder" .
+bb:229	bb:team	bbr:Dodgers .
+bb:229	bb:bats	"right" .
+bb:229	bb:throws	"right" .
+bb:229	bb:weight	"210"^^xs:integer .
+bb:229	bb:date-of-birth	"1984-11-23"^^xs:date .
+bb:229	rdf:type		bbr:infielder .
+
+#5 	Juan Uribe 	R-R 	6'0" 	235 	Mar 22, 1979
+bb:230	bb:playerid	"230"^^xs:integer .
+bb:230	bb:number	"5"^^xs:integer .
+bb:230	bb:lastname	"Uribe" .
+bb:230	bb:firstname	"Juan" .
+bb:230	bb:position	"infielder" .
+bb:230	bb:team	bbr:Dodgers .
+bb:230	bb:bats	"right" .
+bb:230	bb:throws	"right" .
+bb:230	bb:weight	"235"^^xs:integer .
+bb:230	bb:date-of-birth	"1979-03-22"^^xs:date .
+bb:230	rdf:type		bbr:infielder .
+
+# 	Outfielders 	B/T 	Ht 	Wt 	DOB
+#3 	Carl Crawford 	L-L 	6'2" 	225 	Aug 5, 1981
+bb:231	bb:playerid	"231"^^xs:integer .
+bb:231	bb:number	"3"^^xs:integer .
+bb:231	bb:lastname	"Crawford" .
+bb:231	bb:firstname	"Carl" .
+bb:231	bb:position	"outfielder" .
+bb:231	bb:team	bbr:Dodgers .
+bb:231	bb:bats	"left" .
+bb:231	bb:throws	"left" .
+bb:231	bb:weight	"225"^^xs:integer .
+bb:231	bb:date-of-birth	"1981-08-05"^^xs:date .
+bb:231	rdf:type		bbr:outfielder .
+
+#16 	Andre Ethier 	L-L 	6'2" 	200 	Apr 10, 1982
+bb:232	bb:playerid	"232"^^xs:integer .
+bb:232	bb:number	"16"^^xs:integer .
+bb:232	bb:lastname	"Ethier" .
+bb:232	bb:firstname	"Andre" .
+bb:232	bb:position	"outfielder" .
+bb:232	bb:team	bbr:Dodgers .
+bb:232	bb:bats	"left" .
+bb:232	bb:throws	"left" .
+bb:232	bb:weight	"200"^^xs:integer .
+bb:232	bb:date-of-birth	"1982-04-10"^^xs:date .
+bb:232	rdf:type		bbr:outfielder .
+
+#27 	Matt Kemp 	R-R 	6'4" 	215 	Sep 23, 1984
+bb:233	bb:playerid	"233"^^xs:integer .
+bb:233	bb:number	"27"^^xs:integer .
+bb:233	bb:lastname	"Kemp" .
+bb:233	bb:firstname	"Matt" .
+bb:233	bb:position	"outfielder" .
+bb:233	bb:team	bbr:Dodgers .
+bb:233	bb:bats	"right" .
+bb:233	bb:throws	"right" .
+bb:233	bb:weight	"215"^^xs:integer .
+bb:233	bb:date-of-birth	"1984-09-23"^^xs:date .
+bb:233	rdf:type		bbr:outfielder .
+
+#65 	Joc Pederson 	L-L 	6'1" 	185 	Apr 21, 1992
+bb:234	bb:playerid	"234"^^xs:integer .
+bb:234	bb:number	"65"^^xs:integer .
+bb:234	bb:lastname	"Pederson" .
+bb:234	bb:firstname	"Joc" .
+bb:234	bb:position	"outfielder" .
+bb:234	bb:team	bbr:Dodgers .
+bb:234	bb:bats	"left" .
+bb:234	bb:throws	"left" .
+bb:234	bb:weight	"185"^^xs:integer .
+bb:234	bb:date-of-birth	"1992-04-21"^^xs:date .
+bb:234	rdf:type		bbr:outfielder .
+
+#66 	Yasiel Puig 	R-R 	6'3" 	235 	Dec 7, 1990
+bb:235	bb:playerid	"235"^^xs:integer .
+bb:235	bb:number	"66"^^xs:integer .
+bb:235	bb:lastname	"Puig" .
+bb:235	bb:firstname	"Yasiel" .
+bb:235	bb:position	"outfielder" .
+bb:235	bb:team	bbr:Dodgers .
+bb:235	bb:bats	"right" .
+bb:235	bb:throws	"right" .
+bb:235	bb:weight	"235"^^xs:integer .
+bb:235	bb:date-of-birth	"1990-12-07"^^xs:date .
+bb:235	rdf:type		bbr:outfielder .
+
+#33 	Scott Van Slyke 	R-R 	6'5" 	220 	Jul 24, 1986
+bb:236	bb:playerid	"236"^^xs:integer .
+bb:236	bb:number	"33"^^xs:integer .
+bb:236	bb:lastname	"Van Slyke" .
+bb:236	bb:firstname	"Scott" .
+bb:236	bb:position	"outfielder" .
+bb:236	bb:team	bbr:Dodgers .
+bb:236	bb:bats	"right" .
+bb:236	bb:throws	"right" .
+bb:236	bb:weight	"220"^^xs:integer .
+bb:236	bb:date-of-birth	"1986-07-24"^^xs:date .
+bb:236	rdf:type		bbr:outfielder .
+
+#	Manager	Don LASTNAME
+bb:257	bb:lastname	"Mattingly" .
+bb:257	bb:firstname	"Don" .
+bb:257	bb:position	"manager" .
+bb:257	bb:team	bbr:Dodgers .
+bb:257	bb:number	"8"^^xs:integer .
+bb:257	bbr:coachingRole		bbr:manager .
+
+#	Coach	Tim Wallach
+bb:258	bb:lastname	"Wallach" .
+bb:258	bb:firstname	"Tim" .
+bb:258	bb:position	"coach" .
+bb:258	bb:number	"29"^^xs:integer .
+bb:258	bb:team	bbr:Dodgers .
+bb:258	bbr:coachingRole		bbr:benchCoach .
+
+#	Coach	Mark McGwire
+bb:259	bb:lastname	"McGwire" .
+bb:259	bb:firstname	"Mark" .
+bb:259	bb:position	"coach" .
+bb:259	bb:number	"25"^^xs:integer .
+bb:259	bb:team	bbr:Dodgers .
+bb:259	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	John Valentin
+bb:260	bb:lastname	"Valentin" .
+bb:260	bb:firstname	"John" .
+bb:260	bb:position	"coach" .
+bb:260	bb:number	"12"^^xs:integer .
+bb:260	bb:team	bbr:Dodgers .
+bb:260	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Davey Lopes
+bb:261	bb:lastname	"Lopes" .
+bb:261	bb:firstname	"Davey" .
+bb:261	bb:position	"coach" .
+bb:261	bb:number	"100"^^xs:integer .
+bb:261	bb:team	bbr:Dodgers .
+bb:261	bbr:coachingRole		bbr:firstBaseCoach .
+
+#	Coach	Lorenzo Bundy
+bb:262	bb:lastname	"Bundy" .
+bb:262	bb:firstname	"Lorenzo" .
+bb:262	bb:position	"coach" .
+bb:262	bb:number	"100"^^xs:integer .
+bb:262	bb:team	bbr:Dodgers .
+bb:262	bbr:coachingRole		bbr:thirdBaseCoach .
+
+#	Coach	Rick Honeycutt
+bb:263	bb:lastname	"Honeycutt" .
+bb:263	bb:firstname	"Rick" .
+bb:263	bb:position	"coach" .
+bb:263	bb:number	"40"^^xs:integer .
+bb:263	bb:team	bbr:Dodgers .
+bb:263	bbr:coachingRole		bbr:pitchingCoach .
+
+#	Coach	Chuck Crimm
+bb:264	bb:lastname	"Crimm" .
+bb:264	bb:firstname	"Chuck" .
+bb:264	bb:position	"coach" .
+bb:264	bb:number	"50"^^xs:integer .
+bb:264	bb:team	bbr:Dodgers .
+bb:264	bbr:coachingRole		bbr:bullpenCoach .
+
+#	Coach	Rob Flippo
+bb:265	bb:lastname	"Flippo" .
+bb:265	bb:firstname	"Rob" .
+bb:265	bb:position	"coach" .
+bb:265	bb:number	"85"^^xs:integer .
+bb:265	bb:team	bbr:Dodgers .
+bb:265	bbr:coachingRole		bbr:bullpenCatcher .
+
+#	Coach	Steve Cilladi
+bb:266	bb:lastname	"Cilladi" .
+bb:266	bb:firstname	"Steve" .
+bb:266	bb:position	"coach" .
+bb:266	bb:number	"82"^^xs:integer .
+bb:266	bb:team	bbr:Dodgers .
+bb:266	bbr:coachingRole		bbr:bullpenCatcher .
+
+#	Coach	Steve Yeager
+bb:267	bb:lastname	"Yeager" .
+bb:267	bb:firstname	"Steve" .
+bb:267	bb:position	"coach" .
+bb:267	bb:number	"7"^^xs:integer .
+bb:267	bb:team	bbr:Dodgers .
+bb:267	bbr:coachingRole		bbr:catchingCoach .
+
+
+

@@ -1,0 +1,618 @@
+
+prefix bb: <http://marklogic.com/baseball/players#> 
+prefix bbr: <http://marklogic.com/baseball/rules#> 
+prefix xs: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+
+#bb:pX  bb:playerid "XX"^^xs:integer .
+#bb:XX  bb:lastname     "LASTNAME" .
+#bb:XX  bb:firstname    "FIRSTNAME" .
+#bb:XX  bb:position     "POSITION" .
+#bb:XX  bb:number       "NUMBER"^^xs:integer .
+#bb:XX  bb:team         "Athletics" .
+#bb:XX  bb:birthdate    "1989-10-26"^^xs:date .
+#bb:XX  bb:bats         "right" .
+#bb:XX  bb:throws       "right" .
+#bb:XX  bb:height       "" .
+#bb:XX  bb:weight       "220"^^xs:integer .
+#bb:XXX a       bbr:player .
+#bb:XXX a       bbr:pitcher .
+#bb:XXX a       bbr:starter .
+#bb:XXX a       bbr:setup .
+
+
+# 	Pitchers 	B/T 	Ht 	Wt 	DOB
+#40 	Dylan Axelrod 	R-R 	6'0" 	195 	Jul 30, 1985
+bb:2401	bb:playerid	"2401"^^xs:integer .
+bb:2401	bb:number	"40"^^xs:integer .
+bb:2401	bb:lastname	"Axelrod" .
+bb:2401	bb:firstname	"Dylan" .
+bb:2401	bb:position	"pitcher" .
+bb:2401	bb:team	bbr:Reds .
+bb:2401	bb:bats	"right" .
+bb:2401	bb:throws	"right" .
+bb:2401	bb:weight	"195"^^xs:integer .
+bb:2401	bb:date-of-birth	"1985-07-30"^^xs:date .
+bb:2401	rdf:type		bbr:pitcher .
+bb:2401	rdf:type		bbr:setup .
+
+#34 	Homer Bailey 	R-R 	6'4" 	230 	May 3, 1986
+bb:2402	bb:playerid	"2402"^^xs:integer .
+bb:2402	bb:number	"34"^^xs:integer .
+bb:2402	bb:lastname	"Bailey" .
+bb:2402	bb:firstname	"Homer" .
+bb:2402	bb:position	"pitcher" .
+bb:2402	bb:team	bbr:Reds .
+bb:2402	bb:bats	"right" .
+bb:2402	bb:throws	"right" .
+bb:2402	bb:weight	"230"^^xs:integer .
+bb:2402	bb:date-of-birth	"1986-05-03"^^xs:date .
+bb:2402	rdf:type		bbr:pitcher .
+bb:2402	rdf:type		bbr:setup .
+
+#54 	Aroldis Chapman 	L-L 	6'4" 	205 	Feb 28, 1988
+bb:2403	bb:playerid	"2403"^^xs:integer .
+bb:2403	bb:number	"54"^^xs:integer .
+bb:2403	bb:lastname	"Chapman" .
+bb:2403	bb:firstname	"Aroldis" .
+bb:2403	bb:position	"pitcher" .
+bb:2403	bb:team	bbr:Reds .
+bb:2403	bb:bats	"left" .
+bb:2403	bb:throws	"left" .
+bb:2403	bb:weight	"205"^^xs:integer .
+bb:2403	bb:date-of-birth	"1988-02-28"^^xs:date .
+bb:2403	rdf:type		bbr:pitcher .
+bb:2403	rdf:type		bbr:closer .
+
+#52 	Tony Cingrani 	L-L 	6'4" 	215 	Jul 5, 1989
+bb:2404	bb:playerid	"2404"^^xs:integer .
+bb:2404	bb:number	"52"^^xs:integer .
+bb:2404	bb:lastname	"Cingrani" .
+bb:2404	bb:firstname	"Tony" .
+bb:2404	bb:position	"pitcher" .
+bb:2404	bb:team	bbr:Reds .
+bb:2404	bb:bats	"left" .
+bb:2404	bb:throws	"left" .
+bb:2404	bb:weight	"215"^^xs:integer .
+bb:2404	bb:date-of-birth	"1989-07-05"^^xs:date .
+bb:2404	rdf:type		bbr:pitcher .
+bb:2404	rdf:type		bbr:setup .
+
+#53 	Carlos Contreras 	R-R 	5'11" 	205 	Jan 8, 1991
+bb:2405	bb:playerid	"2405"^^xs:integer .
+bb:2405	bb:number	"53"^^xs:integer .
+bb:2405	bb:lastname	"Contreras" .
+bb:2405	bb:firstname	"Carlos" .
+bb:2405	bb:position	"pitcher" .
+bb:2405	bb:team	bbr:Reds .
+bb:2405	bb:bats	"right" .
+bb:2405	bb:throws	"right" .
+bb:2405	bb:weight	"205"^^xs:integer .
+bb:2405	bb:date-of-birth	"1991-01-08"^^xs:date .
+bb:2405	rdf:type		bbr:pitcher .
+bb:2405	rdf:type		bbr:setup .
+
+#64 	Daniel Corcino 	R-R 	5'11" 	210 	Aug 26, 1990
+bb:2406	bb:playerid	"2406"^^xs:integer .
+bb:2406	bb:number	"64"^^xs:integer .
+bb:2406	bb:lastname	"Corcino" .
+bb:2406	bb:firstname	"Daniel" .
+bb:2406	bb:position	"pitcher" .
+bb:2406	bb:team	bbr:Reds .
+bb:2406	bb:bats	"right" .
+bb:2406	bb:throws	"right" .
+bb:2406	bb:weight	"210"^^xs:integer .
+bb:2406	bb:date-of-birth	"1990-08-26"^^xs:date .
+bb:2406	rdf:type		bbr:pitcher .
+bb:2406	rdf:type		bbr:setup .
+
+#47 	Johnny Cueto 	R-R 	5'11" 	215 	Feb 15, 1986
+bb:2407	bb:playerid	"2407"^^xs:integer .
+bb:2407	bb:number	"47"^^xs:integer .
+bb:2407	bb:lastname	"Cueto" .
+bb:2407	bb:firstname	"Johnny" .
+bb:2407	bb:position	"pitcher" .
+bb:2407	bb:team	bbr:Reds .
+bb:2407	bb:bats	"right" .
+bb:2407	bb:throws	"right" .
+bb:2407	bb:weight	"215"^^xs:integer .
+bb:2407	bb:date-of-birth	"1986-02-15"^^xs:date .
+bb:2407	rdf:type		bbr:pitcher .
+bb:2407	rdf:type		bbr:setup .
+
+#41 	Ryan Dennick 	L-L 	6'0" 	185 	Jan 10, 1987
+bb:2408	bb:playerid	"2408"^^xs:integer .
+bb:2408	bb:number	"41"^^xs:integer .
+bb:2408	bb:lastname	"Dennick" .
+bb:2408	bb:firstname	"Ryan" .
+bb:2408	bb:position	"pitcher" .
+bb:2408	bb:team	bbr:Reds .
+bb:2408	bb:bats	"left" .
+bb:2408	bb:throws	"left" .
+bb:2408	bb:weight	"185"^^xs:integer .
+bb:2408	bb:date-of-birth	"1987-01-10"^^xs:date .
+bb:2408	rdf:type		bbr:pitcher .
+bb:2408	rdf:type		bbr:setup .
+
+#70 	Jumbo Diaz 	R-R 	6'4" 	315 	Feb 27, 1984
+bb:2409	bb:playerid	"2409"^^xs:integer .
+bb:2409	bb:number	"70"^^xs:integer .
+bb:2409	bb:lastname	"Diaz" .
+bb:2409	bb:firstname	"Jumbo" .
+bb:2409	bb:position	"pitcher" .
+bb:2409	bb:team	bbr:Reds .
+bb:2409	bb:bats	"right" .
+bb:2409	bb:throws	"right" .
+bb:2409	bb:weight	"315"^^xs:integer .
+bb:2409	bb:date-of-birth	"1984-02-27"^^xs:date .
+bb:2409	rdf:type		bbr:pitcher .
+bb:2409	rdf:type		bbr:setup .
+
+#74 	Ismael Guillon 	L-L 	6'2" 	210 	Feb 13, 1992
+bb:2410	bb:playerid	"2410"^^xs:integer .
+bb:2410	bb:number	"74"^^xs:integer .
+bb:2410	bb:lastname	"Guillon" .
+bb:2410	bb:firstname	"Ismael" .
+bb:2410	bb:position	"pitcher" .
+bb:2410	bb:team	bbr:Reds .
+bb:2410	bb:bats	"left" .
+bb:2410	bb:throws	"left" .
+bb:2410	bb:weight	"210"^^xs:integer .
+bb:2410	bb:date-of-birth	"1992-02-13"^^xs:date .
+bb:2410	rdf:type		bbr:pitcher .
+bb:2410	rdf:type		bbr:setup .
+
+#36 	David Holmberg 	R-L 	6'3" 	225 	Jul 19, 1991
+bb:2411	bb:playerid	"2411"^^xs:integer .
+bb:2411	bb:number	"36"^^xs:integer .
+bb:2411	bb:lastname	"Holmberg" .
+bb:2411	bb:firstname	"David" .
+bb:2411	bb:position	"pitcher" .
+bb:2411	bb:team	bbr:Reds .
+bb:2411	bb:bats	"right" .
+bb:2411	bb:throws	"left" .
+bb:2411	bb:weight	"225"^^xs:integer .
+bb:2411	bb:date-of-birth	"1991-07-19"^^xs:date .
+bb:2411	rdf:type		bbr:pitcher .
+bb:2411	rdf:type		bbr:setup .
+
+#60 	J.J. Hoover 	R-R 	6'3" 	230 	Aug 13, 1987
+bb:2412	bb:playerid	"2412"^^xs:integer .
+bb:2412	bb:number	"60"^^xs:integer .
+bb:2412	bb:lastname	"Hoover" .
+bb:2412	bb:firstname	"J.J." .
+bb:2412	bb:position	"pitcher" .
+bb:2412	bb:team	bbr:Reds .
+bb:2412	bb:bats	"right" .
+bb:2412	bb:throws	"right" .
+bb:2412	bb:weight	"230"^^xs:integer .
+bb:2412	bb:date-of-birth	"1987-08-13"^^xs:date .
+bb:2412	rdf:type		bbr:pitcher .
+bb:2412	rdf:type		bbr:setup .
+
+#	Raisel Iglesias 	R-R 	6'2" 	165 	Jan 4, 1990
+bb:2413	bb:playerid	"2413"^^xs:integer .
+bb:2413	bb:lastname	"Iglesias" .
+bb:2413	bb:firstname	"Raisel" .
+bb:2413	bb:position	"pitcher" .
+bb:2413	bb:team	bbr:Reds .
+bb:2413	bb:bats	"right" .
+bb:2413	bb:throws	"right" .
+bb:2413	bb:weight	"165"^^xs:integer .
+bb:2413	bb:date-of-birth	"1990-01-04"^^xs:date .
+bb:2413	rdf:type		bbr:pitcher .
+bb:2413	rdf:type		bbr:setup .
+
+#55 	Mat Latos 	R-R 	6'6" 	245 	Dec 9, 1987
+bb:2414	bb:playerid	"2414"^^xs:integer .
+bb:2414	bb:number	"55"^^xs:integer .
+bb:2414	bb:lastname	"Latos" .
+bb:2414	bb:firstname	"Mat" .
+bb:2414	bb:position	"pitcher" .
+bb:2414	bb:team	bbr:Reds .
+bb:2414	bb:bats	"right" .
+bb:2414	bb:throws	"right" .
+bb:2414	bb:weight	"245"^^xs:integer .
+bb:2414	bb:date-of-birth	"1987-12-09"^^xs:date .
+bb:2414	rdf:type		bbr:pitcher .
+bb:2414	rdf:type		bbr:setup .
+
+#44 	Mike Leake 	R-R 	5'10" 	190 	Nov 12, 1987
+bb:2415	bb:playerid	"2415"^^xs:integer .
+bb:2415	bb:number	"44"^^xs:integer .
+bb:2415	bb:lastname	"Leake" .
+bb:2415	bb:firstname	"Mike" .
+bb:2415	bb:position	"pitcher" .
+bb:2415	bb:team	bbr:Reds .
+bb:2415	bb:bats	"right" .
+bb:2415	bb:throws	"right" .
+bb:2415	bb:weight	"190"^^xs:integer .
+bb:2415	bb:date-of-birth	"1987-11-12"^^xs:date .
+bb:2415	rdf:type		bbr:pitcher .
+bb:2415	rdf:type		bbr:setup .
+
+#63 	Sam LeCure 	R-R 	6'0" 	205 	May 4, 1984
+bb:2416	bb:playerid	"2416"^^xs:integer .
+bb:2416	bb:number	"63"^^xs:integer .
+bb:2416	bb:lastname	"LeCure" .
+bb:2416	bb:firstname	"Sam" .
+bb:2416	bb:position	"pitcher" .
+bb:2416	bb:team	bbr:Reds .
+bb:2416	bb:bats	"right" .
+bb:2416	bb:throws	"right" .
+bb:2416	bb:weight	"205"^^xs:integer .
+bb:2416	bb:date-of-birth	"1984-05-04"^^xs:date .
+bb:2416	rdf:type		bbr:pitcher .
+bb:2416	rdf:type		bbr:setup .
+
+#45 	Sean Marshall 	L-L 	6'7" 	225 	Aug 30, 1982
+bb:2417	bb:playerid	"2417"^^xs:integer .
+bb:2417	bb:number	"45"^^xs:integer .
+bb:2417	bb:lastname	"Marshall" .
+bb:2417	bb:firstname	"Sean" .
+bb:2417	bb:position	"pitcher" .
+bb:2417	bb:team	bbr:Reds .
+bb:2417	bb:bats	"left" .
+bb:2417	bb:throws	"left" .
+bb:2417	bb:weight	"225"^^xs:integer .
+bb:2417	bb:date-of-birth	"1982-08-30"^^xs:date .
+bb:2417	rdf:type		bbr:pitcher .
+bb:2417	rdf:type		bbr:setup .
+
+#66 	Logan Ondrusek 	R-R 	6'8" 	230 	Feb 13, 1985
+bb:2418	bb:playerid	"2418"^^xs:integer .
+bb:2418	bb:number	"66"^^xs:integer .
+bb:2418	bb:lastname	"Ondrusek" .
+bb:2418	bb:firstname	"Logan" .
+bb:2418	bb:position	"pitcher" .
+bb:2418	bb:team	bbr:Reds .
+bb:2418	bb:bats	"right" .
+bb:2418	bb:throws	"right" .
+bb:2418	bb:weight	"230"^^xs:integer .
+bb:2418	bb:date-of-birth	"1985-02-13"^^xs:date .
+bb:2418	rdf:type		bbr:pitcher .
+bb:2418	rdf:type		bbr:setup .
+
+#43 	Manny Parra 	L-L 	6'3" 	215 	Oct 30, 1982
+bb:2419	bb:playerid	"2419"^^xs:integer .
+bb:2419	bb:number	"43"^^xs:integer .
+bb:2419	bb:lastname	"Parra" .
+bb:2419	bb:firstname	"Manny" .
+bb:2419	bb:position	"pitcher" .
+bb:2419	bb:team	bbr:Reds .
+bb:2419	bb:bats	"left" .
+bb:2419	bb:throws	"left" .
+bb:2419	bb:weight	"215"^^xs:integer .
+bb:2419	bb:date-of-birth	"1982-10-30"^^xs:date .
+bb:2419	rdf:type		bbr:pitcher .
+bb:2419	rdf:type		bbr:setup .
+
+#46 	Curtis Partch 	R-R 	6'5" 	240 	Feb 13, 1987
+bb:2420	bb:playerid	"2420"^^xs:integer .
+bb:2420	bb:number	"46"^^xs:integer .
+bb:2420	bb:lastname	"Partch" .
+bb:2420	bb:firstname	"Curtis" .
+bb:2420	bb:position	"pitcher" .
+bb:2420	bb:team	bbr:Reds .
+bb:2420	bb:bats	"right" .
+bb:2420	bb:throws	"right" .
+bb:2420	bb:weight	"240"^^xs:integer .
+bb:2420	bb:date-of-birth	"1987-02-13"^^xs:date .
+bb:2420	rdf:type		bbr:pitcher .
+bb:2420	rdf:type		bbr:setup .
+
+#31 	Alfredo Simon 	R-R 	6'6" 	265 	May 8, 1981
+bb:2421	bb:playerid	"2421"^^xs:integer .
+bb:2421	bb:number	"31"^^xs:integer .
+bb:2421	bb:lastname	"Simon" .
+bb:2421	bb:firstname	"Alfredo" .
+bb:2421	bb:position	"pitcher" .
+bb:2421	bb:team	bbr:Reds .
+bb:2421	bb:bats	"right" .
+bb:2421	bb:throws	"right" .
+bb:2421	bb:weight	"265"^^xs:integer .
+bb:2421	bb:date-of-birth	"1981-05-08"^^xs:date .
+bb:2421	rdf:type		bbr:pitcher .
+bb:2421	rdf:type		bbr:setup .
+
+#62 	Pedro Villarreal 	R-R 	6'1" 	230 	Dec 9, 1987
+bb:2422	bb:playerid	"2422"^^xs:integer .
+bb:2422	bb:number	"62"^^xs:integer .
+bb:2422	bb:lastname	"Villarreal" .
+bb:2422	bb:firstname	"Pedro" .
+bb:2422	bb:position	"pitcher" .
+bb:2422	bb:team	bbr:Reds .
+bb:2422	bb:bats	"right" .
+bb:2422	bb:throws	"right" .
+bb:2422	bb:weight	"230"^^xs:integer .
+bb:2422	bb:date-of-birth	"1987-12-09"^^xs:date .
+bb:2422	rdf:type		bbr:pitcher .
+bb:2422	rdf:type		bbr:setup .
+
+# 	Catchers 	B/T 	Ht 	Wt 	DOB
+#16 	Tucker Barnhart 	S-R 	5'11" 	195 	Jan 7, 1991
+bb:2423	bb:playerid	"2423"^^xs:integer .
+bb:2423	bb:number	"16"^^xs:integer .
+bb:2423	bb:lastname	"Barnhart" .
+bb:2423	bb:firstname	"Tucker" .
+bb:2423	bb:position	"catcher" .
+bb:2423	bb:team	bbr:Reds .
+bb:2423	bb:bats	"switch" .
+bb:2423	bb:throws	"right" .
+bb:2423	bb:weight	"195"^^xs:integer .
+bb:2423	bb:date-of-birth	"1991-01-07"^^xs:date .
+bb:2423	rdf:type		bbr:catcher .
+
+#39 	Devin Mesoraco 	R-R 	6'1" 	220 	Jun 19, 1988
+bb:2424	bb:playerid	"2424"^^xs:integer .
+bb:2424	bb:number	"39"^^xs:integer .
+bb:2424	bb:lastname	"Mesoraco" .
+bb:2424	bb:firstname	"Devin" .
+bb:2424	bb:position	"catcher" .
+bb:2424	bb:team	bbr:Reds .
+bb:2424	bb:bats	"right" .
+bb:2424	bb:throws	"right" .
+bb:2424	bb:weight	"220"^^xs:integer .
+bb:2424	bb:date-of-birth	"1988-06-19"^^xs:date .
+bb:2424	rdf:type		bbr:catcher .
+
+#29 	Brayan Pena 	S-R 	5'9" 	230 	Jan 7, 1982
+bb:2425	bb:playerid	"2425"^^xs:integer .
+bb:2425	bb:number	"29"^^xs:integer .
+bb:2425	bb:lastname	"Pena" .
+bb:2425	bb:firstname	"Brayan" .
+bb:2425	bb:position	"catcher" .
+bb:2425	bb:team	bbr:Reds .
+bb:2425	bb:bats	"switch" .
+bb:2425	bb:throws	"right" .
+bb:2425	bb:weight	"230"^^xs:integer .
+bb:2425	bb:date-of-birth	"1982-01-07"^^xs:date .
+bb:2425	rdf:type		bbr:catcher .
+
+# 	Infielders 	B/T 	Ht 	Wt 	DOB
+#2 	Zack Cozart 	R-R 	6'0" 	195 	Aug 12, 1985
+bb:2426	bb:playerid	"2426"^^xs:integer .
+bb:2426	bb:number	"2"^^xs:integer .
+bb:2426	bb:lastname	"Cozart" .
+bb:2426	bb:firstname	"Zack" .
+bb:2426	bb:position	"infielder" .
+bb:2426	bb:team	bbr:Reds .
+bb:2426	bb:bats	"right" .
+bb:2426	bb:throws	"right" .
+bb:2426	bb:weight	"195"^^xs:integer .
+bb:2426	bb:date-of-birth	"1985-08-12"^^xs:date .
+bb:2426	rdf:type		bbr:infielder .
+
+#21 	Todd Frazier 	R-R 	6'3" 	220 	Feb 12, 1986
+bb:2427	bb:playerid	"2427"^^xs:integer .
+bb:2427	bb:number	"21"^^xs:integer .
+bb:2427	bb:lastname	"Frazier" .
+bb:2427	bb:firstname	"Todd" .
+bb:2427	bb:position	"infielder" .
+bb:2427	bb:team	bbr:Reds .
+bb:2427	bb:bats	"right" .
+bb:2427	bb:throws	"right" .
+bb:2427	bb:weight	"220"^^xs:integer .
+bb:2427	bb:date-of-birth	"1986-02-12"^^xs:date .
+bb:2427	rdf:type		bbr:infielder .
+
+#23 	Donald Lutz 	L-R 	6'3" 	250 	Feb 6, 1989
+bb:2428	bb:playerid	"2428"^^xs:integer .
+bb:2428	bb:number	"23"^^xs:integer .
+bb:2428	bb:lastname	"Lutz" .
+bb:2428	bb:firstname	"Donald" .
+bb:2428	bb:position	"infielder" .
+bb:2428	bb:team	bbr:Reds .
+bb:2428	bb:bats	"left" .
+bb:2428	bb:throws	"right" .
+bb:2428	bb:weight	"250"^^xs:integer .
+bb:2428	bb:date-of-birth	"1989-02-06"^^xs:date .
+bb:2428	rdf:type		bbr:infielder .
+
+#17 	Kristopher Negron 	R-R 	6'0" 	195 	Feb 1, 1986
+bb:2429	bb:playerid	"2429"^^xs:integer .
+bb:2429	bb:number	"17"^^xs:integer .
+bb:2429	bb:lastname	"Negron" .
+bb:2429	bb:firstname	"Kristopher" .
+bb:2429	bb:position	"infielder" .
+bb:2429	bb:team	bbr:Reds .
+bb:2429	bb:bats	"right" .
+bb:2429	bb:throws	"right" .
+bb:2429	bb:weight	"195"^^xs:integer .
+bb:2429	bb:date-of-birth	"1986-02-01"^^xs:date .
+bb:2429	rdf:type		bbr:infielder .
+
+#4 	Brandon Phillips 	R-R 	6'0" 	200 	Jun 28, 1981
+bb:2430	bb:playerid	"2430"^^xs:integer .
+bb:2430	bb:number	"4"^^xs:integer .
+bb:2430	bb:lastname	"Phillips" .
+bb:2430	bb:firstname	"Brandon" .
+bb:2430	bb:position	"infielder" .
+bb:2430	bb:team	bbr:Reds .
+bb:2430	bb:bats	"right" .
+bb:2430	bb:throws	"right" .
+bb:2430	bb:weight	"200"^^xs:integer .
+bb:2430	bb:date-of-birth	"1981-06-28"^^xs:date .
+bb:2430	rdf:type		bbr:infielder .
+
+#19 	Joey Votto 	L-R 	6'2" 	220 	Sep 10, 1983
+bb:2431	bb:playerid	"2431"^^xs:integer .
+bb:2431	bb:number	"19"^^xs:integer .
+bb:2431	bb:lastname	"Votto" .
+bb:2431	bb:firstname	"Joey" .
+bb:2431	bb:position	"infielder" .
+bb:2431	bb:team	bbr:Reds .
+bb:2431	bb:bats	"left" .
+bb:2431	bb:throws	"right" .
+bb:2431	bb:weight	"220"^^xs:integer .
+bb:2431	bb:date-of-birth	"1983-09-10"^^xs:date .
+bb:2431	rdf:type		bbr:infielder .
+
+# 	Outfielders 	B/T 	Ht 	Wt 	DOB
+#30 	Jason Bourgeois 	R-R 	5'9" 	190 	Jan 4, 1982
+bb:2432	bb:playerid	"2432"^^xs:integer .
+bb:2432	bb:number	"30"^^xs:integer .
+bb:2432	bb:lastname	"Bourgeois" .
+bb:2432	bb:firstname	"Jason" .
+bb:2432	bb:position	"outfielder" .
+bb:2432	bb:team	bbr:Reds .
+bb:2432	bb:bats	"right" .
+bb:2432	bb:throws	"right" .
+bb:2432	bb:weight	"190"^^xs:integer .
+bb:2432	bb:date-of-birth	"1982-01-04"^^xs:date .
+bb:2432	rdf:type		bbr:outfielder .
+
+#32 	Jay Bruce 	L-L 	6'3" 	215 	Apr 3, 1987
+bb:2433	bb:playerid	"2433"^^xs:integer .
+bb:2433	bb:number	"32"^^xs:integer .
+bb:2433	bb:lastname	"Bruce" .
+bb:2433	bb:firstname	"Jay" .
+bb:2433	bb:position	"outfielder" .
+bb:2433	bb:team	bbr:Reds .
+bb:2433	bb:bats	"left" .
+bb:2433	bb:throws	"left" .
+bb:2433	bb:weight	"215"^^xs:integer .
+bb:2433	bb:date-of-birth	"1987-04-03"^^xs:date .
+bb:2433	rdf:type		bbr:outfielder .
+
+#69 	Juan Duran 	R-R 	6'7" 	230 	Sep 2, 1991
+bb:2434	bb:playerid	"2434"^^xs:integer .
+bb:2434	bb:number	"69"^^xs:integer .
+bb:2434	bb:lastname	"Duran" .
+bb:2434	bb:firstname	"Juan" .
+bb:2434	bb:position	"outfielder" .
+bb:2434	bb:team	bbr:Reds .
+bb:2434	bb:bats	"right" .
+bb:2434	bb:throws	"right" .
+bb:2434	bb:weight	"230"^^xs:integer .
+bb:2434	bb:date-of-birth	"1991-09-02"^^xs:date .
+bb:2434	rdf:type		bbr:outfielder .
+
+#6 	Billy Hamilton 	S-R 	6'0" 	160 	Sep 9, 1990
+bb:2435	bb:playerid	"2435"^^xs:integer .
+bb:2435	bb:number	"6"^^xs:integer .
+bb:2435	bb:lastname	"Hamilton" .
+bb:2435	bb:firstname	"Billy" .
+bb:2435	bb:position	"outfielder" .
+bb:2435	bb:team	bbr:Reds .
+bb:2435	bb:bats	"switch" .
+bb:2435	bb:throws	"right" .
+bb:2435	bb:weight	"160"^^xs:integer .
+bb:2435	bb:date-of-birth	"1990-09-09"^^xs:date .
+bb:2435	rdf:type		bbr:outfielder .
+
+#28 	Chris Heisey 	R-R 	6'1" 	210 	Dec 14, 1984
+bb:2436	bb:playerid	"2436"^^xs:integer .
+bb:2436	bb:number	"28"^^xs:integer .
+bb:2436	bb:lastname	"Heisey" .
+bb:2436	bb:firstname	"Chris" .
+bb:2436	bb:position	"outfielder" .
+bb:2436	bb:team	bbr:Reds .
+bb:2436	bb:bats	"right" .
+bb:2436	bb:throws	"right" .
+bb:2436	bb:weight	"210"^^xs:integer .
+bb:2436	bb:date-of-birth	"1984-12-14"^^xs:date .
+bb:2436	rdf:type		bbr:outfielder .
+
+#33 	Yorman Rodriguez 	R-R 	6'3" 	195 	Aug 15, 1992
+bb:2437	bb:playerid	"2437"^^xs:integer .
+bb:2437	bb:number	"33"^^xs:integer .
+bb:2437	bb:lastname	"Rodriguez" .
+bb:2437	bb:firstname	"Yorman" .
+bb:2437	bb:position	"outfielder" .
+bb:2437	bb:team	bbr:Reds .
+bb:2437	bb:bats	"right" .
+bb:2437	bb:throws	"right" .
+bb:2437	bb:weight	"195"^^xs:integer .
+bb:2437	bb:date-of-birth	"1992-08-15"^^xs:date .
+bb:2437	rdf:type		bbr:outfielder .
+
+#25 	Skip Schumaker 	L-R 	5'10" 	195 	Feb 3, 1980
+bb:2438	bb:playerid	"2438"^^xs:integer .
+bb:2438	bb:number	"25"^^xs:integer .
+bb:2438	bb:lastname	"Schumaker" .
+bb:2438	bb:firstname	"Skip" .
+bb:2438	bb:position	"outfielder" .
+bb:2438	bb:team	bbr:Reds .
+bb:2438	bb:bats	"left" .
+bb:2438	bb:throws	"right" .
+bb:2438	bb:weight	"195"^^xs:integer .
+bb:2438	bb:date-of-birth	"1980-02-03"^^xs:date .
+bb:2438	rdf:type		bbr:outfielder .
+
+#	Manager	Bryan Price
+bb:2459	bb:lastname	"Price" .
+bb:2459	bb:firstname	"Bryan" .
+bb:2459	bb:position	"manager" .
+bb:2459	bb:team	bbr:Reds .
+bb:2459	bb:number	"38"^^xs:integer .
+bb:2459	bbr:coachingRole		bbr:manager .
+
+#	Coach	Jay Bell
+bb:2460	bb:lastname	"Bell" .
+bb:2460	bb:firstname	"Jay" .
+bb:2460	bb:position	"coach" .
+bb:2460	bb:number	"49"^^xs:integer .
+bb:2460	bb:team	bbr:Reds .
+bb:2460	bbr:coachingRole		bbr:benchCoach .
+
+#	Coach	Don Long
+bb:2461	bb:lastname	"Long" .
+bb:2461	bb:firstname	"Don" .
+bb:2461	bb:position	"coach" .
+bb:2461	bb:number	"59"^^xs:integer .
+bb:2461	bb:team	bbr:Reds .
+bb:2461	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Lee Tinsley
+bb:2462	bb:lastname	"Tinsley" .
+bb:2462	bb:firstname	"Lee" .
+bb:2462	bb:position	"coach" .
+bb:2462	bb:number	"61"^^xs:integer .
+bb:2462	bb:team	bbr:Reds .
+bb:2462	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Billy Hatcher
+bb:2463	bb:lastname	"Hatcher" .
+bb:2463	bb:firstname	"Billy" .
+bb:2463	bb:position	"coach" .
+bb:2463	bb:number	"22"^^xs:integer .
+bb:2463	bb:team	bbr:Reds .
+bb:2463	bbr:coachingRole		bbr:firstBaseCoach .
+
+#	Coach	Jim Riggleman
+bb:2464	bb:lastname	"Riggleman" .
+bb:2464	bb:firstname	"Jim" .
+bb:2464	bb:position	"coach" .
+bb:2464	bb:number	"100"^^xs:integer .
+bb:2464	bb:team	bbr:Reds .
+bb:2464	bbr:coachingRole		bbr:thirdBaseCoach .
+
+#	Coach	Jeff Pico
+bb:2465	bb:lastname	"Pico" .
+bb:2465	bb:firstname	"Jeff" .
+bb:2465	bb:position	"coach" .
+bb:2465	bb:number	"56"^^xs:integer .
+bb:2465	bb:team	bbr:Reds .
+bb:2465	bbr:coachingRole		bbr:pitchingCoach .
+
+#	Coach	Mack Jenkins
+bb:2466	bb:lastname	"Jenkins" .
+bb:2466	bb:firstname	"Mack" .
+bb:2466	bb:position	"coach" .
+bb:2466	bb:number	"57"^^xs:integer .
+bb:2466	bb:team	bbr:Reds .
+bb:2466	bbr:coachingRole		bbr:bullpenCoach .
+
+#	Coach	Nilson Antigua
+bb:2467	bb:lastname	"Antigua" .
+bb:2467	bb:firstname	"Nilson" .
+bb:2467	bb:position	"coach" .
+bb:2467	bb:number	"75"^^xs:integer .
+bb:2467	bb:team	bbr:Reds .
+bb:2467	bbr:coachingRole		bbr:bullpenCatcher .
+
+
+

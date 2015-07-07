@@ -1,0 +1,8 @@
+<sem:triples xmlns:sem="http://marklogic.com/semantics">
+<sem:triple xmlns:sem="http://marklogic.com/semantics">
+<sem:subject>http://example.org/about</sem:subject>
+<sem:predicate>http://purl.org/dc/elements/1.1/title</sem:predicate>
+<sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Anna's Homepage</sem:object>
+</sem:triple>
+</sem:triples>
+

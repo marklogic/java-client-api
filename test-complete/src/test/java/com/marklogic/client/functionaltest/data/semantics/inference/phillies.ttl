@@ -1,0 +1,547 @@
+
+prefix bb: <http://marklogic.com/baseball/players#> 
+prefix bbr: <http://marklogic.com/baseball/rules#> 
+prefix xs: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+
+#bb:pX  bb:playerid "XX"^^xs:integer .
+#bb:XX  bb:lastname     "LASTNAME" .
+#bb:XX  bb:firstname    "FIRSTNAME" .
+#bb:XX  bb:position     "POSITION" .
+#bb:XX  bb:number       "NUMBER"^^xs:integer .
+#bb:XX  bb:team         "Athletics" .
+#bb:XX  bb:birthdate    "1989-10-26"^^xs:date .
+#bb:XX  bb:bats         "right" .
+#bb:XX  bb:throws       "right" .
+#bb:XX  bb:height       "" .
+#bb:XX  bb:weight       "220"^^xs:integer .
+#bb:XXX a       bbr:player .
+#bb:XXX a       bbr:pitcher .
+#bb:XXX a       bbr:starter .
+#bb:XXX a       bbr:setup .
+
+
+# 	Pitchers 	B/T 	Ht 	Wt 	DOB
+#48 	Phillippe Aumont 	L-R 	6'7" 	260 	Jan 7, 1989
+bb:1901	bb:playerid	"1901"^^xs:integer .
+bb:1901	bb:number	"48"^^xs:integer .
+bb:1901	bb:lastname	"Aumont" .
+bb:1901	bb:firstname	"Phillippe" .
+bb:1901	bb:position	"pitcher" .
+bb:1901	bb:team	bbr:Phillies .
+bb:1901	bb:bats	"left" .
+bb:1901	bb:throws	"right" .
+bb:1901	bb:weight	"260"^^xs:integer .
+bb:1901	bb:date-of-birth	"1989-01-07"^^xs:date .
+bb:1901	rdf:type		bbr:pitcher .
+bb:1901	rdf:type		bbr:setup .
+
+#59 	Antonio Bastardo 	R-L 	5'11" 	200 	Sep 21, 1985
+bb:1902	bb:playerid	"1902"^^xs:integer .
+bb:1902	bb:number	"59"^^xs:integer .
+bb:1902	bb:lastname	"Bastardo" .
+bb:1902	bb:firstname	"Antonio" .
+bb:1902	bb:position	"pitcher" .
+bb:1902	bb:team	bbr:Phillies .
+bb:1902	bb:bats	"right" .
+bb:1902	bb:throws	"left" .
+bb:1902	bb:weight	"200"^^xs:integer .
+bb:1902	bb:date-of-birth	"1985-09-21"^^xs:date .
+bb:1902	rdf:type		bbr:pitcher .
+bb:1902	rdf:type		bbr:setup .
+
+#55 	David Buchanan 	R-R 	6'3" 	200 	May 11, 1989
+bb:1903	bb:playerid	"1903"^^xs:integer .
+bb:1903	bb:number	"55"^^xs:integer .
+bb:1903	bb:lastname	"Buchanan" .
+bb:1903	bb:firstname	"David" .
+bb:1903	bb:position	"pitcher" .
+bb:1903	bb:team	bbr:Phillies .
+bb:1903	bb:bats	"right" .
+bb:1903	bb:throws	"right" .
+bb:1903	bb:weight	"200"^^xs:integer .
+bb:1903	bb:date-of-birth	"1989-05-11"^^xs:date .
+bb:1903	rdf:type		bbr:pitcher .
+bb:1903	rdf:type		bbr:setup .
+
+#30 	Justin De Fratus 	S-R 	6'4" 	225 	Oct 21, 1987
+bb:1904	bb:playerid	"1904"^^xs:integer .
+bb:1904	bb:number	"30"^^xs:integer .
+bb:1904	bb:lastname	"De Fratus" .
+bb:1904	bb:firstname	"Justin" .
+bb:1904	bb:position	"pitcher" .
+bb:1904	bb:team	bbr:Phillies .
+bb:1904	bb:bats	"switch" .
+bb:1904	bb:throws	"right" .
+bb:1904	bb:weight	"225"^^xs:integer .
+bb:1904	bb:date-of-birth	"1987-10-21"^^xs:date .
+bb:1904	rdf:type		bbr:pitcher .
+bb:1904	rdf:type		bbr:setup .
+
+#63 	Jake Diekman 	L-L 	6'4" 	200 	Jan 21, 1987
+bb:1905	bb:playerid	"1905"^^xs:integer .
+bb:1905	bb:number	"63"^^xs:integer .
+bb:1905	bb:lastname	"Diekman" .
+bb:1905	bb:firstname	"Jake" .
+bb:1905	bb:position	"pitcher" .
+bb:1905	bb:team	bbr:Phillies .
+bb:1905	bb:bats	"left" .
+bb:1905	bb:throws	"left" .
+bb:1905	bb:weight	"200"^^xs:integer .
+bb:1905	bb:date-of-birth	"1987-01-21"^^xs:date .
+bb:1905	rdf:type		bbr:pitcher .
+bb:1905	rdf:type		bbr:setup .
+
+#57 	Luis Garcia 	R-R 	6'2" 	210 	Jan 30, 1987
+bb:1906	bb:playerid	"1906"^^xs:integer .
+bb:1906	bb:number	"57"^^xs:integer .
+bb:1906	bb:lastname	"Garcia" .
+bb:1906	bb:firstname	"Luis" .
+bb:1906	bb:position	"pitcher" .
+bb:1906	bb:team	bbr:Phillies .
+bb:1906	bb:bats	"right" .
+bb:1906	bb:throws	"right" .
+bb:1906	bb:weight	"210"^^xs:integer .
+bb:1906	bb:date-of-birth	"1987-01-30"^^xs:date .
+bb:1906	rdf:type		bbr:pitcher .
+bb:1906	rdf:type		bbr:setup .
+
+#53 	Ken Giles 	R-R 	6'2" 	205 	Sep 20, 1990
+bb:1907	bb:playerid	"1907"^^xs:integer .
+bb:1907	bb:number	"53"^^xs:integer .
+bb:1907	bb:lastname	"Giles" .
+bb:1907	bb:firstname	"Ken" .
+bb:1907	bb:position	"pitcher" .
+bb:1907	bb:team	bbr:Phillies .
+bb:1907	bb:bats	"right" .
+bb:1907	bb:throws	"right" .
+bb:1907	bb:weight	"205"^^xs:integer .
+bb:1907	bb:date-of-birth	"1990-09-20"^^xs:date .
+bb:1907	rdf:type		bbr:pitcher .
+bb:1907	rdf:type		bbr:setup .
+
+#75 	Miguel Alfredo Gonzalez 	R-R 	6'3" 	200 	Sep 23, 1986
+bb:1908	bb:playerid	"1908"^^xs:integer .
+bb:1908	bb:number	"75"^^xs:integer .
+bb:1908	bb:lastname	"Alfredo Gonzalez" .
+bb:1908	bb:firstname	"Miguel" .
+bb:1908	bb:position	"pitcher" .
+bb:1908	bb:team	bbr:Phillies .
+bb:1908	bb:bats	"right" .
+bb:1908	bb:throws	"right" .
+bb:1908	bb:weight	"200"^^xs:integer .
+bb:1908	bb:date-of-birth	"1986-09-23"^^xs:date .
+bb:1908	rdf:type		bbr:pitcher .
+bb:1908	rdf:type		bbr:setup .
+
+#35 	Cole Hamels 	L-L 	6'3" 	195 	Dec 27, 1983
+bb:1909	bb:playerid	"1909"^^xs:integer .
+bb:1909	bb:number	"35"^^xs:integer .
+bb:1909	bb:lastname	"Hamels" .
+bb:1909	bb:firstname	"Cole" .
+bb:1909	bb:position	"pitcher" .
+bb:1909	bb:team	bbr:Phillies .
+bb:1909	bb:bats	"left" .
+bb:1909	bb:throws	"left" .
+bb:1909	bb:weight	"195"^^xs:integer .
+bb:1909	bb:date-of-birth	"1983-12-27"^^xs:date .
+bb:1909	rdf:type		bbr:pitcher .
+bb:1909	rdf:type		bbr:setup .
+
+#43 	Mario Hollands 	L-L 	6'5" 	220 	Aug 26, 1988
+bb:1910	bb:playerid	"1910"^^xs:integer .
+bb:1910	bb:number	"43"^^xs:integer .
+bb:1910	bb:lastname	"Hollands" .
+bb:1910	bb:firstname	"Mario" .
+bb:1910	bb:position	"pitcher" .
+bb:1910	bb:team	bbr:Phillies .
+bb:1910	bb:bats	"left" .
+bb:1910	bb:throws	"left" .
+bb:1910	bb:weight	"220"^^xs:integer .
+bb:1910	bb:date-of-birth	"1988-08-26"^^xs:date .
+bb:1910	rdf:type		bbr:pitcher .
+bb:1910	rdf:type		bbr:setup .
+
+#56 	Cesar Jimenez 	L-L 	5'11" 	210 	Nov 12, 1984
+bb:1911	bb:playerid	"1911"^^xs:integer .
+bb:1911	bb:number	"56"^^xs:integer .
+bb:1911	bb:lastname	"Jimenez" .
+bb:1911	bb:firstname	"Cesar" .
+bb:1911	bb:position	"pitcher" .
+bb:1911	bb:team	bbr:Phillies .
+bb:1911	bb:bats	"left" .
+bb:1911	bb:throws	"left" .
+bb:1911	bb:weight	"210"^^xs:integer .
+bb:1911	bb:date-of-birth	"1984-11-12"^^xs:date .
+bb:1911	rdf:type		bbr:pitcher .
+bb:1911	rdf:type		bbr:setup .
+
+#33 	Cliff Lee 	L-L 	6'3" 	205 	Aug 30, 1978
+bb:1912	bb:playerid	"1912"^^xs:integer .
+bb:1912	bb:number	"33"^^xs:integer .
+bb:1912	bb:lastname	"Lee" .
+bb:1912	bb:firstname	"Cliff" .
+bb:1912	bb:position	"pitcher" .
+bb:1912	bb:team	bbr:Phillies .
+bb:1912	bb:bats	"left" .
+bb:1912	bb:throws	"left" .
+bb:1912	bb:weight	"205"^^xs:integer .
+bb:1912	bb:date-of-birth	"1978-08-30"^^xs:date .
+bb:1912	rdf:type		bbr:pitcher .
+bb:1912	rdf:type		bbr:setup .
+
+#49 	Ethan Martin 	R-R 	6'2" 	220 	Jun 6, 1989
+bb:1913	bb:playerid	"1913"^^xs:integer .
+bb:1913	bb:number	"49"^^xs:integer .
+bb:1913	bb:lastname	"Martin" .
+bb:1913	bb:firstname	"Ethan" .
+bb:1913	bb:position	"pitcher" .
+bb:1913	bb:team	bbr:Phillies .
+bb:1913	bb:bats	"right" .
+bb:1913	bb:throws	"right" .
+bb:1913	bb:weight	"220"^^xs:integer .
+bb:1913	bb:date-of-birth	"1989-06-06"^^xs:date .
+bb:1913	rdf:type		bbr:pitcher .
+bb:1913	rdf:type		bbr:setup .
+
+#50 	Hector Neris 	R-R 	6'2" 	175 	Jun 14, 1989
+bb:1914	bb:playerid	"1914"^^xs:integer .
+bb:1914	bb:number	"50"^^xs:integer .
+bb:1914	bb:lastname	"Neris" .
+bb:1914	bb:firstname	"Hector" .
+bb:1914	bb:position	"pitcher" .
+bb:1914	bb:team	bbr:Phillies .
+bb:1914	bb:bats	"right" .
+bb:1914	bb:throws	"right" .
+bb:1914	bb:weight	"175"^^xs:integer .
+bb:1914	bb:date-of-birth	"1989-06-14"^^xs:date .
+bb:1914	rdf:type		bbr:pitcher .
+bb:1914	rdf:type		bbr:setup .
+
+#58 	Jonathan Papelbon 	R-R 	6'4" 	215 	Nov 23, 1980
+bb:1915	bb:playerid	"1915"^^xs:integer .
+bb:1915	bb:number	"58"^^xs:integer .
+bb:1915	bb:lastname	"Papelbon" .
+bb:1915	bb:firstname	"Jonathan" .
+bb:1915	bb:position	"pitcher" .
+bb:1915	bb:team	bbr:Phillies .
+bb:1915	bb:bats	"right" .
+bb:1915	bb:throws	"right" .
+bb:1915	bb:weight	"215"^^xs:integer .
+bb:1915	bb:date-of-birth	"1980-11-23"^^xs:date .
+bb:1915	rdf:type		bbr:pitcher .
+bb:1915	rdf:type		bbr:closer .
+
+#44 	Jonathan Pettibone 	L-R 	6'6" 	225 	Jul 19, 1990
+bb:1916	bb:playerid	"1916"^^xs:integer .
+bb:1916	bb:number	"44"^^xs:integer .
+bb:1916	bb:lastname	"Pettibone" .
+bb:1916	bb:firstname	"Jonathan" .
+bb:1916	bb:position	"pitcher" .
+bb:1916	bb:team	bbr:Phillies .
+bb:1916	bb:bats	"left" .
+bb:1916	bb:throws	"right" .
+bb:1916	bb:weight	"225"^^xs:integer .
+bb:1916	bb:date-of-birth	"1990-07-19"^^xs:date .
+bb:1916	rdf:type		bbr:pitcher .
+bb:1916	rdf:type		bbr:setup .
+
+# 	Catchers 	B/T 	Ht 	Wt 	DOB
+#73 	Tommy Joseph 	R-R 	6'1" 	225 	Jul 16, 1991
+bb:1917	bb:playerid	"1917"^^xs:integer .
+bb:1917	bb:number	"73"^^xs:integer .
+bb:1917	bb:lastname	"Joseph" .
+bb:1917	bb:firstname	"Tommy" .
+bb:1917	bb:position	"catcher" .
+bb:1917	bb:team	bbr:Phillies .
+bb:1917	bb:bats	"right" .
+bb:1917	bb:throws	"right" .
+bb:1917	bb:weight	"225"^^xs:integer .
+bb:1917	bb:date-of-birth	"1991-07-16"^^xs:date .
+bb:1917	rdf:type		bbr:catcher .
+
+#51 	Carlos Ruiz 	R-R 	5'10" 	205 	Jan 22, 1979
+bb:1918	bb:playerid	"1918"^^xs:integer .
+bb:1918	bb:number	"51"^^xs:integer .
+bb:1918	bb:lastname	"Ruiz" .
+bb:1918	bb:firstname	"Carlos" .
+bb:1918	bb:position	"catcher" .
+bb:1918	bb:team	bbr:Phillies .
+bb:1918	bb:bats	"right" .
+bb:1918	bb:throws	"right" .
+bb:1918	bb:weight	"205"^^xs:integer .
+bb:1918	bb:date-of-birth	"1979-01-22"^^xs:date .
+bb:1918	rdf:type		bbr:catcher .
+
+#29 	Cameron Rupp 	R-R 	6'2" 	250 	Sep 28, 1988
+bb:1919	bb:playerid	"1919"^^xs:integer .
+bb:1919	bb:number	"29"^^xs:integer .
+bb:1919	bb:lastname	"Rupp" .
+bb:1919	bb:firstname	"Cameron" .
+bb:1919	bb:position	"catcher" .
+bb:1919	bb:team	bbr:Phillies .
+bb:1919	bb:bats	"right" .
+bb:1919	bb:throws	"right" .
+bb:1919	bb:weight	"250"^^xs:integer .
+bb:1919	bb:date-of-birth	"1988-09-28"^^xs:date .
+bb:1919	rdf:type		bbr:catcher .
+
+# 	Infielders 	B/T 	Ht 	Wt 	DOB
+#25 	Cody Asche 	L-R 	6'1" 	200 	Jun 30, 1990
+bb:1920	bb:playerid	"1920"^^xs:integer .
+bb:1920	bb:number	"25"^^xs:integer .
+bb:1920	bb:lastname	"Asche" .
+bb:1920	bb:firstname	"Cody" .
+bb:1920	bb:position	"infielder" .
+bb:1920	bb:team	bbr:Phillies .
+bb:1920	bb:bats	"left" .
+bb:1920	bb:throws	"right" .
+bb:1920	bb:weight	"200"^^xs:integer .
+bb:1920	bb:date-of-birth	"1990-06-30"^^xs:date .
+bb:1920	rdf:type		bbr:infielder .
+
+#7 	Maikel Franco 	R-R 	6'1" 	180 	Aug 26, 1992
+bb:1921	bb:playerid	"1921"^^xs:integer .
+bb:1921	bb:number	"7"^^xs:integer .
+bb:1921	bb:lastname	"Franco" .
+bb:1921	bb:firstname	"Maikel" .
+bb:1921	bb:position	"infielder" .
+bb:1921	bb:team	bbr:Phillies .
+bb:1921	bb:bats	"right" .
+bb:1921	bb:throws	"right" .
+bb:1921	bb:weight	"180"^^xs:integer .
+bb:1921	bb:date-of-birth	"1992-08-26"^^xs:date .
+bb:1921	rdf:type		bbr:infielder .
+
+#13 	Freddy Galvis 	S-R 	5'10" 	185 	Nov 14, 1989
+bb:1922	bb:playerid	"1922"^^xs:integer .
+bb:1922	bb:number	"13"^^xs:integer .
+bb:1922	bb:lastname	"Galvis" .
+bb:1922	bb:firstname	"Freddy" .
+bb:1922	bb:position	"infielder" .
+bb:1922	bb:team	bbr:Phillies .
+bb:1922	bb:bats	"switch" .
+bb:1922	bb:throws	"right" .
+bb:1922	bb:weight	"185"^^xs:integer .
+bb:1922	bb:date-of-birth	"1989-11-14"^^xs:date .
+bb:1922	rdf:type		bbr:infielder .
+
+#16 	Cesar Hernandez 	S-R 	5'10" 	166 	May 23, 1990
+bb:1923	bb:playerid	"1923"^^xs:integer .
+bb:1923	bb:number	"16"^^xs:integer .
+bb:1923	bb:lastname	"Hernandez" .
+bb:1923	bb:firstname	"Cesar" .
+bb:1923	bb:position	"infielder" .
+bb:1923	bb:team	bbr:Phillies .
+bb:1923	bb:bats	"switch" .
+bb:1923	bb:throws	"right" .
+bb:1923	bb:weight	"166"^^xs:integer .
+bb:1923	bb:date-of-birth	"1990-05-23"^^xs:date .
+bb:1923	rdf:type		bbr:infielder .
+
+#6 	Ryan Howard 	L-L 	6'4" 	250 	Nov 19, 1979
+bb:1924	bb:playerid	"1924"^^xs:integer .
+bb:1924	bb:number	"6"^^xs:integer .
+bb:1924	bb:lastname	"Howard" .
+bb:1924	bb:firstname	"Ryan" .
+bb:1924	bb:position	"infielder" .
+bb:1924	bb:team	bbr:Phillies .
+bb:1924	bb:bats	"left" .
+bb:1924	bb:throws	"left" .
+bb:1924	bb:weight	"250"^^xs:integer .
+bb:1924	bb:date-of-birth	"1979-11-19"^^xs:date .
+bb:1924	rdf:type		bbr:infielder .
+
+#11 	Jimmy Rollins 	S-R 	5'8" 	180 	Nov 27, 1978
+bb:1925	bb:playerid	"1925"^^xs:integer .
+bb:1925	bb:number	"11"^^xs:integer .
+bb:1925	bb:lastname	"Rollins" .
+bb:1925	bb:firstname	"Jimmy" .
+bb:1925	bb:position	"infielder" .
+bb:1925	bb:team	bbr:Phillies .
+bb:1925	bb:bats	"switch" .
+bb:1925	bb:throws	"right" .
+bb:1925	bb:weight	"180"^^xs:integer .
+bb:1925	bb:date-of-birth	"1978-11-27"^^xs:date .
+bb:1925	rdf:type		bbr:infielder .
+
+#26 	Chase Utley 	L-R 	6'1" 	200 	Dec 17, 1978
+bb:1926	bb:playerid	"1926"^^xs:integer .
+bb:1926	bb:number	"26"^^xs:integer .
+bb:1926	bb:lastname	"Utley" .
+bb:1926	bb:firstname	"Chase" .
+bb:1926	bb:position	"infielder" .
+bb:1926	bb:team	bbr:Phillies .
+bb:1926	bb:bats	"left" .
+bb:1926	bb:throws	"right" .
+bb:1926	bb:weight	"200"^^xs:integer .
+bb:1926	bb:date-of-birth	"1978-12-17"^^xs:date .
+bb:1926	rdf:type		bbr:infielder .
+
+# 	Outfielders 	B/T 	Ht 	Wt 	DOB
+#	Aaron Altherr 	R-R 	6'5" 	220 	Jan 14, 1991
+bb:1927	bb:playerid	"1927"^^xs:integer .
+bb:1927	bb:lastname	"Altherr" .
+bb:1927	bb:firstname	"Aaron" .
+bb:1927	bb:position	"outfielder" .
+bb:1927	bb:team	bbr:Phillies .
+bb:1927	bb:bats	"right" .
+bb:1927	bb:throws	"right" .
+bb:1927	bb:weight	"220"^^xs:integer .
+bb:1927	bb:date-of-birth	"1991-01-14"^^xs:date .
+bb:1927	rdf:type		bbr:outfielder .
+
+#9 	Domonic Brown 	L-L 	6'5" 	230 	Sep 3, 1987
+bb:1928	bb:playerid	"1928"^^xs:integer .
+bb:1928	bb:number	"9"^^xs:integer .
+bb:1928	bb:lastname	"Brown" .
+bb:1928	bb:firstname	"Domonic" .
+bb:1928	bb:position	"outfielder" .
+bb:1928	bb:team	bbr:Phillies .
+bb:1928	bb:bats	"left" .
+bb:1928	bb:throws	"left" .
+bb:1928	bb:weight	"230"^^xs:integer .
+bb:1928	bb:date-of-birth	"1987-09-03"^^xs:date .
+bb:1928	rdf:type		bbr:outfielder .
+
+#3 	Marlon Byrd 	R-R 	6'0" 	245 	Aug 30, 1977
+bb:1929	bb:playerid	"1929"^^xs:integer .
+bb:1929	bb:number	"3"^^xs:integer .
+bb:1929	bb:lastname	"Byrd" .
+bb:1929	bb:firstname	"Marlon" .
+bb:1929	bb:position	"outfielder" .
+bb:1929	bb:team	bbr:Phillies .
+bb:1929	bb:bats	"right" .
+bb:1929	bb:throws	"right" .
+bb:1929	bb:weight	"245"^^xs:integer .
+bb:1929	bb:date-of-birth	"1977-08-30"^^xs:date .
+bb:1929	rdf:type		bbr:outfielder .
+
+#72 	Kelly Dugan 	L-R 	6'3" 	215 	Sep 18, 1990
+bb:1930	bb:playerid	"1930"^^xs:integer .
+bb:1930	bb:number	"72"^^xs:integer .
+bb:1930	bb:lastname	"Dugan" .
+bb:1930	bb:firstname	"Kelly" .
+bb:1930	bb:position	"outfielder" .
+bb:1930	bb:team	bbr:Phillies .
+bb:1930	bb:bats	"left" .
+bb:1930	bb:throws	"right" .
+bb:1930	bb:weight	"215"^^xs:integer .
+bb:1930	bb:date-of-birth	"1990-09-18"^^xs:date .
+bb:1930	rdf:type		bbr:outfielder .
+
+#2 	Ben Revere 	L-R 	5'9" 	165 	May 3, 1988
+bb:1931	bb:playerid	"1931"^^xs:integer .
+bb:1931	bb:number	"2"^^xs:integer .
+bb:1931	bb:lastname	"Revere" .
+bb:1931	bb:firstname	"Ben" .
+bb:1931	bb:position	"outfielder" .
+bb:1931	bb:team	bbr:Phillies .
+bb:1931	bb:bats	"left" .
+bb:1931	bb:throws	"right" .
+bb:1931	bb:weight	"165"^^xs:integer .
+bb:1931	bb:date-of-birth	"1988-05-03"^^xs:date .
+bb:1931	rdf:type		bbr:outfielder .
+
+#18 	Darin Ruf 	R-R 	6'3" 	240 	Jul 28, 1986
+bb:1932	bb:playerid	"1932"^^xs:integer .
+bb:1932	bb:number	"18"^^xs:integer .
+bb:1932	bb:lastname	"Ruf" .
+bb:1932	bb:firstname	"Darin" .
+bb:1932	bb:position	"outfielder" .
+bb:1932	bb:team	bbr:Phillies .
+bb:1932	bb:bats	"right" .
+bb:1932	bb:throws	"right" .
+bb:1932	bb:weight	"240"^^xs:integer .
+bb:1932	bb:date-of-birth	"1986-07-28"^^xs:date .
+bb:1932	rdf:type		bbr:outfielder .
+
+#24 	Grady Sizemore 	L-L 	6'2" 	200 	Aug 2, 1982
+bb:1933	bb:playerid	"1933"^^xs:integer .
+bb:1933	bb:number	"24"^^xs:integer .
+bb:1933	bb:lastname	"Sizemore" .
+bb:1933	bb:firstname	"Grady" .
+bb:1933	bb:position	"outfielder" .
+bb:1933	bb:team	bbr:Phillies .
+bb:1933	bb:bats	"left" .
+bb:1933	bb:throws	"left" .
+bb:1933	bb:weight	"200"^^xs:integer .
+bb:1933	bb:date-of-birth	"1982-08-02"^^xs:date .
+bb:1933	rdf:type		bbr:outfielder .
+
+#	Manager	Ryne Sandberg
+bb:1954	bb:lastname	"Sandberg" .
+bb:1954	bb:firstname	"Ryne" .
+bb:1954	bb:position	"manager" .
+bb:1954	bb:team	bbr:Phillies .
+bb:1954	bb:number	"23"^^xs:integer .
+bb:1954	bbr:coachingRole		bbr:manager .
+
+#	Coach	Larry Bowa
+bb:1955	bb:lastname	"Bowa" .
+bb:1955	bb:firstname	"Larry" .
+bb:1955	bb:position	"coach" .
+bb:1955	bb:number	"10"^^xs:integer .
+bb:1955	bb:team	bbr:Phillies .
+bb:1955	bbr:coachingRole		bbr:benchCoach .
+
+#	Coach	Steve Henderson
+bb:1956	bb:lastname	"Henderson" .
+bb:1956	bb:firstname	"Steve" .
+bb:1956	bb:position	"coach" .
+bb:1956	bb:number	"5"^^xs:integer .
+bb:1956	bb:team	bbr:Phillies .
+bb:1956	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	John Mizerock
+bb:1957	bb:lastname	"Mizerock" .
+bb:1957	bb:firstname	"John" .
+bb:1957	bb:position	"coach" .
+bb:1957	bb:number	"12"^^xs:integer .
+bb:1957	bb:team	bbr:Phillies .
+bb:1957	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Juan Samuel
+bb:1958	bb:lastname	"Samuel" .
+bb:1958	bb:firstname	"Juan" .
+bb:1958	bb:position	"coach" .
+bb:1958	bb:number	"8"^^xs:integer .
+bb:1958	bb:team	bbr:Phillies .
+bb:1958	bbr:coachingRole		bbr:firstBaseCoach .
+
+#	Coach	Pete Mackanin
+bb:1959	bb:lastname	"Mackanin" .
+bb:1959	bb:firstname	"Pete" .
+bb:1959	bb:position	"coach" .
+bb:1959	bb:number	"45"^^xs:integer .
+bb:1959	bb:team	bbr:Phillies .
+bb:1959	bbr:coachingRole		bbr:thirdBaseCoach .
+
+#	Coach	Bob McClure
+bb:1960	bb:lastname	"McClure" .
+bb:1960	bb:firstname	"Bob" .
+bb:1960	bb:position	"coach" .
+bb:1960	bb:number	"22"^^xs:integer .
+bb:1960	bb:team	bbr:Phillies .
+bb:1960	bbr:coachingRole		bbr:pitchingCoach .
+
+#	Coach	Rod Nichols
+bb:1961	bb:lastname	"Nichols" .
+bb:1961	bb:firstname	"Rod" .
+bb:1961	bb:position	"coach" .
+bb:1961	bb:number	"54"^^xs:integer .
+bb:1961	bb:team	bbr:Phillies .
+bb:1961	bbr:coachingRole		bbr:bullpenCoach .
+
+#	Coach	Jesus Tiamo
+bb:1962	bb:lastname	"Tiamo" .
+bb:1962	bb:firstname	"Jesus" .
+bb:1962	bb:position	"coach" .
+bb:1962	bb:number	"81"^^xs:integer .
+bb:1962	bb:team	bbr:Phillies .
+bb:1962	bbr:coachingRole		bbr:bullpenCatcher .
+
+
+

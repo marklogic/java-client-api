@@ -1,0 +1,591 @@
+
+prefix bb: <http://marklogic.com/baseball/players#> 
+prefix bbr: <http://marklogic.com/baseball/rules#> 
+prefix xs: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+
+#bb:pX  bb:playerid "XX"^^xs:integer .
+#bb:XX  bb:lastname     "LASTNAME" .
+#bb:XX  bb:firstname    "FIRSTNAME" .
+#bb:XX  bb:position     "POSITION" .
+#bb:XX  bb:number       "NUMBER"^^xs:integer .
+#bb:XX  bb:team         "Athletics" .
+#bb:XX  bb:birthdate    "1989-10-26"^^xs:date .
+#bb:XX  bb:bats         "right" .
+#bb:XX  bb:throws       "right" .
+#bb:XX  bb:height       "" .
+#bb:XX  bb:weight       "220"^^xs:integer .
+#bb:XXX a       bbr:player .
+#bb:XXX a       bbr:pitcher .
+#bb:XXX a       bbr:starter .
+#bb:XXX a       bbr:setup .
+
+
+# 	Pitchers 	B/T 	Ht 	Wt 	DOB
+#57 	Chase Anderson 	R-R 	6'0" 	190 	Nov 30, 1987
+bb:1101	bb:playerid	"1101"^^xs:integer .
+bb:1101	bb:number	"57"^^xs:integer .
+bb:1101	bb:lastname	"Anderson" .
+bb:1101	bb:firstname	"Chase" .
+bb:1101	bb:position	"pitcher" .
+bb:1101	bb:team	bbr:DBacks .
+bb:1101	bb:bats	"right" .
+bb:1101	bb:throws	"right" .
+bb:1101	bb:weight	"190"^^xs:integer .
+bb:1101	bb:date-of-birth	"1987-11-30"^^xs:date .
+bb:1101	rdf:type		bbr:pitcher .
+bb:1101	rdf:type		bbr:setup .
+
+#61 	Bronson Arroyo 	R-R 	6'3" 	195 	Feb 24, 1977
+bb:1102	bb:playerid	"1102"^^xs:integer .
+bb:1102	bb:number	"61"^^xs:integer .
+bb:1102	bb:lastname	"Arroyo" .
+bb:1102	bb:firstname	"Bronson" .
+bb:1102	bb:position	"pitcher" .
+bb:1102	bb:team	bbr:DBacks .
+bb:1102	bb:bats	"right" .
+bb:1102	bb:throws	"right" .
+bb:1102	bb:weight	"195"^^xs:integer .
+bb:1102	bb:date-of-birth	"1977-02-24"^^xs:date .
+bb:1102	rdf:type		bbr:pitcher .
+bb:1102	rdf:type		bbr:setup .
+
+#	Mike Bolsinger 	R-R 	6'2" 	210 	Jan 29, 1988
+bb:1103	bb:playerid	"1103"^^xs:integer .
+bb:1103	bb:lastname	"Bolsinger" .
+bb:1103	bb:firstname	"Mike" .
+bb:1103	bb:position	"pitcher" .
+bb:1103	bb:team	bbr:DBacks .
+bb:1103	bb:bats	"right" .
+bb:1103	bb:throws	"right" .
+bb:1103	bb:weight	"210"^^xs:integer .
+bb:1103	bb:date-of-birth	"1988-01-29"^^xs:date .
+bb:1103	rdf:type		bbr:pitcher .
+bb:1103	rdf:type		bbr:setup .
+
+#77 	Charles Brewer 	R-R 	6'3" 	205 	Apr 7, 1988
+bb:1104	bb:playerid	"1104"^^xs:integer .
+bb:1104	bb:number	"77"^^xs:integer .
+bb:1104	bb:lastname	"Brewer" .
+bb:1104	bb:firstname	"Charles" .
+bb:1104	bb:position	"pitcher" .
+bb:1104	bb:team	bbr:DBacks .
+bb:1104	bb:bats	"right" .
+bb:1104	bb:throws	"right" .
+bb:1104	bb:weight	"205"^^xs:integer .
+bb:1104	bb:date-of-birth	"1988-04-07"^^xs:date .
+bb:1104	rdf:type		bbr:pitcher .
+bb:1104	rdf:type		bbr:setup .
+
+#	Enrique Burgos 	R-R 	6'4" 	250 	Nov 23, 1990
+bb:1105	bb:playerid	"1105"^^xs:integer .
+bb:1105	bb:lastname	"Burgos" .
+bb:1105	bb:firstname	"Enrique" .
+bb:1105	bb:position	"pitcher" .
+bb:1105	bb:team	bbr:DBacks .
+bb:1105	bb:bats	"right" .
+bb:1105	bb:throws	"right" .
+bb:1105	bb:weight	"250"^^xs:integer .
+bb:1105	bb:date-of-birth	"1990-11-23"^^xs:date .
+bb:1105	rdf:type		bbr:pitcher .
+bb:1105	rdf:type		bbr:setup .
+
+#35 	Trevor Cahill 	R-R 	6'4" 	220 	Mar 1, 1988
+bb:1106	bb:playerid	"1106"^^xs:integer .
+bb:1106	bb:number	"35"^^xs:integer .
+bb:1106	bb:lastname	"Cahill" .
+bb:1106	bb:firstname	"Trevor" .
+bb:1106	bb:position	"pitcher" .
+bb:1106	bb:team	bbr:DBacks .
+bb:1106	bb:bats	"right" .
+bb:1106	bb:throws	"right" .
+bb:1106	bb:weight	"220"^^xs:integer .
+bb:1106	bb:date-of-birth	"1988-03-01"^^xs:date .
+bb:1106	rdf:type		bbr:pitcher .
+bb:1106	rdf:type		bbr:setup .
+
+#40 	Andrew Chafin 	R-L 	6'2" 	220 	Jun 17, 1990
+bb:1107	bb:playerid	"1107"^^xs:integer .
+bb:1107	bb:number	"40"^^xs:integer .
+bb:1107	bb:lastname	"Chafin" .
+bb:1107	bb:firstname	"Andrew" .
+bb:1107	bb:position	"pitcher" .
+bb:1107	bb:team	bbr:DBacks .
+bb:1107	bb:bats	"right" .
+bb:1107	bb:throws	"left" .
+bb:1107	bb:weight	"220"^^xs:integer .
+bb:1107	bb:date-of-birth	"1990-06-17"^^xs:date .
+bb:1107	rdf:type		bbr:pitcher .
+bb:1107	rdf:type		bbr:setup .
+
+#55 	Josh Collmenter 	R-R 	6'4" 	235 	Feb 7, 1986
+bb:1108	bb:playerid	"1108"^^xs:integer .
+bb:1108	bb:number	"55"^^xs:integer .
+bb:1108	bb:lastname	"Collmenter" .
+bb:1108	bb:firstname	"Josh" .
+bb:1108	bb:position	"pitcher" .
+bb:1108	bb:team	bbr:DBacks .
+bb:1108	bb:bats	"right" .
+bb:1108	bb:throws	"right" .
+bb:1108	bb:weight	"235"^^xs:integer .
+bb:1108	bb:date-of-birth	"1986-02-07"^^xs:date .
+bb:1108	rdf:type		bbr:pitcher .
+bb:1108	rdf:type		bbr:setup .
+
+#46 	Patrick Corbin 	L-L 	6'2" 	185 	Jul 19, 1989
+bb:1109	bb:playerid	"1109"^^xs:integer .
+bb:1109	bb:number	"46"^^xs:integer .
+bb:1109	bb:lastname	"Corbin" .
+bb:1109	bb:firstname	"Patrick" .
+bb:1109	bb:position	"pitcher" .
+bb:1109	bb:team	bbr:DBacks .
+bb:1109	bb:bats	"left" .
+bb:1109	bb:throws	"left" .
+bb:1109	bb:weight	"185"^^xs:integer .
+bb:1109	bb:date-of-birth	"1989-07-19"^^xs:date .
+bb:1109	rdf:type		bbr:pitcher .
+bb:1109	rdf:type		bbr:setup .
+
+#56 	Eury De La Rosa 	L-L 	5'9" 	165 	Feb 24, 1990
+bb:1110	bb:playerid	"1110"^^xs:integer .
+bb:1110	bb:number	"56"^^xs:integer .
+bb:1110	bb:lastname	"De La Rosa" .
+bb:1110	bb:firstname	"Eury" .
+bb:1110	bb:position	"pitcher" .
+bb:1110	bb:team	bbr:DBacks .
+bb:1110	bb:bats	"left" .
+bb:1110	bb:throws	"left" .
+bb:1110	bb:weight	"165"^^xs:integer .
+bb:1110	bb:date-of-birth	"1990-02-24"^^xs:date .
+bb:1110	rdf:type		bbr:pitcher .
+bb:1110	rdf:type		bbr:setup .
+
+#48 	Randall Delgado 	R-R 	6'3" 	200 	Feb 9, 1990
+bb:1111	bb:playerid	"1111"^^xs:integer .
+bb:1111	bb:number	"48"^^xs:integer .
+bb:1111	bb:lastname	"Delgado" .
+bb:1111	bb:firstname	"Randall" .
+bb:1111	bb:position	"pitcher" .
+bb:1111	bb:team	bbr:DBacks .
+bb:1111	bb:bats	"right" .
+bb:1111	bb:throws	"right" .
+bb:1111	bb:weight	"200"^^xs:integer .
+bb:1111	bb:date-of-birth	"1990-02-09"^^xs:date .
+bb:1111	rdf:type		bbr:pitcher .
+bb:1111	rdf:type		bbr:setup .
+
+#30 	David Hernandez 	R-R 	6'3" 	230 	May 13, 1985
+bb:1112	bb:playerid	"1112"^^xs:integer .
+bb:1112	bb:number	"30"^^xs:integer .
+bb:1112	bb:lastname	"Hernandez" .
+bb:1112	bb:firstname	"David" .
+bb:1112	bb:position	"pitcher" .
+bb:1112	bb:team	bbr:DBacks .
+bb:1112	bb:bats	"right" .
+bb:1112	bb:throws	"right" .
+bb:1112	bb:weight	"230"^^xs:integer .
+bb:1112	bb:date-of-birth	"1985-05-13"^^xs:date .
+bb:1112	rdf:type		bbr:pitcher .
+bb:1112	rdf:type		bbr:setup .
+
+#41 	Daniel Hudson 	R-R 	6'3" 	225 	Mar 9, 1987
+bb:1113	bb:playerid	"1113"^^xs:integer .
+bb:1113	bb:number	"41"^^xs:integer .
+bb:1113	bb:lastname	"Hudson" .
+bb:1113	bb:firstname	"Daniel" .
+bb:1113	bb:position	"pitcher" .
+bb:1113	bb:team	bbr:DBacks .
+bb:1113	bb:bats	"right" .
+bb:1113	bb:throws	"right" .
+bb:1113	bb:weight	"225"^^xs:integer .
+bb:1113	bb:date-of-birth	"1987-03-09"^^xs:date .
+bb:1113	rdf:type		bbr:pitcher .
+bb:1113	rdf:type		bbr:setup .
+
+#50 	Evan Marshall 	R-R 	6'2" 	220 	Apr 18, 1990
+bb:1114	bb:playerid	"1114"^^xs:integer .
+bb:1114	bb:number	"50"^^xs:integer .
+bb:1114	bb:lastname	"Marshall" .
+bb:1114	bb:firstname	"Evan" .
+bb:1114	bb:position	"pitcher" .
+bb:1114	bb:team	bbr:DBacks .
+bb:1114	bb:bats	"right" .
+bb:1114	bb:throws	"right" .
+bb:1114	bb:weight	"220"^^xs:integer .
+bb:1114	bb:date-of-birth	"1990-04-18"^^xs:date .
+bb:1114	rdf:type		bbr:pitcher .
+bb:1114	rdf:type		bbr:setup .
+
+#36 	Wade Miley 	L-L 	6'0" 	220 	Nov 13, 1986
+bb:1115	bb:playerid	"1115"^^xs:integer .
+bb:1115	bb:number	"36"^^xs:integer .
+bb:1115	bb:lastname	"Miley" .
+bb:1115	bb:firstname	"Wade" .
+bb:1115	bb:position	"pitcher" .
+bb:1115	bb:team	bbr:DBacks .
+bb:1115	bb:bats	"left" .
+bb:1115	bb:throws	"left" .
+bb:1115	bb:weight	"220"^^xs:integer .
+bb:1115	bb:date-of-birth	"1986-11-13"^^xs:date .
+bb:1115	rdf:type		bbr:pitcher .
+bb:1115	rdf:type		bbr:setup .
+
+#54 	Vidal Nuno 	L-L 	5'11" 	195 	Jul 26, 1987
+bb:1116	bb:playerid	"1116"^^xs:integer .
+bb:1116	bb:number	"54"^^xs:integer .
+bb:1116	bb:lastname	"Nuno" .
+bb:1116	bb:firstname	"Vidal" .
+bb:1116	bb:position	"pitcher" .
+bb:1116	bb:team	bbr:DBacks .
+bb:1116	bb:bats	"left" .
+bb:1116	bb:throws	"left" .
+bb:1116	bb:weight	"195"^^xs:integer .
+bb:1116	bb:date-of-birth	"1987-07-26"^^xs:date .
+bb:1116	rdf:type		bbr:pitcher .
+bb:1116	rdf:type		bbr:setup .
+
+#59 	Oliver Perez 	L-L 	6'3" 	220 	Aug 15, 1981
+bb:1117	bb:playerid	"1117"^^xs:integer .
+bb:1117	bb:number	"59"^^xs:integer .
+bb:1117	bb:lastname	"Perez" .
+bb:1117	bb:firstname	"Oliver" .
+bb:1117	bb:position	"pitcher" .
+bb:1117	bb:team	bbr:DBacks .
+bb:1117	bb:bats	"left" .
+bb:1117	bb:throws	"left" .
+bb:1117	bb:weight	"220"^^xs:integer .
+bb:1117	bb:date-of-birth	"1981-08-15"^^xs:date .
+bb:1117	rdf:type		bbr:pitcher .
+bb:1117	rdf:type		bbr:setup .
+
+#43 	Addison Reed 	L-R 	6'4" 	220 	Dec 27, 1988
+bb:1118	bb:playerid	"1118"^^xs:integer .
+bb:1118	bb:number	"43"^^xs:integer .
+bb:1118	bb:lastname	"Reed" .
+bb:1118	bb:firstname	"Addison" .
+bb:1118	bb:position	"pitcher" .
+bb:1118	bb:team	bbr:DBacks .
+bb:1118	bb:bats	"left" .
+bb:1118	bb:throws	"right" .
+bb:1118	bb:weight	"220"^^xs:integer .
+bb:1118	bb:date-of-birth	"1988-12-27"^^xs:date .
+bb:1118	rdf:type		bbr:pitcher .
+bb:1118	rdf:type		bbr:setup .
+
+#45 	Matt Reynolds 	L-L 	6'5" 	240 	Oct 2, 1984
+bb:1119	bb:playerid	"1119"^^xs:integer .
+bb:1119	bb:number	"45"^^xs:integer .
+bb:1119	bb:lastname	"Reynolds" .
+bb:1119	bb:firstname	"Matt" .
+bb:1119	bb:position	"pitcher" .
+bb:1119	bb:team	bbr:DBacks .
+bb:1119	bb:bats	"left" .
+bb:1119	bb:throws	"left" .
+bb:1119	bb:weight	"240"^^xs:integer .
+bb:1119	bb:date-of-birth	"1984-10-02"^^xs:date .
+bb:1119	rdf:type		bbr:pitcher .
+bb:1119	rdf:type		bbr:setup .
+
+#52 	Zeke Spruill 	R-R 	6'5" 	190 	Sep 11, 1989
+bb:1120	bb:playerid	"1120"^^xs:integer .
+bb:1120	bb:number	"52"^^xs:integer .
+bb:1120	bb:lastname	"Spruill" .
+bb:1120	bb:firstname	"Zeke" .
+bb:1120	bb:position	"pitcher" .
+bb:1120	bb:team	bbr:DBacks .
+bb:1120	bb:bats	"right" .
+bb:1120	bb:throws	"right" .
+bb:1120	bb:weight	"190"^^xs:integer .
+bb:1120	bb:date-of-birth	"1989-09-11"^^xs:date .
+bb:1120	rdf:type		bbr:pitcher .
+bb:1120	rdf:type		bbr:setup .
+
+#37 	Matt Stites 	L-R 	5'11" 	195 	May 28, 1990
+bb:1121	bb:playerid	"1121"^^xs:integer .
+bb:1121	bb:number	"37"^^xs:integer .
+bb:1121	bb:lastname	"Stites" .
+bb:1121	bb:firstname	"Matt" .
+bb:1121	bb:position	"pitcher" .
+bb:1121	bb:team	bbr:DBacks .
+bb:1121	bb:bats	"left" .
+bb:1121	bb:throws	"right" .
+bb:1121	bb:weight	"195"^^xs:integer .
+bb:1121	bb:date-of-birth	"1990-05-28"^^xs:date .
+bb:1121	rdf:type		bbr:pitcher .
+bb:1121	rdf:type		bbr:setup .
+
+#29 	Brad Ziegler 	R-R 	6'4" 	210 	Oct 10, 1979
+bb:1122	bb:playerid	"1122"^^xs:integer .
+bb:1122	bb:number	"29"^^xs:integer .
+bb:1122	bb:lastname	"Ziegler" .
+bb:1122	bb:firstname	"Brad" .
+bb:1122	bb:position	"pitcher" .
+bb:1122	bb:team	bbr:DBacks .
+bb:1122	bb:bats	"right" .
+bb:1122	bb:throws	"right" .
+bb:1122	bb:weight	"210"^^xs:integer .
+bb:1122	bb:date-of-birth	"1979-10-10"^^xs:date .
+bb:1122	rdf:type		bbr:pitcher .
+bb:1122	rdf:type		bbr:setup .
+
+# 	Catchers 	B/T 	Ht 	Wt 	DOB
+#9 	Tuffy Gosewisch 	R-R 	5'11" 	200 	Aug 17, 1983
+bb:1123	bb:playerid	"1123"^^xs:integer .
+bb:1123	bb:number	"9"^^xs:integer .
+bb:1123	bb:lastname	"Gosewisch" .
+bb:1123	bb:firstname	"Tuffy" .
+bb:1123	bb:position	"catcher" .
+bb:1123	bb:team	bbr:DBacks .
+bb:1123	bb:bats	"right" .
+bb:1123	bb:throws	"right" .
+bb:1123	bb:weight	"200"^^xs:integer .
+bb:1123	bb:date-of-birth	"1983-08-17"^^xs:date .
+bb:1123	rdf:type		bbr:catcher .
+
+#26 	Miguel Montero 	L-R 	5'11" 	210 	Jul 9, 1983
+bb:1124	bb:playerid	"1124"^^xs:integer .
+bb:1124	bb:number	"26"^^xs:integer .
+bb:1124	bb:lastname	"Montero" .
+bb:1124	bb:firstname	"Miguel" .
+bb:1124	bb:position	"catcher" .
+bb:1124	bb:team	bbr:DBacks .
+bb:1124	bb:bats	"left" .
+bb:1124	bb:throws	"right" .
+bb:1124	bb:weight	"210"^^xs:integer .
+bb:1124	bb:date-of-birth	"1983-07-09"^^xs:date .
+bb:1124	rdf:type		bbr:catcher .
+
+# 	Infielders 	B/T 	Ht 	Wt 	DOB
+#13 	Nick Ahmed 	R-R 	6'3" 	205 	Mar 15, 1990
+bb:1125	bb:playerid	"1125"^^xs:integer .
+bb:1125	bb:number	"13"^^xs:integer .
+bb:1125	bb:lastname	"Ahmed" .
+bb:1125	bb:firstname	"Nick" .
+bb:1125	bb:position	"infielder" .
+bb:1125	bb:team	bbr:DBacks .
+bb:1125	bb:bats	"right" .
+bb:1125	bb:throws	"right" .
+bb:1125	bb:weight	"205"^^xs:integer .
+bb:1125	bb:date-of-birth	"1990-03-15"^^xs:date .
+bb:1125	rdf:type		bbr:infielder .
+
+#44 	Paul Goldschmidt 	R-R 	6'3" 	245 	Sep 10, 1987
+bb:1126	bb:playerid	"1126"^^xs:integer .
+bb:1126	bb:number	"44"^^xs:integer .
+bb:1126	bb:lastname	"Goldschmidt" .
+bb:1126	bb:firstname	"Paul" .
+bb:1126	bb:position	"infielder" .
+bb:1126	bb:team	bbr:DBacks .
+bb:1126	bb:bats	"right" .
+bb:1126	bb:throws	"right" .
+bb:1126	bb:weight	"245"^^xs:integer .
+bb:1126	bb:date-of-birth	"1987-09-10"^^xs:date .
+bb:1126	rdf:type		bbr:infielder .
+
+#1 	Didi Gregorius 	L-R 	6'2" 	205 	Feb 18, 1990
+bb:1127	bb:playerid	"1127"^^xs:integer .
+bb:1127	bb:number	"1"^^xs:integer .
+bb:1127	bb:lastname	"Gregorius" .
+bb:1127	bb:firstname	"Didi" .
+bb:1127	bb:position	"infielder" .
+bb:1127	bb:team	bbr:DBacks .
+bb:1127	bb:bats	"left" .
+bb:1127	bb:throws	"right" .
+bb:1127	bb:weight	"205"^^xs:integer .
+bb:1127	bb:date-of-birth	"1990-02-18"^^xs:date .
+bb:1127	rdf:type		bbr:infielder .
+
+#2 	Aaron Hill 	R-R 	5'11" 	205 	Mar 21, 1982
+bb:1128	bb:playerid	"1128"^^xs:integer .
+bb:1128	bb:number	"2"^^xs:integer .
+bb:1128	bb:lastname	"Hill" .
+bb:1128	bb:firstname	"Aaron" .
+bb:1128	bb:position	"infielder" .
+bb:1128	bb:team	bbr:DBacks .
+bb:1128	bb:bats	"right" .
+bb:1128	bb:throws	"right" .
+bb:1128	bb:weight	"205"^^xs:integer .
+bb:1128	bb:date-of-birth	"1982-03-21"^^xs:date .
+bb:1128	rdf:type		bbr:infielder .
+
+#19 	Jake Lamb 	L-R 	6'3" 	220 	Oct 9, 1990
+bb:1129	bb:playerid	"1129"^^xs:integer .
+bb:1129	bb:number	"19"^^xs:integer .
+bb:1129	bb:lastname	"Lamb" .
+bb:1129	bb:firstname	"Jake" .
+bb:1129	bb:position	"infielder" .
+bb:1129	bb:team	bbr:DBacks .
+bb:1129	bb:bats	"left" .
+bb:1129	bb:throws	"right" .
+bb:1129	bb:weight	"220"^^xs:integer .
+bb:1129	bb:date-of-birth	"1990-10-09"^^xs:date .
+bb:1129	rdf:type		bbr:infielder .
+
+#16 	Chris Owings 	R-R 	5'10" 	190 	Aug 12, 1991
+bb:1130	bb:playerid	"1130"^^xs:integer .
+bb:1130	bb:number	"16"^^xs:integer .
+bb:1130	bb:lastname	"Owings" .
+bb:1130	bb:firstname	"Chris" .
+bb:1130	bb:position	"infielder" .
+bb:1130	bb:team	bbr:DBacks .
+bb:1130	bb:bats	"right" .
+bb:1130	bb:throws	"right" .
+bb:1130	bb:weight	"190"^^xs:integer .
+bb:1130	bb:date-of-birth	"1991-08-12"^^xs:date .
+bb:1130	rdf:type		bbr:infielder .
+
+#4 	Cliff Pennington 	S-R 	5'10" 	195 	Jun 15, 1984
+bb:1131	bb:playerid	"1131"^^xs:integer .
+bb:1131	bb:number	"4"^^xs:integer .
+bb:1131	bb:lastname	"Pennington" .
+bb:1131	bb:firstname	"Cliff" .
+bb:1131	bb:position	"infielder" .
+bb:1131	bb:team	bbr:DBacks .
+bb:1131	bb:bats	"switch" .
+bb:1131	bb:throws	"right" .
+bb:1131	bb:weight	"195"^^xs:integer .
+bb:1131	bb:date-of-birth	"1984-06-15"^^xs:date .
+bb:1131	rdf:type		bbr:infielder .
+
+# 	Outfielders 	B/T 	Ht 	Wt 	DOB
+#5 	Ender Inciarte 	L-L 	5'10" 	165 	Oct 29, 1990
+bb:1132	bb:playerid	"1132"^^xs:integer .
+bb:1132	bb:number	"5"^^xs:integer .
+bb:1132	bb:lastname	"Inciarte" .
+bb:1132	bb:firstname	"Ender" .
+bb:1132	bb:position	"outfielder" .
+bb:1132	bb:team	bbr:DBacks .
+bb:1132	bb:bats	"left" .
+bb:1132	bb:throws	"left" .
+bb:1132	bb:weight	"165"^^xs:integer .
+bb:1132	bb:date-of-birth	"1990-10-29"^^xs:date .
+bb:1132	rdf:type		bbr:outfielder .
+
+#6 	David Peralta 	L-L 	6'2" 	215 	Aug 14, 1987
+bb:1133	bb:playerid	"1133"^^xs:integer .
+bb:1133	bb:number	"6"^^xs:integer .
+bb:1133	bb:lastname	"Peralta" .
+bb:1133	bb:firstname	"David" .
+bb:1133	bb:position	"outfielder" .
+bb:1133	bb:team	bbr:DBacks .
+bb:1133	bb:bats	"left" .
+bb:1133	bb:throws	"left" .
+bb:1133	bb:weight	"215"^^xs:integer .
+bb:1133	bb:date-of-birth	"1987-08-14"^^xs:date .
+bb:1133	rdf:type		bbr:outfielder .
+
+#11 	A.J. Pollock 	R-R 	6'1" 	195 	Dec 5, 1987
+bb:1134	bb:playerid	"1134"^^xs:integer .
+bb:1134	bb:number	"11"^^xs:integer .
+bb:1134	bb:lastname	"Pollock" .
+bb:1134	bb:firstname	"A.J." .
+bb:1134	bb:position	"outfielder" .
+bb:1134	bb:team	bbr:DBacks .
+bb:1134	bb:bats	"right" .
+bb:1134	bb:throws	"right" .
+bb:1134	bb:weight	"195"^^xs:integer .
+bb:1134	bb:date-of-birth	"1987-12-05"^^xs:date .
+bb:1134	rdf:type		bbr:outfielder .
+
+#7 	Cody Ross 	R-L 	5'10" 	195 	Dec 23, 1980
+bb:1135	bb:playerid	"1135"^^xs:integer .
+bb:1135	bb:number	"7"^^xs:integer .
+bb:1135	bb:lastname	"Ross" .
+bb:1135	bb:firstname	"Cody" .
+bb:1135	bb:position	"outfielder" .
+bb:1135	bb:team	bbr:DBacks .
+bb:1135	bb:bats	"right" .
+bb:1135	bb:throws	"left" .
+bb:1135	bb:weight	"195"^^xs:integer .
+bb:1135	bb:date-of-birth	"1980-12-23"^^xs:date .
+bb:1135	rdf:type		bbr:outfielder .
+
+#15 	Mark Trumbo 	R-R 	6'4" 	235 	Jan 16, 1986
+bb:1136	bb:playerid	"1136"^^xs:integer .
+bb:1136	bb:number	"15"^^xs:integer .
+bb:1136	bb:lastname	"Trumbo" .
+bb:1136	bb:firstname	"Mark" .
+bb:1136	bb:position	"outfielder" .
+bb:1136	bb:team	bbr:DBacks .
+bb:1136	bb:bats	"right" .
+bb:1136	bb:throws	"right" .
+bb:1136	bb:weight	"235"^^xs:integer .
+bb:1136	bb:date-of-birth	"1986-01-16"^^xs:date .
+bb:1136	rdf:type		bbr:outfielder .
+
+#	Manager	FIRSTNAME LASTNAME
+bb:1157	bb:lastname	"Hale" .
+bb:1157	bb:firstname	"Chip" .
+bb:1157	bb:position	"manager" .
+bb:1157	bb:team	bbr:DBacks .
+bb:1157	bb:number	"100"^^xs:integer .
+bb:1157	bbr:coachingRole		bbr:manager .
+
+#	Coach	Glenn Sherlock
+bb:1158	bb:lastname	"Sherlock" .
+bb:1158	bb:firstname	"Glenn" .
+bb:1158	bb:position	"coach" .
+bb:1158	bb:number	"100"^^xs:integer .
+bb:1158	bb:team	bbr:DBacks .
+bb:1158	bbr:coachingRole		bbr:benchCoach .
+
+#	Coach	Turner Ward
+bb:1159	bb:lastname	"Ward" .
+bb:1159	bb:firstname	"Turner" .
+bb:1159	bb:position	"coach" .
+bb:1159	bb:number	"100"^^xs:integer .
+bb:1159	bb:team	bbr:DBacks .
+bb:1159	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Mark Grace
+bb:1160	bb:lastname	"Grace" .
+bb:1160	bb:firstname	"Mark" .
+bb:1160	bb:position	"coach" .
+bb:1160	bb:number	"100"^^xs:integer .
+bb:1160	bb:team	bbr:DBacks .
+bb:1160	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Dave McKay
+bb:1161	bb:lastname	"McKay" .
+bb:1161	bb:firstname	"Dave" .
+bb:1161	bb:position	"coach" .
+bb:1161	bb:number	"100"^^xs:integer .
+bb:1161	bb:team	bbr:DBacks .
+bb:1161	bbr:coachingRole		bbr:firstBaseCoach .
+
+#	Coach	Andy Green
+bb:1162	bb:lastname	"Green" .
+bb:1162	bb:firstname	"Andy" .
+bb:1162	bb:position	"coach" .
+bb:1162	bb:number	"100"^^xs:integer .
+bb:1162	bb:team	bbr:DBacks .
+bb:1162	bbr:coachingRole		bbr:thirdBaseCoach .
+
+#	Coach	Mike Harkey
+bb:1163	bb:lastname	"Harkey" .
+bb:1163	bb:firstname	"Mike" .
+bb:1163	bb:position	"coach" .
+bb:1163	bb:number	"100"^^xs:integer .
+bb:1163	bb:team	bbr:DBacks .
+bb:1163	bbr:coachingRole		bbr:pitchingCoach .
+
+#	Coach	Mel Stottlemyer
+bb:1164	bb:lastname	"Stottlemyer" .
+bb:1164	bb:firstname	"Mel" .
+bb:1164	bb:position	"coach" .
+bb:1164	bb:number	"100"^^xs:integer .
+bb:1164	bb:team	bbr:DBacks .
+bb:1164	bbr:coachingRole		bbr:bullpenCoach .
+
+#	Coach	Henry Blanco
+bb:1165	bb:lastname	"Blanco" .
+bb:1165	bb:firstname	"Henry" .
+bb:1165	bb:position	"coach" .
+bb:1165	bb:number	"100"^^xs:integer .
+bb:1165	bb:team	bbr:DBacks .
+bb:1165	bbr:coachingRole		bbr:bullpenCatcher .
+
+
+

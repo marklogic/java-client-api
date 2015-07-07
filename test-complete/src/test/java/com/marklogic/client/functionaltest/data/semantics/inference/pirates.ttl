@@ -1,0 +1,582 @@
+
+prefix bb: <http://marklogic.com/baseball/players#> 
+prefix bbr: <http://marklogic.com/baseball/rules#> 
+prefix xs: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+
+#bb:pX  bb:playerid "XX"^^xs:integer .
+#bb:XX  bb:lastname     "LASTNAME" .
+#bb:XX  bb:firstname    "FIRSTNAME" .
+#bb:XX  bb:position     "POSITION" .
+#bb:XX  bb:number       "NUMBER"^^xs:integer .
+#bb:XX  bb:team         "Athletics" .
+#bb:XX  bb:birthdate    "1989-10-26"^^xs:date .
+#bb:XX  bb:bats         "right" .
+#bb:XX  bb:throws       "right" .
+#bb:XX  bb:height       "" .
+#bb:XX  bb:weight       "220"^^xs:integer .
+#bb:XXX a       bbr:player .
+#bb:XXX a       bbr:pitcher .
+#bb:XXX a       bbr:starter .
+#bb:XXX a       bbr:setup .
+
+
+# 	Pitchers 	B/T 	Ht 	Wt 	DOB
+#45 	Gerrit Cole 	R-R 	6'4" 	240 	Sep 8, 1990
+bb:2001	bb:playerid	"2001"^^xs:integer .
+bb:2001	bb:number	"45"^^xs:integer .
+bb:2001	bb:lastname	"Cole" .
+bb:2001	bb:firstname	"Gerrit" .
+bb:2001	bb:position	"pitcher" .
+bb:2001	bb:team	bbr:Pirates .
+bb:2001	bb:bats	"right" .
+bb:2001	bb:throws	"right" .
+bb:2001	bb:weight	"240"^^xs:integer .
+bb:2001	bb:date-of-birth	"1990-09-08"^^xs:date .
+bb:2001	rdf:type		bbr:pitcher .
+bb:2001	rdf:type		bbr:setup .
+
+#58 	Brandon Cumpton 	R-R 	6'2" 	220 	Nov 16, 1988
+bb:2002	bb:playerid	"2002"^^xs:integer .
+bb:2002	bb:number	"58"^^xs:integer .
+bb:2002	bb:lastname	"Cumpton" .
+bb:2002	bb:firstname	"Brandon" .
+bb:2002	bb:position	"pitcher" .
+bb:2002	bb:team	bbr:Pirates .
+bb:2002	bb:bats	"right" .
+bb:2002	bb:throws	"right" .
+bb:2002	bb:weight	"220"^^xs:integer .
+bb:2002	bb:date-of-birth	"1988-11-16"^^xs:date .
+bb:2002	rdf:type		bbr:pitcher .
+bb:2002	rdf:type		bbr:setup .
+
+#	Preston Guilmet 	R-R 	6'2" 	200 	Jul 27, 1987
+bb:2003	bb:playerid	"2003"^^xs:integer .
+bb:2003	bb:lastname	"Guilmet" .
+bb:2003	bb:firstname	"Preston" .
+bb:2003	bb:position	"pitcher" .
+bb:2003	bb:team	bbr:Pirates .
+bb:2003	bb:bats	"right" .
+bb:2003	bb:throws	"right" .
+bb:2003	bb:weight	"200"^^xs:integer .
+bb:2003	bb:date-of-birth	"1987-07-27"^^xs:date .
+bb:2003	rdf:type		bbr:pitcher .
+bb:2003	rdf:type		bbr:setup .
+
+#43 	John Holdzkom 	R-R 	6'7" 	225 	Oct 19, 1987
+bb:2004	bb:playerid	"2004"^^xs:integer .
+bb:2004	bb:number	"43"^^xs:integer .
+bb:2004	bb:lastname	"Holdzkom" .
+bb:2004	bb:firstname	"John" .
+bb:2004	bb:position	"pitcher" .
+bb:2004	bb:team	bbr:Pirates .
+bb:2004	bb:bats	"right" .
+bb:2004	bb:throws	"right" .
+bb:2004	bb:weight	"225"^^xs:integer .
+bb:2004	bb:date-of-birth	"1987-10-19"^^xs:date .
+bb:2004	rdf:type		bbr:pitcher .
+bb:2004	rdf:type		bbr:setup .
+
+#48 	Jared Hughes 	R-R 	6'7" 	245 	Jul 4, 1985
+bb:2005	bb:playerid	"2005"^^xs:integer .
+bb:2005	bb:number	"48"^^xs:integer .
+bb:2005	bb:lastname	"Hughes" .
+bb:2005	bb:firstname	"Jared" .
+bb:2005	bb:position	"pitcher" .
+bb:2005	bb:team	bbr:Pirates .
+bb:2005	bb:bats	"right" .
+bb:2005	bb:throws	"right" .
+bb:2005	bb:weight	"245"^^xs:integer .
+bb:2005	bb:date-of-birth	"1985-07-04"^^xs:date .
+bb:2005	rdf:type		bbr:pitcher .
+bb:2005	rdf:type		bbr:setup .
+
+#60 	Bobby LaFromboise 	L-L 	6'4" 	215 	Jun 25, 1986
+bb:2006	bb:playerid	"2006"^^xs:integer .
+bb:2006	bb:number	"60"^^xs:integer .
+bb:2006	bb:lastname	"LaFromboise" .
+bb:2006	bb:firstname	"Bobby" .
+bb:2006	bb:position	"pitcher" .
+bb:2006	bb:team	bbr:Pirates .
+bb:2006	bb:bats	"left" .
+bb:2006	bb:throws	"left" .
+bb:2006	bb:weight	"215"^^xs:integer .
+bb:2006	bb:date-of-birth	"1986-06-25"^^xs:date .
+bb:2006	rdf:type		bbr:pitcher .
+bb:2006	rdf:type		bbr:setup .
+
+#49 	Jeff Locke 	L-L 	6'0" 	185 	Nov 20, 1987
+bb:2007	bb:playerid	"2007"^^xs:integer .
+bb:2007	bb:number	"49"^^xs:integer .
+bb:2007	bb:lastname	"Locke" .
+bb:2007	bb:firstname	"Jeff" .
+bb:2007	bb:position	"pitcher" .
+bb:2007	bb:team	bbr:Pirates .
+bb:2007	bb:bats	"left" .
+bb:2007	bb:throws	"left" .
+bb:2007	bb:weight	"185"^^xs:integer .
+bb:2007	bb:date-of-birth	"1987-11-20"^^xs:date .
+bb:2007	rdf:type		bbr:pitcher .
+bb:2007	rdf:type		bbr:setup .
+
+#35 	Mark Melancon 	R-R 	6'2" 	215 	Mar 28, 1985
+bb:2008	bb:playerid	"2008"^^xs:integer .
+bb:2008	bb:number	"35"^^xs:integer .
+bb:2008	bb:lastname	"Melancon" .
+bb:2008	bb:firstname	"Mark" .
+bb:2008	bb:position	"pitcher" .
+bb:2008	bb:team	bbr:Pirates .
+bb:2008	bb:bats	"right" .
+bb:2008	bb:throws	"right" .
+bb:2008	bb:weight	"215"^^xs:integer .
+bb:2008	bb:date-of-birth	"1985-03-28"^^xs:date .
+bb:2008	rdf:type		bbr:pitcher .
+bb:2008	rdf:type		bbr:setup .
+
+#50 	Charlie Morton 	R-R 	6'5" 	235 	Nov 12, 1983
+bb:2009	bb:playerid	"2009"^^xs:integer .
+bb:2009	bb:number	"50"^^xs:integer .
+bb:2009	bb:lastname	"Morton" .
+bb:2009	bb:firstname	"Charlie" .
+bb:2009	bb:position	"pitcher" .
+bb:2009	bb:team	bbr:Pirates .
+bb:2009	bb:bats	"right" .
+bb:2009	bb:throws	"right" .
+bb:2009	bb:weight	"235"^^xs:integer .
+bb:2009	bb:date-of-birth	"1983-11-12"^^xs:date .
+bb:2009	rdf:type		bbr:pitcher .
+bb:2009	rdf:type		bbr:setup .
+
+#38 	Stolmy Pimentel 	R-R 	6'3" 	230 	Feb 1, 1990
+bb:2010	bb:playerid	"2010"^^xs:integer .
+bb:2010	bb:number	"38"^^xs:integer .
+bb:2010	bb:lastname	"Pimentel" .
+bb:2010	bb:firstname	"Stolmy" .
+bb:2010	bb:position	"pitcher" .
+bb:2010	bb:team	bbr:Pirates .
+bb:2010	bb:bats	"right" .
+bb:2010	bb:throws	"right" .
+bb:2010	bb:weight	"230"^^xs:integer .
+bb:2010	bb:date-of-birth	"1990-02-01"^^xs:date .
+bb:2010	rdf:type		bbr:pitcher .
+bb:2010	rdf:type		bbr:setup .
+
+#64 	Joely Rodriguez 	L-L 	6'1" 	200 	Nov 14, 1991
+bb:2011	bb:playerid	"2011"^^xs:integer .
+bb:2011	bb:number	"64"^^xs:integer .
+bb:2011	bb:lastname	"Rodriguez" .
+bb:2011	bb:firstname	"Joely" .
+bb:2011	bb:position	"pitcher" .
+bb:2011	bb:team	bbr:Pirates .
+bb:2011	bb:bats	"left" .
+bb:2011	bb:throws	"left" .
+bb:2011	bb:weight	"200"^^xs:integer .
+bb:2011	bb:date-of-birth	"1991-11-14"^^xs:date .
+bb:2011	rdf:type		bbr:pitcher .
+bb:2011	rdf:type		bbr:setup .
+
+#	Chaz Roe 	R-R 	6'5" 	190 	Oct 9, 1986
+bb:2012	bb:playerid	"2012"^^xs:integer .
+bb:2012	bb:lastname	"Roe" .
+bb:2012	bb:firstname	"Chaz" .
+bb:2012	bb:position	"pitcher" .
+bb:2012	bb:team	bbr:Pirates .
+bb:2012	bb:bats	"right" .
+bb:2012	bb:throws	"right" .
+bb:2012	bb:weight	"190"^^xs:integer .
+bb:2012	bb:date-of-birth	"1986-10-09"^^xs:date .
+bb:2012	rdf:type		bbr:pitcher .
+bb:2012	rdf:type		bbr:setup .
+
+#65 	Casey Sadler 	R-R 	6'4" 	215 	Jul 13, 1990
+bb:2013	bb:playerid	"2013"^^xs:integer .
+bb:2013	bb:number	"65"^^xs:integer .
+bb:2013	bb:lastname	"Sadler" .
+bb:2013	bb:firstname	"Casey" .
+bb:2013	bb:position	"pitcher" .
+bb:2013	bb:team	bbr:Pirates .
+bb:2013	bb:bats	"right" .
+bb:2013	bb:throws	"right" .
+bb:2013	bb:weight	"215"^^xs:integer .
+bb:2013	bb:date-of-birth	"1990-07-13"^^xs:date .
+bb:2013	rdf:type		bbr:pitcher .
+bb:2013	rdf:type		bbr:setup .
+
+#	Angel Sanchez 	R-R 	6'1" 	190 	Nov 28, 1989
+bb:2014	bb:playerid	"2014"^^xs:integer .
+bb:2014	bb:lastname	"Sanchez" .
+bb:2014	bb:firstname	"Angel" .
+bb:2014	bb:position	"pitcher" .
+bb:2014	bb:team	bbr:Pirates .
+bb:2014	bb:bats	"right" .
+bb:2014	bb:throws	"right" .
+bb:2014	bb:weight	"190"^^xs:integer .
+bb:2014	bb:date-of-birth	"1989-11-28"^^xs:date .
+bb:2014	rdf:type		bbr:pitcher .
+bb:2014	rdf:type		bbr:setup .
+
+#44 	Tony Watson 	L-L 	6'4" 	225 	May 30, 1985
+bb:2015	bb:playerid	"2015"^^xs:integer .
+bb:2015	bb:number	"44"^^xs:integer .
+bb:2015	bb:lastname	"Watson" .
+bb:2015	bb:firstname	"Tony" .
+bb:2015	bb:position	"pitcher" .
+bb:2015	bb:team	bbr:Pirates .
+bb:2015	bb:bats	"left" .
+bb:2015	bb:throws	"left" .
+bb:2015	bb:weight	"225"^^xs:integer .
+bb:2015	bb:date-of-birth	"1985-05-30"^^xs:date .
+bb:2015	rdf:type		bbr:pitcher .
+bb:2015	rdf:type		bbr:setup .
+
+#37 	Justin Wilson 	L-L 	6'2" 	205 	Aug 18, 1987
+bb:2016	bb:playerid	"2016"^^xs:integer .
+bb:2016	bb:number	"37"^^xs:integer .
+bb:2016	bb:lastname	"Wilson" .
+bb:2016	bb:firstname	"Justin" .
+bb:2016	bb:position	"pitcher" .
+bb:2016	bb:team	bbr:Pirates .
+bb:2016	bb:bats	"left" .
+bb:2016	bb:throws	"left" .
+bb:2016	bb:weight	"205"^^xs:integer .
+bb:2016	bb:date-of-birth	"1987-08-18"^^xs:date .
+bb:2016	rdf:type		bbr:pitcher .
+bb:2016	rdf:type		bbr:setup .
+
+#46 	Vance Worley 	R-R 	6'2" 	230 	Sep 25, 1987
+bb:2017	bb:playerid	"2017"^^xs:integer .
+bb:2017	bb:number	"46"^^xs:integer .
+bb:2017	bb:lastname	"Worley" .
+bb:2017	bb:firstname	"Vance" .
+bb:2017	bb:position	"pitcher" .
+bb:2017	bb:team	bbr:Pirates .
+bb:2017	bb:bats	"right" .
+bb:2017	bb:throws	"right" .
+bb:2017	bb:weight	"230"^^xs:integer .
+bb:2017	bb:date-of-birth	"1987-09-25"^^xs:date .
+bb:2017	rdf:type		bbr:pitcher .
+bb:2017	rdf:type		bbr:setup .
+
+# 	Catchers 	B/T 	Ht 	Wt 	DOB
+#	Ramon Cabrera 	S-R 	5'8" 	195 	Nov 5, 1989
+bb:2018	bb:playerid	"2018"^^xs:integer .
+bb:2018	bb:lastname	"Cabrera" .
+bb:2018	bb:firstname	"Ramon" .
+bb:2018	bb:position	"catcher" .
+bb:2018	bb:team	bbr:Pirates .
+bb:2018	bb:bats	"switch" .
+bb:2018	bb:throws	"right" .
+bb:2018	bb:weight	"195"^^xs:integer .
+bb:2018	bb:date-of-birth	"1989-11-05"^^xs:date .
+bb:2018	rdf:type		bbr:catcher .
+
+#26 	Tony Sanchez 	R-R 	5'11" 	225 	May 20, 1988
+bb:2019	bb:playerid	"2019"^^xs:integer .
+bb:2019	bb:number	"26"^^xs:integer .
+bb:2019	bb:lastname	"Sanchez" .
+bb:2019	bb:firstname	"Tony" .
+bb:2019	bb:position	"catcher" .
+bb:2019	bb:team	bbr:Pirates .
+bb:2019	bb:bats	"right" .
+bb:2019	bb:throws	"right" .
+bb:2019	bb:weight	"225"^^xs:integer .
+bb:2019	bb:date-of-birth	"1988-05-20"^^xs:date .
+bb:2019	rdf:type		bbr:catcher .
+
+#19 	Chris Stewart 	R-R 	6'4" 	210 	Feb 19, 1982
+bb:2020	bb:playerid	"2020"^^xs:integer .
+bb:2020	bb:number	"19"^^xs:integer .
+bb:2020	bb:lastname	"Stewart" .
+bb:2020	bb:firstname	"Chris" .
+bb:2020	bb:position	"catcher" .
+bb:2020	bb:team	bbr:Pirates .
+bb:2020	bb:bats	"right" .
+bb:2020	bb:throws	"right" .
+bb:2020	bb:weight	"210"^^xs:integer .
+bb:2020	bb:date-of-birth	"1982-02-19"^^xs:date .
+bb:2020	rdf:type		bbr:catcher .
+
+# 	Infielders 	B/T 	Ht 	Wt 	DOB
+#24 	Pedro Alvarez 	L-R 	6'3" 	235 	Feb 6, 1987
+bb:2021	bb:playerid	"2021"^^xs:integer .
+bb:2021	bb:number	"24"^^xs:integer .
+bb:2021	bb:lastname	"Alvarez" .
+bb:2021	bb:firstname	"Pedro" .
+bb:2021	bb:position	"infielder" .
+bb:2021	bb:team	bbr:Pirates .
+bb:2021	bb:bats	"left" .
+bb:2021	bb:throws	"right" .
+bb:2021	bb:weight	"235"^^xs:integer .
+bb:2021	bb:date-of-birth	"1987-02-06"^^xs:date .
+bb:2021	rdf:type		bbr:infielder .
+
+#15 	Ike Davis 	L-L 	6'4" 	220 	Mar 22, 1987
+bb:2022	bb:playerid	"2022"^^xs:integer .
+bb:2022	bb:number	"15"^^xs:integer .
+bb:2022	bb:lastname	"Davis" .
+bb:2022	bb:firstname	"Ike" .
+bb:2022	bb:position	"infielder" .
+bb:2022	bb:team	bbr:Pirates .
+bb:2022	bb:bats	"left" .
+bb:2022	bb:throws	"left" .
+bb:2022	bb:weight	"220"^^xs:integer .
+bb:2022	bb:date-of-birth	"1987-03-22"^^xs:date .
+bb:2022	rdf:type		bbr:infielder .
+
+#	Jake Elmore 	R-R 	5'9" 	185 	Jun 15, 1987
+bb:2023	bb:playerid	"2023"^^xs:integer .
+bb:2023	bb:lastname	"Elmore" .
+bb:2023	bb:firstname	"Jake" .
+bb:2023	bb:position	"infielder" .
+bb:2023	bb:team	bbr:Pirates .
+bb:2023	bb:bats	"right" .
+bb:2023	bb:throws	"right" .
+bb:2023	bb:weight	"185"^^xs:integer .
+bb:2023	bb:date-of-birth	"1987-06-15"^^xs:date .
+bb:2023	rdf:type		bbr:infielder .
+
+#63 	Alen Hanson 	S-R 	5'11" 	170 	Oct 22, 1992
+bb:2024	bb:playerid	"2024"^^xs:integer .
+bb:2024	bb:number	"63"^^xs:integer .
+bb:2024	bb:lastname	"Hanson" .
+bb:2024	bb:firstname	"Alen" .
+bb:2024	bb:position	"infielder" .
+bb:2024	bb:team	bbr:Pirates .
+bb:2024	bb:bats	"switch" .
+bb:2024	bb:throws	"right" .
+bb:2024	bb:weight	"170"^^xs:integer .
+bb:2024	bb:date-of-birth	"1992-10-22"^^xs:date .
+bb:2024	rdf:type		bbr:infielder .
+
+#10 	Jordy Mercer 	R-R 	6'3" 	205 	Aug 27, 1986
+bb:2025	bb:playerid	"2025"^^xs:integer .
+bb:2025	bb:number	"10"^^xs:integer .
+bb:2025	bb:lastname	"Mercer" .
+bb:2025	bb:firstname	"Jordy" .
+bb:2025	bb:position	"infielder" .
+bb:2025	bb:team	bbr:Pirates .
+bb:2025	bb:bats	"right" .
+bb:2025	bb:throws	"right" .
+bb:2025	bb:weight	"205"^^xs:integer .
+bb:2025	bb:date-of-birth	"1986-08-27"^^xs:date .
+bb:2025	rdf:type		bbr:infielder .
+
+#59 	Brent Morel 	R-R 	6'1" 	225 	Apr 21, 1987
+bb:2026	bb:playerid	"2026"^^xs:integer .
+bb:2026	bb:number	"59"^^xs:integer .
+bb:2026	bb:lastname	"Morel" .
+bb:2026	bb:firstname	"Brent" .
+bb:2026	bb:position	"infielder" .
+bb:2026	bb:team	bbr:Pirates .
+bb:2026	bb:bats	"right" .
+bb:2026	bb:throws	"right" .
+bb:2026	bb:weight	"225"^^xs:integer .
+bb:2026	bb:date-of-birth	"1987-04-21"^^xs:date .
+bb:2026	rdf:type		bbr:infielder .
+
+#17 	Gaby Sanchez 	R-R 	6'1" 	235 	Sep 2, 1983
+bb:2027	bb:playerid	"2027"^^xs:integer .
+bb:2027	bb:number	"17"^^xs:integer .
+bb:2027	bb:lastname	"Sanchez" .
+bb:2027	bb:firstname	"Gaby" .
+bb:2027	bb:position	"infielder" .
+bb:2027	bb:team	bbr:Pirates .
+bb:2027	bb:bats	"right" .
+bb:2027	bb:throws	"right" .
+bb:2027	bb:weight	"235"^^xs:integer .
+bb:2027	bb:date-of-birth	"1983-09-02"^^xs:date .
+bb:2027	rdf:type		bbr:infielder .
+
+#	Justin Sellers 	R-R 	5'10" 	160 	Feb 1, 1986
+bb:2028	bb:playerid	"2028"^^xs:integer .
+bb:2028	bb:lastname	"Sellers" .
+bb:2028	bb:firstname	"Justin" .
+bb:2028	bb:position	"infielder" .
+bb:2028	bb:team	bbr:Pirates .
+bb:2028	bb:bats	"right" .
+bb:2028	bb:throws	"right" .
+bb:2028	bb:weight	"160"^^xs:integer .
+bb:2028	bb:date-of-birth	"1986-02-01"^^xs:date .
+bb:2028	rdf:type		bbr:infielder .
+
+#18 	Neil Walker 	S-R 	6'3" 	210 	Sep 10, 1985
+bb:2029	bb:playerid	"2029"^^xs:integer .
+bb:2029	bb:number	"18"^^xs:integer .
+bb:2029	bb:lastname	"Walker" .
+bb:2029	bb:firstname	"Neil" .
+bb:2029	bb:position	"infielder" .
+bb:2029	bb:team	bbr:Pirates .
+bb:2029	bb:bats	"switch" .
+bb:2029	bb:throws	"right" .
+bb:2029	bb:weight	"210"^^xs:integer .
+bb:2029	bb:date-of-birth	"1985-09-10"^^xs:date .
+bb:2029	rdf:type		bbr:infielder .
+
+# 	Outfielders 	B/T 	Ht 	Wt 	DOB
+#14 	Jaff Decker 	L-L 	5'9" 	190 	Feb 23, 1990
+bb:2030	bb:playerid	"2030"^^xs:integer .
+bb:2030	bb:number	"14"^^xs:integer .
+bb:2030	bb:lastname	"Decker" .
+bb:2030	bb:firstname	"Jaff" .
+bb:2030	bb:position	"outfielder" .
+bb:2030	bb:team	bbr:Pirates .
+bb:2030	bb:bats	"left" .
+bb:2030	bb:throws	"left" .
+bb:2030	bb:weight	"190"^^xs:integer .
+bb:2030	bb:date-of-birth	"1990-02-23"^^xs:date .
+bb:2030	rdf:type		bbr:outfielder .
+
+#5 	Josh Harrison 	R-R 	5'8" 	200 	Jul 8, 1987
+bb:2031	bb:playerid	"2031"^^xs:integer .
+bb:2031	bb:number	"5"^^xs:integer .
+bb:2031	bb:lastname	"Harrison" .
+bb:2031	bb:firstname	"Josh" .
+bb:2031	bb:position	"outfielder" .
+bb:2031	bb:team	bbr:Pirates .
+bb:2031	bb:bats	"right" .
+bb:2031	bb:throws	"right" .
+bb:2031	bb:weight	"200"^^xs:integer .
+bb:2031	bb:date-of-birth	"1987-07-08"^^xs:date .
+bb:2031	rdf:type		bbr:outfielder .
+
+#57 	Andrew Lambo 	L-L 	6'3" 	225 	Aug 11, 1988
+bb:2032	bb:playerid	"2032"^^xs:integer .
+bb:2032	bb:number	"57"^^xs:integer .
+bb:2032	bb:lastname	"Lambo" .
+bb:2032	bb:firstname	"Andrew" .
+bb:2032	bb:position	"outfielder" .
+bb:2032	bb:team	bbr:Pirates .
+bb:2032	bb:bats	"left" .
+bb:2032	bb:throws	"left" .
+bb:2032	bb:weight	"225"^^xs:integer .
+bb:2032	bb:date-of-birth	"1988-08-11"^^xs:date .
+bb:2032	rdf:type		bbr:outfielder .
+
+#6 	Starling Marte 	R-R 	6'1" 	185 	Oct 9, 1988
+bb:2033	bb:playerid	"2033"^^xs:integer .
+bb:2033	bb:number	"6"^^xs:integer .
+bb:2033	bb:lastname	"Marte" .
+bb:2033	bb:firstname	"Starling" .
+bb:2033	bb:position	"outfielder" .
+bb:2033	bb:team	bbr:Pirates .
+bb:2033	bb:bats	"right" .
+bb:2033	bb:throws	"right" .
+bb:2033	bb:weight	"185"^^xs:integer .
+bb:2033	bb:date-of-birth	"1988-10-09"^^xs:date .
+bb:2033	rdf:type		bbr:outfielder .
+
+#22 	Andrew McCutchen 	R-R 	5'10" 	190 	Oct 10, 1986
+bb:2034	bb:playerid	"2034"^^xs:integer .
+bb:2034	bb:number	"22"^^xs:integer .
+bb:2034	bb:lastname	"McCutchen" .
+bb:2034	bb:firstname	"Andrew" .
+bb:2034	bb:position	"outfielder" .
+bb:2034	bb:team	bbr:Pirates .
+bb:2034	bb:bats	"right" .
+bb:2034	bb:throws	"right" .
+bb:2034	bb:weight	"190"^^xs:integer .
+bb:2034	bb:date-of-birth	"1986-10-10"^^xs:date .
+bb:2034	rdf:type		bbr:outfielder .
+
+#25 	Gregory Polanco 	L-L 	6'4" 	220 	Sep 14, 1991
+bb:2035	bb:playerid	"2035"^^xs:integer .
+bb:2035	bb:number	"25"^^xs:integer .
+bb:2035	bb:lastname	"Polanco" .
+bb:2035	bb:firstname	"Gregory" .
+bb:2035	bb:position	"outfielder" .
+bb:2035	bb:team	bbr:Pirates .
+bb:2035	bb:bats	"left" .
+bb:2035	bb:throws	"left" .
+bb:2035	bb:weight	"220"^^xs:integer .
+bb:2035	bb:date-of-birth	"1991-09-14"^^xs:date .
+bb:2035	rdf:type		bbr:outfielder .
+
+#23 	Travis Snider 	L-L 	6'0" 	235 	Feb 2, 1988
+bb:2036	bb:playerid	"2036"^^xs:integer .
+bb:2036	bb:number	"23"^^xs:integer .
+bb:2036	bb:lastname	"Snider" .
+bb:2036	bb:firstname	"Travis" .
+bb:2036	bb:position	"outfielder" .
+bb:2036	bb:team	bbr:Pirates .
+bb:2036	bb:bats	"left" .
+bb:2036	bb:throws	"left" .
+bb:2036	bb:weight	"235"^^xs:integer .
+bb:2036	bb:date-of-birth	"1988-02-02"^^xs:date .
+bb:2036	rdf:type		bbr:outfielder .
+
+#	Manager	Clint Hurdle
+bb:2057	bb:lastname	"Hurdle" .
+bb:2057	bb:firstname	"Clint" .
+bb:2057	bb:position	"manager" .
+bb:2057	bb:team	bbr:Pirates .
+bb:2057	bb:number	"13"^^xs:integer .
+bb:2057	bbr:coachingRole		bbr:manager .
+
+#	Coach	Brad Fischer
+bb:2058	bb:lastname	"Fischer" .
+bb:2058	bb:firstname	"Brad" .
+bb:2058	bb:position	"coach" .
+bb:2058	bb:number	"100"^^xs:integer .
+bb:2058	bb:team	bbr:Pirates .
+bb:2058	bbr:coachingRole		bbr:benchCoach .
+
+#	Coach	Jeff Branson
+bb:2059	bb:lastname	"Branson" .
+bb:2059	bb:firstname	"Jeff" .
+bb:2059	bb:position	"coach" .
+bb:2059	bb:number	"2"^^xs:integer .
+bb:2059	bb:team	bbr:Pirates .
+bb:2059	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	FIRSTNAME LASTNAME
+bb:2060	bb:lastname	"LASTNAME" .
+bb:2060	bb:firstname	"FIRSTNAME" .
+bb:2060	bb:position	"coach" .
+bb:2060	bb:number	"100"^^xs:integer .
+bb:2060	bb:team	bbr:Pirates .
+bb:2060	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Nick Leyva
+bb:2061	bb:lastname	"Leyva" .
+bb:2061	bb:firstname	"Nick" .
+bb:2061	bb:position	"coach" .
+bb:2061	bb:number	"16"^^xs:integer .
+bb:2061	bb:team	bbr:Pirates .
+bb:2061	bbr:coachingRole		bbr:firstBaseCoach .
+
+#	Coach	Rick Sofield
+bb:2062	bb:lastname	"Sofield" .
+bb:2062	bb:firstname	"Rick" .
+bb:2062	bb:position	"coach" .
+bb:2062	bb:number	"41"^^xs:integer .
+bb:2062	bb:team	bbr:Pirates .
+bb:2062	bbr:coachingRole		bbr:thirdBaseCoach .
+
+#	Coach	Ray Searage
+bb:2063	bb:lastname	"Searage" .
+bb:2063	bb:firstname	"Ray" .
+bb:2063	bb:position	"coach" .
+bb:2063	bb:number	"54"^^xs:integer .
+bb:2063	bb:team	bbr:Pirates .
+bb:2063	bbr:coachingRole		bbr:pitchingCoach .
+
+#	Coach	Euclides Rojas
+bb:2064	bb:lastname	"Rojas" .
+bb:2064	bb:firstname	"Euclides" .
+bb:2064	bb:position	"coach" .
+bb:2064	bb:number	"56"^^xs:integer .
+bb:2064	bb:team	bbr:Pirates .
+bb:2064	bbr:coachingRole		bbr:bullpenCoach .
+
+#	Coach	Heberto Andrade
+bb:2065	bb:lastname	"Andrade" .
+bb:2065	bb:firstname	"Heberto" .
+bb:2065	bb:position	"coach" .
+bb:2065	bb:number	"86"^^xs:integer .
+bb:2065	bb:team	bbr:Pirates .
+bb:2065	bbr:coachingRole		bbr:bullpenCatcher .
+
+
+

@@ -1,0 +1,5 @@
+@prefix ken: <http://example.org/kennedy/> .
+ken:person1 ken:sex ken:male .
+ken:person1 ken:spouse ken:person2 .
+ken:person1 ken:suffix none .
+ken:person1 a ken:person .

@@ -1,0 +1,4 @@
+<#mygraph> = {
+    9 @a <#integer>; 8 7,6 .
+  }; a <#named_graph> .
+<#not_sayin_nothin> . 

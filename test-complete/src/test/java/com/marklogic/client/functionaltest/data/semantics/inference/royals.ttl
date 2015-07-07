@@ -1,0 +1,571 @@
+
+prefix bb: <http://marklogic.com/baseball/players#> 
+prefix bbr: <http://marklogic.com/baseball/rules#> 
+prefix xs: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+
+#bb:pX  bb:playerid "XX"^^xs:integer .
+#bb:XX  bb:lastname     "LASTNAME" .
+#bb:XX  bb:firstname    "FIRSTNAME" .
+#bb:XX  bb:position     "POSITION" .
+#bb:XX  bb:number       "NUMBER"^^xs:integer .
+#bb:XX  bb:team         "Athletics" .
+#bb:XX  bb:birthdate    "1989-10-26"^^xs:date .
+#bb:XX  bb:bats         "right" .
+#bb:XX  bb:throws       "right" .
+#bb:XX  bb:height       "" .
+#bb:XX  bb:weight       "220"^^xs:integer .
+#bb:XXX a       bbr:player .
+#bb:XXX a       bbr:pitcher .
+#bb:XXX a       bbr:starter .
+#bb:XXX a       bbr:setup .
+
+
+# 	Pitchers 	B/T 	Ht 	Wt 	DOB
+#62 	Aaron Brooks 	R-R 	6'4" 	220 	Apr 27, 1990
+bb:2601	bb:playerid	"2601"^^xs:integer .
+bb:2601	bb:number	"62"^^xs:integer .
+bb:2601	bb:lastname	"Brooks" .
+bb:2601	bb:firstname	"Aaron" .
+bb:2601	bb:position	"pitcher" .
+bb:2601	bb:team	bbr:Royals .
+bb:2601	bb:bats	"right" .
+bb:2601	bb:throws	"right" .
+bb:2601	bb:weight	"220"^^xs:integer .
+bb:2601	bb:date-of-birth	"1990-04-27"^^xs:date .
+bb:2601	rdf:type		bbr:pitcher .
+bb:2601	rdf:type		bbr:setup .
+
+#67 	Francisley Bueno 	L-L 	5'11" 	205 	Mar 5, 1981
+bb:2602	bb:playerid	"2602"^^xs:integer .
+bb:2602	bb:number	"67"^^xs:integer .
+bb:2602	bb:lastname	"Bueno" .
+bb:2602	bb:firstname	"Francisley" .
+bb:2602	bb:position	"pitcher" .
+bb:2602	bb:team	bbr:Royals .
+bb:2602	bb:bats	"left" .
+bb:2602	bb:throws	"left" .
+bb:2602	bb:weight	"205"^^xs:integer .
+bb:2602	bb:date-of-birth	"1981-03-05"^^xs:date .
+bb:2602	rdf:type		bbr:pitcher .
+bb:2602	rdf:type		bbr:setup .
+
+#25 	Casey Coleman 	L-R 	6'0" 	185 	Jul 3, 1987
+bb:2603	bb:playerid	"2603"^^xs:integer .
+bb:2603	bb:number	"25"^^xs:integer .
+bb:2603	bb:lastname	"Coleman" .
+bb:2603	bb:firstname	"Casey" .
+bb:2603	bb:position	"pitcher" .
+bb:2603	bb:team	bbr:Royals .
+bb:2603	bb:bats	"left" .
+bb:2603	bb:throws	"right" .
+bb:2603	bb:weight	"185"^^xs:integer .
+bb:2603	bb:date-of-birth	"1987-07-03"^^xs:date .
+bb:2603	rdf:type		bbr:pitcher .
+bb:2603	rdf:type		bbr:setup .
+
+#31 	Louis Coleman 	R-R 	6'4" 	205 	Apr 4, 1986
+bb:2604	bb:playerid	"2604"^^xs:integer .
+bb:2604	bb:number	"31"^^xs:integer .
+bb:2604	bb:lastname	"Coleman" .
+bb:2604	bb:firstname	"Louis" .
+bb:2604	bb:position	"pitcher" .
+bb:2604	bb:team	bbr:Royals .
+bb:2604	bb:bats	"right" .
+bb:2604	bb:throws	"right" .
+bb:2604	bb:weight	"205"^^xs:integer .
+bb:2604	bb:date-of-birth	"1986-04-04"^^xs:date .
+bb:2604	rdf:type		bbr:pitcher .
+bb:2604	rdf:type		bbr:setup .
+
+#55 	Tim Collins 	L-L 	5'7" 	170 	Aug 21, 1989
+bb:2605	bb:playerid	"2605"^^xs:integer .
+bb:2605	bb:number	"55"^^xs:integer .
+bb:2605	bb:lastname	"Collins" .
+bb:2605	bb:firstname	"Tim" .
+bb:2605	bb:position	"pitcher" .
+bb:2605	bb:team	bbr:Royals .
+bb:2605	bb:bats	"left" .
+bb:2605	bb:throws	"left" .
+bb:2605	bb:weight	"170"^^xs:integer .
+bb:2605	bb:date-of-birth	"1989-08-21"^^xs:date .
+bb:2605	rdf:type		bbr:pitcher .
+bb:2605	rdf:type		bbr:setup .
+
+#43 	Aaron Crow 	R-R 	6'3" 	195 	Nov 10, 1986
+bb:2606	bb:playerid	"2606"^^xs:integer .
+bb:2606	bb:number	"43"^^xs:integer .
+bb:2606	bb:lastname	"Crow" .
+bb:2606	bb:firstname	"Aaron" .
+bb:2606	bb:position	"pitcher" .
+bb:2606	bb:team	bbr:Royals .
+bb:2606	bb:bats	"right" .
+bb:2606	bb:throws	"right" .
+bb:2606	bb:weight	"195"^^xs:integer .
+bb:2606	bb:date-of-birth	"1986-11-10"^^xs:date .
+bb:2606	rdf:type		bbr:pitcher .
+bb:2606	rdf:type		bbr:setup .
+
+#17 	Wade Davis 	R-R 	6'5" 	220 	Sep 7, 1985
+bb:2607	bb:playerid	"2607"^^xs:integer .
+bb:2607	bb:number	"17"^^xs:integer .
+bb:2607	bb:lastname	"Davis" .
+bb:2607	bb:firstname	"Wade" .
+bb:2607	bb:position	"pitcher" .
+bb:2607	bb:team	bbr:Royals .
+bb:2607	bb:bats	"right" .
+bb:2607	bb:throws	"right" .
+bb:2607	bb:weight	"220"^^xs:integer .
+bb:2607	bb:date-of-birth	"1985-09-07"^^xs:date .
+bb:2607	rdf:type		bbr:pitcher .
+bb:2607	rdf:type		bbr:setup .
+
+#41 	Danny Duffy 	L-L 	6'3" 	205 	Dec 21, 1988
+bb:2608	bb:playerid	"2608"^^xs:integer .
+bb:2608	bb:number	"41"^^xs:integer .
+bb:2608	bb:lastname	"Duffy" .
+bb:2608	bb:firstname	"Danny" .
+bb:2608	bb:position	"pitcher" .
+bb:2608	bb:team	bbr:Royals .
+bb:2608	bb:bats	"left" .
+bb:2608	bb:throws	"left" .
+bb:2608	bb:weight	"205"^^xs:integer .
+bb:2608	bb:date-of-birth	"1988-12-21"^^xs:date .
+bb:2608	rdf:type		bbr:pitcher .
+bb:2608	rdf:type		bbr:setup .
+
+#27 	Brandon Finnegan 	L-L 	5'11" 	185 	Apr 14, 1993
+bb:2609	bb:playerid	"2609"^^xs:integer .
+bb:2609	bb:number	"27"^^xs:integer .
+bb:2609	bb:lastname	"Finnegan" .
+bb:2609	bb:firstname	"Brandon" .
+bb:2609	bb:position	"pitcher" .
+bb:2609	bb:team	bbr:Royals .
+bb:2609	bb:bats	"left" .
+bb:2609	bb:throws	"left" .
+bb:2609	bb:weight	"185"^^xs:integer .
+bb:2609	bb:date-of-birth	"1993-04-14"^^xs:date .
+bb:2609	rdf:type		bbr:pitcher .
+bb:2609	rdf:type		bbr:setup .
+
+#11 	Jeremy Guthrie 	R-R 	6'1" 	205 	Apr 8, 1979
+bb:2610	bb:playerid	"2610"^^xs:integer .
+bb:2610	bb:number	"11"^^xs:integer .
+bb:2610	bb:lastname	"Guthrie" .
+bb:2610	bb:firstname	"Jeremy" .
+bb:2610	bb:position	"pitcher" .
+bb:2610	bb:team	bbr:Royals .
+bb:2610	bb:bats	"right" .
+bb:2610	bb:throws	"right" .
+bb:2610	bb:weight	"205"^^xs:integer .
+bb:2610	bb:date-of-birth	"1979-04-08"^^xs:date .
+bb:2610	rdf:type		bbr:pitcher .
+bb:2610	rdf:type		bbr:setup .
+
+#40 	Kelvin Herrera 	R-R 	5'10" 	200 	Dec 31, 1989
+bb:2611	bb:playerid	"2611"^^xs:integer .
+bb:2611	bb:number	"40"^^xs:integer .
+bb:2611	bb:lastname	"Herrera" .
+bb:2611	bb:firstname	"Kelvin" .
+bb:2611	bb:position	"pitcher" .
+bb:2611	bb:team	bbr:Royals .
+bb:2611	bb:bats	"right" .
+bb:2611	bb:throws	"right" .
+bb:2611	bb:weight	"200"^^xs:integer .
+bb:2611	bb:date-of-birth	"1989-12-31"^^xs:date .
+bb:2611	rdf:type		bbr:pitcher .
+bb:2611	rdf:type		bbr:setup .
+
+#56 	Greg Holland 	R-R 	5'10" 	205 	Nov 20, 1985
+bb:2612	bb:playerid	"2612"^^xs:integer .
+bb:2612	bb:number	"56"^^xs:integer .
+bb:2612	bb:lastname	"Holland" .
+bb:2612	bb:firstname	"Greg" .
+bb:2612	bb:position	"pitcher" .
+bb:2612	bb:team	bbr:Royals .
+bb:2612	bb:bats	"right" .
+bb:2612	bb:throws	"right" .
+bb:2612	bb:weight	"205"^^xs:integer .
+bb:2612	bb:date-of-birth	"1985-11-20"^^xs:date .
+bb:2612	rdf:type		bbr:pitcher .
+bb:2612	rdf:type		bbr:closer .
+
+#38 	John Lamb 	L-L 	6'4" 	205 	Jul 10, 1990
+bb:2613	bb:playerid	"2613"^^xs:integer .
+bb:2613	bb:number	"38"^^xs:integer .
+bb:2613	bb:lastname	"Lamb" .
+bb:2613	bb:firstname	"John" .
+bb:2613	bb:position	"pitcher" .
+bb:2613	bb:team	bbr:Royals .
+bb:2613	bb:bats	"left" .
+bb:2613	bb:throws	"left" .
+bb:2613	bb:weight	"205"^^xs:integer .
+bb:2613	bb:date-of-birth	"1990-07-10"^^xs:date .
+bb:2613	rdf:type		bbr:pitcher .
+bb:2613	rdf:type		bbr:setup .
+
+#48 	Michael Mariot 	R-R 	6'0" 	190 	Oct 20, 1988
+bb:2614	bb:playerid	"2614"^^xs:integer .
+bb:2614	bb:number	"48"^^xs:integer .
+bb:2614	bb:lastname	"Mariot" .
+bb:2614	bb:firstname	"Michael" .
+bb:2614	bb:position	"pitcher" .
+bb:2614	bb:team	bbr:Royals .
+bb:2614	bb:bats	"right" .
+bb:2614	bb:throws	"right" .
+bb:2614	bb:weight	"190"^^xs:integer .
+bb:2614	bb:date-of-birth	"1988-10-20"^^xs:date .
+bb:2614	rdf:type		bbr:pitcher .
+bb:2614	rdf:type		bbr:setup .
+
+#51 	Jason Vargas 	L-L 	6'0" 	215 	Feb 2, 1983
+bb:2615	bb:playerid	"2615"^^xs:integer .
+bb:2615	bb:number	"51"^^xs:integer .
+bb:2615	bb:lastname	"Vargas" .
+bb:2615	bb:firstname	"Jason" .
+bb:2615	bb:position	"pitcher" .
+bb:2615	bb:team	bbr:Royals .
+bb:2615	bb:bats	"left" .
+bb:2615	bb:throws	"left" .
+bb:2615	bb:weight	"215"^^xs:integer .
+bb:2615	bb:date-of-birth	"1983-02-02"^^xs:date .
+bb:2615	rdf:type		bbr:pitcher .
+bb:2615	rdf:type		bbr:setup .
+
+#30 	Yordano Ventura 	R-R 	6'0" 	180 	Jun 3, 1991
+bb:2616	bb:playerid	"2616"^^xs:integer .
+bb:2616	bb:number	"30"^^xs:integer .
+bb:2616	bb:lastname	"Ventura" .
+bb:2616	bb:firstname	"Yordano" .
+bb:2616	bb:position	"pitcher" .
+bb:2616	bb:team	bbr:Royals .
+bb:2616	bb:bats	"right" .
+bb:2616	bb:throws	"right" .
+bb:2616	bb:weight	"180"^^xs:integer .
+bb:2616	bb:date-of-birth	"1991-06-03"^^xs:date .
+bb:2616	rdf:type		bbr:pitcher .
+bb:2616	rdf:type		bbr:setup .
+
+# 	Catchers 	B/T 	Ht 	Wt 	DOB
+#19 	Erik Kratz 	R-R 	6'4" 	240 	Jun 15, 1980
+bb:2617	bb:playerid	"2617"^^xs:integer .
+bb:2617	bb:number	"19"^^xs:integer .
+bb:2617	bb:lastname	"Kratz" .
+bb:2617	bb:firstname	"Erik" .
+bb:2617	bb:position	"catcher" .
+bb:2617	bb:team	bbr:Royals .
+bb:2617	bb:bats	"right" .
+bb:2617	bb:throws	"right" .
+bb:2617	bb:weight	"240"^^xs:integer .
+bb:2617	bb:date-of-birth	"1980-06-15"^^xs:date .
+bb:2617	rdf:type		bbr:catcher .
+
+#26 	Francisco Pena 	R-R 	6'2" 	230 	Oct 12, 1989
+bb:2618	bb:playerid	"2618"^^xs:integer .
+bb:2618	bb:number	"26"^^xs:integer .
+bb:2618	bb:lastname	"Pena" .
+bb:2618	bb:firstname	"Francisco" .
+bb:2618	bb:position	"catcher" .
+bb:2618	bb:team	bbr:Royals .
+bb:2618	bb:bats	"right" .
+bb:2618	bb:throws	"right" .
+bb:2618	bb:weight	"230"^^xs:integer .
+bb:2618	bb:date-of-birth	"1989-10-12"^^xs:date .
+bb:2618	rdf:type		bbr:catcher .
+
+#13 	Salvador Perez 	R-R 	6'3" 	240 	May 10, 1990
+bb:2619	bb:playerid	"2619"^^xs:integer .
+bb:2619	bb:number	"13"^^xs:integer .
+bb:2619	bb:lastname	"Perez" .
+bb:2619	bb:firstname	"Salvador" .
+bb:2619	bb:position	"catcher" .
+bb:2619	bb:team	bbr:Royals .
+bb:2619	bb:bats	"right" .
+bb:2619	bb:throws	"right" .
+bb:2619	bb:weight	"240"^^xs:integer .
+bb:2619	bb:date-of-birth	"1990-05-10"^^xs:date .
+bb:2619	rdf:type		bbr:catcher .
+
+# 	Infielders 	B/T 	Ht 	Wt 	DOB
+#24 	Christian Colon 	R-R 	5'10" 	190 	May 14, 1989
+bb:2620	bb:playerid	"2620"^^xs:integer .
+bb:2620	bb:number	"24"^^xs:integer .
+bb:2620	bb:lastname	"Colon" .
+bb:2620	bb:firstname	"Christian" .
+bb:2620	bb:position	"infielder" .
+bb:2620	bb:team	bbr:Royals .
+bb:2620	bb:bats	"right" .
+bb:2620	bb:throws	"right" .
+bb:2620	bb:weight	"190"^^xs:integer .
+bb:2620	bb:date-of-birth	"1989-05-14"^^xs:date .
+bb:2620	rdf:type		bbr:infielder .
+
+#61 	Cheslor Cuthbert 	R-R 	6'1" 	190 	Nov 16, 1992
+bb:2621	bb:playerid	"2621"^^xs:integer .
+bb:2621	bb:number	"61"^^xs:integer .
+bb:2621	bb:lastname	"Cuthbert" .
+bb:2621	bb:firstname	"Cheslor" .
+bb:2621	bb:position	"infielder" .
+bb:2621	bb:team	bbr:Royals .
+bb:2621	bb:bats	"right" .
+bb:2621	bb:throws	"right" .
+bb:2621	bb:weight	"190"^^xs:integer .
+bb:2621	bb:date-of-birth	"1992-11-16"^^xs:date .
+bb:2621	rdf:type		bbr:infielder .
+
+#2 	Alcides Escobar 	R-R 	6'1" 	185 	Dec 16, 1986
+bb:2622	bb:playerid	"2622"^^xs:integer .
+bb:2622	bb:number	"2"^^xs:integer .
+bb:2622	bb:lastname	"Escobar" .
+bb:2622	bb:firstname	"Alcides" .
+bb:2622	bb:position	"infielder" .
+bb:2622	bb:team	bbr:Royals .
+bb:2622	bb:bats	"right" .
+bb:2622	bb:throws	"right" .
+bb:2622	bb:weight	"185"^^xs:integer .
+bb:2622	bb:date-of-birth	"1986-12-16"^^xs:date .
+bb:2622	rdf:type		bbr:infielder .
+
+#9 	Johnny Giavotella 	R-R 	5'8" 	185 	Jul 10, 1987
+bb:2623	bb:playerid	"2623"^^xs:integer .
+bb:2623	bb:number	"9"^^xs:integer .
+bb:2623	bb:lastname	"Giavotella" .
+bb:2623	bb:firstname	"Johnny" .
+bb:2623	bb:position	"infielder" .
+bb:2623	bb:team	bbr:Royals .
+bb:2623	bb:bats	"right" .
+bb:2623	bb:throws	"right" .
+bb:2623	bb:weight	"185"^^xs:integer .
+bb:2623	bb:date-of-birth	"1987-07-10"^^xs:date .
+bb:2623	rdf:type		bbr:infielder .
+
+#35 	Eric Hosmer 	L-L 	6'4" 	225 	Oct 24, 1989
+bb:2624	bb:playerid	"2624"^^xs:integer .
+bb:2624	bb:number	"35"^^xs:integer .
+bb:2624	bb:lastname	"Hosmer" .
+bb:2624	bb:firstname	"Eric" .
+bb:2624	bb:position	"infielder" .
+bb:2624	bb:team	bbr:Royals .
+bb:2624	bb:bats	"left" .
+bb:2624	bb:throws	"left" .
+bb:2624	bb:weight	"225"^^xs:integer .
+bb:2624	bb:date-of-birth	"1989-10-24"^^xs:date .
+bb:2624	rdf:type		bbr:firstBaseman .
+
+#14 	Omar Infante 	R-R 	5'11" 	195 	Dec 26, 1981
+bb:2625	bb:playerid	"2625"^^xs:integer .
+bb:2625	bb:number	"14"^^xs:integer .
+bb:2625	bb:lastname	"Infante" .
+bb:2625	bb:firstname	"Omar" .
+bb:2625	bb:position	"infielder" .
+bb:2625	bb:team	bbr:Royals .
+bb:2625	bb:bats	"right" .
+bb:2625	bb:throws	"right" .
+bb:2625	bb:weight	"195"^^xs:integer .
+bb:2625	bb:date-of-birth	"1981-12-26"^^xs:date .
+bb:2625	rdf:type		bbr:infielder .
+
+#8 	Mike Moustakas 	L-R 	6'0" 	195 	Sep 11, 1988
+bb:2626	bb:playerid	"2626"^^xs:integer .
+bb:2626	bb:number	"8"^^xs:integer .
+bb:2626	bb:lastname	"Moustakas" .
+bb:2626	bb:firstname	"Mike" .
+bb:2626	bb:position	"infielder" .
+bb:2626	bb:team	bbr:Royals .
+bb:2626	bb:bats	"left" .
+bb:2626	bb:throws	"right" .
+bb:2626	bb:weight	"195"^^xs:integer .
+bb:2626	bb:date-of-birth	"1988-09-11"^^xs:date .
+bb:2626	rdf:type		bbr:infielder .
+
+#12 	Jayson Nix 	R-R 	5'11" 	195 	Aug 26, 1982
+bb:2627	bb:playerid	"2627"^^xs:integer .
+bb:2627	bb:number	"12"^^xs:integer .
+bb:2627	bb:lastname	"Nix" .
+bb:2627	bb:firstname	"Jayson" .
+bb:2627	bb:position	"infielder" .
+bb:2627	bb:team	bbr:Royals .
+bb:2627	bb:bats	"right" .
+bb:2627	bb:throws	"right" .
+bb:2627	bb:weight	"195"^^xs:integer .
+bb:2627	bb:date-of-birth	"1982-08-26"^^xs:date .
+bb:2627	rdf:type		bbr:infielder .
+
+# 	Outfielders 	B/T 	Ht 	Wt 	DOB
+#45 	Lane Adams 	R-R 	6'4" 	190 	Nov 13, 1989
+bb:2628	bb:playerid	"2628"^^xs:integer .
+bb:2628	bb:number	"45"^^xs:integer .
+bb:2628	bb:lastname	"Adams" .
+bb:2628	bb:firstname	"Lane" .
+bb:2628	bb:position	"outfielder" .
+bb:2628	bb:team	bbr:Royals .
+bb:2628	bb:bats	"right" .
+bb:2628	bb:throws	"right" .
+bb:2628	bb:weight	"190"^^xs:integer .
+bb:2628	bb:date-of-birth	"1989-11-13"^^xs:date .
+bb:2628	rdf:type		bbr:outfielder .
+
+#6 	Lorenzo Cain 	R-R 	6'2" 	205 	Apr 13, 1986
+bb:2629	bb:playerid	"2629"^^xs:integer .
+bb:2629	bb:number	"6"^^xs:integer .
+bb:2629	bb:lastname	"Cain" .
+bb:2629	bb:firstname	"Lorenzo" .
+bb:2629	bb:position	"outfielder" .
+bb:2629	bb:team	bbr:Royals .
+bb:2629	bb:bats	"right" .
+bb:2629	bb:throws	"right" .
+bb:2629	bb:weight	"205"^^xs:integer .
+bb:2629	bb:date-of-birth	"1986-04-13"^^xs:date .
+bb:2629	rdf:type		bbr:outfielder .
+
+#1 	Jarrod Dyson 	L-R 	5'10" 	160 	Aug 15, 1984
+bb:2630	bb:playerid	"2630"^^xs:integer .
+bb:2630	bb:number	"1"^^xs:integer .
+bb:2630	bb:lastname	"Dyson" .
+bb:2630	bb:firstname	"Jarrod" .
+bb:2630	bb:position	"outfielder" .
+bb:2630	bb:team	bbr:Royals .
+bb:2630	bb:bats	"left" .
+bb:2630	bb:throws	"right" .
+bb:2630	bb:weight	"160"^^xs:integer .
+bb:2630	bb:date-of-birth	"1984-08-15"^^xs:date .
+bb:2630	rdf:type		bbr:outfielder .
+
+#4 	Alex Gordon 	L-R 	6'1" 	220 	Feb 10, 1984
+bb:2631	bb:playerid	"2631"^^xs:integer .
+bb:2631	bb:number	"4"^^xs:integer .
+bb:2631	bb:lastname	"Gordon" .
+bb:2631	bb:firstname	"Alex" .
+bb:2631	bb:position	"outfielder" .
+bb:2631	bb:team	bbr:Royals .
+bb:2631	bb:bats	"left" .
+bb:2631	bb:throws	"right" .
+bb:2631	bb:weight	"220"^^xs:integer .
+bb:2631	bb:date-of-birth	"1984-02-10"^^xs:date .
+bb:2631	rdf:type		bbr:outfielder .
+
+#0 	Terrance Gore 	R-R 	5'7" 	165 	Jun 8, 1991
+bb:2632	bb:playerid	"2632"^^xs:integer .
+bb:2632	bb:lastname	"Gore" .
+bb:2632	bb:firstname	"Terrance" .
+bb:2632	bb:position	"outfielder" .
+bb:2632	bb:team	bbr:Royals .
+bb:2632	bb:bats	"right" .
+bb:2632	bb:throws	"right" .
+bb:2632	bb:weight	"165"^^xs:integer .
+bb:2632	bb:date-of-birth	"1991-06-08"^^xs:date .
+bb:2632	rdf:type		bbr:outfielder .
+
+#	Paulo Orlando 	R-R 	6'2" 	210 	Nov 1, 1985
+bb:2633	bb:playerid	"2633"^^xs:integer .
+bb:2633	bb:lastname	"Orlando" .
+bb:2633	bb:firstname	"Paulo" .
+bb:2633	bb:position	"outfielder" .
+bb:2633	bb:team	bbr:Royals .
+bb:2633	bb:bats	"right" .
+bb:2633	bb:throws	"right" .
+bb:2633	bb:weight	"210"^^xs:integer .
+bb:2633	bb:date-of-birth	"1985-11-01"^^xs:date .
+bb:2633	rdf:type		bbr:outfielder .
+
+#34 	Carlos Peguero 	L-L 	6'5" 	250 	Feb 22, 1987
+bb:2634	bb:playerid	"2634"^^xs:integer .
+bb:2634	bb:number	"34"^^xs:integer .
+bb:2634	bb:lastname	"Peguero" .
+bb:2634	bb:firstname	"Carlos" .
+bb:2634	bb:position	"outfielder" .
+bb:2634	bb:team	bbr:Royals .
+bb:2634	bb:bats	"left" .
+bb:2634	bb:throws	"left" .
+bb:2634	bb:weight	"250"^^xs:integer .
+bb:2634	bb:date-of-birth	"1987-02-22"^^xs:date .
+bb:2634	rdf:type		bbr:outfielder .
+
+#	Moises Sierra 	R-R 	6'1" 	220 	Sep 24, 1988
+bb:2635	bb:playerid	"2635"^^xs:integer .
+bb:2635	bb:lastname	"Sierra" .
+bb:2635	bb:firstname	"Moises" .
+bb:2635	bb:position	"outfielder" .
+bb:2635	bb:team	bbr:Royals .
+bb:2635	bb:bats	"right" .
+bb:2635	bb:throws	"right" .
+bb:2635	bb:weight	"220"^^xs:integer .
+bb:2635	bb:date-of-birth	"1988-09-24"^^xs:date .
+bb:2635	rdf:type		bbr:outfielder .
+
+#	Manager	Ned Yost
+bb:2656	bb:lastname	"Yost" .
+bb:2656	bb:firstname	"Ned" .
+bb:2656	bb:position	"manager" .
+bb:2656	bb:team	bbr:Royals .
+bb:2656	bb:number	"3"^^xs:integer .
+bb:2656	bbr:coachingRole		bbr:manager .
+
+#	Coach	Don Wakamatsu
+bb:2657	bb:lastname	"Wakamatsu" .
+bb:2657	bb:firstname	"Don" .
+bb:2657	bb:position	"coach" .
+bb:2657	bb:number	"22"^^xs:integer .
+bb:2657	bb:team	bbr:Royals .
+bb:2657	bbr:coachingRole		bbr:benchCoach .
+
+#	Coach	Dale Sveum
+bb:2658	bb:lastname	"Sveum" .
+bb:2658	bb:firstname	"Dale" .
+bb:2658	bb:position	"coach" .
+bb:2658	bb:number	"21"^^xs:integer .
+bb:2658	bb:team	bbr:Royals .
+bb:2658	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	FIRSTNAME LASTNAME
+bb:2659	bb:lastname	"LASTNAME" .
+bb:2659	bb:firstname	"FIRSTNAME" .
+bb:2659	bb:position	"coach" .
+bb:2659	bb:number	"100"^^xs:integer .
+bb:2659	bb:team	bbr:Royals .
+bb:2659	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Rusty Kuntz
+bb:2660	bb:lastname	"Kuntz" .
+bb:2660	bb:firstname	"Rusty" .
+bb:2660	bb:position	"coach" .
+bb:2660	bb:number	"15"^^xs:integer .
+bb:2660	bb:team	bbr:Royals .
+bb:2660	bbr:coachingRole		bbr:firstBaseCoach .
+
+#	Coach	Mike Jirschele
+bb:2661	bb:lastname	"Jirschele" .
+bb:2661	bb:firstname	"Mike" .
+bb:2661	bb:position	"coach" .
+bb:2661	bb:number	"59"^^xs:integer .
+bb:2661	bb:team	bbr:Royals .
+bb:2661	bbr:coachingRole		bbr:thirdBaseCoach .
+
+#	Coach	Dave Eiland
+bb:2662	bb:lastname	"Eiland" .
+bb:2662	bb:firstname	"Dave" .
+bb:2662	bb:position	"coach" .
+bb:2662	bb:number	"58"^^xs:integer .
+bb:2662	bb:team	bbr:Royals .
+bb:2662	bbr:coachingRole		bbr:pitchingCoach .
+
+#	Coach	Doug Henry
+bb:2663	bb:lastname	"Henry" .
+bb:2663	bb:firstname	"Doug" .
+bb:2663	bb:position	"coach" .
+bb:2663	bb:number	"57"^^xs:integer .
+bb:2663	bb:team	bbr:Royals .
+bb:2663	bbr:coachingRole		bbr:bullpenCoach .
+
+#	Coach	Pedro Grifol
+bb:2664	bb:lastname	"Grifol" .
+bb:2664	bb:firstname	"Pedro" .
+bb:2664	bb:position	"coach" .
+bb:2664	bb:number	"28"^^xs:integer .
+bb:2664	bb:team	bbr:Royals .
+bb:2664	bbr:coachingRole		bbr:bullpenCatcher .
+
+
+

@@ -1,0 +1,102 @@
+# rules for baseball rosters
+
+prefix	bb:			<http://marklogic.com/baseball/players#>
+prefix	bbr:		<http://marklogic.com/baseball/rules#>
+prefix	rdf:		<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+prefix	rdfs:		<http://www.w3.org/2000/01/rdf-schema#>
+prefix	owl:		<http://www.w3.org/2002/07/owl#> 
+prefix	xs:			<http://www.w3.org/2001/XMLSchema#>
+
+rule "southpaw" construct {
+    ?person rdfs:isA "southpaw"
+}
+{
+#    ?person bb:position "pitcher" .
+    ?person rdf:type bbr:pitcher .
+    ?person bb:throws "left" .
+}
+
+rule "crafty_lefty" construct {
+	?person rdfs:isA "crafty_lefty"
+}
+{
+	?person bb:position "pitcher" .
+	?person bb:throws "left" .
+	?person bb:fastball_mph ?speed .
+	filter( ?speed < "89"^^xs:integer )
+}
+
+rule "young" construct {
+	?person rdfs:isA "young"
+}
+{
+	?person bb:date-of-birth ?born .
+	filter( ?born > "1986-12-31"^^xs:date )
+}
+
+rule "grizzled_vet" construct {
+	?person rdfs:isA "grizzled_vet"
+}
+{
+	?person bb:date-of-birth ?born .
+	filter( ?born < "1980-01-01"^^xs:date )
+}
+
+rule "pitcher_both_ways" construct {
+	?person rdfs:isA "pitcher_both_ways"
+}
+{
+	?person a bbr:pitcher .
+	?person a bbr:starter .
+	?person a bbr:reliever .
+}
+
+rule "playsFor" construct {
+	?p1 bbr:playsFor ?p2
+}
+{
+	?p1 a bbr:player .
+	?p2 bbr:coachingRole bbr:manager .
+	?p1 bb:team ?player_team .
+	?p2 bb:team ?manager_team .
+	FILTER (?player_team = ?manager_team)
+}
+
+
+rule "coachesFor" construct {
+	?p1 bbr:coachesFor ?p2
+}
+{
+	?p1 bbr:coachingRole ?crole .
+	?p2 bbr:coachingRole bbr:manager .
+	?p1 bb:team ?player_team .
+	?p2 bb:team ?manager_team .
+	FILTER (?player_team = ?manager_team)
+	FILTER (?crole != bbr:manager )
+}
+
+
+rule "roster" construct {
+  ?p1 bbr:roster ?team .
+}
+{
+  ?p1 bbr:isEmployedBy ?team .
+}
+
+rule "pitchingStaff" construct {
+  ?p1 bbr:pitchingStaff ?team .
+}
+{
+  ?p1 bb:team ?team .
+  ?p1 rdfs:isA bbr:pitcher .
+}
+
+rule "is_a_manager" construct {
+	?p1 rdfs:isA bbr:manager
+}
+{
+	?p1 bbr:coachingRole ?crole .
+	filter (?crole = bbr:manager)
+}
+
+

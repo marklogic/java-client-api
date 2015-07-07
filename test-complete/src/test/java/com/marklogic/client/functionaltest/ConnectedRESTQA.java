@@ -1039,6 +1039,19 @@ public abstract class ConnectedRESTQA {
 	public static void enableCollectionLexicon(String dbName) throws Exception{
 		setDatabaseProperties(dbName,"collection-lexicon",true );
 	}
+	
+	// Enable triple-Index
+	public static void enableTripleIndex(String dbName) throws Exception{
+		setDatabaseProperties(dbName,"triple-index",true );
+	}
+	
+	// Set triple-positions to false
+	public static void enableTriplePositions(String dbName) throws Exception{
+		setDatabaseProperties(dbName,"triple-positions",false );
+	}
+	
+	
+	
 	/*
 	 * "word-lexicons":  [
       "http:\/\/marklogic.com\/collation\/"
