@@ -127,6 +127,9 @@ import com.marklogic.client.query.ValueQueryDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
 import com.marklogic.client.semantics.GraphPermissions;
+import com.marklogic.client.semantics.SPARQLBinding;
+import com.marklogic.client.semantics.SPARQLBindings;
+import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
@@ -5372,6 +5375,56 @@ public class JerseyServices implements RESTServices {
 			params.add("default", "");
 		}
 		return putResource(reqlog, "graphs", transaction, params, input, null);
+	}
+
+	@Override
+	public <R extends AbstractReadHandle> R executeSparql(RequestLogger reqlog, 
+		SPARQLQueryDefinition qdef, R output, long start, long pageLength,
+		Transaction transaction, boolean isUpdate)
+	{
+		if ( qdef == null )   throw new IllegalArgumentException("qdef cannot be null");
+		if ( output == null ) throw new IllegalArgumentException("output cannot be null");
+		RequestParameters params = new RequestParameters();
+		if (start > 1)             params.add("start",      Long.toString(start));
+		if (pageLength >= 0)       params.add("pageLength", Long.toString(pageLength));
+		if (transaction != null)   params.add("txid",       transaction.getTransactionId());
+		String sparql = qdef.getSparql();
+		SPARQLBindings bindings = qdef.getBindings();
+		for ( String bindingName : bindings.keySet() ) {
+			String paramName = "bind:" + bindingName;
+			String typeOrLang = "";
+			for ( SPARQLBinding binding : bindings.get(bindingName) ) {
+				if ( binding.getType() != null && ! "".equals(binding.getType()) ) {
+					typeOrLang = ":" + binding.getType();
+				} else if ( binding.getLanguageTag() != null ) {
+					typeOrLang = "@" + binding.getLanguageTag().toLanguageTag();
+				}
+				params.add(paramName + typeOrLang, binding.getValue());
+			}
+		}
+		QueryDefinition constrainingQuery = qdef.getConstrainingQueryDefinintion();
+		StringHandle input;
+		if ( constrainingQuery != null ) {
+			String stringQuery = constrainingQuery instanceof StringQueryDefinition ?
+				((StringQueryDefinition) constrainingQuery).getCriteria() : null;
+			StructuredQueryDefinition structuredQuery = constrainingQuery instanceof StructuredQueryDefinition ?
+				(StructuredQueryDefinition) constrainingQuery : null;
+			CombinedQueryDefinition combinedQdef = new CombinedQueryBuilderImpl().combine(structuredQuery, null,
+				stringQuery, sparql);
+			input = new StringHandle(combinedQdef.serialize()).withMimetype("application/xml");
+		} else {
+			String mimetype = isUpdate ? "application/sparql-update" : "application/sparql-query";
+			input = new StringHandle(sparql).withMimetype(mimetype);
+		}
+
+		// TODO: do we want this default?
+		HandleImplementation baseHandle = HandleAccessor.checkHandle(output, "graphs/sparql");
+		if ( baseHandle.getFormat() == Format.JSON ) {
+			baseHandle.setMimetype("application/sparql-results+json");
+		} else if ( baseHandle.getFormat() == Format.XML ) {
+			baseHandle.setMimetype("application/sparql-results+xml");
+		}
+		return postResource(reqlog, "/graphs/sparql", transaction, params, input, output);
 	}
 
 	private String getTransactionId(Transaction transaction) {

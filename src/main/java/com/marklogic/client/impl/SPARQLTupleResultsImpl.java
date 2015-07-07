@@ -129,4 +129,9 @@ public class SPARQLTupleResultsImpl
         if ( bindings == null ) throw new IllegalStateException("this has not been populated yet");
         return bindings.iterator();
     }
+
+    @Override
+    public long size() {
+        return bindings.size();
+    }
 }

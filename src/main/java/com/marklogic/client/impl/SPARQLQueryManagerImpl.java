@@ -50,62 +50,38 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
     @Override
     public <T extends SPARQLReadHandle> T executeQuery(
             SPARQLQueryDefinition qdef, T handle) {
-        return executeQueryImpl(qdef, handle, null);
+        return executeQueryImpl(qdef, handle, null, false);
     }
 
     @Override
     public <T extends SPARQLReadHandle> T executeQuery(
             SPARQLQueryDefinition qdef, T handle, Transaction tx) {
-        return executeQueryImpl(qdef, handle, tx);
+        return executeQueryImpl(qdef, handle, tx, false);
     }
 
     private <T extends AbstractReadHandle> T executeQueryImpl(
-            SPARQLQueryDefinition qdef, T handle, Transaction tx) {
+            SPARQLQueryDefinition qdef, T handle, Transaction tx, boolean isUpdate) {
+        return executeQueryImpl(qdef, handle, -1, -1, tx, isUpdate);
+   }
 
-
+    private <T extends AbstractReadHandle> T executeQueryImpl(
+            SPARQLQueryDefinition qdef, T handle, long start, long pageLength, Transaction tx, boolean isUpdate) {
         if ( qdef == null )   throw new IllegalArgumentException("qdef cannot be null");
         if ( handle == null ) throw new IllegalArgumentException("handle cannot be null");
-        if ( qdef instanceof SPARQLQueryDefinitionImpl ) {
-            try {
-                RequestParameters params = new RequestParameters();
-                // TODO: this should be in JerseyServices
-                StringBuffer sb = new StringBuffer();
-                String sparql = ((SPARQLQueryDefinitionImpl) qdef).getSparql();
-                    sb.append("query=" + URLEncoder.encode(sparql, "UTF-8"));
-                SPARQLBindings bindings = qdef.getBindings();
-                for ( String bindingName : bindings.keySet() ) {
-                    String paramName = "bind:" + bindingName;
-                    String typeOrLang = "";
-                    for ( SPARQLBinding binding : bindings.get(bindingName) ) {
-                        if ( binding.getType() != null && ! "".equals(binding.getType()) ) {
-                            typeOrLang = ":" + binding.getType();
-                        } else if ( binding.getLanguageTag() != null ) {
-                            typeOrLang = "@" + binding.getLanguageTag().toLanguageTag();
-                        }
-                        params.add(paramName + typeOrLang, binding.getValue());
-                    }
-                }
-                String formUrlEncodedPayload = sb.toString();
-                StringHandle input = new StringHandle(formUrlEncodedPayload)
-                    .withMimetype("application/x-www-form-urlencoded");
-
-                // TODO: do we want this default?
-                HandleImplementation baseHandle = HandleAccessor.checkHandle(handle, "graphs/sparql");
-                if ( baseHandle.getFormat() == Format.JSON ) {
-                    baseHandle.setMimetype("application/sparql-results+json");
-                }
-                return services.postResource(requestLogger, "/graphs/sparql", tx, params, input, handle);
-            } catch (UnsupportedEncodingException e) {}
-        }
-        throw new IllegalStateException("Unknown type of SPARQLQueryDefinition: " +
-            qdef.getClass().getName());
+        return services.executeSparql(requestLogger, qdef, handle, start, pageLength, tx, isUpdate);
     }
 
     @Override
     public SPARQLTupleResults executeSelect(SPARQLQueryDefinition qdef) {
         // TODO Auto-generated method stub
         SPARQLTupleResults output = new SPARQLTupleResultsImpl().withFormat(Format.JSON); 
-        return executeQueryImpl(qdef, output, null);
+        return executeQueryImpl(qdef, output, null, false);
+    }
+
+    @Override
+    public SPARQLTupleResults executeSelect(SPARQLQueryDefinition qdef,
+            long start, long pageLength) {
+        return executeSelect(qdef, start, pageLength, null);
     }
 
     @Override
@@ -113,41 +89,42 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
             long start, long pageLength, Transaction tx) {
         // TODO Auto-generated method stub
         SPARQLTupleResults output = new SPARQLTupleResultsImpl().withFormat(Format.JSON); 
-        return executeQueryImpl(qdef, output, tx);    }
+        return executeQueryImpl(qdef, output, start, pageLength, tx, false);
+    }
 
     @Override
     public <T extends TriplesReadHandle> T executeConstruct(
             SPARQLQueryDefinition qdef, T triplesReadHandle) {
         // TODO Auto-generated method stub
-        return executeQueryImpl(qdef, triplesReadHandle, null);
+        return executeQueryImpl(qdef, triplesReadHandle, null, false);
     }
 
     @Override
     public <T extends TriplesReadHandle> T executeConstruct(
             SPARQLQueryDefinition qdef, T triplesReadHandle, Transaction tx) {
         // TODO Auto-generated method stub
-        return executeQueryImpl(qdef, triplesReadHandle, tx);
+        return executeQueryImpl(qdef, triplesReadHandle, tx, false);
     }
 
     @Override
     public <T extends TriplesReadHandle> T executeDescribe(
             SPARQLQueryDefinition qdef, T triplesReadHandle) {
         // TODO Auto-generated method stub
-        return executeQueryImpl(qdef, triplesReadHandle, null);
+        return executeQueryImpl(qdef, triplesReadHandle, null, false);
     }
 
     @Override
     public <T extends TriplesReadHandle> T executeDescribe(
             SPARQLQueryDefinition qdef, T triplesReadHandle, Transaction tx) {
         // TODO Auto-generated method stub
-        return executeQueryImpl(qdef, triplesReadHandle, tx);
+        return executeQueryImpl(qdef, triplesReadHandle, tx, false);
     }
 
     @Override
     public Boolean executeAsk(SPARQLQueryDefinition qdef) {
         // TODO Auto-generated method stub
         return Boolean.valueOf(
-            executeQuery(qdef, new StringHandle().withFormat(Format.JSON), null).get()
+            executeQueryImpl(qdef, new StringHandle().withFormat(Format.JSON), null, false).get()
         );
     }
 
@@ -155,20 +132,20 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
     public Boolean executeAsk(SPARQLQueryDefinition qdef, Transaction tx) {
         // TODO Auto-generated method stub
         return Boolean.valueOf(
-            executeQueryImpl(qdef, new StringHandle().withFormat(Format.JSON), tx).get()
+            executeQueryImpl(qdef, new StringHandle().withFormat(Format.JSON), tx, false).get()
         );
     }
 
     @Override
     public void executeUpdate(SPARQLQueryDefinition qdef) {
         // TODO Auto-generated method stub
-        executeQueryImpl(qdef, (TriplesReadHandle) new StringHandle().withFormat(Format.JSON), null);
+        executeQueryImpl(qdef, (TriplesReadHandle) new StringHandle().withFormat(Format.JSON), null, true);
     }
 
     @Override
     public void executeUpdate(SPARQLQueryDefinition qdef, Transaction tx) {
         // TODO Auto-generated method stub
-        executeQueryImpl(qdef, (TriplesReadHandle) new StringHandle().withFormat(Format.JSON), tx);
+        executeQueryImpl(qdef, (TriplesReadHandle) new StringHandle().withFormat(Format.JSON), tx, true);
     }
 
     @Override
