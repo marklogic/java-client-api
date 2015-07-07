@@ -36,11 +36,15 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
         private StructuredQueryDefinition query;
         private QueryOptionsWriteHandle options;
         private String qtext;
+        private String sparql;
 
-        public CombinedQueryDefinitionImpl(StructuredQueryDefinition query, QueryOptionsWriteHandle options, String qtext) {
+        public CombinedQueryDefinitionImpl(StructuredQueryDefinition query, QueryOptionsWriteHandle options,
+            String qtext, String sparql)
+        {
             this.query = query;
             this.options = options;
             this.qtext = qtext;
+            this.sparql = sparql;
         }
 
         public String serialize() {
@@ -50,13 +54,16 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
     }
 
     public CombinedQueryDefinition combine(StructuredQueryDefinition query, String qtext) {
-        return new CombinedQueryDefinitionImpl(query, null, qtext);
+        return new CombinedQueryDefinitionImpl(query, null, qtext, null);
     }
     public CombinedQueryDefinition combine(StructuredQueryDefinition query, QueryOptionsWriteHandle options) {
-        return new CombinedQueryDefinitionImpl(query, options, null);
+        return new CombinedQueryDefinitionImpl(query, options, null, null);
     }
     public CombinedQueryDefinition combine(StructuredQueryDefinition query, QueryOptionsWriteHandle options, String qtext) {
-        return new CombinedQueryDefinitionImpl(query, options, qtext);
+        return new CombinedQueryDefinitionImpl(query, options, qtext, null);
+    }
+    public CombinedQueryDefinition combine(StructuredQueryDefinition query, QueryOptionsWriteHandle options, String qtext, String sparql) {
+        return new CombinedQueryDefinitionImpl(query, options, qtext, sparql);
     }
 
     private String serialize(CombinedQueryDefinitionImpl combinedQueryDefinitionImpl) {
@@ -90,6 +97,8 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
             String qtext = combinedQueryDefinitionImpl.qtext;
             StructuredQueryDefinition query = combinedQueryDefinitionImpl.query;
             QueryOptionsWriteHandle options = combinedQueryDefinitionImpl.options;
+            String sparql = combinedQueryDefinitionImpl.sparql;
+
             XMLStreamWriter serializer = makeSerializer(out);
 
             serializer.writeStartDocument();
@@ -100,6 +109,11 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
                 serializer.writeEndElement();
             } else {
                 serializer.writeCharacters("");
+            }
+            if ( sparql != null ) {
+                serializer.writeStartElement("sparql");
+                serializer.writeCharacters(sparql);
+                serializer.writeEndElement();
             }
             serializer.flush();
             if ( query != null ) {
