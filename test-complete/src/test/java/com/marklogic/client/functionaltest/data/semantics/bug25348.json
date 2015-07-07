@@ -1,0 +1,8 @@
+{ "http://example.com/ns/directory#m":
+  { "http://example.com/ns/person#firstName":
+    [ { "value": "Michelle",
+        "type": "literal",
+        "datatype": "http://www.w3.org/2001/XMLSchema#string" }
+    ]
+  }
+} 

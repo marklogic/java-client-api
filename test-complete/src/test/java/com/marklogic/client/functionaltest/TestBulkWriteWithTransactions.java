@@ -443,11 +443,83 @@ public void testBulkWritewithTransactionCommitTimeOut() throws Exception {
 		count++;
 	}
 	assertEquals("document count", 102,count); 
-
-	
-
 }
 
+/*
+ * Purpose: To test bulk delete within a transaction.
+ * 
+ * Test bulk insert documents with transaction open
+ * and then perform a bulk delete.
+ * Read documents before and after delete.
+ */
+@Test
+	public void testBulkWriteDeleteWithTransactions() throws Exception {
+		int count = 1;
+		boolean tstatus = true;
+		Transaction t1 = client.openTransaction();
+		try {
+			XMLDocumentManager docMgr = client.newXMLDocumentManager();
+			HashMap<String, String> map = new HashMap<String, String>();
+			DocumentWriteSet writeset = docMgr.newWriteSet();
+			for (int i = 0; i < 102; i++) {
+				writeset.add(DIRECTORY + "bar" + i + ".xml", new DOMHandle(
+						getDocumentContent("This is so foo" + i)));
+				map.put(DIRECTORY + "bar" + i + ".xml",
+						convertXMLDocumentToString(getDocumentContent("This is so foo"
+								+ i)));
+				if (count % BATCH_SIZE == 0) {
+					docMgr.write(writeset, t1);
+					writeset = docMgr.newWriteSet();
+				}
+				count++;
+			}
+			if (count % BATCH_SIZE > 0) {
+				docMgr.write(writeset, t1);
+			}
+			String uris[] = new String[102];
+			for (int i = 0; i < 102; i++) {
+				uris[i] = DIRECTORY + "bar" + i + ".xml";
+			}
 
+			count = 0;
+			DocumentPage page = docMgr.read(t1, uris);
+			DOMHandle dh = new DOMHandle();
+			while (page.hasNext()) {
+				DocumentRecord rec = page.next();
+				validateRecord(rec, Format.XML);
+				rec.getContent(dh);
+				assertEquals("Comparing the content :", map.get(rec.getUri()),
+						convertXMLDocumentToString(dh.get()));
+				count++;
+			}
+
+			assertEquals("document count", 102, count);
+			// Perform a bulk delete.
+			docMgr.delete(t1, uris);
+			tstatus = false;
+			count = 0;
+			page = docMgr.read(uris);
+			dh = new DOMHandle();
+			while (page.hasNext()) {
+				DocumentRecord rec = page.next();
+				validateRecord(rec, Format.XML);
+				rec.getContent(dh);
+				assertEquals("Comparing the content :", map.get(rec.getUri()),
+						convertXMLDocumentToString(dh.get()));
+				count++;
+			}
+
+			assertEquals("document count", 0, count);
+
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			tstatus = true;
+			throw e;
+		} finally {
+			if (tstatus) {
+				t1.rollback();
+			}
+		}
+	}
 
 }

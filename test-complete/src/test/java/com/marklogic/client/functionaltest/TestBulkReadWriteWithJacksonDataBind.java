@@ -450,6 +450,8 @@ public class TestBulkReadWriteWithJacksonDataBind extends
 	    count++;
 	  }
      assertEquals("document count", 102,count);
+     // Issue #294 DocumentPage.size() should return correct size
+		assertTrue("DocumentPage Size did not return expected value:: returned==  "+page.size(), page.size() == 102 );
 							
 	}
 	/*

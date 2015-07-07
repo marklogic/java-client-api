@@ -1,0 +1,561 @@
+
+prefix bb: <http://marklogic.com/baseball/players#> 
+prefix bbr: <http://marklogic.com/baseball/rules#> 
+prefix xs: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+
+#bb:pX  bb:playerid "XX"^^xs:integer .
+#bb:XX  bb:lastname     "LASTNAME" .
+#bb:XX  bb:firstname    "FIRSTNAME" .
+#bb:XX  bb:position     "POSITION" .
+#bb:XX  bb:number       "NUMBER"^^xs:integer .
+#bb:XX  bb:team         "Athletics" .
+#bb:XX  bb:birthdate    "1989-10-26"^^xs:date .
+#bb:XX  bb:bats         "right" .
+#bb:XX  bb:throws       "right" .
+#bb:XX  bb:height       "" .
+#bb:XX  bb:weight       "220"^^xs:integer .
+#bb:XXX a       bbr:player .
+#bb:XXX a       bbr:pitcher .
+#bb:XXX a       bbr:starter .
+#bb:XXX a       bbr:setup .
+
+
+# 	Pitchers 	B/T 	Ht 	Wt 	DOB
+#75 	Manny Banuelos 	L-L 	5'10" 	205 	Mar 13, 1991
+bb:2901	bb:playerid	"2901"^^xs:integer .
+bb:2901	bb:number	"75"^^xs:integer .
+bb:2901	bb:lastname	"Banuelos" .
+bb:2901	bb:firstname	"Manny" .
+bb:2901	bb:position	"pitcher" .
+bb:2901	bb:team	bbr:Yankees .
+bb:2901	bb:bats	"left" .
+bb:2901	bb:throws	"left" .
+bb:2901	bb:weight	"205"^^xs:integer .
+bb:2901	bb:date-of-birth	"1991-03-13"^^xs:date .
+bb:2901	rdf:type		bbr:pitcher .
+bb:2901	rdf:type		bbr:setup .
+
+#68 	Dellin Betances 	R-R 	6'8" 	260 	Mar 23, 1988
+bb:2902	bb:playerid	"2902"^^xs:integer .
+bb:2902	bb:number	"68"^^xs:integer .
+bb:2902	bb:lastname	"Betances" .
+bb:2902	bb:firstname	"Dellin" .
+bb:2902	bb:position	"pitcher" .
+bb:2902	bb:team	bbr:Yankees .
+bb:2902	bb:bats	"right" .
+bb:2902	bb:throws	"right" .
+bb:2902	bb:weight	"260"^^xs:integer .
+bb:2902	bb:date-of-birth	"1988-03-23"^^xs:date .
+bb:2902	rdf:type		bbr:pitcher .
+bb:2902	rdf:type		bbr:setup .
+
+#	Jose Campos 	R-R 	6'4" 	195 	Jul 27, 1992
+bb:2903	bb:playerid	"2903"^^xs:integer .
+bb:2903	bb:lastname	"Campos" .
+bb:2903	bb:firstname	"Jose" .
+bb:2903	bb:position	"pitcher" .
+bb:2903	bb:team	bbr:Yankees .
+bb:2903	bb:bats	"right" .
+bb:2903	bb:throws	"right" .
+bb:2903	bb:weight	"195"^^xs:integer .
+bb:2903	bb:date-of-birth	"1992-07-27"^^xs:date .
+bb:2903	rdf:type		bbr:pitcher .
+bb:2903	rdf:type		bbr:setup .
+
+#48 	Preston Claiborne 	R-R 	6'2" 	225 	Jan 21, 1988
+bb:2904	bb:playerid	"2904"^^xs:integer .
+bb:2904	bb:number	"48"^^xs:integer .
+bb:2904	bb:lastname	"Claiborne" .
+bb:2904	bb:firstname	"Preston" .
+bb:2904	bb:position	"pitcher" .
+bb:2904	bb:team	bbr:Yankees .
+bb:2904	bb:bats	"right" .
+bb:2904	bb:throws	"right" .
+bb:2904	bb:weight	"225"^^xs:integer .
+bb:2904	bb:date-of-birth	"1988-01-21"^^xs:date .
+bb:2904	rdf:type		bbr:pitcher .
+bb:2904	rdf:type		bbr:setup .
+
+#61 	Shane Greene 	R-R 	6'4" 	210 	Nov 17, 1988
+bb:2905	bb:playerid	"2905"^^xs:integer .
+bb:2905	bb:number	"61"^^xs:integer .
+bb:2905	bb:lastname	"Greene" .
+bb:2905	bb:firstname	"Shane" .
+bb:2905	bb:position	"pitcher" .
+bb:2905	bb:team	bbr:Yankees .
+bb:2905	bb:bats	"right" .
+bb:2905	bb:throws	"right" .
+bb:2905	bb:weight	"210"^^xs:integer .
+bb:2905	bb:date-of-birth	"1988-11-17"^^xs:date .
+bb:2905	rdf:type		bbr:pitcher .
+bb:2905	rdf:type		bbr:setup .
+
+#55 	David Huff 	S-L 	6'2" 	215 	Aug 22, 1984
+bb:2906	bb:playerid	"2906"^^xs:integer .
+bb:2906	bb:number	"55"^^xs:integer .
+bb:2906	bb:lastname	"Huff" .
+bb:2906	bb:firstname	"David" .
+bb:2906	bb:position	"pitcher" .
+bb:2906	bb:team	bbr:Yankees .
+bb:2906	bb:bats	"switch" .
+bb:2906	bb:throws	"left" .
+bb:2906	bb:weight	"215"^^xs:integer .
+bb:2906	bb:date-of-birth	"1984-08-22"^^xs:date .
+bb:2906	rdf:type		bbr:pitcher .
+bb:2906	rdf:type		bbr:setup .
+
+#27 	Shawn Kelley 	R-R 	6'2" 	220 	Apr 26, 1984
+bb:2907	bb:playerid	"2907"^^xs:integer .
+bb:2907	bb:number	"27"^^xs:integer .
+bb:2907	bb:lastname	"Kelley" .
+bb:2907	bb:firstname	"Shawn" .
+bb:2907	bb:position	"pitcher" .
+bb:2907	bb:team	bbr:Yankees .
+bb:2907	bb:bats	"right" .
+bb:2907	bb:throws	"right" .
+bb:2907	bb:weight	"220"^^xs:integer .
+bb:2907	bb:date-of-birth	"1984-04-26"^^xs:date .
+bb:2907	rdf:type		bbr:pitcher .
+bb:2907	rdf:type		bbr:setup .
+
+#65 	Bryan Mitchell 	L-R 	6'3" 	205 	Apr 19, 1991
+bb:2908	bb:playerid	"2908"^^xs:integer .
+bb:2908	bb:number	"65"^^xs:integer .
+bb:2908	bb:lastname	"Mitchell" .
+bb:2908	bb:firstname	"Bryan" .
+bb:2908	bb:position	"pitcher" .
+bb:2908	bb:team	bbr:Yankees .
+bb:2908	bb:bats	"left" .
+bb:2908	bb:throws	"right" .
+bb:2908	bb:weight	"205"^^xs:integer .
+bb:2908	bb:date-of-birth	"1991-04-19"^^xs:date .
+bb:2908	rdf:type		bbr:pitcher .
+bb:2908	rdf:type		bbr:setup .
+
+#47 	Ivan Nova 	R-R 	6'4" 	225 	Jan 12, 1987
+bb:2909	bb:playerid	"2909"^^xs:integer .
+bb:2909	bb:number	"47"^^xs:integer .
+bb:2909	bb:lastname	"Nova" .
+bb:2909	bb:firstname	"Ivan" .
+bb:2909	bb:position	"pitcher" .
+bb:2909	bb:team	bbr:Yankees .
+bb:2909	bb:bats	"right" .
+bb:2909	bb:throws	"right" .
+bb:2909	bb:weight	"225"^^xs:integer .
+bb:2909	bb:date-of-birth	"1987-01-12"^^xs:date .
+bb:2909	rdf:type		bbr:pitcher .
+bb:2909	rdf:type		bbr:setup .
+
+#41 	David Phelps 	R-R 	6'2" 	200 	Oct 9, 1986
+bb:2910	bb:playerid	"2910"^^xs:integer .
+bb:2910	bb:number	"41"^^xs:integer .
+bb:2910	bb:lastname	"Phelps" .
+bb:2910	bb:firstname	"David" .
+bb:2910	bb:position	"pitcher" .
+bb:2910	bb:team	bbr:Yankees .
+bb:2910	bb:bats	"right" .
+bb:2910	bb:throws	"right" .
+bb:2910	bb:weight	"200"^^xs:integer .
+bb:2910	bb:date-of-birth	"1986-10-09"^^xs:date .
+bb:2910	rdf:type		bbr:pitcher .
+bb:2910	rdf:type		bbr:setup .
+
+#35 	Michael Pineda 	R-R 	6'7" 	265 	Jan 18, 1989
+bb:2911	bb:playerid	"2911"^^xs:integer .
+bb:2911	bb:number	"35"^^xs:integer .
+bb:2911	bb:lastname	"Pineda" .
+bb:2911	bb:firstname	"Michael" .
+bb:2911	bb:position	"pitcher" .
+bb:2911	bb:team	bbr:Yankees .
+bb:2911	bb:bats	"right" .
+bb:2911	bb:throws	"right" .
+bb:2911	bb:weight	"265"^^xs:integer .
+bb:2911	bb:date-of-birth	"1989-01-18"^^xs:date .
+bb:2911	rdf:type		bbr:pitcher .
+bb:2911	rdf:type		bbr:setup .
+
+#63 	Jose Ramirez 	R-R 	6'3" 	190 	Jan 21, 1990
+bb:2912	bb:playerid	"2912"^^xs:integer .
+bb:2912	bb:number	"63"^^xs:integer .
+bb:2912	bb:lastname	"Ramirez" .
+bb:2912	bb:firstname	"Jose" .
+bb:2912	bb:position	"pitcher" .
+bb:2912	bb:team	bbr:Yankees .
+bb:2912	bb:bats	"right" .
+bb:2912	bb:throws	"right" .
+bb:2912	bb:weight	"190"^^xs:integer .
+bb:2912	bb:date-of-birth	"1990-01-21"^^xs:date .
+bb:2912	rdf:type		bbr:pitcher .
+bb:2912	rdf:type		bbr:setup .
+
+#53 	Esmil Rogers 	R-R 	6'3" 	200 	Aug 14, 1985
+bb:2913	bb:playerid	"2913"^^xs:integer .
+bb:2913	bb:number	"53"^^xs:integer .
+bb:2913	bb:lastname	"Rogers" .
+bb:2913	bb:firstname	"Esmil" .
+bb:2913	bb:position	"pitcher" .
+bb:2913	bb:team	bbr:Yankees .
+bb:2913	bb:bats	"right" .
+bb:2913	bb:throws	"right" .
+bb:2913	bb:weight	"200"^^xs:integer .
+bb:2913	bb:date-of-birth	"1985-08-14"^^xs:date .
+bb:2913	rdf:type		bbr:pitcher .
+bb:2913	rdf:type		bbr:setup .
+
+#52 	CC Sabathia 	L-L 	6'7" 	285 	Jul 21, 1980
+bb:2914	bb:playerid	"2914"^^xs:integer .
+bb:2914	bb:number	"52"^^xs:integer .
+bb:2914	bb:lastname	"Sabathia" .
+bb:2914	bb:firstname	"CC" .
+bb:2914	bb:position	"pitcher" .
+bb:2914	bb:team	bbr:Yankees .
+bb:2914	bb:bats	"left" .
+bb:2914	bb:throws	"left" .
+bb:2914	bb:weight	"285"^^xs:integer .
+bb:2914	bb:date-of-birth	"1980-07-21"^^xs:date .
+bb:2914	rdf:type		bbr:pitcher .
+bb:2914	rdf:type		bbr:setup .
+
+#19 	Masahiro Tanaka 	R-R 	6'2" 	205 	Nov 1, 1988
+bb:2915	bb:playerid	"2915"^^xs:integer .
+bb:2915	bb:number	"19"^^xs:integer .
+bb:2915	bb:lastname	"Tanaka" .
+bb:2915	bb:firstname	"Masahiro" .
+bb:2915	bb:position	"pitcher" .
+bb:2915	bb:team	bbr:Yankees .
+bb:2915	bb:bats	"right" .
+bb:2915	bb:throws	"right" .
+bb:2915	bb:weight	"205"^^xs:integer .
+bb:2915	bb:date-of-birth	"1988-11-01"^^xs:date .
+bb:2915	rdf:type		bbr:pitcher .
+bb:2915	rdf:type		bbr:setup .
+
+#43 	Adam Warren 	R-R 	6'1" 	200 	Aug 25, 1987
+bb:2916	bb:playerid	"2916"^^xs:integer .
+bb:2916	bb:number	"43"^^xs:integer .
+bb:2916	bb:lastname	"Warren" .
+bb:2916	bb:firstname	"Adam" .
+bb:2916	bb:position	"pitcher" .
+bb:2916	bb:team	bbr:Yankees .
+bb:2916	bb:bats	"right" .
+bb:2916	bb:throws	"right" .
+bb:2916	bb:weight	"200"^^xs:integer .
+bb:2916	bb:date-of-birth	"1987-08-25"^^xs:date .
+bb:2916	rdf:type		bbr:pitcher .
+bb:2916	rdf:type		bbr:setup .
+
+#39 	Chase Whitley 	R-R 	6'3" 	215 	Jun 14, 1989
+bb:2917	bb:playerid	"2917"^^xs:integer .
+bb:2917	bb:number	"39"^^xs:integer .
+bb:2917	bb:lastname	"Whitley" .
+bb:2917	bb:firstname	"Chase" .
+bb:2917	bb:position	"pitcher" .
+bb:2917	bb:team	bbr:Yankees .
+bb:2917	bb:bats	"right" .
+bb:2917	bb:throws	"right" .
+bb:2917	bb:weight	"215"^^xs:integer .
+bb:2917	bb:date-of-birth	"1989-06-14"^^xs:date .
+bb:2917	rdf:type		bbr:pitcher .
+bb:2917	rdf:type		bbr:setup .
+
+# 	Catchers 	B/T 	Ht 	Wt 	DOB
+#29 	Francisco Cervelli 	R-R 	6'1" 	205 	Mar 6, 1986
+bb:2918	bb:playerid	"2918"^^xs:integer .
+bb:2918	bb:number	"29"^^xs:integer .
+bb:2918	bb:lastname	"Cervelli" .
+bb:2918	bb:firstname	"Francisco" .
+bb:2918	bb:position	"catcher" .
+bb:2918	bb:team	bbr:Yankees .
+bb:2918	bb:bats	"right" .
+bb:2918	bb:throws	"right" .
+bb:2918	bb:weight	"205"^^xs:integer .
+bb:2918	bb:date-of-birth	"1986-03-06"^^xs:date .
+bb:2918	rdf:type		bbr:catcher .
+
+#34 	Brian McCann 	L-R 	6'3" 	230 	Feb 20, 1984
+bb:2919	bb:playerid	"2919"^^xs:integer .
+bb:2919	bb:number	"34"^^xs:integer .
+bb:2919	bb:lastname	"McCann" .
+bb:2919	bb:firstname	"Brian" .
+bb:2919	bb:position	"catcher" .
+bb:2919	bb:team	bbr:Yankees .
+bb:2919	bb:bats	"left" .
+bb:2919	bb:throws	"right" .
+bb:2919	bb:weight	"230"^^xs:integer .
+bb:2919	bb:date-of-birth	"1984-02-20"^^xs:date .
+bb:2919	rdf:type		bbr:catcher .
+
+#66 	John Ryan Murphy 	R-R 	5'11" 	195 	May 13, 1991
+bb:2920	bb:playerid	"2920"^^xs:integer .
+bb:2920	bb:number	"66"^^xs:integer .
+bb:2920	bb:lastname	"Ryan Murphy" .
+bb:2920	bb:firstname	"John" .
+bb:2920	bb:position	"catcher" .
+bb:2920	bb:team	bbr:Yankees .
+bb:2920	bb:bats	"right" .
+bb:2920	bb:throws	"right" .
+bb:2920	bb:weight	"195"^^xs:integer .
+bb:2920	bb:date-of-birth	"1991-05-13"^^xs:date .
+bb:2920	rdf:type		bbr:catcher .
+
+#62 	Austin Romine 	R-R 	6'0" 	215 	Nov 22, 1988
+bb:2921	bb:playerid	"2921"^^xs:integer .
+bb:2921	bb:number	"62"^^xs:integer .
+bb:2921	bb:lastname	"Romine" .
+bb:2921	bb:firstname	"Austin" .
+bb:2921	bb:position	"catcher" .
+bb:2921	bb:team	bbr:Yankees .
+bb:2921	bb:bats	"right" .
+bb:2921	bb:throws	"right" .
+bb:2921	bb:weight	"215"^^xs:integer .
+bb:2921	bb:date-of-birth	"1988-11-22"^^xs:date .
+bb:2921	rdf:type		bbr:catcher .
+
+#82 	Gary Sanchez 	R-R 	6'3" 	235 	Dec 2, 1992
+bb:2922	bb:playerid	"2922"^^xs:integer .
+bb:2922	bb:number	"82"^^xs:integer .
+bb:2922	bb:lastname	"Sanchez" .
+bb:2922	bb:firstname	"Gary" .
+bb:2922	bb:position	"catcher" .
+bb:2922	bb:team	bbr:Yankees .
+bb:2922	bb:bats	"right" .
+bb:2922	bb:throws	"right" .
+bb:2922	bb:weight	"235"^^xs:integer .
+bb:2922	bb:date-of-birth	"1992-12-02"^^xs:date .
+bb:2922	rdf:type		bbr:catcher .
+
+# 	Infielders 	B/T 	Ht 	Wt 	DOB
+#67 	Jose Pirela 	R-R 	5'11" 	210 	Nov 21, 1989
+bb:2923	bb:playerid	"2923"^^xs:integer .
+bb:2923	bb:number	"67"^^xs:integer .
+bb:2923	bb:lastname	"Pirela" .
+bb:2923	bb:firstname	"Jose" .
+bb:2923	bb:position	"infielder" .
+bb:2923	bb:team	bbr:Yankees .
+bb:2923	bb:bats	"right" .
+bb:2923	bb:throws	"right" .
+bb:2923	bb:weight	"210"^^xs:integer .
+bb:2923	bb:date-of-birth	"1989-11-21"^^xs:date .
+bb:2923	rdf:type		bbr:infielder .
+
+#14 	Martin Prado 	R-R 	6'1" 	190 	Oct 27, 1983
+bb:2924	bb:playerid	"2924"^^xs:integer .
+bb:2924	bb:number	"14"^^xs:integer .
+bb:2924	bb:lastname	"Prado" .
+bb:2924	bb:firstname	"Martin" .
+bb:2924	bb:position	"infielder" .
+bb:2924	bb:team	bbr:Yankees .
+bb:2924	bb:bats	"right" .
+bb:2924	bb:throws	"right" .
+bb:2924	bb:weight	"190"^^xs:integer .
+bb:2924	bb:date-of-birth	"1983-10-27"^^xs:date .
+bb:2924	rdf:type		bbr:infielder .
+
+#13 	Alex Rodriguez 	R-R 	6'3" 	225 	Jul 27, 1975
+bb:2925	bb:playerid	"2925"^^xs:integer .
+bb:2925	bb:number	"13"^^xs:integer .
+bb:2925	bb:lastname	"Rodriguez" .
+bb:2925	bb:firstname	"Alex" .
+bb:2925	bb:position	"infielder" .
+bb:2925	bb:team	bbr:Yankees .
+bb:2925	bb:bats	"right" .
+bb:2925	bb:throws	"right" .
+bb:2925	bb:weight	"225"^^xs:integer .
+bb:2925	bb:date-of-birth	"1975-07-27"^^xs:date .
+bb:2925	rdf:type		bbr:infielder .
+
+#17 	Brendan Ryan 	R-R 	6'2" 	195 	Mar 26, 1982
+bb:2926	bb:playerid	"2926"^^xs:integer .
+bb:2926	bb:number	"17"^^xs:integer .
+bb:2926	bb:lastname	"Ryan" .
+bb:2926	bb:firstname	"Brendan" .
+bb:2926	bb:position	"infielder" .
+bb:2926	bb:team	bbr:Yankees .
+bb:2926	bb:bats	"right" .
+bb:2926	bb:throws	"right" .
+bb:2926	bb:weight	"195"^^xs:integer .
+bb:2926	bb:date-of-birth	"1982-03-26"^^xs:date .
+bb:2926	rdf:type		bbr:infielder .
+
+#25 	Mark Teixeira 	S-R 	6'3" 	215 	Apr 11, 1980
+bb:2927	bb:playerid	"2927"^^xs:integer .
+bb:2927	bb:number	"25"^^xs:integer .
+bb:2927	bb:lastname	"Teixeira" .
+bb:2927	bb:firstname	"Mark" .
+bb:2927	bb:position	"infielder" .
+bb:2927	bb:team	bbr:Yankees .
+bb:2927	bb:bats	"switch" .
+bb:2927	bb:throws	"right" .
+bb:2927	bb:weight	"215"^^xs:integer .
+bb:2927	bb:date-of-birth	"1980-04-11"^^xs:date .
+bb:2927	rdf:type		bbr:infielder .
+
+#45 	Zelous Wheeler 	R-R 	5'10" 	220 	Jan 16, 1987
+bb:2928	bb:playerid	"2928"^^xs:integer .
+bb:2928	bb:number	"45"^^xs:integer .
+bb:2928	bb:lastname	"Wheeler" .
+bb:2928	bb:firstname	"Zelous" .
+bb:2928	bb:position	"infielder" .
+bb:2928	bb:team	bbr:Yankees .
+bb:2928	bb:bats	"right" .
+bb:2928	bb:throws	"right" .
+bb:2928	bb:weight	"220"^^xs:integer .
+bb:2928	bb:date-of-birth	"1987-01-16"^^xs:date .
+bb:2928	rdf:type		bbr:infielder .
+
+# 	Outfielders 	B/T 	Ht 	Wt 	DOB
+#36 	Carlos Beltran 	S-R 	6'1" 	210 	Apr 24, 1977
+bb:2929	bb:playerid	"2929"^^xs:integer .
+bb:2929	bb:number	"36"^^xs:integer .
+bb:2929	bb:lastname	"Beltran" .
+bb:2929	bb:firstname	"Carlos" .
+bb:2929	bb:position	"outfielder" .
+bb:2929	bb:team	bbr:Yankees .
+bb:2929	bb:bats	"switch" .
+bb:2929	bb:throws	"right" .
+bb:2929	bb:weight	"210"^^xs:integer .
+bb:2929	bb:date-of-birth	"1977-04-24"^^xs:date .
+bb:2929	rdf:type		bbr:outfielder .
+
+#22 	Jacoby Ellsbury 	L-L 	6'1" 	195 	Sep 11, 1983
+bb:2930	bb:playerid	"2930"^^xs:integer .
+bb:2930	bb:number	"22"^^xs:integer .
+bb:2930	bb:lastname	"Ellsbury" .
+bb:2930	bb:firstname	"Jacoby" .
+bb:2930	bb:position	"outfielder" .
+bb:2930	bb:team	bbr:Yankees .
+bb:2930	bb:bats	"left" .
+bb:2930	bb:throws	"left" .
+bb:2930	bb:weight	"195"^^xs:integer .
+bb:2930	bb:date-of-birth	"1983-09-11"^^xs:date .
+bb:2930	rdf:type		bbr:outfielder .
+
+#81 	Ramon Flores 	L-L 	5'10" 	150 	Mar 26, 1992
+bb:2931	bb:playerid	"2931"^^xs:integer .
+bb:2931	bb:number	"81"^^xs:integer .
+bb:2931	bb:lastname	"Flores" .
+bb:2931	bb:firstname	"Ramon" .
+bb:2931	bb:position	"outfielder" .
+bb:2931	bb:team	bbr:Yankees .
+bb:2931	bb:bats	"left" .
+bb:2931	bb:throws	"left" .
+bb:2931	bb:weight	"150"^^xs:integer .
+bb:2931	bb:date-of-birth	"1992-03-26"^^xs:date .
+bb:2931	rdf:type		bbr:outfielder .
+
+#11 	Brett Gardner 	L-L 	5'10" 	185 	Aug 24, 1983
+bb:2932	bb:playerid	"2932"^^xs:integer .
+bb:2932	bb:number	"11"^^xs:integer .
+bb:2932	bb:lastname	"Gardner" .
+bb:2932	bb:firstname	"Brett" .
+bb:2932	bb:position	"outfielder" .
+bb:2932	bb:team	bbr:Yankees .
+bb:2932	bb:bats	"left" .
+bb:2932	bb:throws	"left" .
+bb:2932	bb:weight	"185"^^xs:integer .
+bb:2932	bb:date-of-birth	"1983-08-24"^^xs:date .
+bb:2932	rdf:type		bbr:outfielder .
+
+#78 	Slade Heathcott 	L-L 	6'1" 	190 	Sep 28, 1990
+bb:2933	bb:playerid	"2933"^^xs:integer .
+bb:2933	bb:number	"78"^^xs:integer .
+bb:2933	bb:lastname	"Heathcott" .
+bb:2933	bb:firstname	"Slade" .
+bb:2933	bb:position	"outfielder" .
+bb:2933	bb:team	bbr:Yankees .
+bb:2933	bb:bats	"left" .
+bb:2933	bb:throws	"left" .
+bb:2933	bb:weight	"190"^^xs:integer .
+bb:2933	bb:date-of-birth	"1990-09-28"^^xs:date .
+bb:2933	rdf:type		bbr:outfielder .
+
+#40 	Eury Perez 	R-R 	6'0" 	190 	May 30, 1990
+bb:2934	bb:playerid	"2934"^^xs:integer .
+bb:2934	bb:number	"40"^^xs:integer .
+bb:2934	bb:lastname	"Perez" .
+bb:2934	bb:firstname	"Eury" .
+bb:2934	bb:position	"outfielder" .
+bb:2934	bb:team	bbr:Yankees .
+bb:2934	bb:bats	"right" .
+bb:2934	bb:throws	"right" .
+bb:2934	bb:weight	"190"^^xs:integer .
+bb:2934	bb:date-of-birth	"1990-05-30"^^xs:date .
+bb:2934	rdf:type		bbr:outfielder .
+
+#	Manager	Joe Girardi
+bb:2955	bb:lastname	"Girardi" .
+bb:2955	bb:firstname	"Joe" .
+bb:2955	bb:position	"manager" .
+bb:2955	bb:team	bbr:Yankees .
+bb:2955	bb:number	"28"^^xs:integer .
+bb:2955	bbr:coachingRole		bbr:manager .
+
+#	Coach	Tony Pena
+bb:2956	bb:lastname	"Pena" .
+bb:2956	bb:firstname	"Tony" .
+bb:2956	bb:position	"coach" .
+bb:2956	bb:number	"56"^^xs:integer .
+bb:2956	bb:team	bbr:Yankees .
+bb:2956	bbr:coachingRole		bbr:benchCoach .
+
+#	Coach	FIRSTNAME LASTNAME
+bb:2957	bb:lastname	"LASTNAME" .
+bb:2957	bb:firstname	"FIRSTNAME" .
+bb:2957	bb:position	"coach" .
+bb:2957	bb:number	"100"^^xs:integer .
+bb:2957	bb:team	bbr:Yankees .
+bb:2957	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	FIRSTNAME LASTNAME
+bb:2958	bb:lastname	"LASTNAME" .
+bb:2958	bb:firstname	"FIRSTNAME" .
+bb:2958	bb:position	"coach" .
+bb:2958	bb:number	"100"^^xs:integer .
+bb:2958	bb:team	bbr:Yankees .
+bb:2958	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	FIRSTNAME LASTNAME
+bb:2959	bb:lastname	"LASTNAME" .
+bb:2959	bb:firstname	"FIRSTNAME" .
+bb:2959	bb:position	"coach" .
+bb:2959	bb:number	"100"^^xs:integer .
+bb:2959	bb:team	bbr:Yankees .
+bb:2959	bbr:coachingRole		bbr:firstBaseCoach .
+
+#	Coach	Rob Thomson
+bb:2960	bb:lastname	"Thomson" .
+bb:2960	bb:firstname	"Rob" .
+bb:2960	bb:position	"coach" .
+bb:2960	bb:number	"59"^^xs:integer .
+bb:2960	bb:team	bbr:Yankees .
+bb:2960	bbr:coachingRole		bbr:thirdBaseCoach .
+
+#	Coach	Larry Rothschild
+bb:2961	bb:lastname	"Rothschild" .
+bb:2961	bb:firstname	"Larry" .
+bb:2961	bb:position	"coach" .
+bb:2961	bb:number	"58"^^xs:integer .
+bb:2961	bb:team	bbr:Yankees .
+bb:2961	bbr:coachingRole		bbr:pitchingCoach .
+
+#	Coach	Gary Tuck
+bb:2962	bb:lastname	"Tuck" .
+bb:2962	bb:firstname	"Gary" .
+bb:2962	bb:position	"coach" .
+bb:2962	bb:number	"60"^^xs:integer .
+bb:2962	bb:team	bbr:Yankees .
+bb:2962	bbr:coachingRole		bbr:bullpenCoach .
+
+#	Coach	Roman Rodriguez
+bb:2963	bb:lastname	"Rodriguez" .
+bb:2963	bb:firstname	"Roman" .
+bb:2963	bb:position	"coach" .
+bb:2963	bb:number	"88"^^xs:integer .
+bb:2963	bb:team	bbr:Yankees .
+bb:2963	bbr:coachingRole		bbr:bullpenCatcher .
+
+
+

@@ -360,8 +360,8 @@ public abstract class ConnectedRESTQA {
 		long after =cal.getTimeInMillis();
 		long diff = after - beforeSetup;
 		
-		String msg = "### Ending TESTCASE SETUP ###: "+diff/1000+" seconds";
-		logger.info(msg);
+//		String msg = "### Ending TESTCASE SETUP ###: "+diff/1000+" seconds";
+//		logger.info(msg);
 		
 	}
 	public static void setupJavaRESTServer(String dbName, String fName, String restServerName, int restPort,boolean attachRestContextDB)throws Exception{
@@ -820,11 +820,11 @@ public abstract class ConnectedRESTQA {
 	
 	public static void logTestMessages(String txt, long before)
 	{
-		Calendar  cal = Calendar.getInstance();
-		long after =cal.getTimeInMillis();
-		long diff = after - before;
-		String msg = "### "+txt+" ### "+diff/1000+" seconds";
-		logger.info(msg);
+//		Calendar  cal = Calendar.getInstance();
+//		long after =cal.getTimeInMillis();
+//		long diff = after - before;
+//		String msg = "### "+txt+" ### "+diff/1000+" seconds";
+//		logger.info(msg);
 	}
 	/*
 	 * This function move rest server first to documents and deletes forests and databases in separate calls
@@ -1039,6 +1039,19 @@ public abstract class ConnectedRESTQA {
 	public static void enableCollectionLexicon(String dbName) throws Exception{
 		setDatabaseProperties(dbName,"collection-lexicon",true );
 	}
+	
+	// Enable triple-Index
+	public static void enableTripleIndex(String dbName) throws Exception{
+		setDatabaseProperties(dbName,"triple-index",true );
+	}
+	
+	// Set triple-positions to false
+	public static void enableTriplePositions(String dbName) throws Exception{
+		setDatabaseProperties(dbName,"triple-positions",false );
+	}
+	
+	
+	
 	/*
 	 * "word-lexicons":  [
       "http:\/\/marklogic.com\/collation\/"
@@ -1451,7 +1464,7 @@ public abstract class ConnectedRESTQA {
 	public static void includeElementFieldWithWeight(String dbName, String field_name, String namespace, String elementName, double weight, String attrNS_URI, String attr_localname, String attr_value) throws Exception{
 
 		ObjectMapper mapper = new ObjectMapper();
-		
+		//			ObjectNode mainNode = mapper.createObjectNode();
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode arrNode = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();

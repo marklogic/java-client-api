@@ -1,0 +1,796 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> .
+@prefix census: <tag:govshare.info,2005:rdf/census/> .
+@prefix usgovt: <tag:govshare.info,2005:rdf/usgovt/> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> 
+	rdf:type <tag:govshare.info,2005:rdf/politico/Country> ;
+	dc:title "United States" ;
+	geo:lat 38.16361 ;
+	geo:long -92.906336 ;
+	census:population 281421906 ;
+	census:households 115904641 ;
+	census:landArea "9161923119956 m^2" ;
+	census:waterArea "664706489036 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/al> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "63" ;
+	usgovt:fipsStateCode "01" ;
+	usgovt:uspsStateCode "AL" ;
+	dc:title "Alabama" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 33.041578 ;
+	geo:long -86.717606 ;
+	census:population   4447100 ;
+	census:households   1963711 ;
+	census:landArea "131426361901 m^2" ;
+	census:waterArea "4338264191 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/al/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/al> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/ak> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "94" ;
+	usgovt:fipsStateCode "02" ;
+	usgovt:uspsStateCode "AK" ;
+	dc:title "Alaska" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 61.593773 ;
+	geo:long -149.689776 ;
+	census:population    626932 ;
+	census:households    260978 ;
+	census:landArea "1481346887193 m^2" ;
+	census:waterArea "236507354315 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/ak/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/ak> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/az> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "86" ;
+	usgovt:fipsStateCode "04" ;
+	usgovt:uspsStateCode "AZ" ;
+	dc:title "Arizona" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 33.979048 ;
+	geo:long -111.65443 ;
+	census:population   5130632 ;
+	census:households   2189189 ;
+	census:landArea "294312170780 m^2" ;
+	census:waterArea "942059255 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/az/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/az> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/ar> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "71" ;
+	usgovt:fipsStateCode "05" ;
+	usgovt:uspsStateCode "AR" ;
+	dc:title "Arkansas" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 34.984084 ;
+	geo:long -92.487179 ;
+	census:population   2673400 ;
+	census:households   1173043 ;
+	census:landArea "134855939370 m^2" ;
+	census:waterArea "2876047706 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/ar/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/ar> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/ca> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "93" ;
+	usgovt:fipsStateCode "06" ;
+	usgovt:uspsStateCode "CA" ;
+	dc:title "California" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 36.148666 ;
+	geo:long -119.601508 ;
+	census:population  33871648 ;
+	census:households  12214549 ;
+	census:landArea "403932815196 m^2" ;
+	census:waterArea "20036751351 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/ca/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/ca> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/co> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "84" ;
+	usgovt:fipsStateCode "08" ;
+	usgovt:uspsStateCode "CO" ;
+	dc:title "Colorado" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 39.279984 ;
+	geo:long -105.358979 ;
+	census:population   4301261 ;
+	census:households   1808037 ;
+	census:landArea "268627156313 m^2" ;
+	census:waterArea "973947089 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/co/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/co> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/ct> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "16" ;
+	usgovt:fipsStateCode "09" ;
+	usgovt:uspsStateCode "CT" ;
+	dc:title "Connecticut" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 41.518148 ;
+	geo:long -72.818249 ;
+	census:population   3405565 ;
+	census:households   1385975 ;
+	census:landArea "12547983374 m^2" ;
+	census:waterArea "1809174855 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/ct/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/ct> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/de> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "51" ;
+	usgovt:fipsStateCode "10" ;
+	usgovt:uspsStateCode "DE" ;
+	dc:title "Delaware" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 39.185514 ;
+	geo:long -75.504198 ;
+	census:population    783600 ;
+	census:households    343072 ;
+	census:landArea "5059707268 m^2" ;
+	census:waterArea "1387471795 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/de/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/de> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/dc> 
+	rdf:type usgovt:Territory ;
+	usgovt:censusStateCode "53" ;
+	usgovt:fipsStateCode "11" ;
+	usgovt:uspsStateCode "DC" ;
+	dc:title "District of Columbia" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 38.913611 ;
+	geo:long -77.013222 ;
+	census:population    572059 ;
+	census:households    274845 ;
+	census:landArea "159033692 m^2" ;
+	census:waterArea "17968995 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/dc/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/dc> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/fl> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "59" ;
+	usgovt:fipsStateCode "12" ;
+	usgovt:uspsStateCode "FL" ;
+	dc:title "Florida" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 28.140923 ;
+	geo:long -82.012976 ;
+	census:population  15982378 ;
+	census:households   7302947 ;
+	census:landArea "139669812564 m^2" ;
+	census:waterArea "30633792058 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/fl/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/fl> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/ga> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "58" ;
+	usgovt:fipsStateCode "13" ;
+	usgovt:uspsStateCode "GA" ;
+	dc:title "Georgia" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 32.95812 ;
+	geo:long -83.603378 ;
+	census:population   8186453 ;
+	census:households   3281737 ;
+	census:landArea "149976204860 m^2" ;
+	census:waterArea "3933225333 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/ga/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/ga> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/hi> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "95" ;
+	usgovt:fipsStateCode "15" ;
+	usgovt:uspsStateCode "HI" ;
+	dc:title "Hawaii" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 20.807317 ;
+	geo:long -156.991487 ;
+	census:population   1211537 ;
+	census:households    460542 ;
+	census:landArea "16634521307 m^2" ;
+	census:waterArea "11676592338 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/hi/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/hi> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/id> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "82" ;
+	usgovt:fipsStateCode "16" ;
+	usgovt:uspsStateCode "ID" ;
+	dc:title "Idaho" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 44.390597 ;
+	geo:long -114.909437 ;
+	census:population   1293953 ;
+	census:households    527824 ;
+	census:landArea "214314284702 m^2" ;
+	census:waterArea "2131225477 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/id/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/id> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/il> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "33" ;
+	usgovt:fipsStateCode "17" ;
+	usgovt:uspsStateCode "IL" ;
+	dc:title "Illinois" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 40.567457 ;
+	geo:long -88.84758 ;
+	census:population  12419293 ;
+	census:households   4885615 ;
+	census:landArea "143960815935 m^2" ;
+	census:waterArea "6036720674 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/il/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/il> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/in> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "32" ;
+	usgovt:fipsStateCode "18" ;
+	usgovt:uspsStateCode "IN" ;
+	dc:title "Indiana" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 40.070025 ;
+	geo:long -86.272347 ;
+	census:population   6080485 ;
+	census:households   2532319 ;
+	census:landArea "92894848176 m^2" ;
+	census:waterArea "1426646391 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/in/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/in> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/ia> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "42" ;
+	usgovt:fipsStateCode "19" ;
+	usgovt:uspsStateCode "IA" ;
+	dc:title "Iowa" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 42.038326 ;
+	geo:long -93.368434 ;
+	census:population   2926324 ;
+	census:households   1232511 ;
+	census:landArea "144700963406 m^2" ;
+	census:waterArea "1041685824 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/ia/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/ia> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/ks> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "47" ;
+	usgovt:fipsStateCode "20" ;
+	usgovt:uspsStateCode "KS" ;
+	dc:title "Kansas" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 38.442264 ;
+	geo:long -97.399596 ;
+	census:population   2688418 ;
+	census:households   1131200 ;
+	census:landArea "211899555547 m^2" ;
+	census:waterArea "1196479516 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/ks/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/ks> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/ky> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "61" ;
+	usgovt:fipsStateCode "21" ;
+	usgovt:uspsStateCode "KY" ;
+	dc:title "Kentucky" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 37.637259 ;
+	geo:long -85.323884 ;
+	census:population   4041769 ;
+	census:households   1750927 ;
+	census:landArea "102895503258 m^2" ;
+	census:waterArea "1763380947 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/ky/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/ky> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/la> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "72" ;
+	usgovt:fipsStateCode "22" ;
+	usgovt:uspsStateCode "LA" ;
+	dc:title "Louisiana" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 30.883133 ;
+	geo:long -91.731841 ;
+	census:population   4468976 ;
+	census:households   1847181 ;
+	census:landArea "112824665700 m^2" ;
+	census:waterArea "21439542252 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/la/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/la> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/me> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "11" ;
+	usgovt:fipsStateCode "23" ;
+	usgovt:uspsStateCode "ME" ;
+	dc:title "Maine" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 44.665264 ;
+	geo:long -69.457397 ;
+	census:population   1274923 ;
+	census:households    651901 ;
+	census:landArea "79931052601 m^2" ;
+	census:waterArea "11714777245 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/me/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/me> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/md> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "52" ;
+	usgovt:fipsStateCode "24" ;
+	usgovt:uspsStateCode "MD" ;
+	dc:title "Maryland" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 39.114408 ;
+	geo:long -76.782835 ;
+	census:population   5296486 ;
+	census:households   2145283 ;
+	census:landArea "25314076865 m^2" ;
+	census:waterArea "6819073655 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/md/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/md> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/ma> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "14" ;
+	usgovt:fipsStateCode "25" ;
+	usgovt:uspsStateCode "MA" ;
+	dc:title "Massachusetts" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 42.235405 ;
+	geo:long -71.4023 ;
+	census:population   6349097 ;
+	census:households   2621989 ;
+	census:landArea "20305551568 m^2" ;
+	census:waterArea "7030651706 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/ma/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/ma> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/mi> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "34" ;
+	usgovt:fipsStateCode "26" ;
+	usgovt:uspsStateCode "MI" ;
+	dc:title "Michigan" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 43.403838 ;
+	geo:long -84.679044 ;
+	census:population   9938444 ;
+	census:households   4234279 ;
+	census:landArea "147121215368 m^2" ;
+	census:waterArea "103372337909 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/mi/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/mi> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/mn> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "41" ;
+	usgovt:fipsStateCode "27" ;
+	usgovt:uspsStateCode "MN" ;
+	dc:title "Minnesota" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 45.639952 ;
+	geo:long -94.083065 ;
+	census:population   4919479 ;
+	census:households   2065946 ;
+	census:landArea "206189140788 m^2" ;
+	census:waterArea "18981482285 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/mn/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/mn> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/ms> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "64" ;
+	usgovt:fipsStateCode "28" ;
+	usgovt:uspsStateCode "MS" ;
+	dc:title "Mississippi" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 32.700249 ;
+	geo:long -89.609622 ;
+	census:population   2844658 ;
+	census:households   1161953 ;
+	census:landArea "121488450732 m^2" ;
+	census:waterArea "3945172740 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/ms/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/ms> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/mo> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "43" ;
+	usgovt:fipsStateCode "29" ;
+	usgovt:uspsStateCode "MO" ;
+	dc:title "Missouri" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 38.353271 ;
+	geo:long -92.439467 ;
+	census:population   5595211 ;
+	census:households   2442017 ;
+	census:landArea "178413721374 m^2" ;
+	census:waterArea "2119611899 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/mo/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/mo> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/mt> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "81" ;
+	usgovt:fipsStateCode "30" ;
+	usgovt:uspsStateCode "MT" ;
+	dc:title "Montana" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 46.939672 ;
+	geo:long -110.568466 ;
+	census:population    902195 ;
+	census:households    412633 ;
+	census:landArea "376979057369 m^2" ;
+	census:waterArea "3858989004 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/mt/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/mt> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/ne> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "46" ;
+	usgovt:fipsStateCode "31" ;
+	usgovt:uspsStateCode "NE" ;
+	dc:title "Nebraska" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 41.242052 ;
+	geo:long -98.411541 ;
+	census:population   1711263 ;
+	census:households    722668 ;
+	census:landArea "199098632058 m^2" ;
+	census:waterArea "1246588932 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/ne/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/ne> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/nv> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "88" ;
+	usgovt:fipsStateCode "32" ;
+	usgovt:uspsStateCode "NV" ;
+	dc:title "Nevada" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 38.640903 ;
+	geo:long -116.886031 ;
+	census:population   1998257 ;
+	census:households    827457 ;
+	census:landArea "284448008848 m^2" ;
+	census:waterArea "1902899301 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/nv/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/nv> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/nh> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "12" ;
+	usgovt:fipsStateCode "33" ;
+	usgovt:uspsStateCode "NH" ;
+	dc:title "New Hampshire" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 43.309253 ;
+	geo:long -71.540147 ;
+	census:population   1235786 ;
+	census:households    547024 ;
+	census:landArea "23227265747 m^2" ;
+	census:waterArea "988970050 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/nh/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/nh> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/nj> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "22" ;
+	usgovt:fipsStateCode "34" ;
+	usgovt:uspsStateCode "NJ" ;
+	dc:title "New Jersey" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 40.291026 ;
+	geo:long -74.50031 ;
+	census:population   8414350 ;
+	census:households   3310275 ;
+	census:landArea "19210817801 m^2" ;
+	census:waterArea "3377250378 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/nj/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/nj> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/nm> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "85" ;
+	usgovt:fipsStateCode "35" ;
+	usgovt:uspsStateCode "NM" ;
+	dc:title "New Mexico" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 34.715946 ;
+	geo:long -106.338771 ;
+	census:population   1819046 ;
+	census:households    780579 ;
+	census:landArea "314309355994 m^2" ;
+	census:waterArea "605947499 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/nm/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/nm> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/ny> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "21" ;
+	usgovt:fipsStateCode "36" ;
+	usgovt:uspsStateCode "NY" ;
+	dc:title "New York" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 42.155127 ;
+	geo:long -75.164667 ;
+	census:population  18976457 ;
+	census:households   7679307 ;
+	census:landArea "122283145776 m^2" ;
+	census:waterArea "19016249880 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/ny/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/ny> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/nc> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "56" ;
+	usgovt:fipsStateCode "37" ;
+	usgovt:uspsStateCode "NC" ;
+	dc:title "North Carolina" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 35.526729 ;
+	geo:long -79.746124 ;
+	census:population   8049313 ;
+	census:households   3523944 ;
+	census:landArea "126160600432 m^2" ;
+	census:waterArea "13228705076 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/nc/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/nc> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/nd> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "44" ;
+	usgovt:fipsStateCode "38" ;
+	usgovt:uspsStateCode "ND" ;
+	dc:title "North Dakota" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 47.534051 ;
+	geo:long -99.93731 ;
+	census:population    642200 ;
+	census:households    289677 ;
+	census:landArea "178646833011 m^2" ;
+	census:waterArea "4464770063 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/nd/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/nd> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/oh> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "31" ;
+	usgovt:fipsStateCode "39" ;
+	usgovt:uspsStateCode "OH" ;
+	dc:title "Ohio" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 40.406215 ;
+	geo:long -82.720939 ;
+	census:population  11353140 ;
+	census:households   4783051 ;
+	census:landArea "106055800423 m^2" ;
+	census:waterArea "10040156786 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/oh/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/oh> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/ok> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "73" ;
+	usgovt:fipsStateCode "40" ;
+	usgovt:uspsStateCode "OK" ;
+	dc:title "Oklahoma" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 35.572285 ;
+	geo:long -97.043688 ;
+	census:population   3450654 ;
+	census:households   1514400 ;
+	census:landArea "177846860194 m^2" ;
+	census:waterArea "3188623148 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/ok/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/ok> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/or> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "92" ;
+	usgovt:fipsStateCode "41" ;
+	usgovt:uspsStateCode "OR" ;
+	dc:title "Oregon" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 44.380111 ;
+	geo:long -121.878222 ;
+	census:population   3421399 ;
+	census:households   1452709 ;
+	census:landArea "248630538171 m^2" ;
+	census:waterArea "6174151143 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/or/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/or> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/pa> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "23" ;
+	usgovt:fipsStateCode "42" ;
+	usgovt:uspsStateCode "PA" ;
+	dc:title "Pennsylvania" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 40.616374 ;
+	geo:long -77.405999 ;
+	census:population  12281054 ;
+	census:households   5249750 ;
+	census:landArea "116074476061 m^2" ;
+	census:waterArea "3208037275 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/pa/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/pa> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/ri> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "15" ;
+	usgovt:fipsStateCode "44" ;
+	usgovt:uspsStateCode "RI" ;
+	dc:title "Rhode Island" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 41.7308 ;
+	geo:long -71.455484 ;
+	census:population   1048319 ;
+	census:households    439837 ;
+	census:landArea "2706348685 m^2" ;
+	census:waterArea "1295300811 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/ri/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/ri> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/sc> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "57" ;
+	usgovt:fipsStateCode "45" ;
+	usgovt:uspsStateCode "SC" ;
+	dc:title "South Carolina" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 33.993155 ;
+	geo:long -80.963451 ;
+	census:population   4012012 ;
+	census:households   1753670 ;
+	census:landArea "77983161188 m^2" ;
+	census:waterArea "4948771376 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/sc/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/sc> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/sd> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "45" ;
+	usgovt:fipsStateCode "46" ;
+	usgovt:uspsStateCode "SD" ;
+	dc:title "South Dakota" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 44.247204 ;
+	geo:long -99.195494 ;
+	census:population    754844 ;
+	census:households    323208 ;
+	census:landArea "196540314429 m^2" ;
+	census:waterArea "3190480713 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/sd/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/sd> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/tn> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "62" ;
+	usgovt:fipsStateCode "47" ;
+	usgovt:uspsStateCode "TN" ;
+	dc:title "Tennessee" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 35.822799 ;
+	geo:long -86.090713 ;
+	census:population   5689283 ;
+	census:households   2439443 ;
+	census:landArea "106751842839 m^2" ;
+	census:waterArea "2398721489 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/tn/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/tn> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/tx> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "74" ;
+	usgovt:fipsStateCode "48" ;
+	usgovt:uspsStateCode "TX" ;
+	dc:title "Texas" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 31.308052 ;
+	geo:long -98.241319 ;
+	census:population  20851820 ;
+	census:households   8157575 ;
+	census:landArea "678051389889 m^2" ;
+	census:waterArea "17569713726 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/tx/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/tx> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/ut> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "87" ;
+	usgovt:fipsStateCode "49" ;
+	usgovt:uspsStateCode "UT" ;
+	dc:title "Utah" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 39.845409 ;
+	geo:long -111.785442 ;
+	census:population   2233169 ;
+	census:households    768594 ;
+	census:landArea "212751079528 m^2" ;
+	census:waterArea "7135874231 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/ut/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/ut> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/vt> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "13" ;
+	usgovt:fipsStateCode "50" ;
+	usgovt:uspsStateCode "VT" ;
+	dc:title "Vermont" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 44.023032 ;
+	geo:long -72.674848 ;
+	census:population    608827 ;
+	census:households    294382 ;
+	census:landArea "23956246818 m^2" ;
+	census:waterArea "944570995 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/vt/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/vt> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/va> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "54" ;
+	usgovt:fipsStateCode "51" ;
+	usgovt:uspsStateCode "VA" ;
+	dc:title "Virginia" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 37.554963 ;
+	geo:long -78.376114 ;
+	census:population   7078515 ;
+	census:households   2904192 ;
+	census:landArea "102548167005 m^2" ;
+	census:waterArea "8236501395 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/va/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/va> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/wa> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "91" ;
+	usgovt:fipsStateCode "53" ;
+	usgovt:uspsStateCode "WA" ;
+	dc:title "Washington" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 47.31569 ;
+	geo:long -121.10203 ;
+	census:population   5894121 ;
+	census:households   2451075 ;
+	census:landArea "172348318782 m^2" ;
+	census:waterArea "12316884947 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/wa/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/wa> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/wv> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "55" ;
+	usgovt:fipsStateCode "54" ;
+	usgovt:uspsStateCode "WV" ;
+	dc:title "West Virginia" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 38.752463 ;
+	geo:long -80.740921 ;
+	census:population   1808344 ;
+	census:households    844623 ;
+	census:landArea "62361027006 m^2" ;
+	census:waterArea "393757137 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/wv/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/wv> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/wi> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "35" ;
+	usgovt:fipsStateCode "55" ;
+	usgovt:uspsStateCode "WI" ;
+	dc:title "Wisconsin" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 44.190581 ;
+	geo:long -89.568976 ;
+	census:population   5363675 ;
+	census:households   2321144 ;
+	census:landArea "140662519921 m^2" ;
+	census:waterArea "28976054385 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/wi/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/wi> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/wy> 
+	rdf:type usgovt:State ;
+	usgovt:censusStateCode "83" ;
+	usgovt:fipsStateCode "56" ;
+	usgovt:uspsStateCode "WY" ;
+	dc:title "Wyoming" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 42.86833 ;
+	geo:long -107.166807 ;
+	census:population    493782 ;
+	census:households    223854 ;
+	census:landArea "251488872143 m^2" ;
+	census:waterArea "1847081495 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/wy/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/wy> .
+<http://www.rdfabout.com/rdf/usgov/geo/us/pr> 
+	rdf:type usgovt:Territory ;
+	usgovt:censusStateCode "06" ;
+	usgovt:fipsStateCode "72" ;
+	usgovt:uspsStateCode "PR" ;
+	dc:title "Puerto Rico" ;
+	dcterms:isPartOf <http://www.rdfabout.com/rdf/usgov/geo/us> ;
+	geo:lat 18.246715 ;
+	geo:long -66.381305 ;
+	census:population   3808610 ;
+	census:households   1418476 ;
+	census:landArea "8869567833 m^2" ;
+	census:waterArea "4920822689 m^2" ;
+	census:details <http://www.rdfabout.com/rdf/usgov/geo/us/pr/censustables> .
+<http://www.rdfabout.com/rdf/usgov/geo/us> dcterms:hasPart <http://www.rdfabout.com/rdf/usgov/geo/us/pr> .

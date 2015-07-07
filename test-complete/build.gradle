@@ -4,8 +4,8 @@ apply plugin: 'java'
 
 test {
 	tasks.withType(Compile) {
-            options.encoding = 'UTF-8'
-  }
+		options.encoding = 'UTF-8'
+	}
 
 	exclude 'com/marklogic/client/functionaltest/TestSSLConnection.class'
 	exclude 'com/marklogic/client/functionaltest/TestBug18993.class'
@@ -21,8 +21,8 @@ dependencies {
 	compile('com.marklogic:java-client-api:4.0-SNAPSHOT')
 	compile('xmlunit:xmlunit:1.5')
 	compile('junit:junit:4.11')
-    compile('org.skyscreamer:jsonassert:1.2.3')
-    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.1'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.1'
+	compile('org.skyscreamer:jsonassert:1.2.3')
+	compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.1'
+	compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.1'
 }
 

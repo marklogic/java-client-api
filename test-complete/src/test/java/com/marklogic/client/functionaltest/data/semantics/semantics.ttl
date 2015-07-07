@@ -1,0 +1,983 @@
+@base <http://marklogic.com/> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix doap: <http://usefulinc.com/ns/doap#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix db:   <http://dbpedia.org/> .
+@prefix dc:   <http://purl.org/dc/elements/1.1/> .
+@prefix ex:   <http://example.org/stuff/1.0/> .
+@prefix sem:  <http://marklogic.com/semantics/> .
+@prefix xs: <http://www.w3.org/2001/XMLSchema#> .
+
+
+<> rdfs:comment "This is a document containing a useful subset of triples for purposes of the MarkLogic World demo" .
+
+<http://www.w3.org/TR/rdf-syntax-grammar>
+  dc:title "RDF/XML Syntax Specification (Revised)" ;
+  ex:editor [
+    ex:fullname "Dave Beckett";
+    ex:homePage <http://purl.org/net/dajobe/>
+  ] .
+
+<http://dbpedia.org/resource/Category:Hadoop>	<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>	<http://www.w3.org/2004/02/skos/core#Concept> .
+<http://dbpedia.org/resource/Category:Hadoop>	<http://www.w3.org/2004/02/skos/core#broader>	<http://dbpedia.org/resource/Category:Apache_Software_Foundation_projects> .
+<http://dbpedia.org/resource/Category:Hadoop>	<http://www.w3.org/2004/02/skos/core#broader>	<http://dbpedia.org/resource/Category:Free_software_programmed_in_Java> .
+<http://dbpedia.org/resource/Hadoop>	<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>	<http://umbel.org/umbel/rc/SoftwareObject> .
+<http://dbpedia.org/resource/Category:Hadoop>	<http://www.w3.org/2004/02/skos/core#prefLabel>	"Hadoop"@en .
+<http://dbpedia.org/resource/Hadoop>	<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>	<http://dbpedia.org/class/yago/Software106566077> .
+<http://dbpedia.org/resource/Hadoop>	<http://xmlns.com/foaf/0.1/isPrimaryTopicOf>	<http://en.wikipedia.org/wiki/Hadoop> .
+<http://dbpedia.org/resource/Category:Hadoop>	<http://www.w3.org/ns/prov#wasDerivedFrom>	<http://en.wikipedia.org/wiki/Category:Hadoop?oldid=449200943> .
+<http://dbpedia.org/resource/Hadoop>	<http://www.w3.org/ns/prov#wasDerivedFrom>	<http://en.wikipedia.org/wiki/Hadoop?oldid=420140078> .
+<http://dbpedia.org/resource/Hadoop>	<http://dbpedia.org/ontology/wikiPageRedirects>	<http://dbpedia.org/resource/Apache_Hadoop> .
+<http://dbpedia.org/resource/Hadoop>	<http://dbpedia.org/property/wordnet_type>	<http://www.w3.org/2006/03/wn/wn20/instances/synset-software-noun-1> .
+<http://dbpedia.org/resource/Category:Hadoop>	<http://www.w3.org/2004/02/skos/core#broader>	<http://dbpedia.org/resource/Category:Cloud_infrastructure> .
+<http://dbpedia.org/class/yago/Hadoop>	<http://www.w3.org/2000/01/rdf-schema#label>	"Hadoop"@en .
+<http://dbpedia.org/resource/Category:Hadoop>	<http://www.w3.org/2004/02/skos/core#broader>	<http://dbpedia.org/resource/Category:Cloud_computing> .
+<http://dbpedia.org/resource/Category:Hadoop>	<http://www.w3.org/2000/01/rdf-schema#label>	"Hadoop"@en .
+<http://dbpedia.org/resource/Hadoop>	<http://www.w3.org/2000/01/rdf-schema#label>	"Hadoop"@en .
+<http://dbpedia.org/class/yago/Hadoop>	<http://www.w3.org/2000/01/rdf-schema#label>	"Apache Hadoop"@en .
+
+<http://dbpedia.org/resource/Apache_Hadoop> rdfs:label "Hadoop"@en .
+<http://dbpedia.org/resource/Hadoop> owl:sameAs <http://dbpedia.org/resource/Apache_Hadoop> .
+
+<http://dbpedia.org/resource/Apache_Hadoop> <http://www.w3.org/2000/01/rdf-schema#comment> "Apache Hadoop is a software framework that supports data-intensive distributed applications under a free license. It enables applications to work with thousands of computational independent computers and petabytes of data. Hadoop was derived from Google's MapReduce and Google File System (GFS) papers. Hadoop is a top-level Apache project being built and used by a global community of contributors, written in the Java programming language."@en .
+
+<http://dbpedia.org/resource/Hadoop> foaf:name "Apache Hadoop" .
+<http://dbpedia.org/resource/Hadoop> foaf:logo <http://hadoop.apache.org/images/hadoop-logo.jpg> .
+
+<http://dbpedia.org/resource/Hadoop>  sem:stableRelease "1.0.4" .
+<http://dbpedia.org/resource/Hadoop>  sem:unstableRelease "2.0.3-alpha" .
+<http://dbpedia.org/resource/Hadoop>  sem:unstableRelease "1.1.2" .
+
+<http://dbpedia.org/resource/Hadoop>  sem:relatedProject  <http://dbpedia.org/resource/Apache_Pig> .
+<http://dbpedia.org/resource/Hadoop>  sem:relatedProject  <http://dbpedia.org/resource/Apache_HBase> .
+<http://dbpedia.org/resource/Hadoop>  sem:relatedProject  <http://dbpedia.org/resource/Apache_Zookeeper> .
+
+<http://dbpedia.org/resource/Apache_Pig> rdfs:label "Apache Pig" .
+<http://dbpedia.org/resource/Apache_HBase> rdfs:label "HBase" .
+<http://dbpedia.org/resource/Apache_Zookeeper> rdfs:label "Apache Zookeeper" .
+
+<http://dbpedia.org/resource/Hadoop>  sem:keyPersonnel <http://dbpedia.org/resource/Doug_Cutting> .
+<http://dbpedia.org/resource/Hadoop>  doap:developer <http://dbpedia.org/resource/Doug_Cutting> .
+<http://dbpedia.org/resource/Doug_Cutting>
+   rdf:type foaf:Person;
+   foaf:name "Doug Cutting";
+   foaf:homepage <http://blog.lucene.com/>;
+   rdfs:label "Doug Cutting" ;
+   foaf:affiliation <http://dbpedia.org/resource/Cloudera>;
+   rdfs:comment "Douglass Read Cutting is an advocate and creator of open-source search technology. He originated Lucene and, with Mike Cafarella, Nutch, both open-source search technology projects which are now managed through the Apache Software Foundation. He is also the creator of Hadoop."@en .
+
+<http://dbpedia.org/resource/IBM> rdf:type sem:Company .
+<http://dbpedia.org/resource/IBM> rdfs:label "IBM" .
+
+<Http://dpbedia.org/resource/Sam_Ruby>
+   rdf:type foaf:Person;
+   foaf:name "Sam Ruby";
+   foaf:homepage <http://intertwingly.net/blog/>;
+   foaf:mbox <mailto:rubys@intertwingly.net>;
+   foaf:affiliation <http://dbpedia.org/resource/IBM>;
+   rdfs:comment "Sam Ruby is a prominent software developer who has made significant contributions to many of the Apache Software Foundation's open source software projects, and to the standardization of web feeds via his involvement with the Atom web feed standard and the feedvalidator.org web service.".
+
+<http://dbpedia.org/resource/Roy_Fielding>
+   rdf:type foaf:Person;
+   foaf:mbox <mailto:fielding@gbiv.com>;
+   foaf:affiliation <http://dbpedia.org/resource/Adobe>;
+   rdfs:comment "Roy Thomas Fielding is an American computer scientist, one of the principal authors of the HTTP specification, an authority on computer network architecture and co-founder of the Apache HTTP Server project.".
+
+<http://dbpedia.org/resource/Cupertino>
+   a sem:City;
+   rdfs:label "Cupertino";
+   sem:cola "166"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Las_Vegas>
+   a sem:City;
+   rdfs:label "Las Vegas";
+   sem:cola "154"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Los_Angeles>
+   a sem:City;
+   rdfs:label "Los Angeles";
+   sem:cola "157"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Monterrey>
+   a sem:City;
+   rdfs:label "Monterrey";
+   sem:cola "108"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Mountain_View>
+   a sem:City;
+   rdfs:label "Mountain View";
+   sem:cola "165"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Oakland>
+   a sem:City;
+   rdfs:label "Oakland";
+   sem:cola "139"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Palo_Alto>
+   a sem:City;
+   rdfs:label "Palo Alto";
+   sem:cola "156"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Portland>
+   a sem:City;
+   rdfs:label "Portland";
+   sem:cola "169"^^xs:decimal
+   .
+<http://dbpedia.org/resource/San_Diego>
+   a sem:City;
+   rdfs:label "San Diego";
+   sem:cola "148"^^xs:decimal
+   .
+<http://dbpedia.org/resource/San_Francisco>
+   a sem:City;
+   rdfs:label "San Francisco";
+   sem:cola "194"^^xs:decimal
+   .
+<http://dbpedia.org/resource/San_Jose>
+   a sem:City;
+   rdfs:label "San Jose";
+   sem:cola "164"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Santa_Clara>
+   a sem:City;
+   rdfs:label "Santa Clara";
+   sem:cola "149"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Seattle>
+   a sem:City;
+   rdfs:label "Seattle";
+   sem:cola "161"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Sunnyvale>
+   a sem:City;
+   rdfs:label "Sunnyvale";
+   sem:cola "155"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Tiajuana>
+   a sem:City;
+   rdfs:label "Tiajuana";
+   sem:cola "83"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Vancouver>
+   a sem:City;
+   rdfs:label "Vancouver";
+   sem:cola "143"^^xs:decimal
+   .
+
+
+<http://dbpedia.org/resource/Andrzej_Bialecki>
+   rdf:type foaf:Person;
+   foaf:name "Andrzej Bialecki";
+   foaf:affiliation <http://dbpedia.org/resource/Getopt>;
+   sem:timeZoneOffset "+1"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Arun_C_Murthy>
+   rdf:type foaf:Person;
+   foaf:name "Arun C Murthy";
+   foaf:affiliation <http://dbpedia.org/resource/Hortonworks>;
+   foaf:based_near <http://dbpedia.org/resource/Palo_Alto>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Amareshwari_Sriramadasu>
+   rdf:type foaf:Person;
+   foaf:name "Amareshwari Sriramadasu";
+   foaf:affiliation <http://dbpedia.org/resource/InMobi>;
+   sem:timeZoneOffset "+5.5"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Amar_Ramesh_Kamat>
+   rdf:type foaf:Person;
+   foaf:name "Amar Ramesh Kamat";
+   foaf:affiliation <http://dbpedia.org/resource/Yahoo!>;
+   sem:timeZoneOffset "+5.5"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Arpit_Gupta>
+   rdf:type foaf:Person;
+   foaf:name "Arpit Gupta";
+   foaf:affiliation <http://dbpedia.org/resource/Hortonworks>;
+   foaf:based_near <http://dbpedia.org/resource/Palo_Alto>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Aaron_T_Myers>
+   rdf:type foaf:Person;
+   foaf:name "Aaron Myers";
+   foaf:affiliation <http://dbpedia.org/resource/Cloudera>;
+   foaf:based_near <http://dbpedia.org/resource/Las_Vegas>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Allen_Wittenauer>
+   rdf:type foaf:Person;
+   foaf:name "Allen Wittenauer";
+   foaf:affiliation <http://dbpedia.org/resource/LinkedIn>;
+   foaf:based_near <http://dbpedia.org/resource/Mountain_View>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Bikas_Saha>
+   rdf:type foaf:Person;
+   foaf:name "Bikas Saha";
+   foaf:affiliation <http://dbpedia.org/resource/Hortonworks>;
+   foaf:based_near <http://dbpedia.org/resource/San_Francisco>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Robert_(Bobby)_Evans>
+   rdf:type foaf:Person;
+   foaf:name "Robert Evans";
+   foaf:affiliation <http://dbpedia.org/resource/Yahoo!>;
+   sem:timeZoneOffset "-6"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Boris_Shkolnik>
+   rdf:type foaf:Person;
+   foaf:name "Boris Shkolnik";
+   foaf:affiliation <http://dbpedia.org/resource/LinkedIn>;
+   foaf:based_near <http://dbpedia.org/resource/Cupertino>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Chris_Douglas>
+   rdf:type foaf:Person;
+   foaf:name "Chris Douglas";
+   foaf:affiliation <http://dbpedia.org/resource/Microsoft>;
+   foaf:based_near <http://dbpedia.org/resource/Seattle>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Konstantin_Boudnik>
+   rdf:type foaf:Person;
+   foaf:name "Konstantin Boudnik";
+   foaf:affiliation <http://dbpedia.org/resource/WANdisco>;
+   foaf:based_near <http://dbpedia.org/resource/Portland>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Doug_Cutting>
+   foaf:based_near <http://dbpedia.org/resource/San_Jose>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Daryn_Sharp>
+   rdf:type foaf:Person;
+   foaf:name "Daryn Sharp";
+   foaf:affiliation <http://dbpedia.org/resource/Yahoo!>;
+   sem:timeZoneOffset "-6"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Devaraj_Das>
+   rdf:type foaf:Person;
+   foaf:name "Devaraj Das";
+   foaf:affiliation <http://dbpedia.org/resource/Hortonworks>;
+   foaf:based_near <http://dbpedia.org/resource/Los_Angeles>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Dhruba_Borthakur>
+   rdf:type foaf:Person;
+   foaf:name "Dhruba Borthakur";
+   foaf:affiliation <http://dbpedia.org/resource/Facebook>;
+   foaf:based_near <http://dbpedia.org/resource/Mountain_View>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Eli_Collins>
+   rdf:type foaf:Person;
+   foaf:name "Eli Collins";
+   foaf:affiliation <http://dbpedia.org/resource/Cloudera>;
+   foaf:based_near <http://dbpedia.org/resource/San_Diego>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Enis_Soztutar>
+   rdf:type foaf:Person;
+   foaf:name "Enis Soztutar";
+   foaf:affiliation <http://dbpedia.org/resource/Hortonworks>;
+   foaf:based_near <http://dbpedia.org/resource/Palo_Alto>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Eric_Yang>
+   rdf:type foaf:Person;
+   foaf:name "Eric Young";
+   foaf:affiliation <http://dbpedia.org/resource/IBM>;
+   foaf:mbox <mailto:eyang@apache.org>;
+   foaf:based_near <http://dbpedia.org/resource/Seattle>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Giridharan_Kesavan>
+   rdf:type foaf:Person;
+   foaf:name "Giridharan Kesavan";
+   foaf:affiliation <http://dbpedia.org/resource/Hortonworks>;
+   foaf:based_near <http://dbpedia.org/resource/Seattle>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Hitesh_Shah>
+   rdf:type foaf:Person;
+   foaf:name "Hitesh Shah";
+   foaf:affiliation <http://dbpedia.org/resource/Hortonworks>;
+   foaf:based_near <http://dbpedia.org/resource/San_Francisco>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Hairong_Kuang>
+   rdf:type foaf:Person;
+   foaf:name "Hairong Kuang";
+   foaf:affiliation <http://dbpedia.org/resource/Facebook>;
+   foaf:based_near <http://dbpedia.org/resource/Monterrey>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Harsh_J>
+   rdf:type foaf:Person;
+   foaf:name "Harsh J Chouraria";
+   foaf:affiliation <http://dbpedia.org/resource/Cloudera>;
+   sem:timeZoneOffset "+5.5"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Jonathan_Eagles>
+   rdf:type foaf:Person;
+   foaf:name "Jonathan Eagles";
+   foaf:affiliation <http://dbpedia.org/resource/Yahoo!>;
+   sem:timeZoneOffset "-6"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Jakob_Homan>
+   rdf:type foaf:Person;
+   foaf:name "Jakob Homan";
+   foaf:affiliation <http://dbpedia.org/resource/LinkedIn>;
+   foaf:based_near <http://dbpedia.org/resource/San_Jose>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Jitendra_Nath_Pandey>
+   rdf:type foaf:Person;
+   foaf:name "Jitendra Nath Pandey";
+   foaf:affiliation <http://dbpedia.org/resource/Hortonworks>;
+   foaf:based_near <http://dbpedia.org/resource/Mountain_View>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Jason_Lowe>
+   rdf:type foaf:Person;
+   foaf:name "Jason Lowe";
+   foaf:affiliation <http://dbpedia.org/resource/Yahoo!>;
+   sem:timeZoneOffset "-6"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Johan_Oskarsson>
+   rdf:type foaf:Person;
+   foaf:name "Johan Oskarsson";
+   foaf:affiliation <http://dbpedia.org/resource/Twitter>;
+   sem:timeZoneOffset "0"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Kihwal_Lee>
+   rdf:type foaf:Person;
+   foaf:name "Kihwal Lee";
+   foaf:affiliation <http://dbpedia.org/resource/Yahoo!>;
+   sem:timeZoneOffset "-6"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Koji_Noguchi>
+   rdf:type foaf:Person;
+   foaf:name "Koji Noguchi";
+   foaf:affiliation <http://dbpedia.org/resource/Yahoo!>;
+   foaf:based_near <http://dbpedia.org/resource/San_Francisco>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Kan_Zhang>
+   rdf:type foaf:Person;
+   foaf:name "Kan Zhang";
+   foaf:mbox <mailto:kzhang@apache.org>;
+   foaf:mbox <mailto:kanzhangemail@gmail.com>;
+   foaf:mbox <mailto:kan@yahoo-inc.com>;
+   foaf:affiliation <http://dbpedia.org/resource/IBM>;
+   foaf:based_near <http://dbpedia.org/resource/Vancouver>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Lohit_Vijayarenu>
+   rdf:type foaf:Person;
+   foaf:name "Lohit Vijayarenu";
+   foaf:affiliation <http://dbpedia.org/resource/MapR>;
+   foaf:based_near <http://dbpedia.org/resource/Palo_Alto>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Luke_Lu>
+   rdf:type foaf:Person;
+   foaf:name "Luke Lu";
+   foaf:mbox <mailto:llu@apache.org>;
+   foaf:affiliation <http://dbpedia.org/resource/IBM>;
+   foaf:based_near <http://dbpedia.org/resource/Seattle>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Mahadev_Konar>
+   rdf:type foaf:Person;
+   foaf:name "Mahadev Konar";
+   foaf:affiliation <http://dbpedia.org/resource/Hortonworks>;
+   foaf:based_near <http://dbpedia.org/resource/San_Jose>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Matei_Zaharia>
+   rdf:type foaf:Person;
+   foaf:name "Matei Zaharia";
+   foaf:affiliation <http://dbpedia.org/resource/UC_Berkeley>;
+   foaf:based_near <http://dbpedia.org/resource/San_Francisco>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Matthew_Foley>
+   rdf:type foaf:Person;
+   foaf:name "Matthew Foley";
+   foaf:affiliation <http://dbpedia.org/resource/Hortonworks>;
+   foaf:mbox <mailto:mfoley@hortonworks.com>;
+   foaf:based_near <http://dbpedia.org/resource/Tiajuana>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Dmytro_Molkov>
+   rdf:type foaf:Person;
+   foaf:name "Dmytro Molkov";
+   foaf:affiliation <http://dbpedia.org/resource/Facebook>;
+   foaf:based_near <http://dbpedia.org/resource/San_Diego>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Mukund_Madhugiri>
+   rdf:type foaf:Person;
+   foaf:name "Mukund Madhugiri";
+   foaf:affiliation <http://dbpedia.org/resource/Yahoo!>;
+   foaf:based_near <http://dbpedia.org/resource/Mountain_View>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Nigel_Daley>
+   rdf:type foaf:Person;
+   foaf:name "Nigel Daley";
+   foaf:mbox <mailto:ndaley@apache.org>;
+   foaf:based_near <http://dbpedia.org/resource/Sunnyvale>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Owen_O'Malley>
+   rdf:type foaf:Person;
+   foaf:name "Owen O'Malley";
+   foaf:affiliation <http://dbpedia.org/resource/Hortonworks>;
+   foaf:based_near <http://dbpedia.org/resource/San_Jose>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Raghu_Angadi>
+   rdf:type foaf:Person;
+   foaf:name "Raghu Angadi";
+   foaf:affiliation <http://dbpedia.org/resource/Twitter>;
+   foaf:based_near <http://dbpedia.org/resource/Sunnyvale>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Ramya_Sunil>
+   rdf:type foaf:Person;
+   foaf:name "Ramya Sunil";
+   foaf:affiliation <http://dbpedia.org/resource/Hortonworks>;
+   foaf:based_near <http://dbpedia.org/resource/Los_Angeles>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Scott_Chun-Yang_Chen>
+   rdf:type foaf:Person;
+   foaf:name "Scott Chun-Yang Chen";
+   foaf:affiliation <http://dbpedia.org/resource/Facebook>;
+   foaf:based_near <http://dbpedia.org/resource/Mountain_View>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Sharad_Agarwal>
+   rdf:type foaf:Person;
+   foaf:name "Sharad Agarwal";
+   foaf:affiliation <http://dbpedia.org/resource/InMobi>;
+   sem:timeZoneOffset "+5.5"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Konstantin_Shvachko>
+   rdf:type foaf:Person;
+   foaf:name "Konstantin Shvachko";
+   foaf:affiliation <http://dbpedia.org/resource/WANdisco>;
+   foaf:based_near <http://dbpedia.org/resource/Portland>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Sanjay_Radia>
+   rdf:type foaf:Person;
+   foaf:name "Sanjay Radia";
+   foaf:affiliation <http://dbpedia.org/resource/Hortonworks>;
+   foaf:mbox <mailto:sanjay.radia@gmail.com>;
+   foaf:based_near <http://dbpedia.org/resource/Sunnyvale>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Siddharth_Seth>
+   rdf:type foaf:Person;
+   foaf:name "Siddharth Seth";
+   foaf:affiliation <http://dbpedia.org/resource/Hortonworks>;
+   foaf:based_near <http://dbpedia.org/resource/San_Francisco>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Suresh_Srinivas>
+   rdf:type foaf:Person;
+   foaf:name "Suresh Srinivas";
+   foaf:affiliation <http://dbpedia.org/resource/Hortonworks>;
+   foaf:based_near <http://dbpedia.org/resource/San_Francisco>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Tsz_Wo_(Nicholas)_Sze>
+   rdf:type foaf:Person;
+   foaf:name "Nicholas Sze";
+   foaf:affiliation <http://dbpedia.org/resource/Hortonworks>;
+   foaf:based_near <http://dbpedia.org/resource/Oakland>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Tanping_Wang>
+   rdf:type foaf:Person;
+   foaf:name "Tanping Wang";
+   foaf:affiliation <http://dbpedia.org/resource/Yahoo!>;
+   foaf:based_near <http://dbpedia.org/resource/Seattle>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Christophe_Taton>
+   rdf:type foaf:Person;
+   foaf:name "Christophe Taton";
+   foaf:affiliation <http://dbpedia.org/resource/INRIA>;
+   sem:timeZoneOffset "+1"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Thomas_Graves>
+   rdf:type foaf:Person;
+   foaf:name "Thomas Graves";
+   foaf:affiliation <http://dbpedia.org/resource/Yahoo!>;
+   sem:timeZoneOffset "-6"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Todd_Lipcon>
+   rdf:type foaf:Person;
+   foaf:name "Todd Lipcon";
+   foaf:affiliation <http://dbpedia.org/resource/Cloudera>;
+   foaf:based_near <http://dbpedia.org/resource/Santa_Clara>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Tom_White>
+   rdf:type foaf:Person;
+   foaf:name "Tom White";
+   foaf:mbox <mailto:twhite@apache.org>;
+   foaf:affiliation <http://dbpedia.org/resource/Cloudera>;
+   foaf:based_near <http://dbpedia.org/resource/Sunnyvale>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Alejandro_Abdelnur>
+   rdf:type foaf:Person;
+   foaf:name "Alejandro Abdelnur";
+   foaf:affiliation <http://dbpedia.org/resource/Cloudera>;
+   foaf:based_near <http://dbpedia.org/resource/San_Francisco>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Uma_Maheswara_Rao_G>
+   rdf:type foaf:Person;
+   foaf:name "Uma Maheswara Rao Gangumalla";
+   foaf:affiliation <http://dbpedia.org/resource/Huawei>;
+   sem:timeZoneOffset "+5.5"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Vinod_Kumar_Vavilapalli>
+   rdf:type foaf:Person;
+   foaf:name "Vinod Kumar Vavilapalli";
+   foaf:affiliation <http://dbpedia.org/resource/Hortonworks>;
+   foaf:mbox <mailto:vinodkv@apache.org>;
+   foaf:based_near <http://dbpedia.org/resource/Santa_Clara>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+<http://dbpedia.org/resource/Zheng_Shao>
+   rdf:type foaf:Person;
+   foaf:name "Zheng Shao";
+   foaf:affiliation <http://dbpedia.org/resource/Facebook>;
+   foaf:based_near <http://dbpedia.org/resource/San_Francisco>;
+   sem:timeZoneOffset "-8"^^xs:decimal
+   .
+   
+<http://dbpedia.org/resource/Apache_Hadoop> doap:developer
+   <http://dbpedia.org/resource/Andrzej_Bialecki>,
+   <http://dbpedia.org/resource/Arun_C_Murthy>,
+   <http://dbpedia.org/resource/Amareshwari_Sriramadasu>,
+   <http://dbpedia.org/resource/Amar_Ramesh_Kamat>,
+   <http://dbpedia.org/resource/Arpit_Gupta>,
+   <http://dbpedia.org/resource/Aaron_T_Myers>,
+   <http://dbpedia.org/resource/Allen_Wittenauer>,
+   <http://dbpedia.org/resource/Bikas_Saha>,
+   <http://dbpedia.org/resource/Robert_(Bobby)_Evans>,
+   <http://dbpedia.org/resource/Boris_Shkolnik>,
+   <http://dbpedia.org/resource/Chris_Douglas>,
+   <http://dbpedia.org/resource/Konstantin_Boudnik>,
+   <http://dbpedia.org/resource/Doug_Cutting>,
+   <http://dbpedia.org/resource/Daryn_Sharp>,
+   <http://dbpedia.org/resource/Devaraj_Das>,
+   <http://dbpedia.org/resource/Dhruba_Borthakur>,
+   <http://dbpedia.org/resource/Eli_Collins>,
+   <http://dbpedia.org/resource/Enis_Soztutar>,
+   <http://dbpedia.org/resource/Eric_Yang>,
+   <http://dbpedia.org/resource/Giridharan_Kesavan>,
+   <http://dbpedia.org/resource/Hitesh_Shah>,
+   <http://dbpedia.org/resource/Hairong_Kuang>,
+   <http://dbpedia.org/resource/Harsh_J>,
+   <http://dbpedia.org/resource/Jonathan_Eagles>,
+   <http://dbpedia.org/resource/Jakob_Homan>,
+   <http://dbpedia.org/resource/Jitendra_Nath_Pandey>,
+   <http://dbpedia.org/resource/Jason_Lowe>,
+   <http://dbpedia.org/resource/Johan_Oskarsson>,
+   <http://dbpedia.org/resource/Kihwal_Lee>,
+   <http://dbpedia.org/resource/Koji_Noguchi>,
+   <http://dbpedia.org/resource/Kan_Zhang>,
+   <http://dbpedia.org/resource/Lohit_Vijayarenu>,
+   <http://dbpedia.org/resource/Luke_Lu>,
+   <http://dbpedia.org/resource/Mahadev_Konar>,
+   <http://dbpedia.org/resource/Matei_Zaharia>,
+   <http://dbpedia.org/resource/Matthew_Foley>,
+   <http://dbpedia.org/resource/Dmytro_Molkov>,
+   <http://dbpedia.org/resource/Mukund_Madhugiri>,
+   <http://dbpedia.org/resource/Nigel_Daley>,
+   <http://dbpedia.org/resource/Owen_O'Malley>,
+   <http://dbpedia.org/resource/Raghu_Angadi>,
+   <http://dbpedia.org/resource/Ramya_Sunil>,
+   <http://dbpedia.org/resource/Scott_Chun-Yang_Chen>,
+   <http://dbpedia.org/resource/Sharad_Agarwal>,
+   <http://dbpedia.org/resource/Konstantin_Shvachko>,
+   <http://dbpedia.org/resource/Sanjay_Radia>,
+   <http://dbpedia.org/resource/Siddharth_Seth>,
+   <http://dbpedia.org/resource/Suresh_Srinivas>,
+   <http://dbpedia.org/resource/Tsz_Wo_(Nicholas)_Sze>,
+   <http://dbpedia.org/resource/Tanping_Wang>,
+   <http://dbpedia.org/resource/Christophe_Taton>,
+   <http://dbpedia.org/resource/Thomas_Graves>,
+   <http://dbpedia.org/resource/Todd_Lipcon>,
+   <http://dbpedia.org/resource/Tom_White>,
+   <http://dbpedia.org/resource/Alejandro_Abdelnur>,
+   <http://dbpedia.org/resource/Uma_Maheswara_Rao_G>,
+   <http://dbpedia.org/resource/Vinod_Kumar_Vavilapalli>,
+   <http://dbpedia.org/resource/Zheng_Shao>.
+
+
+<http://dbpedia.org/resource/Eclipse> doap:developer
+
+   <http://dbpedia.org/resource/Adolfo_Sanchez-Barbudo_Herrera>,
+   <http://dbpedia.org/resource/Aleksey_Aristov>,
+   <http://dbpedia.org/resource/Andrea_Zoppello>,
+   <http://dbpedia.org/resource/Andreas_Weber>,
+   <http://dbpedia.org/resource/Andrew_Overholt>,
+   <http://dbpedia.org/resource/Anthony_Hunter>,
+   <http://dbpedia.org/resource/Austin_Riddle>,
+   <http://dbpedia.org/resource/Blaise_Doughan>,
+   <http://dbpedia.org/resource/Boris_Bokowski>,
+   <http://dbpedia.org/resource/Chris_Aniszczyk>,
+   <http://dbpedia.org/resource/Danail_Branekov>,
+   <http://dbpedia.org/resource/David_Carver>,
+   <http://dbpedia.org/resource/David_Green>,
+   <http://dbpedia.org/resource/David_Williams>,
+   <http://dbpedia.org/resource/DJ_Houghton>,
+   <http://dbpedia.org/resource/Gabriel_BARBIER>,
+   <http://dbpedia.org/resource/Gunnar_Wagenknecht>,
+   <http://dbpedia.org/resource/Hubert_Leung>,
+   <http://dbpedia.org/resource/Hugues_Malphettes>,
+   <http://dbpedia.org/resource/Jesse_McConnell>,
+   <http://dbpedia.org/resource/Joel_Rosi-Schwartz>,
+   <http://dbpedia.org/resource/Ketan_Padegaonkar>,
+   <http://dbpedia.org/resource/Kim_Moir>,
+   <http://dbpedia.org/resource/Lazar_Kirchev>,
+   <http://dbpedia.org/resource/Markus_Kuppe>,
+   <http://dbpedia.org/resource/Martin_Oberhuber>,
+   <http://dbpedia.org/resource/Mike_Squillace>,
+   <http://dbpedia.org/resource/Nicolas_Bros>,
+   <http://dbpedia.org/resource/Oisin_Hurley>,
+   <http://dbpedia.org/resource/Pascal_Rapicault>,
+   <http://dbpedia.org/resource/Robert_Wetzold>,
+   <http://dbpedia.org/resource/Roy_Ganor>,
+   <http://dbpedia.org/resource/Ryan_Brooks>,
+   <http://dbpedia.org/resource/Sebastian_Zarnekow>,
+   <http://dbpedia.org/resource/Shane_Clarke>,
+   <http://dbpedia.org/resource/Simon_Kaegi>,
+   <http://dbpedia.org/resource/Steffen_Pingel>,
+   <http://dbpedia.org/resource/Thomas_Schindl>,
+   <http://dbpedia.org/resource/Thomas_Watson>,
+   <http://dbpedia.org/resource/Tom_Ware>.
+
+_:bnode801115778798442261 <http://example.org/vocab/cola> "267"^^xs:decimal .
+_:bnode801115778798442261 <http://example.org/vocab/rank> "1"^^xs:decimal .
+_:bnode801115778798442261 <http://www.w3.org/2000/01/rdf-schema#label> "Oslo (Norway)" .
+_:bnode4703212043277300564 <http://example.org/vocab/cola> "247"^^xs:decimal .
+_:bnode4703212043277300564 <http://example.org/vocab/rank> "2"^^xs:decimal .
+_:bnode4703212043277300564 <http://www.w3.org/2000/01/rdf-schema#label> "Zurich (Switzerland)" .
+_:bnode7836644854929282033 <http://example.org/vocab/cola> "245"^^xs:decimal .
+_:bnode7836644854929282033 <http://example.org/vocab/rank> "3"^^xs:decimal .
+_:bnode7836644854929282033 <http://www.w3.org/2000/01/rdf-schema#label> "Geneva (Switzerland)" .
+_:bnode12608127936099484007 <http://example.org/vocab/cola> "238"^^xs:decimal .
+_:bnode12608127936099484007 <http://example.org/vocab/rank> "4"^^xs:decimal .
+_:bnode12608127936099484007 <http://www.w3.org/2000/01/rdf-schema#label> "Sydney (Australia)" .
+_:bnode12888363194255067654 <http://example.org/vocab/cola> "238"^^xs:decimal .
+_:bnode12888363194255067654 <http://example.org/vocab/rank> "5"^^xs:decimal .
+_:bnode12888363194255067654 <http://www.w3.org/2000/01/rdf-schema#label> "London (United Kingdom)" .
+_:bnode11529611206292634248 <http://example.org/vocab/cola> "230"^^xs:decimal .
+_:bnode11529611206292634248 <http://example.org/vocab/rank> "6"^^xs:decimal .
+_:bnode11529611206292634248 <http://www.w3.org/2000/01/rdf-schema#label> "Singapore (Singapore)" .
+_:bnode14906996424388853121 <http://example.org/vocab/cola> "224"^^xs:decimal .
+_:bnode14906996424388853121 <http://example.org/vocab/rank> "7"^^xs:decimal .
+_:bnode14906996424388853121 <http://www.w3.org/2000/01/rdf-schema#label> "New York City (United States)" .
+_:bnode13722836869204719926 <http://example.org/vocab/cola> "223"^^xs:decimal .
+_:bnode13722836869204719926 <http://example.org/vocab/rank> "8"^^xs:decimal .
+_:bnode13722836869204719926 <http://www.w3.org/2000/01/rdf-schema#label> "Hong Kong (Hong Kong)" .
+_:bnode17794808286622966414 <http://example.org/vocab/cola> "220"^^xs:decimal .
+_:bnode17794808286622966414 <http://example.org/vocab/rank> "9"^^xs:decimal .
+_:bnode17794808286622966414 <http://www.w3.org/2000/01/rdf-schema#label> "Tokyo (Japan)" .
+_:bnode13238754227443678890 <http://example.org/vocab/cola> "220"^^xs:decimal .
+_:bnode13238754227443678890 <http://example.org/vocab/rank> "10"^^xs:decimal .
+_:bnode13238754227443678890 <http://www.w3.org/2000/01/rdf-schema#label> "Melbourne (Australia)" .
+_:bnode1338700089066335370 <http://example.org/vocab/cola> "216"^^xs:decimal .
+_:bnode1338700089066335370 <http://example.org/vocab/rank> "11"^^xs:decimal .
+_:bnode1338700089066335370 <http://www.w3.org/2000/01/rdf-schema#label> "Perth (Australia)" .
+_:bnode9535876228445912280 <http://example.org/vocab/cola> "214"^^xs:decimal .
+_:bnode9535876228445912280 <http://example.org/vocab/rank> "12"^^xs:decimal .
+_:bnode9535876228445912280 <http://www.w3.org/2000/01/rdf-schema#label> "Brisbane (Australia)" .
+_:bnode16522046029752964499 <http://example.org/vocab/cola> "208"^^xs:decimal .
+_:bnode16522046029752964499 <http://example.org/vocab/rank> "13"^^xs:decimal .
+_:bnode16522046029752964499 <http://www.w3.org/2000/01/rdf-schema#label> "Paris (France)" .
+_:bnode7735148490581389347 <http://example.org/vocab/cola> "206"^^xs:decimal .
+_:bnode7735148490581389347 <http://example.org/vocab/rank> "14"^^xs:decimal .
+_:bnode7735148490581389347 <http://www.w3.org/2000/01/rdf-schema#label> "Stockholm (Sweden)" .
+_:bnode7076885318817966180 <http://example.org/vocab/cola> "195"^^xs:decimal .
+_:bnode7076885318817966180 <http://example.org/vocab/rank> "15"^^xs:decimal .
+_:bnode7076885318817966180 <http://www.w3.org/2000/01/rdf-schema#label> "Washington D.C. (United States)" .
+_:bnode15368169476272835552 <http://example.org/vocab/cola> "194"^^xs:decimal .
+_:bnode15368169476272835552 <http://example.org/vocab/rank> "16"^^xs:decimal .
+_:bnode15368169476272835552 <http://www.w3.org/2000/01/rdf-schema#label> "San Francisco (United States)" .
+_:bnode7858277920659179963 <http://example.org/vocab/cola> "190"^^xs:decimal .
+_:bnode7858277920659179963 <http://example.org/vocab/rank> "17"^^xs:decimal .
+_:bnode7858277920659179963 <http://www.w3.org/2000/01/rdf-schema#label> "Amsterdam (Netherlands)" .
+_:bnode5282577748400710759 <http://example.org/vocab/cola> "185"^^xs:decimal .
+_:bnode5282577748400710759 <http://example.org/vocab/rank> "18"^^xs:decimal .
+_:bnode5282577748400710759 <http://www.w3.org/2000/01/rdf-schema#label> "Copenhagen (Denmark)" .
+_:bnode14867628506795899345 <http://example.org/vocab/cola> "180"^^xs:decimal .
+_:bnode14867628506795899345 <http://example.org/vocab/rank> "19"^^xs:decimal .
+_:bnode14867628506795899345 <http://www.w3.org/2000/01/rdf-schema#label> "Dublin (Ireland)" .
+_:bnode12252494411987616437 <http://example.org/vocab/cola> "174"^^xs:decimal .
+_:bnode12252494411987616437 <http://example.org/vocab/rank> "20"^^xs:decimal .
+_:bnode12252494411987616437 <http://www.w3.org/2000/01/rdf-schema#label> "Toronto (Canada)" .
+_:bnode9579815612793139335 <http://example.org/vocab/cola> "170"^^xs:decimal .
+_:bnode9579815612793139335 <http://example.org/vocab/rank> "21"^^xs:decimal .
+_:bnode9579815612793139335 <http://www.w3.org/2000/01/rdf-schema#label> "Boston (United States)" .
+_:bnode17948236734770686352 <http://example.org/vocab/cola> "168"^^xs:decimal .
+_:bnode17948236734770686352 <http://example.org/vocab/rank> "22"^^xs:decimal .
+_:bnode17948236734770686352 <http://www.w3.org/2000/01/rdf-schema#label> "Vancouver (Canada)" .
+_:bnode740327670408225326 <http://example.org/vocab/cola> "168"^^xs:decimal .
+_:bnode740327670408225326 <http://example.org/vocab/rank> "23"^^xs:decimal .
+_:bnode740327670408225326 <http://www.w3.org/2000/01/rdf-schema#label> "Helsinki (Finland)" .
+_:bnode11756993921850735959 <http://example.org/vocab/cola> "166"^^xs:decimal .
+_:bnode11756993921850735959 <http://example.org/vocab/rank> "24"^^xs:decimal .
+_:bnode11756993921850735959 <http://www.w3.org/2000/01/rdf-schema#label> "Tel Aviv (Israel)" .
+_:bnode1486997724803449219 <http://example.org/vocab/cola> "164"^^xs:decimal .
+_:bnode1486997724803449219 <http://example.org/vocab/rank> "25"^^xs:decimal .
+_:bnode1486997724803449219 <http://www.w3.org/2000/01/rdf-schema#label> "Auckland (New Zealand)" .
+_:bnode15082398042552740824 <http://example.org/vocab/cola> "164"^^xs:decimal .
+_:bnode15082398042552740824 <http://example.org/vocab/rank> "26"^^xs:decimal .
+_:bnode15082398042552740824 <http://www.w3.org/2000/01/rdf-schema#label> "Ottawa (Canada)" .
+_:bnode2848449420411930170 <http://example.org/vocab/cola> "163"^^xs:decimal .
+_:bnode2848449420411930170 <http://example.org/vocab/rank> "27"^^xs:decimal .
+_:bnode2848449420411930170 <http://www.w3.org/2000/01/rdf-schema#label> "Calgary (Canada)" .
+_:bnode4892004654160082753 <http://example.org/vocab/cola> "162"^^xs:decimal .
+_:bnode4892004654160082753 <http://example.org/vocab/rank> "28"^^xs:decimal .
+_:bnode4892004654160082753 <http://www.w3.org/2000/01/rdf-schema#label> "Munich (Germany)" .
+_:bnode8200245256382073587 <http://example.org/vocab/cola> "161"^^xs:decimal .
+_:bnode8200245256382073587 <http://example.org/vocab/rank> "29"^^xs:decimal .
+_:bnode8200245256382073587 <http://www.w3.org/2000/01/rdf-schema#label> "Brussels (Belgium)" .
+_:bnode7399688209197863914 <http://example.org/vocab/cola> "161"^^xs:decimal .
+_:bnode7399688209197863914 <http://example.org/vocab/rank> "30"^^xs:decimal .
+_:bnode7399688209197863914 <http://www.w3.org/2000/01/rdf-schema#label> "Rio de Janeiro (Brazil)" .
+_:bnode15583488143092752225 <http://example.org/vocab/cola> "161"^^xs:decimal .
+_:bnode15583488143092752225 <http://example.org/vocab/rank> "31"^^xs:decimal .
+_:bnode15583488143092752225 <http://www.w3.org/2000/01/rdf-schema#label> "Seattle (United States)" .
+_:bnode11667354324237310654 <http://example.org/vocab/cola> "161"^^xs:decimal .
+_:bnode11667354324237310654 <http://example.org/vocab/rank> "32"^^xs:decimal .
+_:bnode11667354324237310654 <http://www.w3.org/2000/01/rdf-schema#label> "Moscow (Russia)" .
+_:bnode8457002717882791170 <http://example.org/vocab/cola> "160"^^xs:decimal .
+_:bnode8457002717882791170 <http://example.org/vocab/rank> "33"^^xs:decimal .
+_:bnode8457002717882791170 <http://www.w3.org/2000/01/rdf-schema#label> "Rome (Italy)" .
+_:bnode3357612449445276520 <http://example.org/vocab/cola> "158"^^xs:decimal .
+_:bnode3357612449445276520 <http://example.org/vocab/rank> "34"^^xs:decimal .
+_:bnode3357612449445276520 <http://www.w3.org/2000/01/rdf-schema#label> "Miami (United States)" .
+_:bnode14730828473420635717 <http://example.org/vocab/cola> "157"^^xs:decimal .
+_:bnode14730828473420635717 <http://example.org/vocab/rank> "35"^^xs:decimal .
+_:bnode14730828473420635717 <http://www.w3.org/2000/01/rdf-schema#label> "Los Angeles (United States)" .
+_:bnode13189370053514545332 <http://example.org/vocab/cola> "157"^^xs:decimal .
+_:bnode13189370053514545332 <http://example.org/vocab/rank> "36"^^xs:decimal .
+_:bnode13189370053514545332 <http://www.w3.org/2000/01/rdf-schema#label> "Dubai (United Arab Emirates)" .
+_:bnode376086669153251337 <http://example.org/vocab/cola> "157"^^xs:decimal .
+_:bnode376086669153251337 <http://example.org/vocab/rank> "37"^^xs:decimal .
+_:bnode376086669153251337 <http://www.w3.org/2000/01/rdf-schema#label> "So Paulo (Brazil)" .
+_:bnode2030944433177882320 <http://example.org/vocab/cola> "156"^^xs:decimal .
+_:bnode2030944433177882320 <http://example.org/vocab/rank> "38"^^xs:decimal .
+_:bnode2030944433177882320 <http://www.w3.org/2000/01/rdf-schema#label> "Philadelphia (United States)" .
+_:bnode10921702304129253980 <http://example.org/vocab/cola> "156"^^xs:decimal .
+_:bnode10921702304129253980 <http://example.org/vocab/rank> "39"^^xs:decimal .
+_:bnode10921702304129253980 <http://www.w3.org/2000/01/rdf-schema#label> "Milan (Italy)" .
+_:bnode5253456723439961113 <http://example.org/vocab/cola> "151"^^xs:decimal .
+_:bnode5253456723439961113 <http://example.org/vocab/rank> "40"^^xs:decimal .
+_:bnode5253456723439961113 <http://www.w3.org/2000/01/rdf-schema#label> "Montreal (Canada)" .
+_:bnode17599135531426768630 <http://example.org/vocab/cola> "151"^^xs:decimal .
+_:bnode17599135531426768630 <http://example.org/vocab/rank> "41"^^xs:decimal .
+_:bnode17599135531426768630 <http://www.w3.org/2000/01/rdf-schema#label> "Chicago (United States)" .
+_:bnode11414220870553735464 <http://example.org/vocab/cola> "148"^^xs:decimal .
+_:bnode11414220870553735464 <http://example.org/vocab/rank> "42"^^xs:decimal .
+_:bnode11414220870553735464 <http://www.w3.org/2000/01/rdf-schema#label> "San Diego (United States)" .
+_:bnode12935890231425465885 <http://example.org/vocab/cola> "144"^^xs:decimal .
+_:bnode12935890231425465885 <http://example.org/vocab/rank> "43"^^xs:decimal .
+_:bnode12935890231425465885 <http://www.w3.org/2000/01/rdf-schema#label> "Vienna (Austria)" .
+_:bnode4827550681944089739 <http://example.org/vocab/cola> "144"^^xs:decimal .
+_:bnode4827550681944089739 <http://example.org/vocab/rank> "44"^^xs:decimal .
+_:bnode4827550681944089739 <http://www.w3.org/2000/01/rdf-schema#label> "Atlanta (United States)" .
+_:bnode18396313780909092851 <http://example.org/vocab/cola> "143"^^xs:decimal .
+_:bnode18396313780909092851 <http://example.org/vocab/rank> "45"^^xs:decimal .
+_:bnode18396313780909092851 <http://www.w3.org/2000/01/rdf-schema#label> "Madrid (Spain)" .
+_:bnode2762327902691267501 <http://example.org/vocab/cola> "143"^^xs:decimal .
+_:bnode2762327902691267501 <http://example.org/vocab/rank> "46"^^xs:decimal .
+_:bnode2762327902691267501 <http://www.w3.org/2000/01/rdf-schema#label> "Berlin (Germany)" .
+_:bnode12312415203501161665 <http://example.org/vocab/cola> "142"^^xs:decimal .
+_:bnode12312415203501161665 <http://example.org/vocab/rank> "47"^^xs:decimal .
+_:bnode12312415203501161665 <http://www.w3.org/2000/01/rdf-schema#label> "Denver (United States)" .
+_:bnode17222052830967859847 <http://example.org/vocab/cola> "142"^^xs:decimal .
+_:bnode17222052830967859847 <http://example.org/vocab/rank> "48"^^xs:decimal .
+_:bnode17222052830967859847 <http://www.w3.org/2000/01/rdf-schema#label> "Portland (United States)" .
+_:bnode53429093169015205 <http://example.org/vocab/cola> "142"^^xs:decimal .
+_:bnode53429093169015205 <http://example.org/vocab/rank> "49"^^xs:decimal .
+_:bnode53429093169015205 <http://www.w3.org/2000/01/rdf-schema#label> "Athens (Greece)" .
+_:bnode16057455552754825426 <http://example.org/vocab/cola> "140"^^xs:decimal .
+_:bnode16057455552754825426 <http://example.org/vocab/rank> "50"^^xs:decimal .
+_:bnode16057455552754825426 <http://www.w3.org/2000/01/rdf-schema#label> "Barcelona (Spain)" .
+_:bnode9241166173532842578 <http://example.org/vocab/cola> "138"^^xs:decimal .
+_:bnode9241166173532842578 <http://example.org/vocab/rank> "51"^^xs:decimal .
+_:bnode9241166173532842578 <http://www.w3.org/2000/01/rdf-schema#label> "Dallas (United States)" .
+_:bnode9192761986147880424 <http://example.org/vocab/cola> "136"^^xs:decimal .
+_:bnode9192761986147880424 <http://example.org/vocab/rank> "52"^^xs:decimal .
+_:bnode9192761986147880424 <http://www.w3.org/2000/01/rdf-schema#label> "Tampa (United States)" .
+_:bnode12225231673393729687 <http://example.org/vocab/cola> "134"^^xs:decimal .
+_:bnode12225231673393729687 <http://example.org/vocab/rank> "53"^^xs:decimal .
+_:bnode12225231673393729687 <http://www.w3.org/2000/01/rdf-schema#label> "Shanghai (China)" .
+_:bnode12994892484693880700 <http://example.org/vocab/cola> "134"^^xs:decimal .
+_:bnode12994892484693880700 <http://example.org/vocab/rank> "54"^^xs:decimal .
+_:bnode12994892484693880700 <http://www.w3.org/2000/01/rdf-schema#label> "Turin (Italy)" .
+_:bnode5447236522242579186 <http://example.org/vocab/cola> "134"^^xs:decimal .
+_:bnode5447236522242579186 <http://example.org/vocab/rank> "55"^^xs:decimal .
+_:bnode5447236522242579186 <http://www.w3.org/2000/01/rdf-schema#label> "Minneapolis (United States)" .
+_:bnode12408814152912952717 <http://example.org/vocab/cola> "133"^^xs:decimal .
+_:bnode12408814152912952717 <http://example.org/vocab/rank> "56"^^xs:decimal .
+_:bnode12408814152912952717 <http://www.w3.org/2000/01/rdf-schema#label> "Montevideo (Uruguay)" .
+_:bnode8823619767338590846 <http://example.org/vocab/cola> "132"^^xs:decimal .
+_:bnode8823619767338590846 <http://example.org/vocab/rank> "57"^^xs:decimal .
+_:bnode8823619767338590846 <http://www.w3.org/2000/01/rdf-schema#label> "Orlando (United States)" .
+_:bnode6479871256610675605 <http://example.org/vocab/cola> "131"^^xs:decimal .
+_:bnode6479871256610675605 <http://example.org/vocab/rank> "58"^^xs:decimal .
+_:bnode6479871256610675605 <http://www.w3.org/2000/01/rdf-schema#label> "Brasia (Brazil)" .
+_:bnode10851669367661784580 <http://example.org/vocab/cola> "130"^^xs:decimal .
+_:bnode10851669367661784580 <http://example.org/vocab/rank> "59"^^xs:decimal .
+_:bnode10851669367661784580 <http://www.w3.org/2000/01/rdf-schema#label> "Houston (United States)" .
+_:bnode3199653313323542243 <http://example.org/vocab/cola> "130"^^xs:decimal .
+_:bnode3199653313323542243 <http://example.org/vocab/rank> "60"^^xs:decimal .
+_:bnode3199653313323542243 <http://www.w3.org/2000/01/rdf-schema#label> "San Juan (Puerto Rico)" .
+_:bnode6030680830042002750 <http://example.org/vocab/cola> "128"^^xs:decimal .
+_:bnode6030680830042002750 <http://example.org/vocab/rank> "61"^^xs:decimal .
+_:bnode6030680830042002750 <http://www.w3.org/2000/01/rdf-schema#label> "Phoenix (United States)" .
+_:bnode13307213162652679041 <http://example.org/vocab/cola> "127"^^xs:decimal .
+_:bnode13307213162652679041 <http://example.org/vocab/rank> "62"^^xs:decimal .
+_:bnode13307213162652679041 <http://www.w3.org/2000/01/rdf-schema#label> "Santiago (Chile)" .
+_:bnode3914605013651416180 <http://example.org/vocab/cola> "127"^^xs:decimal .
+_:bnode3914605013651416180 <http://example.org/vocab/rank> "63"^^xs:decimal .
+_:bnode3914605013651416180 <http://www.w3.org/2000/01/rdf-schema#label> "Austin (United States)" .
+_:bnode5311103002156211891 <http://example.org/vocab/cola> "127"^^xs:decimal .
+_:bnode5311103002156211891 <http://example.org/vocab/rank> "64"^^xs:decimal .
+_:bnode5311103002156211891 <http://www.w3.org/2000/01/rdf-schema#label> "Istanbul (Turkey)" .
+_:bnode13430458904663653644 <http://example.org/vocab/cola> "126"^^xs:decimal .
+_:bnode13430458904663653644 <http://example.org/vocab/rank> "65"^^xs:decimal .
+_:bnode13430458904663653644 <http://www.w3.org/2000/01/rdf-schema#label> "Saint Petersburg (Russia)" .
+_:bnode5854976231925392117 <http://example.org/vocab/cola> "124"^^xs:decimal .
+_:bnode5854976231925392117 <http://example.org/vocab/rank> "66"^^xs:decimal .
+_:bnode5854976231925392117 <http://www.w3.org/2000/01/rdf-schema#label> "Baku (Azerbaijan)" .
+_:bnode13875159597732027904 <http://example.org/vocab/cola> "123"^^xs:decimal .
+_:bnode13875159597732027904 <http://example.org/vocab/rank> "67"^^xs:decimal .
+_:bnode13875159597732027904 <http://www.w3.org/2000/01/rdf-schema#label> "Salt Lake City (United States)" .
+_:bnode2825031916788720840 <http://example.org/vocab/cola> "122"^^xs:decimal .
+_:bnode2825031916788720840 <http://example.org/vocab/rank> "68"^^xs:decimal .
+_:bnode2825031916788720840 <http://www.w3.org/2000/01/rdf-schema#label> "Lisbon (Portugal)" .
+_:bnode18035598968291344571 <http://example.org/vocab/cola> "118"^^xs:decimal .
+_:bnode18035598968291344571 <http://example.org/vocab/rank> "69"^^xs:decimal .
+_:bnode18035598968291344571 <http://www.w3.org/2000/01/rdf-schema#label> "Bogota (Colombia)" .
+_:bnode5017093873770068309 <http://example.org/vocab/cola> "112"^^xs:decimal .
+_:bnode5017093873770068309 <http://example.org/vocab/rank> "70"^^xs:decimal .
+_:bnode5017093873770068309 <http://www.w3.org/2000/01/rdf-schema#label> "Kuala Lumpur (Malaysia)" .
+_:bnode12695281782338522634 <http://example.org/vocab/cola> "111"^^xs:decimal .
+_:bnode12695281782338522634 <http://example.org/vocab/rank> "71"^^xs:decimal .
+_:bnode12695281782338522634 <http://www.w3.org/2000/01/rdf-schema#label> "Johannesburg (South Africa)" .
+_:bnode8597745695236891120 <http://example.org/vocab/cola> "111"^^xs:decimal .
+_:bnode8597745695236891120 <http://example.org/vocab/rank> "72"^^xs:decimal .
+_:bnode8597745695236891120 <http://www.w3.org/2000/01/rdf-schema#label> "Valencia (Spain)" .
+_:bnode14457261167274024083 <http://example.org/vocab/cola> "111"^^xs:decimal .
+_:bnode14457261167274024083 <http://example.org/vocab/rank> "73"^^xs:decimal .
+_:bnode14457261167274024083 <http://www.w3.org/2000/01/rdf-schema#label> "Bangkok (Thailand)" .
+_:bnode3551547841502801228 <http://example.org/vocab/cola> "108"^^xs:decimal .
+_:bnode3551547841502801228 <http://example.org/vocab/rank> "74"^^xs:decimal .
+_:bnode3551547841502801228 <http://www.w3.org/2000/01/rdf-schema#label> "Jakarta (Indonesia)" .
+_:bnode14184208540034171568 <http://example.org/vocab/cola> "108"^^xs:decimal .
+_:bnode14184208540034171568 <http://example.org/vocab/rank> "75"^^xs:decimal .
+_:bnode14184208540034171568 <http://www.w3.org/2000/01/rdf-schema#label> "Zagreb (Croatia)" .
+_:bnode882657679766158538 <http://example.org/vocab/cola> "106"^^xs:decimal .
+_:bnode882657679766158538 <http://example.org/vocab/rank> "76"^^xs:decimal .
+_:bnode882657679766158538 <http://www.w3.org/2000/01/rdf-schema#label> "Oporto (Portugal)" .
+_:bnode9215116549474763182 <http://example.org/vocab/cola> "103"^^xs:decimal .
+_:bnode9215116549474763182 <http://example.org/vocab/rank> "77"^^xs:decimal .
+_:bnode9215116549474763182 <http://www.w3.org/2000/01/rdf-schema#label> "Monterrey (Mexico)" .
+_:bnode10474599434885460887 <http://example.org/vocab/cola> "101"^^xs:decimal .
+_:bnode10474599434885460887 <http://example.org/vocab/rank> "78"^^xs:decimal .
+_:bnode10474599434885460887 <http://www.w3.org/2000/01/rdf-schema#label> "Mexico City (Mexico)" .
+_:bnode14891379009811378016 <http://example.org/vocab/cola> "100"^^xs:decimal .
+_:bnode14891379009811378016 <http://example.org/vocab/rank> "79"^^xs:decimal .
+_:bnode14891379009811378016 <http://www.w3.org/2000/01/rdf-schema#label> "Prague (Czech Republic)" .
+_:bnode3778433947819414735 <http://example.org/vocab/cola> "98"^^xs:decimal .
+_:bnode3778433947819414735 <http://example.org/vocab/rank> "80"^^xs:decimal .
+_:bnode3778433947819414735 <http://www.w3.org/2000/01/rdf-schema#label> "Lima (Peru)" .
+_:bnode6327630586801308466 <http://example.org/vocab/cola> "95"^^xs:decimal .
+_:bnode6327630586801308466 <http://example.org/vocab/rank> "81"^^xs:decimal .
+_:bnode6327630586801308466 <http://www.w3.org/2000/01/rdf-schema#label> "Warsaw (Poland)" .
+_:bnode9811559483503787395 <http://example.org/vocab/cola> "93"^^xs:decimal .
+_:bnode9811559483503787395 <http://example.org/vocab/rank> "82"^^xs:decimal .
+_:bnode9811559483503787395 <http://www.w3.org/2000/01/rdf-schema#label> "Cape Town (South Africa)" .
+_:bnode6919946268839650472 <http://example.org/vocab/cola> "92"^^xs:decimal .
+_:bnode6919946268839650472 <http://example.org/vocab/rank> "83"^^xs:decimal .
+_:bnode6919946268839650472 <http://www.w3.org/2000/01/rdf-schema#label> "Manila (Philippines)" .
+_:bnode3294476969869550673 <http://example.org/vocab/cola> "92"^^xs:decimal .
+_:bnode3294476969869550673 <http://example.org/vocab/rank> "84"^^xs:decimal .
+_:bnode3294476969869550673 <http://www.w3.org/2000/01/rdf-schema#label> "Kiev (Ukraine)" .
+_:bnode17715403927295875319 <http://example.org/vocab/cola> "90"^^xs:decimal .
+_:bnode17715403927295875319 <http://example.org/vocab/rank> "85"^^xs:decimal .
+_:bnode17715403927295875319 <http://www.w3.org/2000/01/rdf-schema#label> "Vilnius (Lithuania)" .
+_:bnode14200535503915813787 <http://example.org/vocab/cola> "90"^^xs:decimal .
+_:bnode14200535503915813787 <http://example.org/vocab/rank> "86"^^xs:decimal .
+_:bnode14200535503915813787 <http://www.w3.org/2000/01/rdf-schema#label> "Krakow (Poland)" .
+_:bnode11584534214171704707 <http://example.org/vocab/cola> "90"^^xs:decimal .
+_:bnode11584534214171704707 <http://example.org/vocab/rank> "87"^^xs:decimal .
+_:bnode11584534214171704707 <http://www.w3.org/2000/01/rdf-schema#label> "Budapest (Hungary)" .
+_:bnode5455917924420891057 <http://example.org/vocab/cola> "89"^^xs:decimal .
+_:bnode5455917924420891057 <http://example.org/vocab/rank> "88"^^xs:decimal .
+_:bnode5455917924420891057 <http://www.w3.org/2000/01/rdf-schema#label> "Gdansk (Poland)" .
+_:bnode17463648429947037892 <http://example.org/vocab/cola> "86"^^xs:decimal .
+_:bnode17463648429947037892 <http://example.org/vocab/rank> "89"^^xs:decimal .
+_:bnode17463648429947037892 <http://www.w3.org/2000/01/rdf-schema#label> "Wroclaw (Poland)" .
+_:bnode18223702831815967203 <http://example.org/vocab/rank> "92"^^xs:decimal .
+_:bnode18223702831815967203 <http://www.w3.org/2000/01/rdf-schema#label> "Sofia (Bulgaria)" .
+_:bnode6503189870284177823 <http://example.org/vocab/cola> "83"^^xs:decimal .
+_:bnode6503189870284177823 <http://example.org/vocab/rank> "93"^^xs:decimal .
+_:bnode6503189870284177823 <http://www.w3.org/2000/01/rdf-schema#label> "Belgrade (Serbia)" .
+_:bnode3895388374467690444 <http://example.org/vocab/cola> "75"^^xs:decimal .
+_:bnode3895388374467690444 <http://example.org/vocab/rank> "94"^^xs:decimal .
+_:bnode3895388374467690444 <http://www.w3.org/2000/01/rdf-schema#label> "Mumbai (India)" .
+_:bnode3344738497369609850 <http://example.org/vocab/cola> "74"^^xs:decimal .
+_:bnode3344738497369609850 <http://example.org/vocab/rank> "95"^^xs:decimal .
+_:bnode3344738497369609850 <http://www.w3.org/2000/01/rdf-schema#label> "Cairo (Egypt)" .
+_:bnode2054088008933494134 <http://example.org/vocab/cola> "67"^^xs:decimal .
+_:bnode2054088008933494134 <http://example.org/vocab/rank> "96"^^xs:decimal .
+_:bnode2054088008933494134 <http://www.w3.org/2000/01/rdf-schema#label> "Karachi (Pakistan)" .
+_:bnode7581944314821036911 <http://example.org/vocab/cola> "65"^^xs:decimal .
+_:bnode7581944314821036911 <http://example.org/vocab/rank> "97"^^xs:decimal .
+_:bnode7581944314821036911 <http://www.w3.org/2000/01/rdf-schema#label> "Buenos Aires (Argentina)" .
+_:bnode13100542282098034645 <http://example.org/vocab/cola> "62"^^xs:decimal .
+_:bnode13100542282098034645 <http://example.org/vocab/rank> "98"^^xs:decimal .
+_:bnode13100542282098034645 <http://www.w3.org/2000/01/rdf-schema#label> "Delhi (India)" .
+_:bnode14902282870406388411 <http://example.org/vocab/cola> "57"^^xs:decimal .
+_:bnode14902282870406388411 <http://example.org/vocab/rank> "99"^^xs:decimal .
+_:bnode14902282870406388411 <http://www.w3.org/2000/01/rdf-schema#label> "Crrrdoba (Argentina)" .
+_:bnode5635910650750872966 <http://example.org/vocab/cola> "57"^^xs:decimal .
+_:bnode5635910650750872966 <http://example.org/vocab/rank> "100"^^xs:decimal .
+_:bnode5635910650750872966 <http://www.w3.org/2000/01/rdf-schema#label> "Bangalore (India)" .
+_:bnode3643445642044584774 <http://example.org/vocab/cola> "54"^^xs:decimal .
+_:bnode3643445642044584774 <http://example.org/vocab/rank> "101"^^xs:decimal .
+_:bnode3643445642044584774 <http://www.w3.org/2000/01/rdf-schema#label> "Pune (India)" .
+_:bnode7060569212670727032 <http://example.org/vocab/cola> "52"^^xs:decimal .
+_:bnode7060569212670727032 <http://example.org/vocab/rank> "102"^^xs:decimal .
+_:bnode7060569212670727032 <http://www.w3.org/2000/01/rdf-schema#label> "Rosario (Argentina)" .
+_:bnode15556642149435722833 <http://example.org/vocab/cola> "49"^^xs:decimal .
+_:bnode15556642149435722833 <http://example.org/vocab/rank> "103"^^xs:decimal .
+_:bnode15556642149435722833 <http://www.w3.org/2000/01/rdf-schema#label> "Kolkata (India)" .
+_:bnode15841025689407182986 <http://example.org/vocab/cola> "46"^^xs:decimal .
+_:bnode15841025689407182986 <http://example.org/vocab/rank> "104"^^xs:decimal .
+_:bnode15841025689407182986 <http://www.w3.org/2000/01/rdf-schema#label> "Hyderabad (India)" .
+_:bnode14025081166868624652 <http://example.org/vocab/cola> "44"^^xs:decimal .
+_:bnode14025081166868624652 <http://example.org/vocab/rank> "105"^^xs:decimal .
+_:bnode14025081166868624652 <http://www.w3.org/2000/01/rdf-schema#label> "Caracas (Venezuela)" .
+_:bnode8682921392088249856 <http://example.org/vocab/cola> "42"^^xs:decimal .
+_:bnode8682921392088249856 <http://example.org/vocab/rank> "106"^^xs:decimal .
+_:bnode8682921392088249856 <http://www.w3.org/2000/01/rdf-schema#label> "Tehran (Iran)" .

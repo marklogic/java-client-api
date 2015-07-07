@@ -1,0 +1,21 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+    {
+    <http://example.org/joe> dc:publisher "Joe" .
+    <http://example.org/jane> dc:publisher "Jane" .
+    }
+
+    <http://example.org/joe>
+    {
+      <http://example.org/joe> foaf:name "Joe" .
+      <http://example.org/joe> foaf:mbox <mailto:joe@jbloggs.example.org> .
+    }
+
+  <http://example.org/jane>
+    {
+      <http://example.org/jane> foaf:name "Jane" .
+      <http://example.org/jane> foaf:mbox <mailto:jane@jdoe.example.org> .
+    }
+

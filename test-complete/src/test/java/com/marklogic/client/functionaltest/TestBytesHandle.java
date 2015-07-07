@@ -300,6 +300,8 @@ public static void tearDown() throws Exception
 {
 	System.out.println("In tear down");
 	tearDownJavaRESTServer(dbName, fNames, restServerName);
+	deleteRESTUser("eval-user");
+	deleteUserRole("test-eval");
 	
 }
 

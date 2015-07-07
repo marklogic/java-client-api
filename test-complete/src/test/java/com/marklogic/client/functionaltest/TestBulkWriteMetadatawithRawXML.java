@@ -402,8 +402,12 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 	    rec = page.next();
 	    jdm.readMetadata(rec.getUri(), mh);
 	    System.out.print(mh.getCollections().isEmpty());
+	    String expectedCollections = "size:1|http://permission-collections/|";
+		String actualCollections = getDocumentCollectionsString(mh.getCollections());
+
+		assertEquals("Document collections difference", expectedCollections, actualCollections);		
+
 	    assertEquals("default quality",0,mh.getQuality());
-	    assertTrue("default collections reset",mh.getCollections().isEmpty());
 	    
         // Doc3 should have the system default document quality (0) because quality
         // was not included in the document-specific metadata. It should be in the
@@ -485,31 +489,42 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 	     assertEquals("default quality",0,mh1.getQuality());
 		 assertTrue("Properties contains value 19",mh1.getProperties().containsValue("19"));
 	     	
-		 	 page = docMgr.read("/generic/dog.json");
-			 rec = page.next();
-			 docMgr.readMetadata(rec.getUri(), mh1);
-			 assertEquals("default quality",10,mh1.getQuality());
-			 assertTrue("default collections missing",mh1.getCollections().isEmpty());
-			 
-			 page = docMgr.read("/generic/foo1.txt");
-			 rec = page.next();
-			 docMgr.readMetadata(rec.getUri(), mh1);
-			// until issue 24 is fixed
-			 //this.validateDefaultMetadata(mh1);
-			 assertEquals("default quality", 0, mh1.getQuality());
-			 
-             String actualPermissions = mh1.getPermissions().toString();
-     	     System.out.println(actualPermissions);
-		   	assertTrue("Default permissions must contain flexrep-eval=[READ]", actualPermissions.contains("flexrep-eval=[READ]"));
-		   	assertTrue("Default permissions must contain rest-reader=[READ]", actualPermissions.contains("rest-reader=[READ]"));
-		   	assertTrue("Default permissions must contain rest-writer=[UPDATE]", actualPermissions.contains("rest-writer=[UPDATE]"));
-			 
-			 page = docMgr.read("/generic/foo.xml");
-			 rec = page.next();
-			 docMgr.readMetadata(rec.getUri(), mh1);
-			 assertEquals("default quality",0,mh1.getQuality());
-			 assertEquals("default collection must change","[http://Json-Uri-generic-collections/]",mh1.getCollections().toString());
-		    
-	    }
+		page = docMgr.read("/generic/dog.json");
+		rec = page.next();
+		docMgr.readMetadata(rec.getUri(), mh1);
+		assertEquals("default quality", 10, mh1.getQuality());
+		String expectedCollections = "size:1|http://permission-collections/|";
+		String actualCollections = getDocumentCollectionsString(mh1.getCollections());
+
+		assertEquals("Document collections difference", expectedCollections, actualCollections);		
+
+		page = docMgr.read("/generic/foo1.txt");
+		rec = page.next();
+		docMgr.readMetadata(rec.getUri(), mh1);
+		expectedCollections = "size:1|http://permission-collections/|";
+		 actualCollections = getDocumentCollectionsString(mh1.getCollections());
+
+		assertEquals("Document collections difference", expectedCollections, actualCollections);		
+
+		assertEquals("default quality", 0, mh1.getQuality());
+
+		String actualPermissions = mh1.getPermissions().toString();
+		System.out.println(actualPermissions);
+		assertTrue("Default permissions must contain flexrep-eval=[READ]",
+				actualPermissions.contains("flexrep-eval=[READ]"));
+		assertTrue("Default permissions must contain rest-reader=[READ]",
+				actualPermissions.contains("rest-reader=[READ]"));
+		assertTrue("Default permissions must contain rest-writer=[UPDATE]",
+				actualPermissions.contains("rest-writer=[UPDATE]"));
+
+		page = docMgr.read("/generic/foo.xml");
+		rec = page.next();
+		docMgr.readMetadata(rec.getUri(), mh1);
+		assertEquals("default quality", 0, mh1.getQuality());
+		assertEquals("default collection must change",
+				"[http://Json-Uri-generic-collections/]", mh1.getCollections()
+						.toString());
+
+	}
 
 }

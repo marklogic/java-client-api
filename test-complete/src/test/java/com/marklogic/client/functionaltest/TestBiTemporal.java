@@ -301,7 +301,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
   private void insertXMLSingleDocument(String temporalCollection, String docId,
       String transformName) throws Exception {
     System.out.println("Inside insertXMLSingleDocument");
-
+    
     DOMHandle handle = getXMLDocumentHandle("2001-01-01T00:00:00",
         "2011-12-31T23:59:59", "999 Skyway Park - XML", docId);
 
@@ -330,18 +330,19 @@ public class TestBiTemporal extends BasicJavaClientREST {
       ServerTransform transformer = new ServerTransform(transformName);
       transformer.put("name", "Lang");
       transformer.put("value", "English");
-
-      docMgr.write(desc, mh, handle, transformer, null, temporalCollection);
-    } else {
-      docMgr.write(desc, mh, handle, null, null, temporalCollection);
-    }
-  }
+      
+	  docMgr.write(desc, mh, handle, transformer, null,	temporalCollection);
+		}
+      else {
+		docMgr.write(desc, mh, handle, null, null, temporalCollection);
+		}
+   }
 
   // This covers passing transforms and descriptor
   private void updateXMLSingleDocument(String temporalCollection, String docId,
       String transformName) throws Exception {
     System.out.println("Inside updateXMLSingleDocument");
-
+    
     // Update the document
     DOMHandle handle = getXMLDocumentHandle("2003-01-01T00:00:00",
         "2008-12-31T23:59:59", "1999 Skyway Park - Updated - XML", docId);
@@ -372,8 +373,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
       docMgr.write(desc, mh, handle, transformer, null, temporalCollection);
     } else {
-      docMgr.write(desc, mh, handle, null, null, temporalCollection);
+    	docMgr.write(desc, mh, handle, null, null, temporalCollection);
     }
+	
   }
 
   // This covers passing descriptor
@@ -381,7 +383,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       throws Exception {
 
     System.out.println("Inside deleteXMLSingleDocument");
-
+    
     XMLDocumentManager docMgr = writerClient.newXMLDocumentManager();
 
     DocumentDescriptor desc = docMgr.newDescriptor(docId);
@@ -436,14 +438,14 @@ public class TestBiTemporal extends BasicJavaClientREST {
   public void insertJSONSingleDocument(String temporalCollection, String docId,
       Transaction transaction, java.util.Calendar systemTime) throws Exception {
 
-    insertJSONSingleDocument(temporalCollection, docId, null, transaction,
+	  insertJSONSingleDocument(temporalCollection, docId, null, transaction,
         systemTime);
   }
 
   public void insertJSONSingleDocument(String temporalCollection, String docId,
       String transformName) throws Exception {
 
-    insertJSONSingleDocument(temporalCollection, docId, transformName, null,
+	  insertJSONSingleDocument(temporalCollection, docId, transformName, null,
         null);
   }
 
@@ -502,7 +504,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
   public void insertJSONSingleDocumentAsEvalUser(String temporalCollection, String docId) throws Exception {
 
     System.out.println("Inside insertJSONSingleDocumentAsEvalUser");
-
+    
     JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
         "2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON",
         docId);
@@ -512,19 +514,19 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
     // put meta-data
     DocumentMetadataHandle mh = setMetadata(false);
-    docMgr.write(docId, mh, handle, null, null, temporalCollection);
+   docMgr.write(docId, mh, handle, null, null, temporalCollection);
   }
 
   public void updateJSONSingleDocument(String temporalCollection, String docId)
       throws Exception {
-
-    updateJSONSingleDocument(temporalCollection, docId, null, null);
+	  
+	  updateJSONSingleDocument(temporalCollection, docId, null, null);
   }
 
   public void updateJSONSingleDocumentAsEvalUser(String temporalCollection, String docId) throws Exception {
 
     System.out.println("Inside updateJSONSingleDocumentString");
-
+    
     // Update the temporal document
     JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
         "2003-01-01T00:00:00", "2008-12-31T23:59:59",
@@ -541,7 +543,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       Transaction transaction, java.util.Calendar systemTime) throws Exception {
 
     System.out.println("Inside updateJSONSingleDocument");
-
+    
     // Update the temporal document
     JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
         "2003-01-01T00:00:00", "2008-12-31T23:59:59",
@@ -557,13 +559,14 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
   public void deleteJSONSingleDocument(String temporalCollection, String docId,
       Transaction transaction) throws Exception {
+	  
     deleteJSONSingleDocument(temporalCollection, docId, transaction, null);
   }
 
   public void deleteJSONSingleDocumentAsEvalUser(String temporalCollection, String docId) throws Exception {
 
     System.out.println("Inside deleteJSONSingleDocumentAsEvalUser");
-
+    
     JSONDocumentManager docMgr = evalClient.newJSONDocumentManager();
 
     // Doing the logic here to exercise the overloaded methods
@@ -574,14 +577,14 @@ public class TestBiTemporal extends BasicJavaClientREST {
       Transaction transaction, java.util.Calendar systemTime) throws Exception {
 
     System.out.println("Inside deleteJSONSingleDocument");
-
+    
     JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
 
     // Doing the logic here to exercise the overloaded methods
     if (systemTime != null) {
-      docMgr.delete(docId, transaction, temporalCollection, systemTime);
+    	docMgr.delete(docId, transaction, temporalCollection, systemTime);
     } else {
-      docMgr.delete(docId, transaction, temporalCollection);
+    	docMgr.delete(docId, transaction, temporalCollection);
     }
   }
 
@@ -692,10 +695,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
     System.out.println("Inside testXMLWriteSingleDocument");
     String docId = "javaSingleXMLDoc.xml";
 
-    insertXMLSingleDocument(temporalCollectionName, docId, null);
     boolean exceptionThrown = false;
     try {
-      updateXMLSingleDocument(temporalCollectionName, docId,
+    	 updateXMLSingleDocument(temporalCollectionName, docId,
           "add-element-xquery-invalid-bitemp-transform");
     } catch (com.marklogic.client.FailedRequestException ex) {      
       String message = ex.getFailedRequest().getMessageCode();
@@ -955,7 +957,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // ================================================================
     // Update the document
     updateJSONSingleDocumentAsEvalUser(temporalCollectionName, docId);
-
+    
     // Verify that the document was updated
     // Make sure there is 1 document in latest collection
     QueryManager queryMgr = evalClient.newQueryManager();
@@ -1065,7 +1067,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // =============================================================================
     // Delete one of the document
     deleteJSONSingleDocumentAsEvalUser(temporalCollectionName, docId);
-
+   
     // Make sure there are still 4 documents in docId collection
     queryMgr = evalClient.newQueryManager();
     sqb = queryMgr.newStructuredQueryBuilder();
@@ -1881,9 +1883,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
     Transaction transaction = writerClient
         .openTransaction("Transaction for BiTemporal");
     try {
-      insertJSONSingleDocument(temporalCollectionName, docId, null, 
+    	insertJSONSingleDocument(temporalCollectionName, docId, null, 
           transaction, null);
-
+       
       // Verify that the document was inserted
       JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
       DocumentPage readResults = docMgr.read(transaction, docId);
@@ -2026,14 +2028,14 @@ public class TestBiTemporal extends BasicJavaClientREST {
     System.out.println("Inside testTransactionRollback");
 
     String docId = "javaSingleJSONDoc.json";
-
+   
     Transaction transaction = writerClient
         .openTransaction("Transaction for BiTemporal");
 
     try {
-      insertJSONSingleDocument(temporalCollectionName, docId, null,
+    	insertJSONSingleDocument(temporalCollectionName, docId, null,
           transaction, null);
-    } catch (Exception ex) {
+    	} catch (Exception ex) {
       transaction.rollback();
 
       assertTrue("insertJSONSingleDocument failed in testTransactionRollback",
@@ -2117,9 +2119,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
         .openTransaction("Transaction Rollback for BiTemporal Delete");
 
     try {
-      insertJSONSingleDocument(temporalCollectionName, docId, null,
+    	insertJSONSingleDocument(temporalCollectionName, docId, null,
           transaction, null);
-    } catch (Exception ex) {
+    	} catch (Exception ex) {
       transaction.rollback();
 
       assertTrue("insertJSONSingleDocument failed in testTransactionRollback",
@@ -2196,9 +2198,11 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // looking for count of documents to be correct
 
     String docId = "javaSingleJSONDoc.json";
+    
     insertJSONSingleDocument(temporalCollectionName, docId, null);
+    
     updateJSONSingleDocument(temporalCollectionName, docId);
-
+    
     // Fetch documents associated with a search term (such as XML) in Address
     // element
     QueryManager queryMgr = readerClient.newQueryManager();
@@ -2293,9 +2297,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // for count of documents to be correct
 
     String docId = "javaSingleJSONDoc.json";
+    
     insertJSONSingleDocument(temporalCollectionName, docId, null);
     updateJSONSingleDocument(temporalCollectionName, docId);
-
+    
     // Fetch documents associated with a search term (such as XML) in Address
     // element
     QueryManager queryMgr = readerClient.newQueryManager();
@@ -2397,12 +2402,12 @@ public class TestBiTemporal extends BasicJavaClientREST {
         .parseDateTime("2005-01-01T00:00:01");
     insertJSONSingleDocument(temporalLsqtCollectionName, docId, null, null,
         insertTime);
-
+    
     Calendar updateTime = DatatypeConverter
         .parseDateTime("2010-01-01T00:00:01");
     updateJSONSingleDocument(temporalLsqtCollectionName, docId, null,
         updateTime);
-
+    
     // Fetch documents associated with a search term (such as XML) in Address
     // element
     QueryManager queryMgr = readerClient.newQueryManager();

@@ -2,7 +2,7 @@ target/
 .gradle
 *.class
 test-complete/build/
-
+.metadata
 # Package Files #
 *.jar
 *.war

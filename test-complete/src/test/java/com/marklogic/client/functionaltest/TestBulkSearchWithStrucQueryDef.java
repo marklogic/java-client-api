@@ -32,6 +32,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -42,6 +43,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.DocumentWriteSet;
@@ -57,9 +59,12 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
+import com.marklogic.client.query.ExtractedItem;
+import com.marklogic.client.query.ExtractedResult;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.StructuredQueryBuilder;
@@ -393,6 +398,256 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 		}
 
 	}
+	
+	// This test is to verify extract-document-data & extract-path with Default selected option query
+	@Test
+	public void testExtractDocumentData() throws Exception {
+		this.loadJSONDocuments();
+		this.loadXMLDocuments();
+		String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
+		String tail = "</search:search>";
+		String qtext4 = "<search:qtext>71 OR dog14</search:qtext>";
+		DocumentManager docMgr = client.newDocumentManager();
+		QueryManager queryMgr = client.newQueryManager();
+		String options = 
+			"<search:options>" +
+				"<search:extract-document-data>" +
+					"<search:extract-path>//foo</search:extract-path>" +
+					"<search:extract-path>//says</search:extract-path>" +
+				"</search:extract-document-data>" +
+			"</search:options>";
+		// test XML response with extracted XML and JSON matches
+		String combinedSearch = head + qtext4 + options + tail;
+		RawCombinedQueryDefinition rawCombinedQueryDefinition = 
+			queryMgr.newRawCombinedQueryDefinition(new StringHandle(combinedSearch).withMimetype("application/xml"));
+		SearchHandle results = queryMgr.search(rawCombinedQueryDefinition, new SearchHandle());
+		MatchDocumentSummary[] summaries = results.getMatchResults();
+		assertNotNull(summaries);
+		assertEquals(2, summaries.length);
+		for (MatchDocumentSummary summary : summaries) {
+			ExtractedResult extracted = summary.getExtracted();
+			if ( Format.XML == summary.getFormat() ) {
+				// we don't test for kind because it isn't sent in this case
+				assertEquals(1, extracted.size());
+				Document item1 = extracted.next().getAs(Document.class);
+				assertEquals("This is so foo with a bar 71", item1.getFirstChild().getTextContent());
+				continue;
+			} else if ( Format.JSON == summary.getFormat() ) {
+				// we don't test for kind because it isn't sent in this case
+				assertEquals(1, extracted.size());
+				for ( ExtractedItem item : extracted ) {
+					String stringJsonItem = item.getAs(String.class);
+					JsonNode nodeJsonItem = item.getAs(JsonNode.class);
+					if ( nodeJsonItem.has("says") ) {
+						assertEquals("{\"says\":\"woof\"}", stringJsonItem);
+						continue;
+					} 
+					fail("unexpected extracted item:" + stringJsonItem);
+				}
+				continue;
+			}
+			fail("unexpected search result:" + summary.getUri());
+		}
+	}
+	
+	// This test is to verify extract-document-data & extract-path with  selected=exclude option query
+	@Test
+	public void testExtractDocumentData2() throws Exception {
+		this.loadJSONDocuments();
+		this.loadXMLDocuments();
+		String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
+		String tail = "</search:search>";
+		String qtext4 = "<search:qtext>71 OR dog14</search:qtext>";
+		DocumentManager docMgr = client.newDocumentManager();
+		QueryManager queryMgr = client.newQueryManager();
+		String options = 
+			"<search:options>" +
+				"<search:extract-document-data selected=\"exclude\">" +
+					"<search:extract-path>//foo</search:extract-path>" +
+					"<search:extract-path>//says</search:extract-path>" +
+				"</search:extract-document-data>" +
+			"</search:options>";
+		// test XML response with extracted XML and JSON matches
+		String combinedSearch = head + qtext4 + options + tail;
+		RawCombinedQueryDefinition rawCombinedQueryDefinition = 
+			queryMgr.newRawCombinedQueryDefinition(new StringHandle(combinedSearch).withMimetype("application/xml"));
+		SearchHandle results = queryMgr.search(rawCombinedQueryDefinition, new SearchHandle());
+		MatchDocumentSummary[] summaries = results.getMatchResults();
+		assertNotNull(summaries);
+		assertEquals(2, summaries.length);
+		for (MatchDocumentSummary summary : summaries) {
+			ExtractedResult extracted = summary.getExtracted();
+			if ( Format.XML == summary.getFormat() ) {
+				// we don't test for kind because it isn't sent in this case
+				assertEquals(1, extracted.size());
+				Document item1 = extracted.next().getAs(Document.class);
+				assertEquals("This is so foo with a bar 71", item1.getFirstChild().getTextContent());
+				continue;
+			} else if ( Format.JSON == summary.getFormat() ) {
+				// we don't test for kind because it isn't sent in this case
+				assertEquals(1, extracted.size());
+				for ( ExtractedItem item : extracted ) {
+					String stringJsonItem = item.getAs(String.class);
+					JsonNode nodeJsonItem = item.getAs(JsonNode.class);
+					if ( nodeJsonItem.has("animal") ) {
+						assertEquals("{\"animal\":\"dog14\"}", stringJsonItem);
+						continue;
+					} 
+					fail("unexpected extracted item:" + stringJsonItem);
+				}
+				continue;
+			}
+			fail("unexpected search result:" + summary.getUri());
+		}
+	}
+
+	// This test is to verify extract-document-data & extract-path with  selected=include-with-ancestors option query
+	@Test
+	public void testExtractDocumentData3() throws Exception {
+		String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
+		String tail = "</search:search>";
+		String qtext4 = "<search:qtext>71 OR dog14</search:qtext>";
+		DocumentManager docMgr = client.newDocumentManager();
+		QueryManager queryMgr = client.newQueryManager();
+		String options = 
+			"<search:options>" +
+				"<search:extract-document-data selected=\"include-with-ancestors\">" +
+					"<search:extract-path>//foo</search:extract-path>" +
+					"<search:extract-path>//says</search:extract-path>" +
+				"</search:extract-document-data>" +
+			"</search:options>";
+		// test XML response with extracted XML and JSON matches
+		String combinedSearch = head + qtext4 + options + tail;
+		RawCombinedQueryDefinition rawCombinedQueryDefinition = 
+			queryMgr.newRawCombinedQueryDefinition(new StringHandle(combinedSearch).withMimetype("application/xml"));
+		SearchHandle results = queryMgr.search(rawCombinedQueryDefinition, new SearchHandle());
+		MatchDocumentSummary[] summaries = results.getMatchResults();
+		assertNotNull(summaries);
+		assertEquals(2, summaries.length);
+		for (MatchDocumentSummary summary : summaries) {
+			ExtractedResult extracted = summary.getExtracted();
+			if ( Format.XML == summary.getFormat() ) {
+				// we don't test for kind because it isn't sent in this case
+				assertEquals(1, extracted.size());
+				Document item1 = extracted.next().getAs(Document.class);
+				assertEquals("", item1.getFirstChild().getTextContent());
+				continue;
+			} else if ( Format.JSON == summary.getFormat() ) {
+				// we don't test for kind because it isn't sent in this case
+				assertEquals(1, extracted.size());
+				for ( ExtractedItem item : extracted ) {
+					String stringJsonItem = item.getAs(String.class);
+					JsonNode nodeJsonItem = item.getAs(JsonNode.class);
+					if ( nodeJsonItem.has("says") ) {
+						assertEquals("{\"says\":\"woof\"}", stringJsonItem);
+						continue;
+					} 
+					fail("unexpected extracted item:" + stringJsonItem);
+				}
+				continue;
+			}
+			fail("unexpected search result:" + summary.getUri());
+		}
+	}
+	
+	// This test is to verify extract-document-data & extract-path with  selected=include option query
+	@Test
+	public void testExtractDocumentData4() throws Exception {
+		String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
+		String tail = "</search:search>";
+		String qtext4 = "<search:qtext>71 OR dog14</search:qtext>";
+		DocumentManager docMgr = client.newDocumentManager();
+		QueryManager queryMgr = client.newQueryManager();
+		String options = 
+			"<search:options>" +
+				"<search:extract-document-data selected=\"include\">" +
+					"<search:extract-path>//foo</search:extract-path>" +
+					"<search:extract-path>//says</search:extract-path>" +
+				"</search:extract-document-data>" +
+			"</search:options>";
+		// test XML response with extracted XML and JSON matches
+		String combinedSearch = head + qtext4 + options + tail;
+		RawCombinedQueryDefinition rawCombinedQueryDefinition = 
+			queryMgr.newRawCombinedQueryDefinition(new StringHandle(combinedSearch).withMimetype("application/xml"));
+		SearchHandle results = queryMgr.search(rawCombinedQueryDefinition, new SearchHandle());
+		MatchDocumentSummary[] summaries = results.getMatchResults();
+		assertNotNull(summaries);
+		assertEquals(2, summaries.length);
+		for (MatchDocumentSummary summary : summaries) {
+			ExtractedResult extracted = summary.getExtracted();
+			if ( Format.XML == summary.getFormat() ) {
+				// we don't test for kind because it isn't sent in this case
+				assertEquals(1, extracted.size());
+				Document item1 = extracted.next().getAs(Document.class);
+				assertEquals("This is so foo with a bar 71", item1.getFirstChild().getTextContent());
+				continue;
+			} else if ( Format.JSON == summary.getFormat() ) {
+				// we don't test for kind because it isn't sent in this case
+				assertEquals(1, extracted.size());
+				for ( ExtractedItem item : extracted ) {
+					String stringJsonItem = item.getAs(String.class);
+					JsonNode nodeJsonItem = item.getAs(JsonNode.class);
+					if ( nodeJsonItem.has("says") ) {
+						assertEquals("{\"says\":\"woof\"}", stringJsonItem);
+						continue;
+					} 
+					fail("unexpected extracted item:" + stringJsonItem);
+				}
+				continue;
+			}
+			fail("unexpected search result:" + summary.getUri());
+		}
+	}
+	
+	// This test is to verify extract-document-data & extract-path with  selected=all option query
+	@Test
+	public void testExtractDocumentData5() throws Exception {
+		String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
+		String tail = "</search:search>";
+		String qtext4 = "<search:qtext>71 OR dog14</search:qtext>";
+		DocumentManager docMgr = client.newDocumentManager();
+		QueryManager queryMgr = client.newQueryManager();
+		String options = 
+			"<search:options>" +
+				"<search:extract-document-data selected=\"all\">" +
+					"<search:extract-path>//foo</search:extract-path>" +
+					"<search:extract-path>//says</search:extract-path>" +
+				"</search:extract-document-data>" +
+			"</search:options>";
+		// test XML response with extracted XML and JSON matches
+		String combinedSearch = head + qtext4 + options + tail;
+		RawCombinedQueryDefinition rawCombinedQueryDefinition = 
+			queryMgr.newRawCombinedQueryDefinition(new StringHandle(combinedSearch).withMimetype("application/xml"));
+		SearchHandle results = queryMgr.search(rawCombinedQueryDefinition, new SearchHandle());
+		MatchDocumentSummary[] summaries = results.getMatchResults();
+		assertNotNull(summaries);
+		assertEquals(2, summaries.length);
+		for (MatchDocumentSummary summary : summaries) {
+			ExtractedResult extracted = summary.getExtracted();
+			if ( Format.XML == summary.getFormat() ) {
+				// we don't test for kind because it isn't sent in this case
+				assertEquals(1, extracted.size());
+				Document item1 = extracted.next().getAs(Document.class);
+				assertEquals("This is so foo with a bar 71", item1.getFirstChild().getTextContent());
+				continue;
+			} else if ( Format.JSON == summary.getFormat() ) {
+				// we don't test for kind because it isn't sent in this case
+				assertEquals(1, extracted.size());
+				for ( ExtractedItem item : extracted ) {
+					String stringJsonItem = item.getAs(String.class);
+					JsonNode nodeJsonItem = item.getAs(JsonNode.class);
+					if ( nodeJsonItem.has("says") ) {
+						assertEquals("{\"animal\":\"dog14\", \"says\":\"woof\"}", stringJsonItem);
+						continue;
+					} 
+					fail("unexpected extracted item:" + stringJsonItem);
+				}
+				continue;
+			}
+			fail("unexpected search result:" + summary.getUri());
+		}
+	}
+	
 	//This test is to verify RAW JSON structured query
 	@Test
 	public void testBulkSearchRawJSONStrucQD() throws Exception{

@@ -1,0 +1,588 @@
+
+prefix bb: <http://marklogic.com/baseball/players#> 
+prefix bbr: <http://marklogic.com/baseball/rules#> 
+prefix xs: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+
+#bb:pX  bb:playerid "XX"^^xs:integer .
+#bb:XX  bb:lastname     "LASTNAME" .
+#bb:XX  bb:firstname    "FIRSTNAME" .
+#bb:XX  bb:position     "POSITION" .
+#bb:XX  bb:number       "NUMBER"^^xs:integer .
+#bb:XX  bb:team         "Athletics" .
+#bb:XX  bb:birthdate    "1989-10-26"^^xs:date .
+#bb:XX  bb:bats         "right" .
+#bb:XX  bb:throws       "right" .
+#bb:XX  bb:height       "" .
+#bb:XX  bb:weight       "220"^^xs:integer .
+#bb:XXX a       bbr:player .
+#bb:XXX a       bbr:pitcher .
+#bb:XXX a       bbr:starter .
+#bb:XXX a       bbr:setup .
+
+
+# 	Pitchers 	B/T 	Ht 	Wt 	DOB
+#68 	Matt Barnes 	R-R 	6'4" 	205 	Jun 17, 1990
+bb:2301	bb:playerid	"2301"^^xs:integer .
+bb:2301	bb:number	"68"^^xs:integer .
+bb:2301	bb:lastname	"Barnes" .
+bb:2301	bb:firstname	"Matt" .
+bb:2301	bb:position	"pitcher" .
+bb:2301	bb:team	bbr:RedSox .
+bb:2301	bb:bats	"right" .
+bb:2301	bb:throws	"right" .
+bb:2301	bb:weight	"205"^^xs:integer .
+bb:2301	bb:date-of-birth	"1990-06-17"^^xs:date .
+bb:2301	rdf:type		bbr:pitcher .
+bb:2301	rdf:type		bbr:setup .
+
+#66 	Drake Britton 	L-L 	6'2" 	215 	May 22, 1989
+bb:2302	bb:playerid	"2302"^^xs:integer .
+bb:2302	bb:number	"66"^^xs:integer .
+bb:2302	bb:lastname	"Britton" .
+bb:2302	bb:firstname	"Drake" .
+bb:2302	bb:position	"pitcher" .
+bb:2302	bb:team	bbr:RedSox .
+bb:2302	bb:bats	"left" .
+bb:2302	bb:throws	"left" .
+bb:2302	bb:weight	"215"^^xs:integer .
+bb:2302	bb:date-of-birth	"1989-05-22"^^xs:date .
+bb:2302	rdf:type		bbr:pitcher .
+bb:2302	rdf:type		bbr:setup .
+
+#11 	Clay Buchholz 	L-R 	6'3" 	190 	Aug 14, 1984
+bb:2303	bb:playerid	"2303"^^xs:integer .
+bb:2303	bb:number	"11"^^xs:integer .
+bb:2303	bb:lastname	"Buchholz" .
+bb:2303	bb:firstname	"Clay" .
+bb:2303	bb:position	"pitcher" .
+bb:2303	bb:team	bbr:RedSox .
+bb:2303	bb:bats	"left" .
+bb:2303	bb:throws	"right" .
+bb:2303	bb:weight	"190"^^xs:integer .
+bb:2303	bb:date-of-birth	"1984-08-14"^^xs:date .
+bb:2303	rdf:type		bbr:pitcher .
+bb:2303	rdf:type		bbr:setup .
+
+#62 	Rubby De La Rosa 	R-R 	6'1" 	205 	Mar 4, 1989
+bb:2304	bb:playerid	"2304"^^xs:integer .
+bb:2304	bb:number	"62"^^xs:integer .
+bb:2304	bb:lastname	"De La Rosa" .
+bb:2304	bb:firstname	"Rubby" .
+bb:2304	bb:position	"pitcher" .
+bb:2304	bb:team	bbr:RedSox .
+bb:2304	bb:bats	"right" .
+bb:2304	bb:throws	"right" .
+bb:2304	bb:weight	"205"^^xs:integer .
+bb:2304	bb:date-of-birth	"1989-03-04"^^xs:date .
+bb:2304	rdf:type		bbr:pitcher .
+bb:2304	rdf:type		bbr:setup .
+
+#71 	Edwin Escobar 	L-L 	6'1" 	185 	Apr 22, 1992
+bb:2305	bb:playerid	"2305"^^xs:integer .
+bb:2305	bb:number	"71"^^xs:integer .
+bb:2305	bb:lastname	"Escobar" .
+bb:2305	bb:firstname	"Edwin" .
+bb:2305	bb:position	"pitcher" .
+bb:2305	bb:team	bbr:RedSox .
+bb:2305	bb:bats	"left" .
+bb:2305	bb:throws	"left" .
+bb:2305	bb:weight	"185"^^xs:integer .
+bb:2305	bb:date-of-birth	"1992-04-22"^^xs:date .
+bb:2305	rdf:type		bbr:pitcher .
+bb:2305	rdf:type		bbr:setup .
+
+#37 	Heath Hembree 	R-R 	6'4" 	210 	Jan 13, 1989
+bb:2306	bb:playerid	"2306"^^xs:integer .
+bb:2306	bb:number	"37"^^xs:integer .
+bb:2306	bb:lastname	"Hembree" .
+bb:2306	bb:firstname	"Heath" .
+bb:2306	bb:position	"pitcher" .
+bb:2306	bb:team	bbr:RedSox .
+bb:2306	bb:bats	"right" .
+bb:2306	bb:throws	"right" .
+bb:2306	bb:weight	"210"^^xs:integer .
+bb:2306	bb:date-of-birth	"1989-01-13"^^xs:date .
+bb:2306	rdf:type		bbr:pitcher .
+bb:2306	rdf:type		bbr:setup .
+
+#56 	Joe Kelly 	R-R 	6'1" 	175 	Jun 9, 1988
+bb:2307	bb:playerid	"2307"^^xs:integer .
+bb:2307	bb:number	"56"^^xs:integer .
+bb:2307	bb:lastname	"Kelly" .
+bb:2307	bb:firstname	"Joe" .
+bb:2307	bb:position	"pitcher" .
+bb:2307	bb:team	bbr:RedSox .
+bb:2307	bb:bats	"right" .
+bb:2307	bb:throws	"right" .
+bb:2307	bb:weight	"175"^^xs:integer .
+bb:2307	bb:date-of-birth	"1988-06-09"^^xs:date .
+bb:2307	rdf:type		bbr:pitcher .
+bb:2307	rdf:type		bbr:setup .
+
+#59 	Tommy Layne 	L-L 	6'2" 	190 	Nov 2, 1984
+bb:2308	bb:playerid	"2308"^^xs:integer .
+bb:2308	bb:number	"59"^^xs:integer .
+bb:2308	bb:lastname	"Layne" .
+bb:2308	bb:firstname	"Tommy" .
+bb:2308	bb:position	"pitcher" .
+bb:2308	bb:team	bbr:RedSox .
+bb:2308	bb:bats	"left" .
+bb:2308	bb:throws	"left" .
+bb:2308	bb:weight	"190"^^xs:integer .
+bb:2308	bb:date-of-birth	"1984-11-02"^^xs:date .
+bb:2308	rdf:type		bbr:pitcher .
+bb:2308	rdf:type		bbr:setup .
+
+#54 	Edward Mujica 	R-R 	6'3" 	225 	May 10, 1984
+bb:2309	bb:playerid	"2309"^^xs:integer .
+bb:2309	bb:number	"54"^^xs:integer .
+bb:2309	bb:lastname	"Mujica" .
+bb:2309	bb:firstname	"Edward" .
+bb:2309	bb:position	"pitcher" .
+bb:2309	bb:team	bbr:RedSox .
+bb:2309	bb:bats	"right" .
+bb:2309	bb:throws	"right" .
+bb:2309	bb:weight	"225"^^xs:integer .
+bb:2309	bb:date-of-birth	"1984-05-10"^^xs:date .
+bb:2309	rdf:type		bbr:pitcher .
+bb:2309	rdf:type		bbr:setup .
+
+#63 	Anthony Ranaudo 	R-R 	6'7" 	230 	Sep 9, 1989
+bb:2310	bb:playerid	"2310"^^xs:integer .
+bb:2310	bb:number	"63"^^xs:integer .
+bb:2310	bb:lastname	"Ranaudo" .
+bb:2310	bb:firstname	"Anthony" .
+bb:2310	bb:position	"pitcher" .
+bb:2310	bb:team	bbr:RedSox .
+bb:2310	bb:bats	"right" .
+bb:2310	bb:throws	"right" .
+bb:2310	bb:weight	"230"^^xs:integer .
+bb:2310	bb:date-of-birth	"1989-09-09"^^xs:date .
+bb:2310	rdf:type		bbr:pitcher .
+bb:2310	rdf:type		bbr:setup .
+
+#36 	Junichi Tazawa 	R-R 	5'11" 	200 	Jun 6, 1986
+bb:2311	bb:playerid	"2311"^^xs:integer .
+bb:2311	bb:number	"36"^^xs:integer .
+bb:2311	bb:lastname	"Tazawa" .
+bb:2311	bb:firstname	"Junichi" .
+bb:2311	bb:position	"pitcher" .
+bb:2311	bb:team	bbr:RedSox .
+bb:2311	bb:bats	"right" .
+bb:2311	bb:throws	"right" .
+bb:2311	bb:weight	"200"^^xs:integer .
+bb:2311	bb:date-of-birth	"1986-06-06"^^xs:date .
+bb:2311	rdf:type		bbr:pitcher .
+bb:2311	rdf:type		bbr:setup .
+
+#19 	Koji Uehara 	R-R 	6'2" 	195 	Apr 3, 1975
+bb:2312	bb:playerid	"2312"^^xs:integer .
+bb:2312	bb:number	"19"^^xs:integer .
+bb:2312	bb:lastname	"Uehara" .
+bb:2312	bb:firstname	"Koji" .
+bb:2312	bb:position	"pitcher" .
+bb:2312	bb:team	bbr:RedSox .
+bb:2312	bb:bats	"right" .
+bb:2312	bb:throws	"right" .
+bb:2312	bb:weight	"195"^^xs:integer .
+bb:2312	bb:date-of-birth	"1975-04-03"^^xs:date .
+bb:2312	rdf:type		bbr:pitcher .
+bb:2312	rdf:type		bbr:closer .
+
+#64 	Allen Webster 	R-R 	6'2" 	190 	Feb 10, 1990
+bb:2313	bb:playerid	"2313"^^xs:integer .
+bb:2313	bb:number	"64"^^xs:integer .
+bb:2313	bb:lastname	"Webster" .
+bb:2313	bb:firstname	"Allen" .
+bb:2313	bb:position	"pitcher" .
+bb:2313	bb:team	bbr:RedSox .
+bb:2313	bb:bats	"right" .
+bb:2313	bb:throws	"right" .
+bb:2313	bb:weight	"190"^^xs:integer .
+bb:2313	bb:date-of-birth	"1990-02-10"^^xs:date .
+bb:2313	rdf:type		bbr:pitcher .
+bb:2313	rdf:type		bbr:setup .
+
+#30 	Alex Wilson 	R-R 	6'0" 	215 	Nov 3, 1986
+bb:2314	bb:playerid	"2314"^^xs:integer .
+bb:2314	bb:number	"30"^^xs:integer .
+bb:2314	bb:lastname	"Wilson" .
+bb:2314	bb:firstname	"Alex" .
+bb:2314	bb:position	"pitcher" .
+bb:2314	bb:team	bbr:RedSox .
+bb:2314	bb:bats	"right" .
+bb:2314	bb:throws	"right" .
+bb:2314	bb:weight	"215"^^xs:integer .
+bb:2314	bb:date-of-birth	"1986-11-03"^^xs:date .
+bb:2314	rdf:type		bbr:pitcher .
+bb:2314	rdf:type		bbr:setup .
+
+#67 	Brandon Workman 	R-R 	6'5" 	225 	Aug 13, 1988
+bb:2315	bb:playerid	"2315"^^xs:integer .
+bb:2315	bb:number	"67"^^xs:integer .
+bb:2315	bb:lastname	"Workman" .
+bb:2315	bb:firstname	"Brandon" .
+bb:2315	bb:position	"pitcher" .
+bb:2315	bb:team	bbr:RedSox .
+bb:2315	bb:bats	"right" .
+bb:2315	bb:throws	"right" .
+bb:2315	bb:weight	"225"^^xs:integer .
+bb:2315	bb:date-of-birth	"1988-08-13"^^xs:date .
+bb:2315	rdf:type		bbr:pitcher .
+bb:2315	rdf:type		bbr:setup .
+
+#65 	Steven Wright 	R-R 	6'1" 	220 	Aug 30, 1984
+bb:2316	bb:playerid	"2316"^^xs:integer .
+bb:2316	bb:number	"65"^^xs:integer .
+bb:2316	bb:lastname	"Wright" .
+bb:2316	bb:firstname	"Steven" .
+bb:2316	bb:position	"pitcher" .
+bb:2316	bb:team	bbr:RedSox .
+bb:2316	bb:bats	"right" .
+bb:2316	bb:throws	"right" .
+bb:2316	bb:weight	"220"^^xs:integer .
+bb:2316	bb:date-of-birth	"1984-08-30"^^xs:date .
+bb:2316	rdf:type		bbr:pitcher .
+bb:2316	rdf:type		bbr:setup .
+
+# 	Catchers 	B/T 	Ht 	Wt 	DOB
+#61 	Dan Butler 	R-R 	5'10" 	210 	Oct 17, 1986
+bb:2317	bb:playerid	"2317"^^xs:integer .
+bb:2317	bb:number	"61"^^xs:integer .
+bb:2317	bb:lastname	"Butler" .
+bb:2317	bb:firstname	"Dan" .
+bb:2317	bb:position	"catcher" .
+bb:2317	bb:team	bbr:RedSox .
+bb:2317	bb:bats	"right" .
+bb:2317	bb:throws	"right" .
+bb:2317	bb:weight	"210"^^xs:integer .
+bb:2317	bb:date-of-birth	"1986-10-17"^^xs:date .
+bb:2317	rdf:type		bbr:catcher .
+
+#20 	Ryan Lavarnway 	R-R 	6'4" 	240 	Aug 7, 1987
+bb:2318	bb:playerid	"2318"^^xs:integer .
+bb:2318	bb:number	"20"^^xs:integer .
+bb:2318	bb:lastname	"Lavarnway" .
+bb:2318	bb:firstname	"Ryan" .
+bb:2318	bb:position	"catcher" .
+bb:2318	bb:team	bbr:RedSox .
+bb:2318	bb:bats	"right" .
+bb:2318	bb:throws	"right" .
+bb:2318	bb:weight	"240"^^xs:integer .
+bb:2318	bb:date-of-birth	"1987-08-07"^^xs:date .
+bb:2318	rdf:type		bbr:catcher .
+
+#55 	Christian Vazquez 	R-R 	5'9" 	195 	Aug 21, 1990
+bb:2319	bb:playerid	"2319"^^xs:integer .
+bb:2319	bb:number	"55"^^xs:integer .
+bb:2319	bb:lastname	"Vazquez" .
+bb:2319	bb:firstname	"Christian" .
+bb:2319	bb:position	"catcher" .
+bb:2319	bb:team	bbr:RedSox .
+bb:2319	bb:bats	"right" .
+bb:2319	bb:throws	"right" .
+bb:2319	bb:weight	"195"^^xs:integer .
+bb:2319	bb:date-of-birth	"1990-08-21"^^xs:date .
+bb:2319	rdf:type		bbr:catcher .
+
+# 	Infielders 	B/T 	Ht 	Wt 	DOB
+#50 	Mookie Betts 	R-R 	5'9" 	155 	Oct 7, 1992
+bb:2320	bb:playerid	"2320"^^xs:integer .
+bb:2320	bb:number	"50"^^xs:integer .
+bb:2320	bb:lastname	"Betts" .
+bb:2320	bb:firstname	"Mookie" .
+bb:2320	bb:position	"infielder" .
+bb:2320	bb:team	bbr:RedSox .
+bb:2320	bb:bats	"right" .
+bb:2320	bb:throws	"right" .
+bb:2320	bb:weight	"155"^^xs:integer .
+bb:2320	bb:date-of-birth	"1992-10-07"^^xs:date .
+bb:2320	rdf:type		bbr:infielder .
+
+#2 	Xander Bogaerts 	R-R 	6'1" 	210 	Oct 1, 1992
+bb:2321	bb:playerid	"2321"^^xs:integer .
+bb:2321	bb:number	"2"^^xs:integer .
+bb:2321	bb:lastname	"Bogaerts" .
+bb:2321	bb:firstname	"Xander" .
+bb:2321	bb:position	"infielder" .
+bb:2321	bb:team	bbr:RedSox .
+bb:2321	bb:bats	"right" .
+bb:2321	bb:throws	"right" .
+bb:2321	bb:weight	"210"^^xs:integer .
+bb:2321	bb:date-of-birth	"1992-10-01"^^xs:date .
+bb:2321	rdf:type		bbr:infielder .
+
+#70 	Garin Cecchini 	L-R 	6'3" 	220 	Apr 20, 1991
+bb:2322	bb:playerid	"2322"^^xs:integer .
+bb:2322	bb:number	"70"^^xs:integer .
+bb:2322	bb:lastname	"Cecchini" .
+bb:2322	bb:firstname	"Garin" .
+bb:2322	bb:position	"infielder" .
+bb:2322	bb:team	bbr:RedSox .
+bb:2322	bb:bats	"left" .
+bb:2322	bb:throws	"right" .
+bb:2322	bb:weight	"220"^^xs:integer .
+bb:2322	bb:date-of-birth	"1991-04-20"^^xs:date .
+bb:2322	rdf:type		bbr:infielder .
+
+#26 	Brock Holt 	L-R 	5'10" 	185 	Jun 11, 1988
+bb:2323	bb:playerid	"2323"^^xs:integer .
+bb:2323	bb:number	"26"^^xs:integer .
+bb:2323	bb:lastname	"Holt" .
+bb:2323	bb:firstname	"Brock" .
+bb:2323	bb:position	"infielder" .
+bb:2323	bb:team	bbr:RedSox .
+bb:2323	bb:bats	"left" .
+bb:2323	bb:throws	"right" .
+bb:2323	bb:weight	"185"^^xs:integer .
+bb:2323	bb:date-of-birth	"1988-06-11"^^xs:date .
+bb:2323	rdf:type		bbr:infielder .
+
+#16 	Will Middlebrooks 	R-R 	6'3" 	220 	Sep 9, 1988
+bb:2324	bb:playerid	"2324"^^xs:integer .
+bb:2324	bb:number	"16"^^xs:integer .
+bb:2324	bb:lastname	"Middlebrooks" .
+bb:2324	bb:firstname	"Will" .
+bb:2324	bb:position	"infielder" .
+bb:2324	bb:team	bbr:RedSox .
+bb:2324	bb:bats	"right" .
+bb:2324	bb:throws	"right" .
+bb:2324	bb:weight	"220"^^xs:integer .
+bb:2324	bb:date-of-birth	"1988-09-09"^^xs:date .
+bb:2324	rdf:type		bbr:infielder .
+
+#12 	Mike Napoli 	R-R 	6'0" 	220 	Oct 31, 1981
+bb:2325	bb:playerid	"2325"^^xs:integer .
+bb:2325	bb:number	"12"^^xs:integer .
+bb:2325	bb:lastname	"Napoli" .
+bb:2325	bb:firstname	"Mike" .
+bb:2325	bb:position	"infielder" .
+bb:2325	bb:team	bbr:RedSox .
+bb:2325	bb:bats	"right" .
+bb:2325	bb:throws	"right" .
+bb:2325	bb:weight	"220"^^xs:integer .
+bb:2325	bb:date-of-birth	"1981-10-31"^^xs:date .
+bb:2325	rdf:type		bbr:infielder .
+
+#15 	Dustin Pedroia 	R-R 	5'8" 	165 	Aug 17, 1983
+bb:2326	bb:playerid	"2326"^^xs:integer .
+bb:2326	bb:number	"15"^^xs:integer .
+bb:2326	bb:lastname	"Pedroia" .
+bb:2326	bb:firstname	"Dustin" .
+bb:2326	bb:position	"infielder" .
+bb:2326	bb:team	bbr:RedSox .
+bb:2326	bb:bats	"right" .
+bb:2326	bb:throws	"right" .
+bb:2326	bb:weight	"165"^^xs:integer .
+bb:2326	bb:date-of-birth	"1983-08-17"^^xs:date .
+bb:2326	rdf:type		bbr:infielder .
+
+#7 	Jemile Weeks 	S-R 	5'9" 	165 	Jan 26, 1987
+bb:2327	bb:playerid	"2327"^^xs:integer .
+bb:2327	bb:number	"7"^^xs:integer .
+bb:2327	bb:lastname	"Weeks" .
+bb:2327	bb:firstname	"Jemile" .
+bb:2327	bb:position	"infielder" .
+bb:2327	bb:team	bbr:RedSox .
+bb:2327	bb:bats	"switch" .
+bb:2327	bb:throws	"right" .
+bb:2327	bb:weight	"165"^^xs:integer .
+bb:2327	bb:date-of-birth	"1987-01-26"^^xs:date .
+bb:2327	rdf:type		bbr:infielder .
+
+# 	Outfielders 	B/T 	Ht 	Wt 	DOB
+#25 	Jackie Bradley Jr. 	L-R 	5'10" 	195 	Apr 19, 1990
+bb:2328	bb:playerid	"2328"^^xs:integer .
+bb:2328	bb:number	"25"^^xs:integer .
+bb:2328	bb:lastname	"Bradley Jr." .
+bb:2328	bb:firstname	"Jackie" .
+bb:2328	bb:position	"outfielder" .
+bb:2328	bb:team	bbr:RedSox .
+bb:2328	bb:bats	"left" .
+bb:2328	bb:throws	"right" .
+bb:2328	bb:weight	"195"^^xs:integer .
+bb:2328	bb:date-of-birth	"1990-04-19"^^xs:date .
+bb:2328	rdf:type		bbr:outfielder .
+
+#73 	Bryce Brentz 	R-R 	6'0" 	210 	Dec 30, 1988
+bb:2329	bb:playerid	"2329"^^xs:integer .
+bb:2329	bb:number	"73"^^xs:integer .
+bb:2329	bb:lastname	"Brentz" .
+bb:2329	bb:firstname	"Bryce" .
+bb:2329	bb:position	"outfielder" .
+bb:2329	bb:team	bbr:RedSox .
+bb:2329	bb:bats	"right" .
+bb:2329	bb:throws	"right" .
+bb:2329	bb:weight	"210"^^xs:integer .
+bb:2329	bb:date-of-birth	"1988-12-30"^^xs:date .
+bb:2329	rdf:type		bbr:outfielder .
+
+#38 	Rusney Castillo 	R-R 	5'8" 	186 	Sep 7, 1987
+bb:2330	bb:playerid	"2330"^^xs:integer .
+bb:2330	bb:number	"38"^^xs:integer .
+bb:2330	bb:lastname	"Castillo" .
+bb:2330	bb:firstname	"Rusney" .
+bb:2330	bb:position	"outfielder" .
+bb:2330	bb:team	bbr:RedSox .
+bb:2330	bb:bats	"right" .
+bb:2330	bb:throws	"right" .
+bb:2330	bb:weight	"186"^^xs:integer .
+bb:2330	bb:date-of-birth	"1987-09-07"^^xs:date .
+bb:2330	rdf:type		bbr:outfielder .
+
+#52 	Yoenis Cespedes 	R-R 	5'10" 	210 	Oct 18, 1985
+bb:2331	bb:playerid	"2331"^^xs:integer .
+bb:2331	bb:number	"52"^^xs:integer .
+bb:2331	bb:lastname	"Cespedes" .
+bb:2331	bb:firstname	"Yoenis" .
+bb:2331	bb:position	"outfielder" .
+bb:2331	bb:team	bbr:RedSox .
+bb:2331	bb:bats	"right" .
+bb:2331	bb:throws	"right" .
+bb:2331	bb:weight	"210"^^xs:integer .
+bb:2331	bb:date-of-birth	"1985-10-18"^^xs:date .
+bb:2331	rdf:type		bbr:outfielder .
+
+#5 	Allen Craig 	R-R 	6'2" 	215 	Jul 18, 1984
+bb:2332	bb:playerid	"2332"^^xs:integer .
+bb:2332	bb:number	"5"^^xs:integer .
+bb:2332	bb:lastname	"Craig" .
+bb:2332	bb:firstname	"Allen" .
+bb:2332	bb:position	"outfielder" .
+bb:2332	bb:team	bbr:RedSox .
+bb:2332	bb:bats	"right" .
+bb:2332	bb:throws	"right" .
+bb:2332	bb:weight	"215"^^xs:integer .
+bb:2332	bb:date-of-birth	"1984-07-18"^^xs:date .
+bb:2332	rdf:type		bbr:outfielder .
+
+#68 	Alex Hassan 	R-R 	6'3" 	220 	Apr 1, 1988
+bb:2333	bb:playerid	"2333"^^xs:integer .
+bb:2333	bb:number	"68"^^xs:integer .
+bb:2333	bb:lastname	"Hassan" .
+bb:2333	bb:firstname	"Alex" .
+bb:2333	bb:position	"outfielder" .
+bb:2333	bb:team	bbr:RedSox .
+bb:2333	bb:bats	"right" .
+bb:2333	bb:throws	"right" .
+bb:2333	bb:weight	"220"^^xs:integer .
+bb:2333	bb:date-of-birth	"1988-04-01"^^xs:date .
+bb:2333	rdf:type		bbr:outfielder .
+
+#29 	Daniel Nava 	S-L 	5'11" 	200 	Feb 22, 1983
+bb:2334	bb:playerid	"2334"^^xs:integer .
+bb:2334	bb:number	"29"^^xs:integer .
+bb:2334	bb:lastname	"Nava" .
+bb:2334	bb:firstname	"Daniel" .
+bb:2334	bb:position	"outfielder" .
+bb:2334	bb:team	bbr:RedSox .
+bb:2334	bb:bats	"switch" .
+bb:2334	bb:throws	"left" .
+bb:2334	bb:weight	"200"^^xs:integer .
+bb:2334	bb:date-of-birth	"1983-02-22"^^xs:date .
+bb:2334	rdf:type		bbr:outfielder .
+
+#18 	Shane Victorino 	R-R 	5'9" 	190 	Nov 30, 1980
+bb:2335	bb:playerid	"2335"^^xs:integer .
+bb:2335	bb:number	"18"^^xs:integer .
+bb:2335	bb:lastname	"Victorino" .
+bb:2335	bb:firstname	"Shane" .
+bb:2335	bb:position	"outfielder" .
+bb:2335	bb:team	bbr:RedSox .
+bb:2335	bb:bats	"right" .
+bb:2335	bb:throws	"right" .
+bb:2335	bb:weight	"190"^^xs:integer .
+bb:2335	bb:date-of-birth	"1980-11-30"^^xs:date .
+bb:2335	rdf:type		bbr:outfielder .
+
+# 	Designated Hitter 	B/T 	Ht 	Wt 	DOB
+#34 	David Ortiz 	L-L 	6'4" 	230 	Nov 18, 1975
+bb:2336	bb:playerid	"2336"^^xs:integer .
+bb:2336	bb:number	"34"^^xs:integer .
+bb:2336	bb:lastname	"Ortiz" .
+bb:2336	bb:firstname	"David" .
+bb:2336	bb:position	"unknown" .
+bb:2336	bb:team	bbr:RedSox .
+bb:2336	bb:bats	"left" .
+bb:2336	bb:throws	"left" .
+bb:2336	bb:weight	"230"^^xs:integer .
+bb:2336	bb:date-of-birth	"1975-11-18"^^xs:date .
+bb:2336	rdf:type		bbr:unknown .
+
+#	Manager	John Farrell
+bb:2357	bb:lastname	"Farrell" .
+bb:2357	bb:firstname	"John" .
+bb:2357	bb:position	"manager" .
+bb:2357	bb:team	bbr:RedSox .
+bb:2357	bb:number	"53"^^xs:integer .
+bb:2357	bbr:coachingRole		bbr:manager .
+
+#	Coach	Torey Lovullo
+bb:2358	bb:lastname	"Lovullo" .
+bb:2358	bb:firstname	"Torey" .
+bb:2358	bb:position	"coach" .
+bb:2358	bb:number	"17"^^xs:integer .
+bb:2358	bb:team	bbr:RedSox .
+bb:2358	bbr:coachingRole		bbr:benchCoach .
+
+#	Coach	Chili Davis
+bb:2359	bb:lastname	"Davis" .
+bb:2359	bb:firstname	"Chili" .
+bb:2359	bb:position	"coach" .
+bb:2359	bb:number	"100"^^xs:integer .
+bb:2359	bb:team	bbr:RedSox .
+bb:2359	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Victor Rodriguez
+bb:2360	bb:lastname	"Rodriguez" .
+bb:2360	bb:firstname	"Victor" .
+bb:2360	bb:position	"coach" .
+bb:2360	bb:number	"57"^^xs:integer .
+bb:2360	bb:team	bbr:RedSox .
+bb:2360	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Arnie Beyeler
+bb:2361	bb:lastname	"Beyeler" .
+bb:2361	bb:firstname	"Arnie" .
+bb:2361	bb:position	"coach" .
+bb:2361	bb:number	"43"^^xs:integer .
+bb:2361	bb:team	bbr:RedSox .
+bb:2361	bbr:coachingRole		bbr:firstBaseCoach .
+
+#	Coach	Brian Butterfield
+bb:2362	bb:lastname	"Butterfield" .
+bb:2362	bb:firstname	"Brian" .
+bb:2362	bb:position	"coach" .
+bb:2362	bb:number	"13"^^xs:integer .
+bb:2362	bb:team	bbr:RedSox .
+bb:2362	bbr:coachingRole		bbr:thirdBaseCoach .
+
+#	Coach	Juan Nieves
+bb:2363	bb:lastname	"Nieves" .
+bb:2363	bb:firstname	"Juan" .
+bb:2363	bb:position	"coach" .
+bb:2363	bb:number	"47"^^xs:integer .
+bb:2363	bb:team	bbr:RedSox .
+bb:2363	bbr:coachingRole		bbr:pitchingCoach .
+
+#	Coach	Dana LeVangie
+bb:2364	bb:lastname	"LeVangie" .
+bb:2364	bb:firstname	"Dana" .
+bb:2364	bb:position	"coach" .
+bb:2364	bb:number	"58"^^xs:integer .
+bb:2364	bb:team	bbr:RedSox .
+bb:2364	bbr:coachingRole		bbr:bullpenCoach .
+
+#	Coach	FIRSTNAME LASTNAME
+bb:2365	bb:lastname	"LASTNAME" .
+bb:2365	bb:firstname	"FIRSTNAME" .
+bb:2365	bb:position	"coach" .
+bb:2365	bb:number	"100"^^xs:integer .
+bb:2365	bb:team	bbr:RedSox .
+bb:2365	bbr:coachingRole		bbr:bullpenCatcher .
+
+
+

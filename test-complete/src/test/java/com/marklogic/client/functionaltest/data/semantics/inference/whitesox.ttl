@@ -1,0 +1,587 @@
+
+prefix bb: <http://marklogic.com/baseball/players#> 
+prefix bbr: <http://marklogic.com/baseball/rules#> 
+prefix xs: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+
+#bb:pX  bb:playerid "XX"^^xs:integer .
+#bb:XX  bb:lastname     "LASTNAME" .
+#bb:XX  bb:firstname    "FIRSTNAME" .
+#bb:XX  bb:position     "POSITION" .
+#bb:XX  bb:number       "NUMBER"^^xs:integer .
+#bb:XX  bb:team         "Athletics" .
+#bb:XX  bb:birthdate    "1989-10-26"^^xs:date .
+#bb:XX  bb:bats         "right" .
+#bb:XX  bb:throws       "right" .
+#bb:XX  bb:height       "" .
+#bb:XX  bb:weight       "220"^^xs:integer .
+#bb:XXX a       bbr:player .
+#bb:XXX a       bbr:pitcher .
+#bb:XXX a       bbr:starter .
+#bb:XXX a       bbr:setup .
+
+
+# 	Pitchers 	B/T 	Ht 	Wt 	DOB
+#61 	Chris Bassitt 	R-R 	6'5" 	210 	Feb 22, 1989
+bb:2801	bb:playerid	"2801"^^xs:integer .
+bb:2801	bb:number	"61"^^xs:integer .
+bb:2801	bb:lastname	"Bassitt" .
+bb:2801	bb:firstname	"Chris" .
+bb:2801	bb:position	"pitcher" .
+bb:2801	bb:team	bbr:WhiteSox .
+bb:2801	bb:bats	"right" .
+bb:2801	bb:throws	"right" .
+bb:2801	bb:weight	"210"^^xs:integer .
+bb:2801	bb:date-of-birth	"1989-02-22"^^xs:date .
+bb:2801	rdf:type		bbr:pitcher .
+bb:2801	rdf:type		bbr:setup .
+
+#54 	Ronald Belisario 	R-R 	6'3" 	240 	Dec 31, 1982
+bb:2802	bb:playerid	"2802"^^xs:integer .
+bb:2802	bb:number	"54"^^xs:integer .
+bb:2802	bb:lastname	"Belisario" .
+bb:2802	bb:firstname	"Ronald" .
+bb:2802	bb:position	"pitcher" .
+bb:2802	bb:team	bbr:WhiteSox .
+bb:2802	bb:bats	"right" .
+bb:2802	bb:throws	"right" .
+bb:2802	bb:weight	"240"^^xs:integer .
+bb:2802	bb:date-of-birth	"1982-12-31"^^xs:date .
+bb:2802	rdf:type		bbr:pitcher .
+bb:2802	rdf:type		bbr:setup .
+
+#67 	Scott Carroll 	R-R 	6'4" 	215 	Sep 24, 1984
+bb:2803	bb:playerid	"2803"^^xs:integer .
+bb:2803	bb:number	"67"^^xs:integer .
+bb:2803	bb:lastname	"Carroll" .
+bb:2803	bb:firstname	"Scott" .
+bb:2803	bb:position	"pitcher" .
+bb:2803	bb:team	bbr:WhiteSox .
+bb:2803	bb:bats	"right" .
+bb:2803	bb:throws	"right" .
+bb:2803	bb:weight	"215"^^xs:integer .
+bb:2803	bb:date-of-birth	"1984-09-24"^^xs:date .
+bb:2803	rdf:type		bbr:pitcher .
+bb:2803	rdf:type		bbr:setup .
+
+#39 	Maikel Cleto 	R-R 	6'3" 	250 	May 1, 1989
+bb:2804	bb:playerid	"2804"^^xs:integer .
+bb:2804	bb:number	"39"^^xs:integer .
+bb:2804	bb:lastname	"Cleto" .
+bb:2804	bb:firstname	"Maikel" .
+bb:2804	bb:position	"pitcher" .
+bb:2804	bb:team	bbr:WhiteSox .
+bb:2804	bb:bats	"right" .
+bb:2804	bb:throws	"right" .
+bb:2804	bb:weight	"250"^^xs:integer .
+bb:2804	bb:date-of-birth	"1989-05-01"^^xs:date .
+bb:2804	rdf:type		bbr:pitcher .
+bb:2804	rdf:type		bbr:setup .
+
+#50 	John Danks 	L-L 	6'1" 	210 	Apr 15, 1985
+bb:2805	bb:playerid	"2805"^^xs:integer .
+bb:2805	bb:number	"50"^^xs:integer .
+bb:2805	bb:lastname	"Danks" .
+bb:2805	bb:firstname	"John" .
+bb:2805	bb:position	"pitcher" .
+bb:2805	bb:team	bbr:WhiteSox .
+bb:2805	bb:bats	"left" .
+bb:2805	bb:throws	"left" .
+bb:2805	bb:weight	"210"^^xs:integer .
+bb:2805	bb:date-of-birth	"1985-04-15"^^xs:date .
+bb:2805	rdf:type		bbr:pitcher .
+bb:2805	rdf:type		bbr:setup .
+
+#	Raul Fernandez 	R-R 	6'2" 	180 	Jun 22, 1990
+bb:2806	bb:playerid	"2806"^^xs:integer .
+bb:2806	bb:lastname	"Fernandez" .
+bb:2806	bb:firstname	"Raul" .
+bb:2806	bb:position	"pitcher" .
+bb:2806	bb:team	bbr:WhiteSox .
+bb:2806	bb:bats	"right" .
+bb:2806	bb:throws	"right" .
+bb:2806	bb:weight	"180"^^xs:integer .
+bb:2806	bb:date-of-birth	"1990-06-22"^^xs:date .
+bb:2806	rdf:type		bbr:pitcher .
+bb:2806	rdf:type		bbr:setup .
+
+#41 	Javy Guerra 	R-R 	6'1" 	190 	Oct 31, 1985
+bb:2807	bb:playerid	"2807"^^xs:integer .
+bb:2807	bb:number	"41"^^xs:integer .
+bb:2807	bb:lastname	"Guerra" .
+bb:2807	bb:firstname	"Javy" .
+bb:2807	bb:position	"pitcher" .
+bb:2807	bb:team	bbr:WhiteSox .
+bb:2807	bb:bats	"right" .
+bb:2807	bb:throws	"right" .
+bb:2807	bb:weight	"190"^^xs:integer .
+bb:2807	bb:date-of-birth	"1985-10-31"^^xs:date .
+bb:2807	rdf:type		bbr:pitcher .
+bb:2807	rdf:type		bbr:setup .
+
+#45 	Erik Johnson 	R-R 	6'3" 	230 	Dec 30, 1989
+bb:2808	bb:playerid	"2808"^^xs:integer .
+bb:2808	bb:number	"45"^^xs:integer .
+bb:2808	bb:lastname	"Johnson" .
+bb:2808	bb:firstname	"Erik" .
+bb:2808	bb:position	"pitcher" .
+bb:2808	bb:team	bbr:WhiteSox .
+bb:2808	bb:bats	"right" .
+bb:2808	bb:throws	"right" .
+bb:2808	bb:weight	"230"^^xs:integer .
+bb:2808	bb:date-of-birth	"1989-12-30"^^xs:date .
+bb:2808	rdf:type		bbr:pitcher .
+bb:2808	rdf:type		bbr:setup .
+
+#65 	Nate Jones 	R-R 	6'5" 	220 	Jan 28, 1986
+bb:2809	bb:playerid	"2809"^^xs:integer .
+bb:2809	bb:number	"65"^^xs:integer .
+bb:2809	bb:lastname	"Jones" .
+bb:2809	bb:firstname	"Nate" .
+bb:2809	bb:position	"pitcher" .
+bb:2809	bb:team	bbr:WhiteSox .
+bb:2809	bb:bats	"right" .
+bb:2809	bb:throws	"right" .
+bb:2809	bb:weight	"220"^^xs:integer .
+bb:2809	bb:date-of-birth	"1986-01-28"^^xs:date .
+bb:2809	rdf:type		bbr:pitcher .
+bb:2809	rdf:type		bbr:setup .
+
+#48 	Hector Noesi 	R-R 	6'3" 	205 	Jan 26, 1987
+bb:2810	bb:playerid	"2810"^^xs:integer .
+bb:2810	bb:number	"48"^^xs:integer .
+bb:2810	bb:lastname	"Noesi" .
+bb:2810	bb:firstname	"Hector" .
+bb:2810	bb:position	"pitcher" .
+bb:2810	bb:team	bbr:WhiteSox .
+bb:2810	bb:bats	"right" .
+bb:2810	bb:throws	"right" .
+bb:2810	bb:weight	"205"^^xs:integer .
+bb:2810	bb:date-of-birth	"1987-01-26"^^xs:date .
+bb:2810	rdf:type		bbr:pitcher .
+bb:2810	rdf:type		bbr:setup .
+
+#52 	Jake Petricka 	R-R 	6'5" 	205 	Jun 5, 1988
+bb:2811	bb:playerid	"2811"^^xs:integer .
+bb:2811	bb:number	"52"^^xs:integer .
+bb:2811	bb:lastname	"Petricka" .
+bb:2811	bb:firstname	"Jake" .
+bb:2811	bb:position	"pitcher" .
+bb:2811	bb:team	bbr:WhiteSox .
+bb:2811	bb:bats	"right" .
+bb:2811	bb:throws	"right" .
+bb:2811	bb:weight	"205"^^xs:integer .
+bb:2811	bb:date-of-birth	"1988-06-05"^^xs:date .
+bb:2811	rdf:type		bbr:pitcher .
+bb:2811	rdf:type		bbr:setup .
+
+#57 	Zach Putnam 	R-R 	6'2" 	225 	Jul 3, 1987
+bb:2812	bb:playerid	"2812"^^xs:integer .
+bb:2812	bb:number	"57"^^xs:integer .
+bb:2812	bb:lastname	"Putnam" .
+bb:2812	bb:firstname	"Zach" .
+bb:2812	bb:position	"pitcher" .
+bb:2812	bb:team	bbr:WhiteSox .
+bb:2812	bb:bats	"right" .
+bb:2812	bb:throws	"right" .
+bb:2812	bb:weight	"225"^^xs:integer .
+bb:2812	bb:date-of-birth	"1987-07-03"^^xs:date .
+bb:2812	rdf:type		bbr:pitcher .
+bb:2812	rdf:type		bbr:setup .
+
+#62 	Jose Quintana 	R-L 	6'1" 	220 	Jan 24, 1989
+bb:2813	bb:playerid	"2813"^^xs:integer .
+bb:2813	bb:number	"62"^^xs:integer .
+bb:2813	bb:lastname	"Quintana" .
+bb:2813	bb:firstname	"Jose" .
+bb:2813	bb:position	"pitcher" .
+bb:2813	bb:team	bbr:WhiteSox .
+bb:2813	bb:bats	"right" .
+bb:2813	bb:throws	"left" .
+bb:2813	bb:weight	"220"^^xs:integer .
+bb:2813	bb:date-of-birth	"1989-01-24"^^xs:date .
+bb:2813	rdf:type		bbr:pitcher .
+bb:2813	rdf:type		bbr:setup .
+
+#64 	Andre Rienzo 	R-R 	6'3" 	190 	Jul 5, 1988
+bb:2814	bb:playerid	"2814"^^xs:integer .
+bb:2814	bb:number	"64"^^xs:integer .
+bb:2814	bb:lastname	"Rienzo" .
+bb:2814	bb:firstname	"Andre" .
+bb:2814	bb:position	"pitcher" .
+bb:2814	bb:team	bbr:WhiteSox .
+bb:2814	bb:bats	"right" .
+bb:2814	bb:throws	"right" .
+bb:2814	bb:weight	"190"^^xs:integer .
+bb:2814	bb:date-of-birth	"1988-07-05"^^xs:date .
+bb:2814	rdf:type		bbr:pitcher .
+bb:2814	rdf:type		bbr:setup .
+
+#49 	Chris Sale 	L-L 	6'6" 	180 	Mar 30, 1989
+bb:2815	bb:playerid	"2815"^^xs:integer .
+bb:2815	bb:number	"49"^^xs:integer .
+bb:2815	bb:lastname	"Sale" .
+bb:2815	bb:firstname	"Chris" .
+bb:2815	bb:position	"pitcher" .
+bb:2815	bb:team	bbr:WhiteSox .
+bb:2815	bb:bats	"left" .
+bb:2815	bb:throws	"left" .
+bb:2815	bb:weight	"180"^^xs:integer .
+bb:2815	bb:date-of-birth	"1989-03-30"^^xs:date .
+bb:2815	rdf:type		bbr:pitcher .
+bb:2815	rdf:type		bbr:setup .
+
+#68 	Scott Snodgress 	L-L 	6'6" 	225 	Sep 20, 1989
+bb:2816	bb:playerid	"2816"^^xs:integer .
+bb:2816	bb:number	"68"^^xs:integer .
+bb:2816	bb:lastname	"Snodgress" .
+bb:2816	bb:firstname	"Scott" .
+bb:2816	bb:position	"pitcher" .
+bb:2816	bb:team	bbr:WhiteSox .
+bb:2816	bb:bats	"left" .
+bb:2816	bb:throws	"left" .
+bb:2816	bb:weight	"225"^^xs:integer .
+bb:2816	bb:date-of-birth	"1989-09-20"^^xs:date .
+bb:2816	rdf:type		bbr:pitcher .
+bb:2816	rdf:type		bbr:setup .
+
+#53 	Eric Surkamp 	L-L 	6'5" 	220 	Jul 16, 1987
+bb:2817	bb:playerid	"2817"^^xs:integer .
+bb:2817	bb:number	"53"^^xs:integer .
+bb:2817	bb:lastname	"Surkamp" .
+bb:2817	bb:firstname	"Eric" .
+bb:2817	bb:position	"pitcher" .
+bb:2817	bb:team	bbr:WhiteSox .
+bb:2817	bb:bats	"left" .
+bb:2817	bb:throws	"left" .
+bb:2817	bb:weight	"220"^^xs:integer .
+bb:2817	bb:date-of-birth	"1987-07-16"^^xs:date .
+bb:2817	rdf:type		bbr:pitcher .
+bb:2817	rdf:type		bbr:setup .
+
+#40 	Daniel Webb 	R-R 	6'3" 	215 	Aug 18, 1989
+bb:2818	bb:playerid	"2818"^^xs:integer .
+bb:2818	bb:number	"40"^^xs:integer .
+bb:2818	bb:lastname	"Webb" .
+bb:2818	bb:firstname	"Daniel" .
+bb:2818	bb:position	"pitcher" .
+bb:2818	bb:team	bbr:WhiteSox .
+bb:2818	bb:bats	"right" .
+bb:2818	bb:throws	"right" .
+bb:2818	bb:weight	"215"^^xs:integer .
+bb:2818	bb:date-of-birth	"1989-08-18"^^xs:date .
+bb:2818	rdf:type		bbr:pitcher .
+bb:2818	rdf:type		bbr:setup .
+
+# 	Catchers 	B/T 	Ht 	Wt 	DOB
+#21 	Tyler Flowers 	R-R 	6'4" 	245 	Jan 24, 1986
+bb:2819	bb:playerid	"2819"^^xs:integer .
+bb:2819	bb:number	"21"^^xs:integer .
+bb:2819	bb:lastname	"Flowers" .
+bb:2819	bb:firstname	"Tyler" .
+bb:2819	bb:position	"catcher" .
+bb:2819	bb:team	bbr:WhiteSox .
+bb:2819	bb:bats	"right" .
+bb:2819	bb:throws	"right" .
+bb:2819	bb:weight	"245"^^xs:integer .
+bb:2819	bb:date-of-birth	"1986-01-24"^^xs:date .
+bb:2819	rdf:type		bbr:catcher .
+
+#17 	Adrian Nieto 	S-R 	6'0" 	200 	Nov 12, 1989
+bb:2820	bb:playerid	"2820"^^xs:integer .
+bb:2820	bb:number	"17"^^xs:integer .
+bb:2820	bb:lastname	"Nieto" .
+bb:2820	bb:firstname	"Adrian" .
+bb:2820	bb:position	"catcher" .
+bb:2820	bb:team	bbr:WhiteSox .
+bb:2820	bb:bats	"switch" .
+bb:2820	bb:throws	"right" .
+bb:2820	bb:weight	"200"^^xs:integer .
+bb:2820	bb:date-of-birth	"1989-11-12"^^xs:date .
+bb:2820	rdf:type		bbr:catcher .
+
+#36 	Josh Phegley 	R-R 	5'10" 	225 	Feb 12, 1988
+bb:2821	bb:playerid	"2821"^^xs:integer .
+bb:2821	bb:number	"36"^^xs:integer .
+bb:2821	bb:lastname	"Phegley" .
+bb:2821	bb:firstname	"Josh" .
+bb:2821	bb:position	"catcher" .
+bb:2821	bb:team	bbr:WhiteSox .
+bb:2821	bb:bats	"right" .
+bb:2821	bb:throws	"right" .
+bb:2821	bb:weight	"225"^^xs:integer .
+bb:2821	bb:date-of-birth	"1988-02-12"^^xs:date .
+bb:2821	rdf:type		bbr:catcher .
+
+# 	Infielders 	B/T 	Ht 	Wt 	DOB
+#79 	Jose Abreu 	R-R 	6'3" 	255 	Jan 29, 1987
+bb:2822	bb:playerid	"2822"^^xs:integer .
+bb:2822	bb:number	"79"^^xs:integer .
+bb:2822	bb:lastname	"Abreu" .
+bb:2822	bb:firstname	"Jose" .
+bb:2822	bb:position	"infielder" .
+bb:2822	bb:team	bbr:WhiteSox .
+bb:2822	bb:bats	"right" .
+bb:2822	bb:throws	"right" .
+bb:2822	bb:weight	"255"^^xs:integer .
+bb:2822	bb:date-of-birth	"1987-01-29"^^xs:date .
+bb:2822	rdf:type		bbr:infielder .
+
+#22 	Matt Davidson 	R-R 	6'2" 	225 	Mar 26, 1991
+bb:2823	bb:playerid	"2823"^^xs:integer .
+bb:2823	bb:number	"22"^^xs:integer .
+bb:2823	bb:lastname	"Davidson" .
+bb:2823	bb:firstname	"Matt" .
+bb:2823	bb:position	"infielder" .
+bb:2823	bb:team	bbr:WhiteSox .
+bb:2823	bb:bats	"right" .
+bb:2823	bb:throws	"right" .
+bb:2823	bb:weight	"225"^^xs:integer .
+bb:2823	bb:date-of-birth	"1991-03-26"^^xs:date .
+bb:2823	rdf:type		bbr:infielder .
+
+#28 	Leury Garcia 	S-R 	5'8" 	170 	Mar 18, 1991
+bb:2824	bb:playerid	"2824"^^xs:integer .
+bb:2824	bb:number	"28"^^xs:integer .
+bb:2824	bb:lastname	"Garcia" .
+bb:2824	bb:firstname	"Leury" .
+bb:2824	bb:position	"infielder" .
+bb:2824	bb:team	bbr:WhiteSox .
+bb:2824	bb:bats	"switch" .
+bb:2824	bb:throws	"right" .
+bb:2824	bb:weight	"170"^^xs:integer .
+bb:2824	bb:date-of-birth	"1991-03-18"^^xs:date .
+bb:2824	rdf:type		bbr:infielder .
+
+#12 	Conor Gillaspie 	L-R 	6'1" 	195 	Jul 18, 1987
+bb:2825	bb:playerid	"2825"^^xs:integer .
+bb:2825	bb:number	"12"^^xs:integer .
+bb:2825	bb:lastname	"Gillaspie" .
+bb:2825	bb:firstname	"Conor" .
+bb:2825	bb:position	"infielder" .
+bb:2825	bb:team	bbr:WhiteSox .
+bb:2825	bb:bats	"left" .
+bb:2825	bb:throws	"right" .
+bb:2825	bb:weight	"195"^^xs:integer .
+bb:2825	bb:date-of-birth	"1987-07-18"^^xs:date .
+bb:2825	rdf:type		bbr:infielder .
+
+#10 	Alexei Ramirez 	R-R 	6'2" 	180 	Sep 22, 1981
+bb:2826	bb:playerid	"2826"^^xs:integer .
+bb:2826	bb:number	"10"^^xs:integer .
+bb:2826	bb:lastname	"Ramirez" .
+bb:2826	bb:firstname	"Alexei" .
+bb:2826	bb:position	"infielder" .
+bb:2826	bb:team	bbr:WhiteSox .
+bb:2826	bb:bats	"right" .
+bb:2826	bb:throws	"right" .
+bb:2826	bb:weight	"180"^^xs:integer .
+bb:2826	bb:date-of-birth	"1981-09-22"^^xs:date .
+bb:2826	rdf:type		bbr:infielder .
+
+#77 	Carlos Sanchez 	S-R 	5'11" 	195 	Jun 29, 1992
+bb:2827	bb:playerid	"2827"^^xs:integer .
+bb:2827	bb:number	"77"^^xs:integer .
+bb:2827	bb:lastname	"Sanchez" .
+bb:2827	bb:firstname	"Carlos" .
+bb:2827	bb:position	"infielder" .
+bb:2827	bb:team	bbr:WhiteSox .
+bb:2827	bb:bats	"switch" .
+bb:2827	bb:throws	"right" .
+bb:2827	bb:weight	"195"^^xs:integer .
+bb:2827	bb:date-of-birth	"1992-06-29"^^xs:date .
+bb:2827	rdf:type		bbr:infielder .
+
+#5 	Marcus Semien 	R-R 	6'1" 	195 	Sep 17, 1990
+bb:2828	bb:playerid	"2828"^^xs:integer .
+bb:2828	bb:number	"5"^^xs:integer .
+bb:2828	bb:lastname	"Semien" .
+bb:2828	bb:firstname	"Marcus" .
+bb:2828	bb:position	"infielder" .
+bb:2828	bb:team	bbr:WhiteSox .
+bb:2828	bb:bats	"right" .
+bb:2828	bb:throws	"right" .
+bb:2828	bb:weight	"195"^^xs:integer .
+bb:2828	bb:date-of-birth	"1990-09-17"^^xs:date .
+bb:2828	rdf:type		bbr:infielder .
+
+#38 	Andy Wilkins 	L-R 	6'1" 	220 	Sep 13, 1988
+bb:2829	bb:playerid	"2829"^^xs:integer .
+bb:2829	bb:number	"38"^^xs:integer .
+bb:2829	bb:lastname	"Wilkins" .
+bb:2829	bb:firstname	"Andy" .
+bb:2829	bb:position	"infielder" .
+bb:2829	bb:team	bbr:WhiteSox .
+bb:2829	bb:bats	"left" .
+bb:2829	bb:throws	"right" .
+bb:2829	bb:weight	"220"^^xs:integer .
+bb:2829	bb:date-of-birth	"1988-09-13"^^xs:date .
+bb:2829	rdf:type		bbr:infielder .
+
+# 	Outfielders 	B/T 	Ht 	Wt 	DOB
+#20 	Jordan Danks 	L-R 	6'4" 	215 	Aug 7, 1986
+bb:2830	bb:playerid	"2830"^^xs:integer .
+bb:2830	bb:number	"20"^^xs:integer .
+bb:2830	bb:lastname	"Danks" .
+bb:2830	bb:firstname	"Jordan" .
+bb:2830	bb:position	"outfielder" .
+bb:2830	bb:team	bbr:WhiteSox .
+bb:2830	bb:bats	"left" .
+bb:2830	bb:throws	"right" .
+bb:2830	bb:weight	"215"^^xs:integer .
+bb:2830	bb:date-of-birth	"1986-08-07"^^xs:date .
+bb:2830	rdf:type		bbr:outfielder .
+
+#1 	Adam Eaton 	L-L 	5'8" 	185 	Dec 6, 1988
+bb:2831	bb:playerid	"2831"^^xs:integer .
+bb:2831	bb:number	"1"^^xs:integer .
+bb:2831	bb:lastname	"Eaton" .
+bb:2831	bb:firstname	"Adam" .
+bb:2831	bb:position	"outfielder" .
+bb:2831	bb:team	bbr:WhiteSox .
+bb:2831	bb:bats	"left" .
+bb:2831	bb:throws	"left" .
+bb:2831	bb:weight	"185"^^xs:integer .
+bb:2831	bb:date-of-birth	"1988-12-06"^^xs:date .
+bb:2831	rdf:type		bbr:outfielder .
+
+#26 	Avisail Garcia 	R-R 	6'4" 	240 	Jun 12, 1991
+bb:2832	bb:playerid	"2832"^^xs:integer .
+bb:2832	bb:number	"26"^^xs:integer .
+bb:2832	bb:lastname	"Garcia" .
+bb:2832	bb:firstname	"Avisail" .
+bb:2832	bb:position	"outfielder" .
+bb:2832	bb:team	bbr:WhiteSox .
+bb:2832	bb:bats	"right" .
+bb:2832	bb:throws	"right" .
+bb:2832	bb:weight	"240"^^xs:integer .
+bb:2832	bb:date-of-birth	"1991-06-12"^^xs:date .
+bb:2832	rdf:type		bbr:outfielder .
+
+#29 	Jared Mitchell 	L-L 	6'0" 	205 	Oct 13, 1988
+bb:2833	bb:playerid	"2833"^^xs:integer .
+bb:2833	bb:number	"29"^^xs:integer .
+bb:2833	bb:lastname	"Mitchell" .
+bb:2833	bb:firstname	"Jared" .
+bb:2833	bb:position	"outfielder" .
+bb:2833	bb:team	bbr:WhiteSox .
+bb:2833	bb:bats	"left" .
+bb:2833	bb:throws	"left" .
+bb:2833	bb:weight	"205"^^xs:integer .
+bb:2833	bb:date-of-birth	"1988-10-13"^^xs:date .
+bb:2833	rdf:type		bbr:outfielder .
+
+#	J.B. Shuck 	L-L 	5'11" 	195 	Jun 18, 1987
+bb:2834	bb:playerid	"2834"^^xs:integer .
+bb:2834	bb:lastname	"Shuck" .
+bb:2834	bb:firstname	"J.B." .
+bb:2834	bb:position	"outfielder" .
+bb:2834	bb:team	bbr:WhiteSox .
+bb:2834	bb:bats	"left" .
+bb:2834	bb:throws	"left" .
+bb:2834	bb:weight	"195"^^xs:integer .
+bb:2834	bb:date-of-birth	"1987-06-18"^^xs:date .
+bb:2834	rdf:type		bbr:outfielder .
+
+#75 	Trayce Thompson 	R-R 	6'3" 	210 	Mar 15, 1991
+bb:2835	bb:playerid	"2835"^^xs:integer .
+bb:2835	bb:number	"75"^^xs:integer .
+bb:2835	bb:lastname	"Thompson" .
+bb:2835	bb:firstname	"Trayce" .
+bb:2835	bb:position	"outfielder" .
+bb:2835	bb:team	bbr:WhiteSox .
+bb:2835	bb:bats	"right" .
+bb:2835	bb:throws	"right" .
+bb:2835	bb:weight	"210"^^xs:integer .
+bb:2835	bb:date-of-birth	"1991-03-15"^^xs:date .
+bb:2835	rdf:type		bbr:outfielder .
+
+#24 	Dayan Viciedo 	R-R 	5'11" 	240 	Mar 10, 1989
+bb:2836	bb:playerid	"2836"^^xs:integer .
+bb:2836	bb:number	"24"^^xs:integer .
+bb:2836	bb:lastname	"Viciedo" .
+bb:2836	bb:firstname	"Dayan" .
+bb:2836	bb:position	"outfielder" .
+bb:2836	bb:team	bbr:WhiteSox .
+bb:2836	bb:bats	"right" .
+bb:2836	bb:throws	"right" .
+bb:2836	bb:weight	"240"^^xs:integer .
+bb:2836	bb:date-of-birth	"1989-03-10"^^xs:date .
+bb:2836	rdf:type		bbr:outfielder .
+
+#	Manager	Robin Ventura
+bb:2857	bb:lastname	"Ventura" .
+bb:2857	bb:firstname	"Robin" .
+bb:2857	bb:position	"manager" .
+bb:2857	bb:team	bbr:WhiteSox .
+bb:2857	bb:number	"23"^^xs:integer .
+bb:2857	bbr:coachingRole		bbr:manager .
+
+#	Coach	Mark Parent
+bb:2858	bb:lastname	"Parent" .
+bb:2858	bb:firstname	"Mark" .
+bb:2858	bb:position	"coach" .
+bb:2858	bb:number	"8"^^xs:integer .
+bb:2858	bb:team	bbr:WhiteSox .
+bb:2858	bbr:coachingRole		bbr:benchCoach .
+
+#	Coach	Todd Steverson
+bb:2859	bb:lastname	"Steverson" .
+bb:2859	bb:firstname	"Todd" .
+bb:2859	bb:position	"coach" .
+bb:2859	bb:number	"31"^^xs:integer .
+bb:2859	bb:team	bbr:WhiteSox .
+bb:2859	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Harold Baines
+bb:2860	bb:lastname	"Baines" .
+bb:2860	bb:firstname	"Harold" .
+bb:2860	bb:position	"coach" .
+bb:2860	bb:number	"3"^^xs:integer .
+bb:2860	bb:team	bbr:WhiteSox .
+bb:2860	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Daryl Boston
+bb:2861	bb:lastname	"Boston" .
+bb:2861	bb:firstname	"Daryl" .
+bb:2861	bb:position	"coach" .
+bb:2861	bb:number	"17"^^xs:integer .
+bb:2861	bb:team	bbr:WhiteSox .
+bb:2861	bbr:coachingRole		bbr:firstBaseCoach .
+
+#	Coach	Joe McEwing
+bb:2862	bb:lastname	"McEwing" .
+bb:2862	bb:firstname	"Joe" .
+bb:2862	bb:position	"coach" .
+bb:2862	bb:number	"47"^^xs:integer .
+bb:2862	bb:team	bbr:WhiteSox .
+bb:2862	bbr:coachingRole		bbr:thirdBaseCoach .
+
+#	Coach	Don Cooper
+bb:2863	bb:lastname	"Cooper" .
+bb:2863	bb:firstname	"Don" .
+bb:2863	bb:position	"coach" .
+bb:2863	bb:number	"99"^^xs:integer .
+bb:2863	bb:team	bbr:WhiteSox .
+bb:2863	bbr:coachingRole		bbr:pitchingCoach .
+
+#	Coach	Bobby Thigpen
+bb:2864	bb:lastname	"Thigpen" .
+bb:2864	bb:firstname	"Bobby" .
+bb:2864	bb:position	"coach" .
+bb:2864	bb:number	"58"^^xs:integer .
+bb:2864	bb:team	bbr:WhiteSox .
+bb:2864	bbr:coachingRole		bbr:bullpenCoach .
+
+#	Coach	Mark Salas
+bb:2865	bb:lastname	"Salas" .
+bb:2865	bb:firstname	"Mark" .
+bb:2865	bb:position	"coach" .
+bb:2865	bb:number	"59"^^xs:integer .
+bb:2865	bb:team	bbr:WhiteSox .
+bb:2865	bbr:coachingRole		bbr:bullpenCatcher .
+
+
+

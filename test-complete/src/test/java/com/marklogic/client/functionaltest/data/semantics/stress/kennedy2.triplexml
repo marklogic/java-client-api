@@ -1,0 +1,503 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sem:triples xmlns:sem="http://marklogic.com/semantics">
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place24</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Georgia</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place24</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">33.750004</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place24</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-84.31854</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place25</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place25</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Nashville</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place25</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Indiana</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place25</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">39.199356</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place25</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-86.2395</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place26</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place26</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Miami Beach</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place26</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Florida</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place26</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">25.759474</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place26</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-80.13907</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place27</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place27</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Algona</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place27</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Iowa</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place27</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">43.0739</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place27</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-94.22602</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place28</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place28</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Neal</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place28</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Kansas</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place28</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">37.83135</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place28</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-96.07111</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place29</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place29</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Hodge</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place29</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Louisiana</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place29</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">32.27214</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place29</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-92.72489</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place30</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place30</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Bentley</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place30</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Michigan</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place30</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">43.93724</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place30</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-84.12889</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place31</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place31</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Willernie</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place31</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Minnesota</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place31</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">45.054665</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place31</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-92.95703</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place32</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place32</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Lanesboro</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place32</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Minnesota</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place32</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">43.70844</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place32</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-91.95965</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place33</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place33</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Bernie</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place33</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Missouri</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place33</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">36.6624</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place33</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-90.00768</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place34</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place34</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Jamestown</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place34</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Missouri</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place34</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">38.77066</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place34</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-92.48206</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place35</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place35</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Raynesford</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place35</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Montana</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place35</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">47.26124</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place35</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-110.725</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place36</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place36</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Snyder</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place36</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Nebraska</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place36</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">41.704483</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place36</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-96.78794</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place37</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place37</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Silver City</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place37</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Nevada</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place37</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">39.262836</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place37</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-119.64083</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place38</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place38</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Georges Mills</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place38</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">New Hampshire</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place38</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">43.437504</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place38</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-72.07185</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place39</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place39</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Charlestown</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place39</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">New Hampshire</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place39</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">43.24947</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place39</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-72.39026</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place40</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place40</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Groveton</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place40</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">New Hampshire</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place40</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">44.610603</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place40</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-71.48147</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place41</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place41</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Berlin</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place41</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">New Hampshire</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place41</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">44.463337</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place41</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-71.19092</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place42</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place42</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Union</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place42</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">New Jersey</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place42</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">40.6954</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place42</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-74.26933</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place43</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place43</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">New York</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place43</sem:subject>
+    <sem:predicate>http://example.org/kennedy/state</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">New York</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place43</sem:subject>
+    <sem:predicate>http://example.org/kennedy/latitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">40.82618</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place43</sem:subject>
+    <sem:predicate>http://example.org/kennedy/longitude</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">-73.9371</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place44</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/Place</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/place44</sem:subject>
+    <sem:predicate>http://example.org/kennedy/name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Bronx</sem:object>
+  </sem:triple>
+</sem:triples>

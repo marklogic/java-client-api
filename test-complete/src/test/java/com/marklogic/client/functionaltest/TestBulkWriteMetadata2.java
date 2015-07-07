@@ -385,14 +385,29 @@ public class TestBulkWriteMetadata2 extends  BasicJavaClientREST{
 		docMgr.readMetadata(rec.getUri(), mh);
 		assertEquals(" quality",5,mh.getQuality());
 
-		assertTrue("default collections reset",mh.getCollections().isEmpty());
+		// Collections - Test corrected for bug fix from 32783
+		/* Default collections are applied only in the following cases:
+			 
+			* Creating a document with single write without specifying collections
+			* Creating a document or updating document content with bulk write without specifying collections
+			* Resetting collections by deleting all or collection metadata
+			*
+		*/
+		
+		String expectedCollections = "size:1|http://permission-collections/|";
+		String actualCollections = getDocumentCollectionsString(mh.getCollections());
+
+		assertEquals("Document collections difference", expectedCollections, actualCollections);		
 
 		page = docMgr.read("/1/mlfavicon.png");
 		rec = page.next();
 		docMgr.readMetadata(rec.getUri(), mh);
 		assertEquals("default quality",0,mh.getQuality());
 		//		 System.out.println(rec.getUri()+mh.getCollections().isEmpty());
-		assertFalse("default collections reset",mh.getCollections().isEmpty());
+		expectedCollections = "size:1|collection1|";
+		actualCollections = getDocumentCollectionsString(mh.getCollections());
+
+		assertEquals("Document collections difference", expectedCollections, actualCollections);
 
 		page = docMgr.read("/2/mlfavicon.png");
 		rec = page.next();
@@ -462,7 +477,10 @@ public class TestBulkWriteMetadata2 extends  BasicJavaClientREST{
 		jdm.readMetadata(rec.getUri(), mh);
 		System.out.print(mh.getCollections().isEmpty());
 		assertEquals("default quality",1,mh.getQuality());
-		assertTrue("default collections reset",mh.getCollections().isEmpty());
+		String expectedCollections = "size:1|http://permission-collections/|";
+		String actualCollections = getDocumentCollectionsString(mh.getCollections());
+
+		assertEquals("Document collections difference", expectedCollections, actualCollections);
 
 		// Doc3 should have the system default document quality (0) because quality
 		// was not included in the document-specific metadata. It should be in the
@@ -477,18 +495,20 @@ public class TestBulkWriteMetadata2 extends  BasicJavaClientREST{
 		DocumentMetadataHandle doc3Metadata =  
 				jdm.readMetadata("doc3.json", new DocumentMetadataHandle());
 		System.out.println("doc3 quality: Expected=0, Actual=" + doc3Metadata.getPermissions());
-		System.out.print("doc3 collections: Expected: myCollection, Actual=");
-		for (String collection : doc3Metadata.getCollections()) {
-			System.out.print(collection + " ");
-		}
-		System.out.println();
+		expectedCollections = "size:1|mySpecificCollection|";
+		actualCollections = getDocumentCollectionsString(mh.getCollections());
+
+		assertEquals("Document collections difference", expectedCollections, actualCollections);
 
 		// Doc 4 should also use the 1st batch default metadata, with quality 1
 		page = jdm.read("doc4.json");
 		rec = page.next();
 		jdm.readMetadata(rec.getUri(), mh);
 		assertEquals("default quality",1,mh.getQuality());
-		assertTrue("default collections reset",mh.getCollections().isEmpty());
+		expectedCollections = "size:1|http://permission-collections/|";
+		actualCollections = getDocumentCollectionsString(mh.getCollections());
+
+		assertEquals("Document collections difference", expectedCollections, actualCollections);
 		// Doc5 should use the 2nd batch default metadata, with quality 2
 		page = jdm.read("doc5.json");
 		rec = page.next();
@@ -553,7 +573,11 @@ public class TestBulkWriteMetadata2 extends  BasicJavaClientREST{
 		DocumentRecord rec = page.next();
 		docMgr.readMetadata(rec.getUri(), mh);
 		assertEquals("default quality",10,mh.getQuality());
-		assertTrue("default collections missing",mh.getCollections().isEmpty());
+		
+		String expectedCollections = "size:1|http://permission-collections/|";
+		String actualCollections = getDocumentCollectionsString(mh.getCollections());
+
+		assertEquals("Document collections difference", expectedCollections, actualCollections);		
 
 		page = docMgr.read("/generic/foo.xml");
 		rec = page.next();

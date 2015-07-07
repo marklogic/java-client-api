@@ -214,7 +214,7 @@ public class TestBulkWriteMetadata1  extends BasicJavaClientREST {
 		docMgr.write(writeset);
 
 		DocumentPage page = docMgr.read(docId);
-
+		assertTrue("DocumentPage Size did not return expected value:: returned==  "+page.size(), page.size() == 3 );
 		while(page.hasNext()){
 			DocumentRecord rec = page.next();
 			docMgr.readMetadata(rec.getUri(), mh);
