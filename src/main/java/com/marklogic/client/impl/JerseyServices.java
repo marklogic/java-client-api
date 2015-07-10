@@ -5378,6 +5378,19 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
+	public Object deleteGraph(RequestLogger reqlog, String uri,
+			Transaction transaction) throws ForbiddenUserException,
+			FailedRequestException {
+		RequestParameters params = new RequestParameters();
+		if ( uri != null ) {
+			params.add("graph", uri);
+		} else {
+			params.add("default", "");
+		}
+		return deleteResource(reqlog, "graphs", transaction, params, null);
+
+	}
+	@Override
 	public <R extends AbstractReadHandle> R executeSparql(RequestLogger reqlog, 
 		SPARQLQueryDefinition qdef, R output, long start, long pageLength,
 		Transaction transaction, boolean isUpdate)
@@ -5431,4 +5444,5 @@ public class JerseyServices implements RESTServices {
 		if ( transaction == null ) return null;
 		return transaction.getTransactionId();
 	}
+
 }

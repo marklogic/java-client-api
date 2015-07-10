@@ -16,20 +16,25 @@
 package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.util.Iterator;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotEquals;
 
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.marker.TriplesReadHandle;
-import com.marklogic.client.io.marker.TriplesWriteHandle;
 import com.marklogic.client.semantics.GraphManager;
+import com.marklogic.client.semantics.RDFMimeTypes;
 
 public class GraphsTest {
     private static GraphManager gmgr;
@@ -101,5 +106,116 @@ public class GraphsTest {
 //        gmgr.delete(tripleGraphUri);
 //        triples = gmgr.readAs(tripleGraphUri, String.class);
 //        assertEquals(null, triples);
+        gmgr.delete(tripleGraphUri);
+        // ensure it's gone
+        try {
+            gmgr.read(tripleGraphUri, new StringHandle());
+            fail("read non-existent graph should throw ResourceNotFoundException");
+        } catch (ResourceNotFoundException e) {
+            // pass
+        }
+    }
+    
+    @Test
+    public void testTransactions() {
+        GraphManager graphManagerWriter = Common.client.newGraphManager();
+        DatabaseClient readOnlyClient = DatabaseClientFactory.newClient(
+                Common.HOST, Common.PORT, "rest-reader", "x",
+                Authentication.DIGEST);
+        GraphManager graphManagerReader = readOnlyClient.newGraphManager();
+        String t1 = "<s1> <p1> <o1> .";
+        String t2 = "<s2> <p2> <o2> .";
+        try {
+            graphManagerReader.write("thisFails", new StringHandle().with(t1)
+                    .withMimetype(RDFMimeTypes.NTRIPLES.toString()));
+            fail("reader could write a graph.");
+        } catch (ForbiddenUserException e) {
+            // pass
+        }
+        
+        // write in a transaction
+        Transaction tx = null;
+        try {
+            tx = Common.client.openTransaction();
+            graphManagerWriter.write("newGraph", new StringHandle().with(t1)
+                    .withMimetype(RDFMimeTypes.NTRIPLES.toString()), tx);
+            // reader can't see it
+            try {
+                graphManagerReader.read(
+                        "newGraph",
+                        new StringHandle());
+                fail("reader could read graph outside transaction");
+            } catch (ResourceNotFoundException e) {
+                // pass
+            }
+
+            tx.rollback();
+            tx = null;
+
+            // doesn't exist 
+            try {
+                graphManagerWriter.read(
+                        "newGraph",
+                        new StringHandle());
+                fail("graph was written despite rollback");
+            } catch (ResourceNotFoundException e) {
+                // pass
+            }
+            
+            // new tx
+            tx = Common.client.openTransaction();
+            // write a graph in transaction
+            graphManagerWriter.write("newGraph", new StringHandle().with(t1)
+                    .withMimetype(RDFMimeTypes.NTRIPLES), tx);
+
+//            graphManagerWriter.merge("newGraph",  new StringHandle().with(t2)
+//                    .withMimetype(RDFMimeTypes.NTRIPLES), tx);
+
+            tx.commit();
+            tx = null;
+            // graph is now there.  No failure.
+            String mergedGraph = graphManagerWriter.read(
+                    "newGraph",
+                    new StringHandle().withMimetype(RDFMimeTypes.NTRIPLES)).get();
+            // TODO, merge is not implemented yet.
+            // assertEquals(t1 + t2, mergedGraph);
+            // reader cannot delete
+            try {
+                graphManagerReader.delete("newGraph");
+                fail("Reader could delete graph");
+            } catch (ForbiddenUserException e) {
+                //pass
+            }
+
+            // new transaction
+            tx = Common.client.openTransaction();
+            // write a graph in transaction
+            graphManagerWriter.delete("newGraph", tx);
+            tx.commit();
+            tx = null;
+
+            // must be gone.
+            try {
+                graphManagerWriter.read(
+                        "newGraph",
+                        new StringHandle());
+                fail("graph was written despite rollback");
+            } catch (ResourceNotFoundException e) {
+                // pass
+            }
+        } finally {
+            if (tx != null) {
+                tx.rollback();
+                tx = null;
+            }
+            // always try to delete graph
+            try {
+                graphManagerWriter.delete(
+                        "newGraph");
+            } catch (Exception e) {
+                // nop
+            }
+
+        }
     }
 }
