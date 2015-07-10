@@ -21,6 +21,7 @@ import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.OperationNotSupported;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
+import com.marklogic.client.io.marker.TriplesWriteHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
@@ -45,7 +46,8 @@ public class OutputStreamHandle
         JSONWriteHandle, 
         TextWriteHandle,
         XMLWriteHandle,
-        StructureWriteHandle
+        StructureWriteHandle,
+        TriplesWriteHandle
 {
 
 	private OutputStreamSender sender;
