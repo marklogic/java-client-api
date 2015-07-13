@@ -5429,6 +5429,26 @@ public class JerseyServices implements RESTServices {
 			String mimetype = isUpdate ? "application/sparql-update" : "application/sparql-query";
 			input = new StringHandle(sparql).withMimetype(mimetype);
 		}
+		if (qdef.getDefaultGraphUris() != null) {
+		    for (String defaultGraphUri : qdef.getDefaultGraphUris()) {
+		        params.add("default-graph-uri", defaultGraphUri);
+		    }
+		}
+		if (qdef.getNamedGraphUris() != null) {
+            for (String namedGraphUri : qdef.getNamedGraphUris()) {
+                params.add("named-graph-uri", namedGraphUri);
+            }
+        }
+		if (qdef.getUsingGraphUris() != null) {
+            for (String usingGraphUri : qdef.getUsingGraphUris()) {
+                params.add("using-graph-uri", usingGraphUri);
+            }
+        }
+		if (qdef.getUsingNamedUris() != null) {
+            for (String usingGraphUri : qdef.getUsingGraphUris()) {
+                params.add("using-named-uri", usingGraphUri);
+            }
+        }
 
 		// TODO: do we want this default?
 		HandleImplementation baseHandle = HandleAccessor.checkHandle(output, "graphs/sparql");

@@ -30,6 +30,10 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
 
     private String sparql;
     private SPARQLBindings bindings = new SPARQLBindingsImpl();
+    private String[] defaultGraphUris;
+    private String[] namedGraphUris;
+    private String[] usingGraphUris;
+    private String[] usingNamedUris;
 
     public SPARQLQueryDefinitionImpl(String sparql) {
         this.sparql = sparql;
@@ -156,16 +160,36 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
 
     @Override
     public void setDefaultGraphUris(String... uris) {
-        // TODO Auto-generated method stub
-        
+        this.defaultGraphUris = uris;
     }
 
     @Override
     public void setNamedGraphUris(String... uris) {
-        // TODO Auto-generated method stub
-        
+        this.namedGraphUris = uris;
     }
 
+
+    @Override
+    public String[] getDefaultGraphUris() {
+        return this.defaultGraphUris;
+    }
+
+    @Override
+    public String[] getNamedGraphUris() {
+        return this.namedGraphUris;
+    }
+
+    @Override
+    public String[] getUsingGraphUris() {
+        return this.usingGraphUris;
+    }
+
+    @Override
+    public String[] getUsingNamedUris() {
+        return this.usingNamedUris;
+    }
+
+    
     @Override
     public void setConstrainingQueryDefinintion(QueryDefinition query) {
         // TODO Auto-generated method stub
@@ -207,6 +231,16 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
             QueryDefinition structuredQuery) {
         // TODO Auto-generated method stub
         return this;
+    }
+
+    @Override
+    public void setUsingGraphUris(String... uris) {
+        this.usingGraphUris = uris;
+    }
+
+    @Override
+    public void setUsingNamedUris(String... uris) {
+        this.usingNamedUris = uris;
     }
 
 }
