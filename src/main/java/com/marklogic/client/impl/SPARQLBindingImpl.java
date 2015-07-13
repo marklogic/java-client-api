@@ -31,13 +31,13 @@ import com.marklogic.client.semantics.SPARQLBindings;
 public class SPARQLBindingImpl implements SPARQLBinding {
     private String name;
     private String value;
-    private String type;
+    private String datatype;
     private Locale languageTag;
 
     public SPARQLBindingImpl(String name, String value, String type) {
         this.name = name;
         this.value = value;
-        this.type = type;
+        this.datatype = type;
     }
     public SPARQLBindingImpl(String name, String value, Locale languageTag) {
         this.name = name;
@@ -46,6 +46,6 @@ public class SPARQLBindingImpl implements SPARQLBinding {
     }
     public String getName()        { return name;        }
     public String getValue()       { return value;       }
-    public String getType()        { return type;        }
+    public String getDatatype()    { return datatype;    }
     public Locale getLanguageTag() { return languageTag; }
 }

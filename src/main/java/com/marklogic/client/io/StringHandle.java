@@ -27,7 +27,7 @@ import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.QuadsWriteHandle;
-import com.marklogic.client.io.marker.SPARQLReadHandle;
+import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
@@ -49,7 +49,7 @@ public class StringHandle
 		StructureReadHandle, StructureWriteHandle,
 		QuadsWriteHandle, 
 		TriplesReadHandle, TriplesWriteHandle,
-		SPARQLReadHandle
+		SPARQLResultsReadHandle
 {
 	private String content;
 

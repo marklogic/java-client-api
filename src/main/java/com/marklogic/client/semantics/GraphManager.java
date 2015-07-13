@@ -28,9 +28,6 @@ import com.marklogic.client.semantics.Capability;
  */
 // TODO: Are we ok without the generics?
 public interface GraphManager {
-    public TriplesSerializingHandle newTriplesSerializingHandle();
-    public TriplesParsingHandle newTriplesParsingHandle();
-
 // TODO: what is the value?
     public static String DEFAULT_GRAPH = "http...";
 // TODO: what is the value?

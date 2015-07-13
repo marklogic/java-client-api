@@ -26,6 +26,6 @@ import java.util.Map;
  */
 public interface SPARQLBindings extends Map<String, List<SPARQLBinding>> {
     public SPARQLBindings bind(String name, String value);
-    public SPARQLBindings bind(String name, String value, String type);
+    public SPARQLBindings bind(String name, String value, String datatype);
     public SPARQLBindings bind(String name, String value, Locale languageTag);
 };

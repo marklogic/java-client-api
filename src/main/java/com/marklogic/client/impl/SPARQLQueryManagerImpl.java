@@ -22,7 +22,7 @@ import com.marklogic.client.Transaction;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
-import com.marklogic.client.io.marker.SPARQLReadHandle;
+import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
 import com.marklogic.client.io.marker.TriplesReadHandle;
 import com.marklogic.client.semantics.GraphPermissions;
 import com.marklogic.client.semantics.Capability;
@@ -30,8 +30,6 @@ import com.marklogic.client.semantics.SPARQLBinding;
 import com.marklogic.client.semantics.SPARQLBindings;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.semantics.SPARQLQueryManager;
-import com.marklogic.client.semantics.SPARQLTuple;
-import com.marklogic.client.semantics.SPARQLTupleResults;
 import com.marklogic.client.util.RequestParameters;
 
 public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SPARQLQueryManager {
@@ -48,15 +46,27 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
     }
 
     @Override
-    public <T extends SPARQLReadHandle> T executeQuery(
+    public <T extends SPARQLResultsReadHandle> T executeSelect(
             SPARQLQueryDefinition qdef, T handle) {
         return executeQueryImpl(qdef, handle, null, false);
     }
 
     @Override
-    public <T extends SPARQLReadHandle> T executeQuery(
+    public <T extends SPARQLResultsReadHandle> T executeSelect(
             SPARQLQueryDefinition qdef, T handle, Transaction tx) {
         return executeQueryImpl(qdef, handle, tx, false);
+    }
+
+    @Override
+    public <T extends SPARQLResultsReadHandle> T executeSelect(
+            SPARQLQueryDefinition qdef, T handle, long start, long pageLength) {
+        return executeQueryImpl(qdef, handle, start, pageLength, null, false);
+    }
+
+    @Override
+    public <T extends SPARQLResultsReadHandle> T executeSelect(
+            SPARQLQueryDefinition qdef, T handle, long start, long pageLength, Transaction tx) {
+        return executeQueryImpl(qdef, handle, start, pageLength, tx, false);
     }
 
     private <T extends AbstractReadHandle> T executeQueryImpl(
@@ -69,27 +79,6 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
         if ( qdef == null )   throw new IllegalArgumentException("qdef cannot be null");
         if ( handle == null ) throw new IllegalArgumentException("handle cannot be null");
         return services.executeSparql(requestLogger, qdef, handle, start, pageLength, tx, isUpdate);
-    }
-
-    @Override
-    public SPARQLTupleResults executeSelect(SPARQLQueryDefinition qdef) {
-        // TODO Auto-generated method stub
-        SPARQLTupleResults output = new SPARQLTupleResultsImpl().withFormat(Format.JSON); 
-        return executeQueryImpl(qdef, output, null, false);
-    }
-
-    @Override
-    public SPARQLTupleResults executeSelect(SPARQLQueryDefinition qdef,
-            long start, long pageLength) {
-        return executeSelect(qdef, start, pageLength, null);
-    }
-
-    @Override
-    public SPARQLTupleResults executeSelect(SPARQLQueryDefinition qdef,
-            long start, long pageLength, Transaction tx) {
-        // TODO Auto-generated method stub
-        SPARQLTupleResults output = new SPARQLTupleResultsImpl().withFormat(Format.JSON); 
-        return executeQueryImpl(qdef, output, start, pageLength, tx, false);
     }
 
     @Override

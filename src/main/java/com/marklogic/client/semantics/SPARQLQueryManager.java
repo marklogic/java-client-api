@@ -16,7 +16,7 @@
 package com.marklogic.client.semantics;
 
 import com.marklogic.client.Transaction;
-import com.marklogic.client.io.marker.SPARQLReadHandle;
+import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
 import com.marklogic.client.io.marker.TriplesReadHandle;
 import com.marklogic.client.semantics.Capability;
 
@@ -24,14 +24,10 @@ public interface SPARQLQueryManager  {
     // Make a new query definition 
     public SPARQLQueryDefinition newQueryDefinition(String sparql);
 
-    // low-level, handle-oriented query methods. 
-    public <T extends SPARQLReadHandle> T executeQuery(SPARQLQueryDefinition qdef, T handle);
-    public <T extends SPARQLReadHandle> T executeQuery(SPARQLQueryDefinition qdef, T handle, Transaction tx);
-
-    // Higher-level query methods that return useful Java objects 
-    public SPARQLTupleResults executeSelect(SPARQLQueryDefinition qdef);
-    public SPARQLTupleResults executeSelect(SPARQLQueryDefinition qdef, long start, long pageLength);
-    public SPARQLTupleResults executeSelect(SPARQLQueryDefinition qdef, long start, long pageLength, Transaction tx);
+    public <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle);
+    public <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle, Transaction tx);
+    public <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle, long start, long pageLength);
+    public <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle, long start, long pageLength, Transaction tx);
     public <T extends TriplesReadHandle> T executeConstruct(SPARQLQueryDefinition qdef, T triplesReadHandle);
     public <T extends TriplesReadHandle> T executeConstruct(SPARQLQueryDefinition qdef, T triplesReadHandle, Transaction tx);
     public <T extends TriplesReadHandle> T executeDescribe(SPARQLQueryDefinition qdef, T triplesReadHandle);
