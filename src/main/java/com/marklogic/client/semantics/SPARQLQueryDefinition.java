@@ -40,8 +40,15 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
     public void setUpdatePermissions(GraphPermissions permissions);
     public GraphPermissions getUpdatePermissions();
     public SPARQLQueryDefinition withUpdatePermission(String role, Capability capability);
+
+    public String[] getDefaultGraphUris();
+    public String[] getNamedGraphUris();
+    public String[] getUsingGraphUris();
+    public String[] getUsingNamedUris();
     public void setDefaultGraphUris(String... uris);
     public void setNamedGraphUris(String... uris);
+    public void setUsingGraphUris(String... uris);
+    public void setUsingNamedUris(String... uris);
 
     public void setConstrainingQueryDefinintion(QueryDefinition query);
     public QueryDefinition getConstrainingQueryDefinintion();
@@ -51,4 +58,5 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
     public SPARQLRuleset[] getRulesets();
     public SPARQLQueryDefinition withRuleset(SPARQLRuleset ruleset);
     public SPARQLQueryDefinition withStructuredQuery(QueryDefinition structuredQuery);
+    
 }
