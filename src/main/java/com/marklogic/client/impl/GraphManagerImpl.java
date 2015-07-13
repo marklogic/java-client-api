@@ -31,8 +31,6 @@ import com.marklogic.client.io.marker.TriplesWriteHandle;
 import com.marklogic.client.semantics.Capability;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.GraphPermissions;
-import com.marklogic.client.semantics.TriplesParsingHandle;
-import com.marklogic.client.semantics.TriplesSerializingHandle;
 
 public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWriteHandle>
     extends AbstractLoggingManager
@@ -43,18 +41,6 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     public GraphManagerImpl(RESTServices services) {
         super();
         this.services = services;
-    }
-
-    @Override
-    public TriplesSerializingHandle newTriplesSerializingHandle() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public TriplesParsingHandle newTriplesParsingHandle() {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     @Override

@@ -18,6 +18,8 @@ package com.marklogic.client.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import java.util.Iterator;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,8 +38,6 @@ import com.marklogic.client.semantics.SPARQLBindings;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.semantics.SPARQLQueryManager;
 import com.marklogic.client.semantics.SPARQLRuleset;
-import com.marklogic.client.semantics.SPARQLTuple;
-import com.marklogic.client.semantics.SPARQLTupleResults;
 
 public class SPARQLManagerTest {
     private static String graphUri = "http://marklogic.com/java/SPARQLManagerTest";
@@ -46,7 +46,7 @@ public class SPARQLManagerTest {
     private static ObjectMapper mapper = new ObjectMapper()
         .configure(Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
         .configure(Feature.ALLOW_SINGLE_QUOTES, true);
-    private static SPARQLQueryManager smgr = Common.client.newSPARQLQueryManager();
+    private static SPARQLQueryManager smgr;
 
 
     @BeforeClass
@@ -56,6 +56,7 @@ public class SPARQLManagerTest {
         GraphManager gmgr = Common.client.newGraphManager();
         String nTriples = triple1 + "\n" + triple2;
         gmgr.write(graphUri, new StringHandle(nTriples).withMimetype("application/n-triples"));
+        smgr = Common.client.newSPARQLQueryManager();
     }
 
     @AfterClass
@@ -66,7 +67,7 @@ public class SPARQLManagerTest {
     @Test
     public void testSPARQL() throws Exception {
         SPARQLQueryDefinition qdef1 = smgr.newQueryDefinition("select ?s ?p ?o { ?s ?p ?o } limit 1");
-        JsonNode jsonResults = smgr.executeQuery(qdef1, new JacksonHandle()).get();
+        JsonNode jsonResults = smgr.executeSelect(qdef1, new JacksonHandle()).get();
         String expectedFirstResult =
             "{s:{value:'http://example.org/s1', type:'uri'}," +
             "p:{value:'http://example.org/p1', type:'uri'}," +
@@ -78,30 +79,30 @@ public class SPARQLManagerTest {
         assertEquals(mapper.readTree(expectedFirstResult), firstResult);
 
         SPARQLQueryDefinition qdef2 = smgr.newQueryDefinition("select ?s ?p ?o { ?s ?p ?o } limit 100");
-        SPARQLTupleResults results = smgr.executeSelect(qdef2);
-        String[] bindingNames = results.getBindingNames();
-        int i=0;
-        for ( SPARQLTuple tuple : results ) {
-            i++;
-            System.out.println("Result number " + i);
-            for ( String bindingName: bindingNames ) {
-                SPARQLBinding binding = tuple.get(bindingName);
+        jsonResults = smgr.executeSelect(qdef2, new JacksonHandle()).get();
+        JsonNode tuples = jsonResults.path("results").path("bindings");
+        // loop through the "bindings" array (we would call each row a tuple)
+        for ( int i=0; i < tuples.size(); i++ ) {
+            JsonNode tuple = tuples.get(i);
+            // loop through the fields or columns for each row
+            Iterator<String> fieldNames = tuple.fieldNames();
+            while ( fieldNames.hasNext() ) {
+                String bindingName = fieldNames.next();
+                JsonNode binding = tuple.get(bindingName);
                 if ( "s".equals(bindingName) ) {
-                    String expectedValue = i == 1 ? "http://example.org/s1" : "http://example.org/s2";
-                    assertEquals(expectedValue, binding.getValue());
+                    String expectedValue = (i == 0) ? "http://example.org/s1" : "http://example.org/s2";
+                    assertEquals(expectedValue, binding.get("value").asText());
                 }
                 if ( "p".equals(bindingName) ) {
-                    String expectedValue = i == 1 ? "http://example.org/p1" : "http://example.org/p2";
-                    assertEquals(expectedValue, binding.getValue());
+                    String expectedValue = (i == 0) ? "http://example.org/p1" : "http://example.org/p2";
+                    assertEquals(expectedValue, binding.get("value").asText());
                 }
                 if ( "o".equals(bindingName) ) {
-                    String expectedValue = i == 1 ? "http://example.org/o1" : "http://example.org/o2";
-                    assertEquals(expectedValue, binding.getValue());
+                    String expectedValue = (i == 0) ? "http://example.org/o1" : "http://example.org/o2";
+                    assertEquals(expectedValue, binding.get("value").asText());
                 }
-                assertEquals("uri", binding.getType());
-                assertEquals(null, binding.getLanguageTag());
             }
-        };
+        }
 
         SPARQLQueryDefinition qdef3 = smgr.newQueryDefinition("construct { ?s ?p ?o } where  { <subjectExample0> ?p ?o } ");
         StringHandle results1 = smgr.executeConstruct(qdef3, new StringHandle());
@@ -114,7 +115,7 @@ public class SPARQLManagerTest {
         // or use a builder
         qdef4 = qdef4.withBinding("c", "http://example.org/o2").withBinding("d", "http://example.org/o3");
 
-        JsonNode jsonResults2 = smgr.executeQuery(qdef4, new JacksonHandle()).get();
+        JsonNode jsonResults2 = smgr.executeSelect(qdef4, new JacksonHandle()).get();
 
         int numResults2 = jsonResults2.path("results").path("bindings").size();
         // because we said 'filter (?s = ?b)' we should only get one result
@@ -128,7 +129,7 @@ public class SPARQLManagerTest {
         // or a custom ruleset
         qdef4 = qdef4.withRuleset(SPARQLRuleset.ruleset("custom.rules"));
         // use a start and page length, and no transaction
-        SPARQLTupleResults results2 = smgr.executeSelect(qdef4, 1, 100, null);
+        JsonNode results2 = smgr.executeSelect(qdef4, 1, 100, null);
         */
 
         // To invoke an update
@@ -150,22 +151,24 @@ public class SPARQLManagerTest {
             "SELECT ?s ?p ?o FROM <" + graphUri + "> { ?s ?p ?o }");
         long start = 1;
         long pageLength = 1;
-        SPARQLTupleResults results = smgr.executeSelect(qdef1, start, pageLength);
+        JsonNode results = smgr.executeSelect(qdef1, new JacksonHandle(), start, pageLength).get();
+        JsonNode bindings = results.path("results").path("bindings");
         // because we set pageLength to 1 we should only get one result
-        assertEquals(pageLength, results.size());
-        String uri1 = results.iterator().next().get("s").getValue();
+        assertEquals(pageLength, bindings.size());
+        String uri1 = bindings.get(0).get("s").get("value").asText();
 
         pageLength = 2;
-        results = smgr.executeSelect(qdef1, start, pageLength);
-        assertEquals(pageLength, results.size());
+        results = smgr.executeSelect(qdef1, new JacksonHandle(), start, pageLength).get();
+        assertEquals(pageLength, results.path("results").path("bindings").size());
 
         start = 2;
         pageLength = 2;
-        results = smgr.executeSelect(qdef1, start, pageLength);
+        results = smgr.executeSelect(qdef1, new JacksonHandle(), start, pageLength).get();
+        bindings = results.path("results").path("bindings");
         // because we skipped the first result (by setting start=2) there are not enough 
         // results for a full page, so size() only returns 1
-        assertEquals(1, results.size());
-        String uri2 = results.iterator().next().get("s").getValue();
+        assertEquals(1, bindings.size());
+        String uri2 = bindings.get(0).get("s").get("value").asText();
         assertNotEquals(uri1, uri2);
     }
 }

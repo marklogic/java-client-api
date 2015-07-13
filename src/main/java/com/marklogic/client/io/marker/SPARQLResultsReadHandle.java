@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.semantics;
-
-import com.marklogic.client.io.marker.TriplesWriteHandle;
+package com.marklogic.client.io.marker;
 
 /**
- * A marker interface for handles capable of serializing semantic triples.
+ * A marker interface for handles capable of reading SPARQL results.
  * For details about semantics in MarkLogic see
  * {@link https://docs.marklogic.com/guide/semantics Semantics Developer's Guide}
  */
-public interface TriplesSerializingHandle extends TriplesWriteHandle {
-    public void serialize(TriplesSerializer serializer);
+public interface SPARQLResultsReadHandle extends AbstractReadHandle {
 }
