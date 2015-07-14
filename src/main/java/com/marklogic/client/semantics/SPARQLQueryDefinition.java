@@ -17,6 +17,7 @@ package com.marklogic.client.semantics;
 
 import java.util.Locale;
 
+import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.semantics.Capability;
 
@@ -27,8 +28,10 @@ import com.marklogic.client.semantics.Capability;
  */
 public interface SPARQLQueryDefinition extends QueryDefinition {
     public void setSparql(String sparql);
+    public void setSparql(TextWriteHandle sparql);
     public String getSparql();
     public SPARQLQueryDefinition withSparql(String sparql);
+    public SPARQLQueryDefinition withSparql(TextWriteHandle sparql);
 
     public void setBindings(SPARQLBindings bindings);
     public SPARQLBindings getBindings();

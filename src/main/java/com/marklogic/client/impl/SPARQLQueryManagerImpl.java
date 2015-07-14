@@ -23,6 +23,7 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
+import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.io.marker.TriplesReadHandle;
 import com.marklogic.client.semantics.GraphPermissions;
 import com.marklogic.client.semantics.Capability;
@@ -42,6 +43,11 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
 
     @Override
     public SPARQLQueryDefinition newQueryDefinition(String sparql) {
+        return new SPARQLQueryDefinitionImpl(sparql);
+    }
+
+    @Override
+    public SPARQLQueryDefinition newQueryDefinition(TextWriteHandle sparql) {
         return new SPARQLQueryDefinitionImpl(sparql);
     }
 

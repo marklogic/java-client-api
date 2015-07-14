@@ -20,6 +20,7 @@ import java.util.Locale;
 
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.impl.SPARQLBindingsImpl;
+import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.semantics.Capability;
 import com.marklogic.client.semantics.GraphPermissions;
@@ -38,7 +39,11 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
     private SPARQLRuleset[] ruleSets;
 
     public SPARQLQueryDefinitionImpl(String sparql) {
-        this.sparql = sparql;
+        setSparql(sparql);
+    }
+
+    public SPARQLQueryDefinitionImpl(TextWriteHandle sparql) {
+        setSparql(sparql);
     }
 
     @Override
@@ -92,7 +97,11 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
     @Override
     public void setSparql(String sparql) {
         this.sparql = sparql;
-        
+    }
+
+    @Override
+    public void setSparql(TextWriteHandle sparql) {
+        this.sparql = HandleAccessor.contentAsString(sparql);
     }
 
     @Override
@@ -102,6 +111,12 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
 
     @Override
     public SPARQLQueryDefinition withSparql(String sparql) {
+        setSparql(sparql);
+        return this;
+    }
+
+    @Override
+    public SPARQLQueryDefinition withSparql(TextWriteHandle sparql) {
         setSparql(sparql);
         return this;
     }
