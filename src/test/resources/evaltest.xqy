@@ -28,7 +28,7 @@ declare variable $myGYearMonth as xs:gYearMonth external;
 declare variable $myDate as xs:date external;
 declare variable $myDateTime as xs:dateTime external;
 declare variable $myTime as xs:time external;
-(: declare variable $myNull external; :)
+declare variable $myNull external;
 let $myAttribute             := $myElement/@* 
 let $myComment               := $myComment/comment() 
 let $myProcessingInstruction := $myProcessingInstruction/processing-instruction() 
