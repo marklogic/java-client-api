@@ -17,12 +17,14 @@ package com.marklogic.client.semantics;
 
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
+import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.io.marker.TriplesReadHandle;
 import com.marklogic.client.semantics.Capability;
 
 public interface SPARQLQueryManager  {
     // Make a new query definition 
     public SPARQLQueryDefinition newQueryDefinition(String sparql);
+    public SPARQLQueryDefinition newQueryDefinition(TextWriteHandle sparql);
 
     public <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle);
     public <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle, Transaction tx);

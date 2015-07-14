@@ -24,95 +24,82 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.example.cookbook.Util;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
-import com.marklogic.client.example.extension.GraphManager.GraphFormat;
-import com.marklogic.client.example.extension.SPARQLManager.QueryFormat;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.semantics.GraphManager;
+import com.marklogic.client.semantics.RDFMimeTypes;
+import com.marklogic.client.semantics.SPARQLQueryDefinition;
+import com.marklogic.client.semantics.SPARQLQueryManager;
 
 public class GraphSPARQLExample {
-	public static void main(String... args) throws IOException {
-		ExampleProperties props = Util.loadProperties();
+    private static String GRAPH_URI = "com.marklogic.client.example.extension.GraphSPARQLExample";
 
-		DatabaseClient appClient = DatabaseClientFactory.newClient(
-				props.host, props.port,
-				props.writerUser, props.writerPassword, props.authType);
-		DatabaseClient adminClient = DatabaseClientFactory.newClient(
-				props.host, props.port,
-				props.adminUser, props.adminPassword, props.authType);
-		run(appClient, adminClient);
-		appClient.release();
-		adminClient.release();
-	}
+    public static void main(String... args) throws IOException {
+        ExampleProperties props = Util.loadProperties();
 
-	public static void run(DatabaseClient appClient, DatabaseClient adminClient) throws IOException {
-		installExtensions(adminClient);
+        DatabaseClient appClient = DatabaseClientFactory.newClient(
+                props.host, props.port,
+                props.writerUser, props.writerPassword, props.authType);
+        DatabaseClient adminClient = DatabaseClientFactory.newClient(
+                props.host, props.port,
+                props.adminUser, props.adminPassword, props.authType);
+        run(appClient, adminClient);
+        appClient.release();
+        adminClient.release();
+    }
 
-		insertGraph(appClient);
+    public static void run(DatabaseClient appClient, DatabaseClient adminClient) throws IOException {
+        insertGraph(appClient);
 
-		runQuery(appClient);
+        runQuery(appClient);
 
-		deleteGraph(appClient);
+        deleteGraph(appClient);
+    }
 
-		uninstallExtensions(adminClient);
-	}
-	public static void runQuery(DatabaseClient appClient) throws IOException {
-		SPARQLManager sparqlMgr = new SPARQLManager(appClient);
+    public static void runQuery(DatabaseClient appClient) throws IOException {
+        SPARQLQueryManager sparqlMgr = appClient.newSPARQLQueryManager();
 
-		InputStream queryStream = Util.openStream(
-			"scripts"+File.separator+"whoKnowsSwarthmore.sparql");
-		if (queryStream == null)
-			throw new RuntimeException("Could not read SPARQL query");
+        InputStream queryStream = Util.openStream(
+                "scripts"+File.separator+"whoKnowsSwarthmore.sparql");
+        if (queryStream == null)
+            throw new RuntimeException("Could not read SPARQL query");
 
-		InputStreamHandle queryHandle = new InputStreamHandle(queryStream);
+        InputStreamHandle queryHandle = new InputStreamHandle(queryStream);
 
-		StringHandle result = new StringHandle();
+        StringHandle result = new StringHandle();
 
-		System.out.println("running query");
+        System.out.println("running query");
+        SPARQLQueryDefinition query = sparqlMgr.newQueryDefinition(queryHandle);
+        query.setCollections(GRAPH_URI);
 
-		sparqlMgr.search(queryHandle, QueryFormat.NQUAD, result);
+        sparqlMgr.executeSelect(query, result);
 
-		System.out.println(result.get());
-	}
-	public static void insertGraph(DatabaseClient appClient) throws IOException {
-		InputStream tripleStream = Util.openStream(
-				"data"+File.separator+"foaf1.nt");
-		if (tripleStream == null)
-			throw new RuntimeException("Could not read triples");
+        System.out.println(result.get());
+    }
 
-		GraphManager graphMgr = new GraphManager(appClient);
-		
-		System.out.println("inserting graph");
+    public static void insertGraph(DatabaseClient appClient) throws IOException {
+        InputStream tripleStream = Util.openStream(
+                "data"+File.separator+"foaf1.nt");
+        if (tripleStream == null)
+            throw new RuntimeException("Could not read triples");
 
-		graphMgr.insert(
-				GraphFormat.NQUAD, new InputStreamHandle(tripleStream)
-				);
+        GraphManager graphMgr = appClient.newGraphManager();
 
-		System.out.println("inserted graph");
-	}
-	public static void deleteGraph(DatabaseClient appClient) throws IOException {
-		GraphManager graphMgr = new GraphManager(appClient);
+        System.out.println("inserting graph");
 
-		System.out.println("deleting graph");
+        graphMgr.write(GRAPH_URI, new InputStreamHandle(tripleStream).withMimetype(RDFMimeTypes.NQUADS));
 
-		graphMgr.delete();
+        System.out.println("inserted graph");
+    }
 
-		System.out.println("deleted graph");
-	}
-	public static void installExtensions(DatabaseClient adminClient) throws IOException {
-		System.out.println("installing extensions");
+    public static void deleteGraph(DatabaseClient appClient) throws IOException {
+        GraphManager graphMgr = appClient.newGraphManager();
 
-		GraphManager.install(adminClient);
-		SPARQLManager.install(adminClient);
+        System.out.println("deleting graph");
 
-		System.out.println("installed extensions");
-	}
-	public static void uninstallExtensions(DatabaseClient adminClient) throws IOException {
-		System.out.println("uninstalling extensions");
+        graphMgr.delete(GRAPH_URI);;
 
-		GraphManager.uninstall(adminClient);
-		SPARQLManager.uninstall(adminClient);
-
-		System.out.println("uninstalled extensions");
-	}
+        System.out.println("deleted graph");
+    }
 }
 
