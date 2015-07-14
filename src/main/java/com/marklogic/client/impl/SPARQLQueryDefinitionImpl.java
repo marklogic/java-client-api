@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.impl;
 
+import java.util.Arrays;
 import java.util.Locale;
 
 import com.marklogic.client.document.ServerTransform;
@@ -34,6 +35,7 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
     private String[] namedGraphUris;
     private String[] usingGraphUris;
     private String[] usingNamedUris;
+    private SPARQLRuleset[] ruleSets;
 
     public SPARQLQueryDefinitionImpl(String sparql) {
         this.sparql = sparql;
@@ -210,19 +212,22 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
 
     @Override
     public void setRulesets(SPARQLRuleset... ruleset) {
-        // TODO Auto-generated method stub
-        
+        this.ruleSets = ruleset;
     }
 
     @Override
     public SPARQLRuleset[] getRulesets() {
-        // TODO Auto-generated method stub
-        return null;
+        return ruleSets;
     }
 
     @Override
     public SPARQLQueryDefinition withRuleset(SPARQLRuleset ruleset) {
-        // TODO Auto-generated method stub
+        if (this.ruleSets == null) {
+            this.ruleSets = new SPARQLRuleset[] { ruleset };
+        }
+        else {
+            Arrays.asList(this.ruleSets).add(ruleset);
+        }
         return this;
     }
 

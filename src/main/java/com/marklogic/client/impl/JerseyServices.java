@@ -130,6 +130,7 @@ import com.marklogic.client.semantics.GraphPermissions;
 import com.marklogic.client.semantics.SPARQLBinding;
 import com.marklogic.client.semantics.SPARQLBindings;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
+import com.marklogic.client.semantics.SPARQLRuleset;
 import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
@@ -5449,6 +5450,13 @@ public class JerseyServices implements RESTServices {
                 params.add("using-named-uri", usingGraphUri);
             }
         }
+		
+		// rulesets
+		if (qdef.getRulesets() != null) {
+		    for (SPARQLRuleset ruleset : qdef.getRulesets()) {
+		        params.add("ruleset", ruleset.getName());
+		    }
+		}
 
 		// TODO: do we want this default?
 		HandleImplementation baseHandle = HandleAccessor.checkHandle(output, "graphs/sparql");
