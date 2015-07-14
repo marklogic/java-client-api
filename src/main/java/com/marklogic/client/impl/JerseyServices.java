@@ -130,6 +130,7 @@ import com.marklogic.client.semantics.GraphPermissions;
 import com.marklogic.client.semantics.SPARQLBinding;
 import com.marklogic.client.semantics.SPARQLBindings;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
+import com.marklogic.client.semantics.SPARQLRuleset;
 import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
@@ -5378,6 +5379,19 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
+	public Object deleteGraph(RequestLogger reqlog, String uri,
+			Transaction transaction) throws ForbiddenUserException,
+			FailedRequestException {
+		RequestParameters params = new RequestParameters();
+		if ( uri != null ) {
+			params.add("graph", uri);
+		} else {
+			params.add("default", "");
+		}
+		return deleteResource(reqlog, "graphs", transaction, params, null);
+
+	}
+	@Override
 	public <R extends AbstractReadHandle> R executeSparql(RequestLogger reqlog, 
 		SPARQLQueryDefinition qdef, R output, long start, long pageLength,
 		Transaction transaction, boolean isUpdate)
@@ -5416,6 +5430,33 @@ public class JerseyServices implements RESTServices {
 			String mimetype = isUpdate ? "application/sparql-update" : "application/sparql-query";
 			input = new StringHandle(sparql).withMimetype(mimetype);
 		}
+		if (qdef.getDefaultGraphUris() != null) {
+		    for (String defaultGraphUri : qdef.getDefaultGraphUris()) {
+		        params.add("default-graph-uri", defaultGraphUri);
+		    }
+		}
+		if (qdef.getNamedGraphUris() != null) {
+            for (String namedGraphUri : qdef.getNamedGraphUris()) {
+                params.add("named-graph-uri", namedGraphUri);
+            }
+        }
+		if (qdef.getUsingGraphUris() != null) {
+            for (String usingGraphUri : qdef.getUsingGraphUris()) {
+                params.add("using-graph-uri", usingGraphUri);
+            }
+        }
+		if (qdef.getUsingNamedUris() != null) {
+            for (String usingGraphUri : qdef.getUsingGraphUris()) {
+                params.add("using-named-uri", usingGraphUri);
+            }
+        }
+		
+		// rulesets
+		if (qdef.getRulesets() != null) {
+		    for (SPARQLRuleset ruleset : qdef.getRulesets()) {
+		        params.add("ruleset", ruleset.getName());
+		    }
+		}
 
 		// TODO: do we want this default?
 		HandleImplementation baseHandle = HandleAccessor.checkHandle(output, "graphs/sparql");
@@ -5431,4 +5472,5 @@ public class JerseyServices implements RESTServices {
 		if ( transaction == null ) return null;
 		return transaction.getTransactionId();
 	}
+
 }

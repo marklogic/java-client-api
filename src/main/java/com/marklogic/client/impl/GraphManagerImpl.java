@@ -225,19 +225,17 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     public void writeAs(String uri, Object graphData,
             GraphPermissions permissions, Transaction transaction) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
     public void delete(String uri) {
-        // TODO Auto-generated method stub
-        
+        services.deleteGraph(requestLogger, uri, null);
     }
 
     @Override
     public void delete(String uri, Transaction transaction) {
-        // TODO Auto-generated method stub
-        
+        services.deleteGraph(requestLogger, uri, transaction);
     }
 
     @Override

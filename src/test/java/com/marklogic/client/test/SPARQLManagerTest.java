@@ -43,17 +43,24 @@ public class SPARQLManagerTest {
     private static String graphUri = "http://marklogic.com/java/SPARQLManagerTest";
     private static String triple1 = "<http://example.org/s1> <http://example.org/p1> <http://example.org/o1>.";
     private static String triple2 = "<http://example.org/s2> <http://example.org/p2> <http://example.org/o2>.";
+    private static String ontology = 
+            "<http://example.org/p1> <http://www.w3.org/2000/01/rdf-schema#range> <http://example.org/C1> . \n" +
+            "<http://example.org/p2> <http://www.w3.org/2000/01/rdf-schema#domain> <http://example.org/C1> .";
+
+    ;
+    
     private static ObjectMapper mapper = new ObjectMapper()
         .configure(Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
         .configure(Feature.ALLOW_SINGLE_QUOTES, true);
     private static SPARQLQueryManager smgr;
-
+    private static GraphManager gmgr;
+    
 
     @BeforeClass
     public static void beforeClass() {
         Common.connect();
 //        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-        GraphManager gmgr = Common.client.newGraphManager();
+        gmgr = Common.client.newGraphManager();
         String nTriples = triple1 + "\n" + triple2;
         gmgr.write(graphUri, new StringHandle(nTriples).withMimetype("application/n-triples"));
         smgr = Common.client.newSPARQLQueryManager();
@@ -170,5 +177,26 @@ public class SPARQLManagerTest {
         assertEquals(1, bindings.size());
         String uri2 = bindings.get(0).get("s").get("value").asText();
         assertNotEquals(uri1, uri2);
+    }
+    
+    @Test
+    public void testInference() throws Exception {
+        //private static String triple1 = "<http://example.org/s1> <http://example.org/p1> <http://example.org/o1>.";
+        //private static String triple2 = "<http://example.org/s2> <http://example.org/p2> <http://example.org/o2>.";
+        // private static String ontology = "<http://example.org/C1> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://example.org/C2> . <http://example.org/s1> <http://www.w3.org/2000/01/rdf-schema#range> <http://example.org/C1> .";
+        gmgr.write("/ontology", new StringHandle(ontology).withMimetype("application/n-triples"));
+        SPARQLQueryDefinition qdef = smgr.newQueryDefinition(
+                "SELECT ?s { ?s a <http://example.org/C1>  }");
+        JsonNode results = smgr.executeSelect(qdef, new JacksonHandle()).get();
+        assertEquals(0, results.path("results").path("bindings").size());
+        qdef.setRulesets(SPARQLRuleset.RANGE);
+        results = smgr.executeSelect(qdef, new JacksonHandle()).get();
+        assertEquals(1, results.path("results").path("bindings").size());
+        
+        qdef.setRulesets(SPARQLRuleset.RANGE, SPARQLRuleset.DOMAIN);
+        results = smgr.executeSelect(qdef, new JacksonHandle()).get();
+        assertEquals(2, results.path("results").path("bindings").size());
+        
+        gmgr.delete("/ontology");
     }
 }
