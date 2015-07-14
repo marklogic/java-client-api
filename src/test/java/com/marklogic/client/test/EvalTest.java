@@ -104,7 +104,8 @@ public class EvalTest {
             "var myInteger;" +
             "var myDouble;" +
             "var myDate;" +
-            "xdmp.arrayValues([myString, myArray, myObject, myBool, myInteger, myDouble, myDate])";
+            "var myNull;" +
+            "xdmp.arrayValues([myString, myArray, myObject, myBool, myInteger, myDouble, myDate, myNull])";
         // first run it as ad-hoc eval
         runAndTestJavascript( Common.client.newServerEval().javascript(javascript) );
 
