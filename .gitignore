@@ -7,3 +7,5 @@ test-complete/build/
 *.jar
 *.war
 *.ear
+.classpath
+.gitignore
