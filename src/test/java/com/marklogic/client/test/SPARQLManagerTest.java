@@ -200,4 +200,5 @@ public class SPARQLManagerTest {
 
         gmgr.delete("/ontology");
     }
+    
 }

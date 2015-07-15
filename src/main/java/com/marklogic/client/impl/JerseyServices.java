@@ -5379,6 +5379,15 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
+	public <R extends AbstractReadHandle> R writeGraphs(RequestLogger reqlog,
+		AbstractWriteHandle input)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		return putResource(reqlog, "graphs", null, params, input, null);
+	}
+	
+	@Override
 	public Object deleteGraph(RequestLogger reqlog, String uri,
 			Transaction transaction) throws ForbiddenUserException,
 			FailedRequestException {
@@ -5390,6 +5399,12 @@ public class JerseyServices implements RESTServices {
 		}
 		return deleteResource(reqlog, "graphs", transaction, params, null);
 
+	}
+	
+	@Override
+	public void deleteGraphs(RequestLogger reqlog) throws ForbiddenUserException,
+			FailedRequestException {
+		deleteResource(reqlog, "graphs", null, null, null);
 	}
 	@Override
 	public <R extends AbstractReadHandle> R executeSparql(RequestLogger reqlog, 
@@ -5445,9 +5460,9 @@ public class JerseyServices implements RESTServices {
 				params.add("using-graph-uri", usingGraphUri);
 			}
 		}
-		if (qdef.getUsingNamedUris() != null) {
-			for (String usingGraphUri : qdef.getUsingGraphUris()) {
-				params.add("using-named-uri", usingGraphUri);
+		if (qdef.getUsingNamedGraphUris() != null) {
+			for (String usingGraphUri : qdef.getUsingNamedGraphUris()) {
+				params.add("using-named-graph-uri", usingGraphUri);
 			}
 		}
 		
