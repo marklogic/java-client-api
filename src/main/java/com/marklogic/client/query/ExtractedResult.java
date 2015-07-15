@@ -20,7 +20,7 @@ import com.marklogic.client.io.Format;
 /** Surfaces the data sent from the server-side XQuery search:search API. Note
  * that the most important function is to provide access to the list of ExtractedItem
  * objects.  For example:
- * <pre>    String combinedSearch = 
+ * <pre>{@code    String combinedSearch = 
  *      "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">" +
  *        "<search:qtext>my search terms</search:qtext>" +
  *        "<search:options>" +
@@ -42,7 +42,7 @@ import com.marklogic.client.io.Format;
  *                ...
  *            }
  *        }
- *    }</pre>
+ *    }}</pre>
  *
  * Where you can, of course, use any appropriate StructureReadHandle or corresponding
  * class (provided by that handle's receiveAs() method) passed to the
