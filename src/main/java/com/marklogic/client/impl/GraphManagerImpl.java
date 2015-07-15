@@ -264,7 +264,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
 
     @Override
     public void replaceGraphs(QuadsWriteHandle handle) {
-        services.writeGraph(requestLogger, null, handle, null, null);
+        services.writeGraphs(requestLogger, handle);
     }
 
     @Override
@@ -275,8 +275,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
 
     @Override
     public void deleteGraphs() {
-        // TODO Auto-generated method stub
-        
+        services.deleteGraphs(requestLogger);
     }
 
     @Override

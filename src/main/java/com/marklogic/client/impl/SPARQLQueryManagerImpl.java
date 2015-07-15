@@ -15,22 +15,18 @@
  */
 package com.marklogic.client.impl;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
+import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
 import com.marklogic.client.io.marker.TriplesReadHandle;
-import com.marklogic.client.semantics.GraphPermissions;
 import com.marklogic.client.semantics.Capability;
-import com.marklogic.client.semantics.SPARQLBinding;
-import com.marklogic.client.semantics.SPARQLBindings;
+import com.marklogic.client.semantics.GraphPermissions;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.semantics.SPARQLQueryManager;
-import com.marklogic.client.util.RequestParameters;
 
 public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SPARQLQueryManager {
     private RESTServices services;
@@ -111,18 +107,14 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
 
     @Override
     public Boolean executeAsk(SPARQLQueryDefinition qdef) {
-        // TODO Auto-generated method stub
-        return Boolean.valueOf(
-            executeQueryImpl(qdef, new StringHandle().withFormat(Format.JSON), null, false).get()
-        );
+        JsonNode result = executeQueryImpl(qdef, new JacksonHandle(), null, false).get();
+        return result.get("boolean").asBoolean();
     }
 
     @Override
     public Boolean executeAsk(SPARQLQueryDefinition qdef, Transaction tx) {
-        // TODO Auto-generated method stub
-        return Boolean.valueOf(
-            executeQueryImpl(qdef, new StringHandle().withFormat(Format.JSON), tx, false).get()
-        );
+        JsonNode result = executeQueryImpl(qdef, new JacksonHandle(), null, false).get();
+        return result.get("boolean").asBoolean();
     }
 
     @Override

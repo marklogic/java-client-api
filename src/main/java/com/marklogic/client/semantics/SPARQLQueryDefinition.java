@@ -44,11 +44,11 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
     public String[] getDefaultGraphUris();
     public String[] getNamedGraphUris();
     public String[] getUsingGraphUris();
-    public String[] getUsingNamedUris();
+    public String[] getUsingNamedGraphUris();
     public void setDefaultGraphUris(String... uris);
     public void setNamedGraphUris(String... uris);
     public void setUsingGraphUris(String... uris);
-    public void setUsingNamedUris(String... uris);
+    public void setUsingNamedGraphUris(String... uris);
 
     public void setConstrainingQueryDefinintion(QueryDefinition query);
     public QueryDefinition getConstrainingQueryDefinintion();

@@ -187,8 +187,18 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
     }
 
     @Override
-    public String[] getUsingNamedUris() {
+    public String[] getUsingNamedGraphUris() {
         return this.usingNamedUris;
+    }
+
+    @Override
+    public void setUsingGraphUris(String... uris) {
+        this.usingGraphUris = uris;
+    }
+
+    @Override
+    public void setUsingNamedGraphUris(String... uris) {
+        this.usingNamedUris = uris;
     }
 
     
@@ -236,16 +246,6 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
             QueryDefinition structuredQuery) {
         // TODO Auto-generated method stub
         return this;
-    }
-
-    @Override
-    public void setUsingGraphUris(String... uris) {
-        this.usingGraphUris = uris;
-    }
-
-    @Override
-    public void setUsingNamedUris(String... uris) {
-        this.usingNamedUris = uris;
     }
 
 }
