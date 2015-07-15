@@ -4581,7 +4581,7 @@ public class JerseyServices implements RESTServices {
 			}
 			throw new FailedRequestException("failed to " + operation + " "
 					+ entityType + " at " + path + ": "
-					+ status.getReasonPhrase(), extractErrorFields(response));
+					+ status.getReasonPhrase(), failure);
 		}
 	}
 
