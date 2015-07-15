@@ -123,7 +123,7 @@ public class Common {
 		}
 	}
 	public static InputStream testFileToStream(String filename) {
-		return ResourceExtensionsTest.class.getClassLoader().getResourceAsStream(filename);
+		return Common.class.getClassLoader().getResourceAsStream(filename);
 	}
 	public static String testDocumentToString(Document document) {
 		try {

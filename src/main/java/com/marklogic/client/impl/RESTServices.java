@@ -283,9 +283,14 @@ public interface RESTServices {
 	public <R extends AbstractReadHandle> R writeGraph(RequestLogger reqlog, String uri,
 		AbstractWriteHandle input, GraphPermissions permissions, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public <R extends AbstractReadHandle> R writeGraphs(RequestLogger reqlog, 
+			AbstractWriteHandle input)
+			throws ResourceNotFoundException, ForbiddenUserException,
+			FailedRequestException;
 	public Object deleteGraph(RequestLogger requestLogger, String uri,
 			Transaction transaction)
 			throws ForbiddenUserException, FailedRequestException;
+	public void deleteGraphs(RequestLogger requestLogger);
 	public <R extends AbstractReadHandle> R executeSparql(RequestLogger reqlog, 
 		SPARQLQueryDefinition qdef, R output, long start, long pageLength,
 		Transaction transaction, boolean isUpdate);
@@ -296,4 +301,5 @@ public interface RESTServices {
 	 * @return true if the status response is 200, false if 404;
 	 */
 	public boolean exists(String uri);
+	
 }

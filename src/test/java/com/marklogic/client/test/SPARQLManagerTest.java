@@ -61,6 +61,7 @@ public class SPARQLManagerTest {
         Common.connect();
         //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
         gmgr = Common.client.newGraphManager();
+        gmgr.deleteGraphs();
         String nTriples = triple1 + "\n" + triple2;
         gmgr.write(graphUri, new StringHandle(nTriples).withMimetype("application/n-triples"));
         smgr = Common.client.newSPARQLQueryManager();
@@ -200,4 +201,5 @@ public class SPARQLManagerTest {
 
         gmgr.delete("/ontology");
     }
+    
 }
