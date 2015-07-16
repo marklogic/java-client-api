@@ -83,8 +83,6 @@ public class GraphsTest {
         gmgr.mergeGraphsAs(quad4);
         triples = gmgr.readAs(quadGraphUri, String.class);
         gmgr.delete(quadGraphUri);
-        triples = gmgr.readAs(quadGraphUri, String.class);
-        assertEquals(null, triples);
     }
 
     @Test
@@ -95,10 +93,22 @@ public class GraphsTest {
         String ntriple6 = "<http://example.org/s6> <http://example.com/p2> <http://example.org/o2> .";
         String ntriple7 = "<http://example.org/s7> <http://example.com/p2> <http://example.org/o2> .";
         String ntriple8 = "<http://example.org/s8> <http://example.com/p2> <http://example.org/o2> .";
-        gmgr.write(tripleGraphUri, new StringHandle(ntriple5).withMimetype("application/n-triples"));
-        StringHandle triplesHandle = gmgr.read(tripleGraphUri, new StringHandle());
-        gmgr.merge(tripleGraphUri, new StringHandle(ntriple6).withMimetype("application/n-triples"));
-        triplesHandle = gmgr.read(tripleGraphUri, new StringHandle());
+        gmgr.write(tripleGraphUri, new StringHandle(ntriple5).withMimetype(RDFMimeTypes.NTRIPLES));
+        StringHandle triplesHandle = gmgr.read(tripleGraphUri, new StringHandle().withMimetype(RDFMimeTypes.NTRIPLES));
+        assertEquals(ntriple5, triplesHandle.get());
+
+        gmgr.write(tripleGraphUri, new StringHandle(ntriple5 + "\n" + ntriple6)
+            .withMimetype("application/n-triples"));
+        String triples5and6 = gmgr.readAs(tripleGraphUri, String.class);
+        // I have to expect n-quads format since I can't request a specific format with readAs
+        String expected = new String(ntriple5 + "\n" + ntriple6)
+            // n-quads just adds the graph uri at the end
+            .replaceAll(" \\.", " <" + tripleGraphUri + ">.");
+        assertEquals(expected, triples5and6);
+
+        //gmgr.merge(tripleGraphUri, new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NTRIPLES));
+        //String triples5and6 = gmgr.readAs(tripleGraphUri, String.class);
+        //assertEquals(ntriple5 + "\n" + ntriple6, triples5and6);
 //        gmgr.writeAs(tripleGraphUri, ntriple7);
 //        String triples = gmgr.readAs(tripleGraphUri, String.class);
 //        gmgr.mergeAs(tripleGraphUri, ntriple8);
