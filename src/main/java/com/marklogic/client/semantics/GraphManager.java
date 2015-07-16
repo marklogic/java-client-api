@@ -40,8 +40,8 @@ public interface GraphManager {
     public <T extends TriplesReadHandle> T read(String uri, T handle);
     public <T extends TriplesReadHandle> T read(String uri, T handle, Transaction transaction);
 
-    public <T> T readAs(String uri, Class<T> clazz);
-    public <T> T readAs(String uri, Class<T> clazz, Transaction transaction);
+    public <T> T readAs(String uri, Class<T> as);
+    public <T> T readAs(String uri, Class<T> as, Transaction transaction);
 
     public GraphPermissions getPermissions(String uri);
     public GraphPermissions getPermissions(String uri, Transaction transaction);
@@ -83,7 +83,7 @@ public interface GraphManager {
     public void delete(String uri, Transaction transaction);
 
     public <T extends TriplesReadHandle> T things(String[] iris, T handle);
-    public <T> T thingsAs(String[] iris, Class<T> clazz);
+    public <T> T thingsAs(String[] iris, Class<T> as);
 
     // quads methods - no permissions transactions, or read
     public void mergeGraphs(QuadsWriteHandle handle);

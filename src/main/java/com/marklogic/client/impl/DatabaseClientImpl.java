@@ -189,8 +189,7 @@ public class DatabaseClientImpl implements DatabaseClient {
 
 	@Override
 	public GraphManager newGraphManager() {
-		// TODO Auto-generated method stub
-		return new GraphManagerImpl<TriplesReadHandle, TriplesWriteHandle>(services);
+		return new GraphManagerImpl<TriplesReadHandle, TriplesWriteHandle>(services, getHandleRegistry());
 	}
 
 	@Override

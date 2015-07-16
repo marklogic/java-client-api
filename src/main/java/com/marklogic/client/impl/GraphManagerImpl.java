@@ -21,10 +21,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.QuadsWriteHandle;
 import com.marklogic.client.io.marker.TriplesReadHandle;
 import com.marklogic.client.io.marker.TriplesWriteHandle;
@@ -37,10 +39,12 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     implements GraphManager
 {
     private RESTServices services;
+    private HandleFactoryRegistry handleRegistry;
 
-    public GraphManagerImpl(RESTServices services) {
+    public GraphManagerImpl(RESTServices services, HandleFactoryRegistry handleRegistry) {
         super();
         this.services = services;
+        this.handleRegistry = handleRegistry;
     }
 
     @Override
@@ -64,15 +68,26 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
 
     @Override
     public <T> T readAs(String uri, Class<T> clazz) {
-        // TODO Auto-generated method stub
-        return null;
+        return readAs(uri, clazz, null);
     }
 
     @Override
-    public <T> T readAs(String uri, Class<T> clazz,
+    public <T> T readAs(String uri, Class<T> as,
             Transaction transaction) {
-        // TODO Auto-generated method stub
-        return null;
+        ContentHandle<T> handle = handleRegistry.makeHandle(as);
+
+        if ( ! (handle instanceof TriplesReadHandle) ) {
+            throw new IllegalArgumentException("Second arg \"as\" " +
+                "is registered by " + handle.getClass() + " which is not a " +
+                "TriplesReadHandle so it cannot read content from GraphManager");
+        }
+        @SuppressWarnings("unchecked")
+        TriplesReadHandle triplesHandle = (TriplesReadHandle) handle;
+        if (null == read(uri, triplesHandle, transaction)) {
+            return null;
+        }
+
+        return handle.get();
     }
 
     @Override
