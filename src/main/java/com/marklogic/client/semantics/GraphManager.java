@@ -92,5 +92,8 @@ public interface GraphManager {
     public void replaceGraphsAs(Object quadsData);
     // TODO: do we want this?
     public void deleteGraphs();
+
+    public String getDefaultMimetype();
+    public void setDefaultMimetype(String mimetype);
 }
 
