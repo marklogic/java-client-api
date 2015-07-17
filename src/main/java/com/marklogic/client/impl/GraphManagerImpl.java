@@ -26,6 +26,7 @@ import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.QuadsWriteHandle;
 import com.marklogic.client.io.marker.TriplesReadHandle;
@@ -143,55 +144,47 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
 
     @Override
     public void merge(String uri, TriplesWriteHandle handle) {
-        // TODO Auto-generated method stub
-        
+        merge(uri, handle, null, null);
     }
 
     @Override
     public void merge(String uri, TriplesWriteHandle handle,
             Transaction transaction) {
-        // TODO Auto-generated method stub
-        
+        merge(uri, handle, null, transaction);
     }
 
     @Override
     public void merge(String uri, TriplesWriteHandle handle,
             GraphPermissions permissions) {
-        // TODO Auto-generated method stub
-        
+        merge(uri, handle, permissions, null);
     }
 
     @Override
     public void merge(String uri, TriplesWriteHandle handle,
             GraphPermissions permissions, Transaction transaction) {
-        // TODO Auto-generated method stub
-        
+        services.mergeGraph(requestLogger, uri, handle, permissions, transaction);
     }
 
     @Override
     public void mergeAs(String uri, Object graphData) {
-        // TODO Auto-generated method stub
-        
+        mergeAs(uri, graphData, null, null);
     }
 
     @Override
     public void mergeAs(String uri, Object graphData, Transaction transaction) {
-        // TODO Auto-generated method stub
-        
+        mergeAs(uri, graphData, null, transaction);
     }
 
     @Override
     public void mergeAs(String uri, Object graphData,
             GraphPermissions permissions) {
-        // TODO Auto-generated method stub
-        
+        mergeAs(uri, graphData, permissions, null);
     }
 
     @Override
     public void mergeAs(String uri, Object graphData,
             GraphPermissions permissions, Transaction transaction) {
-        // TODO Auto-generated method stub
-        
+        merge(uri, populateTriplesHandle(graphData), permissions, transaction);
     }
 
     @Override
@@ -219,28 +212,51 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
 
     @Override
     public void writeAs(String uri, Object graphData) {
-        // TODO Auto-generated method stub
-        
+        writeAs(uri, graphData, null, null);
     }
 
     @Override
     public void writeAs(String uri, Object graphData, Transaction transaction) {
-        // TODO Auto-generated method stub
-        
+        writeAs(uri, graphData, null, transaction);
     }
 
     @Override
     public void writeAs(String uri, Object graphData,
             GraphPermissions permissions) {
-        // TODO Auto-generated method stub
-        
+        writeAs(uri, graphData, permissions, null);
     }
 
     @Override
     public void writeAs(String uri, Object graphData,
             GraphPermissions permissions, Transaction transaction) {
-        // TODO Auto-generated method stub
+        write(uri, populateTriplesHandle(graphData), permissions, transaction);
+    }
 
+    private AbstractWriteHandle populateHandle(Object graphData) {
+        if (graphData == null) {
+            throw new IllegalArgumentException("no graphData to write");
+        }
+
+        Class<?> as = graphData.getClass();
+
+        if (AbstractWriteHandle.class.isAssignableFrom(as)) {
+            return (AbstractWriteHandle) graphData;
+        } else {
+            ContentHandle<?> handle = handleRegistry.makeHandle(as);
+            if ( ! (handle instanceof TriplesReadHandle) ) {
+                throw new IllegalArgumentException("Arg \"graphData\" " +
+                        "is handled by " + handle.getClass() + " which is not a " +
+                        "TriplesReadHandle so it cannot write using GraphManager");
+            }
+            Utilities.setHandleContent(handle, graphData);
+            return handle;
+        }
+    }
+    private QuadsWriteHandle populateQuadsHandle(Object graphData) {
+        return (QuadsWriteHandle) populateHandle(graphData);
+    }
+    private TriplesWriteHandle populateTriplesHandle(Object graphData) {
+        return (TriplesWriteHandle) populateHandle(graphData);
     }
 
     @Override
@@ -267,14 +283,12 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
 
     @Override
     public void mergeGraphs(QuadsWriteHandle handle) {
-        // TODO Auto-generated method stub
-        
+        services.mergeGraphs(requestLogger, handle);
     }
 
     @Override
     public void mergeGraphsAs(Object quadsData) {
-        // TODO Auto-generated method stub
-        
+        mergeGraphs( populateQuadsHandle(quadsData) );
     }
 
     @Override
@@ -284,8 +298,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
 
     @Override
     public void replaceGraphsAs(Object quadsData) {
-        // TODO Auto-generated method stub
-        
+        replaceGraphs( populateQuadsHandle(quadsData) );
     }
 
     @Override
