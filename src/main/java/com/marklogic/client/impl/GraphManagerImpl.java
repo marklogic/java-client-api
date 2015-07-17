@@ -41,6 +41,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
 {
     private RESTServices services;
     private HandleFactoryRegistry handleRegistry;
+    private String defaultMimetype;
 
     public GraphManagerImpl(RESTServices services, HandleFactoryRegistry handleRegistry) {
         super();
@@ -64,7 +65,12 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     @Override
     public TriplesReadHandle read(String uri, TriplesReadHandle handle,
             Transaction transaction) {
-        return services.readGraph(requestLogger, uri, handle, transaction);
+        HandleImplementation baseHandle = HandleAccessor.as(handle);
+        String mimetype = baseHandle.getMimetype();
+        if ( mimetype == null ) baseHandle.setMimetype(defaultMimetype);
+        services.readGraph(requestLogger, uri, handle, transaction);
+        baseHandle.setMimetype(mimetype);
+        return handle;
     }
 
     @Override
@@ -162,7 +168,11 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     @Override
     public void merge(String uri, TriplesWriteHandle handle,
             GraphPermissions permissions, Transaction transaction) {
+        HandleImplementation baseHandle = HandleAccessor.as(handle);
+        String mimetype = baseHandle.getMimetype();
+        if ( mimetype == null ) baseHandle.setMimetype(defaultMimetype);
         services.mergeGraph(requestLogger, uri, handle, permissions, transaction);
+        baseHandle.setMimetype(mimetype);
     }
 
     @Override
@@ -207,7 +217,11 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     @Override
     public void write(String uri, TriplesWriteHandle handle,
             GraphPermissions permissions, Transaction transaction) {
+        HandleImplementation baseHandle = HandleAccessor.as(handle);
+        String mimetype = baseHandle.getMimetype();
+        if ( mimetype == null ) baseHandle.setMimetype(defaultMimetype);
         services.writeGraph(requestLogger, uri, handle, permissions, transaction);
+        baseHandle.setMimetype(mimetype);
     }
 
     @Override
@@ -283,7 +297,11 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
 
     @Override
     public void mergeGraphs(QuadsWriteHandle handle) {
+        HandleImplementation baseHandle = HandleAccessor.as(handle);
+        String mimetype = baseHandle.getMimetype();
+        if ( mimetype == null ) baseHandle.setMimetype(defaultMimetype);
         services.mergeGraphs(requestLogger, handle);
+        baseHandle.setMimetype(mimetype);
     }
 
     @Override
@@ -293,7 +311,11 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
 
     @Override
     public void replaceGraphs(QuadsWriteHandle handle) {
+        HandleImplementation baseHandle = HandleAccessor.as(handle);
+        String mimetype = baseHandle.getMimetype();
+        if ( mimetype == null ) baseHandle.setMimetype(defaultMimetype);
         services.writeGraphs(requestLogger, handle);
+        baseHandle.setMimetype(mimetype);
     }
 
     @Override
@@ -310,5 +332,13 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     public GraphPermissions permission(String role, Capability... capabilities) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public String getDefaultMimetype() {
+        return defaultMimetype;
+    }
+
+    public void setDefaultMimetype(String mimetype) {
+        this.defaultMimetype = mimetype;
     }
 }
