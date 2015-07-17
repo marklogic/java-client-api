@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.io.InputStream;
 import java.util.Iterator;
 
 import org.junit.AfterClass;
@@ -33,6 +34,8 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.RDFMimeTypes;
 
@@ -40,15 +43,19 @@ public class GraphsTest {
     private static GraphManager gmgr;
     @BeforeClass
     public static void beforeClass() {
+        // implementing a custom handle is the only way currently to set specific
+        // mime types on the writeAs, mergeAs, and readAs methods
+        DatabaseClientFactory.getHandleRegistry().register(NTriplesHandleForTesting.newFactory());
         Common.connect();
         gmgr = Common.client.newGraphManager();
-//        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 
     }
 
     @AfterClass
     public static void afterClass() {
         Common.release();
+        DatabaseClientFactory.getHandleRegistry().register(StringHandle.newFactory());
     }
 
     @Test
@@ -70,18 +77,26 @@ public class GraphsTest {
         String quad3 = "<http://example.org/s3> <http://example.com/p2> <http://example.org/o2> <http://example.org/g1>.";
         String quad4 = "<http://example.org/s4> <http://example.com/p2> <http://example.org/o2> <http://example.org/g1>.";
         GraphManager gmgr = Common.client.newGraphManager();
-        // the next line does not create the graph http://example.org/g1 as expected
-        //gmgr.replaceGraphs(new StringHandle(quad1).withMimetype("application/n-quads"));
-        String allQuads = quad1 + "\n" + quad2 + "\n" + quad3 + "\n" + quad4;
-        gmgr.write("http://example.org/g1", new StringHandle(allQuads).withMimetype("application/n-quads"));
-        StringHandle triplesHandle = gmgr.read(quadGraphUri, new StringHandle());
-        assertEquals(allQuads, triplesHandle.get());
-        gmgr.mergeGraphs(new StringHandle(quad2));
-        triplesHandle = gmgr.read(quadGraphUri, new StringHandle());
+        gmgr.replaceGraphs(new StringHandle(quad1).withMimetype("application/n-quads"));
+        StringHandle quadsHandle = gmgr.read(quadGraphUri,
+            new StringHandle().withMimetype(RDFMimeTypes.NQUADS));
+        assertEquals(quad1, quadsHandle.get());
+
+        gmgr.mergeGraphs(new StringHandle(quad2).withMimetype("application/n-quads"));
+        StringHandle quads1and2 = gmgr.read(quadGraphUri,
+            new StringHandle().withMimetype(RDFMimeTypes.NQUADS));
+        assertEquals(quad1 + "\n" + quad2, quads1and2.get());
+
         gmgr.replaceGraphsAs(quad3);
-        String triples = gmgr.readAs(quadGraphUri, String.class);
+        quadsHandle = gmgr.read(quadGraphUri,
+            new StringHandle().withMimetype(RDFMimeTypes.NQUADS));
+        assertEquals(quad3, quadsHandle.get());
+
         gmgr.mergeGraphsAs(quad4);
-        triples = gmgr.readAs(quadGraphUri, String.class);
+        StringHandle quads3and4 = gmgr.read(quadGraphUri,
+                new StringHandle().withMimetype(RDFMimeTypes.NQUADS));
+        assertEquals(quad3 + "\n" + quad4, quads3and4.get());
+
         gmgr.delete(quadGraphUri);
     }
 
@@ -94,28 +109,30 @@ public class GraphsTest {
         String ntriple7 = "<http://example.org/s7> <http://example.com/p2> <http://example.org/o2> .";
         String ntriple8 = "<http://example.org/s8> <http://example.com/p2> <http://example.org/o2> .";
         gmgr.write(tripleGraphUri, new StringHandle(ntriple5).withMimetype(RDFMimeTypes.NTRIPLES));
-        StringHandle triplesHandle = gmgr.read(tripleGraphUri, new StringHandle().withMimetype(RDFMimeTypes.NTRIPLES));
+        StringHandle triplesHandle = gmgr.read(tripleGraphUri,
+            new StringHandle().withMimetype(RDFMimeTypes.NTRIPLES));
         assertEquals(ntriple5, triplesHandle.get());
 
         gmgr.write(tripleGraphUri, new StringHandle(ntriple5 + "\n" + ntriple6)
-            .withMimetype("application/n-triples"));
+            .withMimetype(RDFMimeTypes.NTRIPLES));
         String triples5and6 = gmgr.readAs(tripleGraphUri, String.class);
-        // I have to expect n-quads format since I can't request a specific format with readAs
-        String expected = new String(ntriple5 + "\n" + ntriple6)
-            // n-quads just adds the graph uri at the end
-            .replaceAll(" \\.", " <" + tripleGraphUri + ">.");
+        // I expect n-triples format String.class is currently handled by my custom NTriplesHandleForTesting
+        String expected = new String(ntriple5 + "\n" + ntriple6);
         assertEquals(expected, triples5and6);
 
-        //gmgr.merge(tripleGraphUri, new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NTRIPLES));
-        //String triples5and6 = gmgr.readAs(tripleGraphUri, String.class);
-        //assertEquals(ntriple5 + "\n" + ntriple6, triples5and6);
-//        gmgr.writeAs(tripleGraphUri, ntriple7);
-//        String triples = gmgr.readAs(tripleGraphUri, String.class);
-//        gmgr.mergeAs(tripleGraphUri, ntriple8);
-//        triples = gmgr.readAs(tripleGraphUri, String.class);
-//        gmgr.delete(tripleGraphUri);
-//        triples = gmgr.readAs(tripleGraphUri, String.class);
-//        assertEquals(null, triples);
+        gmgr.merge(tripleGraphUri, new StringHandle(ntriple7).withMimetype(RDFMimeTypes.NTRIPLES));
+        StringHandle triples5and6and7 = gmgr.read(tripleGraphUri,
+            new StringHandle().withMimetype(RDFMimeTypes.NTRIPLES));
+        assertEquals(ntriple5 + "\n" + ntriple6 + "\n" + ntriple7, triples5and6and7.get());
+
+        gmgr.writeAs(tripleGraphUri, ntriple7);
+        String triples7 = gmgr.readAs(tripleGraphUri, String.class);
+        assertEquals(ntriple7, triples7);
+
+        gmgr.mergeAs(tripleGraphUri, ntriple8);
+        String triples7and8 = gmgr.readAs(tripleGraphUri, String.class);
+        assertEquals(ntriple7 + "\n" + ntriple8, triples7and8);
+
         gmgr.delete(tripleGraphUri);
         // ensure it's gone
         try {
@@ -125,7 +142,27 @@ public class GraphsTest {
             // pass
         }
     }
-    
+    public static class NTriplesHandleForTesting extends StringHandle {
+        public String getMimetype() { return RDFMimeTypes.NTRIPLES; }
+
+        public static ContentHandleFactory newFactory() {
+            return new ContentHandleFactory() {
+                @SuppressWarnings("unchecked")
+                public <C> ContentHandle<C> newHandle(Class<C> type) {
+                    return (ContentHandle<C>) new NTriplesHandleForTesting();
+                }
+
+                public Class<?>[] getHandledClasses() {
+                    return new Class<?>[]{ String.class };
+                }
+
+                public boolean isHandled(Class<?> type) {
+                    return String.class.isAssignableFrom(type);
+                }
+            };
+        }
+    }
+
     @Test
     public void testTransactions() {
         GraphManager graphManagerWriter = Common.client.newGraphManager();

@@ -280,10 +280,10 @@ public interface RESTServices {
 	public <R extends AbstractReadHandle> R readGraph(RequestLogger reqlog, String uri, R output,
 		Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public <R extends AbstractReadHandle> R writeGraph(RequestLogger reqlog, String uri,
+	public void writeGraph(RequestLogger reqlog, String uri,
 		AbstractWriteHandle input, GraphPermissions permissions, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public <R extends AbstractReadHandle> R writeGraphs(RequestLogger reqlog, 
+	public void writeGraphs(RequestLogger reqlog, 
 			AbstractWriteHandle input)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException;
@@ -301,5 +301,13 @@ public interface RESTServices {
 	 * @return true if the status response is 200, false if 404;
 	 */
 	public boolean exists(String uri);
-	
+
+	public void mergeGraph(RequestLogger reqlog, String uri, AbstractWriteHandle input,
+            GraphPermissions permissions, Transaction transaction)
+            throws ResourceNotFoundException, ForbiddenUserException,
+            FailedRequestException;
+
+    public void mergeGraphs(RequestLogger reqlog, AbstractWriteHandle input)
+            throws ResourceNotFoundException, ForbiddenUserException,
+            FailedRequestException;
 }

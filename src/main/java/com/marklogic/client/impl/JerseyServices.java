@@ -3427,9 +3427,9 @@ public class JerseyServices implements RESTServices {
 				"read");
 
 		String inputMimetype = inputBase.getMimetype();
-		String outputMimetype = outputBase.getMimetype();
+		String outputMimetype = outputBase == null ? null : outputBase.getMimetype();
 		boolean isResendable = inputBase.isResendable();
-		Class as = outputBase.receiveAs();
+		Class as = outputBase == null ? null : outputBase.receiveAs();
 
 		WebResource.Builder builder = makePostBuilder(path, params,
 				inputMimetype, outputMimetype);
@@ -5365,7 +5365,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public <R extends AbstractReadHandle> R writeGraph(RequestLogger reqlog, String uri,
+	public void writeGraph(RequestLogger reqlog, String uri,
 		AbstractWriteHandle input, GraphPermissions permissions, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
 	{
@@ -5375,18 +5375,41 @@ public class JerseyServices implements RESTServices {
 		} else {
 			params.add("default", "");
 		}
-		return putResource(reqlog, "graphs", transaction, params, input, null);
+		putResource(reqlog, "graphs", transaction, params, input, null);
 	}
 
 	@Override
-	public <R extends AbstractReadHandle> R writeGraphs(RequestLogger reqlog,
+	public void writeGraphs(RequestLogger reqlog,
 		AbstractWriteHandle input)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
 	{
 		RequestParameters params = new RequestParameters();
-		return putResource(reqlog, "graphs", null, params, input, null);
+		putResource(reqlog, "graphs", null, params, input, null);
 	}
-	
+
+	@Override
+	public void mergeGraph(RequestLogger reqlog, String uri,
+		AbstractWriteHandle input, GraphPermissions permissions, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		if ( uri != null ) {
+			params.add("graph", uri);
+		} else {
+			params.add("default", "");
+		}
+		postResource(reqlog, "graphs", transaction, params, input, null);
+	}
+
+	@Override
+	public void mergeGraphs(RequestLogger reqlog,
+		AbstractWriteHandle input)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		postResource(reqlog, "graphs", null, params, input, null);
+	}
+
 	@Override
 	public Object deleteGraph(RequestLogger reqlog, String uri,
 			Transaction transaction) throws ForbiddenUserException,
