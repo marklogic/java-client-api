@@ -3655,7 +3655,6 @@ public class JerseyServices implements RESTServices {
 		if (transform != null) {
 			transform.merge(params);
 		}
-		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 		if (temporalCollection != null) params.add("temporal-collection", temporalCollection);
 		return postResource(
 			reqlog,
