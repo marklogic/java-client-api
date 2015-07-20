@@ -74,7 +74,6 @@ public class GraphsTest {
         String quad2 = "<http://example.org/s2> <http://example.com/p2> <http://example.org/o2> <http://example.org/g1>.";
         String quad3 = "<http://example.org/s3> <http://example.com/p2> <http://example.org/o2> <http://example.org/g1>.";
         String quad4 = "<http://example.org/s4> <http://example.com/p2> <http://example.org/o2> <http://example.org/g1>.";
-        GraphManager gmgr = Common.client.newGraphManager();
         gmgr.replaceGraphs(new StringHandle(quad1));
         StringHandle quadsHandle = gmgr.read(quadGraphUri, new StringHandle());
         assertEquals(quad1, quadsHandle.get());
@@ -88,7 +87,7 @@ public class GraphsTest {
         assertEquals(quad3, quadsHandle.get());
 
         gmgr.mergeGraphsAs(quad4);
-        String quads3and4 = gmgr.readAs(quadGraphUri);
+        String quads3and4 = gmgr.readAs(quadGraphUri, String.class);
         assertEquals(quad3 + "\n" + quad4, quads3and4);
 
         gmgr.delete(quadGraphUri);
@@ -97,7 +96,6 @@ public class GraphsTest {
     @Test
     public void testTriples() throws Exception {
         gmgr.setDefaultMimetype(RDFMimeTypes.NTRIPLES);
-        GraphManager gmgr = Common.client.newGraphManager();
         String tripleGraphUri = "http://example.org/g2";
         String ntriple5 = "<http://example.org/s5> <http://example.com/p2> <http://example.org/o2> .";
         String ntriple6 = "<http://example.org/s6> <http://example.com/p2> <http://example.org/o2> .";
@@ -137,12 +135,13 @@ public class GraphsTest {
 
     @Test
     public void testTransactions() {
-        gmgr.setDefaultMimetype(RDFMimeTypes.NTRIPLES);
         GraphManager graphManagerWriter = Common.client.newGraphManager();
+        graphManagerWriter.setDefaultMimetype(RDFMimeTypes.NTRIPLES);
         DatabaseClient readOnlyClient = DatabaseClientFactory.newClient(
                 Common.HOST, Common.PORT, "rest-reader", "x",
                 Authentication.DIGEST);
         GraphManager graphManagerReader = readOnlyClient.newGraphManager();
+        graphManagerReader.setDefaultMimetype(RDFMimeTypes.NTRIPLES);
         String t1 = "<s1> <p1> <o1> .";
         String t2 = "<s2> <p2> <o2> .";
         try {
@@ -191,7 +190,7 @@ public class GraphsTest {
             tx = null;
             // graph is now there.  No failure.
             String mergedGraph = graphManagerWriter.readAs("newGraph", String.class);
-            assertEquals(t1 + t2, mergedGraph);
+            assertEquals(t1 + "\n" + t2, mergedGraph);
             // reader cannot delete
             try {
                 graphManagerReader.delete("newGraph");

@@ -88,7 +88,6 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
                 "is registered by " + handle.getClass() + " which is not a " +
                 "TriplesReadHandle so it cannot read content from GraphManager");
         }
-        @SuppressWarnings("unchecked")
         TriplesReadHandle triplesHandle = (TriplesReadHandle) handle;
         if (null == read(uri, triplesHandle, transaction)) {
             return null;
