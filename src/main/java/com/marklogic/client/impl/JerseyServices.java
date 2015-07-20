@@ -5372,7 +5372,11 @@ public class JerseyServices implements RESTServices {
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
 	{
 		RequestParameters params = new RequestParameters();
-		params.add("graph", uri);
+		if ( uri != null ) {
+			params.add("graph", uri);
+		} else {
+			params.add("default", "");
+		}
 		return getResource(reqlog, "graphs", transaction, params, output);
 	}
 
