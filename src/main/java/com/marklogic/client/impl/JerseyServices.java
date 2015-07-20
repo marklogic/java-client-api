@@ -3127,6 +3127,7 @@ public class JerseyServices implements RESTServices {
 			String path, Transaction transaction, RequestParameters params, R output)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
+		if ( params == null ) params = new RequestParameters();
 		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
 				"read");
@@ -3200,6 +3201,7 @@ public class JerseyServices implements RESTServices {
 			String path, Transaction transaction, RequestParameters params, String... mimetypes)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
+		if ( params == null ) params = new RequestParameters();
 		if (transaction != null) params.add("txid", transaction.getTransactionId());
 
 		WebResource.Builder builder = makeGetBuilder(path, params, null);
@@ -3258,6 +3260,7 @@ public class JerseyServices implements RESTServices {
 			R output) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
+		if ( params == null ) params = new RequestParameters();
 		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 		HandleImplementation inputBase = HandleAccessor.checkHandle(input,
 				"write");
@@ -3344,6 +3347,7 @@ public class JerseyServices implements RESTServices {
 		if (input == null || input.length == 0)
 			throw new IllegalArgumentException(
 					"input not specified for multipart");
+		if ( params == null ) params = new RequestParameters();
 		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
@@ -3421,6 +3425,9 @@ public class JerseyServices implements RESTServices {
 			AbstractWriteHandle input, R output) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
+		if ( params == null ) params = new RequestParameters();
+		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
+
 		HandleImplementation inputBase = HandleAccessor.checkHandle(input,
 				"write");
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
@@ -3508,6 +3515,9 @@ public class JerseyServices implements RESTServices {
 			W[] input, Map<String, List<String>>[] headers, R output) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
+		if ( params == null ) params = new RequestParameters();
+		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
+
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output, "read");
 
 		String outputMimetype = outputBase != null ? outputBase.getMimetype() : null;
@@ -3971,6 +3981,7 @@ public class JerseyServices implements RESTServices {
 			AbstractWriteHandle input, String... outputMimetypes) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
+		if ( params == null ) params = new RequestParameters();
 		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 		HandleImplementation inputBase = HandleAccessor.checkHandle(input,
 				"write");
@@ -4050,6 +4061,7 @@ public class JerseyServices implements RESTServices {
 			RequestParameters params, W[] input, String... outputMimetypes)
 			throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
+		if ( params == null ) params = new RequestParameters();
 		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -4115,6 +4127,7 @@ public class JerseyServices implements RESTServices {
 			RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
 			R output) throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
+		if ( params == null ) params = new RequestParameters();
 		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
 				"read");
