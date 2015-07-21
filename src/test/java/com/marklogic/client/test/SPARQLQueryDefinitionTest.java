@@ -64,6 +64,7 @@ public class SPARQLQueryDefinitionTest {
         // verify default graph
     	String defGraphQuery = "SELECT ?s WHERE { ?s a ?o }";
     	SPARQLQueryDefinition qdef = smgr.newQueryDefinition(defGraphQuery);
+    	qdef.setIncludeDefaultRulesets(false);
     	ArrayNode bindings = executeAndExtractBindings(qdef);
     	assertEquals("Union of all graphs has three class assertions", 3, bindings.size());
     	
@@ -79,6 +80,7 @@ public class SPARQLQueryDefinitionTest {
     @Test
     public void testNamedGraphUris() {
     	SPARQLQueryDefinition qdef = smgr.newQueryDefinition("SELECT ?s where { GRAPH ?g { ?s a ?o } }");
+    	qdef.setIncludeDefaultRulesets(false);
     	qdef.setNamedGraphUris("http://example.org/g3");
     	ArrayNode bindings = executeAndExtractBindings(qdef);
     	assertEquals("From named 0 result assertions", 0, bindings.size());
@@ -161,5 +163,4 @@ public class SPARQLQueryDefinitionTest {
 
     	// TODO removeDefaultInference();
     }
-
 }

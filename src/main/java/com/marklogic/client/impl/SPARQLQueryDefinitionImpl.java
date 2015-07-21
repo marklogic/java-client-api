@@ -276,7 +276,7 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
 	@Override
 	public SPARQLQueryDefinition withIncludeDefaultRulesets(Boolean b) {
 		this.includeDefaultRulesets = b;
-		return null;
+		return this;
 	}
 
 }
