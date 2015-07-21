@@ -62,4 +62,8 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
     public SPARQLQueryDefinition withRuleset(SPARQLRuleset ruleset);
     public SPARQLQueryDefinition withStructuredQuery(QueryDefinition structuredQuery);
     
+	public void setIncludeDefaultRulesets(Boolean b);
+	public Boolean getIncludeDefaultRulesets();
+	public SPARQLQueryDefinition withIncludeDefaultRulesets(Boolean b);
+    
 }

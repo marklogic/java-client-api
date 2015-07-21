@@ -5372,7 +5372,11 @@ public class JerseyServices implements RESTServices {
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
 	{
 		RequestParameters params = new RequestParameters();
-		params.add("graph", uri);
+		if ( uri != null ) {
+			params.add("graph", uri);
+		} else {
+			params.add("default", "");
+		}
 		return getResource(reqlog, "graphs", transaction, params, output);
 	}
 
@@ -5451,7 +5455,6 @@ public class JerseyServices implements RESTServices {
 		RequestParameters params = new RequestParameters();
 		if (start > 1)             params.add("start",      Long.toString(start));
 		if (pageLength >= 0)       params.add("pageLength", Long.toString(pageLength));
-		if (transaction != null)   params.add("txid",       transaction.getTransactionId());
 		String sparql = qdef.getSparql();
 		SPARQLBindings bindings = qdef.getBindings();
 		for ( String bindingName : bindings.keySet() ) {
@@ -5506,6 +5509,9 @@ public class JerseyServices implements RESTServices {
 		    for (SPARQLRuleset ruleset : qdef.getRulesets()) {
 		        params.add("ruleset", ruleset.getName());
 		    }
+		}
+		if (qdef.getIncludeDefaultRulesets() != null) {
+			params.add("default-rulesets", qdef.getIncludeDefaultRulesets() ? "include" : "exclude");
 		}
 
 		// TODO: do we want this default?
