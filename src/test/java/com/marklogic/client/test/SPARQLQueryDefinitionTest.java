@@ -4,6 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.UnsupportedEncodingException;
+
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -123,6 +127,39 @@ public class SPARQLQueryDefinitionTest {
     	checkDef.setDefaultGraphUris("http://example.org/g27");
     	assertTrue(smgr.executeAsk(checkDef));
     }
-    
-    
+
+
+    // TODO round out this test setup/teardown.
+    private static void configureDefaultRuleSet() throws UnsupportedEncodingException {
+    	String dbProperties = "{\"database-name\":\"java-unittest\",\"default-ruleset\":[{\"location\":\"rdfs.rules\"}]}";
+    	HttpPut client = new HttpPut("http://localhost:8002/manage/v2/databases/java-unittest/properties");
+    	client.setHeader("content-type", "application/json");
+    	client.setEntity(new StringEntity(dbProperties));
+    }
+
+    @Test
+    public void testIncludeDefaultInference() {
+    	// install default inference.
+    	// TODO installDefaultInference("rdfs.rules");
+    	// check query with and without
+    	// uninstall default inference.
+		SPARQLQueryDefinition qdef = smgr.newQueryDefinition("select ?o where {?s a ?o . filter (?s = <http://example.org/r4> )}");
+		qdef.setIncludeDefaultRulesets(false);
+
+		assertFalse(qdef.getIncludeDefaultRulesets());
+		JacksonHandle handle = smgr.executeSelect(qdef, new JacksonHandle());
+		JsonNode results = handle.get();
+		assertEquals("Size of results with no inference", 1, results.get("results").get("bindings").size());
+
+ 		qdef.setIncludeDefaultRulesets(true);
+ 		handle = smgr.executeSelect(qdef, new JacksonHandle());
+ 		results = handle.get();
+ 		assertEquals("Size of results with default inference", 3, results.get("results").get("bindings").size());
+
+ 		qdef = smgr.newQueryDefinition("select ?o where {?s a ?o . filter (?s = <http://example.org/r4> )}")
+ 			.withIncludeDefaultRulesets(false);
+
+    	// TODO removeDefaultInference();
+    }
+
 }

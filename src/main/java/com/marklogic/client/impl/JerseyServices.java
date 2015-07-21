@@ -5511,6 +5511,9 @@ public class JerseyServices implements RESTServices {
 		        params.add("ruleset", ruleset.getName());
 		    }
 		}
+		if (qdef.getIncludeDefaultRulesets() != null) {
+			params.add("default-rulesets", qdef.getIncludeDefaultRulesets() ? "include" : "exclude");
+		}
 
 		// TODO: do we want this default?
 		HandleImplementation baseHandle = HandleAccessor.checkHandle(output, "graphs/sparql");
