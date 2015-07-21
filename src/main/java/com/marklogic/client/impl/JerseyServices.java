@@ -5455,7 +5455,6 @@ public class JerseyServices implements RESTServices {
 		RequestParameters params = new RequestParameters();
 		if (start > 1)             params.add("start",      Long.toString(start));
 		if (pageLength >= 0)       params.add("pageLength", Long.toString(pageLength));
-		if (transaction != null)   params.add("txid",       transaction.getTransactionId());
 		String sparql = qdef.getSparql();
 		SPARQLBindings bindings = qdef.getBindings();
 		for ( String bindingName : bindings.keySet() ) {

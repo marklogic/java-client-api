@@ -17,6 +17,7 @@ package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.fail;
 
 import java.util.Iterator;
 
@@ -27,12 +28,19 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.Transaction;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.semantics.Capability;
 import com.marklogic.client.semantics.GraphManager;
+import com.marklogic.client.semantics.RDFMimeTypes;
 import com.marklogic.client.semantics.SPARQLBinding;
 import com.marklogic.client.semantics.SPARQLBindings;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
@@ -136,26 +144,6 @@ public class SPARQLManagerTest {
         assertEquals(mapper.readTree(expectedFirstResult), firstResult2);
     }
 
-        /*
-        // to configure inference
-        qdef4 = qdef4.withRuleset(SPARQLRuleset.RDFS_PLUS);
-        // or a custom ruleset
-        qdef4 = qdef4.withRuleset(SPARQLRuleset.ruleset("custom.rules"));
-        // use a start and page length, and no transaction
-        JsonNode results2 = smgr.executeSelect(qdef4, 1, 100, null);
-
-        // To invoke an update
-        SPARQLQueryDefinition qdef5 = smgr.newQueryDefinition("insert data { ... }");
-        qdef5.setUpdatePermissions(smgr.permission("rest-reader", Capability.UPDATE));
-
-        // or
-        SPARQLQueryDefinition qdef6 = smgr.newQueryDefinition("insert data { ... }").withUpdatePermission("rest-reader", Capability.UPDATE);
-
-        QueryDefinition structuredQuery = new StructuredQueryBuilder().term("test");
-
-        SPARQLQueryDefinition qdef7 = smgr.newQueryDefinition("insert data { ... }").withUpdatePermission("rest-reader", Capability.UPDATE).withStructuredQuery(structuredQuery);
-        */
-
     @Test
     public void testPagination() throws Exception {
         SPARQLQueryDefinition qdef1 = smgr.newQueryDefinition(
@@ -201,4 +189,93 @@ public class SPARQLManagerTest {
         gmgr.delete("/ontology");
     }
     
+    @Test
+    public void testTransactions() {
+        GraphManager graphManagerWriter = Common.client.newGraphManager();
+        graphManagerWriter.setDefaultMimetype(RDFMimeTypes.NTRIPLES);
+        DatabaseClient readOnlyClient = DatabaseClientFactory.newClient(
+                Common.HOST, Common.PORT, "rest-reader", "x",
+                Authentication.DIGEST);
+        SPARQLQueryManager sparqlManagerReader = readOnlyClient.newSPARQLQueryManager();
+        String q1 = "INSERT DATA { GRAPH <newGraph> { <s1> <p1> <o1> . } }";
+        String q2 = "INSERT DATA { GRAPH <newGraph> { <s2> <p2> <o2> . } }";
+        String d1 = "DROP GRAPH <newGraph>";
+
+        // write in a transaction
+        Transaction tx = null;
+        try {
+            tx = Common.client.openTransaction();
+            smgr.executeUpdate(smgr.newQueryDefinition(q1), tx);
+            // reader can't see it outside transaction
+			StringHandle handle = sparqlManagerReader
+					.executeSelect(
+							sparqlManagerReader
+									.newQueryDefinition("select ?o where { <s1> <p1> ?o }"),
+							new StringHandle());
+			assertEquals("Empty result outside transaction", "{\"head\":{\"vars\":[]},\"results\":{\"bindings\":[]}}", handle.get());
+
+			// and can inside (with writer user)
+			handle = smgr
+					.executeSelect(
+							sparqlManagerReader
+									.newQueryDefinition("select ?o where { <s1> <p1> ?o }"),
+							new StringHandle(), tx);
+			assertEquals("writer must see effects within transaction.", "{\"head\":{\"vars\":[\"o\"]},\"results\":{\"bindings\":[{\"o\":{\"type\":\"uri\",\"value\":\"o1\"}}]}}", handle.get());
+
+            tx.rollback();
+            tx = null;
+
+            handle = sparqlManagerReader
+					.executeSelect(
+							sparqlManagerReader
+									.newQueryDefinition("select ?o where { <s1> <p1> ?o }"),
+							new StringHandle());
+			assertEquals("Empty result after rollback", "{\"head\":{\"vars\":[]},\"results\":{\"bindings\":[]}}", handle.get());
+			
+            // new tx
+            tx = Common.client.openTransaction();
+            // write a graph in transaction
+            smgr.executeUpdate(smgr.newQueryDefinition(q1), tx);
+            smgr.executeUpdate(smgr.newQueryDefinition(q2), tx);
+            
+            tx.commit();
+            tx = null;
+            // graph is now there.  No failure.
+            handle = sparqlManagerReader
+					.executeSelect(
+							sparqlManagerReader
+									.newQueryDefinition("select ?o where { <s1> <p1> ?o }"),
+							new StringHandle());
+			assertEquals("update has been committed", "{\"head\":{\"vars\":[\"o\"]},\"results\":{\"bindings\":[{\"o\":{\"type\":\"uri\",\"value\":\"o1\"}}]}}", handle.get());
+
+            // new transaction
+            tx = Common.client.openTransaction();
+            // ddrop a graph in transaction
+            smgr.executeUpdate(smgr.newQueryDefinition(d1), tx);
+
+            // must be gone, inside and outside transaction.
+            handle = smgr
+					.executeSelect(
+							smgr.newQueryDefinition("select ?o where { <s1> <p1> ?o }"),
+							new StringHandle(), tx);
+			assertEquals("Empty result after delete, within tx", "{\"head\":{\"vars\":[]},\"results\":{\"bindings\":[]}}", handle.get());
+			
+			tx.commit();
+            tx = null;
+
+        } finally {
+            if (tx != null) {
+                tx.rollback();
+                tx = null;
+            }
+            // always try to delete graph
+            try {
+                graphManagerWriter.delete(
+                        "newGraph");
+            } catch (Exception e) {
+                // nop
+            }
+
+        }
+    }
 }

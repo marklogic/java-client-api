@@ -27,6 +27,7 @@ declare function bootstrap:database-configure(
     let $c := bootstrap:create-geospatial-path-indexes($c, $dbid)
     let $c := bootstrap:create-path-range-indexes($c, $dbid)
     let $c := bootstrap:create-fields($c, $dbid)
+    let $c := bootstrap:create-default-rulesets($c, $dbid)
     (: you can't create field and field range index in same transaction :)
     return admin:save-configuration-without-restart($c),
 
@@ -427,6 +428,15 @@ declare function bootstrap:create-path-range-indexes(
     return
         if (empty($index-specs)) then $c
         else admin:database-add-range-path-index($c, $dbid, $index-specs)
+};
+
+declare function bootstrap:create-default-rulesets(
+    $c as element(configuration),
+    $dbid as xs:unsignedLong
+) as element(configuration)
+{
+    let $ruleset := admin:database-ruleset("rdfs.rules")
+    return admin:database-add-default-ruleset($c, $dbid, $ruleset)
 };
 
 declare function bootstrap:security-config() { 
