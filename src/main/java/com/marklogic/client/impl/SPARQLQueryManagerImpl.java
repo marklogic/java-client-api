@@ -38,6 +38,11 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
     }
 
     @Override
+    public SPARQLQueryDefinition newQueryDefinition() {
+        return new SPARQLQueryDefinitionImpl();
+    }
+
+    @Override
     public SPARQLQueryDefinition newQueryDefinition(String sparql) {
         return new SPARQLQueryDefinitionImpl(sparql);
     }

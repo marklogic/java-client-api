@@ -117,8 +117,10 @@ import com.marklogic.client.query.KeyLocator;
 import com.marklogic.client.query.KeyValueQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
 import com.marklogic.client.query.RawQueryDefinition;
+import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.SuggestDefinition;
@@ -5455,6 +5457,11 @@ public class JerseyServices implements RESTServices {
 		RequestParameters params = new RequestParameters();
 		if (start > 1)             params.add("start",      Long.toString(start));
 		if (pageLength >= 0)       params.add("pageLength", Long.toString(pageLength));
+		if (qdef.getCollections() != null ) {
+			for ( String collection : qdef.getCollections() ) {
+				params.add("collection", collection);
+			}
+		}
 		String sparql = qdef.getSparql();
 		SPARQLBindings bindings = qdef.getBindings();
 		for ( String bindingName : bindings.keySet() ) {
@@ -5470,15 +5477,37 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 		QueryDefinition constrainingQuery = qdef.getConstrainingQueryDefinintion();
-		StringHandle input;
+		StructureWriteHandle input;
 		if ( constrainingQuery != null ) {
-			String stringQuery = constrainingQuery instanceof StringQueryDefinition ?
-				((StringQueryDefinition) constrainingQuery).getCriteria() : null;
-			StructuredQueryDefinition structuredQuery = constrainingQuery instanceof StructuredQueryDefinition ?
-				(StructuredQueryDefinition) constrainingQuery : null;
-			CombinedQueryDefinition combinedQdef = new CombinedQueryBuilderImpl().combine(structuredQuery, null,
-				stringQuery, sparql);
-			input = new StringHandle(combinedQdef.serialize()).withMimetype("application/xml");
+			if (qdef.getOptionsName()!= null && qdef.getOptionsName().length() > 0) {
+				params.add("options", qdef.getOptionsName());
+			}
+			if ( constrainingQuery instanceof RawCombinedQueryDefinition ) {
+				input = ((RawQueryDefinition) constrainingQuery).getHandle();
+				Format format = HandleAccessor.as(input).getFormat();
+				if ( format != Format.XML && format != Format.JSON ) {
+					throw new IllegalArgumentException(
+						"Format of constrainingQuery must be XML or JSON");
+				}
+			} else if ( constrainingQuery instanceof RawStructuredQueryDefinition ) {
+				CombinedQueryDefinition combinedQdef = new CombinedQueryBuilderImpl().combine(
+					(RawStructuredQueryDefinition) constrainingQuery, null, null, sparql);
+				Format format = combinedQdef.getFormat();
+				input = new StringHandle(combinedQdef.serialize()).withFormat(format);
+			} else if ( constrainingQuery instanceof StringQueryDefinition ||
+						constrainingQuery instanceof StructuredQueryDefinition ) {
+				String stringQuery = constrainingQuery instanceof StringQueryDefinition ?
+					((StringQueryDefinition) constrainingQuery).getCriteria() : null;
+				StructuredQueryDefinition structuredQuery =
+					constrainingQuery instanceof StructuredQueryDefinition ?
+						(StructuredQueryDefinition) constrainingQuery : null;
+				CombinedQueryDefinition combinedQdef = new CombinedQueryBuilderImpl().combine(
+					structuredQuery, null, stringQuery, sparql);
+				input = new StringHandle(combinedQdef.serialize()).withMimetype("application/xml");
+			} else {
+			    throw new IllegalArgumentException(
+			        "Constraining query must be of type SPARQLConstrainingQueryDefinition");
+			}
 		} else {
 			String mimetype = isUpdate ? "application/sparql-update" : "application/sparql-query";
 			input = new StringHandle(sparql).withMimetype(mimetype);
@@ -5514,7 +5543,7 @@ public class JerseyServices implements RESTServices {
 			params.add("default-rulesets", qdef.getIncludeDefaultRulesets() ? "include" : "exclude");
 		}
 
-		// TODO: do we want this default?
+		// TODO: remove next six lines once the server supports application/xml and application/json (Bug 34421)
 		HandleImplementation baseHandle = HandleAccessor.checkHandle(output, "graphs/sparql");
 		if ( baseHandle.getFormat() == Format.JSON ) {
 			baseHandle.setMimetype("application/sparql-results+json");

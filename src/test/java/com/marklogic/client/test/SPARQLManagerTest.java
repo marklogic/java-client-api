@@ -34,10 +34,17 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
+import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.semantics.Capability;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.RDFMimeTypes;
@@ -70,7 +77,8 @@ public class SPARQLManagerTest {
         //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
         gmgr = Common.client.newGraphManager();
         String nTriples = triple1 + "\n" + triple2;
-        gmgr.write(graphUri, new StringHandle(nTriples).withMimetype("application/n-triples"));
+        gmgr.setDefaultMimetype(RDFMimeTypes.NTRIPLES);
+        gmgr.write(graphUri, new StringHandle(nTriples));
         smgr = Common.client.newSPARQLQueryManager();
     }
 
@@ -103,25 +111,134 @@ public class SPARQLManagerTest {
         // loop through the "bindings" array (we would call each row a tuple)
         for ( int i=0; i < tuples.size(); i++ ) {
             JsonNode tuple = tuples.get(i);
-            // loop through the fields or columns for each row
-            Iterator<String> fieldNames = tuple.fieldNames();
-            while ( fieldNames.hasNext() ) {
-                String bindingName = fieldNames.next();
-                JsonNode binding = tuple.get(bindingName);
-                if ( "s".equals(bindingName) ) {
-                    String expectedValue = (i == 0) ? "http://example.org/s1" : "http://example.org/s2";
-                    assertEquals(expectedValue, binding.get("value").asText());
-                }
-                if ( "p".equals(bindingName) ) {
-                    String expectedValue = (i == 0) ? "http://example.org/p1" : "http://example.org/p2";
-                    assertEquals(expectedValue, binding.get("value").asText());
-                }
-                if ( "o".equals(bindingName) ) {
-                    String expectedValue = (i == 0) ? "http://example.org/o1" : "http://example.org/o2";
-                    assertEquals(expectedValue, binding.get("value").asText());
-                }
+            String s = tuple.path("s").path("value").asText();
+            String p = tuple.path("p").path("value").asText();
+            String o = tuple.path("o").path("value").asText();
+            if ( "http://example.org/s1".equals(s) ) {
+                assertEquals("http://example.org/p1", p);
+                assertEquals("http://example.org/o1", o);
+            } else if ( "http://example.org/s2".equals(s) ) {
+                assertEquals("http://example.org/p2", p);
+                assertEquals("http://example.org/o2", o);
+            } else {
+                fail("Unexpected value for s:[" + s + "]");
             }
         }
+    }
+
+    @Test
+    public void testConstrainingQueries() throws Exception {
+        // insert two triples for the tests below
+        String localGraphUri = "SPARQLManagerTest.testConstrainingQueries";
+
+        // the first triple is a managed triple so GraphManager can write it
+        String triple1 = "<http://example.org/s1> <http://example.org/p1> 'test1'.";
+        gmgr.writeAs(localGraphUri, triple1);
+
+        // the second triple is an embeded triple so we need a DocumentManager to write it
+        // we're using an embeded triple so we can have other fields on which to query
+        String embededTriple =
+            "<xml>" +
+                "<test2>testValue</test2>" +
+                "<sem:triples xmlns:sem='http://marklogic.com/semantics'>" +
+                    "<sem:triple>" +
+                        "<sem:subject>http://example.org/s2</sem:subject>" +
+                        "<sem:predicate>http://example.org/p2</sem:predicate>" +
+                        "<sem:object datatype='http://www.w3.org/2001/XMLSchema#string'>" +
+                            "test2</sem:object>" +
+                    "</sem:triple>" +
+                "</sem:triples>" +
+            "</xml>";
+        XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+        QueryManager queryMgr = Common.client.newQueryManager();
+        docMgr.writeAs(localGraphUri + "/embededTriple.xml",
+            new DocumentMetadataHandle().withCollections(localGraphUri),
+            embededTriple);
+
+        // test StringQueryDefinition
+        SPARQLQueryDefinition qdef = smgr.newQueryDefinition("select ?s ?p ?o { ?s ?p ?o } limit 100");
+        qdef.setIncludeDefaultRulesets(false);
+        qdef.setCollections(localGraphUri);
+        qdef.setConstrainingQueryDefinintion(queryMgr.newStringDefinition().withCriteria("test1"));
+        JsonNode jsonResults = smgr.executeSelect(qdef, new JacksonHandle()).get();
+        JsonNode tuples = jsonResults.path("results").path("bindings");
+        assertEquals(1, tuples.size());
+        String value = tuples.path(0).path("o").path("value").asText();
+        assertEquals("test1", value);
+
+        // test StructuredQueryDefinition
+        StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+        StructuredQueryDefinition sqdef = 
+            sqb.and(
+                sqb.term("test2"),
+                sqb.value(sqb.element("test2"), "testValue")
+            );
+        qdef.setConstrainingQueryDefinintion(sqdef);
+        jsonResults = smgr.executeSelect(qdef, new JacksonHandle()).get();
+        tuples = jsonResults.path("results").path("bindings");
+        assertEquals(1, tuples.size());
+        value = tuples.path(0).path("o").path("value").asText();
+        assertEquals("test2", value);
+
+        // test XML RawStructuredQueryDefinition
+        String rawXMLStructuredQuery =
+            "<query>" +
+                "<term-query><text>test1</text></term-query>" +
+            "</query>";
+        StringHandle handle = new StringHandle(rawXMLStructuredQuery).withFormat(Format.XML);
+        RawStructuredQueryDefinition rawStructuredQDef = queryMgr.newRawStructuredQueryDefinition(handle);
+        qdef.setConstrainingQueryDefinintion(rawStructuredQDef);
+        jsonResults = smgr.executeSelect(qdef, new JacksonHandle()).get();
+        tuples = jsonResults.path("results").path("bindings");
+        assertEquals(1, tuples.size());
+        value = tuples.path(0).path("o").path("value").asText();
+        assertEquals("test1", value);
+
+        // test JSON RawStructuredQueryDefinition
+        String rawJSONStructuredQuery =
+            "{ query:{" +
+                "term-query:{text:'test2'}" +
+            "}}";
+        handle = new StringHandle(rawJSONStructuredQuery).withFormat(Format.JSON);
+        rawStructuredQDef = queryMgr.newRawStructuredQueryDefinition(handle);
+        qdef.setConstrainingQueryDefinintion(rawStructuredQDef);
+        jsonResults = smgr.executeSelect(qdef, new JacksonHandle()).get();
+        tuples = jsonResults.path("results").path("bindings");
+        assertEquals(1, tuples.size());
+        value = tuples.path(0).path("o").path("value").asText();
+        assertEquals("test2", value);
+
+        // test RawCombinedQueryDefinition
+        String rawCombinedQuery =
+            "<search xmlns='http://marklogic.com/appservices/search'>" +
+                "<sparql>select ?s ?p ?o { ?s ?p ?o } limit 100</sparql>" +
+                "<options>" +
+                    "<constraint name='test2'>" +
+                        "<value type='string'><element ns='' name='test2'/></value>" +
+                    "</constraint>" +
+                "</options>" +
+                "<query>" +
+                    "<and-query>" +
+                        "<term-query><text>test2</text></term-query>" +
+                        "<element-value-query>" +
+                            "<constraint-name>test2</constraint-name>" +
+                            "<value>testValue</value>" +
+                        "</element-value-query>" +
+                    "</and-query>" +
+                "</query>" +
+            "</search>";
+        handle = new StringHandle(rawCombinedQuery).withFormat(Format.XML);
+        RawCombinedQueryDefinition rawCombinedQDef = queryMgr.newRawCombinedQueryDefinition(handle);
+        qdef.setConstrainingQueryDefinintion(rawCombinedQDef);
+        jsonResults = smgr.executeSelect(qdef, new JacksonHandle()).get();
+        tuples = jsonResults.path("results").path("bindings");
+        assertEquals(1, tuples.size());
+        value = tuples.path(0).path("o").path("value").asText();
+        assertEquals("test2", value);
+
+        // clean up the data for this method
+        docMgr.delete(localGraphUri + "/embededTriple.xml");
+        gmgr.delete(localGraphUri);
     }
 
     @Test

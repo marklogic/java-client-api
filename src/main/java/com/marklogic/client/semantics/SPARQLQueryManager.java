@@ -22,7 +22,7 @@ import com.marklogic.client.io.marker.TriplesReadHandle;
 import com.marklogic.client.semantics.Capability;
 
 public interface SPARQLQueryManager  {
-    // Make a new query definition 
+    public SPARQLQueryDefinition newQueryDefinition();
     public SPARQLQueryDefinition newQueryDefinition(String sparql);
     public SPARQLQueryDefinition newQueryDefinition(TextWriteHandle sparql);
 
