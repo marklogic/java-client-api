@@ -22,6 +22,7 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.impl.SPARQLBindingsImpl;
 import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.RawQueryByExampleDefinition;
 import com.marklogic.client.semantics.Capability;
 import com.marklogic.client.semantics.GraphPermissions;
 import com.marklogic.client.semantics.SPARQLBindings;
@@ -38,6 +39,13 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
     private String[] usingNamedUris;
     private SPARQLRuleset[] ruleSets;
 	private Boolean includeDefaultRulesets;
+    private QueryDefinition constrainingQuery;
+    private String optionsName;
+    private String[] collections;
+    private String directory;
+    private ServerTransform transform;
+
+    public SPARQLQueryDefinitionImpl() {}
 
     public SPARQLQueryDefinitionImpl(String sparql) {
         setSparql(sparql);
@@ -49,50 +57,42 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
 
     @Override
     public String getOptionsName() {
-        // TODO Auto-generated method stub
-        return null;
+        return optionsName;
     }
 
     @Override
     public void setOptionsName(String name) {
-        // TODO Auto-generated method stub
-        
+        this.optionsName = name;
     }
 
     @Override
     public String[] getCollections() {
-        // TODO Auto-generated method stub
-        return null;
+        return collections;
     }
 
     @Override
     public void setCollections(String... collections) {
-        // TODO Auto-generated method stub
-        
+        this.collections = collections;
     }
 
     @Override
     public String getDirectory() {
-        // TODO Auto-generated method stub
-        return null;
+        return directory;
     }
 
     @Override
     public void setDirectory(String directory) {
-        // TODO Auto-generated method stub
-        
+        this.directory = directory;
     }
 
     @Override
     public ServerTransform getResponseTransform() {
-        // TODO Auto-generated method stub
-        return null;
+        return transform;
     }
 
     @Override
     public void setResponseTransform(ServerTransform transform) {
-        // TODO Auto-generated method stub
-        
+        this.transform = transform;
     }
 
     @Override
@@ -153,8 +153,8 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
 
     @Override
     public SPARQLQueryDefinition clearBindings() {
-        // TODO Auto-generated method stub
-        return null;
+        bindings = new SPARQLBindingsImpl();
+        return this;
     }
 
     @Override
@@ -217,22 +217,23 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
         this.usingNamedUris = uris;
     }
 
-    
     @Override
     public void setConstrainingQueryDefinintion(QueryDefinition query) {
-        // TODO Auto-generated method stub
-        
+        if ( query instanceof RawQueryByExampleDefinition ) {
+            throw new IllegalArgumentException("SPARQL queries cannot be constrained using " +
+                    "RawQueryByExampleDefinition");
+        }
+        this.constrainingQuery = query;
     }
 
     @Override
     public QueryDefinition getConstrainingQueryDefinintion() {
-        // TODO Auto-generated method stub
-        return null;
+        return this.constrainingQuery;
     }
 
     @Override
     public SPARQLQueryDefinition withConstrainingQuery(QueryDefinition query) {
-        // TODO Auto-generated method stub
+        this.constrainingQuery = query;
         return this;
     }
 
@@ -278,5 +279,4 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
 		this.includeDefaultRulesets = b;
 		return this;
 	}
-
 }

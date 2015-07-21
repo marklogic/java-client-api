@@ -16,16 +16,23 @@
 package com.marklogic.client.impl;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
 
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
+import com.fasterxml.jackson.core.JsonParser.Feature;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
+import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
@@ -33,50 +40,138 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
     extends AbstractQueryDefinition
     implements CombinedQueryDefinition
     {
-        private StructuredQueryDefinition query;
+        private StructuredQueryDefinition structuredQuery;
+        private RawStructuredQueryDefinition rawQuery;
         private QueryOptionsWriteHandle options;
         private String qtext;
         private String sparql;
+        private Format format;
 
-        public CombinedQueryDefinitionImpl(StructuredQueryDefinition query, QueryOptionsWriteHandle options,
-            String qtext, String sparql)
+        public CombinedQueryDefinitionImpl(StructuredQueryDefinition structuredQuery,
+            QueryOptionsWriteHandle options, String qtext, String sparql)
         {
-            this.query = query;
+            this.structuredQuery = structuredQuery;
             this.options = options;
             this.qtext = qtext;
             this.sparql = sparql;
+            this.format = Format.XML;
+        }
+
+        public CombinedQueryDefinitionImpl(RawStructuredQueryDefinition rawQuery,
+            QueryOptionsWriteHandle options, String qtext, String sparql)
+        {
+            this.rawQuery = rawQuery;
+            this.options = options;
+            this.qtext = qtext;
+            this.sparql = sparql;
+            this.format = HandleAccessor.as(rawQuery.getHandle()).getFormat();
+            if ( format != Format.XML && format != Format.JSON ) {
+                throw new IllegalArgumentException("Format of rawQuery must be XML or JSON");
+            }
         }
 
         public String serialize() {
             return CombinedQueryBuilderImpl.this.serialize(this);
         }
 
+        @Override
+        public Format getFormat() {
+            return format;
+        }
+
     }
 
-    public CombinedQueryDefinition combine(StructuredQueryDefinition query, String qtext) {
-        return new CombinedQueryDefinitionImpl(query, null, qtext, null);
+    public CombinedQueryDefinition combine(StructuredQueryDefinition structuredQuery, String qtext) {
+        return new CombinedQueryDefinitionImpl(structuredQuery, null, qtext, null);
     }
-    public CombinedQueryDefinition combine(StructuredQueryDefinition query, QueryOptionsWriteHandle options) {
-        return new CombinedQueryDefinitionImpl(query, options, null, null);
+    public CombinedQueryDefinition combine(StructuredQueryDefinition structuredQuery,
+        QueryOptionsWriteHandle options)
+    {
+        return new CombinedQueryDefinitionImpl(structuredQuery, options, null, null);
     }
-    public CombinedQueryDefinition combine(StructuredQueryDefinition query, QueryOptionsWriteHandle options, String qtext) {
-        return new CombinedQueryDefinitionImpl(query, options, qtext, null);
+    public CombinedQueryDefinition combine(StructuredQueryDefinition structuredQuery,
+        QueryOptionsWriteHandle options, String qtext)
+    {
+        return new CombinedQueryDefinitionImpl(structuredQuery, options, qtext, null);
     }
-    public CombinedQueryDefinition combine(StructuredQueryDefinition query, QueryOptionsWriteHandle options, String qtext, String sparql) {
-        return new CombinedQueryDefinitionImpl(query, options, qtext, sparql);
+    public CombinedQueryDefinition combine(StructuredQueryDefinition structuredQuery,
+        QueryOptionsWriteHandle options, String qtext, String sparql)
+    {
+        return new CombinedQueryDefinitionImpl(structuredQuery, options, qtext, sparql);
     }
 
-    private String serialize(CombinedQueryDefinitionImpl combinedQueryDefinitionImpl) {
+    public CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery, String qtext) {
+        return new CombinedQueryDefinitionImpl(rawQuery, null, qtext, null);
+    }
+    public CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery,
+        QueryOptionsWriteHandle options)
+    {
+        return new CombinedQueryDefinitionImpl(rawQuery, options, null, null);
+    }
+    public CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery,
+        QueryOptionsWriteHandle options, String qtext)
+    {
+        return new CombinedQueryDefinitionImpl(rawQuery, options, qtext, null);
+    }
+    public CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery,
+        QueryOptionsWriteHandle options, String qtext, String sparql)
+    {
+        return new CombinedQueryDefinitionImpl(rawQuery, options, qtext, sparql);
+    }
+
+    private String serialize(CombinedQueryDefinitionImpl qdef) {
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            writeCombinedQuery(baos, combinedQueryDefinitionImpl);
-            return baos.toString("UTF-8");
+            if ( qdef.rawQuery != null ) {
+                Format rawQueryFormat = HandleAccessor.as(qdef.rawQuery.getHandle()).getFormat();
+                if ( Format.XML == rawQueryFormat ) {
+                    return makeXMLCombinedQuery(qdef);
+                } else if ( Format.JSON == rawQueryFormat ) {
+                    return makeJSONCombinedQuery(qdef);
+                } else {
+                    throw new IllegalStateException("A RawStructuredQueryDefinition must " +
+                        "be XML or JSON, not " + rawQueryFormat);
+                }
+            }
+            return makeXMLCombinedQuery(qdef);
         } catch (Exception e) {
             throw new MarkLogicIOException(e);
         }
     }
 
-    private XMLStreamWriter makeSerializer(OutputStream out) {
+    @SuppressWarnings("rawtypes")
+    private String makeJSONCombinedQuery(CombinedQueryDefinitionImpl qdef) {
+        try {
+            ObjectMapper mapper = new ObjectMapper()
+                .configure(Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
+                .configure(Feature.ALLOW_SINGLE_QUOTES, true);
+            ObjectNode rootNode = mapper.createObjectNode();
+            ObjectNode searchNode = mapper.createObjectNode();
+            rootNode.replace("search", searchNode);
+            searchNode.put("sparql", qdef.sparql);
+            if ( qdef.options != null ) {
+                HandleImplementation optionsBase = HandleAccessor.as(qdef.options);
+                if ( Format.JSON != optionsBase.getFormat() ) {
+                    throw new IllegalStateException("Cannot combine a JSON-format structured " +
+                            "query with " + optionsBase.getFormat() + "-format options");
+                }
+                String json = HandleAccessor.contentAsString(qdef.options);
+                JsonNode optionsNode;
+                optionsNode = mapper.readTree(json);
+                searchNode.replace("options", optionsNode.get("options"));
+            }
+            if ( qdef.qtext != null ) searchNode.put("qtext", qdef.qtext);
+            if ( qdef.rawQuery != null ) {
+                String json = HandleAccessor.contentAsString(qdef.rawQuery.getHandle());
+                JsonNode optionsNode = mapper.readTree(json);
+                searchNode.replace("query", optionsNode.get("query"));
+            }
+            return rootNode.toString();
+        } catch (Exception e) {
+            throw new MarkLogicIOException(e);
+        }
+    }
+
+    private XMLStreamWriter makeXMLSerializer(OutputStream out) {
         XMLOutputFactory factory = XMLOutputFactory.newInstance();
         factory.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, true);
 
@@ -92,14 +187,16 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
         }
     }
 
-    private void writeCombinedQuery(OutputStream out, CombinedQueryDefinitionImpl combinedQueryDefinitionImpl) {
+    private String makeXMLCombinedQuery(CombinedQueryDefinitionImpl qdef) {
         try {
-            String qtext = combinedQueryDefinitionImpl.qtext;
-            StructuredQueryDefinition query = combinedQueryDefinitionImpl.query;
-            QueryOptionsWriteHandle options = combinedQueryDefinitionImpl.options;
-            String sparql = combinedQueryDefinitionImpl.sparql;
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            String qtext = qdef.qtext;
+            StructuredQueryDefinition structuredQuery = qdef.structuredQuery;
+            RawStructuredQueryDefinition rawQuery = qdef.rawQuery;
+            QueryOptionsWriteHandle options = qdef.options;
+            String sparql = qdef.sparql;
 
-            XMLStreamWriter serializer = makeSerializer(out);
+            XMLStreamWriter serializer = makeXMLSerializer(out);
 
             serializer.writeStartDocument();
             serializer.writeStartElement("search");
@@ -116,18 +213,18 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
                 serializer.writeEndElement();
             }
             serializer.flush();
-            if ( query != null ) {
-                String structure = query.serialize();
-                out.write(structure.getBytes("UTF-8"));
-                out.flush();
-            }
+            String structure = "";
+            if ( structuredQuery != null ) structure = structuredQuery.serialize();
+            if ( rawQuery != null ) structure = HandleAccessor.contentAsString(rawQuery.getHandle());
+            out.write(structure.getBytes("UTF-8"));
+            out.flush();
             if ( options != null ) {
                 HandleImplementation handleBase = HandleAccessor.as(options);
                 Object value = handleBase.sendContent();
                 if ( value instanceof OutputStreamSender ) {
                     ((OutputStreamSender) value).write(out);
                 } else {
-                    out.write(value.toString().getBytes("UTF-8"));
+                    out.write(HandleAccessor.contentAsString(options).getBytes("UTF-8"));
                 }
                 out.flush();
             }
@@ -136,6 +233,7 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
             serializer.writeEndDocument();
             serializer.flush();
             serializer.close();
+            return out.toString("UTF-8");
         } catch (Exception e) {
             throw new MarkLogicIOException(e);
         }

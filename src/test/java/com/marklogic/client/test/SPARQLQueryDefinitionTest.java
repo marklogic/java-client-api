@@ -22,7 +22,7 @@ import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.semantics.SPARQLQueryManager;
 
 public class SPARQLQueryDefinitionTest {
-
+    
     private static SPARQLQueryManager smgr;
     private static GraphManager gmgr;
 
@@ -51,7 +51,7 @@ public class SPARQLQueryDefinitionTest {
                 .withMimetype("text/trig"));
         smgr = Common.client.newSPARQLQueryManager();
     }
-    
+
     @AfterClass
     public static void afterClass() {
         Common.connect();
@@ -62,6 +62,7 @@ public class SPARQLQueryDefinitionTest {
     private ArrayNode executeAndExtractBindings(SPARQLQueryDefinition qdef) {
         JacksonHandle handle = smgr.executeSelect(qdef, new JacksonHandle());
         JsonNode results = handle.get();
+
         ArrayNode bindings = (ArrayNode) results.findPath("results").findPath(
                 "bindings");
         return bindings;
