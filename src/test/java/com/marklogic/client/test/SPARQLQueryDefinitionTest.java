@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -45,12 +46,17 @@ public class SPARQLQueryDefinitionTest {
     @BeforeClass
     public static void beforeClass() {
         Common.connect();
-        // System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire",
-        // "debug");
         gmgr = Common.client.newGraphManager();
         gmgr.replaceGraphs(new StringHandle(TEST_TRIG)
                 .withMimetype("text/trig"));
         smgr = Common.client.newSPARQLQueryManager();
+    }
+    
+    @AfterClass
+    public static void afterClass() {
+        Common.connect();
+        gmgr = Common.client.newGraphManager();
+        gmgr.deleteGraphs();
     }
 
     private ArrayNode executeAndExtractBindings(SPARQLQueryDefinition qdef) {

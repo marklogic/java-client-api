@@ -83,6 +83,7 @@ public class SPARQLManagerTest {
     @Test
     public void testSPARQLWithLimit() throws Exception {
         SPARQLQueryDefinition qdef1 = smgr.newQueryDefinition("select ?s ?p ?o { ?s ?p ?o } limit 1");
+        qdef1.setIncludeDefaultRulesets(false);
         qdef1.setCollections(graphUri);
         JsonNode jsonResults = smgr.executeSelect(qdef1, new JacksonHandle()).get();
         int numResults = jsonResults.path("results").path("bindings").size();
@@ -95,6 +96,7 @@ public class SPARQLManagerTest {
     @Test
     public void testSPARQLWithTwoResults() throws Exception {
         SPARQLQueryDefinition qdef2 = smgr.newQueryDefinition("select ?s ?p ?o { ?s ?p ?o } limit 100");
+        qdef2.setIncludeDefaultRulesets(false);
         qdef2.setCollections(graphUri);
         JsonNode jsonResults = smgr.executeSelect(qdef2, new JacksonHandle()).get();
         JsonNode tuples = jsonResults.path("results").path("bindings");
@@ -125,6 +127,7 @@ public class SPARQLManagerTest {
     @Test
     public void testSPARQLWithBindings() throws Exception {
         SPARQLQueryDefinition qdef3 = smgr.newQueryDefinition("construct { ?s ?p ?o } where  { <subjectExample0> ?p ?o } ");
+        qdef3.setIncludeDefaultRulesets(false);
         StringHandle results1 = smgr.executeConstruct(qdef3, new StringHandle());
 
         SPARQLQueryDefinition qdef4 = smgr.newQueryDefinition("select ?s ?p ?o { ?s ?p ?o . filter (?s = ?b) }");
@@ -148,6 +151,7 @@ public class SPARQLManagerTest {
     public void testPagination() throws Exception {
         SPARQLQueryDefinition qdef1 = smgr.newQueryDefinition(
             "SELECT ?s ?p ?o FROM <" + graphUri + "> { ?s ?p ?o }");
+        qdef1.setIncludeDefaultRulesets(false);
         long start = 1;
         long pageLength = 1;
         JsonNode results = smgr.executeSelect(qdef1, new JacksonHandle(), start, pageLength).get();
@@ -176,6 +180,7 @@ public class SPARQLManagerTest {
         gmgr.write("/ontology", new StringHandle(ontology).withMimetype("application/n-triples"));
         SPARQLQueryDefinition qdef = smgr.newQueryDefinition(
                 "SELECT ?s { ?s a <http://example.org/C1>  }");
+        qdef.setIncludeDefaultRulesets(false);
         JsonNode results = smgr.executeSelect(qdef, new JacksonHandle()).get();
         assertEquals(0, results.path("results").path("bindings").size());
         qdef.setRulesets(SPARQLRuleset.RANGE);
