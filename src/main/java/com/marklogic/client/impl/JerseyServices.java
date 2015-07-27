@@ -5591,8 +5591,8 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 		if (qdef.getUsingNamedGraphUris() != null) {
-			for (String usingGraphUri : qdef.getUsingNamedGraphUris()) {
-				params.add("using-named-graph-uri", usingGraphUri);
+			for (String usingNamedGraphUri : qdef.getUsingNamedGraphUris()) {
+				params.add("using-named-graph-uri", usingNamedGraphUri);
 			}
 		}
 		
