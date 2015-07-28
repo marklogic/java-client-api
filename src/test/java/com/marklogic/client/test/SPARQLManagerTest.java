@@ -245,9 +245,11 @@ public class SPARQLManagerTest {
     public void testSPARQLWithBindings() throws Exception {
         SPARQLQueryDefinition qdef3 = smgr.newQueryDefinition("construct { ?s ?p ?o } where  { <subjectExample0> ?p ?o } ");
         qdef3.setIncludeDefaultRulesets(false);
+        qdef3.setCollections(graphUri);
         StringHandle results1 = smgr.executeConstruct(qdef3, new StringHandle());
 
         SPARQLQueryDefinition qdef4 = smgr.newQueryDefinition("select ?s ?p ?o { ?s ?p ?o . filter (?s = ?b) }");
+        qdef4.setCollections(graphUri);
         SPARQLBindings bindings = qdef4.getBindings();
         bindings.bind("b", "http://example.org/s1");
         qdef4.setBindings(bindings);
@@ -269,6 +271,7 @@ public class SPARQLManagerTest {
         SPARQLQueryDefinition qdef1 = smgr.newQueryDefinition(
             "SELECT ?s ?p ?o FROM <" + graphUri + "> { ?s ?p ?o }");
         qdef1.setIncludeDefaultRulesets(false);
+        qdef1.setCollections(graphUri);
         long start = 1;
         long pageLength = 1;
         JsonNode results = smgr.executeSelect(qdef1, new JacksonHandle(), start, pageLength).get();
