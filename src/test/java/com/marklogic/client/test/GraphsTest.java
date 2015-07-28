@@ -70,10 +70,10 @@ public class GraphsTest {
     public void testQuads() throws Exception {
         gmgr.setDefaultMimetype(RDFMimeTypes.NQUADS);
         String quadGraphUri = "http://example.org/g1";
-        String quad1 = "<http://example.org/s1> <http://example.com/p1> <http://example.org/o1> <http://example.org/g1>.";
-        String quad2 = "<http://example.org/s2> <http://example.com/p2> <http://example.org/o2> <http://example.org/g1>.";
-        String quad3 = "<http://example.org/s3> <http://example.com/p2> <http://example.org/o2> <http://example.org/g1>.";
-        String quad4 = "<http://example.org/s4> <http://example.com/p2> <http://example.org/o2> <http://example.org/g1>.";
+        String quad1 = "<http://example.org/s1> <http://example.com/p1> <http://example.org/o1> <http://example.org/g1> .";
+        String quad2 = "<http://example.org/s2> <http://example.com/p2> <http://example.org/o2> <http://example.org/g1> .";
+        String quad3 = "<http://example.org/s3> <http://example.com/p2> <http://example.org/o2> <http://example.org/g1> .";
+        String quad4 = "<http://example.org/s4> <http://example.com/p2> <http://example.org/o2> <http://example.org/g1> .";
         gmgr.replaceGraphs(new StringHandle(quad1));
         StringHandle quadsHandle = gmgr.read(quadGraphUri, new StringHandle());
         assertEquals(quad1, quadsHandle.get());
