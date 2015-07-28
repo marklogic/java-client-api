@@ -127,7 +127,13 @@ public class FailedRequest {
 			
 		}
 		else if (MediaType.APPLICATION_JSON_TYPE.isCompatible(contentType)) {
-			failure = jsonFailedRequest(httpStatus, content);						
+			failure = jsonFailedRequest(httpStatus, content);
+		}
+		else if (contentType == null && httpStatus == 404) {
+			failure = new FailedRequest();
+			failure.setStatusCode(httpStatus);
+			failure.setMessageString("");
+			failure.setStatusString("Not Found");
 		}
 		else {
 			failure = new FailedRequest();
