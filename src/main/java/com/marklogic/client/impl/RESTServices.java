@@ -303,11 +303,21 @@ public interface RESTServices {
 	public boolean exists(String uri);
 
 	public void mergeGraph(RequestLogger reqlog, String uri, AbstractWriteHandle input,
-            GraphPermissions permissions, Transaction transaction)
-            throws ResourceNotFoundException, ForbiddenUserException,
-            FailedRequestException;
+			GraphPermissions permissions, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException,
+			   FailedRequestException;
 
-    public void mergeGraphs(RequestLogger reqlog, AbstractWriteHandle input)
-            throws ResourceNotFoundException, ForbiddenUserException,
-            FailedRequestException;
+	public void mergeGraphs(RequestLogger reqlog, AbstractWriteHandle input)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public <R extends AbstractReadHandle> R getPermissions(RequestLogger reqlog, String uri,
+			R output, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public void deletePermissions(RequestLogger reqlog, String uri, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public void writePermissions(RequestLogger reqlog, String uri,
+			AbstractWriteHandle permissions, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public void mergePermissions(RequestLogger reqlog, String uri,
+			AbstractWriteHandle permissions, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 }
