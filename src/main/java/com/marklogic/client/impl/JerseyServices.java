@@ -128,6 +128,8 @@ import com.marklogic.client.query.ValueLocator;
 import com.marklogic.client.query.ValueQueryDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
+import com.marklogic.client.semantics.Capability;
+import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.GraphPermissions;
 import com.marklogic.client.semantics.SPARQLBinding;
 import com.marklogic.client.semantics.SPARQLBindings;
@@ -5360,10 +5362,29 @@ public class JerseyServices implements RESTServices {
 		return entity;
 	}
 
+	private void addGraphUriParam(RequestParameters params, String uri) {
+		if ( uri == null || uri.equals(GraphManager.DEFAULT_GRAPH) ) {
+			params.add("default", "");
+		} else {
+			params.add("graph", uri);
+		}
+	}
+
+	private void addPermsParams(RequestParameters params, GraphPermissions permissions) {
+		if ( permissions != null ) {
+			for ( String role : permissions.keySet() ) {
+				if ( permissions.get(role) != null ) {
+					for ( Capability capability : permissions.get(role) ) {
+						params.add("perm:" + role, capability.toString().toLowerCase());
+					}
+				}
+			}
+		}
+	}
+
 	@Override
 	public <R extends AbstractReadHandle> R getGraphUris(RequestLogger reqlog, R output)
-		throws ResourceNotFoundException, ForbiddenUserException,
-		FailedRequestException
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
 	{
 		return getResource(reqlog, "graphs", null, null, output);
 	}
@@ -5374,11 +5395,7 @@ public class JerseyServices implements RESTServices {
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
 	{
 		RequestParameters params = new RequestParameters();
-		if ( uri != null ) {
-			params.add("graph", uri);
-		} else {
-			params.add("default", "");
-		}
+		addGraphUriParam(params, uri);
 		return getResource(reqlog, "graphs", transaction, params, output);
 	}
 
@@ -5388,17 +5405,13 @@ public class JerseyServices implements RESTServices {
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
 	{
 		RequestParameters params = new RequestParameters();
-		if ( uri != null ) {
-			params.add("graph", uri);
-		} else {
-			params.add("default", "");
-		}
+		addGraphUriParam(params, uri);
+		addPermsParams(params, permissions);
 		putResource(reqlog, "graphs", transaction, params, input, null);
 	}
 
 	@Override
-	public void writeGraphs(RequestLogger reqlog,
-		AbstractWriteHandle input)
+	public void writeGraphs(RequestLogger reqlog, AbstractWriteHandle input)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
 	{
 		RequestParameters params = new RequestParameters();
@@ -5411,17 +5424,13 @@ public class JerseyServices implements RESTServices {
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
 	{
 		RequestParameters params = new RequestParameters();
-		if ( uri != null ) {
-			params.add("graph", uri);
-		} else {
-			params.add("default", "");
-		}
+		addGraphUriParam(params, uri);
+		addPermsParams(params, permissions);
 		postResource(reqlog, "graphs", transaction, params, input, null);
 	}
 
 	@Override
-	public void mergeGraphs(RequestLogger reqlog,
-		AbstractWriteHandle input)
+	public void mergeGraphs(RequestLogger reqlog, AbstractWriteHandle input)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
 	{
 		RequestParameters params = new RequestParameters();
@@ -5429,22 +5438,62 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public Object deleteGraph(RequestLogger reqlog, String uri,
-			Transaction transaction) throws ForbiddenUserException,
-			FailedRequestException {
+	public <R extends AbstractReadHandle> R getPermissions(RequestLogger reqlog, String uri,
+			R output,Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
 		RequestParameters params = new RequestParameters();
-		if ( uri != null ) {
-			params.add("graph", uri);
-		} else {
-			params.add("default", "");
-		}
+		addGraphUriParam(params, uri);
+		params.add("category", "permissions");
+		return getResource(reqlog, "graphs", transaction, params, output);
+	}
+
+	@Override
+	public void deletePermissions(RequestLogger reqlog, String uri, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		addGraphUriParam(params, uri);
+		params.add("category", "permissions");
+		deleteResource(reqlog, "graphs", transaction, params, null);
+	}
+
+	@Override
+	public void writePermissions(RequestLogger reqlog, String uri,
+			AbstractWriteHandle permissions, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		addGraphUriParam(params, uri);
+		params.add("category", "permissions");
+		putResource(reqlog, "graphs", transaction, params, permissions, null);
+	}
+
+	@Override
+	public void mergePermissions(RequestLogger reqlog, String uri,
+			AbstractWriteHandle permissions, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		addGraphUriParam(params, uri);
+		params.add("category", "permissions");
+		postResource(reqlog, "graphs", transaction, params, permissions, null);
+	}
+
+	@Override
+	public Object deleteGraph(RequestLogger reqlog, String uri, Transaction transaction)
+		throws ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		addGraphUriParam(params, uri);
 		return deleteResource(reqlog, "graphs", transaction, params, null);
 
 	}
 	
 	@Override
-	public void deleteGraphs(RequestLogger reqlog) throws ForbiddenUserException,
-			FailedRequestException {
+	public void deleteGraphs(RequestLogger reqlog)
+		throws ForbiddenUserException, FailedRequestException
+	{
 		deleteResource(reqlog, "graphs", null, null, null);
 	}
 	@Override

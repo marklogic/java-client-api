@@ -29,7 +29,7 @@ import com.marklogic.client.semantics.Capability;
 // TODO: Are we ok without the generics?
 public interface GraphManager {
 // TODO: what is the value?
-    public static String DEFAULT_GRAPH = "http...";
+    public static String DEFAULT_GRAPH = "com.marklogic.client.semantics.GraphManager.DEFAULT_GRAPH";
 // TODO: what is the value?
     public static String MULTIPLE_GRAPHS = "http...";
 
@@ -45,8 +45,8 @@ public interface GraphManager {
 
     public GraphPermissions getPermissions(String uri);
     public GraphPermissions getPermissions(String uri, Transaction transaction);
-    public void deletePermissions(String uri, GraphPermissions permissions);
-    public void deletePermissions(String uri, GraphPermissions permissions, Transaction transaction);
+    public void deletePermissions(String uri);
+    public void deletePermissions(String uri, Transaction transaction);
     public void writePermissions(String uri, GraphPermissions permissions);
     public void writePermissions(String uri, GraphPermissions permissions, Transaction transaction);
     public void mergePermissions(String uri, GraphPermissions permissions);

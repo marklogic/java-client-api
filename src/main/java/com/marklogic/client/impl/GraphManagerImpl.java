@@ -19,11 +19,19 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
@@ -98,53 +106,76 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
 
     @Override
     public GraphPermissions getPermissions(String uri) {
-        // TODO Auto-generated method stub
-        return null;
+        return getPermissions(uri, null);
     }
 
     @Override
     public GraphPermissions getPermissions(String uri, Transaction transaction) {
-        // TODO Auto-generated method stub
-        return null;
+        JsonNode json = services.getPermissions(requestLogger, uri, new JacksonHandle(), transaction).get();
+        GraphPermissions perms = new GraphPermissionsImpl();
+        for ( JsonNode permission : json.path("permissions") ) {
+            String role = permission.path("role-name").asText();
+            Set<Capability> capabilities = new HashSet<Capability>();
+            for ( JsonNode capability : permission.path("capabilities") ) {
+                String value = capability.asText();
+                if ( value != null ) {
+                    capabilities.add(Capability.valueOf(value.toUpperCase()));
+                }
+            }
+            perms.put(role, capabilities);
+        }
+        return perms;
     }
 
     @Override
-    public void deletePermissions(String uri, GraphPermissions permissions) {
-        // TODO Auto-generated method stub
-        
+    public void deletePermissions(String uri) {
+        deletePermissions(uri, null);
     }
 
     @Override
-    public void deletePermissions(String uri, GraphPermissions permissions,
-            Transaction transaction) {
-        // TODO Auto-generated method stub
-        
+    public void deletePermissions(String uri, Transaction transaction) {
+        services.deletePermissions(requestLogger, uri, transaction);
+    }
+
+    private JacksonHandle generatePermissions(GraphPermissions permissions) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode payload = mapper.createObjectNode();
+        ArrayNode permissionsNode = mapper.createArrayNode();
+        payload.set("permissions", permissionsNode);
+        for ( String role : permissions.keySet() ) {
+            ObjectNode permissionNode = mapper.createObjectNode();
+            permissionNode.put("role-name", role);
+            ArrayNode capabilitiesNode = mapper.createArrayNode();
+            for ( Capability capability : permissions.get(role) ) {
+                capabilitiesNode.add(capability.toString().toLowerCase());
+            }
+            permissionNode.set("capabilities", capabilitiesNode);
+            permissionsNode.add(permissionNode);
+        }
+
+        return new JacksonHandle(payload);
     }
 
     @Override
     public void writePermissions(String uri, GraphPermissions permissions) {
-        // TODO Auto-generated method stub
-        
+        writePermissions(uri, permissions, null);
     }
 
     @Override
-    public void writePermissions(String uri, GraphPermissions permissions,
-            Transaction transaction) {
-        // TODO Auto-generated method stub
-        
+    public void writePermissions(String uri, GraphPermissions permissions, Transaction transaction) {
+        services.writePermissions(requestLogger, uri,
+            generatePermissions(permissions), transaction);
     }
 
     @Override
     public void mergePermissions(String uri, GraphPermissions permissions) {
-        // TODO Auto-generated method stub
-        
+        mergePermissions(uri, permissions, null);
     }
 
     @Override
-    public void mergePermissions(String uri, GraphPermissions permissions,
-            Transaction transcation) {
-        // TODO Auto-generated method stub
-        
+    public void mergePermissions(String uri, GraphPermissions permissions, Transaction transaction) {
+        services.mergePermissions(requestLogger, uri,
+            generatePermissions(permissions), transaction);
     }
 
     @Override
@@ -168,8 +199,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     public void merge(String uri, TriplesWriteHandle handle,
             GraphPermissions permissions, Transaction transaction) {
         HandleImplementation baseHandle = HandleAccessor.as(handle);
-        String mimetype = baseHandle.getMimetype();
-        if ( mimetype == null ) baseHandle.setMimetype(defaultMimetype);
+        String mimetype = validateGraphsMimetype(baseHandle);
         services.mergeGraph(requestLogger, uri, handle, permissions, transaction);
         baseHandle.setMimetype(mimetype);
     }
@@ -217,8 +247,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     public void write(String uri, TriplesWriteHandle handle,
             GraphPermissions permissions, Transaction transaction) {
         HandleImplementation baseHandle = HandleAccessor.as(handle);
-        String mimetype = baseHandle.getMimetype();
-        if ( mimetype == null ) baseHandle.setMimetype(defaultMimetype);
+        String mimetype = validateGraphsMimetype(baseHandle);
         services.writeGraph(requestLogger, uri, handle, permissions, transaction);
         baseHandle.setMimetype(mimetype);
     }
@@ -297,8 +326,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     @Override
     public void mergeGraphs(QuadsWriteHandle handle) {
         HandleImplementation baseHandle = HandleAccessor.as(handle);
-        String mimetype = baseHandle.getMimetype();
-        if ( mimetype == null ) baseHandle.setMimetype(defaultMimetype);
+        String mimetype = validateGraphsMimetype(baseHandle);
         services.mergeGraphs(requestLogger, handle);
         baseHandle.setMimetype(mimetype);
     }
@@ -311,8 +339,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     @Override
     public void replaceGraphs(QuadsWriteHandle handle) {
         HandleImplementation baseHandle = HandleAccessor.as(handle);
-        String mimetype = baseHandle.getMimetype();
-        if ( mimetype == null ) baseHandle.setMimetype(defaultMimetype);
+        String mimetype = validateGraphsMimetype(baseHandle);
         services.writeGraphs(requestLogger, handle);
         baseHandle.setMimetype(mimetype);
     }
@@ -329,8 +356,9 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
 
     @Override
     public GraphPermissions permission(String role, Capability... capabilities) {
-        // TODO Auto-generated method stub
-        return null;
+        GraphPermissionsImpl perms = new GraphPermissionsImpl();
+        perms.put(role, new HashSet<Capability>(Arrays.asList(capabilities)));
+        return perms;
     }
 
     public String getDefaultMimetype() {
@@ -340,4 +368,27 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     public void setDefaultMimetype(String mimetype) {
         this.defaultMimetype = mimetype;
     }
+
+    public class GraphPermissionsImpl extends HashMap<String, Set<Capability>> implements GraphPermissions{
+        @Override
+        public GraphPermissions permission(String role, Capability... capabilities) {
+            this.put(role, new HashSet<Capability>(Arrays.asList(capabilities)));
+            return this;
+        }
+    }
+
+    private String validateGraphsMimetype(HandleImplementation baseHandle) {
+        String mimetype = baseHandle.getMimetype();
+        if ( mimetype == null ) {
+            if ( defaultMimetype != null ) {
+                baseHandle.setMimetype(defaultMimetype);
+            } else {
+                throw new IllegalArgumentException("You must either call setMimetype on your " +
+                    "handle or setDefaultMimetype on your GraphManager instance with a mimetype " +
+                    "from RDFMimeTypes");
+            }
+        }
+        return mimetype;
+    }
+
 }

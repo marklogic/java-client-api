@@ -447,6 +447,22 @@ declare function bootstrap:security-config() {
         if ( "SEC-ROLEEXISTS" = $e/error:code ) then xdmp:log("rest-evaluator role exists")
         else xdmp:log($e)
     },
+    try {
+        (: no rest-reader role, just the permission :)
+        bootstrap:security-eval(
+            'sec:create-role("read-privileged", "read-privileged", (), (), ())')
+    } catch($e) {
+        if ( "SEC-ROLEEXISTS" = $e/error:code ) then xdmp:log("read-privileged role exists")
+        else xdmp:log($e)
+    },
+    try {
+        (: no rest-reader role, just the permission :)
+        bootstrap:security-eval(
+            'sec:create-role("write-privileged", "write-privileged", (), (), ())')
+    } catch($e) {
+        if ( "SEC-ROLEEXISTS" = $e/error:code ) then xdmp:log("write-privileged role exists")
+        else xdmp:log($e)
+    },
     bootstrap:security-eval(
         'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdbc-eval", "execute", "rest-evaluator")'),
     bootstrap:security-eval(
@@ -459,8 +475,15 @@ declare function bootstrap:security-config() {
         'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdbc-invoke", "execute", "rest-evaluator")'),
     bootstrap:security-eval(
         'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdbc-invoke-in", "execute", "rest-evaluator")'),
+    bootstrap:security-eval(
+        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/rest-reader", "execute", "read-privileged")'),
+    bootstrap:security-eval(
+        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/rest-reader", "execute", "write-privileged")'),
+    bootstrap:security-eval(
+        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/rest-writer", "execute", "write-privileged")'),
 
-    for $user in ("rest-admin", "rest-reader", "rest-writer", "rest-evaluator", "valid") 
+    for $user in ("rest-admin", "rest-reader", "rest-writer", "rest-evaluator", "valid",
+        "read-privileged", "write-privileged")
         let $user-id := 
             try {
                 xdmp:user($user)
