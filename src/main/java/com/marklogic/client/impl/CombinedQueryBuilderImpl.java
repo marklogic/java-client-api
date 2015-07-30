@@ -76,7 +76,17 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
             this.options = options;
             this.qtext = qtext;
             this.sparql = sparql;
-            this.format = HandleAccessor.as(rawQuery.getHandle()).getFormat();
+            // if a query has been supplied, it's either in JSON or in XML
+            if (rawQuery != null) {
+                this.format = HandleAccessor.as(rawQuery.getHandle()).getFormat();
+            } else {
+                if (options != null) {
+                    this.format = HandleAccessor.as(options).getFormat();
+                } else {
+                    // there's only qtext -- we choose format.
+                    this.format = Format.JSON;
+                }
+            }
             if ( format != Format.XML && format != Format.JSON ) {
                 throw new IllegalArgumentException("Format of rawQuery must be XML or JSON");
             }
@@ -133,15 +143,15 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
 
     private String serialize(CombinedQueryDefinitionImpl qdef) {
         try {
-            if ( qdef.rawQuery != null ) {
-                Format rawQueryFormat = HandleAccessor.as(qdef.rawQuery.getHandle()).getFormat();
-                if ( Format.XML == rawQueryFormat ) {
+            if ( qdef.format != null ) {
+                //Format rawQueryFormat = HandleAccessor.as(qdef.rawQuery.getHandle()).getFormat();
+                if ( Format.XML == qdef.format ) {
                     return makeXMLCombinedQuery(qdef);
-                } else if ( Format.JSON == rawQueryFormat ) {
+                } else if ( Format.JSON == qdef.format ) {
                     return makeJSONCombinedQuery(qdef);
                 } else {
                     throw new IllegalStateException("A RawStructuredQueryDefinition must " +
-                        "be XML or JSON, not " + rawQueryFormat);
+                        "be XML or JSON, not " + qdef.format);
                 }
             }
             return makeXMLCombinedQuery(qdef);
@@ -276,14 +286,14 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
         }
         JsonNode structuredQuery = combinedQueryJson.get("search").get("query");
         JacksonHandle structuredQueryHandle = null;
+        RawStructuredQueryDefinition structuredQueryDefinition = null;
         if (structuredQuery != null) {
             ObjectNode rewrappedStructuredQuery = JsonNodeFactory.instance.objectNode();
             ObjectNode structuredQueryObject = rewrappedStructuredQuery.putObject("query");
             structuredQueryObject.setAll((ObjectNode) structuredQuery);
             structuredQueryHandle = new JacksonHandle().with(rewrappedStructuredQuery);
+            structuredQueryDefinition = new RawQueryDefinitionImpl.Structured(structuredQueryHandle);
         }
-        RawStructuredQueryDefinition structuredQueryDefinition = 
-                new RawQueryDefinitionImpl.Structured(structuredQueryHandle);
         return new CombinedQueryDefinitionImpl(structuredQueryDefinition, optionsHandle, qtext, sparql);
     }
     

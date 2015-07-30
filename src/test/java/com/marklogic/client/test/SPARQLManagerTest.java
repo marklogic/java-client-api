@@ -217,7 +217,7 @@ public class SPARQLManagerTest {
                         "<term-query><text>test2</text></term-query>" +
                         "<value-constraint-query>" +
                             "<constraint-name>test2</constraint-name>" +
-                            "<value>testValue</value>" +
+                            "<text>testValue</text>" +
                         "</value-constraint-query>" +
                     "</and-query>" +
                 "</query>" +
@@ -244,7 +244,7 @@ public class SPARQLManagerTest {
                             "<term-query><text>test2</text></term-query>" +
                             "<value-constraint-query>" +
                                 "<constraint-name>test2</constraint-name>" +
-                                "<value>testValue</value>" +
+                                "<text>testValue</text>" +
                             "</value-constraint-query>" +
                         "</and-query>" +
                     "</query>" +
@@ -261,24 +261,8 @@ public class SPARQLManagerTest {
         
         String rawCombinedJson =
                 "{\"search\" : " +
-                    "{\"options\" : " +
-                        "{\"constraint\": " +
-                            "{\"name\":\"test2\", " +
-                            " \"value\": "+
-                            " { \"type\":\"string\", "+
-                            "   \"element\" : { \"ns\":\"\", \"name\":\"test2\" } } } },  " +
-                    "\"sparql\":\"select ?s ?p ?o { ?s ?p ?o } limit 100\"," +
-                    "\"query\" : " +
-                        "{\"and-query\" : " +
-                            "[{\"term-query\": {\"text\": \"test2\"}}," +
-                            " {\"value-constraint-query\" : "  +
-                                "{\"constraint-name\": \"test2\"," +
-                                 "\"value\":\"testValue\"}" +
-                            "}]" +
-                        "}"+
-                    "}"+
-                "}";
-                
+                    "{\"sparql\":\"select ?s ?p ?o { ?s ?p ?o } limit 100\"," +
+                    "\"qtext\":\"testValue\"}}";
         handle = new StringHandle(rawCombinedJson).withFormat(Format.JSON);
         RawCombinedQueryDefinition rawCombinedJsonDef = queryMgr.newRawCombinedQueryDefinition(handle);
         qdef.setConstrainingQueryDefinintion(rawCombinedJsonDef);
@@ -302,7 +286,7 @@ public class SPARQLManagerTest {
                             "[{\"term-query\": {\"text\": \"test2\"}}," +
                             " {\"value-constraint-query\" : "  +
                                 "{\"constraint-name\": \"test2\"," +
-                                 "\"value\":\"testValue\"}" +
+                                 "\"text\":\"testValue\"}" +
                             "}]" +
                         "}"+
                     "}"+
