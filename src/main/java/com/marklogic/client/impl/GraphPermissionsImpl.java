@@ -23,14 +23,14 @@ import com.marklogic.client.semantics.GraphPermissions;
 
 public class GraphPermissionsImpl extends HashMap<String, Set<Capability>> implements GraphPermissions {
 
-	public GraphPermissionsImpl(String role, Capability... capabilities) {
-		// TODO Auto-generated method stub
-		super();
-	}
-	
-	@Override
-	public GraphPermissions permission(String role, Capability... capabilities) {
-		// TODO Auto-generated method stub
-		return this;
-	}
+    public GraphPermissionsImpl(String role, Capability... capabilities) {
+        // TODO Auto-generated method stub
+        super();
+    }
+
+    @Override
+    public GraphPermissions permission(String role, Capability... capabilities) {
+        // TODO Auto-generated method stub
+        return this;
+    }
 }
