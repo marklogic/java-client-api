@@ -215,10 +215,10 @@ public class SPARQLManagerTest {
                 "<query>" +
                     "<and-query>" +
                         "<term-query><text>test2</text></term-query>" +
-                        "<element-value-query>" +
+                        "<value-constraint-query>" +
                             "<constraint-name>test2</constraint-name>" +
                             "<value>testValue</value>" +
-                        "</element-value-query>" +
+                        "</value-constraint-query>" +
                     "</and-query>" +
                 "</query>" +
             "</search>";
@@ -242,10 +242,10 @@ public class SPARQLManagerTest {
                     "<query>" +
                         "<and-query>" +
                             "<term-query><text>test2</text></term-query>" +
-                            "<element-value-query>" +
+                            "<value-constraint-query>" +
                                 "<constraint-name>test2</constraint-name>" +
                                 "<value>testValue</value>" +
-                            "</element-value-query>" +
+                            "</value-constraint-query>" +
                         "</and-query>" +
                     "</query>" +
                 "</search>";
@@ -271,7 +271,7 @@ public class SPARQLManagerTest {
                     "\"query\" : " +
                         "{\"and-query\" : " +
                             "[{\"term-query\": {\"text\": \"test2\"}}," +
-                            " {\"element-value-query\" : "  +
+                            " {\"value-constraint-query\" : "  +
                                 "{\"constraint-name\": \"test2\"," +
                                  "\"value\":\"testValue\"}" +
                             "}]" +
@@ -300,7 +300,7 @@ public class SPARQLManagerTest {
                     "\"query\" : " +
                         "{\"and-query\" : " +
                             "[{\"term-query\": {\"text\": \"test2\"}}," +
-                            " {\"element-value-query\" : "  +
+                            " {\"value-constraint-query\" : "  +
                                 "{\"constraint-name\": \"test2\"," +
                                  "\"value\":\"testValue\"}" +
                             "}]" +
