@@ -26,12 +26,8 @@ import com.marklogic.client.semantics.Capability;
 /**
  * A manager for CRUD operations on semantic graphs.
  */
-// TODO: Are we ok without the generics?
 public interface GraphManager {
-// TODO: what is the value?
     public static String DEFAULT_GRAPH = "com.marklogic.client.semantics.GraphManager.DEFAULT_GRAPH";
-// TODO: what is the value?
-    public static String MULTIPLE_GRAPHS = "http...";
 
     public Iterator<String> listGraphUris();
 
@@ -82,8 +78,8 @@ public interface GraphManager {
     public void delete(String uri);
     public void delete(String uri, Transaction transaction);
 
-    public <T extends TriplesReadHandle> T things(String[] iris, T handle);
-    public <T> T thingsAs(String[] iris, Class<T> as);
+    public <T extends TriplesReadHandle> T things(T handle, String... iris);
+    public <T> T thingsAs(Class<T> as, String... iris);
 
     // quads methods - no permissions transactions, or read
     public void mergeGraphs(QuadsWriteHandle handle);

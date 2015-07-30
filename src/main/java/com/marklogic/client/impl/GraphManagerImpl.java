@@ -82,26 +82,19 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     }
 
     @Override
-    public <T> T readAs(String uri, Class<T> clazz) {
-        return readAs(uri, clazz, null);
+    public <T> T readAs(String uri, Class<T> as) {
+        return readAs(uri, as, null);
     }
 
     @Override
     public <T> T readAs(String uri, Class<T> as,
             Transaction transaction) {
-        ContentHandle<T> handle = handleRegistry.makeHandle(as);
-
-        if ( ! (handle instanceof TriplesReadHandle) ) {
-            throw new IllegalArgumentException("Second arg \"as\" " +
-                "is registered by " + handle.getClass() + " which is not a " +
-                "TriplesReadHandle so it cannot read content from GraphManager");
-        }
-        TriplesReadHandle triplesHandle = (TriplesReadHandle) handle;
-        if (null == read(uri, triplesHandle, transaction)) {
+        ContentHandle<T> triplesHandle = getTriplesReadHandle(as);
+        if (null == read(uri, (TriplesReadHandle) triplesHandle, transaction)) {
             return null;
         }
 
-        return handle.get();
+        return triplesHandle.get();
     }
 
     @Override
@@ -135,6 +128,17 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     @Override
     public void deletePermissions(String uri, Transaction transaction) {
         services.deletePermissions(requestLogger, uri, transaction);
+    }
+
+    private <T> ContentHandle<T> getTriplesReadHandle(Class<T> as) {
+        ContentHandle<T> handle = handleRegistry.makeHandle(as);
+
+        if ( ! (handle instanceof TriplesReadHandle) ) {
+            throw new IllegalArgumentException("The Class for arg \"as\" " +
+                "is registered by " + handle.getClass() + " which is not a " +
+                "TriplesReadHandle so it cannot be used by GraphManager");
+        }
+        return handle;
     }
 
     private JacksonHandle generatePermissions(GraphPermissions permissions) {
@@ -312,15 +316,19 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     }
 
     @Override
-    public TriplesReadHandle things(String[] iris, TriplesReadHandle handle) {
-        // TODO Auto-generated method stub
-        return null;
+    public <T extends TriplesReadHandle> T things(T handle, String... iris) {
+        if ( iris == null ) throw new IllegalArgumentException("iris cannot be null");
+        return services.getThings(requestLogger, iris, handle);
     }
 
     @Override
-    public Object thingsAs(String[] iris, Class clazz) {
-        // TODO Auto-generated method stub
-        return null;
+    public <T> T thingsAs(Class<T> as, String... iris) {
+        ContentHandle<T> triplesHandle = getTriplesReadHandle(as);
+        if (null == things((TriplesReadHandle) triplesHandle, iris) ) {
+            return null;
+        }
+
+        return triplesHandle.get();
     }
 
     @Override
