@@ -320,4 +320,6 @@ public interface RESTServices {
 	public void mergePermissions(RequestLogger reqlog, String uri,
 			AbstractWriteHandle permissions, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public <R extends AbstractReadHandle> R getThings(RequestLogger reqlog, String[] iris, R output)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 }

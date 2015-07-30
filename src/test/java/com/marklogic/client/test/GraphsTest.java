@@ -62,18 +62,18 @@ public class GraphsTest {
             String uri = iter.next();
             assertNotNull(uri);
             assertNotEquals("", uri);
-            System.out.println("DEBUG: [GraphsTest] uri =[" + uri  + "]");
+            System.out.println("[GraphsTest] uri =[" + uri  + "]");
         }
     }
 
     @Test
     public void testQuads() throws Exception {
         gmgr.setDefaultMimetype(RDFMimeTypes.NQUADS);
-        String quadGraphUri = "http://example.org/g1";
-        String quad1 = "<http://example.org/s1> <http://example.com/p1> <http://example.org/o1> <http://example.org/g1> .";
-        String quad2 = "<http://example.org/s2> <http://example.com/p2> <http://example.org/o2> <http://example.org/g1> .";
-        String quad3 = "<http://example.org/s3> <http://example.com/p2> <http://example.org/o2> <http://example.org/g1> .";
-        String quad4 = "<http://example.org/s4> <http://example.com/p2> <http://example.org/o2> <http://example.org/g1> .";
+        String quadGraphUri = "GraphsTest.testQuads";
+        String quad1 = "<http://example.org/s1> <http://example.org/p1> <http://example.org/o1> <" + quadGraphUri + "> .";
+        String quad2 = "<http://example.org/s2> <http://example.org/p2> <http://example.org/o2> <" + quadGraphUri + "> .";
+        String quad3 = "<http://example.org/s3> <http://example.org/p2> <http://example.org/o2> <" + quadGraphUri + "> .";
+        String quad4 = "<http://example.org/s4> <http://example.org/p2> <http://example.org/o2> <" + quadGraphUri + "> .";
         gmgr.replaceGraphs(new StringHandle(quad1));
         StringHandle quadsHandle = gmgr.read(quadGraphUri, new StringHandle());
         assertEquals(quad1, quadsHandle.get());
@@ -96,11 +96,11 @@ public class GraphsTest {
     @Test
     public void testTriples() throws Exception {
         gmgr.setDefaultMimetype(RDFMimeTypes.NTRIPLES);
-        String tripleGraphUri = "http://example.org/g2";
-        String ntriple5 = "<http://example.org/s5> <http://example.com/p2> <http://example.org/o2> .";
-        String ntriple6 = "<http://example.org/s6> <http://example.com/p2> <http://example.org/o2> .";
-        String ntriple7 = "<http://example.org/s7> <http://example.com/p2> <http://example.org/o2> .";
-        String ntriple8 = "<http://example.org/s8> <http://example.com/p2> <http://example.org/o2> .";
+        String tripleGraphUri = "GraphsTest.testTriples";
+        String ntriple5 = "<http://example.org/s5> <http://example.org/p2> <http://example.org/o2> .";
+        String ntriple6 = "<http://example.org/s6> <http://example.org/p2> <http://example.org/o2> .";
+        String ntriple7 = "<http://example.org/s7> <http://example.org/p2> <http://example.org/o2> .";
+        String ntriple8 = "<http://example.org/s8> <http://example.org/p2> <http://example.org/o2> .";
         gmgr.write(tripleGraphUri, new StringHandle(ntriple5));
         StringHandle triplesHandle = gmgr.read(tripleGraphUri, new StringHandle());
         assertEquals(ntriple5, triplesHandle.get());
@@ -229,5 +229,26 @@ public class GraphsTest {
             }
 
         }
+    }
+
+    @Test
+    public void testThings() throws Exception {
+        gmgr.setDefaultMimetype(RDFMimeTypes.NTRIPLES);
+        String tripleGraphUri = "GraphsTest.testTriples";
+        String triplesAboutS5 =
+            "<http://example.org/s5> <http://example.org/p1> <1> .\n" +
+            "<http://example.org/s5> <http://example.org/p2> <2> .\n" +
+            "<http://example.org/s5> <http://example.org/p3> <3> .\n";
+        String triplesAboutS6 =
+            "<http://example.org/s6> <http://example.org/p4> <http://example.org/s5> .";
+        gmgr.write(tripleGraphUri, new StringHandle(triplesAboutS5));
+        gmgr.merge(tripleGraphUri, new StringHandle(triplesAboutS6));
+
+        // since all triples reference http://example.org/s5, all triples should be returned
+        // in NTRIPLES format since that's the default mimetype on gmgr
+        String things = gmgr.thingsAs(String.class, "http://example.org/s5");
+        assertEquals(triplesAboutS5 + triplesAboutS6, things);
+
+        gmgr.delete(tripleGraphUri);
     }
 }

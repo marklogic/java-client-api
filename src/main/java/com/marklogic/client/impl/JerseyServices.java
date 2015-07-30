@@ -5496,6 +5496,19 @@ public class JerseyServices implements RESTServices {
 	{
 		deleteResource(reqlog, "graphs", null, null, null);
 	}
+
+	@Override
+	public <R extends AbstractReadHandle> R getThings(RequestLogger reqlog, String[] iris, R output)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		if ( iris == null ) throw new IllegalArgumentException("iris cannot be null");
+		RequestParameters params = new RequestParameters();
+		for ( String iri : iris ) {
+			params.add("iri", iri);
+		}
+		return getResource(reqlog, "graphs/things", null, params, output);
+	}
+
 	@Override
 	public <R extends AbstractReadHandle> R executeSparql(RequestLogger reqlog, 
 		SPARQLQueryDefinition qdef, R output, long start, long pageLength,
