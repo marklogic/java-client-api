@@ -38,7 +38,7 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
     private String[] usingGraphUris;
     private String[] usingNamedUris;
     private SPARQLRuleset[] ruleSets;
-	private Boolean includeDefaultRulesets;
+    private Boolean includeDefaultRulesets;
     private QueryDefinition constrainingQuery;
     private String optionsName;
     private String[] collections;
@@ -264,19 +264,19 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
         return this;
     }
 
-	@Override
-	public void setIncludeDefaultRulesets(Boolean b) {
-		this.includeDefaultRulesets = b;
-	}
+    @Override
+    public void setIncludeDefaultRulesets(Boolean b) {
+        this.includeDefaultRulesets = b;
+    }
 
-	@Override
-	public Boolean getIncludeDefaultRulesets() {
-		return this.includeDefaultRulesets;
-	}
+    @Override
+    public Boolean getIncludeDefaultRulesets() {
+        return this.includeDefaultRulesets;
+    }
 
-	@Override
-	public SPARQLQueryDefinition withIncludeDefaultRulesets(Boolean b) {
-		this.includeDefaultRulesets = b;
-		return this;
-	}
+    @Override
+    public SPARQLQueryDefinition withIncludeDefaultRulesets(Boolean b) {
+        this.includeDefaultRulesets = b;
+        return this;
+    }
 }
