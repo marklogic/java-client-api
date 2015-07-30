@@ -5511,6 +5511,7 @@ public class JerseyServices implements RESTServices {
 				params.add("collection", collection);
 			}
 		}
+		addPermsParams(params, qdef.getUpdatePermissions());
 		String sparql = qdef.getSparql();
 		SPARQLBindings bindings = qdef.getBindings();
 		for ( String bindingName : bindings.keySet() ) {

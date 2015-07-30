@@ -33,6 +33,7 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
 
     private String sparql;
     private SPARQLBindings bindings = new SPARQLBindingsImpl();
+    private GraphPermissions permissions;
     private String[] defaultGraphUris;
     private String[] namedGraphUris;
     private String[] usingGraphUris;
@@ -159,20 +160,22 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
 
     @Override
     public void setUpdatePermissions(GraphPermissions permissions) {
-        // TODO Auto-generated method stub
-        
+        this.permissions = permissions;
     }
 
     @Override
     public GraphPermissions getUpdatePermissions() {
-        // TODO Auto-generated method stub
-        return null;
+        return permissions;
     }
 
     @Override
     public SPARQLQueryDefinition withUpdatePermission(String role,
             Capability capability) {
-        // TODO Auto-generated method stub
+        if ( permissions == null ) {
+            permissions = new GraphPermissionsImpl(role, capability);
+        } else {
+            permissions = permissions.permission(role, capability);
+        }
         return this;
     }
 
