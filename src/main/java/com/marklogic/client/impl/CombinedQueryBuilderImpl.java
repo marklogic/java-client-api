@@ -16,26 +16,38 @@
 package com.marklogic.client.impl;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSSerializer;
+
 import com.fasterxml.jackson.core.JsonParser.Feature;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.OutputStreamSender;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
+import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
+    
     public class CombinedQueryDefinitionImpl 
     extends AbstractQueryDefinition
     implements CombinedQueryDefinition
@@ -237,5 +249,80 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
         } catch (Exception e) {
             throw new MarkLogicIOException(e);
         }
+    }
+    
+    public CombinedQueryDefinition mergeJSON(StructureWriteHandle input,
+            String sparql) {
+    
+        JacksonHandle handle= new JacksonHandle();
+        HandleAccessor.receiveContent(handle, HandleAccessor.contentAsString(input));
+        JsonNode combinedQueryJson = handle.get();
+        
+        JsonNode optionsContents = combinedQueryJson.get("search").get("options");
+        JacksonHandle optionsHandle = null;
+        if (optionsContents != null) {
+            ObjectNode rewrappedOptionsNode = JsonNodeFactory.instance.objectNode();
+            ObjectNode optionsObject = rewrappedOptionsNode.putObject("options");
+            optionsObject.setAll((ObjectNode) optionsContents);
+            optionsHandle = new JacksonHandle();
+            optionsHandle.set(rewrappedOptionsNode);
+        }
+        
+        //TODO this could be more than one string...
+        JsonNode qtextNode = combinedQueryJson.get("search").get("qtext");
+        String qtext = null;
+        if (qtextNode != null) {
+            qtext = qtextNode.asText();
+        }
+        JsonNode structuredQuery = combinedQueryJson.get("search").get("query");
+        JacksonHandle structuredQueryHandle = null;
+        if (structuredQuery != null) {
+            ObjectNode rewrappedStructuredQuery = JsonNodeFactory.instance.objectNode();
+            ObjectNode structuredQueryObject = rewrappedStructuredQuery.putObject("query");
+            structuredQueryObject.setAll((ObjectNode) structuredQuery);
+            structuredQueryHandle = new JacksonHandle().with(rewrappedStructuredQuery);
+        }
+        RawStructuredQueryDefinition structuredQueryDefinition = 
+                new RawQueryDefinitionImpl.Structured(structuredQueryHandle);
+        return new CombinedQueryDefinitionImpl(structuredQueryDefinition, optionsHandle, qtext, sparql);
+    }
+    
+    public CombinedQueryDefinition mergeXML(StructureWriteHandle input,
+            String sparql) {
+         DOMHandle handle = new DOMHandle();
+         HandleAccessor.receiveContent(handle, HandleAccessor.contentAsString(input));
+         Document combinedQueryXml = handle.get();
+         DOMImplementationLS domImplementation = (DOMImplementationLS) combinedQueryXml.getImplementation();
+         LSSerializer lsSerializer = domImplementation.createLSSerializer();
+         lsSerializer.getDomConfig().setParameter("xml-declaration", false);
+
+         NodeList nl = combinedQueryXml.getElementsByTagNameNS("http://marklogic.com/appservices/search", "options");
+         Node n = nl.item(0);
+         String options = null;
+         StringHandle optionsHandle = null;
+         if (n != null) {
+             options = lsSerializer.writeToString(n);
+             optionsHandle = new StringHandle(options).withFormat(Format.XML);
+         }
+        
+         //TODO this could be more than one string...
+         nl = combinedQueryXml.getElementsByTagNameNS("http://marklogic.com/appservices/search", "qtext");
+         n = nl.item(0);
+         String qtext = null;
+         if (n != null) {
+             qtext = lsSerializer.writeToString(n);
+         }
+         
+         nl = combinedQueryXml.getElementsByTagNameNS("http://marklogic.com/appservices/search", "query");
+         n = nl.item(0);
+         String query = null;
+         if (n != null) {
+             query = lsSerializer.writeToString(nl.item(0));
+         }
+         StringHandle structuredQueryHandle = new StringHandle().with(query).withFormat(Format.XML);
+         RawStructuredQueryDefinition structuredQueryDefinition = 
+                 new RawQueryDefinitionImpl.Structured(structuredQueryHandle);
+         return new CombinedQueryDefinitionImpl(structuredQueryDefinition, optionsHandle, qtext, sparql);
+    
     }
 }
