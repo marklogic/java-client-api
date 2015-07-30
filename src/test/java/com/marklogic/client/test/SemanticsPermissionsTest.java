@@ -36,6 +36,8 @@ import com.marklogic.client.semantics.Capability;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.GraphPermissions;
 import com.marklogic.client.semantics.RDFMimeTypes;
+import com.marklogic.client.semantics.SPARQLQueryDefinition;
+import com.marklogic.client.semantics.SPARQLQueryManager;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SemanticsPermissionsTest {
@@ -138,5 +140,27 @@ public class SemanticsPermissionsTest {
         GraphPermissions permissions = gmgr.getPermissions(graphUri);
         assertEquals(2, permissions.size());
         assertNull(permissions.get("read-privileged"));
+    }
+
+    @Test
+    public void G_testSPARQLInsertPermissions() throws Exception {
+        String localGraphUri = graphUri + ".SPARQLPermissions";
+        String sparql = "INSERT DATA { GRAPH <" + localGraphUri + "> { <s2> <p2> <o2> } }";
+        SPARQLQueryManager sparqlMgr = Common.client.newSPARQLQueryManager();
+        SPARQLQueryDefinition qdef = sparqlMgr.newQueryDefinition(sparql)
+            .withUpdatePermission("write-privileged", Capability.READ)
+            .withUpdatePermission("write-privileged", Capability.UPDATE);
+        sparqlMgr.executeUpdate(qdef);
+        GraphPermissions getPermissions = gmgr.getPermissions(localGraphUri);
+        assertEquals(3, getPermissions.size());
+        assertNotNull(getPermissions.get("write-privileged"));
+        assertEquals(2, getPermissions.get("write-privileged").size());
+        for ( Capability capability : getPermissions.get("write-privileged") ) {
+            if ( capability == null ) fail("capability should not be null");
+            if ( capability != Capability.READ && capability != Capability.UPDATE ) {
+                fail("capabilities should be read or update, not [" + capability + "]");
+            }
+        }
+        gmgr.delete(localGraphUri);
     }
 }
