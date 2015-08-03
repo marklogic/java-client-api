@@ -5546,18 +5546,10 @@ public class JerseyServices implements RESTServices {
 				params.add("options", qdef.getOptionsName());
 			}
 			if ( constrainingQuery instanceof RawCombinedQueryDefinition ) {
-				input = ((RawQueryDefinition) constrainingQuery).getHandle();
-				Format format = HandleAccessor.as(input).getFormat();
-				CombinedQueryDefinition combinedQdef = null;
-				if (format == Format.JSON){
-				    combinedQdef = new CombinedQueryBuilderImpl().mergeJSON(input, sparql);
-				} else if (format == Format.XML){
-				    combinedQdef = new CombinedQueryBuilderImpl().mergeXML(input, sparql);
-				} else {
-					throw new IllegalArgumentException(
-						"Format of constrainingQuery must be XML or JSON");
-				}
-				 input = new StringHandle(combinedQdef.serialize()).withFormat(format);
+				CombinedQueryDefinition combinedQdef = new CombinedQueryBuilderImpl().combine(
+					(RawCombinedQueryDefinition) constrainingQuery, null, null, sparql);
+				Format format = combinedQdef.getFormat();
+				input = new StringHandle(combinedQdef.serialize()).withFormat(format);
 			} else if ( constrainingQuery instanceof RawStructuredQueryDefinition ) {
 				CombinedQueryDefinition combinedQdef = new CombinedQueryBuilderImpl().combine(
 					(RawStructuredQueryDefinition) constrainingQuery, null, null, sparql);

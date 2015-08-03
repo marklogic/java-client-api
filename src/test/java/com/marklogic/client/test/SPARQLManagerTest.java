@@ -206,7 +206,7 @@ public class SPARQLManagerTest {
         // test RawCombinedQueryDefinition
         String rawCombinedQuery =
             "<search xmlns='http://marklogic.com/appservices/search'>" +
-                "<sparql>select ?s ?p ?o { ?s ?p ?o } limit 100</sparql>" +
+                "<sparql>select ?s ?p ?o { ?s ?p ?o } limit 50</sparql>" +
                 "<options>" +
                     "<constraint name='test2'>" +
                         "<value type='string'><element ns='' name='test2'/></value>" +
@@ -251,7 +251,7 @@ public class SPARQLManagerTest {
                 "</search>";
         handle = new StringHandle(rawCombinedQuery2).withFormat(Format.XML);
         RawCombinedQueryDefinition rawCombinedQDef2 = queryMgr.newRawCombinedQueryDefinition(handle);
-        qdef.setConstrainingQueryDefinintion(rawCombinedQDef2);
+        qdef.setConstrainingQueryDefinition(rawCombinedQDef2);
         jsonResults = smgr.executeSelect(qdef, new JacksonHandle()).get();
         tuples = jsonResults.path("results").path("bindings");
         assertEquals(1, tuples.size());
@@ -265,7 +265,7 @@ public class SPARQLManagerTest {
                     "\"qtext\":\"testValue\"}}";
         handle = new StringHandle(rawCombinedJson).withFormat(Format.JSON);
         RawCombinedQueryDefinition rawCombinedJsonDef = queryMgr.newRawCombinedQueryDefinition(handle);
-        qdef.setConstrainingQueryDefinintion(rawCombinedJsonDef);
+        qdef.setConstrainingQueryDefinition(rawCombinedJsonDef);
         jsonResults = smgr.executeSelect(qdef, new JacksonHandle()).get();
         tuples = jsonResults.path("results").path("bindings");
         assertEquals(1, tuples.size());
@@ -293,7 +293,7 @@ public class SPARQLManagerTest {
                 "}";
         handle = new StringHandle(rawCombinedJson).withFormat(Format.JSON);
         rawCombinedJsonDef = queryMgr.newRawCombinedQueryDefinition(handle);
-        qdef.setConstrainingQueryDefinintion(rawCombinedJsonDef);
+        qdef.setConstrainingQueryDefinition(rawCombinedJsonDef);
         jsonResults = smgr.executeSelect(qdef, new JacksonHandle()).get();
         tuples = jsonResults.path("results").path("bindings");
         assertEquals(1, tuples.size());
