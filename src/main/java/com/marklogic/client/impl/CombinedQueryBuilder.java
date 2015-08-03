@@ -16,6 +16,7 @@
 package com.marklogic.client.impl;
 
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
@@ -33,6 +34,13 @@ public interface CombinedQueryBuilder {
     public CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery,
         QueryOptionsWriteHandle options, String qtext);
     public CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery,
+        QueryOptionsWriteHandle options, String qtext, String sparql);
+    public CombinedQueryDefinition combine(RawCombinedQueryDefinition rawQuery, String qtext);
+    public CombinedQueryDefinition combine(RawCombinedQueryDefinition rawQuery,
+        QueryOptionsWriteHandle options);
+    public CombinedQueryDefinition combine(RawCombinedQueryDefinition rawQuery,
+        QueryOptionsWriteHandle options, String qtext);
+    public CombinedQueryDefinition combine(RawCombinedQueryDefinition rawQuery,
         QueryOptionsWriteHandle options, String qtext, String sparql);
 }
 

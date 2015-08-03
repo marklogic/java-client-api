@@ -19,8 +19,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
-import java.util.Iterator;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -30,25 +30,20 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.Transaction;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.semantics.Capability;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.RDFMimeTypes;
-import com.marklogic.client.semantics.SPARQLBinding;
 import com.marklogic.client.semantics.SPARQLBindings;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.semantics.SPARQLQueryManager;
@@ -211,7 +206,7 @@ public class SPARQLManagerTest {
         // test RawCombinedQueryDefinition
         String rawCombinedQuery =
             "<search xmlns='http://marklogic.com/appservices/search'>" +
-                "<sparql>select ?s ?p ?o { ?s ?p ?o } limit 100</sparql>" +
+                "<sparql>select ?s ?p ?o { ?s ?p ?o } limit 50</sparql>" +
                 "<options>" +
                     "<constraint name='test2'>" +
                         "<value type='string'><element ns='' name='test2'/></value>" +
@@ -220,10 +215,10 @@ public class SPARQLManagerTest {
                 "<query>" +
                     "<and-query>" +
                         "<term-query><text>test2</text></term-query>" +
-                        "<element-value-query>" +
+                        "<value-constraint-query>" +
                             "<constraint-name>test2</constraint-name>" +
-                            "<value>testValue</value>" +
-                        "</element-value-query>" +
+                            "<text>testValue</text>" +
+                        "</value-constraint-query>" +
                     "</and-query>" +
                 "</query>" +
             "</search>";
@@ -236,6 +231,76 @@ public class SPARQLManagerTest {
         value = tuples.path(0).path("o").path("value").asText();
         assertEquals("test2", value);
 
+        // this one has no <sparql>, so we'll insert it.
+        String rawCombinedQuery2 =
+                "<search xmlns='http://marklogic.com/appservices/search'>" +
+                    "<options>" +
+                        "<constraint name='test2'>" +
+                            "<value type='string'><element ns='' name='test2'/></value>" +
+                        "</constraint>" +
+                    "</options>" +
+                    "<query>" +
+                        "<and-query>" +
+                            "<term-query><text>test2</text></term-query>" +
+                            "<value-constraint-query>" +
+                                "<constraint-name>test2</constraint-name>" +
+                                "<text>testValue</text>" +
+                            "</value-constraint-query>" +
+                        "</and-query>" +
+                    "</query>" +
+                "</search>";
+        handle = new StringHandle(rawCombinedQuery2).withFormat(Format.XML);
+        RawCombinedQueryDefinition rawCombinedQDef2 = queryMgr.newRawCombinedQueryDefinition(handle);
+        qdef.setConstrainingQueryDefinition(rawCombinedQDef2);
+        jsonResults = smgr.executeSelect(qdef, new JacksonHandle()).get();
+        tuples = jsonResults.path("results").path("bindings");
+        assertEquals(1, tuples.size());
+        value = tuples.path(0).path("o").path("value").asText();
+        assertEquals("test2", value);
+    
+        
+        String rawCombinedJson =
+                "{\"search\" : " +
+                    "{\"sparql\":\"select ?s ?p ?o { ?s ?p ?o } limit 100\"," +
+                    "\"qtext\":\"testValue\"}}";
+        handle = new StringHandle(rawCombinedJson).withFormat(Format.JSON);
+        RawCombinedQueryDefinition rawCombinedJsonDef = queryMgr.newRawCombinedQueryDefinition(handle);
+        qdef.setConstrainingQueryDefinition(rawCombinedJsonDef);
+        jsonResults = smgr.executeSelect(qdef, new JacksonHandle()).get();
+        tuples = jsonResults.path("results").path("bindings");
+        assertEquals(1, tuples.size());
+        value = tuples.path(0).path("o").path("value").asText();
+        assertEquals("test2", value);
+        
+        rawCombinedJson =
+                "{\"search\" : " +
+                    "{\"options\" : " +
+                        "{\"constraint\": " +
+                            "{\"name\":\"test2\", " +
+                            " \"value\": "+
+                            " { \"type\":\"string\", "+
+                            "   \"element\" : { \"ns\":\"\", \"name\":\"test2\" } } } }  " +
+                    "," +
+                    "\"query\" : " +
+                        "{\"and-query\" : " +
+                            "[{\"term-query\": {\"text\": \"test2\"}}," +
+                            " {\"value-constraint-query\" : "  +
+                                "{\"constraint-name\": \"test2\"," +
+                                 "\"text\":\"testValue\"}" +
+                            "}]" +
+                        "}"+
+                    "}"+
+                "}";
+        handle = new StringHandle(rawCombinedJson).withFormat(Format.JSON);
+        rawCombinedJsonDef = queryMgr.newRawCombinedQueryDefinition(handle);
+        qdef.setConstrainingQueryDefinition(rawCombinedJsonDef);
+        jsonResults = smgr.executeSelect(qdef, new JacksonHandle()).get();
+        tuples = jsonResults.path("results").path("bindings");
+        assertEquals(1, tuples.size());
+        value = tuples.path(0).path("o").path("value").asText();
+        assertEquals("test2", value);
+        
+        
         // clean up the data for this method
         docMgr.delete(localGraphUri + "/embededTriple.xml");
         gmgr.delete(localGraphUri);

@@ -5546,12 +5546,10 @@ public class JerseyServices implements RESTServices {
 				params.add("options", qdef.getOptionsName());
 			}
 			if ( constrainingQuery instanceof RawCombinedQueryDefinition ) {
-				input = ((RawQueryDefinition) constrainingQuery).getHandle();
-				Format format = HandleAccessor.as(input).getFormat();
-				if ( format != Format.XML && format != Format.JSON ) {
-					throw new IllegalArgumentException(
-						"Format of constrainingQuery must be XML or JSON");
-				}
+				CombinedQueryDefinition combinedQdef = new CombinedQueryBuilderImpl().combine(
+					(RawCombinedQueryDefinition) constrainingQuery, null, null, sparql);
+				Format format = combinedQdef.getFormat();
+				input = new StringHandle(combinedQdef.serialize()).withFormat(format);
 			} else if ( constrainingQuery instanceof RawStructuredQueryDefinition ) {
 				CombinedQueryDefinition combinedQdef = new CombinedQueryBuilderImpl().combine(
 					(RawStructuredQueryDefinition) constrainingQuery, null, null, sparql);
@@ -5591,8 +5589,8 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 		if (qdef.getUsingNamedGraphUris() != null) {
-			for (String usingGraphUri : qdef.getUsingNamedGraphUris()) {
-				params.add("using-named-graph-uri", usingGraphUri);
+			for (String usingNamedGraphUri : qdef.getUsingNamedGraphUris()) {
+				params.add("using-named-graph-uri", usingNamedGraphUri);
 			}
 		}
 		

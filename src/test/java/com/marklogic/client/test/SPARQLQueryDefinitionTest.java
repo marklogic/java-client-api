@@ -107,50 +107,44 @@ public class SPARQLQueryDefinitionTest {
         assertEquals("From named 1 result assertions", 2, bindings.size());
     }
 
-    // TODO this test is written incorrectly
     @Test
-    @Ignore
     public void testUsingURI() {
         // verify default graph
-        String defGraphQuery = "INSERT DATA { <rr1> <pp1> <oo1> }";
-        String defCheckQuery = "ASK WHERE { <rr1> <pp1> <oo1> }";
+        String defGraphQuery = "INSERT { GRAPH <http://example.org/g3> { <http://example.org/r3> <http://example.org/p3> <http://example.org/o3> } } WHERE { <http://example.org/r1> <http://example.org/p3> ?o }";
+        String defCheckQuery = "ASK WHERE { <http://example.org/r3> <http://example.org/p3> <http://example.org/o3> }";
         SPARQLQueryDefinition qdef = smgr.newQueryDefinition(defGraphQuery);
-        smgr.executeUpdate(qdef);
-        SPARQLQueryDefinition checkDef = smgr.newQueryDefinition(defCheckQuery);
-        // checkDef.setDefaultGraphUris("http://marklogic.com/semantics#default-graph");
-        assertTrue(smgr.executeAsk(checkDef));
-
-        checkDef.setDefaultGraphUris("http://example.org/g1");
-        assertFalse(smgr.executeAsk(checkDef));
-
         qdef.setUsingGraphUris("http://example.org/g1");
         smgr.executeUpdate(qdef);
+        SPARQLQueryDefinition checkDef = smgr.newQueryDefinition(defCheckQuery);
+        checkDef.setDefaultGraphUris("http://example.org/g3");
         assertTrue(smgr.executeAsk(checkDef));
+
+        // clean up 
+        smgr.executeUpdate(smgr.newQueryDefinition("DROP GRAPH <http://example.org/g3>"));
+        assertFalse(smgr.executeAsk(checkDef));
     }
 
-    // TODO this test is wrong.
     @Test
-    @Ignore
     public void testUsingNamedURI() {
         // verify default graph
-        String defGraphQuery = "INSERT DATA { GRAPH <g27> { <rr1> <pp1> <oo1> } }";
-        String checkQuery = "ASK WHERE { <rr1> <pp1> <oo1> }";
+        String defGraphQuery = "INSERT { GRAPH <http://example.org/g65> { <http://example.org/r3> <http://example.org/p3> <http://example.org/o3> } } WHERE { GRAPH ?g { <http://example.org/r1> <http://example.org/p3> ?o } }";
+        String checkQuery = "ASK WHERE { <http://example.org/r3> <http://example.org/p3> <http://example.org/o3> }";
         SPARQLQueryDefinition qdef = smgr.newQueryDefinition(defGraphQuery);
-        // qdef.setUsingNamedGraphUris("http://example.org/g9");
+        
+        // negative, no insert
+        qdef.setUsingNamedGraphUris("http://example.org/baloney");
         smgr.executeUpdate(qdef);
-        SPARQLQueryDefinition checkDef = smgr.newQueryDefinition(checkQuery);
-        checkDef.setDefaultGraphUris("http://example.org/g27");
-        assertTrue(smgr.executeAsk(checkDef));
-    }
 
-    // TODO round out this test setup/teardown.
-    private static void configureDefaultRuleSet()
-            throws UnsupportedEncodingException {
-        String dbProperties = "{\"database-name\":\"java-unittest\",\"default-ruleset\":[{\"location\":\"rdfs.rules\"}]}";
-        HttpPut client = new HttpPut(
-                "http://localhost:8002/manage/v2/databases/java-unittest/properties");
-        client.setHeader("content-type", "application/json");
-        client.setEntity(new StringEntity(dbProperties));
+        SPARQLQueryDefinition checkDef = smgr.newQueryDefinition(checkQuery);
+        checkDef.setDefaultGraphUris("http://example.org/g65");
+        assertFalse(smgr.executeAsk(checkDef));
+        
+        // positive
+        qdef.setUsingNamedGraphUris("http://example.org/g1");
+        smgr.executeUpdate(qdef);
+
+        checkDef.setDefaultGraphUris("http://example.org/g65");
+        assertTrue(smgr.executeAsk(checkDef));
     }
 
     @Test
