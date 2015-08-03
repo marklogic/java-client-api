@@ -159,7 +159,7 @@ public class SPARQLManagerTest {
         SPARQLQueryDefinition qdef = smgr.newQueryDefinition("select ?s ?p ?o { ?s ?p ?o } limit 100");
         qdef.setIncludeDefaultRulesets(false);
         qdef.setCollections(localGraphUri);
-        qdef.setConstrainingQueryDefinintion(queryMgr.newStringDefinition().withCriteria("test1"));
+        qdef.setConstrainingQueryDefinition(queryMgr.newStringDefinition().withCriteria("test1"));
         JsonNode jsonResults = smgr.executeSelect(qdef, new JacksonHandle()).get();
         JsonNode tuples = jsonResults.path("results").path("bindings");
         assertEquals(1, tuples.size());
@@ -173,7 +173,7 @@ public class SPARQLManagerTest {
                 sqb.term("test2"),
                 sqb.value(sqb.element("test2"), "testValue")
             );
-        qdef.setConstrainingQueryDefinintion(sqdef);
+        qdef.setConstrainingQueryDefinition(sqdef);
         jsonResults = smgr.executeSelect(qdef, new JacksonHandle()).get();
         tuples = jsonResults.path("results").path("bindings");
         assertEquals(1, tuples.size());
@@ -187,7 +187,7 @@ public class SPARQLManagerTest {
             "</query>";
         StringHandle handle = new StringHandle(rawXMLStructuredQuery).withFormat(Format.XML);
         RawStructuredQueryDefinition rawStructuredQDef = queryMgr.newRawStructuredQueryDefinition(handle);
-        qdef.setConstrainingQueryDefinintion(rawStructuredQDef);
+        qdef.setConstrainingQueryDefinition(rawStructuredQDef);
         jsonResults = smgr.executeSelect(qdef, new JacksonHandle()).get();
         tuples = jsonResults.path("results").path("bindings");
         assertEquals(1, tuples.size());
@@ -201,7 +201,7 @@ public class SPARQLManagerTest {
             "}}";
         handle = new StringHandle(rawJSONStructuredQuery).withFormat(Format.JSON);
         rawStructuredQDef = queryMgr.newRawStructuredQueryDefinition(handle);
-        qdef.setConstrainingQueryDefinintion(rawStructuredQDef);
+        qdef.setConstrainingQueryDefinition(rawStructuredQDef);
         jsonResults = smgr.executeSelect(qdef, new JacksonHandle()).get();
         tuples = jsonResults.path("results").path("bindings");
         assertEquals(1, tuples.size());
@@ -229,7 +229,7 @@ public class SPARQLManagerTest {
             "</search>";
         handle = new StringHandle(rawCombinedQuery).withFormat(Format.XML);
         RawCombinedQueryDefinition rawCombinedQDef = queryMgr.newRawCombinedQueryDefinition(handle);
-        qdef.setConstrainingQueryDefinintion(rawCombinedQDef);
+        qdef.setConstrainingQueryDefinition(rawCombinedQDef);
         jsonResults = smgr.executeSelect(qdef, new JacksonHandle()).get();
         tuples = jsonResults.path("results").path("bindings");
         assertEquals(1, tuples.size());

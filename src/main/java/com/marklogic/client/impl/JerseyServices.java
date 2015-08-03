@@ -5539,7 +5539,7 @@ public class JerseyServices implements RESTServices {
 				params.add(paramName + typeOrLang, binding.getValue());
 			}
 		}
-		QueryDefinition constrainingQuery = qdef.getConstrainingQueryDefinintion();
+		QueryDefinition constrainingQuery = qdef.getConstrainingQueryDefinition();
 		StructureWriteHandle input;
 		if ( constrainingQuery != null ) {
 			if (qdef.getOptionsName()!= null && qdef.getOptionsName().length() > 0) {
