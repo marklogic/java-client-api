@@ -53,8 +53,8 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
     public void setUsingGraphUris(String... uris);
     public void setUsingNamedGraphUris(String... uris);
 
-    public void setConstrainingQueryDefinintion(QueryDefinition query);
-    public QueryDefinition getConstrainingQueryDefinintion();
+    public void setConstrainingQueryDefinition(QueryDefinition query);
+    public QueryDefinition getConstrainingQueryDefinition();
     public SPARQLQueryDefinition withConstrainingQuery(QueryDefinition query);
 
     public void setRulesets(SPARQLRuleset... ruleset);

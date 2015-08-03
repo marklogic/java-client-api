@@ -221,7 +221,7 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
     }
 
     @Override
-    public void setConstrainingQueryDefinintion(QueryDefinition query) {
+    public void setConstrainingQueryDefinition(QueryDefinition query) {
         if ( query instanceof RawQueryByExampleDefinition ) {
             throw new IllegalArgumentException("SPARQL queries cannot be constrained using " +
                     "RawQueryByExampleDefinition");
@@ -230,7 +230,7 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
     }
 
     @Override
-    public QueryDefinition getConstrainingQueryDefinintion() {
+    public QueryDefinition getConstrainingQueryDefinition() {
         return this.constrainingQuery;
     }
 
