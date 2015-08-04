@@ -104,69 +104,6 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 	}
 
 	/*
-	 * Stubs for tests
-	 */
-	public void testStubs_Graphmanager() {
-		String uri = null;
-		Transaction transaction = null;
-		Object graphData = null;
-		TriplesWriteHandle handle = null;
-		GraphPermissions permissions = null;
-		QuadsWriteHandle quadswritehandle = null;
-		String role = null;
-		// Handles
-		// R TriplesParsingHandle th = gmAdmin.newTriplesParsingHandle();
-		// R gmAdmin.newTriplesSerializingHandle();
-		Capability capabilities = null;
-		String[] iris = null;
-
-		// Tests
-		// D gmAdmin.delete(uri);
-		gmAdmin.delete(uri, transaction);
-		gmAdmin.deleteGraphs();
-		gmAdmin.deletePermissions(uri);
-		gmAdmin.deletePermissions(uri, transaction);
-		gmAdmin.equals(graphData);
-		gmAdmin.getPermissions(uri);
-		gmAdmin.getPermissions(uri, transaction);
-		// D gmAdmin.listGraphUris();
-		gmAdmin.merge(uri, handle);
-		gmAdmin.merge(uri, handle, permissions);
-		gmAdmin.merge(uri, handle, transaction);
-		gmAdmin.merge(uri, handle, permissions, transaction);
-		gmAdmin.mergeAs(uri, graphData);
-		gmAdmin.mergeAs(uri, graphData, permissions);
-		gmAdmin.mergeAs(uri, graphData, transaction);
-		gmAdmin.mergeAs(uri, graphData, permissions, transaction);
-		gmAdmin.mergeGraphs(quadswritehandle);
-		gmAdmin.mergeGraphsAs(graphData);
-		gmAdmin.mergePermissions(uri, permissions);
-		gmAdmin.mergePermissions(uri, permissions, transaction);
-		// gmAdmin.newTriplesParsingHandle();
-		gmAdmin.permission(role, capabilities);
-		// R gmAdmin.read(uri, th );
-		// R gmAdmin.read(uri, th, transaction);
-		gmAdmin.readAs(uri, String.class);
-		gmAdmin.readAs(uri, String.class, transaction);
-		gmAdmin.replaceGraphs(quadswritehandle);
-		gmAdmin.replaceGraphsAs(graphData);// quadsData
-		//gmAdmin.things(handle, iris);
-	//	gmAdmin.thingsAs(iris, String.class);
-		// D gmAdmin.write(uri, handle); String , File Handle TODO::
-		// inputstream,reader, Byte, etc
-		gmAdmin.write(uri, handle, permissions);
-		gmAdmin.write(uri, handle, transaction);
-		gmAdmin.write(uri, handle, permissions, transaction);
-		gmAdmin.writeAs(uri, graphData);
-		gmAdmin.writeAs(uri, graphData, permissions);
-		gmAdmin.writeAs(uri, graphData, transaction);
-		gmAdmin.writeAs(uri, graphData, permissions, transaction);
-		gmAdmin.writePermissions(uri, permissions);
-		gmAdmin.writePermissions(uri, permissions, transaction);
-
-	}
-
-	/*
 	 * Write Triples using Write user & StringHandle with mime-Type = n-triples
 	 * Get the list of Graphs from the DB with Read User Iterate through the
 	 * list of graphs to validate the Graph Delete Graph using URI Validate the
