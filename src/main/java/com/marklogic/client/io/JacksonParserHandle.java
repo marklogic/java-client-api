@@ -15,9 +15,13 @@
  */
 package com.marklogic.client.io;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -38,8 +42,11 @@ import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
- * An adapter for using the streaming capabilities of the Jackson Open Source library.
- * Enables low-level efficient reading and writing of JSON documents.
+ * <p>An adapter for using the streaming capabilities of the Jackson Open Source library.
+ * Enables low-level efficient reading and writing of JSON documents.</p>
+ *
+ * <p>Always call {@link #close} when finished with this handle to release the resources.</p>
+ *
  * @see <a href="http://wiki.fasterxml.com/JacksonStreamingApi">Jackson Streaming API</a>
  */
 public class JacksonParserHandle
@@ -49,10 +56,14 @@ public class JacksonParserHandle
             JSONReadHandle, JSONWriteHandle,
             TextReadHandle, TextWriteHandle,
             XMLReadHandle, XMLWriteHandle,
-            StructureReadHandle, StructureWriteHandle
+            StructureReadHandle, StructureWriteHandle,
+            Closeable
 {
+    static final private Logger logger = LoggerFactory.getLogger(JacksonParserHandle.class);
+
     private JsonParser parser = null;
     private InputStream content = null;
+    private boolean closed = false;
 
 	final static private int BUFFER_SIZE = 8192;
 
@@ -175,9 +186,23 @@ public class JacksonParserHandle
                     out.write(b, 0, len);
                 }
                 content.close();
+                closed = true;
             }
         } catch (IOException e) {
             throw new MarkLogicIOException(e);
+        }
+    }
+
+    /** Always call close() when finished with this handle -- it closes the underlying InputStream.
+     */
+    public void close() {
+        if ( content != null && closed != true ) {
+            try {
+                content.close();
+            } catch (IOException e) {
+                logger.error("Failed to close underlying InputStream",e);
+                throw new MarkLogicIOException(e);
+            }
         }
     }
 }
