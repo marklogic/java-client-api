@@ -2090,7 +2090,7 @@ public class JerseyServices implements RESTServices {
             if (optionsName != null && optionsName.length() > 0) {
                 addEncodedParam(params, "options", optionsName);
             }
-
+            
             ServerTransform transform = queryDef.getResponseTransform();
             if (transform != null) {
                 transform.merge(params);
@@ -2462,7 +2462,7 @@ public class JerseyServices implements RESTServices {
 			uri += "/" + valDef.getName();
 		}
 
-		WebResource.Builder builder = getConnection().path(uri).queryParams(docParams).accept(mimetype);
+		WebResource.Builder builder = makeBuilder(uri, docParams, null, mimetype);
 		addHostCookie(builder, transaction);
 
 
@@ -2541,8 +2541,7 @@ public class JerseyServices implements RESTServices {
 
 		String uri = "values";
 
-		WebResource.Builder builder = getConnection().path(uri)
-				.queryParams(docParams).accept(mimetype);
+		WebResource.Builder builder = makeBuilder(uri, docParams, null, mimetype);
 		addHostCookie(builder, transaction);
 
 		ClientResponse response = null;
@@ -2677,8 +2676,7 @@ public class JerseyServices implements RESTServices {
 		if (logger.isDebugEnabled())
 			logger.debug("Getting {}/{}", type, key);
 
-		WebResource.Builder builder = getConnection().path(type + "/" + key).accept(
-				mimetype);
+		WebResource.Builder builder = makeBuilder(type + "/" + key, null, null, mimetype);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -5024,8 +5022,7 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 		WebResource.Builder builder = null;
-		builder = getConnection().path("suggest").queryParams(params)
-				.accept("application/xml");
+		builder = makeBuilder("suggest", params, null, "application/xml");
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
 		long startTime = System.currentTimeMillis();
@@ -5097,8 +5094,7 @@ public class JerseyServices implements RESTServices {
 			transform.merge(params);
 		}
 		WebResource.Builder builder = null;
-		builder = getConnection().path("alert/match").queryParams(params)
-				.accept("application/xml").type(mimeType);
+		builder = makeBuilder("alert/match", params, "application/xml", mimeType);
 		
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -5195,8 +5191,7 @@ public class JerseyServices implements RESTServices {
 			if (logger.isDebugEnabled())
 				logger.debug("Searching for structure {}", structure);
 
-			builder = getConnection().path("alert/match").queryParams(params)
-					.type("application/xml").accept("application/xml");
+			builder = makeBuilder("alert/match", params, "application/xml", "application/xml");
 		} else if (queryDef instanceof StringQueryDefinition) {
 			String text = ((StringQueryDefinition) queryDef).getCriteria();
 			if (logger.isDebugEnabled())
@@ -5206,8 +5201,7 @@ public class JerseyServices implements RESTServices {
 				addEncodedParam(params, "q", text);
 			}
 
-			builder = getConnection().path("alert/match").queryParams(params)
-					.accept("application/xml");
+			builder = makeBuilder("alert/match", params, null, "application/xml"); 
 		} else if (queryDef instanceof StructuredQueryDefinition) {
 			structure = ((StructuredQueryDefinition) queryDef).serialize();
 
@@ -5215,8 +5209,7 @@ public class JerseyServices implements RESTServices {
 				logger.debug("Searching for structure {} in transaction {}",
 						structure);
 
-			builder = getConnection().path("alert/match").queryParams(params)
-					.type("application/xml").accept("application/xml");
+			builder = makeBuilder("alert/match", params, "application/xml", "application/xml");
 		} else {
 			throw new UnsupportedOperationException("Cannot match with "
 					+ queryDef.getClass().getName());
@@ -5303,8 +5296,7 @@ public class JerseyServices implements RESTServices {
 		if (transform != null) {
 			transform.merge(params);
 		}
-		WebResource.Builder builder = getConnection().path("alert/match").queryParams(params)
-				.accept("application/xml");
+		WebResource.Builder builder = makeBuilder("alert/match", params, "application/xml", "application/xml");
 		
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
