@@ -67,12 +67,14 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
     @Override
     public <T extends SPARQLResultsReadHandle> T executeSelect(
             SPARQLQueryDefinition qdef, T handle, long start, long pageLength) {
-        return executeQueryImpl(qdef, handle, start, pageLength, null, false);
+        return executeSelect(qdef, handle, start, pageLength, null);
     }
 
     @Override
     public <T extends SPARQLResultsReadHandle> T executeSelect(
             SPARQLQueryDefinition qdef, T handle, long start, long pageLength, Transaction tx) {
+        if ( start < 1 ) throw new IllegalArgumentException("start must be 1 or greater");
+        if ( pageLength < 0 ) throw new IllegalArgumentException("pageLength must be 0 or greater");
         return executeQueryImpl(qdef, handle, start, pageLength, tx, false);
     }
 
