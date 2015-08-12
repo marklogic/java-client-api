@@ -338,20 +338,20 @@ public class SPARQLManagerTest {
         qdef1.setIncludeDefaultRulesets(false);
         qdef1.setCollections(graphUri);
         long start = 1;
-        long pageLength = 1;
-        JsonNode results = smgr.executeSelect(qdef1, new JacksonHandle(), start, pageLength).get();
+        smgr.setPageLength(1);
+        JsonNode results = smgr.executeSelect(qdef1, new JacksonHandle(), start).get();
         JsonNode bindings = results.path("results").path("bindings");
         // because we set pageLength to 1 we should only get one result
-        assertEquals(pageLength, bindings.size());
+        assertEquals(1, bindings.size());
         String uri1 = bindings.get(0).get("s").get("value").asText();
 
-        pageLength = 2;
-        results = smgr.executeSelect(qdef1, new JacksonHandle(), start, pageLength).get();
-        assertEquals(pageLength, results.path("results").path("bindings").size());
+        smgr.setPageLength(2);
+        results = smgr.executeSelect(qdef1, new JacksonHandle(), start).get();
+        // because we set pageLength to 2 we should get two results
+        assertEquals(2, results.path("results").path("bindings").size());
 
         start = 2;
-        pageLength = 2;
-        results = smgr.executeSelect(qdef1, new JacksonHandle(), start, pageLength).get();
+        results = smgr.executeSelect(qdef1, new JacksonHandle(), start).get();
         bindings = results.path("results").path("bindings");
         // because we skipped the first result (by setting start=2) there are not enough 
         // results for a full page, so size() only returns 1

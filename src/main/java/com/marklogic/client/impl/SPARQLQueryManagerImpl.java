@@ -31,6 +31,7 @@ import com.marklogic.client.semantics.SPARQLQueryManager;
 
 public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SPARQLQueryManager {
     private RESTServices services;
+    private long pageLength = -1;
 
     public SPARQLQueryManagerImpl(RESTServices services) {
         super();
@@ -66,28 +67,38 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
 
     @Override
     public <T extends SPARQLResultsReadHandle> T executeSelect(
-            SPARQLQueryDefinition qdef, T handle, long start, long pageLength) {
-        return executeSelect(qdef, handle, start, pageLength, null);
+            SPARQLQueryDefinition qdef, T handle, long start) {
+        return executeSelect(qdef, handle, start, null);
     }
 
     @Override
     public <T extends SPARQLResultsReadHandle> T executeSelect(
-            SPARQLQueryDefinition qdef, T handle, long start, long pageLength, Transaction tx) {
+            SPARQLQueryDefinition qdef, T handle, long start, Transaction tx) {
         if ( start < 1 ) throw new IllegalArgumentException("start must be 1 or greater");
+        return executeQueryImpl(qdef, handle, start, tx, false);
+    }
+
+    @Override
+    public long getPageLength() {
+        return pageLength;
+    }
+
+    @Override
+    public void setPageLength(long pageLength) {
         if ( pageLength < 0 ) throw new IllegalArgumentException("pageLength must be 0 or greater");
-        return executeQueryImpl(qdef, handle, start, pageLength, tx, false);
+        this.pageLength = pageLength;
     }
 
     private <T extends AbstractReadHandle> T executeQueryImpl(
             SPARQLQueryDefinition qdef, T handle, Transaction tx, boolean isUpdate) {
-        return executeQueryImpl(qdef, handle, -1, -1, tx, isUpdate);
+        return executeQueryImpl(qdef, handle, -1, tx, isUpdate);
    }
 
     private <T extends AbstractReadHandle> T executeQueryImpl(
-            SPARQLQueryDefinition qdef, T handle, long start, long pageLength, Transaction tx, boolean isUpdate) {
+            SPARQLQueryDefinition qdef, T handle, long start, Transaction tx, boolean isUpdate) {
         if ( qdef == null )   throw new IllegalArgumentException("qdef cannot be null");
         if ( handle == null ) throw new IllegalArgumentException("handle cannot be null");
-        return services.executeSparql(requestLogger, qdef, handle, start, pageLength, tx, isUpdate);
+        return services.executeSparql(requestLogger, qdef, handle, start, getPageLength(), tx, isUpdate);
     }
 
     @Override
