@@ -94,9 +94,9 @@ public class TestBug19443 extends BasicJavaClientREST {
 	    		    "</search:geo-elem>" + 
 	    		  "</search:constraint>" +
 	    		"</search:options>";
-	    System.out.println("Expected is \n");
+	    System.out.println("Expected is :  \n");
 	    System.out.println(actual);
-	    System.out.println("Output is \n");
+	    System.out.println("Output is :  \n");
 	    System.out.println(output);
 
 	    XMLUnit.setIgnoreWhitespace(true); 
