@@ -84,8 +84,6 @@ public class TestBug19443 extends BasicJavaClientREST {
 		optionsMgr.readOptions("ElementChildGeoSpatialIndex", readHandle);
 	    String output = readHandle.get();
 	    
-	    System.out.println(output);
-	    
 	    String actual = 
 	    		"<search:options xmlns:search=\"http://marklogic.com/appservices/search\">" + 
 	    		  "<search:constraint name=\"geoElemChild\">" + 
@@ -96,8 +94,12 @@ public class TestBug19443 extends BasicJavaClientREST {
 	    		    "</search:geo-elem>" + 
 	    		  "</search:constraint>" +
 	    		"</search:options>";
+	    System.out.println("Expected is \n");
+	    System.out.println(actual);
+	    System.out.println("Output is \n");
+	    System.out.println(output);
 
-	    XMLUnit.setIgnoreWhitespace(true);	    
+	    XMLUnit.setIgnoreWhitespace(true); 
 	    assertXMLEqual("testBug19443", actual, output);
  
 		// release client
