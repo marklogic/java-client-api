@@ -9,15 +9,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.Reader;
 import java.util.Iterator;
 
 import org.junit.*;
 import org.junit.runners.MethodSorters;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
@@ -25,17 +22,11 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
-import com.marklogic.client.admin.ExtensionLibraryDescriptor.Permission;
-import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.impl.SPARQLQueryManagerImpl;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.marker.QuadsWriteHandle;
-import com.marklogic.client.io.marker.TriplesReadHandle;
-import com.marklogic.client.io.marker.TriplesWriteHandle;
 import com.marklogic.client.semantics.Capability;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.GraphPermissions;
@@ -249,7 +240,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 	/*
 	 * Write & Read triples of type ttl using bytehandle
 	 */
-//TODO use inpurtstream handle instead of byte
+	//TODO use inpurtstream handle instead of byte
 	@Test
 	public void testWrite_ttl_FileHandle() throws Exception {
 		File file = new File(datasource + "relative3.ttl");
@@ -381,7 +372,6 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 			trx = null;
 		} catch (ResourceNotFoundException e) {
 			System.out.println(e);
-			// TODO: Add assert for delete
 		} finally {
 			if (trx != null) {
 				trx.rollback();
@@ -607,7 +597,6 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 			trx.commit();
 			trx = null;
 		} catch (Exception e) {
-			//TODO: add assert
 			System.out.println(e);
 		} finally {
 			if (trx != null) {
@@ -690,7 +679,8 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 			 assertEquals(Capability.UPDATE, permissions.get("rest-writer").iterator().next());
 		File readFile = handle.get();
 		String expectedContent = convertFileToString(readFile);
-		//TODO:: assert graph URI is default 
+		System.out.println(gmWriter.listGraphUris().next().toString());
+		assertTrue(""+gmWriter.listGraphUris().next().toString(),gmWriter.listGraphUris().next().toString().equals("http://marklogic.com/semantics#default-graph"));
 		assertTrue("Did not insert document or inserted empty doc",
 				expectedContent.contains("http://www.example.org/exampleDocument#Monica"));
 	}
@@ -711,7 +701,6 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		FileHandle filehandle = new FileHandle();
 		filehandle.set(file);
 		gmWriter.write(uri, filehandle.withMimetype(RDFMimeTypes.RDFJSON));
-		//TODO:; check if this should fail? Waiting for response from Ling 
 		gmWriter.mergeGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NTRIPLES));
 		FileHandle handle = gmWriter.read(uri, new FileHandle());
 		File readFile = handle.get();
@@ -781,7 +770,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		gmWriter.write("http://test.things.com/", filehandle);
 		 String things = gmWriter.thingsAs(String.class, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 		assertTrue("Did not return Expected graph Uri's",
-				things.contains("#electricVehicle2"));
+				things.equals("<#electricVehicle2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://people.aifb.kit.edu/awa/2011/smartgrid/schema/smartgrid#ElectricVehicle> ."));
 	}
 	
 	@Test
@@ -791,12 +780,28 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
         File file = new File(datasource + "relative5.xml");
         gmWriter.write(tripleGraphUri, new FileHandle(file) );
         StringHandle things = gmWriter.things(new StringHandle(), "about");
-        assertTrue("Things did not return expected Uri's", things.get().contains("Anna's Homepage"));
+        assertTrue("Things did not return expected Uri's", things.get().equals("<about> <http://purl.org/dc/elements/1.1/title> \"Anna's Homepage\" ."));
+        gmWriter.delete(tripleGraphUri);
+    }
+	
+	//TODO update after git issue #342 is resolved
+	@Test
+	public void testThings_fileNomatch() throws Exception {
+        gmWriter.setDefaultMimetype(RDFMimeTypes.TRIPLEXML);
+        String tripleGraphUri="http://test.things.com/file";
+        File file = new File(datasource + "relative5.xml");
+        gmWriter.write(tripleGraphUri, new FileHandle(file) );
+        try{
+        StringHandle things = gmWriter.things(new StringHandle(), "noMatch");
+        assertTrue("Things did not return expected Uri's", things == null);
+        }catch(Exception e){
+        	
+        }
         gmWriter.delete(tripleGraphUri);
     }
 	
 	@Test
-	public void test001Things_Differentmimetypes() throws Exception {
+	public void testThings_Differentmimetypes() throws Exception {
         gmWriter.setDefaultMimetype(RDFMimeTypes.TRIPLEXML);
         String tripleGraphUri="http://test.things.com/multiple";
         File file = new File(datasource + "relative5.xml");
@@ -807,6 +812,9 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
         assertTrue("Things did not return expected Uri's", things.get().contains("Apache Hadoop"));
         gmWriter.delete(tripleGraphUri);
     }
+	
+	
+	
 	//TODO:: Re-write this Method into multiple tests after 8.0-4 release
 	@Test
 	public void testPermissions_noTrx() throws Exception {
@@ -842,23 +850,15 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		System.out.println("Permissions after setting execute , Should  see Execute & Update"+gmTestPerm.getPermissions(uri));
 		for ( Capability capability : perms.get("test-perm") ) {
             assertTrue("capability should be UPDATE && Execute, not [" + capability + "]", capability == Capability.UPDATE || capability == Capability.EXECUTE );
-        }
-		
-		// Validate write with Update and Execute permissions
-		try{
-			gmTestPerm.write(uri, handle.withMimetype(RDFMimeTypes.RDFXML), perms);
-		}catch(Exception e){
-			System.out.println("Tried to Write Here ::"+e);//
 		}
+		assertTrue("Did not have expected capabilities",perms.get("test-perm").size() ==2);
+		// Validate write with Update and Execute permissions
+			gmTestPerm.write(uri, handle.withMimetype(RDFMimeTypes.RDFXML), perms);
 		System.out.println("Permissions after setting execute , Should  see Execute & Update"+gmTestPerm.getPermissions(uri));
 		
 		// Delete Permissions and Validate
 		gmTestPerm.deletePermissions(uri);
-		try{
 		perms = gmTestPerm.getPermissions(uri);
-		}catch(Exception e){
-		System.out.println("Permissions after setting execute , Should  see Execute & Update"+gmTestPerm.getPermissions(uri));
-		}
 		assertNull(perms.get("test-perm"));
 		
 		
@@ -866,7 +866,6 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		perms = gmTestPerm.permission("test-perm", Capability.EXECUTE);
 		
 		gmTestPerm.writePermissions(uri, perms);
-		
 		// Read and Validate triples
 		try{
 			gmTestPerm.read(uri, handle.withMimetype(RDFMimeTypes.RDFXML));
@@ -876,7 +875,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 			assertTrue("Did not get receive expected string content, Received:: " + readContent,
 					readContent.contains("http://www.daml.org/2001/12/factbook/vi#A113932"));
 		}catch(Exception e){
-			System.out.println("Tried to Read  and validate triples, shold not see this exception ::"+e);
+			System.out.println("Tried to Read  and validate triples, shold  see this exception ::"+e);
 		}
 		System.out.println("Permissions after setting execute , Should  see Execute & Update & Read "+gmTestPerm.getPermissions(uri));
 
@@ -913,6 +912,46 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 				readContent.contains("http://www.daml.org/2001/12/factbook/vi#A113932"));
 
 	}
+
+	/*
+	 * -ve cases for permission outside transaction and after rollback of transaction
+	 * 
+	 * 
+	 */
+	@Test
+	public void testPermissins_withtrxNeg(){
+		File file = new File(datasource + "semantics.rdf");
+		FileHandle handle = new FileHandle();
+		handle.set(file);
+		String uri = "test_permissions12";
+		// Create Role
+		createUserRolesWithPrevilages("test-perm");
+		// Create User with Above Role
+		createRESTUser("perm-user", "x", "test-perm");
+		// Create Client with above User
+		DatabaseClient permUser = DatabaseClientFactory.newClient("localhost", restPort, dbName, "perm-user", "x", Authentication.DIGEST);
+		// Create GraphManager with Above client
+		Transaction trx = permUser.openTransaction();
+		GraphManager gmTestPerm = permUser.newGraphManager();
+		// Set Update Capability for the Created User
+		GraphPermissions perms = gmTestPerm.permission("test-perm", Capability.UPDATE);
+		gmTestPerm.write(uri, handle.withMimetype(RDFMimeTypes.RDFXML), trx);
+		trx.commit();
+		
+		trx = permUser.openTransaction();
+		gmTestPerm.mergePermissions(uri, perms, trx);
+		// Validate test-perm role not available outside transaction
+		GraphPermissions perm = gmTestPerm.getPermissions(uri);
+		System.out.println("OUTSIDE TRX , SHOULD NOT SEE test-perm EXECUTE"+perm);
+		assertNull(perm.get("test-perm"));
+		perms = gmTestPerm.getPermissions(uri,trx);
+		assertTrue("Permission within trx should have Update capability",perms.get("test-perm").contains(Capability.UPDATE));
+		trx.rollback();
+		perms = gmTestPerm.getPermissions(uri);
+		assertNull(perm.get("test-perm"));
+		
+	}
+	
 	
 	//TODO:: Re-write this Method into multiple tests after 8.0-4 release
 	@Test
@@ -942,7 +981,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 			for (Capability capability : perms.get("test-perm")) {
 				assertTrue("capability should be UPDATE, not [" + capability + "]", capability == Capability.UPDATE);
 			}
-
+			
 			// Set Capability for the User
 			perms = gmTestPerm.permission("test-perm", Capability.EXECUTE);
 			// Merge Permissions
@@ -989,7 +1028,8 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 				System.out.println("Tried to Read  and validate triples, shold not see this exception ::" + e);
 			}
 			System.out.println("Permissions after setting execute , Should  see Execute & Update & Read " + gmTestPerm.getPermissions(uri, trx));
-
+			
+			
 			// delete all capabilities
 			gmTestPerm.deletePermissions(uri, trx);
 
@@ -1009,6 +1049,9 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 
 			// Set to Read and Perform Merge
 			perms = gmTestPerm.permission("test-perm", Capability.READ);
+			
+			gmTestPerm.mergePermissions(uri, perms, trx);
+			perms = gmTestPerm.permission("test-perm", Capability.READ);
 			gmTestPerm.mergePermissions(uri, perms, trx);
 			try {
 				gmTestPerm.merge(uri, handle, trx);
@@ -1023,6 +1066,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 					readContent.contains("http://www.daml.org/2001/12/factbook/vi#A113932"));
 			trx.commit();
 			trx = null;
+				
 		} catch (Exception e) {
 
 		} finally {
