@@ -20,8 +20,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.awt.List;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -55,11 +59,12 @@ import com.marklogic.client.semantics.RDFMimeTypes;
 import com.marklogic.client.semantics.SPARQLBindings;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.semantics.SPARQLQueryManager;
+import com.marklogic.client.semantics.SPARQLRuleset;
 
 public class TestSparqlQueryManager extends BasicJavaClientREST {
 	
-	private static String dbName = "TestBasicSemanticsSparqlDB";
-	private static String [] fNames = {"TestBasicSemanticsSparqlDB-1"};
+	private static String dbName = "TestSparqlQueryManagerDB";
+	private static String [] fNames = {"TestSparqlQueryManagerDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
 	private static int restPort=8011;
 	private static DatabaseClient client;
@@ -68,13 +73,17 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	
 	private static String newline;
 	private static String customGraph;
+	private static String inferenceGraph;
 	
 	@BeforeClass
 	public static void setUp() throws Exception
 	{
 		System.out.println("In SPARQL Query Manager Test setup");
+		
 		newline = System.getProperty("line.separator");
 		customGraph = "TestCustomeGraph";
+		inferenceGraph = "TestInferenceGraph";
+		
 		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 		setupAppServicesConstraint(dbName);
 		enableCollectionLexicon(dbName);
@@ -142,7 +151,61 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
                                            "rdfxml1.rdf", "rdfxml", RDFMimeTypes.RDFXML);
 		//RDFJSON    "application/rdf+json"
 	    writeSPARQLDocumentUsingFileHandle(writeclient, "src/test/java/com/marklogic/client/functionaltest/data/semantics/",
-								             "rdfjson.json", "rdfjson", RDFMimeTypes.RDFJSON);				
+								             "rdfjson.json", "rdfjson", RDFMimeTypes.RDFJSON);
+	    
+	    // Build custom data for Ruleset and Inference tests
+	    StringBuffer inferdata = new StringBuffer();
+	    inferdata.append("prefix ad: <http://marklogicsparql.com/addressbook#>");
+	    inferdata.append(newline);
+	    inferdata.append("prefix id:  <http://marklogicsparql.com/id#>");
+	    inferdata.append(newline);
+	    inferdata.append("prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>");
+	    inferdata.append(newline);
+	    inferdata.append("prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#>");
+	    inferdata.append(newline);
+	    inferdata.append("prefix ml: <http://marklogicsparql.com/>");
+	    inferdata.append(newline);
+
+	    inferdata.append("id:1111 ad:firstName \"John\" ." );
+	    inferdata.append(newline);
+	    inferdata.append("id:1111 ad:lastName  \"Snelson\" ." );
+	    inferdata.append(newline);
+	    inferdata.append("id:1111 ml:writeFuncSpecOf ml:Inference .");
+	    inferdata.append(newline);
+	    inferdata.append("id:1111 ml:worksFor ml:MarkLogic ." );
+	    inferdata.append(newline);
+	    inferdata.append("id:1111 a ml:LeadEngineer ." );
+	    inferdata.append(newline);
+
+	    inferdata.append("id:2222 ad:firstName \"Aries\" ." );
+	    inferdata.append(newline);
+	    inferdata.append("id:2222 ad:lastName  \"Li\" ." );
+	    inferdata.append(newline);
+	    inferdata.append("id:2222 ml:writeFuncSpecOf ml:SparqlUpdate ." );
+	    inferdata.append(newline);
+	    inferdata.append("id:2222 ml:worksFor ml:MarkLogic ." );
+	    inferdata.append(newline);
+	    inferdata.append("id:2222 a ml:SeniorEngineer ." );
+	    inferdata.append(newline);
+
+	    inferdata.append("ml:LeadEngineer rdfs:subClassOf  ml:Engineer ." );
+	    inferdata.append(newline);
+	    inferdata.append("ml:SeniorEngineer rdfs:subClassOf  ml:Engineer ." );
+	    inferdata.append(newline);
+	    inferdata.append("ml:Engineer rdfs:subClassOf ml:Employee ." );
+	    inferdata.append(newline);
+	    inferdata.append("ml:Employee rdfs:subClassOf ml:Person ." );
+	    inferdata.append(newline);
+
+	    inferdata.append("ml:writeFuncSpecOf rdfs:subPropertyOf ml:design ." );
+	    inferdata.append(newline);
+	    inferdata.append("ml:developPrototypeOf rdfs:subPropertyOf ml:design ." );
+	    inferdata.append(newline);
+	    inferdata.append("ml:design rdfs:subPropertyOf ml:develop ." );
+	    inferdata.append(newline);
+	    inferdata.append("ml:develop rdfs:subPropertyOf ml:worksOn ." );
+	    // Write the graph
+	    writeSPARQLDataFromString(inferdata.toString(), inferenceGraph);
 	}
 	
 	/* This test checks a simple SPARQL query results from named graph.
@@ -1701,7 +1764,90 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 			assertTrue("Semantic Graphs not found in collections", actualCollections.contains("http://marklogic.com/semantics#graphs"));
 			assertTrue("CopiedGraph not found in collections", actualCollections.contains("CopiedGraph"));
 		}	
-	}	
+	}
+	
+	/* This test verifies MarkLogic Java API support for Inference and Ruleset.
+	 * 
+     * No default ruleset, no inference triples
+     * Add one ruleset, verify inference triples
+     * Add two rulesets, verify inference triples
+	 * 
+	 */
+	@Test
+	public void testInferenceAndRuleSet() throws IOException, SAXException, ParserConfigurationException
+	{	
+	System.out.println("In SPARQL Query Manager Test testInferenceAndRuleSet method");
+	SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
+	SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition();	
+	
+    // Create graph and COPY
+	StringBuffer sparqlInferQuery = new StringBuffer();
+	sparqlInferQuery.append("SELECT *");
+	sparqlInferQuery.append(newline);
+	sparqlInferQuery.append("FROM <");
+	sparqlInferQuery.append(inferenceGraph);
+	sparqlInferQuery.append(">");
+	sparqlInferQuery.append(newline);
+	sparqlInferQuery.append("WHERE ");		
+	sparqlInferQuery.append("{ ?s ?p ?o . }");
+	sparqlInferQuery.append(newline);
+	
+	qdef.setSparql(sparqlInferQuery.toString());
+	qdef.setIncludeDefaultRulesets(false);
+	
+	
+	JacksonHandle jacksonHandle = new JacksonHandle();
+	jacksonHandle.setMimetype("application/json");
+	JsonNode jsonResults18 = sparqlQmgr.executeSelect(qdef,  jacksonHandle).get();		
+	
+	JsonNode jsonBindingsNodes18 = jsonResults18.path("results").path("bindings");
+	
+	// Should have 18 nodes returned. No inference triples returned.
+	assertEquals("18 results not returned from testInferenceAndRuleSet method ", 18, jsonBindingsNodes18.size());
+	qdef = null;
+	jacksonHandle = null;
+	
+	// Add subClassOf.rules as default ruleset
+	qdef = sparqlQmgr.newQueryDefinition();
+	qdef.setRulesets(SPARQLRuleset.SUBCLASS_OF);
+	qdef.setIncludeDefaultRulesets(true);
+	qdef.setSparql(sparqlInferQuery.toString());
+	assertEquals("One Ruleset should have been returned from testInferenceAndRuleSet method ", 1, qdef.getRulesets().length);
+	SPARQLRuleset[] rulesets = qdef.getRulesets();
+	assertEquals("Ruleset name returned from testInferenceAndRuleSet method is incorrect", "subClassOf.rules", rulesets[0].getName());
+	
+	// Execute with default Rulesets enabled. - We need to get Inference triples now.
+	jacksonHandle = new JacksonHandle();
+	jacksonHandle.setMimetype("application/json");
+	JsonNode jsonResultsSubClass = sparqlQmgr.executeSelect(qdef, jacksonHandle).get();
+		
+	// Should have 31 nodes returned.
+	assertEquals("31 results not returned from testInferenceAndRuleSet method ", 31, jsonResultsSubClass.path("results").path("bindings").size());
+	
+	// Enable two rulesets
+	qdef = null;
+	jacksonHandle = null;
+	rulesets = null;
+	
+	// Add subClassOf.rules and subPropertyOf.rules as default ruleset
+	qdef = sparqlQmgr.newQueryDefinition();
+	qdef.setRulesets(SPARQLRuleset.SUBCLASS_OF, SPARQLRuleset.SUBPROPERTY_OF);
+	qdef.setIncludeDefaultRulesets(true);
+	qdef.setSparql(sparqlInferQuery.toString());
+	assertEquals("Two Rulesets should have been returned from testInferenceAndRuleSet method ", 2, qdef.getRulesets().length);
+	// Have an ordered collection. 
+	Collection<SPARQLRuleset> list = Arrays.asList(qdef.getRulesets());
+	//Iterate over the list two times. Items more or less would have asserted by now.
+	Iterator<SPARQLRuleset> itr = list.iterator();
+	assertEquals("First Ruleset name from testInferenceAndRuleSet is incorrect", "subClassOf.rules", itr.next().getName());
+	assertEquals("Second Ruleset name from testInferenceAndRuleSet is incorrect", "subPropertyOf.rules", itr.next().getName());
+	jacksonHandle = new JacksonHandle();
+	jacksonHandle.setMimetype("application/json");
+	JsonNode jsonResultsTwoRules = sparqlQmgr.executeSelect(qdef, jacksonHandle).get();
+		
+	// Should have 44 nodes returned.
+	assertEquals("44 results not returned from testInferenceAndRuleSet method ", 44, jsonResultsTwoRules.path("results").path("bindings").size());
+	}
 	
 	/*
 	 * Write a TURTLE format custom data contained in a string to the database.
@@ -1766,9 +1912,8 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		writeclient.release();
 		readclient.release();
 		client.release();
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		//tearDownJavaRESTServer(dbName, fNames, restServerName);
 		
 	}
 }
-
 
