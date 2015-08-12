@@ -28,8 +28,11 @@ public interface SPARQLQueryManager  {
 
     public <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle);
     public <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle, Transaction tx);
-    public <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle, long start, long pageLength);
-    public <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle, long start, long pageLength, Transaction tx);
+    public <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle, long start);
+    public <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle, long start, Transaction tx);
+    public long getPageLength();
+    public void setPageLength(long pageLength);
+
     public <T extends TriplesReadHandle> T executeConstruct(SPARQLQueryDefinition qdef, T triplesReadHandle);
     public <T extends TriplesReadHandle> T executeConstruct(SPARQLQueryDefinition qdef, T triplesReadHandle, Transaction tx);
     public <T extends TriplesReadHandle> T executeDescribe(SPARQLQueryDefinition qdef, T triplesReadHandle);
