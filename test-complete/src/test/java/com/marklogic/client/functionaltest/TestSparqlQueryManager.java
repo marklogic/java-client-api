@@ -53,6 +53,8 @@ import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.GraphPermissions;
 import com.marklogic.client.semantics.RDFMimeTypes;
@@ -74,6 +76,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	private static String newline;
 	private static String customGraph;
 	private static String inferenceGraph;
+	private static String multibyteGraphName;
 	
 	@BeforeClass
 	public static void setUp() throws Exception
@@ -83,6 +86,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		newline = System.getProperty("line.separator");
 		customGraph = "TestCustomeGraph";
 		inferenceGraph = "TestInferenceGraph";
+		multibyteGraphName = new String("万里长城");
 		
 		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 		setupAppServicesConstraint(dbName);
@@ -132,7 +136,26 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		sparqldata.append("id:5555 ad:email     \"FeiXiang@yahoo.comm\" .");
 		sparqldata.append("id:5555 ad:email     \"Fei.Xiang@marklogic.comm\" .");
 		
+		sparqldata.append("id:6666 ad:firstName \"Lei\" .");
+		sparqldata.append("id:6666 ad:lastName  \"Pei\" .");
+		sparqldata.append("id:6666 ad:homeTel   \"(666) 666-6666\" .");
+		sparqldata.append("id:6666 ad:email     \"Lei.Pei@gmail.com\" .");
+
+		sparqldata.append("id:7777 ad:firstName \"Meng\" .");
+		sparqldata.append("id:7777 ad:lastName  \"Chen\" .");
+		sparqldata.append("id:7777 ad:homeTel   \"(777) 777-7777\" .");
+		sparqldata.append("id:7777 ad:email     \"Meng.Chen@gmail.com\" .");
+
+		sparqldata.append("id:8888 ad:firstName \"Lihan\" .");
+		sparqldata.append("id:8888 ad:lastName  \"Wang\" .");
+		sparqldata.append("id:8888 ad:email     \"lihanwang@yahoo.com\" .");
+		sparqldata.append("id:8888 ad:email     \"Lihan.Wang@gmail.com\" .");
+		
 		writeSPARQLDataFromString(sparqldata.toString(), customGraph);
+		
+		// Write the triples into a graph name with Multi-byte characters.
+		writeSPARQLDataFromString(sparqldata.toString(), multibyteGraphName);
+		
 		//Insert the required Graphs and triples for most of all the tests.
 		
 		//NTRIPLES   "application/n-triples"
@@ -387,7 +410,8 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		
 		SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(sparqlQuery.toString());
 		// Select in a transaction with start = 1 and page length = 1.
-		String jsonStrResults = sparqlQmgr.executeSelect(qdef, new StringHandle(), 1, 1, t).get();
+		sparqlQmgr.setPageLength(1);
+		String jsonStrResults = sparqlQmgr.executeSelect(qdef, new StringHandle(), 1, t).get();
 		ObjectMapper mapper = new ObjectMapper();
 	   
 		// Parsing results using JsonNode. 
@@ -407,7 +431,8 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		/* Order of states returned are : AZ, MD, WS, MS, TN, WA, IN, MA, VR, NC, GA, NJ, MI, OH, PA, IL..... 
 		 * We have set page length = 1 and start from result 2. Should skip Arizona and return only Maryland
 		 */
-		String jsonStrResults2 = sparqlQmgr.executeSelect(qdef, new StringHandle(), 2, 1, t).get();
+		sparqlQmgr.setPageLength(1);
+		String jsonStrResults2 = sparqlQmgr.executeSelect(qdef, new StringHandle(), 2, t).get();
 		
 		// Parsing results using JsonNode. 
 		JsonNode jsonNodesFromStr2 = mapper.readTree(jsonStrResults2);
@@ -426,7 +451,8 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		/* Order of states returned are : AZ, MD, WS, MS, TN, WA, IN, MA, VR, NC, GA, NJ, MI, OH, PA, IL..... 
 		 * We have set page length = 3 and start from result 2. Should skip Arizona and return Maryland, Wisconsin, Missouri
 		*/
-		String jsonStrResults3 = sparqlQmgr.executeSelect(qdef, new StringHandle(), 2, 3, t).get();
+		sparqlQmgr.setPageLength(3);
+		String jsonStrResults3 = sparqlQmgr.executeSelect(qdef, new StringHandle(), 2, t).get();
 
 		// Parsing results using JsonNode. 
 		JsonNode jsonNodesFromStr3 = mapper.readTree(jsonStrResults3);
@@ -457,7 +483,8 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		// Test negative cases.
 		
 		// Select in a transaction with (java index) start = 21 and page length = 2. Out of results' bounds
-		String jsonStrResultsNeg1 = sparqlQmgr.executeSelect(qdef, new StringHandle(), 21, 2, t).get();
+		sparqlQmgr.setPageLength(2);
+		String jsonStrResultsNeg1 = sparqlQmgr.executeSelect(qdef, new StringHandle(), 21, t).get();
 	   
 		// Parsing results using JsonNode. 
 		JsonNode jsonNodesFromStrNeg1 = mapper.readTree(jsonStrResultsNeg1);
@@ -472,7 +499,8 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		assertEquals("Element city is incorrect", "United States", jsonBindingsNodesNeg1.get(0).path("statename").path("value").asText());
 
 		// Select in a transaction with (java index) start = 100 and page length = 100.
-		String jsonStrResultsNeg2 = sparqlQmgr.executeSelect(qdef, new StringHandle(), 100, 100, t).get();
+		sparqlQmgr.setPageLength(100);
+		String jsonStrResultsNeg2 = sparqlQmgr.executeSelect(qdef, new StringHandle(), 100, t).get();
 
 		// Parsing results using JsonNode. 
 		JsonNode jsonNodesFromStrNeg2 = mapper.readTree(jsonStrResultsNeg2);
@@ -486,7 +514,8 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		String exception = "";
 		try {
 			// Select in a transaction with (java index) start = -1 and page length = -1.
-			String jsonStrResultsNeg3 = sparqlQmgr.executeSelect(qdef, new StringHandle(), -1, -1, t).get();
+			sparqlQmgr.setPageLength(-1);
+			String jsonStrResultsNeg3 = sparqlQmgr.executeSelect(qdef, new StringHandle(), -1, t).get();
 		} catch (Exception e) {
 			exception = e.toString();
 		}
@@ -821,6 +850,51 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		assertTrue("Test testExecuteEmptySelectQuery method exception is not thrown", exception.contains(expectedException));
 	}
 	
+	/* This test verifies query clauses with OPTIONAL and FILTER keywords on a graph name with multi-byte characters.
+	 * The database should contain triples from multibyteGraphName graph.
+	 * 
+	 * Expected Result : 1 solution contaiining person with id 4444
+     * 
+     * Uses StringHandle (XMLReadHandle)
+	 * 
+	 */
+	@Test
+	public void testQueryOnMultibyeGraphName() throws IOException, SAXException, ParserConfigurationException
+	{	
+		System.out.println("In SPARQL Query Manager Test testQueryOnMultibyeGraphName method");
+	    // Form a query
+   	
+	    StringBuffer sparqlQuery = new StringBuffer().append("prefix ad: <http://marklogicsparql.com/addressbook#>");
+		sparqlQuery.append(newline);
+		sparqlQuery.append("prefix id:  <http://marklogicsparql.com/id#>");
+		sparqlQuery.append(newline);
+		sparqlQuery.append("SELECT DISTINCT ?person FROM <");
+		sparqlQuery.append(multibyteGraphName);
+		sparqlQuery.append(">");
+	    sparqlQuery.append(newline);
+	    sparqlQuery.append("WHERE { ?person ad:firstName ?firstname ;");
+	    sparqlQuery.append(newline);
+	    sparqlQuery.append(" ad:lastName ?lastname . ");
+	    sparqlQuery.append("OPTIONAL {?person ad:homeTel ?phonenumber .} ");
+	    sparqlQuery.append("FILTER (?firstname = \"Ling\")");
+	    sparqlQuery.append("}");
+	    
+	    SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
+	    SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(sparqlQuery.toString());
+		
+		String jsonStrResults = sparqlQmgr.executeSelect(qdef, new StringHandle()).get();
+		ObjectMapper mapper = new ObjectMapper();
+	   
+		// Parsing results using JsonNode. 
+		JsonNode jsonNodesFromStr = mapper.readTree(jsonStrResults);
+		System.out.println(jsonStrResults);
+		JsonNode jsonBindingsNodes = jsonNodesFromStr.path("results").path("bindings");
+		// Should have 1 node returned. 
+		System.out.println("testQueryOnMultibyeGraphName query result size is " + jsonBindingsNodes.size());
+		assertEquals("Result returned from testQueryOnMultibyeGraphName query is incorrect ", 1, jsonBindingsNodes.size());
+		assertEquals("Element person's value incorrect", "http://marklogicsparql.com/id#4444", jsonBindingsNodes.get(0).path("person").path("value").asText());		
+	}
+	
 	/* This test verifies query clauses with OPTIONAL and FILTER keywords.
 	 * The database should contain triples from testcustom graph.
 	 * 
@@ -1018,7 +1092,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		
 		//Verify the bindings.
 		assertTrue("Bindings Map do not have expected key ", qdef1.getBindings().containsKey("cost"));
-		assertEquals("Result count from  testQueryBindingsOnInteger is incorrect", 5, jsonStrResults.path("results").path("bindings").size());	
+		assertEquals("Result count from  testQueryBindingsOnInteger is incorrect", 8, jsonStrResults.path("results").path("bindings").size());	
 	}
 	
 	/* This test verifies ASK query definition with bindings on multiple string values.
@@ -1175,14 +1249,17 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		//Verify the bindings.
 		assertTrue("Bindings Map do not have expected key ", qdef1.getBindings().containsKey("blahblah"));		
 		
-		assertEquals("Result count from  testQueryBindingsDifferentVariableName is incorrect", 5, jsonStrResults.path("results").path("bindings").size());
+		assertEquals("Result count from  testQueryBindingsDifferentVariableName is incorrect", 8, jsonStrResults.path("results").path("bindings").size());
 		JsonNode jsonBindingsNodes = jsonStrResults.path("results").path("bindings");
 		// The results are ordered.
 		assertEquals("First person's value incorrect", "http://marklogicsparql.com/id#3333", jsonBindingsNodes.get(0).path("person").path("value").asText()); 	
 		assertEquals("Second person's value incorrect", "http://marklogicsparql.com/id#5555", jsonBindingsNodes.get(1).path("person").path("value").asText());
 		assertEquals("Third person's value incorrect", "http://marklogicsparql.com/id#1111", jsonBindingsNodes.get(2).path("person").path("value").asText());
-		assertEquals("Fourth person's value incorrect", "http://marklogicsparql.com/id#4444", jsonBindingsNodes.get(3).path("person").path("value").asText());
-		assertEquals("Fifth person's value incorrect", "http://marklogicsparql.com/id#2222", jsonBindingsNodes.get(4).path("person").path("value").asText());
+		assertEquals("Fourth person's value incorrect", "http://marklogicsparql.com/id#6666", jsonBindingsNodes.get(3).path("person").path("value").asText());
+		assertEquals("Fifth person's value incorrect", "http://marklogicsparql.com/id#8888", jsonBindingsNodes.get(4).path("person").path("value").asText());	
+		assertEquals("Sixth person's value incorrect", "http://marklogicsparql.com/id#4444", jsonBindingsNodes.get(5).path("person").path("value").asText());
+		assertEquals("Seventh person's value incorrect", "http://marklogicsparql.com/id#7777", jsonBindingsNodes.get(6).path("person").path("value").asText());
+		assertEquals("Eighth person's value incorrect", "http://marklogicsparql.com/id#2222", jsonBindingsNodes.get(7).path("person").path("value").asText());
 	}
 	
 	/* This test verifies query definition with bindings on SPARQL Update query with integer data type.
@@ -1837,7 +1914,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	assertEquals("Two Rulesets should have been returned from testInferenceAndRuleSet method ", 2, qdef.getRulesets().length);
 	// Have an ordered collection. 
 	Collection<SPARQLRuleset> list = Arrays.asList(qdef.getRulesets());
-	//Iterate over the list two times. Items more or less would have asserted by now.
+	//Iterate over the list two times. Items more or less, would have asserted by now.
 	Iterator<SPARQLRuleset> itr = list.iterator();
 	assertEquals("First Ruleset name from testInferenceAndRuleSet is incorrect", "subClassOf.rules", itr.next().getName());
 	assertEquals("Second Ruleset name from testInferenceAndRuleSet is incorrect", "subPropertyOf.rules", itr.next().getName());
@@ -1847,6 +1924,188 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		
 	// Should have 44 nodes returned.
 	assertEquals("44 results not returned from testInferenceAndRuleSet method ", 44, jsonResultsTwoRules.path("results").path("bindings").size());
+	}
+	
+	/* This test verifies setConstrainingQueryDefinition method on SPARQLQueryDefinition class. 
+	 * 
+     * Uses JacksonHandle
+	 * 
+	 */
+	@Test
+	public void testConstrainingQuery() throws IOException, SAXException, ParserConfigurationException
+	{	
+		System.out.println("In SPARQL Query Manager Test testConstrainingQuery method");
+		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
+		
+		StringBuffer queryStr = new StringBuffer();
+		queryStr.append("PREFIX ad: <http://marklogicsparql.com/addressbook#>");
+		queryStr.append(newline);
+		queryStr.append("PREFIX d:  <http://marklogicsparql.com/id#>");
+		queryStr.append(newline);
+		queryStr.append("SELECT ?person ?fn ?lastname");
+		queryStr.append(newline);
+		queryStr.append("FROM <");
+		queryStr.append(customGraph);
+		queryStr.append(">");
+		queryStr.append(newline);
+		queryStr.append("WHERE");
+		queryStr.append(newline);
+		queryStr.append("{");
+		queryStr.append(newline);
+		queryStr.append("?person ad:firstName ?firstname ;");
+		queryStr.append(newline);
+		queryStr.append("ad:lastName ?lastname.");
+		queryStr.append(newline);
+		queryStr.append("OPTIONAL {?person ad:homeTel ?phonenumber .}");
+		queryStr.append(newline);
+		queryStr.append("BIND (?firstname as ?fn)");
+		queryStr.append("}");
+		
+		SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(queryStr.toString());
+		QueryManager queryMgr = writeclient.newQueryManager();
+		
+		// Set up the String variable binding.
+		SPARQLBindings bindings = qdef.getBindings();
+		
+		bindings.bind("firstname","Lei","string");
+		qdef.setBindings(bindings);
+		
+		// create query def.
+		StringQueryDefinition querydef = queryMgr.newStringDefinition();
+		querydef.setCriteria("Meng AND 8888");
+		
+		qdef.setConstrainingQueryDefinition(querydef);
+		// Parsing results using JsonNode. 
+		JsonNode jsonStrResults = sparqlQmgr.executeSelect(qdef, new JacksonHandle()).get();
+		System.out.println(jsonStrResults);	
+		JsonNode jsonBindings = jsonStrResults.path("results").path("bindings").get(0);
+		
+		//Verify the results.
+		assertEquals("Result value from  testConstrainingQuery is incorrect", "http://marklogicsparql.com/id#6666", jsonBindings.path("person").path("value").asText());	
+		assertEquals("Result fn from  testConstrainingQuery is incorrect", "Lei", jsonBindings.path("fn").path("value").asText());
+		assertEquals("Result lastname from  testConstrainingQuery is incorrect", "Pei", jsonBindings.path("lastname").path("value").asText());	
+	}
+	
+	/* This negative test verifies setConstrainingQueryDefinition method on SPARQLQueryDefinition class with null. 
+	 * Pass a null to setConstrainingQueryDefinition
+	 * Pass invalid data as criteria
+     * Uses JacksonHandle
+	 * 
+	 */
+	@Test
+	public void testConstrainingQueryNull() throws IOException, SAXException, ParserConfigurationException
+	{	
+		System.out.println("In SPARQL Query Manager Test testConstrainingQueryNull method");
+		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
+		
+		StringBuffer queryStr = new StringBuffer();
+		queryStr.append("PREFIX ad: <http://marklogicsparql.com/addressbook#>");
+		queryStr.append(newline);
+		queryStr.append("PREFIX d:  <http://marklogicsparql.com/id#>");
+		queryStr.append(newline);
+		queryStr.append("SELECT ?person ?fn ?lastname");
+		queryStr.append(newline);
+		queryStr.append("FROM <");
+		queryStr.append(customGraph);
+		queryStr.append(">");
+		queryStr.append(newline);
+		queryStr.append("WHERE");
+		queryStr.append(newline);
+		queryStr.append("{");
+		queryStr.append(newline);
+		queryStr.append("?person ad:firstName ?firstname ;");
+		queryStr.append(newline);
+		queryStr.append("ad:lastName ?lastname.");
+		queryStr.append(newline);
+		queryStr.append("OPTIONAL {?person ad:homeTel ?phonenumber .}");
+		queryStr.append(newline);
+		queryStr.append("BIND (?firstname as ?fn)");
+		queryStr.append("}");
+		
+		SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(queryStr.toString());
+		QueryManager queryMgr = writeclient.newQueryManager();
+		// create query def.
+		StringQueryDefinition strquerydef = queryMgr.newStringDefinition();
+		strquerydef.setCriteria("Foo AND bar");
+		// Set up the String variable binding.
+		SPARQLBindings bindings = qdef.getBindings();
+		
+		bindings.bind("firstname","Lei","string");
+		qdef.setBindings(bindings);
+		qdef.setConstrainingQueryDefinition(null);
+		// Parsing results using JsonNode. 
+		JsonNode jsonStrResults = sparqlQmgr.executeSelect(qdef, new JacksonHandle()).get();
+		System.out.println("Null in ConstrainingQueryDefinition \n");
+		System.out.println(jsonStrResults);	
+		JsonNode jsonBindings = jsonStrResults.path("results").path("bindings");
+		
+		//Verify the results. Returns results.
+		assertEquals("Result size from  testConstrainingQueryNull is incorrect", 1, jsonBindings.size());
+		assertEquals("Result value from  testConstrainingQueryNull is incorrect", "http://marklogicsparql.com/id#6666", jsonBindings.get(0).path("person").path("value").asText());	
+		assertEquals("Result fn from  testConstrainingQueryNull is incorrect", "Lei", jsonBindings.get(0).path("fn").path("value").asText());
+		assertEquals("Result lastname from  testConstrainingQueryNull is incorrect", "Pei", jsonBindings.get(0).path("lastname").path("value").asText());
+		
+		SPARQLQueryDefinition qdef1 = sparqlQmgr.newQueryDefinition(queryStr.toString()).withConstrainingQuery(strquerydef);
+		// Parsing results using JsonNode. 
+		JsonNode jsonStrResults1 = sparqlQmgr.executeSelect(qdef1, new JacksonHandle()).get();
+		System.out.println("Invalid Data \n");
+		System.out.println(jsonStrResults1);	
+		JsonNode jsonBindings1 = jsonStrResults1.path("results").path("bindings");
+				
+		//Verify the results. Returns No results.
+		assertEquals("Result size from  testConstrainingQueryNull is incorrect", 0, jsonBindings1.size());
+	}
+	
+	/* This test verifies SPARQL query with cts:contains 
+	 * 
+     * Uses JacksonHandle
+	 * 
+	 */
+	@Test
+	public void testSparqlQueryCtsContains() throws IOException, SAXException, ParserConfigurationException
+	{	
+		System.out.println("In SPARQL Query Manager Test testSparqlQueryCtsContains method");
+		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
+
+		StringBuffer queryStr = new StringBuffer();
+		queryStr.append("PREFIX ad: <http://marklogicsparql.com/addressbook#>");
+		queryStr.append(newline);
+		queryStr.append("PREFIX d:  <http://marklogicsparql.com/id#>");
+		queryStr.append(newline);
+		queryStr.append("PREFIX cts: <http://marklogic.com/cts#>");
+		queryStr.append(newline);
+		queryStr.append("SELECT ?person ?fn ?lastname");
+		queryStr.append(newline);
+		queryStr.append("FROM <");
+		queryStr.append(customGraph);
+		queryStr.append(">");
+		queryStr.append(newline);
+		queryStr.append("WHERE");
+		queryStr.append(newline);
+		queryStr.append("{");
+		queryStr.append(newline);
+		queryStr.append("?person ad:firstName ?firstname ;");
+		queryStr.append(newline);
+		queryStr.append("ad:lastName ?lastname.");
+		queryStr.append(newline);
+		queryStr.append("OPTIONAL {?person ad:homeTel ?phonenumber .}");
+		queryStr.append(newline);
+		queryStr.append(" FILTER cts:contains(?firstname, cts:or-query((\"Ling\", \"Lei\")))");
+		queryStr.append("}");
+		queryStr.append("ORDER BY ?firstname");
+
+		SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(queryStr.toString());
+		JsonNode jsonStrResults = sparqlQmgr.executeSelect(qdef, new JacksonHandle()).get();
+		System.out.println(jsonStrResults);	
+		JsonNode jsonBindings1 = jsonStrResults.path("results").path("bindings").get(0);
+		JsonNode jsonBindings2 = jsonStrResults.path("results").path("bindings").get(1);
+
+		//Verify the results.
+		assertEquals("Result 1 value from  testSparqlQueryCtsContains is incorrect", "http://marklogicsparql.com/id#6666", jsonBindings1.path("person").path("value").asText());			
+		assertEquals("Result 1 lastname from  testSparqlQueryCtsContains is incorrect", "Pei", jsonBindings1.path("lastname").path("value").asText());
+		
+		assertEquals("Result 2 value from  testSparqlQueryCtsContains is incorrect", "http://marklogicsparql.com/id#4444", jsonBindings2.path("person").path("value").asText());
+		assertEquals("Result 2 lastname from  testSparqlQueryCtsContains is incorrect", "Ling", jsonBindings2.path("lastname").path("value").asText());		
 	}
 	
 	/*
@@ -1912,8 +2171,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		writeclient.release();
 		readclient.release();
 		client.release();
-		//tearDownJavaRESTServer(dbName, fNames, restServerName);
+		tearDownJavaRESTServer(dbName, fNames, restServerName);
 		
 	}
 }
-
