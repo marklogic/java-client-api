@@ -22,6 +22,8 @@ import java.io.File;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
 
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -50,6 +52,7 @@ import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.DocumentUriTemplate;
+import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.XMLDocumentManager;
@@ -62,6 +65,7 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
@@ -91,6 +95,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
   private final static String axisValidName = "javaERIValidAxis";
 
   private final static String temporalCollectionName = "javaERITemporalCollection";
+  private final static String bulktemporalCollectionName = "bulkjavaERITemporalCollection";
   private final static String temporalLsqtCollectionName = "javaERILsqtTemporalCollection";
 
   private final static String systemNodeName = "System";
@@ -125,6 +130,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
     ConnectedRESTQA.addElementRangeIndexTemporalCollection(dbName,
         temporalCollectionName, axisSystemName, axisValidName);
     ConnectedRESTQA.addElementRangeIndexTemporalCollection(dbName,
+            bulktemporalCollectionName, axisSystemName, axisValidName);
+    ConnectedRESTQA.addElementRangeIndexTemporalCollection(dbName,
         temporalLsqtCollectionName, axisSystemName, axisValidName);
     ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
         temporalLsqtCollectionName, true);
@@ -145,6 +152,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
         temporalLsqtCollectionName);
     ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
         temporalCollectionName);
+    ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
+            bulktemporalCollectionName);
     ConnectedRESTQA.deleteElementRangeIndexTemporalAxis("Documents",
         axisValidName);
     ConnectedRESTQA.deleteElementRangeIndexTemporalAxis("Documents",
@@ -632,6 +641,94 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
     return handle;
   }
+  
+  /*
+  * Insert multiple temporal documents to test bulk write of temporal documents.
+  */
+  	@Test
+  	public void testBulkWritReadeWithTransaction() throws Exception {
+
+  		boolean tstatus = false;
+  		DocumentPage termQueryResults = null;
+  		
+  		Transaction tx = writerClient.openTransaction();
+  		try {
+  			XMLDocumentManager docMgr = writerClient.newXMLDocumentManager();
+
+  			DocumentWriteSet writeset = docMgr.newWriteSet();
+  			String[] docId = new String[4];
+  			docId[0] = "1.xml";
+  			docId[1] = "2.xml";
+  			docId[2] = "3.xml";
+  			docId[3] = "4.xml";
+
+  			DOMHandle handle1 = getXMLDocumentHandle("2001-01-01T00:00:00",
+  					"2011-12-31T23:59:56", "999 Skyway Park - XML", docId[0]);
+  			DOMHandle handle2 = getXMLDocumentHandle("2001-01-02T00:00:00",
+  					"2011-12-31T23:59:57", "999 Skyway Park - XML", docId[1]);
+  			DOMHandle handle3 = getXMLDocumentHandle("2001-01-03T00:00:00",
+  					"2011-12-31T23:59:58", "999 Skyway Park - XML", docId[2]);
+  			DOMHandle handle4 = getXMLDocumentHandle("2001-01-04T00:00:00",
+  					"2011-12-31T23:59:59", "999 Skyway Park - XML", docId[3]);
+  			DocumentMetadataHandle mh = setMetadata(false);
+
+  			writeset.add(docId[0], mh, handle1);
+  			writeset.add(docId[1], mh, handle2);
+  			writeset.add(docId[2], mh, handle3);
+  			writeset.add(docId[3], mh, handle4);
+  			Map<String, DOMHandle> map = new TreeMap<String, DOMHandle>();
+  			map.put(docId[0], handle1);
+  			map.put(docId[1], handle2);
+  			map.put(docId[2], handle3);
+  			map.put(docId[3], handle4);
+
+  			docMgr.write(writeset, null, null, bulktemporalCollectionName);
+
+  			QueryManager queryMgr = readerClient.newQueryManager();
+  			StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+
+  			String[] collections = { latestCollectionName, bulktemporalCollectionName, "insertCollection" };
+  			StructuredQueryDefinition termQuery = sqb.collection(collections);
+
+  			long start = 1;
+  			docMgr = readerClient.newXMLDocumentManager();
+  			docMgr.setMetadataCategories(Metadata.ALL); // Get all metadata
+  			termQueryResults = docMgr.search(termQuery, start);
+  			assertEquals("Records counts is incorrect", 4, termQueryResults.size());
+  			// Verify the Document Record content with map contents for each record.
+  			while (termQueryResults.hasNext()) {
+
+  				DocumentRecord record = termQueryResults.next();
+
+  				DOMHandle recordHandle = new DOMHandle();
+  				record.getContent(recordHandle);
+
+  				String recordContent = recordHandle.toString();
+
+  				System.out.println("Record URI = " + record.getUri());
+  				System.out.println("Record content is = " + recordContent);
+
+  				DOMHandle readDOMHandle = map.get(record.getUri());
+  				String mapContent = readDOMHandle.evaluateXPath("/root/Address/text()", String.class);
+
+  				assertTrue("Address value is incorrect ", recordContent.contains(mapContent));
+
+  				readDOMHandle = null;
+  				mapContent = null;
+  			}
+  		}
+  		catch(Exception e) {
+  			System.out.println(e.getMessage());
+  			tstatus=true;
+  			throw e;
+  		}
+  		finally {
+  			if(tstatus) {
+  				if (termQueryResults != null)
+  				termQueryResults.close();
+  			tx.rollback();}
+  		}    
+  	}
 
   @Test
   // Insert a temporal document using DocumentUriTemplate
