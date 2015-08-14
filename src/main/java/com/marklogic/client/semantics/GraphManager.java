@@ -17,6 +17,9 @@ package com.marklogic.client.semantics;
 
 import java.util.Iterator;
 
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.QuadsWriteHandle;
 import com.marklogic.client.io.marker.TriplesReadHandle;
@@ -33,20 +36,32 @@ public interface GraphManager {
 
     // use read(DEFAULT_GRAPH, handle)
     // or read(null, handle)
-    public <T extends TriplesReadHandle> T read(String uri, T handle);
-    public <T extends TriplesReadHandle> T read(String uri, T handle, Transaction transaction);
+    public <T extends TriplesReadHandle> T read(String uri, T handle)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public <T extends TriplesReadHandle> T read(String uri, T handle, Transaction transaction)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    public <T> T readAs(String uri, Class<T> as);
-    public <T> T readAs(String uri, Class<T> as, Transaction transaction);
+    public <T> T readAs(String uri, Class<T> as)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public <T> T readAs(String uri, Class<T> as, Transaction transaction)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    public GraphPermissions getPermissions(String uri);
-    public GraphPermissions getPermissions(String uri, Transaction transaction);
-    public void deletePermissions(String uri);
-    public void deletePermissions(String uri, Transaction transaction);
-    public void writePermissions(String uri, GraphPermissions permissions);
-    public void writePermissions(String uri, GraphPermissions permissions, Transaction transaction);
-    public void mergePermissions(String uri, GraphPermissions permissions);
-    public void mergePermissions(String uri, GraphPermissions permissions, Transaction transcation);
+    public GraphPermissions getPermissions(String uri)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public GraphPermissions getPermissions(String uri, Transaction transaction)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void deletePermissions(String uri)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void deletePermissions(String uri, Transaction transaction)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void writePermissions(String uri, GraphPermissions permissions)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void writePermissions(String uri, GraphPermissions permissions, Transaction transaction)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void mergePermissions(String uri, GraphPermissions permissions)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void mergePermissions(String uri, GraphPermissions permissions, Transaction transcation)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** Create a GraphPermissions builder object with the specified role and capabilities.
      * @param role the name of the role receiving these capabilities
@@ -55,39 +70,64 @@ public interface GraphManager {
      */
     public GraphPermissions permission(String role, Capability... capabilities);
 
-    public void merge(String uri, TriplesWriteHandle handle);
-    public void merge(String uri, TriplesWriteHandle handle, Transaction transaction);
-    public void merge(String uri, TriplesWriteHandle handle, GraphPermissions permissions);
-    public void merge(String uri, TriplesWriteHandle handle, GraphPermissions permissions, Transaction transaction);
+    public void merge(String uri, TriplesWriteHandle handle)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void merge(String uri, TriplesWriteHandle handle, Transaction transaction)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void merge(String uri, TriplesWriteHandle handle, GraphPermissions permissions)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void merge(String uri, TriplesWriteHandle handle, GraphPermissions permissions, Transaction transaction)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    public void mergeAs(String uri, Object graphData);
-    public void mergeAs(String uri, Object graphData, Transaction transaction);
-    public void mergeAs(String uri, Object graphData, GraphPermissions permissions);
-    public void mergeAs(String uri, Object graphData, GraphPermissions permissions, Transaction transaction);
+    public void mergeAs(String uri, Object graphData)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void mergeAs(String uri, Object graphData, Transaction transaction)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void mergeAs(String uri, Object graphData, GraphPermissions permissions)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void mergeAs(String uri, Object graphData, GraphPermissions permissions, Transaction transaction)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    public void write(String uri, TriplesWriteHandle handle);
-    public void write(String uri, TriplesWriteHandle handle, Transaction transaction);
-    public void write(String uri, TriplesWriteHandle handle, GraphPermissions permissions);
-    public void write(String uri, TriplesWriteHandle handle, GraphPermissions permissions, Transaction transaction);
+    public void write(String uri, TriplesWriteHandle handle)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void write(String uri, TriplesWriteHandle handle, Transaction transaction)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void write(String uri, TriplesWriteHandle handle, GraphPermissions permissions)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void write(String uri, TriplesWriteHandle handle, GraphPermissions permissions, Transaction transaction)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    public void writeAs(String uri, Object graphData);
-    public void writeAs(String uri, Object graphData, Transaction transaction);
-    public void writeAs(String uri, Object graphData, GraphPermissions permissions);
-    public void writeAs(String uri, Object graphData, GraphPermissions permissions, Transaction transaction);
+    public void writeAs(String uri, Object graphData)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void writeAs(String uri, Object graphData, Transaction transaction)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void writeAs(String uri, Object graphData, GraphPermissions permissions)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void writeAs(String uri, Object graphData, GraphPermissions permissions, Transaction transaction)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    public void delete(String uri);
-    public void delete(String uri, Transaction transaction);
+    public void delete(String uri)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void delete(String uri, Transaction transaction)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    public <T extends TriplesReadHandle> T things(T handle, String... iris);
-    public <T> T thingsAs(Class<T> as, String... iris);
+    public <T extends TriplesReadHandle> T things(T handle, String... iris)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public <T> T thingsAs(Class<T> as, String... iris)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     // quads methods - no permissions transactions, or read
-    public void mergeGraphs(QuadsWriteHandle handle);
-    public void mergeGraphsAs(Object quadsData);
-    public void replaceGraphs(QuadsWriteHandle handle);
-    public void replaceGraphsAs(Object quadsData);
+    public void mergeGraphs(QuadsWriteHandle handle)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void mergeGraphsAs(Object quadsData)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void replaceGraphs(QuadsWriteHandle handle)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void replaceGraphsAs(Object quadsData)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     // TODO: do we want this?
-    public void deleteGraphs();
+    public void deleteGraphs()
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     public String getDefaultMimetype();
     public void setDefaultMimetype(String mimetype);
