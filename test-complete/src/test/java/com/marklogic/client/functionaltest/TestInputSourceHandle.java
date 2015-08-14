@@ -116,7 +116,9 @@ public class TestInputSourceHandle extends BasicJavaClientREST {
 	    assertTrue("Document is not deleted", documentIsDeleted);
 	    
 		// release client
-		client.release();
+	    contentHandle.close();
+		updateHandle.close();
+		client.release();	
 	}
 	@AfterClass
 	public static void tearDown() throws Exception

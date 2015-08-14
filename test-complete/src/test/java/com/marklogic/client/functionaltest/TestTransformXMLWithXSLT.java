@@ -96,7 +96,8 @@ public class TestTransformXMLWithXSLT extends BasicJavaClientREST {
 		//	    String transformedContent = readContent.replaceAll("^name$", "firstname");
 		//	    assertEquals("XML document write difference", transformedContent, readContent);
 		assertTrue("check document from DB has name element changed",readContent.contains("firstname"));
-		scanner.close();	    
+		scanner.close();
+		handle.close();
 
 		// release client
 		client.release();
