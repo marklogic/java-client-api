@@ -5511,6 +5511,9 @@ public class JerseyServices implements RESTServices {
 		RequestParameters params = new RequestParameters();
 		if (start > 1)             params.add("start",      Long.toString(start));
 		if (pageLength >= 0)       params.add("pageLength", Long.toString(pageLength));
+		if (qdef.getOptimizeLevel() >= 0) {
+			params.add("optimize", Integer.toString(qdef.getOptimizeLevel()));
+		}
 		if (qdef.getCollections() != null ) {
 			for ( String collection : qdef.getCollections() ) {
 				params.add("collection", collection);
