@@ -15,9 +15,6 @@
  */
 package com.marklogic.client.impl;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,7 +29,6 @@ import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
@@ -58,21 +54,21 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     }
 
     @Override
-    public Iterator listGraphUris() {
-        final int bufferSize = 10;
+    public Iterator<String> listGraphUris() {
         final String uriString = services.getGraphUris(requestLogger, new StringHandle()).get();
         String[] uris = uriString.split("\n");
         return Arrays.asList(uris).iterator();
     }
 
     @Override
-    public TriplesReadHandle read(String uri, TriplesReadHandle handle) {
+    public <T extends TriplesReadHandle> T read(String uri, T handle) {
         return read(uri, handle, null);
     }
 
     @Override
-    public TriplesReadHandle read(String uri, TriplesReadHandle handle,
+    public <T extends TriplesReadHandle> T read(String uri, T handle,
             Transaction transaction) {
+        @SuppressWarnings("rawtypes")
         HandleImplementation baseHandle = HandleAccessor.as(handle);
         String mimetype = baseHandle.getMimetype();
         if ( mimetype == null ) baseHandle.setMimetype(defaultMimetype);
@@ -202,6 +198,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     @Override
     public void merge(String uri, TriplesWriteHandle handle,
             GraphPermissions permissions, Transaction transaction) {
+        @SuppressWarnings("rawtypes")
         HandleImplementation baseHandle = HandleAccessor.as(handle);
         String mimetype = validateGraphsMimetype(baseHandle);
         services.mergeGraph(requestLogger, uri, handle, permissions, transaction);
@@ -250,6 +247,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     @Override
     public void write(String uri, TriplesWriteHandle handle,
             GraphPermissions permissions, Transaction transaction) {
+        @SuppressWarnings("rawtypes")
         HandleImplementation baseHandle = HandleAccessor.as(handle);
         String mimetype = validateGraphsMimetype(baseHandle);
         services.writeGraph(requestLogger, uri, handle, permissions, transaction);
@@ -333,6 +331,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
 
     @Override
     public void mergeGraphs(QuadsWriteHandle handle) {
+        @SuppressWarnings("rawtypes")
         HandleImplementation baseHandle = HandleAccessor.as(handle);
         String mimetype = validateGraphsMimetype(baseHandle);
         services.mergeGraphs(requestLogger, handle);
@@ -346,6 +345,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
 
     @Override
     public void replaceGraphs(QuadsWriteHandle handle) {
+        @SuppressWarnings("rawtypes")
         HandleImplementation baseHandle = HandleAccessor.as(handle);
         String mimetype = validateGraphsMimetype(baseHandle);
         services.writeGraphs(requestLogger, handle);
@@ -385,6 +385,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private String validateGraphsMimetype(HandleImplementation baseHandle) {
         String mimetype = baseHandle.getMimetype();
         if ( mimetype == null ) {
