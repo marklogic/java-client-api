@@ -100,6 +100,7 @@ public class TestBug19443 extends BasicJavaClientREST {
 	    System.out.println(output);
 
 	    XMLUnit.setIgnoreWhitespace(true); 
+	    XMLUnit.setNormalizeWhitespace(true);
 	    assertXMLEqual("testBug19443", actual, output);
  
 		// release client
