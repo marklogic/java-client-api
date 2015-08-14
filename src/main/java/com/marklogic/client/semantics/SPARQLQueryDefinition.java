@@ -65,4 +65,7 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
     public void setIncludeDefaultRulesets(Boolean b);
     public Boolean getIncludeDefaultRulesets();
     public SPARQLQueryDefinition withIncludeDefaultRulesets(Boolean b);
+
+    public int getOptimizeLevel();
+    public void setOptimzeLevel(int level);
 }

@@ -45,6 +45,7 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
     private String[] collections;
     private String directory;
     private ServerTransform transform;
+    private int optimizeLevel = -1;
 
     public SPARQLQueryDefinitionImpl() {}
 
@@ -281,5 +282,13 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
     public SPARQLQueryDefinition withIncludeDefaultRulesets(Boolean b) {
         this.includeDefaultRulesets = b;
         return this;
+    }
+
+    public int getOptimizeLevel() {
+        return optimizeLevel;
+    }
+
+    public void setOptimzeLevel(int level) {
+        this.optimizeLevel = level;
     }
 }
