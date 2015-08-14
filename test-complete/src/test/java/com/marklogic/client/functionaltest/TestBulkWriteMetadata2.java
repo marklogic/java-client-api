@@ -584,5 +584,6 @@ public class TestBulkWriteMetadata2 extends  BasicJavaClientREST{
 		docMgr.readMetadata(rec.getUri(), mh);
 		assertEquals("default quality",0,mh.getQuality());
 		assertEquals("default collection must change","[genericCollection]",mh.getCollections().toString());
+		sh.close();
 	}
 }

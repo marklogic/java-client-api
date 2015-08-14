@@ -117,6 +117,8 @@ public class TestSourceHandle extends BasicJavaClientREST {
 		assertTrue("Document is not deleted", documentIsDeleted);
 
 		// release client
+		contentHandle.close();
+		updateHandle.close();
 		client.release();
 	}
 

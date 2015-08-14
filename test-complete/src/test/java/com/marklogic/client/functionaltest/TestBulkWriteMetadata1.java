@@ -345,5 +345,6 @@ public class TestBulkWriteMetadata1  extends BasicJavaClientREST {
 			validateMetadata(mh);
 		}
 		validateMetadata(mh);
+		sh.close();
 	}
 }
