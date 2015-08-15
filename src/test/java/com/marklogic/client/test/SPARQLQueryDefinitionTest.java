@@ -46,6 +46,7 @@ public class SPARQLQueryDefinitionTest {
     @BeforeClass
     public static void beforeClass() {
         Common.connect();
+        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
         gmgr = Common.client.newGraphManager();
         gmgr.replaceGraphs(new StringHandle(TEST_TRIG)
                 .withMimetype("text/trig"));
@@ -74,6 +75,10 @@ public class SPARQLQueryDefinitionTest {
         String defGraphQuery = "SELECT ?s WHERE { ?s a ?o }";
         SPARQLQueryDefinition qdef = smgr.newQueryDefinition(defGraphQuery);
         qdef.setIncludeDefaultRulesets(false);
+        qdef.setOptimzeLevel(1);
+        // this only tests whether optimize level is set, not sent to server
+        // I'm not sure how to test that
+        assertEquals(1, qdef.getOptimizeLevel());
         ArrayNode bindings = executeAndExtractBindings(qdef);
         assertEquals("Union of all graphs has three class assertions", 3,
                 bindings.size());

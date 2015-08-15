@@ -373,6 +373,7 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 		//Bulk delete on GenericDocumentManager - Git 284
 		String doc1 = "/generic/"+docId[0];
 		docMgr.delete(doc1,"/generic/foo.xml","/generic/foo1.txt", "/generic/dog.json");
+		sh.close();
 	}
 
 	@Test

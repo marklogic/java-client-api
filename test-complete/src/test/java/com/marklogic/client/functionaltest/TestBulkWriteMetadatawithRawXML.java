@@ -524,7 +524,7 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 		assertEquals("default collection must change",
 				"[http://Json-Uri-generic-collections/]", mh1.getCollections()
 						.toString());
-
+		sh.close();
 	}
 
 }
