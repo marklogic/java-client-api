@@ -120,6 +120,16 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		}
 		assertTrue("Read after detele did not throw expected Exception, Received ::" + exp,
 				exp.toString().contains("Could not read resource at graphs."));
+		
+		//Delete non existing graph
+		exp =null;
+		try {
+			gmWriter.delete("htp://test.sem.graph/G1");
+		} catch (Exception e) {
+			exp = e;
+		}
+		assertTrue("Delete after detele did not throw expected Exception:: http://bugtrack.marklogic.com/35064:: , Received ::" + exp,
+				exp.toString().contains("Could not read resource at graphs."));
 	}
 
 	/*
@@ -845,6 +855,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		perms = gmTestPerm.permission("test-perm", Capability.EXECUTE);
 		// Merge Permissions 
 		gmTestPerm.mergePermissions(uri, perms);
+	//	gmTestPerm.writePermissions(uri, perms);
 		// Get Permissions And Validate
 		perms = gmTestPerm.getPermissions(uri);
 		System.out.println("Permissions after setting execute , Should  see Execute & Update"+gmTestPerm.getPermissions(uri));
@@ -852,9 +863,14 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
             assertTrue("capability should be UPDATE && Execute, not [" + capability + "]", capability == Capability.UPDATE || capability == Capability.EXECUTE );
 		}
 		assertTrue("Did not have expected capabilities",perms.get("test-perm").size() ==2);
-		// Validate write with Update and Execute permissions
-			gmTestPerm.write(uri, handle.withMimetype(RDFMimeTypes.RDFXML), perms);
-		System.out.println("Permissions after setting execute , Should  see Execute & Update"+gmTestPerm.getPermissions(uri));
+
+		// Write Read permission to uri and validate permissions are overwritten with write
+		perms = gmTestPerm.permission("test-perm", Capability.READ);
+		gmTestPerm.write(uri, handle.withMimetype(RDFMimeTypes.RDFXML), perms);
+		for ( Capability capability : perms.get("test-perm") ) {
+            assertTrue("capability should be READ, not [" + capability + "]", capability == Capability.READ);
+        }
+		assertTrue("Did not have expected capabilities",perms.get("test-perm").size() == 1);
 		
 		// Delete Permissions and Validate
 		gmTestPerm.deletePermissions(uri);
