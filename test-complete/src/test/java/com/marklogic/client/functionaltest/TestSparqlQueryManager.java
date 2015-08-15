@@ -18,16 +18,16 @@ package com.marklogic.client.functionaltest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.awt.List;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -55,6 +55,7 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.semantics.Capability;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.GraphPermissions;
 import com.marklogic.client.semantics.RDFMimeTypes;
@@ -92,9 +93,8 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		setupAppServicesConstraint(dbName);
 		enableCollectionLexicon(dbName);
 		enableTripleIndex(dbName);
-		
 		waitForServerRestart();
-		
+				
 		//You can enable the triple positions index for faster near searches using cts:triple-range-query.
 		writeclient = DatabaseClientFactory.newClient("localhost", restPort,
 				"rest-writer", "x", Authentication.DIGEST);
@@ -1747,11 +1747,54 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		
 		// Test SPARQLQueryDefinition class' set methods.
 		qdef.setSparql(sparqlCreateQuery.toString());
-		qdef.setCollections("my-collections");
+		qdef.setCollections("my-collections1");
+		qdef.setCollections("my-collections2");
 		qdef.setDirectory("my-Directory");
+		
+		createUserRolesWithPrevilages("sem-query-role");
+		createRESTUser("sem-query-user","x","sem-query-role", "rest-writer");
+		DatabaseClient semQueryclient = DatabaseClientFactory.newClient("localhost", restPort,
+				"sem-query-user", "x", Authentication.DIGEST);
+		
+		GraphManager graphManagerPerm = semQueryclient.newGraphManager();
+		GraphPermissions  graphPermissions = graphManagerPerm.permission("sem-query-role", Capability.UPDATE, Capability.EXECUTE);
+		
+		// Set the Permissions on SPARQLQueryDefinition
+		qdef.setUpdatePermissions(graphPermissions);
 		// Create original graph
 		sparqlQmgr.executeUpdate(qdef);
-		 
+		
+		// Verify SPARQLQueryDefinition get methods.		
+		for(String collections : qdef.getCollections())
+			assertTrue("QueryDefinition Collections incorrectlty set ",collections.contains("my-collections1") || collections.contains("my-collections2"));
+		assertEquals("QueryDefinition Directory incorrectlty set ", "my-Directory", qdef.getDirectory());
+		assertNull("QueryDefinition DefaultRulesets incorrectlty set. Should be Null.", qdef.getIncludeDefaultRulesets());
+		assertTrue("QueryDefinition Bindings incorrectlty set. Should be Empty.", qdef.getBindings().isEmpty());
+		assertNull("QueryDefinition Options incorrectlty set. Should be Null.", qdef.getOptionsName());
+		
+		// Now read the graph back using GraphManager and Check Permissions.
+		StringHandle graphStr = graphManagerPerm.read("OriginalGraph", new StringHandle());
+		
+		GraphPermissions readBackPermissions = graphManagerPerm.getPermissions("OriginalGraph");
+		Set<Entry<String, Set<Capability>>> setPermissions = readBackPermissions.entrySet(); 
+		 Iterator<Entry<String, Set<Capability>>> itr = setPermissions.iterator();
+		 String stringPermissions = "size:" + setPermissions.size() + "|";;
+		 while(itr.hasNext()) 
+		 {
+			 Map.Entry mePermissions = (Map.Entry)itr.next();
+			 stringPermissions = stringPermissions + mePermissions.getKey() + ":" + mePermissions.getValue() + "|";
+		 }
+		 System.out.println("Returned permissions from OriginalGraph : " + stringPermissions);
+
+		 assertTrue("Document permissions difference in size value", stringPermissions.contains("size:3"));
+		 assertTrue("Document permissions difference in rest-reader permission", stringPermissions.contains("rest-reader:[READ]"));
+		 assertTrue("Document permissions difference in rest-writer permission", stringPermissions.contains("rest-writer:[UPDATE]"));
+		 assertTrue("Document permissions difference in sem-query-role permission", stringPermissions.contains("sem-query-role:"));
+		 //sem-query-role:[UPDATE, EXECUTE] -->  Order of UPDATE, EXECUTE not certain. Split on role, then pipe char and replace trailing ]
+		 // Better way?
+		 String capab = stringPermissions.split("sem-query-role:\\[")[1].split("\\|")[0].replace("]", "");
+		 assertTrue("Document permissions difference in sem-query-role permission", capab.contains("UPDATE, EXECUTE")||capab.contains("EXECUTE, UPDATE"));
+			
 		// Insert data into OriginalGraph.
 		StringBuffer sparqlInsertData = new StringBuffer().append("PREFIX : <http://example.org/>");
 		sparqlInsertData.append(newline);
@@ -1791,20 +1834,24 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
         // Verify the permissions
         GraphPermissions  graphPermission = sparqlGmgr.getPermissions("CopiedGraph");
         
-        Set setPermissions = graphPermission.entrySet(); 
-	    Iterator iPermissions = setPermissions.iterator(); 
-	    String stringPermissions = "size:" + graphPermission.size() + "|";
-	    while(iPermissions.hasNext()) 
+        Set<Entry<String, Set<Capability>>> setPermissionsCopy = graphPermission.entrySet(); 
+	    Iterator<Entry<String, Set<Capability>>> iPermissionsCopy = setPermissionsCopy.iterator(); 
+	    String stringPermissionsCopy = "size:" + graphPermission.size() + "|";
+	    while(iPermissionsCopy.hasNext()) 
 	    {
-	    	Map.Entry mePermissions = (Map.Entry)iPermissions.next();
-	    	stringPermissions = stringPermissions + mePermissions.getKey() + ":" + mePermissions.getValue() + "|";
+	    	Map.Entry mePermissionsCopy = (Map.Entry)iPermissionsCopy.next();
+	    	stringPermissionsCopy = stringPermissionsCopy + mePermissionsCopy.getKey() + ":" + mePermissionsCopy.getValue() + "|";
 	    }
 	    
-		System.out.println("Returned permissions from graph is : " + stringPermissions);
+		System.out.println("Returned permissions from Copy graph is : " + stringPermissionsCopy);
 
-		assertTrue("Document permissions difference in size value", stringPermissions.contains("size:2"));
-		assertTrue("Document permissions difference in rest-reader permission", stringPermissions.contains("rest-reader:[READ]"));
-		assertTrue("Document permissions difference in rest-writer permission", stringPermissions.contains("rest-writer:[UPDATE]"));
+		assertTrue("Document permissions difference in size value", stringPermissions.contains("size:3"));
+		assertTrue("Document permissions difference in rest-reader permission", stringPermissionsCopy.contains("rest-reader:[READ]"));
+		assertTrue("Document permissions difference in rest-writer permission", stringPermissionsCopy.contains("rest-writer:[UPDATE]"));
+		
+		// Better way?
+		String capabCpy = stringPermissionsCopy.split("sem-query-role:\\[")[1].split("\\|")[0].replace("]", "");
+		assertTrue("Document permissions difference in sem-query-role permission", capabCpy.contains("UPDATE, EXECUTE")||capabCpy.contains("EXECUTE, UPDATE"));				 
 			      
         // Validate the meta data through DocumentMetadataHandle also.
         TextDocumentManager docMgr = readclient.newTextDocumentManager();
@@ -1829,9 +1876,12 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 			String actualPermissions =  getDocumentPermissionsString(permissions);
 			System.out.println("Returned permissions from DocumentMetadataHandle : " + actualPermissions);
 
-			assertTrue("Document permissions difference in size value", actualPermissions.contains("size:2"));
+			assertTrue("Document permissions difference in size value", actualPermissions.contains("size:3"));
 			assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
-			assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));			
+			assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
+			// Better way?
+			String capabAct = actualPermissions.split("sem-query-role:\\[")[1].split("\\|")[0].replace("]", "");
+			assertTrue("Document permissions difference in sem-query-role permission", capabAct.contains("UPDATE, EXECUTE")||capabAct.contains("EXECUTE, UPDATE"));
 
 			// Collections 
 			String actualCollections =  getDocumentCollectionsString(collections);
@@ -1840,7 +1890,11 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 			assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
 			assertTrue("Semantic Graphs not found in collections", actualCollections.contains("http://marklogic.com/semantics#graphs"));
 			assertTrue("CopiedGraph not found in collections", actualCollections.contains("CopiedGraph"));
-		}	
+		}
+		// Release resources.
+		deleteRESTUser("sem-query-user");
+		deleteUserRole("sem-query-role");
+		semQueryclient.release();
 	}
 	
 	/* This test verifies MarkLogic Java API support for Inference and Ruleset.
