@@ -631,9 +631,7 @@ public class QueryOptionsBuilderTest {
 									"fieldrange",
 									builder.range(
 											builder.fieldRangeIndex("int1", builder.rangeType("xs:int"))),
-									builder.aggregate("stddev")),  // field must exist to pass with an aggregate -- search-impl.xqy 3080 bug? TODO log the bug
-						builder.values("field", 
-								builder.field("fieldname")))
+									builder.aggregate("stddev")))  // field must exist to pass with an aggregate -- search-impl.xqy 3080 bug? TODO log the bug
 						.withTuples(
 							builder.tuples("persona",
 									builder.tupleSources(
@@ -650,12 +648,10 @@ public class QueryOptionsBuilderTest {
 												builder.collection("c"))),
 								builder.tuples("fields",
 										builder.tupleSources(
-												builder.field("int1"),
-												builder.field("int2"))));
-						
+												builder.range(builder.fieldRangeIndex("int1", builder.rangeType("xs:int"))),
+												builder.range(builder.fieldRangeIndex("int2", builder.rangeType("xs:int"))))));
 
-		
-		assertEquals(4, options.getValues().size());
+		assertEquals(3, options.getValues().size());
 		assertEquals("uri", options.getValues("uri").getName());
 		QueryValues collectionValues = options.getValues("coll");
 		assertEquals("min", collectionValues.getAggregate().getApply());
@@ -670,8 +666,8 @@ public class QueryOptionsBuilderTest {
 				.getElement().getLocalPart());
 		assertNotNull(options.getTuples("cttuple").getCollection());
 		assertNotNull(options.getTuples("cttuple").getUri());
-		assertEquals("int1", options.getTuples("fields").getField().get(0).getName());
-		assertEquals("int2", options.getTuples("fields").getField().get(1).getName());
+		assertEquals("int1", options.getTuples("fields").getRange().get(0).getFieldName());
+		assertEquals("int2", options.getTuples("fields").getRange().get(1).getFieldName());
 		
 		logger.debug(options.toString());
 		
@@ -685,12 +681,12 @@ public class QueryOptionsBuilderTest {
 				.getElement().getLocalPart());
 		assertNotNull(options.getTuples("cttuple").getCollection());
 		assertNotNull(options.getTuples("cttuple").getUri());
-		assertEquals("int1", options.getTuples("fields").getField().get(0).getName());
-		assertEquals("int2", options.getTuples("fields").getField().get(1).getName());
+		assertEquals("int1", options.getTuples("fields").getRange().get(0).getFieldName());
+		assertEquals("int2", options.getTuples("fields").getRange().get(1).getFieldName());
 
 		collectionValues.setName("coll3");
 		options.addValues(collectionValues);
-		assertEquals(5, options.getValues().size());
+		assertEquals(4, options.getValues().size());
 
 	};
 
