@@ -89,6 +89,11 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
         this.pageLength = pageLength;
     }
 
+    @Override
+    public void clearPageLength() {
+        pageLength = -1;
+    }
+
     private <T extends AbstractReadHandle> T executeQueryImpl(
             SPARQLQueryDefinition qdef, T handle, Transaction tx, boolean isUpdate) {
         return executeQueryImpl(qdef, handle, -1, tx, isUpdate);
