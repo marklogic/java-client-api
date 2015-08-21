@@ -2,8 +2,10 @@ package com.marklogic.client.semantics;
 
 
 /**
- * Some static constants to provide enum-like access
- * to MimeTypes in use by the Semantics endpoints. 
+ * Some static constants to ease use of mime types appropriate for
+ * handles used in GraphManager.{@link GraphManager#read GraphManager.read}/
+ * {@link GraphManager#write GraphManager.write}/
+ * {@link GraphManager#merge GraphManager.merge} methods.
  */
 public final class RDFMimeTypes {
 

@@ -16,23 +16,37 @@
 package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.fasterxml.jackson.core.JsonParser.Feature;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
@@ -45,6 +59,7 @@ import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.RDFMimeTypes;
 import com.marklogic.client.semantics.SPARQLBindings;
+import com.marklogic.client.semantics.SPARQLMimeTypes;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.semantics.SPARQLQueryManager;
 import com.marklogic.client.semantics.SPARQLRuleset;
@@ -322,13 +337,21 @@ public class SPARQLManagerTest {
         // or use a builder
         qdef4 = qdef4.withBinding("c", "http://example.org/o2").withBinding("d", "http://example.org/o3");
 
-        JsonNode jsonResults2 = smgr.executeSelect(qdef4, new JacksonHandle()).get();
+        DOMHandle handle = new DOMHandle();
+        handle.setMimetype(SPARQLMimeTypes.SPARQL_XML);
+        Document jsonResults2 = smgr.executeSelect(qdef4, handle).get();
 
-        int numResults2 = jsonResults2.path("results").path("bindings").size();
+        NodeList results = jsonResults2.getDocumentElement().getLastChild().getChildNodes();
+        // the number of children of the element "bindings"
+        int numResults2 = results.getLength();
         // because we said 'filter (?s = ?b)' we should only get one result
         assertEquals(1, numResults2);
-        JsonNode firstResult2 = jsonResults2.path("results").path("bindings").path(0);
-        assertEquals(mapper.readTree(expectedFirstResult), firstResult2);
+        Node s = results.item(0).getChildNodes().item(0);
+        Node o = results.item(0).getChildNodes().item(1);
+        Node p = results.item(0).getChildNodes().item(2);
+        assertEquals("http://example.org/s1", s.getTextContent());
+        assertEquals("http://example.org/p1", o.getTextContent());
+        assertEquals("http://example.org/o1", p.getTextContent());
     }
 
     @Test
@@ -339,7 +362,9 @@ public class SPARQLManagerTest {
         qdef1.setCollections(graphUri);
         long start = 1;
         smgr.setPageLength(1);
-        JsonNode results = smgr.executeSelect(qdef1, new JacksonHandle(), start).get();
+        JacksonHandle handle = new JacksonHandle();
+        handle.setMimetype(SPARQLMimeTypes.SPARQL_JSON);
+        JsonNode results = smgr.executeSelect(qdef1, handle, start).get();
         JsonNode bindings = results.path("results").path("bindings");
         // because we set pageLength to 1 we should only get one result
         assertEquals(1, bindings.size());
@@ -366,17 +391,41 @@ public class SPARQLManagerTest {
         SPARQLQueryDefinition qdef = smgr.newQueryDefinition(
                 "SELECT ?s { ?s a <http://example.org/C1>  }");
         qdef.setIncludeDefaultRulesets(false);
-        JsonNode results = smgr.executeSelect(qdef, new JacksonHandle()).get();
-        assertEquals(0, results.path("results").path("bindings").size());
+        StringHandle handle = new StringHandle().withMimetype(SPARQLMimeTypes.SPARQL_CSV);
+        String results = smgr.executeSelect(qdef, handle).get();
+        assertNull(results);
+
         qdef.setRulesets(SPARQLRuleset.RANGE);
-        results = smgr.executeSelect(qdef, new JacksonHandle()).get();
-        assertEquals(1, results.path("results").path("bindings").size());
+        results = smgr.executeSelect(qdef, handle).get();
+        assertEquals(1, countLines(parseCsv(results)));
 
         qdef.setRulesets(SPARQLRuleset.RANGE, SPARQLRuleset.DOMAIN);
-        results = smgr.executeSelect(qdef, new JacksonHandle()).get();
-        assertEquals(2, results.path("results").path("bindings").size());
+        results = smgr.executeSelect(qdef, handle).get();
+        MappingIterator<Map<String,String>> csvRows = parseCsv(results);
+        assertTrue(csvRows.hasNext());
+        Map<String,String> row = csvRows.next();
+        assertEquals("http://example.org/o1", row.get("s"));
+        assertTrue(csvRows.hasNext());
+        row = csvRows.next();
+        assertEquals("http://example.org/s2", row.get("s"));
+        assertFalse(csvRows.hasNext());
 
         gmgr.delete("/ontology");
+    }
+
+    private MappingIterator<Map<String,String>> parseCsv(String csv) throws JsonProcessingException, IOException {
+        return new CsvMapper().reader(Map.class)
+            .with(CsvSchema.emptySchema().withHeader()) // use first row as header
+            .readValues(csv);
+    }
+
+    private int countLines(MappingIterator<?> iter) {
+        int numLines = 0;
+        while (iter.hasNext()) {
+            iter.next();
+            numLines++;
+        }
+        return numLines;
     }
     
     @Test
