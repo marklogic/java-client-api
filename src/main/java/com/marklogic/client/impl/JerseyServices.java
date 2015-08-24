@@ -3886,8 +3886,8 @@ public class JerseyServices implements RESTServices {
 					String type = null;
 					Object valueObject = variables.get(name);
 					if ( valueObject == null ) {
-						throw new IllegalStateException("null values not currently supported, but your variable " +
-						"\"" + name + "\" has a null value");
+						value = "";
+						type = "null-node()";
 					} else if ( valueObject instanceof JacksonHandle ||
 								valueObject instanceof JacksonParserHandle ) {
 						JsonNode jsonNode = null;
