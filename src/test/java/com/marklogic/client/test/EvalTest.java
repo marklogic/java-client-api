@@ -105,7 +105,9 @@ public class EvalTest {
             "var myDouble;" +
             "var myDate;" +
             "var myNull;" +
-            "xdmp.arrayValues([myString, myArray, myObject, myBool, myInteger, myDouble, myDate, myNull])";
+            "xdmp.arrayValues([myString, myArray, myObject, myBool, myInteger, myDouble, myDate, " +
+            // since we can't get back a null node, we'll just test that it's null
+            "myNull == null])";
         // first run it as ad-hoc eval
         runAndTestJavascript( Common.client.newServerEval().javascript(javascript) );
 
@@ -159,7 +161,9 @@ public class EvalTest {
             .addVariable("myInteger", 123)
             .addVariable("myDouble",  1.1)
             .addVariable("myDate", 
-                DatatypeFactory.newInstance().newXMLGregorianCalendar(septFirst).toString());
+                DatatypeFactory.newInstance().newXMLGregorianCalendar(septFirst).toString())
+            // we can pass a null node
+            .addVariable("myNull", (String) null);
         EvalResultIterator results = call.eval();
         try {
             assertEquals("myString looks wrong", "Mars", results.next().getAs(String.class));
@@ -177,6 +181,9 @@ public class EvalTest {
             // the same format we sent in (from javax.xml.datatype.XMLGregorianCalendar.toString())
             assertEquals("myDate looks wrong", "2014-09-01T00:00:00.000+02:00",
               results.next().getString());
+            // we can't get back a null so we'll just test that it eval'ed to null on the server
+            // nevermind, thje following line fails because for some reason we get back false
+            assertEquals("myNull looks wrong", Boolean.TRUE, results.next().getBoolean());
       } finally { results.close(); }
 
     }
@@ -220,7 +227,6 @@ public class EvalTest {
             .addVariable("myDateTime", 
                 DatatypeFactory.newInstance().newXMLGregorianCalendar(septFirst).toString())
             .addVariable("myTime", "00:01:01");
-            //.addVariable("myNull", (String) null);
         EvalResultIterator results = call.eval();
         try {
             EvalResult result = results.next();
