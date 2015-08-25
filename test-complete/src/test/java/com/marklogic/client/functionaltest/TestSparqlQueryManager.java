@@ -446,7 +446,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/md", jsonBindingsNodes2.get(0).path("stateCode").path("value").asText());
 		assertEquals("Element lives is incorrect", "5296486", jsonBindingsNodes2.get(0).path("population").path("value").asText());
 		assertEquals("Element city is incorrect", "Maryland", jsonBindingsNodes2.get(0).path("statename").path("value").asText());
-
+		
 		// Select in a transaction with start = 2 and page length = 3. 
 		/* Order of states returned are : AZ, MD, WS, MS, TN, WA, IN, MA, VR, NC, GA, NJ, MI, OH, PA, IL..... 
 		 * We have set page length = 3 and start from result 2. Should skip Arizona and return Maryland, Wisconsin, Missouri
@@ -480,6 +480,10 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		assertEquals("Element lives is incorrect", "5595211", jsonItrNode3.path("population").path("value").asText());
 		assertEquals("Element city is incorrect", "Missouri", jsonItrNode3.path("statename").path("value").asText());
 				
+		assertEquals("Result returned from testPaginationInTransaction Page Length incorrect", 3, sparqlQmgr.getPageLength());
+		// Verify clear page length.
+		sparqlQmgr.clearPageLength();
+		assertEquals("Result returned from testPaginationInTransaction Page Length incorrect", -1, sparqlQmgr.getPageLength());
 		// Test negative cases.
 		
 		// Select in a transaction with (java index) start = 21 and page length = 2. Out of results' bounds
@@ -2161,6 +2165,135 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		assertEquals("Result 2 value from  testSparqlQueryCtsContains is incorrect", "http://marklogicsparql.com/id#4444", jsonBindings2.path("person").path("value").asText());
 		assertEquals("Result 2 lastname from  testSparqlQueryCtsContains is incorrect", "Ling", jsonBindings2.path("lastname").path("value").asText());		
 	}
+	
+	/* This test verifies MarkLogic Sparql Negation.
+	 */
+	@Test
+	public void testSparqlNegation() throws IOException, SAXException, ParserConfigurationException {	
+		System.out.println("In SPARQL Query Manager Test testSparqlNegation method");
+		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
+		SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition();	
+
+		StringBuffer queryStr = new StringBuffer();
+		queryStr.append("PREFIX  id:    <http://marklogicsparql.com/id#>");
+		queryStr.append(newline);
+		queryStr.append("PREFIX  add:   <http://marklogicsparql.com/addressbook#>");
+		queryStr.append(newline);
+		queryStr.append("SELECT ?name");
+		queryStr.append(newline);
+		queryStr.append("FROM <");
+		queryStr.append(customGraph);
+		queryStr.append(">");
+		queryStr.append(newline);
+		queryStr.append("WHERE");
+		queryStr.append(newline);
+		queryStr.append("{");
+		queryStr.append(newline);
+		queryStr.append("?id add:lastName  ?name .");
+		queryStr.append(newline);
+		queryStr.append("FILTER NOT EXISTS { ?id add:homeTel ?num }");
+		queryStr.append(newline);
+		queryStr.append("}");
+		queryStr.append(newline);
+		queryStr.append("ORDER BY ?name");
+		qdef = sparqlQmgr.newQueryDefinition(queryStr.toString());
+
+		JacksonHandle jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+		JsonNode jsonResults = sparqlQmgr.executeSelect(qdef,  jacksonHandle).get();		
+		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		
+		// Should have 4 nodes returned.
+		assertEquals("Result should have been returned from testNamedExecuteSelectQuery method after commit for write client", 4, jsonBindingsNodes.size());
+		assertEquals("Value Data from read client is incorrect", "Ling",jsonBindingsNodes.get(0).path("name").path("value").asText());
+		assertEquals("Value Data from read client is incorrect", "Ling",jsonBindingsNodes.get(1).path("name").path("value").asText());
+		assertEquals("Value Data from read client is incorrect", "Wang",jsonBindingsNodes.get(2).path("name").path("value").asText());
+		assertEquals("Value Data from read client is incorrect", "Xiang",jsonBindingsNodes.get(3).path("name").path("value").asText());
+
+		qdef = null;
+		jacksonHandle = null;
+		jsonResults = null;
+		jsonBindingsNodes = null;
+		queryStr = null;
+				
+		queryStr = new StringBuffer();
+		queryStr.append("PREFIX  id:    <http://marklogicsparql.com/id#>");
+		queryStr.append(newline);
+		queryStr.append("PREFIX  add:   <http://marklogicsparql.com/addressbook#>");
+		queryStr.append(newline);
+		queryStr.append("SELECT ?name");
+		queryStr.append(newline);
+		queryStr.append("FROM <");
+		queryStr.append(customGraph);
+		queryStr.append(">");
+		queryStr.append(newline);
+		queryStr.append("WHERE");
+		queryStr.append(newline);
+		queryStr.append("{");
+		queryStr.append(newline);
+		queryStr.append("?id add:lastName  ?name .");
+		queryStr.append(newline);
+		queryStr.append("?id add:firstName  ?name .");
+		queryStr.append(newline);
+		queryStr.append("MINUS { ?id add:homeTel ?num }");
+		queryStr.append(newline);
+		queryStr.append("}");
+		queryStr.append(newline);
+		queryStr.append("ORDER BY ?name");
+		qdef = sparqlQmgr.newQueryDefinition(queryStr.toString());
+		
+		jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+		jsonResults = sparqlQmgr.executeSelect(qdef,  jacksonHandle).get();		
+
+		jsonBindingsNodes = jsonResults.path("results").path("bindings");		
+		// Should have 1 nodes returned.
+		assertEquals("Result should have been returned from testNamedExecuteSelectQuery method after commit for write client", 1, jsonBindingsNodes.size());
+		assertEquals("Value Data from read client is incorrect", "Ling",jsonBindingsNodes.get(0).path("name").path("value").asText());
+
+		qdef = null;
+		jacksonHandle = null;
+		jsonResults = null;
+		jsonBindingsNodes = null;
+		queryStr = null;
+
+		queryStr = new StringBuffer();
+		queryStr.append("PREFIX  id:    <http://marklogicsparql.com/id#>");
+		queryStr.append(newline);
+		queryStr.append("PREFIX  add:   <http://marklogicsparql.com/addressbook#>");
+		queryStr.append(newline);
+		queryStr.append("SELECT ?name");
+		queryStr.append(newline);
+		queryStr.append("FROM <");
+		queryStr.append(customGraph);
+		queryStr.append(">");
+		queryStr.append(newline);
+		queryStr.append("WHERE");
+		queryStr.append(newline);
+		queryStr.append("{");
+		queryStr.append(newline);
+		queryStr.append("?id add:firstName  ?name .");		
+		queryStr.append(newline);
+		queryStr.append("FILTER EXISTS { ?id add:homeTel ?num }");
+		queryStr.append(newline);
+		queryStr.append("}");
+		queryStr.append(newline);
+		queryStr.append("ORDER BY ?name");
+		qdef = sparqlQmgr.newQueryDefinition(queryStr.toString());
+		
+		jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+		jsonResults = sparqlQmgr.executeSelect(qdef,  jacksonHandle).get();		
+
+		jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		// Should have 4 nodes returned.
+		assertEquals("Result should have been returned from testNamedExecuteSelectQuery method after commit for write client", 4, jsonBindingsNodes.size());
+		assertEquals("Value Data from read client is incorrect", "John",jsonBindingsNodes.get(0).path("name").path("value").asText());
+		assertEquals("Value Data from read client is incorrect", "Lei",jsonBindingsNodes.get(1).path("name").path("value").asText());
+		assertEquals("Value Data from read client is incorrect", "Meng",jsonBindingsNodes.get(2).path("name").path("value").asText());
+		assertEquals("Value Data from read client is incorrect", "Micah",jsonBindingsNodes.get(3).path("name").path("value").asText());
+	}
+	
 	
 	/*
 	 * Write a TURTLE format custom data contained in a string to the database.
