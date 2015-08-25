@@ -98,6 +98,7 @@ import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
+import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonParserHandle;
 import com.marklogic.client.io.OutputStreamSender;
@@ -3717,9 +3718,14 @@ public class JerseyServices implements RESTServices {
 		@Override
 		public EvalResult.Type getType() {
 			String contentType = content.getHeader("Content-Type");
+			String xPrimitive = content.getHeader("X-Primitive");
 			if ( contentType != null ) {
 				if ( "application/json".equals(contentType) ) {
-					return EvalResult.Type.JSON;
+					if ( "null-node()".equals(xPrimitive) ) {
+						return EvalResult.Type.NULL;
+					} else {
+						return EvalResult.Type.JSON;
+					}
 				} else if ( "text/json".equals(contentType) ) {
 					return EvalResult.Type.JSON;
 				} else if ( "application/xml".equals(contentType) ) {
@@ -3727,16 +3733,15 @@ public class JerseyServices implements RESTServices {
 				} else if ( "text/xml".equals(contentType) ) {
 					return EvalResult.Type.XML;
 				} else if ( "application/x-unknown-content-type".equals(contentType) &&
-							"binary()".equals(content.getHeader("X-Primitive")) )
+							"binary()".equals(xPrimitive) )
 				{
 					return EvalResult.Type.BINARY;
 				} else if ( "application/octet-stream".equals(contentType) &&
-							"node()".equals(content.getHeader("X-Primitive")) )
+							"node()".equals(xPrimitive) )
 				{
 					return EvalResult.Type.BINARY;
 				}
 			}
-			String xPrimitive = content.getHeader("X-Primitive");
 			if ( xPrimitive == null ) {
 				return EvalResult.Type.OTHER;
 			} else if ( "string".equals(xPrimitive) || "untypedAtomic".equals(xPrimitive) ) {
@@ -3787,19 +3792,24 @@ public class JerseyServices implements RESTServices {
 				return EvalResult.Type.QNAME;
 			} else if ( "time".equals(xPrimitive) ) {
 				return EvalResult.Type.TIME;
-			} else if ( "null".equals(xPrimitive) ) {
-				return EvalResult.Type.NULL;
 			}
 			return EvalResult.Type.OTHER;
 		}
 
 		@Override
 		public <H extends AbstractReadHandle> H get(H handle) {
-			return content.getContent(handle);
+			if ( getType() == EvalResult.Type.NULL && handle instanceof StringHandle ) {
+				return (H) ((StringHandle) handle).with(null);
+			} else if ( getType() == EvalResult.Type.NULL && handle instanceof BytesHandle ) {
+				return (H) ((BytesHandle) handle).with(null);
+			} else {
+				return content.getContent(handle);
+			}
 		}
 
 		@Override
 		public <T> T getAs(Class<T> clazz) {
+			if ( getType() == EvalResult.Type.NULL ) return null;
 			if (clazz == null) throw new IllegalArgumentException("clazz cannot be null");
 
 			ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(clazz);
@@ -3811,7 +3821,11 @@ public class JerseyServices implements RESTServices {
 
 		@Override
 		public String getString() {
-			return content.getEntityAs(String.class);
+			if ( getType() == EvalResult.Type.NULL ) {
+				return null;
+			} else {
+				return content.getEntityAs(String.class);
+			}
 		}
 
 		@Override
@@ -3886,7 +3900,7 @@ public class JerseyServices implements RESTServices {
 					String type = null;
 					Object valueObject = variables.get(name);
 					if ( valueObject == null ) {
-						value = "";
+						value = "null";
 						type = "null-node()";
 					} else if ( valueObject instanceof JacksonHandle ||
 								valueObject instanceof JacksonParserHandle ) {
@@ -4886,7 +4900,7 @@ public class JerseyServices implements RESTServices {
 					clazz.getConstructor(JerseyServices.class, RequestLogger.class, BodyPart.class);
 				return constructor.newInstance(new JerseyServices(), reqlog, partQueue.next());
 			} catch (Throwable t) {
-				throw new IllegalStateException("Error instantiating " + clazz.getName());
+				throw new IllegalStateException("Error instantiating " + clazz.getName(), t);
 			}
 		}
 
