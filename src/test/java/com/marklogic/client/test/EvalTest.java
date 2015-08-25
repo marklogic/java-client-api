@@ -40,6 +40,7 @@ import org.xml.sax.SAXException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -50,10 +51,13 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.eval.ServerEvaluationCall;
+import com.marklogic.client.impl.HandleAccessor;
+import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
@@ -105,9 +109,7 @@ public class EvalTest {
             "var myDouble;" +
             "var myDate;" +
             "var myNull;" +
-            "xdmp.arrayValues([myString, myArray, myObject, myBool, myInteger, myDouble, myDate, " +
-            // since we can't get back a null node, we'll just test that it's null
-            "myNull == null])";
+            "xdmp.arrayValues([myString, myArray, myObject, myBool, myInteger, myDouble, myDate, myNull])";
         // first run it as ad-hoc eval
         runAndTestJavascript( Common.client.newServerEval().javascript(javascript) );
 
@@ -181,11 +183,38 @@ public class EvalTest {
             // the same format we sent in (from javax.xml.datatype.XMLGregorianCalendar.toString())
             assertEquals("myDate looks wrong", "2014-09-01T00:00:00.000+02:00",
               results.next().getString());
-            // we can't get back a null so we'll just test that it eval'ed to null on the server
-            // nevermind, thje following line fails because for some reason we get back false
-            assertEquals("myNull looks wrong", Boolean.TRUE, results.next().getBoolean());
+            assertEquals("myNull looks wrong", null, results.next().getString());
       } finally { results.close(); }
 
+    }
+
+    @Test
+    public void getNullTests() throws DatatypeConfigurationException, JsonProcessingException, IOException {
+        String javascript = "var myNull; myNull";
+        ServerEvaluationCall call = Common.client.newServerEval().javascript(javascript)
+            .addVariable("myNull", (String) null);
+        EvalResultIterator results = call.eval();
+        try { assertEquals("myNull looks wrong", null, results.next().getString());
+        } finally { results.close(); }
+
+        results = call.eval();
+        try { assertEquals("myNull looks wrong", null, results.next().get(new StringHandle()).get());
+        } finally { results.close(); }
+
+        results = call.eval();
+        try { assertEquals("myNull looks wrong", null, results.next().get(new BytesHandle()).get());
+        } finally { results.close(); }
+
+        results = call.eval();
+        NullNode jsonNullNode = new ObjectMapper().createObjectNode().nullNode();
+        try { assertEquals("myNull looks wrong", jsonNullNode, results.next().get(new JacksonHandle()).get());
+        } finally { results.close(); }
+
+        results = call.eval();
+        ReaderHandle valueReader = results.next().get(new ReaderHandle());
+        String value = HandleAccessor.contentAsString(valueReader);
+        try { assertEquals("myNull looks wrong", "null", value);
+        } finally { results.close(); }
     }
 
     private void runAndTestXQuery(ServerEvaluationCall call) 
