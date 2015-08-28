@@ -333,16 +333,18 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 		.addVariableAs("myNull",(String) null);
 		EvalResultIterator evr = evl.eval();
 		this.validateReturnTypes(evr);
-		String query2 = "declare variable $myArray as json:array external;"
+		String query2 = "declare namespace test=\"http://marklogic.com/test\";" + "declare variable $myArray as json:array external;"
 				         +"declare variable $myObject as json:object external;"
-				         +"declare variable $myJsonNode as xs:string external;"
-				         +"($myArray,$myObject,xdmp:unquote($myJsonNode)/a,xdmp:unquote($myJsonNode)/b,xdmp:unquote($myJsonNode)/c1,"
-				         +"xdmp:unquote($myJsonNode)/d,xdmp:unquote($myJsonNode)/f,xdmp:unquote($myJsonNode)/g )";
+				        // +"declare variable $myJsonNode as xs:string external;"
+				         //+"($myArray,$myObject,xdmp:unquote($myJsonNode)/a,xdmp:unquote($myJsonNode)/b,xdmp:unquote($myJsonNode)/c1,"
+				       +"($myArray,$myObject)";
+				         //+"xdmp:unquote($myJsonNode)/d,xdmp:unquote($myJsonNode)/f,xdmp:unquote($myJsonNode)/g )";
+		System.out.println(query2);
 		evl= client.newServerEval().xquery(query2);
 		evl.addVariableAs("myArray", new ObjectMapper().createArrayNode().add(1).add(2).add(3))
         .addVariableAs("myObject", new ObjectMapper().createObjectNode().put("foo", "v1").putNull("testNull"))
-        .addVariableAs("myXmlNode",new DOMHandle(doc) ).addVariableAs("myNull", null)
-        .addVariableAs("myJsonNode", new StringHandle(jsonNode).withFormat(Format.JSON));
+        .addVariableAs("myXmlNode",new DOMHandle(doc) ).addVariableAs("myNull", null);
+        //.addVariableAs("myJsonNode", new StringHandle(jsonNode).withFormat(Format.JSON));
 		evr = evl.eval();
 		 while(evr.hasNext())
 		 {
