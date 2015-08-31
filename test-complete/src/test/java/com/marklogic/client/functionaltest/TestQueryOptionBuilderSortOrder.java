@@ -50,6 +50,13 @@ import org.skyscreamer.jsonassert.*;
 import org.json.JSONException;
 import org.junit.*;
 
+/*
+ * All the tests in the class are being converted to negative test cases since the Git Issue 347 will not be fixed.
+ * ML version 8.0-4
+ * Java client API version 3.0-4
+ * 08/31/2015
+ */
+
 public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 
 	private static String dbName = "TestQueryOptionBuilderSortOrderDB";
