@@ -250,7 +250,6 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 	/*
 	 * Write & Read triples of type ttl using bytehandle
 	 */
-	// TODO use inpurtstream handle instead of byte
 	@Test
 	public void testWrite_ttl_FileHandle() throws Exception {
 		File file = new File(datasource + "relative3.ttl");
@@ -339,7 +338,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 	 */
 
 	@Test
-	public void test002Write_trig_FileHandle() throws Exception {
+	public void testWrite_trig_FileHandle() throws Exception {
 		File file = new File(datasource + "semantics.trig");
 		FileHandle filehandle = new FileHandle();
 		filehandle.set(file);
@@ -443,7 +442,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 	 * Write & Read NON -RDF format triples
 	 */
 	@Test
-	public void test001Read_nonirin3_FileHandle() throws Exception {
+	public void testRead_nonirin3_FileHandle() throws Exception {
 		StringHandle handle = new StringHandle();
 		File file = new File(datasource + "non-iri.n3");
 		FileHandle filehandle = new FileHandle();
@@ -701,14 +700,14 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 	 * DeleteGraphs and validate ResourceNotFound Exception
 	 */
 	@Test
-	public void testMergeReplace_quads() throws FileNotFoundException {
+	public void test001MergeReplace_quads() throws FileNotFoundException, InterruptedException {
 		String uri = "http://test.sem.quads/json-quads";
 		String ntriple6 = "<http://example.org/s6> <http://example.com/mergeQuadP> <http://example.org/o2> <http://test.sem.quads/json-quads>.";
 		File file = new File(datasource + "bug25348.json");
 		FileHandle filehandle = new FileHandle();
 		filehandle.set(file);
 		gmWriter.write(uri, filehandle.withMimetype(RDFMimeTypes.RDFJSON));
-		gmWriter.mergeGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NTRIPLES));
+		gmWriter.mergeGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS));
 		FileHandle handle = gmWriter.read(uri, new FileHandle());
 		File readFile = handle.get();
 		String expectedContent = convertFileToString(readFile);
@@ -737,7 +736,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 	 */
 
 	@Test
-	public void testMergeReplaceAs_Quads() throws Exception {
+	public void test002MergeReplaceAs_Quads() throws Exception {
 		gmWriter.setDefaultMimetype(RDFMimeTypes.NQUADS);
 		File file = new File(datasource + "semantics.nq");
 		gmWriter.replaceGraphsAs(file);
@@ -787,19 +786,20 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		gmWriter.delete(tripleGraphUri);
 	}
 
-	// TODO update after git issue #342 is resolved
 	@Test
 	public void testThings_fileNomatch() throws Exception {
 		gmWriter.setDefaultMimetype(RDFMimeTypes.TRIPLEXML);
 		String tripleGraphUri = "http://test.things.com/file";
 		File file = new File(datasource + "relative5.xml");
 		gmWriter.write(tripleGraphUri, new FileHandle(file));
+		Exception exp = null;
 		try {
 			StringHandle things = gmWriter.things(new StringHandle(), "noMatch");
 			assertTrue("Things did not return expected Uri's", things == null);
 		} catch (Exception e) {
-
+			exp = e;
 		}
+		assertTrue(exp.toString().contains("ResourceNotFoundException"));
 		gmWriter.delete(tripleGraphUri);
 	}
 
@@ -926,7 +926,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 	 * transaction
 	 */
 	@Test
-	public void testPermissins_withtrxNeg() {
+	public void testPermissions_withtrxNeg() throws Exception {
 		File file = new File(datasource + "semantics.rdf");
 		FileHandle handle = new FileHandle();
 		handle.set(file);
@@ -938,24 +938,35 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		// Create Client with above User
 		DatabaseClient permUser = DatabaseClientFactory.newClient("localhost", restPort, dbName, "perm-user", "x", Authentication.DIGEST);
 		// Create GraphManager with Above client
-		Transaction trx = permUser.openTransaction();
-		GraphManager gmTestPerm = permUser.newGraphManager();
-		// Set Update Capability for the Created User
-		GraphPermissions perms = gmTestPerm.permission("test-perm", Capability.UPDATE);
-		gmTestPerm.write(uri, handle.withMimetype(RDFMimeTypes.RDFXML), trx);
-		trx.commit();
 
-		trx = permUser.openTransaction();
-		gmTestPerm.mergePermissions(uri, perms, trx);
-		// Validate test-perm role not available outside transaction
-		GraphPermissions perm = gmTestPerm.getPermissions(uri);
-		System.out.println("OUTSIDE TRX , SHOULD NOT SEE test-perm EXECUTE" + perm);
-		assertNull(perm.get("test-perm"));
-		perms = gmTestPerm.getPermissions(uri, trx);
-		assertTrue("Permission within trx should have Update capability", perms.get("test-perm").contains(Capability.UPDATE));
-		trx.rollback();
-		perms = gmTestPerm.getPermissions(uri);
-		assertNull(perm.get("test-perm"));
+		Transaction trx = permUser.openTransaction();
+		try {
+			GraphManager gmTestPerm = permUser.newGraphManager();
+			// Set Update Capability for the Created User
+			GraphPermissions perms = gmTestPerm.permission("test-perm", Capability.UPDATE);
+			gmTestPerm.write(uri, handle.withMimetype(RDFMimeTypes.RDFXML), trx);
+			trx.commit();
+
+			trx = permUser.openTransaction();
+			gmTestPerm.mergePermissions(uri, perms, trx);
+			// Validate test-perm role not available outside transaction
+			GraphPermissions perm = gmTestPerm.getPermissions(uri);
+			System.out.println("OUTSIDE TRX , SHOULD NOT SEE test-perm EXECUTE" + perm);
+			assertNull(perm.get("test-perm"));
+			perms = gmTestPerm.getPermissions(uri, trx);
+			assertTrue("Permission within trx should have Update capability", perms.get("test-perm").contains(Capability.UPDATE));
+			trx.rollback();
+			trx = null;
+			perms = gmTestPerm.getPermissions(uri);
+			assertNull(perm.get("test-perm"));
+		} catch (Exception e) {
+
+		} finally {
+			if (trx != null) {
+				trx.commit();
+				trx = null;
+			}
+		}
 
 	}
 
