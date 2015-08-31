@@ -50,6 +50,13 @@ import org.skyscreamer.jsonassert.*;
 import org.json.JSONException;
 import org.junit.*;
 
+/*
+ * All the tests in the class are being converted to negative test cases since the Git Issue 347 will not be fixed.
+ * ML version 8.0-4
+ * Java client API version 3.0-4
+ * 08/31/2015
+ */
+
 public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 
 	private static String dbName = "TestQueryOptionBuilderSortOrderDB";
@@ -77,7 +84,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 		System.out.println("Running clear script");
 	}
 
-	@Test	
+	@Test(expected = com.marklogic.client.FailedRequestException.class)	
 	public void testSortOrderDescendingScore() throws FileNotFoundException, XpathException, TransformerException
 	{	
 		System.out.println("Running testSortOrderDescendingScore");
@@ -143,7 +150,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 		client.release();	
 	}
 
-	@Test	
+	@Test(expected = com.marklogic.client.FailedRequestException.class)	
 	public void testSortOrderPrimaryDescScoreSecondaryAscDate() throws FileNotFoundException, XpathException, TransformerException, IOException, JSONException
 	{	
 		System.out.println("Running testSortOrderPrimaryDescScoreSecondaryAscDate");
@@ -212,7 +219,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 		client.release();	
 	}
 
-	@Test	
+	@Test(expected = com.marklogic.client.FailedRequestException.class)	
 	public void testMultipleSortOrder() throws FileNotFoundException, XpathException, TransformerException, IOException
 	{	
 		System.out.println("Running testMultipleSortOrder");
@@ -358,7 +365,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 		client.release();	
 	} 
 
-	@Test	
+	@Test(expected = com.marklogic.client.FailedRequestException.class)	
 	public void testSortOrderAttribute() throws FileNotFoundException, XpathException, TransformerException, IOException
 	{	
 		System.out.println("Running testSortOrderAttribute");
