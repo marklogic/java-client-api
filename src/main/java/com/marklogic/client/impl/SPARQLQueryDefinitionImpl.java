@@ -34,6 +34,7 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
     private String sparql;
     private SPARQLBindings bindings = new SPARQLBindingsImpl();
     private GraphPermissions permissions;
+    private String baseUri;
     private String[] defaultGraphUris;
     private String[] namedGraphUris;
     private String[] usingGraphUris;
@@ -178,6 +179,16 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
             permissions = permissions.permission(role, capability);
         }
         return this;
+    }
+
+    @Override
+    public String getBaseUri() {
+        return baseUri;
+    }
+
+    @Override
+    public void setBaseUri(String uri) {
+        this.baseUri = uri;
     }
 
     @Override

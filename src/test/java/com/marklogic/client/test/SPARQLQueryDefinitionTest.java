@@ -70,6 +70,29 @@ public class SPARQLQueryDefinitionTest {
     }
 
     @Test
+    public void testBaseUri() {
+        // verify base has expected effect
+        String relativeConstruct = "CONSTRUCT { <relative1> <relative2> <relative3> } \n" +
+            "WHERE { ?s ?p ?o . } LIMIT 1";
+        SPARQLQueryDefinition qdef = smgr.newQueryDefinition(relativeConstruct);
+        qdef.setBaseUri("http://example.org/test/");
+        JsonNode rdf = smgr.executeConstruct(qdef, new JacksonHandle()).get();
+
+        String subject = rdf.fieldNames().next();
+        assertEquals("base uri plus relative subject uri",
+            "http://example.org/test/relative1", subject);
+
+        String predicate = rdf.get(subject).fieldNames().next();
+        assertEquals("base uri plus relative predicate uri",
+            "http://example.org/test/relative2", predicate);
+
+        JsonNode objects = rdf.get(subject).get(predicate);
+        assertEquals(1, objects.size());
+        assertEquals("base uri plus relative uri",
+            "http://example.org/test/relative3", objects.path(0).path("value").asText());
+    }
+
+    @Test
     public void testDefaultURI() {
         // verify default graph
         String defGraphQuery = "SELECT ?s WHERE { ?s a ?o }";

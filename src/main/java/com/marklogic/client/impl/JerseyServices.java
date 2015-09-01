@@ -5582,6 +5582,9 @@ public class JerseyServices implements RESTServices {
 			String mimetype = isUpdate ? "application/sparql-update" : "application/sparql-query";
 			input = new StringHandle(sparql).withMimetype(mimetype);
 		}
+		if (qdef.getBaseUri() != null) {
+			params.add("base", qdef.getBaseUri());
+		}
 		if (qdef.getDefaultGraphUris() != null) {
 		    for (String defaultGraphUri : qdef.getDefaultGraphUris()) {
 		        params.add("default-graph-uri", defaultGraphUri);
