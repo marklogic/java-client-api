@@ -26,6 +26,7 @@ import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.io.marker.TriplesReadHandle;
 import com.marklogic.client.semantics.Capability;
 import com.marklogic.client.semantics.GraphPermissions;
+import com.marklogic.client.semantics.RDFMimeTypes;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.semantics.SPARQLQueryManager;
 
@@ -109,28 +110,39 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
     @Override
     public <T extends TriplesReadHandle> T executeConstruct(
             SPARQLQueryDefinition qdef, T triplesReadHandle) {
-        // TODO Auto-generated method stub
+        setConstructMimetype(triplesReadHandle);
         return executeQueryImpl(qdef, triplesReadHandle, null, false);
     }
 
     @Override
     public <T extends TriplesReadHandle> T executeConstruct(
             SPARQLQueryDefinition qdef, T triplesReadHandle, Transaction tx) {
-        // TODO Auto-generated method stub
+        setConstructMimetype(triplesReadHandle);
         return executeQueryImpl(qdef, triplesReadHandle, tx, false);
+    }
+
+    private void setConstructMimetype(TriplesReadHandle handle) {
+        HandleImplementation baseHandle = HandleAccessor.as(handle);
+        if ( baseHandle.getFormat() == Format.JSON ) {
+            if ( baseHandle.getMimetype() == Format.JSON.getDefaultMimetype() ) {
+                baseHandle.setMimetype(RDFMimeTypes.RDFJSON);
+            }
+        } else if ( baseHandle.getFormat() == Format.XML ) {
+            if ( baseHandle.getMimetype() == Format.XML.getDefaultMimetype()) {
+                baseHandle.setMimetype(RDFMimeTypes.RDFXML);
+            }
+        }
     }
 
     @Override
     public <T extends TriplesReadHandle> T executeDescribe(
             SPARQLQueryDefinition qdef, T triplesReadHandle) {
-        // TODO Auto-generated method stub
         return executeQueryImpl(qdef, triplesReadHandle, null, false);
     }
 
     @Override
     public <T extends TriplesReadHandle> T executeDescribe(
             SPARQLQueryDefinition qdef, T triplesReadHandle, Transaction tx) {
-        // TODO Auto-generated method stub
         return executeQueryImpl(qdef, triplesReadHandle, tx, false);
     }
 
@@ -148,19 +160,16 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
 
     @Override
     public void executeUpdate(SPARQLQueryDefinition qdef) {
-        // TODO Auto-generated method stub
         executeQueryImpl(qdef, (TriplesReadHandle) new StringHandle().withFormat(Format.JSON), null, true);
     }
 
     @Override
     public void executeUpdate(SPARQLQueryDefinition qdef, Transaction tx) {
-        // TODO Auto-generated method stub
         executeQueryImpl(qdef, (TriplesReadHandle) new StringHandle().withFormat(Format.JSON), tx, true);
     }
 
     @Override
     public GraphPermissions permission(String role, Capability... capabilities) {
-        // TODO Auto-generated method stub
         return new GraphPermissionsImpl(role, capabilities);
     }
 }
