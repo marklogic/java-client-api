@@ -44,6 +44,8 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
     public GraphPermissions getUpdatePermissions();
     public SPARQLQueryDefinition withUpdatePermission(String role, Capability capability);
 
+    public String getBaseUri();
+    public void setBaseUri(String uri);
     public String[] getDefaultGraphUris();
     public String[] getNamedGraphUris();
     public String[] getUsingGraphUris();
