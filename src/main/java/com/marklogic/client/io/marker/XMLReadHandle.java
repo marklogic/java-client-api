@@ -21,6 +21,6 @@ import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
  * A XML Read Handle can represent XML content read from the database.
  *
  */
-public interface XMLReadHandle extends AbstractReadHandle, SPARQLResultsReadHandle {
+public interface XMLReadHandle extends AbstractReadHandle, SPARQLResultsReadHandle, TriplesReadHandle {
 
 }
