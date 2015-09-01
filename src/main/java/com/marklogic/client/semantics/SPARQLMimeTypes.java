@@ -1,9 +1,11 @@
 package com.marklogic.client.semantics;
 
+import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
 
 /**
- * Some static constants to ease use of mime types appropriate for handles used in
- * {@link SPARQLQueryManager#executeSelect SPARQLQueryManager.executeSelect}.
+ * Some static constants to ease use of mime types appropriate for handles of
+ * type {@link SPARQLResultsReadHandle} (used in
+ * {@link SPARQLQueryManager#executeSelect SPARQLQueryManager.executeSelect}).
  */
 public final class SPARQLMimeTypes {
 
