@@ -5613,13 +5613,6 @@ public class JerseyServices implements RESTServices {
 			params.add("default-rulesets", qdef.getIncludeDefaultRulesets() ? "include" : "exclude");
 		}
 
-		// TODO: remove next six lines once the server supports application/xml and application/json (Bug 34421)
-		HandleImplementation baseHandle = HandleAccessor.checkHandle(output, "graphs/sparql");
-		if ( baseHandle.getFormat() == Format.JSON ) {
-			baseHandle.setMimetype("application/sparql-results+json");
-		} else if ( baseHandle.getFormat() == Format.XML ) {
-			baseHandle.setMimetype("application/sparql-results+xml");
-		}
 		return postResource(reqlog, "/graphs/sparql", transaction, params, input, output);
 	}
 
