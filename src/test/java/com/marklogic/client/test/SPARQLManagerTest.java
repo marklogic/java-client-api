@@ -18,6 +18,7 @@ package com.marklogic.client.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -31,6 +32,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -134,6 +136,29 @@ public class SPARQLManagerTest {
                 fail("Unexpected value for s:[" + s + "]");
             }
         }
+    }
+
+    @Test
+    public void testDescribe() {
+        // verify base has expected effect
+        String relativeConstruct = "DESCRIBE <http://example.org/s1>";
+        SPARQLQueryDefinition qdef = smgr.newQueryDefinition(relativeConstruct);
+        Document rdf = smgr.executeConstruct(qdef, new DOMHandle()).get();
+
+        Node description = rdf.getFirstChild().getFirstChild();
+        assertNotNull(description.getAttributes());
+        assertEquals("subject",
+            "http://example.org/s1", description.getAttributes().item(0).getTextContent());
+        assertNotNull(description.getFirstChild());
+        assertEquals("predicate",
+            "p1", description.getFirstChild().getNodeName());
+        assertEquals("predicate namespace",
+            "http://example.org/", description.getFirstChild().getNamespaceURI());
+        NamedNodeMap attrs = description.getFirstChild().getAttributes();
+        assertNotNull(attrs);
+        assertNotNull(attrs.getNamedItemNS("http://www.w3.org/1999/02/22-rdf-syntax-ns#", "resource"));
+        assertEquals("object", "http://example.org/o1",
+            attrs.getNamedItemNS("http://www.w3.org/1999/02/22-rdf-syntax-ns#", "resource").getTextContent());
     }
 
     @Test
