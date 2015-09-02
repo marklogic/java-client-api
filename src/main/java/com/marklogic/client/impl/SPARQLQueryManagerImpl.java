@@ -156,7 +156,7 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
 
     @Override
     public Boolean executeAsk(SPARQLQueryDefinition qdef, Transaction tx) {
-        JsonNode result = executeQueryImpl(qdef, new JacksonHandle(), null, false).get();
+        JsonNode result = executeQueryImpl(qdef, new JacksonHandle(), tx, false).get();
         return result.get("boolean").asBoolean();
     }
 
