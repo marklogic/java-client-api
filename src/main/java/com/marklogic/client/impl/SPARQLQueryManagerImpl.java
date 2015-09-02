@@ -110,18 +110,18 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
     @Override
     public <T extends TriplesReadHandle> T executeConstruct(
             SPARQLQueryDefinition qdef, T triplesReadHandle) {
-        setConstructMimetype(triplesReadHandle);
+        setRdfXmlOrJsonMimetype(triplesReadHandle);
         return executeQueryImpl(qdef, triplesReadHandle, null, false);
     }
 
     @Override
     public <T extends TriplesReadHandle> T executeConstruct(
             SPARQLQueryDefinition qdef, T triplesReadHandle, Transaction tx) {
-        setConstructMimetype(triplesReadHandle);
+        setRdfXmlOrJsonMimetype(triplesReadHandle);
         return executeQueryImpl(qdef, triplesReadHandle, tx, false);
     }
 
-    private void setConstructMimetype(TriplesReadHandle handle) {
+    private void setRdfXmlOrJsonMimetype(TriplesReadHandle handle) {
         HandleImplementation baseHandle = HandleAccessor.as(handle);
         if ( baseHandle.getFormat() == Format.JSON ) {
             if ( baseHandle.getMimetype() == Format.JSON.getDefaultMimetype() ) {
@@ -137,12 +137,14 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
     @Override
     public <T extends TriplesReadHandle> T executeDescribe(
             SPARQLQueryDefinition qdef, T triplesReadHandle) {
+        setRdfXmlOrJsonMimetype(triplesReadHandle);
         return executeQueryImpl(qdef, triplesReadHandle, null, false);
     }
 
     @Override
     public <T extends TriplesReadHandle> T executeDescribe(
             SPARQLQueryDefinition qdef, T triplesReadHandle, Transaction tx) {
+        setRdfXmlOrJsonMimetype(triplesReadHandle);
         return executeQueryImpl(qdef, triplesReadHandle, tx, false);
     }
 
