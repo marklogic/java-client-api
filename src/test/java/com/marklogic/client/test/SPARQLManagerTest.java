@@ -162,6 +162,26 @@ public class SPARQLManagerTest {
     }
 
     @Test
+    public void issue_357() {
+        // open transaction
+        Transaction transaction = Common.client.openTransaction();
+
+        // insert some data under transaction
+        String insertString="BASE <http://example.org/addressbook>\n " +
+                "INSERT DATA { <http://example.org/id#3333> <#email> \"jonny@ramone.com\"}";
+        SPARQLQueryDefinition insertDef = smgr.newQueryDefinition(insertString);
+        smgr.executeUpdate(insertDef, transaction);
+
+        // ask for it w/ transaction
+        String queryString = 
+            "ASK WHERE { <http://example.org/id#3333> <http://example.org/addressbook#email> ?o }";
+        SPARQLQueryDefinition booleanDef = smgr.newQueryDefinition(queryString);
+        assertTrue(smgr.executeAsk(booleanDef,transaction));
+
+        transaction.rollback();
+    }
+
+    @Test
     public void testConstrainingQueries() throws Exception {
         // insert two triples for the tests below
         String localGraphUri = "SPARQLManagerTest.testConstrainingQueries";
