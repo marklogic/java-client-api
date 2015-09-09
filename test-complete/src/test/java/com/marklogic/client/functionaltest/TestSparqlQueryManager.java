@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -35,6 +36,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -50,6 +55,7 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
+import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
@@ -78,6 +84,10 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	private static String customGraph;
 	private static String inferenceGraph;
 	private static String multibyteGraphName;
+	private static String enlocaleGraphName;
+	private static String zhlocaleGraphName;
+	private static String datasource;
+	private  static String mbSearchStr = "凌";
 	
 	@BeforeClass
 	public static void setUp() throws Exception
@@ -85,10 +95,16 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		System.out.println("In SPARQL Query Manager Test setup");
 		
 		newline = System.getProperty("line.separator");
-		customGraph = "TestCustomeGraph";
-		inferenceGraph = "TestInferenceGraph";
+		customGraph = "TestCustomGraph";
+		enlocaleGraphName = "englishLocale";		
+		inferenceGraph = "TestInferenceGraph";				
 		multibyteGraphName = new String("万里长城");
 		
+		datasource = "src/test/java/com/marklogic/client/functionaltest/data/semantics/";
+		
+		// localGraphName will have the value of beijing in Chinese which is 北京
+		zhlocaleGraphName = new String("北京");
+		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 		setupAppServicesConstraint(dbName);
 		enableCollectionLexicon(dbName);
@@ -150,7 +166,6 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		sparqldata.append("id:8888 ad:lastName  \"Wang\" .");
 		sparqldata.append("id:8888 ad:email     \"lihanwang@yahoo.com\" .");
 		sparqldata.append("id:8888 ad:email     \"Lihan.Wang@gmail.com\" .");
-		
 		writeSPARQLDataFromString(sparqldata.toString(), customGraph);
 		
 		// Write the triples into a graph name with Multi-byte characters.
@@ -159,76 +174,33 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		//Insert the required Graphs and triples for most of all the tests.
 		
 		//NTRIPLES   "application/n-triples"
-		writeSPARQLDocumentUsingFileHandle(writeclient, "src/test/java/com/marklogic/client/functionaltest/data/semantics/",
+		writeSPARQLDocumentUsingFileHandle(writeclient, datasource,
 				                           "foaf1.nt", "http://marklogic.com/qatests/ntriples/", RDFMimeTypes.NTRIPLES);
 		//TURTLE     "text/turtle"
 		// Pass null for uri so that this triple gets into default graph.
-		writeSPARQLDocumentUsingFileHandle(writeclient, "src/test/java/com/marklogic/client/functionaltest/data/semantics/",
+		writeSPARQLDocumentUsingFileHandle(writeclient, datasource,
 			                               "livesIn.ttl", null, RDFMimeTypes.TURTLE);		
 		//N3         "text/n3"
-		writeSPARQLDocumentUsingFileHandle(writeclient, "src/test/java/com/marklogic/client/functionaltest/data/semantics/",
+		writeSPARQLDocumentUsingFileHandle(writeclient, datasource,
 			                               "geo-states.n3", "http://marklogic.com/qatests/n3/", RDFMimeTypes.N3);
 
 		//RDFXML    "application/rdf+xml"
-		writeSPARQLDocumentUsingFileHandle(writeclient, "src/test/java/com/marklogic/client/functionaltest/data/semantics/",
+		writeSPARQLDocumentUsingFileHandle(writeclient, datasource,
                                            "rdfxml1.rdf", "rdfxml", RDFMimeTypes.RDFXML);
 		//RDFJSON    "application/rdf+json"
-	    writeSPARQLDocumentUsingFileHandle(writeclient, "src/test/java/com/marklogic/client/functionaltest/data/semantics/",
+	    writeSPARQLDocumentUsingFileHandle(writeclient, datasource,
 								             "rdfjson.json", "rdfjson", RDFMimeTypes.RDFJSON);
 	    
-	    // Build custom data for Ruleset and Inference tests
-	    StringBuffer inferdata = new StringBuffer();
-	    inferdata.append("prefix ad: <http://marklogicsparql.com/addressbook#>");
-	    inferdata.append(newline);
-	    inferdata.append("prefix id:  <http://marklogicsparql.com/id#>");
-	    inferdata.append(newline);
-	    inferdata.append("prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>");
-	    inferdata.append(newline);
-	    inferdata.append("prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#>");
-	    inferdata.append(newline);
-	    inferdata.append("prefix ml: <http://marklogicsparql.com/>");
-	    inferdata.append(newline);
-
-	    inferdata.append("id:1111 ad:firstName \"John\" ." );
-	    inferdata.append(newline);
-	    inferdata.append("id:1111 ad:lastName  \"Snelson\" ." );
-	    inferdata.append(newline);
-	    inferdata.append("id:1111 ml:writeFuncSpecOf ml:Inference .");
-	    inferdata.append(newline);
-	    inferdata.append("id:1111 ml:worksFor ml:MarkLogic ." );
-	    inferdata.append(newline);
-	    inferdata.append("id:1111 a ml:LeadEngineer ." );
-	    inferdata.append(newline);
-
-	    inferdata.append("id:2222 ad:firstName \"Aries\" ." );
-	    inferdata.append(newline);
-	    inferdata.append("id:2222 ad:lastName  \"Li\" ." );
-	    inferdata.append(newline);
-	    inferdata.append("id:2222 ml:writeFuncSpecOf ml:SparqlUpdate ." );
-	    inferdata.append(newline);
-	    inferdata.append("id:2222 ml:worksFor ml:MarkLogic ." );
-	    inferdata.append(newline);
-	    inferdata.append("id:2222 a ml:SeniorEngineer ." );
-	    inferdata.append(newline);
-
-	    inferdata.append("ml:LeadEngineer rdfs:subClassOf  ml:Engineer ." );
-	    inferdata.append(newline);
-	    inferdata.append("ml:SeniorEngineer rdfs:subClassOf  ml:Engineer ." );
-	    inferdata.append(newline);
-	    inferdata.append("ml:Engineer rdfs:subClassOf ml:Employee ." );
-	    inferdata.append(newline);
-	    inferdata.append("ml:Employee rdfs:subClassOf ml:Person ." );
-	    inferdata.append(newline);
-
-	    inferdata.append("ml:writeFuncSpecOf rdfs:subPropertyOf ml:design ." );
-	    inferdata.append(newline);
-	    inferdata.append("ml:developPrototypeOf rdfs:subPropertyOf ml:design ." );
-	    inferdata.append(newline);
-	    inferdata.append("ml:design rdfs:subPropertyOf ml:develop ." );
-	    inferdata.append(newline);
-	    inferdata.append("ml:develop rdfs:subPropertyOf ml:worksOn ." );
-	    // Write the graph
-	    writeSPARQLDataFromString(inferdata.toString(), inferenceGraph);
+	    // Build custom data for Ruleset and Inference tests	   
+	    writeNTriplesFromFile("inference.ttl", inferenceGraph);	    
+	    writeNTriplesFromFile("englishlocale.ttl", enlocaleGraphName);
+	    /* Build custom data for Locale test. From Google translation
+	     * We have Ling in Chinese as 凌
+	     * We have Fei in Chinese as 飞	
+	     * 
+	     * We will have these triples in a graph called 北京 (beijing) in Chinese.
+	     */		   
+	    writeNTriplesFromFile("chineselocale.ttl", zhlocaleGraphName);
 	}
 	
 	/* This test checks a simple SPARQL query results from named graph.
@@ -568,6 +540,59 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * The database should contain triples from foaf1.nt file. The data format in this file is XML.
 	 * Results are returned in a sequence of sem:triple values as triples in memory.
 	 * 
+	 * The query should be returning one result. This test also verifies Base URI and Git Issue 356, 358.
+     * 
+     * Uses JacksonHandle and DOMHandle
+	 * 
+	 */
+	@Test
+	public void testBaseUri() throws IOException, SAXException, ParserConfigurationException
+	{	
+		System.out.println("In SPARQL Query Manager Test testBaseUri method");
+		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
+
+		StringBuffer sparqlQuery = new StringBuffer().append(" PREFIX foaf: <http://xmlns.com/foaf/0.1/>");
+		sparqlQuery.append(newline);
+		sparqlQuery.append("CONSTRUCT { <qatest1> <qatest2> <qatest3> }");
+		sparqlQuery.append(newline);
+		sparqlQuery.append("WHERE { ?s ?p ?o . } LIMIT 1");
+							
+		SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(sparqlQuery.toString());	
+		
+		// Base URI set.
+		qdef.setBaseUri("http://qa.marklogic.com/functional/tests/one/");
+		
+		// Verifying Git Issue 356 also, below with JacksonHandle.
+		JacksonHandle jh = new JacksonHandle();
+		JsonNode jsonResults = sparqlQmgr.executeConstruct(qdef, jh).get();
+		String s = jsonResults.fieldNames().next();
+		String p = jsonResults.get(s).fieldNames().next();
+		JsonNode o = jsonResults.get(s).get(p);
+		
+		// Verify the mimetype of the handle.
+		assertEquals("Method testBaseUri MIME type is incorrect",RDFMimeTypes.RDFJSON,jh.getMimetype());
+		assertEquals("Method testBaseUri in-memory subject base URI is incorrect", "http://qa.marklogic.com/functional/tests/one/qatest1", s);
+		assertEquals("Method testBaseUri in-memory predicte base URI is incorrect", "http://qa.marklogic.com/functional/tests/one/qatest2", p);
+		assertEquals("Method testBaseUri in-memory object base URI is incorrect", "http://qa.marklogic.com/functional/tests/one/qatest3", o.path(0).path("value").asText());	
+		
+		// Verify if defaulting to RDFJSON when XMLHandle is used. Git Issue 356.
+		DOMHandle handle = new DOMHandle();
+		Document xmlDoc  = sparqlQmgr.executeConstruct(qdef, handle).get();
+		Node description = xmlDoc.getFirstChild().getFirstChild();
+		NamedNodeMap attrs = description.getFirstChild().getAttributes();
+		
+		String oXML = attrs.getNamedItemNS("http://www.w3.org/1999/02/22-rdf-syntax-ns#", "resource").getTextContent();
+		
+		assertEquals("Method testBaseUri MIME type is incorrect",RDFMimeTypes.RDFXML,handle.getMimetype());
+		assertEquals("Method testBaseUri in-memory subject base URI is incorrect", "http://qa.marklogic.com/functional/tests/one/qatest1", description.getAttributes().item(0).getTextContent());
+		assertEquals("Method testBaseUri in-memory predicate base URI is incorrect", "qatest2", description.getFirstChild().getNodeName());
+		assertEquals("Method testBaseUri in-memory object base URI is incorrect", "http://qa.marklogic.com/functional/tests/one/qatest3", oXML);		
+	}
+	
+	/* This test checks a SPARQL CONSTRUCT query results.
+	 * The database should contain triples from foaf1.nt file. The data format in this file is XML.
+	 * Results are returned in a sequence of sem:triple values as triples in memory.
+	 * 
 	 * The query should be returning one result.
      * 
      * Uses StringHandle (TriplesReadHandle)
@@ -588,7 +613,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		sparqlQuery.append(newline);
 		sparqlQuery.append("{ ?alum foaf:schoolHomepage <http://www.ucsb.edu/> }");		
 		
-		SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(sparqlQuery.toString());
+		SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(sparqlQuery.toString());		
 		// Execute Construct query 	with RDFMimeTypes.NTRIPLES	
 		String[] jsonResults = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.NTRIPLES), t).get().split(" ");
 		
@@ -644,10 +669,11 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		
 	/* This test checks a simple SPARQL DESCRIBE results from named graph.
 	 * The database should contain triples from rdfjson.json.
+	 * Verifies Git Issue 356, 358
 	 * 
 	 * The DESCRIBE query should be returning one result. Result includes all triples which have the IRI as a subject
      * 
-     * Uses Stringhandle
+     * Uses Stringhandle and JacksonHandle. 
 	 * 
 	 */
 	@Test
@@ -664,8 +690,40 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		String[] resultString = jsonResults.split(" ");
 		assertEquals("Method testExecuteDescribeFromRDFJSON subject is incorrect", "<http://example.org/about>", resultString[0]);
 		assertEquals("Method testExecuteDescribeFromRDFJSON predicate is incorrect", "<http://purl.org/dc/elements/1.1/title>", resultString[1]);
-		String objectStr = resultString[2] + " " +resultString[3];
-		assertEquals("Method testExecuteDescribeFromRDFJSON object is incorrect", "\"Anna's Homepage\"", objectStr);		
+		String objectStr = resultString[2] + " " + resultString[3];
+		assertEquals("Method testExecuteDescribeFromRDFJSON object is incorrect", "\"Anna's Homepage\"", objectStr);
+		
+		// Verifying default mime types- Using JacksonHandle
+		JacksonHandle jh = new JacksonHandle();
+		JsonNode jsonNodes = sparqlQmgr.executeDescribe(qdef, jh).get();
+		JsonNode jsonNodeValue = jsonNodes.path("http://example.org/about").path("http://purl.org/dc/elements/1.1/title").get(0);
+     	
+		// Verify Mime type on the handle and value.
+		System.out.println("testQueryOnMultibyeGraphName query result size is " +  jsonNodeValue.get("value"));
+		assertEquals("Element person's value incorrect", RDFMimeTypes.RDFJSON, jh.getMimetype());
+		assertEquals("Result returned from testQueryOnMultibyeGraphName query is incorrect ", "Anna\'s Homepage", jsonNodeValue.get("value").asText());	
+		
+		// Verifying default mime types- Using DOMHandle
+		DOMHandle dh = new DOMHandle();
+		Document xmlDoc = sparqlQmgr.executeDescribe(qdef, dh).get();
+		
+		Node description = xmlDoc.getFirstChild().getFirstChild();
+		NamedNodeMap attrs = description.getFirstChild().getAttributes();
+		// attrs NodeMap should have two nodes.
+		assertEquals("Attribute length value incorrect", 2, attrs.getLength());
+		
+		if (attrs.item(0).getNodeName().equalsIgnoreCase("rdf:datatype"))
+		{
+			assertEquals("Element rdf:datatype value incorrect", "http://www.w3.org/2001/XMLSchema#string", attrs.item(0).getNodeValue());
+			assertEquals("Element xmlns data value incorrect", "http://purl.org/dc/elements/1.1/", attrs.item(1).getNodeValue());
+		}
+		else if (attrs.item(0).getNodeName().equalsIgnoreCase("xmlns"))
+		{
+			assertEquals("Element rdf:datatype value incorrect", "http://www.w3.org/2001/XMLSchema#string", attrs.item(1).getNodeValue());
+			assertEquals("Element xmlns data value incorrect", "http://purl.org/dc/elements/1.1/", attrs.item(0).getNodeValue());
+		}
+		String value = description.getFirstChild().getFirstChild().getNodeValue();
+		assertEquals("Expected value read from DOMHandle incorrect", "Anna\'s Homepage", value);
 	}
 	
 	/* This test checks a simple SPARQL DESCRIBE results from named graph in transaction.
@@ -761,7 +819,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		System.out.println("Checking for false value in testExecuteAsk method : " + bAskFalse);		
 		assertFalse("Method testExecuteAsk result is incorrect. Expected false", bAskFalse);
 		
-		// Negative test case - An empty ASK returns true  Ask QA*******************
+		// Negative test case - An empty ASK returns true.
 		StringBuffer sparqlQueryEmpty = new StringBuffer().append("PREFIX foaf: <http://xmlns.com/foaf/0.1/>");
 		sparqlQueryEmpty.append(newline) ;
 		sparqlQueryEmpty.append("ASK { }");		
@@ -1048,6 +1106,119 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		assertEquals("Element person's value incorrect", "http://marklogicsparql.com/id#4444", jsonBindingsNodes.path("person").path("value").asText()); 	
 	}
 	
+	/* This test verifies query definition with bindings on string.
+	 * The database should contain triples from englishLocale graph.
+	 * 
+     * Uses JacksonHandle. Locale language used is en. 
+	 * 
+	 */
+	@Test
+	public void testQueryBindingsOnStringWithENLocale() throws IOException, SAXException, ParserConfigurationException
+	{	
+		System.out.println("In SPARQL Query Manager Test testQueryBindingsOnStringWithENLocale method");
+		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
+		
+		StringBuffer queryStr = new StringBuffer();
+		queryStr.append("PREFIX ad: <http://marklogicsparql.com/addressbook#>");
+		queryStr.append(newline);
+		queryStr.append("PREFIX d:  <http://marklogicsparql.com/id#>");
+		queryStr.append(newline);
+		queryStr.append("SELECT ?person ?firstname");
+		queryStr.append(newline);
+		queryStr.append("FROM <");
+		queryStr.append(enlocaleGraphName);
+		queryStr.append(">");
+		queryStr.append(newline);
+		queryStr.append("WHERE");
+		queryStr.append(newline);
+		queryStr.append("{");
+		queryStr.append(newline);
+		queryStr.append("?person ad:firstName ?firstname ;");
+		queryStr.append(newline);
+		queryStr.append("ad:lastName ?lastname.");
+		queryStr.append(newline);
+		queryStr.append("OPTIONAL {?person ad:homeTel ?phonenumber .}");
+		queryStr.append(newline);
+		queryStr.append("}");
+		SPARQLQueryDefinition qdef1 = sparqlQmgr.newQueryDefinition(queryStr.toString());
+		
+		// Set up the String variable binding
+		SPARQLBindings bindings = qdef1.getBindings();
+		
+		// Set up the String variable binding with locale
+		Locale enUSLocale = new Locale.Builder().setLanguage("en").build();
+		
+		bindings.bind("firstname", "Ling", enUSLocale);
+		qdef1.setBindings(bindings);
+		// Parsing results using JsonNode. 
+		JsonNode jsonStrResults = sparqlQmgr.executeSelect(qdef1, new JacksonHandle()).get();
+		System.out.println(jsonStrResults);
+		
+		//Verify the bindings.
+		assertTrue("Bindings Map do not have expected key ", qdef1.getBindings().containsKey("firstname"));
+				
+		assertEquals("Result count from  testQueryBindingsOnStringWithENLocale is incorrect", 1, jsonStrResults.path("results").path("bindings").size());
+		JsonNode jsonBindingsNodes = jsonStrResults.path("results").path("bindings").get(0);
+		
+		assertEquals("Element person's value incorrect", "http://marklogicsparql.com/id#4444", jsonBindingsNodes.path("person").path("value").asText()); 	
+	}
+	
+	/* This test verifies query definition with bindings on string with Locale. Verify with withBindings method
+	 * The database should contain triples from zhlocaleGraphName variable's value.
+	 * 
+	 * We have Ling in Chinese as 凌
+	 * We have Fei in Chinese as 飞	
+	 * 
+	 * We will have these triples in a graph called 北京 (beijing) in Chinese.
+     * Uses JacksonHandle
+	 * 
+	 */
+	@Test
+	public void testQueryWithBindingsOnMultiByteString() throws IOException, SAXException, ParserConfigurationException
+	{	
+		System.out.println("In SPARQL Query Manager Test testQueryWithBindingsOnMultiByteString method");
+		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
+		
+		StringBuffer queryStr = new StringBuffer();
+		queryStr.append("PREFIX ad: <http://marklogicsparql.com/addressbook#>");
+		queryStr.append(newline);
+		queryStr.append("PREFIX d:  <http://marklogicsparql.com/id#>");
+		queryStr.append(newline);
+		queryStr.append("SELECT ?person ?firstname");
+		queryStr.append(newline);
+		queryStr.append("FROM <");
+		queryStr.append(zhlocaleGraphName);
+		queryStr.append(">");
+		queryStr.append(newline);
+		queryStr.append("WHERE");
+		queryStr.append(newline);
+		queryStr.append("{");
+		queryStr.append(newline);
+		queryStr.append("?person ad:firstName ?firstname ;");
+		queryStr.append(newline);
+		queryStr.append("ad:lastName ?lastname.");
+		queryStr.append(newline);
+		queryStr.append("OPTIONAL {?person ad:homeTel ?phonenumber .}");
+		queryStr.append(newline);
+		queryStr.append("}");
+		SPARQLQueryDefinition qdef1 = sparqlQmgr.newQueryDefinition(queryStr.toString());
+		
+		// Set up the String variable binding with locale
+		Locale cnLocale = new Locale.Builder().setLanguage("zh").build();
+		qdef1.withBinding("firstname", mbSearchStr, cnLocale);
+		// Parsing results using JsonNode. 
+		JsonNode jsonStrResults = sparqlQmgr.executeSelect(qdef1, new JacksonHandle()).get();
+		System.out.println(jsonStrResults);
+		
+		//Verify the bindings.
+		assertTrue("Bindings Map do not have expected key ", qdef1.getBindings().containsKey("firstname"));
+				
+		assertEquals("Result count from  testQueryWithBindingsOnMultiByteString is incorrect", 1, jsonStrResults.path("results").path("bindings").size());
+		JsonNode jsonBindingsNodes = jsonStrResults.path("results").path("bindings").get(0);
+		
+		assertEquals("Element person's value incorrect", "http://marklogicsparql.com/id#4444", jsonBindingsNodes.path("person").path("value").asText()); 	
+	}
+	
 	/* This test verifies query definition with bindings on integer.
 	 * The database should contain triples from TestCustomeGraph.
 	 * 
@@ -1314,7 +1485,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		queryInsStr.append(newline);
 		queryInsStr.append("}");
 		
-		SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(queryInsStr.toString());
+		SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(queryInsStr.toString());		
 		
 		// Set up the integer variable binding 
 		SPARQLBindings bindings = qdef.getBindings();
@@ -1333,6 +1504,93 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		assertEquals("Subject is incorrect", "http://marklogic.com/baseball/players#35",jsonBindingsNodes.path("s").path("value").asText());
 		assertEquals("Predicate is incorrect", "http://marklogic.com/baseball/players#playerid",jsonBindingsNodes.path("p").path("value").asText());
 		assertEquals("Object is incorrect", "30",jsonBindingsNodes.path("o").path("value").asText());
+		
+		// Verify BaseURI - Insert triples with valid URI
+		SPARQLQueryDefinition qdef2 = sparqlQmgr.newQueryDefinition(queryInsStr.toString());
+		// Set up the integer variable binding 
+		SPARQLBindings bindings2 = qdef2.getBindings();
+		bindings2.bind("playerid", "30","integer");
+		qdef2.setBindings(bindings2);
+		//Set the base URI. This gets concatented to the relative URI (BindingsGraph).
+		String baseuri2 = "http://qa.marklogic.com/qdef2/";
+		qdef2.setBaseUri(baseuri2);
+
+		sparqlQmgr.executeUpdate(qdef2);
+		String q21 = "select ?s ?p ?o from <" + baseuri2 + "BindingsGraph> where {?s ?p ?o. }";
+		SPARQLQueryDefinition qdefValid = sparqlQmgr.newQueryDefinition().withSparql(q21);
+		JsonNode jsonBindingsNodes21 = sparqlQmgr.executeSelect(qdefValid, new JacksonHandle()).get().path("results").path("bindings").get(0);
+
+		// Should have 1 nodes returned.
+		assertEquals("Number of nodes returned from testSparqlUpdateInsertDataBinding method after query is incorrect", 3, jsonBindingsNodes21.size());
+		assertEquals("Subject is incorrect", "http://marklogic.com/baseball/players#35",jsonBindingsNodes21.path("s").path("value").asText());
+		assertEquals("Predicate is incorrect", "http://marklogic.com/baseball/players#playerid",jsonBindingsNodes21.path("p").path("value").asText());
+		assertEquals("Object is incorrect", "30",jsonBindingsNodes21.path("o").path("value").asText());
+		
+		// Verify with base URI set to null;
+		SPARQLQueryDefinition qdefNull = sparqlQmgr.newQueryDefinition(queryInsStr.toString());
+		// Set up the integer variable binding 
+		SPARQLBindings bindingsNull = qdefNull.getBindings();
+		bindingsNull.bind("playerid", "30","integer");
+		qdefNull.setBindings(bindingsNull);
+		//Set the base URI. This gets concatented to the relative URI (BindingsGraph).
+		String baseuriNull = null;
+		qdefNull.setBaseUri(baseuriNull);
+
+		sparqlQmgr.executeUpdate(qdefNull);
+		String qNull = "select ?s ?p ?o from <" + baseuriNull + "BindingsGraph> where {?s ?p ?o. }";
+		SPARQLQueryDefinition qdefNullExeSel = sparqlQmgr.newQueryDefinition().withSparql(qNull);
+		JsonNode jsonBindingsNodesNull = sparqlQmgr.executeSelect(qdefNullExeSel, new JacksonHandle()).get().path("results").path("bindings").get(0);
+
+		// Zero nodes returned.
+		assertNull("Number of nodes returned from testSparqlUpdateInsertDataBinding method after query is incorrect",jsonBindingsNodesNull);
+		
+		// Verify with base URI set to empty;
+		SPARQLQueryDefinition qdefEmpty = sparqlQmgr.newQueryDefinition(queryInsStr.toString());
+		
+		// Set up the integer variable binding
+		SPARQLBindings bindingsEmpty = qdefEmpty.getBindings();
+		bindingsEmpty.bind("playerid", "30", "integer");
+		qdefEmpty.setBindings(bindingsEmpty);
+		
+		// Set the base URI. This gets concatented to the relative URI
+		// (BindingsGraph).
+		String baseuriEmpty = "";
+		qdefEmpty.setBaseUri(baseuriEmpty);
+		String expectedException = "FailedRequestException";
+		String exception = "";
+		
+		try {
+				sparqlQmgr.executeUpdate(qdefEmpty);
+		
+		} catch (Exception e) {
+			exception = e.toString();
+		}
+		System.out.println(exception);
+		assertTrue("Test testSparqlUpdateInsertDataBinding: Exception is not thrown when Base URI is empty", exception.contains(expectedException));
+		
+		String multibyteName = new String("万里长城");
+		// Verify BaseURI - Insert triples with valid base URI containing MB string
+		
+		SPARQLQueryDefinition qdefMB = sparqlQmgr.newQueryDefinition(queryInsStr.toString());
+		// Set up the integer variable binding 
+		SPARQLBindings bindingsMB = qdefMB.getBindings();
+		bindingsMB.bind("playerid", "30","integer");
+		qdefMB.setBindings(bindingsMB);
+		//Set the base URI. This gets concatented to the relative URI (BindingsGraph).
+		String baseuriMB = "http://qa.marklogic.com/qdef2/" + multibyteName + "/";
+		qdefMB.setBaseUri(baseuriMB);
+
+		sparqlQmgr.executeUpdate(qdefMB);
+		String qMB = "select ?s ?p ?o from <" + baseuriMB + "BindingsGraph> where {?s ?p ?o. }";
+		SPARQLQueryDefinition qdefValidMB = sparqlQmgr.newQueryDefinition().withSparql(qMB);
+		JsonNode jsonBindingsNodesMB = sparqlQmgr.executeSelect(qdefValidMB, new JacksonHandle()).get().path("results").path("bindings").get(0);
+
+		// Should have 1 nodes returned.
+		assertEquals("Number of nodes returned from testSparqlUpdateInsertDataBinding method after query is incorrect", 3, jsonBindingsNodesMB.size());
+		assertEquals("Subject is incorrect", "http://marklogic.com/baseball/players#35",jsonBindingsNodesMB.path("s").path("value").asText());
+		assertEquals("Predicate is incorrect", "http://marklogic.com/baseball/players#playerid",jsonBindingsNodesMB.path("p").path("value").asText());
+		assertEquals("Object is incorrect", "30",jsonBindingsNodesMB.path("o").path("value").asText());
+			
 	}
 	
 	/* This test verifies query definition bindings on SPARQL UPDATE command.
@@ -1389,24 +1647,6 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		System.out.println("Exception thrown from testQueryBindingsIncorrectDataType is \n"+ exception);
 		assertTrue("Test testQueryBindingsIncorrectDataType method exception is not thrown", exception.contains(expectedException));
 	    assertTrue("Message Incorrect", exception.contains("Invalid parameter: Bind variable type parameter requires XSD type"));
-	}
-	
-	
-	/* This test verifies sparql query with cts-contains.
-	 * The database should contain triples from geo-states.n3.
-	 * 
-	 * Expected Result : FailedRequestException Exception thrown
-     * 
-     * Uses StringHandle (XMLReadHandle)
-	 * 
-	 */
-	@Test
-	public void testSparqlQueryWithCtsContains() throws IOException, SAXException, ParserConfigurationException
-	{	
-		System.out.println("In SPARQL Query Manager Test testSparqlQueryWithCtsContains method");
-	    // Form a query		
-	    SPARQLQueryManager sparqlQmgr = readclient.newSPARQLQueryManager();
-   	
 	}
 	
 	/* This test verifies sparql update CREATE GRAPH, INSERT DATA and also validates SPARQL EXISTS.
@@ -2294,10 +2534,21 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		assertEquals("Value Data from read client is incorrect", "Micah",jsonBindingsNodes.get(3).path("name").path("value").asText());
 	}
 	
+	/*
+	 * Write a N-TRIPLES format custom data contained in a file to the database.
+	 * Graph Name is : testlocaleGraph
+	 */
+	public static void writeNTriplesFromFile(String filename, String graphName) throws Exception {
+		File file = new File(datasource + filename);
+		FileHandle filehandle = new FileHandle();
+		GraphManager sparqlGmgr = writeclient.newGraphManager();
+		filehandle.set(file);
+		sparqlGmgr.write(graphName, filehandle.withMimetype(RDFMimeTypes.TURTLE));
+	}
 	
 	/*
 	 * Write a TURTLE format custom data contained in a string to the database.
-	 * Graph Name is : 
+	 * Graph Name is : graphName
 	 */
         
 	public static void writeSPARQLDataFromString(String content, String graphName) throws Exception
@@ -2312,7 +2563,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	    try {
 			Thread.sleep(5000);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
+			System.out.print("Exception from writeSPARQLDataFromString "+ e.getMessage());
 			e.printStackTrace();
 		}
 	}																																					
@@ -2320,10 +2571,10 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	/**
 	 * Write document using FileHandle 
 	 * @param client
+	 * @param directoryPath
 	 * @param filename
-	 * @param uri
-	 * @param metadataHandle
-	 * @param type
+	 * @param uri	 
+	 * @param sparqlMIMEType
 	 * @throws IOException
 	 */
 	public static void writeSPARQLDocumentUsingFileHandle(DatabaseClient client, String directoryPath, String filename, String uri, String sparqlMIMEType) throws IOException
@@ -2358,7 +2609,6 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		writeclient.release();
 		readclient.release();
 		client.release();
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
-		
+		tearDownJavaRESTServer(dbName, fNames, restServerName);		
 	}
 }
