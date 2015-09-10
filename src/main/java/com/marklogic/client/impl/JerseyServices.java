@@ -5417,11 +5417,11 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public void writeGraphs(RequestLogger reqlog, AbstractWriteHandle input)
+	public void writeGraphs(RequestLogger reqlog, AbstractWriteHandle input, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
 	{
 		RequestParameters params = new RequestParameters();
-		putResource(reqlog, "graphs", null, params, input, null);
+		putResource(reqlog, "graphs", transaction, params, input, null);
 	}
 
 	@Override
@@ -5436,11 +5436,11 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public void mergeGraphs(RequestLogger reqlog, AbstractWriteHandle input)
+	public void mergeGraphs(RequestLogger reqlog, AbstractWriteHandle input, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
 	{
 		RequestParameters params = new RequestParameters();
-		postResource(reqlog, "graphs", null, params, input, null);
+		postResource(reqlog, "graphs", transaction, params, input, null);
 	}
 
 	@Override
@@ -5497,10 +5497,10 @@ public class JerseyServices implements RESTServices {
 	}
 	
 	@Override
-	public void deleteGraphs(RequestLogger reqlog)
+	public void deleteGraphs(RequestLogger reqlog, Transaction transaction)
 		throws ForbiddenUserException, FailedRequestException
 	{
-		deleteResource(reqlog, "graphs", null, null, null);
+		deleteResource(reqlog, "graphs", transaction, null, null);
 	}
 
 	@Override

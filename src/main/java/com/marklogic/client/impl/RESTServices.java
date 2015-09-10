@@ -283,14 +283,13 @@ public interface RESTServices {
 	public void writeGraph(RequestLogger reqlog, String uri,
 		AbstractWriteHandle input, GraphPermissions permissions, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public void writeGraphs(RequestLogger reqlog, 
-			AbstractWriteHandle input)
-			throws ResourceNotFoundException, ForbiddenUserException,
-			FailedRequestException;
+	public void writeGraphs(RequestLogger reqlog, AbstractWriteHandle input, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public Object deleteGraph(RequestLogger requestLogger, String uri,
 			Transaction transaction)
 			throws ForbiddenUserException, FailedRequestException;
-	public void deleteGraphs(RequestLogger requestLogger);
+	public void deleteGraphs(RequestLogger requestLogger, Transaction transaction)
+		throws ForbiddenUserException, FailedRequestException;
 	public <R extends AbstractReadHandle> R executeSparql(RequestLogger reqlog, 
 		SPARQLQueryDefinition qdef, R output, long start, long pageLength,
 		Transaction transaction, boolean isUpdate);
@@ -307,7 +306,7 @@ public interface RESTServices {
 		throws ResourceNotFoundException, ForbiddenUserException,
 			   FailedRequestException;
 
-	public void mergeGraphs(RequestLogger reqlog, AbstractWriteHandle input)
+	public void mergeGraphs(RequestLogger reqlog, AbstractWriteHandle input, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public <R extends AbstractReadHandle> R getPermissions(RequestLogger reqlog, String uri,
 			R output, Transaction transaction)

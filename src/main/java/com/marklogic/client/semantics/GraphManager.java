@@ -116,17 +116,26 @@ public interface GraphManager {
     public <T> T thingsAs(Class<T> as, String... iris)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    // quads methods - no permissions transactions, or read
+    // quads methods - no permissions or read
     public void mergeGraphs(QuadsWriteHandle handle)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void mergeGraphs(QuadsWriteHandle handle, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     public void mergeGraphsAs(Object quadsData)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void mergeGraphsAs(Object quadsData, Transaction transaction)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     public void replaceGraphs(QuadsWriteHandle handle)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void replaceGraphs(QuadsWriteHandle handle, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     public void replaceGraphsAs(Object quadsData)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-    // TODO: do we want this?
+    public void replaceGraphsAs(Object quadsData, Transaction transaction)
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     public void deleteGraphs()
+        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    public void deleteGraphs(Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     public String getDefaultMimetype();

@@ -18,6 +18,7 @@ package com.marklogic.client.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.InputStream;
@@ -91,6 +92,53 @@ public class GraphsTest {
         assertEquals(quad3 + "\n" + quad4, quads3and4);
 
         gmgr.delete(quadGraphUri);
+    }
+
+    @Test
+    public void testQuadsWithTransaction() throws Exception {
+        gmgr.setDefaultMimetype(RDFMimeTypes.NQUADS);
+        String quadGraphUri = "GraphsTest.testQuadsWithTransaction";
+        String quad1 = "<http://example.org/s1> <http://example.org/p1> <http://example.org/o1> <" + quadGraphUri + "> .";
+        String quad2 = "<http://example.org/s2> <http://example.org/p2> <http://example.org/o2> <" + quadGraphUri + "> .";
+        String quad3 = "<http://example.org/s3> <http://example.org/p2> <http://example.org/o2> <" + quadGraphUri + "> .";
+        String quad4 = "<http://example.org/s4> <http://example.org/p2> <http://example.org/o2> <" + quadGraphUri + "> .";
+        Transaction tx = Common.client.openTransaction();
+        try {
+            gmgr.replaceGraphs(new StringHandle(quad1), tx);
+            assertEquals(quad1, gmgr.read(quadGraphUri, new StringHandle(), tx).get());
+            // make sure our graph is not found outside our transaction
+            assertTrue( validateUriNotFound(quadGraphUri, null) );
+
+            gmgr.mergeGraphs(new StringHandle(quad2), tx);
+            assertEquals(quad1 + "\n" + quad2, gmgr.read(quadGraphUri, new StringHandle(), tx).get());
+            // make sure our graph is not found outside our transaction
+            assertTrue( validateUriNotFound(quadGraphUri, null) );
+
+            gmgr.replaceGraphsAs(quad3, tx);
+            assertEquals(quad3, gmgr.read(quadGraphUri, new StringHandle(), tx).get());
+            // make sure our graph is not found outside our transaction
+            assertTrue( validateUriNotFound(quadGraphUri, null) );
+
+            gmgr.mergeGraphsAs(quad4, tx);
+            assertEquals(quad3 + "\n" + quad4, gmgr.readAs(quadGraphUri, String.class, tx));
+            // make sure our graph is not found outside our transaction
+            assertTrue( validateUriNotFound(quadGraphUri, null) );
+
+            gmgr.delete(quadGraphUri, tx);
+            // make sure our graph is not found *inside* our transaction
+            assertTrue( validateUriNotFound(quadGraphUri, tx) );
+        } finally {
+            tx.rollback();
+        }
+    }
+
+    private boolean validateUriNotFound(String uri, Transaction tx) {
+        try {
+            gmgr.read(uri, new StringHandle(), tx);
+        } catch (ResourceNotFoundException e) {
+            return true;
+        }
+        return false;
     }
 
     @Test
