@@ -331,35 +331,60 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
 
     @Override
     public void mergeGraphs(QuadsWriteHandle handle) {
+        mergeGraphs(handle, null);
+    }
+
+    @Override
+    public void mergeGraphs(QuadsWriteHandle handle, Transaction transaction) {
         @SuppressWarnings("rawtypes")
         HandleImplementation baseHandle = HandleAccessor.as(handle);
         String mimetype = validateGraphsMimetype(baseHandle);
-        services.mergeGraphs(requestLogger, handle);
+        services.mergeGraphs(requestLogger, handle, transaction);
         baseHandle.setMimetype(mimetype);
     }
 
     @Override
     public void mergeGraphsAs(Object quadsData) {
-        mergeGraphs( populateQuadsHandle(quadsData) );
+        mergeGraphsAs(quadsData, null);
+    }
+
+    @Override
+    public void mergeGraphsAs(Object quadsData, Transaction transaction) {
+        mergeGraphs( populateQuadsHandle(quadsData), transaction );
     }
 
     @Override
     public void replaceGraphs(QuadsWriteHandle handle) {
+        replaceGraphs(handle, null);
+    }
+
+    @Override
+    public void replaceGraphs(QuadsWriteHandle handle, Transaction transaction) {
         @SuppressWarnings("rawtypes")
         HandleImplementation baseHandle = HandleAccessor.as(handle);
         String mimetype = validateGraphsMimetype(baseHandle);
-        services.writeGraphs(requestLogger, handle);
+        services.writeGraphs(requestLogger, handle, transaction);
         baseHandle.setMimetype(mimetype);
     }
 
     @Override
     public void replaceGraphsAs(Object quadsData) {
-        replaceGraphs( populateQuadsHandle(quadsData) );
+        replaceGraphsAs(quadsData, null);
+    }
+
+    @Override
+    public void replaceGraphsAs(Object quadsData, Transaction transaction) {
+        replaceGraphs( populateQuadsHandle(quadsData), transaction );
     }
 
     @Override
     public void deleteGraphs() {
-        services.deleteGraphs(requestLogger);
+        deleteGraphs(null);
+    }
+
+    @Override
+    public void deleteGraphs(Transaction transaction) {
+        services.deleteGraphs(requestLogger, transaction);
     }
 
     @Override
