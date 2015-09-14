@@ -188,7 +188,7 @@ public interface ServerEvaluationCall {
      * *As convenience methods</a> throughout the API, the return value
      *  is provided by the handle registered for the provided responseType.
      *
-     * @param responseType the type desired for the response.  Must be a Class regiestered
+     * @param responseType the type desired for the response.  Must be a Class registered
      *      to a handle.
      * @return the result deserialized by the implicit handle mapped to this responseType
      */
