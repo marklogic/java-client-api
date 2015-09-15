@@ -425,4 +425,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
         return mimetype;
     }
 
+    public GraphPermissions newGraphPermissions() {
+        return new GraphPermissionsImpl();
+    }
 }

@@ -174,7 +174,7 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
     public SPARQLQueryDefinition withUpdatePermission(String role,
             Capability capability) {
         if ( permissions == null ) {
-            permissions = new GraphPermissionsImpl(role, capability);
+            permissions = new GraphPermissionsImpl().permission(role, capability);
         } else {
             permissions = permissions.permission(role, capability);
         }

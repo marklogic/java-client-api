@@ -24,13 +24,6 @@ import com.marklogic.client.semantics.Capability;
 import com.marklogic.client.semantics.GraphPermissions;
 
 public class GraphPermissionsImpl extends HashMap<String, Set<Capability>> implements GraphPermissions {
-
-    public GraphPermissionsImpl(String role, Capability... capabilities) {
-        super();
-        if ( capabilities == null ) throw new IllegalArgumentException("capabilities cannot be null");
-        this.put(role, new HashSet<Capability>(Arrays.asList(capabilities)) );
-    }
-
     @Override
     public GraphPermissions permission(String role, Capability... capabilities) {
         if ( capabilities == null ) throw new IllegalArgumentException("capabilities cannot be null");

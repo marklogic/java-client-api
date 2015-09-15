@@ -107,7 +107,8 @@ public class SemanticsPermissionsTest {
 
     @Test
     public void D_testWritePermissions() throws Exception {
-        GraphPermissions perms = gmgr.permission("read-privileged", Capability.EXECUTE);
+        GraphPermissions perms = gmgr.newGraphPermissions();
+        perms = perms.permission("read-privileged", Capability.EXECUTE);
         gmgr.writePermissions(graphUri, perms);
         GraphPermissions permissions = gmgr.getPermissions(graphUri);
         assertEquals(3, permissions.size());

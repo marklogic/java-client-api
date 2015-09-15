@@ -640,5 +640,7 @@ public interface GraphManager {
      * mimetype.
      */
     public void setDefaultMimetype(String mimetype);
-}
 
+    /** Get an empty GraphPermissions instance. */
+    public GraphPermissions newGraphPermissions();
+}
