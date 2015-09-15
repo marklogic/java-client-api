@@ -172,6 +172,6 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
 
     @Override
     public GraphPermissions permission(String role, Capability... capabilities) {
-        return new GraphPermissionsImpl(role, capabilities);
+        return new GraphPermissionsImpl().permission(role, capabilities);
     }
 }
