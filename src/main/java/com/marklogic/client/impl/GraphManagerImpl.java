@@ -402,14 +402,6 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
         this.defaultMimetype = mimetype;
     }
 
-    public class GraphPermissionsImpl extends HashMap<String, Set<Capability>> implements GraphPermissions{
-        @Override
-        public GraphPermissions permission(String role, Capability... capabilities) {
-            this.put(role, new HashSet<Capability>(Arrays.asList(capabilities)));
-            return this;
-        }
-    }
-
     @SuppressWarnings("rawtypes")
     private String validateGraphsMimetype(HandleImplementation baseHandle) {
         String mimetype = baseHandle.getMimetype();
