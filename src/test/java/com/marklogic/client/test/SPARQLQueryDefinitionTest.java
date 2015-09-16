@@ -18,6 +18,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.semantics.GraphManager;
+import com.marklogic.client.semantics.RDFTypes;
+import com.marklogic.client.semantics.SPARQLBindings;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.semantics.SPARQLQueryManager;
 
@@ -34,7 +36,43 @@ public class SPARQLQueryDefinitionTest {
             + "       :p2 \"string value 1\" . "
             + "  :r2 :p1 \"string value 2\" ; "
             + "       :p2 \"string value 3\"@en .  } "
-            + ":g1 { :r1 :p3 \"1\"^^xsd:int .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.STRING              + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.BOOLEAN             + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.DECIMAL             + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.INTEGER             + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.DOUBLE              + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.FLOAT               + " .  } "
+            + ":g1 { :r1 :p3 \"00:01:01\"^^xsd:" + RDFTypes.TIME         + " .  } "
+            + ":g1 { :r1 :p3 \"2014-09-01T00:00:00+02:00\"^^xsd:" + RDFTypes.DATETIME + " .  } "
+            + ":g1 { :r1 :p3 \"2001\"^^xsd:" + RDFTypes.GYEAR            + " .  } "
+            + ":g1 { :r1 :p3 \"--01\"^^xsd:" + RDFTypes.GMONTH           + " .  } "
+            + ":g1 { :r1 :p3 \"---01\"^^xsd:" + RDFTypes.GDAY            + " .  } "
+            + ":g1 { :r1 :p3 \"2001-01\"^^xsd:" + RDFTypes.GYEARMONTH    + " .  } "
+            + ":g1 { :r1 :p3 \"--01-01\"^^xsd:" + RDFTypes.GMONTHDAY     + " .  } "
+            + ":g1 { :r1 :p3 \"P100D\"^^xsd:" + RDFTypes.DURATION        + " .  } "
+            + ":g1 { :r1 :p3 \"P1M\"^^xsd:" + RDFTypes.YEARMONTHDURATION + " .  } "
+            + ":g1 { :r1 :p3 \"P100D\"^^xsd:" + RDFTypes.DAYTIMEDURATION + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.BYTE                + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.SHORT               + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.INT                 + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.LONG                + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.UNSIGNEDBYTE        + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.UNSIGNEDSHORT       + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.UNSIGNEDINT         + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.UNSIGNEDLONG        + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.POSITIVEINTEGER     + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.NONNEGATIVEINTEGER  + " .  } "
+            + ":g1 { :r1 :p3 \"-1\"^^xsd:" + RDFTypes.NEGATIVEINTEGER    + " .  } "
+            + ":g1 { :r1 :p3 \"-1\"^^xsd:" + RDFTypes.NONPOSITIVEINTEGER + " .  } "
+            + ":g1 { :r1 :p3 \"010203\"^^xsd:" + RDFTypes.HEXBINARY      + " .  } "
+            + ":g1 { :r1 :p3 \"AQID\"^^xsd:" + RDFTypes.BASE64BINARY     + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.ANYURI              + " .  } "
+            + ":g1 { :r1 :p3 \"en\"^^xsd:" + RDFTypes.LANGUAGE           + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.NORMALIZEDSTRING    + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.TOKEN               + " .  } "
+            + ":g1 { :r1 :p3 \"1\"^^xsd:" + RDFTypes.NMTOKEN             + " .  } "
+            + ":g1 { :r1 :p3 \"A\"^^xsd:" + RDFTypes.NAME                + " .  } "
+            + ":g1 { :r1 :p3 \"A\"^^xsd:" + RDFTypes.NCNAME              + " .  } "
             + ":g2 { :r2 :p4 \"p4 string value\" .  :r3 a :c2 .  } "
             + ":g3 { :r3 :p5 :r4 .  } "
             + ":g4 { :r4 a :c3 .  } "
@@ -67,6 +105,272 @@ public class SPARQLQueryDefinitionTest {
         ArrayNode bindings = (ArrayNode) results.findPath("results").findPath(
                 "bindings");
         return bindings;
+    }
+
+    @Test
+    public void testBindings() {
+        String ask = "ASK FROM <http://example.org/g1> " +
+            "WHERE { <http://example.org/r1> <http://example.org/p3> ?o }";
+        SPARQLQueryDefinition askQuery = smgr.newQueryDefinition(ask);
+
+        SPARQLBindings bindings = askQuery.getBindings();
+        bindings.bind("o", "1", RDFTypes.STRING);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        bindings.bind("o", "foo", RDFTypes.STRING);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.BOOLEAN);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "0", RDFTypes.BOOLEAN);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.DECIMAL);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2", RDFTypes.DECIMAL);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.INTEGER);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2", RDFTypes.INTEGER);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.DOUBLE);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2", RDFTypes.DOUBLE);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.FLOAT);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2", RDFTypes.FLOAT);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "00:01:01", RDFTypes.TIME);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "00:01:02", RDFTypes.TIME);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "2014-09-01T00:00:00+02:00", RDFTypes.DATETIME);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2014-09-02T00:00:00+02:00", RDFTypes.DATETIME);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "2001", RDFTypes.GYEAR);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2002", RDFTypes.GYEAR);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "--01", RDFTypes.GMONTH);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "--02", RDFTypes.GMONTH);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "---01", RDFTypes.GDAY);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "---02", RDFTypes.GDAY);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "2001-01", RDFTypes.GYEARMONTH);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2002-02", RDFTypes.GYEARMONTH);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "--01-01", RDFTypes.GMONTHDAY);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "--02-02", RDFTypes.GMONTHDAY);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "P100D", RDFTypes.DURATION);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "P200D", RDFTypes.DURATION);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "P1M", RDFTypes.YEARMONTHDURATION);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "P2M", RDFTypes.YEARMONTHDURATION);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "P100D", RDFTypes.DAYTIMEDURATION);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "P200D", RDFTypes.DAYTIMEDURATION);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.BYTE);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2", RDFTypes.BYTE);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.SHORT);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2", RDFTypes.SHORT);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.INT);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2", RDFTypes.INT);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.LONG);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2", RDFTypes.LONG);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.UNSIGNEDBYTE);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2", RDFTypes.UNSIGNEDBYTE);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.UNSIGNEDSHORT);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2", RDFTypes.UNSIGNEDSHORT);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.UNSIGNEDINT);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2", RDFTypes.UNSIGNEDINT);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.UNSIGNEDLONG);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2", RDFTypes.UNSIGNEDLONG);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.POSITIVEINTEGER);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2", RDFTypes.POSITIVEINTEGER);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.NONNEGATIVEINTEGER);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2", RDFTypes.NONNEGATIVEINTEGER);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "-1", RDFTypes.NEGATIVEINTEGER);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "-2", RDFTypes.NEGATIVEINTEGER);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "-1", RDFTypes.NONPOSITIVEINTEGER);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "-2", RDFTypes.NONPOSITIVEINTEGER);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "010203", RDFTypes.HEXBINARY);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "020202", RDFTypes.HEXBINARY);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "AQID", RDFTypes.BASE64BINARY);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "AQIE", RDFTypes.BASE64BINARY);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.ANYURI);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2", RDFTypes.ANYURI);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "en", RDFTypes.LANGUAGE);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "es", RDFTypes.LANGUAGE);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.NORMALIZEDSTRING);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2", RDFTypes.NORMALIZEDSTRING);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.TOKEN);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2", RDFTypes.TOKEN);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "1", RDFTypes.NMTOKEN);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2", RDFTypes.NMTOKEN);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "A", RDFTypes.NAME);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "B", RDFTypes.NAME);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "A", RDFTypes.NCNAME);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "B", RDFTypes.NCNAME);
+        assertFalse(smgr.executeAsk(askQuery));
     }
 
     @Test

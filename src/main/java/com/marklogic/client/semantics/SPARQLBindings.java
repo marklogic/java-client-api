@@ -19,13 +19,40 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Represents binding names and values to go with a SPARQL Query.
- * For details about semantics in MarkLogic see
- * {@link https://docs.marklogic.com/guide/semantics Semantics Developer's Guide}
+/** <p>Represents binding names and values to be sent with a SPARQL Query.
+ * Available for situations where {@link SPARQLQueryDefinition#withBinding
+ * SPARQLQueryDefinition.withBinding} methods are not enough.  For example
+ * usage, see {@link SPARQLQueryManager}.</p>
+ *
+ * <p>For more about RDF literals, see <a
+ * href="http://www.w3.org/TR/rdf11-concepts/#section-Graph-Literal"
+ * target="_top">RDF 1.1 section 3.3</a>.
+ *
+ * <p>For details about RDF, SPARQL, and semantics in MarkLogic see the <a
+ * href="https://docs.marklogic.com/guide/semantics" target="_top">Semantics
+ * Developer's Guide</a>.
  */
 public interface SPARQLBindings extends Map<String, List<SPARQLBinding>> {
+    /** Bind a variable of type iri.
+     * @param name the bound variable name
+     * @param value the value of type iri
+     *
+     * @return this instance (for method chaining)
+     */
     public SPARQLBindings bind(String name, String value);
-    public SPARQLBindings bind(String name, String value, String datatype);
+    /** Bind a variable of specified type.
+     * @param name the bound variable name
+     * @param value the value of type iri
+     * @param datatype the type
+     *
+     * @return this instance (for method chaining)
+     */
+    public SPARQLBindings bind(String name, String value, RDFTypes datatype);
+    /** Bind a variable of type
+     * http://www.w3.org/1999/02/22-rdf-syntax-ns#langString with the specified
+     * language tag.  Note that we call <a
+     * href="http://docs.oracle.com/javase/7/docs/api/java/util/Locale.html#toLanguageTag%28%29"
+     * >Locale.toLanguageTag()</a>
+     * to get compliant IETF BCP 47 language tags. */
     public SPARQLBindings bind(String name, String value, Locale languageTag);
 };
