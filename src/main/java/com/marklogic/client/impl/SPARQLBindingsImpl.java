@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TreeMap;
 
+import com.marklogic.client.semantics.RDFTypes;
 import com.marklogic.client.semantics.SPARQLBinding;
 import com.marklogic.client.semantics.SPARQLBindings;
 
@@ -30,10 +31,10 @@ import com.marklogic.client.semantics.SPARQLBindings;
  */
 public class SPARQLBindingsImpl extends TreeMap<String, List<SPARQLBinding>> implements SPARQLBindings {
     public SPARQLBindings bind(String name, String value) {
-        return bind(name, value, (String) null);
+        return bind(name, value, (RDFTypes) null);
     }
 
-    public SPARQLBindings bind(String name, String value, String type) {
+    public SPARQLBindings bind(String name, String value, RDFTypes type) {
         if ( name == null  ) throw new IllegalArgumentException("name cannot be null");
         if ( value == null ) throw new IllegalArgumentException("value cannot be null");
         add(new SPARQLBindingImpl(name, value, type));

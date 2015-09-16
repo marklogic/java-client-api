@@ -22,9 +22,11 @@ import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.semantics.Capability;
 
 /**
- * Represents a SPARQL query.
- * For details about semantics in MarkLogic see
- * {@link https://docs.marklogic.com/guide/semantics Semantics Developer's Guide}
+ * <p>Represents a SPARQL query.</p>
+ *
+ * <p>For details about RDF, SPARQL, and semantics in MarkLogic see the <a
+ * href="https://docs.marklogic.com/guide/semantics" target="_top">Semantics
+ * Developer's Guide</a>.
  */
 public interface SPARQLQueryDefinition extends QueryDefinition {
     public void setSparql(String sparql);
@@ -36,7 +38,7 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
     public void setBindings(SPARQLBindings bindings);
     public SPARQLBindings getBindings();
     public SPARQLQueryDefinition withBinding(String name, String value);
-    public SPARQLQueryDefinition withBinding(String name, String value, String type);
+    public SPARQLQueryDefinition withBinding(String name, String value, RDFTypes type);
     public SPARQLQueryDefinition withBinding(String name, String value, Locale languageTag);
     public SPARQLQueryDefinition clearBindings();
 

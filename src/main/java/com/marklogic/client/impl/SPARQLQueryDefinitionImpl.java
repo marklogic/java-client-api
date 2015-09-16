@@ -25,6 +25,7 @@ import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
 import com.marklogic.client.semantics.Capability;
 import com.marklogic.client.semantics.GraphPermissions;
+import com.marklogic.client.semantics.RDFTypes;
 import com.marklogic.client.semantics.SPARQLBindings;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.semantics.SPARQLRuleset;
@@ -143,7 +144,7 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
     }
 
     @Override
-    public SPARQLQueryDefinition withBinding(String name, String value, String type) {
+    public SPARQLQueryDefinition withBinding(String name, String value, RDFTypes type) {
         bindings.bind(name, value, type);
         return this;
     }

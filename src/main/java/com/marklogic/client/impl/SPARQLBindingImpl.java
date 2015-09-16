@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TreeMap;
 
+import com.marklogic.client.semantics.RDFTypes;
 import com.marklogic.client.semantics.SPARQLBinding;
 import com.marklogic.client.semantics.SPARQLBindings;
 
@@ -31,10 +32,10 @@ import com.marklogic.client.semantics.SPARQLBindings;
 public class SPARQLBindingImpl implements SPARQLBinding {
     private String name;
     private String value;
-    private String datatype;
+    private RDFTypes datatype;
     private Locale languageTag;
 
-    public SPARQLBindingImpl(String name, String value, String type) {
+    public SPARQLBindingImpl(String name, String value, RDFTypes type) {
         this.name = name;
         this.value = value;
         this.datatype = type;
@@ -46,6 +47,6 @@ public class SPARQLBindingImpl implements SPARQLBinding {
     }
     public String getName()        { return name;        }
     public String getValue()       { return value;       }
-    public String getDatatype()    { return datatype;    }
+    public RDFTypes getDatatype()  { return datatype;    }
     public Locale getLanguageTag() { return languageTag; }
 }

@@ -48,8 +48,9 @@ import com.marklogic.client.semantics.Capability;
  * <p>Or perform a SPARQL CONSTRUCT:</p>
  *
  * <pre>    String sparql = "CONSTRUCT { &lt;a&gt; &lt;b&gt; &lt;c&gt; } WHERE { ?s ?p ?o } LIMIT 10";
- *    SPARQLQueryDefinition query = sparqlMgr.newQueryDefinition(sparql)
- *        .withBinding("o", "http://example.org/object1");
+ *    SPARQLQueryDefinition query = sparqlMgr.newQueryDefinition(sparql);
+ *    SPARQLBindings bindings = query.getBindings();
+ *    query.setBindings(bindings.bind("o", "http://example.org/object1"));
  *    JacksonHandle handle = new JacksonHandle();
  *    handle.setMimetype(RDFMimeTypes.RDFJSON);
  *    JacksonHandle triples = sparqlMgr.executeConstruct(query, handle);
