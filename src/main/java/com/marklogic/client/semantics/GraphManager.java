@@ -31,7 +31,8 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
 import com.marklogic.client.semantics.Capability;
 
 /**
- * <p>A manager for CRUD operations on semantic graphs which reside in MarkLogic Server.</p>
+ * <p>A manager for CRUD operations on semantic graphs which reside in
+ * MarkLogic Server.</p>
  *
  * <p>For example:</p>
  *
@@ -44,7 +45,7 @@ import com.marklogic.client.semantics.Capability;
  * like so:</p>
  *
  * <pre>    GraphManager graphMgr = databaseClient.newGraphManager();
- *    FileHandle fileHandle = new FileHandle(new File("example.ttl")).withMimetype(RDFMimeTypes.TURTLE);
+ *    FileHandle fileHandle = new FileHandle(new File("example.ttl")).withMimetype(RDFMimeTypes.NTRIPLES);
  *    graphMgr.write("myExample/graphUri", fileHandle);
  * </pre>
  *
@@ -52,7 +53,7 @@ import com.marklogic.client.semantics.Capability;
  *
  * <pre>    StringHandle stringHandle = new StringHandle()
  *        .with("&lt;http://example.org/subject2&gt; &lt;http://example.org/predicate2&gt; &lt;http://example.org/object2&gt; .")
- *        .withMimetype(RDFMimeTypes.TURTLE);
+ *        .withMimetype(RDFMimeTypes.NTRIPLES);
  *    graphMgr.merge("myExample/graphUri", stringHandle);
  * </pre>
  *
@@ -60,12 +61,14 @@ import com.marklogic.client.semantics.Capability;
  * variable "triples" like so:</p>
  *
  * <pre>    String triples = graphMgr.read("myExample/graphUri",
- *        new StringHandle().withMimetype(RDFMimeTypes.TURTLE).get());
+ *        new StringHandle().withMimetype(RDFMimeTypes.NTRIPLES)).get();
  * </pre>
  *
- * <p>You could simplify these examples if you first set the default mimetype so you don't have to call setMimetype on each handle.  That also enables you to use the *As convenience methods:</p>
+ * <p>You could simplify these examples if you first set the default mimetype
+ * so you don't have to call setMimetype on each handle.  That also enables you
+ * to use the *As convenience methods:</p>
  *
- * <pre>    graphMgr.setDefaultMimetype(RDFMimeTypes.TURTLE);
+ * <pre>    graphMgr.setDefaultMimetype(RDFMimeTypes.NTRIPLES);
  *    String triples = graphMgr.readAs("myExample/graphUri", String.class);
  * </pre>
  *
@@ -73,7 +76,7 @@ import com.marklogic.client.semantics.Capability;
  *
  * <pre>    graphMgr.writePermissions("myExample/graphUri",
  *        graphMgr.permission("example_manager", Capability.READ)
- *                .permission("example_manager", Capability.WRITE));
+ *                .permission("example_manager", Capability.UPDATE));
  * </pre>
  *
  * <p>Permissions can also be added with {@link #mergePermissions
@@ -110,7 +113,7 @@ public interface GraphManager {
      * <p>Example:</p>
      * <pre>    StringHandle stringHandle = new StringHandle()
      *        .with("&lt;http://example.org/subject2&gt; &lt;http://example.org/predicate2&gt; &lt;http://example.org/object2&gt; .")
-     *        .withMimetype(RDFMimeTypes.TURTLE);
+     *        .withMimetype(RDFMimeTypes.NTRIPLES);
      *    graphMgr.merge(DEFAULT_GRAPH, stringHandle);</pre>
      */
     public static String DEFAULT_GRAPH = "com.marklogic.client.semantics.GraphManager.DEFAULT_GRAPH";
