@@ -65,6 +65,7 @@ import com.marklogic.client.semantics.Capability;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.GraphPermissions;
 import com.marklogic.client.semantics.RDFMimeTypes;
+import com.marklogic.client.semantics.RDFTypes;
 import com.marklogic.client.semantics.SPARQLBindings;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.semantics.SPARQLQueryManager;
@@ -831,32 +832,81 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		assertTrue("Method testExecuteAsk result is incorrect. Expected true for empty ASK query", bAskEmpty);
 	}
 		
-	/* This test checks a simple SPARQL ASK results from named graph ina transaction.
-	 * The database should contain triples from foaf1.nt file. The data format in this file is XML.
+	/* This test checks a simple SPARQL ASK results from named graph in a transaction.
+	 * The database contains triples from rdfxml1.rdf file. The data format in this file is RDFXML.
 	 * 
 	 * The ASK query should be returning result in boolean.
 	 * 
 	 */
 	@Test
-	public void testExecuteAskTransaction() throws IOException, SAXException, ParserConfigurationException
-	{	
-		System.out.println("In SPARQL Query Manager Test testExecuteAskTransaction method");
+	public void testExecuteAskInTransactions() throws IOException, SAXException, ParserConfigurationException
+	{			
+		System.out.println("In SPARQL Query Manager Test testExecuteAskInTransactions method");
 		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
-		Transaction t = writeclient.openTransaction();
-		
-		StringBuffer sparqlQuery = new StringBuffer().append("PREFIX foaf: <http://xmlns.com/foaf/0.1/>");
-		sparqlQuery.append(newline) ;
-		sparqlQuery.append("ASK { ?alum foaf:schoolHomepage <http://www.ucsb.edu/> }");
-		
+		Transaction t1 = writeclient.openTransaction();
+		Transaction t2 = writeclient.openTransaction();
+
+		StringBuffer sparqlQuery = new StringBuffer();
+		sparqlQuery.append("ASK FROM <rdfxml> where { <http://example.org/kennedy/person1> <http://purl.org/dc/elements/1.1/title>  \"Person\'s title\"@en }");
+
 		SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(sparqlQuery.toString());
-		boolean  bAsk = sparqlQmgr.executeAsk(qdef, t);
-			
-     	// Verify result 1 value.
-		System.out.println(bAsk);
+		boolean bAskNoWrite = sparqlQmgr.executeAsk(qdef, t1);
+
+		// Verify result.
+		System.out.println(bAskNoWrite);
+		assertFalse("Method testExecuteAskInTransactions result is incorrect. No records should be returned.", bAskNoWrite);
+
+		// RDFXML "application/rdf+xml".  Get the content into FileHandle
+		File file = new File(datasource + "rdfxml1.rdf");		
+
+		FileHandle filehandle = new FileHandle();
+		filehandle.set(file);
+
+		// Create Graph manager
+		GraphManager sparqlGmgr = writeclient.newGraphManager();
+		// Write the triples in the doc into named graph.
+		sparqlGmgr.write("rdfxml", filehandle.withMimetype(RDFMimeTypes.RDFXML), t1);
 		
-		assertTrue("Method testExecuteAskTransaction result is incorrect", bAsk);
+		// Verify result in t1 transaction.
+		boolean bAskInTransT1 = sparqlQmgr.executeAsk(qdef, t1);
+		System.out.println(bAskInTransT1);
+		assertTrue("Method testExecuteAskInTransactions result is incorrect. Records should be returned.", bAskInTransT1);
+		
+		// Verify result in t2 transaction.
+		boolean bAskInTransT2 = sparqlQmgr.executeAsk(qdef, t2);
+		System.out.println(bAskInTransT2);
+		assertFalse("Method testExecuteAskInTransactions result is incorrect. No Records should be returned.", bAskInTransT2);
+		// Handle the transactions.
+		t1.rollback();
+		t2.rollback();
+		
+		boolean bAskTransRolledback = sparqlQmgr.executeAsk(qdef);
+		System.out.println(bAskTransRolledback);
+		assertFalse("Method testExecuteAskInTransactions result is incorrect. No records should be returned.",	bAskTransRolledback);
+
+		// After rollback. Open another transaction and verify ASK on that transaction.
+		Transaction tAfterRollback = writeclient.openTransaction();
+		// Write the triples in the doc into either named graph.
+		sparqlGmgr.write("rdfxml", filehandle.withMimetype(RDFMimeTypes.RDFXML), tAfterRollback);
+		tAfterRollback.commit();
+
+		boolean bAskAfterCommit = sparqlQmgr.executeAsk(qdef);
+		System.out.println(bAskAfterCommit);
+		assertTrue("Method testExecuteAskInTransactions result is incorrect. Records should be returned.", bAskAfterCommit);
+
+		// After commit. Open another transaction and verify ASK on that transaction.
+		Transaction tAnother = writeclient.openTransaction();
+		// Verify result.
+		boolean bAskInAnotherTrans = sparqlQmgr.executeAsk(qdef, tAnother);
+		System.out.println(bAskInAnotherTrans);
+		assertFalse("Method testExecuteAskInTransactions result is incorrect. Records should be returned.", bAskInAnotherTrans);
+
 		// Handle the transaction.
-		t.commit();		
+		tAnother.commit();
+		t1 = null;
+		t2 = null;
+		tAfterRollback = null;
+		tAnother = null;		
 	}
 	
 	/* This test checks if Exceptions are throw when qdef is null.
@@ -1040,7 +1090,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		
 		// Set up the String variable binding
 		SPARQLBindings bindings = qdef1.getBindings();
-		bindings.bind("firstname", "Ling", "string");
+		bindings.bind("firstname", "Ling", RDFTypes.STRING);
 		qdef1.setBindings(bindings);
 		// Parsing results using JsonNode. 
 		JsonNode jsonStrResults = sparqlQmgr.executeSelect(qdef1, new JacksonHandle()).get();
@@ -1092,7 +1142,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		SPARQLQueryDefinition qdef1 = sparqlQmgr.newQueryDefinition(queryStr.toString());
 		
 		// Set up the String variable binding		
-		qdef1.withBinding("firstname", "Ling", "string");
+		qdef1.withBinding("firstname", "Ling", RDFTypes.STRING);
 		// Parsing results using JsonNode. 
 		JsonNode jsonStrResults = sparqlQmgr.executeSelect(qdef1, new JacksonHandle()).get();
 		System.out.println(jsonStrResults);
@@ -1259,7 +1309,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		
 		// Set up the String variable binding
 		SPARQLBindings bindings = qdef1.getBindings();
-		bindings.bind("cost","8","integer");
+		bindings.bind("cost","8", RDFTypes.INTEGER);
 		qdef1.setBindings(bindings);
 		// Parsing results using JsonNode. 
 		JsonNode jsonStrResults = sparqlQmgr.executeSelect(qdef1, new JacksonHandle()).get();
@@ -1311,9 +1361,9 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		
 		// Set up the String variable binding
 		SPARQLBindings bindings = qdef1.getBindings();
-		bindings.bind("firstname","John","string");
+		bindings.bind("firstname","John", RDFTypes.STRING);
 		qdef1.setBindings(bindings);
-		bindings.bind("firstname","Ling","string");
+		bindings.bind("firstname","Ling", RDFTypes.STRING);
 		qdef1.setBindings(bindings);
 		// Parsing results using JsonNode. 
 		JsonNode jsonStrResults = sparqlQmgr.executeSelect(qdef1, new JacksonHandle()).get();
@@ -1366,7 +1416,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		String expectedException = "IllegalArgumentException";
 		String exception = "";
 		try {
-			bindings.bind("firstname", null,"string");
+			bindings.bind("firstname", null, RDFTypes.STRING);
 		} catch (Exception e) {
 			exception = e.toString();
 		}
@@ -1415,7 +1465,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		
 		// Set up the String variable binding with wrong name
 		SPARQLBindings bindings = qdef1.getBindings();
-		bindings.bind("blahblah", "Ling","string");
+		bindings.bind("blahblah", "Ling", RDFTypes.STRING);
 		qdef1.setBindings(bindings);
 		// Parsing results using JsonNode. 
 		JsonNode jsonStrResults = sparqlQmgr.executeSelect(qdef1, new JacksonHandle()).get();
@@ -1489,7 +1539,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		
 		// Set up the integer variable binding 
 		SPARQLBindings bindings = qdef.getBindings();
-		bindings.bind("playerid", "30","integer");
+		bindings.bind("playerid", "30",RDFTypes.INTEGER);
 		qdef.setBindings(bindings);
 				
 		sparqlQmgr.executeUpdate(qdef);
@@ -1509,7 +1559,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		SPARQLQueryDefinition qdef2 = sparqlQmgr.newQueryDefinition(queryInsStr.toString());
 		// Set up the integer variable binding 
 		SPARQLBindings bindings2 = qdef2.getBindings();
-		bindings2.bind("playerid", "30","integer");
+		bindings2.bind("playerid", "30", RDFTypes.INTEGER);
 		qdef2.setBindings(bindings2);
 		//Set the base URI. This gets concatented to the relative URI (BindingsGraph).
 		String baseuri2 = "http://qa.marklogic.com/qdef2/";
@@ -1530,7 +1580,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		SPARQLQueryDefinition qdefNull = sparqlQmgr.newQueryDefinition(queryInsStr.toString());
 		// Set up the integer variable binding 
 		SPARQLBindings bindingsNull = qdefNull.getBindings();
-		bindingsNull.bind("playerid", "30","integer");
+		bindingsNull.bind("playerid", "30", RDFTypes.INTEGER);
 		qdefNull.setBindings(bindingsNull);
 		//Set the base URI. This gets concatented to the relative URI (BindingsGraph).
 		String baseuriNull = null;
@@ -1549,7 +1599,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		
 		// Set up the integer variable binding
 		SPARQLBindings bindingsEmpty = qdefEmpty.getBindings();
-		bindingsEmpty.bind("playerid", "30", "integer");
+		bindingsEmpty.bind("playerid", "30", RDFTypes.INTEGER);
 		qdefEmpty.setBindings(bindingsEmpty);
 		
 		// Set the base URI. This gets concatented to the relative URI
@@ -1574,7 +1624,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		SPARQLQueryDefinition qdefMB = sparqlQmgr.newQueryDefinition(queryInsStr.toString());
 		// Set up the integer variable binding 
 		SPARQLBindings bindingsMB = qdefMB.getBindings();
-		bindingsMB.bind("playerid", "30","integer");
+		bindingsMB.bind("playerid", "30", RDFTypes.INTEGER);
 		qdefMB.setBindings(bindingsMB);
 		//Set the base URI. This gets concatented to the relative URI (BindingsGraph).
 		String baseuriMB = "http://qa.marklogic.com/qdef2/" + multibyteName + "/";
@@ -1634,7 +1684,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		
 		// Set up the String variable binding with wrong data type.
 		SPARQLBindings bindings = qdef1.getBindings();
-		bindings.bind("firstname", "Ling","dateTimeStamp");
+		bindings.bind("firstname", "Ling", RDFTypes.DATETIME);
 		qdef1.setBindings(bindings);
 
 		String expectedException = "FailedRequestException";
@@ -1646,7 +1696,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		}
 		System.out.println("Exception thrown from testQueryBindingsIncorrectDataType is \n"+ exception);
 		assertTrue("Test testQueryBindingsIncorrectDataType method exception is not thrown", exception.contains(expectedException));
-	    assertTrue("Message Incorrect", exception.contains("Invalid parameter: Bind variable type parameter requires XSD type"));
+	    assertTrue("Message Incorrect", exception.contains("Invalid cast: \"Ling\" cast as xs:dateTime"));
 	}
 	
 	/* This test verifies sparql update CREATE GRAPH, INSERT DATA and also validates SPARQL EXISTS.
@@ -2265,7 +2315,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		// Set up the String variable binding.
 		SPARQLBindings bindings = qdef.getBindings();
 		
-		bindings.bind("firstname","Lei","string");
+		bindings.bind("firstname","Lei", RDFTypes.STRING);
 		qdef.setBindings(bindings);
 		
 		// create query def.
@@ -2328,7 +2378,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		// Set up the String variable binding.
 		SPARQLBindings bindings = qdef.getBindings();
 		
-		bindings.bind("firstname","Lei","string");
+		bindings.bind("firstname","Lei", RDFTypes.STRING);
 		qdef.setBindings(bindings);
 		qdef.setConstrainingQueryDefinition(null);
 		// Parsing results using JsonNode. 
