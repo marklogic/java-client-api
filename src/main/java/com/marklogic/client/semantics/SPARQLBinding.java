@@ -18,9 +18,11 @@ package com.marklogic.client.semantics;
 import java.util.Locale;
 
 /**
- * Represents a binding name, value, and type or language tag.
- * For details about semantics in MarkLogic see
- * {@link https://docs.marklogic.com/guide/semantics Semantics Developer's Guide}
+ * <p>Represents a binding name, value, and type or language tag.</p>
+ *
+ * <p>For details about RDF, SPARQL, and semantics in MarkLogic see the <a
+ * href="https://docs.marklogic.com/guide/semantics" target="_top">Semantics
+ * Developer's Guide</a>.
  */
 public interface SPARQLBinding {
     public String getName();
