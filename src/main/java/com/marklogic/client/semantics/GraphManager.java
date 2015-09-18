@@ -36,7 +36,7 @@ import com.marklogic.client.semantics.Capability;
  *
  * <p>For example:</p>
  *
- * <p>If you have a file called "example.ttl" containing one triple in turtle
+ * <p>If you have a file called "example.nt" containing one triple in turtle
  * mimetype:</p>
  *
  * <pre>    &lt;http://example.org/subject1&gt; &lt;http://example.org/predicate1&gt; &lt;http://example.org/object1&gt; .</pre>
@@ -45,7 +45,7 @@ import com.marklogic.client.semantics.Capability;
  * like so:</p>
  *
  * <pre>    GraphManager graphMgr = databaseClient.newGraphManager();
- *    FileHandle fileHandle = new FileHandle(new File("example.ttl")).withMimetype(RDFMimeTypes.NTRIPLES);
+ *    FileHandle fileHandle = new FileHandle(new File("example.nt")).withMimetype(RDFMimeTypes.NTRIPLES);
  *    graphMgr.write("myExample/graphUri", fileHandle);
  * </pre>
  *
