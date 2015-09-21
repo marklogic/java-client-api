@@ -25,8 +25,10 @@ import com.marklogic.client.Transaction;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.TriplesReadHandle;
 import com.marklogic.client.semantics.Capability;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.GraphPermissions;
@@ -697,7 +699,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 	 * DeleteGraphs and validate ResourceNotFound Exception
 	 */
 	@Test
-	public void test001MergeReplace_quads() throws FileNotFoundException, InterruptedException {
+	public void testMergeReplace_quads() throws FileNotFoundException, InterruptedException {
 		String uri = "http://test.sem.quads/json-quads";
 		String ntriple6 = "<http://example.org/s6> <http://example.com/mergeQuadP> <http://example.org/o2> <http://test.sem.quads/json-quads>.";
 		File file = new File(datasource + "bug25348.json");
@@ -733,7 +735,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 	 */
 
 	@Test
-	public void test002MergeReplaceAs_Quads() throws Exception {
+	public void testMergeReplaceAs_Quads() throws Exception {
 		gmWriter.setDefaultMimetype(RDFMimeTypes.NQUADS);
 		File file = new File(datasource + "semantics.nq");
 		gmWriter.replaceGraphsAs(file);
@@ -777,12 +779,34 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		String tripleGraphUri = "http://test.things.com/file";
 		File file = new File(datasource + "relative5.xml");
 		gmWriter.write(tripleGraphUri, new FileHandle(file));
-		StringHandle things = gmWriter.things(new StringHandle(), "about");
+		TriplesReadHandle things = gmWriter.things(new StringHandle(), "about");
 		assertTrue("Things did not return expected Uri's",
-				things.get().equals("<about> <http://purl.org/dc/elements/1.1/title> \"Anna's Homepage\" ."));
+				things.toString().contains("<about> <http://purl.org/dc/elements/1.1/title> \"Anna's Homepage\" ."));
 		gmWriter.delete(tripleGraphUri);
 	}
 
+	@Test
+	public void testWrite_rdfjson_JacksonHandle() throws Exception {
+		File file = new File(datasource + "relative6.json");
+		FileHandle filehandle = new FileHandle();
+		filehandle.set(file);
+		gmWriter.write("htp://test.sem.graph/rdfjson", filehandle.withMimetype("application/rdf+json"));
+		JacksonHandle handle1  = gmWriter.read("htp://test.sem.graph/rdfjson", new JacksonHandle());
+		JsonNode readFile = handle1.get();
+		assertTrue("Did not insert document or inserted empty doc", readFile.toString().contains("http://purl.org/dc/elements/1.1/title"));
+	}
+
+	
+	@Test
+	public void testWrite_rdfjson_TripleReadHandle() throws Exception {
+		File file = new File(datasource + "relative6.json");
+		FileHandle filehandle = new FileHandle();
+		filehandle.set(file);
+		gmWriter.write("htp://test.sem.graph/rdfjson", filehandle.withMimetype("application/rdf+json"));
+		TriplesReadHandle handle1  = gmWriter.read("htp://test.sem.graph/rdfjson", new JacksonHandle());
+		assertTrue("Did not insert document or inserted empty doc", handle1.toString().contains("http://purl.org/dc/elements/1.1/title"));
+	}
+	
 	@Test
 	public void testThings_fileNomatch() throws Exception {
 		gmWriter.setDefaultMimetype(RDFMimeTypes.TRIPLEXML);
@@ -791,7 +815,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		gmWriter.write(tripleGraphUri, new FileHandle(file));
 		Exception exp = null;
 		try {
-			StringHandle things = gmWriter.things(new StringHandle(), "noMatch");
+			TriplesReadHandle things = gmWriter.things(new StringHandle(), "noMatch");
 			assertTrue("Things did not return expected Uri's", things == null);
 		} catch (Exception e) {
 			exp = e;
