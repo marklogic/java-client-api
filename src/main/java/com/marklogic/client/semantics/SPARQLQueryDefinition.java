@@ -213,7 +213,6 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
      * @return this instance (for method chaining)
      */
     public SPARQLQueryDefinition withRuleset(SPARQLRuleset ruleset);
-    public SPARQLQueryDefinition withStructuredQuery(QueryDefinition structuredQuery);
 
     /** Set whether to include database-default inference or not. Default is true.
      *
