@@ -275,12 +275,6 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
     }
 
     @Override
-    public SPARQLQueryDefinition withStructuredQuery(
-            QueryDefinition structuredQuery) {
-        return this;
-    }
-
-    @Override
     public void setIncludeDefaultRulesets(Boolean b) {
         this.includeDefaultRulesets = b;
     }
