@@ -15,7 +15,10 @@
  */
 package com.marklogic.client.semantics;
 
-/** The types supported for binding variables against SPARQL queries. */
+/** <p>The XSD/<a href="http://www.w3.org/TR/rdf11-concepts/#xsd-datatypes">RDF
+ * literal types</a> supported for binding variables against SPARQL
+ * queries.</p>
+ */
 public enum RDFTypes {
     STRING             ("string"),
     BOOLEAN            ("boolean"),
