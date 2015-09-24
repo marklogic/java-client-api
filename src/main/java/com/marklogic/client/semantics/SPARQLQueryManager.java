@@ -206,7 +206,7 @@ public interface SPARQLQueryManager  {
      *    sparqlMgr.executeUpdate(qdef);</pre>
      *
      * @param role the name of the role receiving these capabilities
-     * @param capabilities the capabilities (read, update, or execute) granted to this role
+     * @param capabilities the capabilities (READ, UPDATE, or EXECUTE) granted to this role
      * @return the new GraphPermissions object with these capabilities set
      */
     public GraphPermissions permission(String role, Capability... capabilities);

@@ -6,6 +6,7 @@ import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
  * Some static constants to ease use of mime types appropriate for handles of
  * type {@link SPARQLResultsReadHandle} (used in
  * {@link SPARQLQueryManager#executeSelect SPARQLQueryManager.executeSelect}).
+ * For more explanation, see {@link SPARQLQueryManager}.
  */
 public final class SPARQLMimeTypes {
 

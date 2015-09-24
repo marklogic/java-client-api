@@ -16,9 +16,10 @@
 package com.marklogic.client.io.marker;
 
 /**
- * A marker interface for handles capable of writing semantic quads.
- * For details about semantics in MarkLogic see
- * {@link https://docs.marklogic.com/guide/semantics Semantics Developer's Guide}
+ * <p>A marker interface for handles capable of writing semantic quads.</p>
+ *
+ * <p>For details about RDF, SPARQL, and semantics in MarkLogic see
+ * <a href="https://docs.marklogic.com/guide/semantics" target="_top">Semantics Developer's Guide</a>
  */
 public interface QuadsWriteHandle extends AbstractWriteHandle {
 }

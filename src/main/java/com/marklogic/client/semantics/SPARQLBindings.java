@@ -36,7 +36,7 @@ import java.util.Map;
  *    bindings.bind("o", "http://example.org/object1");
  *    JacksonHandle results = sparqlMgr.executeSelect(qdef, new JacksonHandle());</pre>
  *
- * <p>Example matching a string with a language tag (re-using data and variables above):</p>
+ * <p>Example matching a literal of rdf data type string (re-using data and variables above):</p>
  *
  * <pre>    qdef = sparqlMgr.newQueryDefinition(select);
  *    bindings = qdef.getBindings();
