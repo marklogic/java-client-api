@@ -68,6 +68,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		tearDownJavaRESTServer(dbName, fNames, restServerName);
 		deleteRESTUser("eval-user");
 		deleteUserRole("test-eval");
+		deleteUserRole("test-perm2");
 	}
 
 	@After
@@ -862,9 +863,12 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		for (Capability capability : perms.get("test-perm")) {
 			assertTrue("capability should be UPDATE, not [" + capability + "]", capability == Capability.UPDATE);
 		}
+		
+		// Create another Role to check for builder style permissions support.
+		createUserRolesWithPrevilages("test-perm2");
 
 		// Set Capability for the User
-		perms = gmTestPerm.permission("test-perm", Capability.EXECUTE);
+		perms = gmTestPerm.permission("test-perm", Capability.EXECUTE).permission("test-perm2", Capability.EXECUTE).permission("test-perm2", Capability.READ);
 		// Merge Permissions
 		gmTestPerm.mergePermissions(uri, perms);
 		// gmTestPerm.writePermissions(uri, perms);
@@ -872,10 +876,15 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		perms = gmTestPerm.getPermissions(uri);
 		System.out.println("Permissions after setting execute , Should  see Execute & Update" + gmTestPerm.getPermissions(uri));
 		for (Capability capability : perms.get("test-perm")) {
-			assertTrue("capability should be UPDATE && Execute, not [" + capability + "]", capability == Capability.UPDATE
+			assertTrue("capability for role test-perm should be UPDATE && Execute, not [" + capability + "]", capability == Capability.UPDATE
+					|| capability == Capability.EXECUTE);
+		}
+		for (Capability capability : perms.get("test-perm2")) {
+			assertTrue("capability for role test-perm2 should be EXECUTE && READ, not [" + capability + "]", capability == Capability.READ
 					|| capability == Capability.EXECUTE);
 		}
 		assertTrue("Did not have expected capabilities", perms.get("test-perm").size() == 2);
+		assertTrue("Did not have expected capabilities", perms.get("test-perm2").size() == 2);
 
 		// Write Read permission to uri and validate permissions are overwritten
 		// with write
@@ -890,6 +899,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		gmTestPerm.deletePermissions(uri);
 		perms = gmTestPerm.getPermissions(uri);
 		assertNull(perms.get("test-perm"));
+		assertNull(perms.get("test-perm2"));
 
 		// Set and Write Execute Permission
 		perms = gmTestPerm.permission("test-perm", Capability.EXECUTE);
@@ -939,7 +949,9 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		String readContent = convertReaderToString(readFile);
 		assertTrue("Did not get receive expected string content, Received:: " + readContent,
 				readContent.contains("http://www.daml.org/2001/12/factbook/vi#A113932"));
-
+	 
+		//Delete the role
+		deleteUserRole("test-perm2");
 	}
 
 	/*
