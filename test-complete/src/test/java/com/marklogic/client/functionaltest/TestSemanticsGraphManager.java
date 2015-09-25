@@ -1128,163 +1128,183 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 	public void testMergeGraphWithTransaction() throws FileNotFoundException, InterruptedException {
 		String uri = "http://test.sem.quads/json-quads";
 		Transaction trxIn = writerClient.openTransaction();
-		String ntriple6 = "<http://example.org/s6> <http://example.com/mergeQuadP> <http://example.org/o2> <http://test.sem.quads/json-quads>.";
-		File file = new File(datasource + "bug25348.json");
-		FileHandle filehandle = new FileHandle();
-		filehandle.set(file);
-		
-		// Using client write and merge Triples within same transaction.
-		gmWriter.write(uri, filehandle.withMimetype(RDFMimeTypes.RDFJSON), trxIn);
-		//Merge Graphs inside the transaction.
-		gmWriter.mergeGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxIn);
-		trxIn.commit();
-		FileHandle handle = gmWriter.read(uri, new FileHandle());
-		File readFile = handle.get();
-		String expectedContent = convertFileToString(readFile);
-		assertTrue("Did not write Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
-		assertTrue("Did not merge Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
-		trxIn = null;
-		handle = null;
-		readFile = null;		
-		expectedContent = null;
-		
-		// Delete Graphs inside the transaction.
-		Transaction trxDelIn = writerClient.openTransaction();
-		gmWriter.delete(uri, trxDelIn);
-		trxDelIn.commit();
-		trxDelIn = null;
-						
-		// Using client write and merge Triples within different transactions. Commit the merge transaction
-		trxIn = writerClient.openTransaction();
-		Transaction trxInMergeGraph = writerClient.openTransaction();
-		
-		gmWriter.write(uri, filehandle.withMimetype(RDFMimeTypes.RDFJSON), trxIn);
-		trxIn.commit();
-		// Make sure that original triples are available.
-		handle = gmWriter.read(uri, new FileHandle());
-		readFile = handle.get();
-		expectedContent = convertFileToString(readFile);
-		assertTrue("Did not write Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
-		handle = null;
-		readFile = null;
-		expectedContent = null;
-		
-		// Merge Graphs inside another transaction.
-		gmWriter.mergeGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxInMergeGraph);
-		trxInMergeGraph.commit();
+		Transaction trxInMergeGraph = null;
+		Transaction trxDelIn = null;
+		try {
+			String ntriple6 = "<http://example.org/s6> <http://example.com/mergeQuadP> <http://example.org/o2> <http://test.sem.quads/json-quads>.";
+			File file = new File(datasource + "bug25348.json");
+			FileHandle filehandle = new FileHandle();
+			filehandle.set(file);
+			
+			// Using client write and merge Triples within same transaction.
+			gmWriter.write(uri, filehandle.withMimetype(RDFMimeTypes.RDFJSON), trxIn);
+			//Merge Graphs inside the transaction.
+			gmWriter.mergeGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxIn);
+			trxIn.commit();
+			FileHandle handle = gmWriter.read(uri, new FileHandle());
+			File readFile = handle.get();
+			String expectedContent = convertFileToString(readFile);
+			assertTrue("Did not write Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
+			assertTrue("Did not merge Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
+			trxIn = null;
+			handle = null;
+			readFile = null;		
+			expectedContent = null;
+			
+			// Delete Graphs inside the transaction.
+			trxDelIn = writerClient.openTransaction();
+			gmWriter.delete(uri, trxDelIn);
+			trxDelIn.commit();
+			trxDelIn = null;
+							
+			// Using client write and merge Triples within different transactions. Commit the merge transaction
+			trxIn = writerClient.openTransaction();
+			trxInMergeGraph = writerClient.openTransaction();
+			
+			gmWriter.write(uri, filehandle.withMimetype(RDFMimeTypes.RDFJSON), trxIn);
+			trxIn.commit();
+			// Make sure that original triples are available.
+			handle = gmWriter.read(uri, new FileHandle());
+			readFile = handle.get();
+			expectedContent = convertFileToString(readFile);
+			assertTrue("Did not write Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
+			handle = null;
+			readFile = null;
+			expectedContent = null;
+			
+			// Merge Graphs inside another transaction.
+			gmWriter.mergeGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxInMergeGraph);
+			trxInMergeGraph.commit();
 
-		handle = gmWriter.read(uri, new FileHandle());
-		readFile = handle.get();
-		expectedContent = convertFileToString(readFile);
-		assertTrue("Merge corrupted original Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
-		assertTrue("Did not merge Quad in separate transaction", expectedContent.contains("<http://example.com/mergeQuadP"));
+			handle = gmWriter.read(uri, new FileHandle());
+			readFile = handle.get();
+			expectedContent = convertFileToString(readFile);
+			assertTrue("Merge corrupted original Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
+			assertTrue("Did not merge Quad in separate transaction", expectedContent.contains("<http://example.com/mergeQuadP"));
 
-		trxIn = null;
-		trxInMergeGraph = null;
-		handle = null;
-		readFile = null;
-		expectedContent = null;
-		trxDelIn = null;
+			trxIn = null;
+			trxInMergeGraph = null;
+			handle = null;
+			readFile = null;
+			expectedContent = null;
+			trxDelIn = null;
 
-		// Delete Graphs inside the transaction.
-		trxDelIn = writerClient.openTransaction();
-		gmWriter.delete(uri, trxDelIn);
-		trxDelIn.commit();
-		trxDelIn = null;
-				
-		// Using client write and merge Triples within different transaction. Rollback the merge transaction.
-		trxIn = writerClient.openTransaction();
-		trxInMergeGraph = writerClient.openTransaction();
-		
-		gmWriter.write(uri, filehandle.withMimetype(RDFMimeTypes.RDFJSON), trxIn);
-		trxIn.commit();
-		
-		// Make sure that original triples are available.
-		handle = gmWriter.read(uri, new FileHandle());
-		readFile = handle.get();
-		expectedContent = convertFileToString(readFile);
-		assertTrue("Did not write Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
-		handle = null;
-		readFile = null;
-		expectedContent = null;
-		//Merge Graphs inside the transaction.
-		gmWriter.mergeGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxInMergeGraph);
-		trxInMergeGraph.rollback();
-		handle = gmWriter.read(uri, new FileHandle());
-		readFile = handle.get();
-		expectedContent = convertFileToString(readFile);
-		
-		// Verify if original quad is available.
-		assertTrue("Merge corrupted original Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
-		assertFalse("Did merge Quad when it should not have, since transaction was rolled back", expectedContent.contains("<http://example.com/mergeQuadP"));
-		
-		trxIn = null;
-		trxInMergeGraph = null;
-		handle = null;
-		readFile = null;		
-		expectedContent = null;
+			// Delete Graphs inside the transaction.
+			trxDelIn = writerClient.openTransaction();
+			gmWriter.delete(uri, trxDelIn);
+			trxDelIn.commit();
+			trxDelIn = null;
+					
+			// Using client write and merge Triples within different transaction. Rollback the merge transaction.
+			trxIn = writerClient.openTransaction();
+			trxInMergeGraph = writerClient.openTransaction();
+			
+			gmWriter.write(uri, filehandle.withMimetype(RDFMimeTypes.RDFJSON), trxIn);
+			trxIn.commit();
+			
+			// Make sure that original triples are available.
+			handle = gmWriter.read(uri, new FileHandle());
+			readFile = handle.get();
+			expectedContent = convertFileToString(readFile);
+			assertTrue("Did not write Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
+			handle = null;
+			readFile = null;
+			expectedContent = null;
+			//Merge Graphs inside the transaction.
+			gmWriter.mergeGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxInMergeGraph);
+			trxInMergeGraph.rollback();
+			handle = gmWriter.read(uri, new FileHandle());
+			readFile = handle.get();
+			expectedContent = convertFileToString(readFile);
+			
+			// Verify if original quad is available.
+			assertTrue("Merge corrupted original Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
+			assertFalse("Did merge Quad when it should not have, since transaction was rolled back", expectedContent.contains("<http://example.com/mergeQuadP"));
+			
+			trxIn = null;
+			trxInMergeGraph = null;
+			handle = null;
+			readFile = null;		
+			expectedContent = null;
 
-		// Delete Graphs inside the transaction.
-		trxDelIn = writerClient.openTransaction();
-		gmWriter.delete(uri, trxDelIn);
-		trxDelIn.commit();
-		trxDelIn = null;
+			// Delete Graphs inside the transaction.
+			trxDelIn = writerClient.openTransaction();
+			gmWriter.delete(uri, trxDelIn);
+			trxDelIn.commit();
+			trxDelIn = null;
 
-		// Using client write and merge Triples within different transaction. Rollback the merge transaction and then commit.
-		trxIn = writerClient.openTransaction();
-		trxInMergeGraph = writerClient.openTransaction();
+			// Using client write and merge Triples within different transaction. Rollback the merge transaction and then commit.
+			trxIn = writerClient.openTransaction();
+			trxInMergeGraph = writerClient.openTransaction();
 
-		gmWriter.write(uri, filehandle.withMimetype(RDFMimeTypes.RDFJSON), trxIn);
-		trxIn.commit();
-		
-		// Make sure that original triples are available.
-		handle = gmWriter.read(uri, new FileHandle());
-		readFile = handle.get();
-		expectedContent = convertFileToString(readFile);
-		assertTrue("Did not write Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
-		handle = null;
-		readFile = null;
-		expectedContent = null;
-		
-		//Merge Graphs inside the transaction.
-		gmWriter.mergeGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxInMergeGraph);
-		// Rollback the merge.
-		trxInMergeGraph.rollback();
-		handle = gmWriter.read(uri, new FileHandle());
-		readFile = handle.get();
-		expectedContent = convertFileToString(readFile);
-		
-		// Verify if original quad is available.
-		assertTrue("Merge corrupted original Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
-		assertFalse("Did merge Quad when it should not have, since transaction was rolled back", expectedContent.contains("<http://example.com/mergeQuadP"));
+			gmWriter.write(uri, filehandle.withMimetype(RDFMimeTypes.RDFJSON), trxIn);
+			trxIn.commit();
+			
+			// Make sure that original triples are available.
+			handle = gmWriter.read(uri, new FileHandle());
+			readFile = handle.get();
+			expectedContent = convertFileToString(readFile);
+			assertTrue("Did not write Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
+			handle = null;
+			readFile = null;
+			expectedContent = null;
+			
+			//Merge Graphs inside the transaction.
+			gmWriter.mergeGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxInMergeGraph);
+			// Rollback the merge.
+			trxInMergeGraph.rollback();
+			handle = gmWriter.read(uri, new FileHandle());
+			readFile = handle.get();
+			expectedContent = convertFileToString(readFile);
+			
+			// Verify if original quad is available.
+			assertTrue("Merge corrupted original Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
+			assertFalse("Did merge Quad when it should not have, since transaction was rolled back", expectedContent.contains("<http://example.com/mergeQuadP"));
 
-		trxIn = null;
-		trxInMergeGraph = null;
-		handle = null;
-		readFile = null;		
-		expectedContent = null;
-		trxInMergeGraph = writerClient.openTransaction();
-		gmWriter.mergeGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxInMergeGraph);
-		// Commit the merge.
-		trxInMergeGraph.commit();
+			trxIn = null;
+			trxInMergeGraph = null;
+			handle = null;
+			readFile = null;		
+			expectedContent = null;
+			trxInMergeGraph = writerClient.openTransaction();
+			gmWriter.mergeGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxInMergeGraph);
+			// Commit the merge.
+			trxInMergeGraph.commit();
 
-		handle = gmWriter.read(uri, new FileHandle());
-		readFile = handle.get();
-		expectedContent = convertFileToString(readFile);
-		// Verify if original quad is available.
-		assertTrue("Merge corrupted original Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
-		assertTrue("Did not merge Quad in second commit transaction", expectedContent.contains("<http://example.com/mergeQuadP"));
+			handle = gmWriter.read(uri, new FileHandle());
+			readFile = handle.get();
+			expectedContent = convertFileToString(readFile);
+			// Verify if original quad is available.
+			assertTrue("Merge corrupted original Quad in transaction", expectedContent.contains("<http://example.com/ns/person#firstName"));
+			assertTrue("Did not merge Quad in second commit transaction", expectedContent.contains("<http://example.com/mergeQuadP"));
 
-		// Delete Graphs inside the transaction.
-		trxDelIn = writerClient.openTransaction();
-		gmWriter.delete(uri, trxDelIn);
-		trxDelIn.commit();
-		trxDelIn = null;
-		trxIn = null;
-		trxInMergeGraph = null;
-		handle = null;
-		readFile = null;		
-		expectedContent = null;
+			// Delete Graphs inside the transaction.
+			trxDelIn = writerClient.openTransaction();
+			gmWriter.delete(uri, trxDelIn);
+			trxDelIn.commit();
+			trxDelIn = null;
+			trxIn = null;
+			trxInMergeGraph = null;
+			handle = null;
+			readFile = null;		
+			expectedContent = null;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+			if (trxIn != null) {
+				trxIn.rollback();
+				trxIn = null;
+			}
+			if (trxDelIn != null) {
+				trxDelIn.rollback();
+				trxDelIn = null;
+			}
+			if (trxInMergeGraph != null) {
+				trxInMergeGraph.rollback();
+				trxInMergeGraph = null;
+			}
+		}	
 	}
 		
 	/*
@@ -1300,168 +1320,192 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 	public void testReplaceGraphWithTransaction() throws FileNotFoundException, InterruptedException {
 		String uri = "http://test.sem.quads/json-quads";
 		Transaction trxIn = writerClient.openTransaction();
-		String ntriple6 = "<http://example.org/s6> <http://example.com/mergeQuadP> <http://example.org/o2> <http://test.sem.quads/json-quads>.";
-		File file = new File(datasource + "bug25348.json");
-		FileHandle filehandle = new FileHandle();
-		filehandle.set(file);
-				
-		// Using client write and replace Triples within same transaction.
-		gmWriter.write(uri, filehandle.withMimetype(RDFMimeTypes.RDFJSON), trxIn);
-		// Replace Graphs inside the transaction.
-		gmWriter.replaceGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxIn);
-		trxIn.commit();
-		FileHandle handle = gmWriter.read(uri, new FileHandle());
-		File readFile = handle.get();
-		String expectedContent = convertFileToString(readFile);
+		Transaction trxDelIn = null;
+		Transaction trxInReplaceGraph = null;
 		
-		// Should not contain original triples
-		assertFalse("Did not replace Quad", expectedContent.contains("http://example.com/ns/person#firstName"));
-		// Should contain new triples
-		assertTrue("Did not replace Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
-		
-		trxIn = null;
-		handle = null;
-		readFile = null;		
-		expectedContent = null;
-		
-		// Delete Graphs inside the transaction.
-		Transaction trxDelIn = writerClient.openTransaction();
-		gmWriter.delete(uri, trxDelIn);
-		trxDelIn.commit();
-		trxDelIn = null;
-						
-		// Using client write and replace Triples within different transactions. Commit the replace transaction
-		trxIn = writerClient.openTransaction();		
-		
-		gmWriter.write(uri, filehandle.withMimetype(RDFMimeTypes.RDFJSON), trxIn);
-		trxIn.commit();
-		handle = gmWriter.read(uri, new FileHandle());
-		readFile = handle.get();
-		expectedContent = convertFileToString(readFile);
-		// Should contain original triples
-		assertTrue("Write Quad not successful", expectedContent.contains("http://example.com/ns/person#firstName"));
-		
-		// Replace Graphs inside another transaction.
-		Transaction trxInReplaceGraph = writerClient.openTransaction();
-		gmWriter.replaceGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxInReplaceGraph);
-		trxInReplaceGraph.commit();
-		handle = null;
-		readFile = null;
-		expectedContent = null;		
+		try {
+			String ntriple6 = "<http://example.org/s6> <http://example.com/mergeQuadP> <http://example.org/o2> <http://test.sem.quads/json-quads>.";
+			File file = new File(datasource + "bug25348.json");
+			FileHandle filehandle = new FileHandle();
+			filehandle.set(file);
+					
+			// Using client write and replace Triples within same transaction.
+			gmWriter.write(uri, filehandle.withMimetype(RDFMimeTypes.RDFJSON), trxIn);
+			// Replace Graphs inside the transaction.
+			gmWriter.replaceGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxIn);
+			trxIn.commit();
+			FileHandle handle = gmWriter.read(uri, new FileHandle());
+			File readFile = handle.get();
+			String expectedContent = convertFileToString(readFile);
+			
+			// Should not contain original triples
+			assertFalse("Did not replace Quad", expectedContent.contains("http://example.com/ns/person#firstName"));
+			// Should contain new triples
+			assertTrue("Did not replace Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
+			
+			trxIn = null;
+			handle = null;
+			readFile = null;		
+			expectedContent = null;
+			
+			// Delete Graphs inside the transaction.
+			trxDelIn = writerClient.openTransaction();
+			gmWriter.delete(uri, trxDelIn);
+			trxDelIn.commit();
+			trxDelIn = null;
+							
+			// Using client write and replace Triples within different transactions. Commit the replace transaction
+			trxIn = writerClient.openTransaction();		
+			
+			gmWriter.write(uri, filehandle.withMimetype(RDFMimeTypes.RDFJSON), trxIn);
+			trxIn.commit();
+			handle = gmWriter.read(uri, new FileHandle());
+			readFile = handle.get();
+			expectedContent = convertFileToString(readFile);
+			// Should contain original triples
+			assertTrue("Write Quad not successful", expectedContent.contains("http://example.com/ns/person#firstName"));
+			
+			// Replace Graphs inside another transaction.
+			trxInReplaceGraph = writerClient.openTransaction();
+			gmWriter.replaceGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxInReplaceGraph);
+			trxInReplaceGraph.commit();
+			handle = null;
+			readFile = null;
+			expectedContent = null;		
 
-		handle = gmWriter.read(uri, new FileHandle());
-		readFile = handle.get();
-		expectedContent = convertFileToString(readFile);
-		// Should not contain original triples
-		assertFalse("Did not replace Quad", expectedContent.contains("http://example.com/ns/person#firstName"));
-		// Should contain new triples
-		assertTrue("Did not replace Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
+			handle = gmWriter.read(uri, new FileHandle());
+			readFile = handle.get();
+			expectedContent = convertFileToString(readFile);
+			// Should not contain original triples
+			assertFalse("Did not replace Quad", expectedContent.contains("http://example.com/ns/person#firstName"));
+			// Should contain new triples
+			assertTrue("Did not replace Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
 
-		trxIn = null;
-		trxInReplaceGraph = null;
-		handle = null;
-		readFile = null;
-		expectedContent = null;
-		trxDelIn = null;
+			trxIn = null;
+			trxInReplaceGraph = null;
+			handle = null;
+			readFile = null;
+			expectedContent = null;
+			trxDelIn = null;
 
-		// Delete Graphs inside the transaction.
-		trxDelIn = writerClient.openTransaction();
-		gmWriter.delete(uri, trxDelIn);
-		trxDelIn.commit();
-				
-		// Using client write and replace Triples within different transaction. Rollback the replace transaction.
-		trxIn = writerClient.openTransaction();
-		trxInReplaceGraph = writerClient.openTransaction();
-		
-		gmWriter.write(uri, filehandle.withMimetype(RDFMimeTypes.RDFJSON), trxIn);
-		trxIn.commit();
-		handle = gmWriter.read(uri, new FileHandle());
-		readFile = handle.get();
-		expectedContent = convertFileToString(readFile);
-		// Should contain original triples
-		assertTrue("Write Quad not successful", expectedContent.contains("http://example.com/ns/person#firstName"));
-		
-		handle = null;
-		readFile = null;
-		expectedContent = null;
-		
-		// Replace Graphs inside the transaction.
-		gmWriter.replaceGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxInReplaceGraph);
-		trxInReplaceGraph.rollback();
-		
-		handle = gmWriter.read(uri, new FileHandle());
-		readFile = handle.get();
-		expectedContent = convertFileToString(readFile);
-		
-		// Should not contain original triples
-		assertTrue("Original Quad not available after transaction rolled back", expectedContent.contains("http://example.com/ns/person#firstName"));
-		// Should contain new triples
-		assertFalse("Did not replace Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
-		
-		trxIn = null;
-		trxInReplaceGraph = null;
-		handle = null;
-		readFile = null;		
-		expectedContent = null;
+			// Delete Graphs inside the transaction.
+			trxDelIn = writerClient.openTransaction();
+			gmWriter.delete(uri, trxDelIn);
+			trxDelIn.commit();
+					
+			// Using client write and replace Triples within different transaction. Rollback the replace transaction.
+			trxIn = writerClient.openTransaction();
+			trxInReplaceGraph = writerClient.openTransaction();
+			
+			gmWriter.write(uri, filehandle.withMimetype(RDFMimeTypes.RDFJSON), trxIn);
+			trxIn.commit();
+			handle = gmWriter.read(uri, new FileHandle());
+			readFile = handle.get();
+			expectedContent = convertFileToString(readFile);
+			// Should contain original triples
+			assertTrue("Write Quad not successful", expectedContent.contains("http://example.com/ns/person#firstName"));
+			
+			handle = null;
+			readFile = null;
+			expectedContent = null;
+			
+			// Replace Graphs inside the transaction.
+			gmWriter.replaceGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxInReplaceGraph);
+			trxInReplaceGraph.rollback();
+			
+			handle = gmWriter.read(uri, new FileHandle());
+			readFile = handle.get();
+			expectedContent = convertFileToString(readFile);
+			
+			// Should not contain original triples
+			assertTrue("Original Quad not available after transaction rolled back", expectedContent.contains("http://example.com/ns/person#firstName"));
+			// Should contain new triples
+			assertFalse("Did not replace Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
+			
+			trxIn = null;
+			trxInReplaceGraph = null;
+			handle = null;
+			readFile = null;		
+			expectedContent = null;
 
-		// Delete Graphs inside the transaction.
-		trxDelIn = writerClient.openTransaction();
-		gmWriter.delete(uri, trxDelIn);
-		trxDelIn.commit();
-		trxDelIn = null;
+			// Delete Graphs inside the transaction.
+			trxDelIn = writerClient.openTransaction();
+			gmWriter.delete(uri, trxDelIn);
+			trxDelIn.commit();
+			trxDelIn = null;
 
-		// Using client write and replace Triples within different transaction. Rollback the replace transaction and then commit.
-		trxIn = writerClient.openTransaction();
-		trxInReplaceGraph = writerClient.openTransaction();
+			// Using client write and replace Triples within different transaction. Rollback the replace transaction and then commit.
+			trxIn = writerClient.openTransaction();
+			trxInReplaceGraph = writerClient.openTransaction();
 
-		gmWriter.write(uri, filehandle.withMimetype(RDFMimeTypes.RDFJSON), trxIn);
-		trxIn.commit();
-		handle = gmWriter.read(uri, new FileHandle());
-		readFile = handle.get();
-		expectedContent = convertFileToString(readFile);
-		// Should contain original triples
-		assertTrue("Write Quad not successful", expectedContent.contains("http://example.com/ns/person#firstName"));
-		handle = null;
-		readFile = null;
-		expectedContent = null;
-		// Replace Graphs inside the transaction.
-		gmWriter.replaceGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxInReplaceGraph);
-		trxInReplaceGraph.rollback();
-		handle = gmWriter.read(uri, new FileHandle());
-		readFile = handle.get();
-		expectedContent = convertFileToString(readFile);
+			gmWriter.write(uri, filehandle.withMimetype(RDFMimeTypes.RDFJSON), trxIn);
+			trxIn.commit();
+			handle = gmWriter.read(uri, new FileHandle());
+			readFile = handle.get();
+			expectedContent = convertFileToString(readFile);
+			// Should contain original triples
+			assertTrue("Write Quad not successful", expectedContent.contains("http://example.com/ns/person#firstName"));
+			handle = null;
+			readFile = null;
+			expectedContent = null;
+			// Replace Graphs inside the transaction.
+			gmWriter.replaceGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxInReplaceGraph);
+			trxInReplaceGraph.rollback();
+			handle = gmWriter.read(uri, new FileHandle());
+			readFile = handle.get();
+			expectedContent = convertFileToString(readFile);
 
-		// Should not contain original triples
-		assertTrue("Original Quad not available after transaction rolled back", expectedContent.contains("http://example.com/ns/person#firstName"));
-		// Should contain new triples
-		assertFalse("Did not replace Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
+			// Should not contain original triples
+			assertTrue("Original Quad not available after transaction rolled back", expectedContent.contains("http://example.com/ns/person#firstName"));
+			// Should contain new triples
+			assertFalse("Did not replace Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
 
-		trxIn = null;
-		trxInReplaceGraph = null;
-		handle = null;
-		readFile = null;		
-		expectedContent = null;
+			trxIn = null;
+			trxInReplaceGraph = null;
+			handle = null;
+			readFile = null;		
+			expectedContent = null;
 
-		trxInReplaceGraph = writerClient.openTransaction();
-		gmWriter.replaceGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxInReplaceGraph);
-		trxInReplaceGraph.commit();
+			trxInReplaceGraph = writerClient.openTransaction();
+			gmWriter.replaceGraphs(new StringHandle(ntriple6).withMimetype(RDFMimeTypes.NQUADS), trxInReplaceGraph);
+			trxInReplaceGraph.commit();
 
-		handle = gmWriter.read(uri, new FileHandle());
-		readFile = handle.get();
-		expectedContent = convertFileToString(readFile);
-		// Should not contain original triples
-		assertFalse("Did not replace Quad", expectedContent.contains("http://example.com/ns/person#firstName"));
-		// Should contain new triples
-		assertTrue("Did not replace Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
+			handle = gmWriter.read(uri, new FileHandle());
+			readFile = handle.get();
+			expectedContent = convertFileToString(readFile);
+			// Should not contain original triples
+			assertFalse("Did not replace Quad", expectedContent.contains("http://example.com/ns/person#firstName"));
+			// Should contain new triples
+			assertTrue("Did not replace Quad", expectedContent.contains("<http://example.com/mergeQuadP"));
 
-		// Delete Graphs inside the transaction.
-		trxDelIn = writerClient.openTransaction();
-		gmWriter.delete(uri, trxDelIn);
-		trxDelIn.commit();
-		trxDelIn = null;
-		handle = null;
-		readFile = null;		
-		expectedContent = null;
-		trxInReplaceGraph = null;
+			// Delete Graphs inside the transaction.
+			trxDelIn = writerClient.openTransaction();
+			gmWriter.delete(uri, trxDelIn);
+			trxDelIn.commit();
+			trxDelIn = null;
+			handle = null;
+			readFile = null;		
+			expectedContent = null;
+			trxInReplaceGraph = null;
+		} catch (Exception e) {	
+			e.printStackTrace();
+		} 
+		finally {
+			if (trxIn != null)
+			{
+				trxIn.rollback();
+				trxIn = null;
+			}
+			if (trxDelIn != null)
+			{
+				trxDelIn.rollback();
+				trxDelIn = null;
+			}
+			if (trxInReplaceGraph != null)
+			{
+				trxInReplaceGraph.rollback();
+				trxInReplaceGraph = null;
+			}
+		}
 	}
 }
