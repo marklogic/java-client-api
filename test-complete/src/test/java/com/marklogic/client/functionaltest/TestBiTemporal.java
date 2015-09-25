@@ -724,8 +724,11 @@ public class TestBiTemporal extends BasicJavaClientREST {
   		}
   		finally {
   			if(tstatus) {
-  				termQueryResults.close();
-  			tx.rollback();}
+  				if (termQueryResults != null)
+  				termQueryResults.close();  			
+  			}
+  			tx.rollback();
+  			tx = null;
   		}    
   	}
 
@@ -2098,6 +2101,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       }
 
       transaction.commit();
+      transaction = null;
 
       // There should still be no documents in latest collection
       queryMgr = writerClient.newQueryManager();
@@ -2112,8 +2116,15 @@ public class TestBiTemporal extends BasicJavaClientREST {
           termQueryResults.getTotalSize());
     } catch (Exception ex) {
       transaction.rollback();
+      transaction = null;
 
       assertTrue("testTransactionCommit failed", false);
+    }
+    finally {
+    	if( transaction != null ) {
+    		transaction.rollback();
+    		transaction = null;
+    	}
     }
   }
 
@@ -2122,166 +2133,179 @@ public class TestBiTemporal extends BasicJavaClientREST {
   public void testTransactionRollback() throws Exception {
 
     System.out.println("Inside testTransactionRollback");
-
-    String docId = "javaSingleJSONDoc.json";
-   
     Transaction transaction = writerClient
-        .openTransaction("Transaction for BiTemporal");
+            .openTransaction("Transaction for BiTemporal");
 
     try {
-    	insertJSONSingleDocument(temporalCollectionName, docId, null,
-          transaction, null);
-    	} catch (Exception ex) {
-      transaction.rollback();
+		String docId = "javaSingleJSONDoc.json";
+		try {
+			insertJSONSingleDocument(temporalCollectionName, docId, null,
+		      transaction, null);
+			} catch (Exception ex) {
+		  transaction.rollback();
+		  transaction = null;
 
-      assertTrue("insertJSONSingleDocument failed in testTransactionRollback",
-          false);
+		  assertTrue("insertJSONSingleDocument failed in testTransactionRollback",
+		      false);
+		}
+
+		// Verify that the document was inserted
+		JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
+		DocumentPage readResults = docMgr.read(transaction, docId);
+
+		System.out.println("Number of results = " + readResults.size());
+		if (readResults.size() != 1) {
+		  transaction.rollback();
+
+		  assertEquals("Wrong number of results", 1, readResults.size());
+		}
+
+		DocumentRecord latestDoc = readResults.next();
+		System.out.println("URI after insert = " + latestDoc.getUri());
+		if (!docId.equals(latestDoc.getUri())) {
+		  transaction.rollback();
+
+		  assertEquals("Document uri wrong after insert", docId, latestDoc.getUri());
+		}
+
+		try {
+		  updateJSONSingleDocument(temporalCollectionName, docId, transaction, null);
+		} catch (Exception ex) {
+		  transaction.rollback();
+		  transaction = null;
+
+		  assertTrue("updateJSONSingleDocument failed in testTransactionRollback",
+		      false);
+		}
+
+		// Verify that the document is visible and count is 4
+		// Fetch documents associated with a search term (such as XML) in Address
+		// element
+		QueryManager queryMgr = writerClient.newQueryManager();
+		StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+
+		StructuredQueryDefinition termQuery = sqb.collection(docId);
+
+		long start = 1;
+		DocumentPage termQueryResults = docMgr
+		    .search(termQuery, start, transaction);
+		System.out
+		    .println("Number of results = " + termQueryResults.getTotalSize());
+		if (termQueryResults.getTotalSize() != 4) {
+		  transaction.rollback();
+
+		  assertEquals("Wrong number of results", 4,
+		      termQueryResults.getTotalSize());
+		}
+
+		transaction.rollback();
+
+		// Verify that the document is not there after rollback
+		boolean exceptionThrown = false;
+		try {
+		  JacksonDatabindHandle<ObjectNode> contentHandle = new JacksonDatabindHandle<ObjectNode>(
+		      ObjectNode.class);
+		  DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+		  docMgr.read(docId, metadataHandle, contentHandle);
+		} catch (Exception ex) {
+		  exceptionThrown = true;
+		}
+
+		if (!exceptionThrown) {
+		  transaction.rollback();
+		
+		  assertTrue("Exception not thrown during read on non-existing uri",
+		      exceptionThrown);
+		}
+
+		// =======================================================================
+		// Now try rollback with delete
+		System.out.println("Test Rollback after delete");
+		docId = "javaSingleJSONDocForDelete.json";
+
+		transaction = writerClient
+		    .openTransaction("Transaction Rollback for BiTemporal Delete");
+
+		try {
+			insertJSONSingleDocument(temporalCollectionName, docId, null,
+		      transaction, null);
+			} catch (Exception ex) {
+		  transaction.rollback();
+		  transaction = null;
+
+		  assertTrue("insertJSONSingleDocument failed in testTransactionRollback",
+		      false);
+		}
+
+		// Verify that the document was inserted
+		docMgr = writerClient.newJSONDocumentManager();
+		readResults = docMgr.read(transaction, docId);
+
+		System.out.println("Number of results = " + readResults.size());
+		if (readResults.size() != 1) {
+		  transaction.rollback();
+
+		  assertEquals("Wrong number of results", 1, readResults.size());
+		}
+
+		latestDoc = readResults.next();
+		System.out.println("URI after insert = " + latestDoc.getUri());
+		if (!docId.equals(latestDoc.getUri())) {
+		  transaction.rollback();
+
+		  assertEquals("Document uri wrong after insert", docId, latestDoc.getUri());
+		}
+
+		try {
+		  deleteJSONSingleDocument(temporalCollectionName, docId, transaction);
+		} catch (Exception ex) {
+		  transaction.rollback();
+		  transaction = null;
+
+		  assertTrue("deleteJSONSingleDocument failed in testTransactionRollback",
+		      false);
+		}
+
+		// Verify that the document is visible and count is 1
+		// Fetch documents associated with a search term (such as XML) in Address
+		// element
+		queryMgr = writerClient.newQueryManager();
+		sqb = queryMgr.newStructuredQueryBuilder();
+
+		termQuery = sqb.collection(docId);
+
+		start = 1;
+		termQueryResults = docMgr.search(termQuery, start, transaction);
+		System.out
+		    .println("Number of results = " + termQueryResults.getTotalSize());
+		if (termQueryResults.getTotalSize() != 1) {
+		  transaction.rollback();
+
+		  assertEquals("Wrong number of results", 1,
+		      termQueryResults.getTotalSize());
+		}
+
+		transaction.rollback();
+		transaction = null;
+
+		// Verify that the document was rolled back and count is 0
+		exceptionThrown = false;
+		try {
+		  readResults = docMgr.read(docId);
+		} catch (Exception ex) {
+		  exceptionThrown = true;
+		}
+
+		System.out.println("Done");
+	} catch (Exception e) {		
+		e.printStackTrace();		
+	}
+    finally {
+    	if(transaction != null) {
+    		transaction.rollback();
+    		transaction = null;
+    	}    	
     }
-
-    // Verify that the document was inserted
-    JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
-    DocumentPage readResults = docMgr.read(transaction, docId);
-
-    System.out.println("Number of results = " + readResults.size());
-    if (readResults.size() != 1) {
-      transaction.rollback();
-
-      assertEquals("Wrong number of results", 1, readResults.size());
-    }
-
-    DocumentRecord latestDoc = readResults.next();
-    System.out.println("URI after insert = " + latestDoc.getUri());
-    if (!docId.equals(latestDoc.getUri())) {
-      transaction.rollback();
-
-      assertEquals("Document uri wrong after insert", docId, latestDoc.getUri());
-    }
-
-    try {
-      updateJSONSingleDocument(temporalCollectionName, docId, transaction, null);
-    } catch (Exception ex) {
-      transaction.rollback();
-
-      assertTrue("updateJSONSingleDocument failed in testTransactionRollback",
-          false);
-    }
-
-    // Verify that the document is visible and count is 4
-    // Fetch documents associated with a search term (such as XML) in Address
-    // element
-    QueryManager queryMgr = writerClient.newQueryManager();
-    StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
-
-    StructuredQueryDefinition termQuery = sqb.collection(docId);
-
-    long start = 1;
-    DocumentPage termQueryResults = docMgr
-        .search(termQuery, start, transaction);
-    System.out
-        .println("Number of results = " + termQueryResults.getTotalSize());
-    if (termQueryResults.getTotalSize() != 4) {
-      transaction.rollback();
-
-      assertEquals("Wrong number of results", 4,
-          termQueryResults.getTotalSize());
-    }
-
-    transaction.rollback();
-
-    // Verify that the document is not there after rollback
-    boolean exceptionThrown = false;
-    try {
-      JacksonDatabindHandle<ObjectNode> contentHandle = new JacksonDatabindHandle<ObjectNode>(
-          ObjectNode.class);
-      DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
-      docMgr.read(docId, metadataHandle, contentHandle);
-    } catch (Exception ex) {
-      exceptionThrown = true;
-    }
-
-    if (!exceptionThrown) {
-      transaction.rollback();
-    
-      assertTrue("Exception not thrown during read on non-existing uri",
-          exceptionThrown);
-    }
-
-    // =======================================================================
-    // Now try rollback with delete
-    System.out.println("Test Rollback after delete");
-    docId = "javaSingleJSONDocForDelete.json";
-
-    transaction = writerClient
-        .openTransaction("Transaction Rollback for BiTemporal Delete");
-
-    try {
-    	insertJSONSingleDocument(temporalCollectionName, docId, null,
-          transaction, null);
-    	} catch (Exception ex) {
-      transaction.rollback();
-
-      assertTrue("insertJSONSingleDocument failed in testTransactionRollback",
-          false);
-    }
-
-    // Verify that the document was inserted
-    docMgr = writerClient.newJSONDocumentManager();
-    readResults = docMgr.read(transaction, docId);
-
-    System.out.println("Number of results = " + readResults.size());
-    if (readResults.size() != 1) {
-      transaction.rollback();
-
-      assertEquals("Wrong number of results", 1, readResults.size());
-    }
-
-    latestDoc = readResults.next();
-    System.out.println("URI after insert = " + latestDoc.getUri());
-    if (!docId.equals(latestDoc.getUri())) {
-      transaction.rollback();
-
-      assertEquals("Document uri wrong after insert", docId, latestDoc.getUri());
-    }
-
-    try {
-      deleteJSONSingleDocument(temporalCollectionName, docId, transaction);
-    } catch (Exception ex) {
-      transaction.rollback();
-
-      assertTrue("deleteJSONSingleDocument failed in testTransactionRollback",
-          false);
-    }
-
-    // Verify that the document is visible and count is 1
-    // Fetch documents associated with a search term (such as XML) in Address
-    // element
-    queryMgr = writerClient.newQueryManager();
-    sqb = queryMgr.newStructuredQueryBuilder();
-
-    termQuery = sqb.collection(docId);
-
-    start = 1;
-    termQueryResults = docMgr.search(termQuery, start, transaction);
-    System.out
-        .println("Number of results = " + termQueryResults.getTotalSize());
-    if (termQueryResults.getTotalSize() != 1) {
-      transaction.rollback();
-
-      assertEquals("Wrong number of results", 1,
-          termQueryResults.getTotalSize());
-    }
-
-    transaction.rollback();
-
-    // Verify that the document was rolled back and count is 0
-    exceptionThrown = false;
-    try {
-      readResults = docMgr.read(docId);
-    } catch (Exception ex) {
-      exceptionThrown = true;
-    }
-
-    System.out.println("Done");
   }
 
   @Test

@@ -496,7 +496,7 @@ public void testBulkWritewithTransactionCommitTimeOut() throws Exception {
 			assertEquals("document count", 102, count);
 			// Perform a bulk delete.
 			docMgr.delete(t1, uris);
-			tstatus = false;
+			
 			count = 0;
 			page = docMgr.read(uris);
 			dh = new DOMHandle();

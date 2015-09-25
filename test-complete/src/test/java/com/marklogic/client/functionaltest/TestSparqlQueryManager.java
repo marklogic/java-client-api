@@ -39,7 +39,6 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -51,11 +50,11 @@ import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.TextDocumentManager;
+import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
-import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
@@ -312,42 +311,55 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	public void testExecuteQueryInTransaction() throws IOException, SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testExecuteQueryInTransaction method");
-		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
 		Transaction t = writeclient.openTransaction();
+		try {
+			SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
 
-		StringBuffer sparqlQuery = new StringBuffer().append("PREFIX usgovt: <tag:govshare.info,2005:rdf/usgovt/>");
-		sparqlQuery.append(newline);
-		sparqlQuery.append("prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>");
-		sparqlQuery.append(newline);
-		sparqlQuery.append("prefix dc: <http://purl.org/dc/elements/1.1/>");
-		sparqlQuery.append(newline);
-		sparqlQuery.append("prefix census: <tag:govshare.info,2005:rdf/census/>");
-		sparqlQuery.append(newline);
-		sparqlQuery.append("prefix census: <tag:govshare.info,2005:rdf/census/>");
-		sparqlQuery.append(newline);
-		sparqlQuery.append("SELECT ?stateCode ?population ?statename from <http://marklogic.com/qatests/n3/geo-states.n3> ");
-		sparqlQuery.append("WHERE { ?stateCode usgovt:censusStateCode \"63\" .");
-		sparqlQuery.append("?stateCode census:population ?population .");
-		sparqlQuery.append("?stateCode dc:title ?statename . }");
-		
-		SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(sparqlQuery.toString());
-		// Select in a transaction.
-		String jsonStrResults = sparqlQmgr.executeSelect(qdef, new StringHandle(), t).get();
-		ObjectMapper mapper = new ObjectMapper();
-	   
-		// Parsing results using JsonNode. 
-		JsonNode jsonNodesFromStr = mapper.readTree(jsonStrResults);
-		System.out.println(jsonStrResults);
-		JsonNode jsonBindingsNodes = jsonNodesFromStr.path("results").path("bindings");
-		// Should have 1 node returned.
-		assertEquals("Result returned from testExecuteQueryInTransaction method size is incorrect ", 1, jsonBindingsNodes.size());									
-		
-		// Verify results.
-		assertEquals("Element statecode value is incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/al", jsonBindingsNodes.get(0).path("stateCode").path("value").asText());
-		assertEquals("Element lives is incorrect", "4447100", jsonBindingsNodes.get(0).path("population").path("value").asText());
-		assertEquals("Element city is incorrect", "Alabama", jsonBindingsNodes.get(0).path("statename").path("value").asText());
-		// Handle the transaction.
-		t.commit();				
+			StringBuffer sparqlQuery = new StringBuffer().append("PREFIX usgovt: <tag:govshare.info,2005:rdf/usgovt/>");
+			sparqlQuery.append(newline);
+			sparqlQuery.append("prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>");
+			sparqlQuery.append(newline);
+			sparqlQuery.append("prefix dc: <http://purl.org/dc/elements/1.1/>");
+			sparqlQuery.append(newline);
+			sparqlQuery.append("prefix census: <tag:govshare.info,2005:rdf/census/>");
+			sparqlQuery.append(newline);
+			sparqlQuery.append("prefix census: <tag:govshare.info,2005:rdf/census/>");
+			sparqlQuery.append(newline);
+			sparqlQuery.append("SELECT ?stateCode ?population ?statename from <http://marklogic.com/qatests/n3/geo-states.n3> ");
+			sparqlQuery.append("WHERE { ?stateCode usgovt:censusStateCode \"63\" .");
+			sparqlQuery.append("?stateCode census:population ?population .");
+			sparqlQuery.append("?stateCode dc:title ?statename . }");
+
+			SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(sparqlQuery.toString());
+			// Select in a transaction.
+			String jsonStrResults = sparqlQmgr.executeSelect(qdef, new StringHandle(), t).get();
+			ObjectMapper mapper = new ObjectMapper();
+
+			// Parsing results using JsonNode. 
+			JsonNode jsonNodesFromStr = mapper.readTree(jsonStrResults);
+			System.out.println(jsonStrResults);
+			JsonNode jsonBindingsNodes = jsonNodesFromStr.path("results").path("bindings");
+			// Should have 1 node returned.
+			assertEquals("Result returned from testExecuteQueryInTransaction method size is incorrect ", 1, jsonBindingsNodes.size());									
+
+			// Verify results.
+			assertEquals("Element statecode value is incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/al", jsonBindingsNodes.get(0).path("stateCode").path("value").asText());
+			assertEquals("Element lives is incorrect", "4447100", jsonBindingsNodes.get(0).path("population").path("value").asText());
+			assertEquals("Element city is incorrect", "Alabama", jsonBindingsNodes.get(0).path("statename").path("value").asText());
+			// Handle the transaction.
+			t.commit();
+			t = null;
+		} catch (Exception e) {			
+			e.printStackTrace();			
+		} 
+		finally
+		{
+			if (t != null)
+			{
+				t.rollback();
+				t = null;
+			}
+		}
 	}
 	
 	/* This test checks a simple SPARQL query pagination from named graph in a transaction.
@@ -362,145 +374,156 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	public void testPaginationInTransaction() throws IOException, SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testPaginationInTransaction method");
-		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
 		Transaction t = writeclient.openTransaction();
-
-		StringBuffer sparqlQuery = new StringBuffer().append("PREFIX usgovt: <tag:govshare.info,2005:rdf/usgovt/>");
-		sparqlQuery.append(newline);
-		sparqlQuery.append("prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>");
-		sparqlQuery.append(newline);
-		sparqlQuery.append("prefix dc: <http://purl.org/dc/elements/1.1/>");
-		sparqlQuery.append(newline);
-		sparqlQuery.append("prefix census: <tag:govshare.info,2005:rdf/census/>");
-		sparqlQuery.append(newline);
-		sparqlQuery.append("prefix census: <tag:govshare.info,2005:rdf/census/>");
-		sparqlQuery.append(newline);
-		sparqlQuery.append("SELECT ?stateCode ?population ?statename from <http://marklogic.com/qatests/n3/geo-states.n3> ");
-		sparqlQuery.append("WHERE { ?stateCode census:population ?population . ");
-		sparqlQuery.append("?stateCode dc:title ?statename . ");
-		sparqlQuery.append("filter (?population > 5000000) }");
-		sparqlQuery.append(" ORDER by (?population)");
-		
-		SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(sparqlQuery.toString());
-		// Select in a transaction with start = 1 and page length = 1.
-		sparqlQmgr.setPageLength(1);
-		String jsonStrResults = sparqlQmgr.executeSelect(qdef, new StringHandle(), 1, t).get();
-		ObjectMapper mapper = new ObjectMapper();
-	   
-		// Parsing results using JsonNode. 
-		JsonNode jsonNodesFromStr = mapper.readTree(jsonStrResults);
-		System.out.println(jsonStrResults);
-		JsonNode jsonBindingsNodes = jsonNodesFromStr.path("results").path("bindings");
-		// Should have 1 node returned. Details of State - Arizona.
-		assertEquals("Result returned from testPaginationInTransaction query 1 has incorrect size ", 1, jsonBindingsNodes.size());
-		System.out.println("testPaginationInTransaction query 1 result size is " + jsonBindingsNodes.size());
-		
-		// Verify results.
-		assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/az", jsonBindingsNodes.get(0).path("stateCode").path("value").asText());
-		assertEquals("Element lives is incorrect", "5130632", jsonBindingsNodes.get(0).path("population").path("value").asText());
-		assertEquals("Element city is incorrect", "Arizona", jsonBindingsNodes.get(0).path("statename").path("value").asText());
-		
-		// Select in a transaction with start = 2 and page length = 1. 
-		/* Order of states returned are : AZ, MD, WS, MS, TN, WA, IN, MA, VR, NC, GA, NJ, MI, OH, PA, IL..... 
-		 * We have set page length = 1 and start from result 2. Should skip Arizona and return only Maryland
-		 */
-		sparqlQmgr.setPageLength(1);
-		String jsonStrResults2 = sparqlQmgr.executeSelect(qdef, new StringHandle(), 2, t).get();
-		
-		// Parsing results using JsonNode. 
-		JsonNode jsonNodesFromStr2 = mapper.readTree(jsonStrResults2);
-		System.out.println(jsonStrResults2);
-		JsonNode jsonBindingsNodes2 = jsonNodesFromStr2.path("results").path("bindings");
-		
-		assertEquals("Result returned from testPaginationInTransaction query 2 has incorrect size ", 1, jsonBindingsNodes2.size());
-		System.out.println("testPaginationInTransaction query 2 result size is " + jsonBindingsNodes2.size());
-		
-		// Verify results - Details of State - Maryland.
-		assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/md", jsonBindingsNodes2.get(0).path("stateCode").path("value").asText());
-		assertEquals("Element lives is incorrect", "5296486", jsonBindingsNodes2.get(0).path("population").path("value").asText());
-		assertEquals("Element city is incorrect", "Maryland", jsonBindingsNodes2.get(0).path("statename").path("value").asText());
-		
-		// Select in a transaction with start = 2 and page length = 3. 
-		/* Order of states returned are : AZ, MD, WS, MS, TN, WA, IN, MA, VR, NC, GA, NJ, MI, OH, PA, IL..... 
-		 * We have set page length = 3 and start from result 2. Should skip Arizona and return Maryland, Wisconsin, Missouri
-		*/
-		sparqlQmgr.setPageLength(3);
-		String jsonStrResults3 = sparqlQmgr.executeSelect(qdef, new StringHandle(), 2, t).get();
-
-		// Parsing results using JsonNode. 
-		JsonNode jsonNodesFromStr3 = mapper.readTree(jsonStrResults3);
-		System.out.println(jsonStrResults3);
-		
-		assertEquals("Result returned from testPaginationInTransaction query 3 has incorrect size ", 3, jsonNodesFromStr3.path("results").path("bindings").size());
-		System.out.println("testPaginationInTransaction query 3 result is " + jsonNodesFromStr3.path("results").path("bindings").size());
-		
-		Iterator<JsonNode> jsonBindingsNodesItr3 = jsonNodesFromStr3.path("results").path("bindings").elements();
-		JsonNode jsonItrNode1 = jsonBindingsNodesItr3.next();
-		// Verify results - Details of State - Maryland.
-		assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/md", jsonItrNode1.path("stateCode").path("value").asText());
-		assertEquals("Element lives is incorrect", "5296486", jsonItrNode1.path("population").path("value").asText());
-		assertEquals("Element city is incorrect", "Maryland", jsonItrNode1.path("statename").path("value").asText());
-		
-		JsonNode jsonItrNode2 = jsonBindingsNodesItr3.next();
-		// Verify results - Details of State - Wisconsin.
-		assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/wi", jsonItrNode2.path("stateCode").path("value").asText());
-		assertEquals("Element lives is incorrect", "5363675", jsonItrNode2.path("population").path("value").asText());
-		assertEquals("Element city is incorrect", "Wisconsin", jsonItrNode2.path("statename").path("value").asText());
-		
-		JsonNode jsonItrNode3 = jsonBindingsNodesItr3.next();
-		// Verify results - Details of State - Wisconsin.
-		assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/mo", jsonItrNode3.path("stateCode").path("value").asText());
-		assertEquals("Element lives is incorrect", "5595211", jsonItrNode3.path("population").path("value").asText());
-		assertEquals("Element city is incorrect", "Missouri", jsonItrNode3.path("statename").path("value").asText());
-				
-		assertEquals("Result returned from testPaginationInTransaction Page Length incorrect", 3, sparqlQmgr.getPageLength());
-		// Verify clear page length.
-		sparqlQmgr.clearPageLength();
-		assertEquals("Result returned from testPaginationInTransaction Page Length incorrect", -1, sparqlQmgr.getPageLength());
-		// Test negative cases.
-		
-		// Select in a transaction with (java index) start = 21 and page length = 2. Out of results' bounds
-		sparqlQmgr.setPageLength(2);
-		String jsonStrResultsNeg1 = sparqlQmgr.executeSelect(qdef, new StringHandle(), 21, t).get();
-	   
-		// Parsing results using JsonNode. 
-		JsonNode jsonNodesFromStrNeg1 = mapper.readTree(jsonStrResultsNeg1);
-		System.out.println(jsonStrResultsNeg1);
-		JsonNode jsonBindingsNodesNeg1 = jsonNodesFromStrNeg1.path("results").path("bindings");
-		// Should have 1 node returned. Details of United States.
-		assertEquals("Result returned from testPaginationInTransaction negative query 1 has incorrect size ", 1, jsonBindingsNodesNeg1.size());
-		System.out.println("testPaginationInTransaction negative query 1 result size is " + jsonBindingsNodesNeg1.size());
-		// Verify results - Details of United States.
-		assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us", jsonBindingsNodesNeg1.get(0).path("stateCode").path("value").asText());
-		assertEquals("Element lives is incorrect", "281421906", jsonBindingsNodesNeg1.get(0).path("population").path("value").asText());
-		assertEquals("Element city is incorrect", "United States", jsonBindingsNodesNeg1.get(0).path("statename").path("value").asText());
-
-		// Select in a transaction with (java index) start = 100 and page length = 100.
-		sparqlQmgr.setPageLength(100);
-		String jsonStrResultsNeg2 = sparqlQmgr.executeSelect(qdef, new StringHandle(), 100, t).get();
-
-		// Parsing results using JsonNode. 
-		JsonNode jsonNodesFromStrNeg2 = mapper.readTree(jsonStrResultsNeg2);
-		System.out.println(jsonStrResultsNeg2);
-		JsonNode jsonBindingsNodesNeg2 = jsonNodesFromStrNeg2.path("results").path("bindings");
-		// Should have 0 nodes returned. 
-		assertEquals("Result returned from testPaginationInTransaction negative query 2 has incorrect size ", 0, jsonBindingsNodesNeg2.size());
-		System.out.println("testPaginationInTransaction negative query 2 result size is " + jsonBindingsNodesNeg2.size());
-        // Pass negative values. 
-		String expectedException = "IllegalArgumentException";
-		String exception = "";
 		try {
-			// Select in a transaction with (java index) start = -1 and page length = -1.
-			sparqlQmgr.setPageLength(-1);
-			String jsonStrResultsNeg3 = sparqlQmgr.executeSelect(qdef, new StringHandle(), -1, t).get();
-		} catch (Exception e) {
-			exception = e.toString();
-		}
-		System.out.println("Exception thrown from testQueryBindingsNullString is \n"+ exception);
-		assertTrue("Test testQueryBindingsNullString method exception is not thrown", exception.contains(expectedException));
+			SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
+			
+			StringBuffer sparqlQuery = new StringBuffer().append("PREFIX usgovt: <tag:govshare.info,2005:rdf/usgovt/>");
+			sparqlQuery.append(newline);
+			sparqlQuery.append("prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#>");
+			sparqlQuery.append(newline);
+			sparqlQuery.append("prefix dc: <http://purl.org/dc/elements/1.1/>");
+			sparqlQuery.append(newline);
+			sparqlQuery.append("prefix census: <tag:govshare.info,2005:rdf/census/>");
+			sparqlQuery.append(newline);
+			sparqlQuery.append("prefix census: <tag:govshare.info,2005:rdf/census/>");
+			sparqlQuery.append(newline);
+			sparqlQuery.append("SELECT ?stateCode ?population ?statename from <http://marklogic.com/qatests/n3/geo-states.n3> ");
+			sparqlQuery.append("WHERE { ?stateCode census:population ?population . ");
+			sparqlQuery.append("?stateCode dc:title ?statename . ");
+			sparqlQuery.append("filter (?population > 5000000) }");
+			sparqlQuery.append(" ORDER by (?population)");
+			
+			SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(sparqlQuery.toString());
+			// Select in a transaction with start = 1 and page length = 1.
+			sparqlQmgr.setPageLength(1);
+			String jsonStrResults = sparqlQmgr.executeSelect(qdef, new StringHandle(), 1, t).get();
+			ObjectMapper mapper = new ObjectMapper();
+   
+			// Parsing results using JsonNode. 
+			JsonNode jsonNodesFromStr = mapper.readTree(jsonStrResults);
+			System.out.println(jsonStrResults);
+			JsonNode jsonBindingsNodes = jsonNodesFromStr.path("results").path("bindings");
+			// Should have 1 node returned. Details of State - Arizona.
+			assertEquals("Result returned from testPaginationInTransaction query 1 has incorrect size ", 1, jsonBindingsNodes.size());
+			System.out.println("testPaginationInTransaction query 1 result size is " + jsonBindingsNodes.size());
+			
+			// Verify results.
+			assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/az", jsonBindingsNodes.get(0).path("stateCode").path("value").asText());
+			assertEquals("Element lives is incorrect", "5130632", jsonBindingsNodes.get(0).path("population").path("value").asText());
+			assertEquals("Element city is incorrect", "Arizona", jsonBindingsNodes.get(0).path("statename").path("value").asText());
+			
+			// Select in a transaction with start = 2 and page length = 1. 
+			/* Order of states returned are : AZ, MD, WS, MS, TN, WA, IN, MA, VR, NC, GA, NJ, MI, OH, PA, IL..... 
+			 * We have set page length = 1 and start from result 2. Should skip Arizona and return only Maryland
+			 */
+			sparqlQmgr.setPageLength(1);
+			String jsonStrResults2 = sparqlQmgr.executeSelect(qdef, new StringHandle(), 2, t).get();
+			
+			// Parsing results using JsonNode. 
+			JsonNode jsonNodesFromStr2 = mapper.readTree(jsonStrResults2);
+			System.out.println(jsonStrResults2);
+			JsonNode jsonBindingsNodes2 = jsonNodesFromStr2.path("results").path("bindings");
+			
+			assertEquals("Result returned from testPaginationInTransaction query 2 has incorrect size ", 1, jsonBindingsNodes2.size());
+			System.out.println("testPaginationInTransaction query 2 result size is " + jsonBindingsNodes2.size());
+			
+			// Verify results - Details of State - Maryland.
+			assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/md", jsonBindingsNodes2.get(0).path("stateCode").path("value").asText());
+			assertEquals("Element lives is incorrect", "5296486", jsonBindingsNodes2.get(0).path("population").path("value").asText());
+			assertEquals("Element city is incorrect", "Maryland", jsonBindingsNodes2.get(0).path("statename").path("value").asText());
+			
+			// Select in a transaction with start = 2 and page length = 3. 
+			/* Order of states returned are : AZ, MD, WS, MS, TN, WA, IN, MA, VR, NC, GA, NJ, MI, OH, PA, IL..... 
+			 * We have set page length = 3 and start from result 2. Should skip Arizona and return Maryland, Wisconsin, Missouri
+			*/
+			sparqlQmgr.setPageLength(3);
+			String jsonStrResults3 = sparqlQmgr.executeSelect(qdef, new StringHandle(), 2, t).get();
+
+			// Parsing results using JsonNode. 
+			JsonNode jsonNodesFromStr3 = mapper.readTree(jsonStrResults3);
+			System.out.println(jsonStrResults3);
+			
+			assertEquals("Result returned from testPaginationInTransaction query 3 has incorrect size ", 3, jsonNodesFromStr3.path("results").path("bindings").size());
+			System.out.println("testPaginationInTransaction query 3 result is " + jsonNodesFromStr3.path("results").path("bindings").size());
+			
+			Iterator<JsonNode> jsonBindingsNodesItr3 = jsonNodesFromStr3.path("results").path("bindings").elements();
+			JsonNode jsonItrNode1 = jsonBindingsNodesItr3.next();
+			// Verify results - Details of State - Maryland.
+			assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/md", jsonItrNode1.path("stateCode").path("value").asText());
+			assertEquals("Element lives is incorrect", "5296486", jsonItrNode1.path("population").path("value").asText());
+			assertEquals("Element city is incorrect", "Maryland", jsonItrNode1.path("statename").path("value").asText());
+			
+			JsonNode jsonItrNode2 = jsonBindingsNodesItr3.next();
+			// Verify results - Details of State - Wisconsin.
+			assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/wi", jsonItrNode2.path("stateCode").path("value").asText());
+			assertEquals("Element lives is incorrect", "5363675", jsonItrNode2.path("population").path("value").asText());
+			assertEquals("Element city is incorrect", "Wisconsin", jsonItrNode2.path("statename").path("value").asText());
+			
+			JsonNode jsonItrNode3 = jsonBindingsNodesItr3.next();
+			// Verify results - Details of State - Wisconsin.
+			assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us/mo", jsonItrNode3.path("stateCode").path("value").asText());
+			assertEquals("Element lives is incorrect", "5595211", jsonItrNode3.path("population").path("value").asText());
+			assertEquals("Element city is incorrect", "Missouri", jsonItrNode3.path("statename").path("value").asText());
 					
-		// Handle the transaction.
-		t.commit();		
+			assertEquals("Result returned from testPaginationInTransaction Page Length incorrect", 3, sparqlQmgr.getPageLength());
+			// Verify clear page length.
+			sparqlQmgr.clearPageLength();
+			assertEquals("Result returned from testPaginationInTransaction Page Length incorrect", -1, sparqlQmgr.getPageLength());
+			// Test negative cases.
+			
+			// Select in a transaction with (java index) start = 21 and page length = 2. Out of results' bounds
+			sparqlQmgr.setPageLength(2);
+			String jsonStrResultsNeg1 = sparqlQmgr.executeSelect(qdef, new StringHandle(), 21, t).get();
+   
+			// Parsing results using JsonNode. 
+			JsonNode jsonNodesFromStrNeg1 = mapper.readTree(jsonStrResultsNeg1);
+			System.out.println(jsonStrResultsNeg1);
+			JsonNode jsonBindingsNodesNeg1 = jsonNodesFromStrNeg1.path("results").path("bindings");
+			// Should have 1 node returned. Details of United States.
+			assertEquals("Result returned from testPaginationInTransaction negative query 1 has incorrect size ", 1, jsonBindingsNodesNeg1.size());
+			System.out.println("testPaginationInTransaction negative query 1 result size is " + jsonBindingsNodesNeg1.size());
+			// Verify results - Details of United States.
+			assertEquals("Element statecode value incorrect", "http://www.rdfabout.com/rdf/usgov/geo/us", jsonBindingsNodesNeg1.get(0).path("stateCode").path("value").asText());
+			assertEquals("Element lives is incorrect", "281421906", jsonBindingsNodesNeg1.get(0).path("population").path("value").asText());
+			assertEquals("Element city is incorrect", "United States", jsonBindingsNodesNeg1.get(0).path("statename").path("value").asText());
+
+			// Select in a transaction with (java index) start = 100 and page length = 100.
+			sparqlQmgr.setPageLength(100);
+			String jsonStrResultsNeg2 = sparqlQmgr.executeSelect(qdef, new StringHandle(), 100, t).get();
+
+			// Parsing results using JsonNode. 
+			JsonNode jsonNodesFromStrNeg2 = mapper.readTree(jsonStrResultsNeg2);
+			System.out.println(jsonStrResultsNeg2);
+			JsonNode jsonBindingsNodesNeg2 = jsonNodesFromStrNeg2.path("results").path("bindings");
+			// Should have 0 nodes returned. 
+			assertEquals("Result returned from testPaginationInTransaction negative query 2 has incorrect size ", 0, jsonBindingsNodesNeg2.size());
+			System.out.println("testPaginationInTransaction negative query 2 result size is " + jsonBindingsNodesNeg2.size());
+			// Pass negative values. 
+			String expectedException = "IllegalArgumentException";
+			String exception = "";
+			try {
+				// Select in a transaction with (java index) start = -1 and page length = -1.
+				sparqlQmgr.setPageLength(-1);
+				String jsonStrResultsNeg3 = sparqlQmgr.executeSelect(qdef, new StringHandle(), -1, t).get();
+			} catch (Exception e) {
+				exception = e.toString();
+			}
+			System.out.println("Exception thrown from testQueryBindingsNullString is \n"+ exception);
+			assertTrue("Test testQueryBindingsNullString method exception is not thrown", exception.contains(expectedException));
+						
+			// Handle the transaction.
+			t.commit();
+			t = null;
+		} catch (Exception e) {			
+			e.printStackTrace();
+		}
+		finally {
+			if (t != null) {
+				t.rollback();
+				t = null;
+			}
+		}
 	}
 	
 	/* This test checks a SPARQL construct query results.
@@ -603,69 +626,81 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	public void testExecuteConstructInTransaction() throws IOException, SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testExecuteConstructInTransaction method");
-		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
 		Transaction t = writeclient.openTransaction();
-
-		StringBuffer sparqlQuery = new StringBuffer().append(" PREFIX foaf: <http://xmlns.com/foaf/0.1/>");
-		sparqlQuery.append(newline);
-		sparqlQuery.append("CONSTRUCT {<http://www.ucsb.edu/random-alum> foaf:knows ?alum }");
-		sparqlQuery.append(newline);
-		sparqlQuery.append("where");
-		sparqlQuery.append(newline);
-		sparqlQuery.append("{ ?alum foaf:schoolHomepage <http://www.ucsb.edu/> }");		
 		
-		SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(sparqlQuery.toString());		
-		// Execute Construct query 	with RDFMimeTypes.NTRIPLES	
-		String[] jsonResults = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.NTRIPLES), t).get().split(" ");
-		
-		// Account for the dot at the end of the triple. Hence size is 4.
-		assertEquals("Method testExecuteConstructInTransaction in-memory Triple part size is incorrect", 4, jsonResults.length);
-		assertEquals("Method testExecuteConstructInTransaction in-memory subject is incorrect", "<http://www.ucsb.edu/random-alum>", jsonResults[0]);
-		assertEquals("Method testExecuteConstructInTransaction in-memory predicate is incorrect", "<http://xmlns.com/foaf/0.1/knows>", jsonResults[1]);
-		assertEquals("Method testExecuteConstructInTransaction in-memory object is incorrect", "<1bfbfb8:ff2d706919:-7fa9>", jsonResults[2]);		
-		
-		// Tests for additional MIME Type.
-		
-		ObjectMapper mapper = new ObjectMapper();
-		
-		String strRDFJSON = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.RDFJSON), t).get().toString();
-		System.out.println("\n RDFJSON format is " + strRDFJSON);
-				   
-		// Parsing results using JsonNode. 
-		JsonNode jsonNodesFromStr = mapper.readTree(strRDFJSON);
-		String strValue =  jsonNodesFromStr.path("http://www.ucsb.edu/random-alum").path("http://xmlns.com/foaf/0.1/knows").get(0).path("value").asText();
-		assertEquals("RDFJSON value output is incorrect ", "1bfbfb8:ff2d706919:-7fa9", strValue);
-		
-		String strRDFXML = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.RDFXML), t).get().toString();
-		
-		System.out.println("\n RDFXML Format is " + strRDFXML);
-		assertTrue("RDFXML subject value output is incorrect ", strRDFXML.contains("rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\""));
-		assertTrue("RDFXML predicate value output is incorrect ", strRDFXML.contains("rdf:Description rdf:about=\"http://www.ucsb.edu/random-alum\""));
-		assertTrue("RDFXML object value output is incorrect ", strRDFXML.contains("knows rdf:resource=\"1bfbfb8:ff2d706919:-7fa9\""));
-
-		String strTRIPLEXML = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.TRIPLEXML), t).get().toString();
-		System.out.println("\n TRIPLEXML format is " + strTRIPLEXML);
-		assertTrue("TRIPLEXML subject value output is incorrect ", strTRIPLEXML.contains("<sem:subject>http://www.ucsb.edu/random-alum</sem:subject>"));
-		assertTrue("TRIPLEXML predicate value output is incorrect ", strTRIPLEXML.contains("<sem:predicate>http://xmlns.com/foaf/0.1/knows</sem:predicate>"));
-		assertTrue("TRIPLEXML object value output is incorrect ", strTRIPLEXML.contains("<sem:object>1bfbfb8:ff2d706919:-7fa9</sem:object>"));
-		
-		String strTURTLE = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.TURTLE), t).get().toString();
-		System.out.println("\n TURTLE format is " + strTURTLE);
-		assertTrue("TURTLE subject value output is incorrect ", strTURTLE.contains("<http://www.ucsb.edu/random-alum>"));
-		assertTrue("TURTLE predicate value output is incorrect ", strTURTLE.contains("<http://xmlns.com/foaf/0.1/knows>"));
-		assertTrue("TURTLE object value output is incorrect ", strTURTLE.contains("<1bfbfb8:ff2d706919:-7fa9>"));
-		
-		//String strN3 = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.N3), t).get().toString();
-		//System.out.println("\n N3 format is " + strN3);
-		
-		String strNTriples = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.NTRIPLES), t).get().toString();
-		System.out.println("\n NTRIPLES format is " + strNTriples);
-		assertTrue("NTRIPLES subject value output is incorrect ", strNTriples.contains("<http://www.ucsb.edu/random-alum>"));
-		assertTrue("NTRIPLES predicate value output is incorrect ", strNTriples.contains("<http://xmlns.com/foaf/0.1/knows>"));
-		assertTrue("NTRIPLES object value output is incorrect ", strNTriples.contains("<1bfbfb8:ff2d706919:-7fa9>"));
+		try {
+			SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
 			
-		// Handle the transaction.
-		t.commit();
+			StringBuffer sparqlQuery = new StringBuffer().append(" PREFIX foaf: <http://xmlns.com/foaf/0.1/>");
+			sparqlQuery.append(newline);
+			sparqlQuery.append("CONSTRUCT {<http://www.ucsb.edu/random-alum> foaf:knows ?alum }");
+			sparqlQuery.append(newline);
+			sparqlQuery.append("where");
+			sparqlQuery.append(newline);
+			sparqlQuery.append("{ ?alum foaf:schoolHomepage <http://www.ucsb.edu/> }");		
+			
+			SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(sparqlQuery.toString());		
+			// Execute Construct query 	with RDFMimeTypes.NTRIPLES	
+			String[] jsonResults = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.NTRIPLES), t).get().split(" ");
+			
+			// Account for the dot at the end of the triple. Hence size is 4.
+			assertEquals("Method testExecuteConstructInTransaction in-memory Triple part size is incorrect", 4, jsonResults.length);
+			assertEquals("Method testExecuteConstructInTransaction in-memory subject is incorrect", "<http://www.ucsb.edu/random-alum>", jsonResults[0]);
+			assertEquals("Method testExecuteConstructInTransaction in-memory predicate is incorrect", "<http://xmlns.com/foaf/0.1/knows>", jsonResults[1]);
+			assertEquals("Method testExecuteConstructInTransaction in-memory object is incorrect", "<1bfbfb8:ff2d706919:-7fa9>", jsonResults[2]);		
+			
+			// Tests for additional MIME Type.
+			
+			ObjectMapper mapper = new ObjectMapper();
+			
+			String strRDFJSON = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.RDFJSON), t).get().toString();
+			System.out.println("\n RDFJSON format is " + strRDFJSON);
+					   
+			// Parsing results using JsonNode. 
+			JsonNode jsonNodesFromStr = mapper.readTree(strRDFJSON);
+			String strValue =  jsonNodesFromStr.path("http://www.ucsb.edu/random-alum").path("http://xmlns.com/foaf/0.1/knows").get(0).path("value").asText();
+			assertEquals("RDFJSON value output is incorrect ", "1bfbfb8:ff2d706919:-7fa9", strValue);
+			
+			String strRDFXML = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.RDFXML), t).get().toString();
+			
+			System.out.println("\n RDFXML Format is " + strRDFXML);
+			assertTrue("RDFXML subject value output is incorrect ", strRDFXML.contains("rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\""));
+			assertTrue("RDFXML predicate value output is incorrect ", strRDFXML.contains("rdf:Description rdf:about=\"http://www.ucsb.edu/random-alum\""));
+			assertTrue("RDFXML object value output is incorrect ", strRDFXML.contains("knows rdf:resource=\"1bfbfb8:ff2d706919:-7fa9\""));
+
+			String strTRIPLEXML = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.TRIPLEXML), t).get().toString();
+			System.out.println("\n TRIPLEXML format is " + strTRIPLEXML);
+			assertTrue("TRIPLEXML subject value output is incorrect ", strTRIPLEXML.contains("<sem:subject>http://www.ucsb.edu/random-alum</sem:subject>"));
+			assertTrue("TRIPLEXML predicate value output is incorrect ", strTRIPLEXML.contains("<sem:predicate>http://xmlns.com/foaf/0.1/knows</sem:predicate>"));
+			assertTrue("TRIPLEXML object value output is incorrect ", strTRIPLEXML.contains("<sem:object>1bfbfb8:ff2d706919:-7fa9</sem:object>"));
+			
+			String strTURTLE = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.TURTLE), t).get().toString();
+			System.out.println("\n TURTLE format is " + strTURTLE);
+			assertTrue("TURTLE subject value output is incorrect ", strTURTLE.contains("<http://www.ucsb.edu/random-alum>"));
+			assertTrue("TURTLE predicate value output is incorrect ", strTURTLE.contains("<http://xmlns.com/foaf/0.1/knows>"));
+			assertTrue("TURTLE object value output is incorrect ", strTURTLE.contains("<1bfbfb8:ff2d706919:-7fa9>"));
+			
+			//String strN3 = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.N3), t).get().toString();
+			//System.out.println("\n N3 format is " + strN3);
+			
+			String strNTriples = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.NTRIPLES), t).get().toString();
+			System.out.println("\n NTRIPLES format is " + strNTriples);
+			assertTrue("NTRIPLES subject value output is incorrect ", strNTriples.contains("<http://www.ucsb.edu/random-alum>"));
+			assertTrue("NTRIPLES predicate value output is incorrect ", strNTriples.contains("<http://xmlns.com/foaf/0.1/knows>"));
+			assertTrue("NTRIPLES object value output is incorrect ", strNTriples.contains("<1bfbfb8:ff2d706919:-7fa9>"));
+				
+			// Handle the transaction.
+			t.commit();
+			t=null;
+		} catch (Exception e) {			
+			e.printStackTrace();	
+		}
+		finally {
+			if (t != null) {
+				t.rollback();
+				t = null;
+			}
+		}
 	}
 		
 	/* This test checks a simple SPARQL DESCRIBE results from named graph.
@@ -739,50 +774,63 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	public void testExecuteDescribeInTransaction() throws IOException, SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testExecuteDescribeInTransaction method");
-		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
 		Transaction t = writeclient.openTransaction();
-		StringBuffer sparqlQuery = new StringBuffer().append("DESCRIBE <http://www.rdfabout.com/rdf/usgov/geo/us/wi>");
 		
-		SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(sparqlQuery.toString());
-		String jsonResults = sparqlQmgr.executeDescribe(qdef, new StringHandle(), t).get();
-		// Split the string containing series of triples on the last characters i.e a space and dot. 		
-		
-     	// Verify result 1 value.
-		System.out.println(jsonResults);		
-		assertEquals("Method testExecuteDescribeInTransaction size is incorrect for WI", 13, jsonResults.split(" \\.").length);
-		
-		// Negative test cases.
-		// Have Invalid URI
-		StringBuffer sparqlInvalidQuery = new StringBuffer().append("DESCRIBE <http://www.rdfabout.com/rdf/usgov/geo/us/blahblah>");
-
-		SPARQLQueryDefinition qdefInvalid = sparqlQmgr.newQueryDefinition(sparqlInvalidQuery.toString());
-		String jsonInvalidResults = sparqlQmgr.executeDescribe(qdefInvalid, new StringHandle(), t).get();
-		ObjectMapper mapper = new ObjectMapper();
-		   
-		// Parsing results using JsonNode. 
-		JsonNode jsonNodesFromStr = mapper.readTree(jsonInvalidResults);
-		JsonNode jsonBindingsNodes = jsonNodesFromStr.path("results").path("bindings");
-
-		// Verify result 0 elements exists.
-		System.out.println("DESCRIBE with Invalid URI size is : "+ jsonBindingsNodes.size());
-		assertEquals("Method testExecuteDescribeInTransaction size is incorrect ", 0, jsonBindingsNodes.size());
-		
-		// Have missing enclosing 
-		StringBuffer sparqlInvalidQuery1 = new StringBuffer().append("DESCRIBE http://www.rdfabout.com/rdf/usgov/geo/us/wi");
-		String expectedException = "FailedRequestException";
-		String exception = "";
-		SPARQLQueryDefinition qdefInvalid1 = sparqlQmgr.newQueryDefinition(sparqlInvalidQuery1.toString());		
 		try {
-			  sparqlQmgr.executeDescribe(qdefInvalid1, new StringHandle(), t).get();
-		} catch (Exception e) {
-			exception = e.toString();
+			SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
+			
+			StringBuffer sparqlQuery = new StringBuffer().append("DESCRIBE <http://www.rdfabout.com/rdf/usgov/geo/us/wi>");
+			
+			SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(sparqlQuery.toString());
+			String jsonResults = sparqlQmgr.executeDescribe(qdef, new StringHandle(), t).get();
+			// Split the string containing series of triples on the last characters i.e a space and dot. 		
+			
+			// Verify result 1 value.
+			System.out.println(jsonResults);		
+			assertEquals("Method testExecuteDescribeInTransaction size is incorrect for WI", 13, jsonResults.split(" \\.").length);
+			
+			// Negative test cases.
+			// Have Invalid URI
+			StringBuffer sparqlInvalidQuery = new StringBuffer().append("DESCRIBE <http://www.rdfabout.com/rdf/usgov/geo/us/blahblah>");
+
+			SPARQLQueryDefinition qdefInvalid = sparqlQmgr.newQueryDefinition(sparqlInvalidQuery.toString());
+			String jsonInvalidResults = sparqlQmgr.executeDescribe(qdefInvalid, new StringHandle(), t).get();
+			ObjectMapper mapper = new ObjectMapper();
+			   
+			// Parsing results using JsonNode. 
+			JsonNode jsonNodesFromStr = mapper.readTree(jsonInvalidResults);
+			JsonNode jsonBindingsNodes = jsonNodesFromStr.path("results").path("bindings");
+
+			// Verify result 0 elements exists.
+			System.out.println("DESCRIBE with Invalid URI size is : "+ jsonBindingsNodes.size());
+			assertEquals("Method testExecuteDescribeInTransaction size is incorrect ", 0, jsonBindingsNodes.size());
+			
+			// Have missing enclosing 
+			StringBuffer sparqlInvalidQuery1 = new StringBuffer().append("DESCRIBE http://www.rdfabout.com/rdf/usgov/geo/us/wi");
+			String expectedException = "FailedRequestException";
+			String exception = "";
+			SPARQLQueryDefinition qdefInvalid1 = sparqlQmgr.newQueryDefinition(sparqlInvalidQuery1.toString());		
+			try {
+				  sparqlQmgr.executeDescribe(qdefInvalid1, new StringHandle(), t).get();
+			} catch (Exception e) {
+				exception = e.toString();
+			}
+			System.out.println("Exception thrown from testExecuteDescribeInTransaction is \n" +exception);
+			assertTrue("Test testExecuteDescribeInTransaction method exception is not thrown",
+					    exception.contains(expectedException));
+			   
+			// Handle the transaction.
+			t.commit();
+			t = null;
+		} catch (Exception e) {			
+			e.printStackTrace();
+		} 
+		finally {
+			if (t != null) {
+				t.rollback();
+				t = null;
+			}
 		}
-		System.out.println("Exception thrown from testExecuteDescribeInTransaction is \n" +exception);
-		assertTrue("Test testExecuteDescribeInTransaction method exception is not thrown",
-				    exception.contains(expectedException));
-		   
-		// Handle the transaction.
-		t.commit();
 	}
 	
 	/* This test checks a simple SPARQL ASK results from named graph.
@@ -840,73 +888,99 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 */
 	@Test
 	public void testExecuteAskInTransactions() throws IOException, SAXException, ParserConfigurationException
-	{			
+	{
 		System.out.println("In SPARQL Query Manager Test testExecuteAskInTransactions method");
-		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
-		Transaction t1 = writeclient.openTransaction();
-		Transaction t2 = writeclient.openTransaction();
+		Transaction t1 = null;
+		Transaction t2 = null;
+		Transaction tAfterRollback = null;
+		Transaction tAnother = null;
+		try {
+			
+			SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
+			StringBuffer sparqlQuery = new StringBuffer();
+			sparqlQuery.append("ASK FROM <rdfxml> where { <http://example.org/kennedy/person1> <http://purl.org/dc/elements/1.1/title>  \"Person\'s title\"@en }");
 
-		StringBuffer sparqlQuery = new StringBuffer();
-		sparqlQuery.append("ASK FROM <rdfxml> where { <http://example.org/kennedy/person1> <http://purl.org/dc/elements/1.1/title>  \"Person\'s title\"@en }");
+			SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(sparqlQuery.toString());
+			boolean bAskNoWrite = sparqlQmgr.executeAsk(qdef, t1);
 
-		SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition(sparqlQuery.toString());
-		boolean bAskNoWrite = sparqlQmgr.executeAsk(qdef, t1);
+			// Verify result.
+			System.out.println(bAskNoWrite);
+			assertFalse("Method testExecuteAskInTransactions result is incorrect. No records should be returned.", bAskNoWrite);
 
-		// Verify result.
-		System.out.println(bAskNoWrite);
-		assertFalse("Method testExecuteAskInTransactions result is incorrect. No records should be returned.", bAskNoWrite);
+			// RDFXML "application/rdf+xml".  Get the content into FileHandle
+			File file = new File(datasource + "rdfxml1.rdf");		
 
-		// RDFXML "application/rdf+xml".  Get the content into FileHandle
-		File file = new File(datasource + "rdfxml1.rdf");		
+			FileHandle filehandle = new FileHandle();
+			filehandle.set(file);
 
-		FileHandle filehandle = new FileHandle();
-		filehandle.set(file);
+			// Create Graph manager
+			GraphManager sparqlGmgr = writeclient.newGraphManager();
+			t1 = writeclient.openTransaction();
+			// Write the triples in the doc into named graph.
+			sparqlGmgr.write("rdfxml", filehandle.withMimetype(RDFMimeTypes.RDFXML), t1);
+			
+			// Verify result in t1 transaction.
+			boolean bAskInTransT1 = sparqlQmgr.executeAsk(qdef, t1);
+			System.out.println(bAskInTransT1);
+			assertTrue("Method testExecuteAskInTransactions result is incorrect. Records should be returned.", bAskInTransT1);
+			
+			// Verify result in t2 transaction.
+			t2 = writeclient.openTransaction();
+			boolean bAskInTransT2 = sparqlQmgr.executeAsk(qdef, t2);
+			System.out.println(bAskInTransT2);
+			assertFalse("Method testExecuteAskInTransactions result is incorrect. No Records should be returned.", bAskInTransT2);
+			// Handle the transactions.
+			t1.rollback();
+			t2.rollback();
+			t1 = null;
+			t2 = null;
+			
+			boolean bAskTransRolledback = sparqlQmgr.executeAsk(qdef);
+			System.out.println(bAskTransRolledback);
+			assertFalse("Method testExecuteAskInTransactions result is incorrect. No records should be returned.",	bAskTransRolledback);
 
-		// Create Graph manager
-		GraphManager sparqlGmgr = writeclient.newGraphManager();
-		// Write the triples in the doc into named graph.
-		sparqlGmgr.write("rdfxml", filehandle.withMimetype(RDFMimeTypes.RDFXML), t1);
-		
-		// Verify result in t1 transaction.
-		boolean bAskInTransT1 = sparqlQmgr.executeAsk(qdef, t1);
-		System.out.println(bAskInTransT1);
-		assertTrue("Method testExecuteAskInTransactions result is incorrect. Records should be returned.", bAskInTransT1);
-		
-		// Verify result in t2 transaction.
-		boolean bAskInTransT2 = sparqlQmgr.executeAsk(qdef, t2);
-		System.out.println(bAskInTransT2);
-		assertFalse("Method testExecuteAskInTransactions result is incorrect. No Records should be returned.", bAskInTransT2);
-		// Handle the transactions.
-		t1.rollback();
-		t2.rollback();
-		
-		boolean bAskTransRolledback = sparqlQmgr.executeAsk(qdef);
-		System.out.println(bAskTransRolledback);
-		assertFalse("Method testExecuteAskInTransactions result is incorrect. No records should be returned.",	bAskTransRolledback);
+			// After rollback. Open another transaction and verify ASK on that transaction.
+			tAfterRollback = writeclient.openTransaction();
+			// Write the triples in the doc into either named graph.
+			sparqlGmgr.write("rdfxml", filehandle.withMimetype(RDFMimeTypes.RDFXML), tAfterRollback);
+			tAfterRollback.commit();
+			tAfterRollback = null;
 
-		// After rollback. Open another transaction and verify ASK on that transaction.
-		Transaction tAfterRollback = writeclient.openTransaction();
-		// Write the triples in the doc into either named graph.
-		sparqlGmgr.write("rdfxml", filehandle.withMimetype(RDFMimeTypes.RDFXML), tAfterRollback);
-		tAfterRollback.commit();
+			boolean bAskAfterCommit = sparqlQmgr.executeAsk(qdef);
+			System.out.println(bAskAfterCommit);
+			assertTrue("Method testExecuteAskInTransactions result is incorrect. Records should be returned.", bAskAfterCommit);
 
-		boolean bAskAfterCommit = sparqlQmgr.executeAsk(qdef);
-		System.out.println(bAskAfterCommit);
-		assertTrue("Method testExecuteAskInTransactions result is incorrect. Records should be returned.", bAskAfterCommit);
+			// After commit. Open another transaction and verify ASK on that transaction.
+			tAnother = writeclient.openTransaction();
+			// Verify result.
+			boolean bAskInAnotherTrans = sparqlQmgr.executeAsk(qdef, tAnother);
+			System.out.println(bAskInAnotherTrans);
+			assertFalse("Method testExecuteAskInTransactions result is incorrect. Records should be returned.", bAskInAnotherTrans);
 
-		// After commit. Open another transaction and verify ASK on that transaction.
-		Transaction tAnother = writeclient.openTransaction();
-		// Verify result.
-		boolean bAskInAnotherTrans = sparqlQmgr.executeAsk(qdef, tAnother);
-		System.out.println(bAskInAnotherTrans);
-		assertFalse("Method testExecuteAskInTransactions result is incorrect. Records should be returned.", bAskInAnotherTrans);
-
-		// Handle the transaction.
-		tAnother.commit();
-		t1 = null;
-		t2 = null;
-		tAfterRollback = null;
-		tAnother = null;		
+			// Handle the transaction.
+			tAnother.commit();						
+			tAnother = null;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+			if (t1 != null) {
+				t1.rollback();
+				t1 = null;				
+			}
+			if (t2 != null) {
+				t2.rollback();
+				t2 = null;				
+			}
+			if (tAnother != null) {
+				tAnother.rollback();
+				tAnother = null;				
+			}			
+			if (tAfterRollback != null) {
+				tAfterRollback.rollback();
+				tAfterRollback = null;				
+			}
+		}
 	}
 	
 	/* This test checks if Exceptions are throw when qdef is null.
@@ -1911,11 +1985,13 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	public void testExecuteUpdateInTransactions() throws IOException, SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testExecuteUpdateInTransactions method");
+		Transaction tWrite = null;
+		
 		SPARQLQueryManager sparqlReadQmgr = readclient.newSPARQLQueryManager();
 		SPARQLQueryManager sparqlWriteQmgr = writeclient.newSPARQLQueryManager();
 		
 		// Insert data into Graph in a transaction.
-		Transaction tWrite = null;
+		
 		SPARQLQueryDefinition qdefWrite = sparqlWriteQmgr.newQueryDefinition();
 		qdefWrite.setSparql("INSERT DATA { GRAPH <TransactionTest> { <Bob> <LivesIn> <London> . } }");
 		try {
