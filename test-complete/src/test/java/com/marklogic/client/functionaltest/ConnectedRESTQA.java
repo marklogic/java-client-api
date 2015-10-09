@@ -1103,6 +1103,36 @@ public abstract class ConnectedRESTQA {
 		setDatabaseProperties(dbName,"range-element-index",mainNode);
 
 	}
+	
+	public static void addRangeElementIndex(String dbName, String[][] rangeElements) throws Exception {
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode mainNode = mapper.createObjectNode();
+		
+		ArrayNode childArray = mapper.createArrayNode();
+		int nRowsLen = rangeElements.length;
+		int j = 0;
+		for (int i = 0; i < nRowsLen; i++) {
+			ObjectNode childNodeObject = mapper.createObjectNode();
+			childNodeObject.put("scalar-type", rangeElements[i][j++]);
+			childNodeObject.put("namespace-uri", rangeElements[i][j++]);
+			childNodeObject.put("localname", rangeElements[i][j++]);
+			childNodeObject.put("collation", rangeElements[i][j++]);
+			if (rangeElements[i][j].equalsIgnoreCase("false"))
+				childNodeObject.put("range-value-positions", false);
+			else
+				childNodeObject.put("range-value-positions", true);
+			j++;
+			childNodeObject.put("invalid-values", rangeElements[i][j++]);
+			/* if new field elements are to be added, then:
+			 * 1) Increment value of j
+			 * 2) add them below here using childNodeObject.put("FIELD-NAME", rangeElements[i][j++]);
+			*/ 
+			childArray.add(childNodeObject);
+			j = 0;
+		}		
+		mainNode.putArray("range-element-index").addAll(childArray);		
+		setDatabaseProperties(dbName,"range-element-index",mainNode);
+	}
 
 
 	/*
@@ -1221,6 +1251,38 @@ public abstract class ConnectedRESTQA {
 		//		System.out.println(type + mainNode.path("range-path-indexes").path("range-path-index").toString());
 		setDatabaseProperties(dbName,"range-path-index",childNode);
 
+	}
+	
+	public static void addRangePathIndex(String dbName, String[][] rangePaths) throws Exception {
+		
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode childNode = mapper.createObjectNode();		
+		ArrayNode childArray = mapper.createArrayNode();
+		
+		int nRowsLen = rangePaths.length;
+		int j = 0;
+		for (int i = 0; i < nRowsLen; i++) {
+			ObjectNode childNodeObject = mapper.createObjectNode();
+			childNodeObject.put("scalar-type", rangePaths[i][j++]);
+			childNodeObject.put("path-expression", rangePaths[i][j++]);
+			childNodeObject.put("collation", rangePaths[i][j++]);
+			childNodeObject.put("invalid-values", rangePaths[i][j++]);
+
+			if (rangePaths[i][j].equalsIgnoreCase("false"))
+				childNodeObject.put("range-value-positions", false);
+			else
+				childNodeObject.put("range-value-positions", true);
+			/* if new field elements are to be added, then:
+			 * 1) Increment value of j
+			 * 2) add them below here using childNodeObject.put("FIELD-NAME", rangePaths[i][j++]);
+			*/ 
+
+			childArray.add(childNodeObject);
+			j = 0;
+		}
+		childNode.putArray("range-path-index").addAll(childArray);
+		
+		setDatabaseProperties(dbName,"range-path-index",childNode);
 	}
 	public static void addGeospatialElementIndexes(String dbName,String localname,String namespace,String coordinateSystem,String pointFormat,boolean rangeValuePositions,String invalidValues) throws Exception{
 		ObjectMapper mapper = new ObjectMapper();
@@ -1474,30 +1536,13 @@ public abstract class ConnectedRESTQA {
 		// These 3 are new fields that have been added as of 8.0.2 from 03/20/2015 in the Management API.
 		childNodeObject.put( "attribute-namespace-uri", attrNS_URI);
 		childNodeObject.put( "attribute-localname", attr_localname);
-		childNodeObject.put( "attribute-value", attr_value);
+		childNodeObject.put( "attribute-value", attr_value);				
 		arrNode.add(childNodeObject);
-		childNode.putArray("included-element").addAll(arrNode);
-		
-		//System.out.println( childNode.toString());
+		childNode.putArray("included-element").addAll(arrNode);		
 		setDatabaseFieldProperties(dbName,field_name,"included-element",childNode);
 
 	}
-	public static void setupAppServicesConstraint(String dbName) throws Exception {
-		enableCollectionLexicon(dbName);
-		enableWordLexicon(dbName);
-		addRangeElementIndex(dbName, "date", "http://purl.org/dc/elements/1.1/", "date");
-		addRangeElementIndex(dbName, "int", "", "popularity");
-		addRangeElementIndex(dbName, "int", "http://test.tups.com", "rate");
-		addRangeElementIndex(dbName, "decimal", "http://test.aggr.com", "score");
-		addRangeElementIndex(dbName, "string", "", "title", "http://marklogic.com/collation/");
-		addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
-		enableTrailingWildcardSearches(dbName);
-		addFieldExcludeRoot(dbName, "para");
-		includeElementFieldWithWeight(dbName, "para", "", "p", 5,"","","");
-		addRangePathIndex(dbName, "string", "/Employee/fn", "http://marklogic.com/collation/", "ignore");
-		addRangePathIndex(dbName, "int", "/root/popularity", "", "ignore");
-		addRangePathIndex(dbName, "decimal", "//@amt", "", "ignore");
-	}
+	
 	public static void setupAppServicesGeoConstraint(String dbName) throws Exception {
 		enableCollectionLexicon(dbName);
 		addRangeElementIndex(dbName, "dateTime", "", "bday", "http://marklogic.com/collation/");
@@ -1509,7 +1554,49 @@ public abstract class ConnectedRESTQA {
 		addBuiltInGeoIndex(dbName);
 
 	}
-
+	
+	public static void setupAppServicesConstraint(String dbName) throws Exception {
+		// Add new range elements into this array
+		String[][] rangeElements = {
+				//{ scalar-type, namespace-uri, localname, collation, range-value-positions, invalid-values }
+				// If there is a need to add additional fields, then add them to the end of each array
+				// and pass empty strings ("") into an array where the additional field does not have a value.
+				// For example : as in namespace, collections below.
+				{ "date", "http://purl.org/dc/elements/1.1/", "date", "", "false", "reject" },
+				{ "int", "", "popularity", "", "false", "reject" },
+				{ "int", "http://test.tups.com", "rate", "", "false", "reject" },
+				{ "decimal", "http://test.aggr.com", "score", "", "false", "reject" },
+				{ "string", "", "title", "http://marklogic.com/collation/", "false", "reject" }
+				// Add new RangeElementIndex as an array below.
+		};
+		
+		//Add new path elements into this array
+		String[][] rangePaths = {
+				//{ scalar-type, path-expression, collation, range-value-positions, invalid-values }
+				// If there is a need to add additional fields, then add them to the end of each array
+				// and pass empty strings ("") into an array where the additional field does not have a value.
+				// For example : as in namespace, collections below.
+				{ "string", "/Employee/fn", "http://marklogic.com/collation/", "ignore", "false"},
+				{ "int", "/root/popularity", "", "ignore", "false"},
+				{ "decimal", "//@amt", "", "ignore", "false" }
+				// Add new RangePathIndex as an array below.
+		};
+		
+		enableCollectionLexicon(dbName);
+		enableWordLexicon(dbName);	
+		
+		// Insert the range indices		
+		addRangeElementIndex(dbName, rangeElements);
+				
+		addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
+		enableTrailingWildcardSearches(dbName);
+		addFieldExcludeRoot(dbName, "para");
+		includeElementFieldWithWeight(dbName, "para", "", "p", 5,"","","");		
+		
+		// Insert the path range indices		
+		addRangePathIndex(dbName, rangePaths);
+	}
+	
 	/*
 	 * Create a temporal axis based on 2 element range indexes, for start and end values (for system or valid axis)
 	 * @dbName Database Name
