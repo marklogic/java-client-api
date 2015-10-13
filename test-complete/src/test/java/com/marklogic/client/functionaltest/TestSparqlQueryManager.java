@@ -955,7 +955,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 			// Verify result.
 			boolean bAskInAnotherTrans = sparqlQmgr.executeAsk(qdef, tAnother);
 			System.out.println(bAskInAnotherTrans);
-			assertFalse("Method testExecuteAskInTransactions result is incorrect. Records should be returned.", bAskInAnotherTrans);
+			assertTrue("Method testExecuteAskInTransactions result is incorrect. Records should be returned.", bAskInAnotherTrans);
 
 			// Handle the transaction.
 			tAnother.commit();						
