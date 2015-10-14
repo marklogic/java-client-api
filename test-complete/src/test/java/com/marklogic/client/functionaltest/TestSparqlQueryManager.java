@@ -46,6 +46,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -88,6 +90,107 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	private static String zhlocaleGraphName;
 	private static String datasource;
 	private  static String mbSearchStr = "凌";
+	
+	/*
+	 * Used in testExecuteAskInTransactions method to test transactions
+	 * This returns false.
+	 */
+	static class ExecuteAskSecondThreadFalse extends Thread {
+		 private boolean bCompleted = false;
+		public boolean isbCompleted() {
+			return bCompleted;
+		}
+		public void setbCompleted(boolean bCompleted) {
+			this.bCompleted = bCompleted;
+		}
+		@Override
+		public void run() {
+			Transaction t2 = writeclient.openTransaction();
+			try {
+				System.out.println("In ExecuteAskSecondThreadFalse run method");
+				
+				SPARQLQueryManager sparqlQmgrTh = writeclient.newSPARQLQueryManager();
+				StringBuffer sparqlQueryTh = new StringBuffer();				
+				sparqlQueryTh.append("ASK FROM <rdfxml> where { <http://example.org/kennedy/person1> <http://purl.org/dc/elements/1.1/title>  \"Person\'s title\"@en }");
+
+				SPARQLQueryDefinition qdefTh = sparqlQmgrTh.newQueryDefinition(sparqlQueryTh.toString());
+
+				// Verify result in t2 transaction.			
+				boolean bAskInTransT2 = sparqlQmgrTh.executeAsk(qdefTh, t2);
+				System.out.println("Method ExecuteAskSecondThreadFalse Run result is " + bAskInTransT2);
+				assertFalse("Class ExecuteAskSecondThreadFalse Run result is incorrect. No Records should be returned.", bAskInTransT2);
+				setbCompleted(true);
+				
+			} catch (ForbiddenUserException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (FailedRequestException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			finally {
+				if (t2 != null) {
+					t2.rollback();
+					t2 = null;
+				}
+			}
+		}
+	}
+	
+	/*
+	 * Used in testExecuteAskInTransactions method to test transactions
+	 * Sleeps for 5 seconds, so that main thread commits the record
+	 * This returns true.
+	 */
+	static class ExecuteAskSecondThreadTrue extends Thread {
+		private boolean bCompleted = false;
+
+		public boolean isbCompleted() {
+			return bCompleted;
+		}
+
+		public void setbCompleted(boolean bCompleted) {
+			this.bCompleted = bCompleted;
+		}
+
+		@Override
+		public void run() {
+			Transaction t2 = writeclient.openTransaction("WaitingTransaction");
+			try {
+				System.out.println("In ExecuteAskSecondThreadTrue run method");
+				
+				SPARQLQueryManager sparqlQmgrTh = writeclient.newSPARQLQueryManager();
+				StringBuffer sparqlQueryTh = new StringBuffer();				
+				sparqlQueryTh.append("ASK FROM <rdfxml> where { <http://example.org/kennedy/person1> <http://purl.org/dc/elements/1.1/title>  \"Person\'s title\"@en }");
+
+				SPARQLQueryDefinition qdefTh = sparqlQmgrTh.newQueryDefinition(sparqlQueryTh.toString());
+
+				// Verify result in t2 transaction.
+				try {
+					//sleep for 5 seconds for main thread to finish commit.
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {					
+					e.printStackTrace();
+				}
+				// By this time the other transaction should (could have?) have commited.
+				boolean bAskInTransT2 = sparqlQmgrTh.executeAsk(qdefTh, t2);
+				System.out.println("Method ExecuteAskSecondThreadTrue Run result is " + bAskInTransT2);
+				assertTrue("Class ExecuteAskSecondThreadTrue Run result is incorrect. Records should be returned.", bAskInTransT2);
+				setbCompleted(true);
+				
+			} catch (ForbiddenUserException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (FailedRequestException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if (t2 != null) {
+				t2.rollback();
+				t2 = null;
+			}	
+		}		
+	}
 	
 	@BeforeClass
 	public static void setUp() throws Exception
@@ -239,16 +342,14 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 			jsonNameNode = nameNodesItr.next();					
 			// Verify result 1's values.
 			assertEquals("Element 1 name value incorrect", "Karen Schouten", jsonNameNode.path("name").path("value").asText());
-			assertEquals("Element 1 type is incorrect", "literal", jsonNameNode.path("name").path("type").asText());
-			assertEquals("Element 1 datatype is incorrect", "http://www.w3.org/2001/XMLSchema#string", jsonNameNode.path("name").path("datatype").asText());
+			assertEquals("Element 1 type is incorrect", "literal", jsonNameNode.path("name").path("type").asText());			
 		}
 			
 		if(nameNodesItr.hasNext()) {
 			// Verify result 2's values.
 			jsonNameNode = nameNodesItr.next();					
 			assertEquals("Element 2 name value incorrect", "Nick Aster", jsonNameNode.path("name").path("value").asText());
-			assertEquals("Element 2 type is incorrect", "literal", jsonNameNode.path("name").path("type").asText());
-			assertEquals("Element 2 datatype is incorrect", "http://www.w3.org/2001/XMLSchema#string", jsonNameNode.path("name").path("datatype").asText());
+			assertEquals("Element 2 type is incorrect", "literal", jsonNameNode.path("name").path("type").asText());			
 		}
 	}
 	
@@ -879,7 +980,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		System.out.println("Checking for true value in testExecuteAsk method with empty ASK : " + bAskEmpty);		
 		assertTrue("Method testExecuteAsk result is incorrect. Expected true for empty ASK query", bAskEmpty);
 	}
-		
+	
 	/* This test checks a simple SPARQL ASK results from named graph in a transaction.
 	 * The database contains triples from rdfxml1.rdf file. The data format in this file is RDFXML.
 	 * 
@@ -891,12 +992,12 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	{
 		System.out.println("In SPARQL Query Manager Test testExecuteAskInTransactions method");
 		Transaction t1 = null;
-		Transaction t2 = null;
 		Transaction tAfterRollback = null;
 		Transaction tAnother = null;
 		try {
 			
 			SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
+			t1 = writeclient.openTransaction();
 			StringBuffer sparqlQuery = new StringBuffer();
 			sparqlQuery.append("ASK FROM <rdfxml> where { <http://example.org/kennedy/person1> <http://purl.org/dc/elements/1.1/title>  \"Person\'s title\"@en }");
 
@@ -909,13 +1010,12 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 
 			// RDFXML "application/rdf+xml".  Get the content into FileHandle
 			File file = new File(datasource + "rdfxml1.rdf");		
-
 			FileHandle filehandle = new FileHandle();
 			filehandle.set(file);
 
 			// Create Graph manager
 			GraphManager sparqlGmgr = writeclient.newGraphManager();
-			t1 = writeclient.openTransaction();
+			
 			// Write the triples in the doc into named graph.
 			sparqlGmgr.write("rdfxml", filehandle.withMimetype(RDFMimeTypes.RDFXML), t1);
 			
@@ -924,17 +1024,13 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 			System.out.println(bAskInTransT1);
 			assertTrue("Method testExecuteAskInTransactions result is incorrect. Records should be returned.", bAskInTransT1);
 			
-			// Verify result in t2 transaction.
-			t2 = writeclient.openTransaction();
-			boolean bAskInTransT2 = sparqlQmgr.executeAsk(qdef, t2);
-			System.out.println(bAskInTransT2);
-			assertFalse("Method testExecuteAskInTransactions result is incorrect. No Records should be returned.", bAskInTransT2);
-			// Handle the transactions.
+			// Thread1 should be blocked due to ML Server holding a write lock on the record and returns false.
+			ExecuteAskSecondThreadFalse thread1 = new ExecuteAskSecondThreadFalse();			
+			thread1.start();			
+			// Handle the transactions.			
 			t1.rollback();
-			t2.rollback();
-			t1 = null;
-			t2 = null;
-			
+			t1 = null;			
+						
 			boolean bAskTransRolledback = sparqlQmgr.executeAsk(qdef);
 			System.out.println(bAskTransRolledback);
 			assertFalse("Method testExecuteAskInTransactions result is incorrect. No records should be returned.",	bAskTransRolledback);
@@ -943,8 +1039,25 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 			tAfterRollback = writeclient.openTransaction();
 			// Write the triples in the doc into either named graph.
 			sparqlGmgr.write("rdfxml", filehandle.withMimetype(RDFMimeTypes.RDFXML), tAfterRollback);
+			
+			// Thread2 should be blocked and sleeping, while main thread commits. Thread 2 returns true.
+			ExecuteAskSecondThreadTrue thread2 = new ExecuteAskSecondThreadTrue();
+			thread2.start();
+			
 			tAfterRollback.commit();
 			tAfterRollback = null;
+			int nCount = 0;
+			// Now wait for thread2 to complete. To do - Producer/Consumer model helps?.
+			while(!thread2.isbCompleted()){
+				try {
+					// Sleep main thread for 1 second and check for 10 times.
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				if (nCount++ > 10)
+					break;
+			}
 
 			boolean bAskAfterCommit = sparqlQmgr.executeAsk(qdef);
 			System.out.println(bAskAfterCommit);
@@ -967,11 +1080,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 			if (t1 != null) {
 				t1.rollback();
 				t1 = null;				
-			}
-			if (t2 != null) {
-				t2.rollback();
-				t2 = null;				
-			}
+			}			
 			if (tAnother != null) {
 				tAnother.rollback();
 				tAnother = null;				
