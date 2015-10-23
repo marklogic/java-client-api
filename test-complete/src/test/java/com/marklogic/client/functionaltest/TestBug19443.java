@@ -16,23 +16,25 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-
-import org.custommonkey.xmlunit.XMLUnit;
+import static org.junit.Assert.assertTrue;
 
 import javax.xml.namespace.QName;
 
-import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.config.QueryOptionsBuilder;
-import com.marklogic.client.io.Format;
+import org.custommonkey.xmlunit.Diff;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.admin.config.QueryOptionsBuilder;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
-
-import org.junit.*;
 public class TestBug19443 extends BasicJavaClientREST {
 
 	private static String dbName = "TestBug19443DB";
@@ -103,7 +105,8 @@ public class TestBug19443 extends BasicJavaClientREST {
 
 	    XMLUnit.setIgnoreWhitespace(true);
 	    XMLUnit.setNormalizeWhitespace(true);
-	    assertXMLEqual("testBug19443", actual, output);
+	    Diff diff = XMLUnit.compareXML( actual, output );
+	    assertTrue( "Not Similar", diff.similar() );
  
 		// release client
 	    client.release();	
