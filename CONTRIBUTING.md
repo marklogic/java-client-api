@@ -54,7 +54,7 @@ and clone your copy.
     $ cd java-client-api
     $ git remote add upstream git://github.com/marklogic/java-client-api.git
 
-All bug fixes and new features go into the dev branch.
+All bug fixes and new features go into the [develop](https://github.com/marklogic/java-client-api/tree/develop) branch.
 
 We ask that you open an issue in the [issue tracker][] and get agreement from
 at least one of the project maintainers before you start coding.
@@ -67,7 +67,7 @@ your vision does not align with that of a project maintainer.
 Okay, so you have decided to fix something. Create a feature branch
 and start hacking:
 
-    $ git checkout -b my-feature-branch -t origin/dev
+    $ git checkout -b my-feature-branch -t origin/develop
 
 #### Commit your changes
 
@@ -107,7 +107,7 @@ run `git shortlog` or `git log --oneline`.
 Use `git rebase` (not `git merge`) to sync your work from time to time.
 
     $ git fetch upstream
-    $ git rebase upstream/dev
+    $ git rebase upstream/develop
 
 #### Test your code
 
@@ -145,15 +145,15 @@ local shell as follows:
 
     $ git push origin --delete my-feature-branch
 
-* Check out the dev branch:
+* Check out the *develop* branch:
 
-    $ git checkout dev -f
+    $ git checkout develop -f
 
 * Delete the local branch:
 
     $ git branch -D my-feature-branch
 
-* Update your dev with the latest upstream version:
+* Update your *develop* with the latest upstream version:
 
-    $ git pull --ff upstream dev
+    $ git pull --ff upstream develop
 [issue tracker]: https://github.com/marklogic/java-client-api/issues
