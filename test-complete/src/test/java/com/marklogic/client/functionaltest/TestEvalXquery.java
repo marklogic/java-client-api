@@ -157,7 +157,7 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 				 
 			 }else if(er.getType().equals(Type.DATE)){
 //				 System.out.println("Testing is DATE? "+er.getAs(String.class));
-				 assertEquals("Returns me a date :","2002-03-07-07:00",er.getAs(String.class));
+				 assertEquals("Returns me a date :","2002-03-07-08:00",er.getAs(String.class));
 			 }else if(er.getType().equals(Type.DATETIME)){
 //				 System.out.println("Testing is DATETIME? "+er.getAs(String.class));
 				 assertEquals("Returns me a dateTime :","2010-01-06T18:13:50.874-07:00",er.getAs(String.class));
