@@ -21,6 +21,9 @@ import static org.junit.Assert.*;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -101,7 +104,7 @@ public class TestEvalXquery  extends BasicJavaClientREST {
  This method is validating all the return values from xquery
   */
 	void validateReturnTypes(EvalResultIterator evr) throws Exception{
-		
+		boolean inDST = TimeZone.getDefault().inDaylightTime( new Date() );
 		 while(evr.hasNext())
 		 {
 			 EvalResult er =evr.next();
@@ -157,11 +160,22 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 				 
 			 }else if(er.getType().equals(Type.DATE)){
 //				 System.out.println("Testing is DATE? "+er.getAs(String.class));
-				 assertEquals("Returns me a date :","2002-03-07-08:00",er.getAs(String.class));
+				if (inDST)
+					assertEquals("Returns me a date :", "2002-03-07-07:00",
+							er.getAs(String.class));
+				else
+					assertEquals("Returns me a date :", "2002-03-07-08:00",
+							er.getAs(String.class));
 			 }else if(er.getType().equals(Type.DATETIME)){
 //				 System.out.println("Testing is DATETIME? "+er.getAs(String.class));
-				 assertEquals("Returns me a dateTime :","2010-01-06T18:13:50.874-07:00",er.getAs(String.class));
-				 
+				 if (inDST)
+					assertEquals("Returns me a dateTime :",
+							"2010-01-06T18:13:50.874-07:00",
+							er.getAs(String.class));
+				else
+					assertEquals("Returns me a dateTime :",
+							"2010-01-06T18:13:50.874-08:00",
+							er.getAs(String.class));
 			 }else if(er.getType().equals(Type.DECIMAL)){
 //				 System.out.println("Testing is Decimal? "+er.getAs(String.class));
 				 assertEquals("Returns me a Decimal :","10.5",er.getAs(String.class));
