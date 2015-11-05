@@ -20,8 +20,6 @@ import static org.junit.Assert.assertTrue;
 
 import javax.xml.namespace.QName;
 
-import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -100,11 +98,7 @@ public class TestBug19443 extends BasicJavaClientREST {
 	    System.out.println(actual);
 	    System.out.println("Output is :  \n");
 	    System.out.println(output);
-
-	    XMLUnit.setIgnoreWhitespace(true); 
-	    XMLUnit.setNormalizeWhitespace(true);
-	    Diff diff = XMLUnit.compareXML( actual, output );
-	    assertTrue( "Not Similar", diff.similar() );
+	    assertTrue( "Element geo-option not available", actual.contains("<search:geo-option>type=long-lat-point</search:geo-option>") );
  
 		// release client
 	    client.release();	
