@@ -659,6 +659,7 @@ public class DocumentMetadataHandle
 	private void sendMetadataImpl(OutputStream out) {
 		try {
 			XMLOutputFactory factory = XMLOutputFactory.newInstance();
+			factory.setProperty("javax.xml.stream.isRepairingNamespaces", true);
 
 			valueSerializer = null;
 
