@@ -80,27 +80,24 @@ import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 
 /**
- * A QueryOptionsHandle is used to configure query configurations.
- * 
- * <p>Use a QueryOptionsHandle if you want to use Java to configure and manage
- * MarkLogic query configurations, for search, value lookups, and facets.</p>
- * 
- * <p>Read an options node from MarkLogic with</p>
- * 
- * <pre>QueryOptionsHandle handle = QueryOptionsManager.readOptions(name, new QueryOptionsHandle());</pre>
- * 
- * <p>or construct a fresh empty one (which is not a valid configuration without further building)</p>
- * 
- * <pre>QueryOptionsHandle handle = new QueryOptionsHandle();</pre>
- *  
- * <p>Build up options to a handle using fluent setter methods</p>
- * 
- * <pre>handle.withConstraints(...).withTerm(...).withOperators(...)</pre>
- * 
- * <p>and constructed items from {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.</p>
- * 
+ * @deprecated Use a JSON or XML 
+ * {@link com.marklogic.client.io.marker.StructureWriteHandle write handle} or
+ * {@link com.marklogic.client.io.marker.StructureReadHandle read handle}
+ * implementation instead of this class to write or read
+ * query options.  For instance:
+ * <pre>{@code
+ *  String opts = new StringBuilder()
+ *      .append("<options xmlns=\"http://marklogic.com/appservices/search\">")
+ *      .append(    "<debug>true</debug>")
+ *      .append("</options>")
+ *      .toString();
+ *  optsMgr.writeOptions("debug", new StringHandle(opts)); }</pre>
+ * or
+ * <pre>{@code
+ *  String opts = "{\"options\":{\"debug\":true}}";
+ *  optsMgr.writeOptions("debug", new StringHandle(opts).withFormat(Format.JSON)); }</pre>
  */
-@SuppressWarnings("deprecation")
+@Deprecated
 public final class QueryOptionsHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
 	implements OutputStreamSender, BufferableHandle,
