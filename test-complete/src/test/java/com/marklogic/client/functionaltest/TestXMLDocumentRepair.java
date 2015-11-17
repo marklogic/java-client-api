@@ -71,7 +71,7 @@ public class TestXMLDocumentRepair extends BasicJavaClientREST {
 		out.close();
 
 		// create database client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8015, "rest-writer", "x", Authentication.DIGEST);
 
 		// create doc id
 		String docId = "/repair/xml/" + file.getName();
