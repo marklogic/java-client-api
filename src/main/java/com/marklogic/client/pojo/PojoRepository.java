@@ -46,7 +46,7 @@ import java.io.Serializable;
  * Where MyClass is your custom pojo type, and myId is the bean property of type Integer
  * marked with the 
  * {@literal @}{@link Id Id annotation}.  The 
- * {@literal @}Id annotaiton can be attached to a public field or a public getter or a 
+ * {@literal @}Id annotation can be attached to a public field or a public getter or a 
  * public setter.  The bean property marked with {@literal @}Id must be a native type or 
  * {@link java.io.Serializable} class and must contain an 
  * identifier value unique across all persisted instances of that
@@ -65,7 +65,7 @@ import java.io.Serializable;
  *
  * If that works but the configured objectMapper in the Pojo Facade is different and not
  * working, you can troubleshoot by directly accessing the objectMapper used by the Pojo 
- * Facade using an unsupported internal method attached to the current implementataion: 
+ * Facade using an unsupported internal method attached to the current implementation: 
  * <a 
  * href="https://github.com/marklogic/java-client-api/blob/master/src/main/java/com/marklogic/client/impl/PojoRepositoryImpl.java"
  * >com.marklogic.client.impl.PojoRepositoryImpl</a>.
