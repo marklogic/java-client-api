@@ -51,6 +51,8 @@ public class TestBug18801 extends BasicJavaClientREST {
 	public static void setUp() throws Exception 
 	{
 	  System.out.println("In setup");
+	  // Adding a wait for cluster restart from a prior test.
+	  waitForServerRestart();
 	  setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	  setupAppServicesConstraint(dbName);
 	}

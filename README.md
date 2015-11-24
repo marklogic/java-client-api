@@ -26,6 +26,24 @@ The Java API supports the following core features of the MarkLogic database:
 
 For more details, please read this [deeper dive](http://developer.marklogic.com/features/java-client-api-2)
 
+### What's New in Java Client API 3.0.2
+
+* Many bug fixes
+
+### What's New in Java Client API 3.0.3
+
+* Search Extract - add support to SearchHandle (actually MatchDocumentSummary) for content extracted by
+  the [extract-document-data option](http://docs.marklogic.com/search:search#opt-extract-document-data)
+* Bi-Temporal enhancements - support bulk write of bitemporal documents; expose bitemporal system time
+* Bulk delete
+
+### What's New in Java Client API 3.0.4
+
+* Semantics API - GraphManager for CRUD of semantic graphs; SPARQLQueryManager for executing SPARQL
+  queries (select, describe, construct, and ask) and using SPARQL Update
+* Enable [MarkLogic Jena API](https://github.com/marklogic/marklogic-jena) (separate project)
+* Enable [MarkLogic Sesame API](https://github.com/marklogic/marklogic-sesame) (separate project)
+
 ### QuickStart
 
 To use the API in your maven project, include the following in your pom.xml:

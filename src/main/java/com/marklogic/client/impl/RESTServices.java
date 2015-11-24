@@ -30,6 +30,7 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentUriTemplate;
@@ -54,6 +55,8 @@ import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.SuggestDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
+import com.marklogic.client.semantics.GraphPermissions;
+import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
@@ -66,7 +69,7 @@ public interface RESTServices {
 	public void setDatabaseClient(DatabaseClient client);
 	public void release();
 
-	public void deleteDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,
+	public TemporalDescriptor deleteDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,
 			Set<Metadata> categories, RequestParameters extraParams)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
@@ -88,19 +91,20 @@ public interface RESTServices {
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
 	public void postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
-			ServerTransform transform, Format defaultFormat, Transaction transaction)
+			ServerTransform transform, Transaction transaction, Format defaultFormat)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 	public <T extends AbstractReadHandle> T postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
-			ServerTransform transform, Transaction transaction, Format defaultFormat, T output)
+			ServerTransform transform, Transaction transaction, Format defaultFormat, T output,
+			String temporalCollection)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
-	public void putDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,
+	public TemporalDescriptor putDocument(RequestLogger logger, DocumentDescriptor desc, Transaction transaction,
 			Set<Metadata> categories, RequestParameters extraParams,
 			DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle)
 		throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException;
 
-	public DocumentDescriptor postDocument(RequestLogger logger, DocumentUriTemplate template,
+	public DocumentDescriptorImpl postDocument(RequestLogger logger, DocumentUriTemplate template,
 			Transaction transaction, Set<Metadata> categories, RequestParameters extraParams,
 			DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle)
 		throws ResourceNotFoundException, ForbiddenUserException,
@@ -271,10 +275,50 @@ public interface RESTServices {
 	public InputStream match(String[] docIds, String[] candidateRules, ServerTransform transform);
 	public InputStream match(QueryDefinition queryDef, long start, long pageLength, String[] candidateRules, ServerTransform transform);
 	
+	public <R extends AbstractReadHandle> R getGraphUris(RequestLogger reqlog, R output)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public <R extends AbstractReadHandle> R readGraph(RequestLogger reqlog, String uri, R output,
+		Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public void writeGraph(RequestLogger reqlog, String uri,
+		AbstractWriteHandle input, GraphPermissions permissions, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public void writeGraphs(RequestLogger reqlog, AbstractWriteHandle input, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public Object deleteGraph(RequestLogger requestLogger, String uri,
+			Transaction transaction)
+			throws ForbiddenUserException, FailedRequestException;
+	public void deleteGraphs(RequestLogger requestLogger, Transaction transaction)
+		throws ForbiddenUserException, FailedRequestException;
+	public <R extends AbstractReadHandle> R executeSparql(RequestLogger reqlog, 
+		SPARQLQueryDefinition qdef, R output, long start, long pageLength,
+		Transaction transaction, boolean isUpdate);
+
 	/**
 	 * Wraps a HEAD request for a simple URI
 	 * @param uri URL to which to make a HEAD request
 	 * @return true if the status response is 200, false if 404;
 	 */
 	public boolean exists(String uri);
+
+	public void mergeGraph(RequestLogger reqlog, String uri, AbstractWriteHandle input,
+			GraphPermissions permissions, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException,
+			   FailedRequestException;
+
+	public void mergeGraphs(RequestLogger reqlog, AbstractWriteHandle input, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public <R extends AbstractReadHandle> R getPermissions(RequestLogger reqlog, String uri,
+			R output, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public void deletePermissions(RequestLogger reqlog, String uri, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public void writePermissions(RequestLogger reqlog, String uri,
+			AbstractWriteHandle permissions, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public void mergePermissions(RequestLogger reqlog, String uri,
+			AbstractWriteHandle permissions, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public <R extends AbstractReadHandle> R getThings(RequestLogger reqlog, String[] iris, R output)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 }

@@ -1,0 +1,7 @@
+<rdf:RDF xmlns:ken="http://example.org/kennedy/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <rdf:Description rdf:about="http://example.org/kennedy/person1">
+        <dc:title xml:lang="en">Person's title</dc:title>
+        <dc:title xml:lang="es">Titulo de la persona</dc:title>
+        <ken:sameAs rdf:resource="http://foo/bar"/>
+    </rdf:Description>
+</rdf:RDF>

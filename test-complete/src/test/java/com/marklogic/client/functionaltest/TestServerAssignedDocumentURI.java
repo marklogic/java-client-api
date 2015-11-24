@@ -304,6 +304,7 @@ public class TestServerAssignedDocumentURI extends BasicJavaClientREST {
 		System.out.println(metadataContent);
 
 		assertTrue("metadata is not created", metadataContent.contains("<Author>MarkLogic</Author>"));
+		handle.close();
 
 		// release client
 		client1.release();

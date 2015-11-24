@@ -26,10 +26,14 @@ import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
+import com.marklogic.client.io.marker.QuadsWriteHandle;
+import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
+import com.marklogic.client.io.marker.TriplesReadHandle;
+import com.marklogic.client.io.marker.TriplesWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
@@ -42,7 +46,10 @@ public class StringHandle
 		JSONReadHandle, JSONWriteHandle, 
 		TextReadHandle, TextWriteHandle,
 		XMLReadHandle, XMLWriteHandle,
-		StructureReadHandle, StructureWriteHandle
+		StructureReadHandle, StructureWriteHandle,
+		QuadsWriteHandle, 
+		TriplesReadHandle, TriplesWriteHandle,
+		SPARQLResultsReadHandle
 {
 	private String content;
 

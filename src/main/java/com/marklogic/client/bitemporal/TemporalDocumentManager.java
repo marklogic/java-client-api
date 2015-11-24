@@ -19,9 +19,11 @@ import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentUriTemplate;
+import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
@@ -33,7 +35,7 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
    * Just like {@link DocumentManager#create(DocumentUriTemplate, DocumentMetadataWriteHandle,
    * AbstractWriteHandle, ServerTransform, Transaction) create} but create document
    * in a temporalCollection, which will enforce all the rules of
-   * <a href="http://docs.marklogic.com/8.0/guide/concepts/data-management#id_98803">
+   * <a href="http://docs.marklogic.com/guide/temporal/managing">
    * bitemporal data management</a>.
    * @param template	the template for constructing the document uri
    * @param metadataHandle	a handle for writing the metadata of the document
@@ -42,9 +44,10 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
    * @param transaction	an open transaction under which the document may have been created or deleted
    * @param temporalCollection	the name of the temporal collection existing in the database into
    *    which this document should be written
-   * @return the database uri that identifies the created document
+   * @return the TemporalDescriptor including the database uri that identifies the created document,
+   *    as well as the temporal system time when the document was created
    */
-  public DocumentDescriptor create(DocumentUriTemplate template,
+  public TemporalDescriptor create(DocumentUriTemplate template,
       DocumentMetadataWriteHandle metadataHandle,
       W contentHandle,
       ServerTransform transform,
@@ -56,7 +59,7 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
    * Just like {@link DocumentManager#write(DocumentDescriptor, DocumentMetadataWriteHandle,
    * AbstractWriteHandle, ServerTransform, Transaction) write} but write document
    * in a temporalCollection, which will enforce all the rules of
-   * <a href="http://docs.marklogic.com/8.0/guide/concepts/data-management#id_98803">
+   * <a href="http://docs.marklogic.com/guide/temporal/managing">
    * bitemporal data management</a>.
    * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
    * @param metadataHandle	a handle for writing the metadata of the document
@@ -65,8 +68,9 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
    * @param transaction	an open transaction under which the document may have been created or deleted
    * @param temporalCollection	the name of the temporal collection existing in the database into
    *    which this document should be written
+   * @return the TemporalDescriptor with the temporal system time when the document was written
    */
-  public void write(DocumentDescriptor desc,
+  public TemporalDescriptor write(DocumentDescriptor desc,
       DocumentMetadataWriteHandle metadataHandle,
       W contentHandle,
       ServerTransform transform,
@@ -78,7 +82,7 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
    * Just like {@link DocumentManager#write(String, DocumentMetadataWriteHandle,
    * AbstractWriteHandle, ServerTransform, Transaction) write} but write document
    * in a temporalCollection, which will enforce all the rules of
-   * <a href="http://docs.marklogic.com/8.0/guide/concepts/data-management#id_98803">
+   * <a href="http://docs.marklogic.com/guide/temporal/managing">
    * bitemporal data management</a>.
    * @param docId	the URI identifier for the document
    * @param metadataHandle	a handle for writing the metadata of the document
@@ -87,8 +91,9 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
    * @param transaction	an open transaction under which the document may have been created or deleted
    * @param temporalCollection	the name of the temporal collection existing in the database into
    *    which this document should be written
+   * @return the TemporalDescriptor with the temporal system time when the document was written
    */
-  public void write(String docId,
+  public TemporalDescriptor write(String docId,
       DocumentMetadataWriteHandle metadataHandle,
       W contentHandle,
       ServerTransform transform,
@@ -99,14 +104,15 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
   /**
    * Just like {@link DocumentManager#delete(DocumentDescriptor, Transaction) delete} but delete
    * document in a temporalCollection, which will enforce all the rules of
-   * <a href="http://docs.marklogic.com/8.0/guide/concepts/data-management#id_98803">
+   * <a href="http://docs.marklogic.com/guide/temporal/managing">
    * bitemporal data management</a>.
    * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
    * @param transaction	an open transaction under which the document may have been created or deleted
    * @param temporalCollection	the name of the temporal collection existing in the database in
    *    which this document should be marked as deleted
+   * @return the TemporalDescriptor with the temporal system time when the document was deleted
    */
-  public void delete(DocumentDescriptor desc,
+  public TemporalDescriptor delete(DocumentDescriptor desc,
       Transaction transaction,
       String temporalCollection)
   throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
@@ -114,14 +120,15 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
   /**
    * Just like {@link DocumentManager#delete(String, Transaction) delete} but delete
    * document in a temporalCollection, which will enforce all the rules of
-   * <a href="http://docs.marklogic.com/8.0/guide/concepts/data-management#id_98803">
+   * <a href="http://docs.marklogic.com/guide/temporal/managing">
    * bitemporal data management</a>.
    * @param docId	the URI identifier for the document
    * @param transaction	an open transaction under which the document may have been created or deleted
    * @param temporalCollection	the name of the temporal collection existing in the database in
    *    which this document should be marked as deleted
+   * @return the TemporalDescriptor with the temporal system time when the document was deleted
    */
-  public void delete(String docId,
+  public TemporalDescriptor delete(String docId,
       Transaction transaction,
       String temporalCollection)
   throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
@@ -139,9 +146,10 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
      * @param temporalCollection	the name of the temporal collection existing in the database into
      *    which this document should be written
      * @param systemTime	the application-specified system time with which this document will be marked
-     * @return the database uri that identifies the created document
+     * @return the database uri that identifies the created document,
+     *    as well as the temporal system time when the document was created
      */
-    public DocumentDescriptor create(DocumentUriTemplate template,
+    public TemporalDescriptor create(DocumentUriTemplate template,
         DocumentMetadataWriteHandle metadataHandle,
         W contentHandle,
         ServerTransform transform,
@@ -162,8 +170,9 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
      * @param temporalCollection	the name of the temporal collection existing in the database into
      *    which this document should be written
      * @param systemTime	the application-specified system time with which this document will be marked
+     * @return the TemporalDescriptor with the temporal system time when the document was written
      */
-    public void write(DocumentDescriptor desc,
+    public TemporalDescriptor write(DocumentDescriptor desc,
         DocumentMetadataWriteHandle metadataHandle,
         W contentHandle,
         ServerTransform transform,
@@ -184,8 +193,9 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
      * @param temporalCollection	the name of the temporal collection existing in the database into
      *    which this document should be written
      * @param systemTime	the application-specified system time with which this document will be marked
+     * @return the TemporalDescriptor with the temporal system time when the document was written
      */
-    public void write(String docId,
+    public TemporalDescriptor write(String docId,
         DocumentMetadataWriteHandle metadataHandle,
         W contentHandle,
         ServerTransform transform,
@@ -195,6 +205,25 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     /**
+     * Just like {@link DocumentManager#write(DocumentWriteSet, ServerTransform, Transaction)
+     *  write} but create document in a temporalCollection, which will enforce all the rules of
+     * <a href="http://docs.marklogic.com/guide/temporal/managing">
+     * bitemporal data management</a>.
+     * @param writeSet	the set of documents and metadata to write
+     * @param transform	a server transform to modify the contents of each document
+     * @param transaction	an open transaction under which the documents will be written
+     * @param temporalCollection	the name of the temporal collection existing in the database into
+     *    which this document should be written
+     * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk">REST API -&gt; Reading
+     *      and Writing Multiple Documents</a>
+     */
+    // TODO: do we return something for the temporal system time? is it per-document?
+    public void write(DocumentWriteSet writeSet,
+        ServerTransform transform,
+        Transaction transaction,
+        String temporalCollection);
+
+    /**
      * Just like {@link #delete(DocumentDescriptor, Transaction, String) delete} but delete
      * document at a specified system time
      * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
@@ -202,8 +231,9 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
      * @param temporalCollection	the name of the temporal collection existing in the database in
      *    which this document should be marked as deleted
      * @param systemTime	the application-specified system time with which this document will be marked
+     * @return the TemporalDescriptor with the temporal system time when the document was deleted
      */
-    public void delete(DocumentDescriptor desc,
+    public TemporalDescriptor delete(DocumentDescriptor desc,
         Transaction transaction,
         String temporalCollection,
         java.util.Calendar systemTime)
@@ -217,8 +247,9 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
      * @param temporalCollection	the name of the temporal collection existing in the database in
      *    which this document should be marked as deleted
      * @param systemTime	the application-specified system time with which this document will be marked
+     * @return the TemporalDescriptor with the temporal system time when the document was deleted
      */
-    public void delete(String docId,
+    public TemporalDescriptor delete(String docId,
         Transaction transaction,
         String temporalCollection,
         java.util.Calendar systemTime)

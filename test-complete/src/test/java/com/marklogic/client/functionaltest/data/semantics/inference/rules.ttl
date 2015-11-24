@@ -1,0 +1,159 @@
+
+prefix  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+prefix  rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+prefix owl: <http://www.w3.org/2002/07/owl#>
+prefix bb:  <http://marklogic.com/baseball/players#>
+prefix bbr:  <http://marklogic.com/baseball/rules#>
+prefix xs: <http://www.w3.org/2001/XMLSchema#>
+
+
+
+bbr:coachingRole rdfs:domain bbr:coachingStaff .
+bbr:coachingRole rdfs:range bbr:staffPositions .
+
+bbr:bullpenCatcher rdfs:label "Bullpen Catcher" .
+bbr:bullpenCoach rdfs:label "Bullpen Coach" .
+bbr:catchingCoach rdfs:label "Catching Coach" .
+bbr:firstBaseCoach rdfs:label "First Base Coach" .
+bbr:thirdBaseCoach rdfs:label "Third Base Coach" .
+bbr:pitchingCoach rdfs:label "Pitching Coach" .
+bbr:hittingCoach rdfs:label "Hitting Coach" .
+bbr:benchCoach rdfs:label "Bench Coach" .
+bbr:manager rdfs:label "Manager" .
+
+bbr:player rdfs:type rdfs:Class .
+bbr:manager rdfs:type rdfs:Class .
+bbr:coach rdfs:type rdfs:Class .
+bbr:pitcher rdfs:subClassOf bbr:player .
+bbr:catcher rdfs:subClassOf bbr:player .
+bbr:infielder rdfs:subClassOf bbr:player .
+bbr:outfielder rdfs:subClassOf bbr:player .
+bbr:DH rdfs:subClassOf bbr:player .
+
+bbr:player rdfs:label "Player" .
+bbr:manager rdfs:label "Manager" .
+bbr:coach rdfs:label "Coach" .
+bbr:pitcher rdfs:label "Pitcher" .
+bbr:catcher rdfs:label "Catcher" .
+bbr:infielder rdfs:label "Infielder" .
+bbr:outfielder rdfs:label "Outfielder" .
+bbr:DH rdfs:label "Designated Hitter" .
+
+bbr:firstBaseman rdfs:subClassOf bbr:infielder .
+bbr:secondBaseman rdfs:subClassOf bbr:infielder .
+bbr:thirdBaseman rdfs:subClassOf bbr:infielder .
+bbr:shortstop rdfs:subClassOf bbr:infielder .
+bbr:leftFielder rdfs:subClassOf bbr:outfielder .
+bbr:rightFielder rdfs:subClassOf bbr:outfielder .
+bbr:centerFielder rdfs:subClassOf bbr:outfielder .
+
+bbr:firstBaseman rdfs:label "First Baseman" .
+bbr:secondBaseman rdfs:label "Second Baseman" .
+bbr:thirdBaseman rdfs:label "Third Baseman" .
+bbr:shortstop rdfs:label "Shortstop" .
+bbr:leftFielder rdfs:label "Left Fielder" .
+bbr:rightFielder rdfs:label "Right Fielder" .
+bbr:centerFielder rdfs:label "Center Fielder" .
+
+bbr:starter rdfs:subClassOf bbr:pitcher .
+bbr:reliever rdfs:subClassOf bbr:pitcher .
+bbr:starter rdfs:domain bbr:pitchingStaff .
+bbr:reliever rdfs:domain bbr:pitchingStaff .
+
+bbr:starter rdfs:label "Starter" .
+bbr:reliever rdfs:label "Reliever" .
+
+bbr:setup rdfs:subClassOf bbr:reliever .
+bbr:mopup rdfs:subClassOf bbr:reliever .
+bbr:closer rdfs:subClassOf bbr:reliever .
+
+bbr:playsFor owl:inverseOf bbr:manages .
+bbr:coachesFor owl:inverseOf bbr:supervises .
+
+bbr:playsFor rdfs:subPropertyOf bbr:onRosterOf .
+bbr:manages rdfs:subPropertyOf bbr:onRosterOf .
+bbr:coaches rdfs:subPropertyOf bbr:onRosterOf .
+bbr:playsFor rdfs:domain bbr:rosterMember .
+bbr:manages rdfs:domain bbr:rosterMember .
+bbr:coaches rdfs:domain bbr:rosterMember .
+
+bbr:benchCoach rdfs:subPropertyOf bbr:coach .
+bbr:catchingCoach rdfs:subPropertyOf bbr:coach .
+bbr:hittingCoach rdfs:subPropertyOf bbr:coach .
+bbr:pitchingCoach rdfs:subPropertyOf bbr:coach .
+bbr:bullpenCoach rdfs:subPropertyOf bbr:coach .
+bbr:firstBaseCoach rdfs:subPropertyOf bbr:coach .
+bbr:thirdBaseCoach rdfs:subPropertyOf bbr:coach .
+bbr:bullpenCatcher rdfs:subPropertyOf bbr:coach .
+
+bbr:player owl:equivalentClass bbr:athlete .
+bbr:memberOf a owl:TransitiveProperty .
+
+bbr:Athletics bbr:memberOf bbr:AL .
+bbr:Angels bbr:memberOf bbr:AL .
+bbr:Mariners bbr:memberOf bbr:AL .
+bbr:Astros bbr:memberOf bbr:AL .
+bbr:Rangers bbr:memberOf bbr:AL .
+bbr:WhiteSox bbr:memberOf bbr:AL .
+bbr:Tigers bbr:memberOf bbr:AL .
+bbr:Royals bbr:memberOf bbr:AL .
+bbr:Indians bbr:memberOf bbr:AL .
+bbr:Twins bbr:memberOf bbr:AL .
+bbr:Yankees bbr:memberOf bbr:AL .
+bbr:RedSox bbr:memberOf bbr:AL .
+bbr:Rays bbr:memberOf bbr:AL .
+bbr:Orioles bbr:memberOf bbr:AL .
+bbr:BlueJays bbr:memberOf bbr:AL .
+
+bbr:Dodgers bbr:memberOf bbr:NL .
+bbr:Padres bbr:memberOf bbr:NL .
+bbr:DBacks bbr:memberOf bbr:NL .
+bbr:Giants bbr:memberOf bbr:NL .
+bbr:Rockies bbr:memberOf bbr:NL .
+bbr:Reds bbr:memberOf bbr:NL .
+bbr:Cardinals bbr:memberOf bbr:NL .
+bbr:Cubs bbr:memberOf bbr:NL .
+bbr:Pirates bbr:memberOf bbr:NL .
+bbr:Brewers bbr:memberOf bbr:NL .
+bbr:Mets bbr:memberOf bbr:NL .
+bbr:Marlins bbr:memberOf bbr:NL .
+bbr:Braves bbr:memberOf bbr:NL .
+bbr:Phillies bbr:memberOf bbr:NL .
+bbr:Nationals bbr:memberOf bbr:NL .
+
+bbr:Athletics rdfs:label "Athletics" .
+bbr:Angels rdfs:label "Angels" .
+bbr:Mariners rdfs:label "Mariners" .
+bbr:Astros rdfs:label "Astros" .
+bbr:Rangers rdfs:label "Rangers" .
+bbr:WhiteSox rdfs:label "White Sox" .
+bbr:Tigers rdfs:label "Tigers" .
+bbr:Royals rdfs:label "Royals" .
+bbr:Indians rdfs:label "Indians" .
+bbr:Twins rdfs:label "Twins" .
+bbr:Yankees rdfs:label "Yankees" .
+bbr:RedSox rdfs:label "Red Sox" .
+bbr:Rays rdfs:label "Rays" .
+bbr:Orioles rdfs:label "Orioles" .
+bbr:BlueJays rdfs:label "Blue Jays" .
+
+bbr:Dodgers rdfs:label "Dodgers" .
+bbr:Padres rdfs:label "Padres" .
+bbr:DBacks rdfs:label "DBacks" .
+bbr:Giants rdfs:label "Giants" .
+bbr:Rockies rdfs:label "Rockies" .
+bbr:Reds rdfs:label "Reds" .
+bbr:Cardinals rdfs:label "Cardinals" .
+bbr:Cubs rdfs:label "Cubs" .
+bbr:Pirates rdfs:label "Pirates" .
+bbr:Brewers rdfs:label "Brewers" .
+bbr:Mets rdfs:label "Mets" .
+bbr:Marlins rdfs:label "Marlins" .
+bbr:Braves rdfs:label "Braves" .
+bbr:Phillies rdfs:label "Phillies" .
+bbr:Nationals rdfs:label "Nationals" .
+
+bbr:AL rdfs:label "American League" .
+bbr:NL rdfs:label "National League" .
+
+

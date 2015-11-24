@@ -1,0 +1,503 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sem:triples xmlns:sem="http://marklogic.com/semantics">
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person23</sem:subject>
+    <sem:predicate>http://example.org/kennedy/middle-initial</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">nil</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person23</sem:subject>
+    <sem:predicate>http://example.org/kennedy/last-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Bessette</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person23</sem:subject>
+    <sem:predicate>http://example.org/kennedy/suffix</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">none</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person23</sem:subject>
+    <sem:predicate>http://example.org/kennedy/alma-mater</sem:predicate>
+    <sem:object>http://example.org/kennedy/Boston-University</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person23</sem:subject>
+    <sem:predicate>http://example.org/kennedy/birth-year</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">1966</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person23</sem:subject>
+    <sem:predicate>http://example.org/kennedy/death-year</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">1999</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person23</sem:subject>
+    <sem:predicate>http://example.org/kennedy/sex</sem:predicate>
+    <sem:object>http://example.org/kennedy/female</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person23</sem:subject>
+    <sem:predicate>http://example.org/kennedy/spouse</sem:predicate>
+    <sem:object>http://example.org/kennedy/person22</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person23</sem:subject>
+    <sem:predicate>http://example.org/kennedy/profession</sem:predicate>
+    <sem:object>http://example.org/kennedy/model</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person23</sem:subject>
+    <sem:predicate>http://example.org/kennedy/profession</sem:predicate>
+    <sem:object>http://example.org/kennedy/PR</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person24</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/person</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person24</sem:subject>
+    <sem:predicate>http://example.org/kennedy/first-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Patrick</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person24</sem:subject>
+    <sem:predicate>http://example.org/kennedy/middle-initial</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Bouvier</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person24</sem:subject>
+    <sem:predicate>http://example.org/kennedy/last-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Kennedy</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person24</sem:subject>
+    <sem:predicate>http://example.org/kennedy/suffix</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">none</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person24</sem:subject>
+    <sem:predicate>http://example.org/kennedy/birth-year</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">1963</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person24</sem:subject>
+    <sem:predicate>http://example.org/kennedy/death-year</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">1963</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person24</sem:subject>
+    <sem:predicate>http://example.org/kennedy/sex</sem:predicate>
+    <sem:object>http://example.org/kennedy/male</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person25</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/person</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person25</sem:subject>
+    <sem:predicate>http://example.org/kennedy/first-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Robert</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person25</sem:subject>
+    <sem:predicate>http://example.org/kennedy/middle-initial</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">S</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person25</sem:subject>
+    <sem:predicate>http://example.org/kennedy/last-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Shriver</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person25</sem:subject>
+    <sem:predicate>http://example.org/kennedy/suffix</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">III</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person25</sem:subject>
+    <sem:predicate>http://example.org/kennedy/alma-mater</sem:predicate>
+    <sem:object>http://example.org/kennedy/Yale</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person25</sem:subject>
+    <sem:predicate>http://example.org/kennedy/birth-year</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">1954</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person25</sem:subject>
+    <sem:predicate>http://example.org/kennedy/sex</sem:predicate>
+    <sem:object>http://example.org/kennedy/male</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person25</sem:subject>
+    <sem:predicate>http://example.org/kennedy/profession</sem:predicate>
+    <sem:object>http://example.org/kennedy/attorney</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person25</sem:subject>
+    <sem:predicate>http://example.org/kennedy/profession</sem:predicate>
+    <sem:object>http://example.org/kennedy/producer</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person25</sem:subject>
+    <sem:predicate>http://example.org/kennedy/profession</sem:predicate>
+    <sem:object>http://example.org/kennedy/goverment</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person26</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/person</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person26</sem:subject>
+    <sem:predicate>http://example.org/kennedy/first-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Maria</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person26</sem:subject>
+    <sem:predicate>http://example.org/kennedy/middle-initial</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Owings</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person26</sem:subject>
+    <sem:predicate>http://example.org/kennedy/last-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Shriver</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person26</sem:subject>
+    <sem:predicate>http://example.org/kennedy/suffix</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">none</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person26</sem:subject>
+    <sem:predicate>http://example.org/kennedy/alma-mater</sem:predicate>
+    <sem:object>http://example.org/kennedy/Georgetown-University</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person26</sem:subject>
+    <sem:predicate>http://example.org/kennedy/birth-year</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">1955</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person26</sem:subject>
+    <sem:predicate>http://example.org/kennedy/sex</sem:predicate>
+    <sem:object>http://example.org/kennedy/female</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person26</sem:subject>
+    <sem:predicate>http://example.org/kennedy/spouse</sem:predicate>
+    <sem:object>http://example.org/kennedy/person27</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person26</sem:subject>
+    <sem:predicate>http://example.org/kennedy/profession</sem:predicate>
+    <sem:object>http://example.org/kennedy/reporter</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person27</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/person</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person27</sem:subject>
+    <sem:predicate>http://example.org/kennedy/first-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Arnold</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person27</sem:subject>
+    <sem:predicate>http://example.org/kennedy/middle-initial</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Alois</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person27</sem:subject>
+    <sem:predicate>http://example.org/kennedy/last-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Schwarzenegger</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person27</sem:subject>
+    <sem:predicate>http://example.org/kennedy/suffix</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">none</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person27</sem:subject>
+    <sem:predicate>http://example.org/kennedy/alma-mater</sem:predicate>
+    <sem:object>http://example.org/kennedy/University-of-Wisconsin</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person27</sem:subject>
+    <sem:predicate>http://example.org/kennedy/birth-year</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">1947</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person27</sem:subject>
+    <sem:predicate>http://example.org/kennedy/sex</sem:predicate>
+    <sem:object>http://example.org/kennedy/male</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person27</sem:subject>
+    <sem:predicate>http://example.org/kennedy/spouse</sem:predicate>
+    <sem:object>http://example.org/kennedy/person26</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person27</sem:subject>
+    <sem:predicate>http://example.org/kennedy/profession</sem:predicate>
+    <sem:object>http://example.org/kennedy/body-builder</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person27</sem:subject>
+    <sem:predicate>http://example.org/kennedy/profession</sem:predicate>
+    <sem:object>http://example.org/kennedy/actor</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person27</sem:subject>
+    <sem:predicate>http://example.org/kennedy/profession</sem:predicate>
+    <sem:object>http://example.org/kennedy/governor</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person28</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/person</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person28</sem:subject>
+    <sem:predicate>http://example.org/kennedy/first-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Timothy</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person28</sem:subject>
+    <sem:predicate>http://example.org/kennedy/middle-initial</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Perry</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person28</sem:subject>
+    <sem:predicate>http://example.org/kennedy/last-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Shriver</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person28</sem:subject>
+    <sem:predicate>http://example.org/kennedy/suffix</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">none</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person28</sem:subject>
+    <sem:predicate>http://example.org/kennedy/alma-mater</sem:predicate>
+    <sem:object>http://example.org/kennedy/Yale</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person28</sem:subject>
+    <sem:predicate>http://example.org/kennedy/alma-mater</sem:predicate>
+    <sem:object>http://example.org/kennedy/Catholic-University</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person28</sem:subject>
+    <sem:predicate>http://example.org/kennedy/alma-mater</sem:predicate>
+    <sem:object>http://example.org/kennedy/University-of-Connecticut</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person28</sem:subject>
+    <sem:predicate>http://example.org/kennedy/birth-year</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">1959</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person28</sem:subject>
+    <sem:predicate>http://example.org/kennedy/sex</sem:predicate>
+    <sem:object>http://example.org/kennedy/male</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person28</sem:subject>
+    <sem:predicate>http://example.org/kennedy/spouse</sem:predicate>
+    <sem:object>http://example.org/kennedy/person30</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person28</sem:subject>
+    <sem:predicate>http://example.org/kennedy/profession</sem:predicate>
+    <sem:object>http://example.org/kennedy/teacher</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person28</sem:subject>
+    <sem:predicate>http://example.org/kennedy/profession</sem:predicate>
+    <sem:object>http://example.org/kennedy/non-profit</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person30</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/person</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person30</sem:subject>
+    <sem:predicate>http://example.org/kennedy/first-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Linda</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person30</sem:subject>
+    <sem:predicate>http://example.org/kennedy/middle-initial</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Sophia</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person30</sem:subject>
+    <sem:predicate>http://example.org/kennedy/last-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Potter</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person30</sem:subject>
+    <sem:predicate>http://example.org/kennedy/suffix</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">none</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person30</sem:subject>
+    <sem:predicate>http://example.org/kennedy/birth-year</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">1956</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person30</sem:subject>
+    <sem:predicate>http://example.org/kennedy/sex</sem:predicate>
+    <sem:object>http://example.org/kennedy/female</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person30</sem:subject>
+    <sem:predicate>http://example.org/kennedy/spouse</sem:predicate>
+    <sem:object>http://example.org/kennedy/person28</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person31</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/person</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person31</sem:subject>
+    <sem:predicate>http://example.org/kennedy/first-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Mark</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person31</sem:subject>
+    <sem:predicate>http://example.org/kennedy/middle-initial</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Kennedy</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person31</sem:subject>
+    <sem:predicate>http://example.org/kennedy/last-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Shriver</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person31</sem:subject>
+    <sem:predicate>http://example.org/kennedy/suffix</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">none</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person31</sem:subject>
+    <sem:predicate>http://example.org/kennedy/birth-year</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">1964</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person31</sem:subject>
+    <sem:predicate>http://example.org/kennedy/sex</sem:predicate>
+    <sem:object>http://example.org/kennedy/male</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person31</sem:subject>
+    <sem:predicate>http://example.org/kennedy/spouse</sem:predicate>
+    <sem:object>http://example.org/kennedy/person32</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person32</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/person</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person32</sem:subject>
+    <sem:predicate>http://example.org/kennedy/first-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Jeannie</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person32</sem:subject>
+    <sem:predicate>http://example.org/kennedy/middle-initial</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">nil</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person32</sem:subject>
+    <sem:predicate>http://example.org/kennedy/last-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Ripp</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person32</sem:subject>
+    <sem:predicate>http://example.org/kennedy/suffix</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">none</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person32</sem:subject>
+    <sem:predicate>http://example.org/kennedy/birth-year</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">1965</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person32</sem:subject>
+    <sem:predicate>http://example.org/kennedy/sex</sem:predicate>
+    <sem:object>http://example.org/kennedy/female</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person32</sem:subject>
+    <sem:predicate>http://example.org/kennedy/spouse</sem:predicate>
+    <sem:object>http://example.org/kennedy/person31</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person33</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/person</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person33</sem:subject>
+    <sem:predicate>http://example.org/kennedy/first-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Anthony</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person33</sem:subject>
+    <sem:predicate>http://example.org/kennedy/middle-initial</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Kennedy</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person33</sem:subject>
+    <sem:predicate>http://example.org/kennedy/last-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Shriver</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person33</sem:subject>
+    <sem:predicate>http://example.org/kennedy/suffix</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">none</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person33</sem:subject>
+    <sem:predicate>http://example.org/kennedy/birth-year</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">1965</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person33</sem:subject>
+    <sem:predicate>http://example.org/kennedy/sex</sem:predicate>
+    <sem:object>http://example.org/kennedy/male</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person33</sem:subject>
+    <sem:predicate>http://example.org/kennedy/spouse</sem:predicate>
+    <sem:object>http://example.org/kennedy/person34</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person34</sem:subject>
+    <sem:predicate>http://www.w3.org/1999/02/22-rdf-syntax-ns#type</sem:predicate>
+    <sem:object>http://example.org/kennedy/person</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person34</sem:subject>
+    <sem:predicate>http://example.org/kennedy/first-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Alina</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person34</sem:subject>
+    <sem:predicate>http://example.org/kennedy/middle-initial</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">nil</sem:object>
+  </sem:triple>
+  <sem:triple>
+    <sem:subject>http://example.org/kennedy/person34</sem:subject>
+    <sem:predicate>http://example.org/kennedy/last-name</sem:predicate>
+    <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Mojica</sem:object>
+  </sem:triple>
+</sem:triples>

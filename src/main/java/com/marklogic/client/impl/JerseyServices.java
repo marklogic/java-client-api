@@ -25,6 +25,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.HashMap;
@@ -44,6 +45,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.StreamingOutput;
+import javax.xml.bind.DatatypeConverter;
 
 import org.apache.http.HttpHost;
 import org.apache.http.HttpVersion;
@@ -68,6 +70,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -80,6 +83,7 @@ import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.document.ContentDescriptor;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager.Metadata;
@@ -94,6 +98,7 @@ import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
+import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonParserHandle;
 import com.marklogic.client.io.OutputStreamSender;
@@ -113,8 +118,10 @@ import com.marklogic.client.query.KeyLocator;
 import com.marklogic.client.query.KeyValueQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
 import com.marklogic.client.query.RawQueryDefinition;
+import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.SuggestDefinition;
@@ -122,6 +129,13 @@ import com.marklogic.client.query.ValueLocator;
 import com.marklogic.client.query.ValueQueryDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
+import com.marklogic.client.semantics.Capability;
+import com.marklogic.client.semantics.GraphManager;
+import com.marklogic.client.semantics.GraphPermissions;
+import com.marklogic.client.semantics.SPARQLBinding;
+import com.marklogic.client.semantics.SPARQLBindings;
+import com.marklogic.client.semantics.SPARQLQueryDefinition;
+import com.marklogic.client.semantics.SPARQLRuleset;
 import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
@@ -487,7 +501,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public void deleteDocument(RequestLogger reqlog, DocumentDescriptor desc,
+	public TemporalDescriptor deleteDocument(RequestLogger reqlog, DocumentDescriptor desc,
 			Transaction transaction, Set<Metadata> categories, RequestParameters extraParams)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
@@ -510,6 +524,7 @@ public class JerseyServices implements RESTServices {
 		long startTime = System.currentTimeMillis();
 		int nextDelay = 0;
 		int retry = 0;
+		MultivaluedMap<String, String> responseHeaders = null;
 		for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
 			if (nextDelay > 0) {
 				try {
@@ -528,7 +543,7 @@ public class JerseyServices implements RESTServices {
 				break;
 			}
 
-			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+			responseHeaders = response.getHeaders();
 			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
 			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
 
@@ -570,9 +585,12 @@ public class JerseyServices implements RESTServices {
 		if (status != ClientResponse.Status.NO_CONTENT)
 			throw new FailedRequestException("delete failed: "
 					+ status.getReasonPhrase(), extractErrorFields(response));
+		responseHeaders = response.getHeaders();
+		TemporalDescriptor temporalDesc = updateTemporalSystemTime(desc, responseHeaders);
 
 		response.close();
 		logRequest(reqlog, "deleted %s document", uri);
+		return temporalDesc;
 	}
 
 	@Override
@@ -1129,7 +1147,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public void putDocument(RequestLogger reqlog, DocumentDescriptor desc,
+	public TemporalDescriptor putDocument(RequestLogger reqlog, DocumentDescriptor desc,
 			Transaction transaction, Set<Metadata> categories,
 			RequestParameters extraParams,
 			DocumentMetadataWriteHandle metadataHandle,
@@ -1163,20 +1181,21 @@ public class JerseyServices implements RESTServices {
 		}
 
 		if (metadataBase != null && contentBase != null) {
-			putPostDocumentImpl(reqlog, "put", desc, transaction, categories,
+			return putPostDocumentImpl(reqlog, "put", desc, transaction, categories,
 					extraParams, metadataMimetype, metadataHandle,
 					contentMimetype, contentHandle);
 		} else if (metadataBase != null) {
-			putPostDocumentImpl(reqlog, "put", desc, transaction, categories, false,
+			return putPostDocumentImpl(reqlog, "put", desc, transaction, categories, false,
 					extraParams, metadataMimetype, metadataHandle);
 		} else if (contentBase != null) {
-			putPostDocumentImpl(reqlog, "put", desc, transaction, null, true, 
+			return putPostDocumentImpl(reqlog, "put", desc, transaction, null, true, 
 					extraParams, contentMimetype, contentHandle);
 		}
+		throw new IllegalArgumentException("Either metadataHandle or contentHandle must not be null");
 	}
 
 	@Override
-	public DocumentDescriptor postDocument(RequestLogger reqlog, DocumentUriTemplate template,
+	public DocumentDescriptorImpl postDocument(RequestLogger reqlog, DocumentUriTemplate template,
 			Transaction transaction, Set<Metadata> categories, RequestParameters extraParams,
 			DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
@@ -1229,7 +1248,7 @@ public class JerseyServices implements RESTServices {
 		return desc;
 	}
 
-	private void putPostDocumentImpl(RequestLogger reqlog, String method, DocumentDescriptor desc,
+	private TemporalDescriptor putPostDocumentImpl(RequestLogger reqlog, String method, DocumentDescriptor desc,
 			Transaction transaction, Set<Metadata> categories, boolean isOnContent, RequestParameters extraParams,
 			String mimetype, AbstractWriteHandle handle)
 	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
@@ -1386,11 +1405,12 @@ public class JerseyServices implements RESTServices {
 				updateDescriptor(desc, responseHeaders);
 			}
 		}
-
+		TemporalDescriptor temporalDesc = updateTemporalSystemTime(desc, responseHeaders);
 		response.close();
+		return temporalDesc;
 	}
 
-	private void putPostDocumentImpl(RequestLogger reqlog, String method, DocumentDescriptor desc,
+	private TemporalDescriptor putPostDocumentImpl(RequestLogger reqlog, String method, DocumentDescriptor desc,
 			Transaction transaction, Set<Metadata> categories, RequestParameters extraParams,
 			String metadataMimetype, DocumentMetadataWriteHandle metadataHandle, String contentMimetype,
 			AbstractWriteHandle contentHandle)
@@ -1525,8 +1545,9 @@ public class JerseyServices implements RESTServices {
 				updateDescriptor(desc, responseHeaders);
 			}
 		}
-
+		TemporalDescriptor temporalDesc = updateTemporalSystemTime(desc, responseHeaders);
 		response.close();
+		return temporalDesc;
 	}
 
 	@Override
@@ -1806,6 +1827,31 @@ public class JerseyServices implements RESTServices {
 		updateLength(desc, headers);
 	}
 
+	private TemporalDescriptor updateTemporalSystemTime(DocumentDescriptor desc,
+			MultivaluedMap<String, String> headers)
+	{
+		if (headers == null) return null;
+		
+		DocumentDescriptorImpl temporalDescriptor;
+		if ( desc instanceof DocumentDescriptorImpl ) {
+			temporalDescriptor = (DocumentDescriptorImpl) desc;
+		} else {
+			temporalDescriptor = new DocumentDescriptorImpl(desc.getUri(), false);
+		}
+		temporalDescriptor.setTemporalSystemTime(getHeaderTemporalSystemTime(headers));
+		return temporalDescriptor;
+	}
+
+	private String getHeaderTemporalSystemTime(MultivaluedMap<String, String> headers) {
+		if (headers.containsKey("x-marklogic-system-time")) {
+			List<String> values = headers.get("x-marklogic-system-time");
+			if (values != null) {
+				return values.get(0);
+			}
+		}
+		return null;
+	}
+
 	private void copyDescriptor(DocumentDescriptor desc,
 			HandleImplementation handleBase) {
 		if (handleBase == null)
@@ -2045,7 +2091,7 @@ public class JerseyServices implements RESTServices {
             if (optionsName != null && optionsName.length() > 0) {
                 addEncodedParam(params, "options", optionsName);
             }
-
+            
             ServerTransform transform = queryDef.getResponseTransform();
             if (transform != null) {
                 transform.merge(params);
@@ -2417,7 +2463,7 @@ public class JerseyServices implements RESTServices {
 			uri += "/" + valDef.getName();
 		}
 
-		WebResource.Builder builder = getConnection().path(uri).queryParams(docParams).accept(mimetype);
+		WebResource.Builder builder = makeBuilder(uri, docParams, null, mimetype);
 		addHostCookie(builder, transaction);
 
 
@@ -2496,8 +2542,7 @@ public class JerseyServices implements RESTServices {
 
 		String uri = "values";
 
-		WebResource.Builder builder = getConnection().path(uri)
-				.queryParams(docParams).accept(mimetype);
+		WebResource.Builder builder = makeBuilder(uri, docParams, null, mimetype);
 		addHostCookie(builder, transaction);
 
 		ClientResponse response = null;
@@ -2632,8 +2677,7 @@ public class JerseyServices implements RESTServices {
 		if (logger.isDebugEnabled())
 			logger.debug("Getting {}/{}", type, key);
 
-		WebResource.Builder builder = getConnection().path(type + "/" + key).accept(
-				mimetype);
+		WebResource.Builder builder = makeBuilder(type + "/" + key, null, null, mimetype);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -3086,6 +3130,7 @@ public class JerseyServices implements RESTServices {
 			String path, Transaction transaction, RequestParameters params, R output)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
+		if ( params == null ) params = new RequestParameters();
 		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
 				"read");
@@ -3159,6 +3204,7 @@ public class JerseyServices implements RESTServices {
 			String path, Transaction transaction, RequestParameters params, String... mimetypes)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
+		if ( params == null ) params = new RequestParameters();
 		if (transaction != null) params.add("txid", transaction.getTransactionId());
 
 		WebResource.Builder builder = makeGetBuilder(path, params, null);
@@ -3217,6 +3263,7 @@ public class JerseyServices implements RESTServices {
 			R output) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
+		if ( params == null ) params = new RequestParameters();
 		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 		HandleImplementation inputBase = HandleAccessor.checkHandle(input,
 				"write");
@@ -3303,6 +3350,7 @@ public class JerseyServices implements RESTServices {
 		if (input == null || input.length == 0)
 			throw new IllegalArgumentException(
 					"input not specified for multipart");
+		if ( params == null ) params = new RequestParameters();
 		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
@@ -3380,15 +3428,18 @@ public class JerseyServices implements RESTServices {
 			AbstractWriteHandle input, R output) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
+		if ( params == null ) params = new RequestParameters();
+		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
+
 		HandleImplementation inputBase = HandleAccessor.checkHandle(input,
 				"write");
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
 				"read");
 
 		String inputMimetype = inputBase.getMimetype();
-		String outputMimetype = outputBase.getMimetype();
+		String outputMimetype = outputBase == null ? null : outputBase.getMimetype();
 		boolean isResendable = inputBase.isResendable();
-		Class as = outputBase.receiveAs();
+		Class as = outputBase == null ? null : outputBase.receiveAs();
 
 		WebResource.Builder builder = makePostBuilder(path, params,
 				inputMimetype, outputMimetype);
@@ -3467,6 +3518,9 @@ public class JerseyServices implements RESTServices {
 			W[] input, Map<String, List<String>>[] headers, R output) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
+		if ( params == null ) params = new RequestParameters();
+		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
+
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output, "read");
 
 		String outputMimetype = outputBase != null ? outputBase.getMimetype() : null;
@@ -3538,16 +3592,17 @@ public class JerseyServices implements RESTServices {
 	@Override
 	public void postBulkDocuments(
 			RequestLogger reqlog, DocumentWriteSet writeSet,
-			ServerTransform transform, Format defaultFormat, Transaction transaction)
+			ServerTransform transform, Transaction transaction, Format defaultFormat)
 		throws ForbiddenUserException,  FailedRequestException
 	{
-		postBulkDocuments(reqlog, writeSet, transform, transaction, defaultFormat, null);
+		postBulkDocuments(reqlog, writeSet, transform, transaction, defaultFormat, null, null);
 	}
 
 	@Override
 	public <R extends AbstractReadHandle> R postBulkDocuments(
 			RequestLogger reqlog, DocumentWriteSet writeSet,
-			ServerTransform transform, Transaction transaction, Format defaultFormat, R output)
+			ServerTransform transform, Transaction transaction, Format defaultFormat, R output,
+			String temporalCollection)
 		throws ForbiddenUserException,  FailedRequestException
 	{
 		ArrayList<AbstractWriteHandle> writeHandles = new ArrayList<AbstractWriteHandle>();
@@ -3603,7 +3658,7 @@ public class JerseyServices implements RESTServices {
 		if (transform != null) {
 			transform.merge(params);
 		}
-		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
+		if (temporalCollection != null) params.add("temporal-collection", temporalCollection);
 		return postResource(
 			reqlog,
 			"documents",
@@ -3663,9 +3718,14 @@ public class JerseyServices implements RESTServices {
 		@Override
 		public EvalResult.Type getType() {
 			String contentType = content.getHeader("Content-Type");
+			String xPrimitive = content.getHeader("X-Primitive");
 			if ( contentType != null ) {
 				if ( "application/json".equals(contentType) ) {
-					return EvalResult.Type.JSON;
+					if ( "null-node()".equals(xPrimitive) ) {
+						return EvalResult.Type.NULL;
+					} else {
+						return EvalResult.Type.JSON;
+					}
 				} else if ( "text/json".equals(contentType) ) {
 					return EvalResult.Type.JSON;
 				} else if ( "application/xml".equals(contentType) ) {
@@ -3673,16 +3733,15 @@ public class JerseyServices implements RESTServices {
 				} else if ( "text/xml".equals(contentType) ) {
 					return EvalResult.Type.XML;
 				} else if ( "application/x-unknown-content-type".equals(contentType) &&
-							"binary()".equals(content.getHeader("X-Primitive")) )
+							"binary()".equals(xPrimitive) )
 				{
 					return EvalResult.Type.BINARY;
 				} else if ( "application/octet-stream".equals(contentType) &&
-							"node()".equals(content.getHeader("X-Primitive")) )
+							"node()".equals(xPrimitive) )
 				{
 					return EvalResult.Type.BINARY;
 				}
 			}
-			String xPrimitive = content.getHeader("X-Primitive");
 			if ( xPrimitive == null ) {
 				return EvalResult.Type.OTHER;
 			} else if ( "string".equals(xPrimitive) || "untypedAtomic".equals(xPrimitive) ) {
@@ -3733,19 +3792,24 @@ public class JerseyServices implements RESTServices {
 				return EvalResult.Type.QNAME;
 			} else if ( "time".equals(xPrimitive) ) {
 				return EvalResult.Type.TIME;
-			} else if ( "null".equals(xPrimitive) ) {
-				return EvalResult.Type.NULL;
 			}
 			return EvalResult.Type.OTHER;
 		}
 
 		@Override
 		public <H extends AbstractReadHandle> H get(H handle) {
-			return content.getContent(handle);
+			if ( getType() == EvalResult.Type.NULL && handle instanceof StringHandle ) {
+				return (H) ((StringHandle) handle).with(null);
+			} else if ( getType() == EvalResult.Type.NULL && handle instanceof BytesHandle ) {
+				return (H) ((BytesHandle) handle).with(null);
+			} else {
+				return content.getContent(handle);
+			}
 		}
 
 		@Override
 		public <T> T getAs(Class<T> clazz) {
+			if ( getType() == EvalResult.Type.NULL ) return null;
 			if (clazz == null) throw new IllegalArgumentException("clazz cannot be null");
 
 			ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(clazz);
@@ -3757,7 +3821,11 @@ public class JerseyServices implements RESTServices {
 
 		@Override
 		public String getString() {
-			return content.getEntityAs(String.class);
+			if ( getType() == EvalResult.Type.NULL ) {
+				return null;
+			} else {
+				return content.getEntityAs(String.class);
+			}
 		}
 
 		@Override
@@ -3807,40 +3875,86 @@ public class JerseyServices implements RESTServices {
 				throw new IllegalStateException("Invalid eval context: " + context);
 			}
 			if ( variables != null && variables.size() > 0 ) {
-				sb.append("&vars=");
-				ObjectNode vars = new ObjectMapper().createObjectNode();
+				int i=0;
 				for ( String name : variables.keySet() ) {
-					Object valueObject = variables.get(name);
-					// replace any name starting with a namespace prefix with a Clark Notation QName
+					String namespace = "";
+					String localname = name;
 					if ( namespaces != null ) {
 						for ( String prefix : namespaces.keySet() ) {
 							if ( name != null && prefix != null &&
 								 name.startsWith(prefix + ":") )
 							{
-								name = "{" + namespaces.get(prefix) + "}" + 
-									name.substring(prefix.length() + 1);
+								localname = name.substring(prefix.length() + 1);
+								namespace = namespaces.get(prefix);
 							}
 						}
 					}
-					if ( valueObject == null )                    vars.putNull(name);
-					else if ( valueObject instanceof BigDecimal ) vars.put(name, (BigDecimal) valueObject);
-					else if ( valueObject instanceof Double )     vars.put(name, (Double) valueObject);
-					else if ( valueObject instanceof Float )      vars.put(name, (Float) valueObject);
-					else if ( valueObject instanceof Integer )    vars.put(name, (Integer) valueObject);
-					else if ( valueObject instanceof Long )       vars.put(name, (Long) valueObject);
-					else if ( valueObject instanceof Short )      vars.put(name, (Short) valueObject);
-					else if ( valueObject instanceof Number )     vars.put(name, new BigDecimal(valueObject.toString()));
-					else if ( valueObject instanceof Boolean )    vars.put(name, (Boolean) valueObject);
-					else if ( valueObject instanceof String )     vars.put(name, (String) valueObject);
-					else if ( valueObject instanceof JacksonHandle ) {
-						vars.set(name, ((JacksonHandle) valueObject).get());
-					} else if ( valueObject instanceof JacksonParserHandle ) {
-						vars.set(name, ((JacksonParserHandle) valueObject).get().readValueAs(JsonNode.class));
+					// set the variable namespace
+					sb.append("&evn" + i + "=");
+					sb.append(URLEncoder.encode(namespace, "UTF-8"));
+					// set the variable localname
+					sb.append("&evl" + i + "=");
+					sb.append(URLEncoder.encode(localname, "UTF-8"));
+
+					String value;
+					String type = null;
+					Object valueObject = variables.get(name);
+					if ( valueObject == null ) {
+						value = "null";
+						type = "null-node()";
+					} else if ( valueObject instanceof JacksonHandle ||
+								valueObject instanceof JacksonParserHandle ) {
+						JsonNode jsonNode = null;
+						if ( valueObject instanceof JacksonHandle ) {
+							jsonNode = ((JacksonHandle) valueObject).get();
+						} else if ( valueObject instanceof JacksonParserHandle ) {
+							jsonNode = ((JacksonParserHandle) valueObject).get().readValueAs(JsonNode.class);
+						}
+						value = jsonNode.toString();
+						type = getJsonType(jsonNode);
 					} else if ( valueObject instanceof AbstractWriteHandle ) {
-						vars.put(name, HandleAccessor.contentAsString((AbstractWriteHandle) valueObject));
+						value = HandleAccessor.contentAsString((AbstractWriteHandle) valueObject);
+						HandleImplementation valueBase = HandleAccessor.as((AbstractWriteHandle) valueObject);
+						Format format = valueBase.getFormat();
+						//TODO: figure out what type should be
+						// I see element() and document-node() are two valid types
+						if ( format == Format.XML ) {
+							type = "document-node()";
+						} else if ( format == Format.JSON ) {
+							JsonNode jsonNode = new JacksonParserHandle().getMapper().readTree(value);
+							type = getJsonType(jsonNode);
+						} else if ( format == Format.TEXT ) {
+							/* Comment next line until 32608 is resolved
+							type = "text()";
+							// until then, use the following line */
+							type = "xs:untypedAtomic";
+						} else if ( format == Format.BINARY ) {
+							throw new UnsupportedOperationException("Binary format is not supported for variables");
+						} else {
+							throw new UnsupportedOperationException("Undefined format is not supported for variables. " +
+								"Please set the format on your handle for variable " + name + ".");
+						}
+					} else if ( valueObject instanceof String ||
+								valueObject instanceof Boolean ||
+								valueObject instanceof Number ) {
+						value = valueObject.toString();
+						// when we send type "xs:untypedAtomic" via XDBC, the server attempts to intelligently decide
+						// how to cast the type
+						type = "xs:untypedAtomic";
+					} else {
+						throw new IllegalArgumentException("Variable with name=" +
+							name + " is of unsupported type" +
+							valueObject.getClass() + ". Supported types are String, Boolean, Number, " +
+							"or AbstractWriteHandle");
 					}
+
+					// set the variable value
+					sb.append("&evv" + i + "=");
+					sb.append(URLEncoder.encode(value, "UTF-8"));
+					// set the variable type
+					sb.append("&evt" + i + "=" + type);
+					i++;
 				}
-				sb.append(URLEncoder.encode(vars.toString(), "UTF-8"));
 			}
 			formUrlEncodedPayload = sb.toString();
 		} catch (UnsupportedEncodingException e) {
@@ -3852,6 +3966,18 @@ public class JerseyServices implements RESTServices {
 			.withMimetype("application/x-www-form-urlencoded");
 		return new JerseyEvalResultIterator( postIteratedResourceImpl(DefaultJerseyResultIterator.class,
 			reqlog, path, transaction, params, input) );
+	}
+
+	private String getJsonType(JsonNode jsonNode) {
+		if ( jsonNode instanceof ArrayNode ) {
+			return "json:array";
+		} else if ( jsonNode instanceof ObjectNode ) {
+			return "json:object";
+		} else {
+			throw new IllegalArgumentException("When using JacksonHandle or " +
+					"JacksonParserHandle with ServerEvaluationCall the content must be " +
+					"a valid array or object");
+		}
 	}
 
 	@Override
@@ -3870,6 +3996,7 @@ public class JerseyServices implements RESTServices {
 			AbstractWriteHandle input, String... outputMimetypes) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
+		if ( params == null ) params = new RequestParameters();
 		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 		HandleImplementation inputBase = HandleAccessor.checkHandle(input,
 				"write");
@@ -3949,6 +4076,7 @@ public class JerseyServices implements RESTServices {
 			RequestParameters params, W[] input, String... outputMimetypes)
 			throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
+		if ( params == null ) params = new RequestParameters();
 		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -4014,6 +4142,7 @@ public class JerseyServices implements RESTServices {
 			RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
 			R output) throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
+		if ( params == null ) params = new RequestParameters();
 		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
 				"read");
@@ -4480,7 +4609,7 @@ public class JerseyServices implements RESTServices {
 			}
 			throw new FailedRequestException("failed to " + operation + " "
 					+ entityType + " at " + path + ": "
-					+ status.getReasonPhrase(), extractErrorFields(response));
+					+ status.getReasonPhrase(), failure);
 		}
 	}
 
@@ -4771,7 +4900,7 @@ public class JerseyServices implements RESTServices {
 					clazz.getConstructor(JerseyServices.class, RequestLogger.class, BodyPart.class);
 				return constructor.newInstance(new JerseyServices(), reqlog, partQueue.next());
 			} catch (Throwable t) {
-				throw new IllegalStateException("Error instantiating " + clazz.getName());
+				throw new IllegalStateException("Error instantiating " + clazz.getName(), t);
 			}
 		}
 
@@ -4853,10 +4982,22 @@ public class JerseyServices implements RESTServices {
 			return metadata.getContent(metadataHandle);
 		}
 
+		public <T> T getMetadataAs(Class<T> as) {
+			if ( as == null ) throw new IllegalStateException(
+				"getMetadataAs cannot accept null");
+			return metadata.getContentAs(as);
+		}
+
 		public <T extends AbstractReadHandle> T getContent(T contentHandle) {
 			if ( content == null ) throw new IllegalStateException(
 				"getContent called when no content is available");
 			return content.getContent(contentHandle);
+		}
+
+		public <T> T getContentAs(Class<T> as) {
+			if ( as == null ) throw new IllegalStateException(
+				"getContentAs cannot accept null");
+			return content.getContentAs(as);
 		}
 	}
 
@@ -4895,8 +5036,7 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 		WebResource.Builder builder = null;
-		builder = getConnection().path("suggest").queryParams(params)
-				.accept("application/xml");
+		builder = makeBuilder("suggest", params, null, "application/xml");
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
 		long startTime = System.currentTimeMillis();
@@ -4968,8 +5108,7 @@ public class JerseyServices implements RESTServices {
 			transform.merge(params);
 		}
 		WebResource.Builder builder = null;
-		builder = getConnection().path("alert/match").queryParams(params)
-				.accept("application/xml").type(mimeType);
+		builder = makeBuilder("alert/match", params, "application/xml", mimeType);
 		
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -5066,8 +5205,7 @@ public class JerseyServices implements RESTServices {
 			if (logger.isDebugEnabled())
 				logger.debug("Searching for structure {}", structure);
 
-			builder = getConnection().path("alert/match").queryParams(params)
-					.type("application/xml").accept("application/xml");
+			builder = makeBuilder("alert/match", params, "application/xml", "application/xml");
 		} else if (queryDef instanceof StringQueryDefinition) {
 			String text = ((StringQueryDefinition) queryDef).getCriteria();
 			if (logger.isDebugEnabled())
@@ -5077,8 +5215,7 @@ public class JerseyServices implements RESTServices {
 				addEncodedParam(params, "q", text);
 			}
 
-			builder = getConnection().path("alert/match").queryParams(params)
-					.accept("application/xml");
+			builder = makeBuilder("alert/match", params, null, "application/xml"); 
 		} else if (queryDef instanceof StructuredQueryDefinition) {
 			structure = ((StructuredQueryDefinition) queryDef).serialize();
 
@@ -5086,8 +5223,7 @@ public class JerseyServices implements RESTServices {
 				logger.debug("Searching for structure {} in transaction {}",
 						structure);
 
-			builder = getConnection().path("alert/match").queryParams(params)
-					.type("application/xml").accept("application/xml");
+			builder = makeBuilder("alert/match", params, "application/xml", "application/xml");
 		} else {
 			throw new UnsupportedOperationException("Cannot match with "
 					+ queryDef.getClass().getName());
@@ -5174,8 +5310,7 @@ public class JerseyServices implements RESTServices {
 		if (transform != null) {
 			transform.merge(params);
 		}
-		WebResource.Builder builder = getConnection().path("alert/match").queryParams(params)
-				.accept("application/xml");
+		WebResource.Builder builder = makeBuilder("alert/match", params, "application/xml", "application/xml");
 		
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -5233,8 +5368,260 @@ public class JerseyServices implements RESTServices {
 		return entity;
 	}
 
+	private void addGraphUriParam(RequestParameters params, String uri) {
+		if ( uri == null || uri.equals(GraphManager.DEFAULT_GRAPH) ) {
+			params.add("default", "");
+		} else {
+			params.add("graph", uri);
+		}
+	}
+
+	private void addPermsParams(RequestParameters params, GraphPermissions permissions) {
+		if ( permissions != null ) {
+			for ( String role : permissions.keySet() ) {
+				if ( permissions.get(role) != null ) {
+					for ( Capability capability : permissions.get(role) ) {
+						params.add("perm:" + role, capability.toString().toLowerCase());
+					}
+				}
+			}
+		}
+	}
+
+	@Override
+	public <R extends AbstractReadHandle> R getGraphUris(RequestLogger reqlog, R output)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		return getResource(reqlog, "graphs", null, null, output);
+	}
+
+	@Override
+	public <R extends AbstractReadHandle> R readGraph(RequestLogger reqlog, String uri, R output,
+		Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		addGraphUriParam(params, uri);
+		return getResource(reqlog, "graphs", transaction, params, output);
+	}
+
+	@Override
+	public void writeGraph(RequestLogger reqlog, String uri,
+		AbstractWriteHandle input, GraphPermissions permissions, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		addGraphUriParam(params, uri);
+		addPermsParams(params, permissions);
+		putResource(reqlog, "graphs", transaction, params, input, null);
+	}
+
+	@Override
+	public void writeGraphs(RequestLogger reqlog, AbstractWriteHandle input, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		putResource(reqlog, "graphs", transaction, params, input, null);
+	}
+
+	@Override
+	public void mergeGraph(RequestLogger reqlog, String uri,
+		AbstractWriteHandle input, GraphPermissions permissions, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		addGraphUriParam(params, uri);
+		addPermsParams(params, permissions);
+		postResource(reqlog, "graphs", transaction, params, input, null);
+	}
+
+	@Override
+	public void mergeGraphs(RequestLogger reqlog, AbstractWriteHandle input, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		postResource(reqlog, "graphs", transaction, params, input, null);
+	}
+
+	@Override
+	public <R extends AbstractReadHandle> R getPermissions(RequestLogger reqlog, String uri,
+			R output,Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		addGraphUriParam(params, uri);
+		params.add("category", "permissions");
+		return getResource(reqlog, "graphs", transaction, params, output);
+	}
+
+	@Override
+	public void deletePermissions(RequestLogger reqlog, String uri, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		addGraphUriParam(params, uri);
+		params.add("category", "permissions");
+		deleteResource(reqlog, "graphs", transaction, params, null);
+	}
+
+	@Override
+	public void writePermissions(RequestLogger reqlog, String uri,
+			AbstractWriteHandle permissions, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		addGraphUriParam(params, uri);
+		params.add("category", "permissions");
+		putResource(reqlog, "graphs", transaction, params, permissions, null);
+	}
+
+	@Override
+	public void mergePermissions(RequestLogger reqlog, String uri,
+			AbstractWriteHandle permissions, Transaction transaction)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		addGraphUriParam(params, uri);
+		params.add("category", "permissions");
+		postResource(reqlog, "graphs", transaction, params, permissions, null);
+	}
+
+	@Override
+	public Object deleteGraph(RequestLogger reqlog, String uri, Transaction transaction)
+		throws ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		addGraphUriParam(params, uri);
+		return deleteResource(reqlog, "graphs", transaction, params, null);
+
+	}
+	
+	@Override
+	public void deleteGraphs(RequestLogger reqlog, Transaction transaction)
+		throws ForbiddenUserException, FailedRequestException
+	{
+		deleteResource(reqlog, "graphs", transaction, null, null);
+	}
+
+	@Override
+	public <R extends AbstractReadHandle> R getThings(RequestLogger reqlog, String[] iris, R output)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		if ( iris == null ) throw new IllegalArgumentException("iris cannot be null");
+		RequestParameters params = new RequestParameters();
+		for ( String iri : iris ) {
+			params.add("iri", iri);
+		}
+		return getResource(reqlog, "graphs/things", null, params, output);
+	}
+
+	@Override
+	public <R extends AbstractReadHandle> R executeSparql(RequestLogger reqlog, 
+		SPARQLQueryDefinition qdef, R output, long start, long pageLength,
+		Transaction transaction, boolean isUpdate)
+	{
+		if ( qdef == null )   throw new IllegalArgumentException("qdef cannot be null");
+		if ( output == null ) throw new IllegalArgumentException("output cannot be null");
+		RequestParameters params = new RequestParameters();
+		if (start > 1)             params.add("start",      Long.toString(start));
+		if (pageLength >= 0)       params.add("pageLength", Long.toString(pageLength));
+		if (qdef.getOptimizeLevel() >= 0) {
+			params.add("optimize", Integer.toString(qdef.getOptimizeLevel()));
+		}
+		if (qdef.getCollections() != null ) {
+			for ( String collection : qdef.getCollections() ) {
+				params.add("collection", collection);
+			}
+		}
+		addPermsParams(params, qdef.getUpdatePermissions());
+		String sparql = qdef.getSparql();
+		SPARQLBindings bindings = qdef.getBindings();
+		for ( String bindingName : bindings.keySet() ) {
+			String paramName = "bind:" + bindingName;
+			String typeOrLang = "";
+			for ( SPARQLBinding binding : bindings.get(bindingName) ) {
+				if ( binding.getDatatype() != null ) {
+					typeOrLang = ":" + binding.getDatatype();
+				} else if ( binding.getLanguageTag() != null ) {
+					typeOrLang = "@" + binding.getLanguageTag().toLanguageTag();
+				}
+				params.add(paramName + typeOrLang, binding.getValue());
+			}
+		}
+		QueryDefinition constrainingQuery = qdef.getConstrainingQueryDefinition();
+		StructureWriteHandle input;
+		if ( constrainingQuery != null ) {
+			if (qdef.getOptionsName()!= null && qdef.getOptionsName().length() > 0) {
+				params.add("options", qdef.getOptionsName());
+			}
+			if ( constrainingQuery instanceof RawCombinedQueryDefinition ) {
+				CombinedQueryDefinition combinedQdef = new CombinedQueryBuilderImpl().combine(
+					(RawCombinedQueryDefinition) constrainingQuery, null, null, sparql);
+				Format format = combinedQdef.getFormat();
+				input = new StringHandle(combinedQdef.serialize()).withFormat(format);
+			} else if ( constrainingQuery instanceof RawStructuredQueryDefinition ) {
+				CombinedQueryDefinition combinedQdef = new CombinedQueryBuilderImpl().combine(
+					(RawStructuredQueryDefinition) constrainingQuery, null, null, sparql);
+				Format format = combinedQdef.getFormat();
+				input = new StringHandle(combinedQdef.serialize()).withFormat(format);
+			} else if ( constrainingQuery instanceof StringQueryDefinition ||
+						constrainingQuery instanceof StructuredQueryDefinition ) {
+				String stringQuery = constrainingQuery instanceof StringQueryDefinition ?
+					((StringQueryDefinition) constrainingQuery).getCriteria() : null;
+				StructuredQueryDefinition structuredQuery =
+					constrainingQuery instanceof StructuredQueryDefinition ?
+						(StructuredQueryDefinition) constrainingQuery : null;
+				CombinedQueryDefinition combinedQdef = new CombinedQueryBuilderImpl().combine(
+					structuredQuery, null, stringQuery, sparql);
+				input = new StringHandle(combinedQdef.serialize()).withMimetype("application/xml");
+			} else {
+			    throw new IllegalArgumentException(
+			        "Constraining query must be of type SPARQLConstrainingQueryDefinition");
+			}
+		} else {
+			String mimetype = isUpdate ? "application/sparql-update" : "application/sparql-query";
+			input = new StringHandle(sparql).withMimetype(mimetype);
+		}
+		if (qdef.getBaseUri() != null) {
+			params.add("base", qdef.getBaseUri());
+		}
+		if (qdef.getDefaultGraphUris() != null) {
+		    for (String defaultGraphUri : qdef.getDefaultGraphUris()) {
+		        params.add("default-graph-uri", defaultGraphUri);
+		    }
+		}
+		if (qdef.getNamedGraphUris() != null) {
+			for (String namedGraphUri : qdef.getNamedGraphUris()) {
+				params.add("named-graph-uri", namedGraphUri);
+			}
+		}
+		if (qdef.getUsingGraphUris() != null) {
+			for (String usingGraphUri : qdef.getUsingGraphUris()) {
+				params.add("using-graph-uri", usingGraphUri);
+			}
+		}
+		if (qdef.getUsingNamedGraphUris() != null) {
+			for (String usingNamedGraphUri : qdef.getUsingNamedGraphUris()) {
+				params.add("using-named-graph-uri", usingNamedGraphUri);
+			}
+		}
+		
+		// rulesets
+		if (qdef.getRulesets() != null) {
+		    for (SPARQLRuleset ruleset : qdef.getRulesets()) {
+		        params.add("ruleset", ruleset.getName());
+		    }
+		}
+		if (qdef.getIncludeDefaultRulesets() != null) {
+			params.add("default-rulesets", qdef.getIncludeDefaultRulesets() ? "include" : "exclude");
+		}
+
+		return postResource(reqlog, "/graphs/sparql", transaction, params, input, output);
+	}
+
 	private String getTransactionId(Transaction transaction) {
 		if ( transaction == null ) return null;
 		return transaction.getTransactionId();
 	}
+
 }

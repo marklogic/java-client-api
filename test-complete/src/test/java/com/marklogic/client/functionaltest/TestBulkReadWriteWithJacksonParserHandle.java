@@ -230,6 +230,10 @@ public class TestBulkReadWriteWithJacksonParserHandle extends
 		
 		docMgr.read(docId[2], jacksonhandle);
 		JSONAssert.assertEquals(json3, jacksonhandle.toString(), true);
+		// Close handles.
+		jacksonParserHandle1.close();
+		jacksonParserHandle2.close();
+		jacksonParserHandle3.close();
 	}
 	
 	/* 
@@ -278,6 +282,10 @@ public class TestBulkReadWriteWithJacksonParserHandle extends
 		
 		docMgr.read(docId[2], jacksonhandle);
 		JSONAssert.assertEquals(json3, jacksonhandle.toString(), true);
+		// Close handles.
+		jacksonParserHandle1.close();
+		jacksonParserHandle2.close();
+		jacksonParserHandle3.close();
 	}
 
 	/*
@@ -327,6 +335,10 @@ public class TestBulkReadWriteWithJacksonParserHandle extends
 			validateMetadata(mhRead);
 		}
 		validateMetadata(mhRead);
+		// Close handles.
+		jacksonParserHandle1.close();
+		jacksonParserHandle2.close();
+		jacksonParserHandle3.close();
 	}
 
 	/*
@@ -442,7 +454,12 @@ public class TestBulkReadWriteWithJacksonParserHandle extends
 		rec = page.next();
 		jdm.readMetadata(rec.getUri(), mh);
 		assertEquals("default quality", 2, mh.getQuality());
-
+		// Close handles.
+		jacksonParserHandle1.close();
+		jacksonParserHandle2.close();
+		jacksonParserHandle3.close();
+		jacksonParserHandle4.close();
+		jacksonParserHandle5.close();
 	}
 	
 	/*
@@ -497,6 +514,10 @@ public class TestBulkReadWriteWithJacksonParserHandle extends
 		}
 		validateMetadata(mhRead);
 		mhRead = null;
+		// Close handles.
+		jacksonParserHandle1.close();
+		jacksonParserHandle2.close();
+		jacksonParserHandle3.close();
 	}
 	
 	/*
@@ -577,8 +598,12 @@ public class TestBulkReadWriteWithJacksonParserHandle extends
 		assertFalse("Page has previous page ?",page.hasPreviousPage());
 		assertEquals("page size", 25,page.getPageSize());
 		assertEquals("document count", 1,page.getTotalSize());
+		// Close handles.
+		jacksonParserHandle1.close();
+		jacksonParserHandle2.close();
+		jacksonParserHandle3.close();
 	}
-		
+	
 	@AfterClass
 	public static void tearDown() throws Exception {
 		System.out.println("In tear down");

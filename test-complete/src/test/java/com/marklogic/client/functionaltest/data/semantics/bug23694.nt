@@ -1,0 +1,36 @@
+<http://localhost/vocabulary/bench/Journal> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://xmlns.com/foaf/0.1/Document> .
+<http://localhost/vocabulary/bench/Proceedings> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://xmlns.com/foaf/0.1/Document> .
+<http://localhost/vocabulary/bench/Inproceedings> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://xmlns.com/foaf/0.1/Document> .
+<http://localhost/vocabulary/bench/Article> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://xmlns.com/foaf/0.1/Document> .
+<http://localhost/vocabulary/bench/Www> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://xmlns.com/foaf/0.1/Document> .
+<http://localhost/vocabulary/bench/MastersThesis> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://xmlns.com/foaf/0.1/Document> .
+<http://localhost/vocabulary/bench/PhDThesis> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://xmlns.com/foaf/0.1/Document> .
+<http://localhost/vocabulary/bench/Incollection> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://xmlns.com/foaf/0.1/Document> .
+<http://localhost/vocabulary/bench/Book> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://xmlns.com/foaf/0.1/Document> .
+<http://localhost/persons/Paul_Erdoes> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> .
+<http://localhost/persons/Paul_Erdoes> <http://xmlns.com/foaf/0.1/name> "Paul Erdoes"^^<http://www.w3.org/2001/XMLSchema#string> .
+_:KozuezEfthimiou <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> .
+_:KozuezEfthimiou <http://xmlns.com/foaf/0.1/name> "Kozue Efthimiou"^^<http://www.w3.org/2001/XMLSchema#string> .
+<http://localhost/publications/articles/Journal1/1940/Article20> <http://purl.org/dc/elements/1.1/creator> _:KozuezEfthimiou .
+<http://localhost/publications/articles/Journal1/1941/Article2> <http://purl.org/dc/elements/1.1/creator> _:KozuezEfthimiou .
+<http://localhost/publications/articles/Journal1/1941/Article2> <http://purl.org/dc/elements/1.1/creator> <http://localhost/persons/Paul_Erdoes> .
+<http://localhost/publications/inprocs/Proceeding1/1950/Inproceeding1> <http://purl.org/dc/elements/1.1/creator> _:BhoomikazSecord .
+<http://localhost/publications/inprocs/Proceeding1/1950/Inproceeding1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/vocabulary/bench/Inproceedings> .
+<http://localhost/publications/inprocs/Proceeding1/1950/Inproceeding1> <http://purl.org/dc/elements/1.1/creator> _:EdittazServoss .
+<http://localhost/publications/inprocs/Proceeding1/1950/Inproceeding1> <http://purl.org/dc/elements/1.1/creator> <http://localhost/persons/Paul_Erdoes> .
+<http://localhost/publications/inprocs/Proceeding1/1950/Inproceeding1> <http://purl.org/dc/terms/issued> "1950"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://localhost/publications/inprocs/Proceeding1/1951/Inproceeding1> <http://purl.org/dc/elements/1.1/title> "realer climber borderlands"^^<http://www.w3.org/2001/XMLSchema#string> .
+<http://localhost/publications/inprocs/Proceeding1/1951/Inproceeding1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/vocabulary/bench/Inproceedings> .
+<http://localhost/publications/inprocs/Proceeding1/1951/Inproceeding1> <http://purl.org/dc/terms/issued> "1951"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://localhost/publications/inprocs/Proceeding1/1951/Inproceeding1> <http://purl.org/dc/elements/1.1/creator> _:SibyllazReas .
+<http://localhost/publications/inprocs/Proceeding1/1951/Inproceeding1> <http://purl.org/dc/elements/1.1/creator> <http://localhost/persons/Paul_Erdoes> .
+<http://localhost/publications/inprocs/Proceeding1/1952/Inproceeding1> <http://purl.org/dc/terms/issued> "1952"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://localhost/publications/inprocs/Proceeding1/1952/Inproceeding1> <http://purl.org/dc/elements/1.1/creator> _:DoreszHugi .
+<http://localhost/publications/inprocs/Proceeding1/1952/Inproceeding1> <http://purl.org/dc/elements/1.1/creator> <http://localhost/persons/Paul_Erdoes> .
+<http://localhost/publications/inprocs/Proceeding1/1953/Inproceeding1> <http://purl.org/dc/terms/issued> "1953"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://localhost/publications/inprocs/Proceeding1/1953/Inproceeding1> <http://purl.org/dc/elements/1.1/creator> _:AdokzGalbiso .
+<http://localhost/publications/inprocs/Proceeding1/1953/Inproceeding1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/vocabulary/bench/Inproceedings> .
+<http://localhost/publications/inprocs/Proceeding1/1952/Inproceeding1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost/vocabulary/bench/Inproceedings> .
+<http://localhost/publications/inprocs/Proceeding1/1953/Inproceeding1> <http://purl.org/dc/elements/1.1/creator> _:JanekazHochhalter .
+<http://localhost/publications/inprocs/Proceeding1/1953/Inproceeding1> <http://purl.org/dc/elements/1.1/creator> <http://localhost/persons/Paul_Erdoes> .
+<http://localhost/publications/inprocs/Proceeding1/1953/Inproceeding2> <http://localhost/vocabulary/bench/booktitle> "virally whitens diplex"^^<http://www.w3.org/2001/XMLSchema#string> .

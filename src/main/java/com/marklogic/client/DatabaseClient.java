@@ -31,6 +31,8 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.alerting.RuleManager;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.pojo.PojoRepository;
+import com.marklogic.client.semantics.GraphManager;
+import com.marklogic.client.semantics.SPARQLQueryManager;
 
 /**
  * A Database Client instantiates document and query managers and other objects
@@ -113,6 +115,12 @@ public interface DatabaseClient {
      */
     public ServerConfigurationManager newServerConfigManager();
 
+    /** Creates a manager for CRUD operations on semantic graphs.  */
+    public GraphManager newGraphManager();
+    
+    /** Creates a manager for executing SPARQL queries and retrieving results. */
+    public SPARQLQueryManager newSPARQLQueryManager();
+    
     /**
      * Creates a PojoRepository specific to the specified class and its id type. 
      * The PojoRepository provides a facade for persisting, retrieving, and

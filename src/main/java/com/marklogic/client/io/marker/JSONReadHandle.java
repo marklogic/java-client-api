@@ -15,10 +15,12 @@
  */
 package com.marklogic.client.io.marker;
 
+import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
+
 /**
  * A JSON Read Handle can represent JSON content read from the database.
  *
  */
-public interface JSONReadHandle extends AbstractReadHandle {
+public interface JSONReadHandle extends AbstractReadHandle, SPARQLResultsReadHandle, TriplesReadHandle {
 
 }

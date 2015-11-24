@@ -439,6 +439,6 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 		assertTrue("Page has previous page ?",page.hasPreviousPage());
 		assertEquals("page size", 25,page.getPageSize());
 		assertEquals("document count", 102,page.getTotalSize());
-
+		sh.close();
 	}
 }

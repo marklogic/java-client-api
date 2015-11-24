@@ -20,9 +20,11 @@ import java.io.InputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.AbstractReadHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 
 public class DocumentRecordImpl implements DocumentRecord {
@@ -65,10 +67,30 @@ public class DocumentRecordImpl implements DocumentRecord {
 		return metadataHandle;
 	}
 
+	public <T> T getMetadataAs(Class<T> clazz) {
+		ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(clazz);
+		if ( readHandle instanceof DocumentMetadataReadHandle ) {
+			DocumentMetadataReadHandle metadataHandle = (DocumentMetadataReadHandle) readHandle;
+			metadataHandle = getMetadata(metadataHandle);
+			if ( metadataHandle == null ) return null;
+			return readHandle.get();
+		} else {
+			throw new IllegalArgumentException("Class \"" + clazz.getName() + "\" uses handle " +
+				readHandle.getClass() + " which is not a DocumentMetadataReadHandle");
+		}
+	}
+
     public <T extends AbstractReadHandle> T getContent(T contentHandle) {
 		HandleAccessor.checkHandle(contentHandle, "content");
 		HandleAccessor.receiveContent(contentHandle, content);
 		return contentHandle;
+	}
+
+	public <T> T getContentAs(Class<T> clazz) {
+		ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(clazz);
+		readHandle = getContent(readHandle);
+		if ( readHandle == null ) return null;
+		return readHandle.get();
 	}
 }
 

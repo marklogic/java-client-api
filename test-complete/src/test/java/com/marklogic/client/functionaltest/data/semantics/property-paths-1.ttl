@@ -1,0 +1,66 @@
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix c: <http://learningsparql.com/ns/citations#> .
+@prefix : <http://learningsparql.com/ns/papers#> .
+@prefix mlpp: <http://marklogicsparql.com/prop-paths#> .
+
+:paperA dc:title "Paper A" .
+:paperA mlpp:level 1 .
+
+:paperB	rdfs:label "Paper B" ;
+	c:cites	:paperA ;
+	mlpp:level 2 .
+
+:paperC	c:cites	:paperA .
+:paperC mlpp:level 3 .
+
+:paperD	c:cites :paperA , :paperB .
+:paperD mlpp:level 4 .
+
+:paperE	c:cites	:paperA	.
+:paperE mlpp:level 5 .
+
+:paperF	c:cites	:paperC , :paperE	.
+:paperF mlpp:level 6 .
+
+:paperG	c:cites	:paperC	, :paperE	.
+:paperG mlpp:level 7 .
+
+:paperH	c:cites	:paperD	.
+:paperH mlpp:level 8 .
+
+:paperI	c:cites	:paperF	, 	:paperG	.
+:paperI mlpp:level 9 .
+
+:paperJ c:cites :paperI .
+:paperJ mlpp:level 10 .
+
+:paperK c:cites :paperJ .
+:paperK mlpp:level 11 .
+
+:paperK2 c:cites :paperJ ;
+	mlpp:level 12 .
+
+:paperL c:cites :paperK ;
+	mlpp:level 12 .
+
+:paperM c:cites :paperL ;
+	mlpp:level 13 .
+
+:paperN c:cites :paperM ;
+	mlpp:level 14 .
+
+:paperO c:cites :paperN ;
+	mlpp:level 15 .
+
+:paperP c:cites :paperO ;
+	mlpp:level 16 .
+
+:paperQ c:cites :paperP ;
+	mlpp:level 17 .
+
+:paperR c:cites :paperQ ;
+	mlpp:level 18 .
+
+:paperLoop c:cites :paperLoop .
+

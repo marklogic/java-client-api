@@ -1,0 +1,7 @@
+{
+  "http://example.org/about" : {
+        "http://purl.org/dc/elements/1.1/creator" : [ { "value" : "Anna Wilder", "type" : "literal" } ],
+        "http://purl.org/dc/elements/1.1/title"   : [ { "value" : "Anna''s Homepage", "type" : "literal", "lang" : "en" } ] ,
+        "http://xmlns.com/foaf/0.1/maker"         : [ { "value" : "_:person", "type" : "BNODE" } ]
+    }
+}

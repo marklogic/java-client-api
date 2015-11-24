@@ -17,9 +17,13 @@ package com.marklogic.client.io;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BinaryReadHandle;
@@ -31,23 +35,27 @@ import com.marklogic.client.io.marker.GenericReadHandle;
 import com.marklogic.client.io.marker.GenericWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
+import com.marklogic.client.io.marker.QuadsWriteHandle;
+import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
+import com.marklogic.client.io.marker.TriplesReadHandle;
+import com.marklogic.client.io.marker.TriplesWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
- * An Input Stream Handle represents a resource as an input stream for reading or writing.
- * 
- * When finished with the input stream, close the input stream to release
- * the response.
- * 
- * When writing JSON, text, or XML content, you should use an InputStream only
+ * <p>An InputStreamHandle represents a resource as an InputStream for reading or writing.</p>
+ *
+ * <p>When writing JSON, text, or XML content, you should use an InputStream only
  * if the stream is encoded in UTF-8.  If the characters have a different encoding, use
- * a ReaderHandle and specify the correct character encoding for the stream when
- * creating the Reader.
+ * a {@link ReaderHandle} and specify the correct character encoding for the stream when
+ * creating the Reader.</p>
+ *
+ * <p>Either call {@link #close} or {@link #get}.close() when finished with this handle
+ * to release the resources.</p>
  */
 public class InputStreamHandle
 	extends BaseHandle<InputStream, InputStream>
@@ -57,8 +65,14 @@ public class InputStreamHandle
 		JSONReadHandle, JSONWriteHandle, 
 		TextReadHandle, TextWriteHandle,
 		XMLReadHandle, XMLWriteHandle,
-		StructureReadHandle, StructureWriteHandle
+		StructureReadHandle, StructureWriteHandle,
+		TriplesReadHandle, TriplesWriteHandle,
+		QuadsWriteHandle, SPARQLResultsReadHandle,
+		Closeable
+
 {
+	static final private Logger logger = LoggerFactory.getLogger(InputStreamHandle.class);
+
 	private InputStream content;
 
 	final static private int BUFFER_SIZE = 8192;
@@ -215,5 +229,18 @@ public class InputStreamHandle
 		}
 
 		return content;
+	}
+
+	/** Either call close() or get().close() when finished with this handle to close the underlying InputStream.
+	 */
+	public void close() {
+		if ( content != null ) {
+			try {
+				content.close();
+			} catch (IOException e) {
+				logger.error("Failed to close underlying InputStream",e);
+				throw new MarkLogicIOException(e);
+			}
+		}
 	}
 }

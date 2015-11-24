@@ -1,0 +1,4 @@
+<#mygraph> = {
+    <http://marklogic.com/john> @a <http://marklogic.com/people>; 8 7,6 .
+  }; a <#named_graph> .
+<#not_sayin_nothin> .

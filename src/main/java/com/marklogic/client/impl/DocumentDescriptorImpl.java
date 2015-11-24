@@ -15,16 +15,18 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.io.Format;
 
-public class DocumentDescriptorImpl implements DocumentDescriptor {
+public class DocumentDescriptorImpl implements DocumentDescriptor, TemporalDescriptor {
 	private String  uri;
 	private Format  format;
 	private String  mimetype;
 	private long    byteLength = UNKNOWN_LENGTH;
 	private long    version    = UNKNOWN_VERSION;
 	private boolean isInternal = false;
+	private String  temporalSystemTime;
 
 	public DocumentDescriptorImpl(boolean isInternal) {
 		super();
@@ -92,5 +94,14 @@ public class DocumentDescriptorImpl implements DocumentDescriptor {
 	}
 	protected boolean isInternal() {
 		return isInternal;
+	}
+
+	@Override
+	public String getTemporalSystemTime() {
+		return temporalSystemTime;
+	}
+
+	protected void setTemporalSystemTime(String dateTime) {
+		this.temporalSystemTime = dateTime;
 	}
 }

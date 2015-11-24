@@ -17,6 +17,7 @@ package com.marklogic.client.io;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,24 +30,31 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
+import com.marklogic.client.io.marker.QuadsWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
+import com.marklogic.client.io.marker.TriplesReadHandle;
+import com.marklogic.client.io.marker.TriplesWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
- * A Reader Handle represents a character content as a reader
- * for reading to or writing from the database.
- * 
- * When finished with the reader, close the reader to release the resources.
+ * <p>A Reader Handle represents a character content as a reader
+ * for reading to or writing from the database.</p>
+ *
+ * <p>Either call {@link #close} or {@link #get}.close() when finished with this handle
+ * to release the resources.</p>
  */
 public class ReaderHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
@@ -54,8 +62,13 @@ public class ReaderHandle
 		JSONReadHandle, JSONWriteHandle, 
 		TextReadHandle, TextWriteHandle,
 		XMLReadHandle, XMLWriteHandle,
-		StructureReadHandle, StructureWriteHandle
+		StructureReadHandle, StructureWriteHandle,
+		QuadsWriteHandle,
+		TriplesReadHandle, TriplesWriteHandle,
+		Closeable
 {
+	static final private Logger logger = LoggerFactory.getLogger(InputStreamHandle.class);
+
 	final static private int BUFFER_SIZE = 8192;
 
     private Reader content;
@@ -232,5 +245,18 @@ public class ReaderHandle
 		}
 
 		out.flush();
+	}
+
+	/** Either call close() or get().close() when finished with this handle to close the underlying Reader.
+	 */
+	public void close() {
+		if ( content != null ) {
+			try {
+				content.close();
+			} catch (IOException e) {
+				logger.error("Failed to close underlying InputStream",e);
+				throw new MarkLogicIOException(e);
+			}
+		}
 	}
 }

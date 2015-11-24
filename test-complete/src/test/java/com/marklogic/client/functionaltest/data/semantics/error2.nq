@@ -1,0 +1,3 @@
+<#electricVehicle1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type1> <http://people.aifb.kit.edu/#ElectricVehicle1> <http://mygraph> .
+<#electricVehicle2> http://www.w3.org/1999/02/22-rdf-syntax-ns#type2 <http://people.aifb.kit.edu/#ElectricVehicle2> <http://mygraph> .
+<#electricVehicle2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type3> <http://people.aifb.kit.edu/#ElectricVehicle3> <http://mygraph> .

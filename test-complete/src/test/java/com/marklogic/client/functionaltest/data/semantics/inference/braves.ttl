@@ -1,0 +1,590 @@
+
+prefix bb: <http://marklogic.com/baseball/players#> 
+prefix bbr: <http://marklogic.com/baseball/rules#> 
+prefix xs: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+
+#bb:pX  bb:playerid "XX"^^xs:integer .
+#bb:XX  bb:lastname     "LASTNAME" .
+#bb:XX  bb:firstname    "FIRSTNAME" .
+#bb:XX  bb:position     "POSITION" .
+#bb:XX  bb:number       "NUMBER"^^xs:integer .
+#bb:XX  bb:team         "Athletics" .
+#bb:XX  bb:birthdate    "1989-10-26"^^xs:date .
+#bb:XX  bb:bats         "right" .
+#bb:XX  bb:throws       "right" .
+#bb:XX  bb:height       "" .
+#bb:XX  bb:weight       "220"^^xs:integer .
+#bb:XXX a       bbr:player .
+#bb:XXX a       bbr:pitcher .
+#bb:XXX a       bbr:starter .
+#bb:XXX a       bbr:setup .
+
+
+# 	Pitchers 	B/T 	Ht 	Wt 	DOB
+#43 	Luis Avilan 	L-L 	6'2" 	220 	Jul 19, 1989
+bb:801	bb:playerid	"801"^^xs:integer .
+bb:801	bb:number	"43"^^xs:integer .
+bb:801	bb:lastname	"Avilan" .
+bb:801	bb:firstname	"Luis" .
+bb:801	bb:position	"pitcher" .
+bb:801	bb:team	bbr:Braves .
+bb:801	bb:bats	"left" .
+bb:801	bb:throws	"left" .
+bb:801	bb:weight	"220"^^xs:integer .
+bb:801	bb:date-of-birth	"1989-07-19"^^xs:date .
+bb:801	rdf:type		bbr:pitcher .
+bb:801	rdf:type		bbr:setup .
+
+#37 	Brandon Beachy 	R-R 	6'3" 	215 	Sep 3, 1986
+bb:802	bb:playerid	"802"^^xs:integer .
+bb:802	bb:number	"37"^^xs:integer .
+bb:802	bb:lastname	"Beachy" .
+bb:802	bb:firstname	"Brandon" .
+bb:802	bb:position	"pitcher" .
+bb:802	bb:team	bbr:Braves .
+bb:802	bb:bats	"right" .
+bb:802	bb:throws	"right" .
+bb:802	bb:weight	"215"^^xs:integer .
+bb:802	bb:date-of-birth	"1986-09-03"^^xs:date .
+bb:802	rdf:type		bbr:pitcher .
+bb:802	rdf:type		bbr:setup .
+
+#48 	David Carpenter 	R-R 	6'2" 	230 	Jul 15, 1985
+bb:803	bb:playerid	"803"^^xs:integer .
+bb:803	bb:number	"48"^^xs:integer .
+bb:803	bb:lastname	"Carpenter" .
+bb:803	bb:firstname	"David" .
+bb:803	bb:position	"pitcher" .
+bb:803	bb:team	bbr:Braves .
+bb:803	bb:bats	"right" .
+bb:803	bb:throws	"right" .
+bb:803	bb:weight	"230"^^xs:integer .
+bb:803	bb:date-of-birth	"1985-07-15"^^xs:date .
+bb:803	rdf:type		bbr:pitcher .
+bb:803	rdf:type		bbr:setup .
+
+#53 	Cory Gearrin 	R-R 	6'3" 	215 	Apr 14, 1986
+bb:804	bb:playerid	"804"^^xs:integer .
+bb:804	bb:number	"53"^^xs:integer .
+bb:804	bb:lastname	"Gearrin" .
+bb:804	bb:firstname	"Cory" .
+bb:804	bb:position	"pitcher" .
+bb:804	bb:team	bbr:Braves .
+bb:804	bb:bats	"right" .
+bb:804	bb:throws	"right" .
+bb:804	bb:weight	"215"^^xs:integer .
+bb:804	bb:date-of-birth	"1986-04-14"^^xs:date .
+bb:804	rdf:type		bbr:pitcher .
+bb:804	rdf:type		bbr:setup .
+
+#57 	David Hale 	R-R 	6'2" 	210 	Sep 27, 1987
+bb:805	bb:playerid	"805"^^xs:integer .
+bb:805	bb:number	"57"^^xs:integer .
+bb:805	bb:lastname	"Hale" .
+bb:805	bb:firstname	"David" .
+bb:805	bb:position	"pitcher" .
+bb:805	bb:team	bbr:Braves .
+bb:805	bb:bats	"right" .
+bb:805	bb:throws	"right" .
+bb:805	bb:weight	"210"^^xs:integer .
+bb:805	bb:date-of-birth	"1987-09-27"^^xs:date .
+bb:805	rdf:type		bbr:pitcher .
+bb:805	rdf:type		bbr:setup .
+
+#58 	Juan Jaime 	R-R 	6'2" 	250 	Aug 2, 1987
+bb:806	bb:playerid	"806"^^xs:integer .
+bb:806	bb:number	"58"^^xs:integer .
+bb:806	bb:lastname	"Jaime" .
+bb:806	bb:firstname	"Juan" .
+bb:806	bb:position	"pitcher" .
+bb:806	bb:team	bbr:Braves .
+bb:806	bb:bats	"right" .
+bb:806	bb:throws	"right" .
+bb:806	bb:weight	"250"^^xs:integer .
+bb:806	bb:date-of-birth	"1987-08-02"^^xs:date .
+bb:806	rdf:type		bbr:pitcher .
+bb:806	rdf:type		bbr:setup .
+
+#46 	Craig Kimbrel 	R-R 	5'11" 	220 	May 28, 1988
+bb:807	bb:playerid	"807"^^xs:integer .
+bb:807	bb:number	"46"^^xs:integer .
+bb:807	bb:lastname	"Kimbrel" .
+bb:807	bb:firstname	"Craig" .
+bb:807	bb:position	"pitcher" .
+bb:807	bb:team	bbr:Braves .
+bb:807	bb:bats	"right" .
+bb:807	bb:throws	"right" .
+bb:807	bb:weight	"220"^^xs:integer .
+bb:807	bb:date-of-birth	"1988-05-28"^^xs:date .
+bb:807	rdf:type		bbr:pitcher .
+bb:807	rdf:type		bbr:closer .
+
+#54 	Kris Medlen 	S-R 	5'10" 	190 	Oct 7, 1985
+bb:808	bb:playerid	"808"^^xs:integer .
+bb:808	bb:number	"54"^^xs:integer .
+bb:808	bb:lastname	"Medlen" .
+bb:808	bb:firstname	"Kris" .
+bb:808	bb:position	"pitcher" .
+bb:808	bb:team	bbr:Braves .
+bb:808	bb:bats	"switch" .
+bb:808	bb:throws	"right" .
+bb:808	bb:weight	"190"^^xs:integer .
+bb:808	bb:date-of-birth	"1985-10-07"^^xs:date .
+bb:808	rdf:type		bbr:pitcher .
+bb:808	rdf:type		bbr:setup .
+
+#36 	Mike Minor 	R-L 	6'4" 	220 	Dec 26, 1987
+bb:809	bb:playerid	"809"^^xs:integer .
+bb:809	bb:number	"36"^^xs:integer .
+bb:809	bb:lastname	"Minor" .
+bb:809	bb:firstname	"Mike" .
+bb:809	bb:position	"pitcher" .
+bb:809	bb:team	bbr:Braves .
+bb:809	bb:bats	"right" .
+bb:809	bb:throws	"left" .
+bb:809	bb:weight	"220"^^xs:integer .
+bb:809	bb:date-of-birth	"1987-12-26"^^xs:date .
+bb:809	rdf:type		bbr:pitcher .
+bb:809	rdf:type		bbr:setup .
+
+#68 	Aaron Northcraft 	R-R 	6'4" 	230 	May 28, 1990
+bb:810	bb:playerid	"810"^^xs:integer .
+bb:810	bb:number	"68"^^xs:integer .
+bb:810	bb:lastname	"Northcraft" .
+bb:810	bb:firstname	"Aaron" .
+bb:810	bb:position	"pitcher" .
+bb:810	bb:team	bbr:Braves .
+bb:810	bb:bats	"right" .
+bb:810	bb:throws	"right" .
+bb:810	bb:weight	"230"^^xs:integer .
+bb:810	bb:date-of-birth	"1990-05-28"^^xs:date .
+bb:810	rdf:type		bbr:pitcher .
+bb:810	rdf:type		bbr:setup .
+
+#51 	James Russell 	L-L 	6'4" 	200 	Jan 8, 1986
+bb:811	bb:playerid	"811"^^xs:integer .
+bb:811	bb:number	"51"^^xs:integer .
+bb:811	bb:lastname	"Russell" .
+bb:811	bb:firstname	"James" .
+bb:811	bb:position	"pitcher" .
+bb:811	bb:team	bbr:Braves .
+bb:811	bb:bats	"left" .
+bb:811	bb:throws	"left" .
+bb:811	bb:weight	"200"^^xs:integer .
+bb:811	bb:date-of-birth	"1986-01-08"^^xs:date .
+bb:811	rdf:type		bbr:pitcher .
+bb:811	rdf:type		bbr:setup .
+
+#50 	Gus Schlosser 	R-R 	6'4" 	225 	Oct 20, 1988
+bb:812	bb:playerid	"812"^^xs:integer .
+bb:812	bb:number	"50"^^xs:integer .
+bb:812	bb:lastname	"Schlosser" .
+bb:812	bb:firstname	"Gus" .
+bb:812	bb:position	"pitcher" .
+bb:812	bb:team	bbr:Braves .
+bb:812	bb:bats	"right" .
+bb:812	bb:throws	"right" .
+bb:812	bb:weight	"225"^^xs:integer .
+bb:812	bb:date-of-birth	"1988-10-20"^^xs:date .
+bb:812	rdf:type		bbr:pitcher .
+bb:812	rdf:type		bbr:setup .
+
+#61 	Chasen Shreve 	L-L 	6'3" 	190 	Jul 12, 1990
+bb:813	bb:playerid	"813"^^xs:integer .
+bb:813	bb:number	"61"^^xs:integer .
+bb:813	bb:lastname	"Shreve" .
+bb:813	bb:firstname	"Chasen" .
+bb:813	bb:position	"pitcher" .
+bb:813	bb:team	bbr:Braves .
+bb:813	bb:bats	"left" .
+bb:813	bb:throws	"left" .
+bb:813	bb:weight	"190"^^xs:integer .
+bb:813	bb:date-of-birth	"1990-07-12"^^xs:date .
+bb:813	rdf:type		bbr:pitcher .
+bb:813	rdf:type		bbr:setup .
+
+#59 	Shae Simmons 	R-R 	5'11" 	175 	Sep 3, 1990
+bb:814	bb:playerid	"814"^^xs:integer .
+bb:814	bb:number	"59"^^xs:integer .
+bb:814	bb:lastname	"Simmons" .
+bb:814	bb:firstname	"Shae" .
+bb:814	bb:position	"pitcher" .
+bb:814	bb:team	bbr:Braves .
+bb:814	bb:bats	"right" .
+bb:814	bb:throws	"right" .
+bb:814	bb:weight	"175"^^xs:integer .
+bb:814	bb:date-of-birth	"1990-09-03"^^xs:date .
+bb:814	rdf:type		bbr:pitcher .
+bb:814	rdf:type		bbr:setup .
+
+#49 	Julio Teheran 	R-R 	6'2" 	200 	Jan 27, 1991
+bb:815	bb:playerid	"815"^^xs:integer .
+bb:815	bb:number	"49"^^xs:integer .
+bb:815	bb:lastname	"Teheran" .
+bb:815	bb:firstname	"Julio" .
+bb:815	bb:position	"pitcher" .
+bb:815	bb:team	bbr:Braves .
+bb:815	bb:bats	"right" .
+bb:815	bb:throws	"right" .
+bb:815	bb:weight	"200"^^xs:integer .
+bb:815	bb:date-of-birth	"1991-01-27"^^xs:date .
+bb:815	rdf:type		bbr:pitcher .
+bb:815	rdf:type		bbr:setup .
+
+#67 	Ian Thomas 	R-L 	6'4" 	215 	Apr 20, 1987
+bb:816	bb:playerid	"816"^^xs:integer .
+bb:816	bb:number	"67"^^xs:integer .
+bb:816	bb:lastname	"Thomas" .
+bb:816	bb:firstname	"Ian" .
+bb:816	bb:position	"pitcher" .
+bb:816	bb:team	bbr:Braves .
+bb:816	bb:bats	"right" .
+bb:816	bb:throws	"left" .
+bb:816	bb:weight	"215"^^xs:integer .
+bb:816	bb:date-of-birth	"1987-04-20"^^xs:date .
+bb:816	rdf:type		bbr:pitcher .
+bb:816	rdf:type		bbr:setup .
+
+#38 	Anthony Varvaro 	R-R 	6'0" 	190 	Oct 31, 1984
+bb:817	bb:playerid	"817"^^xs:integer .
+bb:817	bb:number	"38"^^xs:integer .
+bb:817	bb:lastname	"Varvaro" .
+bb:817	bb:firstname	"Anthony" .
+bb:817	bb:position	"pitcher" .
+bb:817	bb:team	bbr:Braves .
+bb:817	bb:bats	"right" .
+bb:817	bb:throws	"right" .
+bb:817	bb:weight	"190"^^xs:integer .
+bb:817	bb:date-of-birth	"1984-10-31"^^xs:date .
+bb:817	rdf:type		bbr:pitcher .
+bb:817	rdf:type		bbr:setup .
+
+#39 	Jonny Venters 	L-L 	6'3" 	200 	Mar 20, 1985
+bb:818	bb:playerid	"818"^^xs:integer .
+bb:818	bb:number	"39"^^xs:integer .
+bb:818	bb:lastname	"Venters" .
+bb:818	bb:firstname	"Jonny" .
+bb:818	bb:position	"pitcher" .
+bb:818	bb:team	bbr:Braves .
+bb:818	bb:bats	"left" .
+bb:818	bb:throws	"left" .
+bb:818	bb:weight	"200"^^xs:integer .
+bb:818	bb:date-of-birth	"1985-03-20"^^xs:date .
+bb:818	rdf:type		bbr:pitcher .
+bb:818	rdf:type		bbr:setup .
+
+#52 	Jordan Walden 	R-R 	6'5" 	250 	Nov 16, 1987
+bb:819	bb:playerid	"819"^^xs:integer .
+bb:819	bb:number	"52"^^xs:integer .
+bb:819	bb:lastname	"Walden" .
+bb:819	bb:firstname	"Jordan" .
+bb:819	bb:position	"pitcher" .
+bb:819	bb:team	bbr:Braves .
+bb:819	bb:bats	"right" .
+bb:819	bb:throws	"right" .
+bb:819	bb:weight	"250"^^xs:integer .
+bb:819	bb:date-of-birth	"1987-11-16"^^xs:date .
+bb:819	rdf:type		bbr:pitcher .
+bb:819	rdf:type		bbr:setup .
+
+#40 	Alex Wood 	R-L 	6'4" 	215 	Jan 12, 1991
+bb:820	bb:playerid	"820"^^xs:integer .
+bb:820	bb:number	"40"^^xs:integer .
+bb:820	bb:lastname	"Wood" .
+bb:820	bb:firstname	"Alex" .
+bb:820	bb:position	"pitcher" .
+bb:820	bb:team	bbr:Braves .
+bb:820	bb:bats	"right" .
+bb:820	bb:throws	"left" .
+bb:820	bb:weight	"215"^^xs:integer .
+bb:820	bb:date-of-birth	"1991-01-12"^^xs:date .
+bb:820	rdf:type		bbr:pitcher .
+bb:820	rdf:type		bbr:setup .
+
+# 	Catchers 	B/T 	Ht 	Wt 	DOB
+#25 	Christian Bethancourt 	R-R 	6'2" 	205 	Sep 2, 1991
+bb:821	bb:playerid	"821"^^xs:integer .
+bb:821	bb:number	"25"^^xs:integer .
+bb:821	bb:lastname	"Bethancourt" .
+bb:821	bb:firstname	"Christian" .
+bb:821	bb:position	"catcher" .
+bb:821	bb:team	bbr:Braves .
+bb:821	bb:bats	"right" .
+bb:821	bb:throws	"right" .
+bb:821	bb:weight	"205"^^xs:integer .
+bb:821	bb:date-of-birth	"1991-09-02"^^xs:date .
+bb:821	rdf:type		bbr:catcher .
+
+#24 	Evan Gattis 	R-R 	6'4" 	260 	Aug 18, 1986
+bb:822	bb:playerid	"822"^^xs:integer .
+bb:822	bb:number	"24"^^xs:integer .
+bb:822	bb:lastname	"Gattis" .
+bb:822	bb:firstname	"Evan" .
+bb:822	bb:position	"catcher" .
+bb:822	bb:team	bbr:Braves .
+bb:822	bb:bats	"right" .
+bb:822	bb:throws	"right" .
+bb:822	bb:weight	"260"^^xs:integer .
+bb:822	bb:date-of-birth	"1986-08-18"^^xs:date .
+bb:822	rdf:type		bbr:catcher .
+
+# 	Infielders 	B/T 	Ht 	Wt 	DOB
+#5 	Freddie Freeman 	L-R 	6'5" 	225 	Sep 12, 1989
+bb:823	bb:playerid	"823"^^xs:integer .
+bb:823	bb:number	"5"^^xs:integer .
+bb:823	bb:lastname	"Freeman" .
+bb:823	bb:firstname	"Freddie" .
+bb:823	bb:position	"infielder" .
+bb:823	bb:team	bbr:Braves .
+bb:823	bb:bats	"left" .
+bb:823	bb:throws	"right" .
+bb:823	bb:weight	"225"^^xs:integer .
+bb:823	bb:date-of-birth	"1989-09-12"^^xs:date .
+bb:823	rdf:type		bbr:infielder .
+
+#15 	Phil Gosselin 	R-R 	6'1" 	200 	Oct 3, 1988
+bb:824	bb:playerid	"824"^^xs:integer .
+bb:824	bb:number	"15"^^xs:integer .
+bb:824	bb:lastname	"Gosselin" .
+bb:824	bb:firstname	"Phil" .
+bb:824	bb:position	"infielder" .
+bb:824	bb:team	bbr:Braves .
+bb:824	bb:bats	"right" .
+bb:824	bb:throws	"right" .
+bb:824	bb:weight	"200"^^xs:integer .
+bb:824	bb:date-of-birth	"1988-10-03"^^xs:date .
+bb:824	rdf:type		bbr:infielder .
+
+#23 	Chris Johnson 	R-R 	6'3" 	225 	Oct 1, 1984
+bb:825	bb:playerid	"825"^^xs:integer .
+bb:825	bb:number	"23"^^xs:integer .
+bb:825	bb:lastname	"Johnson" .
+bb:825	bb:firstname	"Chris" .
+bb:825	bb:position	"infielder" .
+bb:825	bb:team	bbr:Braves .
+bb:825	bb:bats	"right" .
+bb:825	bb:throws	"right" .
+bb:825	bb:weight	"225"^^xs:integer .
+bb:825	bb:date-of-birth	"1984-10-01"^^xs:date .
+bb:825	rdf:type		bbr:infielder .
+
+#7 	Tommy La Stella 	L-R 	5'11" 	185 	Jan 31, 1989
+bb:826	bb:playerid	"826"^^xs:integer .
+bb:826	bb:number	"7"^^xs:integer .
+bb:826	bb:lastname	"La Stella" .
+bb:826	bb:firstname	"Tommy" .
+bb:826	bb:position	"infielder" .
+bb:826	bb:team	bbr:Braves .
+bb:826	bb:bats	"left" .
+bb:826	bb:throws	"right" .
+bb:826	bb:weight	"185"^^xs:integer .
+bb:826	bb:date-of-birth	"1989-01-31"^^xs:date .
+bb:826	rdf:type		bbr:infielder .
+
+#1 	Tyler Pastornicky 	R-R 	5'11" 	180 	Dec 13, 1989
+bb:827	bb:playerid	"827"^^xs:integer .
+bb:827	bb:number	"1"^^xs:integer .
+bb:827	bb:lastname	"Pastornicky" .
+bb:827	bb:firstname	"Tyler" .
+bb:827	bb:position	"infielder" .
+bb:827	bb:team	bbr:Braves .
+bb:827	bb:bats	"right" .
+bb:827	bb:throws	"right" .
+bb:827	bb:weight	"180"^^xs:integer .
+bb:827	bb:date-of-birth	"1989-12-13"^^xs:date .
+bb:827	rdf:type		bbr:infielder .
+
+#14 	Ramiro Pena 	S-R 	5'11" 	200 	Jul 18, 1985
+bb:828	bb:playerid	"828"^^xs:integer .
+bb:828	bb:number	"14"^^xs:integer .
+bb:828	bb:lastname	"Pena" .
+bb:828	bb:firstname	"Ramiro" .
+bb:828	bb:position	"infielder" .
+bb:828	bb:team	bbr:Braves .
+bb:828	bb:bats	"switch" .
+bb:828	bb:throws	"right" .
+bb:828	bb:weight	"200"^^xs:integer .
+bb:828	bb:date-of-birth	"1985-07-18"^^xs:date .
+bb:828	rdf:type		bbr:infielder .
+
+#67 	Elmer Reyes 	R-R 	5'11" 	175 	Nov 26, 1990
+bb:829	bb:playerid	"829"^^xs:integer .
+bb:829	bb:number	"67"^^xs:integer .
+bb:829	bb:lastname	"Reyes" .
+bb:829	bb:firstname	"Elmer" .
+bb:829	bb:position	"infielder" .
+bb:829	bb:team	bbr:Braves .
+bb:829	bb:bats	"right" .
+bb:829	bb:throws	"right" .
+bb:829	bb:weight	"175"^^xs:integer .
+bb:829	bb:date-of-birth	"1990-11-26"^^xs:date .
+bb:829	rdf:type		bbr:infielder .
+
+#19 	Andrelton Simmons 	R-R 	6'2" 	195 	Sep 4, 1989
+bb:830	bb:playerid	"830"^^xs:integer .
+bb:830	bb:number	"19"^^xs:integer .
+bb:830	bb:lastname	"Simmons" .
+bb:830	bb:firstname	"Andrelton" .
+bb:830	bb:position	"infielder" .
+bb:830	bb:team	bbr:Braves .
+bb:830	bb:bats	"right" .
+bb:830	bb:throws	"right" .
+bb:830	bb:weight	"195"^^xs:integer .
+bb:830	bb:date-of-birth	"1989-09-04"^^xs:date .
+bb:830	rdf:type		bbr:infielder .
+
+# 	Outfielders 	B/T 	Ht 	Wt 	DOB
+#13 	Jose Constanza 	L-L 	5'9" 	185 	Sep 1, 1983
+bb:831	bb:playerid	"831"^^xs:integer .
+bb:831	bb:number	"13"^^xs:integer .
+bb:831	bb:lastname	"Constanza" .
+bb:831	bb:firstname	"Jose" .
+bb:831	bb:position	"outfielder" .
+bb:831	bb:team	bbr:Braves .
+bb:831	bb:bats	"left" .
+bb:831	bb:throws	"left" .
+bb:831	bb:weight	"185"^^xs:integer .
+bb:831	bb:date-of-birth	"1983-09-01"^^xs:date .
+bb:831	rdf:type		bbr:outfielder .
+
+#20 	Todd Cunningham 	S-R 	6'0" 	205 	Mar 20, 1989
+bb:832	bb:playerid	"832"^^xs:integer .
+bb:832	bb:number	"20"^^xs:integer .
+bb:832	bb:lastname	"Cunningham" .
+bb:832	bb:firstname	"Todd" .
+bb:832	bb:position	"outfielder" .
+bb:832	bb:team	bbr:Braves .
+bb:832	bb:bats	"switch" .
+bb:832	bb:throws	"right" .
+bb:832	bb:weight	"205"^^xs:integer .
+bb:832	bb:date-of-birth	"1989-03-20"^^xs:date .
+bb:832	rdf:type		bbr:outfielder .
+
+#22 	Jason Heyward 	L-L 	6'5" 	245 	Aug 9, 1989
+bb:833	bb:playerid	"833"^^xs:integer .
+bb:833	bb:number	"22"^^xs:integer .
+bb:833	bb:lastname	"Heyward" .
+bb:833	bb:firstname	"Jason" .
+bb:833	bb:position	"outfielder" .
+bb:833	bb:team	bbr:Braves .
+bb:833	bb:bats	"left" .
+bb:833	bb:throws	"left" .
+bb:833	bb:weight	"245"^^xs:integer .
+bb:833	bb:date-of-birth	"1989-08-09"^^xs:date .
+bb:833	rdf:type		bbr:outfielder .
+
+#17 	Joey Terdoslavich 	S-R 	6'2" 	200 	Sep 9, 1988
+bb:834	bb:playerid	"834"^^xs:integer .
+bb:834	bb:number	"17"^^xs:integer .
+bb:834	bb:lastname	"Terdoslavich" .
+bb:834	bb:firstname	"Joey" .
+bb:834	bb:position	"outfielder" .
+bb:834	bb:team	bbr:Braves .
+bb:834	bb:bats	"switch" .
+bb:834	bb:throws	"right" .
+bb:834	bb:weight	"200"^^xs:integer .
+bb:834	bb:date-of-birth	"1988-09-09"^^xs:date .
+bb:834	rdf:type		bbr:outfielder .
+
+#2 	B.J. Upton 	R-R 	6'3" 	185 	Aug 21, 1984
+bb:835	bb:playerid	"835"^^xs:integer .
+bb:835	bb:number	"2"^^xs:integer .
+bb:835	bb:lastname	"Upton" .
+bb:835	bb:firstname	"B.J." .
+bb:835	bb:position	"outfielder" .
+bb:835	bb:team	bbr:Braves .
+bb:835	bb:bats	"right" .
+bb:835	bb:throws	"right" .
+bb:835	bb:weight	"185"^^xs:integer .
+bb:835	bb:date-of-birth	"1984-08-21"^^xs:date .
+bb:835	rdf:type		bbr:outfielder .
+
+#8 	Justin Upton 	R-R 	6'2" 	205 	Aug 25, 1987
+bb:836	bb:playerid	"836"^^xs:integer .
+bb:836	bb:number	"8"^^xs:integer .
+bb:836	bb:lastname	"Upton" .
+bb:836	bb:firstname	"Justin" .
+bb:836	bb:position	"outfielder" .
+bb:836	bb:team	bbr:Braves .
+bb:836	bb:bats	"right" .
+bb:836	bb:throws	"right" .
+bb:836	bb:weight	"205"^^xs:integer .
+bb:836	bb:date-of-birth	"1987-08-25"^^xs:date .
+bb:836	rdf:type		bbr:outfielder .
+
+#	Manager	Fredi Gonzalez
+bb:857	bb:lastname	"Gonzalez" .
+bb:857	bb:firstname	"Fredi" .
+bb:857	bb:position	"manager" .
+bb:857	bb:team	bbr:Braves .
+bb:857	bb:number	"100"^^xs:integer .
+bb:857	bbr:coachingRole		bbr:manager .
+
+#	Coach	Carlos Tosca
+bb:858	bb:lastname	"Tosca" .
+bb:858	bb:firstname	"Carlos" .
+bb:858	bb:position	"coach" .
+bb:858	bb:number	"100"^^xs:integer .
+bb:858	bb:team	bbr:Braves .
+bb:858	bbr:coachingRole		bbr:benchCoach .
+
+#	Coach	Kevin Seitzer
+bb:859	bb:lastname	"Seitzer" .
+bb:859	bb:firstname	"Kevin" .
+bb:859	bb:position	"coach" .
+bb:859	bb:number	"100"^^xs:integer .
+bb:859	bb:team	bbr:Braves .
+bb:859	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Jose Castro
+bb:860	bb:lastname	"Castro" .
+bb:860	bb:firstname	"Jose" .
+bb:860	bb:position	"coach" .
+bb:860	bb:number	"100"^^xs:integer .
+bb:860	bb:team	bbr:Braves .
+bb:860	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Terry Pendleton
+bb:861	bb:lastname	"Pendleton" .
+bb:861	bb:firstname	"Terry" .
+bb:861	bb:position	"coach" .
+bb:861	bb:number	"100"^^xs:integer .
+bb:861	bb:team	bbr:Braves .
+bb:861	bbr:coachingRole		bbr:firstBaseCoach .
+
+#	Coach	Bo Porter
+bb:862	bb:lastname	"Porter" .
+bb:862	bb:firstname	"Bo" .
+bb:862	bb:position	"coach" .
+bb:862	bb:number	"100"^^xs:integer .
+bb:862	bb:team	bbr:Braves .
+bb:862	bbr:coachingRole		bbr:thirdBaseCoach .
+
+#	Coach	Roger McDowell
+bb:863	bb:lastname	"McDowell" .
+bb:863	bb:firstname	"Roger" .
+bb:863	bb:position	"coach" .
+bb:863	bb:number	"100"^^xs:integer .
+bb:863	bb:team	bbr:Braves .
+bb:863	bbr:coachingRole		bbr:pitchingCoach .
+
+#	Coach	Eddie Perez
+bb:864	bb:lastname	"Perez" .
+bb:864	bb:firstname	"Eddie" .
+bb:864	bb:position	"coach" .
+bb:864	bb:number	"100"^^xs:integer .
+bb:864	bb:team	bbr:Braves .
+bb:864	bbr:coachingRole		bbr:bullpenCoach .
+
+#	Coach	Alan Butts
+bb:865	bb:lastname	"Butts" .
+bb:865	bb:firstname	"Alan" .
+bb:865	bb:position	"coach" .
+bb:865	bb:number	"100"^^xs:integer .
+bb:865	bb:team	bbr:Braves .
+bb:865	bbr:coachingRole		bbr:bullpenCatcher .
+
+

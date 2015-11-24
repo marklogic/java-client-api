@@ -16,23 +16,23 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-
-import org.custommonkey.xmlunit.XMLUnit;
+import static org.junit.Assert.assertTrue;
 
 import javax.xml.namespace.QName;
 
-import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.config.QueryOptionsBuilder;
-import com.marklogic.client.io.Format;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.admin.config.QueryOptionsBuilder;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
-
-import org.junit.*;
 public class TestBug19443 extends BasicJavaClientREST {
 
 	private static String dbName = "TestBug19443DB";
@@ -96,9 +96,12 @@ public class TestBug19443 extends BasicJavaClientREST {
 	    		    "</search:geo-elem>" + 
 	    		  "</search:constraint>" +
 	    		"</search:options>";
+	    System.out.println("Expected is :  \n");
+	    System.out.println(actual);
+	    System.out.println("Output is :  \n");
+	    System.out.println(output);
 
-	    XMLUnit.setIgnoreWhitespace(true);	    
-	    assertXMLEqual("testBug19443", actual, output);
+	    assertTrue( "Element geo-option not available", actual.contains("<search:geo-option>type=long-lat-point</search:geo-option>") );
  
 		// release client
 	    client.release();	

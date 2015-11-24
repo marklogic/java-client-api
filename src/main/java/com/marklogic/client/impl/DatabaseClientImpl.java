@@ -29,6 +29,8 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.semantics.GraphManager;
+import com.marklogic.client.semantics.SPARQLQueryManager;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.extensions.ResourceManager;
@@ -40,6 +42,8 @@ import com.marklogic.client.Transaction;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.impl.PojoRepositoryImpl;
+import com.marklogic.client.io.marker.TriplesReadHandle;
+import com.marklogic.client.io.marker.TriplesWriteHandle;
 
 public class DatabaseClientImpl implements DatabaseClient {
 	static final private Logger logger = LoggerFactory.getLogger(DatabaseClientImpl.class);
@@ -181,5 +185,16 @@ public class DatabaseClientImpl implements DatabaseClient {
 	@Override
 	public ServerEvaluationCall newServerEval() {
 		return new ServerEvaluationCallImpl(services, getHandleRegistry());
+	}
+
+	@Override
+	public GraphManager newGraphManager() {
+		return new GraphManagerImpl<TriplesReadHandle, TriplesWriteHandle>(services, getHandleRegistry());
+	}
+
+	@Override
+	public SPARQLQueryManager newSPARQLQueryManager() {
+		// TODO Auto-generated method stub
+		return new SPARQLQueryManagerImpl(services);
 	}
 }

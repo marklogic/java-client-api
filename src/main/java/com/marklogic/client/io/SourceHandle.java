@@ -17,6 +17,7 @@ package com.marklogic.client.io;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -45,19 +46,23 @@ import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
- * A Source Handle represents XML content as a transform source for reading
- * or transforms a source into a result for writing.
+ * <p>A Source Handle represents XML content as a transform source for reading
+ * or transforms a source into a result for writing.</p>
+ *
+ * <p>Always call {@link #close} when finished with this handle to release the resources.</p>
  */
 public class SourceHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
 	implements OutputStreamSender, BufferableHandle, ContentHandle<Source>,
 	    XMLReadHandle, XMLWriteHandle, 
-	    StructureReadHandle, StructureWriteHandle
+	    StructureReadHandle, StructureWriteHandle,
+		Closeable
 {
 	static final private Logger logger = LoggerFactory.getLogger(SourceHandle.class);
 
 	private Transformer transformer;
 	private Source      content;
+	private InputStream underlyingStream;
 
 	/**
 	 * Creates a factory to create a SourceHandle instance for a Transformer Source.
@@ -249,6 +254,7 @@ public class SourceHandle
 				return;
 			}
 
+			this.underlyingStream = content;
 			this.content = new StreamSource(new InputStreamReader(content, "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
 			throw new MarkLogicIOException(e);
@@ -264,5 +270,18 @@ public class SourceHandle
 	}
 	public void write(OutputStream out) throws IOException {
 		transform(new StreamResult(new OutputStreamWriter(out, "UTF-8")));
+	}
+
+	/** Always call close() when finished with this handle -- it closes the underlying InputStream.
+	 */
+	public void close() {
+		if ( underlyingStream != null ) {
+			try {
+				underlyingStream.close();
+			} catch (IOException e) {
+				logger.error("Failed to close underlying InputStream",e);
+				throw new MarkLogicIOException(e);
+			}
+		}
 	}
 }

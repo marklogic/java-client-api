@@ -30,6 +30,7 @@ import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
+import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.TextReadHandle;
@@ -50,7 +51,8 @@ public class JacksonHandle
             JSONReadHandle, JSONWriteHandle,
             TextReadHandle, TextWriteHandle,
             XMLReadHandle, XMLWriteHandle,
-            StructureReadHandle, StructureWriteHandle
+            StructureReadHandle, StructureWriteHandle,
+            SPARQLResultsReadHandle
 {
 	private JsonNode content;
 

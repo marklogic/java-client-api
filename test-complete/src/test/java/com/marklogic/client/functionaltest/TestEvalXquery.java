@@ -21,6 +21,9 @@ import static org.junit.Assert.*;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -101,7 +104,7 @@ public class TestEvalXquery  extends BasicJavaClientREST {
  This method is validating all the return values from xquery
   */
 	void validateReturnTypes(EvalResultIterator evr) throws Exception{
-		
+		boolean inDST = TimeZone.getDefault().inDaylightTime( new Date() );
 		 while(evr.hasNext())
 		 {
 			 EvalResult er =evr.next();
@@ -157,11 +160,22 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 				 
 			 }else if(er.getType().equals(Type.DATE)){
 //				 System.out.println("Testing is DATE? "+er.getAs(String.class));
-				 assertEquals("Returns me a date :","2002-03-07-07:00",er.getAs(String.class));
+				if (inDST)
+					assertEquals("Returns me a date :", "2002-03-07-07:00",
+							er.getAs(String.class));
+				else
+					assertEquals("Returns me a date :", "2002-03-07-08:00",
+							er.getAs(String.class));
 			 }else if(er.getType().equals(Type.DATETIME)){
 //				 System.out.println("Testing is DATETIME? "+er.getAs(String.class));
-				 assertEquals("Returns me a dateTime :","2010-01-06T18:13:50.874-07:00",er.getAs(String.class));
-				 
+				 if (inDST)
+					assertEquals("Returns me a dateTime :",
+							"2010-01-06T18:13:50.874-07:00",
+							er.getAs(String.class));
+				else
+					assertEquals("Returns me a dateTime :",
+							"2010-01-06T17:13:50.874-08:00",
+							er.getAs(String.class));
 			 }else if(er.getType().equals(Type.DECIMAL)){
 //				 System.out.println("Testing is Decimal? "+er.getAs(String.class));
 				 assertEquals("Returns me a Decimal :","10.5",er.getAs(String.class));
@@ -333,16 +347,18 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 		.addVariableAs("myNull",(String) null);
 		EvalResultIterator evr = evl.eval();
 		this.validateReturnTypes(evr);
-		String query2 = "declare variable $myArray as json:array external;"
+		String query2 = "declare namespace test=\"http://marklogic.com/test\";" + "declare variable $myArray as json:array external;"
 				         +"declare variable $myObject as json:object external;"
-				         +"declare variable $myJsonNode as xs:string external;"
-				         +"($myArray,$myObject,xdmp:unquote($myJsonNode)/a,xdmp:unquote($myJsonNode)/b,xdmp:unquote($myJsonNode)/c1,"
-				         +"xdmp:unquote($myJsonNode)/d,xdmp:unquote($myJsonNode)/f,xdmp:unquote($myJsonNode)/g )";
+				        // +"declare variable $myJsonNode as xs:string external;"
+				         //+"($myArray,$myObject,xdmp:unquote($myJsonNode)/a,xdmp:unquote($myJsonNode)/b,xdmp:unquote($myJsonNode)/c1,"
+				       +"($myArray,$myObject)";
+				         //+"xdmp:unquote($myJsonNode)/d,xdmp:unquote($myJsonNode)/f,xdmp:unquote($myJsonNode)/g )";
+		System.out.println(query2);
 		evl= client.newServerEval().xquery(query2);
 		evl.addVariableAs("myArray", new ObjectMapper().createArrayNode().add(1).add(2).add(3))
         .addVariableAs("myObject", new ObjectMapper().createObjectNode().put("foo", "v1").putNull("testNull"))
-        .addVariableAs("myXmlNode",new DOMHandle(doc) ).addVariableAs("myNull", null)
-        .addVariableAs("myJsonNode", new StringHandle(jsonNode).withFormat(Format.JSON));
+        .addVariableAs("myXmlNode",new DOMHandle(doc) ).addVariableAs("myNull", null);
+        //.addVariableAs("myJsonNode", new StringHandle(jsonNode).withFormat(Format.JSON));
 		evr = evl.eval();
 		 while(evr.hasNext())
 		 {

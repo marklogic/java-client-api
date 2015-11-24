@@ -1,0 +1,603 @@
+
+prefix bb: <http://marklogic.com/baseball/players#> 
+prefix bbr: <http://marklogic.com/baseball/rules#> 
+prefix xs: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+
+#bb:pX  bb:playerid "XX"^^xs:integer .
+#bb:XX  bb:lastname     "LASTNAME" .
+#bb:XX  bb:firstname    "FIRSTNAME" .
+#bb:XX  bb:position     "POSITION" .
+#bb:XX  bb:number       "NUMBER"^^xs:integer .
+#bb:XX  bb:team         "Athletics" .
+#bb:XX  bb:birthdate    "1989-10-26"^^xs:date .
+#bb:XX  bb:bats         "right" .
+#bb:XX  bb:throws       "right" .
+#bb:XX  bb:height       "" .
+#bb:XX  bb:weight       "220"^^xs:integer .
+#bb:XXX a       bbr:player .
+#bb:XXX a       bbr:pitcher .
+#bb:XXX a       bbr:starter .
+#bb:XXX a       bbr:setup .
+
+
+# 	Pitchers 	B/T 	Ht 	Wt 	DOB
+#49 	Jake Arrieta 	R-R 	6'4" 	225 	Mar 6, 1986
+bb:1001	bb:playerid	"1001"^^xs:integer .
+bb:1001	bb:number	"49"^^xs:integer .
+bb:1001	bb:lastname	"Arrieta" .
+bb:1001	bb:firstname	"Jake" .
+bb:1001	bb:position	"pitcher" .
+bb:1001	bb:team	bbr:Cubs .
+bb:1001	bb:bats	"right" .
+bb:1001	bb:throws	"right" .
+bb:1001	bb:weight	"225"^^xs:integer .
+bb:1001	bb:date-of-birth	"1986-03-06"^^xs:date .
+bb:1001	rdf:type		bbr:pitcher .
+bb:1001	rdf:type		bbr:setup .
+
+#32 	Dallas Beeler 	R-R 	6'5" 	210 	Jun 12, 1989
+bb:1002	bb:playerid	"1002"^^xs:integer .
+bb:1002	bb:number	"32"^^xs:integer .
+bb:1002	bb:lastname	"Beeler" .
+bb:1002	bb:firstname	"Dallas" .
+bb:1002	bb:position	"pitcher" .
+bb:1002	bb:team	bbr:Cubs .
+bb:1002	bb:bats	"right" .
+bb:1002	bb:throws	"right" .
+bb:1002	bb:weight	"210"^^xs:integer .
+bb:1002	bb:date-of-birth	"1989-06-12"^^xs:date .
+bb:1002	rdf:type		bbr:pitcher .
+bb:1002	rdf:type		bbr:setup .
+
+#22 	Felix Doubront 	L-L 	6'2" 	225 	Oct 23, 1987
+bb:1003	bb:playerid	"1003"^^xs:integer .
+bb:1003	bb:number	"22"^^xs:integer .
+bb:1003	bb:lastname	"Doubront" .
+bb:1003	bb:firstname	"Felix" .
+bb:1003	bb:position	"pitcher" .
+bb:1003	bb:team	bbr:Cubs .
+bb:1003	bb:bats	"left" .
+bb:1003	bb:throws	"left" .
+bb:1003	bb:weight	"225"^^xs:integer .
+bb:1003	bb:date-of-birth	"1987-10-23"^^xs:date .
+bb:1003	rdf:type		bbr:pitcher .
+bb:1003	rdf:type		bbr:setup .
+
+#52 	Justin Grimm 	R-R 	6'3" 	210 	Aug 16, 1988
+bb:1004	bb:playerid	"1004"^^xs:integer .
+bb:1004	bb:number	"52"^^xs:integer .
+bb:1004	bb:lastname	"Grimm" .
+bb:1004	bb:firstname	"Justin" .
+bb:1004	bb:position	"pitcher" .
+bb:1004	bb:team	bbr:Cubs .
+bb:1004	bb:bats	"right" .
+bb:1004	bb:throws	"right" .
+bb:1004	bb:weight	"210"^^xs:integer .
+bb:1004	bb:date-of-birth	"1988-08-16"^^xs:date .
+bb:1004	rdf:type		bbr:pitcher .
+bb:1004	rdf:type		bbr:setup .
+
+#28 	Kyle Hendricks 	R-R 	6'3" 	190 	Dec 7, 1989
+bb:1005	bb:playerid	"1005"^^xs:integer .
+bb:1005	bb:number	"28"^^xs:integer .
+bb:1005	bb:lastname	"Hendricks" .
+bb:1005	bb:firstname	"Kyle" .
+bb:1005	bb:position	"pitcher" .
+bb:1005	bb:team	bbr:Cubs .
+bb:1005	bb:bats	"right" .
+bb:1005	bb:throws	"right" .
+bb:1005	bb:weight	"190"^^xs:integer .
+bb:1005	bb:date-of-birth	"1989-12-07"^^xs:date .
+bb:1005	rdf:type		bbr:pitcher .
+bb:1005	rdf:type		bbr:setup .
+
+#36 	Edwin Jackson 	R-R 	6'3" 	210 	Sep 9, 1983
+bb:1006	bb:playerid	"1006"^^xs:integer .
+bb:1006	bb:number	"36"^^xs:integer .
+bb:1006	bb:lastname	"Jackson" .
+bb:1006	bb:firstname	"Edwin" .
+bb:1006	bb:position	"pitcher" .
+bb:1006	bb:team	bbr:Cubs .
+bb:1006	bb:bats	"right" .
+bb:1006	bb:throws	"right" .
+bb:1006	bb:weight	"210"^^xs:integer .
+bb:1006	bb:date-of-birth	"1983-09-09"^^xs:date .
+bb:1006	rdf:type		bbr:pitcher .
+bb:1006	rdf:type		bbr:setup .
+
+#43 	Eric Jokisch 	R-L 	6'2" 	185 	Jul 29, 1989
+bb:1007	bb:playerid	"1007"^^xs:integer .
+bb:1007	bb:number	"43"^^xs:integer .
+bb:1007	bb:lastname	"Jokisch" .
+bb:1007	bb:firstname	"Eric" .
+bb:1007	bb:position	"pitcher" .
+bb:1007	bb:team	bbr:Cubs .
+bb:1007	bb:bats	"right" .
+bb:1007	bb:throws	"left" .
+bb:1007	bb:weight	"185"^^xs:integer .
+bb:1007	bb:date-of-birth	"1989-07-29"^^xs:date .
+bb:1007	rdf:type		bbr:pitcher .
+bb:1007	rdf:type		bbr:setup .
+
+#	Joseph Ortiz 	L-L 	5'7" 	175 	Aug 13, 1990
+bb:1008	bb:playerid	"1008"^^xs:integer .
+bb:1008	bb:lastname	"Ortiz" .
+bb:1008	bb:firstname	"Joseph" .
+bb:1008	bb:position	"pitcher" .
+bb:1008	bb:team	bbr:Cubs .
+bb:1008	bb:bats	"left" .
+bb:1008	bb:throws	"left" .
+bb:1008	bb:weight	"175"^^xs:integer .
+bb:1008	bb:date-of-birth	"1990-08-13"^^xs:date .
+bb:1008	rdf:type		bbr:pitcher .
+bb:1008	rdf:type		bbr:setup .
+
+#50 	Blake Parker 	R-R 	6'3" 	225 	Jun 19, 1985
+bb:1009	bb:playerid	"1009"^^xs:integer .
+bb:1009	bb:number	"50"^^xs:integer .
+bb:1009	bb:lastname	"Parker" .
+bb:1009	bb:firstname	"Blake" .
+bb:1009	bb:position	"pitcher" .
+bb:1009	bb:team	bbr:Cubs .
+bb:1009	bb:bats	"right" .
+bb:1009	bb:throws	"right" .
+bb:1009	bb:weight	"225"^^xs:integer .
+bb:1009	bb:date-of-birth	"1985-06-19"^^xs:date .
+bb:1009	rdf:type		bbr:pitcher .
+bb:1009	rdf:type		bbr:setup .
+
+#54 	Neil Ramirez 	R-R 	6'4" 	190 	May 25, 1989
+bb:1010	bb:playerid	"1010"^^xs:integer .
+bb:1010	bb:number	"54"^^xs:integer .
+bb:1010	bb:lastname	"Ramirez" .
+bb:1010	bb:firstname	"Neil" .
+bb:1010	bb:position	"pitcher" .
+bb:1010	bb:team	bbr:Cubs .
+bb:1010	bb:bats	"right" .
+bb:1010	bb:throws	"right" .
+bb:1010	bb:weight	"190"^^xs:integer .
+bb:1010	bb:date-of-birth	"1989-05-25"^^xs:date .
+bb:1010	rdf:type		bbr:pitcher .
+bb:1010	rdf:type		bbr:setup .
+
+#56 	Hector Rondon 	R-R 	6'3" 	180 	Feb 26, 1988
+bb:1011	bb:playerid	"1011"^^xs:integer .
+bb:1011	bb:number	"56"^^xs:integer .
+bb:1011	bb:lastname	"Rondon" .
+bb:1011	bb:firstname	"Hector" .
+bb:1011	bb:position	"pitcher" .
+bb:1011	bb:team	bbr:Cubs .
+bb:1011	bb:bats	"right" .
+bb:1011	bb:throws	"right" .
+bb:1011	bb:weight	"180"^^xs:integer .
+bb:1011	bb:date-of-birth	"1988-02-26"^^xs:date .
+bb:1011	rdf:type		bbr:pitcher .
+bb:1011	rdf:type		bbr:setup .
+
+#59 	Zac Rosscup 	R-L 	6'2" 	205 	Jun 9, 1988
+bb:1012	bb:playerid	"1012"^^xs:integer .
+bb:1012	bb:number	"59"^^xs:integer .
+bb:1012	bb:lastname	"Rosscup" .
+bb:1012	bb:firstname	"Zac" .
+bb:1012	bb:position	"pitcher" .
+bb:1012	bb:team	bbr:Cubs .
+bb:1012	bb:bats	"right" .
+bb:1012	bb:throws	"left" .
+bb:1012	bb:weight	"205"^^xs:integer .
+bb:1012	bb:date-of-birth	"1988-06-09"^^xs:date .
+bb:1012	rdf:type		bbr:pitcher .
+bb:1012	rdf:type		bbr:setup .
+
+#63 	Brian Schlitter 	R-R 	6'5" 	235 	Dec 21, 1985
+bb:1013	bb:playerid	"1013"^^xs:integer .
+bb:1013	bb:number	"63"^^xs:integer .
+bb:1013	bb:lastname	"Schlitter" .
+bb:1013	bb:firstname	"Brian" .
+bb:1013	bb:position	"pitcher" .
+bb:1013	bb:team	bbr:Cubs .
+bb:1013	bb:bats	"right" .
+bb:1013	bb:throws	"right" .
+bb:1013	bb:weight	"235"^^xs:integer .
+bb:1013	bb:date-of-birth	"1985-12-21"^^xs:date .
+bb:1013	rdf:type		bbr:pitcher .
+bb:1013	rdf:type		bbr:setup .
+
+#19 	Dan Straily 	R-R 	6'2" 	215 	Dec 1, 1988
+bb:1014	bb:playerid	"1014"^^xs:integer .
+bb:1014	bb:number	"19"^^xs:integer .
+bb:1014	bb:lastname	"Straily" .
+bb:1014	bb:firstname	"Dan" .
+bb:1014	bb:position	"pitcher" .
+bb:1014	bb:team	bbr:Cubs .
+bb:1014	bb:bats	"right" .
+bb:1014	bb:throws	"right" .
+bb:1014	bb:weight	"215"^^xs:integer .
+bb:1014	bb:date-of-birth	"1988-12-01"^^xs:date .
+bb:1014	rdf:type		bbr:pitcher .
+bb:1014	rdf:type		bbr:setup .
+
+#46 	Pedro Strop 	R-R 	6'1" 	220 	Jun 13, 1985
+bb:1015	bb:playerid	"1015"^^xs:integer .
+bb:1015	bb:number	"46"^^xs:integer .
+bb:1015	bb:lastname	"Strop" .
+bb:1015	bb:firstname	"Pedro" .
+bb:1015	bb:position	"pitcher" .
+bb:1015	bb:team	bbr:Cubs .
+bb:1015	bb:bats	"right" .
+bb:1015	bb:throws	"right" .
+bb:1015	bb:weight	"220"^^xs:integer .
+bb:1015	bb:date-of-birth	"1985-06-13"^^xs:date .
+bb:1015	rdf:type		bbr:pitcher .
+bb:1015	rdf:type		bbr:setup .
+
+#38 	Jacob Turner 	R-R 	6'5" 	215 	May 21, 1991
+bb:1016	bb:playerid	"1016"^^xs:integer .
+bb:1016	bb:number	"38"^^xs:integer .
+bb:1016	bb:lastname	"Turner" .
+bb:1016	bb:firstname	"Jacob" .
+bb:1016	bb:position	"pitcher" .
+bb:1016	bb:team	bbr:Cubs .
+bb:1016	bb:bats	"right" .
+bb:1016	bb:throws	"right" .
+bb:1016	bb:weight	"215"^^xs:integer .
+bb:1016	bb:date-of-birth	"1991-05-21"^^xs:date .
+bb:1016	rdf:type		bbr:pitcher .
+bb:1016	rdf:type		bbr:setup .
+
+#47 	Arodys Vizcaino 	R-R 	6'0" 	190 	Nov 13, 1990
+bb:1017	bb:playerid	"1017"^^xs:integer .
+bb:1017	bb:number	"47"^^xs:integer .
+bb:1017	bb:lastname	"Vizcaino" .
+bb:1017	bb:firstname	"Arodys" .
+bb:1017	bb:position	"pitcher" .
+bb:1017	bb:team	bbr:Cubs .
+bb:1017	bb:bats	"right" .
+bb:1017	bb:throws	"right" .
+bb:1017	bb:weight	"190"^^xs:integer .
+bb:1017	bb:date-of-birth	"1990-11-13"^^xs:date .
+bb:1017	rdf:type		bbr:pitcher .
+bb:1017	rdf:type		bbr:setup .
+
+#67 	Tsuyoshi Wada 	L-L 	5'11" 	180 	Feb 21, 1981
+bb:1018	bb:playerid	"1018"^^xs:integer .
+bb:1018	bb:number	"67"^^xs:integer .
+bb:1018	bb:lastname	"Wada" .
+bb:1018	bb:firstname	"Tsuyoshi" .
+bb:1018	bb:position	"pitcher" .
+bb:1018	bb:team	bbr:Cubs .
+bb:1018	bb:bats	"left" .
+bb:1018	bb:throws	"left" .
+bb:1018	bb:weight	"180"^^xs:integer .
+bb:1018	bb:date-of-birth	"1981-02-21"^^xs:date .
+bb:1018	rdf:type		bbr:pitcher .
+bb:1018	rdf:type		bbr:setup .
+
+#37 	Travis Wood 	R-L 	5'11" 	175 	Feb 6, 1987
+bb:1019	bb:playerid	"1019"^^xs:integer .
+bb:1019	bb:number	"37"^^xs:integer .
+bb:1019	bb:lastname	"Wood" .
+bb:1019	bb:firstname	"Travis" .
+bb:1019	bb:position	"pitcher" .
+bb:1019	bb:team	bbr:Cubs .
+bb:1019	bb:bats	"right" .
+bb:1019	bb:throws	"left" .
+bb:1019	bb:weight	"175"^^xs:integer .
+bb:1019	bb:date-of-birth	"1987-02-06"^^xs:date .
+bb:1019	rdf:type		bbr:pitcher .
+bb:1019	rdf:type		bbr:setup .
+
+#53 	Wesley Wright 	R-L 	5'11" 	185 	Jan 28, 1985
+bb:1020	bb:playerid	"1020"^^xs:integer .
+bb:1020	bb:number	"53"^^xs:integer .
+bb:1020	bb:lastname	"Wright" .
+bb:1020	bb:firstname	"Wesley" .
+bb:1020	bb:position	"pitcher" .
+bb:1020	bb:team	bbr:Cubs .
+bb:1020	bb:bats	"right" .
+bb:1020	bb:throws	"left" .
+bb:1020	bb:weight	"185"^^xs:integer .
+bb:1020	bb:date-of-birth	"1985-01-28"^^xs:date .
+bb:1020	rdf:type		bbr:pitcher .
+bb:1020	rdf:type		bbr:setup .
+
+# 	Catchers 	B/T 	Ht 	Wt 	DOB
+#12 	John Baker 	L-R 	6'1" 	215 	Jan 20, 1981
+bb:1021	bb:playerid	"1021"^^xs:integer .
+bb:1021	bb:number	"12"^^xs:integer .
+bb:1021	bb:lastname	"Baker" .
+bb:1021	bb:firstname	"John" .
+bb:1021	bb:position	"catcher" .
+bb:1021	bb:team	bbr:Cubs .
+bb:1021	bb:bats	"left" .
+bb:1021	bb:throws	"right" .
+bb:1021	bb:weight	"215"^^xs:integer .
+bb:1021	bb:date-of-birth	"1981-01-20"^^xs:date .
+bb:1021	rdf:type		bbr:catcher .
+
+#5 	Welington Castillo 	R-R 	5'10" 	210 	Apr 24, 1987
+bb:1022	bb:playerid	"1022"^^xs:integer .
+bb:1022	bb:number	"5"^^xs:integer .
+bb:1022	bb:lastname	"Castillo" .
+bb:1022	bb:firstname	"Welington" .
+bb:1022	bb:position	"catcher" .
+bb:1022	bb:team	bbr:Cubs .
+bb:1022	bb:bats	"right" .
+bb:1022	bb:throws	"right" .
+bb:1022	bb:weight	"210"^^xs:integer .
+bb:1022	bb:date-of-birth	"1987-04-24"^^xs:date .
+bb:1022	rdf:type		bbr:catcher .
+
+#51 	Rafael Lopez 	L-R 	5'9" 	190 	Oct 2, 1987
+bb:1023	bb:playerid	"1023"^^xs:integer .
+bb:1023	bb:number	"51"^^xs:integer .
+bb:1023	bb:lastname	"Lopez" .
+bb:1023	bb:firstname	"Rafael" .
+bb:1023	bb:position	"catcher" .
+bb:1023	bb:team	bbr:Cubs .
+bb:1023	bb:bats	"left" .
+bb:1023	bb:throws	"right" .
+bb:1023	bb:weight	"190"^^xs:integer .
+bb:1023	bb:date-of-birth	"1987-10-02"^^xs:date .
+bb:1023	rdf:type		bbr:catcher .
+
+# 	Infielders 	B/T 	Ht 	Wt 	DOB
+#7 	Arismendy Alcantara 	S-R 	5'10" 	170 	Oct 29, 1991
+bb:1024	bb:playerid	"1024"^^xs:integer .
+bb:1024	bb:number	"7"^^xs:integer .
+bb:1024	bb:lastname	"Alcantara" .
+bb:1024	bb:firstname	"Arismendy" .
+bb:1024	bb:position	"infielder" .
+bb:1024	bb:team	bbr:Cubs .
+bb:1024	bb:bats	"switch" .
+bb:1024	bb:throws	"right" .
+bb:1024	bb:weight	"170"^^xs:integer .
+bb:1024	bb:date-of-birth	"1991-10-29"^^xs:date .
+bb:1024	rdf:type		bbr:infielder .
+
+#9 	Javier Baez 	R-R 	6'0" 	190 	Dec 1, 1992
+bb:1025	bb:playerid	"1025"^^xs:integer .
+bb:1025	bb:number	"9"^^xs:integer .
+bb:1025	bb:lastname	"Baez" .
+bb:1025	bb:firstname	"Javier" .
+bb:1025	bb:position	"infielder" .
+bb:1025	bb:team	bbr:Cubs .
+bb:1025	bb:bats	"right" .
+bb:1025	bb:throws	"right" .
+bb:1025	bb:weight	"190"^^xs:integer .
+bb:1025	bb:date-of-birth	"1992-12-01"^^xs:date .
+bb:1025	rdf:type		bbr:infielder .
+
+#13 	Starlin Castro 	R-R 	6'0" 	190 	Mar 24, 1990
+bb:1026	bb:playerid	"1026"^^xs:integer .
+bb:1026	bb:number	"13"^^xs:integer .
+bb:1026	bb:lastname	"Castro" .
+bb:1026	bb:firstname	"Starlin" .
+bb:1026	bb:position	"infielder" .
+bb:1026	bb:team	bbr:Cubs .
+bb:1026	bb:bats	"right" .
+bb:1026	bb:throws	"right" .
+bb:1026	bb:weight	"190"^^xs:integer .
+bb:1026	bb:date-of-birth	"1990-03-24"^^xs:date .
+bb:1026	rdf:type		bbr:infielder .
+
+#30 	Mike Olt 	R-R 	6'2" 	210 	Aug 27, 1988
+bb:1027	bb:playerid	"1027"^^xs:integer .
+bb:1027	bb:number	"30"^^xs:integer .
+bb:1027	bb:lastname	"Olt" .
+bb:1027	bb:firstname	"Mike" .
+bb:1027	bb:position	"infielder" .
+bb:1027	bb:team	bbr:Cubs .
+bb:1027	bb:bats	"right" .
+bb:1027	bb:throws	"right" .
+bb:1027	bb:weight	"210"^^xs:integer .
+bb:1027	bb:date-of-birth	"1988-08-27"^^xs:date .
+bb:1027	rdf:type		bbr:infielder .
+
+#44 	Anthony Rizzo 	L-L 	6'3" 	240 	Aug 8, 1989
+bb:1028	bb:playerid	"1028"^^xs:integer .
+bb:1028	bb:number	"44"^^xs:integer .
+bb:1028	bb:lastname	"Rizzo" .
+bb:1028	bb:firstname	"Anthony" .
+bb:1028	bb:position	"infielder" .
+bb:1028	bb:team	bbr:Cubs .
+bb:1028	bb:bats	"left" .
+bb:1028	bb:throws	"left" .
+bb:1028	bb:weight	"240"^^xs:integer .
+bb:1028	bb:date-of-birth	"1989-08-08"^^xs:date .
+bb:1028	rdf:type		bbr:infielder .
+
+#24 	Luis Valbuena 	L-R 	5'10" 	200 	Nov 30, 1985
+bb:1029	bb:playerid	"1029"^^xs:integer .
+bb:1029	bb:number	"24"^^xs:integer .
+bb:1029	bb:lastname	"Valbuena" .
+bb:1029	bb:firstname	"Luis" .
+bb:1029	bb:position	"infielder" .
+bb:1029	bb:team	bbr:Cubs .
+bb:1029	bb:bats	"left" .
+bb:1029	bb:throws	"right" .
+bb:1029	bb:weight	"200"^^xs:integer .
+bb:1029	bb:date-of-birth	"1985-11-30"^^xs:date .
+bb:1029	rdf:type		bbr:infielder .
+
+#61 	Christian Villanueva 	R-R 	5'11" 	210 	Jun 19, 1991
+bb:1030	bb:playerid	"1030"^^xs:integer .
+bb:1030	bb:number	"61"^^xs:integer .
+bb:1030	bb:lastname	"Villanueva" .
+bb:1030	bb:firstname	"Christian" .
+bb:1030	bb:position	"infielder" .
+bb:1030	bb:team	bbr:Cubs .
+bb:1030	bb:bats	"right" .
+bb:1030	bb:throws	"right" .
+bb:1030	bb:weight	"210"^^xs:integer .
+bb:1030	bb:date-of-birth	"1991-06-19"^^xs:date .
+bb:1030	rdf:type		bbr:infielder .
+
+#45 	Logan Watkins 	L-R 	5'11" 	195 	Aug 29, 1989
+bb:1031	bb:playerid	"1031"^^xs:integer .
+bb:1031	bb:number	"45"^^xs:integer .
+bb:1031	bb:lastname	"Watkins" .
+bb:1031	bb:firstname	"Logan" .
+bb:1031	bb:position	"infielder" .
+bb:1031	bb:team	bbr:Cubs .
+bb:1031	bb:bats	"left" .
+bb:1031	bb:throws	"right" .
+bb:1031	bb:weight	"195"^^xs:integer .
+bb:1031	bb:date-of-birth	"1989-08-29"^^xs:date .
+bb:1031	rdf:type		bbr:infielder .
+
+# 	Outfielders 	B/T 	Ht 	Wt 	DOB
+#8 	Chris Coghlan 	L-R 	6'0" 	195 	Jun 18, 1985
+bb:1032	bb:playerid	"1032"^^xs:integer .
+bb:1032	bb:number	"8"^^xs:integer .
+bb:1032	bb:lastname	"Coghlan" .
+bb:1032	bb:firstname	"Chris" .
+bb:1032	bb:position	"outfielder" .
+bb:1032	bb:team	bbr:Cubs .
+bb:1032	bb:bats	"left" .
+bb:1032	bb:throws	"right" .
+bb:1032	bb:weight	"195"^^xs:integer .
+bb:1032	bb:date-of-birth	"1985-06-18"^^xs:date .
+bb:1032	rdf:type		bbr:outfielder .
+
+#21 	Junior Lake 	R-R 	6'3" 	215 	Mar 27, 1990
+bb:1033	bb:playerid	"1033"^^xs:integer .
+bb:1033	bb:number	"21"^^xs:integer .
+bb:1033	bb:lastname	"Lake" .
+bb:1033	bb:firstname	"Junior" .
+bb:1033	bb:position	"outfielder" .
+bb:1033	bb:team	bbr:Cubs .
+bb:1033	bb:bats	"right" .
+bb:1033	bb:throws	"right" .
+bb:1033	bb:weight	"215"^^xs:integer .
+bb:1033	bb:date-of-birth	"1990-03-27"^^xs:date .
+bb:1033	rdf:type		bbr:outfielder .
+
+#20 	Justin Ruggiano 	R-R 	6'1" 	210 	Apr 12, 1982
+bb:1034	bb:playerid	"1034"^^xs:integer .
+bb:1034	bb:number	"20"^^xs:integer .
+bb:1034	bb:lastname	"Ruggiano" .
+bb:1034	bb:firstname	"Justin" .
+bb:1034	bb:position	"outfielder" .
+bb:1034	bb:team	bbr:Cubs .
+bb:1034	bb:bats	"right" .
+bb:1034	bb:throws	"right" .
+bb:1034	bb:weight	"210"^^xs:integer .
+bb:1034	bb:date-of-birth	"1982-04-12"^^xs:date .
+bb:1034	rdf:type		bbr:outfielder .
+
+#68 	Jorge Soler 	R-R 	6'4" 	215 	Feb 25, 1992
+bb:1035	bb:playerid	"1035"^^xs:integer .
+bb:1035	bb:number	"68"^^xs:integer .
+bb:1035	bb:lastname	"Soler" .
+bb:1035	bb:firstname	"Jorge" .
+bb:1035	bb:position	"outfielder" .
+bb:1035	bb:team	bbr:Cubs .
+bb:1035	bb:bats	"right" .
+bb:1035	bb:throws	"right" .
+bb:1035	bb:weight	"215"^^xs:integer .
+bb:1035	bb:date-of-birth	"1992-02-25"^^xs:date .
+bb:1035	rdf:type		bbr:outfielder .
+
+#6 	Ryan Sweeney 	L-L 	6'4" 	225 	Feb 20, 1985
+bb:1036	bb:playerid	"1036"^^xs:integer .
+bb:1036	bb:number	"6"^^xs:integer .
+bb:1036	bb:lastname	"Sweeney" .
+bb:1036	bb:firstname	"Ryan" .
+bb:1036	bb:position	"outfielder" .
+bb:1036	bb:team	bbr:Cubs .
+bb:1036	bb:bats	"left" .
+bb:1036	bb:throws	"left" .
+bb:1036	bb:weight	"225"^^xs:integer .
+bb:1036	bb:date-of-birth	"1985-02-20"^^xs:date .
+bb:1036	rdf:type		bbr:outfielder .
+
+#41 	Matt Szczur 	R-R 	6'1" 	195 	Jul 20, 1989
+bb:1037	bb:playerid	"1037"^^xs:integer .
+bb:1037	bb:number	"41"^^xs:integer .
+bb:1037	bb:lastname	"Szczur" .
+bb:1037	bb:firstname	"Matt" .
+bb:1037	bb:position	"outfielder" .
+bb:1037	bb:team	bbr:Cubs .
+bb:1037	bb:bats	"right" .
+bb:1037	bb:throws	"right" .
+bb:1037	bb:weight	"195"^^xs:integer .
+bb:1037	bb:date-of-birth	"1989-07-20"^^xs:date .
+bb:1037	rdf:type		bbr:outfielder .
+
+#	Manager	Joe Maddon
+bb:1058	bb:lastname	"Maddon" .
+bb:1058	bb:firstname	"Joe" .
+bb:1058	bb:position	"manager" .
+bb:1058	bb:team	bbr:Cubs .
+bb:1058	bb:number	"100"^^xs:integer .
+bb:1058	bbr:coachingRole		bbr:manager .
+
+#	Coach	Brandon Hyde
+bb:1059	bb:lastname	"Hyde" .
+bb:1059	bb:firstname	"Brandon" .
+bb:1059	bb:position	"coach" .
+bb:1059	bb:number	"100"^^xs:integer .
+bb:1059	bb:team	bbr:Cubs .
+bb:1059	bbr:coachingRole		bbr:benchCoach .
+
+#	Coach	John Mallee
+bb:1060	bb:lastname	"Mallee" .
+bb:1060	bb:firstname	"John" .
+bb:1060	bb:position	"coach" .
+bb:1060	bb:number	"100"^^xs:integer .
+bb:1060	bb:team	bbr:Cubs .
+bb:1060	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Eric Hinske
+bb:1061	bb:lastname	"Hinske" .
+bb:1061	bb:firstname	"Eric" .
+bb:1061	bb:position	"coach" .
+bb:1061	bb:number	"100"^^xs:integer .
+bb:1061	bb:team	bbr:Cubs .
+bb:1061	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Doug Dascenzo
+bb:1062	bb:lastname	"Dascenzo" .
+bb:1062	bb:firstname	"Doug" .
+bb:1062	bb:position	"coach" .
+bb:1062	bb:number	"100"^^xs:integer .
+bb:1062	bb:team	bbr:Cubs .
+bb:1062	bbr:coachingRole		bbr:firstBaseCoach .
+
+#	Coach	Gary Jones
+bb:1063	bb:lastname	"Jones" .
+bb:1063	bb:firstname	"Gary" .
+bb:1063	bb:position	"coach" .
+bb:1063	bb:number	"1"^^xs:integer .
+bb:1063	bb:team	bbr:Cubs .
+bb:1063	bbr:coachingRole		bbr:thirdBaseCoach .
+
+#	Coach	Chris Bosio
+bb:1064	bb:lastname	"Bosio" .
+bb:1064	bb:firstname	"Chris" .
+bb:1064	bb:position	"coach" .
+bb:1064	bb:number	"100"^^xs:integer .
+bb:1064	bb:team	bbr:Cubs .
+bb:1064	bbr:coachingRole		bbr:pitchingCoach .
+
+#	Coach	Lester Strode
+bb:1065	bb:lastname	"Strode" .
+bb:1065	bb:firstname	"Lester" .
+bb:1065	bb:position	"coach" .
+bb:1065	bb:number	"100"^^xs:integer .
+bb:1065	bb:team	bbr:Cubs .
+bb:1065	bbr:coachingRole		bbr:bullpenCoach .
+
+#	Coach	Chad Noble
+bb:1066	bb:lastname	"Noble" .
+bb:1066	bb:firstname	"Chad" .
+bb:1066	bb:position	"coach" .
+bb:1066	bb:number	"100"^^xs:integer .
+bb:1066	bb:team	bbr:Cubs .
+bb:1066	bbr:coachingRole		bbr:bullpenCatcher .
+
+
+

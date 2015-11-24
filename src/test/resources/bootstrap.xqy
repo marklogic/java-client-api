@@ -27,6 +27,7 @@ declare function bootstrap:database-configure(
     let $c := bootstrap:create-geospatial-path-indexes($c, $dbid)
     let $c := bootstrap:create-path-range-indexes($c, $dbid)
     let $c := bootstrap:create-fields($c, $dbid)
+    let $c := bootstrap:create-default-rulesets($c, $dbid)
     (: you can't create field and field range index in same transaction :)
     return admin:save-configuration-without-restart($c),
 
@@ -429,12 +430,37 @@ declare function bootstrap:create-path-range-indexes(
         else admin:database-add-range-path-index($c, $dbid, $index-specs)
 };
 
+declare function bootstrap:create-default-rulesets(
+    $c as element(configuration),
+    $dbid as xs:unsignedLong
+) as element(configuration)
+{
+    let $ruleset := admin:database-ruleset("rdfs.rules")
+    return admin:database-add-default-ruleset($c, $dbid, $ruleset)
+};
+
 declare function bootstrap:security-config() { 
     try {
         bootstrap:security-eval(
             'sec:create-role("rest-evaluator", "rest-evaluator", ("rest-evaluator", "rest-writer"), (), ())')
     } catch($e) {
         if ( "SEC-ROLEEXISTS" = $e/error:code ) then xdmp:log("rest-evaluator role exists")
+        else xdmp:log($e)
+    },
+    try {
+        (: no rest-reader role, just the permission :)
+        bootstrap:security-eval(
+            'sec:create-role("read-privileged", "read-privileged", (), (), ())')
+    } catch($e) {
+        if ( "SEC-ROLEEXISTS" = $e/error:code ) then xdmp:log("read-privileged role exists")
+        else xdmp:log($e)
+    },
+    try {
+        (: no rest-reader role, just the permission :)
+        bootstrap:security-eval(
+            'sec:create-role("write-privileged", "write-privileged", (), (), ())')
+    } catch($e) {
+        if ( "SEC-ROLEEXISTS" = $e/error:code ) then xdmp:log("write-privileged role exists")
         else xdmp:log($e)
     },
     bootstrap:security-eval(
@@ -449,8 +475,15 @@ declare function bootstrap:security-config() {
         'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdbc-invoke", "execute", "rest-evaluator")'),
     bootstrap:security-eval(
         'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/xdbc-invoke-in", "execute", "rest-evaluator")'),
+    bootstrap:security-eval(
+        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/rest-reader", "execute", "read-privileged")'),
+    bootstrap:security-eval(
+        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/rest-reader", "execute", "write-privileged")'),
+    bootstrap:security-eval(
+        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/rest-writer", "execute", "write-privileged")'),
 
-    for $user in ("rest-admin", "rest-reader", "rest-writer", "rest-evaluator", "valid") 
+    for $user in ("rest-admin", "rest-reader", "rest-writer", "rest-evaluator", "valid",
+        "read-privileged", "write-privileged")
         let $user-id := 
             try {
                 xdmp:user($user)

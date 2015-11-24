@@ -17,6 +17,7 @@ package com.marklogic.client.io;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -53,14 +54,17 @@ import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
- * An Input Source Handle represents XML content as an input source for reading or writing.
- * When reading, the XML may be processed by a SAX content handler.
+ * <p>An Input Source Handle represents XML content as an input source for reading or writing.
+ * When reading, the XML may be processed by a SAX content handler.</p>
+ *
+ * <p>Always call {@link #close} when finished with this handle to release the resources.</p>
  */
 public class InputSourceHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
 	implements OutputStreamSender, BufferableHandle, ContentHandle<InputSource>,
 	    XMLReadHandle, XMLWriteHandle,
-	    StructureReadHandle, StructureWriteHandle
+	    StructureReadHandle, StructureWriteHandle,
+		Closeable
 {
 	static final private Logger logger = LoggerFactory.getLogger(InputSourceHandle.class);
 
@@ -69,6 +73,7 @@ public class InputSourceHandle
 	private Schema           defaultWriteSchema;
 	private SAXParserFactory factory;
 	private InputSource      content;
+	private InputStream      underlyingStream;
 
 	/**
 	 * Creates a factory to create a InputSourceHandle instance for a SAX InputSource.
@@ -345,6 +350,7 @@ public class InputSourceHandle
 				return;
 			}
 
+			this.underlyingStream = content;
 			this.content = new InputSource(new InputStreamReader(content, "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
 			logger.error("Failed to read input stream as input source",e);
@@ -403,5 +409,18 @@ public class InputSourceHandle
 	    public void warning(SAXParseException e) throws SAXException {
 	    	// noop
 	    }
+	}
+
+	/** Always call close() when finished with this handle -- it closes the underlying InputStream.
+	 */
+	public void close() {
+		if ( underlyingStream != null ) {
+			try {
+				underlyingStream.close();
+			} catch (IOException e) {
+				logger.error("Failed to close underlying InputStream",e);
+				throw new MarkLogicIOException(e);
+			}
+		}
 	}
 }

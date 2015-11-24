@@ -113,6 +113,8 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 			// set the transformer
 			handle.setTransformer(transformer);
 			writeset.add(docId[i],handle);
+			//Close handle.
+			handle.close();
 		}
 		docMgr.write(writeset);
 		FileHandle dh = new FileHandle();

@@ -1,0 +1,641 @@
+
+prefix bb: <http://marklogic.com/baseball/players#> 
+prefix bbr: <http://marklogic.com/baseball/rules#> 
+prefix xs: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+
+#bb:pX  bb:playerid "XX"^^xs:integer .
+#bb:XX  bb:lastname     "LASTNAME" .
+#bb:XX  bb:firstname    "FIRSTNAME" .
+#bb:XX  bb:position     "POSITION" .
+#bb:XX  bb:number       "NUMBER"^^xs:integer .
+#bb:XX  bb:team         "Athletics" .
+#bb:XX  bb:birthdate    "1989-10-26"^^xs:date .
+#bb:XX  bb:bats         "right" .
+#bb:XX  bb:throws       "right" .
+#bb:XX  bb:height       "" .
+#bb:XX  bb:weight       "220"^^xs:integer .
+#bb:XXX a       bbr:player .
+#bb:XXX a       bbr:pitcher .
+#bb:XXX a       bbr:starter .
+#bb:XXX a       bbr:setup .
+
+
+# 	Pitchers 	B/T 	Ht 	Wt 	DOB
+#73 	Jayson Aquino 	L-L 	6'1" 	180 	Nov 22, 1992
+bb:2501	bb:playerid	"2501"^^xs:integer .
+bb:2501	bb:number	"73"^^xs:integer .
+bb:2501	bb:lastname	"Aquino" .
+bb:2501	bb:firstname	"Jayson" .
+bb:2501	bb:position	"pitcher" .
+bb:2501	bb:team	bbr:Rockies .
+bb:2501	bb:bats	"left" .
+bb:2501	bb:throws	"left" .
+bb:2501	bb:weight	"180"^^xs:integer .
+bb:2501	bb:date-of-birth	"1992-11-22"^^xs:date .
+bb:2501	rdf:type		bbr:pitcher .
+bb:2501	rdf:type		bbr:setup .
+
+#36 	Christian Bergman 	R-R 	6'1" 	180 	May 4, 1988
+bb:2502	bb:playerid	"2502"^^xs:integer .
+bb:2502	bb:number	"36"^^xs:integer .
+bb:2502	bb:lastname	"Bergman" .
+bb:2502	bb:firstname	"Christian" .
+bb:2502	bb:position	"pitcher" .
+bb:2502	bb:team	bbr:Rockies .
+bb:2502	bb:bats	"right" .
+bb:2502	bb:throws	"right" .
+bb:2502	bb:weight	"180"^^xs:integer .
+bb:2502	bb:date-of-birth	"1988-05-04"^^xs:date .
+bb:2502	rdf:type		bbr:pitcher .
+bb:2502	rdf:type		bbr:setup .
+
+#35 	Chad Bettis 	R-R 	6'1" 	200 	Apr 26, 1989
+bb:2503	bb:playerid	"2503"^^xs:integer .
+bb:2503	bb:number	"35"^^xs:integer .
+bb:2503	bb:lastname	"Bettis" .
+bb:2503	bb:firstname	"Chad" .
+bb:2503	bb:position	"pitcher" .
+bb:2503	bb:team	bbr:Rockies .
+bb:2503	bb:bats	"right" .
+bb:2503	bb:throws	"right" .
+bb:2503	bb:weight	"200"^^xs:integer .
+bb:2503	bb:date-of-birth	"1989-04-26"^^xs:date .
+bb:2503	rdf:type		bbr:pitcher .
+bb:2503	rdf:type		bbr:setup .
+
+#49 	Rex Brothers 	L-L 	6'0" 	210 	Dec 18, 1987
+bb:2504	bb:playerid	"2504"^^xs:integer .
+bb:2504	bb:number	"49"^^xs:integer .
+bb:2504	bb:lastname	"Brothers" .
+bb:2504	bb:firstname	"Rex" .
+bb:2504	bb:position	"pitcher" .
+bb:2504	bb:team	bbr:Rockies .
+bb:2504	bb:bats	"left" .
+bb:2504	bb:throws	"left" .
+bb:2504	bb:weight	"210"^^xs:integer .
+bb:2504	bb:date-of-birth	"1987-12-18"^^xs:date .
+bb:2504	rdf:type		bbr:pitcher .
+bb:2504	rdf:type		bbr:setup .
+
+#51 	Brooks Brown 	L-R 	6'3" 	205 	Jun 20, 1985
+bb:2505	bb:playerid	"2505"^^xs:integer .
+bb:2505	bb:number	"51"^^xs:integer .
+bb:2505	bb:lastname	"Brown" .
+bb:2505	bb:firstname	"Brooks" .
+bb:2505	bb:position	"pitcher" .
+bb:2505	bb:team	bbr:Rockies .
+bb:2505	bb:bats	"left" .
+bb:2505	bb:throws	"right" .
+bb:2505	bb:weight	"205"^^xs:integer .
+bb:2505	bb:date-of-birth	"1985-06-20"^^xs:date .
+bb:2505	rdf:type		bbr:pitcher .
+bb:2505	rdf:type		bbr:setup .
+
+#31 	Eddie Butler 	R-R 	6'2" 	180 	Mar 13, 1991
+bb:2506	bb:playerid	"2506"^^xs:integer .
+bb:2506	bb:number	"31"^^xs:integer .
+bb:2506	bb:lastname	"Butler" .
+bb:2506	bb:firstname	"Eddie" .
+bb:2506	bb:position	"pitcher" .
+bb:2506	bb:team	bbr:Rockies .
+bb:2506	bb:bats	"right" .
+bb:2506	bb:throws	"right" .
+bb:2506	bb:weight	"180"^^xs:integer .
+bb:2506	bb:date-of-birth	"1991-03-13"^^xs:date .
+bb:2506	rdf:type		bbr:pitcher .
+bb:2506	rdf:type		bbr:setup .
+
+#45 	Jhoulys Chacin 	R-R 	6'3" 	215 	Jan 7, 1988
+bb:2507	bb:playerid	"2507"^^xs:integer .
+bb:2507	bb:number	"45"^^xs:integer .
+bb:2507	bb:lastname	"Chacin" .
+bb:2507	bb:firstname	"Jhoulys" .
+bb:2507	bb:position	"pitcher" .
+bb:2507	bb:team	bbr:Rockies .
+bb:2507	bb:bats	"right" .
+bb:2507	bb:throws	"right" .
+bb:2507	bb:weight	"215"^^xs:integer .
+bb:2507	bb:date-of-birth	"1988-01-07"^^xs:date .
+bb:2507	rdf:type		bbr:pitcher .
+bb:2507	rdf:type		bbr:setup .
+
+#27 	Tyler Chatwood 	R-R 	6'0" 	185 	Dec 16, 1989
+bb:2508	bb:playerid	"2508"^^xs:integer .
+bb:2508	bb:number	"27"^^xs:integer .
+bb:2508	bb:lastname	"Chatwood" .
+bb:2508	bb:firstname	"Tyler" .
+bb:2508	bb:position	"pitcher" .
+bb:2508	bb:team	bbr:Rockies .
+bb:2508	bb:bats	"right" .
+bb:2508	bb:throws	"right" .
+bb:2508	bb:weight	"185"^^xs:integer .
+bb:2508	bb:date-of-birth	"1989-12-16"^^xs:date .
+bb:2508	rdf:type		bbr:pitcher .
+bb:2508	rdf:type		bbr:setup .
+
+#29 	Jorge De La Rosa 	L-L 	6'1" 	215 	Apr 5, 1981
+bb:2509	bb:playerid	"2509"^^xs:integer .
+bb:2509	bb:number	"29"^^xs:integer .
+bb:2509	bb:lastname	"De La Rosa" .
+bb:2509	bb:firstname	"Jorge" .
+bb:2509	bb:position	"pitcher" .
+bb:2509	bb:team	bbr:Rockies .
+bb:2509	bb:bats	"left" .
+bb:2509	bb:throws	"left" .
+bb:2509	bb:weight	"215"^^xs:integer .
+bb:2509	bb:date-of-birth	"1981-04-05"^^xs:date .
+bb:2509	rdf:type		bbr:pitcher .
+bb:2509	rdf:type		bbr:setup .
+
+#58 	Yohan Flande 	L-L 	6'2" 	180 	Jan 27, 1986
+bb:2510	bb:playerid	"2510"^^xs:integer .
+bb:2510	bb:number	"58"^^xs:integer .
+bb:2510	bb:lastname	"Flande" .
+bb:2510	bb:firstname	"Yohan" .
+bb:2510	bb:position	"pitcher" .
+bb:2510	bb:team	bbr:Rockies .
+bb:2510	bb:bats	"left" .
+bb:2510	bb:throws	"left" .
+bb:2510	bb:weight	"180"^^xs:integer .
+bb:2510	bb:date-of-birth	"1986-01-27"^^xs:date .
+bb:2510	rdf:type		bbr:pitcher .
+bb:2510	rdf:type		bbr:setup .
+
+#53 	Christian Friedrich 	R-L 	6'4" 	215 	Jul 8, 1987
+bb:2511	bb:playerid	"2511"^^xs:integer .
+bb:2511	bb:number	"53"^^xs:integer .
+bb:2511	bb:lastname	"Friedrich" .
+bb:2511	bb:firstname	"Christian" .
+bb:2511	bb:position	"pitcher" .
+bb:2511	bb:team	bbr:Rockies .
+bb:2511	bb:bats	"right" .
+bb:2511	bb:throws	"left" .
+bb:2511	bb:weight	"215"^^xs:integer .
+bb:2511	bb:date-of-birth	"1987-07-08"^^xs:date .
+bb:2511	rdf:type		bbr:pitcher .
+bb:2511	rdf:type		bbr:setup .
+
+#32 	LaTroy Hawkins 	R-R 	6'5" 	220 	Dec 21, 1972
+bb:2512	bb:playerid	"2512"^^xs:integer .
+bb:2512	bb:number	"32"^^xs:integer .
+bb:2512	bb:lastname	"Hawkins" .
+bb:2512	bb:firstname	"LaTroy" .
+bb:2512	bb:position	"pitcher" .
+bb:2512	bb:team	bbr:Rockies .
+bb:2512	bb:bats	"right" .
+bb:2512	bb:throws	"right" .
+bb:2512	bb:weight	"220"^^xs:integer .
+bb:2512	bb:date-of-birth	"1972-12-21"^^xs:date .
+bb:2512	rdf:type		bbr:pitcher .
+bb:2512	rdf:type		bbr:setup .
+
+#54 	Tommy Kahnle 	R-R 	6'1" 	230 	Aug 7, 1989
+bb:2513	bb:playerid	"2513"^^xs:integer .
+bb:2513	bb:number	"54"^^xs:integer .
+bb:2513	bb:lastname	"Kahnle" .
+bb:2513	bb:firstname	"Tommy" .
+bb:2513	bb:position	"pitcher" .
+bb:2513	bb:team	bbr:Rockies .
+bb:2513	bb:bats	"right" .
+bb:2513	bb:throws	"right" .
+bb:2513	bb:weight	"230"^^xs:integer .
+bb:2513	bb:date-of-birth	"1989-08-07"^^xs:date .
+bb:2513	rdf:type		bbr:pitcher .
+bb:2513	rdf:type		bbr:setup .
+
+#48 	Boone Logan 	R-L 	6'5" 	215 	Aug 13, 1984
+bb:2514	bb:playerid	"2514"^^xs:integer .
+bb:2514	bb:number	"48"^^xs:integer .
+bb:2514	bb:lastname	"Logan" .
+bb:2514	bb:firstname	"Boone" .
+bb:2514	bb:position	"pitcher" .
+bb:2514	bb:team	bbr:Rockies .
+bb:2514	bb:bats	"right" .
+bb:2514	bb:throws	"left" .
+bb:2514	bb:weight	"215"^^xs:integer .
+bb:2514	bb:date-of-birth	"1984-08-13"^^xs:date .
+bb:2514	rdf:type		bbr:pitcher .
+bb:2514	rdf:type		bbr:setup .
+
+#24 	Jordan Lyles 	R-R 	6'4" 	215 	Oct 19, 1990
+bb:2515	bb:playerid	"2515"^^xs:integer .
+bb:2515	bb:number	"24"^^xs:integer .
+bb:2515	bb:lastname	"Lyles" .
+bb:2515	bb:firstname	"Jordan" .
+bb:2515	bb:position	"pitcher" .
+bb:2515	bb:team	bbr:Rockies .
+bb:2515	bb:bats	"right" .
+bb:2515	bb:throws	"right" .
+bb:2515	bb:weight	"215"^^xs:integer .
+bb:2515	bb:date-of-birth	"1990-10-19"^^xs:date .
+bb:2515	rdf:type		bbr:pitcher .
+bb:2515	rdf:type		bbr:setup .
+
+#47 	Chris Martin 	R-R 	6'8" 	215 	Jun 2, 1986
+bb:2516	bb:playerid	"2516"^^xs:integer .
+bb:2516	bb:number	"47"^^xs:integer .
+bb:2516	bb:lastname	"Martin" .
+bb:2516	bb:firstname	"Chris" .
+bb:2516	bb:position	"pitcher" .
+bb:2516	bb:team	bbr:Rockies .
+bb:2516	bb:bats	"right" .
+bb:2516	bb:throws	"right" .
+bb:2516	bb:weight	"215"^^xs:integer .
+bb:2516	bb:date-of-birth	"1986-06-02"^^xs:date .
+bb:2516	rdf:type		bbr:pitcher .
+bb:2516	rdf:type		bbr:setup .
+
+#46 	Tyler Matzek 	L-L 	6'3" 	210 	Oct 19, 1990
+bb:2517	bb:playerid	"2517"^^xs:integer .
+bb:2517	bb:number	"46"^^xs:integer .
+bb:2517	bb:lastname	"Matzek" .
+bb:2517	bb:firstname	"Tyler" .
+bb:2517	bb:position	"pitcher" .
+bb:2517	bb:team	bbr:Rockies .
+bb:2517	bb:bats	"left" .
+bb:2517	bb:throws	"left" .
+bb:2517	bb:weight	"210"^^xs:integer .
+bb:2517	bb:date-of-birth	"1990-10-19"^^xs:date .
+bb:2517	rdf:type		bbr:pitcher .
+bb:2517	rdf:type		bbr:setup .
+
+#12 	Juan Nicasio 	R-R 	6'3" 	210 	Aug 31, 1986
+bb:2518	bb:playerid	"2518"^^xs:integer .
+bb:2518	bb:number	"12"^^xs:integer .
+bb:2518	bb:lastname	"Nicasio" .
+bb:2518	bb:firstname	"Juan" .
+bb:2518	bb:position	"pitcher" .
+bb:2518	bb:team	bbr:Rockies .
+bb:2518	bb:bats	"right" .
+bb:2518	bb:throws	"right" .
+bb:2518	bb:weight	"210"^^xs:integer .
+bb:2518	bb:date-of-birth	"1986-08-31"^^xs:date .
+bb:2518	rdf:type		bbr:pitcher .
+bb:2518	rdf:type		bbr:setup .
+
+#0 	Adam Ottavino 	S-R 	6'5" 	230 	Nov 22, 1985
+bb:2519	bb:playerid	"2519"^^xs:integer .
+bb:2519	bb:lastname	"Ottavino" .
+bb:2519	bb:firstname	"Adam" .
+bb:2519	bb:position	"pitcher" .
+bb:2519	bb:team	bbr:Rockies .
+bb:2519	bb:bats	"switch" .
+bb:2519	bb:throws	"right" .
+bb:2519	bb:weight	"230"^^xs:integer .
+bb:2519	bb:date-of-birth	"1985-11-22"^^xs:date .
+bb:2519	rdf:type		bbr:pitcher .
+bb:2519	rdf:type		bbr:setup .
+
+#	Jorge Rondon 	R-R 	6'1" 	215 	Feb 16, 1988
+bb:2520	bb:playerid	"2520"^^xs:integer .
+bb:2520	bb:lastname	"Rondon" .
+bb:2520	bb:firstname	"Jorge" .
+bb:2520	bb:position	"pitcher" .
+bb:2520	bb:team	bbr:Rockies .
+bb:2520	bb:bats	"right" .
+bb:2520	bb:throws	"right" .
+bb:2520	bb:weight	"215"^^xs:integer .
+bb:2520	bb:date-of-birth	"1988-02-16"^^xs:date .
+bb:2520	rdf:type		bbr:pitcher .
+bb:2520	rdf:type		bbr:setup .
+
+#	Chris Rusin 	L-L 	6'2" 	195 	Oct 22, 1986
+bb:2521	bb:playerid	"2521"^^xs:integer .
+bb:2521	bb:lastname	"Rusin" .
+bb:2521	bb:firstname	"Chris" .
+bb:2521	bb:position	"pitcher" .
+bb:2521	bb:team	bbr:Rockies .
+bb:2521	bb:bats	"left" .
+bb:2521	bb:throws	"left" .
+bb:2521	bb:weight	"195"^^xs:integer .
+bb:2521	bb:date-of-birth	"1986-10-22"^^xs:date .
+bb:2521	rdf:type		bbr:pitcher .
+bb:2521	rdf:type		bbr:setup .
+
+#75 	Kraig Sitton 	L-L 	6'5" 	190 	Jul 13, 1988
+bb:2522	bb:playerid	"2522"^^xs:integer .
+bb:2522	bb:number	"75"^^xs:integer .
+bb:2522	bb:lastname	"Sitton" .
+bb:2522	bb:firstname	"Kraig" .
+bb:2522	bb:position	"pitcher" .
+bb:2522	bb:team	bbr:Rockies .
+bb:2522	bb:bats	"left" .
+bb:2522	bb:throws	"left" .
+bb:2522	bb:weight	"190"^^xs:integer .
+bb:2522	bb:date-of-birth	"1988-07-13"^^xs:date .
+bb:2522	rdf:type		bbr:pitcher .
+bb:2522	rdf:type		bbr:setup .
+
+# 	Catchers 	B/T 	Ht 	Wt 	DOB
+#8 	Michael McKenry 	R-R 	5'10" 	205 	Mar 4, 1985
+bb:2523	bb:playerid	"2523"^^xs:integer .
+bb:2523	bb:number	"8"^^xs:integer .
+bb:2523	bb:lastname	"McKenry" .
+bb:2523	bb:firstname	"Michael" .
+bb:2523	bb:position	"catcher" .
+bb:2523	bb:team	bbr:Rockies .
+bb:2523	bb:bats	"right" .
+bb:2523	bb:throws	"right" .
+bb:2523	bb:weight	"205"^^xs:integer .
+bb:2523	bb:date-of-birth	"1985-03-04"^^xs:date .
+bb:2523	rdf:type		bbr:catcher .
+
+#20 	Wilin Rosario 	R-R 	5'11" 	220 	Feb 23, 1989
+bb:2524	bb:playerid	"2524"^^xs:integer .
+bb:2524	bb:number	"20"^^xs:integer .
+bb:2524	bb:lastname	"Rosario" .
+bb:2524	bb:firstname	"Wilin" .
+bb:2524	bb:position	"catcher" .
+bb:2524	bb:team	bbr:Rockies .
+bb:2524	bb:bats	"right" .
+bb:2524	bb:throws	"right" .
+bb:2524	bb:weight	"220"^^xs:integer .
+bb:2524	bb:date-of-birth	"1989-02-23"^^xs:date .
+bb:2524	rdf:type		bbr:catcher .
+
+# 	Infielders 	B/T 	Ht 	Wt 	DOB
+#10 	Cristhian Adames 	S-R 	6'0" 	180 	Jul 26, 1991
+bb:2525	bb:playerid	"2525"^^xs:integer .
+bb:2525	bb:number	"10"^^xs:integer .
+bb:2525	bb:lastname	"Adames" .
+bb:2525	bb:firstname	"Cristhian" .
+bb:2525	bb:position	"infielder" .
+bb:2525	bb:team	bbr:Rockies .
+bb:2525	bb:bats	"switch" .
+bb:2525	bb:throws	"right" .
+bb:2525	bb:weight	"180"^^xs:integer .
+bb:2525	bb:date-of-birth	"1991-07-26"^^xs:date .
+bb:2525	rdf:type		bbr:infielder .
+
+#28 	Nolan Arenado 	R-R 	6'2" 	205 	Apr 16, 1991
+bb:2526	bb:playerid	"2526"^^xs:integer .
+bb:2526	bb:number	"28"^^xs:integer .
+bb:2526	bb:lastname	"Arenado" .
+bb:2526	bb:firstname	"Nolan" .
+bb:2526	bb:position	"infielder" .
+bb:2526	bb:team	bbr:Rockies .
+bb:2526	bb:bats	"right" .
+bb:2526	bb:throws	"right" .
+bb:2526	bb:weight	"205"^^xs:integer .
+bb:2526	bb:date-of-birth	"1991-04-16"^^xs:date .
+bb:2526	rdf:type		bbr:infielder .
+
+#23 	Charlie Culberson 	R-R 	6'0" 	200 	Apr 10, 1989
+bb:2527	bb:playerid	"2527"^^xs:integer .
+bb:2527	bb:number	"23"^^xs:integer .
+bb:2527	bb:lastname	"Culberson" .
+bb:2527	bb:firstname	"Charlie" .
+bb:2527	bb:position	"infielder" .
+bb:2527	bb:team	bbr:Rockies .
+bb:2527	bb:bats	"right" .
+bb:2527	bb:throws	"right" .
+bb:2527	bb:weight	"200"^^xs:integer .
+bb:2527	bb:date-of-birth	"1989-04-10"^^xs:date .
+bb:2527	rdf:type		bbr:infielder .
+
+#	Rosell Herrera 	S-R 	6'3" 	190 	Oct 16, 1992
+bb:2528	bb:playerid	"2528"^^xs:integer .
+bb:2528	bb:lastname	"Herrera" .
+bb:2528	bb:firstname	"Rosell" .
+bb:2528	bb:position	"infielder" .
+bb:2528	bb:team	bbr:Rockies .
+bb:2528	bb:bats	"switch" .
+bb:2528	bb:throws	"right" .
+bb:2528	bb:weight	"190"^^xs:integer .
+bb:2528	bb:date-of-birth	"1992-10-16"^^xs:date .
+bb:2528	rdf:type		bbr:infielder .
+
+#9 	DJ LeMahieu 	R-R 	6'4" 	205 	Jul 13, 1988
+bb:2529	bb:playerid	"2529"^^xs:integer .
+bb:2529	bb:number	"9"^^xs:integer .
+bb:2529	bb:lastname	"LeMahieu" .
+bb:2529	bb:firstname	"DJ" .
+bb:2529	bb:position	"infielder" .
+bb:2529	bb:team	bbr:Rockies .
+bb:2529	bb:bats	"right" .
+bb:2529	bb:throws	"right" .
+bb:2529	bb:weight	"205"^^xs:integer .
+bb:2529	bb:date-of-birth	"1988-07-13"^^xs:date .
+bb:2529	rdf:type		bbr:infielder .
+
+#33 	Justin Morneau 	L-R 	6'4" 	220 	May 15, 1981
+bb:2530	bb:playerid	"2530"^^xs:integer .
+bb:2530	bb:number	"33"^^xs:integer .
+bb:2530	bb:lastname	"Morneau" .
+bb:2530	bb:firstname	"Justin" .
+bb:2530	bb:position	"infielder" .
+bb:2530	bb:team	bbr:Rockies .
+bb:2530	bb:bats	"left" .
+bb:2530	bb:throws	"right" .
+bb:2530	bb:weight	"220"^^xs:integer .
+bb:2530	bb:date-of-birth	"1981-05-15"^^xs:date .
+bb:2530	rdf:type		bbr:infielder .
+
+#4 	Ben Paulsen 	L-R 	6'4" 	205 	Oct 27, 1987
+bb:2531	bb:playerid	"2531"^^xs:integer .
+bb:2531	bb:number	"4"^^xs:integer .
+bb:2531	bb:lastname	"Paulsen" .
+bb:2531	bb:firstname	"Ben" .
+bb:2531	bb:position	"infielder" .
+bb:2531	bb:team	bbr:Rockies .
+bb:2531	bb:bats	"left" .
+bb:2531	bb:throws	"right" .
+bb:2531	bb:weight	"205"^^xs:integer .
+bb:2531	bb:date-of-birth	"1987-10-27"^^xs:date .
+bb:2531	rdf:type		bbr:infielder .
+
+#14 	Josh Rutledge 	R-R 	6'1" 	190 	Apr 21, 1989
+bb:2532	bb:playerid	"2532"^^xs:integer .
+bb:2532	bb:number	"14"^^xs:integer .
+bb:2532	bb:lastname	"Rutledge" .
+bb:2532	bb:firstname	"Josh" .
+bb:2532	bb:position	"infielder" .
+bb:2532	bb:team	bbr:Rockies .
+bb:2532	bb:bats	"right" .
+bb:2532	bb:throws	"right" .
+bb:2532	bb:weight	"190"^^xs:integer .
+bb:2532	bb:date-of-birth	"1989-04-21"^^xs:date .
+bb:2532	rdf:type		bbr:infielder .
+
+#2 	Troy Tulowitzki 	R-R 	6'3" 	215 	Oct 10, 1984
+bb:2533	bb:playerid	"2533"^^xs:integer .
+bb:2533	bb:number	"2"^^xs:integer .
+bb:2533	bb:lastname	"Tulowitzki" .
+bb:2533	bb:firstname	"Troy" .
+bb:2533	bb:position	"infielder" .
+bb:2533	bb:team	bbr:Rockies .
+bb:2533	bb:bats	"right" .
+bb:2533	bb:throws	"right" .
+bb:2533	bb:weight	"215"^^xs:integer .
+bb:2533	bb:date-of-birth	"1984-10-10"^^xs:date .
+bb:2533	rdf:type		bbr:infielder .
+
+#43 	Rafael Ynoa 	S-R 	6'0" 	185 	Aug 7, 1987
+bb:2534	bb:playerid	"2534"^^xs:integer .
+bb:2534	bb:number	"43"^^xs:integer .
+bb:2534	bb:lastname	"Ynoa" .
+bb:2534	bb:firstname	"Rafael" .
+bb:2534	bb:position	"infielder" .
+bb:2534	bb:team	bbr:Rockies .
+bb:2534	bb:bats	"switch" .
+bb:2534	bb:throws	"right" .
+bb:2534	bb:weight	"185"^^xs:integer .
+bb:2534	bb:date-of-birth	"1987-08-07"^^xs:date .
+bb:2534	rdf:type		bbr:infielder .
+
+# 	Outfielders 	B/T 	Ht 	Wt 	DOB
+#1 	Brandon Barnes 	R-R 	6'2" 	210 	May 15, 1986
+bb:2535	bb:playerid	"2535"^^xs:integer .
+bb:2535	bb:number	"1"^^xs:integer .
+bb:2535	bb:lastname	"Barnes" .
+bb:2535	bb:firstname	"Brandon" .
+bb:2535	bb:position	"outfielder" .
+bb:2535	bb:team	bbr:Rockies .
+bb:2535	bb:bats	"right" .
+bb:2535	bb:throws	"right" .
+bb:2535	bb:weight	"210"^^xs:integer .
+bb:2535	bb:date-of-birth	"1986-05-15"^^xs:date .
+bb:2535	rdf:type		bbr:outfielder .
+
+#19 	Charlie Blackmon 	L-L 	6'3" 	210 	Jul 1, 1986
+bb:2536	bb:playerid	"2536"^^xs:integer .
+bb:2536	bb:number	"19"^^xs:integer .
+bb:2536	bb:lastname	"Blackmon" .
+bb:2536	bb:firstname	"Charlie" .
+bb:2536	bb:position	"outfielder" .
+bb:2536	bb:team	bbr:Rockies .
+bb:2536	bb:bats	"left" .
+bb:2536	bb:throws	"left" .
+bb:2536	bb:weight	"210"^^xs:integer .
+bb:2536	bb:date-of-birth	"1986-07-01"^^xs:date .
+bb:2536	rdf:type		bbr:outfielder .
+
+#6 	Corey Dickerson 	L-R 	6'1" 	205 	May 22, 1989
+bb:2537	bb:playerid	"2537"^^xs:integer .
+bb:2537	bb:number	"6"^^xs:integer .
+bb:2537	bb:lastname	"Dickerson" .
+bb:2537	bb:firstname	"Corey" .
+bb:2537	bb:position	"outfielder" .
+bb:2537	bb:team	bbr:Rockies .
+bb:2537	bb:bats	"left" .
+bb:2537	bb:throws	"right" .
+bb:2537	bb:weight	"205"^^xs:integer .
+bb:2537	bb:date-of-birth	"1989-05-22"^^xs:date .
+bb:2537	rdf:type		bbr:outfielder .
+
+#5 	Carlos Gonzalez 	L-L 	6'1" 	220 	Oct 17, 1985
+bb:2538	bb:playerid	"2538"^^xs:integer .
+bb:2538	bb:number	"5"^^xs:integer .
+bb:2538	bb:lastname	"Gonzalez" .
+bb:2538	bb:firstname	"Carlos" .
+bb:2538	bb:position	"outfielder" .
+bb:2538	bb:team	bbr:Rockies .
+bb:2538	bb:bats	"left" .
+bb:2538	bb:throws	"left" .
+bb:2538	bb:weight	"220"^^xs:integer .
+bb:2538	bb:date-of-birth	"1985-10-17"^^xs:date .
+bb:2538	rdf:type		bbr:outfielder .
+
+#16 	Kyle Parker 	R-R 	6'0" 	205 	Sep 30, 1989
+bb:2539	bb:playerid	"2539"^^xs:integer .
+bb:2539	bb:number	"16"^^xs:integer .
+bb:2539	bb:lastname	"Parker" .
+bb:2539	bb:firstname	"Kyle" .
+bb:2539	bb:position	"outfielder" .
+bb:2539	bb:team	bbr:Rockies .
+bb:2539	bb:bats	"right" .
+bb:2539	bb:throws	"right" .
+bb:2539	bb:weight	"205"^^xs:integer .
+bb:2539	bb:date-of-birth	"1989-09-30"^^xs:date .
+bb:2539	rdf:type		bbr:outfielder .
+
+#13 	Drew Stubbs 	R-R 	6'4" 	205 	Oct 4, 1984
+bb:2540	bb:playerid	"2540"^^xs:integer .
+bb:2540	bb:number	"13"^^xs:integer .
+bb:2540	bb:lastname	"Stubbs" .
+bb:2540	bb:firstname	"Drew" .
+bb:2540	bb:position	"outfielder" .
+bb:2540	bb:team	bbr:Rockies .
+bb:2540	bb:bats	"right" .
+bb:2540	bb:throws	"right" .
+bb:2540	bb:weight	"205"^^xs:integer .
+bb:2540	bb:date-of-birth	"1984-10-04"^^xs:date .
+bb:2540	rdf:type		bbr:outfielder .
+
+#	Manager	Walt Weiss
+bb:2561	bb:lastname	"Weiss" .
+bb:2561	bb:firstname	"Walt" .
+bb:2561	bb:position	"manager" .
+bb:2561	bb:team	bbr:Rockies .
+bb:2561	bb:number	"22"^^xs:integer .
+bb:2561	bbr:coachingRole		bbr:manager .
+
+#	Coach	Tom Runnells
+bb:2562	bb:lastname	"Runnells" .
+bb:2562	bb:firstname	"Tom" .
+bb:2562	bb:position	"coach" .
+bb:2562	bb:number	"11"^^xs:integer .
+bb:2562	bb:team	bbr:Rockies .
+bb:2562	bbr:coachingRole		bbr:benchCoach .
+
+#	Coach	Blake Doyle
+bb:2563	bb:lastname	"Doyle" .
+bb:2563	bb:firstname	"Blake" .
+bb:2563	bb:position	"coach" .
+bb:2563	bb:number	"25"^^xs:integer .
+bb:2563	bb:team	bbr:Rockies .
+bb:2563	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	FIRSTNAME LASTNAME
+bb:2564	bb:lastname	"LASTNAME" .
+bb:2564	bb:firstname	"FIRSTNAME" .
+bb:2564	bb:position	"coach" .
+bb:2564	bb:number	"100"^^xs:integer .
+bb:2564	bb:team	bbr:Rockies .
+bb:2564	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Eric Young
+bb:2565	bb:lastname	"Young" .
+bb:2565	bb:firstname	"Eric" .
+bb:2565	bb:position	"coach" .
+bb:2565	bb:number	"21"^^xs:integer .
+bb:2565	bb:team	bbr:Rockies .
+bb:2565	bbr:coachingRole		bbr:firstBaseCoach .
+
+#	Coach	Stu Cole
+bb:2566	bb:lastname	"Cole" .
+bb:2566	bb:firstname	"Stu" .
+bb:2566	bb:position	"coach" .
+bb:2566	bb:number	"39"^^xs:integer .
+bb:2566	bb:team	bbr:Rockies .
+bb:2566	bbr:coachingRole		bbr:thirdBaseCoach .
+
+#	Coach	Steve Foster
+bb:2567	bb:lastname	"Foster" .
+bb:2567	bb:firstname	"Steve" .
+bb:2567	bb:position	"coach" .
+bb:2567	bb:number	"100"^^xs:integer .
+bb:2567	bb:team	bbr:Rockies .
+bb:2567	bbr:coachingRole		bbr:pitchingCoach .
+
+#	Coach	Darren Holmes
+bb:2568	bb:lastname	"Holmes" .
+bb:2568	bb:firstname	"Darren" .
+bb:2568	bb:position	"coach" .
+bb:2568	bb:number	"100"^^xs:integer .
+bb:2568	bb:team	bbr:Rockies .
+bb:2568	bbr:coachingRole		bbr:bullpenCoach .
+
+#	Coach	FIRSTNAME LASTNAME
+bb:2569	bb:lastname	"LASTNAME" .
+bb:2569	bb:firstname	"FIRSTNAME" .
+bb:2569	bb:position	"coach" .
+bb:2569	bb:number	"100"^^xs:integer .
+bb:2569	bb:team	bbr:Rockies .
+bb:2569	bbr:coachingRole		bbr:bullpenCatcher .
+
+
+

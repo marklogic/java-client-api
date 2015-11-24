@@ -17,6 +17,7 @@ package com.marklogic.client.io;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -44,23 +45,25 @@ import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
- * An XML Event Reader Handle represents XML content as an XML event reader
- * for reading as a series of StAX events.
- * 
- * When finished with the event reader, close the event reader to release
- * the response.
+ * <p>An XML Event Reader Handle represents XML content as an XML event reader
+ * for reading as a series of StAX events.</p>
+ *
+ * <p>Either call {@link #close} or {@link #get}.close() when finished with this handle
+ * to release the resources.</p>
  */
 public class XMLEventReaderHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
 	implements OutputStreamSender, BufferableHandle, ContentHandle<XMLEventReader>,
 		XMLReadHandle, XMLWriteHandle,
-		StructureReadHandle, StructureWriteHandle
+		StructureReadHandle, StructureWriteHandle,
+		Closeable
 {
 	static final private Logger logger = LoggerFactory.getLogger(XMLEventReaderHandle.class);
 
 	private XMLResolver     resolver;
 	private XMLEventReader  content;
 	private XMLInputFactory factory;
+	private InputStream     underlyingStream;
 
 	/**
 	 * Creates a factory to create an XMLEventReaderHandle instance for a StAX event reader.
@@ -242,6 +245,7 @@ public class XMLEventReaderHandle
 			return;
 		}
 
+		this.underlyingStream = content;
 		try {
 			if (logger.isInfoEnabled())
 				logger.info("Parsing StAX events from input stream");
@@ -285,6 +289,19 @@ public class XMLEventReaderHandle
 		} catch (XMLStreamException e) {
 			logger.error("Failed to parse StAX events from input stream",e);
 			throw new MarkLogicInternalException(e);
+		}
+	}
+
+	/** Either call close() or get().close() when finished with this handle to close the underlying InputStream.
+	 */
+	public void close() {
+		if ( underlyingStream != null ) {
+			try {
+				underlyingStream.close();
+			} catch (IOException e) {
+				logger.error("Failed to close underlying InputStream",e);
+				throw new MarkLogicIOException(e);
+			}
 		}
 	}
 }

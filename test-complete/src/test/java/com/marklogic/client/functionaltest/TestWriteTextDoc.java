@@ -39,7 +39,7 @@ public class TestWriteTextDoc extends BasicJavaClientREST
 	@Test  
 	public void testWriteTextDoc()  
 	{
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "admin", "admin", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8015, "admin", "admin", Authentication.DIGEST);
 
 		String docId = "/foo/test/myFoo.txt";
 		TextDocumentManager docMgr = client.newTextDocumentManager();

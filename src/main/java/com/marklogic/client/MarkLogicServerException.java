@@ -45,6 +45,10 @@ public abstract class MarkLogicServerException extends RuntimeException {
 		super(localMessage);
 	}
 	
+	public MarkLogicServerException(String localMessage, Throwable cause) {
+		super(localMessage, cause);
+	}
+
 	@Override
 	public String getMessage() {
 		if (super.getMessage() != null && failedRequest != null) {

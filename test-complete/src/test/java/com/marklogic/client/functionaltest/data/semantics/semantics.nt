@@ -1,0 +1,31 @@
+# The N-Triples statements below are equivalent to this RDF/XML:
+#
+# <rdf:RDF xmlns="http://xmlns.com/foaf/0.1/"
+#          xmlns:dc="http://purl.org/dc/terms/"
+#          xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+#   <Document rdf:about="http://www.w3.org/2001/sw/RDFCore/ntriples/">
+#     <dc:title xml:lang="en-US">N-Triples</dc:title>
+#     <maker>
+#       <Person rdf:nodeID="art">
+#         <name>Art Barstow</name>
+#       </Person>
+#     </maker>
+#     <maker>
+#       <Person rdf:nodeID="dave">
+#         <name>Dave Beckett</name>
+#       </Person>
+#     </maker>
+#   </Document>
+# </rdf:RDF>
+
+<http://www.w3.org/2001/sw/RDFCore/ntriples/> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>
+    <http://xmlns.com/foaf/0.1/Document> .
+<http://www.w3.org/2001/sw/RDFCore/ntriples/> <http://purl.org/dc/terms/title> "N-Triples"@en-US .
+<http://www.w3.org/2001/sw/RDFCore/ntriples/> <http://xmlns.com/foaf/0.1/maker> _:art .
+<http://www.w3.org/2001/sw/RDFCore/ntriples/> <http://xmlns.com/foaf/0.1/maker> _:dave .
+
+_:art <http://www.w3.org/1999/02/22-rdf-syntax-ns#> <http://xmlns.com/foaf/0.1/Person> .
+_:art <http://xmlns.com/foaf/0.1/name> "Art Barstow".
+
+_:dave <http://www.w3.org/1999/02/22-rdf-syntax-ns#> <http://xmlns.com/foaf/0.1/Person> .
+_:dave <http://xmlns.com/foaf/0.1/name> "Dave Beckett".
