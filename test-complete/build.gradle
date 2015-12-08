@@ -1,6 +1,8 @@
 
 /* plugins */
 apply plugin: 'java'
+apply plugin: 'jacoco'
+    jacoco{toolVersion="0.7.4.201502262128"}
 
 test {
 	tasks.withType(Compile) {
@@ -16,6 +18,12 @@ repositories {
 	mavenLocal()
 	mavenCentral()
 }
+
+jacocoTestReport {
+                    group = "Reporting"
+                    description = "Generate Jacoco coverage reports after running tests."
+                    additionalSourceDirs = files(sourceSets.main.allJava.srcDirs)
+                }
 
 dependencies {
 	compile('com.marklogic:java-client-api:4.0-SNAPSHOT')
