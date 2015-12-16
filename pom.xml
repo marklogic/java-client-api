@@ -70,6 +70,7 @@
 					<overview>${basedir}/src/main/javadoc/overview.html</overview>
 					<show>public</show>
 					<doctitle>${javadoc-title}</doctitle>
+					<windowtitle>${javadoc-title}</windowtitle>
 					<use/>
 				</configuration>
 				<executions>
