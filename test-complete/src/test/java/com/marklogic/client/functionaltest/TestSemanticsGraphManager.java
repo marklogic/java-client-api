@@ -768,10 +768,10 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		FileHandle filehandle = new FileHandle();
 		filehandle.set(file);
 		gmWriter.write("http://test.things.com/", filehandle);
-		String things = gmWriter.thingsAs(String.class, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+		String things = gmWriter.thingsAs(String.class, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type");		
 		assertTrue(
 				"Did not return Expected graph Uri's",
-				things.equals("<#electricVehicle2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://people.aifb.kit.edu/awa/2011/smartgrid/schema/smartgrid#ElectricVehicle> ."));
+				things.trim().equals("<#electricVehicle2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://people.aifb.kit.edu/awa/2011/smartgrid/schema/smartgrid#ElectricVehicle> ."));
 	}
 
 	@Test
