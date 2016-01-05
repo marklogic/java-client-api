@@ -771,7 +771,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		String things = gmWriter.thingsAs(String.class, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type");		
 		assertTrue(
 				"Did not return Expected graph Uri's",
-				things.trim().equals("<#electricVehicle2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://people.aifb.kit.edu/awa/2011/smartgrid/schema/smartgrid#ElectricVehicle> ."));
+				things.equals("<#electricVehicle2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://people.aifb.kit.edu/awa/2011/smartgrid/schema/smartgrid#ElectricVehicle> ."));
 	}
 
 	@Test
