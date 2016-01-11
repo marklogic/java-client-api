@@ -52,6 +52,7 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 	{
 		System.out.println("In setup");
 		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		setDatabaseProperties(dbName,"stemmed-searches","basic");
 		setupAppServicesConstraint(dbName);
 	}
 
