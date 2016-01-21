@@ -24,6 +24,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -518,6 +519,7 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = addVersionHeader(desc,
 				webResource.getRequestBuilder(), "If-Match");
+		addTransactionScopedCookies(builder, webResource, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -646,9 +648,10 @@ public class JerseyServices implements RESTServices {
 		if (logger.isDebugEnabled())
 			logger.debug("Getting {} in transaction {}", uri, getTransactionId(transaction));
 
-		WebResource.Builder builder = makeDocumentResource(
-				makeDocumentParams(uri, categories, transaction, extraParams))
-				.accept(mimetype);
+		WebResource webResource = makeDocumentResource(
+				makeDocumentParams(uri, categories, transaction, extraParams));
+		WebResource.Builder builder = webResource.accept(mimetype);
+		addTransactionScopedCookies(builder, webResource, transaction);
 
 		if (extraParams != null && extraParams.containsKey("range"))
 			builder = builder.header("range", extraParams.get("range").get(0));
@@ -934,7 +937,9 @@ public class JerseyServices implements RESTServices {
 				categories, transaction, extraParams, true);
 		docParams.add("format", metadataFormat);
 
-		WebResource.Builder builder = makeDocumentResource(docParams).getRequestBuilder();
+		WebResource webResource = makeDocumentResource(docParams);
+		WebResource.Builder builder = webResource.getRequestBuilder();
+		addTransactionScopedCookies(builder, webResource, transaction);
 		builder = addVersionHeader(desc, builder, "If-None-Match");
 
 		MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
@@ -1089,7 +1094,7 @@ public class JerseyServices implements RESTServices {
 					getTransactionId(transaction));
 
 		WebResource.Builder builder = webResource.getRequestBuilder();
-		addHostCookie(builder, transaction);
+		addTransactionScopedCookies(builder, webResource, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -1276,6 +1281,7 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = webResource.type(
 				(mimetype != null) ? mimetype : MediaType.WILDCARD);
+		addTransactionScopedCookies(builder, webResource, transaction);
 		if (uri != null) {
 			builder = addVersionHeader(desc, builder, "If-Match");
 		}
@@ -1432,7 +1438,9 @@ public class JerseyServices implements RESTServices {
 		MultivaluedMap<String, String> docParams =
 			makeDocumentParams(uri, categories, transaction, extraParams, true);
 
-		WebResource.Builder builder = makeDocumentResource(docParams).getRequestBuilder();
+		WebResource webResource = makeDocumentResource(docParams);
+		WebResource.Builder builder = webResource.getRequestBuilder();
+		addTransactionScopedCookies(builder, webResource, transaction);
 		if (uri != null) {
 			builder = addVersionHeader(desc, builder, "If-Match");
 		}
@@ -1646,7 +1654,7 @@ public class JerseyServices implements RESTServices {
 					"transaction open produced invalid location: " + location);
 
 		String transactionId = location.substring(location.lastIndexOf("/") + 1);
-		return new TransactionImpl(this, transactionId, hostId);
+		return new TransactionImpl(this, transactionId, response.getCookies());
 	}
 
 	@Override
@@ -1681,7 +1689,7 @@ public class JerseyServices implements RESTServices {
 				.queryParams(transParams);
 
 		WebResource.Builder builder = webResource.getRequestBuilder();
-		addHostCookie(builder, transaction);
+		addTransactionScopedCookies(builder, webResource, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -2064,9 +2072,10 @@ public class JerseyServices implements RESTServices {
         MultivaluedMap<String, String> params;
         Transaction transaction;
 
-		WebResource.Builder builder = null;
-		String structure = null;
-		HandleImplementation baseHandle = null;
+        WebResource webResource = null;
+        WebResource.Builder builder = null;
+        String structure = null;
+        HandleImplementation baseHandle = null;
 
         JerseySearchRequest(RequestLogger reqlog, QueryDefinition queryDef, String mimetype, 
                 Transaction transaction, MultivaluedMap<String, String> params) {
@@ -2130,10 +2139,10 @@ public class JerseyServices implements RESTServices {
                 String path = (queryDef instanceof RawQueryByExampleDefinition) ?
                     "qbe" : "search";
 
-                WebResource resource = getConnection().path(path).queryParams(params);
+                webResource = getConnection().path(path).queryParams(params);
                 builder = (payloadMimetype != null) ?
-                    resource.type(payloadMimetype).accept(mimetype) :
-                    resource.accept(mimetype);
+                    webResource.type(payloadMimetype).accept(mimetype) :
+                    webResource.accept(mimetype);
             } else if (queryDef instanceof StringQueryDefinition) {
                 String text = ((StringQueryDefinition) queryDef).getCriteria();
                 if (logger.isDebugEnabled())
@@ -2143,8 +2152,8 @@ public class JerseyServices implements RESTServices {
                     addEncodedParam(params, "q", text);
                 }
 
-                builder = getConnection().path("search").queryParams(params)
-                    .type("application/xml").accept(mimetype);
+                webResource = getConnection().path("search").queryParams(params);
+                builder = webResource.type("application/xml").accept(mimetype);
             } else if (queryDef instanceof KeyValueQueryDefinition) {
                 if (logger.isDebugEnabled())
                     logger.debug("Searching for keys/values");
@@ -2164,36 +2173,36 @@ public class JerseyServices implements RESTServices {
                     addEncodedParam(params, "value", entry.getValue());
                 }
 
-                builder = getConnection().path("keyvalue").queryParams(params)
-                    .accept(mimetype);
+                webResource = getConnection().path("keyvalue").queryParams(params);
+                builder = webResource.accept(mimetype);
             } else if (queryDef instanceof StructuredQueryDefinition) {
                 structure = ((StructuredQueryDefinition) queryDef).serialize();
 
                 if (logger.isDebugEnabled())
                     logger.debug("Searching for structure {}", structure);
 
-                builder = getConnection().path("search").queryParams(params)
-                    .type("application/xml").accept(mimetype);
+                webResource = getConnection().path("search").queryParams(params);
+                builder = webResource.type("application/xml").accept(mimetype);
             } else if (queryDef instanceof CombinedQueryDefinition) {
                 structure = ((CombinedQueryDefinition) queryDef).serialize();
 
                 if (logger.isDebugEnabled())
                     logger.debug("Searching for combined query {}", structure);
 
-                builder = getConnection().path("search").queryParams(params)
-                    .type("application/xml").accept(mimetype);
+                webResource = getConnection().path("search").queryParams(params);
+                builder = webResource.type("application/xml").accept(mimetype);
             } else if (queryDef instanceof DeleteQueryDefinition) {
                 if (logger.isDebugEnabled())
                     logger.debug("Searching for deletes");
 
-                builder = getConnection().path("search").queryParams(params)
-                    .accept(mimetype);
+                webResource = getConnection().path("search").queryParams(params);
+                builder = webResource.accept(mimetype);
             } else {
                 throw new UnsupportedOperationException("Cannot search with "
                         + queryDef.getClass().getName());
             }
 
-            addHostCookie(builder, transaction);
+            addTransactionScopedCookies(builder, webResource, transaction);
         }
 
         ClientResponse getResponse() {
@@ -2289,7 +2298,7 @@ public class JerseyServices implements RESTServices {
 		WebResource webResource = getConnection().path("search").queryParams(params);
 
 		WebResource.Builder builder = webResource.getRequestBuilder();
-		addHostCookie(builder, transaction);
+		addTransactionScopedCookies(builder, webResource, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -2463,8 +2472,9 @@ public class JerseyServices implements RESTServices {
 			uri += "/" + valDef.getName();
 		}
 
-		WebResource.Builder builder = makeBuilder(uri, docParams, null, mimetype);
-		addHostCookie(builder, transaction);
+		WebResource webResource = makeWebResource(uri, docParams);
+		WebResource.Builder builder = makeBuilder(webResource, null, mimetype);
+		addTransactionScopedCookies(builder, webResource, transaction);
 
 
 		ClientResponse response = null;
@@ -2542,8 +2552,9 @@ public class JerseyServices implements RESTServices {
 
 		String uri = "values";
 
-		WebResource.Builder builder = makeBuilder(uri, docParams, null, mimetype);
-		addHostCookie(builder, transaction);
+		WebResource webResource = makeWebResource(uri, docParams);
+		WebResource.Builder builder = makeBuilder(webResource, null, mimetype);
+		addTransactionScopedCookies(builder, webResource, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -2610,9 +2621,10 @@ public class JerseyServices implements RESTServices {
 
 		String uri = "config/query";
 
-		WebResource.Builder builder = getConnection().path(uri)
-				.queryParams(docParams).accept(mimetype);
-		addHostCookie(builder, transaction);
+		WebResource webResource = getConnection().path(uri)
+				.queryParams(docParams);
+		WebResource.Builder builder = webResource.accept(mimetype);
+		addTransactionScopedCookies(builder, webResource, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -3013,7 +3025,8 @@ public class JerseyServices implements RESTServices {
 		if (logger.isDebugEnabled())
 			logger.debug("Deleting {}/{}", type, key);
 
-		WebResource builder = getConnection().path(type + "/" + key);
+		WebResource.Builder builder = getConnection().path(type + "/" + key)
+			.getRequestBuilder();
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -3138,8 +3151,9 @@ public class JerseyServices implements RESTServices {
 		String mimetype = outputBase.getMimetype();
 		Class as = outputBase.receiveAs();
 
-		WebResource.Builder builder = makeGetBuilder(path, params, mimetype);
-		addHostCookie(builder, transaction);
+		WebResource webResource = makeGetWebResource(path, params, mimetype);
+		WebResource.Builder builder = makeBuilder(webResource, null, mimetype);
+		addTransactionScopedCookies(builder, webResource, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -3207,8 +3221,9 @@ public class JerseyServices implements RESTServices {
 		if ( params == null ) params = new RequestParameters();
 		if (transaction != null) params.add("txid", transaction.getTransactionId());
 
-		WebResource.Builder builder = makeGetBuilder(path, params, null);
-		addHostCookie(builder, transaction);
+		WebResource webResource = makeGetWebResource(path, params, null);
+		WebResource.Builder builder = makeBuilder(webResource, null, null);
+		addTransactionScopedCookies(builder, webResource, transaction);
 
 		MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
 
@@ -3279,9 +3294,9 @@ public class JerseyServices implements RESTServices {
 		
 			as = outputBase.receiveAs();
 		}
-		WebResource.Builder builder = makePutBuilder(path, params,
-				inputMimetype, outputMimeType);
-		addHostCookie(builder, transaction);
+		WebResource webResource = makePutWebResource(path, params);
+		WebResource.Builder builder = makeBuilder(webResource, inputMimetype, outputMimeType);
+		addTransactionScopedCookies(builder, webResource, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -3375,9 +3390,9 @@ public class JerseyServices implements RESTServices {
 			MultiPart multiPart = new MultiPart();
 			boolean hasStreamingPart = addParts(multiPart, reqlog, input);
 
-			WebResource.Builder builder = makePutBuilder(path, params,
-					multiPart, outputMimetype);
-			addHostCookie(builder, transaction);
+			WebResource webResource = makePutWebResource(path, params);
+			WebResource.Builder builder = makeBuilder(webResource, multiPart, outputMimetype);
+			addTransactionScopedCookies(builder, webResource, transaction);
 
 			response = doPut(builder, multiPart, hasStreamingPart);
 			status = response.getClientResponseStatus();
@@ -3441,9 +3456,9 @@ public class JerseyServices implements RESTServices {
 		boolean isResendable = inputBase.isResendable();
 		Class as = outputBase == null ? null : outputBase.receiveAs();
 
-		WebResource.Builder builder = makePostBuilder(path, params,
-				inputMimetype, outputMimetype);
-		addHostCookie(builder, transaction);
+		WebResource webResource = makePostWebResource(path, params);
+		WebResource.Builder builder = makeBuilder(webResource, inputMimetype, outputMimetype);
+		addTransactionScopedCookies(builder, webResource, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -3542,9 +3557,9 @@ public class JerseyServices implements RESTServices {
 			MultiPart multiPart = new MultiPart();
 			boolean hasStreamingPart = addParts(multiPart, reqlog, null, input, headers);
 
-			WebResource.Builder builder = makePostBuilder(path, params,
-					multiPart, outputMimetype);
-			addHostCookie(builder, transaction);
+			WebResource webResource = makePostWebResource(path, params);
+			WebResource.Builder builder = makeBuilder(webResource, multiPart, outputMimetype);
+			addTransactionScopedCookies(builder, webResource, transaction);
 
 			response = doPost(builder, multiPart, hasStreamingPart);
 			status = response.getClientResponseStatus();
@@ -4004,8 +4019,9 @@ public class JerseyServices implements RESTServices {
 		String inputMimetype = inputBase.getMimetype();
 		boolean isResendable = inputBase.isResendable();
 
-		WebResource.Builder builder = makePostBuilder(path, params, inputMimetype, null);
-		addHostCookie(builder, transaction);
+		WebResource webResource = makePostWebResource(path, params);
+		WebResource.Builder builder = makeBuilder(webResource, inputMimetype, null);
+		addTransactionScopedCookies(builder, webResource, transaction);
 
 		MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
 
@@ -4094,12 +4110,12 @@ public class JerseyServices implements RESTServices {
 			MultiPart multiPart = new MultiPart();
 			boolean hasStreamingPart = addParts(multiPart, reqlog, input);
 
-			WebResource.Builder builder = makePostBuilder(
-					path,
-					params,
-					multiPart,
-					Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
-			addHostCookie(builder, transaction);
+			WebResource webResource = makePostWebResource(path, params);
+			WebResource.Builder builder = makeBuilder(
+				webResource,
+				multiPart,
+				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
+			addTransactionScopedCookies(builder, webResource, transaction);
 
 			response = doPost(builder, multiPart, hasStreamingPart);
 			status = response.getClientResponseStatus();
@@ -4153,9 +4169,9 @@ public class JerseyServices implements RESTServices {
 			outputMimeType = outputBase.getMimetype();
 			as = outputBase.receiveAs();
 		}
-		WebResource.Builder builder = makeDeleteBuilder(reqlog, path, params,
-				outputMimeType);
-		addHostCookie(builder, transaction);
+		WebResource webResource = makeDeleteWebResource(path, params);
+		WebResource.Builder builder = makeBuilder(webResource, null, outputMimeType);
+		addTransactionScopedCookies(builder, webResource, transaction);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -4209,18 +4225,15 @@ public class JerseyServices implements RESTServices {
 		return output;
 	}
 
-	private WebResource.Builder makeGetBuilder(String path,
+	private WebResource makeGetWebResource(String path,
 			RequestParameters params, Object mimetype) {
 		if (path == null)
 			throw new IllegalArgumentException("Read with null path");
 
-		WebResource.Builder builder = makeBuilder(path, convertParams(params),
-				null, mimetype);
-
 		if (logger.isDebugEnabled())
 			logger.debug(String.format("Getting %s as %s", path, mimetype));
 
-		return builder;
+		return makeWebResource(path, convertParams(params));
 	}
 
 	private ClientResponse doGet(WebResource.Builder builder) {
@@ -4232,19 +4245,15 @@ public class JerseyServices implements RESTServices {
 		return response;
 	}
 
-	private WebResource.Builder makePutBuilder(String path,
-			RequestParameters params, String inputMimetype,
-			String outputMimetype) {
+	private WebResource makePutWebResource(String path,
+			RequestParameters params) {
 		if (path == null)
 			throw new IllegalArgumentException("Write with null path");
-
-		WebResource.Builder builder = makeBuilder(path, convertParams(params),
-				inputMimetype, outputMimetype);
 
 		if (logger.isDebugEnabled())
 			logger.debug("Putting {}", path);
 
-		return builder;
+		return makeWebResource(path, convertParams(params));
 	}
 
 	private ClientResponse doPut(RequestLogger reqlog,
@@ -4274,21 +4283,6 @@ public class JerseyServices implements RESTServices {
 		return response;
 	}
 
-	private WebResource.Builder makePutBuilder(String path,
-			RequestParameters params, MultiPart multiPart, String outputMimetype) {
-		if (path == null)
-			throw new IllegalArgumentException("Write with null path");
-
-		WebResource.Builder builder = makeBuilder(path, convertParams(params),
-				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE),
-				outputMimetype);
-
-		if (logger.isDebugEnabled())
-			logger.debug("Putting multipart for {}", path);
-
-		return builder;
-	}
-
 	private ClientResponse doPut(WebResource.Builder builder,
 			MultiPart multiPart, boolean hasStreamingPart) {
 		if (isFirstRequest() && hasStreamingPart)
@@ -4302,19 +4296,14 @@ public class JerseyServices implements RESTServices {
 		return response;
 	}
 
-	private WebResource.Builder makePostBuilder(String path,
-			RequestParameters params, Object inputMimetype,
-			Object outputMimetype) {
+	private WebResource makePostWebResource(String path, RequestParameters params) {
 		if (path == null)
 			throw new IllegalArgumentException("Apply with null path");
-
-		WebResource.Builder builder = makeBuilder(path, convertParams(params),
-				inputMimetype, outputMimetype);
 
 		if (logger.isDebugEnabled())
 			logger.debug("Posting {}", path);
 
-		return builder;
+		return makeWebResource(path, convertParams(params));
 	}
 
 	private ClientResponse doPost(RequestLogger reqlog,
@@ -4341,21 +4330,6 @@ public class JerseyServices implements RESTServices {
 		return response;
 	}
 
-	private WebResource.Builder makePostBuilder(String path,
-			RequestParameters params, MultiPart multiPart, Object outputMimetype) {
-		if (path == null)
-			throw new IllegalArgumentException("Apply with null path");
-
-		WebResource.Builder builder = makeBuilder(path, convertParams(params),
-				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE),
-				outputMimetype);
-
-		if (logger.isDebugEnabled())
-			logger.debug("Posting multipart for {}", path);
-
-		return builder;
-	}
-
 	private ClientResponse doPost(WebResource.Builder builder,
 			MultiPart multiPart, boolean hasStreamingPart) {
 		if (isFirstRequest() && hasStreamingPart)
@@ -4369,18 +4343,14 @@ public class JerseyServices implements RESTServices {
 		return response;
 	}
 
-	private WebResource.Builder makeDeleteBuilder(RequestLogger reqlog,
-			String path, RequestParameters params, String mimetype) {
+	private WebResource makeDeleteWebResource(String path, RequestParameters params) {
 		if (path == null)
 			throw new IllegalArgumentException("Delete with null path");
-
-		WebResource.Builder builder = makeBuilder(path, convertParams(params),
-				null, mimetype);
 
 		if (logger.isDebugEnabled())
 			logger.debug("Deleting {}", path);
 
-		return builder;
+		return makeWebResource(path, convertParams(params));
 	}
 
 	private ClientResponse doDelete(WebResource.Builder builder) {
@@ -4474,12 +4444,45 @@ public class JerseyServices implements RESTServices {
 				.replace("+", "%20");
 	}
 
-	private void addHostCookie(WebResource.Builder builder, Transaction transaction) {
-		if (transaction != null) {
-			if ( builder != null ) {
-				builder.cookie(new Cookie("HostId", transaction.getHostId()));
-			} else {
-				throw new MarkLogicInternalException("no builder available to set 'HostId' cookie");
+	private void addTransactionScopedCookies(WebResource.Builder builder, WebResource webResource,
+		Transaction transaction)
+	{
+		if ( transaction != null && transaction.getCookies() != null ) {
+			if ( builder == null ) {
+				throw new MarkLogicInternalException("no builder available to set cookies");
+			}
+			if ( webResource == null ) {
+				throw new MarkLogicInternalException("no webResource available to get the URI");
+			}
+			URI uri = webResource.getURI();
+			for ( NewCookie cookie : transaction.getCookies() ) {
+				// don't forward the cookie if it requires https and we're not using https
+				if ( cookie.isSecure() && ! "https".equals(uri.getScheme()) ) {
+					continue;
+				}
+				// don't forward the cookie if it requires a path and we're using a different path
+				if ( cookie.getPath() != null ) {
+					if ( uri.getPath() == null || ! uri.getPath().startsWith(cookie.getPath()) ) {
+						continue;
+					}
+				}
+				// don't forward the cookie if it requires a domain and we're using a different domain
+				if ( cookie.getDomain() != null ) {
+					if ( uri.getHost() == null || ! uri.getHost().equals(cookie.getDomain()) ) {
+						continue;
+					}
+				}
+				// don't forward the cookie if it has 0 for max age
+				if ( cookie.getMaxAge() == 0 ) { continue; }
+				// don't forward the cookie if it has a max age and we're past the max age
+				if ( cookie.getMaxAge() > 0 ) {
+					Calendar expiration = (Calendar) ((TransactionImpl) transaction).getCreatedTimestamp().clone();
+					expiration.roll(Calendar.SECOND, cookie.getMaxAge());
+					if ( System.currentTimeMillis() > expiration.getTimeInMillis() ) {
+						continue;
+					}
+				}
+				builder.cookie(cookie);
 			}
 		}
 	}
@@ -4552,22 +4555,29 @@ public class JerseyServices implements RESTServices {
 		return hasStreamingPart;
 	}
 
-	private WebResource.Builder makeBuilder(String path,
-			MultivaluedMap<String, String> params, Object inputMimetype,
-			Object outputMimetype) {
+	private WebResource makeWebResource(String path,
+			MultivaluedMap<String, String> params) {
 		if ( params == null ) params = new MultivaluedMapImpl();
 		if ( database != null ) {
 			addEncodedParam(params, "database", database);
 		}
-		WebResource resource = getConnection().path(path).queryParams(params);
+		return getConnection().path(path).queryParams(params);
+	}
 
-		WebResource.Builder builder = resource.getRequestBuilder();
+	private WebResource.Builder makeBuilder(WebResource webResource,
+		Object inputMimetype, Object outputMimetype) {
+
+		WebResource.Builder builder = webResource.getRequestBuilder();
 
 		if (inputMimetype == null) {
 		} else if (inputMimetype instanceof String) {
 			builder = builder.type((String) inputMimetype);
 		} else if (inputMimetype instanceof MediaType) {
 			builder = builder.type((MediaType) inputMimetype);
+		} else if (inputMimetype instanceof MultiPart) {
+			builder = builder.type(Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
+			if (logger.isDebugEnabled())
+				logger.debug("Sending multipart for {}", webResource.getURI().getPath());
 		} else {
 			throw new IllegalArgumentException(
 					"Unknown input mimetype specifier "
@@ -4586,6 +4596,12 @@ public class JerseyServices implements RESTServices {
 		}
 
 		return builder;
+	}
+
+	private WebResource.Builder makeBuilder(String path,
+			MultivaluedMap<String, String> params, Object inputMimetype,
+			Object outputMimetype) {
+		return makeBuilder(makeWebResource(path, params), inputMimetype, outputMimetype);
 	}
 
 	private void checkStatus(ClientResponse response,
