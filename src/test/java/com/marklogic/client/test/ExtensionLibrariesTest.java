@@ -50,7 +50,7 @@ public class ExtensionLibrariesTest {
 
 		// get the list of descriptors
 		ExtensionLibraryDescriptor[] descriptors = libsMgr.list();
-		assertEquals("number of modules installed", descriptors.length, 1);
+		assertEquals("number of modules installed", 1, descriptors.length);
 		
 		for (ExtensionLibraryDescriptor descriptor : descriptors) {
 			assertEquals(descriptor.getPath(), "/ext/my/path/to/my/module.xqy");
