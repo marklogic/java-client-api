@@ -4,7 +4,7 @@
 	<groupId>com.marklogic</groupId>
 	<artifactId>java-client-api</artifactId>
 	<packaging>jar</packaging>
-	<version>2.0.5</version>
+	<version>2.0.6</version>
 	<name>MarkLogic Java Client API</name>
 	<description>The official MarkLogic Java client API.</description>
 	<url>https://github.com/marklogic/java-client-api</url>

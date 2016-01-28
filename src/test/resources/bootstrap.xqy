@@ -756,7 +756,7 @@ declare function bootstrap:post(
         if (exists($user-id)) then ()
         else if ($user eq "valid")
         then bootstrap:security-config('sec:create-user("valid", "valid unprivileged user", "x", (), (), (), ())')
-        else bootstrap:security-config('sec:create-user($user, $user||" user", "x", ($user), (), (), () )'),
+        else bootstrap:security-config('sec:create-user("'||$user||'", "'||$user||' user", "x", ("'||$user||'"), (), (), () )'),
 
     let $dbid := xdmp:database("java-unittest")
     return (

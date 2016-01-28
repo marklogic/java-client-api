@@ -15,12 +15,18 @@
  */
 package com.marklogic.client.test;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.assertEquals;
+
+import org.custommonkey.xmlunit.XpathEngine;
+import org.custommonkey.xmlunit.SimpleNamespaceContext;
+import org.custommonkey.xmlunit.XMLUnit;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
@@ -30,6 +36,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -42,6 +49,30 @@ import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.util.EditableNamespaceContext;
 
 public class StructuredQueryBuilderTest {
+	static private XpathEngine xpather;
+
+    @BeforeClass
+    public static void beforeClass() {
+        XMLUnit.setIgnoreAttributeOrder(true);
+        XMLUnit.setIgnoreWhitespace(true);
+        XMLUnit.setNormalize(true);
+        XMLUnit.setNormalizeWhitespace(true);
+        XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
+
+        HashMap<String,String> namespaces = new HashMap<String, String>();
+        namespaces.put("rapi", "http://marklogic.com/rest-api");
+        namespaces.put("prop", "http://marklogic.com/xdmp/property");
+        namespaces.put("xs",   "http://www.w3.org/2001/XMLSchema");
+        namespaces.put("xsi",  "http://www.w3.org/2001/XMLSchema-instance");
+        namespaces.put("search",  "http://marklogic.com/appservices/search");
+
+
+        SimpleNamespaceContext namespaceContext = new SimpleNamespaceContext(namespaces);
+
+        xpather = XMLUnit.newXpathEngine();
+        xpather.setNamespaceContext(namespaceContext);
+    }
+
 	// remove dependency on org.apache.tools.ant.filters.StringInputStream
 	static class StringInputStream extends ByteArrayInputStream {
 		StringInputStream(String input) {
@@ -508,7 +539,7 @@ q);
         	xml = new StringInputStream(q);
         	parser.parse(xml, handler);
                 
-			assertEquals(
+			assertXMLEqual("Geospatial query malformed", 
 					"<query xmlns=\"http://marklogic.com/appservices/search\" "
 					+ "xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" "
 					+ "xmlns:search=\"http://marklogic.com/appservices/search\" "
