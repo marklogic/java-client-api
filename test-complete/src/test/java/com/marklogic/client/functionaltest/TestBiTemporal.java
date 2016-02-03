@@ -1275,7 +1275,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       assertTrue("System start date check failed",
           (systemStartDate.contains("2010-01-01T00:00:01")));
       assertTrue("System end date check failed",
-          (systemEndDate.contains("9999-12-31T23:59:59")));
+          (systemEndDate.contains("9999-12-31T11:59:59")));
 
       // Validate collections
       Iterator<String> resCollections = metadataHandle.getCollections()
@@ -1442,8 +1442,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
             && validEndDate.contains("2008-12-31T23:59:59")) {
           assertTrue("System start date check failed",
               (systemStartDate.contains("2011-01-01T00:00:01")));
-          assertTrue("System start date check failed",
-              (systemEndDate.contains("9999-12-31T23:59:59")));
+          assertTrue("System end date check failed",
+              (systemEndDate.contains("9999-12-31T11:59:59")));
 
           Iterator<String> resCollections = metadataHandle.getCollections()
               .iterator();
@@ -1486,8 +1486,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
             && validEndDate.contains("2003-01-01T00:00:00")) {
           assertTrue("System start date check failed",
               (systemStartDate.contains("2011-01-01T00:00:01")));
-          assertTrue("System start date check failed",
-              (systemEndDate.contains("9999-12-31T23:59:59")));
+          assertTrue("System end date check failed",
+              (systemEndDate.contains("9999-12-31T11:59:59")));
 
           Iterator<String> resCollections = metadataHandle.getCollections()
               .iterator();
@@ -1530,8 +1530,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
           // This is the latest document
           assertTrue("System start date check failed",
               (systemStartDate.contains("2011-01-01T00:00:01")));
-          assertTrue("System start date check failed",
-              (systemEndDate.contains("9999-12-31T23:59:59")));
+          assertTrue("System end date check failed",
+              (systemEndDate.contains("9999-12-31T11:59:59")));
           assertTrue("URI should be the doc uri ", record.getUri()
               .equals(docId));
 
