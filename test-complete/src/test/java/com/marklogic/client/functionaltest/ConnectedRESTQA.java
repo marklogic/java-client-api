@@ -1516,6 +1516,11 @@ public abstract class ConnectedRESTQA {
 		childNodeObject.put( "namespace-uri", namespace);
 		childNodeObject.put( "localname", elementName);
 		childNodeObject.put("weight", 1.0);
+		
+		childNodeObject.put( "attribute-namespace-uri", "");
+		childNodeObject.put( "attribute-localname", "");
+		childNodeObject.put( "attribute-value", "");
+		
 		arrNode.add(childNodeObject);
 		childNode.putArray("included-element").addAll(arrNode);
 		//	mainNode.put("included-elements", childNode);
