@@ -48,9 +48,7 @@ public class TestAppServicesGeoElementConstraint extends BasicJavaClientREST {
 @BeforeClass
 	public static void setUp() throws Exception 
 	{
-	  System.out.println("In setup");
-//	  super.setUp();
-//	  serverName = getConnectedServerName();
+	  System.out.println("In setup"); 
 	  setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 	  setupAppServicesGeoConstraint(dbName);
 	}
@@ -90,10 +88,9 @@ public  void testCleanUp() throws Exception
 		
 		// get the result
 		Document resultDoc = resultsHandle.get();
-
-		System.out.println("Returned result of testPointPositiveLangLat :"+convertXMLDocumentToString(resultDoc)+" Ends here");
+		
 		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("karl_kara 12,5 12,5 12 5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
+		assertXpathEvaluatesTo("12,5", "string(//*[local-name()='result'][1]//*[local-name()='highlight'])", resultDoc);
 		
 		// release client
 		client.release();		
@@ -128,10 +125,8 @@ public  void testCleanUp() throws Exception
 		
 		// get the result
 		Document resultDoc = resultsHandle.get();
-
-		System.out.println("testPointNegativeLangLat Result : "+convertXMLDocumentToString(resultDoc));
+		
 		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-//		assertXpathEvaluatesTo("-12,-5", "string(//*[local-name()='result'][1]//*[local-name()='highlight'])", resultDoc);
 		assertXpathEvaluatesTo("geo-elem:\"-12,-5\"", "string(//*[local-name()='qtext'])", resultDoc);
 		// release client
 		client.release();		
@@ -174,8 +169,7 @@ public  void testCleanUp() throws Exception
 			System.out.println("Result : "+result);
 		} catch (Exception e) { e.toString(); }
 		
-		assertTrue("Expected Warning message is not thrown", result.contains("<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>"));
-		
+		assertTrue("Expected Warning message is not thrown", result.contains("<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>"));		
 				
 		// release client
 		client.release();		
@@ -210,14 +204,14 @@ public  void testCleanUp() throws Exception
 		queryMgr.search(querydef, resultsHandle);
 		
 		// get the result
-		Document resultDoc = resultsHandle.get();
+		Document resultDoc = resultsHandle.get();		
 
 		assertXpathEvaluatesTo("5", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("karl_kara 12,5 12,5 12 5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("bill_kara 13,5 13,5 13 5", "string(//*[local-name()='result'][2]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("karl_gale 12,6 12,6 12 6", "string(//*[local-name()='result'][3]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("jack_kara 11,5 11,5 11 5", "string(//*[local-name()='result'][4]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("karl_jill 12,4 12,4 12 4", "string(//*[local-name()='result'][5]//*[local-name()='match'])", resultDoc);
+		assertXpathEvaluatesTo("12,5", "string(//*[local-name()='result'][1]//*[local-name()='highlight'])", resultDoc);
+		assertXpathEvaluatesTo("13,5", "string(//*[local-name()='result'][2]//*[local-name()='highlight'])", resultDoc);
+		assertXpathEvaluatesTo("12,6", "string(//*[local-name()='result'][3]//*[local-name()='highlight'])", resultDoc);
+		assertXpathEvaluatesTo("11,5", "string(//*[local-name()='result'][4]//*[local-name()='highlight'])", resultDoc);
+		assertXpathEvaluatesTo("12,4", "string(//*[local-name()='result'][5]//*[local-name()='highlight'])", resultDoc);
 		
 		// release client
 		client.release();		
@@ -252,12 +246,12 @@ public  void testCleanUp() throws Exception
 		
 		// get the result
 		Document resultDoc = resultsHandle.get();
-
+		
 		assertXpathEvaluatesTo("4", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("karl_kara 12,5 12,5 12 5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("jack_jill 11,4 11,4 11 4", "string(//*[local-name()='result'][2]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("jack_kara 11,5 11,5 11 5", "string(//*[local-name()='result'][3]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("karl_jill 12,4 12,4 12 4", "string(//*[local-name()='result'][4]//*[local-name()='match'])", resultDoc);
+		assertXpathEvaluatesTo("12,5", "string(//*[local-name()='result'][1]//*[local-name()='highlight'])", resultDoc);
+		assertXpathEvaluatesTo("11,4", "string(//*[local-name()='result'][2]//*[local-name()='highlight'])", resultDoc);
+		assertXpathEvaluatesTo("11,5", "string(//*[local-name()='result'][3]//*[local-name()='highlight'])", resultDoc);
+		assertXpathEvaluatesTo("12,4", "string(//*[local-name()='result'][4]//*[local-name()='highlight'])", resultDoc);
 		
 		// release client
 		client.release();		
@@ -304,6 +298,5 @@ public  void testCleanUp() throws Exception
 	{
 		System.out.println("In tear down");
 		tearDownJavaRESTServer(dbName, fNames,  restServerName);
-//		super.tearDown();
 	}
 }
