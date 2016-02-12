@@ -104,28 +104,31 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 		DocumentCollections collections = mh.getCollections();
 
 		// Properties
-		// String expectedProperties = "size:5|reviewed:true|myInteger:10|myDecimal:34.56678|myCalendar:2014|myString:foo|";
 		String actualProperties = getDocumentPropertiesString(properties);
 		boolean result = actualProperties.contains("size:5|");
-//		System.out.println(actualProperties);
+
 		assertTrue("Document properties count", result);
 
 		// Permissions
 		 String expectedPermissions1 = "size:4|flexrep-eval:[READ]|rest-reader:[READ]|app-user:[UPDATE, READ]|rest-writer:[UPDATE]|";
-		 String expectedPermissions2 = "size:4|flexrep-eval:[READ]|rest-reader:[READ]|app-user:[READ, UPDATE]|rest-writer:[UPDATE]|";
-		String actualPermissions = getDocumentPermissionsString(permissions);
-//		System.out.println(actualPermissions);
-		if(actualPermissions.contains("[UPDATE, READ]"))
-			assertEquals("Document permissions difference", expectedPermissions1, actualPermissions);
-		else if(actualPermissions.contains("[READ, UPDATE]"))
-			assertEquals("Document permissions difference", expectedPermissions2, actualPermissions);
-		else
-			assertEquals("Document permissions difference", "wrong", actualPermissions);
-
+		 	 
+		 //Split up app-user permissions because the list of permissions are not ordered.
+		String[] appUserPermissions = getDocumentPermissionsString(permissions).split("app-user:");
+		String[] actualPermissions = appUserPermissions[0].split("\\|");
+		System.out.println(actualPermissions.toString());
+		assertTrue("Document permissions difference",appUserPermissions[1].contains("UPDATE, READ") || appUserPermissions[1].contains("READ, UPDATE"));
+		
+		assertTrue("Document permissions difference", expectedPermissions1.contains(actualPermissions[0]));
+		assertTrue("Document permissions difference", expectedPermissions1.contains(actualPermissions[1]));
+		assertTrue("Document permissions difference", expectedPermissions1.contains(actualPermissions[2]));
+		
 		// Collections 
 		String expectedCollections = "size:2|my-collection1|my-collection2|";
-		String actualCollections = getDocumentCollectionsString(collections);
-		assertEquals("Document collections difference", expectedCollections, actualCollections);
+		String[] actualCollections = getDocumentCollectionsString(collections).split("\\|");;
+		
+		assertTrue("Document collections difference", expectedCollections.contains(actualCollections[0]));
+		assertTrue("Document collections difference", expectedCollections.contains(actualCollections[1]));
+		assertTrue("Document collections difference", expectedCollections.contains(actualCollections[2]));
 
 	}	
 	public void validateDefaultMetadata(DocumentMetadataHandle mh){
@@ -137,14 +140,19 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 		// Permissions
 
 		String expectedPermissions1 = "size:3|flexrep-eval:[READ]|rest-reader:[READ]|rest-writer:[UPDATE]|";
-		String actualPermissions = getDocumentPermissionsString(permissions);
-		assertEquals("Document permissions difference", expectedPermissions1, actualPermissions);
+		String[] actualPermissions = getDocumentPermissionsString(permissions).split("\\|");
+		assertTrue("Document permissions difference", expectedPermissions1.contains(actualPermissions[0]));
+		assertTrue("Document permissions difference", expectedPermissions1.contains(actualPermissions[1]));
+		assertTrue("Document permissions difference", expectedPermissions1.contains(actualPermissions[2]));
+		assertTrue("Document permissions difference", expectedPermissions1.contains(actualPermissions[3]));
 
 		// Collections 
 		String expectedCollections = "size:1|http://permission-collections/|";
-		String actualCollections = getDocumentCollectionsString(collections);
+		String[] actualCollections = getDocumentCollectionsString(collections).split("\\|");
 
-		assertEquals("Document collections difference", expectedCollections, actualCollections);
+		assertTrue("Document collections difference", expectedCollections.contains(actualCollections[0]));
+		assertTrue("Document collections difference", expectedCollections.contains(actualCollections[1]));
+		
 		//	    System.out.println(actualPermissions);
 	}
 	public void validateRecord(DocumentRecord record,Format type) {
