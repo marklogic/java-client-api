@@ -78,6 +78,7 @@ implements DocumentPatchBuilder
 			XMLStreamWriter serializer = out.getSerializer();
 			writeStartInsert(out, contextPath, position.toString(), cardinality);
 			serializer.writeCharacters(""); // force the tag close
+			serializer.flush();
 			out.getWriter().write(fragment);
 			serializer.writeEndElement();
 		}
