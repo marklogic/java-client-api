@@ -44,15 +44,37 @@ import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.impl.PojoRepositoryImpl;
 import com.marklogic.client.io.marker.TriplesReadHandle;
 import com.marklogic.client.io.marker.TriplesWriteHandle;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
+
+import javax.net.ssl.SSLContext;
 
 public class DatabaseClientImpl implements DatabaseClient {
 	static final private Logger logger = LoggerFactory.getLogger(DatabaseClientImpl.class);
 
 	private RESTServices          services;
+	private String                host;
+	private int                   port;
+	private String                database;
+	private String                user;
+	private String                password;
+	private Authentication        type;
+	private SSLContext            context;
+	private SSLHostnameVerifier   verifier;
 	private HandleFactoryRegistry handleRegistry;
 
-	public DatabaseClientImpl(RESTServices services) {
+	public DatabaseClientImpl(RESTServices services, String host, int port, String database,
+		String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier)
+	{
 		this.services = services;
+		this.host     = host;
+		this.port     = port;
+		this.database = database;
+		this.user     = user;
+		this.password = password;
+		this.type     = type;
+		this.context  = context;
+		this.verifier = verifier;
 		services.setDatabaseClient(this);
 	}
 
@@ -196,5 +218,45 @@ public class DatabaseClientImpl implements DatabaseClient {
 	public SPARQLQueryManager newSPARQLQueryManager() {
 		// TODO Auto-generated method stub
 		return new SPARQLQueryManagerImpl(services);
+	}
+
+	@Override
+	public String getHost() {
+		return host;
+	}
+
+	@Override
+	public int getPort() {
+		return port;
+	}
+
+	@Override
+	public String getDatabase() {
+		return database;
+	}
+
+	@Override
+	public String getUser() {
+		return user;
+	}
+
+	@Override
+	public String getPassword() {
+		return password;
+	}
+
+	@Override
+	public Authentication getAuthentication() {
+		return type;
+	}
+
+	@Override
+	public SSLContext getSSLContext() {
+		return context;
+	}
+
+	@Override
+	public SSLHostnameVerifier getSSLHostnameVerifier() {
+		return verifier;
 	}
 }

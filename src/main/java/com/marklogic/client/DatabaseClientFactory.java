@@ -326,7 +326,7 @@ public class DatabaseClientFactory {
 				);
 		}
 
-		return new DatabaseClientImpl(services);		
+		return new DatabaseClientImpl(services, host, port, database, user, password, type, context, verifier);
 	}
 
 	/**

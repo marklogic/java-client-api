@@ -33,6 +33,10 @@ import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.SPARQLQueryManager;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
+
+import javax.net.ssl.SSLContext;
 
 /**
  * A Database Client instantiates document and query managers and other objects
@@ -183,5 +187,21 @@ public interface DatabaseClient {
      * than the default for this REST server, you will need the xdbc:eval-in or xdbc:invoke-in
      * privilege.
      */
-	public ServerEvaluationCall newServerEval();
+    public ServerEvaluationCall newServerEval();
+
+    public String getHost();
+
+    public int getPort();
+
+    public String getDatabase();
+
+    public String getUser();
+
+    public String getPassword();
+
+    public Authentication getAuthentication();
+
+    public SSLContext getSSLContext();
+
+    public SSLHostnameVerifier getSSLHostnameVerifier();
 }
