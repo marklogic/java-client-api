@@ -16,15 +16,20 @@ declare function testxqy:transform(
   let $targetModule    := map:get($params,"ml.module")
   let $targetNamespace := map:get($params,"ml.namespace")
   let $targetFunction  := (map:get($params,"ml.function"), "transform")[1]
-  let $function := xdmp:function(QName($targetNamespace, $targetFunction), $targetModule)
+  let $_               := (
+    map:delete($params, "ml.module"),
+    map:delete($params, "ml.namespace"),
+    map:delete($params, "ml.function")
+  )
+  let $function      := xdmp:function(QName($targetNamespace, $targetFunction), $targetModule)
   let $targetContent := map:entry("uri", map:get($context, "uri"))
-  let $_ := map:put($targetContent, "value", $content)
+  let $_             := map:put($targetContent, "value", $content)
   let $targetContext := if ( empty($params) or map:count($params) = 0 ) then ()
     else map:entry("transform_param", xdmp:to-json-string($params))
-  let $returnMap := xdmp:apply($function, $targetContent, $targetContext)
+  let $returnMap     := xdmp:apply($function, $targetContent, $targetContext)
   (: TODO: finish handling multiple documents--for now this only handles one :)
-  let $firstKey := map:keys($returnMap)[1]
-  let $firstValue := map:get($returnMap, $firstKey)
+  let $firstKey      := map:keys($returnMap)[1]
+  let $firstValue    := map:get($returnMap, $firstKey)
   return $firstValue
 };
 
