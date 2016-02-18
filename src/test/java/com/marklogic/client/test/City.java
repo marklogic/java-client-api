@@ -29,6 +29,7 @@ public class City {
     private int geoNameId;
     private String name;
     private String asciiName;
+    @PathIndexProperty(scalarType=ScalarType.STRING)
     private String[] alternateNames;
     private double latitude;
     private double longitude;
