@@ -45,26 +45,47 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 
 public class TransformTest {
+	final static public String MLCP_TRANSFORM_ADAPTER = "MlcpTransformAdapter.xqy";
 	final static public String TEST_NS =
 		"http://marklogic.com/rest-api/test/transform";
 
 	static private String xqueryTransform;
 	static private String xslTransform;
 	static private String optionsName;
+	static private ServerConfigurationManager confMgr;
+	static private TransformExtensionsManager extensionMgr;
+
 
 	@BeforeClass
 	public static void beforeClass()
 	throws IOException, FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
 		Common.connectAdmin();
 		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+		confMgr = Common.client.newServerConfigManager();
+
+		extensionMgr = confMgr.newTransformExtensionsManager();
 		xqueryTransform = Common.testFileToString(TransformExtensionsTest.XQUERY_FILE);
 		xslTransform    = Common.testFileToString(TransformExtensionsTest.XSLT_FILE);
-    	optionsName = ValuesHandleTest.makeValuesOptions();
+		optionsName = ValuesHandleTest.makeValuesOptions();
+		extensionMgr.writeXQueryTransform(
+				TransformExtensionsTest.XQUERY_NAME,
+				new StringHandle().withFormat(Format.TEXT).with(xqueryTransform),
+				TransformExtensionsTest.makeXQueryMetadata()
+				);
+
+		extensionMgr.writeXQueryTransformAs(
+				MLCP_TRANSFORM_ADAPTER,
+				TransformExtensionsTest.makeXQueryMetadata(),
+				Common.testFileToString(MLCP_TRANSFORM_ADAPTER)
+				);
 	}
+
 	@AfterClass
 	public static void afterClass()
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-        Common.client.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
+		confMgr.newQueryOptionsManager().deleteOptions(optionsName);
+		extensionMgr.deleteTransform(MLCP_TRANSFORM_ADAPTER);
+		extensionMgr.deleteTransform(TransformExtensionsTest.XQUERY_NAME);
 		Common.release();
 		xqueryTransform = null;
 		xslTransform    = null;
@@ -73,28 +94,12 @@ public class TransformTest {
 	@Test
 	public void testXQueryTransform()
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-		ServerConfigurationManager confMgr =
-			Common.client.newServerConfigManager();
-
-		TransformExtensionsManager extensionMgr =
-			confMgr.newTransformExtensionsManager();
-
-		extensionMgr.writeXQueryTransform(
-				TransformExtensionsTest.XQUERY_NAME,
-				new StringHandle().withFormat(Format.TEXT).with(xqueryTransform),
-				TransformExtensionsTest.makeXQueryMetadata()
-				);
-
 		runTransform(new ServerTransform(TransformExtensionsTest.XQUERY_NAME));
-
-		extensionMgr.deleteTransform(TransformExtensionsTest.XQUERY_NAME);
 	}
+
 	@Test
 	public void testXSLTransform()
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-		TransformExtensionsManager extensionMgr =
-			Common.client.newServerConfigManager().newTransformExtensionsManager();
-
 		extensionMgr.writeXSLTransform(
 				TransformExtensionsTest.XSLT_NAME,
 				new StringHandle().with(xslTransform),
@@ -105,32 +110,40 @@ public class TransformTest {
 
 		extensionMgr.deleteTransform(TransformExtensionsTest.XSLT_NAME);
 	}
+
 	@Test
 	public void testXQueryMlcpTransformAdapter() throws Exception{
-		ServerConfigurationManager confMgr =
-			Common.client.newServerConfigManager();
-
-		TransformExtensionsManager extensionMgr =
-			confMgr.newTransformExtensionsManager();
-
-		extensionMgr.writeXQueryTransformAs(
-				"MlcpTransformAdapter.xqy",
-				TransformExtensionsTest.makeXQueryMetadata(),
-				Common.testFileToString("MlcpTransformAdapter.xqy")
-				);
-
 		ExtensionLibrariesManager libMgr = confMgr.newExtensionLibrariesManager();
 		String transformContents = Common.testFileToString("MlcpTransform.xqy");
-		libMgr.write("/ext/MlcpTransform.xqy", new StringHandle(transformContents).withFormat(Format.TEXT));
+		libMgr.write("/ext/MlcpTransform.xqy",
+			new StringHandle(transformContents).withFormat(Format.TEXT));
 
-		ServerTransform transform = new ServerTransform("MlcpTransformAdapter.xqy");
+		ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER);
 		transform.add("ml.module", "/ext/MlcpTransform.xqy");
 		transform.add("ml.namespace", "http://marklogic.com/example");
 		transform.add("attr-value", "true");
 		runTransform(transform);
 
-		extensionMgr.deleteTransform("MlcpTransformAdapter.xqy");
+		libMgr.delete("/ext/MlcpTransform.xqy");
 	}
+
+	@Test
+	public void testXQueryRestTransformAdapter() throws Exception{
+		ExtensionLibrariesManager libMgr = confMgr.newExtensionLibrariesManager();
+		String transformContents = Common.testFileToString("RestTransformAdapter.xqy");
+		libMgr.write("/ext/RestTransformAdapter.xqy",
+			new StringHandle(transformContents).withFormat(Format.TEXT));
+
+		ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER);
+		transform.add("ml.module", "/ext/RestTransformAdapter.xqy");
+		transform.add("ml.namespace", "http://marklogic.com/mlcp/transform/RestTransformAdapter.xqy");
+		transform.add("ml.transform", TransformExtensionsTest.XQUERY_NAME);
+		transform.add("value", "true");
+		runTransform(transform);
+
+		libMgr.delete("/ext/RestTransformAdapter.xqy");
+	}
+
 	private void runTransform(ServerTransform transform)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		transform.put("value", "true");
@@ -219,9 +232,6 @@ public class TransformTest {
 			"  </search:metrics>\n" + 
 			"</search:response>}\n" + 
 			"};";
-		TransformExtensionsManager extensionMgr =
-			Common.client.newServerConfigManager().newTransformExtensionsManager();
-
 		extensionMgr.writeXQueryTransform( "test118", new StringHandle().with(naiveTransform));
 		QueryManager q = Common.client.newQueryManager();
 		StringQueryDefinition s = q.newStringDefinition("");
