@@ -401,6 +401,7 @@ declare function bootstrap:create-path-range-indexes(
         let $curr-idx := admin:database-get-range-path-indexes($c, $dbid)
         let $new-idx  := (
             "long", "com.marklogic.client.test.City/population",
+            "string", "com.marklogic.client.test.City/alternateNames",
             "string", "com.marklogic.client.test.Country/continent"
             )
         for $i in 1 to (count($new-idx) idiv 2)
