@@ -24,12 +24,12 @@ declare function testxqy:transform(
   let $function      := xdmp:function(QName($targetNamespace, $targetFunction), $targetModule)
   let $targetContent := map:entry("uri", map:get($context, "uri"))
   let $_             := map:put($targetContent, "value", $content)
+let $_ := xdmp:log("DEBUG: [MlcpTransformAdapter] xdmp:to-json-string($params)=[" || xdmp:to-json-string($params) || "]")
   let $targetContext := if ( empty($params) or map:count($params) = 0 ) then ()
     else map:entry("transform_param", xdmp:to-json-string($params))
-  let $returnMap     := xdmp:apply($function, $targetContent, $targetContext)
+  let $returnMap     := xdmp:apply($function, $targetContent, $targetContext)[1]
   (: TODO: finish handling multiple documents--for now this only handles one :)
-  let $firstKey      := map:keys($returnMap)[1]
-  let $firstValue    := map:get($returnMap, $firstKey)
+  let $firstValue    := map:get($returnMap, "value")
   return $firstValue
 };
 
