@@ -1,5 +1,5 @@
 xquery version "1.0-ml";
-module namespace testxqy = "http://marklogic.com/rest-api/transform/MlcpTransformAdapter.xqy";
+module namespace testxqy = "http://marklogic.com/rest-api/transform/MlcpTransformAdapter";
 
 import module namespace plugin = "http://marklogic.com/extension/plugin"
     at "/MarkLogic/plugin/plugin.xqy";

@@ -47,7 +47,7 @@ import com.marklogic.client.query.ValuesDefinition;
 public class TransformTest {
 	final static public String JS_NAME = "testsjs";
 	final static public String JS_FILE = "testsjs.sjs";
-	final static public String MLCP_TRANSFORM_ADAPTER = "MlcpTransformAdapter.xqy";
+	final static public String MLCP_TRANSFORM_ADAPTER = "MlcpTransformAdapter";
 	final static public String TEST_NS =
 		"http://marklogic.com/rest-api/test/transform";
 
@@ -92,7 +92,7 @@ public class TransformTest {
 		extensionMgr.writeXQueryTransformAs(
 				MLCP_TRANSFORM_ADAPTER,
 				TransformExtensionsTest.makeXQueryMetadata(),
-				Common.testFileToString(MLCP_TRANSFORM_ADAPTER)
+				Common.testFileToString(MLCP_TRANSFORM_ADAPTER + ".xqy")
 				);
 
 		extensionMgr.writeXSLTransform(
@@ -147,7 +147,7 @@ public class TransformTest {
 		transform.add("attr-value", "true");
 		runTransform(transform);
 
-		//libMgr.delete("/ext/SampleMlcpTransform.xqy");
+		libMgr.delete("/ext/SampleMlcpTransform.xqy");
 	}
 
 	@Test
@@ -171,7 +171,7 @@ public class TransformTest {
 		transform.add("attr-value", "true");
 		runTransform(transform);
 
-		//libMgr.delete("/ext/SampleMlcpTransform.sjs");
+		libMgr.delete("/ext/SampleMlcpTransform.sjs");
 	}
 
 	@Test
@@ -206,11 +206,11 @@ public class TransformTest {
 
 		//docMgr.delete(docId);
 
-        QueryManager queryMgr = Common.client.newQueryManager();
+		QueryManager queryMgr = Common.client.newQueryManager();
 
-        StringQueryDefinition stringQuery = queryMgr.newStringDefinition();
-        stringQuery.setCriteria("grandchild1 OR grandchild4");
-        stringQuery.setResponseTransform(transform);
+		StringQueryDefinition stringQuery = queryMgr.newStringDefinition();
+		stringQuery.setCriteria("grandchild1 OR grandchild4");
+		stringQuery.setResponseTransform(transform);
 
 		result = queryMgr.search(stringQuery, new DOMHandle()).get();
 		value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");
@@ -224,13 +224,13 @@ public class TransformTest {
 		value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");
 		assertEquals("Key-value query read transform failed","true",value);
 
-    	ValuesDefinition vdef =
-    		queryMgr.newValuesDefinition("double", optionsName);
+		ValuesDefinition vdef =
+			queryMgr.newValuesDefinition("double", optionsName);
 		stringQuery = queryMgr.newStringDefinition();
 		stringQuery.setCriteria("10");
-        stringQuery.setResponseTransform(transform);
+		stringQuery.setResponseTransform(transform);
 
-        vdef.setQueryDefinition(stringQuery);
+		vdef.setQueryDefinition(stringQuery);
 		result = queryMgr.values(vdef, new DOMHandle()).get();
 		value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");
 		assertEquals("Values query read transform failed",value,"true");
