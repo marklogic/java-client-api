@@ -45,15 +45,16 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 
 public class TransformTest {
+	final static public String JS_NAME = "testsjs";
+	final static public String JS_FILE = "testsjs.sjs";
 	final static public String MLCP_TRANSFORM_ADAPTER = "MlcpTransformAdapter.xqy";
 	final static public String TEST_NS =
 		"http://marklogic.com/rest-api/test/transform";
 
-	static private String xqueryTransform;
-	static private String xslTransform;
 	static private String optionsName;
 	static private ServerConfigurationManager confMgr;
 	static private TransformExtensionsManager extensionMgr;
+	static private ExtensionLibrariesManager libMgr;
 
 
 	@BeforeClass
@@ -64,13 +65,28 @@ public class TransformTest {
 		confMgr = Common.client.newServerConfigManager();
 
 		extensionMgr = confMgr.newTransformExtensionsManager();
-		xqueryTransform = Common.testFileToString(TransformExtensionsTest.XQUERY_FILE);
-		xslTransform    = Common.testFileToString(TransformExtensionsTest.XSLT_FILE);
 		optionsName = ValuesHandleTest.makeValuesOptions();
-		extensionMgr.writeXQueryTransform(
-				TransformExtensionsTest.XQUERY_NAME,
-				new StringHandle().withFormat(Format.TEXT).with(xqueryTransform),
-				TransformExtensionsTest.makeXQueryMetadata()
+		libMgr = confMgr.newExtensionLibrariesManager();
+
+		libMgr.write("/ext/RestTransformAdapter.xqy",
+			new StringHandle(Common.testFileToString("RestTransformAdapter.xqy")).withFormat(Format.TEXT));
+
+		libMgr.write("/ext/memory-operations.xqy",
+			new StringHandle(Common.testFileToString("memory-operations.xqy")).withFormat(Format.TEXT));
+
+		libMgr.write("/ext/node-operations.xqy",
+			new StringHandle(Common.testFileToString("node-operations.xqy")).withFormat(Format.TEXT));
+
+		extensionMgr.writeXQueryTransformAs(
+			TransformExtensionsTest.XQUERY_NAME,
+			TransformExtensionsTest.makeXQueryMetadata(),
+			Common.testFileToString(TransformExtensionsTest.XQUERY_FILE)
+		);
+
+		extensionMgr.writeJavascriptTransformAs(
+				JS_NAME,
+				TransformExtensionsTest.makeXQueryMetadata(),
+				Common.testFileToString(JS_FILE)
 				);
 
 		extensionMgr.writeXQueryTransformAs(
@@ -78,17 +94,28 @@ public class TransformTest {
 				TransformExtensionsTest.makeXQueryMetadata(),
 				Common.testFileToString(MLCP_TRANSFORM_ADAPTER)
 				);
+
+		extensionMgr.writeXSLTransform(
+			TransformExtensionsTest.XSLT_NAME,
+			new StringHandle(Common.testFileToString(TransformExtensionsTest.XSLT_FILE)),
+			TransformExtensionsTest.makeXSLTMetadata()
+		);
 	}
 
 	@AfterClass
 	public static void afterClass()
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		confMgr.newQueryOptionsManager().deleteOptions(optionsName);
+
 		extensionMgr.deleteTransform(MLCP_TRANSFORM_ADAPTER);
 		extensionMgr.deleteTransform(TransformExtensionsTest.XQUERY_NAME);
+		extensionMgr.deleteTransform(TransformExtensionsTest.XSLT_NAME);
+
+		libMgr.delete("/ext/RestTransformAdapter.xqy");
+		libMgr.delete("/ext/memory-operations.xqy");
+		libMgr.delete("/ext/node-operations.xqy");
+
 		Common.release();
-		xqueryTransform = null;
-		xslTransform    = null;
 	}
 
 	@Test
@@ -98,50 +125,63 @@ public class TransformTest {
 	}
 
 	@Test
+	public void testJavascriptTransform() throws Exception{
+		runTransform(new ServerTransform(JS_NAME));
+	}
+
+	@Test
 	public void testXSLTransform()
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-		extensionMgr.writeXSLTransform(
-				TransformExtensionsTest.XSLT_NAME,
-				new StringHandle().with(xslTransform),
-				TransformExtensionsTest.makeXSLTMetadata()
-				);
-
 		runTransform(new ServerTransform(TransformExtensionsTest.XSLT_NAME));
-
-		extensionMgr.deleteTransform(TransformExtensionsTest.XSLT_NAME);
 	}
 
 	@Test
 	public void testXQueryMlcpTransformAdapter() throws Exception{
-		ExtensionLibrariesManager libMgr = confMgr.newExtensionLibrariesManager();
-		String transformContents = Common.testFileToString("MlcpTransform.xqy");
-		libMgr.write("/ext/MlcpTransform.xqy",
+		String transformContents = Common.testFileToString("SampleMlcpTransform.xqy");
+		libMgr.write("/ext/SampleMlcpTransform.xqy",
 			new StringHandle(transformContents).withFormat(Format.TEXT));
 
 		ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER);
-		transform.add("ml.module", "/ext/MlcpTransform.xqy");
+		transform.add("ml.module", "/ext/SampleMlcpTransform.xqy");
 		transform.add("ml.namespace", "http://marklogic.com/example");
 		transform.add("attr-value", "true");
 		runTransform(transform);
 
-		libMgr.delete("/ext/MlcpTransform.xqy");
+		//libMgr.delete("/ext/SampleMlcpTransform.xqy");
 	}
 
 	@Test
 	public void testXQueryRestTransformAdapter() throws Exception{
-		ExtensionLibrariesManager libMgr = confMgr.newExtensionLibrariesManager();
-		String transformContents = Common.testFileToString("RestTransformAdapter.xqy");
-		libMgr.write("/ext/RestTransformAdapter.xqy",
-			new StringHandle(transformContents).withFormat(Format.TEXT));
-
 		ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER);
 		transform.add("ml.module", "/ext/RestTransformAdapter.xqy");
 		transform.add("ml.namespace", "http://marklogic.com/mlcp/transform/RestTransformAdapter.xqy");
 		transform.add("ml.transform", TransformExtensionsTest.XQUERY_NAME);
 		transform.add("value", "true");
 		runTransform(transform);
+	}
 
-		libMgr.delete("/ext/RestTransformAdapter.xqy");
+	@Test
+	public void testJavascriptMlcpTransformAdapter() throws Exception{
+		String transformContents = Common.testFileToString("SampleMlcpTransform.sjs");
+		libMgr.write("/ext/SampleMlcpTransform.sjs",
+			new StringHandle(transformContents).withFormat(Format.TEXT));
+
+		ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER);
+		transform.add("ml.module", "/ext/SampleMlcpTransform.sjs");
+		transform.add("attr-value", "true");
+		runTransform(transform);
+
+		//libMgr.delete("/ext/SampleMlcpTransform.sjs");
+	}
+
+	@Test
+	public void testJavascriptRestTransformAdapter() throws Exception{
+		ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER);
+		transform.add("ml.module", "/ext/RestTransformAdapter.xqy");
+		transform.add("ml.namespace", "http://marklogic.com/mlcp/transform/RestTransformAdapter.xqy");
+		transform.add("ml.transform", JS_NAME);
+		transform.add("value", "true");
+		runTransform(transform);
 	}
 
 	private void runTransform(ServerTransform transform)
@@ -156,7 +196,7 @@ public class TransformTest {
 		String value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");
 		assertEquals("Document read transform failed","true",value);
 
-		docMgr.delete(docId);
+		//docMgr.delete(docId);
 
 		docId = "/test/testTransformable2.xml";
 		docMgr.write(docId, new StringHandle().with("<document/>"), transform);
@@ -164,7 +204,7 @@ public class TransformTest {
 		value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");
 		assertEquals("Document write transform failed",value,"true");
 
-		docMgr.delete(docId);
+		//docMgr.delete(docId);
 
         QueryManager queryMgr = Common.client.newQueryManager();
 
@@ -174,7 +214,7 @@ public class TransformTest {
 
 		result = queryMgr.search(stringQuery, new DOMHandle()).get();
 		value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");
-		assertEquals("String query read transform failed",value,"true");
+		assertEquals("String query read transform failed","true",value);
 
 		KeyValueQueryDefinition keyValueQuery = queryMgr.newKeyValueDefinition();
 		keyValueQuery.put(queryMgr.newElementLocator(new QName("leaf")), "leaf3");
@@ -182,7 +222,7 @@ public class TransformTest {
 
 		result = queryMgr.search(keyValueQuery, new DOMHandle()).get();
 		value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");
-		assertEquals("Key-value query read transform failed",value,"true");
+		assertEquals("Key-value query read transform failed","true",value);
 
     	ValuesDefinition vdef =
     		queryMgr.newValuesDefinition("double", optionsName);
