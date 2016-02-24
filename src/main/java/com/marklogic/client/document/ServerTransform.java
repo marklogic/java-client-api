@@ -47,6 +47,17 @@ public class ServerTransform extends RequestParameters {
 	}
 
 	/**
+	 * Appends a value to the list for a parameter and returns this instance for
+	 * method chaining.
+	 * @param name	the parameter
+	 * @param value	the value to add to the list
+	 */
+	public ServerTransform addParameter(String name, String value) {
+		add(name, value);
+		return this;
+	}
+
+	/**
 	 * Merges the transform and its parameters with other parameters
 	 * of the request.
 	 * 
