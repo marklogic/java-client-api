@@ -141,10 +141,10 @@ public class TransformTest {
 		libMgr.write("/ext/SampleMlcpTransform.xqy",
 			new StringHandle(transformContents).withFormat(Format.TEXT));
 
-		ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER);
-		transform.add("ml.module", "/ext/SampleMlcpTransform.xqy");
-		transform.add("ml.namespace", "http://marklogic.com/example");
-		transform.add("attr-value", "true");
+		ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER)
+			.addParameter("ml.module", "/ext/SampleMlcpTransform.xqy")
+			.addParameter("ml.namespace", "http://marklogic.com/example")
+			.addParameter("attr-value", "true");
 		runTransform(transform);
 
 		libMgr.delete("/ext/SampleMlcpTransform.xqy");
@@ -152,11 +152,11 @@ public class TransformTest {
 
 	@Test
 	public void testXQueryRestTransformAdapter() throws Exception{
-		ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER);
-		transform.add("ml.module", "/ext/RestTransformAdapter.xqy");
-		transform.add("ml.namespace", "http://marklogic.com/mlcp/transform/RestTransformAdapter.xqy");
-		transform.add("ml.transform", TransformExtensionsTest.XQUERY_NAME);
-		transform.add("value", "true");
+		ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER)
+			.addParameter("ml.module", "/ext/RestTransformAdapter.xqy")
+			.addParameter("ml.namespace", "http://marklogic.com/mlcp/transform/RestTransformAdapter.xqy")
+			.addParameter("ml.transform", TransformExtensionsTest.XQUERY_NAME)
+			.addParameter("value", "true");
 		runTransform(transform);
 	}
 
@@ -166,9 +166,9 @@ public class TransformTest {
 		libMgr.write("/ext/SampleMlcpTransform.sjs",
 			new StringHandle(transformContents).withFormat(Format.TEXT));
 
-		ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER);
-		transform.add("ml.module", "/ext/SampleMlcpTransform.sjs");
-		transform.add("attr-value", "true");
+		ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER)
+			.addParameter("ml.module", "/ext/SampleMlcpTransform.sjs")
+			.addParameter("attr-value", "true");
 		runTransform(transform);
 
 		libMgr.delete("/ext/SampleMlcpTransform.sjs");
@@ -176,11 +176,11 @@ public class TransformTest {
 
 	@Test
 	public void testJavascriptRestTransformAdapter() throws Exception{
-		ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER);
-		transform.add("ml.module", "/ext/RestTransformAdapter.xqy");
-		transform.add("ml.namespace", "http://marklogic.com/mlcp/transform/RestTransformAdapter.xqy");
-		transform.add("ml.transform", JS_NAME);
-		transform.add("value", "true");
+		ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER)
+			.addParameter("ml.module", "/ext/RestTransformAdapter.xqy")
+			.addParameter("ml.namespace", "http://marklogic.com/mlcp/transform/RestTransformAdapter.xqy")
+			.addParameter("ml.transform", JS_NAME)
+			.addParameter("value", "true");
 		runTransform(transform);
 	}
 
