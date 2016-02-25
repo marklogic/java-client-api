@@ -113,7 +113,7 @@ public interface SearchResults {
      * (if requested).
      * @return	The constraint names.
      */
-	public String[] getConstraintNames();
+    public String[] getConstraintNames();
 
     /**
      * Returns the named constraint used in the search
@@ -122,7 +122,7 @@ public interface SearchResults {
      * @param handle	An XML handle for reading the constraint.
      * @return	The handle on the constraint.
      */
-	public <T extends XMLReadHandle> T getConstraint(String name, T handle);
+    public <T extends XMLReadHandle> T getConstraint(String name, T handle);
 
     /**
      * Returns an iterator over the constraints used in the search
@@ -130,26 +130,26 @@ public interface SearchResults {
      * @param handle	An XML handle for reading the constraints.
      * @return	An iterator that populates the handle with each constraint.
      */
-	public <T extends XMLReadHandle> Iterator<T> getConstraintIterator(T handle);
+    public <T extends XMLReadHandle> Iterator<T> getConstraintIterator(T handle);
 
     /**
      * Returns the plan for the search (if requested).
      * @param handle	An XML handle for reading the plan.
      * @return	The handle on the plan.
      */
-	public <T extends XMLReadHandle> T getPlan(T handle);
+    public <T extends XMLReadHandle> T getPlan(T handle);
 
-	/**
-	 * Returns the string query input (if provided and requested).
-	 * @return	The string queries.
-	 */
+    /**
+     * Returns the string query input (if provided and requested).
+     * @return	The string queries.
+     */
     public String[] getStringQueries();
 
-	/**
-	 * Returns the cts:query used in the search (if requested).
+    /**
+     * Returns the cts:query used in the search (if requested).
      * @param handle	An XML handle for reading the query.
      * @return	The handle on the query.
-	 */
+     */
     public <T extends XMLReadHandle> T getQuery(T handle);
 }
 
