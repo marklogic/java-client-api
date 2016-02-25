@@ -15,7 +15,7 @@ declare function adapter:transform(
   let $uri           := map:get($content, "uri")
   let $docIn         := map:get($content, "value")
   let $params        := xdmp:from-json-string(
-    (map:get($context, "transform_param"), '{"ml.transform":"transform"}')[1]
+    head((map:get($context, "transform_param"), '{"ml.transform":"transform"}'))
   )
   let $transform     := map:get($params, "ml.transform")
   let $targetContext := map:entry("uri", $uri)
