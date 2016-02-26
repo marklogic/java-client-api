@@ -259,6 +259,10 @@ public class InputSourceHandle
 	/**
 	 * Returns the factory for parsing SAX events.
 	 * @return	the SAX factory
+	 * @throws SAXException if such an error occurs while initializing the
+	 *         new factory
+	 * @throws ParserConfigurationException if such an error occurs while
+	 *         initializing the new factory
 	 */
 	public SAXParserFactory getFactory() throws SAXException, ParserConfigurationException {
 		if (factory == null)

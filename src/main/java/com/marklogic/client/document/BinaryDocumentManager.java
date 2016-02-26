@@ -56,6 +56,7 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * @param as	the IO class for reading the range of bytes
      * @param start	the zero-based index of the first byte in the range
      * @param length	the number of bytes in the range
+     * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the range of bytes
 	 */
 	public <T> T readAs(String docId, Class<T> as, long start, long length)
@@ -71,6 +72,7 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * @param as	the IO class for reading the range of bytes
      * @param start	the zero-based index of the first byte in the range
      * @param length	the number of bytes in the range
+     * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the range of bytes
 	 */
 	public <T> T readAs(String docId, DocumentMetadataReadHandle metadataHandle, Class<T> as, long start, long length)
@@ -85,6 +87,7 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * @param contentHandle	a handle for reading the content of the document
      * @param start	the zero-based index of the first byte in the range
      * @param length	the number of bytes in the range
+     * @param <T> the type of BinaryReadHandle to return
      * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, long start, long length)
@@ -99,6 +102,7 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * @param transform	a server transform to modify the document content
      * @param start	the zero-based index of the first byte in the range
      * @param length	the number of bytes in the range
+     * @param <T> the type of BinaryReadHandle to return
      * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, ServerTransform transform, long start, long length)
@@ -112,6 +116,7 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * @param contentHandle	a handle for reading the content of the document
      * @param start	the zero-based index of the first byte in the range
      * @param length	the number of bytes in the range
+     * @param <T> the type of BinaryReadHandle to return
      * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, long start, long length)
@@ -126,6 +131,7 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * @param transform	a server transform to modify the document content
      * @param start	the zero-based index of the first byte in the range
      * @param length	the number of bytes in the range
+     * @param <T> the type of BinaryReadHandle to return
      * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, long start, long length)
@@ -141,6 +147,7 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * @param contentHandle	a handle for reading the content of the document
      * @param start	the zero-based index of the first byte in the range
      * @param length	the number of bytes in the range
+     * @param <T> the type of BinaryReadHandle to return
      * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length)
@@ -156,6 +163,7 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * @param transform	a server transform to modify the document content
      * @param start	the zero-based index of the first byte in the range
      * @param length	the number of bytes in the range
+     * @param <T> the type of BinaryReadHandle to return
      * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length)
@@ -170,6 +178,7 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * @param contentHandle	a handle for reading the content of the document
      * @param start	the zero-based index of the first byte in the range
      * @param length	the number of bytes in the range
+     * @param <T> the type of BinaryReadHandle to return
      * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length)
@@ -185,6 +194,7 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * @param transform	a server transform to modify the document content
      * @param start	the zero-based index of the first byte in the range
      * @param length	the number of bytes in the range
+     * @param <T> the type of BinaryReadHandle to return
      * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length)
@@ -200,6 +210,7 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * @param start	the zero-based index of the first byte in the range
      * @param length	the number of bytes in the range
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @param <T> the type of BinaryReadHandle to return
      * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, long start, long length, Transaction transaction)
@@ -215,6 +226,7 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * @param start	the zero-based index of the first byte in the range
      * @param length	the number of bytes in the range
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @param <T> the type of BinaryReadHandle to return
      * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(String docId, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction)
@@ -229,6 +241,7 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * @param start	the zero-based index of the first byte in the range
      * @param length	the number of bytes in the range
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @param <T> the type of BinaryReadHandle to return
      * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, long start, long length, Transaction transaction)
@@ -244,6 +257,7 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * @param start	the zero-based index of the first byte in the range
      * @param length	the number of bytes in the range
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @param <T> the type of BinaryReadHandle to return
      * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction)
@@ -260,6 +274,7 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * @param start	the zero-based index of the first byte in the range
      * @param length	the number of bytes in the range
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @param <T> the type of BinaryReadHandle to return
      * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction)
@@ -276,6 +291,7 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * @param start	the zero-based index of the first byte in the range
      * @param length	the number of bytes in the range
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @param <T> the type of BinaryReadHandle to return
      * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction)
@@ -291,6 +307,7 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * @param start	the zero-based index of the first byte in the range
      * @param length	the number of bytes in the range
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @param <T> the type of BinaryReadHandle to return
      * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction)
@@ -307,6 +324,7 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * @param start	the zero-based index of the first byte in the range
      * @param length	the number of bytes in the range
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @param <T> the type of BinaryReadHandle to return
      * @return	the range of bytes
      */
 	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction)

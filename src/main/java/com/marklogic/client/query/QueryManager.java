@@ -256,6 +256,7 @@ public interface QueryManager {
      * saved query options.
      * @param querydef	the definition of query criteria and query options
      * @param searchHandle	a handle for reading the results from the search
+     * @param <T> the type of SearchReadHandle to return
      * @return	the handle populated with the results from the search
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle);
@@ -266,6 +267,7 @@ public interface QueryManager {
      * @param querydef	the definition of query criteria and query options
      * @param searchHandle	a handle for reading the results from the search
      * @param start	the offset of the first document in the page (where 1 is the first result)
+     * @param <T> the type of SearchReadHandle to return
      * @return	the handle populated with the results from the search
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start);
@@ -276,6 +278,7 @@ public interface QueryManager {
      * @param querydef	the definition of query criteria and query options
      * @param searchHandle	a handle for reading the results from the search
      * @param transaction	a open transaction for matching documents
+     * @param <T> the type of SearchReadHandle to return
      * @return	the handle populated with the results from the search
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction);
@@ -288,6 +291,7 @@ public interface QueryManager {
      * @param searchHandle	a handle for reading the results from the search
      * @param start	the offset of the first document in the page (where 1 is the first result)
      * @param transaction	a open transaction for matching documents
+     * @param <T> the type of SearchReadHandle to return
      * @return	the handle populated with the results from the search
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction);
@@ -297,6 +301,8 @@ public interface QueryManager {
      * values in the SuggestionDefinition.  The list of strings returned by
      * this function can be used to provide possible values for completing
      * a string search.
+     * @param suggestionDef the partial string to complete and suggest query options
+     * @return the suggested string completions
      */
     public String[] suggest(SuggestDefinition suggestionDef);
     
@@ -319,6 +325,7 @@ public interface QueryManager {
      * previously saved query options.
      * @param valdef	the definition of query criteria and query options
      * @param valueHandle	a handle for reading the values for the matched documents
+     * @param <T> the type of ValuesReadHandle to return
      * @return	the handle populated with the values from the index
      */
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle);
@@ -329,6 +336,7 @@ public interface QueryManager {
      * @param valdef	the definition of query criteria and query options
      * @param valueHandle	a handle for reading the values for the matched documents
      * @param start	the offset of the first returned result (where 1 is the first value)
+     * @param <T> the type of ValuesReadHandle to return
      * @return	the handle populated with the values from the index
      */
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, long start);
@@ -340,6 +348,7 @@ public interface QueryManager {
      * @param valdef	the definition of query criteria and query options
      * @param valueHandle	a handle for reading the values for the matched documents
      * @param transaction	a open transaction for matching documents
+     * @param <T> the type of ValuesReadHandle to return
      * @return	the handle populated with the values from the index
      */
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, Transaction transaction);

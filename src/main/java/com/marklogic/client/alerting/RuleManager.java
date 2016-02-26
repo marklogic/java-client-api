@@ -41,12 +41,13 @@ public interface RuleManager {
 	/**
 	 * Reads a rule from the server in an XML representation provided
 	 * as an object of an IO class.
-     * 
-     * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
-     * 
+	 *
+	 * The IO class must have been registered before creating the database client.
+	 * By default, standard Java IO classes for document content are registered.
+	 *
 	 * @param ruleName	name of rule on REST server
-     * @param as	the IO class for reading the rule
+	 * @param as	the IO class for reading the rule
+	 * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return	an object of the IO class with the rule
 	 */
 	public <T> T readRuleAs(String ruleName, Class<T> as)
@@ -57,6 +58,7 @@ public interface RuleManager {
 	 * 
 	 * @param ruleName	Name of rule on REST server.
 	 * @param readHandle	Handle that will accept the rule payload. Often will be an instance of RuleDefinition.
+	 * @param <T> the type of RuleReadHandle to return
 	 * @return Handle or object that models the rule.
 	 */
 	public <T extends RuleReadHandle> T readRule(String ruleName, T readHandle)
@@ -66,10 +68,10 @@ public interface RuleManager {
 	/**
 	 * Writes a rule to the server in an XML representation provided
 	 * as an object of an IO class.
-	 * 
-     * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
-     * 
+	 *
+	 * The IO class must have been registered before creating the database client.
+	 * By default, standard Java IO classes for document content are registered.
+	 *
 	 * @param ruleName	name of rule on REST server
 	 * @param ruleSource	an IO representation of the rule
 	 */
@@ -90,7 +92,7 @@ public interface RuleManager {
 	 * 
 	 * @param ruleName	Name of rule on REST server.
 	 * @param writeHandle	Handle that contains the rule payload. Often will be an instance of RuleDefinition.
-     */	
+	 */	
 	public void writeRule(String ruleName, RuleWriteHandle writeHandle);
 
 	/**
@@ -105,6 +107,7 @@ public interface RuleManager {
 	 * Matches server rules based on the results of a search.
 	 * @param docQuery A query definition to qualify documents to match.
 	 * @param ruleListHandle A handle to hold the match results.
+	 * @param <T> the type of RuleListReadHandle to return
 	 * @return The List of rules matched by the documents returned by this query.
 	 */
 	public <T extends RuleListReadHandle> T match(QueryDefinition docQuery, T ruleListHandle);
@@ -117,6 +120,7 @@ public interface RuleManager {
 	 * @param pageLength The number of results in the filtering query to match. Use null to return all matches.
 	 * @param candidateRules An array of rule names to return in matches.  Null matches all rules.
 	 * @param ruleListHandle A handle to hold the match results.
+	 * @param <T> the type of RuleListReadHandle to return
 	 * @return The list of rules matched by the documents returned by the query.
 	 */
 	public <T extends RuleListReadHandle> T match(QueryDefinition docQuery,
@@ -130,17 +134,19 @@ public interface RuleManager {
 	 * @param pageLength The number of results in the filtering query to match. Use null to return all matches.
 	 * @param candidateRules An array of rule names to return in matches.  A zero-length array matches all rules.
 	 * @param ruleListHandle A handle to hold the match results.
-     * @param transform	a server transform to modify the rule list payload.
+	 * @param transform	a server transform to modify the rule list payload.
+	 * @param <T> the type of RuleListReadHandle to return
 	 * @return The list of rules matched by the documents returned by the query.
 	 */
 	public <T extends RuleListReadHandle> T match(QueryDefinition docQuery,
 			long start, long pageLength, String[] candidateRules, T ruleListHandle,
-		   	ServerTransform transform);
+			ServerTransform transform);
 
 	/**
 	 * Matches server rules based on an array of document IDS.
 	 * @param docIds An array of document IDs to match against.
 	 * @param ruleListHandle A handle to hold the match results.
+	 * @param <T> the type of RuleListReadHandle to return
 	 * @return The union of all rules matched by the document ids provided.
 	 */
 	public <T extends RuleListReadHandle> T match(String[] docIds, T ruleListHandle);
@@ -150,6 +156,7 @@ public interface RuleManager {
 	 * @param docIds An array of document IDs to match against.
 	 * @param candidateRules An array of rule names to return in matches.  A zero-length array matches all rules.
 	 * @param ruleListHandle A handle to hold the match results
+	 * @param <T> the type of RuleListReadHandle to return
 	 * @return The union of rules in candidateRules matched by the document ids provided.
 	 */
 	public <T extends RuleListReadHandle> T match(String[] docIds, String[] candidateRules, T ruleListHandle);
@@ -159,7 +166,8 @@ public interface RuleManager {
 	 * @param docIds An array of document IDs to match against.
 	 * @param candidateRules An array of rule names to return in matches.   A zero-length array matches all rules.
 	 * @param ruleListHandle A handle to hold the match results.
-     * @param transform	a server transform to modify the rule list payload.
+	 * @param transform	a server transform to modify the rule list payload.
+	 * @param <T> the type of RuleListReadHandle to return
 	 * @return The union of rules in candidateRules matched by the document ids provided.
 	 */
 	public <T extends RuleListReadHandle> T match(String[] docIds, String[] candidateRules, T ruleListHandle, ServerTransform transform);
@@ -167,25 +175,27 @@ public interface RuleManager {
 	/**
 	 * Matches server rules based on a document supplied
 	 * in a textual representation provided as an object of an IO class.
-     * 
-     * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
-     * 
+	 *
+	 * The IO class must have been registered before creating the database client.
+	 * By default, standard Java IO classes for document content are registered.
+	 *
 	 * @param content	an IO representation of the document to match against rules
 	 * @param ruleListHandle a handle to hold the match results
+	 * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return the union of rules matched by the document provided
 	 */
 	public <T extends RuleListReadHandle> T matchAs(Object content, T ruleListHandle);
 	/**
 	 * Matches server rules based on a document supplied
 	 * in a textual representation provided as an object of an IO class.
-     * 
-     * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
-     * 
+	 *
+	 * The IO class must have been registered before creating the database client.
+	 * By default, standard Java IO classes for document content are registered.
+	 *
 	 * @param content	an IO representation of the document to match against rules
 	 * @param candidateRules an array of rule names to match.  A zero-length array matches all rules.
 	 * @param ruleListHandle a handle to hold the match results
+	 * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return the union of rules matched by the document provided
 	 */
 	public <T extends RuleListReadHandle> T matchAs(Object content, String[] candidateRules,
@@ -193,14 +203,15 @@ public interface RuleManager {
 	/**
 	 * Matches server rules based on a document supplied
 	 * in a textual representation provided as an object of an IO class.
-     * 
-     * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
-     * 
+	 *
+	 * The IO class must have been registered before creating the database client.
+	 * By default, standard Java IO classes for document content are registered.
+	 *
 	 * @param content	an IO representation of the document to match against rules
 	 * @param candidateRules an array of rule names to match.  A zero-length array matches all rules.
 	 * @param ruleListHandle a handle to hold the match results
 	 * @param transform	a server transform to modify the rule list payload
+	 * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return the union of rules matched by the document provided
 	 */
 	public <T extends RuleListReadHandle> T matchAs(Object content, String[] candidateRules,
@@ -228,7 +239,7 @@ public interface RuleManager {
 	 * @param document A document payload to match against rules.
 	 * @param candidateRules An array of rule names to match.  A zero-length array matches all rules.
 	 * @param ruleListHandle A handle to hold the match results.
-     * @param transform	a server transform to modify the rule list payload.
+	 * @param transform	a server transform to modify the rule list payload.
 	 * @return The union of rules in candidateRules matched by the document.
 	 */
 	public <T extends RuleListReadHandle> T match(StructureWriteHandle document,

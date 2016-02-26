@@ -84,6 +84,7 @@ public interface MatchDocumentSummary {
 	/**
      * Returns an iterator over the snippets matched for the result.
      * @param handle	An XML handle for reading the snippets.
+     * @param <T> the type of XMLReadHandle to iterate over
      * @return	An iterator that populates the handle with each snippet.
 	 */
 	public <T extends XMLReadHandle> Iterator<T> getSnippetIterator(T handle);
@@ -98,6 +99,7 @@ public interface MatchDocumentSummary {
      * By default, standard Java IO classes for document content are registered.
      * 
      * @param as	the IO class for reading the first snippet for the result
+     * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the content of the document in the first snippet
 	 */
 	public <T> T getFirstSnippetAs(Class<T> as);
@@ -105,7 +107,8 @@ public interface MatchDocumentSummary {
 	 * Returns the content of the first snippet for the matched result document
 	 * as a convenience, especially for a raw snippet that contains the entire
 	 * result document.
-     * @param handle	An XML handle for reading the first snippet.
+	 * @param handle	An XML handle for reading the first snippet.
+	 * @param <T> the type of XMLReadHandle to return
 	 * @return	The handle populated with the first snippet.
 	 */
 	public <T extends XMLReadHandle> T getFirstSnippet(T handle);
@@ -133,18 +136,21 @@ public interface MatchDocumentSummary {
      * By default, standard Java IO classes for document content are registered.
      * 
      * @param as	the IO class for reading the metadata for the result
+     * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the extracted result document metadata
      */
 	public <T> T getMetadataAs(Class<T> as);
 	/**
      * Returns the metadata extracted from the result document.
      * @param handle	An XML handle for reading the metadata.
+     * @param <T> the type of XMLReadHandle to return
      * @return	The handle on the metadata.
 	 */
 	public <T extends XMLReadHandle> T getMetadata(T handle);
 
     /**
      * Returns the mime type associated with this document.
+     * @return the mime type associated with this document.
      */
     public String getMimeType();
      

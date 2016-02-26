@@ -113,6 +113,7 @@ public class ExtensionMetadata {
 	/**
 	 * Returns the script language for this resource extension, either XQUERY (default)
 	 * or JAVASCRIPT.
+	 * @return the script language for this resource extension
 	 */
     public ScriptLanguage getScriptLanguage() {
         return scriptLanguage;
@@ -121,6 +122,7 @@ public class ExtensionMetadata {
 	/**
 	 * Specifies the script language for this resource extension, either XQUERY (default)
 	 * or JAVASCRIPT.
+	 * @param scriptLanguage the script language for this resource extension
 	 */
     public void setScriptLanguage(ScriptLanguage scriptLanguage) {
         this.scriptLanguage = scriptLanguage;

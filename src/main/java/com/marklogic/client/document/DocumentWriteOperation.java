@@ -53,6 +53,7 @@ public interface DocumentWriteOperation {
     /** Returns the {@link DocumentWriteOperation.OperationType} set implicitly by your call to
      * {@link DocumentWriteSet#add add}, {@link DocumentWriteSet#addDefault addDefault}, or
      * {@link DocumentWriteSet#disableDefault disableDefault}.
+     * @return the operation type which was set implicitly
      */
     public OperationType getOperationType();
 
@@ -60,18 +61,21 @@ public interface DocumentWriteOperation {
     // server after a write with a DocumentDescriptor.
     /** The uri for this document if set explicitly by your call to
      * {@link DocumentWriteSet#add(String, AbstractWriteHandle) add(String, ...)}
+     * @return the uri
      */
     public String getUri();
 
     /** The handle with the metadata as set by your call to
      * {@link DocumentWriteSet#add(String, DocumentMetadataWriteHandle, AbstractWriteHandle) add} or
      * {@link DocumentWriteSet#add(DocumentDescriptor, DocumentMetadataWriteHandle, AbstractWriteHandle) add}.
+     * @return the handle with the metadata
      */
     public DocumentMetadataWriteHandle getMetadata();
 
     /** The handle with the content as set by your call to
      * {@link DocumentWriteSet#add(String, AbstractWriteHandle) add} or
      * {@link DocumentWriteSet#add(DocumentDescriptor, AbstractWriteHandle) add}.
+     * @return the handle with the content
      */
     public AbstractWriteHandle getContent();
 }

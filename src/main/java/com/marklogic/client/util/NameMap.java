@@ -59,6 +59,7 @@ public interface NameMap<V> extends Map<QName,V> {
 	 * Returns the value of the QName, cast to the supplied type.
 	 * @param name	the key
 	 * @param as	the type for the value
+	 * @param <T> the type for the value
 	 * @return	the value cast to the type
 	 */
 	public <T> T get(QName name, Class<T> as);
@@ -66,6 +67,7 @@ public interface NameMap<V> extends Map<QName,V> {
 	 * Returns the value of the string name, cast to the supplied type.
 	 * @param name	the key expressed as a string
 	 * @param as	the type for the value
+	 * @param <T> the type for the value
 	 * @return	the value cast to the type
 	 */
 	public <T> T get(String name, Class<T> as);

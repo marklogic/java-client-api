@@ -39,6 +39,7 @@ public interface ResourceExtensionsManager {
      * 
      * @param format	whether to provide the list in a JSON or XML representation
      * @param as	the IO class for reading the list of resource service extensions
+     * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return	an object of the IO class with the list of resource service extensions
      */
     public <T> T listServicesAs(Format format, Class<T> as);
@@ -52,12 +53,14 @@ public interface ResourceExtensionsManager {
      * @param format	whether to provide the list in a JSON or XML representation
      * @param as	the IO class for reading the list of resource service extensions
      * @param refresh	whether to parse metadata from the extension source
+     * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return	an object of the IO class with the list of resource service extensions
      */
     public <T> T listServicesAs(Format format, Class<T> as, boolean refresh);
     /**
 	 * Reads the list of resource service extensions installed on the server.
 	 * @param listHandle	a handle on a JSON or XML representation of the list
+	 * @param <T> the type of StructureReadHandle to return
 	 * @return	the list handle
 	 */
     public <T extends StructureReadHandle> T listServices(T listHandle);
@@ -67,6 +70,7 @@ public interface ResourceExtensionsManager {
 	 * the extension source.
 	 * @param listHandle	a handle on a JSON or XML representation of the list
      * @param refresh	whether to parse metadata from the extension source
+	 * @param <T> the type of StructureReadHandle to return
 	 * @return	the list handle
      */
     public <T extends StructureReadHandle> T listServices(T listHandle, boolean refresh);
@@ -80,6 +84,7 @@ public interface ResourceExtensionsManager {
      * 
      * @param resourceName	the name of the resource
      * @param as	the IO class for reading the source code as text
+     * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the source code for the service
      */
     public <T> T readServicesAs(String resourceName, Class<T> as);
@@ -88,6 +93,7 @@ public interface ResourceExtensionsManager {
      * Reads the XQuery implementation of the services for a resource.
      * @param resourceName	the name of the resource
      * @param sourceHandle	a handle for reading the text of the XQuery implementation.
+     * @param <T> the type of TextReadHandle to return
      * @return	the XQuery source code
      */
     public <T extends TextReadHandle> T readServices(String resourceName, T sourceHandle);

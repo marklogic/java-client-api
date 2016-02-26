@@ -57,7 +57,7 @@ public class ExtensionLibraryDescriptor {
 		}
 		/**
 		 * sets the capability for this permission
-		 * @param capability
+		 * @param capability the capability for this permission
 		 */
 		public void setCapability(String capability) {
 			this.capability = capability;

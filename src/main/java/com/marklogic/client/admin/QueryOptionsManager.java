@@ -38,6 +38,7 @@ public interface QueryOptionsManager {
      * 
      * @param format	whether to provide the list in a JSON or XML representation
      * @param as	the IO class for reading the list of options
+     * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return	an object of the IO class with the option names
      */
 	public <T> T optionsListAs(Format format, Class<T> as)
@@ -50,6 +51,7 @@ public interface QueryOptionsManager {
      * By default, standard Java IO classes for document content are registered.
      * 
      * @param listHandle a handle for reading the list of name options
+     * @param the type of QueryOptionsListReadHandle to return
      * @return the handle populated with the names
      */
     public <T extends QueryOptionsListReadHandle> T optionsList(T listHandle)
@@ -61,6 +63,7 @@ public interface QueryOptionsManager {
 	 * @param name the name of options configuration stored on MarkLogic REST instance.
      * @param format	whether to provide the options in a JSON or XML representation
      * @param as	the IO class for reading the query options
+   * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return an object of the IO class with the query options
      */
 	public <T> T readOptionsAs(String name, Format format, Class<T> as)
@@ -72,7 +75,7 @@ public interface QueryOptionsManager {
 	 * 
 	 * @param name the name of options configuration stored on MarkLogic REST instance.
 	 * @param queryOptionsHandle an object into which to fetch the query options.
-	 * @param <T> a set of classes able to read query configurations from the database.
+	 * @param the type of QueryOptionsListReadHandle to return
 	 * @return an object holding the query configurations
 	 */
     public <T extends QueryOptionsReadHandle> T readOptions(String name, T queryOptionsHandle)
