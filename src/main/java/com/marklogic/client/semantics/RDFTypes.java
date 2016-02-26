@@ -27,6 +27,7 @@ public enum RDFTypes {
     DOUBLE             ("double"),
     FLOAT              ("float"),
     TIME               ("time"),
+    DATE               ("date"),
     DATETIME           ("dateTime"),
     GYEAR              ("gYear"),
     GMONTH             ("gMonth"),
