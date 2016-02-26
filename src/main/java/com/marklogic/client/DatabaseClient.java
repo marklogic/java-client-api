@@ -119,10 +119,14 @@ public interface DatabaseClient {
      */
     public ServerConfigurationManager newServerConfigManager();
 
-    /** Creates a manager for CRUD operations on semantic graphs.  */
+    /** Creates a manager for CRUD operations on semantic graphs.
+     * @return the new GraphManager instance
+     */
     public GraphManager newGraphManager();
     
-    /** Creates a manager for executing SPARQL queries and retrieving results. */
+    /** Creates a manager for executing SPARQL queries and retrieving results.
+     * @return the new SPARQLQueryManager instance
+     */
     public SPARQLQueryManager newSPARQLQueryManager();
     
     /**
@@ -134,6 +138,8 @@ public interface DatabaseClient {
      * @param clazz the class type for this PojoRepository to handle
      * @param idClass the class type of the id field for this clazz, must obviously 
      *          be Serializable or we'll struggle to marshall it
+     * @param <T> the pojo type this PojoRepository will manage
+     * @param <ID> the scalar type of the id for pojos of type &lt;T&gt;
      * @return the initialized PojoRepository
      **/
     public <T, ID extends Serializable> PojoRepository<T, ID> newPojoRepository(Class<T> clazz, Class<ID> idClass);
@@ -143,6 +149,7 @@ public interface DatabaseClient {
      * 
      * @param resourceName	the name of the extension resource
      * @param resourceManager	the manager for the extension resource
+     * @param <T> the type of ResourceManager to init for the extension resource
      * @return	the initialized resource manager
      */
     public <T extends ResourceManager> T init(String resourceName, T resourceManager);
@@ -186,6 +193,7 @@ public interface DatabaseClient {
      * xdbc:invoke privilege.  If this DatabaseClient is pointed at a database different
      * than the default for this REST server, you will need the xdbc:eval-in or xdbc:invoke-in
      * privilege.
+     * @return the new ServerEvaluationCall instance
      */
     public ServerEvaluationCall newServerEval();
 

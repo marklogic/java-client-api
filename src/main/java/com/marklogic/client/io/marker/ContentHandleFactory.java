@@ -36,6 +36,8 @@ public interface ContentHandleFactory {
 	/**
 	 * Instantiates a handle for an IO class recognized by the factory.
 	 * @param type	the class of the IO representation
+	 * @param <C> the registered type which will be handled by the returned
+	 *            ContentHandle
 	 * @return	the handle or null if the class is unrecognized
 	 */
 	public <C> ContentHandle<C> newHandle(Class<C> type);

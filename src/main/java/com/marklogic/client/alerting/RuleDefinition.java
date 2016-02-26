@@ -205,6 +205,7 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 	 * 
 	 * @param handle
 	 *            The handle to use for export.
+	 * @param <T> the type of XMLReadHandle to return
 	 * @return The handle, with a combined query and options included as XML.
 	 */
 	public <T extends XMLReadHandle> T exportQueryDefinition(T handle) {

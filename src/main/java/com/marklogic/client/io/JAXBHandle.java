@@ -68,6 +68,7 @@ public class JAXBHandle<C>
 	 * of the specified classes.
 	 * @param pojoClasses	the POJO classes for which this factory provides a handle
 	 * @return	the factory
+	 * @throws JAXBException if a JAXB error occurs while initializing the new factory
 	 */
 	static public ContentHandleFactory newFactory(Class<?>... pojoClasses)
 	throws JAXBException {
@@ -81,6 +82,7 @@ public class JAXBHandle<C>
 	 * @param context	the JAXB context for marshaling the POJO classes
 	 * @param pojoClasses	the POJO classes for which this factory provides a handle
 	 * @return	the factory
+	 * @throws JAXBException if a JAXB error occurs while initializing the new factory
 	 */
 	static public ContentHandleFactory newFactory(JAXBContext context, Class<?>... pojoClasses)
 	throws JAXBException {
@@ -118,6 +120,7 @@ public class JAXBHandle<C>
 	 * Returns the root object of the JAXB structure for the content
 	 * cast to a more specific class.
 	 * @param as	the class of the object
+	 * @param <T> the type to return
 	 * @return	the root JAXB object
 	 */
 	public <T> T get(Class<T> as) {
@@ -216,6 +219,7 @@ public class JAXBHandle<C>
 	 * Returns the unmarshaller that converts a tree data structure
 	 * from XML to Java objects, reusing any existing unmarshaller.
 	 * @return	the unmarshaller for the JAXB context
+	 * @throws JAXBException if unmarshaller initialization fails
 	 */
 	public Unmarshaller getUnmarshaller()
 	throws JAXBException {
@@ -226,6 +230,7 @@ public class JAXBHandle<C>
 	 * from XML to Java objects.
 	 * @param reuse	whether to reuse an existing unmarshaller
 	 * @return	the unmarshaller for the JAXB context
+	 * @throws JAXBException if unmarshaller initialization fails
 	 */
 	public Unmarshaller getUnmarshaller(boolean reuse)
 	throws JAXBException {
@@ -238,6 +243,7 @@ public class JAXBHandle<C>
 	 * Returns the marshaller that converts a tree data structure
 	 * from Java objects to XML, reusing any existing marshaller.
 	 * @return	the marshaller for the JAXB context
+	 * @throws JAXBException if marshaller initialization fails
 	 */
 	public Marshaller getMarshaller()
 	throws JAXBException {
@@ -248,6 +254,7 @@ public class JAXBHandle<C>
 	 * from Java objects to XML.
 	 * @param reuse	whether to reuse an existing marshaller
 	 * @return	the marshaller for the JAXB context
+	 * @throws JAXBException if marshaller initialization fails
 	 */
 	public Marshaller getMarshaller(boolean reuse)
 	throws JAXBException {

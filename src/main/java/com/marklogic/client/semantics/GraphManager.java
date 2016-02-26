@@ -121,11 +121,11 @@ public interface GraphManager {
     /** <p>Get the uri for available graphs.</p>
      *
      * <p>Example:</p>
-     * <pre>    Iterator<String> iter = graphMgr.listGraphUris();
+     * <pre>    Iterator&lt;String&gt; iter = graphMgr.listGraphUris();
      *    while ( iter.hasNext() ) {
      *        String uri = iter.next();
      *        ...
-     *    }
+     *    }</pre>
      */
     public Iterator<String> listGraphUris();
 

@@ -125,6 +125,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * @param docId the URI identifier for the document
      * @param as	the IO class for reading the content of the document
+     * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the content of the document in the database
      */
     public <T> T readAs(String docId, Class<T> as)
@@ -138,6 +139,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param docId the URI identifier for the document
      * @param as	the IO class for reading the content of the document
      * @param transform	a server transform to modify the document content
+     * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the content of the document in the database
      */
     public <T> T readAs(String docId, Class<T> as, ServerTransform transform)
@@ -151,6 +153,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param docId the URI identifier for the document
      * @param metadataHandle	a handle for reading the metadata of the document
      * @param as	the IO class for reading the content of the document
+     * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the content of the document in the database
      */
     public <T> T readAs(String docId, DocumentMetadataReadHandle metadataHandle, Class<T> as)
@@ -165,6 +168,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param metadataHandle	a handle for reading the metadata of the document
      * @param as	the IO class for reading the content of the document
      * @param transform	a server transform to modify the document content
+     * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the content of the document in the database
      */
     public <T> T readAs(String docId, DocumentMetadataReadHandle metadataHandle, Class<T> as, ServerTransform transform)
@@ -177,6 +181,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * @param docId	the URI identifier for the document
      * @param contentHandle	a handle for reading the content of the document
+     * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(String docId, T contentHandle)
@@ -189,6 +194,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param docId	the URI identifier for the document
      * @param contentHandle	a handle for reading the content of the document
      * @param transform	a server transform to modify the document content
+     * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(String docId, T contentHandle, ServerTransform transform)
@@ -200,6 +206,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
      * @param contentHandle	a handle for reading the content of the document
+     * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle)
@@ -212,6 +219,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
      * @param contentHandle	a handle for reading the content of the document
      * @param transform	a server transform to modify the document content
+     * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform)
@@ -225,6 +233,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param docId	the URI identifier for the document
      * @param metadataHandle	a handle for reading the metadata of the document
      * @param contentHandle	a handle for reading the content of the document
+     * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle)
@@ -238,6 +247,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param metadataHandle	a handle for reading the metadata of the document
      * @param contentHandle	a handle for reading the content of the document
      * @param transform	a server transform to modify the document content
+     * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform)
@@ -250,6 +260,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
      * @param metadataHandle	a handle for reading the metadata of the document
      * @param contentHandle	a handle for reading the content of the document
+     * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle)
@@ -263,6 +274,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param metadataHandle	a handle for reading the metadata of the document
      * @param contentHandle	a handle for reading the content of the document
      * @param transform	a server transform to modify the document content
+     * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform)
@@ -276,6 +288,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param docId	the URI identifier for the document
      * @param contentHandle	a handle for reading the content of the document
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(String docId, T contentHandle, Transaction transaction)
@@ -289,6 +302,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for reading the content of the document
      * @param transform	a server transform to modify the document content
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(String docId, T contentHandle, ServerTransform transform, Transaction transaction)
@@ -301,6 +315,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
      * @param contentHandle	a handle for reading the content of the document
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle, Transaction transaction)
@@ -314,6 +329,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for reading the content of the document
      * @param transform	a server transform to modify the document content
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, Transaction transaction)
@@ -328,6 +344,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param metadataHandle	a handle for reading the metadata of the document
      * @param contentHandle	a handle for reading the content of the document
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction)
@@ -342,6 +359,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for reading the content of the document
      * @param transform	a server transform to modify the document content
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction)
@@ -355,6 +373,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param metadataHandle	a handle for reading the metadata of the document
      * @param contentHandle	a handle for reading the content of the document
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
      */
     public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction)

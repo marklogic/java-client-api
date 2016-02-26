@@ -284,6 +284,7 @@ public class QueryOptionsBuilder {
 	 * @param indexSpec
 	 *            Contains data source for the sort order as well as typing and
 	 *            collation information as appropriate.
+   * @param direction the direction
 	 * @return A QuerySortOrder object for use in the
 	 *         sortOrders(QuerySortOrder...) method.
 	 */
@@ -465,8 +466,8 @@ public class QueryOptionsBuilder {
 	 *            List of starter configurations, probably returned by the
 	 *            joiner builder method. Joiners define how terms are grouped
 	 *            together into an overall search expression.
-	 * @param quotation
-	 * @param implicit
+	 * @param quotation the quotation
+	 * @param implicit the implicit element
 	 * @return A QueryGrammar instance for use in composing 
      * {@link com.marklogic.client.admin.config.QueryOptions}
 	 */
@@ -1145,6 +1146,7 @@ map</pre>
 	 *            precedes longitude. If longitude precedes latitude in your
 	 *            data, use a geo-option called "long-lat-points" on the
 	 *            enclosing geospatial builder method.
+   * @return the GeospatialSpec representing the specified index
 	 */
 	public GeospatialSpec elementChildGeospatialIndex(QName parent, QName geospatialElement) {
 		GeospatialSpecImpl index = new GeospatialSpecImpl();

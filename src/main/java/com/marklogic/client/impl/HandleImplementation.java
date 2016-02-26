@@ -62,7 +62,7 @@ public abstract class HandleImplementation<R,W>
 	 * must be retried.  The method returns false unless overridden.
 	 * You should rarely if ever need to call this method directly
 	 * when using the handle.
-	 * @return
+	 * @return true if the content can be sent again; false otherwise
 	 */
 	protected boolean isResendable() {
 		return resendable;

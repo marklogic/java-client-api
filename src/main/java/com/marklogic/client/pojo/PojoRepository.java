@@ -40,7 +40,7 @@ import java.io.Serializable;
  *    }
  *    ...
  *    DatabaseClient client = ...;
- *    PojoRepository<MyClass, Integer> myClassRepo = 
+ *    PojoRepository&lt;MyClass, Integer&gt; myClassRepo = 
  *        client.newPojoRepository(MyClass.class, Integer.class);</pre>
  *
  * Where MyClass is your custom pojo type, and myId is the bean property of type Integer
@@ -183,7 +183,10 @@ public interface PojoRepository<T, ID extends Serializable> {
         throws ForbiddenUserException, FailedRequestException;
 
     /** @return the number of documents of the type managed by this PojoRepository persisted in the database which match
-     * the query */
+     * the query
+     * @param query the query to perform to determine the number of matching instance in the db
+     * @return the number of instance in the db matching the query
+     */
     public long count(PojoQueryDefinition query)
         throws ForbiddenUserException, FailedRequestException;
   
@@ -203,7 +206,10 @@ public interface PojoRepository<T, ID extends Serializable> {
     public void delete(ID... ids)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** As part of transaction, deletes from the database the documents with the corresponding ids */
+    /** As part of transaction, deletes from the database the documents with the corresponding ids
+     * @param ids the ids of instances to delete
+     * @param transaction the transaction within which to perform the delete
+     */
     public void delete(ID[] ids, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
@@ -212,7 +218,9 @@ public interface PojoRepository<T, ID extends Serializable> {
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** As part of transaction, deletes from the database all documents of the type managed by this PojoRepositoryof type T persisted by 
-     * the pojo facade */
+     * the pojo facade
+     * @param transaction the transaction within which to perform the delete
+     */
     public void deleteAll(Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
@@ -395,10 +403,12 @@ public interface PojoRepository<T, ID extends Serializable> {
 
     /** The number of instances per page returned when calling {@link #readAll readAll} or
      * {@link #search search} (Default: 50).
+     * @return the max number of instances per page
      */
     public long getPageLength();
     /** Set the number of instances per page returned when calling {@link #readAll readAll} or
      * {@link #search search}.
+     * @param length the max number of instance per page
      */
     public void setPageLength(long length);
 }

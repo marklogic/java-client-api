@@ -55,6 +55,7 @@ public interface Transaction {
 	 * Reads the status for the transaction including whether the transaction
 	 * has timed out.
 	 * @param handle	a JSON or XML handle on the content of the status report
+   * @param <T> the type of StructureReadHandle handle to return
 	 * @return	the status report handle
 	 */
 	public <T extends StructureReadHandle> T readStatus(T handle) throws ForbiddenUserException, FailedRequestException;

@@ -51,6 +51,7 @@ public class ServerTransform extends RequestParameters {
 	 * method chaining.
 	 * @param name	the parameter
 	 * @param value	the value to add to the list
+	 * @return this instance (for method chaining)
 	 */
 	public ServerTransform addParameter(String name, String value) {
 		add(name, value);

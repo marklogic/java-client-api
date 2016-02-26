@@ -32,6 +32,7 @@ public interface OutputStreamSender {
 	 * Implements a callback to write content to the provided output stream
 	 * for sending to the database server.
 	 * @param out	the output stream receiving the content
+	 * @throws IOException if io problems arise
 	 */
 	public void write(OutputStream out) throws IOException;
 }

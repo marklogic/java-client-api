@@ -33,8 +33,8 @@ public abstract class MarkLogicServerException extends RuntimeException {
 	private FailedRequest failedRequest;
 	
 	/**
-	 * @param localMessage
-	 * @param failedRequest
+	 * @param localMessage message describing the exception
+	 * @param failedRequest details about the failed request behind this exception
 	 */
 	public MarkLogicServerException(String localMessage, FailedRequest failedRequest) {
 		super(localMessage);

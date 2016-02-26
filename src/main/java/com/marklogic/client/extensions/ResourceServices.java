@@ -45,6 +45,7 @@ public interface ResourceServices {
 	 * Reads resource content by calling a GET service.
 	 * @param params	the parameters for the call
 	 * @param output	a handle on the content returned by the call
+	 * @param <R> the type of AbstractReadHandle to return
 	 * @return	the content handle
 	 */
 	public <R extends AbstractReadHandle> R get(RequestParameters params, R output);
@@ -53,6 +54,7 @@ public interface ResourceServices {
 	 * @param params	the parameters for the call
 	 * @param transaction	the transaction for reading content
 	 * @param output	a handle on the content returned by the call
+	 * @param <R> the type of AbstractReadHandle to return
 	 * @return	the content handle
 	 */
 	public <R extends AbstractReadHandle> R get(RequestParameters params, Transaction transaction, R output);
@@ -78,6 +80,7 @@ public interface ResourceServices {
 	 * @param params	the parameters for the call
 	 * @param input	the content passed with the call
 	 * @param output	a handle on the content response from the call
+	 * @param <R> the type of AbstractReadHandle to return
 	 * @return	the content handle for the response
 	 */
 	public <R extends AbstractReadHandle> R put(RequestParameters params, AbstractWriteHandle input, R output);
@@ -87,6 +90,7 @@ public interface ResourceServices {
 	 * @param input	the content passed with the call
 	 * @param transaction	the transaction for writing content
 	 * @param output	a handle on the content response from the call
+	 * @param <R> the type of AbstractReadHandle to return
 	 * @return	the content handle for the response
 	 */
 	public <R extends AbstractReadHandle> R put(RequestParameters params, AbstractWriteHandle input, Transaction transaction, R output);
@@ -95,6 +99,8 @@ public interface ResourceServices {
 	 * @param params	the parameters for the call
 	 * @param input	an array of content passed with the call
 	 * @param output	a handle on the content response from the call
+	 * @param <R> the type of AbstractReadHandle to return
+	 * @param <W> the type of AbstractWriteHandle's with content to send
 	 * @return	the content handle for the response
 	 */
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R put(RequestParameters params, W[] input, R output);
@@ -104,6 +110,8 @@ public interface ResourceServices {
 	 * @param input	an array of content passed with the call
 	 * @param transaction	the transaction for writing content
 	 * @param output	a handle on the content response from the call
+	 * @param <R> the type of AbstractReadHandle to return
+	 * @param <W> the type of AbstractWriteHandle's with content to send
 	 * @return	the content handle for the response
 	 */
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R put(RequestParameters params, W[] input, Transaction transaction, R output);
@@ -113,6 +121,7 @@ public interface ResourceServices {
 	 * @param params	the parameters for the call
 	 * @param input	the content passed with the call
 	 * @param output	a handle on the content response from the call
+	 * @param <R> the type of AbstractReadHandle to return
 	 * @return	the content handle for the response
 	 */
 	public <R extends AbstractReadHandle> R post(RequestParameters params, AbstractWriteHandle input, R output);
@@ -122,6 +131,7 @@ public interface ResourceServices {
 	 * @param input	the content passed with the call
 	 * @param transaction	the transaction for applying content
 	 * @param output	a handle on the content response from the call
+	 * @param <R> the type of AbstractReadHandle to return
 	 * @return	the content handle for the response
 	 */
 	public <R extends AbstractReadHandle> R post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, R output);
@@ -130,6 +140,8 @@ public interface ResourceServices {
 	 * @param params	the parameters for the call
 	 * @param input	an array of content passed with the call
 	 * @param output	a handle on the content response from the call
+	 * @param <R> the type of AbstractReadHandle to return
+	 * @param <W> the type of AbstractWriteHandle's with content to send
 	 * @return	the content handle for the response
 	 */
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R post(RequestParameters params, W[] input, R output);
@@ -139,6 +151,8 @@ public interface ResourceServices {
 	 * @param input	an array of content passed with the call
 	 * @param transaction	the transaction for applying content
 	 * @param output	a handle on the content response from the call
+	 * @param <R> the type of AbstractReadHandle to return
+	 * @param <W> the type of AbstractWriteHandle's with content to send
 	 * @return	the content handle for the response
 	 */
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R post(RequestParameters params, W[] input, Transaction transaction, R output);
@@ -165,6 +179,7 @@ public interface ResourceServices {
 	 * @param params	the parameters for the call
 	 * @param input	an array of content passed with the call
 	 * @param mimetypes	the mimetypes for the requested content
+	 * @param <W> the type of AbstractWriteHandle's with content to send
 	 * @return	an iterator over the requested content
 	 */
 	public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, String... mimetypes);
@@ -174,6 +189,7 @@ public interface ResourceServices {
 	 * @param input	an array of content passed with the call
 	 * @param transaction	the transaction for applying content
 	 * @param mimetypes	the mimetypes for the requested content
+	 * @param <W> the type of AbstractWriteHandle's with content to send
 	 * @return	an iterator over the requested content
 	 */
 	public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, Transaction transaction, String... mimetypes);
@@ -182,6 +198,7 @@ public interface ResourceServices {
 	 * Deletes content by calling a DELETE service.
 	 * @param params	the parameters for the call
 	 * @param output	a handle on the content response from the call
+	 * @param <R> the type of AbstractReadHandle to return
 	 * @return	the content handle for the response
 	 */
 	public <R extends AbstractReadHandle> R delete(RequestParameters params, R output);
@@ -190,6 +207,7 @@ public interface ResourceServices {
 	 * @param params	the parameters for the call
 	 * @param transaction	the transaction for applying content
 	 * @param output	a handle on the content response from the call
+	 * @param <R> the type of AbstractReadHandle to return
 	 * @return	the content handle for the response
 	 */
 	public <R extends AbstractReadHandle> R delete(RequestParameters params, Transaction transaction, R output);
@@ -233,6 +251,7 @@ public interface ResourceServices {
 		/**
 		 * Returns a handle on the content.
 		 * @param handle	the content handle
+		 * @param <R> the type of AbstractReadHandle to return
 		 * @return	the content handle
 		 */
 		public <R extends AbstractReadHandle> R getContent(R handle);
