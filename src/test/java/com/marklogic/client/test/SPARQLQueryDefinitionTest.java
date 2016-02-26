@@ -43,6 +43,7 @@ public class SPARQLQueryDefinitionTest {
             + "      :r1 :p3 \"1\"^^xsd:" + RDFTypes.DOUBLE              + " . "
             + "      :r1 :p3 \"1\"^^xsd:" + RDFTypes.FLOAT               + " . "
             + "      :r1 :p3 \"00:01:01\"^^xsd:" + RDFTypes.TIME         + " . "
+            + "      :r1 :p3 \"2014-09-01\"^^xsd:" + RDFTypes.DATE + " ."
             + "      :r1 :p3 \"2014-09-01T00:00:00+02:00\"^^xsd:" + RDFTypes.DATETIME + " ."
             + "      :r1 :p3 \"2001\"^^xsd:" + RDFTypes.GYEAR            + " . "
             + "      :r1 :p3 \"--01\"^^xsd:" + RDFTypes.GMONTH           + " . "
@@ -168,6 +169,13 @@ public class SPARQLQueryDefinitionTest {
         assertTrue(smgr.executeAsk(askQuery));
         bindings.clear();
         askQuery.withBinding("o", "00:01:02", RDFTypes.TIME);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "2014-09-01", RDFTypes.DATE);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2014-09-02", RDFTypes.DATE);
         assertFalse(smgr.executeAsk(askQuery));
         bindings.clear();
 
