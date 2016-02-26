@@ -211,7 +211,7 @@ public interface RuleManager {
 	 * @param candidateRules an array of rule names to match.  A zero-length array matches all rules.
 	 * @param ruleListHandle a handle to hold the match results
 	 * @param transform	a server transform to modify the rule list payload
-	 * @param <T> the type of object that will be returned by the handle registered for it
+	 * @param <T> the type of RuleListReadHandle to return
 	 * @return the union of rules matched by the document provided
 	 */
 	public <T extends RuleListReadHandle> T matchAs(Object content, String[] candidateRules,
@@ -221,6 +221,7 @@ public interface RuleManager {
 	 * Matches server rules based on a document supplied in a write handle.
 	 * @param document A document payload to match against rules.
 	 * @param ruleListHandle A handle to hold the match results.
+	 * @param <T> the type of RuleListReadHandle to return
 	 * @return The union of rules matched by the document provided.
 	 */
 	public <T extends RuleListReadHandle> T match(StructureWriteHandle document, T ruleListHandle);
@@ -229,6 +230,7 @@ public interface RuleManager {
 	 * @param document A document payload to match against rules.
 	 * @param candidateRules An array of rule names to match.  A zero-length array matches all rules.
 	 * @param ruleListHandle A handle to hold the match results
+	 * @param <T> the type of RuleListReadHandle to return
 	 * @return The union of rules in candidateRules matched by the document.
 	 */
 	public <T extends RuleListReadHandle> T match(StructureWriteHandle document,
@@ -240,6 +242,7 @@ public interface RuleManager {
 	 * @param candidateRules An array of rule names to match.  A zero-length array matches all rules.
 	 * @param ruleListHandle A handle to hold the match results.
 	 * @param transform	a server transform to modify the rule list payload.
+	 * @param <T> the type of RuleListReadHandle to return
 	 * @return The union of rules in candidateRules matched by the document.
 	 */
 	public <T extends RuleListReadHandle> T match(StructureWriteHandle document,
