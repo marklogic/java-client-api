@@ -49,7 +49,7 @@ public class ExtensionLibrariesTest {
 			new File("src/test/resources/module.xqy")).withFormat(Format.TEXT));
 
 		// get the list of descriptors
-		ExtensionLibraryDescriptor[] descriptors = libsMgr.list();
+		ExtensionLibraryDescriptor[] descriptors = libsMgr.list("/ext/my/path/to/my/");
 		assertEquals("number of modules installed", 1, descriptors.length);
 		
 		for (ExtensionLibraryDescriptor descriptor : descriptors) {
@@ -67,8 +67,8 @@ public class ExtensionLibrariesTest {
 			// pass;
 		}
 		
-		descriptors = libsMgr.list();
-		assertEquals("number of modules installed", descriptors.length, 0);
+		descriptors = libsMgr.list("/ext/my/path/to/my/");
+		assertEquals("number of modules installed", 0, descriptors.length);
 		
 	}
 }
