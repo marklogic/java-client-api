@@ -1785,12 +1785,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
           assertTrue("Document permissions difference in size value",
               actualPermissions.contains("size:3"));
          
-
           assertTrue(
               "Document permissions difference in rest-reader permission",
-              actualPermissions.contains("rest-reader:[READ]"));
-          System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-          System.out.println(actualPermissions);
+              actualPermissions.contains("rest-reader:[READ]"));          
 
         //Split up rest-writer:[READ, EXECUTE, UPDATE] string
           String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
@@ -1949,8 +1946,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
           assertTrue(
               "Document permissions difference in rest-reader permission",
               actualPermissions.contains("rest-reader:[READ]"));
-          System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-          System.out.println(actualPermissions);
+         
         //Split up rest-writer:[READ, EXECUTE, UPDATE] string
           String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
           
