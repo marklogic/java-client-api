@@ -509,7 +509,7 @@ public class StructuredQueryBuilder {
      * whose value that has the correct datatyped comparison with 
      * one of the criteria values.
      * @param index	the range container
-     * @param type
+     * @param type	the datatype of the container and specified values
      * @param collation	the identifier for the strategy for comparing types 
      * @param operator	the comparison with the criteria values
      * @param values	the possible datatyped values for the comparison
@@ -524,7 +524,7 @@ public class StructuredQueryBuilder {
      * whose value that has the correct datatyped comparison with 
      * one of the criteria values.
      * @param index	the range container
-     * @param type
+     * @param type	the datatype of the container and specified values
      * @param collation	the identifier for the strategy for comparing types 
      * @param scope	whether the query matches the document content or properties
      * @param operator	the comparison with the criteria values
@@ -556,7 +556,7 @@ public class StructuredQueryBuilder {
      * whose value that has the correct datatyped comparison with 
      * one of the criteria values.
      * @param index	the range container
-     * @param type
+     * @param type	the datatype of the container and specified values
      * @param collation	the identifier for the strategy for comparing types 
      * @param options	options for fine tuning the query
      * @param operator	the comparison with the criteria values
@@ -572,7 +572,7 @@ public class StructuredQueryBuilder {
      * whose value that has the correct datatyped comparison with 
      * one of the criteria values.
      * @param index	the range container
-     * @param type
+     * @param type	the datatype of the container and specified values
      * @param collation	the identifier for the strategy for comparing types 
      * @param scope	whether the query matches the document content or properties
      * @param options	options for fine tuning the query
@@ -994,6 +994,7 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the and() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param queries deprecated
          */
         @Deprecated
         public AndQuery(StructuredQueryDefinition... queries) {
@@ -1018,6 +1019,7 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the or() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param queries deprecated
          */
         @Deprecated
     	public OrQuery(StructuredQueryDefinition... queries) {
@@ -1042,6 +1044,7 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the not() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param query deprecated
          */
     	@Deprecated
     	public NotQuery(StructuredQueryDefinition query) {
@@ -1093,6 +1096,8 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the andNot() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param positive deprecated
+         * @param negative deprecated
          */
         @Deprecated
     	public AndNotQuery(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
@@ -1148,6 +1153,7 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the document() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param uris deprecated
          */
         @Deprecated
         public DocumentQuery(String... uris) {
@@ -1176,6 +1182,8 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the term() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param weight deprecated
+         * @param terms deprecated
          */
         @Deprecated
         public TermQuery(Double weight, String... terms) {
@@ -1208,6 +1216,7 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the near() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param queries deprecated
          */
         @Deprecated
     	public NearQuery(StructuredQueryDefinition... queries) {
@@ -1250,6 +1259,7 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the collection() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param uris deprecated
          */
         @Deprecated
     	public CollectionQuery(String... uris) {
@@ -1279,6 +1289,8 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the directory() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param isInfinite deprecated
+         * @param uris deprecated
          */
         @Deprecated
     	public DirectoryQuery(Boolean isInfinite, String... uris) {
@@ -1319,6 +1331,7 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the documentFragment() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param query deprecated
          */
         @Deprecated
     	public DocumentFragmentQuery(StructuredQueryDefinition query) {
@@ -1344,6 +1357,7 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the properties() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param query deprecated
          */
         @Deprecated
     	public PropertiesQuery(StructuredQueryDefinition query) {
@@ -1369,6 +1383,7 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the locks() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param query deprecated
          */
         @Deprecated
     	public LocksQuery(StructuredQueryDefinition query) {
@@ -1426,6 +1441,8 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the elementConstraint() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param constraintName deprecated
+         * @param query deprecated
          */
         @Deprecated
     	public ElementConstraintQuery(String constraintName, StructuredQueryDefinition query) {
@@ -1455,7 +1472,9 @@ public class StructuredQueryBuilder {
 
         /**
          * @deprecated Use the propertiesConstraint() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
+         *operator and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param constraintName deprecated
+         * @param query deprecated
          */
         @Deprecated
     	public PropertiesConstraintQuery(String constraintName, StructuredQueryDefinition query) {
@@ -1486,6 +1505,8 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the collectionConstraint() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param constraintName deprecated
+         * @param uris deprecated
          */
         @Deprecated
     	public CollectionConstraintQuery(String constraintName, String... uris) {
@@ -1517,6 +1538,8 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the valueConstraint() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param constraintName deprecated
+         * @param values deprecated
          */
         @Deprecated
     	public ValueConstraintQuery(String constraintName, String... values) {
@@ -1555,6 +1578,8 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the wordConstraint() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param constraintName deprecated
+         * @param words deprecated
          */
         @Deprecated
     	public WordConstraintQuery(String constraintName, String... words) {
@@ -1593,6 +1618,9 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the rangeConstraint() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param constraintName deprecated
+         * @param operator deprecated
+         * @param values deprecated
          */
         @Deprecated
     	public RangeConstraintQuery(String constraintName, Operator operator, String... values) {
@@ -1625,6 +1653,8 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the geospatialConstraint() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param constraintName deprecated
+         * @param regions deprecated
          */
         @Deprecated
     	public GeospatialConstraintQuery(String constraintName, Region... regions) {
@@ -1657,6 +1687,8 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the customConstraint() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
+         * @param constraintName deprecated
+         * @param terms deprecated
          */
         @Deprecated
     	public CustomConstraintQuery(String constraintName, String... terms) {
@@ -2228,6 +2260,8 @@ public class StructuredQueryBuilder {
 
         /**
          * @deprecated Use the point() builder method of StructuredQueryBuilder.
+         * @param latitude deprecated
+         * @param longitude deprecated
          */
         @Deprecated
         public Point(double latitude, double longitude) {
@@ -2268,6 +2302,9 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the circle() builder method of StructuredQueryBuilder
          * and type the object as an instance of the Region interface.
+         * @param latitude deprecated
+         * @param longitude deprecated
+         * @param radius deprecated
          */
         @Deprecated
         public Circle(double latitude, double longitude, double radius) {
@@ -2294,6 +2331,10 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the box() builder method of StructuredQueryBuilder
          * and type the object as an instance of the Region interface.
+         * @param south deprecated
+         * @param west deprecated
+         * @param north deprecated
+         * @param east deprecated
          */
         @Deprecated
         public Box(double south, double west, double north, double east) {
@@ -2324,6 +2365,7 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Use the polygon() builder method of StructuredQueryBuilder
          * and type the object as an instance of the Region interface.
+         * @param points deprecated
          */
         @Deprecated
         public Polygon(Point... points) {
@@ -2757,6 +2799,7 @@ public class StructuredQueryBuilder {
 	 * Identify an axis for use in {@link #temporalPeriodRange temporalPeriodRange}
 	 * or {@link #temporalPeriodCompare temporalPeriodCompare} queries.
 	 * @param name the name of the axis as configured in the server
+	 * @return a temporal axis
 	 */
 	public StructuredQueryBuilder.Axis axis(String name) {
 		return new TemporalAxis(name);
@@ -2767,6 +2810,7 @@ public class StructuredQueryBuilder {
 	 * queries.
 	 * @param start the start date/time for this period
 	 * @param end   the end date/time for this period
+	 * @return a temporal period
 	 */
 	public StructuredQueryBuilder.Period period(Calendar start, Calendar end) {
 		return new TemporalPeriod(DatatypeConverter.printDateTime(start),
@@ -2778,6 +2822,7 @@ public class StructuredQueryBuilder {
 	 * queries.
 	 * @param start the start date/time for this period, in ISO 8601 format
 	 * @param end   the end date/time for this period, in ISO 8601 format
+	 * @return a temporal period
 	 */
 	public StructuredQueryBuilder.Period period(String start, String end) {
 		return new TemporalPeriod(start, end);
@@ -2792,6 +2837,7 @@ public class StructuredQueryBuilder {
 	 * @param period the period considered using the operator
 	 * @param options string options from the list for
 	 *     <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query calls</a>
+	 * @return a query to filter by comparing a temporal axis to period values
 	 * @see <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query</a>
 	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_91434">
 	 *      Structured Queries: period-range-query</a>
@@ -2805,6 +2851,8 @@ public class StructuredQueryBuilder {
 	}
 
 	/**
+	 * Matches documents that have a value in the specified axis that matches the specified
+	 * periods using the specified operator.
 	 * @param axes the set of axes of document temporal values used to determine which documents have
 	 *        values that match this query
 	 * @param operator the operator used to determine if values in the axis match the specified period
@@ -2812,6 +2860,7 @@ public class StructuredQueryBuilder {
 	 *     the query matches if a value matches any period.
 	 * @param options string options from the list for
 	 *     <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query calls</a>
+	 * @return a query to filter by comparing a temporal axis to period values
 	 * @see <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query</a>
 	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_91434">
 	 *      Structured Queries: period-range-query</a>
@@ -2834,6 +2883,7 @@ public class StructuredQueryBuilder {
 	 * @param axis2 the second axis of document temporal values 
 	 * @param options string options from the list for
 	 *     <a href="http://docs.marklogic.com/cts:period-compare-query">cts:period-compare-query calls</a>
+	 * @return a query to filter by comparing temporal axes
 	 * @see <a href="http://docs.marklogic.com/cts:period-compare-query">cts:period-compare-query</a>
 	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_19798">
 	 *      Structured Queries: period-compare-query</a>
@@ -2854,6 +2904,7 @@ public class StructuredQueryBuilder {
 	 * @param weight the weight for for this query
 	 * @param options string options from the list for
 	 *     <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query calls</a>
+	 * @return a query to filter by lsqt
 	 * @see <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query</a>
 	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_85930">
 	 *      Structured Queries: lsqt-query</a>
@@ -2873,6 +2924,7 @@ public class StructuredQueryBuilder {
 	 * @param weight the weight for for this query
 	 * @param options string options from the list for
 	 *     <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query calls</a>
+	 * @return a query to filter by lsqt
 	 * @see <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query</a>
 	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_85930">
 	 *      Structured Queries: lsqt-query</a>

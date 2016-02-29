@@ -156,6 +156,7 @@ public interface MatchDocumentSummary {
      
     /**
      * Returns the format associated with this document
+     * @return the format
      */
     public Format getFormat();
 
@@ -169,6 +170,7 @@ public interface MatchDocumentSummary {
 	/**
      * Returns the relevance information for the result.
      * @param handle	An XML handle for reading the relevance information.
+     * @param <T> the type of XMLReadHandle to return
      * @return	The handle on the relevance information.
 	 */
 	public <T extends XMLReadHandle> T getRelevanceInfo(T handle);

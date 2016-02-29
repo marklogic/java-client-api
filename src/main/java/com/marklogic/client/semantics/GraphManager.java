@@ -126,6 +126,8 @@ public interface GraphManager {
      *        String uri = iter.next();
      *        ...
      *    }</pre>
+     *
+     * @return the graph uris
      */
     public Iterator<String> listGraphUris();
 
@@ -138,6 +140,7 @@ public interface GraphManager {
      * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
      * @param handle the handle to populate and return, set with the desired
      *     mimetype from RDFMimeTypes
+     * @param <T> the type of TriplesReadHandle to return
      *
      * @return the populated handle
      *
@@ -157,6 +160,7 @@ public interface GraphManager {
      *     mimetype from RDFMimeTypes
      *     mimetype from RDFMimeTypes
      * @param transaction the open transaction to read from
+     * @param <T> the type of TriplesReadHandle to return
      *
      * @return the populated handle
      */
@@ -169,6 +173,7 @@ public interface GraphManager {
      *
      * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
      * @param as the type to populate and return. This type must be registered by an io handle.
+     * @param <T> the type of object that will be returned by the handle registered for it
      *
      * @return the retrieved triples as the specified type
      *
@@ -184,6 +189,7 @@ public interface GraphManager {
      * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
      * @param as the type to populate and return. This type must be registered by an io handle.
      * @param transaction the open transaction to read from
+     * @param <T> the type of object that will be returned by the handle registered for it
      *
      * @return the retrieved triples as the specified type
      */
@@ -504,6 +510,7 @@ public interface GraphManager {
      * @param handle the handle to populate and return with the desired
      *     mimetype from RDFMimeTypes
      * @param iris the subject or object iris to retrieve
+     * @param <T> the type of TriplesReadHandle to return
      *
      * @return the populated handle
      */
@@ -516,6 +523,7 @@ public interface GraphManager {
      *
      * @param as the type to populate and return. This type must be registered by an io handle.
      * @param iris the subject or object iris to retrieve
+     * @param <T> the type of object that will be returned by the handle registered for it
      *
      * @return the retrieved triples as the specified type
      */
@@ -632,7 +640,10 @@ public interface GraphManager {
     public void deleteGraphs(Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** Get the mimetype set by calling setDefaultMimetype. */
+    /** Get the mimetype set by calling setDefaultMimetype.
+     *
+     * @return the default mimetype set by calling setDefaultMimetype
+     */
     public String getDefaultMimetype();
 
     /** Set the default mimetype for data sent by write* or merge* methods
@@ -641,9 +652,14 @@ public interface GraphManager {
      * instead of the default.  This default mimetype must be set to use the
      * *As methods since there is no handle on which to explicity set a
      * mimetype.
+     *
+     * @param mimetype the new default mimetype
      */
     public void setDefaultMimetype(String mimetype);
 
-    /** Get an empty GraphPermissions instance. */
+    /** Get an empty GraphPermissions instance.
+     *
+     * @return an empty GraphPermissions instance
+     */
     public GraphPermissions newGraphPermissions();
 }

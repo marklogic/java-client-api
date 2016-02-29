@@ -81,20 +81,31 @@ import com.marklogic.client.semantics.Capability;
  * <a href="https://docs.marklogic.com/guide/semantics" target="_top">Semantics Developer's Guide</a>.
  */
 public interface SPARQLQueryManager  {
-    /** Instantiate a new SPARQLQueryDefinition.  */
+    /** Instantiate a new SPARQLQueryDefinition.
+     *
+     * @return an empty SPARQLQueryDefinition
+     */
     public SPARQLQueryDefinition newQueryDefinition();
 
-    /** Instantiate a new SPARQLQueryDefinition with provided SPARQL.  */
+    /** Instantiate a new SPARQLQueryDefinition with provided SPARQL.
+     *
+     * @param sparql a sparql query as text
+     * @return the query as SPARQLQueryDefinition
+     */
     public SPARQLQueryDefinition newQueryDefinition(String sparql);
 
     /** Instantiate a new SPARQLQueryDefinition with the SPARQL from
      * the provided TextWriteHandle.
+     *
+     * @param sparql the handle containing a sparql query as text
+     * @return the query as SPARQLQueryDefinition
      */
     public SPARQLQueryDefinition newQueryDefinition(TextWriteHandle sparql);
 
     /** Execute a SPARQL "SELECT" query.
      * @param qdef the query
      * @param handle the handle capable of reading {@link SPARQLMimeTypes sparql results}
+     * @param <T> the type of SPARQLResultsReadHandle to return
      * @return the results in the provided SPARQLResultsReadHandle
      */
     public <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle);
@@ -102,7 +113,8 @@ public interface SPARQLQueryManager  {
     /** Execute a SPARQL "SELECT" query.
      * @param qdef the query
      * @param handle the handle capable of reading {@link SPARQLMimeTypes sparql results}
-     * @param tx the multi-statement transaction
+     * @param tx the transaction context for this operation
+     * @param <T> the type of SPARQLResultsReadHandle to return
      * @return the results in the provided SPARQLResultsReadHandle
      */
     public <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle, Transaction tx);
@@ -112,6 +124,7 @@ public interface SPARQLQueryManager  {
      * @param handle the handle capable of reading {@link SPARQLMimeTypes sparql results}
      * @param start when paging through results, the first result of this page--must be &gt; 0.
      *     Use together with {@link #setPageLength}.
+     * @param <T> the type of SPARQLResultsReadHandle to return
      * @return the results in the provided SPARQLResultsReadHandle
      */
     public <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle, long start);
@@ -121,7 +134,8 @@ public interface SPARQLQueryManager  {
      * @param handle the handle capable of reading {@link SPARQLMimeTypes sparql results}
      * @param start when paging through results, the first result of this page--must be &gt; 0.
      *     Use together with {@link #setPageLength}.
-     * @param tx the multi-statement transaction
+     * @param tx the transaction context for this operation
+     * @param <T> the type of SPARQLResultsReadHandle to return
      * @return the results in the provided SPARQLResultsReadHandle
      */
     public <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle, long start, Transaction tx);
@@ -140,6 +154,7 @@ public interface SPARQLQueryManager  {
     /** Execute a SPARQL "CONSTRUCT" statement.
      * @param qdef the SPARQL "CONSTRUCT" statement
      * @param handle the handle capable of reading {@link RDFMimeTypes triples or quads results}
+     * @param <T> the type of TriplesReadHandle to return
      * @return the results in the provided TriplesReadHandle
      */
     public <T extends TriplesReadHandle> T executeConstruct(SPARQLQueryDefinition qdef, T handle);
@@ -147,6 +162,8 @@ public interface SPARQLQueryManager  {
     /** Execute a SPARQL "CONSTRUCT" statement.
      * @param qdef the SPARQL "CONSTRUCT" statement
      * @param handle the handle capable of reading {@link RDFMimeTypes triples or quads results}
+     * @param tx the transaction context for this query
+     * @param <T> the type of TriplesReadHandle to return
      * @return the results in the provided TriplesReadHandle
      */
     public <T extends TriplesReadHandle> T executeConstruct(SPARQLQueryDefinition qdef, T handle, Transaction tx);
@@ -154,6 +171,7 @@ public interface SPARQLQueryManager  {
     /** Execute a SPARQL "DESCRIBE" query (which implements the Concise Bounded Description specification).
      * @param qdef the query
      * @param handle the handle capable of reading {@link RDFMimeTypes triples or quads results}
+     * @param <T> the type of TriplesReadHandle to return
      * @return the results in the provided TriplesReadHandle
      */
     public <T extends TriplesReadHandle> T executeDescribe(SPARQLQueryDefinition qdef, T handle);
@@ -161,7 +179,8 @@ public interface SPARQLQueryManager  {
     /** Execute a SPARQL "DESCRIBE" query (which implements the Concise Bounded Description specification).
      * @param qdef the query
      * @param handle the handle capable of reading {@link RDFMimeTypes triples or quads results}
-     * @param tx the multi-statement transaction
+     * @param tx the transaction context for this query
+     * @param <T> the type of TriplesReadHandle to return
      * @return the results in the provided TriplesReadHandle
      */
     public <T extends TriplesReadHandle> T executeDescribe(SPARQLQueryDefinition qdef, T handle, Transaction tx);
@@ -174,6 +193,7 @@ public interface SPARQLQueryManager  {
 
     /** Execute a SPARQL "ASK" statement.
      * @param qdef the SPARQL "CONSTRUCT" statement
+     * @param tx the transaction context for this query
      * @return the answer as Boolean
      */
     public Boolean executeAsk(SPARQLQueryDefinition qdef, Transaction tx);
@@ -189,7 +209,7 @@ public interface SPARQLQueryManager  {
      * permisisons see {@link #permission}.
      *
      * @param qdef the SPARQL update statement
-     * @param tx the multi-statement transaction
+     * @param tx the transaction context for this operation
      */
     public void executeUpdate(SPARQLQueryDefinition qdef, Transaction tx);
 

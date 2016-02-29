@@ -73,6 +73,7 @@ public interface RequestLogger {
 	 * this method directly if convenient.
 	 * 
 	 * @param content	the copied content
+	 * @param <T> the type to return
 	 * @return	the copied content
 	 */
     public <T> T copyContent(T content);

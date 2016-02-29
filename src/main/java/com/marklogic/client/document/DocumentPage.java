@@ -37,7 +37,11 @@ import java.io.Closeable;
  * you must call close() to free the underlying resources.
  */
 public interface DocumentPage extends Page<DocumentRecord>, Closeable {
-    /** Convenience method combines the functionality of Page.next() and DocumentRecord.getContent(). */
+    /** Convenience method combines the functionality of Page.next() and DocumentRecord.getContent().
+     * @param contentHandle the handle top populate with the contents from the next document
+     * @param <T> the type of AbstractReadHandle to return
+     * @return the contents of the next document
+     */
     public <T extends AbstractReadHandle> T nextContent(T contentHandle);
     /** Frees the underlying resources, including the http connection. */
     public void close();

@@ -69,6 +69,7 @@ public interface TransformExtensionsManager {
 	/**
 	 * Lists the installed transform extensions.
 	 * @param listHandle	a handle on a JSON or XML representation of the list
+	 * @param <T> the type of StructureReadHandle to return
 	 * @return	the list handle
 	 */
 	public <T extends StructureReadHandle> T listTransforms(T listHandle)

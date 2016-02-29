@@ -84,6 +84,8 @@ extends DocumentMetadataPatchBuilder
 	
 	/**
 	 * Specifies the language for this patch to use
+	 * @param pathLang the language (XPath or JSONPath)
+	 * @return	the patch builder (for convenient chaining)
 	 */
 	public DocumentPatchBuilder pathLanguage(PathLanguage pathLang);
 	
