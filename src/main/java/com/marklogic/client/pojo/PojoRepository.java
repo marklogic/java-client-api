@@ -189,7 +189,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      */
     public long count(PojoQueryDefinition query)
         throws ForbiddenUserException, FailedRequestException;
-  
+
     /** In the context of transaction, the number of documents of the type managed by
      * this PojoRepository persisted in the database which match the query
      * @param query the query which results much match (queries are run unfiltered by default)
@@ -201,8 +201,10 @@ public interface PojoRepository<T, ID extends Serializable> {
      */
     public long count(PojoQueryDefinition query, Transaction transaction)
         throws ForbiddenUserException, FailedRequestException;
-  
-    /** Deletes from the database the documents with the corresponding ids */
+
+    /** Deletes from the database the persisted pojo instances with the corresponding ids
+     * @param ids the ids for the pojo instances to delete from the server
+     */
     public void delete(ID... ids)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 

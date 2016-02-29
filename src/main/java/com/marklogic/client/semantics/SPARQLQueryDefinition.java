@@ -63,11 +63,17 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
      */
     public SPARQLQueryDefinition withSparql(TextWriteHandle sparql);
 
-    /** Set the child SPARQLBindings instance. */
+    /** Set the child SPARQLBindings instance.
+     *
+     * @param bindings bindings to set as the child SPARQLBindings instance
+     */
     public void setBindings(SPARQLBindings bindings);
 
     /** Get the child SPARQLBindings instance (normally populated by calls to
-     * withBinding methods). */
+     * withBinding methods).
+     *
+     * @return the bindings set on this instance
+     */
     public SPARQLBindings getBindings();
 
     /** <p>Bind a variable of type iri.</p>
@@ -126,6 +132,8 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
 
     /** Get any permissions set on this instance.  This does not get any info
      * from the database.
+     *
+     * @return the permissions set on this instance
      */
     public GraphPermissions getUpdatePermissions();
 
@@ -183,7 +191,10 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
 
     /** Set the search query used to constrain the set of documents included in
      * the SPARQL query. Only meant to query unmanaged triples.  The behavior
-     * is unspecified if used to query managed triples. */
+     * is unspecified if used to query managed triples.
+     *
+     * @param query the constraining query
+     */
     public void setConstrainingQueryDefinition(QueryDefinition query);
     public QueryDefinition getConstrainingQueryDefinition();
     /** Set the search query used to constrain the set of documents included in
@@ -233,6 +244,8 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
     /** Set a number indicating how much time for the query engine to spend
      * analyzing a query. (See <a href="http://docs.marklogic.com/sem:sparql">sem:sparql</a>
      * in the server-side XQuery API docs)
+     *
+     * @param level the optimization level
      */
     public void setOptimzeLevel(int level);
 }

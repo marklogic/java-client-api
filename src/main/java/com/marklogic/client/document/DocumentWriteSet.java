@@ -29,6 +29,7 @@ import java.util.Set;
  */
 public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
     /** Sets the default metadata for this write set for all documents added after this call
+     * @param metadataHandle the handle containing the metatdata to use as defaults
      * @return this instance (for method chaining)
      */
     public DocumentWriteSet addDefault(DocumentMetadataWriteHandle metadataHandle);
