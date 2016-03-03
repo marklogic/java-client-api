@@ -267,6 +267,7 @@ implements DocumentMetadataPatchBuilder
 			XMLStreamWriter serializer = out.getSerializer();
 			if (call.isFragment) {
 				serializer.writeCharacters(""); // force the tag close
+				serializer.flush();
 				for (Object fragment: call.args) {
 					out.getWriter().write(
 							(fragment instanceof String) ?
@@ -325,6 +326,7 @@ implements DocumentMetadataPatchBuilder
 			if (original == null)
 				return;
 			try {
+				serializer.writeNamespace("xs", XMLConstants.W3C_XML_SCHEMA_NS_URI);
 				serializer.writeAttribute(
 					"xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type", type);
 				serializer.writeCharacters(value);
@@ -1059,15 +1061,16 @@ implements DocumentMetadataPatchBuilder
 				
 				XMLOutputSerializer out = new XMLOutputSerializer(writer, serializer);
 
+				serializer.writeStartDocument("utf-8", "1.0");
+
+				serializer.writeStartElement("rapi", "patch", REST_API_NS);
 				for (String nsPrefix: namespaces.getAllPrefixes()) {
 					serializer.setPrefix(
 						nsPrefix, namespaces.getNamespaceURI(nsPrefix)
 						);
+					serializer.writeNamespace(nsPrefix, namespaces.getNamespaceURI(nsPrefix));
 				}
 
-				serializer.writeStartDocument("utf-8", "1.0");
-
-				serializer.writeStartElement("rapi", "patch", REST_API_NS);
 
 				if (libraryNs != null && libraryAt != null) {
 					serializer.writeStartElement("rapi", "replace-library", REST_API_NS);

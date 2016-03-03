@@ -60,7 +60,7 @@ import com.marklogic.client.util.IterableNamespaceContext;
  * <pre>StructuredQueryDefinition andQry = structuredQueryBuilder.and(... query definitions ...);</pre>
  */
 public class StructuredQueryBuilder {
-	final static private String SEARCH_API_NS="http://marklogic.com/appservices/search";
+	public static final String SEARCH_API_NS="http://marklogic.com/appservices/search";
 
 	/*
 	 * This map is used to prevent reuse of reserved prefixes in path expressions.
@@ -2422,7 +2422,7 @@ public class StructuredQueryBuilder {
 		try {
 			XMLStreamWriter serializer = factory.createXMLStreamWriter(out, "UTF-8");
 
-			serializer.setDefaultNamespace("http://marklogic.com/appservices/search");
+			serializer.setDefaultNamespace(SEARCH_API_NS);
 			serializer.setPrefix("xs",  XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
 			return serializer;
@@ -2456,7 +2456,7 @@ public class StructuredQueryBuilder {
 
 // omit the XML prolog
 //			serializer.writeStartDocument();
-			serializer.writeStartElement("query");
+			serializer.writeStartElement(SEARCH_API_NS, "query");
 			
 			if (objects != null) {
 				if (objects instanceof AbstractStructuredQuery[]) {

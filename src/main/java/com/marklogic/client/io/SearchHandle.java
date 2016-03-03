@@ -166,6 +166,11 @@ public class SearchHandle
 			SearchResponseImpl response = new SearchResponseImpl();
 			response.parse(reader);
 			reader.close();
+			try {
+				content.close();
+			} catch (IOException e) {
+				// ignore.
+			}
 
 			summary          =
 				(response.tempSummary == null || response.tempSummary.size() < 1) ?
@@ -595,7 +600,12 @@ public class SearchHandle
                     result.setItems( populateExtractedItems(getSlice(events, extractedItemEvents)) );
                 // if extractSelected is "include", this is not a root document node
                 } else if ( Format.JSON == getFormat() && "include".equals(extractSelected) ) {
-                    String json = events.get(startChildren).toString();
+                    XMLEvent event = events.get(startChildren);
+                    if ( XMLStreamConstants.CHARACTERS != event.getEventType() ) {
+                        throw new MarkLogicIOException("Cannot parse JSON for " +
+                            getPath() + "--content should be characters");
+                    }
+                    String json = event.asCharacters().getData();
                     try {
                         JsonNode jsonArray = new ObjectMapper().readTree(json);
                         ArrayList<String> items = new ArrayList<String>(jsonArray.size());
@@ -608,8 +618,14 @@ public class SearchHandle
                             getPath(), e);
                     }
                 } else {
+                    XMLEvent event = events.get(startChildren);
+                    if ( XMLStreamConstants.CHARACTERS != event.getEventType() ) {
+                        throw new MarkLogicIOException("Cannot read " +
+                            getPath() + "--content should be characters");
+                    }
+                    String text = event.asCharacters().getData();
                     ArrayList<String> items = new ArrayList<String>(1);
-                    items.add( events.get(startChildren).toString() );
+                    items.add( event.asCharacters().getData() );
                     result.setItems( items );
                 }
             }

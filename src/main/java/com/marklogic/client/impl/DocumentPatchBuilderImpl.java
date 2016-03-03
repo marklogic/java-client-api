@@ -125,6 +125,7 @@ implements DocumentPatchBuilder
 			writeStartReplace(out, selectPath, cardinality);
 			if (isFragment) {
 				serializer.writeCharacters(""); // force the tag close
+				serializer.flush();
 				out.getWriter().write(inputAsString);
 			} else {
 				serializer.writeCharacters(inputAsString);
@@ -167,6 +168,7 @@ implements DocumentPatchBuilder
 					out, selectPath, contextPath, position.toString(), cardinality
 					);
 			serializer.writeCharacters(""); // force the tag close
+			serializer.flush();
 			out.getWriter().write(fragment);
 			serializer.writeEndElement();
 		}

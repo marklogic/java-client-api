@@ -46,6 +46,7 @@ import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawQueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
+import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
@@ -273,7 +274,7 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
             XMLStreamWriter serializer = makeXMLSerializer(out);
 
             serializer.writeStartDocument();
-            serializer.writeStartElement("search");
+            serializer.writeStartElement(StructuredQueryBuilder.SEARCH_API_NS, "search");
             if ( qtext != null ) {
                 serializer.writeStartElement("qtext");
                 serializer.writeCharacters(qtext);

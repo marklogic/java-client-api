@@ -261,7 +261,8 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 
 			serializer.writeStartElement(RequestConstants.RESTAPI_PREFIX,
 					"description", RequestConstants.RESTAPI_NS);
-			serializer.writeCharacters(getDescription());
+			String description = getDescription();
+			if ( description != null ) serializer.writeCharacters(description);
 			serializer.writeEndElement();
 			serializer.flush();
 
@@ -415,6 +416,7 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 			TransformerException {
 		serializer.writeStartElement("rapi", "rule-metadata",
 				RequestConstants.RESTAPI_NS);
+		serializer.writeNamespace("xs", XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
 		for (Map.Entry<QName, Object> metadataProperty : getMetadata()
 				.entrySet()) {
