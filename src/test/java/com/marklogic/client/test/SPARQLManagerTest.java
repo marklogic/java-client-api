@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -441,8 +442,8 @@ public class SPARQLManagerTest {
         qdef.setIncludeDefaultRulesets(false);
         StringHandle handle = new StringHandle().withMimetype(SPARQLMimeTypes.SPARQL_CSV);
         String results = smgr.executeSelect(qdef, handle).get();
-        assertNull(results);
-
+        assertEquals("%0D%0A", URLEncoder.encode(results, "utf8"));
+        
         qdef.setRulesets(SPARQLRuleset.RANGE);
         results = smgr.executeSelect(qdef, handle).get();
         assertEquals(1, countLines(parseCsv(results)));
