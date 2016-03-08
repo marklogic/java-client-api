@@ -5115,7 +5115,7 @@ public class JerseyServices implements RESTServices {
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
 		HandleImplementation baseHandle = HandleAccessor.checkHandle(document, "match");
-		if (candidateRules.length > 0) {
+		if (candidateRules != null) {
 			for (String candidateRule : candidateRules) {
 				params.add("rule", candidateRule);
 			}
