@@ -554,7 +554,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   @Override
   public void write(DocumentWriteSet writeSet, ServerTransform transform,
       Transaction transaction) {
-    write(writeSet, null, transaction, null);
+    write(writeSet, transform, transaction, null);
   }
 
   @Override
