@@ -84,6 +84,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	
 	private static String newline;
 	private static String customGraph;
+	private static String datecustomGraph;
 	private static String inferenceGraph;
 	private static String multibyteGraphName;
 	private static String enlocaleGraphName;
@@ -199,6 +200,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		
 		newline = System.getProperty("line.separator");
 		customGraph = "TestCustomGraph";
+		datecustomGraph = "TestDateCustomGraph";
 		enlocaleGraphName = "englishLocale";		
 		inferenceGraph = "TestInferenceGraph";				
 		multibyteGraphName = new String("万里长城");
@@ -304,6 +306,39 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	     * We will have these triples in a graph called 北京 (beijing) in Chinese.
 	     */		   
 	    writeNTriplesFromFile("chineselocale.ttl", zhlocaleGraphName);
+	    
+	    // Build up custom data.
+	    StringBuffer sparqldatedata = new StringBuffer().append("prefix ad: <http://marklogicsparql.com/addressbook#>");
+	    sparqldatedata.append(newline);
+	    sparqldatedata.append("prefix xs: <http://www.w3.org/2001/XMLSchema#>");
+	    sparqldatedata.append(newline);
+	    sparqldatedata.append("prefix bb: <http://marklogic.com/baseball/players#>");
+	    sparqldatedata.append(newline);
+	  
+	    sparqldatedata.append("bb:6 bb:playerid \"6\"^^xs:integer .");
+	    sparqldatedata.append("bb:6 bb:lastname \"Abad\" .");
+	    sparqldatedata.append("bb:6 bb:firstname \"Fernando\" .");
+	    sparqldatedata.append("bb:6 bb:position  \"pitcher\" .");
+	    sparqldatedata.append("bb:6 bb:number  \"56\" .");
+	    sparqldatedata.append("bb:6 bb:team   \"Athletics\" .");
+	    sparqldatedata.append("bb:6 bb:throws  \"left\" .");
+	    sparqldatedata.append("bb:6 bb:bats   \"left\" .");
+	    sparqldatedata.append("bb:6 bb:weight  \"220\" .");
+	    sparqldatedata.append("bb:6 bb:birthdate \"1985-12-17\"^^xs:date .");
+	    sparqldatedata.append(newline);
+
+	    sparqldatedata.append("bb:7 bb:playerid \"7\"^^xs:integer .");
+	    sparqldatedata.append("bb:7 bb:lastname  \"Chavez\" .");
+	    sparqldatedata.append("bb:7 bb:firstname \"Jesse\" .");
+	    sparqldatedata.append("bb:7 bb:position  \"pitcher\" .");
+	    sparqldatedata.append("bb:7 bb:number  \"60\" .");
+	    sparqldatedata.append("bb:7 bb:team   \"Athletics\" .");
+	    sparqldatedata.append("bb:7 bb:throws  \"right\" .");
+	    sparqldatedata.append("bb:7 bb:bats   \"right\" .");
+	    sparqldatedata.append("bb:7 bb:weight  \"160\" .");
+	    sparqldatedata.append("bb:7 bb:birthdate \"1983-08-21\"^^xs:date .");
+	    
+	    writeSPARQLDataFromString(sparqldatedata.toString(), datecustomGraph);
 	}
 	
 	/* This test checks a simple SPARQL query results from named graph.
@@ -1337,6 +1372,62 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		JsonNode jsonBindingsNodes = jsonStrResults.path("results").path("bindings").get(0);
 		
 		assertEquals("Element person's value incorrect", "http://marklogicsparql.com/id#4444", jsonBindingsNodes.path("person").path("value").asText()); 	
+	}
+	
+	/* This test verifies query definition with bindings on date. Verify with withBindings method
+	 * The database should contain triples from TestDateCustomGraph.
+	 * Verifies Git Issue 378.
+     * Uses JacksonHandle
+	 * 
+	 */
+	@Test
+	public void testQueryWithBindingsOnDate() throws IOException, SAXException, ParserConfigurationException
+	{	
+		System.out.println("In SPARQL Query Manager Test testQueryWithBindingsOnDate method");
+		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
+		
+		StringBuffer queryStr = new StringBuffer();
+		queryStr.append("PREFIX bb: <http://marklogic.com/baseball/players#>");
+		queryStr.append(newline);
+		queryStr.append("PREFIX d:  <http://marklogicsparql.com/id#>");
+		queryStr.append(newline);
+		queryStr.append("prefix xs: <http://www.w3.org/2001/XMLSchema#>");
+		queryStr.append(newline);
+		queryStr.append("SELECT ?person ?birthdate");
+		queryStr.append(newline);
+		queryStr.append("FROM <");
+		queryStr.append(datecustomGraph);
+		queryStr.append(">");
+		queryStr.append(newline);
+		queryStr.append("WHERE");
+		queryStr.append(newline);
+		queryStr.append("{");
+		queryStr.append(newline);
+		queryStr.append("?person bb:firstname ?firstname ;");
+		queryStr.append(newline);
+		queryStr.append("bb:lastname ?lastname;");
+		queryStr.append(newline);
+		queryStr.append("bb:birthdate ?birthdate.");
+		queryStr.append(newline);
+		queryStr.append("FILTER( ?birthdate=?bdate)" );
+		queryStr.append("}");
+		
+		System.out.println(queryStr.toString());
+		SPARQLQueryDefinition qdef1 = sparqlQmgr.newQueryDefinition(queryStr.toString());
+		
+		// Set up the String variable binding		
+		qdef1.withBinding("bdate", "1983-08-21", RDFTypes.DATE);
+		// Parsing results using JsonNode. 
+		JsonNode jsonStrResults = sparqlQmgr.executeSelect(qdef1, new JacksonHandle()).get();
+		System.out.println(jsonStrResults);
+		
+		//Verify the bindings.
+		assertTrue("Bindings Map do not have expected key ", qdef1.getBindings().containsKey("bdate"));
+				
+		assertEquals("Result count from  testQueryWithBindingsOnString is incorrect", 1, jsonStrResults.path("results").path("bindings").size());
+		JsonNode jsonBindingsNodes = jsonStrResults.path("results").path("bindings").get(0);
+		
+		assertEquals("Element person's value incorrect", "http://marklogic.com/baseball/players#7", jsonBindingsNodes.path("person").path("value").asText()); 	
 	}
 	
 	/* This test verifies query definition with bindings on string.
