@@ -1,43 +1,106 @@
 /*
- * Copyright 2014-2015 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright 2014-2015 MarkLogic Corporation
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.TreeMap;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.functionaltest.BasicJavaClientREST;
-
-import org.junit.*;
+import com.marklogic.client.Transaction;
+import com.marklogic.client.alerting.RuleDefinition;
+import com.marklogic.client.alerting.RuleDefinitionList;
+import com.marklogic.client.alerting.RuleManager;
+import com.marklogic.client.document.DocumentManager.Metadata;
+import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.document.TextDocumentManager;
+import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.TuplesHandle;
+import com.marklogic.client.io.ValuesHandle;
+import com.marklogic.client.io.ValuesListHandle;
+import com.marklogic.client.query.AggregateResult;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.query.SuggestDefinition;
+import com.marklogic.client.query.ValuesDefinition;
+import com.marklogic.client.query.ValuesListDefinition;
 
 public class TestDatabaseClientConnection extends BasicJavaClientREST{
 	
-	private static String dbName = "DatabaeClientConnectionDB";
-	private static String [] fNames = {"DatabaeClientConnectionDB-1"};
+	private static String dbName = "DatabaseClientConnectionDB";
+	private static String [] fNames = {"DatabaseClientConnectionDB-1"};
 	private static String restServerName = "REST-Java-Client-API-Server";
-	@BeforeClass
-	public static void setUp() throws Exception
-	{
-		System.out.println("In setup");
 	
+	// These members are used to test Git Issue 332.
+	private static String UberdbName = "UberDatabaseClientConnectionDB";
+	private static String UberDefaultdbName = "Documents";
+	private static String [] UberfNames = {"UberDatabaseClientConnectionDB-1"};
+	private static int Uberport = 8000;
+	private static String UberrestServerName = "App-Services";
+	
+	@BeforeClass
+	public static void setUp() throws Exception 
+	{
+		System.out.println("In setup");	
+		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		
+		/*
+		 * Only users with the http://marklogic.com/xdmp/privileges/xdmp-eval-in (xdmp:eval-in) or equivalent privilege can 
+		 * send request parameter that enables the request to be evaluated against a content database other than the default 
+		 * database associated with the REST API instances
+		 */
+		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
+	    createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader","rest-extension-user","manage-user");
+	    
+	     // Create a database and forest for use on uber port (8000). Do not associate the REST server (on 8000) with an DB.
+		createDB(UberdbName);
+		createForest(UberfNames[0], UberdbName);
+		
+		setupAppServicesConstraint(UberdbName);
+		addRangeElementIndex(UberdbName, "string", "http://action/", "title", "http://marklogic.com/collation/");
+		addRangeElementIndex(UberdbName, "string", "http://noun/", "title", "http://marklogic.com/collation/");
 	}
 
 	@SuppressWarnings("deprecation")
@@ -60,12 +123,10 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		String stringException = "";
 		
 		// write doc on released client
-		try
-		{
+		try {
 			writeDocumentUsingStringHandle(client, filename, "/write-txt-doc-released-client/", "Text");
 		} 
-		catch (Exception e) 
-		{
+		catch (Exception e) {
 			stringException = "Client is not available - " + e;
 		}
 		
@@ -101,8 +162,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		String exception = "";
 		
 		// write doc
-		try
-		{
+		try {
 			writeDocumentUsingStringHandle(client, filename, "/write-text-doc/", "Text");
 		}
 		catch (Exception e) { exception = e.toString(); }
@@ -127,8 +187,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		String exception = "";
 		
 		// write doc
-		try
-		{
+		try {
 			writeDocumentUsingStringHandle(client, filename, "/write-text-doc/", "Text");
 		}
 		catch (Exception e) { exception = e.toString(); }
@@ -156,8 +215,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		String exception = "";
 		
 		// write doc
-		try
-		{
+		try {
 			writeDocumentUsingStringHandle(client, filename, "/write-text-doc/", "Text");
 		}
 		catch (Exception e) { exception = e.toString(); }
@@ -187,8 +245,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		String exception = "";
 		
 		// write doc
-		try
-		{
+		try {
 			writeDocumentUsingStringHandle(client, filename, "/write-text-doc/", "Text");
 		}
 		catch (Exception e) { exception = e.toString(); }
@@ -200,15 +257,418 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		// release client
 		client.release();
 	}
-@AfterClass
+	
+	/*
+	 * These tests are specifically to validate Git Issue 332.
+	 * https://github.com/marklogic/java-client-api/issues/332
+	 * 
+	 *  We need to test that REST calls can pass a database name and access that database on the uber server port (8000). 
+	 *  Create a database, forest and associate the database to the uber server on port 8000, where App-Services is running.
+	 *  We will be testing the following :
+	 *  
+     *   QueryManager.suggest()
+     *   QueryManager.tuples()
+     *   QueryManager.values()
+     *   QueryManager.valuesList()
+     *   Transaction.readStatus()
+     *   RuleManager.readRule(As)()
+     *   RuleManager.match(As)()
+            with StructureWriteHandle
+            with StringQueryDefinition
+            with StructuredQueryDefinition
+            with RawQueryDefinition
+            with docIds
+     *   
+	 *  
+	 */
+	
+	// Trying to access database without specifying the database name.
+	@SuppressWarnings("deprecation")
+	@Test	public void testDBClientUsingWithoutDatabaseName() throws IOException, SAXException, ParserConfigurationException
+	{
+		System.out.println("Running testDBClientUsingWithoutDatabaseName");
+		
+		String filename = "xml-original-test.xml";
+		String uri = "/write-xml-string/";		
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", Uberport, "eval-user", "x", Authentication.DIGEST);				
+		String exception = "";
+			
+			// write doc		
+			writeDocumentUsingStringHandle(client, filename, uri, "XML");		
+			// read docs
+			StringHandle contentHandle = readDocumentUsingStringHandle(client, uri + filename, "XML");
+			String readContent = contentHandle.get();
+
+			// get xml document for expected result
+			Document expectedDoc = expectedXMLDocument(filename);
+
+			// convert actual string to xml doc
+			Document readDoc = convertStringToXMLDocument(readContent);
+
+			assertXMLEqual("Write XML difference", expectedDoc, readDoc);
+		
+			// release client		
+			client.release();
+	}
+	
+	// Trying to access database by specifying the database name.
+	@SuppressWarnings("deprecation")
+	@Test	public void testDBClientUsingWithDatabaseName() throws IOException, SAXException, ParserConfigurationException
+	{
+		System.out.println("Running testDBClientUsingWithDatabaseName");
+		
+		String filename = "xml-original-test.xml";
+		String uri = "/write-xml-string/";		
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);				
+		String exception = "";
+				
+		// write doc		
+		writeDocumentUsingStringHandle(client, filename, uri, "XML");		
+		// read docs
+		StringHandle contentHandle = readDocumentUsingStringHandle(client, uri + filename, "XML");
+		String readContent = contentHandle.get();
+
+		// get xml document for expected result
+		Document expectedDoc = expectedXMLDocument(filename);
+
+		// convert actual string to xml doc
+		Document readDoc = convertStringToXMLDocument(readContent);
+
+		assertXMLEqual("Write XML difference", expectedDoc, readDoc);
+		
+		// release client		
+		client.release();
+	}
+	
+	@Test	
+	public void testUberSearchSuggestionMultiByte() throws FileNotFoundException
+	{	
+		System.out.println("Running testUberSearchSuggestionMultiByte");
+
+		String[] filenames = {"multibyte1.xml", "multibyte2.xml", "multibyte3.xml"};
+		String queryOptionName = "suggestionOpt.xml";
+		
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);			
+		// write docs
+		for(String filename : filenames) {
+			writeDocumentUsingInputStreamHandle(client, filename, "/ss/", "XML");
+		}
+
+		setQueryOption(client, queryOptionName);
+		QueryManager queryMgr = client.newQueryManager();
+		SuggestDefinition def = queryMgr.newSuggestDefinition("上海", queryOptionName);
+
+		String[] suggestions = queryMgr.suggest(def);
+
+		for(int i = 0; i < suggestions.length; i++) {
+			System.out.println(suggestions[i]);
+		}
+		
+		assertTrue("suggestion is wrong", suggestions[0].contains("上海"));
+		// release client		
+		client.release();
+	}
+	
+	@Test
+	public void testQueryManagerTuples() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	{	
+		System.out.println("Running testQueryManagerTuples");
+
+		String[] filenames = {"aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml", "aggr5.xml"};
+		String queryOptionName = "aggregatesOpt.xml";
+
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
+		
+		// write docs
+		for(String filename : filenames) {
+			writeDocumentUsingInputStreamHandle(client, filename, "/tuples-aggr/", "XML");
+		}
+		
+		setQueryOption(client, queryOptionName);
+				
+		QueryManager queryMgr = client.newQueryManager();
+		
+		// create query def
+		ValuesDefinition queryDef = queryMgr.newValuesDefinition("popularity", "aggregatesOpt.xml");
+		queryDef.setAggregate("correlation", "covariance");
+		queryDef.setName("pop-rate-tups");
+		
+		// create tuples handle
+		TuplesHandle tuplesHandle = new TuplesHandle();
+		queryMgr.tuples(queryDef, tuplesHandle);
+						
+        AggregateResult[] agg = tuplesHandle.getAggregates();
+        System.out.println(agg.length);
+        assertEquals("Invalid length", 2, agg.length);
+        double correlation = agg[0].get("xs:double", Double.class);
+        double covariance = agg[1].get("xs:double", Double.class);
+        
+        DecimalFormat df = new DecimalFormat("###.##");
+        String roundedCorrelation = df.format(correlation);
+        String roundedCovariance = df.format(covariance);
+        
+        System.out.println(roundedCorrelation);
+        System.out.println(roundedCovariance);
+        
+        assertEquals("Invalid correlation", "0.33", roundedCorrelation);
+        assertEquals("Invalid covariance", "0.42", roundedCovariance);
+        
+        ValuesListDefinition vdef = queryMgr.newValuesListDefinition("aggregatesOpt.xml");
+        ValuesListHandle results = queryMgr.valuesList(vdef, new ValuesListHandle());
+        // Get the Map of lexicons sorted.
+        HashMap<String,String> lexiconMap = results.getValuesMap();
+        TreeMap<String, String> treeMap = new TreeMap<String,String>(lexiconMap);
+        assertEquals("Map should contain three keys", treeMap.size(), 3);
+        assertEquals("First key incorrect",treeMap.firstKey(), "pop-aggr");
+        assertEquals("Last key incorrect",treeMap.lastKey(), "score-aggr");
+               		
+		// release client
+		client.release();	
+	}
+	
+	@Test
+	public void testValuesOccurences() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	{	
+		System.out.println("Running testValuesOccurences");
+		
+		String[] filenames = {"aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml"};
+		String queryOptionName = "aggregatesOpt5Occ.xml";
+
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
+		
+		// write docs
+		for(String filename : filenames) {
+			writeDocumentUsingInputStreamHandle(client, filename, "/values-aggr/", "XML");
+		}
+		
+		setQueryOption(client, queryOptionName);
+				
+		QueryManager queryMgr = client.newQueryManager();
+		
+		// create query def
+		ValuesDefinition queryDef = queryMgr.newValuesDefinition("title", "aggregatesOpt5Occ.xml");
+		queryDef.setAggregate("count");
+		queryDef.setName("title-val");
+		
+		// create handle
+		ValuesHandle valuesHandle = new ValuesHandle();
+		queryMgr.values(queryDef, valuesHandle);
+						
+        AggregateResult[] agg = valuesHandle.getAggregates();
+        System.out.println(agg.length);
+        System.out.println(agg[0].getValue());
+
+		// release client
+		client.release();			
+	}
+		
+	@Test
+	public void testTransactionReadStatus() throws Exception {
+		
+		System.out.println("Running testTransactionReadStatus");
+		
+		String docId[] = {"/foo/test/transactionURIFoo1.txt","/foo/test/transactionURIFoo2.txt","/foo/test/transactionURIFoo3.txt"};
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
+		Transaction transaction = client.openTransaction();
+		try {
+			TextDocumentManager docMgr = client.newTextDocumentManager();
+			docMgr.setMetadataCategories(Metadata.ALL);
+			DocumentWriteSet writeset = docMgr.newWriteSet();
+			
+			DocumentMetadataHandle mhRead = new DocumentMetadataHandle();		
+			
+			writeset.add(docId[0], new StringHandle().with("This is so transactionURIFoo 1"));
+			writeset.add(docId[1], new StringHandle().with("This is so transactionURIFoo 2"));
+			writeset.add(docId[2], new StringHandle().with("This is so transactionURIFoo 3"));
+			docMgr.write(writeset, transaction);
+			StringHandle wrteTransHandle = new StringHandle();
+			transaction.readStatus(wrteTransHandle);
+			assertTrue("Transaction readStatus during write does not contain Database name. ", (wrteTransHandle.get()).contains(UberrestServerName));
+			assertTrue("Transaction readStatus during write does not contain Database name. ", (wrteTransHandle.get()).contains("App-Services"));
+			transaction.commit();
+			
+			transaction = client.openTransaction();
+
+			DocumentPage page = docMgr.read(transaction, docId[0], docId[1], docId[2]);
+			assertTrue("DocumentPage Size did not return expected value:: returned==  "+page.size(), page.size() == 3 );
+			StringHandle readTransHandle = new StringHandle();
+			transaction.readStatus(readTransHandle);
+			assertTrue("Transaction readStatus during read does not contain Database name. ", (readTransHandle.get()).contains(UberrestServerName));
+			assertTrue("Transaction readStatus during read does not contain Database name. ", (readTransHandle.get()).contains("App-Services"));
+			
+		}
+		catch(Exception exp) {
+			System.out.println(exp.getMessage());
+			throw exp;
+		}
+		finally {
+			transaction.rollback();
+		}
+	}
+
+	@Test	
+	public void testRuleManagerReadAs() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	{
+		System.out.println("Running testRuleManagerReadAs");
+		
+		String ruleName1 = "RULE-TEST-1";
+		String ruleName2 = "RULE-TEST-2";
+		BufferedReader bufInputStream = null;
+		DatabaseClient client = null;
+		try {
+		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+
+		client = DatabaseClientFactory.newClient("localhost", Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
+		// write docs
+		for(String filename : filenames) {
+			writeDocumentUsingInputStreamHandle(client, filename, "/raw-alert/", "XML");
+		}
+
+		// create a manager for configuring rules
+		RuleManager ruleMgr = client.newRuleManager();
+
+		// create handle
+		InputStreamHandle ruleHandle1 = new InputStreamHandle();
+		InputStreamHandle ruleHandle2 = new InputStreamHandle();
+
+		// get the rule file
+		InputStream inputStream1 = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/rules/alertRule1.xml");
+		InputStream inputStream2 = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/rules/alertRule2.xml");
+
+		ruleHandle1.set(inputStream1);
+		ruleHandle2.set(inputStream2);
+
+		// write the rule to the database
+		ruleMgr.writeRule(ruleName1, ruleHandle1);
+		ruleMgr.writeRule(ruleName2, ruleHandle2);
+
+		// create a manager for document search criteria
+		QueryManager queryMgr = client.newQueryManager();
+
+		// specify the search criteria for the documents
+		String criteria = "atlantic";
+		StringQueryDefinition querydef = queryMgr.newStringDefinition();
+		querydef.setCriteria(criteria);
+
+		// create a manager for reading rules
+		RuleManager ruleReadMgr = client.newRuleManager();
+		
+		// Test for readRule
+		RuleDefinition ruleReadDef1 = ruleReadMgr.readRule(ruleName1, new RuleDefinition());
+		assertTrue("Rule Manager readRule name method asserts", ruleName1.equalsIgnoreCase(ruleReadDef1.getName()));
+		assertTrue("Rule Manager readRule description method asserts", ruleReadDef1.getDescription().equalsIgnoreCase("rule for test1"));
+		// End of Test for readRule
+		
+		// Test for readRuleAs
+		String bufCurrentLine = null;
+		StringBuffer srtBuf = new StringBuffer();
+		File rule2ReadAsFile = ruleReadMgr.readRuleAs(ruleName2, File.class);
+		
+		bufInputStream = new BufferedReader(new FileReader(rule2ReadAsFile));
+		while ((bufCurrentLine = bufInputStream.readLine()) != null) {
+			srtBuf.append(bufCurrentLine);
+			System.out.println(bufCurrentLine);
+		}
+		assertTrue("Rule Manager readRuleAs name method asserts", srtBuf.toString().contains(ruleName2));
+		assertTrue("Rule Manager readRuleAs description method asserts", srtBuf.toString().contains("rule for test2"));		
+		}
+		catch(Exception e) {
+			System.out.println(e.getMessage());
+		}
+		finally {
+			if (bufInputStream != null)
+			bufInputStream.close();
+		}
+
+		// release client
+		client.release();		
+	}
+	
+	@Test	
+	public void testRMMatchQDAndDocIds() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	{
+		System.out.println("Running testRMMatchQDAndDocIds");		
+		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+		String[] docIds = new String[5];
+		String[] candidateRules = {"RULE-TEST-1", "RULE-TEST-2"};
+		int i=0;		
+		
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+
+		// write docs
+		for(String filename : filenames) {
+			writeDocumentUsingInputStreamHandle(client, filename, "/raw-alert/", "XML");
+			docIds[i++] = new String("/raw-alert/"+filename);
+		}
+
+		// create a manager for configuring rules
+		RuleManager ruleMgr = client.newRuleManager();
+
+		// create handle
+		InputStreamHandle ruleHandle1 = new InputStreamHandle();
+		InputStreamHandle ruleHandle2 = new InputStreamHandle();
+
+		// get the rule file
+		InputStream inputStream1 = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/rules/alertRule1.xml");
+		InputStream inputStream2 = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/rules/alertRule2.xml");
+
+		ruleHandle1.set(inputStream1);
+		ruleHandle2.set(inputStream2);
+
+		// write the rule to the database
+		ruleMgr.writeRule(candidateRules[0], ruleHandle1);
+		ruleMgr.writeRule(candidateRules[1], ruleHandle2);
+
+		// create a manager for document search criteria
+		QueryManager queryMgr = client.newQueryManager();
+
+		// specify the search criteria for the documents
+		String criteria = "atlantic";
+		//StringQueryDefinition querydef = queryMgr.newStringDefinition();
+		StringQueryDefinition querydef = queryMgr.newStringDefinition();
+		querydef.setCriteria(criteria);
+
+		// create a manager for matching rules
+		RuleManager ruleMatchMgr = client.newRuleManager();
+
+		// match the rules against the documents qualified by the criteria
+		RuleDefinitionList matchedRulesDefList = new RuleDefinitionList();
+		//String[] candidateRules = {"RULE-TEST-1", "RULE-TEST-2"};
+		RuleDefinitionList matchedRules = ruleMatchMgr.match(querydef, 0,10, candidateRules, matchedRulesDefList);
+
+		System.out.println(matchedRules.size());
+
+		String expected = "";
+
+		// iterate over the matched rules
+		Iterator<RuleDefinition> ruleItr = matchedRules.iterator();
+		while (ruleItr.hasNext()) {
+			RuleDefinition rule = ruleItr.next();
+			System.out.println(
+					"document criteria "+criteria+" matched rule "+
+							rule.getName()+" with metadata "+rule.getMetadata()
+					);
+			expected = expected + rule.getName() + " - " + rule.getMetadata() + " | ";
+		}
+
+		System.out.println(expected);
+
+		assertTrue("incorrect rules", expected.contains("RULE-TEST-1 - {rule-number=one}")&& expected.contains("RULE-TEST-2 - {rule-number=two}"));
+
+		// release client
+		client.release();	
+	}
+			
+	@AfterClass
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
 		
 		setAuthentication("digest",restServerName);
-		setDefaultUser("nobody",restServerName);
+		setDefaultUser("nobody",restServerName);				
 		tearDownJavaRESTServer(dbName, fNames, restServerName);
 		
+		deleteRESTUser("eval-user");
+		deleteUserRole("test-eval");
 	}
 }
-
