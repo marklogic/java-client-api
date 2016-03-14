@@ -37,6 +37,7 @@ import org.junit.Test;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.document.DocumentPage;
@@ -185,6 +186,91 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 		assertEquals("document count", 102,count); 
 
 	}
+	
+	/* This test is similar to testBulkLoadWithXQueryTransform and is used to validate Git Issue 396.
+	 * 
+	 * Verify that a ServerTransform object is passed along when in transactions.
+	 */
+	
+	@Test
+	public void testBulkXQYTransformWithTrans() throws Exception {
+
+		TransformExtensionsManager transMgr = 
+				client.newServerConfigManager().newTransformExtensionsManager();
+		Transaction tRollback = client.openTransaction();
+		ExtensionMetadata metadata = new ExtensionMetadata();
+		metadata.setTitle("Adding attribute xquery Transform");
+		metadata.setDescription("This plugin transforms an XML document by adding attribute to root node");
+		metadata.setProvider("MarkLogic");
+		metadata.setVersion("0.1");
+		// get the transform file
+		File transformFile = new File("src/test/java/com/marklogic/client/functionaltest/transforms/add-attr-xquery-transform.xqy");
+		FileHandle transformHandle = new FileHandle(transformFile);
+		transMgr.writeXQueryTransform("add-attr-xquery-transform", transformHandle, metadata);
+		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
+		transform.put("name", "Lang");
+		transform.put("value", "English");
+		int count=1;
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+		HashMap<String,String> map= new HashMap<String,String>();
+		DocumentWriteSet writesetRollback = docMgr.newWriteSet();
+		// Verify rollback with a smaller number of documents.
+		for(int i = 0;i<12;i++){
+
+			writesetRollback.add(DIRECTORY+"fooWithTrans"+i+".xml", new DOMHandle(getDocumentContent("This is so foo"+i)));
+			map.put(DIRECTORY+"fooWithTrans"+i+".xml", convertXMLDocumentToString(getDocumentContent("This is so foo"+i)));
+			if(count%10 == 0){
+				docMgr.write(writesetRollback, transform, tRollback);
+				writesetRollback = docMgr.newWriteSet();
+			}
+			count++;
+		}
+		if(count%10 > 0){
+			docMgr.write(writesetRollback, transform, tRollback);
+		}
+		String uris[] = new String[102];
+		for(int i =0;i<102;i++){
+			uris[i]=DIRECTORY+"fooWithTrans"+i+".xml";
+		}
+				
+		try {
+			// Verify rollback on DocumentManager write method with transform. 
+			tRollback.rollback();			
+			DocumentPage pageRollback = docMgr.read(uris);
+			assertEquals("Document count is not zero. Transaction did not rollback", 0, pageRollback.size());
+			
+			// Perform write with a commit.
+			Transaction tCommit = client.openTransaction();
+			DocumentWriteSet writeset = docMgr.newWriteSet();
+			for(int i =0;i<102;i++){
+
+				writeset.add(DIRECTORY+"fooWithTrans"+i+".xml", new DOMHandle(getDocumentContent("This is so foo"+i)));
+				map.put(DIRECTORY+"fooWithTrans"+i+".xml", convertXMLDocumentToString(getDocumentContent("This is so foo"+i)));
+				if(count%BATCH_SIZE == 0){
+					docMgr.write(writeset, transform, tCommit);
+					writeset = docMgr.newWriteSet();
+				}
+				count++;
+			}
+			if(count%BATCH_SIZE > 0){
+				docMgr.write(writeset, transform, tCommit);
+			}
+			tCommit.commit();			
+			count=0;
+			DocumentPage page = docMgr.read(uris);
+			DOMHandle dh = new DOMHandle();
+			while(page.hasNext()){
+				DocumentRecord rec = page.next();
+				rec.getContent(dh);
+				assertTrue("Element has attribure ? :",dh.get().getElementsByTagName("foo").item(0).hasAttributes());
+				count++;
+			}
+		}catch(Exception e) {
+			System.out.println(e.getMessage());throw e;
+		}		
+		assertEquals("document count", 102,count); 
+	}
+		
 	@Test
 	public void testBulkReadWithXQueryTransform() throws Exception {
 
