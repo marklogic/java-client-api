@@ -209,7 +209,7 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 		transMgr.writeXQueryTransform("add-attr-xquery-transform", transformHandle, metadata);
 		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
 		transform.put("name", "Lang");
-		transform.put("value", "English");
+		transform.put("value", "testBulkXQYTransformWithTrans");
 		int count=1;
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 		HashMap<String,String> map= new HashMap<String,String>();
@@ -259,10 +259,14 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 			count=0;
 			DocumentPage page = docMgr.read(uris);
 			DOMHandle dh = new DOMHandle();
+			 // To verify that transformation did run on all docs.
+			String verifyAttrValue = null;
 			while(page.hasNext()){
 				DocumentRecord rec = page.next();
 				rec.getContent(dh);
 				assertTrue("Element has attribure ? :",dh.get().getElementsByTagName("foo").item(0).hasAttributes());
+				verifyAttrValue = dh.get().getElementsByTagName("foo").item(0).getAttributes().getNamedItem("Lang").getNodeValue();
+				assertTrue("Server Transform did not go through ",verifyAttrValue.equalsIgnoreCase("testBulkXQYTransformWithTrans"));
 				count++;
 			}
 		}catch(Exception e) {
