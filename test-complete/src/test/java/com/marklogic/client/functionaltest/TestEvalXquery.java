@@ -107,7 +107,7 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 		boolean inDST = TimeZone.getDefault().inDaylightTime( new Date() );
 		 while(evr.hasNext())
 		 {
-			 EvalResult er =evr.next();
+			 EvalResult er =evr.next();			 
 			 if(er.getType().equals(Type.XML)){
 				 DOMHandle dh = new DOMHandle();
 				 dh=er.get(dh);
@@ -152,7 +152,7 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 			 }else if(er.getType().equals(Type.OTHER)){
 				//There is git issue 151
 //				 System.out.println("Testing is Others? "+er.getAs(String.class));
-				  assertTrue("Returns OTHERs",(er.getString().contains("xdmp:forest-restart#1") || er.getString().contains("PT0S")));
+				  assertTrue("Returns OTHERs",er.getString().contains("PT0S"));
 				 
 			 }else if(er.getType().equals(Type.ANYURI)){
 //				 System.out.println("Testing is AnyUri? "+er.getAs(String.class));
@@ -210,7 +210,7 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 				 assertEquals("Returns me a HEXBINARY :","BEEF",er.getAs(String.class));
 			 }else if(er.getType().equals(Type.QNAME)){
 //				 System.out.println("Testing is QNAME integer"+er.getAs(String.class));
-				 assertEquals("Returns me a QNAME :","integer",er.getAs(String.class));
+				 assertTrue("Returns me a QNAME :",er.getString().contains("integer") || er.getString().contains("fn:empty"));
 			 }else if(er.getType().equals(Type.TIME)){
 //				 System.out.println("Testing is TIME? "+er.getAs(String.class));
 				 assertEquals("Returns me a TIME :","10:00:00",er.getAs(String.class));

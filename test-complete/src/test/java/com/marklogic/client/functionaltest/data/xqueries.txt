@@ -28,8 +28,8 @@ math:acos(.5);
 (:returns NULL:)
 ();
 
-(:returns OTHER:)
-xdmp:functions()[2];
+(:returns QNAME:)
+xdmp:function-name(xdmp:function(xs:QName("fn:empty")));
 
 (: returns XML document :)
 cts:search(fn:doc(), cts:directory-query(("/"),"1"));
