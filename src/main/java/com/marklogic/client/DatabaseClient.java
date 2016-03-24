@@ -207,6 +207,8 @@ public interface DatabaseClient {
 
     public String getPassword();
 
+    public String getForestName();
+
     public Authentication getAuthentication();
 
     public SSLContext getSSLContext();
