@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ public class City {
     private int geoNameId;
     private String name;
     private String asciiName;
+    @PathIndexProperty(scalarType=ScalarType.STRING)
     private String[] alternateNames;
     private double latitude;
     private double longitude;

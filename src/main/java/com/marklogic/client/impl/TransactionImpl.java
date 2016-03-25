@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,35 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.StructureReadHandle;
 
+import javax.ws.rs.core.NewCookie;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+
 class TransactionImpl implements Transaction {
 	final static int DEFAULT_TIMELIMIT = -1;
 
-	private RESTServices services;
-	private String       transactionId;
-	private String       hostId;
+	private RESTServices    services;
+	private String          transactionId;
+	private String          hostId;
+	// we keep cookies scoped with each tranasaction to work with load balancers
+	// that need to keep requests for one transaction on a specific MarkLogic Server host
+	private List<NewCookie> cookies = new ArrayList<NewCookie>();
+	private Calendar        created = Calendar.getInstance();
 
-	TransactionImpl(RESTServices services, String transactionId, String hostId) {
-		this.services = services;
+	TransactionImpl(RESTServices services, String transactionId, List<NewCookie> cookies) {
+		this.services      = services;
 		this.transactionId = transactionId;
-		this.hostId = hostId;
+		if ( cookies != null ) {
+			for ( NewCookie cookie : cookies ) {
+				// make a clone to ensure we're not holding on to any resources
+				// related to an HTTP connection that need to be released
+				this.cookies.add(new NewCookie(cookie));
+				if ( "HostId".equalsIgnoreCase(cookie.getName()) ) {
+					hostId =  cookie.getValue();
+				}
+			}
+		}
 	}
 
 	public String getTransactionId() {
@@ -40,11 +58,19 @@ class TransactionImpl implements Transaction {
 		this.transactionId = transactionId;
 	}
 
+	public List<NewCookie> getCookies() {
+		return cookies;
+	}
+
 	public String getHostId() {
 		return hostId;
 	}
 	protected void setHostId(String hostId) {
 		this.hostId = hostId;
+	}
+
+	public Calendar getCreatedTimestamp() {
+		return created;
 	}
 
 	@Override

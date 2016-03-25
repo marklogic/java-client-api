@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,14 +42,21 @@ import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
  *  }</pre>
  */
 public interface DocumentRecord {
-    /** Returns the uri (unique identifier) of the document in the server */
+    /** Returns the uri (unique identifier) of the document in the server
+     * @return the uri
+     */
     public String getUri();
 
-    /** Returns the format of the document in the server */
+    /** Returns the format of the document in the server
+     * @return the format of the document in the server
+     */
     public Format getFormat();
 
     /** Returns the mime-type ("Content-Type" header) of the document as specified by
-     * the server (uses the server's mime-type mapping for file extensions) */
+     * the server (uses the server's mime-type mapping for file extensions)
+     *
+     * @return the mime-type
+     */
     public String getMimetype();
 
     /**
@@ -59,6 +66,10 @@ public interface DocumentRecord {
      * DocumentMetadataHandle which offers convenient metadata access methods.
      * @see <a href="http://docs.marklogic.com/guide/rest-dev/documents#id_63117">
      *     REST API Dev Guide -&gt; Working with Metadata</a>
+     *
+     * @param metadataHandle the handle to populate with the metadata
+     * @param <T> the type of DocumentMetadataReadHandle to return
+     * @return a handle populated with the document metadata
      */
     public <T extends DocumentMetadataReadHandle> T getMetadata(T metadataHandle);
     /**
@@ -67,6 +78,10 @@ public interface DocumentRecord {
      *
      * The IO class must have been registered before creating the database client.
      * By default, standard Java IO classes for document content are registered.
+     *
+     * @param as the Class which a handle should instantiate, populate and return
+     * @param <T> the type of object that will be returned by the handle registered for it
+     * @return the document metadata as the Class type requested
      */
     public <T> T getMetadataAs(Class<T> as);
 
@@ -74,6 +89,10 @@ public interface DocumentRecord {
      * Given a handle, populates the handle with the document contents directly from
      * the server (or the transformed contents if a ServerTransform was used). Use
      * a handle that is appropriate for the {@link #getFormat format} of this document.
+     *
+     * @param contentHandle the handle to populate with the contents
+     * @param <T> the type of AbstractReadHandle to return
+     * @return a handle populated with the document contents
      */
     public <T extends AbstractReadHandle> T getContent(T contentHandle);
     /**
@@ -82,6 +101,10 @@ public interface DocumentRecord {
      *
      * The IO class must have been registered before creating the database client.
      * By default, standard Java IO classes for document content are registered.
+     *
+     * @param as the Class which a handle should instantiate, populate and return
+     * @param <T> the type of object that will be returned by the handle registered for it
+     * @return the document contents as the Class type requested
      */
     public <T> T getContentAs(Class<T> as);
 }

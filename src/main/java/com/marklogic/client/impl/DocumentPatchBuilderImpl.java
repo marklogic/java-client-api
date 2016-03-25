@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 MarkLogic Corporation
+ * Copyright 2013-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,7 @@ implements DocumentPatchBuilder
 			XMLStreamWriter serializer = out.getSerializer();
 			writeStartInsert(out, contextPath, position.toString(), cardinality);
 			serializer.writeCharacters(""); // force the tag close
+			serializer.flush();
 			out.getWriter().write(fragment);
 			serializer.writeEndElement();
 		}
@@ -124,6 +125,7 @@ implements DocumentPatchBuilder
 			writeStartReplace(out, selectPath, cardinality);
 			if (isFragment) {
 				serializer.writeCharacters(""); // force the tag close
+				serializer.flush();
 				out.getWriter().write(inputAsString);
 			} else {
 				serializer.writeCharacters(inputAsString);
@@ -166,6 +168,7 @@ implements DocumentPatchBuilder
 					out, selectPath, contextPath, position.toString(), cardinality
 					);
 			serializer.writeCharacters(""); // force the tag close
+			serializer.flush();
 			out.getWriter().write(fragment);
 			serializer.writeEndElement();
 		}

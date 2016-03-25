@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 MarkLogic Corporation
+ * Copyright 2014-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@ public class TestMetadata extends BasicJavaClientREST{
 
 		// connect the client
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		StringBuffer calProperty = new StringBuffer("myCalendar:").append(Calendar.getInstance().get(Calendar.YEAR));
 
 		// create and initialize a handle on the metadata
 		DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
@@ -94,7 +95,7 @@ public class TestMetadata extends BasicJavaClientREST{
 		assertTrue("Document property reviewed not found or not correct", actualProperties.contains("reviewed:true"));
 		assertTrue("Document property myInteger not found or not correct", actualProperties.contains("myInteger:10"));
 		assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("myDecimal:34.56678"));
-		assertTrue("Document property myCalendar not found or not correct", actualProperties.contains("myCalendar:2015"));
+		assertTrue("Document property myCalendar not found or not correct", actualProperties.contains(calProperty.toString()));
 		assertTrue("Document property myString not found or not correct", actualProperties.contains("myString:foo"));
 
 		// Permissions
@@ -125,6 +126,7 @@ public class TestMetadata extends BasicJavaClientREST{
 		System.out.println("Running testTextMetadataStringHandle");
 
 		String filename = "facebook-10443244874876159931";
+		StringBuffer calProperty = new StringBuffer("myCalendar:").append(Calendar.getInstance().get(Calendar.YEAR));
 
 		// connect the client
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
@@ -165,7 +167,7 @@ public class TestMetadata extends BasicJavaClientREST{
 		assertTrue("Document property reviewed not found or not correct", actualProperties.contains("reviewed:true"));
 		assertTrue("Document property myInteger not found or not correct", actualProperties.contains("myInteger:10"));
 		assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("myDecimal:34.56678"));
-		assertTrue("Document property myCalendar not found or not correct", actualProperties.contains("myCalendar:2015"));
+		assertTrue("Document property myCalendar not found or not correct", actualProperties.contains(calProperty.toString()));
 		assertTrue("Document property myString not found or not correct", actualProperties.contains("myString:foo"));
 
 		// Permissions
@@ -194,6 +196,7 @@ public class TestMetadata extends BasicJavaClientREST{
 	public void testXMLMetadataJAXBHandle() throws JAXBException
 	{
 		System.out.println("Running testXMLMetadataJAXBHandle");
+		StringBuffer calProperty = new StringBuffer("myCalendar:").append(Calendar.getInstance().get(Calendar.YEAR));
 
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
 
@@ -238,7 +241,7 @@ public class TestMetadata extends BasicJavaClientREST{
 		assertTrue("Document property reviewed not found or not correct", actualProperties.contains("reviewed:true"));
 		assertTrue("Document property myInteger not found or not correct", actualProperties.contains("myInteger:10"));
 		assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("myDecimal:34.56678"));
-		assertTrue("Document property myCalendar not found or not correct", actualProperties.contains("myCalendar:2015"));
+		assertTrue("Document property myCalendar not found or not correct", actualProperties.contains(calProperty.toString()));
 		assertTrue("Document property myString not found or not correct", actualProperties.contains("myString:foo"));
 
 		// Permissions
@@ -269,6 +272,7 @@ public class TestMetadata extends BasicJavaClientREST{
 		System.out.println("Running testJSONMetadataOutputStreamHandle");
 
 		String filename = "myJSONFile.json";
+		StringBuffer calProperty = new StringBuffer("myCalendar:").append(Calendar.getInstance().get(Calendar.YEAR));
 
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
 
@@ -308,7 +312,7 @@ public class TestMetadata extends BasicJavaClientREST{
 		assertTrue("Document property reviewed not found or not correct", actualProperties.contains("reviewed:true"));
 		assertTrue("Document property myInteger not found or not correct", actualProperties.contains("myInteger:10"));
 		assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("myDecimal:34.56678"));
-		assertTrue("Document property myCalendar not found or not correct", actualProperties.contains("myCalendar:2015"));
+		assertTrue("Document property myCalendar not found or not correct", actualProperties.contains(calProperty.toString()));
 		assertTrue("Document property myString not found or not correct", actualProperties.contains("myString:foo"));
 
 		// Permissions

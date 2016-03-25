@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,8 @@ public class GenerateIndexConfig {
      * following options:
      *   -classes: a space-separated list of java pojo classes visible on the classpath
      *   -file: a file path to write with the output (otherwise uses standard out)
+     * @param args an array of the above documented options followed directly
+     *             by the value for that option
      * @throws IOException if an error occurs reading the classes or writing the output
      * @throws IllegalStateException if errors are found in your annotations
      * @throws ClassNotFoundException if the classes are not found on the classpath

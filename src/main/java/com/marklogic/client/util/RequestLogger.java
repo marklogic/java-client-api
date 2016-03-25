@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,7 @@ public interface RequestLogger {
 	 * this method directly if convenient.
 	 * 
 	 * @param content	the copied content
+	 * @param <T> the type to return
 	 * @return	the copied content
 	 */
     public <T> T copyContent(T content);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,18 @@ public class ServerTransform extends RequestParameters {
 	 */
 	public String getName() {
 		return name;
+	}
+
+	/**
+	 * Appends a value to the list for a parameter and returns this instance for
+	 * method chaining.
+	 * @param name	the parameter
+	 * @param value	the value to add to the list
+	 * @return this instance (for method chaining)
+	 */
+	public ServerTransform addParameter(String name, String value) {
+		add(name, value);
+		return this;
 	}
 
 	/**

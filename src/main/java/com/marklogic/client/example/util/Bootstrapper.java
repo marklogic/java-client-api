@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,9 +51,10 @@ public class Bootstrapper {
 	/**
 	 * Command-line invocation.
 	 * @param args	command-line arguments specifying the configuration and REST server
+	 * @throws IOException if a communication error occurs
 	 */
 	public static void main(String[] args)
-	throws ClientProtocolException, IOException, FactoryConfigurationError {
+	throws IOException {
 		Properties properties = new Properties();
 		for (int i=0; i < args.length; i++) {
 			String name = args[i];
@@ -98,18 +99,20 @@ public class Bootstrapper {
 	/**
 	 * Invocation based on properties.
 	 * @param properties	the specification of the configuration and REST server
+	 * @throws IOException if a communication error occurs
 	 */
 	public void makeServer(Properties properties)
-	throws ClientProtocolException, IOException, FactoryConfigurationError {
+	throws IOException {
 		makeServer(new ConfigServer(properties), new RESTServer(properties));
 	}
 	/**
 	 * Programmatic invocation.
 	 * @param configServer	the configuration server for creating the REST server
 	 * @param restServer	the specification of the REST server
+	 * @throws IOException if a communication error occurs
 	 */
 	public void makeServer(ConfigServer configServer, RESTServer restServer)
-	throws ClientProtocolException, IOException, FactoryConfigurationError {
+	throws IOException {
         
         DefaultHttpClient client = new DefaultHttpClient();
 

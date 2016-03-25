@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -210,6 +210,7 @@ public class DOMHandle
 	/**
 	 * Returns the factory for building DOM documents.
 	 * @return	the document factory
+	 * @throws ParserConfigurationException if it occurs while initializing the new factory
 	 */
 	public DocumentBuilderFactory getFactory() throws ParserConfigurationException {
 		if (factory == null)
@@ -262,8 +263,10 @@ public class DOMHandle
 	 * An XPath expression can return a Node or subinterface such as
 	 * Element or Text, a NodeList, or a Boolean, Number, or String value.
 	 * @param xpathExpression	the XPath expression as a string
-	 * @param as	the type of the value 
+	 * @param as	the type expected to be matched by the xpath
+	 * @param <T> the type to return
 	 * @return	the value produced by the XPath expression
+	 * @throws XPathExpressionException if xpathExpression cannot be evaluated
 	 */
 	public <T> T evaluateXPath(String xpathExpression, Class<T> as)
 	throws XPathExpressionException {
@@ -276,8 +279,10 @@ public class DOMHandle
 	 * Element or Text, a NodeList, or a Boolean, Number, or String value.
 	 * @param xpathExpression	the XPath expression as a string
 	 * @param context	the node for evaluating the expression
-	 * @param as	the type of the value 
+	 * @param as	the type expected to be matched by the xpath
+	 * @param <T> the type to return
 	 * @return	the value produced by the XPath expression
+	 * @throws XPathExpressionException if xpathExpression cannot be evaluated
 	 */
 	public <T> T evaluateXPath(String xpathExpression, Node context, Class<T> as)
 	throws XPathExpressionException {
@@ -291,6 +296,7 @@ public class DOMHandle
 	 * Compile an XPath string expression for efficient evaluation later.
 	 * @param xpathExpression	the XPath expression as a string
 	 * @return	the compiled XPath expression
+	 * @throws XPathExpressionException if xpathExpression cannot be compiled
 	 */
 	public XPathExpression compileXPath(String xpathExpression)
 	throws XPathExpressionException {
@@ -301,8 +307,10 @@ public class DOMHandle
 	 * An XPath expression can return a Node or subinterface such as
 	 * Element or Text, a NodeList, or a Boolean, Number, or String value.
 	 * @param xpathExpression	an XPath expression compiled previously
-	 * @param as	the type of the value 
+	 * @param as	the type expected to be matched by the xpath
+	 * @param <T> the type to return
 	 * @return	the value produced by the XPath expression
+	 * @throws XPathExpressionException if xpathExpression cannot be evaluated
 	 */
 	public <T> T evaluateXPath(XPathExpression xpathExpression, Class<T> as)
 	throws XPathExpressionException {
@@ -315,8 +323,10 @@ public class DOMHandle
 	 * Element or Text, a NodeList, or a Boolean, Number, or String value.
 	 * @param xpathExpression	an XPath expression compiled previously
 	 * @param context	the node for evaluating the expression
-	 * @param as	the type of the value 
+	 * @param as	the type expected to be matched by the xpath
+	 * @param <T> the type to return
 	 * @return	the value produced by the XPath expression
+	 * @throws XPathExpressionException if xpathExpression cannot be evaluated
 	 */
 	public <T> T evaluateXPath(XPathExpression xpathExpression, Node context, Class<T> as)
 	throws XPathExpressionException {

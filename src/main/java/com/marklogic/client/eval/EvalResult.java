@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ public interface EvalResult {
 
     /** Use a handle to retrieve the contents of this result.
      * @param handle the handle to populate with the contents of this result
+     * @param <H> the type of AbstractReadHandle to return
      * @return the handle populated with the contents of this result
      */
     public <H extends AbstractReadHandle> H get(H handle);
@@ -60,6 +61,7 @@ public interface EvalResult {
     /** An io shortcut method to get the contents as an object
      * of the specified type, which must be a registered type.
      * @param clazz the Class (type). This type must be registered by an io handle.
+     * @param <T> the type of object that will be returned by the handle registered for it
      * @return an instance of the requested type populated with the contents of this result
      */
     public <T> T getAs(Class<T> clazz);

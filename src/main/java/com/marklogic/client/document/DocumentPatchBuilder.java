@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 MarkLogic Corporation
+ * Copyright 2013-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,6 +84,8 @@ extends DocumentMetadataPatchBuilder
 	
 	/**
 	 * Specifies the language for this patch to use
+	 * @param pathLang the language (XPath or JSONPath)
+	 * @return	the patch builder (for convenient chaining)
 	 */
 	public DocumentPatchBuilder pathLanguage(PathLanguage pathLang);
 	

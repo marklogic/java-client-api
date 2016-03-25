@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,8 @@ public abstract class MarkLogicServerException extends RuntimeException {
 	private FailedRequest failedRequest;
 	
 	/**
-	 * @param localMessage
-	 * @param failedRequest
+	 * @param localMessage message describing the exception
+	 * @param failedRequest details about the failed request behind this exception
 	 */
 	public MarkLogicServerException(String localMessage, FailedRequest failedRequest) {
 		super(localMessage);

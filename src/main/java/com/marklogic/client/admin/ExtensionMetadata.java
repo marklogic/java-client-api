@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,6 +113,7 @@ public class ExtensionMetadata {
 	/**
 	 * Returns the script language for this resource extension, either XQUERY (default)
 	 * or JAVASCRIPT.
+	 * @return the script language for this resource extension
 	 */
     public ScriptLanguage getScriptLanguage() {
         return scriptLanguage;
@@ -121,6 +122,7 @@ public class ExtensionMetadata {
 	/**
 	 * Specifies the script language for this resource extension, either XQUERY (default)
 	 * or JAVASCRIPT.
+	 * @param scriptLanguage the script language for this resource extension
 	 */
     public void setScriptLanguage(ScriptLanguage scriptLanguage) {
         this.scriptLanguage = scriptLanguage;

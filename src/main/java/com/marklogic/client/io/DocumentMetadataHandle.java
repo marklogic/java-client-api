@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -663,14 +663,15 @@ public class DocumentMetadataHandle
 
 			XMLStreamWriter serializer = factory.createXMLStreamWriter(out, "UTF-8");
 
-			serializer.setPrefix("rapi", REST_API_NS);
-			serializer.setPrefix("prop", PROPERTY_API_NS);
-			serializer.setPrefix("xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
-			serializer.setPrefix("xs",   XMLConstants.W3C_XML_SCHEMA_NS_URI);
-
 			serializer.writeStartDocument("utf-8", "1.0");
 
 			serializer.writeStartElement("rapi", "metadata", REST_API_NS);
+			serializer.writeNamespace("rapi", REST_API_NS);
+			serializer.writeNamespace("prop", PROPERTY_API_NS);
+			if ( properties != null ) {
+				serializer.writeNamespace("xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+				serializer.writeNamespace("xs",   XMLConstants.W3C_XML_SCHEMA_NS_URI);
+			}
 
 			sendCollectionsImpl(serializer);
 			sendPermissionsImpl(serializer);

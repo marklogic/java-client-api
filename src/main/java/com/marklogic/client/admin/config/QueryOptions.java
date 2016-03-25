@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,6 +125,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 
 		/**
 		 * Construct with the name of the constraint.
+     * @param name the name of the constraint
 		 */
 		public QueryConstraint(String name) {
 			this();
@@ -150,6 +151,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 
 		/**
 		 * Returns the constrained index.
+		 * @param <T> the type of source
 		 * @return	the index specification
 		 */
 		@SuppressWarnings("unchecked")
@@ -487,7 +489,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		/**
 		 * Add a facet option to this constraint type
 		 * 
-		 * @param facetOption
+		 * @param facetOption the option
 		 */
 		public void addFacetOption(String facetOption) {
 			this.facetOptions.add(facetOption);
@@ -2981,6 +2983,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 
 		/**
 		 * get the constraint definition that backs default term queries.
+		 * @param <T> the type of source
 		 * @return A value, word, or value definition that backs default queries.
 		 */
 		public <T extends BaseConstraintItem> T getSource() {

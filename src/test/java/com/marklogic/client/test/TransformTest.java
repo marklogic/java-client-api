@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
+import com.marklogic.client.admin.ExtensionLibrariesManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.document.ServerTransform;
@@ -44,68 +45,147 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 
 public class TransformTest {
+	final static public String JS_NAME = "testsjs";
+	final static public String JS_FILE = "testsjs.sjs";
+	final static public String MLCP_TRANSFORM_ADAPTER = "MlcpTransformAdapter";
 	final static public String TEST_NS =
 		"http://marklogic.com/rest-api/test/transform";
 
-	static private String xqueryTransform;
-	static private String xslTransform;
 	static private String optionsName;
+	static private ServerConfigurationManager confMgr;
+	static private TransformExtensionsManager extensionMgr;
+	static private ExtensionLibrariesManager libMgr;
+
 
 	@BeforeClass
 	public static void beforeClass()
 	throws IOException, FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
 		Common.connectAdmin();
-		xqueryTransform = Common.testFileToString(TransformExtensionsTest.XQUERY_FILE);
-		xslTransform    = Common.testFileToString(TransformExtensionsTest.XSLT_FILE);
-    	optionsName = ValuesHandleTest.makeValuesOptions();
+		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+		confMgr = Common.client.newServerConfigManager();
+
+		extensionMgr = confMgr.newTransformExtensionsManager();
+		optionsName = ValuesHandleTest.makeValuesOptions();
+		libMgr = confMgr.newExtensionLibrariesManager();
+
+		libMgr.write("/ext/RestTransformAdapter.xqy",
+			new StringHandle(Common.testFileToString("RestTransformAdapter.xqy")).withFormat(Format.TEXT));
+
+		libMgr.write("/ext/memory-operations.xqy",
+			new StringHandle(Common.testFileToString("memory-operations.xqy")).withFormat(Format.TEXT));
+
+		libMgr.write("/ext/node-operations.xqy",
+			new StringHandle(Common.testFileToString("node-operations.xqy")).withFormat(Format.TEXT));
+
+		extensionMgr.writeXQueryTransformAs(
+			TransformExtensionsTest.XQUERY_NAME,
+			TransformExtensionsTest.makeXQueryMetadata(),
+			Common.testFileToString(TransformExtensionsTest.XQUERY_FILE)
+		);
+
+		extensionMgr.writeJavascriptTransformAs(
+				JS_NAME,
+				TransformExtensionsTest.makeXQueryMetadata(),
+				Common.testFileToString(JS_FILE)
+				);
+
+		extensionMgr.writeXQueryTransformAs(
+				MLCP_TRANSFORM_ADAPTER,
+				TransformExtensionsTest.makeXQueryMetadata(),
+				Common.testFileToString(MLCP_TRANSFORM_ADAPTER + ".xqy")
+				);
+
+		extensionMgr.writeXSLTransform(
+			TransformExtensionsTest.XSLT_NAME,
+			new StringHandle(Common.testFileToString(TransformExtensionsTest.XSLT_FILE)),
+			TransformExtensionsTest.makeXSLTMetadata()
+		);
 	}
+
 	@AfterClass
 	public static void afterClass()
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-        Common.client.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
+		confMgr.newQueryOptionsManager().deleteOptions(optionsName);
+
+		extensionMgr.deleteTransform(MLCP_TRANSFORM_ADAPTER);
+		extensionMgr.deleteTransform(TransformExtensionsTest.XQUERY_NAME);
+		extensionMgr.deleteTransform(TransformExtensionsTest.XSLT_NAME);
+
+		libMgr.delete("/ext/RestTransformAdapter.xqy");
+		libMgr.delete("/ext/memory-operations.xqy");
+		libMgr.delete("/ext/node-operations.xqy");
+
 		Common.release();
-		xqueryTransform = null;
-		xslTransform    = null;
 	}
 
 	@Test
 	public void testXQueryTransform()
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-		ServerConfigurationManager confMgr =
-			Common.client.newServerConfigManager();
-
-		TransformExtensionsManager extensionMgr =
-			confMgr.newTransformExtensionsManager();
-
-		extensionMgr.writeXQueryTransform(
-				TransformExtensionsTest.XQUERY_NAME,
-				new StringHandle().withFormat(Format.TEXT).with(xqueryTransform),
-				TransformExtensionsTest.makeXQueryMetadata()
-				);
-
-		runTransform(TransformExtensionsTest.XQUERY_NAME);
-
-		extensionMgr.deleteTransform(TransformExtensionsTest.XQUERY_NAME);
+		runTransform(new ServerTransform(TransformExtensionsTest.XQUERY_NAME));
 	}
+
+	@Test
+	public void testJavascriptTransform() throws Exception{
+		runTransform(new ServerTransform(JS_NAME));
+	}
+
 	@Test
 	public void testXSLTransform()
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-		TransformExtensionsManager extensionMgr =
-			Common.client.newServerConfigManager().newTransformExtensionsManager();
-
-		extensionMgr.writeXSLTransform(
-				TransformExtensionsTest.XSLT_NAME,
-				new StringHandle().with(xslTransform),
-				TransformExtensionsTest.makeXSLTMetadata()
-				);
-
-		runTransform(TransformExtensionsTest.XSLT_NAME);
-
-		extensionMgr.deleteTransform(TransformExtensionsTest.XSLT_NAME);
+		runTransform(new ServerTransform(TransformExtensionsTest.XSLT_NAME));
 	}
-	private void runTransform(String transformName)
+
+	@Test
+	public void testXQueryMlcpTransformAdapter() throws Exception{
+		String transformContents = Common.testFileToString("SampleMlcpTransform.xqy");
+		libMgr.write("/ext/SampleMlcpTransform.xqy",
+			new StringHandle(transformContents).withFormat(Format.TEXT));
+
+		ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER)
+			.addParameter("ml.module", "/ext/SampleMlcpTransform.xqy")
+			.addParameter("ml.namespace", "http://marklogic.com/example")
+			.addParameter("attr-value", "true");
+		runTransform(transform);
+
+		libMgr.delete("/ext/SampleMlcpTransform.xqy");
+	}
+
+	@Test
+	public void testXQueryRestTransformAdapter() throws Exception{
+		ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER)
+			.addParameter("ml.module", "/ext/RestTransformAdapter.xqy")
+			.addParameter("ml.namespace", "http://marklogic.com/mlcp/transform/RestTransformAdapter.xqy")
+			.addParameter("ml.transform", TransformExtensionsTest.XQUERY_NAME)
+			.addParameter("value", "true");
+		runTransform(transform);
+	}
+
+	@Test
+	public void testJavascriptMlcpTransformAdapter() throws Exception{
+		String transformContents = Common.testFileToString("SampleMlcpTransform.sjs");
+		libMgr.write("/ext/SampleMlcpTransform.sjs",
+			new StringHandle(transformContents).withFormat(Format.TEXT));
+
+		ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER)
+			.addParameter("ml.module", "/ext/SampleMlcpTransform.sjs")
+			.addParameter("attr-value", "true");
+		runTransform(transform);
+
+		libMgr.delete("/ext/SampleMlcpTransform.sjs");
+	}
+
+	@Test
+	public void testJavascriptRestTransformAdapter() throws Exception{
+		ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER)
+			.addParameter("ml.module", "/ext/RestTransformAdapter.xqy")
+			.addParameter("ml.namespace", "http://marklogic.com/mlcp/transform/RestTransformAdapter.xqy")
+			.addParameter("ml.transform", JS_NAME)
+			.addParameter("value", "true");
+		runTransform(transform);
+	}
+
+	private void runTransform(ServerTransform transform)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		ServerTransform transform = new ServerTransform(transformName);
 		transform.put("value", "true");
 
 		String docId = "/test/testTransformable1.xml";
@@ -114,9 +194,9 @@ public class TransformTest {
 		docMgr.write(docId, new StringHandle().with("<document/>"));
 		Document result = docMgr.read(docId, new DOMHandle(), transform).get();
 		String value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");
-		assertEquals("Document read transform failed",value,"true");
+		assertEquals("Document read transform failed","true",value);
 
-		docMgr.delete(docId);
+		//docMgr.delete(docId);
 
 		docId = "/test/testTransformable2.xml";
 		docMgr.write(docId, new StringHandle().with("<document/>"), transform);
@@ -124,17 +204,17 @@ public class TransformTest {
 		value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");
 		assertEquals("Document write transform failed",value,"true");
 
-		docMgr.delete(docId);
+		//docMgr.delete(docId);
 
-        QueryManager queryMgr = Common.client.newQueryManager();
+		QueryManager queryMgr = Common.client.newQueryManager();
 
-        StringQueryDefinition stringQuery = queryMgr.newStringDefinition();
-        stringQuery.setCriteria("grandchild1 OR grandchild4");
-        stringQuery.setResponseTransform(transform);
+		StringQueryDefinition stringQuery = queryMgr.newStringDefinition();
+		stringQuery.setCriteria("grandchild1 OR grandchild4");
+		stringQuery.setResponseTransform(transform);
 
 		result = queryMgr.search(stringQuery, new DOMHandle()).get();
 		value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");
-		assertEquals("String query read transform failed",value,"true");
+		assertEquals("String query read transform failed","true",value);
 
 		KeyValueQueryDefinition keyValueQuery = queryMgr.newKeyValueDefinition();
 		keyValueQuery.put(queryMgr.newElementLocator(new QName("leaf")), "leaf3");
@@ -142,15 +222,15 @@ public class TransformTest {
 
 		result = queryMgr.search(keyValueQuery, new DOMHandle()).get();
 		value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");
-		assertEquals("Key-value query read transform failed",value,"true");
+		assertEquals("Key-value query read transform failed","true",value);
 
-    	ValuesDefinition vdef =
-    		queryMgr.newValuesDefinition("double", optionsName);
+		ValuesDefinition vdef =
+			queryMgr.newValuesDefinition("double", optionsName);
 		stringQuery = queryMgr.newStringDefinition();
 		stringQuery.setCriteria("10");
-        stringQuery.setResponseTransform(transform);
+		stringQuery.setResponseTransform(transform);
 
-        vdef.setQueryDefinition(stringQuery);
+		vdef.setQueryDefinition(stringQuery);
 		result = queryMgr.values(vdef, new DOMHandle()).get();
 		value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");
 		assertEquals("Values query read transform failed",value,"true");
@@ -192,9 +272,6 @@ public class TransformTest {
 			"  </search:metrics>\n" + 
 			"</search:response>}\n" + 
 			"};";
-		TransformExtensionsManager extensionMgr =
-			Common.client.newServerConfigManager().newTransformExtensionsManager();
-
 		extensionMgr.writeXQueryTransform( "test118", new StringHandle().with(naiveTransform));
 		QueryManager q = Common.client.newQueryManager();
 		StringQueryDefinition s = q.newStringDefinition("");

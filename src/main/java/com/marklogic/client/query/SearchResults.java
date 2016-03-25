@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,43 +113,46 @@ public interface SearchResults {
      * (if requested).
      * @return	The constraint names.
      */
-	public String[] getConstraintNames();
+    public String[] getConstraintNames();
 
     /**
      * Returns the named constraint used in the search
      * (if requested).
      * @param name	The constraint name.
      * @param handle	An XML handle for reading the constraint.
+     * @param <T> the type of XMLReadHandle to return
      * @return	The handle on the constraint.
      */
-	public <T extends XMLReadHandle> T getConstraint(String name, T handle);
+    public <T extends XMLReadHandle> T getConstraint(String name, T handle);
 
     /**
      * Returns an iterator over the constraints used in the search
      * (if requested).
      * @param handle	An XML handle for reading the constraints.
+     * @param <T> the type of XMLReadHandle's to return in the Iterator
      * @return	An iterator that populates the handle with each constraint.
      */
-	public <T extends XMLReadHandle> Iterator<T> getConstraintIterator(T handle);
+    public <T extends XMLReadHandle> Iterator<T> getConstraintIterator(T handle);
 
     /**
      * Returns the plan for the search (if requested).
      * @param handle	An XML handle for reading the plan.
+     * @param <T> the type of XMLReadHandle to return
      * @return	The handle on the plan.
      */
-	public <T extends XMLReadHandle> T getPlan(T handle);
+    public <T extends XMLReadHandle> T getPlan(T handle);
 
-	/**
-	 * Returns the string query input (if provided and requested).
-	 * @return	The string queries.
-	 */
+    /**
+     * Returns the string query input (if provided and requested).
+     * @return	The string queries.
+     */
     public String[] getStringQueries();
 
-	/**
-	 * Returns the cts:query used in the search (if requested).
+    /**
+     * Returns the cts:query used in the search (if requested).
      * @param handle	An XML handle for reading the query.
+     * @param <T> the type of XMLReadHandle to return
      * @return	The handle on the query.
-	 */
+     */
     public <T extends XMLReadHandle> T getQuery(T handle);
 }
-

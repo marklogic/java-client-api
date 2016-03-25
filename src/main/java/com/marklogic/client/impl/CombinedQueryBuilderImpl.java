@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawQueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
+import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
@@ -273,7 +274,7 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
             XMLStreamWriter serializer = makeXMLSerializer(out);
 
             serializer.writeStartDocument();
-            serializer.writeStartElement("search");
+            serializer.writeStartElement(StructuredQueryBuilder.SEARCH_API_NS, "search");
             if ( qtext != null ) {
                 serializer.writeStartElement("qtext");
                 serializer.writeCharacters(qtext);

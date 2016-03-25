@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 MarkLogic Corporation
+ * Copyright 2015-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,8 @@ public interface ContentHandleFactory {
 	/**
 	 * Instantiates a handle for an IO class recognized by the factory.
 	 * @param type	the class of the IO representation
+	 * @param <C> the registered type which will be handled by the returned
+	 *            ContentHandle
 	 * @return	the handle or null if the class is unrecognized
 	 */
 	public <C> ContentHandle<C> newHandle(Class<C> type);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 MarkLogic Corporation
+ * Copyright 2014-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 	{
 		System.out.println("In setup");
 		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		setDatabaseProperties(dbName,"stemmed-searches","basic");
 		setupAppServicesConstraint(dbName);
 	}
 

@@ -30,7 +30,7 @@ public class SPARQLQueryDefinitionTest {
 
     private static String TEST_TRIG = "@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . "
             + "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> . "
-            + "@prefix : <http://example.org/> . "
+            + "@prefix : <http://marklogic.com/SPARQLQDefTest/> . "
             + "{ :r1 a :c1 ; "
             + "       :p1 \"string value 0\" ; "
             + "       :p2 \"string value 1\" . "
@@ -43,6 +43,7 @@ public class SPARQLQueryDefinitionTest {
             + "      :r1 :p3 \"1\"^^xsd:" + RDFTypes.DOUBLE              + " . "
             + "      :r1 :p3 \"1\"^^xsd:" + RDFTypes.FLOAT               + " . "
             + "      :r1 :p3 \"00:01:01\"^^xsd:" + RDFTypes.TIME         + " . "
+            + "      :r1 :p3 \"2014-09-01\"^^xsd:" + RDFTypes.DATE + " ."
             + "      :r1 :p3 \"2014-09-01T00:00:00+02:00\"^^xsd:" + RDFTypes.DATETIME + " ."
             + "      :r1 :p3 \"2001\"^^xsd:" + RDFTypes.GYEAR            + " . "
             + "      :r1 :p3 \"--01\"^^xsd:" + RDFTypes.GMONTH           + " . "
@@ -86,7 +87,7 @@ public class SPARQLQueryDefinitionTest {
         Common.connect();
         //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
         gmgr = Common.client.newGraphManager();
-        gmgr.replaceGraphs(new StringHandle(TEST_TRIG)
+        gmgr.mergeGraphs(new StringHandle(TEST_TRIG)
                 .withMimetype("text/trig"));
         smgr = Common.client.newSPARQLQueryManager();
     }
@@ -95,7 +96,15 @@ public class SPARQLQueryDefinitionTest {
     public static void afterClass() {
         Common.connect();
         gmgr = Common.client.newGraphManager();
-        gmgr.deleteGraphs();
+        gmgr.delete(GraphManager.DEFAULT_GRAPH);
+        gmgr.delete("http://marklogic.com/SPARQLQDefTest/g1");
+        gmgr.delete("http://marklogic.com/SPARQLQDefTest/g2");
+        gmgr.delete("http://marklogic.com/SPARQLQDefTest/g4");
+        gmgr.delete("http://marklogic.com/SPARQLQDefTest/g65");
+        gmgr.delete("http://marklogic.com/SPARQLQDefTest/o1");
+        gmgr.delete("http://marklogic.com/SPARQLQDefTest/o2");
+        gmgr.delete("http://marklogic.com/SPARQLQDefTest/o3");
+        gmgr.delete("http://marklogic.com/SPARQLQDefTest/o4");
     }
 
     private ArrayNode executeAndExtractBindings(SPARQLQueryDefinition qdef) {
@@ -109,8 +118,8 @@ public class SPARQLQueryDefinitionTest {
 
     @Test
     public void testBindings() {
-        String ask = "ASK FROM <http://example.org/g1> " +
-            "WHERE { <http://example.org/r1> <http://example.org/p3> ?o }";
+        String ask = "ASK FROM <http://marklogic.com/SPARQLQDefTest/g1> " +
+            "WHERE { <http://marklogic.com/SPARQLQDefTest/r1> <http://marklogic.com/SPARQLQDefTest/p3> ?o }";
         SPARQLQueryDefinition askQuery = smgr.newQueryDefinition(ask);
 
         SPARQLBindings bindings = askQuery.getBindings();
@@ -160,6 +169,13 @@ public class SPARQLQueryDefinitionTest {
         assertTrue(smgr.executeAsk(askQuery));
         bindings.clear();
         askQuery.withBinding("o", "00:01:02", RDFTypes.TIME);
+        assertFalse(smgr.executeAsk(askQuery));
+        bindings.clear();
+
+        askQuery.withBinding("o", "2014-09-01", RDFTypes.DATE);
+        assertTrue(smgr.executeAsk(askQuery));
+        bindings.clear();
+        askQuery.withBinding("o", "2014-09-02", RDFTypes.DATE);
         assertFalse(smgr.executeAsk(askQuery));
         bindings.clear();
 
@@ -379,21 +395,21 @@ public class SPARQLQueryDefinitionTest {
         String relativeConstruct = "CONSTRUCT { <relative1> <relative2> <relative3> } \n" +
             "WHERE { ?s ?p ?o . } LIMIT 1";
         SPARQLQueryDefinition qdef = smgr.newQueryDefinition(relativeConstruct);
-        qdef.setBaseUri("http://example.org/test/");
+        qdef.setBaseUri("http://marklogic.com/SPARQLQDefTest/");
         JsonNode rdf = smgr.executeConstruct(qdef, new JacksonHandle()).get();
 
         String subject = rdf.fieldNames().next();
         assertEquals("base uri plus relative subject uri",
-            "http://example.org/test/relative1", subject);
+            "http://marklogic.com/SPARQLQDefTest/relative1", subject);
 
         String predicate = rdf.get(subject).fieldNames().next();
         assertEquals("base uri plus relative predicate uri",
-            "http://example.org/test/relative2", predicate);
+            "http://marklogic.com/SPARQLQDefTest/relative2", predicate);
 
         JsonNode objects = rdf.get(subject).get(predicate);
         assertEquals(1, objects.size());
         assertEquals("base uri plus relative uri",
-            "http://example.org/test/relative3", objects.path(0).path("value").asText());
+            "http://marklogic.com/SPARQLQDefTest/relative3", objects.path(0).path("value").asText());
     }
 
     @Test
@@ -410,12 +426,12 @@ public class SPARQLQueryDefinitionTest {
         assertEquals("Union of all graphs has three class assertions", 3,
                 bindings.size());
 
-        qdef.setDefaultGraphUris("http://example.org/g4");
+        qdef.setDefaultGraphUris("http://marklogic.com/SPARQLQDefTest/g4");
         bindings = executeAndExtractBindings(qdef);
         assertEquals("Single graphs has one assertion", 1, bindings.size());
 
-        qdef.setDefaultGraphUris("http://example.org/g4",
-                "http://example.org/g2");
+        qdef.setDefaultGraphUris("http://marklogic.com/SPARQLQDefTest/g4",
+                "http://marklogic.com/SPARQLQDefTest/g2");
         bindings = executeAndExtractBindings(qdef);
         assertEquals("Union two default graphs has two assertions", 2,
                 bindings.size());
@@ -426,15 +442,15 @@ public class SPARQLQueryDefinitionTest {
         SPARQLQueryDefinition qdef = smgr
                 .newQueryDefinition("SELECT ?s where { GRAPH ?g { ?s a ?o } }");
         qdef.setIncludeDefaultRulesets(false);
-        qdef.setNamedGraphUris("http://example.org/g3");
+        qdef.setNamedGraphUris("http://marklogic.com/SPARQLQDefTest/g3");
         ArrayNode bindings = executeAndExtractBindings(qdef);
         assertEquals("From named 0 result assertions", 0, bindings.size());
 
-        qdef.setNamedGraphUris("http://example.org/g4");
+        qdef.setNamedGraphUris("http://marklogic.com/SPARQLQDefTest/g4");
         bindings = executeAndExtractBindings(qdef);
         assertEquals("From named 1 result assertions", 1, bindings.size());
 
-        qdef.setNamedGraphUris("http://example.org/g4", "http://example.org/g2");
+        qdef.setNamedGraphUris("http://marklogic.com/SPARQLQDefTest/g4", "http://marklogic.com/SPARQLQDefTest/g2");
         bindings = executeAndExtractBindings(qdef);
         assertEquals("From named 1 result assertions", 2, bindings.size());
     }
@@ -442,40 +458,50 @@ public class SPARQLQueryDefinitionTest {
     @Test
     public void testUsingURI() {
         // verify default graph
-        String defGraphQuery = "INSERT { GRAPH <http://example.org/g3> { <http://example.org/r3> <http://example.org/p3> <http://example.org/o3> } } WHERE { <http://example.org/r1> <http://example.org/p3> ?o }";
-        String defCheckQuery = "ASK WHERE { <http://example.org/r3> <http://example.org/p3> <http://example.org/o3> }";
+        String defGraphQuery = "INSERT { GRAPH <http://marklogic.com/SPARQLQDefTest/g3> " +
+            "{ <http://marklogic.com/SPARQLQDefTest/r3> " +
+              "<http://marklogic.com/SPARQLQDefTest/p3> " +
+              "<http://marklogic.com/SPARQLQDefTest/o3> } } " +
+            "WHERE { <http://marklogic.com/SPARQLQDefTest/r1> <http://marklogic.com/SPARQLQDefTest/p3> ?o }";
+        String defCheckQuery = 
+            "ASK WHERE { <http://marklogic.com/SPARQLQDefTest/r3> <http://marklogic.com/SPARQLQDefTest/p3> <http://marklogic.com/SPARQLQDefTest/o3> }";
         SPARQLQueryDefinition qdef = smgr.newQueryDefinition(defGraphQuery);
-        qdef.setUsingGraphUris("http://example.org/g1");
+        qdef.setUsingGraphUris("http://marklogic.com/SPARQLQDefTest/g1");
         smgr.executeUpdate(qdef);
         SPARQLQueryDefinition checkDef = smgr.newQueryDefinition(defCheckQuery);
-        checkDef.setDefaultGraphUris("http://example.org/g3");
+        checkDef.setDefaultGraphUris("http://marklogic.com/SPARQLQDefTest/g3");
         assertTrue(smgr.executeAsk(checkDef));
 
         // clean up 
-        smgr.executeUpdate(smgr.newQueryDefinition("DROP GRAPH <http://example.org/g3>"));
+        smgr.executeUpdate(smgr.newQueryDefinition("DROP GRAPH <http://marklogic.com/SPARQLQDefTest/g3>"));
         assertFalse(smgr.executeAsk(checkDef));
     }
 
     @Test
     public void testUsingNamedURI() {
         // verify default graph
-        String defGraphQuery = "INSERT { GRAPH <http://example.org/g65> { <http://example.org/r3> <http://example.org/p3> <http://example.org/o3> } } WHERE { GRAPH ?g { <http://example.org/r1> <http://example.org/p3> ?o } }";
-        String checkQuery = "ASK WHERE { <http://example.org/r3> <http://example.org/p3> <http://example.org/o3> }";
+        String defGraphQuery = "INSERT { GRAPH <http://marklogic.com/SPARQLQDefTest/g65> " +
+            "{ <http://marklogic.com/SPARQLQDefTest/r3> " +
+              "<http://marklogic.com/SPARQLQDefTest/p3> " +
+              "<http://marklogic.com/SPARQLQDefTest/o3> } } " +
+            "WHERE { GRAPH ?g { <http://marklogic.com/SPARQLQDefTest/r1> <http://marklogic.com/SPARQLQDefTest/p3> ?o } }";
+        String checkQuery = 
+            "ASK WHERE { <http://marklogic.com/SPARQLQDefTest/r3> <http://marklogic.com/SPARQLQDefTest/p3> <http://marklogic.com/SPARQLQDefTest/o3> }";
         SPARQLQueryDefinition qdef = smgr.newQueryDefinition(defGraphQuery);
         
         // negative, no insert
-        qdef.setUsingNamedGraphUris("http://example.org/baloney");
+        qdef.setUsingNamedGraphUris("http://marklogic.com/SPARQLQDefTest/baloney");
         smgr.executeUpdate(qdef);
 
         SPARQLQueryDefinition checkDef = smgr.newQueryDefinition(checkQuery);
-        checkDef.setDefaultGraphUris("http://example.org/g65");
+        checkDef.setDefaultGraphUris("http://marklogic.com/SPARQLQDefTest/g65");
         assertFalse(smgr.executeAsk(checkDef));
         
         // positive
-        qdef.setUsingNamedGraphUris("http://example.org/g1");
+        qdef.setUsingNamedGraphUris("http://marklogic.com/SPARQLQDefTest/g1");
         smgr.executeUpdate(qdef);
 
-        checkDef.setDefaultGraphUris("http://example.org/g65");
+        checkDef.setDefaultGraphUris("http://marklogic.com/SPARQLQDefTest/g65");
         assertTrue(smgr.executeAsk(checkDef));
     }
 
@@ -486,7 +512,7 @@ public class SPARQLQueryDefinitionTest {
         // check query with and without
         // uninstall default inference.
         SPARQLQueryDefinition qdef = smgr
-                .newQueryDefinition("select ?o where {?s a ?o . filter (?s = <http://example.org/r4> )}");
+                .newQueryDefinition("select ?o where {?s a ?o . filter (?s = <http://marklogic.com/SPARQLQDefTest/r4> )}");
         qdef.setIncludeDefaultRulesets(false);
 
         assertFalse(qdef.getIncludeDefaultRulesets());
@@ -503,7 +529,7 @@ public class SPARQLQueryDefinitionTest {
 
         qdef = smgr
                 .newQueryDefinition(
-                        "select ?o where {?s a ?o . filter (?s = <http://example.org/r4> )}")
+                        "select ?o where {?s a ?o . filter (?s = <http://marklogic.com/SPARQLQDefTest/r4> )}")
                 .withIncludeDefaultRulesets(false);
 
         // TODO removeDefaultInference();

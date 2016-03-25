@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,8 +55,10 @@ public class Util {
 	}
 
 	/**
-	 * Read the configuration properties for the example.
+	 * Read the configuration properties for the example from the file
+	 * Example.properties.
 	 * @return	the configuration object
+	 * @throws IOException if one occurs while loading the properties
 	 */
 	public static ExampleProperties loadProperties() throws IOException {
 		String propsName = "Example.properties";
@@ -75,7 +77,7 @@ public class Util {
 	 * Read a resource for an example.
 	 * @param fileName	the name of the resource
 	 * @return	an input stream for the resource
-	 * @throws IOException
+	 * @throws IOException if one occurs opening the stream
 	 */
 	public static InputStream openStream(String fileName) throws IOException {
 		return Util.class.getClassLoader().getResourceAsStream(fileName);

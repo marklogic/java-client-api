@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -256,6 +256,7 @@ public interface QueryManager {
      * saved query options.
      * @param querydef	the definition of query criteria and query options
      * @param searchHandle	a handle for reading the results from the search
+     * @param <T> the type of SearchReadHandle to return
      * @return	the handle populated with the results from the search
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle);
@@ -266,6 +267,7 @@ public interface QueryManager {
      * @param querydef	the definition of query criteria and query options
      * @param searchHandle	a handle for reading the results from the search
      * @param start	the offset of the first document in the page (where 1 is the first result)
+     * @param <T> the type of SearchReadHandle to return
      * @return	the handle populated with the results from the search
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start);
@@ -276,6 +278,7 @@ public interface QueryManager {
      * @param querydef	the definition of query criteria and query options
      * @param searchHandle	a handle for reading the results from the search
      * @param transaction	a open transaction for matching documents
+     * @param <T> the type of SearchReadHandle to return
      * @return	the handle populated with the results from the search
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction);
@@ -288,6 +291,7 @@ public interface QueryManager {
      * @param searchHandle	a handle for reading the results from the search
      * @param start	the offset of the first document in the page (where 1 is the first result)
      * @param transaction	a open transaction for matching documents
+     * @param <T> the type of SearchReadHandle to return
      * @return	the handle populated with the results from the search
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction);
@@ -297,6 +301,8 @@ public interface QueryManager {
      * values in the SuggestionDefinition.  The list of strings returned by
      * this function can be used to provide possible values for completing
      * a string search.
+     * @param suggestionDef the partial string to complete and suggest query options
+     * @return the suggested string completions
      */
     public String[] suggest(SuggestDefinition suggestionDef);
     
@@ -319,6 +325,7 @@ public interface QueryManager {
      * previously saved query options.
      * @param valdef	the definition of query criteria and query options
      * @param valueHandle	a handle for reading the values for the matched documents
+     * @param <T> the type of ValuesReadHandle to return
      * @return	the handle populated with the values from the index
      */
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle);
@@ -329,6 +336,7 @@ public interface QueryManager {
      * @param valdef	the definition of query criteria and query options
      * @param valueHandle	a handle for reading the values for the matched documents
      * @param start	the offset of the first returned result (where 1 is the first value)
+     * @param <T> the type of ValuesReadHandle to return
      * @return	the handle populated with the values from the index
      */
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, long start);
@@ -340,6 +348,7 @@ public interface QueryManager {
      * @param valdef	the definition of query criteria and query options
      * @param valueHandle	a handle for reading the values for the matched documents
      * @param transaction	a open transaction for matching documents
+     * @param <T> the type of ValuesReadHandle to return
      * @return	the handle populated with the values from the index
      */
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, Transaction transaction);
@@ -352,6 +361,7 @@ public interface QueryManager {
      * @param valueHandle	a handle for reading the values for the matched documents
      * @param start	the offset of the first returned result (where 1 is the first value)
      * @param transaction	a open transaction for matching documents
+     * @param <T> the type of ValuesReadHandle to return
      * @return	the handle populated with the values from the index
      */
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, long start, Transaction transaction);
@@ -361,6 +371,7 @@ public interface QueryManager {
      * based on query criteria and, potentially, previously saved query options.  
      * @param valdef	the definition of query criteria and query options
      * @param tupleHandle	a handle for reading the tuples for the matched documents
+     * @param <T> the type of TuplesReadHandle to return
      * @return	the handle populated with the tuples from the index
      */
     public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle);
@@ -371,6 +382,7 @@ public interface QueryManager {
      * @param valdef	the definition of query criteria and query options
      * @param tupleHandle	a handle for reading the tuples for the matched documents
      * @param start	the offset of the first returned result (where 1 is the first tuple)
+     * @param <T> the type of TuplesReadHandle to return
      * @return	the handle populated with the tuples from the index
      */
     public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, long start);
@@ -383,6 +395,7 @@ public interface QueryManager {
      * @param valdef	the definition of query criteria and query options
      * @param tupleHandle	a handle for reading the tuples for the matched documents
      * @param transaction	a open transaction for matching documents
+     * @param <T> the type of TuplesReadHandle to return
      * @return	the handle populated with the tuples from the index
      */
     public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, Transaction transaction);
@@ -396,6 +409,7 @@ public interface QueryManager {
      * @param tupleHandle	a handle for reading the tuples for the matched documents
      * @param start	the offset of the first returned result (where 1 is the first tuple)
      * @param transaction	a open transaction for matching documents
+     * @param <T> the type of TuplesReadHandle to return
      * @return	the handle populated with the tuples from the index
      */
     public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, long start, Transaction transaction);
@@ -405,6 +419,7 @@ public interface QueryManager {
      * values list definition and, potentially, previously saved query options.
      * @param valdef the definition of the query criteria and options
      * @param valueHandle a handle for reading the list of names lexicon configurations
+     * @param <T> the type of ValuesListReadHandle to return
      * @return the handle populated with the names
      */
     public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valueHandle);
@@ -417,6 +432,7 @@ public interface QueryManager {
      * @param valdef the definition of the query criteria and options
      * @param valueHandle a handle for reading the list of names lexicon configurations
      * @param transaction	a open transaction for matching documents
+     * @param <T> the type of ValuesListReadHandle to return
      * @return the handle populated with the names
      */
     public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valueHandle, Transaction transaction);
@@ -424,6 +440,7 @@ public interface QueryManager {
     /**
      * Retrieves the list of available named query options.
      * @param listHandle a handle for reading the list of name options
+     * @param <T> the type of QueryOptionsListReadHandle to return
      * @return the handle populated with the names
      */
     public <T extends QueryOptionsListReadHandle> T optionsList(T listHandle);
@@ -434,6 +451,7 @@ public interface QueryManager {
      * options deleted by the transaction.
      * @param valueHandle a handle for reading the list of name options
      * @param transaction	a open transaction for matching documents
+     * @param <T> the type of QueryOptionsListReadHandle to return
      * @return the handle populated with the names
      */
     public <T extends QueryOptionsListReadHandle> T optionsList(T valueHandle, Transaction transaction);
@@ -462,10 +480,11 @@ public interface QueryManager {
     public MatchDocumentSummary findOne(QueryDefinition querydef, Transaction transaction);
 
 	/**
-     * Converts a query by example into a combined query that expresses the criteria
-     * as a structured search.
+     * Sends a query by example to the server to convert into a combined query
+     * that expresses the criteria as a structured search.
      * @param query	the query by example
-     * @param convertedHandle
+     * @param convertedHandle the container to use for the new converted query
+     * @param <T> the type of StructureReadHandle to return
      * @return	the handle populated with the combined query
      */
     public <T extends StructureReadHandle> T convert(RawQueryByExampleDefinition query, T convertedHandle);
@@ -473,6 +492,7 @@ public interface QueryManager {
      * Checks a query by example for mistakes in expressing the criteria.
      * @param query	the query by example
      * @param reportHandle	a handle for reading the validation report 
+     * @param <T> the type of StructureReadHandle to return
      * @return	the handle populated with the validation report
      */
     public <T extends StructureReadHandle> T validate(RawQueryByExampleDefinition query, T reportHandle);

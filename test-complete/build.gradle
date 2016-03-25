@@ -1,6 +1,8 @@
 
 /* plugins */
 apply plugin: 'java'
+apply plugin: 'jacoco'
+    jacoco{toolVersion="0.7.4.201502262128"}
 
 test {
 	tasks.withType(Compile) {
@@ -17,8 +19,14 @@ repositories {
 	mavenCentral()
 }
 
+jacocoTestReport {
+                    group = "Reporting"
+                    description = "Generate Jacoco coverage reports after running tests."
+                    additionalSourceDirs = files(sourceSets.main.allJava.srcDirs)
+                }
+
 dependencies {
-	compile('com.marklogic:java-client-api:3.0.4')
+	compile('com.marklogic:java-client-api:3.0.5')
 	compile('xmlunit:xmlunit:1.5')
 	compile('junit:junit:4.11')
 	compile('org.skyscreamer:jsonassert:1.2.3')

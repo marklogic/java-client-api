@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,6 +95,7 @@ public class DatabaseClientFactory {
 		 * @param hostname	the name of the checked host
 		 * @param cns	common names for the checked host
 		 * @param subjectAlts	alternative subject names for the checked host
+		 * @throws SSLException if the hostname isn't acceptable
 		 */
 		public void verify(String hostname, String[] cns, String[] subjectAlts) throws SSLException;
 
@@ -165,6 +166,7 @@ public class DatabaseClientFactory {
 		 * Creates a ContentHandle if the registry has a factory
 		 * for the class of the IO representation.
 		 * @param type	the class for an IO representation
+		 * @param <C> the registered type for the returned handle
 		 * @return	a content handle or null if no factory supports the class
 		 */
 		public <C> ContentHandle<C> makeHandle(Class<C> type);
@@ -326,7 +328,7 @@ public class DatabaseClientFactory {
 				);
 		}
 
-		return new DatabaseClientImpl(services);		
+		return new DatabaseClientImpl(services, host, port, database, user, password, type, context, verifier);
 	}
 
 	/**

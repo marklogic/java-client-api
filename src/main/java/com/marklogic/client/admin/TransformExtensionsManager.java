@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ public interface TransformExtensionsManager {
      * 
      * @param format	whether to provide the list in a JSON or XML representation
      * @param as	the IO class for reading the list of transform extensions
+     * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return	an object of the IO class with the list of transform extensions
      */
     public <T> T listTransformsAs(Format format, Class<T> as);
@@ -60,6 +61,7 @@ public interface TransformExtensionsManager {
      * @param format	whether to provide the list in a JSON or XML representation
      * @param as	the IO class for reading the list of transform extensions
      * @param refresh	whether to parse metadata from the extension source
+     * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return	an object of the IO class with the list of transform extensions
      */
     public <T> T listTransformsAs(Format format, Class<T> as, boolean refresh);
@@ -67,6 +69,7 @@ public interface TransformExtensionsManager {
 	/**
 	 * Lists the installed transform extensions.
 	 * @param listHandle	a handle on a JSON or XML representation of the list
+	 * @param <T> the type of StructureReadHandle to return
 	 * @return	the list handle
 	 */
 	public <T extends StructureReadHandle> T listTransforms(T listHandle)
@@ -76,6 +79,7 @@ public interface TransformExtensionsManager {
 	 * the metadata about each extension by parsing the extension source.
 	 * @param listHandle	a handle on a JSON or XML representation of the list
      * @param refresh	whether to parse metadata from the extension source
+	 * @param <T> the type of StructureReadHandle to return
 	 * @return	the list handle
 	 */
 	public <T extends StructureReadHandle> T listTransforms(T listHandle, boolean refresh)
@@ -90,6 +94,7 @@ public interface TransformExtensionsManager {
      * 
      * @param transformName	the name of the transform
      * @param as	the IO class for reading the source code as XML
+     * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the XSLT source code
 	 */
 	public <T> T readXSLTransformAs(String transformName, Class<T> as)
@@ -99,6 +104,7 @@ public interface TransformExtensionsManager {
      * Reads the source for a transform implemented in XSLT.
      * @param transformName	the name of the transform
      * @param sourceHandle	a handle for reading the text of the XSLT implementation.
+     * @param <T> the type of XMLReadHandle to return
      * @return	the XSLT source code
 	 */
     public <T extends XMLReadHandle> T readXSLTransform(String transformName, T sourceHandle)
@@ -113,6 +119,7 @@ public interface TransformExtensionsManager {
      * 
      * @param transformName	the name of the transform
      * @param as	the IO class for reading the source code as text
+     * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the XQuery source code
      */
 	public <T> T readXQueryTransformAs(String transformName, Class<T> as)
@@ -122,6 +129,7 @@ public interface TransformExtensionsManager {
      * Reads the source for a transform implemented in XQuery.
      * @param transformName	the name of the transform
      * @param sourceHandle	a handle for reading the text of the XQuery implementation.
+     * @param <T> the type of TextReadHandle to return
      * @return	the XQuery source code
 	 */
 	public <T extends TextReadHandle> T readXQueryTransform(String transformName, T sourceHandle)
@@ -136,6 +144,7 @@ public interface TransformExtensionsManager {
    * 
    * @param transformName	the name of the transform
    * @param as	the IO class for reading the source code as text
+   * @param <T> the type of object that will be returned by the handle registered for it
    * @return	an object of the IO class with the Javascript source code
    */
 public <T> T readJavascriptTransformAs(String transformName, Class<T> as)
@@ -145,6 +154,7 @@ public <T> T readJavascriptTransformAs(String transformName, Class<T> as)
    * Reads the source for a transform implemented in Javascript.
    * @param transformName	the name of the transform
    * @param sourceHandle	a handle for reading the text of the Javascript implementation.
+   * @param <T> the type of TextReadHandle to return
    * @return	the Javascript source code
  */
 public <T extends TextReadHandle> T readJavascriptTransform(String transformName, T sourceHandle)

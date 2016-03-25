@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ public interface ExtensionLibrariesManager {
 	 * 
 	 * @param libraryPath the path to the library
 	 * @param as	the IO class for reading the library asset
+	 * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return	an object of the IO class with the library asset 
 	 */
 	public <T> T readAs(String libraryPath, Class<T> as)
@@ -63,6 +64,7 @@ public interface ExtensionLibrariesManager {
 	 * 
 	 * @param  libraryDescriptor a descriptor that locates the library
 	 * @param as	the IO class for reading the library asset
+	 * @param <T> the type of AbstractReadHandle to return
 	 * @return	an object of the IO class with the library asset 
 	 */
 	public <T> T read(ExtensionLibraryDescriptor libraryDescriptor, Class<T> as)
@@ -72,6 +74,7 @@ public interface ExtensionLibrariesManager {
 	 * Reads the contents of a library asset into a handle.
 	 * @param libraryPath the path to the library
 	 * @param readHandle a handle for reading the contents of the file
+	 * @param <T> the type of AbstractReadHandle to return
 	 * @return the handle for the library asset
 	 */
 	public <T extends AbstractReadHandle> T read(String libraryPath, T readHandle)
@@ -80,6 +83,7 @@ public interface ExtensionLibrariesManager {
 	 * Reads the contents of a library asset into a handle.
 	 * @param  libraryDescriptor a descriptor that locates the library.
 	 * @param readHandle A handle for reading the contents of the file.
+	 * @param <T> the type of AbstractReadHandle to return
 	 * @return The handle.
 	 */
 	public <T extends AbstractReadHandle> T read(ExtensionLibraryDescriptor libraryDescriptor, T readHandle)

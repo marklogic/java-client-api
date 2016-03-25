@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -259,6 +259,10 @@ public class InputSourceHandle
 	/**
 	 * Returns the factory for parsing SAX events.
 	 * @return	the SAX factory
+	 * @throws SAXException if such an error occurs while initializing the
+	 *         new factory
+	 * @throws ParserConfigurationException if such an error occurs while
+	 *         initializing the new factory
 	 */
 	public SAXParserFactory getFactory() throws SAXException, ParserConfigurationException {
 		if (factory == null)

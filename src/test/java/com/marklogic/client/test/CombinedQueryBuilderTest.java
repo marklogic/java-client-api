@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ public class CombinedQueryBuilderTest {
     public String buildExpected(String qtext, String collection) throws XMLStreamException, UnsupportedEncodingException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XMLStreamWriter writer = makeXMLStreamWriter(baos);
-        writer.writeStartElement("search");
+        writer.writeStartElement(StructuredQueryBuilder.SEARCH_API_NS, "search");
             writer.writeStartElement("qtext");
                 writer.writeCharacters(qtext);
             writer.writeEndElement();
@@ -104,6 +104,7 @@ public class CombinedQueryBuilderTest {
             writer.writeEndElement();
             writeOptions(writer);
         writer.writeEndElement();
+        writer.flush();
         return baos.toString("UTF-8");
     }
 
@@ -119,6 +120,7 @@ public class CombinedQueryBuilderTest {
                 writer.writeCharacters("filtered");
             writer.writeEndElement();
         writer.writeEndElement();
+        writer.flush();
     }
 
     public XMLStreamWriter makeXMLStreamWriter(OutputStream out) throws XMLStreamException {

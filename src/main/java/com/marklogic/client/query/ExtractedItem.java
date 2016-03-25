@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,18 @@ import com.marklogic.client.io.marker.StructureReadHandle;
 /** Access the extracted XML or JSON node using any StructureReadHandle
  * or class registered by a ContentHandle. */
 public interface ExtractedItem {
-    /** Get the item using the specified handle. */
+    /** Get the item using the specified handle.
+     * @param handle a handle to populate
+     * @param <T> the type of StructureReadHandle to return
+     * @return the item represented by this instance
+     */
     public <T extends StructureReadHandle> T get(T handle);
-    /** Get the item using the handle registered for the specified class. */
+
+    /** Get the item using the handle registered for the specified class.
+     * @param as a Class type that has been registered by a handle
+     * @param <T> the type of object that will be returned by the handle registered for it
+     * @return the item represented by this instance
+     */
     public <T> T getAs(Class<T> as);
 }
 

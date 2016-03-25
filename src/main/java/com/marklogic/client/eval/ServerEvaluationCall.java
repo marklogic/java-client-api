@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -190,6 +190,7 @@ public interface ServerEvaluationCall {
      *
      * @param responseType the type desired for the response.  Must be a Class registered
      *      to a handle.
+     * @param <T> the type of object that will be returned by the handle registered for it
      * @return the result deserialized by the implicit handle mapped to this responseType
      */
     public <T> T evalAs(Class<T> responseType)
@@ -198,6 +199,7 @@ public interface ServerEvaluationCall {
     /** Provides the single result of the server-side eval or invoke call, wrapped in an io
      * handle.
      * @param responseHandle the type of handle appropriate for the expected single result
+     * @param <H> the type of AbstractReadHandle to return
      * @return the handle which wraps the response
      */
     public <H extends AbstractReadHandle> H eval(H responseHandle)

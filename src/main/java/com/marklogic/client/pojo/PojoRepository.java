@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,13 +40,13 @@ import java.io.Serializable;
  *    }
  *    ...
  *    DatabaseClient client = ...;
- *    PojoRepository<MyClass, Integer> myClassRepo = 
+ *    PojoRepository&lt;MyClass, Integer&gt; myClassRepo = 
  *        client.newPojoRepository(MyClass.class, Integer.class);</pre>
  *
  * Where MyClass is your custom pojo type, and myId is the bean property of type Integer
  * marked with the 
  * {@literal @}{@link Id Id annotation}.  The 
- * {@literal @}Id annotaiton can be attached to a public field or a public getter or a 
+ * {@literal @}Id annotation can be attached to a public field or a public getter or a 
  * public setter.  The bean property marked with {@literal @}Id must be a native type or 
  * {@link java.io.Serializable} class and must contain an 
  * identifier value unique across all persisted instances of that
@@ -65,7 +65,7 @@ import java.io.Serializable;
  *
  * If that works but the configured objectMapper in the Pojo Facade is different and not
  * working, you can troubleshoot by directly accessing the objectMapper used by the Pojo 
- * Facade using an unsupported internal method attached to the current implementataion: 
+ * Facade using an unsupported internal method attached to the current implementation: 
  * <a 
  * href="https://github.com/marklogic/java-client-api/blob/master/src/main/java/com/marklogic/client/impl/PojoRepositoryImpl.java"
  * >com.marklogic.client.impl.PojoRepositoryImpl</a>.
@@ -183,10 +183,13 @@ public interface PojoRepository<T, ID extends Serializable> {
         throws ForbiddenUserException, FailedRequestException;
 
     /** @return the number of documents of the type managed by this PojoRepository persisted in the database which match
-     * the query */
+     * the query
+     * @param query the query to perform to determine the number of matching instance in the db
+     * @return the number of instance in the db matching the query
+     */
     public long count(PojoQueryDefinition query)
         throws ForbiddenUserException, FailedRequestException;
-  
+
     /** In the context of transaction, the number of documents of the type managed by
      * this PojoRepository persisted in the database which match the query
      * @param query the query which results much match (queries are run unfiltered by default)
@@ -198,12 +201,17 @@ public interface PojoRepository<T, ID extends Serializable> {
      */
     public long count(PojoQueryDefinition query, Transaction transaction)
         throws ForbiddenUserException, FailedRequestException;
-  
-    /** Deletes from the database the documents with the corresponding ids */
+
+    /** Deletes from the database the persisted pojo instances with the corresponding ids
+     * @param ids the ids for the pojo instances to delete from the server
+     */
     public void delete(ID... ids)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** As part of transaction, deletes from the database the documents with the corresponding ids */
+    /** As part of transaction, deletes from the database the documents with the corresponding ids
+     * @param ids the ids of instances to delete
+     * @param transaction the transaction within which to perform the delete
+     */
     public void delete(ID[] ids, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
@@ -212,7 +220,9 @@ public interface PojoRepository<T, ID extends Serializable> {
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** As part of transaction, deletes from the database all documents of the type managed by this PojoRepositoryof type T persisted by 
-     * the pojo facade */
+     * the pojo facade
+     * @param transaction the transaction within which to perform the delete
+     */
     public void deleteAll(Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
@@ -395,10 +405,12 @@ public interface PojoRepository<T, ID extends Serializable> {
 
     /** The number of instances per page returned when calling {@link #readAll readAll} or
      * {@link #search search} (Default: 50).
+     * @return the max number of instances per page
      */
     public long getPageLength();
     /** Set the number of instances per page returned when calling {@link #readAll readAll} or
      * {@link #search search}.
+     * @param length the max number of instance per page
      */
     public void setPageLength(long length);
 }

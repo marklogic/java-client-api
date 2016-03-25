@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,14 +52,21 @@ public interface ExtractedResult extends Iterable<ExtractedItem> {
 
     /** The xquery type of the extracted data.  For XML it will be "element".  For
      * JSON it will be "object" or "array".  Not always available, returns null if
-     * unavailable. **/
+     * unavailable.
+     * @return the xquery type of the extracted data
+     */
     public String getKind();
 
     /** Returns true if the underlying node is an "extracted-none" XML element or
-     * JSON property. */
+     * JSON property.
+     * @return if the underlying node is an "extracted-none" XML element or
+     *         JSON property
+     */
     public boolean isEmpty();
 
-    /** The number of ExtractedItem objects in the Iterator. */
+    /** The number of ExtractedItem objects in the Iterator.
+     * @return the number of ExtractedItem object in the Iterator
+     */
     public int size();
 
     /** Returns the next element in the internal iterator, which is separate

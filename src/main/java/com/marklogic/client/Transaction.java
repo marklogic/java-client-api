@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package com.marklogic.client;
 
 import com.marklogic.client.io.marker.StructureReadHandle;
+import javax.ws.rs.core.NewCookie;
+import java.util.List;
 
 /**
  * Identifies and provides methods to complete a transaction.
@@ -41,9 +43,19 @@ public interface Transaction {
 	public String getHostId();
 
 	/**
+	 * Returns any cookies sent in the response to open the transaction.  This is
+	 * specifically to support cookies used by a load balancer to keep all
+	 * requests associated with a transaction on the host where that transaction
+	 * originated.
+	 * @return	the cookies sent in the response to open the transaction
+	 */
+	public List<NewCookie> getCookies();
+
+	/**
 	 * Reads the status for the transaction including whether the transaction
 	 * has timed out.
 	 * @param handle	a JSON or XML handle on the content of the status report
+   * @param <T> the type of StructureReadHandle handle to return
 	 * @return	the status report handle
 	 */
 	public <T extends StructureReadHandle> T readStatus(T handle) throws ForbiddenUserException, FailedRequestException;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ public interface OutputStreamSender {
 	 * Implements a callback to write content to the provided output stream
 	 * for sending to the database server.
 	 * @param out	the output stream receiving the content
+	 * @throws IOException if io problems arise
 	 */
 	public void write(OutputStream out) throws IOException;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 MarkLogic Corporation
+ * Copyright 2015-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,21 +126,14 @@ public class HandleFactoryRegistryImpl implements HandleFactoryRegistry {
 		return copy;
 	}
 	Class<?> getRegisteredType(Class<?> type) {
-		while (type != null && !type.isAssignableFrom(Object.class)) {
-			if (factories.containsKey(type)) {
-				return type;
+		if ( type == null ) throw new IllegalArgumentException("type must not be null");
+		if (factories.containsKey(type)) {
+			return type;
+		}
+		for ( Class<?> registeredClass : factories.keySet() ) {
+			if ( registeredClass.isAssignableFrom(type) ) {
+				return registeredClass;
 			}
-
-			Class<?>[] interfaces = type.getInterfaces();
-			if (interfaces != null) {
-				for (Class<?> interfaceType: interfaces) {
-					if (factories.containsKey(interfaceType)) {
-						return interfaceType;
-					}
-				}
-			}
-
-			type = type.getSuperclass();
 		}
 
 		return null;

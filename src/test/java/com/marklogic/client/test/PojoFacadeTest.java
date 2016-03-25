@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -359,6 +359,7 @@ public class PojoFacadeTest {
             page.close();
         }
 
+
         // test numeric (integer) values
         query = qb.value("population", 374801);
         page = cities.search(query, 1);
@@ -600,8 +601,26 @@ public class PojoFacadeTest {
         assertEquals("Times should be equal", timeTest2.timeTest, timeTest2FromDb.timeTest);
     }
 
+    /* TODO: uncomment when we have a fix for https://github.com/marklogic/java-client-api/issues/383
     @Test
-    public void testG_DeletePojos() throws Exception {
+    public void testG_GithubIssue383() {
+        PojoQueryBuilder<City> qb = cities.getQueryBuilder();
+        PojoQueryDefinition query = qb.range("alternateNames", Operator.EQ, "San", "Santo");
+        PojoPage<City> page = cities.search(query, 1);
+        try {
+            int numRead = 0;
+            for ( City city : page ) numRead++;
+            assertEquals("Failed to find number of records expected", 11, numRead);
+            assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+        } finally {
+            page.close();
+        }
+
+    }
+    */
+
+    @Test
+    public void testH_DeletePojos() throws Exception {
         cities.delete(1185098, 2239076);
         StringQueryDefinition query = Common.client.newQueryManager().newStringDefinition();
         query.setCriteria("Tungi OR Dalatando OR Chittagong");

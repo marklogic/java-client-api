@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,10 @@ import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.SPARQLQueryManager;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
+
+import javax.net.ssl.SSLContext;
 
 /**
  * A Database Client instantiates document and query managers and other objects
@@ -115,10 +119,14 @@ public interface DatabaseClient {
      */
     public ServerConfigurationManager newServerConfigManager();
 
-    /** Creates a manager for CRUD operations on semantic graphs.  */
+    /** Creates a manager for CRUD operations on semantic graphs.
+     * @return the new GraphManager instance
+     */
     public GraphManager newGraphManager();
     
-    /** Creates a manager for executing SPARQL queries and retrieving results. */
+    /** Creates a manager for executing SPARQL queries and retrieving results.
+     * @return the new SPARQLQueryManager instance
+     */
     public SPARQLQueryManager newSPARQLQueryManager();
     
     /**
@@ -130,6 +138,8 @@ public interface DatabaseClient {
      * @param clazz the class type for this PojoRepository to handle
      * @param idClass the class type of the id field for this clazz, must obviously 
      *          be Serializable or we'll struggle to marshall it
+     * @param <T> the pojo type this PojoRepository will manage
+     * @param <ID> the scalar type of the id for pojos of type &lt;T&gt;
      * @return the initialized PojoRepository
      **/
     public <T, ID extends Serializable> PojoRepository<T, ID> newPojoRepository(Class<T> clazz, Class<ID> idClass);
@@ -139,6 +149,7 @@ public interface DatabaseClient {
      * 
      * @param resourceName	the name of the extension resource
      * @param resourceManager	the manager for the extension resource
+     * @param <T> the type of ResourceManager to init for the extension resource
      * @return	the initialized resource manager
      */
     public <T extends ResourceManager> T init(String resourceName, T resourceManager);
@@ -182,6 +193,23 @@ public interface DatabaseClient {
      * xdbc:invoke privilege.  If this DatabaseClient is pointed at a database different
      * than the default for this REST server, you will need the xdbc:eval-in or xdbc:invoke-in
      * privilege.
+     * @return the new ServerEvaluationCall instance
      */
-	public ServerEvaluationCall newServerEval();
+    public ServerEvaluationCall newServerEval();
+
+    public String getHost();
+
+    public int getPort();
+
+    public String getDatabase();
+
+    public String getUser();
+
+    public String getPassword();
+
+    public Authentication getAuthentication();
+
+    public SSLContext getSSLContext();
+
+    public SSLHostnameVerifier getSSLHostnameVerifier();
 }

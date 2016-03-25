@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -554,7 +554,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   @Override
   public void write(DocumentWriteSet writeSet, ServerTransform transform,
       Transaction transaction) {
-    write(writeSet, null, transaction, null);
+    write(writeSet, transform, transaction, null);
   }
 
   @Override

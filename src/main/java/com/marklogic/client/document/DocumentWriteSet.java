@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 MarkLogic Corporation
+ * Copyright 2012-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,15 @@ import java.util.Set;
  *     REST API Guide -&gt; Writing Multiple Documents</a>
  */
 public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
-    /** Sets the default metadata for this write set for all documents added after this call */
+    /** Sets the default metadata for this write set for all documents added after this call
+     * @param metadataHandle the handle containing the metatdata to use as defaults
+     * @return this instance (for method chaining)
+     */
     public DocumentWriteSet addDefault(DocumentMetadataWriteHandle metadataHandle);
 
-    /** Removes the default metadata for this write set for all documents added after this call */
+    /** Removes the default metadata for this write set for all documents added after this call
+     * @return this instance (for method chaining)
+     */
     public DocumentWriteSet disableDefault();
 
     /**
@@ -39,6 +44,7 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * and contents provided by the handle
      * @param docId	the URI identifier for the document
      * @param contentHandle	a handle for writing the content of the document
+     * @return this instance (for method chaining)
      */
     public DocumentWriteSet add(String docId, AbstractWriteHandle contentHandle);
 
@@ -48,6 +54,7 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * @param docId	the URI identifier for the document
      * @param metadataHandle	a handle for writing the metadata of the document
      * @param contentHandle	a handle for writing the content of the document
+     * @return this instance (for method chaining)
      */
     public DocumentWriteSet add(String docId, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle);
 
@@ -56,6 +63,7 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * contents provided by the handle
      * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
      * @param contentHandle	a handle for writing the content of the document
+     * @return this instance (for method chaining)
      */
     public DocumentWriteSet add(DocumentDescriptor desc, AbstractWriteHandle contentHandle);
 
@@ -65,6 +73,7 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
      * @param metadataHandle	a handle for writing the metadata of the document
      * @param contentHandle	a handle for writing the content of the document
+     * @return this instance (for method chaining)
      */
     public DocumentWriteSet add(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle);
 }
