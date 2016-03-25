@@ -20,4 +20,10 @@ package com.marklogic.client.query;
  * that can serialize as a cts query.
  */
 public interface CtsQueryDefinition extends QueryDefinition {
+    /**
+     * Returns the structured query definition as a serialized XML string.
+     * 
+     * @return The serialized definition.
+     */
+    public String serialize();
 }
