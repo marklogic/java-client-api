@@ -247,5 +247,5 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
      *
      * @param level the optimization level
      */
-    public void setOptimzeLevel(int level);
+    public void setOptimizeLevel(int level);
 }
