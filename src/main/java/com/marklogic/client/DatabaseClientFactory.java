@@ -324,6 +324,7 @@ public class DatabaseClientFactory {
 			 * @param user	the user with read, write, or administrative privileges
 			 * @param password	the password for the user
 			 * @param type	the type of authentication applied to the request
+			 * @param forestName	a forest to pass along to new DocumentManager and QueryManager instances
 			 * @return	a new client for making database requests
 			 */
 	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, String forestName) {
@@ -338,6 +339,7 @@ public class DatabaseClientFactory {
 	 * @param user	the user with read, write, or administrative privileges
 	 * @param password	the password for the user
 	 * @param type	the type of authentication applied to the request
+	 * @param forestName	a forest to pass along to new DocumentManager and QueryManager instances
 	 * @return	a new client for making database requests
 	 */
 	static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, String forestName) {
@@ -351,6 +353,7 @@ public class DatabaseClientFactory {
 	 * @param user	the user with read, write, or administrative privileges
 	 * @param password	the password for the user
 	 * @param type	the type of authentication applied to the request
+	 * @param forestName	a forest to pass along to new DocumentManager and QueryManager instances
 	 * @param context	the SSL context for authenticating with the server
 	 * @return	a new client for making database requests
 	 */
@@ -366,6 +369,7 @@ public class DatabaseClientFactory {
 	 * @param user	the user with read, write, or administrative privileges
 	 * @param password	the password for the user
 	 * @param type	the type of authentication applied to the request
+	 * @param forestName	a forest to pass along to new DocumentManager and QueryManager instances
 	 * @param context	the SSL context for authenticating with the server
 	 * @return	a new client for making database requests
 	 */
@@ -380,6 +384,7 @@ public class DatabaseClientFactory {
 	 * @param user	the user with read, write, or administrative privileges
 	 * @param password	the password for the user
 	 * @param type	the type of authentication applied to the request
+	 * @param forestName	a forest to pass along to new DocumentManager and QueryManager instances
 	 * @param context	the SSL context for authenticating with the server
 	 * @param verifier	a callback for checking hostnames
 	 * @return	a new client for making database requests
@@ -398,6 +403,7 @@ public class DatabaseClientFactory {
 	 * @param user	the user with read, write, or administrative privileges
 	 * @param password	the password for the user
 	 * @param type	the type of authentication applied to the request
+	 * @param forestName	a forest to pass along to new DocumentManager and QueryManager instances
 	 * @param context 	the SSL context for authenticating with the server
 	 * @param verifier	a callback for checking hostnames
 	 * @return	a new client for making database requests
@@ -610,7 +616,7 @@ public class DatabaseClientFactory {
 		/**
 		 * Specifies the forest name for clients created with a
 		 * DatabaseClientFactory.Bean object.
-		 * @param password	the forest name
+		 * @param forestName	a forest to pass along to new DocumentManager and QueryManager instances
 		 */
 		public void setForestName(String forestName) {
 			this.forestName = forestName;
