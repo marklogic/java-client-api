@@ -416,7 +416,7 @@ public class DatabaseClientFactory {
 	static private DatabaseClientImpl newClientImpl(String host, int port, String database, String user, String password, Authentication type, String forestName, SSLContext context, SSLHostnameVerifier verifier) {
 		logger.debug("Creating new database client for server at "+host+":"+port);
 		JerseyServices services = new JerseyServices();
-		services.connect(host, port, database, user, password, type, context, verifier);
+		services.connect(host, port, database, user, password, type, forestName, context, verifier);
 
 		if (clientConfigurator != null) {
 			((HttpClientConfigurator) clientConfigurator).configure(

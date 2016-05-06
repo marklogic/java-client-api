@@ -64,7 +64,7 @@ import com.sun.jersey.api.client.ClientResponse;
 
 public interface RESTServices {
 	public void connect(String host, int port, String database, String user, String password, Authentication type,
-			SSLContext context, SSLHostnameVerifier verifier);
+			String forestName, SSLContext context, SSLHostnameVerifier verifier);
 	public DatabaseClient getDatabaseClient();
 	public void setDatabaseClient(DatabaseClient client);
 	public void release();
