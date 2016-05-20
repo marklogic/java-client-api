@@ -21,6 +21,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 
 import org.junit.After;
@@ -33,7 +35,6 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
@@ -58,22 +59,22 @@ public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 	private static final String DIRECTORY ="/bulkread/";
 	private static String dbName = "TestBulkReadWriteWithJacksonHandleDB";
 	private static String [] fNames = {"TestBulkReadWriteWithJacksonHandleDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	private  DatabaseClient client ;
 	@BeforeClass
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);	  
 
 	}
 
-	@Before  public void testSetup() throws Exception
+	@Before  public void testSetup() throws KeyManagementException, NoSuchAlgorithmException, Exception
 	{
 		// create new connection for each test below
-		client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 	}
 	@After
 	public  void testCleanUp() throws Exception
@@ -157,7 +158,7 @@ public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 	}
 
 	@Test
-	public void testWriteMultipleJSONDocs() throws Exception 
+	public void testWriteMultipleJSONDocs() throws KeyManagementException, NoSuchAlgorithmException, Exception 
 	{
 		String docId[] = { "/a.json", "/b.json", "/c.json" };
 		String json1 = new String("{\"animal\":\"dog\", \"says\":\"woof\"}");
@@ -210,7 +211,7 @@ public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 	 */
 
 	@Test
-	public void testWriteMultipleJSONDocsWithDefaultMetadata() throws Exception  
+	public void testWriteMultipleJSONDocsWithDefaultMetadata() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	{
 		String docId[] = {"/a.json","/b.json","/c.json"};
 		String json1 = new String("{\"animal\":\"dog\", \"says\":\"woof\"}");
@@ -266,7 +267,7 @@ public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 	 * Test Bulk Read to see you can read all the documents
 	 */
 	@Test
-	public void testWriteMultipleJSONDocsWithDefaultMetadata2() throws Exception  
+	public void testWriteMultipleJSONDocsWithDefaultMetadata2() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	{
 		// Synthesize input content
 		String doc1 = new String("{\"animal\": \"cat\", \"says\": \"meow\"}");
@@ -394,7 +395,7 @@ public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 	 */
 
 	@Test
-	public void testWriteMultiJSONFilesDefaultMetadata() throws Exception  
+	public void testWriteMultiJSONFilesDefaultMetadata() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	{
 		String docId[] = {"/original.json","/updated.json","/constraint1.json"};
 		String jsonFilename1 = "json-original.json";
@@ -453,7 +454,7 @@ public class TestBulkReadWriteWithJacksonHandle extends BasicJavaClientREST  {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down" );
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 
 	public void validateRecord(DocumentRecord record,Format type) {

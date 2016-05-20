@@ -16,41 +16,44 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.ServerConfigurationManager.Policy;
-import com.marklogic.client.io.FileHandle;
+import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.XMLDocumentManager;
-import org.junit.*;
+import com.marklogic.client.io.FileHandle;
 public class TestBug18920 extends BasicJavaClientREST{
 
 	private static String dbName = "Test18920DB";
 	private static String [] fNames = {"Test18920DB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 	@BeforeClass
 	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0],  restServerName,8011);
+		configureRESTServer(dbName, fNames);
 	}
 
 	@SuppressWarnings("deprecation")
 	@Test
-	public void testBug18920() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testBug18920() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testBug18920");
 		
@@ -59,7 +62,7 @@ public class TestBug18920 extends BasicJavaClientREST{
 		String docId = uri + filename;
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// create a manager for the server configuration
 		ServerConfigurationManager configMgr = client.newServerConfigManager();
@@ -120,7 +123,7 @@ public class TestBug18920 extends BasicJavaClientREST{
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 		
 	}
 }

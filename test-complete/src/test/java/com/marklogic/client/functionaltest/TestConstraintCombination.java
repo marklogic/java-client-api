@@ -16,37 +16,40 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.*;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 public class TestConstraintCombination extends BasicJavaClientREST {
 
 	private static String dbName = "ConstraintCombinationDB";
 	private static String [] fNames = {"ConstraintCombinationDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	
 @BeforeClass
 	public static void setUp() throws Exception 
 	{
 	  System.out.println("In setup");
-	  setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+	  configureRESTServer(dbName, fNames);
 	  addRangeElementAttributeIndex(dbName, "dateTime", "http://example.com", "entry", "", "date");
 	  addRangeElementIndex(dbName, "int", "http://example.com", "scoville");
 	  addRangeElementIndex(dbName, "decimal", "http://example.com", "rating");
@@ -60,12 +63,12 @@ public class TestConstraintCombination extends BasicJavaClientREST {
 @After
 	public  void testCleanUp() throws Exception
 	{
-		clearDB(restPort);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 
 @Test
-	public void testConstraintCombination() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testConstraintCombination() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{	
 		System.out.println("Running testConstraintCombination");
 		
@@ -77,7 +80,7 @@ public class TestConstraintCombination extends BasicJavaClientREST {
 		
 		String queryOptionName = "constraintCombinationOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 				
 	    // create and initialize a handle on the metadata
 	    DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -125,7 +128,7 @@ public class TestConstraintCombination extends BasicJavaClientREST {
 	}
 
 @Test
-	public void testConstraintCombinationWordAndCollection() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testConstraintCombinationWordAndCollection() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{	
 		System.out.println("Running testConstraintCombinationWordAndCollection");
 		
@@ -137,7 +140,7 @@ public class TestConstraintCombination extends BasicJavaClientREST {
 		
 		String queryOptionName = "constraintCombinationOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 				
 	    // create and initialize a handle on the metadata
 	    DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -183,7 +186,7 @@ public class TestConstraintCombination extends BasicJavaClientREST {
 	}
 
 @Test
-	public void testConstraintCombinationFieldAndRange() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testConstraintCombinationFieldAndRange() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{	
 		System.out.println("testConstraintCombinationFieldAndRange");
 		
@@ -195,7 +198,7 @@ public class TestConstraintCombination extends BasicJavaClientREST {
 		
 		String queryOptionName = "constraintCombinationOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 				
 	    // create and initialize a handle on the metadata
 	    DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -243,6 +246,6 @@ public class TestConstraintCombination extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

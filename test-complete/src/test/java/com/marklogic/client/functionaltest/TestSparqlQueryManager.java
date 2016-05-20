@@ -23,6 +23,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -76,7 +79,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	
 	private static String dbName = "TestSparqlQueryManagerDB";
 	private static String [] fNames = {"TestSparqlQueryManagerDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 	private static int restPort=8011;
 	private static DatabaseClient client;
 	private static DatabaseClient writeclient;
@@ -194,7 +197,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	}
 	
 	@BeforeClass
-	public static void setUp() throws Exception
+	public static void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception
 	{
 		System.out.println("In SPARQL Query Manager Test setup");
 		
@@ -210,18 +213,16 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		// localGraphName will have the value of beijing in Chinese which is 北京
 		zhlocaleGraphName = new String("北京");
 		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 		enableCollectionLexicon(dbName);
 		enableTripleIndex(dbName);
 		waitForServerRestart();
 				
 		//You can enable the triple positions index for faster near searches using cts:triple-range-query.
-		writeclient = DatabaseClientFactory.newClient("localhost", restPort,
-				"rest-writer", "x", Authentication.DIGEST);
-		readclient = DatabaseClientFactory.newClient("localhost", restPort,
-				"rest-reader", "x", Authentication.DIGEST);
-		client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
+		writeclient = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+		readclient = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 				
 		// Build up custom data.
 		StringBuffer sparqldata = new StringBuffer().append("prefix ad: <http://marklogicsparql.com/addressbook#>");
@@ -350,7 +351,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testNamedExecuteSelectQuery() throws IOException, SAXException, ParserConfigurationException
+	public void testNamedExecuteSelectQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testNamedExecuteSelectQuery method");
 		SPARQLQueryManager sparqlQmgr = readclient.newSPARQLQueryManager();
@@ -397,7 +398,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testDefaultExecuteSelectQuery() throws IOException, SAXException, ParserConfigurationException
+	public void testDefaultExecuteSelectQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testDefaultExecuteSelectQuery method");
 		SPARQLQueryManager sparqlQmgr = readclient.newSPARQLQueryManager();
@@ -444,7 +445,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testExecuteQueryInTransaction() throws IOException, SAXException, ParserConfigurationException
+	public void testExecuteQueryInTransaction() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testExecuteQueryInTransaction method");
 		Transaction t = writeclient.openTransaction();
@@ -507,7 +508,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testPaginationInTransaction() throws IOException, SAXException, ParserConfigurationException
+	public void testPaginationInTransaction() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testPaginationInTransaction method");
 		Transaction t = writeclient.openTransaction();
@@ -672,7 +673,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testExecuteConstruct() throws IOException, SAXException, ParserConfigurationException
+	public void testExecuteConstruct() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testExecuteConstruct method");
 		SPARQLQueryManager sparqlQmgr = readclient.newSPARQLQueryManager();		
@@ -706,7 +707,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testBaseUri() throws IOException, SAXException, ParserConfigurationException
+	public void testBaseUri() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testBaseUri method");
 		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -759,7 +760,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testExecuteConstructInTransaction() throws IOException, SAXException, ParserConfigurationException
+	public void testExecuteConstructInTransaction() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testExecuteConstructInTransaction method");
 		Transaction t = writeclient.openTransaction();
@@ -849,7 +850,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testExecuteDescribeFromRDFJSON() throws IOException, SAXException, ParserConfigurationException
+	public void testExecuteDescribeFromRDFJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testExecuteDescribeFromRDFJSON method");
 		SPARQLQueryManager sparqlQmgr = readclient.newSPARQLQueryManager();
@@ -907,7 +908,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testExecuteDescribeInTransaction() throws IOException, SAXException, ParserConfigurationException
+	public void testExecuteDescribeInTransaction() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testExecuteDescribeInTransaction method");
 		Transaction t = writeclient.openTransaction();
@@ -979,7 +980,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testExecuteAsk() throws IOException, SAXException, ParserConfigurationException
+	public void testExecuteAsk() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testExecuteAsk method");
 		SPARQLQueryManager sparqlQmgr = readclient.newSPARQLQueryManager();
@@ -1023,7 +1024,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testExecuteAskInTransactions() throws IOException, SAXException, ParserConfigurationException
+	public void testExecuteAskInTransactions() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{
 		System.out.println("In SPARQL Query Manager Test testExecuteAskInTransactions method");
 		Transaction t1 = null;
@@ -1136,7 +1137,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testExecuteSelectQueryNullQDEF() throws IOException, SAXException, ParserConfigurationException
+	public void testExecuteSelectQueryNullQDEF() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testExecuteSelectQueryNullQDEF method");
 		SPARQLQueryManager sparqlQmgr = readclient.newSPARQLQueryManager();		
@@ -1161,7 +1162,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testExecuteEmptySelectQuery() throws IOException, SAXException, ParserConfigurationException
+	public void testExecuteEmptySelectQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testExecuteEmptySelectQuery method");
 		SPARQLQueryManager sparqlQmgr = readclient.newSPARQLQueryManager();
@@ -1189,7 +1190,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testQueryOnMultibyeGraphName() throws IOException, SAXException, ParserConfigurationException
+	public void testQueryOnMultibyeGraphName() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testQueryOnMultibyeGraphName method");
 	    // Form a query
@@ -1234,7 +1235,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testQueryClauseOptionalFilter() throws IOException, SAXException, ParserConfigurationException
+	public void testQueryClauseOptionalFilter() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testQueryClauseOptionalFilter method");
 	    // Form a query
@@ -1277,7 +1278,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testQueryBindingsOnString() throws IOException, SAXException, ParserConfigurationException
+	public void testQueryBindingsOnString() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testQueryBindingString method");
 		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1330,7 +1331,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testQueryWithBindingsOnString() throws IOException, SAXException, ParserConfigurationException
+	public void testQueryWithBindingsOnString() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testQueryWithBindingsOnString method");
 		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1381,7 +1382,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testQueryWithBindingsOnDate() throws IOException, SAXException, ParserConfigurationException
+	public void testQueryWithBindingsOnDate() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testQueryWithBindingsOnDate method");
 		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1437,7 +1438,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testQueryBindingsOnStringWithENLocale() throws IOException, SAXException, ParserConfigurationException
+	public void testQueryBindingsOnStringWithENLocale() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testQueryBindingsOnStringWithENLocale method");
 		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1498,7 +1499,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testQueryWithBindingsOnMultiByteString() throws IOException, SAXException, ParserConfigurationException
+	public void testQueryWithBindingsOnMultiByteString() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testQueryWithBindingsOnMultiByteString method");
 		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1550,7 +1551,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testQueryBindingsOnInteger() throws IOException, SAXException, ParserConfigurationException
+	public void testQueryBindingsOnInteger() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testQueryBindingsOnInteger method");
 		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1602,7 +1603,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testQueryBindingsAskOnStrings() throws IOException, SAXException, ParserConfigurationException
+	public void testQueryBindingsAskOnStrings() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testQueryBindingsAskOnStrings method");
 		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1655,7 +1656,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testQueryBindingsNullString() throws IOException, SAXException, ParserConfigurationException
+	public void testQueryBindingsNullString() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testQueryBindingsNullString method");
 		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1706,7 +1707,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testQueryBindingsDifferentVariableName() throws IOException, SAXException, ParserConfigurationException
+	public void testQueryBindingsDifferentVariableName() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testQueryBindingsDifferentVariableName method");
 		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1769,7 +1770,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testSparqlUpdateInsertDataBinding() throws IOException, SAXException, ParserConfigurationException
+	public void testSparqlUpdateInsertDataBinding() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testSparqlUpdateInsertDataBinding method");
         SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1925,7 +1926,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testQueryBindingsIncorrectDataType() throws IOException, SAXException, ParserConfigurationException
+	public void testQueryBindingsIncorrectDataType() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testQueryBindingsIncorrectDataType method");
         SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -1984,7 +1985,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testExecuteUpdateCreateSilent() throws IOException, SAXException, ParserConfigurationException
+	public void testExecuteUpdateCreateSilent() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testExecuteUpdateCreateSilent method");
 	    // Form a query
@@ -2123,7 +2124,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testExecuteUpdateDropSilent() throws IOException, SAXException, ParserConfigurationException
+	public void testExecuteUpdateDropSilent() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testExecuteUpdateDropSilent method");
 		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -2182,7 +2183,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testExecuteUpdateInTransactions() throws IOException, SAXException, ParserConfigurationException
+	public void testExecuteUpdateInTransactions() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testExecuteUpdateInTransactions method");
 		Transaction tWrite = null;
@@ -2305,7 +2306,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testSetGetMethodsOnQdefWithCopy() throws IOException, SAXException, ParserConfigurationException
+	public void testSetGetMethodsOnQdefWithCopy() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testSetGetMethodsOnQdefWithCopy method");
 		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -2323,8 +2324,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		
 		createUserRolesWithPrevilages("sem-query-role");
 		createRESTUser("sem-query-user","x","sem-query-role", "rest-writer");
-		DatabaseClient semQueryclient = DatabaseClientFactory.newClient("localhost", restPort,
-				"sem-query-user", "x", Authentication.DIGEST);
+		DatabaseClient semQueryclient = DatabaseClientFactory.newClient("localhost", restPort, "sem-query-user", "x", Authentication.DIGEST);
 		
 		GraphManager graphManagerPerm = semQueryclient.newGraphManager();
 		GraphPermissions  graphPermissions = graphManagerPerm.permission("sem-query-role", Capability.UPDATE, Capability.EXECUTE);
@@ -2475,7 +2475,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testInferenceAndRuleSet() throws IOException, SAXException, ParserConfigurationException
+	public void testInferenceAndRuleSet() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 	System.out.println("In SPARQL Query Manager Test testInferenceAndRuleSet method");
 	SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -2556,7 +2556,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testConstrainingQuery() throws IOException, SAXException, ParserConfigurationException
+	public void testConstrainingQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testConstrainingQuery method");
 		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -2617,7 +2617,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testConstrainingQueryNull() throws IOException, SAXException, ParserConfigurationException
+	public void testConstrainingQueryNull() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testConstrainingQueryNull method");
 		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -2686,7 +2686,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testSparqlQueryCtsContains() throws IOException, SAXException, ParserConfigurationException
+	public void testSparqlQueryCtsContains() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("In SPARQL Query Manager Test testSparqlQueryCtsContains method");
 		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
@@ -2735,7 +2735,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	/* This test verifies MarkLogic Sparql Negation.
 	 */
 	@Test
-	public void testSparqlNegation() throws IOException, SAXException, ParserConfigurationException {	
+	public void testSparqlNegation() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException {	
 		System.out.println("In SPARQL Query Manager Test testSparqlNegation method");
 		SPARQLQueryManager sparqlQmgr = writeclient.newSPARQLQueryManager();
 		SPARQLQueryDefinition qdef = sparqlQmgr.newQueryDefinition();	
@@ -2864,7 +2864,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * Write a N-TRIPLES format custom data contained in a file to the database.
 	 * Graph Name is : testlocaleGraph
 	 */
-	public static void writeNTriplesFromFile(String filename, String graphName) throws Exception {
+	public static void writeNTriplesFromFile(String filename, String graphName) throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		File file = new File(datasource + filename);
 		FileHandle filehandle = new FileHandle();
 		GraphManager sparqlGmgr = writeclient.newGraphManager();
@@ -2877,7 +2877,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * Graph Name is : graphName
 	 */
         
-	public static void writeSPARQLDataFromString(String content, String graphName) throws Exception
+	public static void writeSPARQLDataFromString(String content, String graphName) throws KeyManagementException, NoSuchAlgorithmException, Exception
 	{
 		// Create Grapgh manager
         GraphManager sparqlGmgr = writeclient.newGraphManager();
@@ -2903,7 +2903,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	 * @param sparqlMIMEType
 	 * @throws IOException
 	 */
-	public static void writeSPARQLDocumentUsingFileHandle(DatabaseClient client, String directoryPath, String filename, String uri, String sparqlMIMEType) throws IOException
+	public static void writeSPARQLDocumentUsingFileHandle(DatabaseClient client, String directoryPath, String filename, String uri, String sparqlMIMEType) throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{
 		// Get the content to file
 		File file = new File(directoryPath + filename);
@@ -2935,6 +2935,6 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		writeclient.release();
 		readclient.release();
 		client.release();
-		tearDownJavaRESTServer(dbName, fNames, restServerName);		
+		cleanupRESTServer(dbName, fNames);		
 	}
 }

@@ -16,7 +16,9 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Calendar;
@@ -49,6 +51,7 @@ import com.marklogic.client.Transaction;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.DocumentUriTemplate;
@@ -56,28 +59,26 @@ import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.JacksonDatabindHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
+import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.JacksonDatabindHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder.TemporalOperator;
+import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class TestBiTemporal extends BasicJavaClientREST {
 
   private static String dbName = "TestBiTemporalJava";
   private static String[] fNames = { "TestBiTemporalJava-1" };
-  private static String restServerName = "REST-Java-Client-API-Server";
-  private static int restPort = 8011;
+  
+  
   private static int uberPort = 8000;
   private DatabaseClient adminClient = null;
   private DatabaseClient writerClient = null;
@@ -110,7 +111,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     System.out.println("In setup");
-    setupJavaRESTServer(dbName, fNames[0], restServerName, restPort);
+    configureRESTServer(dbName, fNames);
 
     ConnectedRESTQA.addRangeElementIndex(dbName, dateTimeDataTypeString, "",
         systemStartERIName);
@@ -142,7 +143,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     System.out.println("In tear down");
 
     // Delete database first. Otherwise axis and collection cannot be deleted
-    tearDownJavaRESTServer(dbName, fNames, restServerName);
+    cleanupRESTServer(dbName, fNames);
     deleteRESTUser("eval-user");
     deleteUserRole("test-eval");
 
@@ -165,19 +166,16 @@ public class TestBiTemporal extends BasicJavaClientREST {
   public void setUp() throws Exception {
     createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke","temporal:statement-set-system-time");
     createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
-    adminClient = DatabaseClientFactory.newClient("localhost", restPort, dbName,
-        "rest-admin", "x", Authentication.DIGEST);
-    writerClient = DatabaseClientFactory.newClient("localhost", restPort, dbName,
-        "rest-writer", "x", Authentication.DIGEST);
-    readerClient = DatabaseClientFactory.newClient("localhost", restPort, dbName,
-        "rest-reader", "x", Authentication.DIGEST);   
-    evalClient = DatabaseClientFactory.newClient("localhost", uberPort, dbName,
-        "eval-user", "x", Authentication.DIGEST);           
+    int restPort = getRestServerPort();
+    adminClient = getDatabaseClientOnDatabase("localhost", restPort, dbName, "rest-admin", "x", Authentication.DIGEST);
+    writerClient = getDatabaseClientOnDatabase("localhost", restPort, dbName, "rest-writer", "x", Authentication.DIGEST);
+    readerClient = getDatabaseClientOnDatabase("localhost", restPort, dbName, "rest-reader", "x", Authentication.DIGEST);   
+    evalClient = getDatabaseClientOnDatabase("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);           
   }
 
   @After
   public void tearDown() throws Exception {
-    clearDB(restPort);
+    clearDB();
     adminClient.release();
   }
 

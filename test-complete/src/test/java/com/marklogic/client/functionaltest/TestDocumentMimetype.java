@@ -16,36 +16,39 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.io.FileHandle;
-import org.junit.*;
 public class TestDocumentMimetype extends BasicJavaClientREST {
 	
 	private static String dbName = "TestDocumentMimetypeDB";
 	private static String [] fNames = {"TestDocumentMimetypeDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 	@BeforeClass
 	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 	}
 	
 	@Test
-	public void testMatchedMimetypeOnXML() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testMatchedMimetypeOnXML() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testMatchedMimetypeOnXML");
 		
@@ -53,7 +56,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 		String uri = "/xml-mimetype/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -87,7 +90,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testUnknownMimetypeOnXML() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testUnknownMimetypeOnXML() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnknownMimetypeOnXML");
 		
@@ -95,7 +98,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 		String uri = "/xml-mimetype/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -128,7 +131,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-	@Test	public void testUnmatchedMimetypeOnXML() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testUnmatchedMimetypeOnXML() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnmatchedMimetypeOnXML");
 		
@@ -136,7 +139,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 		String uri = "/xml-mimetype/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -169,7 +172,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-	@Test	public void testUnsupportedMimetypeOnXML() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testUnsupportedMimetypeOnXML() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnsupportedMimetypeOnXML");
 		
@@ -177,7 +180,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 		String uri = "/xml-mimetype/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -210,7 +213,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-	@Test	public void testMatchedMimetypeOnJSON() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testMatchedMimetypeOnJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testMatchedMimetypeOnJSON");
 		
@@ -218,7 +221,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 		String uri = "/json-mimetype/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -251,7 +254,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-	@Test	public void testUnknownMimetypeOnJSON() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testUnknownMimetypeOnJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnknownMimetypeOnJSON");
 		
@@ -259,7 +262,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 		String uri = "/json-mimetype/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -292,7 +295,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 
-	@Test	public void testUnmatchedMimetypeOnJSON() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testUnmatchedMimetypeOnJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnmatchedMimetypeOnJSON");
 		
@@ -300,7 +303,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 		String uri = "/json-mimetype/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -333,7 +336,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 
-	@Test	public void testUnsupportedMimetypeOnJSON() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testUnsupportedMimetypeOnJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnsupportedMimetypeOnJSON");
 		
@@ -341,7 +344,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 		String uri = "/json-mimetype/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -374,7 +377,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 
-	@Test	public void testMatchedMimetypeOnBinary() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testMatchedMimetypeOnBinary() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testMatchedMimetypeOnBinary");
 		
@@ -382,7 +385,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 		String uri = "/bin-mimetype/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -415,7 +418,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-	@Test	public void testUnknownMimetypeOnBinary() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testUnknownMimetypeOnBinary() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnknownMimetypeOnBinary");
 		
@@ -423,7 +426,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 		String uri = "/bin-mimetype/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -456,7 +459,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-	@Test	public void testUnmatchedMimetypeOnBinary() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testUnmatchedMimetypeOnBinary() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnmatchedMimetypeOnBinary");
 		
@@ -464,7 +467,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 		String uri = "/bin-mimetype/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -497,7 +500,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 
-	@Test	public void testUnsupportedMimetypeOnBinary() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testUnsupportedMimetypeOnBinary() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnsupportedMimetypeOnBinary");
 		
@@ -505,7 +508,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 		String uri = "/bin-mimetype/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -538,7 +541,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 
-	@Test	public void testMatchedMimetypeOnText() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testMatchedMimetypeOnText() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testMatchedMimetypeOnText");
 		
@@ -546,7 +549,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 		String uri = "/txt-mimetype/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -579,7 +582,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-	@Test	public void testUnknownMimetypeOnText() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testUnknownMimetypeOnText() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnknownMimetypeOnText");
 		
@@ -587,7 +590,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 		String uri = "/txt-mimetype/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -620,7 +623,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-	@Test	public void testUnmatchedMimetypeOnText() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testUnmatchedMimetypeOnText() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnmatchedMimetypeOnText");
 		
@@ -628,7 +631,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 		String uri = "/txt-mimetype/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -661,7 +664,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	    client.release();
 	}
 
-	@Test	public void testUnsupportedMimetypeOnText() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testUnsupportedMimetypeOnText() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testUnsupportedMimetypeOnText");
 		
@@ -669,7 +672,7 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 		String uri = "/txt-mimetype/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -705,7 +708,6 @@ public class TestDocumentMimetype extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames,  restServerName);
-		
+		cleanupRESTServer(dbName, fNames);
 	}
 }

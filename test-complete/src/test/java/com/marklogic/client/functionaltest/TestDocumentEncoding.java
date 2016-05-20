@@ -16,9 +16,11 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -30,36 +32,37 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.StringHandle;
-import org.junit.*;
 
 public class TestDocumentEncoding extends BasicJavaClientREST
 {
 	private static String dbName = "DocumentEncodingDB";
 	private static String [] fNames = {"DocumentEncodingDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 	@BeforeClass
 	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 	}
 
 	@Test
-	public void testEncoding() throws IOException, TransformerException, ParserConfigurationException
+	public void testEncoding() throws KeyManagementException, NoSuchAlgorithmException, IOException,  TransformerException, ParserConfigurationException
 	{
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -145,6 +148,6 @@ public class TestDocumentEncoding extends BasicJavaClientREST
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

@@ -16,51 +16,53 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import com.marklogic.client.query.QueryManager;
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.util.EditableNamespaceContext;
-import com.marklogic.client.io.DOMHandle;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.*;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.*;
 public class TestStructuredSearchGeo extends BasicJavaClientREST {
 
 	private static String dbName = "TestStructuredSearchGeoDB";
 	private static String [] fNames = {"TestStructuredSearchGeoDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 
 	@BeforeClass 
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesGeoConstraint(dbName);
 	}
 
 	@Test	
-	public void testTestStructuredSearchGeo() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testTestStructuredSearchGeo() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testTestStructuredSearchGeo");
 
 		String queryOptionName = "geoConstraintOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(int i = 1; i <= 7; i++)
@@ -93,13 +95,13 @@ public class TestStructuredSearchGeo extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testTestStructuredSearchGeoBox() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testTestStructuredSearchGeoBox() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testTestStructuredSearchGeoBox");
 
 		String queryOptionName = "geoConstraintOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		loadGeoData();
@@ -130,13 +132,13 @@ public class TestStructuredSearchGeo extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testTestStructuredSearchGeoBoxAndPath() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testTestStructuredSearchGeoBoxAndPath() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testTestStructuredSearchGeoBoxAndPath" + "This test is for Bug : 22071 & 22136");
 
 		String queryOptionName = "geoConstraintOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		loadGeoData();
@@ -180,6 +182,6 @@ public class TestStructuredSearchGeo extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

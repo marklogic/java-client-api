@@ -17,6 +17,9 @@
 package com.marklogic.client.functionaltest;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+
 import java.io.InputStream;
 
 import com.marklogic.client.DatabaseClient;
@@ -34,14 +37,15 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST{
 	
 	private static String dbName = "DatabaseAuthenticationDB";
 	private static String [] fNames = {"DatabaseAuthenticationDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort=8011;
+	
+	private static int restPort = getRestServerPort();
+	private static String restServerName = getRestServerName();
 	
 	 @BeforeClass
 	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		configureRESTServer(dbName, fNames);
 	       setupAppServicesConstraint(dbName);	  
 
 	}
@@ -49,12 +53,12 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST{
 	 @After
 	public  void testCleanUp() throws Exception
 	{
-		clearDB(restPort);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 
 	
-	@Test public void testAuthenticationNone() throws IOException
+	@Test public void testAuthenticationNone() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{
 		setAuthentication("application-level",restServerName);
 		setDefaultUser("rest-admin",restServerName);
@@ -88,7 +92,7 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST{
 		setDefaultUser("nobody",restServerName);
 	}
 	
-@Test	public void testAuthenticationBasic() throws IOException
+@Test	public void testAuthenticationBasic() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{
 		setAuthentication("basic",restServerName);
 		setDefaultUser("rest-writer",restServerName);
@@ -129,7 +133,7 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST{
 		
 		setAuthentication("digest",restServerName);
 		setDefaultUser("nobody",restServerName);
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }
 

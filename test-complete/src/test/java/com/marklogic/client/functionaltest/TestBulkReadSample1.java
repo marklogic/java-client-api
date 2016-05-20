@@ -16,34 +16,40 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.document.DocumentRecord;
-import com.marklogic.client.document.TextDocumentManager;
-import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.document.BinaryDocumentManager;
-import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.document.GenericDocumentManager;
-import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.JacksonHandle;
-
-
-import com.marklogic.client.document.DocumentWriteSet;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import static org.junit.Assert.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.document.BinaryDocumentManager;
+import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentRecord;
+import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.document.GenericDocumentManager;
+import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.document.TextDocumentManager;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.FileHandle;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.StringHandle;
 
 /*
  * This test is designed to to test simple bulk reads with different types of Managers and different content type like JSON,text,binary,XMl by passing set of uris
@@ -63,14 +69,14 @@ public class TestBulkReadSample1 extends BasicJavaClientREST  {
 	private static final String DIRECTORY ="/bulkread/";
 	private static String dbName = "TestBulkReadSampleDB";
 	private static String [] fNames = {"TestBulkReadSampleDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	private  DatabaseClient client ;
     @BeforeClass
 	public static void setUp() throws Exception 
 	{
 	   System.out.println("In setup");
-	   setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+	   configureRESTServer(dbName, fNames);
        setupAppServicesConstraint(dbName);	  
 
 	}
@@ -78,7 +84,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST  {
   @Before  public void testSetup() throws Exception
   {
 	  // create new connection for each test below
-	  client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
+	  client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
   }
     @After
     public  void testCleanUp() throws Exception
@@ -131,7 +137,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST  {
     * Verified by reading individual documents
     */
 @Test  
-	public void test2ReadMultipleXMLDoc() throws Exception  
+	public void test2ReadMultipleXMLDoc() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	  {
 		int count=1;
 	    XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -173,7 +179,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST  {
      * 
 	 */
 	@Test 
-	public void test3ReadMultipleBinaryDoc() throws Exception  
+	public void test3ReadMultipleBinaryDoc() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	  {
 		 String docId[] = {"Sega-4MB.jpg"};
 		 int count=1;
@@ -228,7 +234,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST  {
 	 * This test has a bug logged in github with tracking Issue#33
  */
 	@Test
-	public void test4WriteMultipleJSONDocs() throws Exception  
+	public void test4WriteMultipleJSONDocs() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	  {
 		 int count=1;	 
  		 JSONDocumentManager docMgr = client.newJSONDocumentManager();
@@ -282,7 +288,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST  {
  * 
  */
 @Test 
-	public void test5WriteGenericDocMgr() throws Exception  
+	public void test5WriteGenericDocMgr() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	  {
 		
 		GenericDocumentManager docMgr = client.newDocumentManager();
@@ -322,7 +328,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST  {
 	    }
 //test for Issue# 107
 @Test 
-public void test6CloseMethodforReadMultipleDoc() throws Exception  
+public void test6CloseMethodforReadMultipleDoc() throws KeyManagementException, NoSuchAlgorithmException, Exception  
   {
 	 int count=1;	
 	 DocumentPage page;
@@ -369,7 +375,7 @@ public void test6CloseMethodforReadMultipleDoc() throws Exception
 	public static void tearDown() throws Exception
 	{
 	System.out.println("In tear down" );
-	tearDownJavaRESTServer(dbName, fNames, restServerName);
+	cleanupRESTServer(dbName, fNames);
 	}
 
   public void validateRecord(DocumentRecord record,Format type) {

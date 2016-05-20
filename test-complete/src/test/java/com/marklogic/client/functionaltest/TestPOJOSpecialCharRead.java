@@ -21,6 +21,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -31,7 +33,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.pojo.PojoPage;
@@ -51,10 +52,10 @@ import com.marklogic.client.query.StringQueryDefinition;
 public class TestPOJOSpecialCharRead extends BasicJavaClientREST {
 	private static String dbName = "TestPOJOSpecialCharSearchDB";
 	private static String [] fNames = {"TestPOJOSpecialCharSearchDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 
 	private long negativeId = -1L;
-	private static int restPort = 8011;
+	
 	private  DatabaseClient client;
 
 	/*
@@ -190,17 +191,17 @@ public class TestPOJOSpecialCharRead extends BasicJavaClientREST {
 	public static void setUpBeforeClass() throws Exception {
 		//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		configureRESTServer(dbName, fNames);
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 	@Before
-	public void setUp() throws Exception {
-		client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 	}
 	@After
 	public void tearDown() throws Exception {

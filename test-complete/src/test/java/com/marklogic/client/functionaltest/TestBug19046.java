@@ -16,43 +16,45 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.*;
 public class TestBug19046 extends BasicJavaClientREST {
 
 	private static String dbName = "Bug19046DB";
 	private static String [] fNames = {"Bug19046DB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 @BeforeClass
 	public static void setUp() throws Exception 
 	{
 	  System.out.println("In setup");
-	  setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+	  configureRESTServer(dbName, fNames);
 	  setupAppServicesConstraint(dbName);
 	}
 
 @Test
-	public void testBug19046() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testBug19046() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testBug19046");
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 				
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
@@ -82,7 +84,7 @@ public class TestBug19046 extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 		
 	}
 }

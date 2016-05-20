@@ -21,6 +21,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 
 import org.junit.After;
@@ -35,7 +37,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
@@ -52,8 +53,8 @@ public class TestJacksonAnnotationsTest extends BasicJavaClientREST {
 
 	private static String dbName = "TestJacksonAnnotationsTestDB";
 	private static String[] fNames = { "TestJacksonAnnotationsTest-1" };
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	private DatabaseClient client;
 	private long negativeId = -1L;
 
@@ -290,23 +291,22 @@ public class TestJacksonAnnotationsTest extends BasicJavaClientREST {
 		// System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire",
 		// "debug");
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName, restPort);
+		configureRESTServer(dbName, fNames);
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 
 	@Before
-	public void setUp() throws Exception {
-		client = DatabaseClientFactory.newClient("localhost", restPort,
-				"rest-admin", "x", Authentication.DIGEST);
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 	}
 
 	@After
-	public void tearDown() throws Exception {
+	public void tearDown() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		// release client
 		client.release();
 	}
@@ -375,7 +375,7 @@ public class TestJacksonAnnotationsTest extends BasicJavaClientREST {
 	 */
 
 	@Test
-	public void testPOJOJsonIgnoreProperties() throws Exception {
+	public void testPOJOJsonIgnoreProperties() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
 		String artifactName = "IgnoreProperties";
 
@@ -407,7 +407,7 @@ public class TestJacksonAnnotationsTest extends BasicJavaClientREST {
 	 * read back and in that the Java Default 0 is read back into the object.
 	 */
 	@Test
-	public void testPOJOJsonIgnorePropertiesObject() throws Exception {
+	public void testPOJOJsonIgnorePropertiesObject() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -425,7 +425,7 @@ public class TestJacksonAnnotationsTest extends BasicJavaClientREST {
 	 */
 
 	@Test
-	public void testPOJOJsonIgnoreField() throws Exception {
+	public void testPOJOJsonIgnoreField() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
 		String artifactName = "IgnoreFields";
 
@@ -455,7 +455,7 @@ public class TestJacksonAnnotationsTest extends BasicJavaClientREST {
 	 * read back and in that the Java Default 0 is read back into the object.
 	 */
 	@Test
-	public void testPOJOJsonIgnoreFieldsObject() throws Exception {
+	public void testPOJOJsonIgnoreFieldsObject() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -475,7 +475,7 @@ public class TestJacksonAnnotationsTest extends BasicJavaClientREST {
 	 */
 
 	@Test
-	public void testPOJOJsonProperty() throws Exception {
+	public void testPOJOJsonProperty() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
 		String artifactName = "JsonProperty";
 
@@ -508,7 +508,7 @@ public class TestJacksonAnnotationsTest extends BasicJavaClientREST {
 	 * read back and in that the Java Default 0 is read back into the object.
 	 */
 	@Test
-	public void testPOJOJsonJsonPropertyObject() throws Exception {
+	public void testPOJOJsonJsonPropertyObject() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
 		String instanceName = "JsonProperty";
@@ -532,7 +532,7 @@ public class TestJacksonAnnotationsTest extends BasicJavaClientREST {
 	 * JSON.
 	 */
 	@Test
-	public void testPOJOJsonJsonValueObject() throws Exception {
+	public void testPOJOJsonJsonValueObject() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
 		ObjectMapper mapper = new ObjectMapper();
 		String instanceName = "JsonValue";

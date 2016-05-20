@@ -16,52 +16,49 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.Reader;
 import java.io.FileReader;
-import java.io.BufferedReader;
+import java.io.Reader;
 import java.io.StringReader;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.bind.JAXBContext;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.document.TextDocumentManager;
-import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.document.BinaryDocumentManager;
-import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.document.GenericDocumentManager;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JAXBHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.ReaderHandle;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.SourceHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.FailedRequestException;
-
-
-
-
-
-
 import javax.xml.transform.dom.DOMSource;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.skyscreamer.jsonassert.*;
-import org.json.JSONException;
-import org.junit.*;
-
-import static org.junit.Assert.*;
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ResourceNotFoundException;
+import com.marklogic.client.document.BinaryDocumentManager;
+import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.document.GenericDocumentManager;
+import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.document.TextDocumentManager;
+import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.io.BytesHandle;
+import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.FileHandle;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.JAXBHandle;
+import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.ReaderHandle;
+import com.marklogic.client.io.SourceHandle;
+import com.marklogic.client.io.StringHandle;
 
 /*
  * This test is designed to to test simple bulk writes with different types of Managers and different content type like JSON,text,binary,XMl
@@ -80,14 +77,14 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 
 	private static String dbName = "TestBulkWriteSampleDB";
 	private static String [] fNames = {"TestBulkWriteSampleDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	private  DatabaseClient client ;
 	@BeforeClass
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		configureRESTServer(dbName, fNames);
 
 		//To enable client side http logging
 
@@ -97,10 +94,10 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 
 	}
 
-	@Before  public void testSetup() throws Exception
+	@Before  public void testSetup() throws KeyManagementException, NoSuchAlgorithmException, Exception
 	{
 		// create new connection for each test below
-		client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 	}
 	@After
 	public  void testCleanUp() throws Exception
@@ -146,7 +143,7 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 	 * Verified by reading individual documents
 	 */
 	@Test  
-	public void testWriteMultipleXMLDoc() throws Exception  
+	public void testWriteMultipleXMLDoc() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	{
 
 
@@ -178,7 +175,7 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 	 * Expecting an exception.
 	 */
 	@Test (expected = FailedRequestException.class) 
-	public void testWriteMultipleSameBinaryDoc() throws Exception  
+	public void testWriteMultipleSameBinaryDoc() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	{
 		String docId[] = {"Pandakarlino.jpg","mlfavicon.png"};
 
@@ -198,7 +195,7 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 	 * Verified by reading individual documents
 	 */
 	@Test 
-	public void testWriteMultipleBinaryDoc() throws Exception  
+	public void testWriteMultipleBinaryDoc() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	{
 		String docId[] = {"Pandakarlino.jpg","mlfavicon.png"};
 
@@ -243,7 +240,7 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 
 	 */
 	@Test
-	public void testWriteMultipleJSONDocs() throws Exception  
+	public void testWriteMultipleJSONDocs() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	{
 		String docId[] = {"/a.json","/b.json","/c.json"};
 		String json1 = new String("{\"animal\":\"dog\", \"says\":\"woof\"}");
@@ -269,7 +266,7 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 		bfr.close();
 	}
 	@Test
-	public void testWriteMultipleJAXBDocs() throws Exception  
+	public void testWriteMultipleJAXBDocs() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	{
 		String docId[] ={"/jaxb/iphone.xml","/jaxb/ipad.xml","/jaxb/ipod.xml"};
 		Product product1 = new Product();
@@ -310,7 +307,7 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 	 * 
 	 */
 	@Test 
-	public void testWriteGenericDocMgr() throws Exception  
+	public void testWriteGenericDocMgr() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	{
 		String docId[] = {"Pandakarlino.jpg","mlfavicon.png"};
 
@@ -377,7 +374,7 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 	}
 
 	@Test
-	public void testWriteMultipleJacksonPoJoDocs() throws Exception  
+	public void testWriteMultipleJacksonPoJoDocs() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	{
 		String docId[] ={"/jack/iphone.json","/jack/ipad.json","/jack/ipod.json"};
 		Product product1 = new Product();
@@ -424,7 +421,7 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 	}
 	
 	@Test(expected=ResourceNotFoundException.class)
-	public void testJAXBDocsBulkDelete() throws Exception  
+	public void testJAXBDocsBulkDelete() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	{
 		String docId[] ={"/jaxb/iphone.xml","/jaxb/ipad.xml","/jaxb/ipod.xml"};
 		Product product1 = new Product();
@@ -471,6 +468,6 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down" );
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

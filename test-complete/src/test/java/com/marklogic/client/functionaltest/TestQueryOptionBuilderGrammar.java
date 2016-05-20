@@ -18,60 +18,62 @@ package com.marklogic.client.functionaltest;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.w3c.dom.Document;
+
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.config.QueryOptions.QueryGrammar.QueryJoiner.JoinerApply;
 import com.marklogic.client.admin.config.QueryOptions.QueryGrammar.Tokenize;
 import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.impl.Utilities;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StringQueryDefinition;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.w3c.dom.Document;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
-
-import org.junit.*;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 public class TestQueryOptionBuilderGrammar extends BasicJavaClientREST {
 
 	private static String dbName = "TestQueryOptionBuilderGrammarDB";
 	private static String [] fNames = {"TestQueryOptionBuilderGrammarDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 	
 	@BeforeClass
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 
 	@After
 	public  void testCleanUp() throws Exception
 	{
-		clearDB(8011);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 
 	@Test	
-	public void testGrammarOperatorQuotation() throws FileNotFoundException, XpathException, TransformerException
+	public void testGrammarOperatorQuotation() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
 	{	
 		System.out.println("Running testGrammarOperatorQuotation");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -136,13 +138,13 @@ public class TestQueryOptionBuilderGrammar extends BasicJavaClientREST {
 	} 
 
 	@Test	
-	public void testGrammarTwoWordsSpace() throws FileNotFoundException, XpathException, TransformerException
+	public void testGrammarTwoWordsSpace() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
 	{	
 		System.out.println("Running testGrammarTwoWordsSpace");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -206,13 +208,13 @@ public class TestQueryOptionBuilderGrammar extends BasicJavaClientREST {
 	} 
 
 	@Test	
-	public void testGrammarPrecedenceAndNegate() throws FileNotFoundException, XpathException, TransformerException
+	public void testGrammarPrecedenceAndNegate() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
 	{	
 		System.out.println("Running testGrammarPrecedenceAndNegate");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -277,13 +279,13 @@ public class TestQueryOptionBuilderGrammar extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testGrammarConstraint() throws FileNotFoundException, XpathException, TransformerException
+	public void testGrammarConstraint() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
 	{	
 		System.out.println("Running testGrammarConstraint");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -351,7 +353,7 @@ public class TestQueryOptionBuilderGrammar extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 
 	}
 }

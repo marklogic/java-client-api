@@ -16,40 +16,42 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.*;
-
-import org.junit.*;
 public class TestMetadataXML extends BasicJavaClientREST {
 
 	private static String dbName = "TestMetadataXMLDB";
 	private static String [] fNames = {"TestMetadataXMLDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 	
 	@BeforeClass
 	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
 
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 	}
 
 	@Test
-	public void testMetadataXMLCRUD() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testMetadataXMLCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testMetadataXMLCRUD");
 
@@ -57,7 +59,7 @@ public class TestMetadataXML extends BasicJavaClientREST {
 		String uri = "/write-bin-metadata/";
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// create doc manager
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -134,7 +136,7 @@ public class TestMetadataXML extends BasicJavaClientREST {
 
 
 	@Test	
-	public void testMetadataXMLNegative() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testMetadataXMLNegative() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testMetadataXMLNegative");
 
@@ -142,13 +144,13 @@ public class TestMetadataXML extends BasicJavaClientREST {
 		String uri = "/write-neg-metadata/";
 
 		// connect the client
-		DatabaseClient client1 = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client1 = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write the doc
 		writeDocumentUsingBytesHandle(client1, filename, uri, "Binary");
 
 		// connect with another client to write metadata
-		DatabaseClient client2 = DatabaseClientFactory.newClient("localhost", 8011, "rest-reader", "x", Authentication.DIGEST);
+		DatabaseClient client2 = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
 
 		// create doc manager
 		XMLDocumentManager docMgr = client2.newXMLDocumentManager();
@@ -186,6 +188,6 @@ public class TestMetadataXML extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

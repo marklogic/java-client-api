@@ -17,46 +17,47 @@
 package com.marklogic.client.functionaltest;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.xml.sax.SAXException;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StringQueryDefinition;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.xml.sax.SAXException;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
-
-import org.junit.*;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 
 public class TestQueryOptionBuilderTransformResults extends BasicJavaClientREST {
 
 	private static String dbName = "TestQueryOptionBuilderTransformResultsDB";
 	private static String [] fNames = {"TestQueryOptionBuilderTransformResultsDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 
 	@BeforeClass	
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 
@@ -64,18 +65,18 @@ public class TestQueryOptionBuilderTransformResults extends BasicJavaClientREST 
 	public  
 	void testCleanUp() throws Exception
 	{
-		clearDB(restPort);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 
 	@Test	
-	public void testTransformResuleWithSnippetFunction() throws XpathException, TransformerException, JsonProcessingException, IOException
+	public void testTransformResuleWithSnippetFunction() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, JsonProcessingException, IOException
 	{	
 		System.out.println("Running testTransformResuleWithSnippetFunction");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -136,13 +137,13 @@ public class TestQueryOptionBuilderTransformResults extends BasicJavaClientREST 
 	}
 
 	@Test	
-	public void testTransformResuleWithEmptySnippetFunction() throws XpathException, TransformerException, SAXException, IOException
+	public void testTransformResuleWithEmptySnippetFunction() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, SAXException, IOException
 	{	
 		System.out.println("Running testTransformResuleWithEmptySnippetFunction");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -203,7 +204,7 @@ public class TestQueryOptionBuilderTransformResults extends BasicJavaClientREST 
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 
 	}
 }

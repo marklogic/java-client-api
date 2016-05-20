@@ -18,6 +18,8 @@ package com.marklogic.client.functionaltest;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import org.junit.After;
 import org.junit.Before;
@@ -48,7 +50,7 @@ public class TestBug26248 {
 		  String resendableDoc;
 		  InputStream onetimeDoc;
 		  TextDocumentManager docMgr;
-		  DocWriter(DatabaseClient client, String id, String doc) throws Exception {
+		  DocWriter(DatabaseClient client, String id, String doc) throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		   this.id = id;
 		   if (isResendable)
 		    this.resendableDoc = doc;
@@ -79,11 +81,10 @@ public class TestBug26248 {
 	 
 		
 	@Test
-	public void testBug26248() throws Exception {
+	public void testBug26248() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		try{ 
 		DocWriter.isResendable = false;
-		client= DatabaseClientFactory.newClient(
-			    "localhost", 8011, "rest-writer", "x", Authentication.DIGEST
+		client= DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST
 			   );
 		  DocWriter dw0 = new DocWriter(client, "/tmp/test0.txt", "The zeroth text");
 		  DocWriter dw1 = new DocWriter(client, "/tmp/test1.txt", "The first text");

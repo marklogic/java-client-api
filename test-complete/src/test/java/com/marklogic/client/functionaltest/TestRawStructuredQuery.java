@@ -16,20 +16,26 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawStructuredQueryDefinition;
-
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.DOMHandle;
@@ -37,23 +43,19 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.*;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.*;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.RawStructuredQueryDefinition;
 
 public class TestRawStructuredQuery extends BasicJavaClientREST {
 	private static String dbName = "TestRawStructuredQueryDB";
 	private static String [] fNames = {"TestRawStructuredQueryDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 
 	@BeforeClass	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0],  restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 		System.out.println("after setup");
 	}
@@ -61,18 +63,18 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 	@After
 	public  void testCleanUp() throws Exception
 	{
-		clearDB(restPort);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 
 	@Test	
-	public void testRawStructuredQueryXML() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawStructuredQueryXML() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawStructuredQueryXML");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -114,13 +116,13 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawStructuredQueryJSON() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawStructuredQueryJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawStructuredQueryJSON");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -166,14 +168,14 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawStructuredQueryXMLWithOptions() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawStructuredQueryXMLWithOptions() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawStructuredQueryXMLWithOptions");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "valueConstraintWithoutIndexSettingsAndNSOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -217,14 +219,14 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawStructuredQueryJSONWithOverwriteOptions() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawStructuredQueryJSONWithOverwriteOptions() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawStructuredQueryJSONWithOverwriteOptions");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "valueConstraintWithoutIndexSettingsAndNSOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -272,7 +274,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawStructuredQueryCollection() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawStructuredQueryCollection() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawStructuredQueryCollection");
 
@@ -282,7 +284,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 		String filename4 = "constraint4.xml";
 		String filename5 = "constraint5.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// create and initialize a handle on the metadata
 		DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -335,7 +337,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawStructuredQueryCombo() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawStructuredQueryCombo() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawStructuredQueryCombo");
 
@@ -345,7 +347,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 		String filename4 = "constraint4.xml";
 		String filename5 = "constraint5.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// create and initialize a handle on the metadata
 		DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -398,13 +400,13 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawStructuredQueryField() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawStructuredQueryField() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawStructuredQueryField");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -443,13 +445,13 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawStructuredQueryPathIndex() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawStructuredQueryPathIndex() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawStructuredQueryPathIndex");
 
 		String[] filenames = {"pathindex1.xml", "pathindex2.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -485,7 +487,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 		client.release();		
 	}
 
-	/*public void testRawStructuredQueryComboJSON() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	/*public void testRawStructuredQueryComboJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawStructuredQueryComboJSON");
 
@@ -495,7 +497,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 		String filename4 = "constraint4.xml";
 		String filename5 = "constraint5.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 	    // create and initialize a handle on the metadata
 	    DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -559,6 +561,6 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames,restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

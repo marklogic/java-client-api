@@ -16,11 +16,13 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
 import org.junit.After;
@@ -33,16 +35,15 @@ import org.junit.runners.MethodSorters;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.Transaction;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.eval.EvalResult;
+import com.marklogic.client.eval.EvalResult.Type;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.eval.ServerEvaluationCall;
-import com.marklogic.client.eval.EvalResult.Type;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
@@ -56,13 +57,12 @@ import com.marklogic.client.io.InputStreamHandle;
 public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 	private static String dbName = "TestEvalXqueryWithTransDB";
 	private static String [] fNames = {"TestEvalXqueryWithTransDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+		
 	private  DatabaseClient client ;
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		 System.out.println("In setup");
-		 setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		 configureRESTServer(dbName, fNames);
  	     createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
  	     createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
 //		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
@@ -71,14 +71,14 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 		deleteRESTUser("eval-user");
 		deleteUserRole("test-eval");
 	}
 
 	@Before
-	public void setUp() throws Exception {
-		client = DatabaseClientFactory.newClient("localhost", restPort,"eval-user", "x", Authentication.DIGEST);
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+		client = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
 	}
 
 	@After
@@ -87,7 +87,7 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 	}
 // loop the eval query more than 150 times and should not stuck
 	@Test
-	public void test1MultipleEvalQueries() throws Exception {
+	public void test1MultipleEvalQueries() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 	
 		GenericDocumentManager docMgr = client.newDocumentManager();
 		File file1= null;
@@ -128,7 +128,7 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 	}
 	//issue 170 are blocking the test progress in here
 	@Test
-	public void test2XqueryEvalTransactions() throws Exception{
+	public void test2XqueryEvalTransactions() throws KeyManagementException, NoSuchAlgorithmException, Exception{
 		int count=1;
 		boolean tstatus =true;
 		Transaction t1 = client.openTransaction();
@@ -168,11 +168,12 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 }
 	//issue 171 are blocking the test progress in here
 		@Test
-		public void test3XqueryEvalTransactionsWithRunTimeDB() throws Exception{
+		public void test3XqueryEvalTransactionsWithRunTimeDB() throws KeyManagementException, NoSuchAlgorithmException, Exception{
 			int count=1;
 			boolean tstatus =true;
-			associateRESTServerWithDB(restServerName,"Documents");
-			DatabaseClient client2 =DatabaseClientFactory.newClient("localhost", restPort,dbName,"eval-user", "x", Authentication.DIGEST);
+			associateRESTServerWithDB(getRestServerName(),"Documents");
+			
+			DatabaseClient client2 = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
 			Transaction t1 = client2.openTransaction();
 			try{ 
 			XMLDocumentManager docMgr = client2.newXMLDocumentManager();

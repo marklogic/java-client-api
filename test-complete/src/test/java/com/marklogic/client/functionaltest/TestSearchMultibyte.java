@@ -16,57 +16,59 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import com.marklogic.client.query.QueryManager;
-
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.io.DOMHandle;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.*;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 public class TestSearchMultibyte extends BasicJavaClientREST {
 
 	private static String dbName = "TestSearchMultibyteDB";
 	private static String [] fNames = {"TestSearchMultibyteDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 
 	@BeforeClass	
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 
 	@After
 	public void testCleanUp() throws Exception
 	{
-		clearDB(restPort);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 
 	@Test	
-	public void testSearchString() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testSearchString() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testSearchString");
 
 		String[] filenames = {"multibyte1.xml", "multibyte2.xml", "multibyte3.xml"};
 		String queryOptionName = "multibyteSearchOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -97,14 +99,14 @@ public class TestSearchMultibyte extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testSearchStringWithBucket() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testSearchStringWithBucket() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testSearchStringWithBucket");
 
 		String[] filenames = {"multibyte1.xml", "multibyte2.xml", "multibyte3.xml"};
 		String queryOptionName = "multibyteSearchOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -136,14 +138,14 @@ public class TestSearchMultibyte extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testSearchStringWithBucketAndWord() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testSearchStringWithBucketAndWord() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testSearchStringWithBucketAndWord");
 
 		String[] filenames = {"multibyte1.xml", "multibyte2.xml", "multibyte3.xml"};
 		String queryOptionName = "multibyteSearchOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -177,6 +179,6 @@ public class TestSearchMultibyte extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames,restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

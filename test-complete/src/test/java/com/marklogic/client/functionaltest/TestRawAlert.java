@@ -16,26 +16,28 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryDefinition;
-
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.alerting.RuleDefinition;
@@ -46,39 +48,40 @@ import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.*;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class TestRawAlert extends BasicJavaClientREST {
 	private static String dbName = "TestRawAlertDB";
 	private static String [] fNames = {"TestRawAlertDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 
 	@BeforeClass	
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0],  restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 
 	@After
 	public void testCleanUp() throws Exception
 	{
-		clearDB(restPort);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 
 	@Test	
-	public void testRawAlert() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawAlert() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawAlert");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -138,13 +141,13 @@ public class TestRawAlert extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawAlertUnmatched() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawAlertUnmatched() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawAlertUnmatched");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -187,13 +190,13 @@ public class TestRawAlert extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawAlertMultipleRules() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawAlertMultipleRules() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawAlertMultipleRules");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -258,13 +261,13 @@ public class TestRawAlert extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawAlertUnmatchingRuleName() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawAlertUnmatchingRuleName() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawAlertUnmatchingRuleName");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -303,13 +306,13 @@ public class TestRawAlert extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawAlertJSON() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawAlertJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawAlertJSON");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -376,13 +379,13 @@ public class TestRawAlert extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawAlertStructuredQuery() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawAlertStructuredQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawAlertStructuredQuery");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -435,13 +438,13 @@ public class TestRawAlert extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawAlertStructuredQueryTransform() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawAlertStructuredQueryTransform() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawAlertStructuredQueryTransform");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -500,13 +503,13 @@ public class TestRawAlert extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawAlertCandidateRules() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawAlertCandidateRules() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawAlertCandidateRules");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -600,13 +603,13 @@ public class TestRawAlert extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawAlertCandidateRulesUnmatched() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawAlertCandidateRulesUnmatched() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawAlertCandidateRulesUnmatched");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -674,13 +677,13 @@ public class TestRawAlert extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawAlertDocUris() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawAlertDocUris() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawAlertDocUris");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -741,13 +744,13 @@ public class TestRawAlert extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRawAlertDocPayload() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRawAlertDocPayload() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawAlertDocPayload");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -809,6 +812,6 @@ public class TestRawAlert extends BasicJavaClientREST {
 	public static  void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames,  restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

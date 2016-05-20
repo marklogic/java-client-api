@@ -19,6 +19,8 @@ package com.marklogic.client.functionaltest;
 import static org.junit.Assert.*;
 
 import java.io.*;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
 
 import javax.xml.transform.OutputKeys;
@@ -34,6 +36,7 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.SourceHandle;
+
 import org.junit.*;
 
 public class TestTransformXMLWithXSLT extends BasicJavaClientREST {
@@ -48,7 +51,7 @@ public class TestTransformXMLWithXSLT extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testWriteXMLWithXSLTransform() throws TransformerException, FileNotFoundException
+	public void testWriteXMLWithXSLTransform() throws KeyManagementException, NoSuchAlgorithmException, TransformerException, FileNotFoundException
 	{	
 		// connect the client
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8015, "rest-writer", "x", Authentication.DIGEST);

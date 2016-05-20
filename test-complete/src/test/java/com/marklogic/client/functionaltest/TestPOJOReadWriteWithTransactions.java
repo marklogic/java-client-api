@@ -16,8 +16,13 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 
 import org.junit.After;
@@ -29,9 +34,8 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.Transaction;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
@@ -42,26 +46,26 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 
 	private static String dbName = "TestPOJORWTransDB";
 	private static String [] fNames = {"TestPOJORWTransDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	private  DatabaseClient client ;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 //		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		configureRESTServer(dbName, fNames);
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 
 	@Before
-	public void setUp() throws Exception {
-		client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 	}
 
 	@After
@@ -93,7 +97,7 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 	//This test is to persist a simple design model objects in ML, read from ML, delete all
 	// Issue 104 for unable to have transaction in count,exists, delete methods
 	@Test
-	public void test0POJOWriteWithTransaction() throws Exception {
+	public void test0POJOWriteWithTransaction() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		Transaction t= client.openTransaction();
 		//Load more than 100 objects
@@ -119,7 +123,7 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 	}
 	//This test is to persist objects into different collections, read documents based on Id and delete single object based on Id
 	@Test
-	public void test1POJOWriteWithTransCollection() throws Exception {
+	public void test1POJOWriteWithTransCollection() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		//Load more than 110 objects into different collections
 		Transaction t= client.openTransaction();
@@ -237,7 +241,7 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 		//see if it complains when there are no records
 	}
 	@Test
-	public void test3POJOWriteWithPojoPageReadAll() throws Exception {
+	public void test3POJOWriteWithPojoPageReadAll() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		//Load more than 110 objects into different collections
@@ -307,7 +311,7 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 	}
 
 //	@Test
-	public void test4POJOSearchWithCollectionsandTransaction() throws Exception {
+	public void test4POJOSearchWithCollectionsandTransaction() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
 		products.deleteAll();
@@ -381,7 +385,7 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST{
 		assertFalse("all the documents are deleted",products.exists((long)12));
 	}
 @Test
-	public void test5POJOSearchWithQueryDefinitionandTransaction() throws Exception {
+	public void test5POJOSearchWithQueryDefinitionandTransaction() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
 		products.deleteAll();

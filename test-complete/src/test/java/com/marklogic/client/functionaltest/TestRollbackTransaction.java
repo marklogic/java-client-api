@@ -18,52 +18,55 @@ package com.marklogic.client.functionaltest;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
-import org.junit.*;
+import com.marklogic.client.io.Format;
 
 public class TestRollbackTransaction extends BasicJavaClientREST {
 
 	private static String dbName = "TestRollbackTransactionDB";
 	private static String [] fNames = {"TestRollbackTransactionDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 
 	@BeforeClass	
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 
 	@Test	
-	public void testRollbackDeleteDocument() throws ParserConfigurationException, SAXException, IOException
+	public void testRollbackDeleteDocument() throws KeyManagementException, NoSuchAlgorithmException, ParserConfigurationException, SAXException, IOException
 	{	
 		System.out.println("testRollbackDeleteDocument");
 
 		String filename = "bbq1.xml";
 		String uri = "/tx-rollback/";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
 
@@ -114,7 +117,7 @@ public class TestRollbackTransaction extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRollbackUpdateDocument() throws ParserConfigurationException, SAXException, IOException
+	public void testRollbackUpdateDocument() throws KeyManagementException, NoSuchAlgorithmException, ParserConfigurationException, SAXException, IOException
 	{	
 		System.out.println("testRollbackUpdateDocument");
 
@@ -122,7 +125,7 @@ public class TestRollbackTransaction extends BasicJavaClientREST {
 		String updateFilename = "json-updated.json";
 		String uri = "/tx-rollback/";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
 
@@ -176,7 +179,7 @@ public class TestRollbackTransaction extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testRollbackMetadata() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testRollbackMetadata() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testRollbackMetadata");
 
@@ -184,7 +187,7 @@ public class TestRollbackTransaction extends BasicJavaClientREST {
 		String uri = "/tx-rollback/";
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
 
@@ -253,14 +256,14 @@ public class TestRollbackTransaction extends BasicJavaClientREST {
 	}	
 
 	@Test	
-	public void testNegative() throws ParserConfigurationException, SAXException, IOException
+	public void testNegative() throws KeyManagementException, NoSuchAlgorithmException, ParserConfigurationException, SAXException, IOException
 	{	
 		System.out.println("testNegative");
 
 		String filename = "bbq1.xml";
 		String uri = "/tx-rollback/";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
 
@@ -312,7 +315,7 @@ public class TestRollbackTransaction extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 
 	}
 }

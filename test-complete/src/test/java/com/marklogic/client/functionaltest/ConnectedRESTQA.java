@@ -26,12 +26,16 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.client.entity.*;
 import org.apache.logging.log4j.*;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
@@ -39,15 +43,22 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Properties;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
+
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 
 import java.net.InetAddress;
 
@@ -56,12 +67,50 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+
 
 /**
  * @author gvaidees
  *
  */
 public abstract class ConnectedRESTQA {
+	private String serverName = "";
+	private static String restServerName = null;
+	private static String restSslServerName = null;
+	private static String ssl_enabled = null;
+	private static String https_port = null;
+	private static String http_port = null;
+	// This needs to be a FQDN when SSL is enabled. Else localhost. Set in test.properties 
+	private static String host_name = null;
+	// This needs to be a FQDN when SSL is enabled. Else localhost
+	private static String ssl_host_name = null;
+	private static String admin_user = null;
+	private static String admin_password = null;
+	private static String mlRestWriteUser = null;
+	private static String mlRestWritePassword = null;
+	private static String mlRestAdminUser = null;
+	private static String mlRestAdminPassword = null;
+	private static String mlRestReadUser = null;
+	private static String mlRestReadPassword = null;
+	private static String ml_certificate_password = null;
+	private static String ml_certificate_file = null; 	
+
+	SSLContext sslContext = null;
 
 	/**
 	 * Use Rest call to create a database.
@@ -208,47 +257,66 @@ public abstract class ConnectedRESTQA {
 		}
 	}
 
-	public static void assocRESTServer(String restServerName,String dbName,int restPort)	{
-		try{
-			DefaultHttpClient client = new DefaultHttpClient();
-
+	public static void assocRESTServer(String restServerName, String dbName, int restPort) {
+		DefaultHttpClient client = new DefaultHttpClient();
+		try {
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
 
-			HttpPost post = new HttpPost("http://localhost:8002"+ "/v1/rest-apis?format=json");
-			//			
-			String JSONString = 
-					"{ \"rest-api\": {\"name\":\""+
-							restServerName +
-							"\",\"database\":\""+ 
-							dbName + 
-							"\",\"port\":\""+
-							restPort+
-							"\"}}";
-			//			System.out.println(JSONString);		
+			HttpPost post = new HttpPost("http://localhost:8002"
+					+ "/v1/rest-apis?format=json");
+			String JSONString = "{ \"rest-api\": {\"name\":\"" + restServerName
+					+ "\",\"database\":\"" + dbName + "\",\"port\":\""
+					+ restPort + "\"}}";
+
 			post.addHeader("Content-type", "application/json");
 			post.setEntity(new StringEntity(JSONString));
 
 			HttpResponse response = client.execute(post);
-//			System.out.println(JSONString);
+
 			if (response.getStatusLine().getStatusCode() == 400) {
-				// EntityUtils to get the response content
 				System.out.println("AppServer already exist");
-				if(dbName.equals("Documents")){
+				if (dbName.equals("Documents")) {
 					System.out.println("and Context database is Documents DB");
+				} else {
+					System.out.println("and changing context database to " + dbName);
+					associateRESTServerWithDB(restServerName, dbName);
 				}
-				else{
-					System.out.println("and changing context database to "+dbName);
-					associateRESTServerWithDB(restServerName,dbName);
+			} else if (response.getStatusLine().getStatusCode() == 201) {
+				// Enable security on new REST Http Server if SSL is turned on.
+				if (IsSecurityEnabled()) {
+					enableSecurityOnRESTServer(restServerName, dbName);
 				}
-				
 			}
-		}catch (Exception e) {
+
+		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
 		}
 	}
+	
+	public static void enableSecurityOnRESTServer(String restServerName,String dbName)throws Exception{
+		DefaultHttpClient client = new DefaultHttpClient();
+
+		client.getCredentialsProvider().setCredentials(
+				new AuthScope("localhost", 8002),
+				new UsernamePasswordCredentials("admin", "admin"));
+		String  body = "{\"group-name\": \"Default\",\"internal-security\":\"true\", \"ssl-certificate-template\":\"ssl1-QAXdbcServer\", \"ssl-require-client-certificate\":\"true\"" +					
+							"}";
+
+		HttpPut put = new HttpPut("http://localhost:8002/manage/v2/servers/"+restServerName+"/properties?server-type=http");
+		put.addHeader("Content-type", "application/json");
+		put.setEntity(new StringEntity(body));
+
+		HttpResponse response2 = client.execute(put);
+		HttpEntity respEntity = response2.getEntity();
+		if(respEntity != null){
+			String content =  EntityUtils.toString(respEntity);
+			System.out.println(content);
+		}
+	}
+	
 	public static void associateRESTServerWithDB(String restServerName,String dbName)throws Exception{
 		DefaultHttpClient client = new DefaultHttpClient();
 
@@ -773,21 +841,47 @@ public abstract class ConnectedRESTQA {
 		}
 	}
 
+	/*
+	 * Clear the Database
+	 * 
+	 */	
 	public static void clearDB(int port){
-		try{
-			DefaultHttpClient client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(
-					new AuthScope("localhost", port),
-					new UsernamePasswordCredentials("admin", "admin"));
-			String uri = "http://localhost:"+port+"/v1/search/";
-			HttpDelete delete = new HttpDelete(uri);
-			client.execute(delete);
-
+		try {
+			
+			String uri  = null;
+			if ( IsSecurityEnabled()) {
+				String hostname = getRestServerHostName();
+				uri = "https://"+hostname+":"+port+"/v1/search/"; 
+				SSLContext sslContext = getSslContext();
+				
+				 CredentialsProvider credsProvider = new BasicCredentialsProvider();			        
+				 credsProvider.setCredentials(
+			                new AuthScope(hostname, port),
+			                new UsernamePasswordCredentials("admin", "admin"));
+			        
+				HttpClientBuilder hcb = HttpClientBuilder.create().setSslcontext(sslContext);
+				hcb.setDefaultCredentialsProvider(credsProvider);
+				CloseableHttpClient clientSSL = hcb.build();				
+				HttpDelete postReq = new HttpDelete(uri);				
+				clientSSL.execute(postReq);
+				// Wait for the database to be cleared. The claer db is taking some time.
+                Thread.sleep(5000);	    
+			}
+			else {
+				DefaultHttpClient client = new DefaultHttpClient();
+				client.getCredentialsProvider().setCredentials(
+						new AuthScope("localhost", port),
+						new UsernamePasswordCredentials("admin", "admin"));
+				uri = "http://localhost:"+port+"/v1/search/";
+				HttpDelete delete = new HttpDelete(uri);
+				client.execute(delete);
+			}
 		}catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
 		}
 	}
+	
 	public static void waitForServerRestart()
 	{
 		try{
@@ -1050,14 +1144,6 @@ public abstract class ConnectedRESTQA {
 		setDatabaseProperties(dbName,"triple-positions",false );
 	}
 	
-	
-	
-	/*
-	 * "word-lexicons":  [
-      "http:\/\/marklogic.com\/collation\/"
-    ]
-  }
-	 */
 	public static void enableWordLexicon(String dbName) throws Exception{
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode childNode = mapper.createObjectNode();
@@ -1971,4 +2057,361 @@ public abstract class ConnectedRESTQA {
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * Returns a SSLContext, so that the tests can run on a SSL enabled REST server.
+	 * @return
+	 * @throws IOException
+	 * @throws NoSuchAlgorithmException
+	 * @throws KeyManagementException
+	 * @throws KeyStoreException 
+	 * @throws CertificateException 
+	 * @throws UnrecoverableKeyException 
+	 */
+	public static SSLContext getSslContext() throws IOException, NoSuchAlgorithmException, KeyManagementException, KeyStoreException, CertificateException, UnrecoverableKeyException
+	{
+		// create a trust manager
+		// (note: a real application should verify certificates)
+		
+		TrustManager tm =  new X509TrustManager() {
+            public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+                // nothing to do
+            }
+
+            public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+                // nothing to do
+            }
+
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
+         };
+
+        // get the client certificate. In case we need to modify path. 
+        String mlCertFile = new String(ml_certificate_file);
+       
+        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+        Properties property = new Properties();
+        InputStream keyInput  = property.getClass().getResourceAsStream(mlCertFile);
+        try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        try {
+        	keyStore.load(keyInput, ml_certificate_password.toCharArray());
+        } finally {
+                if(keyInput != null)
+        	keyInput.close();
+        }
+        keyManagerFactory.init(keyStore, ml_certificate_password.toCharArray());
+        KeyManager[] keyMgr = keyManagerFactory.getKeyManagers();
+                       
+		// create an SSL context
+		SSLContext mlsslContext = SSLContext.getInstance("TLSv1.2");
+		mlsslContext.init(keyMgr, new TrustManager[] { tm }, null);
+		
+		return mlsslContext;
+	}
+	
+	/**
+	 * Clear the database contents based on port for SSL or non SSL enabled REST Server.
+	 * @param dbName
+	 * @param fNames
+	 * @throws Exception
+	 */
+	public static void  clearDB() throws Exception
+	{		
+		clearDB(getRestServerPort());
+	}
+	
+	/**
+	 * Configure a SSL or non SSL enabled REST Server based on the build.gradle ssl setting.
+	 * @param dbName
+	 * @param fNames
+	 * @throws Exception
+	 */
+	public static void  configureRESTServer(String dbName, String[] fNames) throws Exception
+	{
+		loadGradleProperties();
+		if (IsSecurityEnabled())
+			setupJavaRESTServer(dbName, fNames[0], restSslServerName, getRestServerPort());
+		else
+			setupJavaRESTServer(dbName, fNames[0], restServerName, getRestServerPort());
+	}
+	
+	/**
+	 * Configure a SSL or non SSL enabled REST Server based on the build.gradle ssl setting. 
+	 * Associate database or not
+	 * @param dbName
+	 * @param fNames
+	 * @throws Exception
+	 */
+	public static void  configureRESTServer(String dbName, String[] fNames, boolean bAssociateDB) throws Exception
+	{
+		loadGradleProperties();
+		if (IsSecurityEnabled())			
+			setupJavaRESTServer(dbName, fNames[0], restSslServerName, getRestServerPort(), bAssociateDB );
+		else			
+			setupJavaRESTServer(dbName, fNames[0], restServerName, getRestServerPort(), bAssociateDB);
+	}
+	
+	/**
+	 * Removes the database and forest from a REST server.
+	 * @param dbName
+	 * @param fNames
+	 * @throws Exception
+	 */
+	public static void cleanupRESTServer(String dbName, String[] fNames) throws Exception
+	{
+		if 	(IsSecurityEnabled())
+			tearDownJavaRESTServer(dbName, fNames, restSslServerName);
+		else
+			tearDownJavaRESTServer(dbName, fNames, restServerName);		
+	}
+	
+	/**
+	 * Returns true or false based security (ssl) is enabled or disabled. 
+	 * @return
+	 */
+	public static boolean IsSecurityEnabled()
+	{	
+		boolean bSecurityEnabled = false;
+		if(getSslEnabled().trim().equalsIgnoreCase("true")) 
+			  bSecurityEnabled = true;
+		else if ( getSslEnabled().trim().equalsIgnoreCase("false") || getSslEnabled() == null || getSslEnabled().trim().isEmpty() ) 
+			  bSecurityEnabled = false;
+		return bSecurityEnabled; 		
+	}
+	
+	public static DatabaseClient getDatabaseClient() throws KeyManagementException, NoSuchAlgorithmException, IOException
+	{			
+		DatabaseClient client = DatabaseClientFactory.newClient(getServer(), getRestServerPort());		
+		return client; 		
+	}
+	
+	public static DatabaseClient getDatabaseClient(String user, String password, Authentication authType) throws KeyManagementException, NoSuchAlgorithmException, IOException
+	{	
+		DatabaseClient client = null;
+		try {			
+			   SSLContext sslcontext = null;
+			   if 	(IsSecurityEnabled()) {
+				sslcontext = getSslContext();
+				 client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), user, password, authType, sslcontext, SSLHostnameVerifier.ANY);
+			  }
+			  else
+			    client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), user, password, authType);
+		} catch (CertificateException certEx) {
+			// TODO Auto-generated catch block
+			certEx.printStackTrace();
+		}
+		catch (KeyStoreException ksEx) {
+			// TODO Auto-generated catch block
+			ksEx.printStackTrace();
+		}
+		catch (UnrecoverableKeyException unReovkeyEx) {
+			// TODO Auto-generated catch block
+			unReovkeyEx.printStackTrace();
+		} 
+		return client;
+	}
+	
+	/*
+	 * To provide DatabaseClient instance in the following cases.
+	 * Access a specific database on non uber port i.e., 8012
+	 * Access a specific database through uber server on port (specifically port 8000)
+	 */
+	public DatabaseClient getDatabaseClientOnDatabase(String hostName, int port, String databaseName, String user, String password, Authentication authType) throws KeyManagementException, NoSuchAlgorithmException, IOException
+	{	
+		DatabaseClient client = null;		
+		try {			
+			SSLContext sslcontext = null;
+			// Enable secure access on non 8000 port. Uber servers on port 8000 aren't security enabled as of now.
+			if 	(IsSecurityEnabled() && port != 8000) {
+				sslcontext = getSslContext();				
+				client= DatabaseClientFactory.newClient(hostName, port, databaseName, user, password, authType, sslcontext, SSLHostnameVerifier.ANY);
+			}
+			else
+				client = DatabaseClientFactory.newClient(hostName, port, databaseName, user, password, authType);					    
+		} catch (CertificateException certEx) {
+			// TODO Auto-generated catch block
+			certEx.printStackTrace();
+		}
+		catch (KeyStoreException ksEx) {
+			// TODO Auto-generated catch block
+			ksEx.printStackTrace();
+		}
+		catch (UnrecoverableKeyException unReovkeyEx) {
+			// TODO Auto-generated catch block
+			unReovkeyEx.printStackTrace();
+		} 
+		return client;
+	}
+	
+	/**
+	 * Return a Server name.
+	 * For SSL runs returns value in restSslServerName
+	 * For non SSL runs returns restServerName
+	 * @return
+	 */
+	
+	public static String getRestServerName()
+	{		
+		return (getSslEnabled().trim().equalsIgnoreCase("true")?restSslServerName:restServerName); 		
+	}
+	
+	/**
+	 * Return a Server host name configured in build.gradle.
+	 * For SSL runs returns SSL_HOST_NAME
+	 * For non SSL runs returns HOST_NAME
+	 * @return
+	 */
+	
+	public static String getRestServerHostName()
+	{		
+		return (getSslEnabled().trim().equalsIgnoreCase("true")?getSslServer():getServer()); 		
+	}
+	
+	/**
+	 * Return a Server host port configured in build.gradle.
+	 * For SSL runs returns HTTPS_PORT
+	 * For non SSL runs returns HTTP_PORT
+	 * @return
+	 */
+	
+	public static int getRestServerPort()
+	{		
+		return (getSslEnabled().trim().equalsIgnoreCase("true")?getHttpsPort():getHttpPort()); 		
+	}
+		
+	public static void loadGradleProperties() {
+		Properties property = new Properties();
+    	InputStream input = null;
+
+    	try {
+
+    	    input = property.getClass().getResourceAsStream("/test.properties");
+
+    	    // load a properties file
+    	    property.load(input);
+
+    	} catch (IOException ex) {
+    	    ex.printStackTrace();
+    	    throw new RuntimeException(ex);
+    	}
+    	// Set the variable values. 
+    	
+    	// Rest App server names and ports. 
+        restServerName = property.getProperty("mlAppServerName");
+    	restSslServerName = property.getProperty("mlAppServerSSLName");
+    	
+    	https_port = property.getProperty("httpsPort");
+    	http_port = property.getProperty("httpPort");
+
+    	// Machine names where ML Server runs
+    	host_name = property.getProperty("restHost");
+    	ssl_host_name = property.getProperty("restSSLHost");
+    	
+    	// Users
+    	admin_user = property.getProperty("mlAdminUser");
+    	admin_password = property.getProperty("mlAdminPassword");
+    	
+    	mlRestWriteUser = property.getProperty("mlRestWriteUser");
+    	mlRestWritePassword = property.getProperty("mlRestWritePassword");
+    	
+    	mlRestAdminUser = property.getProperty("mlRestAdminUser");
+    	mlRestAdminPassword = property.getProperty("mlRestAdminPassword");
+    	
+    	mlRestReadUser = property.getProperty("mlRestReadUser");
+    	mlRestReadPassword = property.getProperty("mlRestReadPassword");
+    	
+    	// Security and Certificate properties.
+    	ssl_enabled = property.getProperty("restSSLset");
+    	ml_certificate_password = property.getProperty("ml_certificate_password");
+    	ml_certificate_file = property.getProperty("ml_certificate_file");
+    }	
+	
+	public static String getAdminUser() {
+        return admin_user;
+    }
+
+    public static String getAdminPassword() {
+        return admin_password;
+    }
+    
+    public static String getRestWriterUser() {
+        return mlRestWriteUser;
+    }
+
+    public static String getRestWriterPassword() {
+        return mlRestWritePassword;
+    }
+    
+    public static String getRestAdminUser() {
+        return mlRestAdminUser;
+    }
+
+    public static String getRestAdminPassword() {
+        return mlRestAdminPassword;
+    }
+    
+    public static String getRestReaderUser() {
+        return mlRestReadUser;
+    }
+
+    public static String getRestReaderPassword() {
+        return mlRestReadPassword;
+    }
+    public static String getSslEnabled() {
+        return ssl_enabled;
+    }
+    
+    public static int getRestAppServerPort() {
+        return (IsSecurityEnabled() ? getHttpsPort():getHttpPort());
+    }
+    
+    // Returns the name of the REST Application server name. Currently on single node.
+    public static String getRestAppServerName() {
+        return (IsSecurityEnabled() ? getSslAppServerName(): getAppServerName());
+    }
+    
+ // Returns the Host name where REST Application server runs. Currently on single node.
+    public static String getRestAppServerHostName() {
+        return (IsSecurityEnabled() ? getSslServer(): getServer());
+    }
+    
+    public static int getHttpsPort() {
+        return (Integer.parseInt(https_port));
+    }
+    
+    public static int getHttpPort() {
+        return (Integer.parseInt(http_port));
+    }
+    
+    /* This needs to be a FQDN when SSL is enabled. Else localhost. 
+     * Set in test.properties or using a sed in build script
+     * 
+     */
+    public static String getServer() {
+        return host_name;
+    }
+    
+    /* This needs to be a FQDN when SSL is enabled. Else localhost. 
+     * Set in test.properties or using a sed in build script
+     * 
+     */
+    public static String getSslServer() {
+       return ssl_host_name;
+    }
+    
+    public static String getAppServerName() {
+        return restServerName;
+    }
+    
+    public static String getSslAppServerName() {
+       return restSslServerName;
+    }
 }

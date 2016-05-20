@@ -16,51 +16,49 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.io.DOMHandle;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.*;
 public class TestAppServicesFieldConstraint extends BasicJavaClientREST {
 
 //	private String serverName = "";
 	private static String dbName = "AppServicesFieldConstraintDB";
 	private static String [] fNames = {"AppServicesFieldConstraintDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 @BeforeClass
 	public static void setUp() throws Exception 
 	{
 	  System.out.println("In setup");
-//	  super.setUp();
-//	  serverName = getConnectedServerName();
-	  setupJavaRESTServer(dbName, fNames[0],  restServerName,8011);
+	  configureRESTServer(dbName, fNames);
 	  setupAppServicesConstraint(dbName);
 	}
 
-
-
 @Test
-	public void testWithSnippetAndVariousGrammarAndWordQuery() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testWithSnippetAndVariousGrammarAndWordQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{	
 		System.out.println("Running testWithSnippetAndVariousGrammarAndWordQuery");
 		
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "fieldConstraintWithSnippetAndVariousGrammarAndWordQueryOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 				
 		// write docs
 		for(String filename : filenames)
@@ -100,7 +98,6 @@ public class TestAppServicesFieldConstraint extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames,  restServerName);
-//		super.tearDown();
+		cleanupRESTServer(dbName, fNames);
 	}
 }

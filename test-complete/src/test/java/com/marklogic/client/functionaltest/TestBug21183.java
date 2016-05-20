@@ -16,49 +16,50 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StringQueryDefinition;
-
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.XMLStreamReaderHandle;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.*;
+import com.marklogic.client.query.MatchDocumentSummary;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 public class TestBug21183 extends BasicJavaClientREST {
 
 	private static String dbName = "TestBug21183DB";
 	private static String [] fNames = {"TestBug21183DB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 @BeforeClass
 	public static void setUp() throws Exception 
 	{
 	  System.out.println("In setup");
-	  setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+	  configureRESTServer(dbName, fNames);
 	  setupAppServicesConstraint(dbName);
 	}
 
 @Test
-	public void testBug21183() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testBug21183() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testBug21183");
 		
 		String[] filenames = {"bug21183.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// write docs
 		for(String filename : filenames)
@@ -105,7 +106,7 @@ public class TestBug21183 extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	
 	}
 }

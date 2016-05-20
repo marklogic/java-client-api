@@ -16,21 +16,22 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.util.Calendar;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.TimeZone;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -50,12 +51,10 @@ import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 
 
 
@@ -67,15 +66,13 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
  */
 public class TestEvalXquery  extends BasicJavaClientREST {
 	private static String dbName = "TestEvalXqueryDB";
-	private static String [] fNames = {"TestEvalXqueryDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	private static String [] fNames = {"TestEvalXqueryDB-1"};	
 	private  DatabaseClient client ;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		 System.out.println("In setup");
-		 TestEvalXquery.setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		 TestEvalXquery.configureRESTServer(dbName, fNames);
  	     TestEvalXquery.createUserRolesWithPrevilages("test-eval", "xdbc:eval","any-uri","xdbc:invoke");
  	     TestEvalXquery.createRESTUser("eval-user", "x", "test-eval");
 //		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
@@ -84,14 +81,14 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 		TestEvalXquery.deleteRESTUser("eval-user");
 		TestEvalXquery.deleteUserRole("test-eval");
 	}
 
 	@Before
-	public void setUp() throws Exception {
-		client = DatabaseClientFactory.newClient("localhost", restPort,"eval-user", "x", Authentication.DIGEST);
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+		client = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
 	}
 
 	@After
@@ -236,7 +233,7 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 	
 	//This test intended to verify a simple xquery for inserting and reading  documents of different formats and returning boolean,string number types
 	@Test
-	public void testXqueryReturningDifferentAutomicTypes() throws Exception {
+	public void testXqueryReturningDifferentAutomicTypes() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 	 String insertXML = "xdmp:document-insert(\"test1.xml\",<foo>test1</foo>)";
 	 String insertJSON = "xdmp:document-insert(\"test2.json\",object-node {\"test\":\"hello\"})";
 	 String insertTXT = "xdmp:document-insert(\"/test3.txt\",text { \"This is a text document.\" })";
@@ -298,7 +295,7 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 	}
 	//This test is intended to test eval(T handle), passing input stream handle with xqueries that retruns different types, formats
 	@Test
-	public void testXqueryReturningDifferentTypesAndFormatsWithHandle() throws Exception {
+	public void testXqueryReturningDifferentTypesAndFormatsWithHandle() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 	
 	 InputStream inputStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/xqueries.txt");
 	 InputStreamHandle ish = new InputStreamHandle();
@@ -316,7 +313,7 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 	}
 	//Test is intended to test different types of variable passed to xquery from java and check return node types,data types
 	@Test
-	public void testXqueryDifferentVariableTypes() throws Exception {
+	public void testXqueryDifferentVariableTypes() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 	
 		DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 		InputSource is = new InputSource();
@@ -433,7 +430,7 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 	}
 	//Issue 156 exist for this, have test cases where you can pass, element node, text node, binary node as an external variable 
 	@Test(expected = com.marklogic.client.FailedRequestException.class)
-	public void testXqueryWithExtVarAsNode() throws Exception {
+	public void testXqueryWithExtVarAsNode() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 		  InputSource is = new InputSource();
 		   is.setCharacterStream(new StringReader("<foo attr=\"attribute\"><?processing instruction?> <!--comment-->test1</foo>"));
@@ -459,10 +456,14 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 
 	//Issue 156 , have test cases where you can pass, element node, text node, binary node, json object, json array  as an external variable 
 	@Test
-	public void testXqueryInvokeModuleRetDiffTypes() throws Exception {
+	public void testXqueryInvokeModuleRetDiffTypes() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 	
 		InputStream inputStream=null;
-		DatabaseClient	moduleClient = DatabaseClientFactory.newClient("localhost", restPort,(restServerName+"-modules"),"admin", "admin", Authentication.DIGEST);
+
+		int restPort = getRestServerPort();
+		String restServerName = getRestServerName();
+		
+		DatabaseClient	moduleClient = getDatabaseClientOnDatabase("localhost", restPort,(restServerName+"-modules"),"admin", "admin", Authentication.DIGEST);
 	try{
 		inputStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/xquery-modules-with-diff-variable-types.xqy");
 		InputStreamHandle ish = new InputStreamHandle();

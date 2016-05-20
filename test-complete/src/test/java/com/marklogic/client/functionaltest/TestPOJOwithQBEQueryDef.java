@@ -16,9 +16,14 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -29,9 +34,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
@@ -42,25 +45,19 @@ import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
-import com.marklogic.client.query.RawQueryByExampleDefinition;
-import com.marklogic.client.query.RawStructuredQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder.Operator;
 
 public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 	private static String dbName = "TestPOJOqbeQDSearchDB";
 	private static String [] fNames = {"TestPOJOqbeQDSearchDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	private  DatabaseClient client ;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		configureRESTServer(dbName, fNames);
 		BasicJavaClientREST.addRangeElementIndex(dbName, "long", "", "inventory");
 		BasicJavaClientREST.addRangeElementIndex(dbName, "long", "", "id");
 	}
@@ -68,11 +65,11 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 	@Before
-	public void setUp() throws Exception {
-		client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 	}
 	@After
 	public void tearDown() throws Exception {
@@ -278,7 +275,7 @@ public class TestPOJOwithQBEQueryDef extends BasicJavaClientREST {
 	}
 	//Searching for Id as Number in JSON using range query 
 	@Test(expected=ClassCastException.class)
-	public void testPOJOcombinedSearchforNumberWithStringHandle() throws JsonProcessingException, IOException {
+	public void testPOJOcombinedSearchforNumberWithStringHandle() throws KeyManagementException, NoSuchAlgorithmException, JsonProcessingException, IOException {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
 		this.loadSimplePojos(products);

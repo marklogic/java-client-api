@@ -17,40 +17,41 @@
 package com.marklogic.client.functionaltest;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.io.QueryOptionsListHandle;
-
-import org.junit.*;
 
 public class TestQueryOptionsListHandle extends BasicJavaClientREST {
 
 	private static String dbName = "QueryOptionsListHandleDB";
 	private static String [] fNames = {"QueryOptionsListHandleDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 
 	@BeforeClass	
 	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 	}
 
 	@Test	
-	public void testNPE() throws IOException, SAXException, ParserConfigurationException
+	public void testNPE() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{		
 		System.out.println("Running testNPE");
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		QueryOptionsListHandle handle = new QueryOptionsListHandle();
 
@@ -64,6 +65,6 @@ public class TestQueryOptionsListHandle extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

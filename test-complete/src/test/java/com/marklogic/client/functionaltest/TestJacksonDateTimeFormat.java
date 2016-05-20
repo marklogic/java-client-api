@@ -21,6 +21,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.TimeZone;
 
@@ -34,7 +36,6 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.document.DocumentManager.Metadata;
@@ -53,10 +54,10 @@ import com.marklogic.client.pojo.annotation.Id;
 public class TestJacksonDateTimeFormat extends BasicJavaClientREST {
 	private static String dbName = "TestJacksonDateTimeFormatDB";
 	private static String [] fNames = {"TestJacksonDateTimeFormatDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 		
 	private long artifactId = 1L;
-	private static int restPort = 8011;
+	
 	private  DatabaseClient client;
 	
 	 /*
@@ -165,17 +166,17 @@ public class TestJacksonDateTimeFormat extends BasicJavaClientREST {
 	public static void setUpBeforeClass() throws Exception {
 		//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		configureRESTServer(dbName, fNames);
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 	@Before
-	public void setUp() throws Exception {
-		client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 	}
 	@After
 	public void tearDown() throws Exception {
@@ -291,7 +292,7 @@ public class TestJacksonDateTimeFormat extends BasicJavaClientREST {
 	 * To verify that a JSON String with datetime string can be written and read back using Jackson.
 	 */
 	@Test
-	public void testWriteJSONDocsWithDateTimeAsString() throws Exception 
+	public void testWriteJSONDocsWithDateTimeAsString() throws KeyManagementException, NoSuchAlgorithmException, Exception 
 	{
 		String docId[] = { "/datetime.json" };
 		String jsonDate = new String("{\"expiryDate\": {\"java.util.GregorianCalendar\": \"2014-11-06,13:00\"}}");

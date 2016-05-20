@@ -16,31 +16,35 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.SuggestDefinition;
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-
-import org.junit.*;
 
 public class TestSearchSuggestion extends BasicJavaClientREST {
 
 	private static String dbName = "SearchSuggestionDB";
 	private static String [] fNames = {"SearchSuggestionDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 
 	@BeforeClass 
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
 
-		setupJavaRESTServer(dbName, fNames[0],  restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 		addRangeElementIndex(dbName, "string", "http://action/", "title", "http://marklogic.com/collation/");
 		addRangeElementIndex(dbName, "string", "http://noun/", "title", "http://marklogic.com/collation/");
@@ -49,19 +53,19 @@ public class TestSearchSuggestion extends BasicJavaClientREST {
 	@After
 	public void testCleanUp() throws Exception
 	{
-		clearDB(restPort);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 
 	@Test	
-	public void testSearchSuggestion() throws FileNotFoundException
+	public void testSearchSuggestion() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testSearchSuggestion");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "suggestionOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -90,14 +94,14 @@ public class TestSearchSuggestion extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testSearchSuggestionWithSettersAndQuery() throws FileNotFoundException
+	public void testSearchSuggestionWithSettersAndQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testSearchSuggestionWithSettersAndQuery");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "suggestionOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -129,14 +133,14 @@ public class TestSearchSuggestion extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testSearchSuggestionMultiByte() throws FileNotFoundException
+	public void testSearchSuggestionMultiByte() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testSearchSuggestionMultiByte");
 
 		String[] filenames = {"multibyte1.xml", "multibyte2.xml", "multibyte3.xml"};
 		String queryOptionName = "suggestionOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -164,14 +168,14 @@ public class TestSearchSuggestion extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testSearchSuggestionOnAttribute() throws FileNotFoundException
+	public void testSearchSuggestionOnAttribute() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testSearchSuggestionOnAttribute");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "suggestionOpt2.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -201,14 +205,14 @@ public class TestSearchSuggestion extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testSearchSuggestionWithNS() throws FileNotFoundException
+	public void testSearchSuggestionWithNS() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testSearchSuggestionWithNS");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "suggestionOpt3.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -236,14 +240,14 @@ public class TestSearchSuggestion extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testSearchSuggestionWithNSNonDefault() throws FileNotFoundException
+	public void testSearchSuggestionWithNSNonDefault() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testSearchSuggestionWithNSNonDefault");
 
 		String[] filenames = {"suggestion1.xml"};
 		String queryOptionName = "suggestionOpt4.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -276,14 +280,14 @@ public class TestSearchSuggestion extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testSearchSuggestionWithNSDefault() throws FileNotFoundException
+	public void testSearchSuggestionWithNSDefault() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testSearchSuggestionWithNSDefault");
 
 		String[] filenames = {"suggestion1.xml"};
 		String queryOptionName = "suggestionOpt4.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -317,6 +321,6 @@ public class TestSearchSuggestion extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames,  restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

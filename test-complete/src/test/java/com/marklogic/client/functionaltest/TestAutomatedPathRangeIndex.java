@@ -6,6 +6,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+
 import java.io.InputStream;
 import java.util.List;
 
@@ -49,16 +52,14 @@ import com.marklogic.client.pojo.util.GenerateIndexConfig;
 public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	private static String dbName = "TestAutomatedPathRangeIndexDB";
 	private static String[] fNames = { "TestAutomatedPathRangeIndexDB-1" };
-	private static String restServerName = "REST-Java-Client-API-Server";
-
-	private static int restPort = 8011;
+	
 	private DatabaseClient client;
 	
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {		
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName, restPort);
+		configureRESTServer(dbName, fNames);
 		//
 		BasicJavaClientREST.addRangePathIndex(dbName, "long", "com.marklogic.client.functionaltest.ArtifactIndexedOnInteger/inventory", "", "reject",true);
 
@@ -67,13 +68,12 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down");	    
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 
 	@Before
-	public void setUp() throws Exception {
-		client = DatabaseClientFactory.newClient("localhost", restPort,
-				"admin", "admin", Authentication.DIGEST);
+	public void setUp() throws Exception {		
+		client = getDatabaseClient("admin", "admin", Authentication.DIGEST);
 	}
 
 	@After
@@ -87,7 +87,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	 * propName exist and then extracts it from the response.
 	 * The propValue string needs to be available in the extracted JsonNode's path-expression property.
 	 */
-	public static void validateRangePathIndexInDatabase(String propName, String propValue) throws IOException {
+	public static void validateRangePathIndexInDatabase(String propName, String propValue) throws KeyManagementException, NoSuchAlgorithmException, IOException {
 		InputStream jsonstream = null;
 		boolean propFound = false;
 		String propertyAvailable = null;
@@ -132,7 +132,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	 * propName exist and then extracts it from the response.
 	 * The propValue string needs to be available in the extracted JsonNode's path-expression property.
 	 */
-	public static void validateMultipleRangePathIndexInDatabase(String propName, String[] propValue) throws IOException {
+	public static void validateMultipleRangePathIndexInDatabase(String propName, String[] propValue) throws KeyManagementException, NoSuchAlgorithmException, IOException {
 		InputStream jsonstream = null;
 		boolean propFound = false;
 		String propertyAvailable1 = null;
@@ -182,7 +182,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	}
 	
 	@Test
-	public void testArtifactIndexedOnInt() throws Exception {
+	public void testArtifactIndexedOnInt() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		boolean succeeded = false;
 		File jsonFile = null;
 		try {
@@ -220,7 +220,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	 */
 	
 	@Test
-	public void testArtifactIndexedOnInteger() throws Exception {
+	public void testArtifactIndexedOnInteger() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		boolean succeeded = false;
 		File jsonFile = null;
 		try{GenerateIndexConfig.main(new String[] { "-classes",
@@ -298,7 +298,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	
 	
 	@Test
-	public void testArtifactIndexedOnString() throws Exception {
+	public void testArtifactIndexedOnString() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		boolean succeeded = false;
 		File jsonFile = null;
 		try {
@@ -332,7 +332,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	}
 	
 	@Test
-	public void testArtifactIndexedOnDateTime() throws Exception {
+	public void testArtifactIndexedOnDateTime() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		boolean succeeded = false;
 		File jsonFile = null;
 		try {
@@ -366,7 +366,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	}
 	
 	@Test
-	public void testArtifactIndexedOnFloat() throws Exception {
+	public void testArtifactIndexedOnFloat() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		boolean succeeded = false;
 		File jsonFile = null;
 		try {
@@ -400,7 +400,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	}
 	
 	@Test
-	public void testArtifactIndexedOnAnyURI() throws Exception {
+	public void testArtifactIndexedOnAnyURI() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		boolean succeeded = false;
 		File jsonFile = null;
 		try {
@@ -434,7 +434,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	}
 	
 	@Test
-	public void testArtifactIndexedOnIntAsString() throws Exception {
+	public void testArtifactIndexedOnIntAsString() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		boolean succeeded = false;
 		File jsonFile = null;
 		try {
@@ -468,7 +468,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	}
 	
 	@Test
-	public void testArtifactIndexedOnMultipleFields() throws Exception {
+	public void testArtifactIndexedOnMultipleFields() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		boolean succeeded = false;
 		File jsonFile = null;
 		try {
@@ -505,7 +505,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	}
 	
 	@Test
-	public void testArtifactIndexedOnStringInSuperClass() throws Exception {
+	public void testArtifactIndexedOnStringInSuperClass() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		boolean succeeded = false;
 		File jsonFile = null;
 		try {
@@ -542,7 +542,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	}
 	
 	@Test
-	public void testArtifactMultipleIndexedOnInt() throws Exception {
+	public void testArtifactMultipleIndexedOnInt() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		boolean succeeded = false;
 		File jsonFile = null;
 		try {
@@ -596,7 +596,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	 */
 	
 	@Test
-	public void testArtifactIndexedOnUnSupportedAsString() throws Exception {
+	public void testArtifactIndexedOnUnSupportedAsString() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		boolean succeeded = false;
 		File jsonFile = null;
 		try {

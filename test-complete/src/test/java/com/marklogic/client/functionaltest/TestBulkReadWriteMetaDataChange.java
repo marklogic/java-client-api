@@ -22,6 +22,8 @@ package com.marklogic.client.functionaltest;
 
 import static org.junit.Assert.assertTrue;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 
 import org.junit.After;
@@ -33,9 +35,8 @@ import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.Transaction;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -61,8 +62,8 @@ import com.marklogic.client.io.StringHandle;
 public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 	private static String dbName = "TestBulkReadWriteMetaDataChangeDB";
 	private static String [] fNames = {"TestBulkReadWriteMetaDataChangeDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	private  DatabaseClient client ;
 
 	/**
@@ -72,7 +73,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In Setup");
 		
-		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		configureRESTServer(dbName, fNames);
 		createRESTUser("app-user", "password", "rest-writer","rest-reader" );
 	}
 
@@ -82,7 +83,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 		deleteRESTUser("app-user");
 	}
 
@@ -90,9 +91,9 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 	 * @throws java.lang.Exception
 	 */
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		// create new connection for each test below
-		client = DatabaseClientFactory.newClient("localhost", restPort, "app-user", "password", Authentication.DIGEST);
+		client = getDatabaseClient("app-user", "password", Authentication.DIGEST);
 	}
 
 	/**
@@ -308,7 +309,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 		mhUpd = null;
 	}
 	@Test
-	public void testWriteMultipleJacksonPoJoDocsWithMetadata() throws Exception  
+	public void testWriteMultipleJacksonPoJoDocsWithMetadata() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	{
 		String docId[] ={"/jack/iphone.json","/jack/ipad.json","/jack/ipod.json"};
 		Product product1 = new Product();
@@ -369,7 +370,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 	 * read method performs the bulk read
 	 */
 	@Test
-	public void testBulkReadUsingMultipleUri() throws Exception {
+	public void testBulkReadUsingMultipleUri() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		String docId[] = {"/foo/test/transactionURIFoo1.txt","/foo/test/transactionURIFoo2.txt","/foo/test/transactionURIFoo3.txt"};
 		Transaction transaction = client.openTransaction();
 		try {
@@ -417,7 +418,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 	 */
 
 	@Test	
-	public void testReadUsingMultipleUriAndMetadataHandleInTransaction() throws Exception {
+	public void testReadUsingMultipleUriAndMetadataHandleInTransaction() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		String docId[] = {"/foo/test/multipleURIFoo1.txt","/foo/test/multipleURIFoo2.txt","/foo/test/multipleURIFoo3.txt"};
 		Transaction transaction = client.openTransaction();
 		try {
@@ -462,7 +463,7 @@ public class TestBulkReadWriteMetaDataChange  extends BasicJavaClientREST {
 	 */
 
 	@Test	
-	public void testBulkReadMetadataUsingMultipleUriNoTransaction() throws Exception {
+	public void testBulkReadMetadataUsingMultipleUriNoTransaction() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		String docId[] = {"/foo/test/URIFoo1.txt","/foo/test/URIFoo2.txt","/foo/test/URIFoo3.txt"};
 		DocumentMetadataHandle mhRead = new DocumentMetadataHandle();
 

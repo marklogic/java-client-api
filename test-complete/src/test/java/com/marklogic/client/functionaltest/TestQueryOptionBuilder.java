@@ -20,48 +20,50 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.config.QueryOptions.Facets;
 import com.marklogic.client.admin.config.QueryOptions.FragmentScope;
 import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.QueryOptionsHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.QueryOptionsHandle;
-import com.marklogic.client.io.StringHandle;
-
-import org.junit.*;
-
 public class TestQueryOptionBuilder extends BasicJavaClientREST {
 
 	private static String dbName = "TestQueryOptionBuilderDB";
 	private static String [] fNames = {"TestQueryOptionBuilderDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 	
 	@BeforeClass
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 
@@ -69,18 +71,18 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 	@After
 	public  void testCleanUp() throws Exception
 	{
-		clearDB(8011);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 
 	@Test	
-	public void testValueConstraintWildcard() throws FileNotFoundException, XpathException
+	public void testValueConstraintWildcard() throws KeyManagementException, NoSuchAlgorithmException, XpathException, IOException
 	{	
 		System.out.println("Running testValueConstraintWildcard");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -143,13 +145,13 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testWordConstraintNormalWordQuery() throws FileNotFoundException, XpathException
+	public void testWordConstraintNormalWordQuery() throws KeyManagementException, NoSuchAlgorithmException, XpathException, IOException
 	{	
 		System.out.println("Running testWordConstraintNormalWordQuery");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -219,7 +221,7 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testAllConstraintsWithStringSearch() throws FileNotFoundException, XpathException, TransformerException
+	public void testAllConstraintsWithStringSearch() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
 	{	
 		System.out.println("Running testAllConstraintsWithStringSearch");
 
@@ -229,7 +231,7 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 		String filename4 = "constraint4.xml";
 		String filename5 = "constraint5.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// create and initialize a handle on the metadata
 		DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -335,7 +337,7 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testAllConstraintsWithStructuredSearch() throws FileNotFoundException, XpathException, TransformerException
+	public void testAllConstraintsWithStructuredSearch() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
 	{	
 		System.out.println("Running testAllConstraintsWithStructuredSearch");
 
@@ -345,7 +347,7 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 		String filename4 = "constraint4.xml";
 		String filename5 = "constraint5.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// create and initialize a handle on the metadata
 		DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -458,14 +460,14 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testExtractMetadataWithStructuredSearch() throws XpathException, TransformerException, ParserConfigurationException, SAXException, IOException
+	public void testExtractMetadataWithStructuredSearch() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, ParserConfigurationException, SAXException, IOException
 	{	
 		System.out.println("testExtractMetadataWithStructuredSearch");
 
 		String filename = "xml-original.xml";
 		String uri = "/extract-metadata/";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		ServerConfigurationManager scMgr = client.newServerConfigManager();
 		scMgr.setServerRequestLogging(true);
@@ -540,14 +542,14 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 	}
 
 	// See bug 18361
-	/*public void testExtractMetadataWithStructuredSearchAndConstraint() throws XpathException, TransformerException, ParserConfigurationException, SAXException, IOException
+	/*public void testExtractMetadataWithStructuredSearchAndConstraint() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, ParserConfigurationException, SAXException, IOException
 	{	
 		System.out.println("testExtractMetadataWithStructuredSearchAndConstraint");
 
 		String filename = "xml-original.xml";
 		String uri = "/extract-metadata/";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		ServerConfigurationManager scMgr = client.newServerConfigManager();
 		scMgr.setServerRequestLogging(true);
@@ -614,14 +616,14 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 	}*/
 
 	@Test	
-	public void testExtractMetadataWithStructuredSearchAndRangeConstraint() throws XpathException, TransformerException, ParserConfigurationException, SAXException, IOException
+	public void testExtractMetadataWithStructuredSearchAndRangeConstraint() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, ParserConfigurationException, SAXException, IOException
 	{	
 		System.out.println("testExtractMetadataWithStructuredSearchAndRangeConstraint");
 
 		String filename = "xml-original.xml";
 		String uri = "/extract-metadata/";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		ServerConfigurationManager scMgr = client.newServerConfigManager();
 		scMgr.setServerRequestLogging(true);
@@ -702,14 +704,14 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testDocumentLevelMetadata() throws XpathException, TransformerException, ParserConfigurationException, SAXException, IOException
+	public void testDocumentLevelMetadata() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, ParserConfigurationException, SAXException, IOException
 	{	
 		System.out.println("testDocumentLevelMetadata");
 
 		String filename = "xml-original.xml";
 		String uri = "/extract-metadata/";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		ServerConfigurationManager scMgr = client.newServerConfigManager();
 		scMgr.setServerRequestLogging(true);
@@ -793,7 +795,7 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 
 	}
 }

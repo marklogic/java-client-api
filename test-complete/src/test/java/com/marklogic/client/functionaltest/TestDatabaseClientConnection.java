@@ -26,6 +26,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.HashMap;
@@ -66,12 +68,13 @@ import com.marklogic.client.query.SuggestDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
 
-public class TestDatabaseClientConnection extends BasicJavaClientREST {
+public class TestDatabaseClientConnection extends BasicJavaClientREST{
 	
 	private static String dbName = "DatabaseClientConnectionDB";
 	private static String [] fNames = {"DatabaseClientConnectionDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	
+	private static int restPort = getRestServerPort();
+	private static String restServerName = getRestServerName();
+		
 	// These members are used to test Git Issue 332.
 	private static String UberdbName = "UberDatabaseClientConnectionDB";
 	private static String UberDefaultdbName = "Documents";
@@ -84,7 +87,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 	{
 		System.out.println("In setup");	
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		
 		/*
 		 * Only users with the http://marklogic.com/xdmp/privileges/xdmp-eval-in (xdmp:eval-in) or equivalent privilege can 
@@ -100,19 +103,19 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 		
 		setupAppServicesConstraint(UberdbName);
 		addRangeElementIndex(UberdbName, "string", "http://action/", "title", "http://marklogic.com/collation/");
-		addRangeElementIndex(UberdbName, "string", "http://noun/", "title", "http://marklogic.com/collation/");		
+		addRangeElementIndex(UberdbName, "string", "http://noun/", "title", "http://marklogic.com/collation/");
 	}
 
 	@SuppressWarnings("deprecation")
 	@Test
-	public void testReleasedClient() throws IOException
+	public void testReleasedClient() throws IOException, KeyManagementException, NoSuchAlgorithmException
 	{
 		System.out.println("Running testReleasedClient");
 		
 		String filename = "facebook-10443244874876159931";
 		
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// write doc
 		writeDocumentUsingStringHandle(client, filename, "/write-text-doc/", "Text");
@@ -136,17 +139,18 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
 	@SuppressWarnings("deprecation")
 	@Test
-	public void testDatabaseClientConnectionExist()
+	public void testDatabaseClientConnectionExist() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{
 		System.out.println("Running testDatabaseClientConnectionExist");
 		
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-reader", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
 		String[] stringClient = client.toString().split("@");
 		assertEquals("Object does not exist", "com.marklogic.client.impl.DatabaseClientImpl", stringClient[0]);
 		
 		// release client
 		client.release();
 	}
+
 
 	@SuppressWarnings("deprecation")
 	@Test	public void testDatabaseClientConnectionInvalidPort() throws IOException
@@ -172,6 +176,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 		client.release();
 	}
 	
+
 	@SuppressWarnings("deprecation")
 	@Test	public void testDatabaseClientConnectionInvalidUser() throws IOException
 	{
@@ -198,6 +203,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 		// release client
 		client.release();
 	}
+
 
 	@SuppressWarnings("deprecation")
 	@Test	public void testDatabaseClientConnectionInvalidPassword() throws IOException
@@ -226,6 +232,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 		client.release();
 	}
 	
+
 	@SuppressWarnings("deprecation")
 	@Test	public void testDatabaseClientConnectionInvalidHost() throws IOException
 	{
@@ -254,9 +261,33 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 		client.release();
 	}
 	
+	/*
+	 * These tests are specifically to validate Git Issue 332.
+	 * https://github.com/marklogic/java-client-api/issues/332
+	 * 
+	 *  We need to test that REST calls can pass a database name and access that database on the uber server port (8000). 
+	 *  Create a database, forest and associate the database to the uber server on port 8000, where App-Services is running.
+	 *  We will be testing the following :
+	 *  
+     *   QueryManager.suggest()
+     *   QueryManager.tuples()
+     *   QueryManager.values()
+     *   QueryManager.valuesList()
+     *   Transaction.readStatus()
+     *   RuleManager.readRule(As)()
+     *   RuleManager.match(As)()
+            with StructureWriteHandle
+            with StringQueryDefinition
+            with StructuredQueryDefinition
+            with RawQueryDefinition
+            with docIds
+     *   
+	 *  
+	 */
+	
 	// Trying to access database without specifying the database name.
 	@SuppressWarnings("deprecation")
-	@Test	public void testDBClientUsingWithoutDatabaseName() throws IOException, SAXException, ParserConfigurationException
+	@Test	public void testDBClientUsingWithoutDatabaseName() throws IOException,  SAXException, ParserConfigurationException
 	{
 		System.out.println("Running testDBClientUsingWithoutDatabaseName");
 		
@@ -285,7 +316,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 	
 	// Trying to access database by specifying the database name.
 	@SuppressWarnings("deprecation")
-	@Test	public void testDBClientUsingWithDatabaseName() throws IOException, SAXException, ParserConfigurationException
+	@Test	public void testDBClientUsingWithDatabaseName() throws IOException,  SAXException, ParserConfigurationException
 	{
 		System.out.println("Running testDBClientUsingWithDatabaseName");
 		
@@ -345,12 +376,12 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 	public void testQueryManagerTuples() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testQueryManagerTuples");
-		
+
 		String[] filenames = {"aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml", "aggr5.xml"};
 		String queryOptionName = "aggregatesOpt.xml";
 
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
-				
+		
 		// write docs
 		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/tuples-aggr/", "XML");
@@ -381,6 +412,9 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
         
         System.out.println(roundedCorrelation);
         System.out.println(roundedCovariance);
+        
+        assertEquals("Invalid correlation", "0.33", roundedCorrelation);
+        assertEquals("Invalid covariance", "0.42", roundedCovariance);
         
         ValuesListDefinition vdef = queryMgr.newValuesListDefinition("aggregatesOpt.xml");
         ValuesListHandle results = queryMgr.valuesList(vdef, new ValuesListHandle());
@@ -474,6 +508,139 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 			transaction.rollback();
 		}
 	}
+	
+	@Test	
+	public void testRMMatchQDAndDocIds() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException, KeyManagementException, NoSuchAlgorithmException
+	{
+		System.out.println("Running testRMMatchQDAndDocIds");		
+		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+		String[] docIds = new String[5];
+		String[] candidateRules = {"RULE-TEST-1", "RULE-TEST-2"};
+		int i=0;		
+		
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+		// write docs
+		for(String filename : filenames) {
+			writeDocumentUsingInputStreamHandle(client, filename, "/raw-alert/", "XML");
+			docIds[i++] = new String("/raw-alert/"+filename);
+		}
+
+		// create a manager for configuring rules
+		RuleManager ruleMgr = client.newRuleManager();
+
+		// create handle
+		InputStreamHandle ruleHandle1 = new InputStreamHandle();
+		InputStreamHandle ruleHandle2 = new InputStreamHandle();
+
+		// get the rule file
+		InputStream inputStream1 = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/rules/alertRule1.xml");
+		InputStream inputStream2 = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/rules/alertRule2.xml");
+
+		ruleHandle1.set(inputStream1);
+		ruleHandle2.set(inputStream2);
+
+		// write the rule to the database
+		ruleMgr.writeRule(candidateRules[0], ruleHandle1);
+		ruleMgr.writeRule(candidateRules[1], ruleHandle2);
+
+		// create a manager for document search criteria
+		QueryManager queryMgr = client.newQueryManager();
+
+		// specify the search criteria for the documents
+		String criteria = "atlantic";
+		//StringQueryDefinition querydef = queryMgr.newStringDefinition();
+		StringQueryDefinition querydef = queryMgr.newStringDefinition();
+		querydef.setCriteria(criteria);
+
+		// create a manager for matching rules
+		RuleManager ruleMatchMgr = client.newRuleManager();
+
+		// match the rules against the documents qualified by the criteria
+		RuleDefinitionList matchedRulesDefList = new RuleDefinitionList();
+		//String[] candidateRules = {"RULE-TEST-1", "RULE-TEST-2"};
+		RuleDefinitionList matchedRules = ruleMatchMgr.match(querydef, 0,10, candidateRules, matchedRulesDefList);
+
+		System.out.println(matchedRules.size());
+
+		String expected = "";
+
+		// iterate over the matched rules
+		Iterator<RuleDefinition> ruleItr = matchedRules.iterator();
+		while (ruleItr.hasNext()) {
+			RuleDefinition rule = ruleItr.next();
+			System.out.println(
+					"document criteria "+criteria+" matched rule "+
+							rule.getName()+" with metadata "+rule.getMetadata()
+					);
+			expected = expected + rule.getName() + " - " + rule.getMetadata() + " | ";
+		}
+
+		System.out.println(expected);
+
+		assertTrue("incorrect rules", expected.contains("RULE-TEST-1 - {rule-number=one}")&& expected.contains("RULE-TEST-2 - {rule-number=two}"));
+
+		// release client
+		client.release();	
+	}
+	
+	// Test to validate that addAs with a java.io.object in DocumentWriteSet writes the document.
+	@Test
+	public void testAddAs() throws Exception {
+		
+		System.out.println("Running testAddAs");
+		
+		String[] docId = {"aggr1.xml", "aggr2.xml", "aggr3.xml"};
+		DatabaseClient client = DatabaseClientFactory.newClient("localhost", Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
+		Transaction transaction = client.openTransaction();
+		
+		try {
+			TextDocumentManager docMgr = client.newTextDocumentManager();
+			docMgr.setMetadataCategories(Metadata.ALL);
+			DocumentWriteSet writeset = docMgr.newWriteSet();
+			
+			DocumentMetadataHandle mhRead = new DocumentMetadataHandle();		
+			InputStream inputStream1 = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/" + docId[0]);
+			InputStream inputStream2 = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/" + docId[1]);
+			InputStream inputStream3 = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/" + docId[2]);
+			writeset.addAs(docId[0], inputStream1);
+			writeset.addAs(docId[1], inputStream2);
+			writeset.addAs(docId[2], inputStream3);
+			
+			docMgr.write(writeset, transaction);
+			StringHandle wrteTransHandle = new StringHandle();
+			transaction.readStatus(wrteTransHandle);
+			assertTrue("Transaction readStatus during write does not contain Database name. ", (wrteTransHandle.get()).contains(UberrestServerName));
+			assertTrue("Transaction readStatus during write does not contain Database name. ", (wrteTransHandle.get()).contains("App-Services"));
+			transaction.commit();
+			
+			transaction = client.openTransaction();
+			String txId = transaction.getTransactionId();
+
+			DocumentPage page = docMgr.read(transaction, docId[0], docId[1], docId[2]);
+			assertTrue("DocumentPage Size did not return expected value returned==  "+page.size(), page.size() == 3 );
+			// Read back the doc contents to make sure that write succeeded.
+			String strDocContent1 = docMgr.read(docId[0], new StringHandle()).get();
+			assertTrue("Text document write difference", strDocContent1.contains("Vannevar Bush wrote an article for The Atlantic Monthly"));
+			String strDocContent2 = docMgr.read(docId[1], new StringHandle()).get();
+			assertTrue("Text document write difference", strDocContent2.contains("The Bush article described a device called a Memex."));
+			String strDocContent3 = docMgr.read(docId[2], new StringHandle()).get();
+			assertTrue("Text document write difference", strDocContent3.contains("For 1945, the thoughts expressed in The Atlantic Monthly were groundbreaking."));
+			
+			StringHandle readTransHandle = new StringHandle();
+			transaction.readStatus(readTransHandle);
+			assertTrue("Transaction readStatus during read does not contain App Server name. ", (readTransHandle.get()).contains(UberrestServerName));
+			assertTrue("Transaction readStatus during read does not contain Database name. ", (readTransHandle.get()).contains(dbName));
+			assertTrue("Transaction readStatus during read does not contain Transaction Id name. ", (readTransHandle.get()).contains(txId));
+		}
+		catch(Exception exp) {
+			System.out.println(exp.getMessage());
+			throw exp;
+		}
+		finally {
+			transaction.rollback();
+		}
+	}
 
 	@Test	
 	public void testRuleManagerReadAs() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
@@ -554,78 +721,6 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 	}
 	
 	@Test	
-	public void testRMMatchQDAndDocIds() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{
-		System.out.println("Running testRMMatchQDAndDocIds");		
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
-		String[] docIds = new String[5];
-		String[] candidateRules = {"RULE-TEST-1", "RULE-TEST-2"};
-		int i=0;		
-		
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
-
-		// write docs
-		for(String filename : filenames) {
-			writeDocumentUsingInputStreamHandle(client, filename, "/raw-alert/", "XML");
-			docIds[i++] = new String("/raw-alert/"+filename);
-		}
-
-		// create a manager for configuring rules
-		RuleManager ruleMgr = client.newRuleManager();
-
-		// create handle
-		InputStreamHandle ruleHandle1 = new InputStreamHandle();
-		InputStreamHandle ruleHandle2 = new InputStreamHandle();
-
-		// get the rule file
-		InputStream inputStream1 = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/rules/alertRule1.xml");
-		InputStream inputStream2 = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/rules/alertRule2.xml");
-
-		ruleHandle1.set(inputStream1);
-		ruleHandle2.set(inputStream2);
-
-		// write the rule to the database
-		ruleMgr.writeRule(candidateRules[0], ruleHandle1);
-		ruleMgr.writeRule(candidateRules[1], ruleHandle2);
-
-		// create a manager for document search criteria
-		QueryManager queryMgr = client.newQueryManager();
-
-		// specify the search criteria for the documents
-		String criteria = "atlantic";		
-		StringQueryDefinition querydef = queryMgr.newStringDefinition();
-		querydef.setCriteria(criteria);
-
-		// create a manager for matching rules
-		RuleManager ruleMatchMgr = client.newRuleManager();
-
-		// match the rules against the documents qualified by the criteria
-		RuleDefinitionList matchedRulesDefList = new RuleDefinitionList();		
-		RuleDefinitionList matchedRules = ruleMatchMgr.match(querydef, 0,10, candidateRules, matchedRulesDefList);
-
-		System.out.println(matchedRules.size());
-
-		String expected = "";
-
-		// iterate over the matched rules
-		Iterator<RuleDefinition> ruleItr = matchedRules.iterator();
-		while (ruleItr.hasNext()) {
-			RuleDefinition rule = ruleItr.next();
-			System.out.println(
-					"document criteria "+criteria+" matched rule "+
-							rule.getName()+" with metadata "+rule.getMetadata()
-					);
-			expected = expected + rule.getName() + " - " + rule.getMetadata() + " | ";
-		}
-
-		System.out.println(expected);
-		assertTrue("incorrect rules", expected.contains("RULE-TEST-1 - {rule-number=one}")&& expected.contains("RULE-TEST-2 - {rule-number=two}"));
-
-		// release client
-		client.release();	
-	}
-	
-	@Test	
 	public void testRMMatchAsWithCandidates() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{
 		System.out.println("Running testRMMatchAsWithCandidates");		
@@ -676,7 +771,8 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 
 		// iterate over the matched rules
 		Iterator<RuleDefinition> ruleItr = matchedRules.iterator();
-		while (ruleItr.hasNext()) {
+		while (ruleItr.hasNext()) 
+		{
 			RuleDefinition rule = ruleItr.next();
 			System.out.println(
 					"document criteria matched rule "+
@@ -754,65 +850,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 		// release client
 		client.release();	
 	}
-	
-	// Test to validate that addAs with a java.io.object in DocumentWriteSet writes the document.
-	@Test
-	public void testAddAs() throws Exception {
-
-		System.out.println("Running testAddAs");
-
-		String[] docId = {"aggr1.xml", "aggr2.xml", "aggr3.xml"};
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
-		Transaction transaction = client.openTransaction();
-
-		try {
-			TextDocumentManager docMgr = client.newTextDocumentManager();
-			docMgr.setMetadataCategories(Metadata.ALL);
-			DocumentWriteSet writeset = docMgr.newWriteSet();
-
-			DocumentMetadataHandle mhRead = new DocumentMetadataHandle();		
-			InputStream inputStream1 = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/" + docId[0]);
-			InputStream inputStream2 = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/" + docId[1]);
-			InputStream inputStream3 = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/" + docId[2]);
-			writeset.addAs(docId[0], inputStream1);
-			writeset.addAs(docId[1], inputStream2);
-			writeset.addAs(docId[2], inputStream3);
-
-			docMgr.write(writeset, transaction);
-			StringHandle wrteTransHandle = new StringHandle();
-			transaction.readStatus(wrteTransHandle);
-			assertTrue("Transaction readStatus during write does not contain Database name. ", (wrteTransHandle.get()).contains(UberrestServerName));
-			assertTrue("Transaction readStatus during write does not contain Database name. ", (wrteTransHandle.get()).contains("App-Services"));
-			transaction.commit();
-
-			transaction = client.openTransaction();
-			String txId = transaction.getTransactionId();
-
-			DocumentPage page = docMgr.read(transaction, docId[0], docId[1], docId[2]);
-			assertTrue("DocumentPage Size did not return expected value returned==  "+page.size(), page.size() == 3 );
-			// Read back the doc contents to make sure that write succeeded.
-			String strDocContent1 = docMgr.read(docId[0], new StringHandle()).get();
-			assertTrue("Text document write difference", strDocContent1.contains("Vannevar Bush wrote an article for The Atlantic Monthly"));
-			String strDocContent2 = docMgr.read(docId[1], new StringHandle()).get();
-			assertTrue("Text document write difference", strDocContent2.contains("The Bush article described a device called a Memex."));
-			String strDocContent3 = docMgr.read(docId[2], new StringHandle()).get();
-			assertTrue("Text document write difference", strDocContent3.contains("For 1945, the thoughts expressed in The Atlantic Monthly were groundbreaking."));
-
-			StringHandle readTransHandle = new StringHandle();
-			transaction.readStatus(readTransHandle);
-			assertTrue("Transaction readStatus during read does not contain App Server name. ", (readTransHandle.get()).contains(UberrestServerName));
-			assertTrue("Transaction readStatus during read does not contain Database name. ", (readTransHandle.get()).contains(dbName));
-			assertTrue("Transaction readStatus during read does not contain Transaction Id name. ", (readTransHandle.get()).contains(txId));
-		}
-		catch(Exception exp) {
-			System.out.println(exp.getMessage());
-			throw exp;
-		}
-		finally {
-			transaction.rollback();
-		}
-	}
-						
+			
 	@AfterClass
 	public static void tearDown() throws Exception
 	{
@@ -820,11 +858,9 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
 		
 		setAuthentication("digest",restServerName);
 		setDefaultUser("nobody",restServerName);				
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 		
 		deleteRESTUser("eval-user");
 		deleteUserRole("test-eval");
-		deleteDB(UberdbName);
-		deleteForest(UberfNames[0]);
 	}
 }

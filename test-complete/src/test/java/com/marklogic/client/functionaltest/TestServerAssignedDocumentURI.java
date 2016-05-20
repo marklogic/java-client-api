@@ -16,23 +16,27 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.document.DocumentDescriptor;
@@ -43,29 +47,28 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
-import org.junit.*;
 public class TestServerAssignedDocumentURI extends BasicJavaClientREST {
 
 	private static String dbName = "TestServerAssignedDocumentUriDB";
 	private static String [] fNames = {"TestServerAssignedDocumentUri-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 
 	@BeforeClass	
 	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0],restServerName,8011);
+		configureRESTServer(dbName, fNames);
 	}
 
 	@Test	
-	public void testCreate()
+	public void testCreate() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{
 		System.out.println("Running testCreate");
 
 		String filename = "flipper.xml";
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// create doc manager
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -98,14 +101,14 @@ public class TestServerAssignedDocumentURI extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testCreateMultibyte()
+	public void testCreateMultibyte() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{
 		System.out.println("Running testCreateMultibyte");
 
 		String filename = "flipper.xml";
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// create doc manager
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -141,14 +144,14 @@ public class TestServerAssignedDocumentURI extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testCreateInvalidURI() // should be failed
+	public void testCreateInvalidURI() throws KeyManagementException, NoSuchAlgorithmException, IOException // should be failed
 	{
 		System.out.println("Running testCreateInvalidURI");
 
 		String filename = "flipper.xml";
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// create doc manager
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -181,14 +184,14 @@ public class TestServerAssignedDocumentURI extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testCreateInvalidDirectory() // Should be failed
+	public void testCreateInvalidDirectory() throws KeyManagementException, NoSuchAlgorithmException, IOException // Should be failed
 	{
 		System.out.println("Running testCreateInvalidDirectory");
 
 		String filename = "flipper.xml";
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// create doc manager
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -220,12 +223,12 @@ public class TestServerAssignedDocumentURI extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testCreateWithTransformerTxMetadata() throws TransformerException, ParserConfigurationException, SAXException, IOException
+	public void testCreateWithTransformerTxMetadata() throws KeyManagementException, NoSuchAlgorithmException, TransformerException, ParserConfigurationException, SAXException, IOException
 	{	
 		System.out.println("Running testCreateWithTransformerTxMetadata");
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// get the doc
 		Source source = new StreamSource("src/test/java/com/marklogic/client/functionaltest/data/employee.xml");
@@ -244,7 +247,7 @@ public class TestServerAssignedDocumentURI extends BasicJavaClientREST {
 		client.release();
 
 		// connect the rest-writer client
-		DatabaseClient client1 = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client1 = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// create a doc manager
 		XMLDocumentManager docMgr = client1.newXMLDocumentManager();
@@ -314,6 +317,6 @@ public class TestServerAssignedDocumentURI extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

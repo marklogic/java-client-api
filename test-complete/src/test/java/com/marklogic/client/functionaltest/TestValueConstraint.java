@@ -16,53 +16,57 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.MatchLocation;
-import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
-
-import org.junit.*;
+import com.marklogic.client.query.MatchDocumentSummary;
+import com.marklogic.client.query.MatchLocation;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 public class TestValueConstraint extends BasicJavaClientREST {
 
 	static final private String[] filenames = {"value-constraint-doc.xml", "value-constraint-doc2.xml"};
 
 	private static String dbName = "ValueConstraintDB";
 	private static String [] fNames = {"ValueConstraintDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 
 	@BeforeClass	
 	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0],  restServerName,8011);
+		configureRESTServer(dbName, fNames);
 	}
 	
 	@After
 	public void testCleanUp() throws Exception
 	{
-		clearDB(restPort);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 
 	@Test	
-	public void testElementValueConstraint() throws FileNotFoundException
+	public void testElementValueConstraint() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// create doc manager
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -147,9 +151,9 @@ public class TestValueConstraint extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testAttributeValueConstraint() throws FileNotFoundException
+	public void testAttributeValueConstraint() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// create doc manager
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -237,6 +241,6 @@ public class TestValueConstraint extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames,  restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

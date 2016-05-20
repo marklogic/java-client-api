@@ -61,21 +61,20 @@ import com.marklogic.client.io.StringHandle;
 public class TestBulkWriteOptimisticLocking extends BasicJavaClientREST {
 	private static String dbName = "TestBulkWriteOptLockDB";
 	private static String[] fNames = { "TestBulkWriteOptLockDB-1" };
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	private DatabaseClient client;
 
 	@BeforeClass
 	public static void setUp() throws Exception {
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName, restPort);
+		configureRESTServer(dbName, fNames);
 	}
 /*
 	@Before
-	public void testSetup() throws Exception {
+	public void testSetup() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		// create new connection for each test below
-		client = DatabaseClientFactory.newClient("localhost", restPort,
-				"rest-admin", "x", Authentication.DIGEST);
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// create server configuration manager
 		ServerConfigurationManager configMgr = client.newServerConfigManager();
@@ -98,7 +97,7 @@ public class TestBulkWriteOptimisticLocking extends BasicJavaClientREST {
 	}
 
 	@After
-	public void testCleanUp() throws Exception {
+	public void testCleanUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		System.out.println("Running clear script");
 		ServerConfigurationManager configMgr = client.newServerConfigManager();
 
@@ -121,7 +120,7 @@ public class TestBulkWriteOptimisticLocking extends BasicJavaClientREST {
 	@AfterClass
 	public static void tearDown() throws Exception {
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 	
 	public DocumentMetadataHandle setMetadata(){
@@ -139,7 +138,7 @@ public class TestBulkWriteOptimisticLocking extends BasicJavaClientREST {
 	}
 
 	@Test
-	public void testWriteSingleOptimisticLocking() throws Exception {
+	public void testWriteSingleOptimisticLocking() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
 		String bookFilename = "book.xml";
 		String bookURI = "/book-xml-handle/";
@@ -170,7 +169,7 @@ public class TestBulkWriteOptimisticLocking extends BasicJavaClientREST {
 
 		// update the document, specifying the current version with the
 		// descriptor
-		// if the document changed after reading, write() throws an exception
+		// if the document changed after reading, write() throws KeyManagementException, NoSuchAlgorithmException, an exception
 		docMgr.write(desc, updateHandle);
 
 		// get the updated version without getting the content
@@ -182,7 +181,7 @@ public class TestBulkWriteOptimisticLocking extends BasicJavaClientREST {
 
 		// delete the document, specifying the current version with the
 		// descriptor
-		// if the document changed after exists(), delete() throws an exception
+		// if the document changed after exists(), delete() throws KeyManagementException, NoSuchAlgorithmException, an exception
 		docMgr.delete(desc);
 
 		// release the client
@@ -192,7 +191,7 @@ public class TestBulkWriteOptimisticLocking extends BasicJavaClientREST {
 	}
 	
 	@Test
-	public void testWriteBulkOptimisticLocking() throws Exception {
+	public void testWriteBulkOptimisticLocking() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
 		String nameId[] = {"property1.xml","property2.xml","property3.xml"};
 		String docId[] = {"/opt/lock/property1.xml","/opt/lock/property2.xml","/opt/lock/property3.xml"};

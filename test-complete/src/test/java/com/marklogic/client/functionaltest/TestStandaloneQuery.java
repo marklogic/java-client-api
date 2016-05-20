@@ -16,54 +16,57 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
+import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.FragmentScope;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
 import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.io.DOMHandle;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import static org.junit.Assert.*;
-import org.junit.*;
 
 public class TestStandaloneQuery extends BasicJavaClientREST {
 
 	private static String dbName = "TestStandaloneQueryDB";
 	private static String [] fNames = {"TestStandaloneQueryDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 
 	@BeforeClass	
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setDatabaseProperties(dbName,"stemmed-searches","basic");
 		setupAppServicesConstraint(dbName);
 	}
 
 	@Test	
-	public void testStandaloneWordQuery() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testStandaloneWordQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testStandaloneWordQuery");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -99,13 +102,13 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testStandaloneWordQueryEnhanced() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testStandaloneWordQueryEnhanced() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testStandaloneWordQueryEnhanced");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -144,13 +147,13 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testStandaloneRangeQuery() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testStandaloneRangeQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{
 		System.out.println("Running testStandaloneRangeQuery");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -185,13 +188,13 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testStandaloneRangeQueryEnhanced() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testStandaloneRangeQueryEnhanced() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{
 		System.out.println("Running testStandaloneRangeQueryEnhanced");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -227,13 +230,13 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testStandaloneRangeQueryEnhanced1() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testStandaloneRangeQueryEnhanced1() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{
 		System.out.println("Running testStandaloneRangeQueryEnhanced1");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -268,13 +271,13 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testStandaloneRangeQueryEnhanced2() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testStandaloneRangeQueryEnhanced2() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{
 		System.out.println("Running testStandaloneRangeQueryEnhanced2");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -310,13 +313,13 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testStandaloneRangeQueryEnhanced3() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testStandaloneRangeQueryEnhanced3() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{
 		System.out.println("Running testStandaloneRangeQueryEnhanced3");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -351,13 +354,13 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testStandaloneRangeQueryEnhanced4() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testStandaloneRangeQueryEnhanced4() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{
 		System.out.println("Running testStandaloneRangeQueryEnhanced4");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -394,13 +397,13 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testStandaloneValueQueryOnAttribute() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testStandaloneValueQueryOnAttribute() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testStandaloneValueQueryOnAttribute");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -435,13 +438,13 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testStandaloneValueQueryOnAttributeEnhanced() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testStandaloneValueQueryOnAttributeEnhanced() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testStandaloneValueQueryOnAttributeEnhanced");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -482,7 +485,7 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 
 	}
 }

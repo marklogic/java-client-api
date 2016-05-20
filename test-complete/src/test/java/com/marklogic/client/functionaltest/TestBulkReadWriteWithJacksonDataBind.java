@@ -20,6 +20,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +33,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
@@ -58,8 +59,8 @@ public class TestBulkReadWriteWithJacksonDataBind extends
 	private static final String DIRECTORY = "/";
 	private static String dbName = "TestBulkJacksonDataBindDB";
 	private static String[] fNames = { "TestBulkJacksonDataBindDB-1" };
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	private DatabaseClient client;
 	
 	public static class ContentCheck
@@ -78,15 +79,14 @@ public class TestBulkReadWriteWithJacksonDataBind extends
 	@BeforeClass
 	public static void setUp() throws Exception {
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName, restPort);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 
 	@Before
-	public void testSetup() throws Exception {
+	public void testSetup() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		// create new connection for each test below
-		client = DatabaseClientFactory.newClient("localhost", restPort,
-				"rest-admin", "x", Authentication.DIGEST);
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 	}
 
 	@After
@@ -188,7 +188,7 @@ public class TestBulkReadWriteWithJacksonDataBind extends
 	 *
 	 */
 	@Test
-	public void testWriteMultipleJSONFiles() throws Exception {
+	public void testWriteMultipleJSONFiles() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		
 		String docId = "/";
 		
@@ -234,7 +234,7 @@ public class TestBulkReadWriteWithJacksonDataBind extends
 	}
 	
 	@Test
-	public void testWriteMultipleJSONDocsFromStrings() throws Exception {
+	public void testWriteMultipleJSONDocsFromStrings() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 				
 		String docId[] = { "/iphone.json", "/imac.json", "/ipad.json" };
 		String json1 = new String("{ \"name\":\"iPhone 6\" , \"industry\":\"Mobile Phone\" , \"description\":\"New iPhone 6\"}");
@@ -299,7 +299,7 @@ public class TestBulkReadWriteWithJacksonDataBind extends
 	 * Purpose: To test newFactory method with custom Pojo instances.
 	 */
 	@Test
-	public void testJacksonDataBindHandleFromFactory() throws Exception {
+	public void testJacksonDataBindHandleFromFactory() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 				
 		String docId[] = { "/iphone.json", "/imac.json", "/ipad.json" };
 				
@@ -392,7 +392,7 @@ public class TestBulkReadWriteWithJacksonDataBind extends
 	 * Use one Jackson Handles instance.
 	 */
 	@Test
-	public void testSingleJacksonHandlerHundredJsonDocs() throws Exception {
+	public void testSingleJacksonHandlerHundredJsonDocs() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		
 		JacksonHandle jh = new JacksonHandle();
 		jh.withFormat(Format.JSON);
@@ -461,7 +461,7 @@ public class TestBulkReadWriteWithJacksonDataBind extends
 	 * Use multiple Jackson Handle instances.
 	 */
 	@Test
-	public void testMultipleJacksonHandleHundredJsonDocs1() throws Exception {
+	public void testMultipleJacksonHandleHundredJsonDocs1() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		docMgr.setMetadataCategories(Metadata.ALL);
@@ -525,6 +525,6 @@ public class TestBulkReadWriteWithJacksonDataBind extends
 	@AfterClass
 	public static void tearDown() throws Exception {
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

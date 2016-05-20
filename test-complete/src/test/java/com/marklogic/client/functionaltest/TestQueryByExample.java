@@ -16,15 +16,27 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.transform.TransformerException;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.w3c.dom.Document;
+
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
@@ -37,42 +49,35 @@ import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
 import com.sun.jersey.api.client.ClientHandlerException;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.*;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.w3c.dom.Document;
-import org.junit.*;
-
 public class TestQueryByExample extends BasicJavaClientREST {
 	private static String dbName = "TestQueryByExampleDB";
 	private static String [] fNames = {"TestQueryByExampleDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 	private static int restPort=8011;
 
 	@BeforeClass
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 
 	@After
 	public  void testCleanUp() throws Exception
 	{
-		clearDB(restPort);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 
 	@Test
-	public void testQueryByExampleXML() throws IOException, TransformerException, XpathException
+	public void testQueryByExampleXML() throws KeyManagementException, NoSuchAlgorithmException, IOException,  TransformerException, XpathException
 	{	
 		System.out.println("Running testQueryByExampleXML");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -103,13 +108,13 @@ public class TestQueryByExample extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testQueryByExampleXMLnew() throws IOException, TransformerException, XpathException
+	public void testQueryByExampleXMLnew() throws KeyManagementException, NoSuchAlgorithmException, IOException,  TransformerException, XpathException
 	{	
 		System.out.println("Running testQueryByExampleXML");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -140,13 +145,13 @@ public class TestQueryByExample extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testQueryByExampleJSON() throws IOException
+	public void testQueryByExampleJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testQueryByExampleJSON");
 
 		String[] filenames = {"constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -177,13 +182,13 @@ public class TestQueryByExample extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testBug22179() throws IOException
+	public void testBug22179() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testBug22179");
 
 		String[] filenames = {"constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -207,13 +212,13 @@ public class TestQueryByExample extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testQueryByExampleXMLPayload() throws IOException, TransformerException, XpathException
+	public void testQueryByExampleXMLPayload() throws KeyManagementException, NoSuchAlgorithmException, IOException,  TransformerException, XpathException
 	{	
 		System.out.println("Running testQueryByExampleXMLPayload");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -240,13 +245,13 @@ public class TestQueryByExample extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testQueryByExampleJSONPayload() throws IOException, Exception
+	public void testQueryByExampleJSONPayload() throws KeyManagementException, NoSuchAlgorithmException, IOException,  Exception
 	{	
 		System.out.println("Running testQueryByExampleJSONPayload");
 
 		String[] filenames = {"constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -270,13 +275,13 @@ public class TestQueryByExample extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testQueryByExampleXMLPermission() throws IOException, TransformerException, XpathException
+	public void testQueryByExampleXMLPermission() throws KeyManagementException, NoSuchAlgorithmException, IOException,  TransformerException, XpathException
 	{	
 		System.out.println("Running testQueryByExampleXMLPermission");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -308,13 +313,13 @@ public class TestQueryByExample extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testQueryByExampleWrongXML() throws IOException, TransformerException, XpathException
+	public void testQueryByExampleWrongXML() throws KeyManagementException, NoSuchAlgorithmException, IOException,  TransformerException, XpathException
 	{	
 		System.out.println("Running testQueryByExampleXMLPayload");
 
 		String filename = "WrongFormat.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		try{
 			// write docs
 			writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "XML");
@@ -343,13 +348,13 @@ public class TestQueryByExample extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testQueryByExampleWrongJSON() throws IOException
+	public void testQueryByExampleWrongJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testQueryByExampleJSON");
 
 		String filename = "WrongFormat.json";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		try{	
 			// write docs
 			writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "JSON");
@@ -381,13 +386,13 @@ public class TestQueryByExample extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testQueryByExampleXMLWrongQuery() throws IOException, TransformerException, XpathException
+	public void testQueryByExampleXMLWrongQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException,  TransformerException, XpathException
 	{	
 		System.out.println("Running testQueryByExampleXMLWrongQuery");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -431,13 +436,13 @@ public class TestQueryByExample extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testQueryByExampleJSONWrongQuery() throws IOException
+	public void testQueryByExampleJSONWrongQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testQueryByExampleJSONWrongQuery");
 
 		String[] filenames = {"constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -493,6 +498,6 @@ public class TestQueryByExample extends BasicJavaClientREST {
 	@AfterClass	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

@@ -16,63 +16,65 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.MatchLocation;
-import com.marklogic.client.query.QueryManager;
-
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.Transaction;
-import com.marklogic.client.query.KeyValueQueryDefinition;
 import com.marklogic.client.admin.NamespacesManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.SearchHandle;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.*;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.*;
+import com.marklogic.client.query.KeyValueQueryDefinition;
+import com.marklogic.client.query.MatchDocumentSummary;
+import com.marklogic.client.query.MatchLocation;
+import com.marklogic.client.query.QueryManager;
 public class TestKeyValueSearch extends BasicJavaClientREST {
 	private static String dbName = "TestKeyValueSearchDB";
 	private static String [] fNames = {"TestKeyValueSearchDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 	private static int restPort=8011;
 
 	@BeforeClass
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 
 	@After
 	public  void testCleanUp() throws Exception
 	{
-		clearDB(restPort);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 
 	@Test
-	public void testKeyValueSearch() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testKeyValueSearch() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{	
 		System.out.println("Running testKeyValueSearch");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "valueConstraintWithoutIndexSettingsAndNSOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// create transaction
 		Transaction transaction1 = client.openTransaction();
@@ -118,14 +120,14 @@ public class TestKeyValueSearch extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testKeyValueSearchWithNS() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testKeyValueSearchWithNS() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testKeyValueSearchWithNS");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		//String queryOptionName = "valueConstraintWithoutIndexSettingsAndNSOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// setup namespaces to test kv with namespaces
 		NamespacesManager nsMgr = client.newServerConfigManager().newNamespacesManager();
@@ -158,13 +160,13 @@ public class TestKeyValueSearch extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testKeyValueSearchJSON() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testKeyValueSearchJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{	
 		System.out.println("testKeyValueSearchJSON");
 
 		String[] filenames = {"json-original.json", "json-updated.json"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -200,6 +202,6 @@ public class TestKeyValueSearch extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames,  restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

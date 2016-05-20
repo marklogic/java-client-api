@@ -16,20 +16,29 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
-
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.DOMHandle;
@@ -37,42 +46,37 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.*;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.*;
-import org.junit.runners.MethodSorters;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestRawCombinedQuery extends BasicJavaClientREST {
 	private static String dbName = "TestRawCombinedQueryDB";
 	private static String [] fNames = {"TestRawCombinedQueryDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	
 	@BeforeClass	
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0],restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 	@After
 	public void testCleanUp() throws Exception
 	{
-		clearDB(restPort);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 	
 	@Test	
-	public void testBug22353() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testBug22353() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testBug22353");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -118,13 +122,13 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void test1RawCombinedQueryXML() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test1RawCombinedQueryXML() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryXML");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -170,14 +174,14 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void test2RawCombinedQueryXMLWithOptions() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test2RawCombinedQueryXMLWithOptions() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryXMLWithOptions");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "valueConstraintWithoutIndexSettingsAndNSOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -222,14 +226,14 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void test3RawCombinedQueryXMLWithOverwriteOptions() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test3RawCombinedQueryXMLWithOverwriteOptions() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryXMLWithOverwriteOptions");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "valueConstraintWithoutIndexSettingsAndNSOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -273,14 +277,14 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void test4RawCombinedQueryJSONWithOverwriteOptions() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test4RawCombinedQueryJSONWithOverwriteOptions() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryJSONWithOverwriteOptions");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "valueConstraintWithoutIndexSettingsAndNSOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -328,13 +332,13 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void test5RawCombinedQueryJSON() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test5RawCombinedQueryJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryJSON");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -380,13 +384,13 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void test6RawCombinedQueryWildcard() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test6RawCombinedQueryWildcard() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryWildcard");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -433,7 +437,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void test7RawCombinedQueryCollection() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test7RawCombinedQueryCollection() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryCollection");
 
@@ -443,7 +447,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 		String filename4 = "constraint4.xml";
 		String filename5 = "constraint5.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// create and initialize a handle on the metadata
 		DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -496,7 +500,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void test8RawCombinedQueryCombo() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test8RawCombinedQueryCombo() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryCombo");
 
@@ -506,7 +510,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 		String filename4 = "constraint4.xml";
 		String filename5 = "constraint5.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// create and initialize a handle on the metadata
 		DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -559,13 +563,13 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void test9RawCombinedQueryField() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test9RawCombinedQueryField() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryField");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -604,13 +608,13 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void test10RawCombinedQueryPathIndex() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test10RawCombinedQueryPathIndex() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryPathIndex");
 
 		String[] filenames = {"pathindex1.xml", "pathindex2.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -647,7 +651,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void test11RawCombinedQueryComboJSON() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test11RawCombinedQueryComboJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryComboJSON");
 
@@ -657,7 +661,7 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 		String filename4 = "constraint4.xml";
 		String filename5 = "constraint5.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// create and initialize a handle on the metadata
 		DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -718,13 +722,13 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void test12RawCombinedQueryFieldJSON() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void test12RawCombinedQueryFieldJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testRawCombinedQueryFieldJSON");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -773,6 +777,6 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

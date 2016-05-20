@@ -16,40 +16,44 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
-import org.junit.*;
+import com.marklogic.client.io.Format;
 public class TestDocumentFormat extends BasicJavaClientREST {
 	
 	private static String dbName = "TestDocumentFormatDB";
 	private static String [] fNames = {"TestDocumentFormat-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 	@BeforeClass
 	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
 		
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 	}
 
 	@Test
-	public void testXMLFormatOnXML() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testXMLFormatOnXML() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testXMLFormatOnXML");
 		
@@ -57,7 +61,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String uri = "/xml-format-xml-file/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -84,7 +88,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	}
 
 	@Test
-	public void testJSONFormatOnXML() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testJSONFormatOnXML() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testJSONFormatOnXML");
 		
@@ -92,7 +96,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String uri = "/json-format-xml-file/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -124,7 +128,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	}
 
 	@Test
-	public void testBinaryFormatOnXML() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testBinaryFormatOnXML() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testBinaryFormatOnXML");
 		
@@ -132,7 +136,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String uri = "/bin-format-xml-file/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -159,7 +163,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testTextFormatOnXML() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testTextFormatOnXML() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testTextFormatOnXML");
 		
@@ -167,7 +171,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String uri = "/txt-format-xml-file/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -194,7 +198,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	}
 
 	@Test
-	public void testJSONFormatOnJSON() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testJSONFormatOnJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testJSONFormatOnJSON");
 		
@@ -202,7 +206,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String uri = "/json-format-json-file/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -229,7 +233,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	}	
 
 	@Test
-	public void testXMLFormatOnJSON() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testXMLFormatOnJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testXMLFormatOnJSON");
 		
@@ -237,7 +241,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String uri = "/xml-format-json-file/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -264,7 +268,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	}	
 
 	@Test	
-	public void testBinaryFormatOnJSON() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testBinaryFormatOnJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testBinaryFormatOnJSON");
 		
@@ -272,7 +276,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String uri = "/bin-format-json-file/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -299,7 +303,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	}	
 
 	@Test
-	public void testTextFormatOnJSON() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testTextFormatOnJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testTextFormatOnJSON");
 		
@@ -307,7 +311,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String uri = "/txt-format-json-file/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -333,7 +337,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}	
 
-	@Test	public void testBinaryFormatOnBinary() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testBinaryFormatOnBinary() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testBinaryFormatOnBinary");
 		
@@ -341,7 +345,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String uri = "/bin-format-bin-file/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -367,7 +371,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}	
 
-	@Test	public void testXMLFormatOnBinary() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testXMLFormatOnBinary() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testXMLFormatOnBinary");
 		
@@ -375,7 +379,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String uri = "/xml-format-bin-file/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -406,7 +410,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}	
 
-	@Test	public void testJSONFormatOnBinary() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testJSONFormatOnBinary() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testJSONFormatOnBinary");
 		
@@ -414,7 +418,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String uri = "/json-format-bin-file/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -445,7 +449,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-	@Test	public void testTextFormatOnBinary() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testTextFormatOnBinary() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testTextFormatOnBinary");
 		
@@ -453,7 +457,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String uri = "/bin-format-bin-file/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -484,7 +488,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}	
 
-	@Test	public void testTextFormatOnText() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testTextFormatOnText() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testTextFormatOnText");
 		
@@ -492,7 +496,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String uri = "/txt-format-txt-file/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -519,7 +523,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	}	
 	
 
-	@Test	public void testXMLFormatOnText() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testXMLFormatOnText() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testXMLFormatOnText");
 		
@@ -527,7 +531,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String uri = "/xml-format-txt-file/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -553,7 +557,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-	@Test	public void testJSONFormatOnText() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testJSONFormatOnText() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testJSONFormatOnText");
 		
@@ -561,7 +565,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String uri = "/json-format-txt-file/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -592,7 +596,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-	@Test	public void testBinaryFormatOnText() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testBinaryFormatOnText() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testBinaryFormatOnText");
 		
@@ -600,7 +604,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String uri = "/bin-format-txt-file/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -626,7 +630,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	    client.release();
 	}
 	
-	@Test	public void testNegativeJSONFormatWithDOMHandle() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testNegativeJSONFormatWithDOMHandle() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testNegativeJSONFormatWithDOMHandle");
 		
@@ -634,7 +638,7 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 		String uri = "/negative-format/";
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		// create doc manager
 		DocumentManager docMgr = client.newDocumentManager();
@@ -665,6 +669,6 @@ public class TestDocumentFormat extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

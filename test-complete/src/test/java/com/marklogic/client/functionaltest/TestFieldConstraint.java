@@ -16,30 +16,33 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.io.SearchHandle;
-
-import org.junit.*;
 public class TestFieldConstraint extends BasicJavaClientREST {
 	static String filenames[] = {"bbq1.xml", "bbq2.xml", "bbq3.xml", "bbq4.xml", "bbq5.xml"};
 	static String queryOptionName = "fieldConstraintOpt.xml";
 	private static String dbName = "FieldConstraintDB";
 	private static String [] fNames = {"FieldConstraintDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 	private static int restPort=8011;
 	
 	@BeforeClass
 	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		addField(dbName, "bbqtext");
 		includeElementField(dbName, "bbqtext", "http://example.com", "title");
 		includeElementField(dbName, "bbqtext", "http://example.com", "abstract");
@@ -48,14 +51,14 @@ public class TestFieldConstraint extends BasicJavaClientREST {
 	 @After
 	public  void testCleanUp() throws Exception
 	{
-		clearDB(restPort);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 
 	@Test
-	public void testFieldConstraint() throws IOException
+	public void testFieldConstraint() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// write docs
 		for(String filename:filenames)
@@ -86,6 +89,6 @@ public class TestFieldConstraint extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

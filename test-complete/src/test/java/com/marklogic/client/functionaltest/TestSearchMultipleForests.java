@@ -16,45 +16,48 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import com.marklogic.client.query.QueryManager;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
-import org.junit.*;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 public class TestSearchMultipleForests extends BasicJavaClientREST {
 
 	private static String dbName = "TestSearchMultipleForestsDB";
 	private static String [] fNames = {"TestSearchMultipleForestsDB-1", "TestSearchMultipleForestsDB-2"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 
 	@BeforeClass 
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0],  restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		createForest(fNames[1],dbName);
 		setupAppServicesGeoConstraint(dbName);
 	}
 
 	@Test	
-	public void testSearchMultipleForest() throws IOException, SAXException, ParserConfigurationException, TransformerException
+	public void testSearchMultipleForest() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException, TransformerException
 	{	
 		System.out.println("Running testSearchMultipleForest");
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		DocumentManager docMgr = client.newDocumentManager();
 		docMgr.setForestName("TestSearchMultipleForestsDB-1");
@@ -91,6 +94,6 @@ public class TestSearchMultipleForests extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

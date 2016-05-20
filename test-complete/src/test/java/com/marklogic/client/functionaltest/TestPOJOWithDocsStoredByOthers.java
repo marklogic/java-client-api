@@ -19,6 +19,8 @@ package com.marklogic.client.functionaltest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 
 import org.junit.After;
@@ -30,7 +32,6 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.document.DocumentManager.Metadata;
@@ -47,9 +48,9 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 
 	private static String dbName = "TestPOJOWithDocsStoredByOthersDB";
 	private static String[] fNames = { "TestPOJOWithDocsStoredByOthersDB-1" };
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 
-	private static int restPort = 8011;
+	
 	private DatabaseClient client;
 
 	/*
@@ -205,19 +206,18 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 		// System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire",
 		// "debug");
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName, restPort);
+		configureRESTServer(dbName, fNames);
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 
 	@Before
-	public void setUp() throws Exception {
-		client = DatabaseClientFactory.newClient("localhost", restPort,
-				"rest-admin", "x", Authentication.DIGEST);
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 	}
 
 	@After
@@ -345,7 +345,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	 */
 
 	@Test(expected=IllegalArgumentException.class)
-	public void testPOJOReadDocStoredWithInvalidContent() throws Exception {
+	public void testPOJOReadDocStoredWithInvalidContent() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
 		String docId[] = { "com.marklogic.client.functionaltest.TestPOJOWithDocsStoredByOthers$SmallArtifactIdInSuper/SmallArtifactIdInSuper.json" };
 		String json1 = new String(
@@ -387,7 +387,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	 * inventory field.
 	 */
 	@Test
-	public void testPOJOReadDocStoredWithNoBeanProperty() throws Exception {
+	public void testPOJOReadDocStoredWithNoBeanProperty() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
 		String docId[] = { "com.marklogic.client.functionaltest.TestPOJOWithDocsStoredByOthers$SmallArtifactIdInSuper/SmallArtifactIdInSuper.json" };
 		String json1 = new String(
@@ -436,7 +436,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	 */
 
 	@Test(expected=ResourceNotFoundException.class)
-	public void testPOJOReadDocStoredWithInvalidDataType() throws Exception {
+	public void testPOJOReadDocStoredWithInvalidDataType() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
 		String docId[] = { "com.marklogic.client.functionaltest.TestPOJOWithDocsStoredByOthers$SmallArtifact/SmallArtifact.json" };
 		String json1 = new String(
@@ -482,7 +482,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testPOJOWriteReadSuper() throws Exception {
+	public void testPOJOWriteReadSuper() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		
 	PojoRepository<SmallArtifactNoId, String> pojoReposSmallArtifact = client
 				.newPojoRepository(SmallArtifactNoId.class, String.class);
@@ -509,7 +509,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testPOJOWriteReadSuperAndSub() throws Exception {
+	public void testPOJOWriteReadSuperAndSub() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		
 	PojoRepository<SmallArtifactIdInSuperAndSub, String> pojoReposSmallArtifact = client
 				.newPojoRepository(SmallArtifactIdInSuperAndSub.class, String.class);
@@ -537,7 +537,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	 * 
 	 */
 	@Test
-	public void testPOJOWriteReadDiffAccessSpecifiers() throws Exception {
+	public void testPOJOWriteReadDiffAccessSpecifiers() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		
 	PojoRepository<SmallArtifactPublic, String> pojoReposSmallArtifact = client
 				.newPojoRepository(SmallArtifactPublic.class, String.class);
@@ -565,7 +565,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	 */
 	
 	@Test
-	public void testPOJOSubObjReferencedBySuperClassVariable() throws Exception {
+	public void testPOJOSubObjReferencedBySuperClassVariable() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		
 	PojoRepository<SmallArtifactIdInSuper, String> pojoReposSmallArtifact = client
 				.newPojoRepository(SmallArtifactIdInSuper.class, String.class);
@@ -593,7 +593,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	 */
 	
 	@Test
-	public void testPOJOSubObjReferencedBySuperClassVariableOne() throws Exception {
+	public void testPOJOSubObjReferencedBySuperClassVariableOne() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		
 	PojoRepository<SmallArtifactIdInSuperAndSub, String> pojoReposSmallArtifact = client
 				.newPojoRepository(SmallArtifactIdInSuperAndSub.class, String.class);

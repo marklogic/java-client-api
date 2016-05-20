@@ -16,37 +16,44 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.TextDocumentManager;
-
-import org.junit.*;
 public class TestMultithreading extends BasicJavaClientREST {
 
 	private static String dbName = "TestMultithreadingDB";
 	private static String [] fNames = {"TestMultithreadingDBDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 	private static int restPort=8011;
 
 	@BeforeClass
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName, restPort);
+		configureRESTServer(dbName, fNames);
 	}
 
 	@After
 	public  void testCleanUp() throws Exception
 	{
-		clearDB(restPort);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 
 	@Test
-	public void testMultithreading() throws InterruptedException
+	public void testMultithreading() throws KeyManagementException, NoSuchAlgorithmException, InterruptedException, IOException
 	{
 		ThreadClass dt1 = new ThreadClass("Thread A");
 		ThreadClass dt2 = new ThreadClass("Thread B");
@@ -55,7 +62,7 @@ public class TestMultithreading extends BasicJavaClientREST {
 		dt2.start(); // this will start thread of object 2
 		dt2.join();
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-reader", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
 		TextDocumentManager docMgr = client.newTextDocumentManager();
 
 		for (int i = 1; i <= 5; i++)
@@ -76,7 +83,7 @@ public class TestMultithreading extends BasicJavaClientREST {
 		client.release();
 	}
 
-	/*public void testMultithreadingSearchAndWrite() throws InterruptedException
+	/*public void testMultithreadingSearchAndWrite() throws KeyManagementException, NoSuchAlgorithmException, InterruptedException
 	{
 		System.out.println("testMultithreadingSearchAndWrite");
 
@@ -88,7 +95,7 @@ public class TestMultithreading extends BasicJavaClientREST {
         tw1.join();
         ts1.join();
 
-        DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+        DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
         TextDocumentManager docMgr = client.newTextDocumentManager();
 
         for (int i = 1; i <= 15; i++)
@@ -109,7 +116,7 @@ public class TestMultithreading extends BasicJavaClientREST {
    }*/
 
 	@Test
-	public void testMultithreadingMultipleSearch() throws InterruptedException
+	public void testMultithreadingMultipleSearch() throws KeyManagementException, NoSuchAlgorithmException, InterruptedException
 	{
 		System.out.println("testMultithreadingMultipleSearch");
 
@@ -143,7 +150,7 @@ public class TestMultithreading extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }
 

@@ -16,42 +16,49 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.ResourceNotFoundException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.admin.ExtensionLibrariesManager;
 import com.marklogic.client.admin.ExtensionLibraryDescriptor;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.DatabaseClient;
-
-import org.junit.*;
 public class TestCRUDModulesDb extends BasicJavaClientREST {
 
 	private static String dbName = "Modules";
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 @BeforeClass
 	public static void setUp() throws Exception 
 	{
 	System.out.println("In setup");
-	assocRESTServer(restServerName, dbName,8011);
+	loadGradleProperties();
+	assocRESTServer(getRestServerName(), dbName, getRestServerPort());
 	}
 
 @After
 public  void testCleanUp() throws Exception
 {
-//	clearDB(8011);
+//	clearDB();
 	System.out.println("Running clear script");
 }
 @Test
-	public void testXQueryModuleCRUDDuplicateFile()
+	public void testXQueryModuleCRUDDuplicateFile() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// get a manager
 		//ExtensionLibrariesManager libsMgr = Common.client.newServerConfigManager().newExtensionLibrariesManager();
@@ -94,9 +101,9 @@ public  void testCleanUp() throws Exception
 	}
 
 
-@Test	public void testXQueryModuleCRUDDifferentPath() {
+@Test	public void testXQueryModuleCRUDDifferentPath() throws KeyManagementException, NoSuchAlgorithmException, IOException {
 		
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// get a manager
 		ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
@@ -138,9 +145,9 @@ public  void testCleanUp() throws Exception
 
 
 @Test
-public void testXQueryModuleCRUDBinaryFile() {
+public void testXQueryModuleCRUDBinaryFile() throws KeyManagementException, NoSuchAlgorithmException, IOException {
 		
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// get a manager
 		ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
@@ -175,9 +182,9 @@ public void testXQueryModuleCRUDBinaryFile() {
 	}
 
 
-@Test	public void testXQueryModuleCRUDTextFile() {
+@Test	public void testXQueryModuleCRUDTextFile() throws KeyManagementException, NoSuchAlgorithmException, IOException {
 		
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// get a manager
 		ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
@@ -212,9 +219,9 @@ public void testXQueryModuleCRUDBinaryFile() {
 	}
 
 
-@Test	public void testXQueryModuleCRUDXmlFile() {
+@Test	public void testXQueryModuleCRUDXmlFile() throws KeyManagementException, NoSuchAlgorithmException, IOException {
 		
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// get a manager
 		ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
@@ -249,9 +256,9 @@ public void testXQueryModuleCRUDBinaryFile() {
 	}
 
 
-@Test	public void testXQueryModuleReadModulesDb() {
+@Test	public void testXQueryModuleReadModulesDb() throws KeyManagementException, NoSuchAlgorithmException, IOException {
 		
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// get a manager
 		ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
@@ -295,10 +302,10 @@ public void testXQueryModuleCRUDBinaryFile() {
 	}
 
 @Test
-public void testXQueryModuleReadExtensionLibraryDescriptor () {
+public void testXQueryModuleReadExtensionLibraryDescriptor () throws KeyManagementException, NoSuchAlgorithmException, IOException {
 		System.out.println("testXQueryModuleReadExtensionLibraryDescriptor");
 		
-DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// get a manager
 		ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
@@ -345,9 +352,9 @@ DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest
 	}
 
 @Test
-public void testXQueryModuleCRUDXmlFileNegative() {
+public void testXQueryModuleCRUDXmlFileNegative() throws KeyManagementException, NoSuchAlgorithmException, IOException {
 	
-	DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+	DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 	
 	// get a manager
 	ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
@@ -375,7 +382,7 @@ public void testXQueryModuleCRUDXmlFileNegative() {
 	{
 		System.out.println("In tear down");
 		try{
-			deleteRESTServer(restServerName); 
+			deleteRESTServer(getRestServerName()); 
 		}catch(Exception e){
 			e.printStackTrace(); 
 		}	

@@ -16,17 +16,24 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
@@ -36,25 +43,19 @@ import com.marklogic.client.query.AggregateResult;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.ValuesDefinition;
 
-
-import org.junit.*;
-import static org.junit.Assert.*;
-
-
-
 public class TestAggregates extends BasicJavaClientREST  {
 
 	
 	private static String dbName = "TestAggregatesDB";
 	private static String [] fNames = {"TestAggregatesDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
  
     @BeforeClass
 	public static void setUp() throws Exception 
 	{
 	   System.out.println("In setup");
-	  setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+	  configureRESTServer(dbName, fNames);
 	  setupAppServicesConstraint(dbName);
 	  
 	 // System.out.println(" and "+ serverName + dbName + restServerName);
@@ -63,18 +64,18 @@ public class TestAggregates extends BasicJavaClientREST  {
     @After
     public  void testCleanUp() throws Exception
     {
-    	clearDB(restPort);
+    	clearDB();
     	System.out.println("Running clear script");
     }
 	@Test
-	public void testValuesAggregates() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testValuesAggregates() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException, KeyManagementException, NoSuchAlgorithmException
 	{	
 		System.out.println("Running testValuesAggregates");
 		
 		String[] filenames = {"aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml", "aggr5.xml"};
 		String queryOptionName = "aggregatesOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// write docs
 		for(String filename : filenames)
@@ -145,14 +146,14 @@ public class TestAggregates extends BasicJavaClientREST  {
 	
 	
 	@Test
-	public void testValuesAggregatesWithNS() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testValuesAggregatesWithNS() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testValuesAggregatesWithNS");
 		
 		String[] filenames = {"aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml", "aggr5.xml"};
 		String queryOptionName = "aggregatesOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// write docs
 		for(String filename : filenames)
@@ -206,14 +207,14 @@ public class TestAggregates extends BasicJavaClientREST  {
 		client.release();		
 	}
 	@Test
-	public void testTuplesAggregates() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testTuplesAggregates() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testTuplesAggregates");
 		
 		String[] filenames = {"aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml", "aggr5.xml"};
 		String queryOptionName = "aggregatesOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// write docs
 		for(String filename : filenames)
@@ -254,14 +255,14 @@ public class TestAggregates extends BasicJavaClientREST  {
 		client.release();		
 	}
 	@Test
-	public void testValuesAggregatesWithJson() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testValuesAggregatesWithJson() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testValuesAggregatesWithJson");
 		
 		String[] filenames = {"aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml", "aggr5.xml"};
 		String queryOptionName = "aggregatesOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// write docs
 		for(String filename : filenames)
@@ -291,14 +292,14 @@ public class TestAggregates extends BasicJavaClientREST  {
 		client.release();		
 	}
 	@Test
-	public void testValuesAggregatesThreeOccurences() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testValuesAggregatesThreeOccurences() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testValuesAggregatesThreeOccurences");
 		
 		String[] filenames = {"aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml"};
 		String queryOptionName = "aggregatesOpt3Occ.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// write docs
 		for(String filename : filenames)
@@ -348,14 +349,14 @@ public class TestAggregates extends BasicJavaClientREST  {
 		client.release();		
 	}
 	@Test
-	public void testValuesAggregatesFiveOccurences() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testValuesAggregatesFiveOccurences() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testValuesAggregatesThreeOccurences");
 		
 		String[] filenames = {"aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml"};
 		String queryOptionName = "aggregatesOpt5Occ.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// write docs
 		for(String filename : filenames)
@@ -388,7 +389,6 @@ public class TestAggregates extends BasicJavaClientREST  {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down" );
-	
-	tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

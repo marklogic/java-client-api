@@ -19,6 +19,8 @@ package com.marklogic.client.functionaltest;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -54,8 +56,8 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 	private static final String DIRECTORY ="/bulkTransform/";
 	private static String dbName = "TestBulkWriteWithTransformDB";
 	private static String [] fNames = {"TestBulkWriteWithTransformDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	private  DatabaseClient client ;
 	// Additional port to test for Uber port
     private static int uberPort = 8000;
@@ -63,20 +65,20 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 		deleteRESTUser("eval-user");
 		deleteUserRole("test-eval");
 	}
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 //		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		// create new connection for each test below
 		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
@@ -92,7 +94,7 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 	}
 
 	@Test
-	public void testBulkLoadWithXSLTClientSideTransform() throws Exception {
+	public void testBulkLoadWithXSLTClientSideTransform() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		String docId[] ={"/transform/emp.xml","/transform/food1.xml","/transform/food2.xml"};
 		Source s[] = new Source[3];
 		s[0] = new StreamSource("src/test/java/com/marklogic/client/functionaltest/data/employee.xml");
@@ -135,7 +137,7 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 
 	}
 	@Test
-	public void testBulkLoadWithXQueryTransform() throws Exception {
+	public void testBulkLoadWithXQueryTransform() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
 		TransformExtensionsManager transMgr = 
 				client.newServerConfigManager().newTransformExtensionsManager();
@@ -193,7 +195,7 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 	 */
 	
 	@Test
-	public void testBulkXQYTransformWithTrans() throws Exception {
+	public void testBulkXQYTransformWithTrans() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
 		TransformExtensionsManager transMgr = 
 				client.newServerConfigManager().newTransformExtensionsManager();
@@ -276,7 +278,7 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 	}
 		
 	@Test
-	public void testBulkReadWithXQueryTransform() throws Exception {
+	public void testBulkReadWithXQueryTransform() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
 		TransformExtensionsManager transMgr = 
 				client.newServerConfigManager().newTransformExtensionsManager();

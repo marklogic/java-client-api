@@ -16,40 +16,45 @@
 
 package com.marklogic.client.functionaltest;
 
-import java.io.*;
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Reader;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.custommonkey.xmlunit.XMLUnit;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.ReaderHandle;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.*;
-
-import org.junit.*;
 
 public class TestReaderHandle extends BasicJavaClientREST {
 	private static String dbName = "WriteReaderHandleDB";
 	private static String [] fNames = {"WriteReaderHandleDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 
 	@BeforeClass	
 	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 	}
 
 	@Test	
-	public void testXmlCRUD() throws FileNotFoundException, IOException, SAXException, ParserConfigurationException
+	public void testXmlCRUD() throws KeyManagementException, NoSuchAlgorithmException, FileNotFoundException, IOException, SAXException, ParserConfigurationException
 	{
 		System.out.println("Running testXmlCRUD");
 
@@ -60,7 +65,7 @@ public class TestReaderHandle extends BasicJavaClientREST {
 		XMLUnit.setNormalizeWhitespace(true);
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write the doc
 		writeDocumentReaderHandle(client, filename, uri, "XML");
@@ -123,7 +128,7 @@ public class TestReaderHandle extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testTextCRUD() throws FileNotFoundException, IOException
+	public void testTextCRUD() throws KeyManagementException, NoSuchAlgorithmException, FileNotFoundException, IOException
 	{
 		System.out.println("Running testTextCRUD");
 
@@ -131,7 +136,7 @@ public class TestReaderHandle extends BasicJavaClientREST {
 		String uri = "/write-text-readerhandle/";
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write the doc
 		writeDocumentReaderHandle(client, filename, uri, "Text");
@@ -185,7 +190,7 @@ public class TestReaderHandle extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testJsonCRUD() throws FileNotFoundException, IOException
+	public void testJsonCRUD() throws KeyManagementException, NoSuchAlgorithmException, FileNotFoundException, IOException
 	{
 		System.out.println("Running testJsonCRUD");
 
@@ -195,7 +200,7 @@ public class TestReaderHandle extends BasicJavaClientREST {
 		ObjectMapper mapper = new ObjectMapper();
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write the doc
 		writeDocumentReaderHandle(client, filename, uri, "JSON");
@@ -249,7 +254,7 @@ public class TestReaderHandle extends BasicJavaClientREST {
 	}
 
 	//@Test Issue 225 	
-	public void testBinaryCRUD() throws IOException
+	public void testBinaryCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		String filename = "Pandakarlino.jpg";
 		String uri = "/write-bin-filehandle/";
@@ -257,7 +262,7 @@ public class TestReaderHandle extends BasicJavaClientREST {
 		System.out.println("Running testBinaryCRUD");
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		writeDocumentReaderHandle(client, filename, uri, "Binary");	
 
 		// read docs
@@ -319,6 +324,6 @@ public class TestReaderHandle extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames,  restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

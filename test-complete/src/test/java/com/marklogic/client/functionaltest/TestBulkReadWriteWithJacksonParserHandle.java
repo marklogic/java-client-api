@@ -23,6 +23,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -39,7 +41,6 @@ import org.xml.sax.SAXException;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
@@ -52,16 +53,14 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
-import com.marklogic.client.io.marker.ContentHandle;
-import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonDatabindHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.JacksonParserHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawQueryByExampleDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
+import com.marklogic.client.query.RawQueryByExampleDefinition;
 
 /*
  * This test is designed to to test all of bulk reads and write of JSON  with JacksonParserHandle Manager by passing set of uris
@@ -74,24 +73,23 @@ public class TestBulkReadWriteWithJacksonParserHandle extends
 	private static final String DIRECTORY = "/";
 	private static String dbName = "TestBulkJacksonParserDB";
 	private static String[] fNames = { "TestBulkJacksonParserDB-1" };
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	private DatabaseClient client;
 
 	@BeforeClass
 	public static void setUp() throws Exception {
 		System.out.println("In setup");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-		setupJavaRESTServer(dbName, fNames[0], restServerName, restPort);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 
 	}
 
 	@Before
-	public void testSetup() throws Exception {
+	public void testSetup() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		// create new connection for each test below
-		client = DatabaseClientFactory.newClient("localhost", restPort,
-				"rest-admin", "x", Authentication.DIGEST);
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 	}
 
 	@After
@@ -194,7 +192,7 @@ public class TestBulkReadWriteWithJacksonParserHandle extends
 	 * Verified by reading individual documents. 
 	 */
 	@Test
-	public void testWriteMultipleJSONDocs() throws Exception {
+	public void testWriteMultipleJSONDocs() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		String docId[] = { "/a.json", "/b.json", "/c.json" };
 		String json1 = new String("{\"animal\":\"dog\", \"says\":\"woof\"}");
 		String json2 = new String("{\"animal\":\"cat\", \"says\":\"meow\"}");
@@ -242,7 +240,7 @@ public class TestBulkReadWriteWithJacksonParserHandle extends
 	 * Verified by reading individual documents. 
 	 */
 	@Test
-	public void testWriteMultipleJSONDocsFromFactory() throws Exception {
+	public void testWriteMultipleJSONDocsFromFactory() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		String docId[] = { "/a.json", "/b.json", "/c.json" };
 		String json1 = new String("{\"animal\":\"dog\", \"says\":\"woof\"}");
 		String json2 = new String("{\"animal\":\"cat\", \"says\":\"meow\"}");
@@ -295,7 +293,7 @@ public class TestBulkReadWriteWithJacksonParserHandle extends
 	 */
 
 	@Test
-	public void testWriteMultipleJSONDocsWithDefaultMetadata() throws Exception {
+	public void testWriteMultipleJSONDocsWithDefaultMetadata() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		String docId[] = { "/a.json", "/b.json", "/c.json" };
 		String json1 = new String("{\"animal\":\"dog\", \"says\":\"woof\"}");
 		String json2 = new String("{\"animal\":\"cat\", \"says\":\"meow\"}");
@@ -469,7 +467,7 @@ public class TestBulkReadWriteWithJacksonParserHandle extends
 	 */
 
 	@Test
-	public void testWriteMultiJSONFilesDefaultMetadata() throws Exception  
+	public void testWriteMultiJSONFilesDefaultMetadata() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	{
 		String docId[] = {"/original.json","/updated.json","/constraint1.json"};
 		String jsonFilename1 = "json-original.json";
@@ -526,7 +524,7 @@ public class TestBulkReadWriteWithJacksonParserHandle extends
 	 * Search with JacksonParserHandle
 	 */
 	@Test
-	public void testBulkSearchQBEWithJSONResponseFormat() throws IOException, ParserConfigurationException, SAXException, TransformerException {
+	public void testBulkSearchQBEWithJSONResponseFormat() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, TransformerException {
 		int count;
 		String docId[] = { "/a.json", "/b.json", "/c.json" };
 		String json1 = new String("{\"animal\":\"dog\", \"says\":\"woof\"}");
@@ -607,7 +605,7 @@ public class TestBulkReadWriteWithJacksonParserHandle extends
 	@AfterClass
 	public static void tearDown() throws Exception {
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 
 	public void validateRecord(DocumentRecord record, Format type) {

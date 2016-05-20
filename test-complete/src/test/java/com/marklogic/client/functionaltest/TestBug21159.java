@@ -16,43 +16,44 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import com.marklogic.client.query.CountedDistinctValue;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
-import com.marklogic.client.query.Tuple;
-import com.marklogic.client.query.ValuesDefinition;
-
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.TuplesHandle;
 import com.marklogic.client.io.ValuesHandle;
-
-import static org.junit.Assert.*;
-
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.*;
+import com.marklogic.client.query.CountedDistinctValue;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
+import com.marklogic.client.query.Tuple;
+import com.marklogic.client.query.ValuesDefinition;
 public class TestBug21159 extends BasicJavaClientREST {
 
 	private static String dbName = "TestRawCombinedQueryDB";
 	private static String [] fNames = {"TestRawCombinedQueryDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 @BeforeClass
 	public static void setUp() throws Exception 
 	{
 	  System.out.println("In setup");
-	  setupJavaRESTServer(dbName, fNames[0],  restServerName,8011);
+	  configureRESTServer(dbName, fNames);
 	  setupAppServicesConstraint(dbName);
 	  
     	addRangeElementIndex(dbName, "string", "", "grandchild", "http://marklogic.com/collation/");
@@ -62,13 +63,13 @@ public class TestBug21159 extends BasicJavaClientREST {
 	}
 
 @Test
-public void testBug21159Tuples() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+public void testBug21159Tuples() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testBug21159Tuples");
 		
 		String[] filenames = {"tuples-test1.xml", "tuples-test2.xml", "tuples-test3.xml", "tuples-test4.xml", "lexicon-test1.xml","lexicon-test2.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -112,13 +113,13 @@ public void testBug21159Tuples() throws IOException, ParserConfigurationExceptio
 	}
 
 @Test
-public void testBug21159Values() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+public void testBug21159Values() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 {	
 	System.out.println("Running testBug21159Values");
 	
 	String[] filenames = {"tuples-test1.xml", "tuples-test2.xml", "tuples-test3.xml", "tuples-test4.xml", "lexicon-test1.xml","lexicon-test2.xml"};
 
-	DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+	DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 	
 	// set query option validation to true
 	ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -162,7 +163,7 @@ public void testBug21159Values() throws IOException, ParserConfigurationExceptio
 public static void tearDown() throws Exception
 {
 	System.out.println("In tear down");
-	tearDownJavaRESTServer(dbName, fNames, restServerName);
+	cleanupRESTServer(dbName, fNames);
 	
 }
 }

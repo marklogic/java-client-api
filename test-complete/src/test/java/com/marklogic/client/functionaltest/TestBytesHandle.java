@@ -19,6 +19,9 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -38,20 +41,20 @@ public class TestBytesHandle extends BasicJavaClientREST{
 
 private static String dbName = "BytesHandleDB";
 private static String [] fNames = {"BytesHandleDB-1"};
-private static String restServerName = "REST-Java-Client-API-Server";
+
 //Additional port to test for Uber port
 private static int uberPort = 8000;
 
 @BeforeClass
 public static void setUp() throws Exception{
 	System.out.println("In setup");
-	setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+	configureRESTServer(dbName, fNames);
 	createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
 	}
 
 @Test
-public void testXmlCRUD() throws IOException , SAXException, ParserConfigurationException{
+public void testXmlCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException , SAXException, ParserConfigurationException{
 
 	String filename = "xml-original-test.xml";
 	String uri = "/write-xml-domhandle/";
@@ -116,7 +119,7 @@ public void testXmlCRUD() throws IOException , SAXException, ParserConfiguration
     }
 
 @Test
-public void testTextCRUD() throws IOException, ParserConfigurationException, SAXException{
+public void testTextCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException{
 	String filename = "text-original.txt";
 	String uri = "/write-text-Byteshandle/";	
 	System.out.println("Runing test TextCRUD");
@@ -174,7 +177,7 @@ public void testTextCRUD() throws IOException, ParserConfigurationException, SAX
 }
 
 @Test
-public void testJsonCRUD() throws IOException, ParserConfigurationException, SAXException{
+public void testJsonCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException{
 	String filename = "json-original.json";
 	String uri = "/write-json-Byteshandle/";
 	System.out.println("Running testJsonCRUD");
@@ -235,7 +238,7 @@ public void testJsonCRUD() throws IOException, ParserConfigurationException, SAX
 }
 
 @Test
-public void testBinaryCRUD() throws IOException, ParserConfigurationException, SAXException{
+public void testBinaryCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException{
 	String filename = "Pandakarlino.jpg";
 	String uri = "/write-bin-Bytehandle/";
 	System.out.println("Running testBinaryCRUD");
@@ -299,7 +302,7 @@ public void testBinaryCRUD() throws IOException, ParserConfigurationException, S
 public static void tearDown() throws Exception
 {
 	System.out.println("In tear down");
-	tearDownJavaRESTServer(dbName, fNames, restServerName);
+	cleanupRESTServer(dbName, fNames);
 	deleteRESTUser("eval-user");
 	deleteUserRole("test-eval");
 	

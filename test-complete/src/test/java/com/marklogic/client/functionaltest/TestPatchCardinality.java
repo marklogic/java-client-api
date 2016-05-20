@@ -17,15 +17,21 @@
 package com.marklogic.client.functionaltest;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-
-import org.custommonkey.xmlunit.*;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+
+import org.custommonkey.xmlunit.XMLAssert;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentMetadataPatchBuilder.Cardinality;
@@ -36,39 +42,36 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
 
-import org.custommonkey.xmlunit.XMLUnit;
-import org.junit.*;
-
 public class TestPatchCardinality extends BasicJavaClientREST {
 
 	private static String dbName = "TestPatchCardinalityDB";
 	private static String [] fNames = {"TestPatchCardinalityDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 	private static int restPort=8011;
 
 	@BeforeClass
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 
 	@After
 	public  void testCleanUp() throws Exception
 	{
-		clearDB(restPort);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 
 	@Test	
-	public void testOneCardinalityNegative() throws IOException
+	public void testOneCardinalityNegative() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testOneCardinalityNegative");
 
 		String[] filenames = {"cardinal1.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -102,13 +105,13 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testOneCardinalityPositve() throws IOException
+	public void testOneCardinalityPositve() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testOneCardinalityPositive");
 
 		String[] filenames = {"cardinal2.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -134,13 +137,13 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testOneOrMoreCardinalityPositve() throws IOException
+	public void testOneOrMoreCardinalityPositve() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testOneOrMoreCardinalityPositive");
 
 		String[] filenames = {"cardinal1.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -170,13 +173,13 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testOneOrMoreCardinalityNegative() throws IOException
+	public void testOneOrMoreCardinalityNegative() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testOneOrMoreCardinalityNegative");
 
 		String[] filenames = {"cardinal3.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -210,13 +213,13 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testZeroOrOneCardinalityNegative() throws IOException
+	public void testZeroOrOneCardinalityNegative() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testZeroOrOneCardinalityNegative");
 
 		String[] filenames = {"cardinal1.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -251,13 +254,13 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 
 
 	@Test	
-	public void testZeroOrOneCardinalityPositive() throws IOException
+	public void testZeroOrOneCardinalityPositive() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testZeroOrOneCardinalityPositive");
 
 		String[] filenames = {"cardinal2.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -283,13 +286,13 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testZeroOrOneCardinalityPositiveWithZero() throws IOException
+	public void testZeroOrOneCardinalityPositiveWithZero() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testZeroOrOneCardinalityPositiveWithZero");
 
 		String[] filenames = {"cardinal3.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -315,13 +318,13 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testZeroOrMoreCardinality() throws IOException
+	public void testZeroOrMoreCardinality() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testZeroOrMoreCardinality");
 
 		String[] filenames = {"cardinal1.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -351,13 +354,13 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testBug23843() throws IOException
+	public void testBug23843() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testBug23843");
 
 		String[] filenames = {"cardinal1.xml","cardinal4.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames)
@@ -440,7 +443,7 @@ public class TestPatchCardinality extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 
 	}
 }

@@ -24,6 +24,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -64,14 +66,14 @@ import com.marklogic.client.io.JacksonHandle;
 public class TestEvalJavaScript  extends BasicJavaClientREST {
 	private static String dbName = "TestEvalJavaScriptDB";
 	private static String [] fNames = {"TestEvalJavaScriptDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	private  DatabaseClient client ;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		 System.out.println("In setup");
- 	     setupJavaRESTServer(dbName, fNames[0], restServerName,restPort,false);
+		 configureRESTServer(dbName, fNames, false);
  	     TestEvalXquery.createUserRolesWithPrevilages("test-js-eval", "xdbc:eval", "xdbc:eval-in","xdmp:eval-in","xdmp:invoke-in","xdmp:invoke","xdbc:invoke-in","any-uri","xdbc:invoke");
  	     TestEvalXquery.createRESTUser("eval-user", "x", "test-js-eval");
 		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
@@ -80,14 +82,15 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 		TestEvalXquery.deleteRESTUser("eval-user");
 		TestEvalXquery.deleteUserRole("test-js-eval");
 	}
 
 	@Before
-	public void setUp() throws Exception {
-		client = DatabaseClientFactory.newClient("localhost", restPort,dbName,"eval-user", "x", Authentication.DIGEST);
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+		int restPort = getRestServerPort();
+		client = getDatabaseClientOnDatabase("localhost", restPort, dbName,"eval-user", "x", Authentication.DIGEST);
 	}
 
 	@After
@@ -272,7 +275,7 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 	//This test intended to verify a simple JS query for inserting and reading  documents of different formats and returning boolean,string number types
 	
 	@Test
-	public void testJSReturningDifferentTypesOrder1() throws Exception {
+	public void testJSReturningDifferentTypesOrder1() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		String insertXML = "declareUpdate();" + "var x = new NodeBuilder();"
 				+ "x.startDocument();" + "x.startElement(\"foo\");"
 				+ "x.addText(\"test1\");" + "x.endElement();"
@@ -349,7 +352,7 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 	
 	//This test is intended to test eval(T handle), passing input stream handle with javascript that retruns different types, formats
 	@Test
-	public void testJSReturningDifferentTypesOrder2() throws Exception {
+	public void testJSReturningDifferentTypesOrder2() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
 		InputStream inputStream = new FileInputStream(
 				"src/test/java/com/marklogic/client/functionaltest/data/javascriptQueries.sjs");
@@ -396,7 +399,7 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 	 * See Git issue # 317 for further explanation.
 	 */
 	@Test(expected=IllegalArgumentException.class)
-	public void testJSDifferentVariableTypes() throws Exception {
+	public void testJSDifferentVariableTypes() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 	
 		DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 		InputSource is = new InputSource();
@@ -441,7 +444,7 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 	 * See Git issue # 317 for further explanation.
 	 */
 	@Test
-	public void testJSDifferentVariableTypesWithNulls() throws Exception {
+	public void testJSDifferentVariableTypesWithNulls() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 	
 		DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 		InputSource is = new InputSource();
@@ -484,7 +487,7 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 	 * This test does not have NullNode set in a variable	 
 	 */	
 	@Test
-	public void testJSDifferentVariableTypesNoNullNodes() throws Exception {
+	public void testJSDifferentVariableTypesNoNullNodes() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 	
 		DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 		InputSource is = new InputSource();
@@ -544,9 +547,9 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 	public void testJSReturningDifferentTypesOrder3fromModules() throws Exception {
 
 		InputStream inputStream = null;
-		DatabaseClient moduleClient = DatabaseClientFactory.newClient(
-				"localhost", restPort, (restServerName + "-modules"), "admin",
-				"admin", Authentication.DIGEST);
+		int restPort = getRestServerPort();
+		String restServerName = getRestServerName();
+		DatabaseClient moduleClient = getDatabaseClientOnDatabase("localhost", restPort, (restServerName + "-modules"), "admin", "admin", Authentication.DIGEST);
 		try {
 			inputStream = new FileInputStream(
 					"src/test/java/com/marklogic/client/functionaltest/data/javascriptQueries.sjs");

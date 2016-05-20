@@ -43,8 +43,8 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 	private static GraphManager gmReader;	
 	private static String dbName = "SemanticsDB-JavaAPI";
 	private static String[] fNames = { "SemanticsDB-JavaAPI-1" };
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;	
+	
+	//	
 	private DatabaseClient adminClient = null;
 	private DatabaseClient writerClient = null;
 	private DatabaseClient readerClient = null;
@@ -53,7 +53,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName, 8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 		enableCollectionLexicon(dbName);
 		enableTripleIndex(dbName);
@@ -65,7 +65,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		System.out.println("In tear down");
 		// Delete database first. Otherwise axis and collection cannot be
 		// deleted
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 		deleteRESTUser("eval-user");
 		deleteUserRole("test-eval");
 		deleteUserRole("test-perm2");
@@ -73,7 +73,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 
 	@After
 	public void testCleanUp() throws Exception {
-		clearDB(restPort);
+		clearDB();
 		adminClient.release();
 		writerClient.release();
 		readerClient.release();
@@ -84,9 +84,10 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 	public void setUp() throws Exception {
 		createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
 		createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
-		adminClient = DatabaseClientFactory.newClient("localhost", restPort, dbName, "rest-admin", "x", Authentication.DIGEST);
-		writerClient = DatabaseClientFactory.newClient("localhost", restPort, dbName, "rest-writer", "x", Authentication.DIGEST);
-		readerClient = DatabaseClientFactory.newClient("localhost", restPort, dbName, "rest-reader", "x", Authentication.DIGEST);		
+		int restPort = getRestServerPort();
+		adminClient = getDatabaseClientOnDatabase("localhost", restPort, dbName, "rest-admin", "x", Authentication.DIGEST);
+		writerClient = getDatabaseClientOnDatabase("localhost", restPort, dbName, "rest-writer", "x", Authentication.DIGEST);
+		readerClient = getDatabaseClientOnDatabase("localhost", restPort, dbName, "rest-reader", "x", Authentication.DIGEST);		
 		gmWriter = writerClient.newGraphManager();
 		gmReader = readerClient.newGraphManager();		
 	}
@@ -850,7 +851,8 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		// Create User with Above Role
 		createRESTUser("perm-user", "x", "test-perm");
 		// Create Client with above User
-		DatabaseClient permUser = DatabaseClientFactory.newClient("localhost", restPort, dbName, "perm-user", "x", Authentication.DIGEST);
+		int restPort = getRestServerPort();
+		DatabaseClient permUser = getDatabaseClientOnDatabase("localhost", restPort, dbName, "perm-user", "x", Authentication.DIGEST);
 		// Create GraphManager with Above client
 		GraphManager gmTestPerm = permUser.newGraphManager();
 		// Set Update Capability for the Created User
@@ -969,7 +971,8 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		// Create User with Above Role
 		createRESTUser("perm-user", "x", "test-perm");
 		// Create Client with above User
-		DatabaseClient permUser = DatabaseClientFactory.newClient("localhost", restPort, dbName, "perm-user", "x", Authentication.DIGEST);
+		int restPort = getRestServerPort();
+		DatabaseClient permUser = getDatabaseClientOnDatabase("localhost", restPort, dbName, "perm-user", "x", Authentication.DIGEST);
 		// Create GraphManager with Above client
 
 		Transaction trx = permUser.openTransaction();
@@ -1015,7 +1018,8 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		// Create User with Above Role
 		createRESTUser("perm-user", "x", "test-perm");
 		// Create Client with above User
-		DatabaseClient permUser = DatabaseClientFactory.newClient("localhost", restPort, dbName, "perm-user", "x", Authentication.DIGEST);
+		int restPort = getRestServerPort();
+		DatabaseClient permUser = getDatabaseClientOnDatabase("localhost", restPort, dbName, "perm-user", "x", Authentication.DIGEST);
 
 		// Create GraphManager with Above client
 		Transaction trx = permUser.openTransaction();

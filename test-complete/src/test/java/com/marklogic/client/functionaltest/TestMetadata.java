@@ -16,47 +16,50 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
-
-import org.junit.*;
 public class TestMetadata extends BasicJavaClientREST{
 
 	private static String dbName = "TestMetadataDB";
 	private static String [] fNames = {"TestMetadataDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 
 	@BeforeClass
 	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 	}
 
 	@Test
-	public void testBinaryMetadataBytesHandle() throws IOException
+	public void testBinaryMetadataBytesHandle() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{
 		System.out.println("Running testBinaryMetadataBytesHandle");
 
 		String filename = "Simple_ScanTe.png";
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		StringBuffer calProperty = new StringBuffer("myCalendar:").append(Calendar.getInstance().get(Calendar.YEAR));
 
 		// create and initialize a handle on the metadata
@@ -121,7 +124,7 @@ public class TestMetadata extends BasicJavaClientREST{
 	}	
 
 	@Test	
-	public void testTextMetadataStringHandle() throws IOException
+	public void testTextMetadataStringHandle() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{
 		System.out.println("Running testTextMetadataStringHandle");
 
@@ -129,7 +132,7 @@ public class TestMetadata extends BasicJavaClientREST{
 		StringBuffer calProperty = new StringBuffer("myCalendar:").append(Calendar.getInstance().get(Calendar.YEAR));
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// create and initialize a handle on the metadata
 		DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
@@ -193,12 +196,12 @@ public class TestMetadata extends BasicJavaClientREST{
 	}
 
 	@Test	
-	public void testXMLMetadataJAXBHandle() throws JAXBException
+	public void testXMLMetadataJAXBHandle() throws KeyManagementException, NoSuchAlgorithmException, JAXBException, IOException
 	{
 		System.out.println("Running testXMLMetadataJAXBHandle");
 		StringBuffer calProperty = new StringBuffer("myCalendar:").append(Calendar.getInstance().get(Calendar.YEAR));
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		Product product1 = new Product();
 		product1.setName("iPad");
@@ -267,14 +270,14 @@ public class TestMetadata extends BasicJavaClientREST{
 	}
 
 	@Test	
-	public void testJSONMetadataOutputStreamHandle() throws JAXBException
+	public void testJSONMetadataOutputStreamHandle() throws KeyManagementException, NoSuchAlgorithmException, JAXBException, IOException
 	{
 		System.out.println("Running testJSONMetadataOutputStreamHandle");
 
 		String filename = "myJSONFile.json";
 		StringBuffer calProperty = new StringBuffer("myCalendar:").append(Calendar.getInstance().get(Calendar.YEAR));
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// create and initialize a handle on the metadata
 		DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
@@ -338,13 +341,13 @@ public class TestMetadata extends BasicJavaClientREST{
 	}
 
 	@Test	
-	public void testJSONMetadataQName() throws JAXBException
+	public void testJSONMetadataQName() throws KeyManagementException, NoSuchAlgorithmException, JAXBException, IOException
 	{
 		System.out.println("Running testJSONMetadataQName");
 
 		String filename = "myJSONFile.json";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// create and initialize a handle on the metadata
 		DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
@@ -378,7 +381,6 @@ public class TestMetadata extends BasicJavaClientREST{
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames,  restServerName);
-
+		cleanupRESTServer(dbName, fNames);
 	}
 }

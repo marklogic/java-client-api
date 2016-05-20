@@ -17,6 +17,8 @@
 package com.marklogic.client.functionaltest;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -30,7 +32,6 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.Format;
@@ -42,24 +43,24 @@ public class TestBug18990 extends BasicJavaClientREST {
 
 	private static String dbName = "TestBug18990DB";
 	private static String [] fNames = {"TestBug18990DB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 @BeforeClass
 	public static void setUp() throws Exception 
 	{
 	  System.out.println("In setup");
-	  setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+	  configureRESTServer(dbName, fNames);
 	  setupAppServicesConstraint(dbName);
 	}
 
 @Test
-	public void testBug18990() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException, JSONException
+	public void testBug18990() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException, JSONException
 	{	
 		System.out.println("Running testBug18990");
 		
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "valueConstraintWildCardOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// set query option validation to true and server logger to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -106,6 +107,6 @@ public class TestBug18990 extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

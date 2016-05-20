@@ -16,15 +16,21 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 
 import javax.xml.namespace.NamespaceContext;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.NamespacesManager;
 import com.marklogic.client.document.DocumentPatchBuilder;
@@ -32,28 +38,27 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
-import org.junit.*;
 
 public class TestNamespaces extends BasicJavaClientREST {
 	private static String dbName = "TestNamespacesDB";
 	private static String [] fNames = {"TestNamespacesDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 
 	@BeforeClass
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 
 	@Test
-	public void testNamespaces()
+	public void testNamespaces() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		System.out.println("Running testNamespaces");
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// create namespaces manager
 		NamespacesManager nsMgr = client.newServerConfigManager().newNamespacesManager();
@@ -96,12 +101,12 @@ public class TestNamespaces extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testDefaultNamespaces()
+	public void testDefaultNamespaces() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{
 		System.out.println("Running testDefaultNamespaces");
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// create namespaces manager
 		NamespacesManager nsMgr = client.newServerConfigManager().newNamespacesManager();
@@ -137,11 +142,11 @@ public class TestNamespaces extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testBug22396() throws IOException {
+	public void testBug22396() throws KeyManagementException, NoSuchAlgorithmException, IOException {
 
 		System.out.println("Runing testBug22396");
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		writeDocumentUsingInputStreamHandle(client, "constraint1.xml", "/testBug22396/", "XML");
@@ -175,6 +180,6 @@ public class TestNamespaces extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

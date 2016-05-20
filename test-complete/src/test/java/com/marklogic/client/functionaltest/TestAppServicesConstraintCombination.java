@@ -16,56 +16,57 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import com.marklogic.client.query.QueryManager;
-
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.*;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 public class TestAppServicesConstraintCombination extends BasicJavaClientREST {
 
 //	private String serverName = "";
 	private static String dbName = "AppServicesConstraintCombinationDB";
 	private static String [] fNames = {"AppServicesConstraintCombinationDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 
 @BeforeClass
 	public static void setUp() throws Exception 
 	{
-
-	  setupJavaRESTServer(dbName, fNames[0],  restServerName,8011);
+	  configureRESTServer(dbName, fNames);
 	  setupAppServicesConstraint(dbName);
 	}
 @After
 public  void testCleanUp() throws Exception
 {
-	clearDB(8011);
+	clearDB();
 	System.out.println("Running clear script");
 }
 
 @Test
-	public void testWithValueAndRange() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testWithValueAndRange() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{	
 		System.out.println("Running testWithValueAndRange");
 		
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "appservicesConstraintCombinationOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 				
 		// write docs
 		for(String filename : filenames)
@@ -100,7 +101,7 @@ public  void testCleanUp() throws Exception
 	}
 
 @Test	
-	public void testWithAll() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testWithAll() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{	
 		System.out.println("Running testWithAll");
 		
@@ -111,7 +112,7 @@ public  void testCleanUp() throws Exception
 		String filename5 = "constraint5.xml";
 		String queryOptionName = "appservicesConstraintCombinationOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 	    // create and initialize a handle on the metadata
 	    DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -165,7 +166,7 @@ public  void testCleanUp() throws Exception
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 //		super.tearDown();
 	}
 }

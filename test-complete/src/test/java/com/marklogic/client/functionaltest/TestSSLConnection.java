@@ -21,6 +21,9 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.SSLContext;
@@ -50,7 +53,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
 	 * 
 
 	@SuppressWarnings("deprecation")
-	@Test	 public void testSSLConnection() throws NoSuchAlgorithmException, KeyManagementException, FileNotFoundException, XpathException
+	@Test	 public void testSSLConnection() throws KeyManagementException, NoSuchAlgorithmException, NoSuchAlgorithmException, KeyManagementException, FileNotFoundException, XpathException
 	{	
 		System.out.println("Running testSSLConnection");
 
@@ -189,7 +192,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
 	 */
 
 	@Test	
-	public void testSSLConnectionInvalidPort() throws IOException, NoSuchAlgorithmException, KeyManagementException
+	public void testSSLConnectionInvalidPort() throws KeyManagementException, NoSuchAlgorithmException, IOException,  NoSuchAlgorithmException, KeyManagementException
 	{
 		System.out.println("Running testSSLConnectionInvalidPort");
 
@@ -236,7 +239,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testSSLConnectionNonSSLServer() throws IOException, NoSuchAlgorithmException, KeyManagementException
+	public void testSSLConnectionNonSSLServer() throws KeyManagementException, NoSuchAlgorithmException, IOException,  NoSuchAlgorithmException, KeyManagementException
 	{
 		System.out.println("Running testSSLConnectionNonSSLServer");
 
@@ -283,7 +286,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testSSLConnectionInvalidPassword() throws IOException, NoSuchAlgorithmException, KeyManagementException
+	public void testSSLConnectionInvalidPassword() throws KeyManagementException, NoSuchAlgorithmException, IOException,  NoSuchAlgorithmException, KeyManagementException
 	{
 		System.out.println("Running testSSLConnectionInvalidPassword");
 
@@ -333,7 +336,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testSSLConnectionInvalidUser() throws IOException, NoSuchAlgorithmException, KeyManagementException
+	public void testSSLConnectionInvalidUser() throws KeyManagementException, NoSuchAlgorithmException, IOException,  NoSuchAlgorithmException, KeyManagementException
 	{
 		System.out.println("Running testSSLConnectionInvalidUser");
 
@@ -385,6 +388,6 @@ public class TestSSLConnection extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

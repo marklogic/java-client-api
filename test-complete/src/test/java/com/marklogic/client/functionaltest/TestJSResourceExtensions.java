@@ -16,29 +16,14 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.FileInputStream;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.text.html.FormSubmitEvent;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import org.json.JSONException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -55,7 +40,6 @@ import com.marklogic.client.admin.MethodType;
 import com.marklogic.client.admin.ResourceExtensionsManager;
 import com.marklogic.client.admin.ResourceExtensionsManager.MethodParameters;
 import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.extensions.ResourceManager;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
@@ -70,8 +54,8 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 	private static final String DIRECTORY ="/bulkTransform/";
 	private static String dbName = "TestJSResourceExtensionDB";
 	private static String [] fNames = {"TestResourceExtensionDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	//
 	private  DatabaseClient client ;
 	ResourceExtensionsManager resourceMgr;
 
@@ -170,7 +154,7 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort,false);
+		configureRESTServer(dbName, fNames, false);
 		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
 	    createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
 		//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
@@ -180,14 +164,16 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 		deleteRESTUser("eval-user");
 		deleteUserRole("test-eval");
 	}
 
 	@Before
-	public void setUp() throws Exception {
-		client = DatabaseClientFactory.newClient("localhost", restPort,dbName, "eval-user", "x", Authentication.DIGEST);
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+		
+		int restPort = getRestServerPort();
+		client = getDatabaseClientOnDatabase("localhost", restPort, dbName, "eval-user", "x", Authentication.DIGEST);
 		resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
 		ExtensionMetadata resextMetadata = new ExtensionMetadata();
 		resextMetadata.setTitle("BasicJSTest");
@@ -214,7 +200,7 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 	}
 
 	@Test
-	public void test1GetAllResourceServices() throws Exception {
+	public void test1GetAllResourceServices() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		
 		JacksonHandle jh = new JacksonHandle();
 		resourceMgr.listServices(jh);
@@ -237,7 +223,7 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 
 	}
 	@Test
-	public void test2GetAllResourceServicesMultipleTimes() throws Exception {
+	public void test2GetAllResourceServicesMultipleTimes() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		
 		JacksonHandle jh = new JacksonHandle();
 		

@@ -17,9 +17,14 @@
 package com.marklogic.client.functionaltest;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -40,7 +45,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -49,29 +53,29 @@ import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.JacksonParserHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
-import com.marklogic.client.query.QueryManager.QueryView;
 
 public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 	private static final int BATCH_SIZE=100;
 	private static final String DIRECTORY ="/bulkSearch/";
 	private static String dbName = "TestBulkSearchQBEDB";
 	private static String [] fNames = {"TestBulkSearchQBEDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	private  DatabaseClient client ;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 		createRESTUserWithPermissions("usr1", "password",getPermissionNode("flexrep-eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
 	}
@@ -79,15 +83,15 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 		deleteRESTUser("usr1");
 	}
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 //			System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		// create new connection for each test below
-		client = DatabaseClientFactory.newClient("localhost", restPort, "usr1", "password", Authentication.DIGEST);
+		client = getDatabaseClient("usr1", "password", Authentication.DIGEST);
 		loadTxtDocuments();
 		loadXMLDocuments();
 		loadJSONDocuments();
@@ -109,7 +113,7 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 		//        System.out.println(record.getMimetype());
 
 	}
-	public void loadXMLDocuments() throws IOException, ParserConfigurationException, SAXException, TransformerException{
+	public void loadXMLDocuments() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, TransformerException{
 		int count=1;
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 		DocumentWriteSet writeset =docMgr.newWriteSet();
@@ -146,7 +150,7 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 			docMgr.write(writeset);
 		}
 	}
-	public void loadJSONDocuments() throws JsonProcessingException, IOException{
+	public void loadJSONDocuments() throws KeyManagementException, NoSuchAlgorithmException, JsonProcessingException, IOException{
 		int count=1;	 
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		DocumentWriteSet writeset =docMgr.newWriteSet();
@@ -171,7 +175,7 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 		}
 	}
 	@Test
-	public void testBulkSearchQBEWithXMLResponseFormat() throws IOException, ParserConfigurationException, SAXException, TransformerException, XpathException {
+	public void testBulkSearchQBEWithXMLResponseFormat() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, TransformerException, XpathException {
 		int count;
 		//Creating a xml document manager for bulk search
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -220,7 +224,7 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 
 	}
 	@Test
-	public void testBulkSearchQBEWithJSONResponseFormat() throws IOException, ParserConfigurationException, SAXException, TransformerException {
+	public void testBulkSearchQBEWithJSONResponseFormat() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, TransformerException {
 		int count;
 
 		//Creating a xml document manager for bulk search
@@ -268,7 +272,7 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 
 	}
 	@Test
-	public void testBulkSearchQBECombinedQuery() throws IOException, ParserConfigurationException, SAXException, TransformerException, XpathException {
+	public void testBulkSearchQBECombinedQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, TransformerException, XpathException {
 		int count;
 
 		//Creating a xml document manager for bulk search
@@ -333,7 +337,7 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 
 	}
 	@Test
-	public void testBulkSearchQBEWithJSONCombinedQuery() throws IOException, ParserConfigurationException, SAXException, TransformerException {
+	public void testBulkSearchQBEWithJSONCombinedQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, TransformerException {
 		int count;
 
 		//Creating a xml document manager for bulk search
@@ -387,7 +391,7 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 	 */
 	
 	@Test
-	public void testBulkSearchQBEResponseInParserHandle() throws IOException, ParserConfigurationException, SAXException, TransformerException {
+	public void testBulkSearchQBEResponseInParserHandle() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, TransformerException {
 		int count;
 
 		//Creating a xml document manager for bulk search

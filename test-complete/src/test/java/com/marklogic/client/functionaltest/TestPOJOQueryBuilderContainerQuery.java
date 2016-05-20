@@ -16,7 +16,13 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -25,29 +31,27 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoQueryBuilder;
+import com.marklogic.client.pojo.PojoQueryBuilder.Operator;
 import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.pojo.PojoRepository;
-import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.pojo.PojoQueryBuilder.Operator;
 
 public class TestPOJOQueryBuilderContainerQuery extends BasicJavaClientREST {
 
 	private static String dbName = "TestPOJOQueryBuilderContainerQuerySearchDB";
 	private static String [] fNames = {"TestPOJOQueryBuilderContainserQuerySearchDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	private  DatabaseClient client ;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-//						System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		configureRESTServer(dbName, fNames);
 //		BasicJavaClientREST.setDatabaseProperties(dbName, "trailing-wildcard-searches", true);
 //		BasicJavaClientREST.setDatabaseProperties(dbName, "word-positions", true);
 //		BasicJavaClientREST.setDatabaseProperties(dbName, "element-word-positions", true);
@@ -57,11 +61,11 @@ public class TestPOJOQueryBuilderContainerQuery extends BasicJavaClientREST {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 	@Before
-	public void setUp() throws Exception {
-		client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 
 	}
@@ -209,7 +213,7 @@ public class TestPOJOQueryBuilderContainerQuery extends BasicJavaClientREST {
 	//Below scenario is verifying range query from PojoBuilder 
 	
 	@Test
-	public void testPOJORangeSearch() throws Exception {
+	public void testPOJORangeSearch() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
 		this.loadSimplePojos(products);
@@ -277,7 +281,7 @@ public class TestPOJOQueryBuilderContainerQuery extends BasicJavaClientREST {
 	//Below scenario is verifying and query with all pojo builder methods
 
 	@Test
-	public void testPOJOWordSearchWithOptions() throws Exception {
+	public void testPOJOWordSearchWithOptions() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
 		this.loadSimplePojos(products);

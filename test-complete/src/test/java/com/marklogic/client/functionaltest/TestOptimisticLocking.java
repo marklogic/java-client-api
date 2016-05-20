@@ -16,36 +16,39 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.ServerConfigurationManager.Policy;
 import com.marklogic.client.admin.ServerConfigurationManager.UpdatePolicy;
+import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.document.XMLDocumentManager;
-
-import org.junit.*;
 
 public class TestOptimisticLocking extends BasicJavaClientREST{
 	private static String dbName = "TestOptimisticLockingDB";
 	private static String [] fNames = {"TestOptimisticLockingDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 	private static int restPort=8011;
 
 	@BeforeClass
@@ -53,19 +56,19 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 	{
 		System.out.println("In setup");
 
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 	}
 
 	@After
 	public  void testCleanUp() throws Exception
 	{
 		
-		clearDB(restPort);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 
 	@Test
-	public void testRequired() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testRequired() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testRequired");
 
@@ -76,7 +79,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		long badVersion = 1111;
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// create a manager for the server configuration
 		ServerConfigurationManager configMgr = client.newServerConfigManager();
@@ -247,7 +250,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 
 	@SuppressWarnings("deprecation")
 	@Test	
-	public void testOptionalWithUnknownVersion() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testOptionalWithUnknownVersion() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testOptionalWithUnknownVersion");
 
@@ -258,7 +261,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		long badVersion = 1111;
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// create a manager for the server configuration
 		ServerConfigurationManager configMgr = client.newServerConfigManager();
@@ -407,7 +410,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 
 	@SuppressWarnings("deprecation")
 	@Test	
-	public void testOptionalWithGoodVersion() throws IOException, ParserConfigurationException, SAXException, XpathException
+	public void testOptionalWithGoodVersion() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testOptionalWithGoodVersion");
 
@@ -418,7 +421,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		long badVersion = 1111;
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// create a manager for the server configuration
 		ServerConfigurationManager configMgr = client.newServerConfigManager();
@@ -566,7 +569,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 
 
 	@SuppressWarnings("deprecation")
-	@Test	public void testNone() throws IOException, ParserConfigurationException, SAXException, XpathException
+	@Test	public void testNone() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testNone");
 
@@ -577,7 +580,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		long badVersion = 1111;
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// create a manager for the server configuration
 		ServerConfigurationManager configMgr = client.newServerConfigManager();
@@ -667,7 +670,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		ServerConfigurationManager configMgr = client.newServerConfigManager();
 
 		// read the server configuration from the database
@@ -680,7 +683,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		// write the server configuration to the database
 		configMgr.writeConfiguration();
 		client.release();
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 
 	}
 }

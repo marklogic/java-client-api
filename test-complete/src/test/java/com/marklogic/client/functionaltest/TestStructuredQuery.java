@@ -17,59 +17,62 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
-import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.query.StructuredQueryBuilder.Operator;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.junit.*;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryBuilder.Operator;
+import com.marklogic.client.query.StructuredQueryDefinition;
 public class TestStructuredQuery extends BasicJavaClientREST {
 
 	private static String dbName = "TestStructuredQueryDB";
 	private static String [] fNames = {"TestStructuredQueryDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 
 	@BeforeClass	
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 	
 	@After
 	public  void testCleanUp() throws Exception
 	{
-		clearDB(8011);
+		clearDB();
 		System.out.println("Running clear script");
 	}	
 
 	@Test	
-	public void testStructuredQuery() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testStructuredQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testStructuredQuery");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "valueConstraintWildCardOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -106,14 +109,14 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testStructuredQueryJSON() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testStructuredQueryJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testStructuredQueryJSON");
 
 		String[] filenames = {"constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json"};
 		String queryOptionName = "valueConstraintWildCardOpt.json";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -173,14 +176,14 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testValueConstraintWildCard() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testValueConstraintWildCard() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testValueConstraintWildCard");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "valueConstraintWildCardOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -220,14 +223,14 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testAndNotQuery() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testAndNotQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testAndNotQuery");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "valueConstraintWildCardOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -269,14 +272,14 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testNearQuery() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testNearQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testNearQuery");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "valueConstraintWildCardOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -316,7 +319,7 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testDirectoryQuery() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testDirectoryQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testDirectoryQuery");
 
@@ -324,7 +327,7 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 		String[] filenames2 = {"constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "valueConstraintWildCardOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -370,7 +373,7 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testDocumentQuery() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testDocumentQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testDocumentQuery");
 
@@ -378,7 +381,7 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 		String[] filenames2 = {"constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "valueConstraintWildCardOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -425,7 +428,7 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testCollectionQuery() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testCollectionQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testCollectionQuery");
 
@@ -436,7 +439,7 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 		String filename5 = "constraint5.xml";
 		String queryOptionName = "valueConstraintWildCardOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -494,14 +497,14 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testContainerConstraintQuery() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testContainerConstraintQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testContainerConstraintQuery");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String queryOptionName = "containerConstraintOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// set query option validation to true
 		ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -541,6 +544,6 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames,  restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 }

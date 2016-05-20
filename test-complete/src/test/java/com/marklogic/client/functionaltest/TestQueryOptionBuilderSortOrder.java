@@ -16,39 +16,40 @@
 
 package com.marklogic.client.functionaltest;
 
-import java.io.IOException;
-
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.*;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 
-import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.config.QueryOptionsBuilder;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.admin.config.QueryOptions.QuerySortOrder.Direction;
-
 import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.json.JSONException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
 import org.w3c.dom.Document;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.admin.config.QueryOptions.QuerySortOrder.Direction;
+import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
-
-import org.skyscreamer.jsonassert.*;
-import org.json.JSONException;
-import org.junit.*;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 
 /*
  * All the tests in the class are being converted to negative test cases since the Git Issue 347 will not be fixed.
@@ -61,8 +62,8 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 
 	private static String dbName = "TestQueryOptionBuilderSortOrderDB";
 	private static String [] fNames = {"TestQueryOptionBuilderSortOrderDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	// Additional port to test for Uber port
 	private static int uberPort = 8000;
 
@@ -70,7 +71,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 		
 		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
@@ -80,7 +81,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 	@After
 	public  void testCleanUp() throws Exception
 	{
-		clearDB(restPort);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 
@@ -505,7 +506,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames,restServerName);
+		cleanupRESTServer(dbName, fNames);
 		deleteRESTUser("eval-user");
 		deleteUserRole("test-eval");
 	}

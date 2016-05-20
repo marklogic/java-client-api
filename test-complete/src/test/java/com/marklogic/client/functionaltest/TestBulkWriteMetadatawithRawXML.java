@@ -17,10 +17,13 @@
 package com.marklogic.client.functionaltest;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,12 +40,11 @@ import org.w3c.dom.Document;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.TextDocumentManager;
@@ -50,15 +52,15 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.DocumentMetadataHandle.Capability;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.DocumentMetadataHandle.Capability;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 /**
  * @author skottam
  * This test is test the DocumentWriteSet function 
@@ -74,8 +76,8 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 
 	private static String dbName = "TestBulkWriteDefaultMetadataDB3";
 	private static String [] fNames = {"TestBulkWriteDefaultMetadataDB-3"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	private  DatabaseClient client ;
 	/**
 	 * @throws java.lang.Exception
@@ -83,7 +85,7 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		  System.out.println("In Setup");
-		  setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
+		  configureRESTServer(dbName, fNames);
 		  createRESTUser("app-user", "password","rest-writer","rest-reader"  );
 		  createRESTUserWithPermissions("usr1", "password",getPermissionNode("flexrep-eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
 	}
@@ -94,7 +96,7 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 		deleteRESTUser("app-user");
 		deleteRESTUser("usr1");
 	}
@@ -103,9 +105,9 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 	 * @throws java.lang.Exception
 	 */
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		// create new connection for each test below
-		  client = DatabaseClientFactory.newClient("localhost", restPort, "usr1", "password", Authentication.DIGEST);
+		  client = getDatabaseClient("usr1", "password", Authentication.DIGEST);
 	}
 
 	/**
@@ -187,7 +189,7 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 	   	assertTrue("my-collection1 not found", actualCollections.contains("http://permission-collections/"));
 	}
 	@Test  
-	public void testWriteMultipleTextDocWithXMLMetadata() throws Exception
+	public void testWriteMultipleTextDocWithXMLMetadata() throws KeyManagementException, NoSuchAlgorithmException, Exception
 	  {
 		DocumentMetadataHandle mh2;
 		 String docId[] = {"/foo/test/myFoo1.txt","/foo/test/myFoo2.txt","/foo/test/myFoo3.txt",
@@ -257,7 +259,7 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 			 
 	  }
 	@Test  
-	public void testWriteMultipleXMLDocWithXMLMetadata() throws Exception  
+	public void testWriteMultipleXMLDocWithXMLMetadata() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	  {  
 		// put metadata
 	    
@@ -335,7 +337,7 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 	 * This is test is made up for the github issue 41
 	 */
 @Test
-	public void testWriteMultipleJSONDocsWithRawJSONMetadata() throws Exception  
+	public void testWriteMultipleJSONDocsWithRawJSONMetadata() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	  {
 		// Synthesize input content
         
@@ -437,7 +439,7 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
  * 
  */
 	@Test 
-	public void testWriteGenericDocMgrWithDefaultMetadata() throws Exception  
+	public void testWriteGenericDocMgrWithDefaultMetadata() throws KeyManagementException, NoSuchAlgorithmException, Exception  
 	  {
 		 String docId[] = {"Sega-4MB.jpg"};
 		  

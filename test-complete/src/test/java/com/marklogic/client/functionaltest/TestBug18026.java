@@ -16,9 +16,14 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.Assert.assertTrue;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -26,38 +31,35 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputStreamHandle;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.*;
-
-import org.junit.*;
 public class TestBug18026 extends BasicJavaClientREST {
 	
 	private static String dbName = "Bug18026DB";
 	private static String [] fNames = {"Bug18026DB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 	private XpathEngine xpather;
 	@BeforeClass
 	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 	}
 
 	@Test
-	public void testBug18026() throws IOException, SAXException, ParserConfigurationException
+	public void testBug18026() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		String filename = "xml-original.xml";
 		String uri = "/write-buffer/";
@@ -86,7 +88,7 @@ public class TestBug18026 extends BasicJavaClientREST {
         xpather.setNamespaceContext(namespaceContext);
 				
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		Document readDoc = expectedXMLDocument(filename);
 		
@@ -116,7 +118,7 @@ public class TestBug18026 extends BasicJavaClientREST {
 	}
 
 	@Test
-	public void testBug18026WithJson() throws IOException, SAXException, ParserConfigurationException
+	public void testBug18026WithJson() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		String filename = "json-original.json";
 		String uri = "/write-buffer/";
@@ -147,7 +149,7 @@ public class TestBug18026 extends BasicJavaClientREST {
         ObjectMapper mapper = new ObjectMapper();
         
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		
 		InputStream inputStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
 		
@@ -183,7 +185,7 @@ public class TestBug18026 extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 		
 	}
 }

@@ -57,8 +57,7 @@ import com.marklogic.client.io.marker.DocumentPatchHandle;
 public class TestPartialUpdate extends BasicJavaClientREST {
 	private static String dbName = "TestPartialUpdateDB";
 	private static String [] fNames = {"TestPartialUpdateDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort=8011;
+	
 	// Additional port to test for Uber port
     private static int uberPort = 8000;
 
@@ -67,7 +66,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	{
 		System.out.println("In setup");
 		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 		
 		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
@@ -77,7 +76,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	@After
 	public  void testCleanUp() throws Exception
 	{
-		clearDB(restPort);
+		clearDB();
 		System.out.println("Running clear script");
 	}
 
@@ -643,7 +642,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	@Test	
 	public void testPartialUpdateCombinationJSON() throws Exception{
 		System.out.println("Running testPartialUpdateCombinationJSON");
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		String[] filenames = {"json-original.json"};
@@ -973,7 +972,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	 * Function tested: replaceValue.
 	*/
 	@Test	
-	public void testPartialUpdateReplaceValueJSON() throws IOException, JSONException
+	public void testPartialUpdateReplaceValueJSON() throws IOException,  JSONException
 	{	
 		System.out.println("Running testPartialUpdateReplaceValueJSON");
 
@@ -1017,7 +1016,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	 * Functions tested : replaceFragment.
 	*/
 	@Test	
-	public void testPartialUpdateReplaceFragmentJSON() throws IOException, JSONException
+	public void testPartialUpdateReplaceFragmentJSON() throws IOException,  JSONException
 	{	
 		System.out.println("Running testPartialUpdateReplaceValueJSON");
 
@@ -1061,7 +1060,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	 * Functions tested : replaceInsertFragment. An new fragment is inserted when unknown index is used.
 	*/
 	@Test	
-	public void testPartialUpdateReplaceInsertFragmentNewJSON() throws IOException, JSONException
+	public void testPartialUpdateReplaceInsertFragmentNewJSON() throws IOException,  JSONException
 	{	
 		System.out.println("Running testPartialUpdateReplaceInsertFragmentExistingJSON");
 
@@ -1106,7 +1105,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	 * Functions tested : replaceInsertFragment. An existing fragment replaced with another fragment.
 	*/
 	@Test	
-	public void testPartialUpdateReplaceInsertFragmentExistingJSON() throws IOException, JSONException
+	public void testPartialUpdateReplaceInsertFragmentExistingJSON() throws IOException,  JSONException
 	{	
 		System.out.println("Running testPartialUpdateReplaceInsertFragmentExistingJSON");
 
@@ -1150,7 +1149,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	 * Function tested: delete.
 	*/
 	@Test	
-	public void testPartialUpdateDeleteJSON() throws IOException, JSONException
+	public void testPartialUpdateDeleteJSON() throws IOException,  JSONException
 	{	
 		System.out.println("Running testPartialUpdateReplaceValueJSON");
 
@@ -1194,7 +1193,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	 * Functions tested : replaceInsertFragment. An new fragment is inserted when unknown index is used.
 	*/
 	@Test	
-	public void testMetaDataUpdateJSON() throws IOException, JSONException
+	public void testMetaDataUpdateJSON() throws IOException,  JSONException
 	{	
 		System.out.println("Running testPartialUpdateReplaceInsertFragmentExistingJSON");
 
@@ -1289,7 +1288,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	@AfterClass
 	public static void tearDown() throws Exception
 	{
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 		deleteRESTUser("eval-user");
 		deleteUserRole("test-eval");
 	}

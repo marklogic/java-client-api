@@ -16,43 +16,45 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.StringHandle;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.*;
-
-import org.junit.*;
 
 public class TestStringHandle extends BasicJavaClientREST {
 
 	private static String dbName = "StringDB";
 	private static String [] fNames = {"StringDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
+	
 
 	@BeforeClass	
 	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
+		configureRESTServer(dbName, fNames);
 	}
 
 	@Test	
-	public void testXmlCRUD() throws IOException, SAXException, ParserConfigurationException
+	public void testXmlCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		String filename = "xml-original-test.xml";
 		String uri = "/write-xml-string/";
@@ -60,7 +62,7 @@ public class TestStringHandle extends BasicJavaClientREST {
 		System.out.println("Running testXmlCRUD");
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		writeDocumentUsingStringHandle(client, filename, uri, "XML");
@@ -119,7 +121,7 @@ public class TestStringHandle extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testTextCRUD() throws IOException
+	public void testTextCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		String filename = "text-original.txt";
 		String uri = "/write-text-stringhandle/";
@@ -127,7 +129,7 @@ public class TestStringHandle extends BasicJavaClientREST {
 		System.out.println("Running testTextCRUD");
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		writeDocumentUsingStringHandle(client, filename, uri, "Text");
@@ -179,7 +181,7 @@ public class TestStringHandle extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testJsonCRUD() throws IOException
+	public void testJsonCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{	
 		String filename = "json-original.json";
 		String uri = "/write-json-stringhandle/";
@@ -189,7 +191,7 @@ public class TestStringHandle extends BasicJavaClientREST {
 		ObjectMapper mapper = new ObjectMapper();
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// write docs
 		writeDocumentUsingStringHandle(client, filename, uri, "JSON");
@@ -241,12 +243,12 @@ public class TestStringHandle extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testBug22356() throws IOException, SAXException, ParserConfigurationException
+	public void testBug22356() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
 		System.out.println("Running testBug22356");
 
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		// read docs
 		StringHandle contentHandle = null;
@@ -268,7 +270,7 @@ public class TestStringHandle extends BasicJavaClientREST {
 	public static void tearDown() throws Exception
 	{
 		System.out.println("In tear down");
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 
 	}
 }

@@ -16,10 +16,14 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -30,46 +34,37 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.functionaltest.TestPOJOSpecialCharRead.SpecialArtifact;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.pojo.PojoRepository;
-import com.marklogic.client.pojo.annotation.GeospatialLatitude;
-import com.marklogic.client.pojo.annotation.GeospatialLongitude;
-import com.marklogic.client.pojo.annotation.GeospatialPathIndexProperty;
-import com.marklogic.client.pojo.annotation.Id;
 import com.marklogic.client.pojo.util.GenerateIndexConfig;
-import com.marklogic.client.query.QueryDefinition;
 
 public class TestPOJOQueryBuilderGeoQueries extends BasicJavaClientREST {
 
 	private static String dbName = "TestPOJOQueryBuilderGeoQuerySearchDB";
 	private static String [] fNames = {"TestPOJOQueryBuilderGeoQuerySearchDB-1"};
-	private static String restServerName = "REST-Java-Client-API-Server";
-	private static int restPort = 8011;
+	
+	
 	private  DatabaseClient client ;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		System.out.println("In setup");
-		setupJavaRESTServer(dbName, fNames[0], restServerName,restPort);
-		createAutomaticGeoIndex();
-		
+		configureRESTServer(dbName, fNames);
+		createAutomaticGeoIndex();		
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-		tearDownJavaRESTServer(dbName, fNames, restServerName);
+		cleanupRESTServer(dbName, fNames);
 	}
 	@Before
-	public void setUp() throws Exception {
-		client = DatabaseClientFactory.newClient("localhost", restPort, "rest-admin", "x", Authentication.DIGEST);
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 	}
 	@After
 	public void tearDown() throws Exception {
@@ -164,7 +159,7 @@ public class TestPOJOQueryBuilderGeoQueries extends BasicJavaClientREST {
 //	 
 //	}
 //	
-	public static void createAutomaticGeoIndex() throws Exception {
+	public static void createAutomaticGeoIndex() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		boolean succeeded = false;
 		File jsonFile = null;
 		try {
