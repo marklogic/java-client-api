@@ -31,68 +31,74 @@ import com.marklogic.client.io.InputStreamHandle;
 import org.junit.*;
 
 import static org.junit.Assert.*;
+/*
+ * The tests here run against normal a no SSL enabled REST Server.
+ * This is because, there is no point in enabling a SSL on a REST Server and then testing
+ * for Basic and None digests.
+ */
 
-public class TestDatabaseAuthentication extends BasicJavaClientREST{
-	
-	
+public class TestDatabaseAuthentication extends BasicJavaClientREST {
+
 	private static String dbName = "DatabaseAuthenticationDB";
 	private static String [] fNames = {"DatabaseAuthenticationDB-1"};
-	
-	private static int restPort = getRestServerPort();
-	private static String restServerName = getRestServerName();
+	private static int restPort;
+	private static String restServerName;
 	
 	 @BeforeClass
-	public static void setUp() throws Exception
-	{
+	public static void setUp() throws Exception {
 		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-	       setupAppServicesConstraint(dbName);	  
-
+	    // Setup non - SSL server, if not available.
+		loadGradleProperties();
+	    restPort =  getHttpPort();
+		restServerName = getAppServerName();
+		setupJavaRESTServer(dbName, fNames[0], restServerName, restPort);
+		setupAppServicesConstraint(dbName);
 	}
 	 
 	 @After
-	public  void testCleanUp() throws Exception
-	{
+	public  void testCleanUp() throws Exception {
 		clearDB();
 		System.out.println("Running clear script");
 	}
 
-	
-	@Test public void testAuthenticationNone() throws KeyManagementException, NoSuchAlgorithmException, IOException
-	{
-		setAuthentication("application-level",restServerName);
-		setDefaultUser("rest-admin",restServerName);
+	 @Test 
+	 public void testAuthenticationNone() throws KeyManagementException, NoSuchAlgorithmException, IOException
+	 {
+		 setAuthentication("application-level",restServerName);
+		 setDefaultUser("rest-admin",restServerName);
 
-		System.out.println("Running testAuthenticationNone");
+		 System.out.println("Running testAuthenticationNone");
+
+		 String filename = "text-original.txt";
+
+		 // connect the client		 
+		 DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011);
+
+		 // write doc
+		 writeDocumentUsingStringHandle(client, filename, "/write-text-doc-app-level/", "Text");
+
+		 // read docs
+		 InputStreamHandle contentHandle = readDocumentUsingInputStreamHandle(client, "/write-text-doc-app-level/" + filename, "Text");
+
+		 // get the contents
+		 InputStream fileRead = contentHandle.get();
+
+		 String readContent = convertInputStreamToString(fileRead);
+
+		 String expectedContent = "hello world, welcome to java API";
+
+		 assertEquals("Write Text difference", expectedContent.trim(), readContent.trim());
+
+		 // release client
+		 client.release();
+
+		 setAuthentication("digest",restServerName);
+		 setDefaultUser("nobody",restServerName);
+	 }
 		
-		String filename = "text-original.txt";
-		
-		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011);
-		
-		// write doc
-	    writeDocumentUsingStringHandle(client, filename, "/write-text-doc-app-level/", "Text");
-	 
-	    // read docs
-	 	InputStreamHandle contentHandle = readDocumentUsingInputStreamHandle(client, "/write-text-doc-app-level/" + filename, "Text");
-	 		
-	 	// get the contents
-	 	InputStream fileRead = contentHandle.get();
-	 		
-	 	String readContent = convertInputStreamToString(fileRead);
-	 		
-	 	String expectedContent = "hello world, welcome to java API";
-	 						
-	 	assertEquals("Write Text difference", expectedContent.trim(), readContent.trim());
-		
-		// release client
-		client.release();
-		
-		setAuthentication("digest",restServerName);
-		setDefaultUser("nobody",restServerName);
-	}
 	
-@Test	public void testAuthenticationBasic() throws KeyManagementException, NoSuchAlgorithmException, IOException
+    @Test
+    public void testAuthenticationBasic() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{
 		setAuthentication("basic",restServerName);
 		setDefaultUser("rest-writer",restServerName);
@@ -126,14 +132,15 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST{
 		setDefaultUser("nobody",restServerName);
 	}
 
-@AfterClass
-	public static void tearDown() throws Exception
-	{
+    @AfterClass
+	public static void tearDown() throws Exception {
 		System.out.println("In tear down" );
 		
 		setAuthentication("digest",restServerName);
 		setDefaultUser("nobody",restServerName);
-		cleanupRESTServer(dbName, fNames);
+		
+		// Tear down non-ssl server.
+		tearDownJavaRESTServer(dbName, fNames, restServerName);	
 	}
 }
 

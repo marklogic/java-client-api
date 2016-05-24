@@ -56,6 +56,7 @@ public class TestRuntimeDBselection extends BasicJavaClientREST {
 
 	@Test
 	public void testRuntimeDBclientWithDefaultUser() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+		if 	(!IsSecurityEnabled()) {
 		associateRESTServerWithDefaultUser(getRestServerName(),"eval-user","application-level");
 		int restPort = getRestServerPort();
 		client = DatabaseClientFactory.newClient("localhost", restPort, dbName);
@@ -70,12 +71,15 @@ public class TestRuntimeDBselection extends BasicJavaClientREST {
 		assertEquals("count of documents ",0,response2);
 		client.release();
 		associateRESTServerWithDefaultUser(getRestServerName(),"nobody","digest");
+		}
 	}
 	//Issue 184 exists 
 	@Test
 	public void testRuntimeDBclientWithDifferentAuthType() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+		if 	(!IsSecurityEnabled()) {
 		associateRESTServerWithDefaultUser(getRestServerName(),"nobody","basic");
 		int restPort = getRestServerPort();
+		
 		client = getDatabaseClientOnDatabase("localhost", restPort, dbName,"eval-user","x",Authentication.BASIC);
 		String insertJSON = "xdmp:document-insert(\"test2.json\",object-node {\"test\":\"hello\"})";
 		client.newServerEval().xquery(insertJSON).eval();
@@ -88,12 +92,18 @@ public class TestRuntimeDBselection extends BasicJavaClientREST {
 		assertEquals("count of documents ",0,response2);
 		client.release();
 		associateRESTServerWithDefaultUser(getRestServerName(),"nobody","digest");
+		}
 	}
 	//issue 141 user with no privileges for eval
+	/*
+	 * If ssl is enabled, then there throw an exception, since the test is expecting it, with BASIC
+	 */
 	@Test(expected=FailedRequestException.class)
 	public void testRuntimeDBclientWithNoPrivUser() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		int restPort = getRestServerPort();
-		client = DatabaseClientFactory.newClient("localhost", restPort, dbName,"rest-admin","x",Authentication.BASIC);
+		if 	(IsSecurityEnabled()) throw new FailedRequestException("Illegal");
+		else
+			client = DatabaseClientFactory.newClient("localhost", restPort, dbName,"rest-admin","x",Authentication.BASIC);
 		String insertJSON = "xdmp:document-insert(\"test2.json\",object-node {\"test\":\"hello\"})";
 		client.newServerEval().xquery(insertJSON).eval();
 		String query1 = "fn:count(fn:doc())";

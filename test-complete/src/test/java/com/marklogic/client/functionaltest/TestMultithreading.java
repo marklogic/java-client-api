@@ -36,18 +36,14 @@ public class TestMultithreading extends BasicJavaClientREST {
 	private static String dbName = "TestMultithreadingDB";
 	private static String [] fNames = {"TestMultithreadingDBDB-1"};
 	
-	private static int restPort=8011;
-
 	@BeforeClass
-	public static void setUp() throws Exception 
-	{
+	public static void setUp() throws Exception {
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
 	}
 
 	@After
-	public  void testCleanUp() throws Exception
-	{
+	public  void testCleanUp() throws Exception {
 		clearDB();
 		System.out.println("Running clear script");
 	}
@@ -58,22 +54,22 @@ public class TestMultithreading extends BasicJavaClientREST {
 		ThreadClass dt1 = new ThreadClass("Thread A");
 		ThreadClass dt2 = new ThreadClass("Thread B");
 
-		dt1.start(); // this will start thread of object 1
-		dt2.start(); // this will start thread of object 2
-		dt2.join();
+		Thread t1 = new Thread(dt1);
+		t1.start(); // this will start thread of object 1
+		Thread t2 = new Thread(dt2);
+		t2.start(); // this will start thread of object 2
+		t2.join();
 
 		DatabaseClient client = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
 		TextDocumentManager docMgr = client.newTextDocumentManager();
 
-		for (int i = 1; i <= 5; i++)
-		{
+		for (int i = 1; i <= 5; i++) {
 			String expectedUri = "/multithread-content-A/filename" + i + ".txt";
 			String docUri = docMgr.exists("/multithread-content-A/filename" + i + ".txt").getUri();
 			assertEquals("URI is not found", expectedUri, docUri);
 		}
 
-		for (int i = 1; i <= 5; i++)
-		{
+		for (int i = 1; i <= 5; i++) {
 			String expectedUri = "/multithread-content-B/filename" + i + ".txt";
 			String docUri = docMgr.exists("/multithread-content-B/filename" + i + ".txt").getUri();
 			assertEquals("URI is not found", expectedUri, docUri);
@@ -82,38 +78,6 @@ public class TestMultithreading extends BasicJavaClientREST {
 		// release client
 		client.release();
 	}
-
-	/*public void testMultithreadingSearchAndWrite() throws KeyManagementException, NoSuchAlgorithmException, InterruptedException
-	{
-		System.out.println("testMultithreadingSearchAndWrite");
-
-		ThreadWrite tw1 = new ThreadWrite("Write Thread");
-		ThreadSearch ts1 = new ThreadSearch("Search Thread");
-
-        tw1.start(); 
-        ts1.start();
-        tw1.join();
-        ts1.join();
-
-        DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
-        TextDocumentManager docMgr = client.newTextDocumentManager();
-
-        for (int i = 1; i <= 15; i++)
-        {
-        	String expectedUri = "/multithread-write/filename" + i + ".xml";
-        	String docUri = docMgr.exists("/multithread-write/filename" + i + ".xml").getUri();
-        	assertEquals("URI is not found", expectedUri, docUri);
-        }
-
-        for(int x = 0; x <= 9; x++)
-        {
-        	System.out.println(ts1.totalResultsArray[x]);
-        	assertTrue("Search result is 0", ts1.totalResultsArray[x] != 0);
-        }
-
-        // release client
-        client.release();
-   }*/
 
 	@Test
 	public void testMultithreadingMultipleSearch() throws KeyManagementException, NoSuchAlgorithmException, InterruptedException
@@ -147,11 +111,8 @@ public class TestMultithreading extends BasicJavaClientREST {
 	}
 	
 	@AfterClass	
-	public static void tearDown() throws Exception
-	{
+	public static void tearDown() throws Exception {
 		System.out.println("In tear down");
 		cleanupRESTServer(dbName, fNames);
 	}
 }
-
-
