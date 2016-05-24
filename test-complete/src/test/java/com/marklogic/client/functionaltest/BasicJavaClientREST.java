@@ -31,10 +31,13 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.channels.FileChannel;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
@@ -61,6 +64,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 //import sun.java2d.loops.XorPixelWriter.ByteData;
+
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -1736,11 +1740,14 @@ return readContent;
 	
 	/**
 	 * Load geo data for geo spatial tests
-	 * @throws FileNotFoundException
+	 * @throws IOException 
+	 * @throws NoSuchAlgorithmException 
+	 * @throws KeyManagementException 
 	 */
-	public void loadGeoData() throws FileNotFoundException
+	public void loadGeoData() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		//DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// write docs
 		for(int i = 1; i <= 24; i++)
