@@ -2231,11 +2231,16 @@ public abstract class ConnectedRESTQA {
 			SSLContext sslcontext = null;
 			// Enable secure access on non 8000 port. Uber servers on port 8000 aren't security enabled as of now.
 			if 	(IsSecurityEnabled() && port != 8000) {
-				sslcontext = getSslContext();				
+				sslcontext = getSslContext();
+				if (hostName.equalsIgnoreCase("localhost"))
+						hostName = getSslServer();
 				client= DatabaseClientFactory.newClient(hostName, port, databaseName, user, password, authType, sslcontext, SSLHostnameVerifier.ANY);
 			}
-			else
-				client = DatabaseClientFactory.newClient(hostName, port, databaseName, user, password, authType);					    
+			else {
+				if (hostName.equalsIgnoreCase("localhost"))
+					hostName = getServer();
+				client = DatabaseClientFactory.newClient(hostName, port, databaseName, user, password, authType);
+			}
 		} catch (CertificateException certEx) {
 			// TODO Auto-generated catch block
 			certEx.printStackTrace();
