@@ -83,6 +83,7 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 
 	@After
 	public void tearDown() throws Exception {
+		clearDB();
 		client.release();
 	}
 // loop the eval query more than 150 times and should not stuck
@@ -92,7 +93,7 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 		GenericDocumentManager docMgr = client.newDocumentManager();
 		File file1= null;
 		FileInputStream fis=null;
-		try{
+		try {
 		file1 = new File("src/test/java/com/marklogic/client/functionaltest/data/Sega-4MB.jpg");
 		fis = new FileInputStream(file1);
 		InputStreamHandle handle1 = new InputStreamHandle(fis);
@@ -101,29 +102,31 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 	    String query = "declare variable $myInteger as xs:integer external;"
 	    		+ "(fn:doc()/binary(),$myInteger,xdmp:database-name(xdmp:database()))";
 	   long sizeOfBinary =docMgr.read("/binary4mbdoc",new InputStreamHandle()).getByteLength();
-	    for(int i=0 ; i<=330;i++){
+	    for(int i=0 ; i<=330;i++) {
 	    	ServerEvaluationCall evl= client.newServerEval().xquery(query);
 	    	evl.addVariable("myInteger", (int)i);
 	    	EvalResultIterator evr = evl.eval();
-	       while(evr.hasNext()){
+	       while(evr.hasNext()) {
 	    	   EvalResult er =evr.next();
-				 if(er.getType().equals(Type.INTEGER)){
+				 if(er.getType().equals(Type.INTEGER)) {
 					 assertEquals("itration number",i,er.getNumber().intValue());
-				 }else if(er.getType().equals(Type.BINARY)){
+				 } else if(er.getType().equals(Type.BINARY)) {
 					 FileHandle readHandle1 = new FileHandle();
 					 assertEquals("size of the binary ",er.get(readHandle1).get().length(),sizeOfBinary);
 					 
-				 }else if(er.getType().equals(Type.STRING)){
+				 } else if(er.getType().equals(Type.STRING)) {
 					 assertEquals("database name ","TestEvalXqueryWithTransDB",er.getString());
-				 }else{
+				 } else {
 					 fail("Getting incorrect type");
-				 }
-				 
+				 }				 
 	       }
 	    }
-		}catch(Exception e){throw e;}
-		finally{
-		fis.close();	
+		}
+		catch(Exception e) {
+			throw e;
+		}
+		finally {
+		    fis.close();	
 		}
 	}
 	//issue 170 are blocking the test progress in here
@@ -132,36 +135,38 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 		int count=1;
 		boolean tstatus =true;
 		Transaction t1 = client.openTransaction();
-		try{ 
+		try { 
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 		HashMap<String,String> map= new HashMap<String,String>();
 		DocumentWriteSet writeset =docMgr.newWriteSet();
-		for(int i =0;i<102;i++){
+		for(int i =0;i<102;i++) {
 			writeset.add("/sec"+i+".xml", new DOMHandle(getDocumentContent("This is so sec"+i)));
 			map.put("/sec"+i+".xml", convertXMLDocumentToString(getDocumentContent("This is so sec"+i)));
-			if(count%100 == 0){
+			if(count%100 == 0) {
 				docMgr.write(writeset,t1);
 				writeset = docMgr.newWriteSet();
 			}
 			count++;
 		}
-		if(count%100 > 0){
+		if(count%100 > 0) {
 			docMgr.write(writeset,t1);
 		}
 		 String query = "declare variable $myInteger as xs:integer external;"
 		    		+ "(fn:count(fn:doc()))";
 		 ServerEvaluationCall evl= client.newServerEval().xquery(query);
 	     EvalResultIterator evr = evl.eval();
-	     assertEquals("Count of documents outside of the transaction",1,evr.next().getNumber().intValue());
+	     assertEquals("Count of documents outside of the transaction",0,evr.next().getNumber().intValue());
 	     evl= client.newServerEval().xquery(query).transaction(t1);
 	     evr = evl.eval();
-	     assertEquals("Count of documents outside of the transaction",103,evr.next().getNumber().intValue());
-		}catch(Exception e){
+	     assertEquals("Count of documents outside of the transaction",102,evr.next().getNumber().intValue());
+		}
+		catch(Exception e) {
 			System.out.println(e.getMessage());
 			tstatus=true;
 			throw e;
-		}finally{
-			if(tstatus){
+		}
+		finally {
+			if(tstatus) {
 				t1.rollback();
 			}
 		}
@@ -175,36 +180,38 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 			
 			DatabaseClient client2 = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
 			Transaction t1 = client2.openTransaction();
-			try{ 
+			try { 
 			XMLDocumentManager docMgr = client2.newXMLDocumentManager();
 			HashMap<String,String> map= new HashMap<String,String>();
 			DocumentWriteSet writeset =docMgr.newWriteSet();
 			for(int i =0;i<102;i++){
 				writeset.add("/sec"+i+".xml", new DOMHandle(getDocumentContent("This is so sec"+i)));
 				map.put("/sec"+i+".xml", convertXMLDocumentToString(getDocumentContent("This is so sec"+i)));
-				if(count%100 == 0){
+				if(count%100 == 0) {
 					docMgr.write(writeset,t1);
 					writeset = docMgr.newWriteSet();
 				}
 				count++;
 			}
-			if(count%100 > 0){
+			if(count%100 > 0) {
 				docMgr.write(writeset,t1);
 			}
 			 String query = "declare variable $myInteger as xs:integer external;"
 			    		+ "(fn:count(fn:doc()))";
 			 ServerEvaluationCall evl= client2.newServerEval().xquery(query);
 		     EvalResultIterator evr = evl.eval();
-		     assertEquals("Count of documents outside of the transaction",1,evr.next().getNumber().intValue());
+		     assertEquals("Count of documents outside of the transaction",0,evr.next().getNumber().intValue());
 		     evl= client2.newServerEval().xquery(query).transaction(t1);
 		     evr = evl.eval();
-		     assertEquals("Count of documents outside of the transaction",103,evr.next().getNumber().intValue());
-			}catch(Exception e){
+		     assertEquals("Count of documents outside of the transaction",102,evr.next().getNumber().intValue());
+			}
+			catch(Exception e) {
 				System.out.println(e.getMessage());
 				tstatus=true;
 				throw e;
-			}finally{
-				if(tstatus){
+			}
+			finally {
+				if(tstatus) {
 					t1.rollback();
 					client2.release();
 				}
