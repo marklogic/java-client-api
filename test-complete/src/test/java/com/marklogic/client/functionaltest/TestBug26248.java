@@ -32,11 +32,11 @@ import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
 
-public class TestBug26248 {
+public class TestBug26248 extends BasicJavaClientREST {
 	DatabaseClient client ;
 	@Before
 	public void setUp() throws Exception {
-		
+		loadGradleProperties();
 	}
 
 	@After
@@ -84,8 +84,8 @@ public class TestBug26248 {
 	public void testBug26248() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		try{ 
 		DocWriter.isResendable = false;
-		client= DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST
-			   );
+		
+		client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 		  DocWriter dw0 = new DocWriter(client, "/tmp/test0.txt", "The zeroth text");
 		  DocWriter dw1 = new DocWriter(client, "/tmp/test1.txt", "The first text");
 		  DocWriter dw2 = new DocWriter(client, "/tmp/test2.txt", "The second text");

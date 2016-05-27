@@ -21,6 +21,7 @@ import org.apache.http.util.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -862,9 +863,22 @@ public abstract class ConnectedRESTQA {
 				HttpClientBuilder hcb = HttpClientBuilder.create().setSslcontext(sslContext);
 				hcb.setDefaultCredentialsProvider(credsProvider);
 				CloseableHttpClient clientSSL = hcb.build();				
-				HttpDelete postReq = new HttpDelete(uri);				
-				clientSSL.execute(postReq);
-				// Wait for the database to be cleared. The claer db is taking some time.
+				HttpDelete postReq = new HttpDelete(uri);
+				CloseableHttpResponse response = null;
+				try {
+					response = clientSSL.execute(postReq);
+
+					if (response.getStatusLine().getStatusCode() == 200) {
+						System.out.println("Clearing the database - success");
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					response.close();
+					clientSSL.close();
+				}
+				
+				// Wait for the database to be cleared. The clear db is taking some time.
                 Thread.sleep(5000);	    
 			}
 			else {
@@ -2401,6 +2415,11 @@ public abstract class ConnectedRESTQA {
      * 
      */
     public static String getServer() {
+    	if (IsSecurityEnabled()) {
+    		// Some servers do not seem to be configured with FQDN.
+    		if (!host_name.endsWith(".marklogic.com"))
+    			return host_name+".marklogic.com";
+    	}
         return host_name;
     }
     
@@ -2409,6 +2428,11 @@ public abstract class ConnectedRESTQA {
      * 
      */
     public static String getSslServer() {
+    	if (IsSecurityEnabled()) {
+    		// Some servers do not seem to be configured with FQDN.
+    		if (!ssl_host_name.endsWith(".marklogic.com"))
+    			return ssl_host_name+".marklogic.com";
+    	}
        return ssl_host_name;
     }
     

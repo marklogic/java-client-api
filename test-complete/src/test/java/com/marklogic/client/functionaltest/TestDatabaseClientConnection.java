@@ -162,7 +162,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8033, "rest-reader", "x", Authentication.DIGEST);
 		
 		//String expectedException = "com.sun.jersey.api.client.ClientHandlerException: org.apache.http.conn.HttpHostConnectException: Connection to http://localhost:8033 refused";
-		String expectedException = "com.sun.jersey.api.client.ClientHandlerException: java.net.ConnectException: Connection refused: connect";
+		String expectedException = "com.sun.jersey.api.client.ClientHandlerException: java.net.ConnectException: Connection refused";
 		String exception = "";
 		
 		// write doc
@@ -171,20 +171,20 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		}
 		catch (Exception e) { exception = e.toString(); }
 		
-		assertEquals("Exception is not thrown", expectedException, exception);
+		assertTrue("Exception is not thrown", exception.contains(expectedException));
 		
 		// release client
 		client.release();
 	}
 	
 	@SuppressWarnings("deprecation")
-	@Test	public void testDatabaseClientConnectionInvalidUser() throws IOException
+	@Test	public void testDatabaseClientConnectionInvalidUser() throws IOException, KeyManagementException, NoSuchAlgorithmException
 	{
 		System.out.println("Running testDatabaseClientConnectionInvalidUser");
 		
 		String filename = "facebook-10443244874876159931";
 		
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "foo-the-bar", "x", Authentication.DIGEST);
+		DatabaseClient client =  getDatabaseClient("foo-the-bar", "x", Authentication.DIGEST);
 		
 		String expectedException = "com.marklogic.client.FailedRequestException: Local message: write failed: Unauthorized. Server Message: Unauthorized";
 		String exception = "";
@@ -205,14 +205,14 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 	}
 
 	@SuppressWarnings("deprecation")
-	@Test	public void testDatabaseClientConnectionInvalidPassword() throws IOException
+	@Test	public void testDatabaseClientConnectionInvalidPassword() throws IOException, KeyManagementException, NoSuchAlgorithmException
 	{
 		System.out.println("Running testDatabaseClientConnectionInvalidPassword");
 		
 		String filename = "facebook-10443244874876159931";
 		
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "foobar", Authentication.DIGEST);
-		
+		DatabaseClient client =  getDatabaseClient("rest-writer", "foobar", Authentication.DIGEST);
+				
 		String expectedException = "com.marklogic.client.FailedRequestException: Local message: write failed: Unauthorized. Server Message: Unauthorized";
 		String exception = "";
 		
@@ -719,15 +719,14 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 	}
 	
 	@Test	
-	public void testRMMatchAsWithCandidates() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRMMatchAsWithCandidates() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException, KeyManagementException, NoSuchAlgorithmException
 	{
 		System.out.println("Running testRMMatchAsWithCandidates");		
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String ruleName1 = "RULE-TEST-1";
 		String ruleName2 = "RULE-TEST-2";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
-		
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		// write docs
 		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/raw-alert/", "XML");
@@ -787,13 +786,14 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 	}
 	
 	@Test
-	public void testRuleManagerMatchAs() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	public void testRuleManagerMatchAs() throws IOException, ParserConfigurationException, SAXException, XpathException, TransformerException, KeyManagementException, NoSuchAlgorithmException
 	{
 		System.out.println("Running testRuleManagerMatchAs");		
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String[] rules = new String[] {"RULE-TEST-1","RULE-TEST-2"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);		
+		//DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames) {
@@ -853,9 +853,13 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 	public static void tearDown() throws Exception {
 		System.out.println("In tear down");
 		
-		setAuthentication("digest",restServerName);
-		setDefaultUser("nobody",restServerName);				
+		if (!IsSecurityEnabled()) {
+			setDefaultUser("nobody",restServerName);
+			setAuthentication("digest",restServerName);
+		}
 		cleanupRESTServer(dbName, fNames);
+		deleteForest(UberfNames[0]);
+		deleteDB(UberdbName);
 		
 		deleteRESTUser("eval-user");
 		deleteUserRole("test-eval");

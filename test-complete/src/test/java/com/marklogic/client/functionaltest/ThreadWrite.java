@@ -17,6 +17,9 @@
 package com.marklogic.client.functionaltest;
 
 import java.io.File;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 
 import com.marklogic.client.DatabaseClient;
@@ -25,15 +28,16 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.FileHandle;
 
-public class ThreadWrite extends Thread{
+public class ThreadWrite extends BasicJavaClientREST implements Runnable {
 
 	String msg;
 
 	public void run()
 	{	
 		String filename = "flipper.xml";
+		try {
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
 
@@ -58,6 +62,11 @@ public class ThreadWrite extends Thread{
 
 		// release client
 		client.release();
+		} catch (KeyManagementException | NoSuchAlgorithmException
+				| IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	}
 
 	ThreadWrite(String mg)

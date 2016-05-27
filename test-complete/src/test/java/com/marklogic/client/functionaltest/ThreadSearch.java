@@ -16,6 +16,9 @@
 
 package com.marklogic.client.functionaltest;
 
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 
 import com.marklogic.client.DatabaseClient;
@@ -25,7 +28,7 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.io.SearchHandle;
 
-public class ThreadSearch extends Thread {
+public class ThreadSearch extends BasicJavaClientREST implements Runnable {
 
 	String msg;
 	long totalResultsArray[] = new long[10];
@@ -34,9 +37,11 @@ public class ThreadSearch extends Thread {
 	public void run()
 	{	
 		long totalResults = 0;
-
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-reader", "x", Authentication.DIGEST);
-
+		
+		DatabaseClient client;
+		try {
+		
+		client = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
 		QueryManager queryMgr = client.newQueryManager();
 		StringQueryDefinition querydef = queryMgr.newStringDefinition(null);
 
@@ -70,6 +75,11 @@ public class ThreadSearch extends Thread {
 
 		// release client
 		client.release();
+		} catch (KeyManagementException | NoSuchAlgorithmException
+				| IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	}
 
 	ThreadSearch(String mg)

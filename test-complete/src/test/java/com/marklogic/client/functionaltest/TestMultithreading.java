@@ -85,8 +85,9 @@ public class TestMultithreading extends BasicJavaClientREST {
 		System.out.println("testMultithreadingMultipleSearch");
 
 		ThreadWrite tw1 = new ThreadWrite("Write Thread");
-		tw1.start();
-		tw1.join();
+		Thread w1 = new Thread(tw1);
+		w1.start();
+		w1.join();
 
 		ThreadSearch ts1 = new ThreadSearch("Search Thread 1");
 		ThreadSearch ts2 = new ThreadSearch("Search Thread 2");
@@ -94,17 +95,22 @@ public class TestMultithreading extends BasicJavaClientREST {
 		ThreadSearch ts4 = new ThreadSearch("Search Thread 4");
 		ThreadSearch ts5 = new ThreadSearch("Search Thread 5");
 
-		ts1.start();
-		ts2.start();
-		ts3.start();
-		ts4.start();
-		ts5.start();
+		Thread t1 = new Thread(ts1);
+		t1.start();
+		Thread t2 = new Thread(ts2);
+		t2.start();
+		Thread t3 = new Thread(ts3);
+		t3.start();
+		Thread t4 = new Thread(ts4);
+		t4.start();
+		Thread t5 = new Thread(ts5);
+		t5.start();
 
-		ts1.join();
-		ts2.join();
-		ts3.join();
-		ts4.join();
-		ts5.join();
+		t1.join();
+		t2.join();
+		t3.join();
+		t4.join();
+		t5.join();
 
 		long totalAllDocumentsReturned = ts1.totalAllResults + ts2.totalAllResults + ts3.totalAllResults + ts4.totalAllResults + ts5.totalAllResults;
 		assertTrue("Documents count is incorrect", totalAllDocumentsReturned == 750);

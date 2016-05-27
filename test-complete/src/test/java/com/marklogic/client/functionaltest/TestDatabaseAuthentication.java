@@ -43,14 +43,23 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST {
 	private static String [] fNames = {"DatabaseAuthenticationDB-1"};
 	private static int restPort;
 	private static String restServerName;
+	private static String hostName;
 	
 	 @BeforeClass
 	public static void setUp() throws Exception {
 		System.out.println("In setup");
 	    // Setup non - SSL server, if not available.
 		loadGradleProperties();
-	    restPort =  getHttpPort();
-		restServerName = getAppServerName();
+	   
+		restServerName = getRestAppServerName();
+		if (IsSecurityEnabled()) {
+			restPort =  getHttpPort();
+			hostName = getSslServer();
+		}
+		else {
+			hostName = getServer();
+			restPort =  getHttpPort();
+		}
 		setupJavaRESTServer(dbName, fNames[0], restServerName, restPort);
 		setupAppServicesConstraint(dbName);
 	}
@@ -64,6 +73,7 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST {
 	 @Test 
 	 public void testAuthenticationNone() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	 {
+		 if (!IsSecurityEnabled()) {
 		 setAuthentication("application-level",restServerName);
 		 setDefaultUser("rest-admin",restServerName);
 
@@ -72,7 +82,7 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST {
 		 String filename = "text-original.txt";
 
 		 // connect the client		 
-		 DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011);
+		 DatabaseClient client = DatabaseClientFactory.newClient(hostName, restPort);
 
 		 // write doc
 		 writeDocumentUsingStringHandle(client, filename, "/write-text-doc-app-level/", "Text");
@@ -94,12 +104,14 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST {
 
 		 setAuthentication("digest",restServerName);
 		 setDefaultUser("nobody",restServerName);
+		 }
 	 }
 		
 	
     @Test
     public void testAuthenticationBasic() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{
+    	if (!IsSecurityEnabled()) {
 		setAuthentication("basic",restServerName);
 		setDefaultUser("rest-writer",restServerName);
 		
@@ -108,7 +120,7 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST {
 		String filename = "text-original.txt";
 		
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-writer", "x", Authentication.BASIC);
+		DatabaseClient client = DatabaseClientFactory.newClient(hostName, restPort, "rest-writer", "x", Authentication.BASIC);
 		
 		// write doc
 	    writeDocumentUsingStringHandle(client, filename, "/write-text-doc-basic/", "Text");
@@ -130,6 +142,7 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST {
 		
 		setAuthentication("digest",restServerName);
 		setDefaultUser("nobody",restServerName);
+    	}
 	}
 
     @AfterClass
