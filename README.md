@@ -51,13 +51,13 @@ To use the API in your maven project, include the following in your pom.xml:
     <dependency>
         <groupId>com.marklogic</groupId>
         <artifactId>java-client-api</artifactId>
-        <version>3.0.1</version>
+        <version>3.0.4</version>
     </dependency>
 
 For gradle projects, include the following:
 
     dependencies {
-        compile group: 'com.marklogic', name: 'java-client-api', version: '3.0.1'
+        compile group: 'com.marklogic', name: 'java-client-api', version: '3.0.4'
     }
 
 Read [The Java API in Five Minutes](http://developer.marklogic.com/try/java/index)
