@@ -176,7 +176,11 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 		public void test3XqueryEvalTransactionsWithRunTimeDB() throws KeyManagementException, NoSuchAlgorithmException, Exception{
 			int count=1;
 			boolean tstatus =true;
-			associateRESTServerWithDB(getRestServerName(),"Documents");
+			
+			String [] fNamesTmp = {"test3XqueryEvalDB-1"};
+			String dbNameTmp = "test3XqueryEvalDB";
+			
+			configureRESTServer(dbNameTmp, fNamesTmp);
 			
 			DatabaseClient client2 = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
 			Transaction t1 = client2.openTransaction();
@@ -215,6 +219,8 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 					t1.rollback();
 					client2.release();
 				}
+				cleanupRESTServer(dbNameTmp, fNamesTmp);
+				associateRESTServerWithDB(getRestServerName(),"Documents");
 			}
 	}
 }
