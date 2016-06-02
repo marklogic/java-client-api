@@ -1592,9 +1592,6 @@ public class JerseyServices implements RESTServices {
 		if ( database != null ) {
 			addEncodedParam(transParams, "database", database);
 		}
-		if ( forestName != null ) {
-			addEncodedParam(transParams, "forest-name", forestName);
-		}
 
 		WebResource resource = (transParams != null) ? getConnection().path(
 				"transactions").queryParams(transParams) : getConnection()
