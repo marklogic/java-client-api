@@ -1209,11 +1209,18 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
-     * Gets the format of the managed documents
+     * Gets the default format of the managed documents
      * 
-     * @return	the format for documents supported by this document manager
+     * @return	the default format for documents supported by this document manager
      */
     public Format getContentFormat();
+
+    /**
+     * Sets the default format of the managed documents
+     * 
+     * @param format  the default format for documents supported by this document manager
+     */
+    public void setContentFormat(Format format);
 
     /**
      * Returns the categories of metadata to read, write, patch, or search.

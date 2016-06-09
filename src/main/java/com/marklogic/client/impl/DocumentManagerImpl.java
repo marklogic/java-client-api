@@ -121,6 +121,11 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     return contentFormat;
   }
 
+  @Override
+  public void setContentFormat(Format format) {
+    contentFormat = format;
+  }
+
   // select categories of metadata to read, write, or reset
   @Override
   public void setMetadataCategories(Set<Metadata> categories) {
