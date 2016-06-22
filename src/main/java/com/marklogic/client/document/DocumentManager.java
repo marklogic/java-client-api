@@ -64,7 +64,21 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
         /**
          * Specifies document search quality.
          */
-		QUALITY;
+		QUALITY,
+        /**
+         * Specifies key value metadata 
+         */
+		METADATAVALUES;
+
+		@Override
+        public String toString() {
+            switch(this) {
+            case METADATAVALUES:
+                return "METADATA-VALUES";
+            default:
+                return this.name();
+            }
+        }
     }
 
 	/**

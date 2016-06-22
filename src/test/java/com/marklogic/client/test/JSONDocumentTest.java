@@ -65,8 +65,9 @@ public class JSONDocumentTest {
 			+ "   \"properties\":[\n" 
 			+ "    {\"first\":\"value one\",\n"
 			+ "     \"second\":2,"
-			+ "     \"third\":3}]," 
-			+ "  \"quality\":3}\n";
+			+ "     \"third\":3}],\n" 
+			+ "  \"quality\":3, \n"
+			+ "  \"metadataValues\": {\"key1\" : \"value1\", \"key2\" : \"value2\" , \"number1\" : \"10\"}}\n";
 
 	static final private Logger logger = LoggerFactory
 			.getLogger(JSONDocumentTest.class);
@@ -232,7 +233,12 @@ public class JSONDocumentTest {
 				.deleteCollection("collection1")
 				.deleteProperty("first")
 				.replacePropertyApply("second", patchBldr.call().add(3))
-				.setQuality(4).build();
+				.setQuality(4)
+				.addMetadataValue("key3", "value3")
+				.deleteMetadataValue("key2")
+				.replaceMetadataValueApply("number1", patchBldr.call().add(5))
+				.replaceMetadataValue("key1", "modifiedValue1")
+				.build();
 
 		docMgr.patch(docId, patchHandle);
 
@@ -250,7 +256,12 @@ public class JSONDocumentTest {
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",metadata);
 		assertXpathEvaluatesTo("5","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='second'])",metadata);
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='4'])",metadata);
-
+		assertXpathEvaluatesTo("3","count(/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'])",metadata);
+		assertXpathEvaluatesTo("value3", "/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'][@key=\"key3\"]", metadata);
+		assertXpathEvaluatesTo("modifiedValue1", "/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'][@key=\"key1\"]", metadata);
+		assertXpathEvaluatesTo("0", "count(/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'][@key=\"key2\"])", metadata);
+		assertXpathEvaluatesTo("15", "/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'][@key=\"number1\"]", metadata);
+	
 		docMgr.delete(docId);
 	}
 
@@ -366,7 +377,12 @@ public class JSONDocumentTest {
 				.deleteProperty("first")
 				.replacePropertyValue("third", 17)
 				.replacePropertyApply("second", patchBldr.call().add(3))
-				.setQuality(4).build();
+				.setQuality(4)
+				.addMetadataValue("key3", "value3")
+				.deleteMetadataValue("key2")
+				.replaceMetadataValueApply("number1", patchBldr.call().add(5))
+				.replaceMetadataValue("key1", "modifiedValue1")
+				.build();
 
 		String jsonMetadata = docMgr.readMetadata(docId,
 				new StringHandle().withFormat(Format.JSON)).get();
@@ -392,6 +408,11 @@ public class JSONDocumentTest {
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",metadata);
 		assertXpathEvaluatesTo("5","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='second'])",metadata);
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='4'])",metadata);
+		assertXpathEvaluatesTo("3","count(/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'])",metadata);
+		assertXpathEvaluatesTo("value3", "/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'][@key=\"key3\"]", metadata);
+		assertXpathEvaluatesTo("modifiedValue1", "/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'][@key=\"key1\"]", metadata);
+		assertXpathEvaluatesTo("0", "count(/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'][@key=\"key2\"])", metadata);
+		assertXpathEvaluatesTo("15", "/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'][@key=\"number1\"]", metadata);
 		//TODO: uncomment next line once we fix https://bugtrack.marklogic.com/29865
 		//assertXpathEvaluatesTo("17","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='third'])",metadata);
 

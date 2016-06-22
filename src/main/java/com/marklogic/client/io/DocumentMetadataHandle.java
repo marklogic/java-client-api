@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -270,10 +271,32 @@ public class DocumentMetadataHandle
 		
 	}
 
+	/**
+	 * Represents the values metadata for a database document.
+	 */
+	public interface DocumentMetadataValues extends Map<String, String> {
+		/**
+		 * Adds key value metadata pairs that can be written for the document.
+		 * 
+		 * @param key the key of the key value metadata
+		 * @param value the value of the key value metadata
+		 */
+		public void add(String key, String value);
+	}
+
+	@SuppressWarnings("serial")
+	static private class ValuesImpl extends HashMap<String, String> implements DocumentMetadataValues {
+		@Override
+		public void add(String key, String value) {
+			put(key, value);
+		}
+	}
+	
 	private DocumentCollections collections;
     private DocumentPermissions permissions;
 	private DocumentProperties  properties;
 	private int                 quality = 0;
+	private DocumentMetadataValues metadataValues;
 	private boolean             qualityModified = false;
 	private ValueSerializer     valueSerializer;
 
@@ -417,6 +440,41 @@ public class DocumentMetadataHandle
 	}
 
 	/**
+	 * Returns a container for the values metadata for the document as read from
+	 * the server or modified locally.
+	 * 
+	 * @return the document values
+	 */
+	public DocumentMetadataValues getMetadataValues() {
+		if (metadataValues == null) {
+			metadataValues = new ValuesImpl();
+		}
+		return metadataValues;
+	}
+
+	/**
+	 * Locally assigns a container with document values. Ordinarily, you never
+	 * change the container but, instead, modify the collections stored by the
+	 * container.
+	 * 
+	 * @param values the document values
+	 */
+	public void setMetadataValues(DocumentMetadataValues metadataValues) {
+		this.metadataValues = metadataValues;
+	}
+
+	/**
+	 * Locally adds the collections to the current collections for the document.
+	 * 
+	 * @param collections the document collections
+	 * @return the document metadata handle
+	 */
+	public DocumentMetadataHandle withMetadataValue(String key, String value) {
+		getMetadataValues().put(key, value);
+		return this;
+	}
+	
+	/**
 	 * Restricts the format used parsing and serializing the metadata.
 	 */
     @Override
@@ -506,7 +564,44 @@ public class DocumentMetadataHandle
 		receivePermissionsImpl(document);
 		receivePropertiesImpl(document);
 		receiveQualityImpl(document);
+		receiveMetadataValuesImpl(document);
 	}
+
+	private void receiveMetadataValuesImpl(Document document) {
+		DocumentMetadataValues metadataValues = getMetadataValues();
+		metadataValues.clear();
+
+		if (document == null)
+			return;
+
+		NodeList valuesIn = document.getElementsByTagNameNS(REST_API_NS, "metadata-values");
+		for (int i = 0; i < valuesIn.getLength(); i++) {
+			String key = null;
+			String value = null;
+
+			NodeList children = valuesIn.item(i).getChildNodes();
+			for (int j = 0; j < children.getLength(); j++) {
+				Node node = children.item(j);
+				if (node.getNodeType() != Node.ELEMENT_NODE)
+					continue;
+				Element element = (Element) node;
+
+				if ("metadata-value".equals(element.getLocalName())) {
+					key = element.getAttribute("key");
+					value = element.getTextContent();
+				} else if (logger.isWarnEnabled())
+					logger.warn("Skipping unknown value element", element.getTagName());
+				if (key == null || value == null) {
+					if (logger.isWarnEnabled())
+						logger.warn("Could not parse value");
+					continue;
+				}
+
+				metadataValues.put(key, value);
+			}
+		}
+	}
+
 	private void receiveCollectionsImpl(Document document) {
 		DocumentCollections collections = getCollections();
 		collections.clear();
@@ -677,7 +772,7 @@ public class DocumentMetadataHandle
 			sendPermissionsImpl(serializer);
 			sendPropertiesImpl(serializer);
 			sendQualityImpl(serializer);
-
+			sendMetadataValuesImpl(serializer);
 			serializer.writeEndElement();
 
 			serializer.writeEndDocument();
@@ -694,6 +789,22 @@ public class DocumentMetadataHandle
 			valueSerializer = null;
 		}
 	}
+
+	private void sendMetadataValuesImpl(XMLStreamWriter serializer) throws XMLStreamException {
+		if (getMetadataValues() == null || getMetadataValues().size() == 0)
+			return;
+		serializer.writeStartElement(REST_API_NS, "metadata-values");
+
+		for (Map.Entry<String, String> value : getMetadataValues().entrySet()) {
+			serializer.writeStartElement("rapi", "metadata-value", REST_API_NS);
+			serializer.writeAttribute("key", value.getKey());
+			serializer.writeCharacters(value.getValue());
+			serializer.writeEndElement();
+		}
+
+		serializer.writeEndElement();
+	}
+
 	private void sendCollectionsImpl(XMLStreamWriter serializer) throws XMLStreamException {
 		if ( getCollections() == null || getCollections().size() == 0 ) return;
 		serializer.writeStartElement("rapi", "collections", REST_API_NS);

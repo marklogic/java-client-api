@@ -290,6 +290,38 @@ public interface DocumentMetadataPatchBuilder {
 			);
 
 	/**
+	 * Adds a new values metadata
+	 * @param key the key of the values metadata
+	 * @param value the value of the values metadata
+	 * @return	the patch builder (for convenient chaining)
+	 */
+	public DocumentMetadataPatchBuilder addMetadataValue(String key, String value);
+	/**
+	 * Deletes the specified values metadata properties with the given key.
+	 * @param key the key of the values metadata
+	 * @return	the patch builder (for convenient chaining)
+	 */
+	public DocumentMetadataPatchBuilder deleteMetadataValue(String key);
+	/**
+	 * Replaces the existing values metadata
+	 * @param key the key of the existing values metadata
+	 * @param newValue the new value of the values metadata to be assigned to the key
+	 * @return	the patch builder (for convenient chaining)
+	 */
+	public DocumentMetadataPatchBuilder replaceMetadataValue(String key, String newValue);
+	/**
+	 * Specifies a replacement operation by applying a function
+	 * to the values metadata. You must use
+	 * CallBuilder to build a specification of the call.
+	 * @param key	the key of the existing values metadata
+	 * @param call	the specification of the function call
+	 * @return	the patch builder (for convenient chaining)
+	 */
+	public DocumentMetadataPatchBuilder replaceMetadataValueApply(
+			String name, Call call
+			);
+
+	/**
 	 * Adds a new metadata property with a simple name.
 	 * @param name	the name of the new property
 	 * @param value	the value of the new property

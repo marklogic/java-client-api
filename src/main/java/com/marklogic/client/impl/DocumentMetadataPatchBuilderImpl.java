@@ -756,7 +756,142 @@ implements DocumentMetadataPatchBuilder
 			serializer.writeEndElement();
 		}
 	}
+	
+	static class AddMetadataValuesOperation extends PatchOperation {
+		String key;
+		String value;
+		AddMetadataValuesOperation(String key, String value) {
+			super();
+			this.value = value;
+			this.key = key;
+		}
+		@Override
+		public void write(JSONStringWriter serializer) {
+			// TODO: error if name empty
+			String pathString = serializer.getPathLanguage() == PathLanguage.JSONPATH ?
+					"$.metadataValues" :
+					"/object-node('metadataValues')"; 
 
+			writeStartInsert(serializer, pathString, "last-child", null);
+			serializer.writeStartEntry("content");
+			serializer.writeStartObject();
+			serializer.writeStartEntry(key);
+			serializer.writeStringValue(value);
+			serializer.writeEndObject();
+			serializer.writeEndObject();
+			serializer.writeEndObject();
+		}
+		@Override
+		public void write(XMLOutputSerializer out) throws Exception {
+			XMLStreamWriter serializer = out.getSerializer();
+			writeStartInsert(out, "/rapi:metadata/rapi:metadata-values", "last-child", null);
+
+			serializer.writeStartElement("rapi", "metadata-value", REST_API_NS);
+			serializer.writeAttribute("key", key);
+			serializer.writeCharacters(value);
+			serializer.writeEndElement();
+
+			serializer.writeEndElement();
+		}
+	}
+
+	static class DeleteMetadataValuesOperation extends PatchOperation {
+		String key;
+		DeleteMetadataValuesOperation(String key) {
+			super();
+			this.key = key;
+		}
+		@Override
+		public void write(JSONStringWriter serializer) {
+			// TODO: error if name empty
+			String pathString = serializer.getPathLanguage() == PathLanguage.JSONPATH ?
+					"$.metadataValues.["+JSONStringWriter.toJSON(key)+"]":
+					"/metadataValues/node("+JSONStringWriter.toJSON(key)+")"; 
+
+			writeDelete(serializer,
+					pathString,
+					null
+					);
+		}
+		@Override
+		public void write(XMLOutputSerializer out) throws Exception {
+			writeDelete(out,
+					"/rapi:metadata/rapi:metadata-values/rapi:metadata-value[@key='"+key+"']",
+					null
+					);
+		}
+	}
+
+	static class ReplaceMetadataValuesOperation extends PatchOperation {
+		String key;
+		String value;
+		ReplaceMetadataValuesOperation(String key, String value) {
+			super();
+			this.key = key;
+			this.value = value;
+		}
+		@Override
+		public void write(JSONStringWriter serializer) {
+			// TODO: error if name empty
+			String pathString = serializer.getPathLanguage() == PathLanguage.JSONPATH ?
+					"$.metadataValues.["+JSONStringWriter.toJSON(key)+"]":
+					"/metadataValues/node("+JSONStringWriter.toJSON(key)+")"; 
+
+			writeStartReplace(serializer,
+					pathString,
+					null
+					);
+			serializer.writeStartEntry("content");
+			serializer.writeStringValue(value);
+			serializer.writeEndObject();
+			serializer.writeEndObject();
+		}
+		@Override
+		public void write(XMLOutputSerializer out) throws Exception {
+			XMLStreamWriter serializer = out.getSerializer();
+			writeStartReplace(out,
+					"/rapi:metadata/rapi:metadata-values/rapi:metadata-value[@key='"+key+"']",
+					null
+					);
+			serializer.writeStartElement("rapi", "metadata-value", REST_API_NS);
+			serializer.writeAttribute("key", key);
+			serializer.writeCharacters(value);
+			serializer.writeEndElement();
+
+			serializer.writeEndElement();
+		}
+	}
+
+	static class ReplaceMetadataValuesApplyOperation extends PatchOperation {
+		String   key;
+		CallImpl call;
+		ReplaceMetadataValuesApplyOperation(String key, CallImpl call) {
+			super();
+			this.call = call;
+			this.key = key;
+		}
+		@Override
+		public void write(JSONStringWriter serializer) {
+			// TODO: error if name empty
+			String pathString = serializer.getPathLanguage() == PathLanguage.JSONPATH ?
+					"$.metadataValues.["+JSONStringWriter.toJSON(key)+"]":
+					"/metadataValues/node("+JSONStringWriter.toJSON(key)+")"; 
+			writeReplaceApply(serializer, 
+					pathString,
+					null,
+					call
+					);
+		}
+		@Override
+		public void write(XMLOutputSerializer out) throws Exception {
+			// TODO: declare namespace on root
+			writeReplaceApply(out,
+					"/rapi:metadata/rapi:metadata-values/rapi:metadata-value[@key='"+key+"']",
+					null,
+					call
+					);
+		}
+	}
 	static class DocumentPatchHandleImpl
 	extends StringHandle
 	implements PatchHandle
@@ -891,6 +1026,37 @@ implements DocumentMetadataPatchBuilder
 	}
 
 	@Override
+	public DocumentMetadataPatchBuilder addMetadataValue(String key, String value) {
+		onMetadataValues();
+		operations.add(new AddMetadataValuesOperation(key, value));
+		return this;
+	}
+
+	@Override
+	public DocumentMetadataPatchBuilder deleteMetadataValue(String key) {
+		onMetadataValues();
+		operations.add(new DeleteMetadataValuesOperation(key));
+		return this;
+	}
+
+	@Override
+	public DocumentMetadataPatchBuilder replaceMetadataValue(String key, String newValue) {
+		onMetadataValues();
+		operations.add(new ReplaceMetadataValuesOperation(key, newValue));
+		return this;
+	}
+
+	@Override
+	public DocumentMetadataPatchBuilder replaceMetadataValueApply(String key, Call call) {
+		if (!CallImpl.class.isAssignableFrom(call.getClass()))
+			throw new IllegalArgumentException(
+					"Cannot use external call implementation");
+		onMetadataValues();
+		operations.add(new ReplaceMetadataValuesApplyOperation(key, (CallImpl)call));
+		return this;
+	}
+
+	@Override
 	public DocumentMetadataPatchBuilder addPropertyValue(String name, Object value) {
 		onProperties();
 		QName qname = asQName(name);
@@ -1014,6 +1180,9 @@ implements DocumentMetadataPatchBuilder
 	}
 	private void onQuality() {
 		onMetadata(Metadata.QUALITY);
+	}
+	private void onMetadataValues() {
+		onMetadata(Metadata.METADATAVALUES);
 	}
 
 	@Override

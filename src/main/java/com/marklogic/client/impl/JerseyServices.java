@@ -273,7 +273,7 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 
-		if (authenType != null) {
+		if (authenType != null && authenType != Authentication.KERBEROS) {
 			if (user == null)
 				throw new IllegalArgumentException("No user provided");
 			if (password == null)
@@ -372,16 +372,16 @@ public class JerseyServices implements RESTServices {
 
 		if (authenType != null) {
 			List<String> authpref = new ArrayList<String>();
-
 			if (authenType == Authentication.BASIC)
 				authpref.add(AuthPolicy.BASIC);
 			else if (authenType == Authentication.DIGEST)
 				authpref.add(AuthPolicy.DIGEST);
+			else if (authenType == Authentication.KERBEROS)
+				authpref.add(AuthPolicy.SPNEGO);
 			else
 				throw new MarkLogicInternalException(
 						"Internal error - unknown authentication type: "
 								+ authenType.name());
-
 			httpParams.setParameter(AuthPNames.PROXY_AUTH_PREF, authpref);
 		}
 
@@ -431,7 +431,11 @@ public class JerseyServices implements RESTServices {
 			client.addFilter(new DigestChallengeFilter());
 
 			client.addFilter(new HTTPDigestAuthFilter(user, password));
-		} else {
+		}  else if (authenType == Authentication.KERBEROS) {
+			checkFirstRequest = true;
+			client.addFilter(new HTTPKerberosAuthFilter(host, user));
+		}
+		else {
 			throw new MarkLogicInternalException(
 					"Internal error - unknown authentication type: "
 							+ authenType.name());
@@ -1812,7 +1816,7 @@ public class JerseyServices implements RESTServices {
 				docParams.add("category", "metadata");
 			} else {
 				for (Metadata category : categories)
-					docParams.add("category", category.name().toLowerCase());
+					docParams.add("category", category.toString().toLowerCase());
 			}
 		}
 		if (transaction != null) {

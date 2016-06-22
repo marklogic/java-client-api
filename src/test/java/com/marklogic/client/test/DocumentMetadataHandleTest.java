@@ -39,6 +39,7 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentMetadataValues;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.io.StringHandle;
@@ -87,6 +88,10 @@ public class DocumentMetadataHandleTest {
 		    "</third>"+
 		  "</prop:properties>"+
 		  "<rapi:quality>3</rapi:quality>"+
+		  "<rapi:metadata-values>"+
+		    "<rapi:metadata-value key=\"key1\">value1</rapi:metadata-value>"+
+		    "<rapi:metadata-value key=\"key2\">value2</rapi:metadata-value>"+
+		  "</rapi:metadata-values>"+
 		"</rapi:metadata>";
 
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -109,6 +114,8 @@ public class DocumentMetadataHandleTest {
 		metaWriteHandle.getProperties().put("second", 2);
 		metaWriteHandle.getProperties().put("third", thirdChildren);
 		metaWriteHandle.setQuality(3);
+		metaWriteHandle.getMetadataValues().add("key1", "value1");
+		metaWriteHandle.getMetadataValues().add("key2", "value2");
 
 		docMgr.setMetadataCategories(Metadata.ALL);
 
@@ -163,6 +170,9 @@ public class DocumentMetadataHandleTest {
 				assertEquals("Third property with wrong child value "+i, expectedNode.getNodeValue(), actualNode.getNodeValue());
 			}
 			assertEquals("Wrong quality", 3, metaReadHandle.getQuality());
+			DocumentMetadataValues metadataValues = metaReadHandle.getMetadataValues();
+			assertEquals("Wrong value for key in the values metadata", "value1", metadataValues.get("key1"));
+			assertEquals("Wrong value for key in the values metadata", "value2", metadataValues.get("key2"));
 		}
 	}
 }

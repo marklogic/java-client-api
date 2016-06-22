@@ -15,7 +15,9 @@
  */
 package com.marklogic.client;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Set;
 
 import javax.net.ssl.SSLContext;
@@ -31,6 +33,11 @@ import com.marklogic.client.impl.JerseyServices;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
 
+import sun.security.krb5.Credentials;
+import sun.security.krb5.KrbException;
+import sun.security.krb5.PrincipalName;
+import sun.security.krb5.RealmException;
+
 /**
  * A Database Client Factory configures a database client for making
  * database requests.
@@ -45,7 +52,9 @@ public class DatabaseClientFactory {
 	/**
 	 * Authentication enumerates the methods for verifying a user and
 	 * password with the database.
+	 * @deprecated use BasicAuthContext, DigestAuthContext and KerberosAuthContext classes
 	 */
+	@Deprecated
 	public enum Authentication {
 	    /**
 	     * Minimal security unless used with SSL.
@@ -54,7 +63,11 @@ public class DatabaseClientFactory {
 		/**
 		 * Moderate security without SSL.
 		 */
-		DIGEST;
+		DIGEST,
+		/**
+		 * Authentication using Kerberos.
+		 */
+		KERBEROS;
 
 		/**
 		 * Returns the enumerated value for the case-insensitive name.
@@ -199,6 +212,159 @@ public class DatabaseClientFactory {
 	private DatabaseClientFactory() {
 	}
 
+	private static void checkTGT(String username) throws KrbException, IOException {
+		Credentials cred;
+		// Check if the cache already has valid TGT information. If not, throw
+		// exceptions
+		if (username != null) {
+			cred = Credentials.acquireTGTFromCache(new PrincipalName(username), null);
+		} else {
+			cred = Credentials.acquireTGTFromCache(null, null);
+		}
+		if (cred == null) {
+			throw new KrbException("No ticket granting ticket in the cache");
+		} else {
+			Date endTime = cred.getEndTime();
+			if (endTime != null) {
+				if (endTime.compareTo(new Date()) == -1) {
+					throw new KrbException("The ticket granting ticket in the cache is no longer valid");
+				}
+			}
+		}
+	}
+
+	public interface SecurityContext {
+		SSLContext getSSLContext();
+		void setSSLContext(SSLContext context);
+		SSLHostnameVerifier getSSLHostnameVerifier();
+		void setSSLHostnameVerifier(SSLHostnameVerifier verifier);
+		SecurityContext withSSLContext(SSLContext context);
+		SecurityContext withSSLHostnameVerifier(SSLHostnameVerifier verifier);
+	}
+
+	private static class AuthContext implements SecurityContext {
+		SSLContext sslContext;
+		SSLHostnameVerifier sslVerifier;
+
+		@Override
+		public SSLContext getSSLContext() {
+			return sslContext;
+		}
+
+		@Override
+		public void setSSLContext(SSLContext context) {
+			this.sslContext = context;
+		}
+
+		@Override
+		public SSLHostnameVerifier getSSLHostnameVerifier() {
+			return sslVerifier;
+		}
+
+		@Override
+		public void setSSLHostnameVerifier(SSLHostnameVerifier verifier) {
+			this.sslVerifier = verifier;
+		}
+
+		@Override
+		public SecurityContext withSSLContext(SSLContext context) {
+			this.sslContext = context;
+			return this;
+		}
+
+		@Override
+		public SecurityContext withSSLHostnameVerifier(SSLHostnameVerifier verifier) {
+			this.sslVerifier = verifier;
+			return this;
+		}
+
+	}
+
+	public static class BasicAuthContext extends AuthContext {
+		String user;
+		String password;
+
+		public BasicAuthContext(String user, String password) {
+			this.user = user;
+			this.password = password;
+		}
+
+		public String getUser() {
+			return user;
+		}
+
+		public String getPassword() {
+			return password;
+		}
+
+		@Override
+		public BasicAuthContext withSSLContext(SSLContext context) {
+			this.sslContext = context;
+			return this;
+		}
+
+		@Override
+		public BasicAuthContext withSSLHostnameVerifier(SSLHostnameVerifier verifier) {
+			this.sslVerifier = verifier;
+			return this;
+		}
+	}
+
+	public static class DigestAuthContext extends AuthContext {
+		String user;
+		String password;
+
+		public DigestAuthContext(String user, String password) {
+			this.user = user;
+			this.password = password;
+		}
+
+		public String getUser() {
+			return user;
+		}
+
+		public String getPassword() {
+			return password;
+		}
+
+		@Override
+		public DigestAuthContext withSSLContext(SSLContext context) {
+			this.sslContext = context;
+			return this;
+		}
+
+		@Override
+		public DigestAuthContext withSSLHostnameVerifier(SSLHostnameVerifier verifier) {
+			this.sslVerifier = verifier;
+			return this;
+		}
+	}
+
+	public static class KerberosAuthContext extends AuthContext {
+		String externalName;
+
+		public KerberosAuthContext() throws KrbException, IOException {
+			checkTGT(null);
+		}
+
+		public KerberosAuthContext(String externalName) throws KrbException, IOException {
+			this.externalName = externalName;
+			checkTGT(externalName);
+		}
+
+		@Override
+		public KerberosAuthContext withSSLContext(SSLContext context) {
+			this.sslContext = context;
+			return this;
+		}
+
+		@Override
+		public KerberosAuthContext withSSLHostnameVerifier(SSLHostnameVerifier verifier) {
+			this.sslVerifier = verifier;
+			return this;
+		}
+	}
+
 	/**
 	 * Creates a client to access the database by means of a REST server
 	 * without any authentication. Such clients can be convenient for
@@ -229,13 +395,139 @@ public class DatabaseClientFactory {
 	/**
 	 * Creates a client to access the database by means of a REST server.
 	 * 
+	 * @param host the host with the REST server
+	 * @param port the port for the REST server
+	 * @param securityContext the security context created depending upon the
+	 *            authentication type (BASIC, DIGEST & KERBEROS) and
+	 *            communication channel type (SSL)
+	 * @return a new client for making database requests
+	 */
+	static public DatabaseClient newClient(String host, int port, SecurityContext securityContext) {
+		String user = null;
+		String password = null;
+		Authentication type = null;
+		SSLContext sslContext = null;
+		SSLHostnameVerifier sslVerifier = null;
+		if (securityContext instanceof BasicAuthContext) {
+			BasicAuthContext basicContext = (BasicAuthContext) securityContext;
+			user = basicContext.user;
+			password = basicContext.password;
+			type = Authentication.BASIC;
+			if (basicContext.sslContext != null) {
+				sslContext = basicContext.sslContext;
+				if (basicContext.sslVerifier != null) {
+					sslVerifier = basicContext.sslVerifier;
+				} else {
+					sslVerifier = SSLHostnameVerifier.COMMON;
+				}
+			}
+			return newClient(host, port, null, user, password, type, null, sslContext, sslVerifier);
+		} else if (securityContext instanceof DigestAuthContext) {
+			DigestAuthContext digestContext = (DigestAuthContext) securityContext;
+			user = digestContext.user;
+			password = digestContext.password;
+			type = Authentication.DIGEST;
+			if (digestContext.sslContext != null) {
+				sslContext = digestContext.sslContext;
+				if (digestContext.sslVerifier != null) {
+					sslVerifier = digestContext.sslVerifier;
+				} else {
+					sslVerifier = SSLHostnameVerifier.COMMON;
+				}
+			}
+			return newClient(host, port, null, user, password, type, null, sslContext, sslVerifier);
+		} else if (securityContext instanceof KerberosAuthContext) {
+			KerberosAuthContext kerberosContext = (KerberosAuthContext) securityContext;
+			type = Authentication.KERBEROS;
+			if (kerberosContext.externalName != null) {
+				user = kerberosContext.externalName;
+			}
+			if (kerberosContext.sslContext != null) {
+				sslContext = kerberosContext.sslContext;
+				if (kerberosContext.sslVerifier != null) {
+					sslVerifier = kerberosContext.sslVerifier;
+				} else {
+					sslVerifier = SSLHostnameVerifier.COMMON;
+				}
+			}
+			return newClient(host, port, null, kerberosContext.externalName, null, type, null, sslContext, sslVerifier);
+		}
+		return null;
+	}
+
+	/**
+	 * Creates a client to access the database by means of a REST server.
+	 * 
+	 * @param host the host with the REST server
+	 * @param port the port for the REST server
+	 * @param database the database to access (default: configured database for
+	 *            the REST server)
+	 * @param securityContext the security context created depending upon the
+	 *            authentication type (BASIC, DIGEST & KERBEROS) and
+	 *            communication channel type (SSL)
+	 * @return a new client for making database requests
+	 */
+	static public DatabaseClient newClient(String host, int port, String database, SecurityContext securityContext) {
+		String user = null;
+		String password = null;
+		Authentication type = null;
+		SSLContext sslContext = null;
+		SSLHostnameVerifier sslVerifier = null;
+		if (securityContext instanceof BasicAuthContext) {
+			BasicAuthContext basicContext = (BasicAuthContext) securityContext;
+			user = basicContext.user;
+			password = basicContext.password;
+			type = Authentication.BASIC;
+			if (basicContext.sslContext != null) {
+				sslContext = basicContext.sslContext;
+				if (basicContext.sslVerifier != null) {
+					sslVerifier = basicContext.sslVerifier;
+				} else {
+					sslVerifier = SSLHostnameVerifier.COMMON;
+				}
+			}
+		} else if (securityContext instanceof DigestAuthContext) {
+			DigestAuthContext digestContext = (DigestAuthContext) securityContext;
+			user = digestContext.user;
+			password = digestContext.password;
+			type = Authentication.DIGEST;
+			if (digestContext.sslContext != null) {
+				sslContext = digestContext.sslContext;
+				if (digestContext.sslVerifier != null) {
+					sslVerifier = digestContext.sslVerifier;
+				} else {
+					sslVerifier = SSLHostnameVerifier.COMMON;
+				}
+			}
+		} else if (securityContext instanceof KerberosAuthContext) {
+			KerberosAuthContext kerberosContext = (KerberosAuthContext) securityContext;
+			type = Authentication.KERBEROS;
+			if (kerberosContext.externalName != null) {
+				user = kerberosContext.externalName;
+			}
+			if (kerberosContext.sslContext != null) {
+				sslContext = kerberosContext.sslContext;
+				if (kerberosContext.sslVerifier != null) {
+					sslVerifier = kerberosContext.sslVerifier;
+				} else {
+					sslVerifier = SSLHostnameVerifier.COMMON;
+				}
+			}
+		}
+		return newClient(host, port, database, user, password, type, null, sslContext, sslVerifier);
+	}
+	/**
+	 * Creates a client to access the database by means of a REST server.
+	 * 
 	 * @param host	the host with the REST server
 	 * @param port	the port for the REST server
 	 * @param user	the user with read, write, or administrative privileges
 	 * @param password	the password for the user
 	 * @param type	the type of authentication applied to the request
 	 * @return	a new client for making database requests
+	 * @deprecated	use {@link #newClient(String host, int port, SecurityContext securityContext)}
 	 */
+	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type) {
 		return newClient(host, port, null, user, password, type, null, null, null);
 	}
@@ -249,7 +541,9 @@ public class DatabaseClientFactory {
 	 * @param password	the password for the user
 	 * @param type	the type of authentication applied to the request
 	 * @return	a new client for making database requests
+	 * @deprecated	use {@link #newClient(String host, int port, String database, SecurityContext securityContext)}
 	 */
+	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type) {
 		return newClient(host, port, database, user, password, type, null, null, null);
 	}
@@ -263,7 +557,9 @@ public class DatabaseClientFactory {
 	 * @param type	the type of authentication applied to the request
 	 * @param context	the SSL context for authenticating with the server
 	 * @return	a new client for making database requests
+	 * @deprecated	use {@link #newClient(String host, int port, SecurityContext securityContext)}
 	 */
+	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context) {
 		return newClient(host, port, null, user, password, type, context, SSLHostnameVerifier.COMMON);
 	}
@@ -278,7 +574,9 @@ public class DatabaseClientFactory {
 	 * @param type	the type of authentication applied to the request
 	 * @param context	the SSL context for authenticating with the server
 	 * @return	a new client for making database requests
+	 * @deprecated	use {@link #newClient(String host, int port, String database, SecurityContext securityContext)}
 	 */
+	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, SSLContext context) {
 		return newClient(host, port, database, user, password, type, context, SSLHostnameVerifier.COMMON);
 	}
@@ -293,7 +591,9 @@ public class DatabaseClientFactory {
 	 * @param context	the SSL context for authenticating with the server
 	 * @param verifier	a callback for checking hostnames
 	 * @return	a new client for making database requests
+	 * @deprecated	use {@link #newClient(String host, int port, SecurityContext securityContext)}
 	 */
+	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
 		DatabaseClientImpl client = newClientImpl(host, port, null, user, password, type, null, context, verifier);
 		client.setHandleRegistry(getHandleRegistry().copy());
@@ -311,7 +611,9 @@ public class DatabaseClientFactory {
 	 * @param context	the SSL context for authenticating with the server
 	 * @param verifier	a callback for checking hostnames
 	 * @return	a new client for making database requests
+	 * @deprecated	use {@link #newClient(String host, int port, String database, SecurityContext securityContext)}
 	 */
+	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
 		DatabaseClientImpl client = newClientImpl(host, port, database, user, password, type, null, context, verifier);
 		client.setHandleRegistry(getHandleRegistry().copy());
@@ -500,6 +802,8 @@ public class DatabaseClientFactory {
 		private           String                user;
 		private           String                password;
 		private           Authentication        authentication;
+		private           String                externalName;
+		private           SecurityContext       securityContext;
 		private           String                forestName;
 		private           HandleFactoryRegistry handleRegistry =
 			HandleFactoryRegistryImpl.newDefault();
@@ -582,6 +886,22 @@ public class DatabaseClientFactory {
 			this.password = password;
 		}
 		/**
+		 * Returns the external name for Kerberos clients created with a
+		 * DatabaseClientFactory.Bean object.
+		 * @return	the external name
+		 */
+		public String getExternalName() {
+			return externalName;
+		}
+		/**
+		 * Specifies the external name for Kerberos clients created with a
+		 * DatabaseClientFactory.Bean object.
+		 * @param externalName	the external name
+		 */
+		public void setExternalName(String externalName) {
+			this.externalName = externalName;
+		}
+		/**
 		 * Returns the authentication type for clients created with a
 		 * DatabaseClientFactory.Bean object.
 		 * @return	the authentication type 
@@ -622,6 +942,22 @@ public class DatabaseClientFactory {
 			this.forestName = forestName;
 		}
 		/**
+		 * Returns the database for clients created with a
+		 * DatabaseClientFactory.Bean object.
+		 * @return	the database
+		 */
+		public String getDatabase() {
+			return database;
+		}
+		/**
+		 * Specifies the database for clients created with a
+		 * DatabaseClientFactory.Bean object.
+		 * @param database	a database to pass along to new DocumentManager and QueryManager instances
+		 */
+		public void setDatabase(String database) {
+			this.database = database;
+		}
+		/**
 		 * Returns the SSLContext for SSL clients created with a
 		 * DatabaseClientFactory.Bean object.
 		 * @return	the SSL context
@@ -654,7 +990,24 @@ public class DatabaseClientFactory {
 		public void setVerifier(SSLHostnameVerifier verifier) {
 			this.verifier = verifier;
 		}
-
+		/**
+		 * Returns the security context for clients created with a
+		 * DatabaseClientFactory.Bean object. (BasicAuthContext, DigestAuthContext
+		 * or KerberosAuthContext)
+		 * @return	the security context
+		 */
+		public SecurityContext getSecurityContext() {
+			return securityContext;
+		}
+		/**
+		 * Specifies the security context for clients created with a
+		 * DatabaseClientFactory.Bean object 
+		 * @param securityContext	the security context (BasicAuthContext, 
+		 * DigestAuthContext or KerberosAuthContext)
+		 */
+		public void setSecurityContext(SecurityContext securityContext) {
+			this.securityContext = securityContext;
+		}
 		/**
 		 * Returns the registry for associating 
 		 * IO representation classes with handle factories.

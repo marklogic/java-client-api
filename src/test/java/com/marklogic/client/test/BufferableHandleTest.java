@@ -189,6 +189,10 @@ public class BufferableHandleTest {
 		    "</third>"+
 		  "</prop:properties>"+
 		  "<rapi:quality>3</rapi:quality>"+
+		  "<rapi:metadata-values>"+
+		    "  <rapi:metadata-value key=\"key1\">value1</rapi:metadata-value>"+
+		    "  <rapi:metadata-value key=\"number1\">10</rapi:metadata-value>"+
+		    "</rapi:metadata-values>"+
 		"</rapi:metadata>";
 
     	DocumentMetadataHandle metadataH = new DocumentMetadataHandle();
@@ -234,6 +238,14 @@ public class BufferableHandleTest {
 				).getLength() == 1);
 		assertTrue("", xpather.getMatchingNodes(
 				"/rapi:metadata/prop:properties/third/third.second[string(.) = '3.2']",
+				XMLUnit.buildControlDocument(afterStr)
+				).getLength() == 1);
+		assertTrue("", xpather.getMatchingNodes(
+				"/rapi:metadata/rapi:metadata-values/rapi:metadata-value[@key = 'key1'][string(.) = 'value1']",
+				XMLUnit.buildControlDocument(afterStr)
+				).getLength() == 1);
+		assertTrue("", xpather.getMatchingNodes(
+				"/rapi:metadata/rapi:metadata-values/rapi:metadata-value[@key = 'number1'][string(.) = '10']",
 				XMLUnit.buildControlDocument(afterStr)
 				).getLength() == 1);
 		assertTrue("", xpather.getMatchingNodes(

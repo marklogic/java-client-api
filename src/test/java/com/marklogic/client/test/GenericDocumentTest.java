@@ -127,6 +127,11 @@ public class GenericDocumentTest {
 	"    <second>2</second>\n"+
 	"  </prop:properties>\n"+
 	"  <rapi:quality>3</rapi:quality>\n"+
+	"  <rapi:metadata-values>"+
+	"    <rapi:metadata-value key=\"key1\">value1</rapi:metadata-value>"+
+	"    <rapi:metadata-value key=\"key2\">value2</rapi:metadata-value>"+
+	"    <rapi:metadata-value key=\"number1\">10</rapi:metadata-value>"+
+	"  </rapi:metadata-values>"+
 	"</rapi:metadata>\n";
 
 	final static String patchedMetadata =
@@ -179,6 +184,8 @@ public class GenericDocumentTest {
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='app-user'])",stringMetadata);
 		assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",stringMetadata);
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='3'])",stringMetadata);
+		assertXpathEvaluatesTo("3","count(/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'])",stringMetadata);
+		assertXpathEvaluatesTo("value1", "/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'][@key=\"key1\"]", stringMetadata);
 
 		docId = "/test/testMetadataXML2.xml";
 		docMgr.write(docId, new StringHandle().with(metadata), new StringHandle().with(content));
@@ -189,6 +196,8 @@ public class GenericDocumentTest {
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='app-user'])",stringMetadata);
 		assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",stringMetadata);
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='3'])",stringMetadata);
+		assertXpathEvaluatesTo("3","count(/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'])",stringMetadata);
+		assertXpathEvaluatesTo("value1", "/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'][@key=\"key1\"]", stringMetadata);
 
 		docMgr.writeDefaultMetadata(docId);
 		stringMetadata = docMgr.readMetadata(docId, xmlStringHandle).get();
@@ -197,6 +206,7 @@ public class GenericDocumentTest {
 		assertXpathEvaluatesTo("0","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='app-user'])",stringMetadata);
 		assertXpathEvaluatesTo("0","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",stringMetadata);
 		assertXpathEvaluatesTo("0","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='3'])",stringMetadata);
+		assertXpathEvaluatesTo("0","count(/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'])",stringMetadata);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -374,6 +384,8 @@ public class GenericDocumentTest {
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='app-user'])",stringMetadata);
 		assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",stringMetadata);
 		assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='3'])",stringMetadata);
+		assertXpathEvaluatesTo("3","count(/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'])",stringMetadata);
+		assertXpathEvaluatesTo("value1", "/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'][@key=\"key1\"]", stringMetadata);
 
 		docMgr.delete(docId);
 	}
@@ -403,6 +415,10 @@ public class GenericDocumentTest {
 			.deleteProperty("first")
 			.replacePropertyApply("second", patchBldr.call().add(3))
 			.setQuality(4)
+			.addMetadataValue("key3", "value3")
+			.deleteMetadataValue("key2")
+			.replaceMetadataValueApply("number1", patchBldr.call().add(5))
+			.replaceMetadataValue("key1", "modifiedValue1")
 			.build();
 
 			docMgr.patch(docId, patchHandle);
@@ -416,6 +432,11 @@ public class GenericDocumentTest {
 			assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='first' or local-name()='second'])",metadata);
 			assertXpathEvaluatesTo("5","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='second'])",metadata);
 			assertXpathEvaluatesTo("1","count(/*[local-name()='metadata']/*[local-name()='quality' and string(.)='4'])",metadata);
+			assertXpathEvaluatesTo("3","count(/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'])",metadata);
+			assertXpathEvaluatesTo("value3", "/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'][@key=\"key3\"]", metadata);
+			assertXpathEvaluatesTo("modifiedValue1", "/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'][@key=\"key1\"]", metadata);
+			assertXpathEvaluatesTo("0", "count(/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'][@key=\"key2\"])", metadata);
+			assertXpathEvaluatesTo("15", "/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'][@key=\"number1\"]", metadata);
 		}
 
 		docMgr.delete(docId);
