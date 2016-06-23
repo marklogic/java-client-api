@@ -29,6 +29,7 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentMetadataValues;
 import com.marklogic.client.io.InputStreamHandle;
 
 /**
@@ -70,6 +71,10 @@ public class DocumentMetadataRead {
 		// access the document metadata
 		DocumentCollections collections = metadataHandle.getCollections();
 
+		// access the document metadata-values
+		DocumentMetadataValues metadataValues = metadataHandle.getMetadataValues();
+		System.out.println(metadataValues.get("key1"));
+
 		// access the document content
 		Document document = contentHandle.get();
 
@@ -95,6 +100,7 @@ public class DocumentMetadataRead {
 		metadataHandle.getPermissions().add("app-user", Capability.UPDATE, Capability.READ);
 		metadataHandle.getProperties().put("reviewed", true);
 		metadataHandle.setQuality(1);
+		metadataHandle.getMetadataValues().add("key1", "value1");
 
 		InputStreamHandle handle = new InputStreamHandle();
 		handle.set(docStream);

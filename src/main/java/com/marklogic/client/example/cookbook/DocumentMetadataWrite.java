@@ -63,6 +63,7 @@ public class DocumentMetadataWrite {
 		metadataHandle.getPermissions().add("app-user", Capability.UPDATE, Capability.READ);
 		metadataHandle.getProperties().put("reviewed", true);
 		metadataHandle.setQuality(1);
+		metadataHandle.getMetadataValues().add("key1", "value1");
 
 		// create a handle on the content
 		InputStreamHandle contentHandle = new InputStreamHandle();

@@ -398,61 +398,12 @@ public class DatabaseClientFactory {
 	 * @param host the host with the REST server
 	 * @param port the port for the REST server
 	 * @param securityContext the security context created depending upon the
-	 *            authentication type (BASIC, DIGEST & KERBEROS) and
-	 *            communication channel type (SSL)
+	 *            authentication type - BasicAuthContext, DigestAuthContext or KerberosAuthContext
+	 *            and communication channel type (SSL)
 	 * @return a new client for making database requests
 	 */
 	static public DatabaseClient newClient(String host, int port, SecurityContext securityContext) {
-		String user = null;
-		String password = null;
-		Authentication type = null;
-		SSLContext sslContext = null;
-		SSLHostnameVerifier sslVerifier = null;
-		if (securityContext instanceof BasicAuthContext) {
-			BasicAuthContext basicContext = (BasicAuthContext) securityContext;
-			user = basicContext.user;
-			password = basicContext.password;
-			type = Authentication.BASIC;
-			if (basicContext.sslContext != null) {
-				sslContext = basicContext.sslContext;
-				if (basicContext.sslVerifier != null) {
-					sslVerifier = basicContext.sslVerifier;
-				} else {
-					sslVerifier = SSLHostnameVerifier.COMMON;
-				}
-			}
-			return newClient(host, port, null, user, password, type, null, sslContext, sslVerifier);
-		} else if (securityContext instanceof DigestAuthContext) {
-			DigestAuthContext digestContext = (DigestAuthContext) securityContext;
-			user = digestContext.user;
-			password = digestContext.password;
-			type = Authentication.DIGEST;
-			if (digestContext.sslContext != null) {
-				sslContext = digestContext.sslContext;
-				if (digestContext.sslVerifier != null) {
-					sslVerifier = digestContext.sslVerifier;
-				} else {
-					sslVerifier = SSLHostnameVerifier.COMMON;
-				}
-			}
-			return newClient(host, port, null, user, password, type, null, sslContext, sslVerifier);
-		} else if (securityContext instanceof KerberosAuthContext) {
-			KerberosAuthContext kerberosContext = (KerberosAuthContext) securityContext;
-			type = Authentication.KERBEROS;
-			if (kerberosContext.externalName != null) {
-				user = kerberosContext.externalName;
-			}
-			if (kerberosContext.sslContext != null) {
-				sslContext = kerberosContext.sslContext;
-				if (kerberosContext.sslVerifier != null) {
-					sslVerifier = kerberosContext.sslVerifier;
-				} else {
-					sslVerifier = SSLHostnameVerifier.COMMON;
-				}
-			}
-			return newClient(host, port, null, kerberosContext.externalName, null, type, null, sslContext, sslVerifier);
-		}
-		return null;
+		return newClient(host, port, null, securityContext);
 	}
 
 	/**
@@ -463,8 +414,8 @@ public class DatabaseClientFactory {
 	 * @param database the database to access (default: configured database for
 	 *            the REST server)
 	 * @param securityContext the security context created depending upon the
-	 *            authentication type (BASIC, DIGEST & KERBEROS) and
-	 *            communication channel type (SSL)
+	 *            authentication type - BasicAuthContext, DigestAuthContext or KerberosAuthContext
+	 *            and communication channel type (SSL)
 	 * @return a new client for making database requests
 	 */
 	static public DatabaseClient newClient(String host, int port, String database, SecurityContext securityContext) {
@@ -486,6 +437,7 @@ public class DatabaseClientFactory {
 					sslVerifier = SSLHostnameVerifier.COMMON;
 				}
 			}
+			return newClient(host, port, database, user, password, type, null, sslContext, sslVerifier);
 		} else if (securityContext instanceof DigestAuthContext) {
 			DigestAuthContext digestContext = (DigestAuthContext) securityContext;
 			user = digestContext.user;
@@ -499,12 +451,10 @@ public class DatabaseClientFactory {
 					sslVerifier = SSLHostnameVerifier.COMMON;
 				}
 			}
+			return newClient(host, port, database, user, password, type, null, sslContext, sslVerifier);
 		} else if (securityContext instanceof KerberosAuthContext) {
 			KerberosAuthContext kerberosContext = (KerberosAuthContext) securityContext;
 			type = Authentication.KERBEROS;
-			if (kerberosContext.externalName != null) {
-				user = kerberosContext.externalName;
-			}
 			if (kerberosContext.sslContext != null) {
 				sslContext = kerberosContext.sslContext;
 				if (kerberosContext.sslVerifier != null) {
@@ -513,8 +463,9 @@ public class DatabaseClientFactory {
 					sslVerifier = SSLHostnameVerifier.COMMON;
 				}
 			}
+			return newClient(host, port, database, kerberosContext.externalName, null, type, null, sslContext, sslVerifier);
 		}
-		return newClient(host, port, database, user, password, type, null, sslContext, sslVerifier);
+		return null;
 	}
 	/**
 	 * Creates a client to access the database by means of a REST server.
@@ -858,6 +809,7 @@ public class DatabaseClientFactory {
 		 * DatabaseClientFactory.Bean object.
 		 * @return	the user
 		 */
+		@Deprecated
 		public String getUser() {
 			return user;
 		}
@@ -866,6 +818,7 @@ public class DatabaseClientFactory {
 		 * DatabaseClientFactory.Bean object.
 		 * @param user	the user
 		 */
+		@Deprecated
 		public void setUser(String user) {
 			this.user = user;
 		}
@@ -874,6 +827,7 @@ public class DatabaseClientFactory {
 		 * DatabaseClientFactory.Bean object.
 		 * @return	the password
 		 */
+		@Deprecated
 		public String getPassword() {
 			return password;
 		}
@@ -882,6 +836,7 @@ public class DatabaseClientFactory {
 		 * DatabaseClientFactory.Bean object.
 		 * @param password	the password
 		 */
+		@Deprecated
 		public void setPassword(String password) {
 			this.password = password;
 		}
@@ -906,6 +861,7 @@ public class DatabaseClientFactory {
 		 * DatabaseClientFactory.Bean object.
 		 * @return	the authentication type 
 		 */
+		@Deprecated
 		public Authentication getAuthentication() {
 			return authentication;
 		}
@@ -914,6 +870,7 @@ public class DatabaseClientFactory {
 		 * DatabaseClientFactory.Bean object.
 		 * @param authentication	the authentication type
 		 */
+		@Deprecated
 		public void setAuthentication(Authentication authentication) {
 			this.authentication = authentication;
 		}
@@ -922,6 +879,7 @@ public class DatabaseClientFactory {
 		 * DatabaseClientFactory.Bean object based on a string value.
 		 * @param authentication	the authentication type
 		 */
+		@Deprecated
 		public void setAuthenticationValue(String authentication) {
 			this.authentication = Authentication.valueOfUncased(authentication);
 		}
@@ -962,6 +920,7 @@ public class DatabaseClientFactory {
 		 * DatabaseClientFactory.Bean object.
 		 * @return	the SSL context
 		 */
+		@Deprecated
 		public SSLContext getContext() {
 			return context;
 		}
@@ -970,6 +929,7 @@ public class DatabaseClientFactory {
 		 * DatabaseClientFactory.Bean object that authenticate with SSL.
 		 * @param context	the SSL context
 		 */
+		@Deprecated
 		public void setContext(SSLContext context) {
 			this.context = context;
 		}
@@ -978,6 +938,7 @@ public class DatabaseClientFactory {
 		 * DatabaseClientFactory.Bean object.
 		 * @return	the host verifier
 		 */
+		@Deprecated
 		public SSLHostnameVerifier getVerifier() {
 			return verifier;
 		}
@@ -987,13 +948,14 @@ public class DatabaseClientFactory {
 		 * additional security.
 		 * @param verifier	the host verifier
 		 */
+		@Deprecated
 		public void setVerifier(SSLHostnameVerifier verifier) {
 			this.verifier = verifier;
 		}
 		/**
 		 * Returns the security context for clients created with a
-		 * DatabaseClientFactory.Bean object. (BasicAuthContext, DigestAuthContext
-		 * or KerberosAuthContext)
+		 * DatabaseClientFactory.Bean object - BasicAuthContext, DigestAuthContext
+		 * or KerberosAuthContext
 		 * @return	the security context
 		 */
 		public SecurityContext getSecurityContext() {
@@ -1002,8 +964,8 @@ public class DatabaseClientFactory {
 		/**
 		 * Specifies the security context for clients created with a
 		 * DatabaseClientFactory.Bean object 
-		 * @param securityContext	the security context (BasicAuthContext, 
-		 * DigestAuthContext or KerberosAuthContext)
+		 * @param securityContext	the security context - BasicAuthContext, 
+		 * DigestAuthContext or KerberosAuthContext
 		 */
 		public void setSecurityContext(SecurityContext securityContext) {
 			this.securityContext = securityContext;

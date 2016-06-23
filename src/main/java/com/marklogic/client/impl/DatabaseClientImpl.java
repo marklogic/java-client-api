@@ -46,6 +46,7 @@ import com.marklogic.client.io.marker.TriplesReadHandle;
 import com.marklogic.client.io.marker.TriplesWriteHandle;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 
 import javax.net.ssl.SSLContext;
 
@@ -63,6 +64,7 @@ public class DatabaseClientImpl implements DatabaseClient {
 	private SSLContext            context;
 	private SSLHostnameVerifier   verifier;
 	private HandleFactoryRegistry handleRegistry;
+	private SecurityContext       securityContext; // Would be used once we remove Authentication entirely
 
 	public DatabaseClientImpl(RESTServices services, String host, int port, String database,
 		String user, String password, Authentication type, String forestName, SSLContext context, SSLHostnameVerifier verifier)
@@ -270,5 +272,10 @@ public class DatabaseClientImpl implements DatabaseClient {
 	@Override
 	public SSLHostnameVerifier getSSLHostnameVerifier() {
 		return verifier;
+	}
+
+	@Override
+	public SecurityContext getSecurityContext() {
+		return securityContext;
 	}
 }

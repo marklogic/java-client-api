@@ -35,6 +35,7 @@ import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.SPARQLQueryManager;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 
 import javax.net.ssl.SSLContext;
 
@@ -214,4 +215,6 @@ public interface DatabaseClient {
     public SSLContext getSSLContext();
 
     public SSLHostnameVerifier getSSLHostnameVerifier();
+
+    public SecurityContext getSecurityContext();
 }

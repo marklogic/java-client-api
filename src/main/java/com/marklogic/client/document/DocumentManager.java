@@ -66,7 +66,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
          */
 		QUALITY,
         /**
-         * Specifies key value metadata 
+         * Specifies document metadata-values.
          */
 		METADATAVALUES;
 

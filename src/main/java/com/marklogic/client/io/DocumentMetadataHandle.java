@@ -272,14 +272,14 @@ public class DocumentMetadataHandle
 	}
 
 	/**
-	 * Represents the values metadata for a database document.
+	 * Represents the metadata-values for a database document.
 	 */
 	public interface DocumentMetadataValues extends Map<String, String> {
 		/**
-		 * Adds key value metadata pairs that can be written for the document.
+		 * Adds metadata-value that can be written for the document.
 		 * 
-		 * @param key the key of the key value metadata
-		 * @param value the value of the key value metadata
+		 * @param key	the key of the metadata-value
+		 * @param value	the value of the metadata-value
 		 */
 		public void add(String key, String value);
 	}
@@ -440,10 +440,10 @@ public class DocumentMetadataHandle
 	}
 
 	/**
-	 * Returns a container for the values metadata for the document as read from
+	 * Returns a container for the metadata-values for the document as read from
 	 * the server or modified locally.
 	 * 
-	 * @return the document values
+	 * @return	the document metadata-values
 	 */
 	public DocumentMetadataValues getMetadataValues() {
 		if (metadataValues == null) {
@@ -453,21 +453,22 @@ public class DocumentMetadataHandle
 	}
 
 	/**
-	 * Locally assigns a container with document values. Ordinarily, you never
-	 * change the container but, instead, modify the collections stored by the
+	 * Locally assigns a container with document metadata-values. Ordinarily, you never
+	 * change the container but, instead, modify the metadata-values stored by the
 	 * container.
 	 * 
-	 * @param values the document values
+	 * @param metadataValues	the document metadata-values
 	 */
 	public void setMetadataValues(DocumentMetadataValues metadataValues) {
 		this.metadataValues = metadataValues;
 	}
 
 	/**
-	 * Locally adds the collections to the current collections for the document.
+	 * Locally adds the metadata-value to the current metadata-values for the document.
 	 * 
-	 * @param collections the document collections
-	 * @return the document metadata handle
+	 * @param key	the key of metadata-value
+	 * @param value	the value of metadata-value
+	 * @return	 the document metadata handle
 	 */
 	public DocumentMetadataHandle withMetadataValue(String key, String value) {
 		getMetadataValues().put(key, value);
