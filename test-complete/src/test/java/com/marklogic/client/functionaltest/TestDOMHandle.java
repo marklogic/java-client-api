@@ -16,7 +16,7 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -71,8 +71,14 @@ public class TestDOMHandle extends BasicJavaClientREST {
 		
 		// get xml document for expected result
 		Document expectedDoc = expectedXMLDocument(filename);
-			    	    
-	    assertXMLEqual("Write XML difference", expectedDoc, readDoc);
+		
+		assertEquals("First Node incorrect in input doc",readDoc.getFirstChild().getNodeName().trim(),"food");
+		assertEquals("First Node attribute incorrect in input doc",readDoc.getFirstChild().getAttributes().item(0).getNodeValue().trim(),"en");
+		assertEquals("Child Node value incorrect in input doc",readDoc.getChildNodes().item(0).getTextContent().trim(),"noodle");
+		
+		assertEquals("First Node incorrect in output doc",expectedDoc.getFirstChild().getNodeName().trim(),"food");
+		assertEquals("First Node attribute incorrect in output doc",expectedDoc.getFirstChild().getAttributes().item(0).getNodeValue().trim(),"en");
+		assertEquals("Child Node value incorrect in output doc",expectedDoc.getChildNodes().item(0).getTextContent().trim(),"noodle");
 				
 	    // update the doc
 	    // acquire the content for update
@@ -83,11 +89,13 @@ public class TestDOMHandle extends BasicJavaClientREST {
 	    DOMHandle updateHandle = readDocumentUsingDOMHandle(client, uri + filename, "XML");
 	 
 	    Document readDocUpdate = updateHandle.get();
-	    
+	        
 		// get xml document for expected result
 		Document expectedDocUpdate = expectedXMLDocument(updateFilename);
 		
-	    assertXMLEqual("Write XML difference", expectedDocUpdate, readDocUpdate);
+		assertEquals("First Node incorrect in output doc",readDocUpdate.getFirstChild().getNodeName().trim(),"food");
+		assertEquals("First Node attribute incorrect in output doc",readDocUpdate.getFirstChild().getAttributes().item(0).getNodeValue().trim(),"en");
+		assertEquals("Child Node value incorrect in output doc",readDocUpdate.getChildNodes().item(0).getTextContent().trim(),"fried noodle");
 	 		 	
 		// delete the document
 	    deleteDocument(client, uri + filename, "XML");
