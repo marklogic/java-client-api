@@ -857,9 +857,11 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 			setDefaultUser("nobody",restServerName);
 			setAuthentication("digest",restServerName);
 		}
+		// Associate the Server with Documents. Due to test orders being undeterministic not sure which DB will be associated.
+		associateRESTServerWithDB(restServerName,"Documents");
 		cleanupRESTServer(dbName, fNames);
-		deleteForest(UberfNames[0]);
 		deleteDB(UberdbName);
+		deleteForest(UberfNames[0]);
 		
 		deleteRESTUser("eval-user");
 		deleteUserRole("test-eval");
