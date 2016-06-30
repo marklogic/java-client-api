@@ -45,6 +45,7 @@ import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.XMLStreamReaderHandle;
 import com.marklogic.client.util.RequestParameters;
@@ -140,6 +141,15 @@ public class ResourceExtension {
 
 			return documents.toArray(new Document[documents.size()]);
 		}
+
+		public void getMimetype(String... uris) {
+			RequestParameters params = new RequestParameters();
+			params.add("service", "check-dictionary");
+			params.add("uris", uris);
+			ReaderHandle output = getServices().get(params, new ReaderHandle());
+			System.out.println("Mime " + output.getMimetype());
+		}
+
 		public boolean isCorrect(String word, String... uris) {
 			try {
 				RequestParameters params = new RequestParameters();
@@ -305,6 +315,7 @@ public class ResourceExtension {
 				!"invalid".equals(list[0].getDocumentElement().getNodeName())
 				);
 
+		dictionaryMgr.getMimetype(uri);
 		// use a resource service to check the correctness of a word
 		String word = "biz";
 		if (!dictionaryMgr.isCorrect(word, uri)) {

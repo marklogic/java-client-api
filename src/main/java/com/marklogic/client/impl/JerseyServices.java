@@ -3213,6 +3213,7 @@ public class JerseyServices implements RESTServices {
 		checkStatus(response, status, "read", "resource", path,
 				ResponseStatus.OK_OR_NO_CONTENT);
 
+		updateDescriptor(outputBase, response.getHeaders());
 		if (as != null) {
 			outputBase.receiveContent(makeResult(reqlog, "read", "resource",
 					response, as));
