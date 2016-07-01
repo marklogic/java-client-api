@@ -88,6 +88,23 @@ public class StructuredQueryBuilder {
     }
     
     /**
+     * Geospatial operators to be used in geospatial region index queries
+     */
+    public enum GeoSpatialOperator {
+        EQUALS, DISJOINT, TOUCHES, CONTAINS, COVERS,
+        INTERSECTS, WITHIN, COVEREDBY, CROSSES, OVERLAPS;
+
+        @Override
+        public String toString() {
+            switch(this) {
+            case COVEREDBY:
+                return "covered-by";
+            default:
+                return this.name().toLowerCase();
+            }
+        }
+    }
+    /**
      * A comparison operator for use in range queries.
      */
 	public enum Operator {
@@ -119,6 +136,12 @@ public class StructuredQueryBuilder {
      * geospatial index must be defined in the database configuration.
      */
     public interface GeospatialIndex {
+    }
+    /**
+     * A GeospatialRangeIndex can be used for geospatial region index queries. The
+     * geospatial region index must be defined in the database configuration.
+     */
+    public interface GeospatialRegionIndex {
     }
     /**
      * A ContainerIndex can be used for container queries.
@@ -595,7 +618,7 @@ public class StructuredQueryBuilder {
      */
     public StructuredQueryDefinition geospatial(GeospatialIndex index, Region... regions) {
     	checkRegions(regions);
-        return new GeospatialQuery(index, null, regions, null);
+        return new GeospatialPointQuery(index, null, regions, null);
     }
     /**
      * Matches an element, element pair, element attribute, pair, or path
@@ -608,7 +631,40 @@ public class StructuredQueryBuilder {
      */
     public StructuredQueryDefinition geospatial(GeospatialIndex index, FragmentScope scope, String[] options, Region... regions) {
     	checkRegions(regions);
-        return new GeospatialQuery(index, scope, regions, options);
+        return new GeospatialPointQuery(index, scope, regions, options);
+    }
+
+
+    /**
+     * Matches a path specifying a geospatial region, which is indexed via 
+     * geospatial region index, that has the relationship given by the operator
+     * with at least one of the criteria regions.
+     * @param index	the container for the geospatial regions
+     * @param operator	the geospatial operator to be applied with the regions in the
+     *                  index and the specified regions
+     * @param regions	the possible regions containing the region
+     * @return	the StructuredQueryDefinition for the geospatial query
+     */
+    public StructuredQueryDefinition geospatial(GeospatialRegionIndex index, GeoSpatialOperator operator, Region... regions) {
+        checkRegions(regions);
+        return new GeospatialRegionQuery((GeoRegionPathImpl)index, operator, null, regions, null);
+    }
+
+    /**
+     * Matches a path specifying a geospatial region, which is indexed via 
+     * geospatial region index, that has the relationship given by the operator
+     * with at least one of the criteria regions.
+     * @param index	the container for the geospatial regions
+     * @param operator	the geospatial operator to be applied with the regions in the
+     *                  index and the specified regions
+     * @param scope	whether the query matches the document content or properties
+     * @param options	options for fine tuning the query
+     * @param regions	the possible regions containing the region
+     * @return	the StructuredQueryDefinition for the geospatial query
+     */
+    public StructuredQueryDefinition geospatial(GeospatialRegionIndex index, GeoSpatialOperator operator, FragmentScope scope, String[] options, Region... regions) {
+        checkRegions(regions);
+        return new GeospatialRegionQuery((GeoRegionPathImpl)index, operator, scope, regions, options);
     }
 
     /**
@@ -761,7 +817,17 @@ public class StructuredQueryBuilder {
      * @return	the specification for the index on the geospatial coordinates
      */
     public GeospatialIndex geoPath(PathIndex pathIndex) {
-    	return new GeoPathImpl(pathIndex);
+        return new GeoPointPathImpl(pathIndex);
+    }
+
+    /**
+     * Identifies a path with regions to match
+     * with a geospatial query.
+     * @param pathIndex	the indexed path
+     * @return	the specification for the index on the geospatial region
+     */
+    public GeospatialRegionIndex geoRegionPath(PathIndex pathIndex) {
+        return new GeoRegionPathImpl(pathIndex);
     }
 
     /**
@@ -938,6 +1004,20 @@ public class StructuredQueryBuilder {
     public GeospatialConstraintQuery geospatialConstraint(String constraintName, Region... regions) {
     	checkRegions(regions);
         return new GeospatialConstraintQuery(constraintName, regions);
+    }
+
+    /**
+     * Matches the container specified by the constraint
+     * whose geospatial region appears within one of the criteria regions.
+     * @param constraintName	the constraint definition
+     * @param operator	the geospatial operator to be applied with the regions 
+     *                  in the index and the criteria regions
+     * @param regions	the possible regions containing the point
+     * @return	the StructuredQueryDefinition for the geospatial constraint query
+     */
+    public StructuredQueryDefinition geospatialRegionConstraint(String constraintName, GeoSpatialOperator operator, Region... regions) {
+        checkRegions(regions);
+        return new GeospatialRegionConstraintQuery(constraintName, operator, regions);
     }
 
     /**
@@ -1674,6 +1754,30 @@ public class StructuredQueryBuilder {
         }
     }
 
+    class GeospatialRegionConstraintQuery extends AbstractStructuredQuery {
+        String name = null;
+        Region[] regions = null;
+        GeoSpatialOperator operator;
+
+        public GeospatialRegionConstraintQuery(String constraintName, GeoSpatialOperator operator, Region... regions) {
+            super();
+            name = constraintName;
+            this.regions = regions;
+            this.operator = operator;
+        }
+
+        @Override
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("geo-region-constraint-query");
+            writeText(serializer, "constraint-name", name);
+            writeText(serializer, "geospatial-operator", operator.toString());
+            for (Region region : regions) {
+                ((RegionImpl) region).innerSerialize(serializer);
+            }
+            serializer.writeEndElement();
+        }
+    }
+
     /**
      * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
      * as the type for instances of CustomConstraintQuery.
@@ -1872,18 +1976,25 @@ public class StructuredQueryBuilder {
         }
     }
 
-    class GeospatialQuery
-    extends AbstractStructuredQuery {
+    abstract class GeospatialBaseQuery extends AbstractStructuredQuery {
+        FragmentScope scope;
+        Region[] regions;
+        String[] options;
+
+        GeospatialBaseQuery(FragmentScope scope, Region[] regions, String[] options) {
+            this.scope = scope;
+            this.regions = regions;
+            this.options = options;
+        }
+    }
+
+    class GeospatialPointQuery
+    extends GeospatialBaseQuery {
     	GeospatialIndex index;
-		FragmentScope   scope;
-    	Region[]        regions;
-        String[]        options;
-        GeospatialQuery(GeospatialIndex index, FragmentScope scope, Region[] regions,
+        GeospatialPointQuery(GeospatialIndex index, FragmentScope scope, Region[] regions,
         		String[] options) {
+        	super(scope, regions, options);
         	this.index   = index;
-    		this.scope   = scope;
-        	this.regions = regions;
-    		this.options = options;
         }
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
@@ -1898,8 +2009,9 @@ public class StructuredQueryBuilder {
         		elemName = "geo-elem-pair-query";
         	else if (index instanceof GeoAttributePairImpl)
         		elemName = "geo-attr-pair-query";
-        	else if (index instanceof GeoPathImpl)
+        	else if (index instanceof GeoPointPathImpl) {
         		elemName = "geo-path-query";
+        	}
         	else
         		throw new IllegalStateException(
         				"unknown index class: "+index.getClass().getName());
@@ -1915,6 +2027,34 @@ public class StructuredQueryBuilder {
             	((RegionImpl) region).innerSerialize(serializer);
             }
            serializer.writeEndElement();
+        }
+    }
+
+    class GeospatialRegionQuery extends GeospatialBaseQuery {
+        GeoRegionPathImpl index;
+        GeoSpatialOperator operator;
+
+        GeospatialRegionQuery(GeoRegionPathImpl index, GeoSpatialOperator operator, FragmentScope scope,
+                Region[] regions, String[] options) {
+            super(scope, regions, options);
+            this.index = index;
+            this.operator = operator;
+        }
+
+        @Override
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            String elemName = "geo-region-path-query";
+            serializer.writeStartElement(elemName);
+            ((IndexImpl) index).innerSerialize(serializer);
+            writeText(serializer, "geospatial-operator", operator.toString());
+            if (scope != null) {
+                writeText(serializer, "fragment-scope", scope.toString().toLowerCase());
+            }
+            writeTextList(serializer, "geo-option", options);
+            for (Region region : regions) {
+                ((RegionImpl) region).innerSerialize(serializer);
+            }
+            serializer.writeEndElement();
         }
     }
 
@@ -2206,17 +2346,32 @@ public class StructuredQueryBuilder {
             serializeNamedIndex(serializer, "lon", lonImpl.qname, lonImpl.name);
         }
     }
-    
-    private class GeoPathImpl extends IndexImpl implements GeospatialIndex {
-    	PathIndex pathIndex;
-    	GeoPathImpl(PathIndex pathIndex) {
-    		this.pathIndex = pathIndex;
-    	}
-    	@Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	PathIndexImpl pathIndexImpl = (PathIndexImpl) pathIndex;
-        	pathIndexImpl.innerSerialize(serializer);       	;
-    	}
+
+    private class GeoBasePathImpl extends IndexImpl {
+        PathIndex pathIndex;
+
+        GeoBasePathImpl(PathIndex pathIndex) {
+            this.pathIndex = pathIndex;
+        }
+
+        @Override
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            PathIndexImpl pathIndexImpl = (PathIndexImpl) pathIndex;
+            pathIndexImpl.innerSerialize(serializer);
+            ;
+        }
+    }
+
+    private class GeoPointPathImpl extends GeoBasePathImpl implements GeospatialIndex {
+        GeoPointPathImpl(PathIndex pathIndex) {
+            super(pathIndex);
+        }
+    }
+
+    private class GeoRegionPathImpl extends GeoBasePathImpl implements GeospatialRegionIndex {
+        GeoRegionPathImpl(PathIndex pathIndex) {
+            super(pathIndex);
+        }
     }
 
     /**

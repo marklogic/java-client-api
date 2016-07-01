@@ -25,6 +25,7 @@ declare function bootstrap:database-configure(
     let $c := bootstrap:create-geospatial-element-child-indexes($c, $dbid)
     let $c := bootstrap:create-geospatial-element-pair-indexes($c, $dbid)
     let $c := bootstrap:create-geospatial-path-indexes($c, $dbid)
+    let $c := bootstrap:create-geospatial-region-path-indexes($c, $dbid)
     let $c := bootstrap:create-path-range-indexes($c, $dbid)
     let $c := bootstrap:create-fields($c, $dbid)
     let $c := bootstrap:create-default-rulesets($c, $dbid)
@@ -261,7 +262,8 @@ declare function bootstrap:create-geospatial-element-pair-indexes(
         let $p := "http://marklogic.com/ns/test/places"
         let $new-idx  := (
             $p, "place", $p, "lat", $p, "long", "wgs84",
-            "", "com.marklogic.client.test.City", "", "latitude", "", "longitude", "wgs84"
+            "", "com.marklogic.client.test.City", "", "latitude", "", "longitude", "wgs84",
+            "", "point", "", "lat", "", "lon", "wgs84/double"
             )
         for $i in 1 to (count($new-idx) idiv 7)
         let $offset    := ($i * 7) - 6
@@ -328,6 +330,41 @@ declare function bootstrap:create-geospatial-path-indexes(
     return
         if (empty($index-specs)) then $c
         else admin:database-add-geospatial-path-index($c, $dbid, $index-specs)
+};
+
+declare function bootstrap:create-geospatial-region-path-indexes(
+    $c as element(configuration),
+    $dbid as xs:unsignedLong
+) as element(configuration)
+{
+    let $index-specs :=
+        let $curr-idx := admin:database-get-geospatial-region-path-indexes($c, $dbid)
+        let $new-idx  := (
+            "/country/region"
+            )
+        (: no offset necessary now since each new-idx only has one item, but that may change :)
+        let $n := 1
+        for $i in 1 to (count($new-idx) idiv $n)
+        let $offset    := ($i * $n) - ($n - 1)
+        let $path      := subsequence($new-idx, $offset, 1)
+        let $curr      := $curr-idx[
+            string(dbx:path-expression) eq $path and
+            string(dbx:coordinate-system) eq "wgs84" and
+            string(dbx:geohash-precision) eq 3 and
+            string(dbx:invalid-values) eq "ignore"
+            ]
+        return
+            if (exists($curr)) then (
+                xdmp:log(concat("Geospatial-region-path-index already exists:", $path))
+            ) else (
+                admin:database-geospatial-region-path-index(
+                    $path, "wgs84", 3, "ignore"
+                ),
+                xdmp:log(concat("Creating geospatial-region-path-index:", $path))
+            )
+    return
+        if (empty($index-specs)) then $c
+        else admin:database-add-geospatial-region-path-index($c, $dbid, $index-specs)
 };
 
 declare function bootstrap:create-fields(
