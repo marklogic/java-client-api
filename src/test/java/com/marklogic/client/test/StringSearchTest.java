@@ -20,6 +20,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import javax.xml.namespace.QName;
@@ -40,6 +41,7 @@ import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.config.QueryOptions.QueryRange;
 import com.marklogic.client.admin.config.QueryOptions.QueryTransformResults;
 import com.marklogic.client.admin.config.QueryOptionsBuilder;
+import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.SearchHandle;
@@ -50,14 +52,17 @@ import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
+import com.marklogic.client.query.SearchMetrics;
 import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.util.RequestLogger;
 
 @SuppressWarnings("deprecation")
 public class StringSearchTest {
-	@SuppressWarnings("unused")
-	private static final Logger logger = (Logger) LoggerFactory
-			.getLogger(QueryOptionsHandleTest.class);
-	
+  @SuppressWarnings("unused")
+  private static final Logger logger = (Logger) LoggerFactory
+      .getLogger(QueryOptionsHandleTest.class);
+
     @BeforeClass
     public static void beforeClass() {
         Common.connectAdmin();
@@ -107,16 +112,16 @@ public class StringSearchTest {
         handle = queryMgr.search(qdef, handle);
         assertNotNull(handle);
 
-		MatchDocumentSummary[] summaries = handle.getMatchResults();
-		assertNotNull(summaries);
-		assertEquals("expected 2 results", 2, summaries.length);
+        MatchDocumentSummary[] summaries = handle.getMatchResults();
+        assertNotNull(summaries);
+        assertEquals("expected 2 results", 2, summaries.length);
 
-		for (MatchDocumentSummary summary : summaries) {
-        	MatchLocation[] locations = summary.getMatchLocations();
-    		assertEquals("expected 1 match location", 1, locations.length);
-			for (MatchLocation location : locations) {
-				assertNotNull(location.getAllSnippetText());
-			}
+        for (MatchDocumentSummary summary : summaries) {
+          MatchLocation[] locations = summary.getMatchLocations();
+          assertEquals("expected 1 match location", 1, locations.length);
+          for (MatchLocation location : locations) {
+            assertNotNull(location.getAllSnippetText());
+          }
         }
     }
 
@@ -154,6 +159,76 @@ public class StringSearchTest {
         summaries = results.getMatchResults();
         assertNotNull(summaries);
         assertEquals("expected 2 results", 2, summaries.length);
+        assertEquals("empty-snippet", results.getSnippetTransformType());
+    }
+
+    @Test
+    public void testSearchHandle() throws Exception {
+      String xml = 
+        "<product xmlns='http://example.com/products'>" +
+          "<description xmlns='' xml:lang='en'>some description</description>" +
+        "</product>";
+
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      RequestLogger logger = Common.client.newLogger(out);
+      DocumentMetadataHandle meta = new DocumentMetadataHandle()
+        .withCollections("xml", "products");
+      Common.client.newXMLDocumentManager().writeAs("test.xml", meta, xml);
+      QueryManager queryMgr = Common.client.newQueryManager();
+      queryMgr.startLogging(logger);
+      RawCombinedQueryDefinition query = queryMgr.newRawCombinedQueryDefinition(
+          new StringHandle(
+            "<search xmlns='http://marklogic.com/appservices/search'>" +
+              "<options>" +
+                "<extract-document-data selected='all'>" +
+                  "<extract-path>//description[@xml:lang='en']</extract-path>" +
+                "</extract-document-data>" +
+                "<constraint name='myFacet'>" +
+                  "<range type='xs:string' facet='true'>" +
+                    "<element name='grandchild'/>" +
+                  "</range>" +
+                "</constraint>" +
+                "<extract-metadata>" +
+                  "<qname elem-name='description'/>" +
+                "</extract-metadata>" +
+                "<return-constraints>true</return-constraints>" +
+                "<return-facets>true</return-facets>" +
+                "<return-metrics>true</return-metrics>" +
+                "<return-plan>true</return-plan>" +
+                "<return-qtext>true</return-qtext>" +
+                "<return-query>true</return-query>" +
+                "<return-results>true</return-results>" +
+                "<debug>true</debug>" +
+              "</options>" +
+              "<query>" +
+                "<and-query>" +
+                  "<collection-query><uri>xml</uri></collection-query>" +
+                  "<collection-query><uri>products</uri></collection-query>" +
+                "</and-query>" +
+              "</query>" +
+            "</search>"
+          )
+      );
+      queryMgr.setView(QueryView.ALL);
+      SearchHandle results = queryMgr.search(query, new SearchHandle());
+      assertTrue(results.getConstraintIterator(new StringHandle()).next().get().startsWith("<search:constraint"));
+      assertTrue(results.getConstraintNames()[0].equals("myFacet"));
+      assertTrue(results.getConstraint("myFacet", new StringHandle()).get().startsWith("<search:constraint"));
+      assertEquals("myFacet", results.getFacetNames()[0]);
+      SearchMetrics metrics = results.getMetrics();
+      assertTrue(metrics.getFacetResolutionTime() >= 0);
+      assertTrue(metrics.getQueryResolutionTime() >= 0);
+      assertTrue(metrics.getSnippetResolutionTime() >= 0);
+      assertTrue(metrics.getMetadataResolutionTime() >= 0);
+      assertTrue(metrics.getExtractResolutionTime() >= 0);
+      assertTrue(metrics.getTotalTime() >= 0);
+      assertTrue(results.getPlan(new StringHandle()).get().startsWith("<search:plan"));
+      assertEquals("plan", results.getPlan().getFirstChild().getLocalName());
+      assertEquals("SEARCH-FLWOR", results.getReports()[0].getId());
+      assertTrue(results.getQuery(new StringHandle()).get().startsWith("<search:query"));
+      assertEquals("snippet", results.getSnippetTransformType());
+      assertTrue(results.getWarnings().length == 0);
+      assertTrue(out.toString().startsWith("searched"));
     }
 
     @Test
@@ -200,15 +275,15 @@ public class StringSearchTest {
 
         // Get back facets...
         QueryOptionsBuilder builder = new QueryOptionsBuilder();
-		QueryRange grandchildRange = builder.range(
-				builder.elementRangeIndex(
-						new QName("grandchild"),
-						builder.stringRangeType("http://marklogic.com/collation/")
-						));
-		grandchildRange.setDoFacets(true);
-		QueryOptionsHandle options = new QueryOptionsHandle().withConstraints(
-        		builder.constraint("grandchild",grandchildRange)
-        		);
+        QueryRange grandchildRange = builder.range(
+            builder.elementRangeIndex(
+              new QName("grandchild"),
+              builder.stringRangeType("http://marklogic.com/collation/")
+              ));
+        grandchildRange.setDoFacets(true);
+        QueryOptionsHandle options = new QueryOptionsHandle().withConstraints(
+            builder.constraint("grandchild",grandchildRange)
+            );
 
         QueryRange range = options.getConstraint("grandchild").getSource();
         assertEquals(range.getElement(), new QName("grandchild"));
@@ -217,7 +292,7 @@ public class StringSearchTest {
         options.withTransformResults(tresults);
 
         QueryOptionsManager queryOptionsMgr =
-        	Common.client.newServerConfigManager().newQueryOptionsManager();
+          Common.client.newServerConfigManager().newQueryOptionsManager();
 
         queryOptionsMgr.writeOptions(optionsName, options);
 

@@ -461,13 +461,15 @@ public class SearchHandle
         long frTime = -1;
         long srTime = -1;
         long mrTime = -1;
+        long erTime = -1;
         long totalTime = -1;
 
-        public SearchMetricsImpl(long qrTime, long frTime, long srTime, long mrTime, long totalTime) {
+        public SearchMetricsImpl(long qrTime, long frTime, long srTime, long mrTime, long erTime, long totalTime) {
             this.qrTime = qrTime;
             this.frTime = frTime;
             this.srTime = srTime;
             this.mrTime = mrTime;
+            this.erTime = erTime;
             this.totalTime = totalTime;
         }
 
@@ -489,6 +491,11 @@ public class SearchHandle
         @Override
         public long getMetadataResolutionTime() {
             return mrTime;
+        }
+
+        @Override
+        public long getExtractResolutionTime() {
+            return erTime;
         }
 
         @Override
@@ -1505,13 +1512,15 @@ public class SearchHandle
             QName facetName    = new QName(SEARCH_NS, "facet-resolution-time");
             QName snippetName  = new QName(SEARCH_NS, "snippet-resolution-time");
             QName metadataName = new QName(SEARCH_NS, "metadata-resolution-time");
+            QName extractName  = new QName(SEARCH_NS, "extract-resolution-time");
             QName totalName    = new QName(SEARCH_NS, "total-time");
 	
             long qrTime = -1;
             long frTime = -1;
             long srTime = -1;
-            long tTime  = -1;
             long mrTime = -1;
+            long erTime  = -1;
+            long tTime  = -1;
 
             QName metricsName = element.getName();
 			events: while (reader.hasNext()) {
@@ -1530,6 +1539,8 @@ public class SearchHandle
 						srTime = parseTime(dtFactory, now, reader.getElementText());
 					} else if (metadataName.equals(startName)) {
 						mrTime = parseTime(dtFactory, now, reader.getElementText());
+					} else if (extractName.equals(startName)) {
+						erTime = parseTime(dtFactory, now, reader.getElementText());
 					} else if (totalName.equals(startName)) {
 						tTime = parseTime(dtFactory, now, reader.getElementText());
 					} else {
@@ -1544,7 +1555,7 @@ public class SearchHandle
 				}
 			}
 
-            tempMetrics = new SearchMetricsImpl(qrTime, frTime, srTime, mrTime, tTime);
+            tempMetrics = new SearchMetricsImpl(qrTime, frTime, srTime, mrTime, erTime, tTime);
 	    }
 	    private void handleConstraint(XMLEventReader reader, StartElement element)
 	    throws XMLStreamException {
