@@ -1505,7 +1505,8 @@ public class SearchHandle
             QName facetName    = new QName(SEARCH_NS, "facet-resolution-time");
             QName snippetName  = new QName(SEARCH_NS, "snippet-resolution-time");
             QName metadataName = new QName(SEARCH_NS, "metadata-resolution-time");
-            QName totalName    = new QName(SEARCH_NS, "total-time");
+            QName extractName  = new QName(SEARCH_NS, "extract-resolution-time");
+	    QName totalName    = new QName(SEARCH_NS, "total-time");
 	
             long qrTime = -1;
             long frTime = -1;
