@@ -30,6 +30,8 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLEventReader;
@@ -44,6 +46,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.OutputStreamSender;
@@ -56,6 +59,8 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
 public final class Utilities {
 	private static DocumentBuilderFactory factory;
 
+	private static DatatypeFactory datatypeFactory;
+	
 	private static DocumentBuilderFactory getFactory()
 			throws ParserConfigurationException {
 		if (factory == null)
@@ -653,5 +658,16 @@ public final class Utilities {
 		}
 
 		handle.setFormat(format);
+	}
+
+	static public DatatypeFactory getDatatypeFactory() {
+		if (datatypeFactory == null) {
+		try {
+			datatypeFactory = DatatypeFactory.newInstance();
+		} catch (DatatypeConfigurationException e) {
+			throw new MarkLogicInternalException(e);
+		}
+		}
+		return datatypeFactory;
 	}
 }

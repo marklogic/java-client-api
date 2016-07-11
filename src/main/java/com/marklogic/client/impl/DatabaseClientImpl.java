@@ -29,6 +29,7 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.row.RowManager;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.SPARQLQueryManager;
 import com.marklogic.client.util.RequestLogger;
@@ -151,6 +152,12 @@ public class DatabaseClientImpl implements DatabaseClient {
 		QueryManagerImpl queryMgr = new QueryManagerImpl(services);
 		queryMgr.setHandleRegistry(getHandleRegistry());
 		return queryMgr;
+	}
+	@Override
+	public RowManager newRowManager() {
+		RowManagerImpl rowMgr = new RowManagerImpl(services);
+		rowMgr.setHandleRegistry(getHandleRegistry());
+		return rowMgr;
 	}
 	@Override
 	public ServerConfigurationManager newServerConfigManager() {

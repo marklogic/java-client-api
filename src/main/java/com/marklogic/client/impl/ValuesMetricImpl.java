@@ -18,29 +18,13 @@ package com.marklogic.client.impl;
 import java.util.Calendar;
 
 import javax.xml.bind.annotation.XmlValue;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
-
-import com.marklogic.client.MarkLogicIOException;
 
 /**
  * A CountedDistinctValue is a value that includes a frequency.
  */
 public class ValuesMetricImpl {
-    private static DatatypeFactory dtFactory = null;
     private static Calendar now = Calendar.getInstance();
-
-    private static DatatypeFactory getDatatypeFactory() {
-        if (dtFactory == null) {
-            try {
-                dtFactory = DatatypeFactory.newInstance();
-            } catch (DatatypeConfigurationException dce) {
-                throw new MarkLogicIOException("Cannot instantiate datatypeFactory", dce);
-            }
-        }
-        return dtFactory;
-    }
 
     public ValuesMetricImpl() {
     }
@@ -58,7 +42,7 @@ public class ValuesMetricImpl {
     }
 
     private long parseTime(String time) {
-        Duration d = getDatatypeFactory().newDurationDayTime(time);
+        Duration d = Utilities.getDatatypeFactory().newDurationDayTime(time);
         return d.getTimeInMillis(now);
     }
 }
