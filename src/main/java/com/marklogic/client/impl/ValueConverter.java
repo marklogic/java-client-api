@@ -20,11 +20,7 @@ import java.math.BigInteger;
 import java.util.Calendar;
 
 import javax.xml.bind.DatatypeConverter;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
-
-import com.marklogic.client.MarkLogicInternalException;
 
 /**
  * ValueConverter roundtrips Java atomic values to and from XML.
@@ -56,8 +52,6 @@ public class ValueConverter {
 	 */
 	final static public int        MAX_UNSIGNED_SHORT = 65535;
 
-	static private DatatypeFactory datatypeFactory;
-	
 	private ValueConverter() {
 		super();
 	}
@@ -293,13 +287,13 @@ public class ValueConverter {
 		if ("xs:dateTime".equals(type))
 			return DatatypeConverter.parseDateTime(value);
 		if ("xs:dayTimeDuration".equals(type))
-			return getFactory().newDurationDayTime(value);
+			return Utilities.getDatatypeFactory().newDurationDayTime(value);
 		if ("xs:decimal".equals(type))
 			return DatatypeConverter.parseDecimal(value);
 		if ("xs:double".equals(type))
 			return DatatypeConverter.parseDouble(value);
 		if ("xs:duration".equals(type))
-			return getFactory().newDuration(value);
+			return Utilities.getDatatypeFactory().newDuration(value);
 		if ("xs:float".equals(type))
 			return DatatypeConverter.parseFloat(value);
 		if ("xs:int".equals(type))
@@ -326,21 +320,11 @@ public class ValueConverter {
         } if ("xs:unsignedShort".equals(type))
             return DatatypeConverter.parseUnsignedShort(value);
 		if ("xs:yearMonthDuration".equals(type))
-			return getFactory().newDurationYearMonth(value);
+			return Utilities.getDatatypeFactory().newDurationYearMonth(value);
 		return value;
 	}
     @SuppressWarnings("unchecked")
 	static public <T> T convertToJava(String type, String value, Class<T> as) {
         return (T) convertToJava(type, value);
     }
-	static private DatatypeFactory getFactory() {
-		if (datatypeFactory == null) {
-		try {
-			datatypeFactory = DatatypeFactory.newInstance();
-		} catch (DatatypeConfigurationException e) {
-			throw new MarkLogicInternalException(e);
-		}
-		}
-		return datatypeFactory;
-	}
 }

@@ -1,0 +1,249 @@
+package com.marklogic.client.impl;
+
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.Map;
+
+import com.marklogic.client.expression.BaseType;
+
+public class BaseTypeImpl {
+	public static interface BaseArgImpl {
+		public StringBuilder exportAst(StringBuilder strb);
+    }
+
+	static BaseListImpl<BaseArgImpl> baseListImpl(Object[] items) {
+		return new BaseListImpl<BaseArgImpl>(convertList(items));
+	}
+	static <T extends BaseArgImpl> BaseListImpl<T> baseListImpl(Object[] items, Class<T> as) {
+		return new BaseListImpl<T>(convertList(items, as));
+	}
+	static class BaseListImpl<T extends BaseArgImpl> implements BaseArgImpl {
+		protected T[] items;
+		protected BaseListImpl(T[] items) {
+			this.items = items;
+		}
+		public T[] getItems() {
+			return this.items;
+		}
+		@Override
+		public StringBuilder exportAst(StringBuilder strb) {
+			return exportASTList(strb, items);
+		}
+		@Override
+		public String toString() {
+			return listToString(items);
+		}
+    }
+
+	static BaseCallImpl<BaseArgImpl> baseCallImpl(String fnPrefix, String fnName, Object[] items) {
+		return new BaseCallImpl<BaseArgImpl>(fnPrefix, fnName, convertList(items));
+	}
+	static <T extends BaseArgImpl> BaseCallImpl<T> baseCallImpl(String fnPrefix, String fnName, Object[] items, Class<T> as) {
+		return new BaseCallImpl<T>(fnPrefix, fnName, convertList(items, as));
+	}
+	static class BaseCallImpl<T extends BaseArgImpl> extends BaseListImpl<T> {
+		protected String fnPrefix = null;
+		protected String fnName   = null;
+		protected BaseCallImpl(String fnPrefix, String fnName, T[] fnArgs) {
+			super(fnArgs);
+			this.fnPrefix = fnPrefix;
+			this.fnName   = fnName;
+		}
+		@Override
+		public StringBuilder exportAst(StringBuilder strb) {
+			strb.append("{\"ns\":\"").append(fnPrefix).append("\", \"fn\":\"").append(fnName).append("\", \"args\":");
+			return super.exportAst(strb).append("}");
+		}
+		@Override
+		public String toString() {
+			return fnPrefix+":"+fnName+super.toString();
+		}
+	}
+
+	static class BaseChainImpl<T extends BaseArgImpl> implements BaseArgImpl {
+		private BaseCallImpl<T>[] chain = null;
+		@SuppressWarnings("unchecked")
+		protected BaseChainImpl(BaseChainImpl<T> prior, String fnPrefix, String fnName, T[] fnArgs) {
+			BaseCallImpl<T> call = new BaseCallImpl<T>(fnPrefix, fnName, fnArgs);
+			if (prior == null) {
+				chain = (BaseCallImpl<T>[]) Array.newInstance(BaseCallImpl.class, 1);
+				chain[0] = call;
+			} else {
+				BaseCallImpl<T>[] priorChain = prior.chain;
+				chain = Arrays.copyOf(priorChain, priorChain.length + 1);
+				chain[priorChain.length] = call;
+			}
+		}
+		@Override
+		public StringBuilder exportAst(StringBuilder strb) {
+			strb.append("{\"ns\":\"op\", \"fn\":\"operators\", \"args\":");
+			return exportASTList(strb, chain).append("}");
+		}
+		@Override
+		public String toString() {
+			return Arrays.stream(chain)
+			             .map(item -> item.toString())
+			             .reduce((priorString,argString) -> priorString+"."+argString)
+			             .get();
+		}
+	}
+
+	static BaseType.ItemSeqExpr items(BaseType.ItemExpr... items) {
+		return new ItemSeqListImpl(items);
+	}
+	static BaseType.NodeSeqExpr nodes(BaseType.NodeExpr... items) {
+		return new NodeSeqListImpl(items);
+	}
+	static BaseType.ElementSeqExpr elements(BaseType.ElementExpr... items) {
+		return new ElementSeqListImpl(items);
+	}
+
+    static class ItemSeqListImpl extends BaseListImpl<BaseArgImpl> implements BaseType.ItemSeqExpr {
+    	ItemSeqListImpl(Object[] items) {
+            super(convertList(items));
+        }
+    }
+    static class ItemSeqCallImpl extends BaseCallImpl<BaseArgImpl> implements BaseType.ItemSeqExpr {
+    	ItemSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, convertList(fnArgs));
+        }
+    }
+    static class ItemCallImpl extends BaseCallImpl<BaseArgImpl> implements BaseType.ItemExpr {
+    	ItemCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, convertList(fnArgs));
+        }
+    }
+    static class NodeSeqListImpl extends BaseListImpl<BaseArgImpl> implements BaseType.NodeSeqExpr {
+    	NodeSeqListImpl(Object[] items) {
+            super(convertList(items));
+        }
+    }
+    static class NodeCallImpl extends BaseCallImpl<BaseArgImpl> implements BaseType.NodeExpr {
+    	NodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, convertList(fnArgs));
+        }
+    }
+    static class ElementSeqListImpl extends BaseListImpl<BaseArgImpl> implements BaseType.ElementSeqExpr {
+    	ElementSeqListImpl(Object[] items) {
+            super(convertList(items));
+        }
+    }
+    static class ElementCallImpl extends BaseCallImpl<BaseArgImpl> implements BaseType.ElementExpr {
+    	ElementCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, convertList(fnArgs));
+        }
+    }
+
+    static class Literal implements BaseTypeImpl.BaseArgImpl {
+    	private Object value = null;
+    	Literal(Object value) {
+    		this.value = value;
+    	}
+		@Override
+		public StringBuilder exportAst(StringBuilder strb) {
+			astifyObject(strb, value);
+			return strb;
+		}
+		@Override
+		public String toString() {
+			if (value == null) {
+				return null;
+			}
+			return value.toString();
+		}
+    }
+
+    static private String listToString(BaseArgImpl[] items) {
+    	if (items == null) {
+    		return "()";
+    	}
+		return "("+stringifyList(items)+")";
+    }
+    static private StringBuilder exportASTList(StringBuilder strb, BaseArgImpl[] items) {
+    	astifyArray(strb, items);
+    	return strb;
+    }
+    static private String stringifyList(BaseArgImpl[] items) {
+    	if (items == null) {
+    		return null;
+    	}
+		return Arrays.stream(items)
+		             .map(item -> (item == null) ? "null" : item.toString())
+		             .reduce((priorString,argString) -> priorString+", "+argString)
+		             .get();
+    }
+    static private void astifyArray(StringBuilder strb, Object[] items) {
+	   	strb.append("[");
+    	if (items != null && items.length > 0) {
+    		boolean isFirst = true;
+    	    for (Object item: items) {
+    			if (isFirst) {
+    				isFirst = false;
+    			} else {
+    				strb.append(", ");
+    			}
+    			astifyObject(strb, item);
+    		}
+    	}
+		strb.append("]");
+    }
+    // TODO: collection for set, list
+    static private void astifyMap(StringBuilder strb, java.util.Map<?,?> map) {
+		strb.append("{");
+    	if (map != null && map.size() > 0) {
+    		boolean isFirst = true;
+        	for (java.util.Map.Entry<?, ?> entry: map.entrySet()) {
+    			if (isFirst) {
+    				isFirst = false;
+    			} else {
+    				strb.append(", ");
+    			}
+    			strb.append("\"");
+    			strb.append(entry.getKey().toString());
+    			strb.append("\"");
+    			strb.append(":");
+    			astifyObject(strb, entry.getValue());
+        	}
+    	}
+		strb.append("}");
+    }
+    static private void astifyObject(StringBuilder strb, Object value) {
+		if (value == null) {
+			strb.append("null");
+		} else if (value instanceof BaseArgImpl) {
+			((BaseArgImpl) value).exportAst(strb); 
+		} else if (value instanceof Number || value instanceof Boolean) {
+			strb.append(value.toString());
+		} else if (value instanceof Object[]) {
+			astifyArray(strb, (Object[]) value);
+		} else if (value instanceof java.util.Map<?,?>) {
+			astifyMap(strb, (java.util.Map<?,?>) value);
+		} else {
+			strb.append("\"");
+			strb.append(value.toString());
+			strb.append("\"");
+		}
+    }
+
+	static BaseArgImpl[] convertList(Object[] items) {
+		return convertList(items, BaseArgImpl.class);
+	}
+    @SuppressWarnings("unchecked")
+	static <T extends BaseArgImpl> T[] convertList(Object[] items, Class<T> as) {
+    	if (items == null) {
+    		return null;
+    	}
+    	if (as.isAssignableFrom(items.getClass().getComponentType())) {
+    		return (T[]) items;
+    	}
+	    return (items == null || items.length == 0) ? null :
+	    	Arrays.stream(items)
+	    	      .map(item -> {
+	    	          if (item != null && !as.isInstance(item)) {
+	    	            throw new IllegalArgumentException("argument with unknown class "+item.getClass().getName());
+	    	          }
+	    	          return (T) item;
+	    	          })
+	    	      .toArray(size -> (T[]) Array.newInstance(as, size));
+	}
+}

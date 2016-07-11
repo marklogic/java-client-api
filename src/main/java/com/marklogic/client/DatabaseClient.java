@@ -26,8 +26,8 @@ import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.eval.ServerEvaluationCall;
 import com.marklogic.client.extensions.ResourceManager;
-import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.row.RowManager;
 import com.marklogic.client.alerting.RuleManager;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.pojo.PojoRepository;
@@ -99,10 +99,16 @@ public interface DatabaseClient {
     public XMLDocumentManager newXMLDocumentManager();
 
     /**
-     * Creates a manager for querying the database.
+     * Creates a manager to query for database documents.
      * @return	a manager supporting search operations and lookup of values and tuples in indexes (also known as lexicons)
      */
     public QueryManager newQueryManager();
+
+    /**
+     * Creates a manager to retrieve rows from the database.
+     * @return	a manager supporting plans for processing database rows
+     */
+    public RowManager newRowManager();
 
     /**
      * Creates a manager for building rules and rules-matching applications.

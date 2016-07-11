@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 MarkLogic Corporation
+ * Copyright 2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.io.marker;
+package com.marklogic.client.expression;
 
-/**
- * A Structure Read Handle can represent a data structure read from the
- * database.
- * 
- */
-public interface StructureReadHandle extends DocumentMetadataReadHandle,
-		QueryOptionsReadHandle, QueryOptionsListReadHandle, SearchReadHandle,
-		RowReadHandle, ValuesListReadHandle, ValuesReadHandle, TuplesReadHandle,
-		RuleListReadHandle, RuleReadHandle {
+// TODO: replace placeholder with interface generated from signatures of functions in namespace
+public interface Map {
+    public interface MapExpr { }
 }
