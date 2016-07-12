@@ -117,9 +117,9 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public ExprColSeq cols(String... col) {
-        return cols(Arrays.stream(col)
+        return cols((ExprCol[]) Arrays.stream(col)
             .map(item -> col(item))
-            .toArray(size -> (ExprCol[]) Array.newInstance(ExprCol.class, size))); 
+            .toArray(size -> new ExprCol[size])); 
     }
     @Override
         public ExprColSeq cols(ExprCol... col) {
@@ -271,9 +271,9 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public SortKeySeq sortKeys(String... key) {
-        return sortKeys(Arrays.stream(key)
+        return sortKeys((SortKey[]) Arrays.stream(key)
             .map(item -> col(item))
-            .toArray(size -> (SortKey[]) Array.newInstance(SortKey.class, size))); 
+            .toArray(size -> new SortKey[size])); 
     }
     @Override
         public SortKeySeq sortKeys(SortKey... key) {
