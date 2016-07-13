@@ -2,6 +2,7 @@ package com.marklogic.client.test;
 
 import static org.junit.Assert.*;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.util.HashMap;
@@ -18,18 +19,23 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.ReaderHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowManager;
+import com.marklogic.client.row.RowSet;
 import com.marklogic.client.util.EditableNamespaceContext;
 
 public class RowManagerTest {
-	static Map<String,Object>[] rows = null;
+    private static Map<String,Object>[] rows = null;
 	@SuppressWarnings("unchecked")
 	@BeforeClass
-	public static void beforeClass() {
+	public static void beforeClass() throws IOException, InterruptedException {
 		rows = new Map[3];
 		Map<String,Object>   row  = new HashMap<String,Object>();
 		row.put("rowNum", 1);
@@ -46,7 +52,36 @@ public class RowManagerTest {
 		row.put("city",   "Phoenix");
 		row.put("temp",   "92");
 		rows[2] = row;
-		Common.connect();
+
+/* TODO: document join from literals via uri or maybe eval user?
+    private static final String MASTER_DETAIL_TDE_FILE  = "masterDetail.tdex";
+    private static final String MASTER_DETAIL_DATA_FILE = "masterDetail.xml";
+
+		BufferedReader         fileReader = null;
+		XMLDocumentManager     docMgr     = null;
+		DocumentMetadataHandle docMeta    = null;
+
+		Common.connectDatabase("Schemas");
+        fileReader = new BufferedReader(Common.testFileToReader(MASTER_DETAIL_TDE_FILE, "UTF-8"));
+        docMgr = Common.client.newXMLDocumentManager();
+        docMeta = new DocumentMetadataHandle();
+        docMeta.getCollections().add("http://marklogic.com/xdmp/tde");
+        docMgr.write("/optic/test/masterDetail.tdex", docMeta, new ReaderHandle(fileReader));
+        fileReader.close();
+		Common.release();
+
+        Common.connect();
+        fileReader = new BufferedReader(Common.testFileToReader(MASTER_DETAIL_DATA_FILE, "UTF-8"));
+        docMgr     = Common.client.newXMLDocumentManager();
+        docMeta    = new DocumentMetadataHandle();
+        docMeta.getCollections().add("/optic/test");
+        docMgr.write("/optic/test/masterDetail.xml",  docMeta, new ReaderHandle(fileReader));
+        fileReader.close();
+
+        // wait for reindexing
+        Thread.sleep(1000);
+ */
+        Common.connect();
 	}
 	@AfterClass
 	public static void afterClass() {
@@ -79,11 +114,7 @@ public class RowManagerTest {
 		lineReader.close();
 		readerHandle.close();
 
-        EditableNamespaceContext namespaces = new EditableNamespaceContext();
-        namespaces.setNamespaceURI("sp", "http://www.w3.org/2005/sparql-results#");
-
-        DOMHandle domHandle = rowMgr.resultDoc(plan, new DOMHandle());
-        domHandle.getXPathProcessor().setNamespaceContext(namespaces);
+        DOMHandle domHandle = initNamespaces(rowMgr.resultDoc(plan, new DOMHandle()));
 
         NodeList testList = domHandle.evaluateXPath("/sp:sparql/sp:head/sp:variable", NodeList.class);
         assertEquals("unexpected header count in XML", testList.getLength(), 2);
@@ -96,13 +127,7 @@ public class RowManagerTest {
         assertEquals("unexpected row count in XML", testList.getLength(), 1);
 
         testList = domHandle.evaluateXPath("/sp:sparql/sp:results/sp:result[1]/sp:binding", NodeList.class);
-        assertEquals("unexpected column count in XML", testList.getLength(), 2);
-        testElement = (Element) testList.item(0);
-        assertEquals("unexpected first binding name in XML", testElement.getAttribute("name"), "rowNum");
-        assertEquals("unexpected first binding value in XML", testElement.getTextContent(), "2");
-        testElement = (Element) testList.item(1);
-        assertEquals("unexpected second binding name in XML", testElement.getAttribute("name"), "temp");
-        assertEquals("unexpected first binding value in XML", testElement.getTextContent(), "72");
+        checkSingleRow(testList);
 
         JsonNode testNode = rowMgr.resultDoc(plan, new JacksonHandle()).get();
 
@@ -116,9 +141,58 @@ public class RowManagerTest {
         arrayNode = testNode.findValue("bindings");
         assertEquals("unexpected row count in JSON", arrayNode.size(), 1);
 
-        String value = arrayNode.get(0).findValue("rowNum").findValue("value").asText();
+        checkSingleRow(arrayNode.get(0));
+	}
+	@Test
+	public void testResultRows() throws IOException, XPathExpressionException {
+		RowManager rowMgr = Common.client.newRowManager();
+
+		PlanBuilder p = rowMgr.newPlanBuilder();
+
+		PlanBuilder.ExportablePlan plan =
+				p.fromLiterals(rows)
+				 .where(p.eq(p.col("city"), p.xs.string("Seattle")))
+				 .select(p.cols("rowNum", "temp"));
+
+		RowSet<DOMHandle> xmlRowSet = rowMgr.resultRows(plan, new DOMHandle());
+
+		Iterator<DOMHandle> xmlRowItr = xmlRowSet.iterator();
+		DOMHandle xmlRow = initNamespaces(xmlRowItr.next());
+        checkSingleRow(xmlRow.evaluateXPath("/sp:result/sp:binding", NodeList.class));
+        assertFalse("expected one XML row", xmlRowItr.hasNext());
+
+        xmlRowSet.close();
+
+		RowSet<JacksonHandle> jsonRowSet = rowMgr.resultRows(plan, new JacksonHandle());
+
+		Iterator<JacksonHandle> jsonRowItr = jsonRowSet.iterator();
+		JacksonHandle jsonRow = jsonRowItr.next();
+        checkSingleRow(jsonRow.get());
+        assertFalse("expected one JSON row", jsonRowItr.hasNext());
+
+        jsonRowSet.close();
+	}
+	private DOMHandle initNamespaces(DOMHandle handle) {
+        EditableNamespaceContext namespaces = new EditableNamespaceContext();
+        namespaces.setNamespaceURI("sp", "http://www.w3.org/2005/sparql-results#");
+
+        handle.getXPathProcessor().setNamespaceContext(namespaces);
+
+        return handle;
+	}
+	private void checkSingleRow(NodeList row) {
+        assertEquals("unexpected column count in XML", row.getLength(), 2);
+        Element testElement = (Element) row.item(0);
+        assertEquals("unexpected first binding name in XML", testElement.getAttribute("name"), "rowNum");
+        assertEquals("unexpected first binding value in XML", testElement.getTextContent(), "2");
+        testElement = (Element) row.item(1);
+        assertEquals("unexpected second binding name in XML", testElement.getAttribute("name"), "temp");
+        assertEquals("unexpected first binding value in XML", testElement.getTextContent(), "72");
+	}
+	private void checkSingleRow(JsonNode row) {
+        String value = row.findValue("rowNum").findValue("value").asText();
         assertEquals("unexpected first binding value in JSON", value, "2");
-        value = arrayNode.get(0).findValue("temp").findValue("value").asText();
+        value = row.findValue("temp").findValue("value").asText();
         assertEquals("unexpected first binding value in JSON", value, "72");
 	}
 }

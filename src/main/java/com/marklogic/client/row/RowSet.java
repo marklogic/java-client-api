@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.io.marker;
+package com.marklogic.client.row;
 
-/**
- * A Row Read Handle can represent rows read from the
- * database.
- * 
- */
-public interface RowReadHandle extends AbstractReadHandle {
+import java.io.Closeable;
+import java.util.stream.Stream;
+
+import com.marklogic.client.io.marker.RowReadHandle;
+
+// TODO: JavaDoc
+public interface RowSet<T extends RowReadHandle> extends Iterable<T>, Closeable {
+    public String[] getColumnNames();
+
+    public Stream<T> stream();
 }
