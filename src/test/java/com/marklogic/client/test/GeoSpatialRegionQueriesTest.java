@@ -212,6 +212,7 @@ public class GeoSpatialRegionQueriesTest {
 
         SearchHandle results = queryMgr.search(query, new SearchHandle());
         MatchDocumentSummary[] summaries = results.getMatchResults();
+        assertEquals(1, summaries.length);
         for (MatchDocumentSummary summary : summaries) {
             assertEquals("mexico.xml", summary.getUri());
         }
@@ -235,15 +236,22 @@ public class GeoSpatialRegionQueriesTest {
         QueryManager queryMgr = Common.client.newQueryManager();
         StructuredQueryBuilder qb = new StructuredQueryBuilder("geooptions");
         StructuredQueryDefinition qdef;
-        qdef = qb.geospatialRegionConstraint("geoo", GeoSpatialOperator.CONTAINS,
+        qdef = qb.geospatialRegionConstraint("geoo", GeoSpatialOperator.DISJOINT,
                 qb.point(19.429297983081977, -99.140625));
 
         SearchHandle results = queryMgr.search(qdef, new SearchHandle());
         MatchDocumentSummary[] summaries = results.getMatchResults();
+        assertEquals(2, summaries.length);
+
+        qdef = qb.geospatialRegionConstraint("geoo", GeoSpatialOperator.CONTAINS, 
+                qb.point(21.884239, -78.164978));
+        results = queryMgr.search(qdef, new SearchHandle());
+        summaries = results.getMatchResults();
+        assertEquals(1, summaries.length);
         for (MatchDocumentSummary summary : summaries) {
-            assertEquals("mexico.xml", summary.getUri());
+            assertEquals("cuba.xml", summary.getUri());
         }
         optionsMgr.deleteOptions("geooptions");
-    }
+  }
 
 }
