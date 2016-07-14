@@ -4861,10 +4861,10 @@ public class JerseyServices implements RESTServices {
 			String paramName = "bind:" + bindingName;
 			String typeOrLang = "";
 			for ( SPARQLBinding binding : bindings.get(bindingName) ) {
-				if ( binding.getDatatype() != null ) {
-					typeOrLang = ":" + binding.getDatatype();
-				} else if ( binding.getLanguageTag() != null ) {
+				if ( binding.getLanguageTag() != null ) {
 					typeOrLang = "@" + binding.getLanguageTag().toLanguageTag();
+				} else if ( binding.getDatatype() != null ) {
+					typeOrLang = ":" + binding.getDatatype();
 				}
 				params.add(paramName + typeOrLang, binding.getValue());
 			}
