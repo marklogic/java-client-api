@@ -49,19 +49,27 @@ public class Common {
 	final public static int    PORT     = 8012;
 
 	public static DatabaseClient client;
-	public static void connect() {
-		if (client != null) {
-			client.release();
-			client = null;
-		}
-		client = newClient();
+	private static void connectImpl(DatabaseClient client) {
+		release();
+		Common.client = client;
 	}
 
+	public static void connect() {
+		connectImpl(newClient());
+	}
+	public static void connectDatabase(String name) {
+		connectImpl(newClient(name));
+	}
 	public static void connectAdmin() {
 		client = newAdminClient();
 	}
 	public static void connectEval() {
 		client = newEvalClient();
+	}
+	public static DatabaseClient newClient(String name) {
+		return DatabaseClientFactory.newClient(Common.HOST, Common.PORT, name,
+				new DatabaseClientFactory.DigestAuthContext(Common.USERNAME, Common.PASSWORD)
+				);
 	}
 	public static DatabaseClient newClient() {
 		return DatabaseClientFactory.newClient(
@@ -79,7 +87,10 @@ public class Common {
 				);
 	}
 	public static void release() {
-		client = null;
+		if (client != null) {
+			client.release();
+			client = null;
+		}
 	}
 
 	public static byte[] streamToBytes(InputStream is) throws IOException {

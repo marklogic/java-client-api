@@ -63,7 +63,7 @@
 				<version>2.8.1</version>
 				<configuration>
 					<bottom><![CDATA[Copyright &#169; 2013-2016 MarkLogic Corporation.]]></bottom>
-					<excludePackageNames>*.impl:*.jaxb:*.test:*.test.*</excludePackageNames>
+					<excludePackageNames>*.impl:*.jaxb:*.test:*.test.*:*.expression</excludePackageNames>
 					<links>
 						<link>http://docs.oracle.com/javase/8/docs/api/</link>
 					</links>

@@ -170,6 +170,7 @@ public class RowManagerImpl
 				services.postIteratedResource(requestLogger, "rows", transaction, params, astHandle);
 
 // TODO: distinguish request for homogeneous JSON or XML rows from map that can process CIDs
+//       param to opt in for breaking out content
 // TODO: RowRecord should wrap ServiceResult
 		return new RowSetImpl<T>(rawHandle, iter);
 	}
