@@ -11,10 +11,7 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
-import com.marklogic.client.expression.BaseType;
 import com.marklogic.client.expression.XsValue;
-import com.marklogic.client.impl.BaseTypeImpl.BaseListImpl;
-import com.marklogic.client.impl.BaseTypeImpl.ItemSeqListImpl;
 
 public class XsValueImpl implements XsValue {
 	@Override

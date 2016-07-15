@@ -18,13 +18,33 @@ package com.marklogic.client.row;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
+import com.marklogic.client.io.marker.JSONReadHandle;
+import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.RowReadHandle;
+
+/* STATUS
+
+   DONE:
+   + RowManager.newPlanBuilder() except for placeholder parameters
+   + RowManager.resultDoc()
+   + RowManager.resultDocAs()
+   + RowManager.resultRows() except RowRecord
+   + RawPlanDefinition
+
+   TO DO:
+   + RowRecord
+   + column names
+   + sequence column values
+   + column metadata
+   + placeholder parameters
+   + RowManager.resultRowsAs()
+ */
 
 // TODO: JavaDoc
 public interface RowManager {
 	public PlanBuilder newPlanBuilder();
 
-	// TODO: derive raw definition from plan
+	public RawPlanDefinition newRawPlanDefinition(JSONWriteHandle handle);
 
 	public <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle);
     public <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction);

@@ -15,25 +15,39 @@
  */
 package com.marklogic.client.impl;
 
+import java.lang.reflect.Constructor;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
+import com.marklogic.client.expression.PlanBuilder.PlanParam;
 import com.marklogic.client.expression.Xs;
+import com.marklogic.client.expression.XsValue;
+import com.marklogic.client.expression.XsValue.AnyAtomicTypeVal;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.RowReadHandle;
+import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
+import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
 import com.marklogic.client.util.RequestParameters;
 
@@ -64,6 +78,11 @@ public class RowManagerImpl
 				new MathExprImpl(xs), new RdfExprImpl(xs), new SemExprImpl(xs), new SqlExprImpl(xs),
 				new XdmpExprImpl(xs), xs
 				);
+	}
+
+	@Override
+	public RawPlanDefinition newRawPlanDefinition(JSONWriteHandle handle) {
+		return new RawPlanDefinitionImpl(handle);
 	}
 
 	@Override
@@ -98,22 +117,11 @@ public class RowManagerImpl
 	}
 	@Override
 	public <T extends RowReadHandle> T resultDoc(Plan plan, T resultsHandle, Transaction transaction) {
-		if (!(plan instanceof PlanBuilderBase.PlanBase)) {
-			if (plan == null) {
-				throw new IllegalArgumentException("Must specify a plan to produce the row result document");
-			} else {
-				throw new IllegalArgumentException("Cannot retrieve row result document with invalid plan having class "+plan.getClass().getName());
-			}
-		}
+		AbstractWriteHandle astHandle = getPlanHandle(plan);
+
 		if (resultsHandle == null) {
 			throw new IllegalArgumentException("Must specify a handle to read the row result document");
 		}
-
-		PlanBuilderBase.PlanBase exportablePlan = (PlanBuilderBase.PlanBase) plan;
-
-		// TODO: maybe serialize plan to JSON using JSON writer?
-		String ast = exportablePlan.getAst();
-		AbstractWriteHandle astHandle = new StringHandle(ast);
 
 // TODO: parameter bindings
 		RequestParameters params = new RequestParameters();
@@ -127,13 +135,8 @@ public class RowManagerImpl
 	}
 	@Override
 	public <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rawHandle, Transaction transaction) {
-		if (!(plan instanceof PlanBuilderBase.PlanBase)) {
-			if (plan == null) {
-				throw new IllegalArgumentException("Must specify a plan to iterate the row results");
-			} else {
-				throw new IllegalArgumentException("Cannot iterate rows with invalid plan having class "+plan.getClass().getName());
-			}
-		}
+		AbstractWriteHandle astHandle = getPlanHandle(plan);
+
 		if (rawHandle == null) {
 			throw new IllegalArgumentException("Must specify a handle to iterate over the rows");
 		} else if (!(rawHandle instanceof BaseHandle)) {
@@ -155,25 +158,34 @@ public class RowManagerImpl
 			throw new IllegalArgumentException("Must use JSON or XML format to iterate rows instead of "+handleFormat.name());
 		}
 
-		PlanBuilderBase.PlanBase exportablePlan = (PlanBuilderBase.PlanBase) plan;
-
-		// TODO: maybe serialize plan to JSON using JSON writer?
-		String ast = exportablePlan.getAst();
-		AbstractWriteHandle astHandle = new StringHandle(ast);
-
-		// TODO: parameter bindings
+// TODO: parameter bindings
 		RequestParameters params = new RequestParameters();
-		params.add("row-format", rowFormat);
+		params.add("row-format",       rowFormat);
+// TODO: "reference" for RowRecord
+		params.add("document-columns", "inline");
 
 // QUESTION: outputMimetypes a noop?
 		ServiceResultIterator iter = 
 				services.postIteratedResource(requestLogger, "rows", transaction, params, astHandle);
 
-// TODO: distinguish request for homogeneous JSON or XML rows from map that can process CIDs
-//       param to opt in for breaking out content
-// TODO: RowRecord should wrap ServiceResult
 		return new RowSetImpl<T>(rawHandle, iter);
 	}
+	private AbstractWriteHandle getPlanHandle(Plan plan) {
+		if (plan == null) {
+			throw new IllegalArgumentException("Must specify a plan to produce row results");
+		} else if (plan instanceof PlanBuilderBase.PlanBase) {
+			PlanBuilderBase.PlanBase exportablePlan = (PlanBuilderBase.PlanBase) plan;
+
+			// TODO: maybe serialize plan to JSON using JSON writer?
+			String ast = exportablePlan.getAst();
+			return new StringHandle(ast);
+		} else if (plan instanceof RawPlanDefinitionImpl) {
+			RawPlanDefinitionImpl rawPlan = (RawPlanDefinitionImpl) plan;
+			return rawPlan.getHandle();
+		}
+		throw new IllegalArgumentException("Cannot produce rows with invalid plan having class "+plan.getClass().getName());
+	}
+
 	static class RowSetImpl<T extends RowReadHandle> implements RowSet<T>, Iterator<T> {
 		private T                     rowHandle = null;
 		private ServiceResultIterator results   = null;
@@ -243,6 +255,184 @@ public class RowManagerImpl
 				nextRow   = null;
 				rowHandle = null;
 			}
+		}
+	}
+	/* TODO:
+	 RowSetImpl to populate RowRecordImpl
+	 ServiceResult is not sufficient
+	 need Content-Id header for document parts
+	 need Content-Disposition header for both row and document parts
+	 new ObjectMapper().readValue(value.value(), Map.class)
+	 delegate to Jackson ObjectMapper to read the row part via input stream
+	 read row part as map
+	 keep a map of cid keys to columns
+	 row set read ahead to next row part, populating a map of column keys with part ServiceResult values
+	 instantiate new RowRecord on each new row
+	 */
+	static class RowRecordImpl implements RowRecord {
+		private static final Map<Class<?>,Constructor<?>> constructors = new HashMap<Class<?>,Constructor<?>>();
+
+		private Map<String, Object> row = null;
+
+		RowRecordImpl() {
+		}
+
+// QUESTION:  threading guarantees - multiple handles? precedent?
+		void init(Map<String, Object> row) {
+			this.row = row;
+		}
+
+		// supported operations for unmodifiable map
+		@Override
+		public boolean containsKey(Object key) {
+			return row.containsKey(key);
+		}
+		@Override
+		public boolean containsValue(Object value) {
+			return row.containsValue(value);
+		}
+		@Override
+		public Set<Entry<String, Object>> entrySet() {
+			return row.entrySet();
+		}
+		@Override
+		public Object get(Object key) {
+			return row.get(key);
+		}
+		@Override
+		public boolean isEmpty() {
+			return row.isEmpty();
+		}
+		@Override
+		public Set<String> keySet() {
+			return row.keySet();
+		}
+		@Override
+		public Collection<Object> values() {
+			return row.values();
+		}
+		@Override
+		public int size() {
+			return row.size();
+		}
+
+		// unsupported operations for unmodifiable map
+		@Override
+		public Object put(String key, Object value) {
+			throw new UnsupportedOperationException("cannot modify row record");
+		}
+		@Override
+		public Object remove(Object key) {
+			throw new UnsupportedOperationException("cannot modify row record");
+		}
+		@Override
+		public void putAll(Map<? extends String, ? extends Object> m) {
+			throw new UnsupportedOperationException("cannot modify row record");
+		}
+		@Override
+		public void clear() {
+			throw new UnsupportedOperationException("cannot modify row record");
+		}
+
+// TODO: metadata accessors
+
+		// literal casting convenience getters
+		@Override
+		public boolean getBoolean(String columnName) {
+			return (Boolean) get(columnName);
+		}
+		@Override
+		public byte getByte(String columnName) {
+			return (Byte) get(columnName);
+		}
+		@Override
+		public double getDouble(String columnName) {
+			return (Double) get(columnName);
+		}
+		@Override
+		public float getFloat(String columnName) {
+			return (Float) get(columnName);
+		}
+		@Override
+		public int getInt(String columnName) {
+			return (Integer) get(columnName);
+		}
+		@Override
+		public long getLong(String columnName) {
+			return (Long) get(columnName);
+		}
+		@Override
+		public short getShort(String columnName) {
+			return (Short) get(columnName);
+		}
+		@Override
+		public String getString(String columnName) {
+			return get(columnName).toString();
+		}
+		
+		private ServiceResult getServiceResult(String columnName) {
+			return (ServiceResult) get(columnName);
+		}
+
+		@Override
+		public <T extends AnyAtomicTypeVal> T getValueAs(String columnName, Class<T> as) throws Exception {
+			@SuppressWarnings("unchecked")
+			Constructor<T> constructor = (Constructor<T>) constructors.get(as);
+			if (constructor == null) {
+				constructor = as.getConstructor(String.class);
+				constructors.put(as, constructor);
+			}
+			return constructor.newInstance(getString(columnName));
+		}
+		@Override
+		public <T extends AnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as) throws Exception {
+// TODO: constructor array for sequence
+			return null;
+		}
+
+// TODO: accessors for format and mimetype of ServiceResult
+// TODO: ColumnDocument interface inherited by ServiceResult?
+		@Override
+		public <T extends AbstractReadHandle> T getContent(String columnName, T contentHandle) {
+// TODO: RESTServiceResult
+			ServiceResult docResult = getServiceResult(columnName);
+			if (docResult == null) {
+				return null;
+			}
+			return docResult.getContent(contentHandle);
+		}
+		@Override
+		public <T> T getContentAs(String columnName, Class<T> as) {
+			return null;
+		}
+	}
+	static class RawPlanDefinitionImpl implements RawPlanDefinition {
+		private JSONWriteHandle handle = null;
+		RawPlanDefinitionImpl(JSONWriteHandle handle) {
+			setHandle(handle);
+		}
+
+		@Override
+		public Plan bindParam(PlanParam param, String literal) {
+// TODO 
+			return null;
+		}
+
+		@Override
+		public JSONWriteHandle getHandle() {
+			return handle;
+		}
+		@Override
+		public void setHandle(JSONWriteHandle handle) {
+			if (handle == null) {
+				throw new IllegalArgumentException("Must specify handle for reading raw plan");
+			}
+			this.handle = handle;
+		}
+		@Override
+		public RawPlanDefinition withHandle(JSONWriteHandle handle) {
+			setHandle(handle);
+			return this;
 		}
 	}
 }
