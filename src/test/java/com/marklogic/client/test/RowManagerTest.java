@@ -18,6 +18,7 @@ package com.marklogic.client.test;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.LineNumberReader;
@@ -42,6 +43,7 @@ import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
+import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
 import com.marklogic.client.util.EditableNamespaceContext;
 
@@ -178,6 +180,7 @@ public class RowManagerTest {
 			RowSet<DOMHandle> xmlRowSet = rowMgr.resultRows(plan, new DOMHandle());
 
 			Iterator<DOMHandle> xmlRowItr = xmlRowSet.iterator();
+			assertTrue("no XML row to iterate", xmlRowItr.hasNext());
 			DOMHandle xmlRow = initNamespaces(xmlRowItr.next());
 	        checkSingleRow(xmlRow.evaluateXPath("/sp:result/sp:binding", NodeList.class));
 	        assertFalse("expected one XML row", xmlRowItr.hasNext());
@@ -187,11 +190,19 @@ public class RowManagerTest {
 			RowSet<JacksonHandle> jsonRowSet = rowMgr.resultRows(plan, new JacksonHandle());
 
 			Iterator<JacksonHandle> jsonRowItr = jsonRowSet.iterator();
+			assertTrue("no JSON row to iterate", jsonRowItr.hasNext());
 			JacksonHandle jsonRow = jsonRowItr.next();
 	        checkSingleRow(jsonRow.get());
 	        assertFalse("expected one JSON row", jsonRowItr.hasNext());
 
 	        jsonRowSet.close();
+
+			RowSet<RowRecord> recordRowSet = rowMgr.resultRows(plan);
+			Iterator<RowRecord> recordRowItr = recordRowSet.iterator();
+			assertTrue("no record row to iterate", recordRowItr.hasNext());
+			RowRecord recordRow = recordRowItr.next();
+			checkSingleRow(recordRow);
+	        assertFalse("expected one record row", recordRowItr.hasNext());
 		}
 	}
 	private DOMHandle initNamespaces(DOMHandle handle) {
@@ -216,5 +227,11 @@ public class RowManagerTest {
         assertEquals("unexpected first binding value in JSON", value, "2");
         value = row.findValue("temp").findValue("value").asText();
         assertEquals("unexpected first binding value in JSON", value, "72");
+	}
+	private void checkSingleRow(RowRecord row) {
+        String value = row.getString("rowNum");
+        assertEquals("unexpected first binding value in row record", value, "2");
+        value = row.getString("temp");
+        assertEquals("unexpected first binding value in row record", value, "72");
 	}
 }

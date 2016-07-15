@@ -18,10 +18,8 @@ package com.marklogic.client.row;
 import java.io.Closeable;
 import java.util.stream.Stream;
 
-import com.marklogic.client.io.marker.RowReadHandle;
-
 // TODO: JavaDoc
-public interface RowSet<T extends RowReadHandle> extends Iterable<T>, Closeable {
+public interface RowSet<T> extends Iterable<T>, Closeable {
     public String[] getColumnNames();
 
     public Stream<T> stream();

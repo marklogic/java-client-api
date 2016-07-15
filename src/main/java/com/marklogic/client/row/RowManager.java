@@ -46,10 +46,13 @@ public interface RowManager {
 
 	public RawPlanDefinition newRawPlanDefinition(JSONWriteHandle handle);
 
+	public RowSet<RowRecord> resultRows(Plan plan);
+	public RowSet<RowRecord> resultRows(Plan plan, Transaction transaction);
+
 	public <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle);
     public <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction);
 
-/* TODO: design
+/* TODO:
     public <T> RowSet<T> resultRows(Plan plan, Class<T> as);
     public <T> RowSet<T> resultRows(Plan plan, Class<T> as, Transaction transaction);
  */

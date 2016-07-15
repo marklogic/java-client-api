@@ -15,19 +15,24 @@
  */
 package com.marklogic.client.impl;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
@@ -37,8 +42,11 @@ import com.marklogic.client.expression.XsValue;
 import com.marklogic.client.expression.XsValue.AnyAtomicTypeVal;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
+import com.marklogic.client.impl.RESTServices.RESTServiceResult;
+import com.marklogic.client.impl.RESTServices.RESTServiceResultIterator;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
@@ -130,45 +138,58 @@ public class RowManagerImpl
 	}
 
 	@Override
+	public RowSet<RowRecord> resultRows(Plan plan) {
+		return resultRows(plan, new RowRecordImpl(), null);
+	}
+	@Override
+	public RowSet<RowRecord> resultRows(Plan plan, Transaction transaction) {
+		return resultRows(plan, new RowRecordImpl(), transaction);
+	}
+	@Override
 	public <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle) {
 		return resultRows(plan, rowHandle, null);
 	}
 	@Override
-	public <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rawHandle, Transaction transaction) {
+	public <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction) {
 		AbstractWriteHandle astHandle = getPlanHandle(plan);
 
-		if (rawHandle == null) {
+		if (rowHandle == null) {
 			throw new IllegalArgumentException("Must specify a handle to iterate over the rows");
-		} else if (!(rawHandle instanceof BaseHandle)) {
-			throw new IllegalArgumentException("Cannot iterate rows with invalid handle having class "+rawHandle.getClass().getName());
 		}
 
-		BaseHandle<?,?> rowHandle = (BaseHandle<?,?>) rawHandle;
+		String rowFormat = "sparql-json";
+		String docCols   = "inline";
+		if (rowHandle instanceof RowRecordImpl) {
+			docCols = "reference";
+		} else if (rowHandle instanceof BaseHandle) {
+			BaseHandle<?,?> baseHandle = (BaseHandle<?,?>) rowHandle;
 
-		Format handleFormat = rowHandle.getFormat();
-		String rowFormat    = "sparql-json";
-		switch (handleFormat) {
-		case JSON:
-		case UNKNOWN:
-			break;
-		case XML:
-			rowFormat = "sparql-xml";
-			break;
-		default:
-			throw new IllegalArgumentException("Must use JSON or XML format to iterate rows instead of "+handleFormat.name());
+			Format handleFormat = baseHandle.getFormat();
+			switch (handleFormat) {
+			case JSON:
+			case UNKNOWN:
+				break;
+			case XML:
+				rowFormat = "sparql-xml";
+				break;
+			default:
+				throw new IllegalArgumentException("Must use JSON or XML format to iterate rows instead of "+handleFormat.name());
+			}
+		} else {
+			throw new IllegalArgumentException("Cannot iterate rows with invalid handle having class "+rowHandle.getClass().getName());
 		}
+
 
 // TODO: parameter bindings
 		RequestParameters params = new RequestParameters();
 		params.add("row-format",       rowFormat);
-// TODO: "reference" for RowRecord
-		params.add("document-columns", "inline");
+		params.add("document-columns", docCols);
 
 // QUESTION: outputMimetypes a noop?
-		ServiceResultIterator iter = 
+		RESTServiceResultIterator iter = 
 				services.postIteratedResource(requestLogger, "rows", transaction, params, astHandle);
 
-		return new RowSetImpl<T>(rawHandle, iter);
+		return new RowSetImpl<T>(rowHandle, iter);
 	}
 	private AbstractWriteHandle getPlanHandle(Plan plan) {
 		if (plan == null) {
@@ -187,13 +208,17 @@ public class RowManagerImpl
 	}
 
 	static class RowSetImpl<T extends RowReadHandle> implements RowSet<T>, Iterator<T> {
-		private T                     rowHandle = null;
-		private ServiceResultIterator results   = null;
-		private ServiceResult         nextRow   = null;
+		private T                         rowHandle   = null;
+		private boolean                   isRowRecord = false;
+		private RESTServiceResultIterator results     = null;
+		private RESTServiceResult         nextRow     = null;
 
-		RowSetImpl(T rowHandle, ServiceResultIterator results) {
+		RowSetImpl(T rowHandle, RESTServiceResultIterator results) {
 			this.rowHandle = rowHandle;
 			this.results   = results;
+			if (rowHandle instanceof RowRecord) {
+			    isRowRecord = true;
+			}
 			if (results.hasNext()) {
 				nextRow = results.next();
 			}
@@ -216,27 +241,93 @@ public class RowManagerImpl
 
 		@Override
 		public boolean hasNext() {
-			if (results == null) {
-				return false;
-			}
-			return results.hasNext();
+			return nextRow != null;
 		}
 		@Override
 		public T next() {
-			ServiceResult currentRow = nextRow;
+			RESTServiceResult currentRow = nextRow;
 			if (currentRow == null) {
 				throw new NoSuchElementException("no next row");
 			}
 
-// QUESTION: threading guarantees - multiple handles? precedent?
 			T currentHandle = rowHandle;
-			if (results.hasNext()) {
-				nextRow = results.next();
-			} else {
-				closeImpl();
+
+			boolean hasMoreRows = results.hasNext();
+
+// QUESTION: threading guarantees - multiple handles? precedent?
+			if (!isRowRecord) {
+				if (hasMoreRows) {
+					nextRow = results.next();
+				} else {
+					closeImpl();
+				}
+				return currentRow.getContent(currentHandle);
 			}
 
-			return currentRow.getContent(currentHandle);
+			try {
+				RowRecordImpl rowRecord = (RowRecordImpl) rowHandle;
+
+				@SuppressWarnings("unchecked")
+				Map<String, Object> row = new ObjectMapper().readValue(currentRow.getContent(new InputStreamHandle()).get(), Map.class);
+				row.replaceAll((key, rawBinding) -> {
+					@SuppressWarnings("unchecked")
+					Map<String,Object> binding = (Map<String,Object>) rawBinding;
+// TODO: capture SPARQL type and datatype for casting on request
+// TODO: special processing for cid?
+					String type     = (String) binding.get("type");
+					String datatype = (String) binding.get("datatype");
+					Object value    = binding.get("value");
+					return value;
+				});
+
+				while (hasMoreRows) {
+					currentRow = results.next();
+					Map<String,List<String>> headers = currentRow.getHeaders();
+
+					List<String> headerList = headers.get("Content-Disposition");
+					if (headerList == null || headerList.isEmpty()) {
+						break;
+					}
+					String headerValue = headerList.get(0);
+					if (!headerValue.startsWith("attachment;")) {
+						break;
+					}
+
+					headerList = headers.get("Content-ID");
+					if (headerList == null || headerList.isEmpty()) {
+						break;
+					}
+					headerValue = headerList.get(0);
+					if (!headerValue.startsWith("<")) {
+						break;
+					}
+					int pos = headerValue.indexOf(">",1);
+					if (pos == -1) {
+						break;
+					}
+					String colName = headerValue.substring(1, pos);
+
+					row.put(colName, currentRow);
+
+					hasMoreRows = results.hasNext();
+				}
+
+				rowRecord.init(row);
+
+				if (hasMoreRows) {
+					nextRow = currentRow;
+				} else {
+					closeImpl();
+				}
+
+				return currentHandle;
+			} catch (JsonParseException e) {
+				throw new MarkLogicIOException("could not part row record", e);
+			} catch (JsonMappingException e) {
+				throw new MarkLogicIOException("could not map row record", e);
+			} catch (IOException e) {
+				throw new MarkLogicIOException("could not read row record", e);
+			}
 		}
 
 		@Override
@@ -257,25 +348,10 @@ public class RowManagerImpl
 			}
 		}
 	}
-	/* TODO:
-	 RowSetImpl to populate RowRecordImpl
-	 ServiceResult is not sufficient
-	 need Content-Id header for document parts
-	 need Content-Disposition header for both row and document parts
-	 new ObjectMapper().readValue(value.value(), Map.class)
-	 delegate to Jackson ObjectMapper to read the row part via input stream
-	 read row part as map
-	 keep a map of cid keys to columns
-	 row set read ahead to next row part, populating a map of column keys with part ServiceResult values
-	 instantiate new RowRecord on each new row
-	 */
 	static class RowRecordImpl implements RowRecord {
 		private static final Map<Class<?>,Constructor<?>> constructors = new HashMap<Class<?>,Constructor<?>>();
 
 		private Map<String, Object> row = null;
-
-		RowRecordImpl() {
-		}
 
 // QUESTION:  threading guarantees - multiple handles? precedent?
 		void init(Map<String, Object> row) {
@@ -370,8 +446,8 @@ public class RowManagerImpl
 			return get(columnName).toString();
 		}
 		
-		private ServiceResult getServiceResult(String columnName) {
-			return (ServiceResult) get(columnName);
+		private RESTServiceResult getServiceResult(String columnName) {
+			return (RESTServiceResult) get(columnName);
 		}
 
 		@Override
@@ -390,12 +466,27 @@ public class RowManagerImpl
 			return null;
 		}
 
-// TODO: accessors for format and mimetype of ServiceResult
-// TODO: ColumnDocument interface inherited by ServiceResult?
+// TODO: ColumnDocument interface inherited by RESTServiceResult?
+
+		@Override
+		public Format getContentFormat(String columnName) {
+			RESTServiceResult docResult = getServiceResult(columnName);
+			if (docResult == null) {
+				return null;
+			}
+			return docResult.getFormat();
+		}
+		@Override
+		public String getContentMimetype(String columnName) {
+			RESTServiceResult docResult = getServiceResult(columnName);
+			if (docResult == null) {
+				return null;
+			}
+			return docResult.getMimetype();
+		}
 		@Override
 		public <T extends AbstractReadHandle> T getContent(String columnName, T contentHandle) {
-// TODO: RESTServiceResult
-			ServiceResult docResult = getServiceResult(columnName);
+			RESTServiceResult docResult = getServiceResult(columnName);
 			if (docResult == null) {
 				return null;
 			}
@@ -403,6 +494,7 @@ public class RowManagerImpl
 		}
 		@Override
 		public <T> T getContentAs(String columnName, Class<T> as) {
+// TODO
 			return null;
 		}
 	}

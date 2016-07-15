@@ -18,6 +18,7 @@ package com.marklogic.client.row;
 import java.util.Map;
 
 import com.marklogic.client.expression.XsValue;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.RowReadHandle;
 
@@ -37,6 +38,8 @@ public interface RowRecord extends RowReadHandle, Map<String, Object> {
 	public <T extends XsValue.AnyAtomicTypeVal> T   getValueAs(String columnName,  Class<T> as) throws Exception;
 	public <T extends XsValue.AnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as) throws Exception;
 
-    public <T extends AbstractReadHandle> T getContent(String columnName, T contentHandle);
+	public Format getContentFormat(String columnName);
+	public String getContentMimetype(String columnName);
+	public <T extends AbstractReadHandle> T getContent(String columnName, T contentHandle);
     public <T> T getContentAs(String columnName, Class<T> as);
 }

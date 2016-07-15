@@ -2790,7 +2790,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public ServiceResultIterator getIteratedResource(RequestLogger reqlog,
+	public RESTServiceResultIterator getIteratedResource(RequestLogger reqlog,
 			String path, Transaction transaction, RequestParameters params, String... mimetypes)
 			throws ResourceNotFoundException, ForbiddenUserException,
 			FailedRequestException {
@@ -3477,7 +3477,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public ServiceResultIterator postIteratedResource(RequestLogger reqlog,
+	public RESTServiceResultIterator postIteratedResource(RequestLogger reqlog,
 			String path, Transaction transaction, RequestParameters params, AbstractWriteHandle input,
 			String... outputMimetypes) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
@@ -3524,7 +3524,7 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public <W extends AbstractWriteHandle> ServiceResultIterator postIteratedResource(
+	public <W extends AbstractWriteHandle> RESTServiceResultIterator postIteratedResource(
 			RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
 			W[] input, String... outputMimetypes)
 			throws ResourceNotFoundException, ResourceNotResendableException,
@@ -4226,6 +4226,11 @@ public class JerseyServices implements RESTServices {
 			return length;
 		}
 
+		public Map<String,List<String>> getHeaders() {
+			extractHeaders();
+			return headers;
+		}
+
 		public String getHeader(String name) {
 			extractHeaders();
 			return headers.getFirst(name);
@@ -4243,7 +4248,7 @@ public class JerseyServices implements RESTServices {
 		}
 	}
 
-	public class JerseyServiceResult extends JerseyResult implements ServiceResult {
+	public class JerseyServiceResult extends JerseyResult implements RESTServices.RESTServiceResult {
 		public JerseyServiceResult(RequestLogger reqlog, BodyPart part) {
 			super(reqlog, part);
 		}
@@ -4353,7 +4358,7 @@ public class JerseyServices implements RESTServices {
 
 	public class JerseyServiceResultIterator 
 		extends JerseyResultIterator<JerseyServiceResult>
-		implements ServiceResultIterator
+		implements RESTServiceResultIterator
 	{
 		public JerseyServiceResultIterator(RequestLogger reqlog,
 				List<BodyPart> partList, Closeable closeable) {

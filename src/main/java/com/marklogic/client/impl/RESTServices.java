@@ -32,15 +32,14 @@ import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentUriTemplate;
-import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.eval.EvalResultIterator;
-import com.marklogic.client.eval.ServerEvaluationCall;
+import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
-import com.marklogic.client.impl.ServerEvaluationCallImpl.Context;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
@@ -172,7 +171,7 @@ public interface RESTServices {
 	public <R extends AbstractReadHandle> R getResource(RequestLogger reqlog, String path, 
 			Transaction transaction, RequestParameters params, R output)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-	public ServiceResultIterator getIteratedResource(
+	public RESTServiceResultIterator getIteratedResource(
 			RequestLogger reqlog, String path, Transaction transaction, RequestParameters params, String... mimetypes)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
@@ -202,12 +201,12 @@ public interface RESTServices {
 			W[] input, Map<String, List<String>>[] headers, R output)
 		throws ResourceNotFoundException, ResourceNotResendableException, 
             ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
-	public ServiceResultIterator postIteratedResource(
+	public RESTServiceResultIterator postIteratedResource(
 			RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
 			AbstractWriteHandle input, String... outputMimetypes)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException;
-	public <W extends AbstractWriteHandle> ServiceResultIterator postIteratedResource(
+	public <W extends AbstractWriteHandle> RESTServiceResultIterator postIteratedResource(
 			RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
 			W[] input, String... outputMimetypes)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
@@ -321,4 +320,12 @@ public interface RESTServices {
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public <R extends AbstractReadHandle> R getThings(RequestLogger reqlog, String[] iris, R output)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+
+	public interface RESTServiceResultIterator extends ServiceResultIterator {
+		@Override
+		public RESTServiceResult next();
+	}
+	public interface RESTServiceResult extends ServiceResult {
+		public Map<String,List<String>> getHeaders();
+	}
 }
