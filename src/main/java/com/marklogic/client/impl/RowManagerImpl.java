@@ -30,7 +30,6 @@ import java.util.stream.StreamSupport;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.Transaction;
@@ -38,10 +37,7 @@ import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
 import com.marklogic.client.expression.PlanBuilder.PlanParam;
 import com.marklogic.client.expression.Xs;
-import com.marklogic.client.expression.XsValue;
 import com.marklogic.client.expression.XsValue.AnyAtomicTypeVal;
-import com.marklogic.client.extensions.ResourceServices.ServiceResult;
-import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.impl.RESTServices.RESTServiceResult;
 import com.marklogic.client.impl.RESTServices.RESTServiceResultIterator;
 import com.marklogic.client.io.BaseHandle;
@@ -268,7 +264,9 @@ public class RowManagerImpl
 				RowRecordImpl rowRecord = (RowRecordImpl) rowHandle;
 
 				@SuppressWarnings("unchecked")
-				Map<String, Object> row = new ObjectMapper().readValue(currentRow.getContent(new InputStreamHandle()).get(), Map.class);
+				Map<String, Object> row = new ObjectMapper().readValue(
+						currentRow.getContent(new InputStreamHandle()).get(), Map.class
+						);
 				row.replaceAll((key, rawBinding) -> {
 					@SuppressWarnings("unchecked")
 					Map<String,Object> binding = (Map<String,Object>) rawBinding;
@@ -282,6 +280,7 @@ public class RowManagerImpl
 
 				while (hasMoreRows) {
 					currentRow = results.next();
+
 					Map<String,List<String>> headers = currentRow.getHeaders();
 
 					List<String> headerList = headers.get("Content-Disposition");
@@ -289,7 +288,7 @@ public class RowManagerImpl
 						break;
 					}
 					String headerValue = headerList.get(0);
-					if (!headerValue.startsWith("attachment;")) {
+					if (headerValue == null || !headerValue.startsWith("attachment;")) {
 						break;
 					}
 
@@ -298,10 +297,10 @@ public class RowManagerImpl
 						break;
 					}
 					headerValue = headerList.get(0);
-					if (!headerValue.startsWith("<")) {
+					if (headerValue == null || !(headerValue.startsWith("<") && headerValue.endsWith(">"))) {
 						break;
 					}
-					int pos = headerValue.indexOf(">",1);
+					int pos = headerValue.indexOf("[",1);
 					if (pos == -1) {
 						break;
 					}
@@ -447,7 +446,11 @@ public class RowManagerImpl
 		}
 		
 		private RESTServiceResult getServiceResult(String columnName) {
-			return (RESTServiceResult) get(columnName);
+			Object val = get(columnName);
+			if (val instanceof RESTServiceResult) {
+				return (RESTServiceResult) val;
+			}
+			return null;
 		}
 
 		@Override

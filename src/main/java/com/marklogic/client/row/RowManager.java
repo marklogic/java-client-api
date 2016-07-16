@@ -25,18 +25,22 @@ import com.marklogic.client.io.marker.RowReadHandle;
 /* STATUS
 
    DONE:
-   + RowManager.newPlanBuilder() except for placeholder parameters
+   + RowManager.newPlanBuilder()
+   + PlanBuilder - fromView(), fromLiterals(), expressions
    + RowManager.resultDoc()
    + RowManager.resultDocAs()
-   + RowManager.resultRows() except RowRecord
+   + RowManager.resultRows()
    + RawPlanDefinition
+   + RowSet
+   + RowRecord
 
    TO DO:
-   + RowRecord
-   + column names
-   + sequence column values
-   + column metadata
-   + placeholder parameters
+   + PlanBuilder - placeholder parameter binding, fromTriples(), and fromLexicon()
+   + move type interfaces into expression.marker package
+   + RowSet - column name
+   + RowRecord - sequence column values
+   + RowRecord - column metadata
+   + RowManager - placeholder parameters
    + RowManager.resultRowsAs()
  */
 

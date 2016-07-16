@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.test;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -22,19 +23,31 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
@@ -48,28 +61,56 @@ import com.marklogic.client.row.RowSet;
 import com.marklogic.client.util.EditableNamespaceContext;
 
 public class RowManagerTest {
-    private static Map<String,Object>[] rows = null;
+    private static String[]             uris    = null;
+    private static String[]             docs    = null;
+    private static Map<String,Object>[] litRows = null;
 	@SuppressWarnings("unchecked")
 	@BeforeClass
 	public static void beforeClass() throws IOException, InterruptedException {
-		rows = new Map[3];
+        uris = new String[]{"/rowtest/docJoin1.json", "/rowtest/docJoin1.xml", "/rowtest/docJoin1.txt"};
+        docs = new String[]{
+        		"{\"a\":{\"b\":[\"c\", 4]}}",
+        		"<a><b>c</b>4</a>",
+        		"a b c 4"
+        		};
+
+		litRows = new Map[3];
+
 		Map<String,Object>   row  = new HashMap<String,Object>();
 		row.put("rowNum", 1);
 		row.put("city",   "New York");
 		row.put("temp",   "82");
-		rows[0] = row;
+		row.put("uri",    uris[0]);
+		litRows[0] = row;
+
 		row = new HashMap<String,Object>();
 		row.put("rowNum", 2);
 		row.put("city",   "Seattle");
 		row.put("temp",   "72");
-		rows[1] = row;
+		row.put("uri",    uris[1]);
+		litRows[1] = row;
+
 		row = new HashMap<String,Object>();
 		row.put("rowNum", 3);
 		row.put("city",   "Phoenix");
 		row.put("temp",   "92");
-		rows[2] = row;
+		row.put("uri",    uris[2]);
+		litRows[2] = row;
 
-/* TODO: document join from literals via uri or maybe eval user?
+        Common.connect();
+
+        @SuppressWarnings("rawtypes")
+		DocumentManager docMgr = Common.client.newDocumentManager();
+
+        docMgr.write(
+        	docMgr.newWriteSet()
+                  .add(uris[0], new StringHandle(docs[0]).withFormat(Format.JSON))
+                  .add(uris[1], new StringHandle(docs[1]).withFormat(Format.XML))
+                  .add(uris[2], new StringHandle(docs[2]).withFormat(Format.TEXT))
+              );
+
+/* TODO: as eval user???
+
     private static final String MASTER_DETAIL_TDE_FILE  = "masterDetail.tdex";
     private static final String MASTER_DETAIL_DATA_FILE = "masterDetail.xml";
 
@@ -97,7 +138,6 @@ public class RowManagerTest {
         // wait for reindexing
         Thread.sleep(1000);
  */
-        Common.connect();
 	}
 	@AfterClass
 	public static void afterClass() {
@@ -110,7 +150,8 @@ public class RowManagerTest {
 
 		PlanBuilder p = rowMgr.newPlanBuilder();
 		PlanBuilder.ExportablePlan builtPlan =
-				p.fromLiterals(rows)
+				p.fromLiterals(litRows)
+				 .orderBy(p.col("rowNum"))
 				 .where(p.eq(p.col("city"), p.xs.string("Seattle")))
 				 .select(p.cols("rowNum", "temp"));
 
@@ -125,10 +166,10 @@ public class RowManagerTest {
 			LineNumberReader lineReader = new LineNumberReader(readerHandle.get());
 
 			String[] cols = lineReader.readLine().split(",");
-			assertArrayEquals("unexpected header", new String[]{"rowNum","temp"}, cols);
+			assertArrayEquals("unexpected header", cols, new String[]{"rowNum","temp"});
 
 			cols = lineReader.readLine().split(",");
-			assertArrayEquals("unexpected data", new String[]{"2","72"}, cols);
+			assertArrayEquals("unexpected data", cols, new String[]{"2","72"});
 
 			lineReader.close();
 			readerHandle.close();
@@ -136,14 +177,14 @@ public class RowManagerTest {
 	        DOMHandle domHandle = initNamespaces(rowMgr.resultDoc(plan, new DOMHandle()));
 
 	        NodeList testList = domHandle.evaluateXPath("/sp:sparql/sp:head/sp:variable", NodeList.class);
-	        assertEquals("unexpected header count in XML", testList.getLength(), 2);
+	        assertEquals("unexpected header count in XML", 2, testList.getLength());
 	        Element testElement = (Element) testList.item(0);
-	        assertEquals("unexpected first header name in XML", testElement.getAttribute("name"), "rowNum");
+	        assertEquals("unexpected first header name in XML", "rowNum", testElement.getAttribute("name"));
 	        testElement = (Element) testList.item(1);
-	        assertEquals("unexpected second header name in XML", testElement.getAttribute("name"), "temp");
+	        assertEquals("unexpected second header name in XML", "temp", testElement.getAttribute("name"));
 
 	        testList = domHandle.evaluateXPath("/sp:sparql/sp:results/sp:result", NodeList.class);
-	        assertEquals("unexpected row count in XML", testList.getLength(), 1);
+	        assertEquals("unexpected row count in XML", 1, testList.getLength());
 
 	        testList = domHandle.evaluateXPath("/sp:sparql/sp:results/sp:result[1]/sp:binding", NodeList.class);
 	        checkSingleRow(testList);
@@ -151,14 +192,14 @@ public class RowManagerTest {
 	        JsonNode testNode = rowMgr.resultDoc(plan, new JacksonHandle()).get();
 
 	        JsonNode arrayNode = testNode.findValue("vars");
-	        assertEquals("unexpected header count in JSON", arrayNode.size(), 2);
+	        assertEquals("unexpected header count in JSON", 2, arrayNode.size());
 	        
-	        assertEquals("unexpected first header name in JSON",  arrayNode.get(0).asText(), "rowNum");
-	        assertEquals("unexpected second header name in JSON", arrayNode.get(1).asText(), "temp");
+	        assertEquals("unexpected first header name in JSON",  "rowNum", arrayNode.get(0).asText());
+	        assertEquals("unexpected second header name in JSON", "temp",   arrayNode.get(1).asText());
 	        
 
 	        arrayNode = testNode.findValue("bindings");
-	        assertEquals("unexpected row count in JSON", arrayNode.size(), 1);
+	        assertEquals("unexpected row count in JSON", 1, arrayNode.size());
 
 	        checkSingleRow(arrayNode.get(0));
 		}
@@ -169,7 +210,8 @@ public class RowManagerTest {
 
 		PlanBuilder p = rowMgr.newPlanBuilder();
 		PlanBuilder.ExportablePlan builtPlan =
-				p.fromLiterals(rows)
+				p.fromLiterals(litRows)
+				 .orderBy(p.col("rowNum"))
 				 .where(p.eq(p.col("city"), p.xs.string("Seattle")))
 				 .select(p.cols("rowNum", "temp"));
 
@@ -203,6 +245,38 @@ public class RowManagerTest {
 			RowRecord recordRow = recordRowItr.next();
 			checkSingleRow(recordRow);
 	        assertFalse("expected one record row", recordRowItr.hasNext());
+
+	        recordRowSet.close();
+		}
+	}
+	@Test
+	public void testResultRowDocs()
+	throws IOException, XPathExpressionException, TransformerConfigurationException, TransformerException, TransformerFactoryConfigurationError, SAXException
+	{
+		RowManager rowMgr = Common.client.newRowManager();
+
+		PlanBuilder p = rowMgr.newPlanBuilder();
+		PlanBuilder.ExportablePlan builtPlan =
+				p.fromLiterals(litRows)
+				 .orderBy(p.col("rowNum"))
+				 .joinLeftOuterDoc("doc", "uri")
+				 .select(p.cols("rowNum", "uri", "doc"));
+
+		StringHandle planHandle = builtPlan.export(new StringHandle()).withFormat(Format.JSON);
+		RawPlanDefinition rawPlan = rowMgr.newRawPlanDefinition(planHandle);
+		
+		for (PlanBuilder.Plan plan: new PlanBuilder.Plan[]{builtPlan, rawPlan}) {
+			RowSet<DOMHandle> xmlRowSet = rowMgr.resultRows(plan, new DOMHandle());
+	        checkXMLDocRows(xmlRowSet);
+	        xmlRowSet.close();
+
+			RowSet<JacksonHandle> jsonRowSet = rowMgr.resultRows(plan, new JacksonHandle());
+	        checkJSONDocRows(jsonRowSet);
+	        jsonRowSet.close();
+
+			RowSet<RowRecord> recordRowSet = rowMgr.resultRows(plan);
+			checkRecordDocRows(recordRowSet);
+			recordRowSet.close();
 		}
 	}
 	private DOMHandle initNamespaces(DOMHandle handle) {
@@ -214,24 +288,110 @@ public class RowManagerTest {
         return handle;
 	}
 	private void checkSingleRow(NodeList row) {
-        assertEquals("unexpected column count in XML", row.getLength(), 2);
+        assertEquals("unexpected column count in XML", 2, row.getLength());
         Element testElement = (Element) row.item(0);
-        assertEquals("unexpected first binding name in XML", testElement.getAttribute("name"), "rowNum");
-        assertEquals("unexpected first binding value in XML", testElement.getTextContent(), "2");
+        assertEquals("unexpected first binding name in XML",  "rowNum", testElement.getAttribute("name"));
+        assertEquals("unexpected first binding value in XML", "2",      testElement.getTextContent());
         testElement = (Element) row.item(1);
-        assertEquals("unexpected second binding name in XML", testElement.getAttribute("name"), "temp");
-        assertEquals("unexpected first binding value in XML", testElement.getTextContent(), "72");
+        assertEquals("unexpected second binding name in XML",  "temp", testElement.getAttribute("name"));
+        assertEquals("unexpected second binding value in XML", "72",   testElement.getTextContent());
 	}
 	private void checkSingleRow(JsonNode row) {
         String value = row.findValue("rowNum").findValue("value").asText();
-        assertEquals("unexpected first binding value in JSON", value, "2");
+        assertEquals("unexpected first binding value in JSON", "2",  value);
         value = row.findValue("temp").findValue("value").asText();
-        assertEquals("unexpected first binding value in JSON", value, "72");
+        assertEquals("unexpected first binding value in JSON", "72", value);
 	}
 	private void checkSingleRow(RowRecord row) {
-        String value = row.getString("rowNum");
-        assertEquals("unexpected first binding value in row record", value, "2");
-        value = row.getString("temp");
-        assertEquals("unexpected first binding value in row record", value, "72");
+        assertEquals("unexpected first binding value in row record", "2",  row.getString("rowNum"));
+
+        assertEquals("unexpected first binding value in row record", "72", row.getString("temp"));
+	}
+	private void checkXMLDocRows(RowSet<DOMHandle> rowSet)
+	throws XPathExpressionException, TransformerConfigurationException, TransformerException, TransformerFactoryConfigurationError, SAXException, IOException
+	{
+		int rowCount = 0;
+		for (DOMHandle xmlRow: rowSet) {
+			xmlRow = initNamespaces(xmlRow);
+
+			NodeList row = xmlRow.evaluateXPath("/sp:result/sp:binding", NodeList.class);
+
+	        rowCount++;
+
+			assertEquals("unexpected column count in XML", 3, row.getLength());
+
+	        Element testElement = (Element) row.item(0);
+	        assertEquals("unexpected first binding name in XML", "rowNum",  testElement.getAttribute("name"));
+	        assertEquals("unexpected first binding value in XML", String.valueOf(rowCount), testElement.getTextContent());
+
+	        testElement = (Element) row.item(1);
+	        assertEquals("unexpected second binding name in XML", "uri",               testElement.getAttribute("name"));
+	        assertEquals("unexpected second binding value in XML", uris[rowCount - 1], testElement.getTextContent());
+
+	        testElement = (Element) row.item(2);
+	        assertEquals("unexpected third binding name in XML", "doc", testElement.getAttribute("name"));
+	        if (uris[rowCount - 1].endsWith(".xml")) {
+	        	assertXMLEqual("unexpected third binding value in XML",
+	        			docs[rowCount - 1], nodeToString(testElement.getElementsByTagName("a").item(0))
+	        			);
+	        } else {
+		        assertEquals("unexpected third binding value in XML", docs[rowCount - 1], testElement.getTextContent());
+	        }
+		}
+        assertEquals("row count for XML document join", 3, rowCount);
+	}
+	private void checkJSONDocRows(RowSet<JacksonHandle> rowSet) {
+		int rowCount = 0;
+		for (JacksonHandle jsonRow: rowSet) {
+			JsonNode row = jsonRow.get();
+
+			rowCount++;
+
+	        String value = row.findValue("rowNum").findValue("value").asText();
+	        assertEquals("unexpected first binding value in JSON", String.valueOf(rowCount), value);
+
+	        value = row.findValue("uri").findValue("value").asText();
+	        assertEquals("unexpected second binding value in JSON", uris[rowCount - 1], value);
+
+	        if (uris[rowCount - 1].endsWith(".json")) {
+		        value = row.findValue("doc").findValue("value").toString();
+		        assertEquals("unexpected third binding value in JSON", docs[rowCount - 1].replace(" ", ""), value);
+	        } else {
+		        value = row.findValue("doc").findValue("value").asText();
+		        assertEquals("unexpected third binding value in JSON", docs[rowCount - 1], value);
+	        }
+		}
+        assertEquals("row count for JSON document join", 3, rowCount);
+	}
+	private void checkRecordDocRows(RowSet<RowRecord> rowSet) throws SAXException, IOException {
+		int rowCount = 0;
+		for (RowRecord row: rowSet) {
+			rowCount++;
+
+	        assertEquals("unexpected first binding value in row record", rowCount, row.getInt("rowNum"));
+
+	        assertEquals("unexpected second binding value in row record", uris[rowCount - 1], row.getString("uri"));
+
+    		String doc = row.getContent("doc", new StringHandle()).get();
+	        if (uris[rowCount - 1].endsWith(".json")) {
+		        assertEquals("unexpected third binding JSON value in row record", docs[rowCount - 1], doc);
+	        } else if (uris[rowCount - 1].endsWith(".xml")) {
+	        	assertXMLEqual("unexpected third binding XML value in row record", docs[rowCount - 1], doc);
+	        } else {
+		        assertEquals("unexpected third binding value in row record", docs[rowCount - 1], doc);
+	        }
+		}
+        assertEquals("row count for record document join", 3, rowCount);
+	}
+	private String nodeToString(Node node)
+	throws TransformerConfigurationException, TransformerException, TransformerFactoryConfigurationError
+	{
+		StringWriter sw = new StringWriter();
+		Transformer  tf = TransformerFactory.newInstance().newTransformer();
+		tf.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		tf.transform(
+				new DOMSource(node), new StreamResult(sw)
+				);
+		return sw.toString();
 	}
 }
