@@ -442,7 +442,11 @@ public class RowManagerImpl
 		}
 		@Override
 		public String getString(String columnName) {
-			return get(columnName).toString();
+			Object value = get(columnName);
+			if (value == null || value instanceof String) {
+				return (String) value;
+			}
+			return value.toString();
 		}
 		
 		private RESTServiceResult getServiceResult(String columnName) {

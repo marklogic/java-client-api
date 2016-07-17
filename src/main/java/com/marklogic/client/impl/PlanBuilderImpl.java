@@ -21,6 +21,7 @@ import java.util.Arrays;
 import com.marklogic.client.expression.BaseType;
 import com.marklogic.client.expression.Xs;
 import com.marklogic.client.expression.XsValue;
+import com.marklogic.client.expression.CtsQuery;
 
 import com.marklogic.client.expression.PlanBuilder;
 
@@ -308,63 +309,24 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new ColumnCallImpl("op", "view-col", new Object[]{ view, column });
     } 
     @Override
-    public AccessPlan fromLiterals(@SuppressWarnings("unchecked") java.util.Map<String,Object>... rows) {
-        return new AccessPlanCallImpl(null, "op", "from-literals", new Object[]{literal(rows)});
+    public QualifiedPlan fromLexicons(java.util.Map<String, CtsQuery.ReferenceExpr> indexes) {
+        return new QualifiedPlanCallImpl("op", "from-lexicons", new Object[]{literal(indexes)});
     }
     @Override
-    public AccessPlan fromLiterals(java.util.Map<String,Object>[] rows, String qualifierName) {
-        return new AccessPlanCallImpl(null, "op", "from-literals", new Object[]{literal(rows), xs.string(qualifierName)});
+    public QualifiedPlan fromLexicons(java.util.Map<String, CtsQuery.ReferenceExpr> indexes, String qualifierName) {
+        return new QualifiedPlanCallImpl("op", "from-lexicons", new Object[]{literal(indexes), xs.string(qualifierName)});
+    }
+    @Override
+    public QualifiedPlan fromLiterals(@SuppressWarnings("unchecked") java.util.Map<String,Object>... rows) {
+        return new QualifiedPlanCallImpl("op", "from-literals", new Object[]{literal(rows)});
+    }
+    @Override
+    public QualifiedPlan fromLiterals(java.util.Map<String,Object>[] rows, String qualifierName) {
+        return new QualifiedPlanCallImpl("op", "from-literals", new Object[]{literal(rows), xs.string(qualifierName)});
     }
  public class PlanCallImpl  extends PlanBase  implements PlanBuilder.Plan {
         PlanCallImpl(PlanChainedImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
             super(prior, fnPrefix, fnName, fnArgs);
-         }
-
-}
- public class PreparePlanCallImpl  extends ExportablePlanCallImpl  implements PlanBuilder.PreparePlan {
-        PreparePlanCallImpl(PlanChainedImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
-            super(prior, fnPrefix, fnName, fnArgs);
-         }
-     @Override
-        public PlanFunction installedFunction(String modulePath, String functionName) {
-        return installedFunction(xs.string(modulePath), xs.string(functionName)); 
-    }
-    @Override
-        public PlanFunction installedFunction(Xs.StringParam modulePath, Xs.StringParam functionName) {
-        return new PlanFunctionCallImpl("op", "installed-function", new Object[]{ modulePath, functionName });
-    }
-    @Override
-        public ExportablePlan map(PlanFunction func) {
-        return new ExportablePlanCallImpl(this, "op", "map", new Object[]{ func });
-    }
-    @Override
-        public PlanFunction mapFunction(String moduleName) {
-        return mapFunction(xs.string(moduleName)); 
-    }
-    @Override
-        public PlanFunction mapFunction(Xs.StringParam moduleName) {
-        return new PlanFunctionCallImpl("op", "map-function", new Object[]{ moduleName });
-    }
-    @Override
-        public ExportablePlan reduce(PlanFunction func) {
-        return new ExportablePlanCallImpl(this, "op", "reduce", new Object[]{ func });
-    }
-    @Override
-        public ExportablePlan reduce(PlanFunction func, Xs.AnyAtomicTypeParam seed) {
-        return new ExportablePlanCallImpl(this, "op", "reduce", new Object[]{ func, seed });
-    }
-    @Override
-        public PlanFunction reduceFunction(String moduleName) {
-        return reduceFunction(xs.string(moduleName)); 
-    }
-    @Override
-        public PlanFunction reduceFunction(Xs.StringParam moduleName) {
-        return new PlanFunctionCallImpl("op", "reduce-function", new Object[]{ moduleName });
-    }
-}
- public class PlanParamCallImpl  extends PlanBaseImpl  implements PlanBuilder.PlanParam {
-        PlanParamCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-            super(fnPrefix, fnName, fnArgs);
          }
 
 }
@@ -373,8 +335,8 @@ public class PlanBuilderImpl extends PlanBuilderBase {
          Xs.StringParam schema = null;
          ViewPlanCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(null, fnPrefix, fnName, fnArgs);
-         schema = (Xs.StringParam) fnArgs[0];
-         view = (Xs.StringParam) fnArgs[1];
+         schema = (fnArgs.length <= 0) ? null : (Xs.StringParam) fnArgs[0];
+         view = (fnArgs.length <= 1) ? null : (Xs.StringParam) fnArgs[1];
          }
      @Override
         public Column col(String column) {
@@ -385,20 +347,8 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return schemaCol(this.schema, this.view, column);
     }
 }
- public class ExportablePlanCallImpl  extends PlanCallImpl  implements PlanBuilder.ExportablePlan {
-        ExportablePlanCallImpl(PlanChainedImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
-            super(prior, fnPrefix, fnName, fnArgs);
-         }
-
-}
  public class ColumnCallImpl  extends ExprColCallImpl  implements PlanBuilder.Column {
         ColumnCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-            super(fnPrefix, fnName, fnArgs);
-         }
-
-}
- public class AggregateColCallImpl  extends PlanBaseImpl  implements PlanBuilder.AggregateCol {
-        AggregateColCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, fnArgs);
          }
 
@@ -557,6 +507,80 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     public ModifyPlan whereDistinct() {
         return new ModifyPlanCallImpl(this, "op", "whereDistinct", null);
     }
+}
+ public class PreparePlanCallImpl  extends ExportablePlanCallImpl  implements PlanBuilder.PreparePlan {
+        PreparePlanCallImpl(PlanChainedImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
+            super(prior, fnPrefix, fnName, fnArgs);
+         }
+     @Override
+        public PlanFunction installedFunction(String modulePath, String functionName) {
+        return installedFunction(xs.string(modulePath), xs.string(functionName)); 
+    }
+    @Override
+        public PlanFunction installedFunction(Xs.StringParam modulePath, Xs.StringParam functionName) {
+        return new PlanFunctionCallImpl("op", "installed-function", new Object[]{ modulePath, functionName });
+    }
+    @Override
+        public ExportablePlan map(PlanFunction func) {
+        return new ExportablePlanCallImpl(this, "op", "map", new Object[]{ func });
+    }
+    @Override
+        public PlanFunction mapFunction(String moduleName) {
+        return mapFunction(xs.string(moduleName)); 
+    }
+    @Override
+        public PlanFunction mapFunction(Xs.StringParam moduleName) {
+        return new PlanFunctionCallImpl("op", "map-function", new Object[]{ moduleName });
+    }
+    @Override
+        public ExportablePlan reduce(PlanFunction func) {
+        return new ExportablePlanCallImpl(this, "op", "reduce", new Object[]{ func });
+    }
+    @Override
+        public ExportablePlan reduce(PlanFunction func, Xs.AnyAtomicTypeParam seed) {
+        return new ExportablePlanCallImpl(this, "op", "reduce", new Object[]{ func, seed });
+    }
+    @Override
+        public PlanFunction reduceFunction(String moduleName) {
+        return reduceFunction(xs.string(moduleName)); 
+    }
+    @Override
+        public PlanFunction reduceFunction(Xs.StringParam moduleName) {
+        return new PlanFunctionCallImpl("op", "reduce-function", new Object[]{ moduleName });
+    }
+}
+ public class PlanParamCallImpl  extends PlanBaseImpl  implements PlanBuilder.PlanParam {
+        PlanParamCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+         }
+
+}
+ public class QualifiedPlanCallImpl  extends AccessPlanCallImpl  implements PlanBuilder.QualifiedPlan {
+        Xs.StringParam qualifier = null;
+         QualifiedPlanCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(null, fnPrefix, fnName, fnArgs);
+         qualifier = (fnArgs.length <= 1) ? null : (Xs.StringParam) fnArgs[1];
+         }
+     @Override
+        public Column col(String column) {
+        return col(xs.string(column)); 
+    }
+    @Override
+        public Column col(Xs.StringParam column) {
+        return viewCol(this.qualifier, column);
+    }
+}
+ public class ExportablePlanCallImpl  extends PlanCallImpl  implements PlanBuilder.ExportablePlan {
+        ExportablePlanCallImpl(PlanChainedImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
+            super(prior, fnPrefix, fnName, fnArgs);
+         }
+
+}
+ public class AggregateColCallImpl  extends PlanBaseImpl  implements PlanBuilder.AggregateCol {
+        AggregateColCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+         }
+
 }
  static class AggregateColSeqListImpl extends PlanListImpl implements PlanBuilder.AggregateColSeq {
         AggregateColSeqListImpl(Object[] items) {

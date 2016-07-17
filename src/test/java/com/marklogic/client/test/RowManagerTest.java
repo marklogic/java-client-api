@@ -48,6 +48,7 @@ import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.expression.CtsQuery;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
@@ -109,7 +110,7 @@ public class RowManagerTest {
                   .add(uris[2], new StringHandle(docs[2]).withFormat(Format.TEXT))
               );
 
-/* TODO: as eval user???
+/* TODO: move to bootstrap.xqy
 
     private static final String MASTER_DETAIL_TDE_FILE  = "masterDetail.tdex";
     private static final String MASTER_DETAIL_DATA_FILE = "masterDetail.xml";
@@ -278,6 +279,52 @@ public class RowManagerTest {
 			checkRecordDocRows(recordRowSet);
 			recordRowSet.close();
 		}
+	}
+	@Test
+	public void testLexicons() throws IOException, XPathExpressionException {
+		RowManager rowMgr = Common.client.newRowManager();
+
+		PlanBuilder p = rowMgr.newPlanBuilder();
+
+		Map<String, CtsQuery.ReferenceExpr> lexicons = new HashMap<String, CtsQuery.ReferenceExpr>();
+		lexicons.put("uri", p.cts.uriReference());
+		lexicons.put("int", p.cts.elementReference(p.xs.qname("int")));
+
+		PlanBuilder.ExportablePlan plan =
+				p.fromLexicons(lexicons)
+				 .orderBy(p.cols("int", "uri"))
+				 .select(p.cols("int",  "uri"));
+
+		int[]    expectedInts = {
+			1,
+			3,
+			3,
+			3,
+			4,
+			10,
+			10,
+			20,
+			30,
+			};
+		String[] expectedUris = {
+			"/sample/tuples-test1.xml",
+			"/sample/tuples-test2.xml",
+			"/sample/tuples-test3.xml",
+			"/sample/tuples-test4.xml",
+			"/sample/lexicon-test4.xml",
+			"/sample/lexicon-test3.xml",
+			"/sample/lexicon-test4.xml",
+			"/sample/lexicon-test3.xml",
+			"/sample/lexicon-test4.xml"
+			};
+
+		int rowNum = 0;
+		for (RowRecord row: rowMgr.resultRows(plan)) {
+	        assertEquals("unexpected int value in row record "+rowNum, expectedInts[rowNum], row.getInt("int"));
+	        assertEquals("unexpected uri value in row record "+rowNum, expectedUris[rowNum], row.getString("uri"));
+			rowNum++;
+		}
+        assertEquals("unexpected count of result records", rowNum, expectedInts.length);
 	}
 	private DOMHandle initNamespaces(DOMHandle handle) {
         EditableNamespaceContext namespaces = new EditableNamespaceContext();

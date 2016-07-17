@@ -19,6 +19,7 @@ package com.marklogic.client.expression;
 import com.marklogic.client.expression.BaseType;
 
 import com.marklogic.client.expression.XsValue;
+ import com.marklogic.client.expression.Map;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
@@ -29,10 +30,6 @@ public interface CtsQuery {
     public CtsQuery.QueryExpr andQuery(CtsQuery.QuerySeqExpr queries, String... options);
     public CtsQuery.QueryExpr andQuery(CtsQuery.QuerySeqExpr queries, XsValue.StringSeqVal options);
     public CtsQuery.QueryExpr boostQuery(CtsQuery.QueryExpr matchingQuery, CtsQuery.QueryExpr boostingQuery);
-    public CtsQuery.BoxExpr box(double south, double west, double north, double east);
-    public CtsQuery.BoxExpr box(XsValue.DoubleVal south, XsValue.DoubleVal west, XsValue.DoubleVal north, XsValue.DoubleVal east);
-    public CtsQuery.CircleExpr circle(double radius, CtsQuery.PointExpr center);
-    public CtsQuery.CircleExpr circle(XsValue.DoubleVal radius, CtsQuery.PointExpr center);
     public CtsQuery.QueryExpr collectionQuery(String... uris);
     public CtsQuery.QueryExpr collectionQuery(XsValue.StringSeqVal uris);
     public CtsQuery.QueryExpr directoryQuery(String... uris);
@@ -206,9 +203,6 @@ public interface CtsQuery {
     public CtsQuery.QueryExpr periodRangeQuery(XsValue.StringSeqVal axisName, XsValue.StringVal operator, CtsQuery.PeriodSeqExpr period);
     public CtsQuery.QueryExpr periodRangeQuery(String axisName, String operator, CtsQuery.PeriodSeqExpr period, String... options);
     public CtsQuery.QueryExpr periodRangeQuery(XsValue.StringSeqVal axisName, XsValue.StringVal operator, CtsQuery.PeriodSeqExpr period, XsValue.StringSeqVal options);
-    public CtsQuery.PointExpr point(double latitude, double longitude);
-    public CtsQuery.PointExpr point(XsValue.DoubleVal latitude, XsValue.DoubleVal longitude);
-    public CtsQuery.PolygonExpr polygon(XsValue.AnyAtomicTypeSeqVal vertices);
     public CtsQuery.QueryExpr propertiesFragmentQuery(CtsQuery.QueryExpr query);
     public CtsQuery.QueryExpr propertiesQuery(CtsQuery.QueryExpr arg1);
     public CtsQuery.QueryExpr tripleRangeQuery(XsValue.AnyAtomicTypeSeqVal subject, XsValue.AnyAtomicTypeSeqVal predicate, XsValue.AnyAtomicTypeSeqVal object);
@@ -224,12 +218,44 @@ public interface CtsQuery {
     public CtsQuery.QueryExpr wordQuery(String text, String... options);
     public CtsQuery.QueryExpr wordQuery(XsValue.StringSeqVal text, XsValue.StringSeqVal options);
     public CtsQuery.QueryExpr wordQuery(String text, String options, double weight);
-    public CtsQuery.QueryExpr wordQuery(XsValue.StringSeqVal text, XsValue.StringSeqVal options, XsValue.DoubleVal weight);     public CtsQuery.BoxSeqExpr box(CtsQuery.BoxExpr... items);
+    public CtsQuery.QueryExpr wordQuery(XsValue.StringSeqVal text, XsValue.StringSeqVal options, XsValue.DoubleVal weight);
+    public CtsQuery.BoxExpr box(double south, double west, double north, double east);
+    public CtsQuery.BoxExpr box(XsValue.DoubleVal south, XsValue.DoubleVal west, XsValue.DoubleVal north, XsValue.DoubleVal east);
+    public CtsQuery.CircleExpr circle(double radius, CtsQuery.PointExpr center);
+    public CtsQuery.CircleExpr circle(XsValue.DoubleVal radius, CtsQuery.PointExpr center);
+    public CtsQuery.PointExpr point(double latitude, double longitude);
+    public CtsQuery.PointExpr point(XsValue.DoubleVal latitude, XsValue.DoubleVal longitude);
+    public CtsQuery.PolygonExpr polygon(XsValue.AnyAtomicTypeSeqVal vertices);
+    public CtsQuery.ReferenceExpr collectionReference();
+    public CtsQuery.ReferenceExpr collectionReference(String... options);
+    public CtsQuery.ReferenceExpr collectionReference(XsValue.StringSeqVal options);
+    public CtsQuery.ReferenceExpr elementAttributeReference(XsValue.QNameVal element, XsValue.QNameVal attribute);
+    public CtsQuery.ReferenceExpr elementAttributeReference(XsValue.QNameVal element, XsValue.QNameVal attribute, String... options);
+    public CtsQuery.ReferenceExpr elementAttributeReference(XsValue.QNameVal element, XsValue.QNameVal attribute, XsValue.StringSeqVal options);
+    public CtsQuery.ReferenceExpr elementReference(XsValue.QNameVal element);
+    public CtsQuery.ReferenceExpr elementReference(XsValue.QNameVal element, String... options);
+    public CtsQuery.ReferenceExpr elementReference(XsValue.QNameVal element, XsValue.StringSeqVal options);
+    public CtsQuery.ReferenceExpr fieldReference(String field);
+    public CtsQuery.ReferenceExpr fieldReference(XsValue.StringVal field);
+    public CtsQuery.ReferenceExpr fieldReference(String field, String... options);
+    public CtsQuery.ReferenceExpr fieldReference(XsValue.StringVal field, XsValue.StringSeqVal options);
+    public CtsQuery.ReferenceExpr jsonPropertyReference(String property);
+    public CtsQuery.ReferenceExpr jsonPropertyReference(XsValue.StringVal property);
+    public CtsQuery.ReferenceExpr jsonPropertyReference(String property, String... options);
+    public CtsQuery.ReferenceExpr jsonPropertyReference(XsValue.StringVal property, XsValue.StringSeqVal options);
+    public CtsQuery.ReferenceExpr pathReference(String pathExpression);
+    public CtsQuery.ReferenceExpr pathReference(XsValue.StringVal pathExpression);
+    public CtsQuery.ReferenceExpr pathReference(String pathExpression, String... options);
+    public CtsQuery.ReferenceExpr pathReference(XsValue.StringVal pathExpression, XsValue.StringSeqVal options);
+    public CtsQuery.ReferenceExpr pathReference(String pathExpression, String options, Map.MapExpr map);
+    public CtsQuery.ReferenceExpr pathReference(XsValue.StringVal pathExpression, XsValue.StringSeqVal options, Map.MapExpr map);
+    public CtsQuery.ReferenceExpr uriReference();     public CtsQuery.BoxSeqExpr box(CtsQuery.BoxExpr... items);
      public CtsQuery.CircleSeqExpr circle(CtsQuery.CircleExpr... items);
      public CtsQuery.PeriodSeqExpr period(CtsQuery.PeriodExpr... items);
      public CtsQuery.PointSeqExpr point(CtsQuery.PointExpr... items);
      public CtsQuery.PolygonSeqExpr polygon(CtsQuery.PolygonExpr... items);
      public CtsQuery.QuerySeqExpr query(CtsQuery.QueryExpr... items);
+     public CtsQuery.ReferenceSeqExpr reference(CtsQuery.ReferenceExpr... items);
      public CtsQuery.RegionSeqExpr region(CtsQuery.RegionExpr... items);
         public interface BoxSeqExpr extends RegionSeqExpr { }
         public interface BoxExpr extends BoxSeqExpr, RegionExpr { }
@@ -243,6 +269,8 @@ public interface CtsQuery {
         public interface PolygonExpr extends PolygonSeqExpr, RegionExpr { }
          public interface QuerySeqExpr extends BaseType.ItemSeqExpr { }
         public interface QueryExpr extends QuerySeqExpr, BaseType.ItemExpr { }
+         public interface ReferenceSeqExpr extends BaseType.ItemSeqExpr { }
+        public interface ReferenceExpr extends ReferenceSeqExpr, BaseType.ItemExpr { }
          public interface RegionSeqExpr extends BaseType.ItemSeqExpr { }
         public interface RegionExpr extends RegionSeqExpr, BaseType.ItemExpr { }
 

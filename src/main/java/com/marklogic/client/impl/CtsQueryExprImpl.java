@@ -21,6 +21,8 @@ import com.marklogic.client.expression.Xs;
 
 import com.marklogic.client.expression.CtsQuery;
 import com.marklogic.client.expression.XsValue;
+ import com.marklogic.client.expression.Map;
+ import com.marklogic.client.impl.MapExprImpl;
 
 import com.marklogic.client.impl.BaseTypeImpl;
 
@@ -54,22 +56,6 @@ public class CtsQueryExprImpl implements CtsQuery {
     @Override
         public CtsQuery.QueryExpr boostQuery(CtsQuery.QueryExpr matchingQuery, CtsQuery.QueryExpr boostingQuery) {
         return new CtsQueryExprImpl.QueryCallImpl("cts", "boost-query", new Object[]{ matchingQuery, boostingQuery });
-    }
-    @Override
-        public CtsQuery.BoxExpr box(double south, double west, double north, double east) {
-        return box(xs.doubleVal(south), xs.doubleVal(west), xs.doubleVal(north), xs.doubleVal(east)); 
-    }
-    @Override
-        public CtsQuery.BoxExpr box(XsValue.DoubleVal south, XsValue.DoubleVal west, XsValue.DoubleVal north, XsValue.DoubleVal east) {
-        return new CtsQueryExprImpl.BoxCallImpl("cts", "box", new Object[]{ south, west, north, east });
-    }
-    @Override
-        public CtsQuery.CircleExpr circle(double radius, CtsQuery.PointExpr center) {
-        return circle(xs.doubleVal(radius), center); 
-    }
-    @Override
-        public CtsQuery.CircleExpr circle(XsValue.DoubleVal radius, CtsQuery.PointExpr center) {
-        return new CtsQueryExprImpl.CircleCallImpl("cts", "circle", new Object[]{ radius, center });
     }
     @Override
         public CtsQuery.QueryExpr collectionQuery(String... uris) {
@@ -764,18 +750,6 @@ public class CtsQueryExprImpl implements CtsQuery {
         return new CtsQueryExprImpl.QueryCallImpl("cts", "period-range-query", new Object[]{ axisName, operator, period, options });
     }
     @Override
-        public CtsQuery.PointExpr point(double latitude, double longitude) {
-        return point(xs.doubleVal(latitude), xs.doubleVal(longitude)); 
-    }
-    @Override
-        public CtsQuery.PointExpr point(XsValue.DoubleVal latitude, XsValue.DoubleVal longitude) {
-        return new CtsQueryExprImpl.PointCallImpl("cts", "point", new Object[]{ latitude, longitude });
-    }
-    @Override
-        public CtsQuery.PolygonExpr polygon(XsValue.AnyAtomicTypeSeqVal vertices) {
-        return new CtsQueryExprImpl.PolygonCallImpl("cts", "polygon", new Object[]{ vertices });
-    }
-    @Override
         public CtsQuery.QueryExpr propertiesFragmentQuery(CtsQuery.QueryExpr query) {
         return new CtsQueryExprImpl.QueryCallImpl("cts", "properties-fragment-query", new Object[]{ query });
     }
@@ -838,6 +812,130 @@ public class CtsQueryExprImpl implements CtsQuery {
     @Override
         public CtsQuery.QueryExpr wordQuery(XsValue.StringSeqVal text, XsValue.StringSeqVal options, XsValue.DoubleVal weight) {
         return new CtsQueryExprImpl.QueryCallImpl("cts", "word-query", new Object[]{ text, options, weight });
+    }
+    @Override
+        public CtsQuery.BoxExpr box(double south, double west, double north, double east) {
+        return box(xs.doubleVal(south), xs.doubleVal(west), xs.doubleVal(north), xs.doubleVal(east)); 
+    }
+    @Override
+        public CtsQuery.BoxExpr box(XsValue.DoubleVal south, XsValue.DoubleVal west, XsValue.DoubleVal north, XsValue.DoubleVal east) {
+        return new CtsQueryExprImpl.BoxCallImpl("cts", "box", new Object[]{ south, west, north, east });
+    }
+    @Override
+        public CtsQuery.CircleExpr circle(double radius, CtsQuery.PointExpr center) {
+        return circle(xs.doubleVal(radius), center); 
+    }
+    @Override
+        public CtsQuery.CircleExpr circle(XsValue.DoubleVal radius, CtsQuery.PointExpr center) {
+        return new CtsQueryExprImpl.CircleCallImpl("cts", "circle", new Object[]{ radius, center });
+    }
+    @Override
+        public CtsQuery.PointExpr point(double latitude, double longitude) {
+        return point(xs.doubleVal(latitude), xs.doubleVal(longitude)); 
+    }
+    @Override
+        public CtsQuery.PointExpr point(XsValue.DoubleVal latitude, XsValue.DoubleVal longitude) {
+        return new CtsQueryExprImpl.PointCallImpl("cts", "point", new Object[]{ latitude, longitude });
+    }
+    @Override
+        public CtsQuery.PolygonExpr polygon(XsValue.AnyAtomicTypeSeqVal vertices) {
+        return new CtsQueryExprImpl.PolygonCallImpl("cts", "polygon", new Object[]{ vertices });
+    }
+    @Override
+        public CtsQuery.ReferenceExpr collectionReference() {
+        return new CtsQueryExprImpl.ReferenceCallImpl("cts", "collection-reference", new Object[]{  });
+    }
+    @Override
+        public CtsQuery.ReferenceExpr collectionReference(String... options) {
+        return collectionReference((options == null) ? null : xs.strings(options)); 
+    }
+    @Override
+        public CtsQuery.ReferenceExpr collectionReference(XsValue.StringSeqVal options) {
+        return new CtsQueryExprImpl.ReferenceCallImpl("cts", "collection-reference", new Object[]{ options });
+    }
+    @Override
+        public CtsQuery.ReferenceExpr elementAttributeReference(XsValue.QNameVal element, XsValue.QNameVal attribute) {
+        return new CtsQueryExprImpl.ReferenceCallImpl("cts", "element-attribute-reference", new Object[]{ element, attribute });
+    }
+    @Override
+        public CtsQuery.ReferenceExpr elementAttributeReference(XsValue.QNameVal element, XsValue.QNameVal attribute, String... options) {
+        return elementAttributeReference(element, attribute, (options == null) ? null : xs.strings(options)); 
+    }
+    @Override
+        public CtsQuery.ReferenceExpr elementAttributeReference(XsValue.QNameVal element, XsValue.QNameVal attribute, XsValue.StringSeqVal options) {
+        return new CtsQueryExprImpl.ReferenceCallImpl("cts", "element-attribute-reference", new Object[]{ element, attribute, options });
+    }
+    @Override
+        public CtsQuery.ReferenceExpr elementReference(XsValue.QNameVal element) {
+        return new CtsQueryExprImpl.ReferenceCallImpl("cts", "element-reference", new Object[]{ element });
+    }
+    @Override
+        public CtsQuery.ReferenceExpr elementReference(XsValue.QNameVal element, String... options) {
+        return elementReference(element, (options == null) ? null : xs.strings(options)); 
+    }
+    @Override
+        public CtsQuery.ReferenceExpr elementReference(XsValue.QNameVal element, XsValue.StringSeqVal options) {
+        return new CtsQueryExprImpl.ReferenceCallImpl("cts", "element-reference", new Object[]{ element, options });
+    }
+    @Override
+        public CtsQuery.ReferenceExpr fieldReference(String field) {
+        return fieldReference(xs.string(field)); 
+    }
+    @Override
+        public CtsQuery.ReferenceExpr fieldReference(XsValue.StringVal field) {
+        return new CtsQueryExprImpl.ReferenceCallImpl("cts", "field-reference", new Object[]{ field });
+    }
+    @Override
+        public CtsQuery.ReferenceExpr fieldReference(String field, String... options) {
+        return fieldReference(xs.string(field), (options == null) ? null : xs.strings(options)); 
+    }
+    @Override
+        public CtsQuery.ReferenceExpr fieldReference(XsValue.StringVal field, XsValue.StringSeqVal options) {
+        return new CtsQueryExprImpl.ReferenceCallImpl("cts", "field-reference", new Object[]{ field, options });
+    }
+    @Override
+        public CtsQuery.ReferenceExpr jsonPropertyReference(String property) {
+        return jsonPropertyReference(xs.string(property)); 
+    }
+    @Override
+        public CtsQuery.ReferenceExpr jsonPropertyReference(XsValue.StringVal property) {
+        return new CtsQueryExprImpl.ReferenceCallImpl("cts", "json-property-reference", new Object[]{ property });
+    }
+    @Override
+        public CtsQuery.ReferenceExpr jsonPropertyReference(String property, String... options) {
+        return jsonPropertyReference(xs.string(property), (options == null) ? null : xs.strings(options)); 
+    }
+    @Override
+        public CtsQuery.ReferenceExpr jsonPropertyReference(XsValue.StringVal property, XsValue.StringSeqVal options) {
+        return new CtsQueryExprImpl.ReferenceCallImpl("cts", "json-property-reference", new Object[]{ property, options });
+    }
+    @Override
+        public CtsQuery.ReferenceExpr pathReference(String pathExpression) {
+        return pathReference(xs.string(pathExpression)); 
+    }
+    @Override
+        public CtsQuery.ReferenceExpr pathReference(XsValue.StringVal pathExpression) {
+        return new CtsQueryExprImpl.ReferenceCallImpl("cts", "path-reference", new Object[]{ pathExpression });
+    }
+    @Override
+        public CtsQuery.ReferenceExpr pathReference(String pathExpression, String... options) {
+        return pathReference(xs.string(pathExpression), (options == null) ? null : xs.strings(options)); 
+    }
+    @Override
+        public CtsQuery.ReferenceExpr pathReference(XsValue.StringVal pathExpression, XsValue.StringSeqVal options) {
+        return new CtsQueryExprImpl.ReferenceCallImpl("cts", "path-reference", new Object[]{ pathExpression, options });
+    }
+    @Override
+        public CtsQuery.ReferenceExpr pathReference(String pathExpression, String options, Map.MapExpr map) {
+        return pathReference(xs.string(pathExpression), (options == null) ? null : xs.strings(options), map); 
+    }
+    @Override
+        public CtsQuery.ReferenceExpr pathReference(XsValue.StringVal pathExpression, XsValue.StringSeqVal options, Map.MapExpr map) {
+        return new CtsQueryExprImpl.ReferenceCallImpl("cts", "path-reference", new Object[]{ pathExpression, options, map });
+    }
+    @Override
+    public CtsQuery.ReferenceExpr uriReference() {
+        return new CtsQueryExprImpl.ReferenceCallImpl("cts", "uri-reference", null);
     }     @Override
     public CtsQuery.BoxSeqExpr box(CtsQuery.BoxExpr... items) {
         return new CtsQueryExprImpl.BoxSeqListImpl(items);
@@ -861,6 +959,10 @@ public class CtsQueryExprImpl implements CtsQuery {
      @Override
     public CtsQuery.QuerySeqExpr query(CtsQuery.QueryExpr... items) {
         return new CtsQueryExprImpl.QuerySeqListImpl(items);
+    }
+     @Override
+    public CtsQuery.ReferenceSeqExpr reference(CtsQuery.ReferenceExpr... items) {
+        return new CtsQueryExprImpl.ReferenceSeqListImpl(items);
     }
      @Override
     public CtsQuery.RegionSeqExpr region(CtsQuery.RegionExpr... items) {
@@ -953,6 +1055,21 @@ public class CtsQueryExprImpl implements CtsQuery {
         }
         static class QueryCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements QueryExpr {
             QueryCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+            }
+        }
+         static class ReferenceSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements ReferenceSeqExpr {
+            ReferenceSeqListImpl(Object[] items) {
+                super(BaseTypeImpl.convertList(items));
+            }
+        }
+        static class ReferenceSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements ReferenceSeqExpr {
+            ReferenceSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+            }
+        }
+        static class ReferenceCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements ReferenceExpr {
+            ReferenceCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
                 super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
             }
         }

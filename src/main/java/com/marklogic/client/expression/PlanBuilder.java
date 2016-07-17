@@ -16,6 +16,7 @@
 package com.marklogic.client.expression;
 
 import com.marklogic.client.expression.BaseType;
+import com.marklogic.client.expression.CtsQuery;
 import com.marklogic.client.io.marker.JSONReadHandle;
 
 
@@ -123,33 +124,11 @@ public abstract class PlanBuilder {
     public Plan bindParam(PlanParam param, String literal);
 
 }
- public interface PreparePlan extends ExportablePlan {
-    public PlanFunction installedFunction(String modulePath, String functionName);
-    public PlanFunction installedFunction(Xs.StringParam modulePath, Xs.StringParam functionName);
-    public ExportablePlan map(PlanFunction func);
-    public PlanFunction mapFunction(String moduleName);
-    public PlanFunction mapFunction(Xs.StringParam moduleName);
-    public ExportablePlan reduce(PlanFunction func);
-    public ExportablePlan reduce(PlanFunction func, Xs.AnyAtomicTypeParam seed);
-    public PlanFunction reduceFunction(String moduleName);
-    public PlanFunction reduceFunction(Xs.StringParam moduleName);
-}
- public interface PlanParam extends Xs.AnyURIParam, Xs.Base64BinaryParam, Xs.BooleanParam, Xs.DateParam, Xs.DateTimeParam, Xs.DecimalParam, Xs.IntegerParam, Xs.LongParam, Xs.IntParam, Xs.ShortParam, Xs.ByteParam, Xs.UnsignedLongParam, Xs.UnsignedIntParam, Xs.UnsignedShortParam, Xs.UnsignedByteParam, Xs.DoubleParam, Xs.DayTimeDurationParam, Xs.YearMonthDurationParam, Xs.FloatParam, Xs.GDayParam, Xs.GMonthParam, Xs.GMonthDayParam, Xs.GYearParam, Xs.GYearMonthParam, Xs.HexBinaryParam, Xs.QNameParam, Xs.StringParam, Xs.TimeParam, Xs.UntypedAtomicParam {
-
-}
  public interface ViewPlan extends AccessPlan {
     public Column col(String column);
     public Column col(Xs.StringParam column);
 }
- public interface ExportablePlan extends Plan {
-    public <T extends JSONReadHandle> T export(T handle);
-    public <T> T exportAs(Class<T> as);
-
-}
  public interface Column extends ExprCol, Xs.AnyURIExpr, Xs.Base64BinaryExpr, Xs.BooleanExpr, Xs.DateExpr, Xs.DateTimeExpr, Xs.DecimalExpr, Xs.IntegerExpr, Xs.LongExpr, Xs.IntExpr, Xs.ShortExpr, Xs.ByteExpr, Xs.UnsignedLongExpr, Xs.UnsignedIntExpr, Xs.UnsignedShortExpr, Xs.UnsignedByteExpr, Xs.DoubleExpr, Xs.DayTimeDurationExpr, Xs.YearMonthDurationExpr, Xs.FloatExpr, Xs.GDayExpr, Xs.GMonthExpr, Xs.GMonthDayExpr, Xs.GYearExpr, Xs.GYearMonthExpr, Xs.HexBinaryExpr, Xs.QNameExpr, Xs.StringExpr, Xs.TimeExpr, Xs.UntypedAtomicExpr {
-
-}
- public interface AggregateCol extends AggregateColSeq {
 
 }
  public interface ExprCol extends AggregateCol, SortKey, ExprColSeq {
@@ -196,11 +175,40 @@ public abstract class PlanBuilder {
     public ModifyPlan where(Xs.BooleanExpr condition);
     public ModifyPlan whereDistinct();
 }
+ public interface PreparePlan extends ExportablePlan {
+    public PlanFunction installedFunction(String modulePath, String functionName);
+    public PlanFunction installedFunction(Xs.StringParam modulePath, Xs.StringParam functionName);
+    public ExportablePlan map(PlanFunction func);
+    public PlanFunction mapFunction(String moduleName);
+    public PlanFunction mapFunction(Xs.StringParam moduleName);
+    public ExportablePlan reduce(PlanFunction func);
+    public ExportablePlan reduce(PlanFunction func, Xs.AnyAtomicTypeParam seed);
+    public PlanFunction reduceFunction(String moduleName);
+    public PlanFunction reduceFunction(Xs.StringParam moduleName);
+}
+ public interface PlanParam extends Xs.AnyURIParam, Xs.Base64BinaryParam, Xs.BooleanParam, Xs.DateParam, Xs.DateTimeParam, Xs.DecimalParam, Xs.IntegerParam, Xs.LongParam, Xs.IntParam, Xs.ShortParam, Xs.ByteParam, Xs.UnsignedLongParam, Xs.UnsignedIntParam, Xs.UnsignedShortParam, Xs.UnsignedByteParam, Xs.DoubleParam, Xs.DayTimeDurationParam, Xs.YearMonthDurationParam, Xs.FloatParam, Xs.GDayParam, Xs.GMonthParam, Xs.GMonthDayParam, Xs.GYearParam, Xs.GYearMonthParam, Xs.HexBinaryParam, Xs.QNameParam, Xs.StringParam, Xs.TimeParam, Xs.UntypedAtomicParam {
+
+}
+ public interface QualifiedPlan extends AccessPlan {
+    public Column col(String column);
+    public Column col(Xs.StringParam column);
+}
+ public interface ExportablePlan extends Plan {
+    public <T extends JSONReadHandle> T export(T handle);
+    public <T> T exportAs(Class<T> as);
+
+}
+ public interface AggregateCol extends AggregateColSeq {
+
+}
  
     public abstract PlanParam param(String name);
 
-    public abstract AccessPlan fromLiterals(@SuppressWarnings("unchecked") java.util.Map<String,Object>... rows);
-    public abstract AccessPlan fromLiterals(java.util.Map<String,Object>[] rows, String qualifierName);
+    public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsQuery.ReferenceExpr> indexes);
+    public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsQuery.ReferenceExpr> indexes, String qualifierName);
+
+    public abstract QualifiedPlan fromLiterals(@SuppressWarnings("unchecked") java.util.Map<String,Object>... rows);
+    public abstract QualifiedPlan fromLiterals(java.util.Map<String,Object>[] rows, String qualifierName);
  public interface AggregateColSeq { }
  public interface ExprColSeq extends AggregateColSeq, SortKeySeq { }
  public interface JoinKey extends JoinKeySeq { }
