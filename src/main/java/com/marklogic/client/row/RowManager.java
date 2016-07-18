@@ -26,7 +26,7 @@ import com.marklogic.client.io.marker.RowReadHandle;
 
    DONE:
    + RowManager.newPlanBuilder()
-   + PlanBuilder - fromView(), fromLiterals(), expressions
+   + PlanBuilder - fromView(), fromTriples(), fromLexicon(), fromLiterals(), expressions
    + RowManager.resultDoc()
    + RowManager.resultDocAs()
    + RowManager.resultRows()
@@ -35,7 +35,7 @@ import com.marklogic.client.io.marker.RowReadHandle;
    + RowRecord
 
    TO DO:
-   + PlanBuilder - placeholder parameter binding, fromTriples(), and fromLexicon()
+   + PlanBuilder - placeholder parameter binding
    + move type interfaces into expression.marker package
    + RowSet - column name
    + RowRecord - sequence column values

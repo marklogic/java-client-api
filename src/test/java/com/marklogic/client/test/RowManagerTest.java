@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -59,12 +60,15 @@ import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
+import com.marklogic.client.semantics.GraphManager;
+import com.marklogic.client.semantics.RDFMimeTypes;
 import com.marklogic.client.util.EditableNamespaceContext;
 
 public class RowManagerTest {
     private static String[]             uris    = null;
     private static String[]             docs    = null;
     private static Map<String,Object>[] litRows = null;
+    private static String[][]           triples = null;
 	@SuppressWarnings("unchecked")
 	@BeforeClass
 	public static void beforeClass() throws IOException, InterruptedException {
@@ -98,16 +102,38 @@ public class RowManagerTest {
 		row.put("uri",    uris[2]);
 		litRows[2] = row;
 
+	    triples = new String[][]{
+	    		new String[]{"http://example.org/rowgraph/s1", "http://example.org/rowgraph/p1", "http://example.org/rowgraph/o1"},
+	    		new String[]{"http://example.org/rowgraph/s1", "http://example.org/rowgraph/p2", "http://example.org/rowgraph/o2"},
+	    		new String[]{"http://example.org/rowgraph/s2", "http://example.org/rowgraph/p1", "http://example.org/rowgraph/o3"},
+	    		new String[]{"http://example.org/rowgraph/s2", "http://example.org/rowgraph/p2", "http://example.org/rowgraph/o4"}
+	        };
+
         Common.connect();
 
         @SuppressWarnings("rawtypes")
 		DocumentManager docMgr = Common.client.newDocumentManager();
 
+        String triplesXML =
+        	"<sem:triples xmlns:sem=\"http://marklogic.com/semantics\">\n"+
+        	String.join("\n", (String[]) Arrays
+        		.stream(triples)
+        		.map(triple ->
+                	"<sem:triple>"+
+	                "<sem:subject>"+triple[0]+"</sem:subject>"+
+    	            "<sem:predicate>"+triple[1]+"</sem:predicate>"+
+        	        "<sem:object>"+triple[2]+"</sem:object>"+
+            	    "</sem:triple>"
+                	)
+	        	.toArray(size -> new String[size])
+    	    	)+
+        	"</sem:triples>";
         docMgr.write(
         	docMgr.newWriteSet()
                   .add(uris[0], new StringHandle(docs[0]).withFormat(Format.JSON))
                   .add(uris[1], new StringHandle(docs[1]).withFormat(Format.XML))
                   .add(uris[2], new StringHandle(docs[2]).withFormat(Format.TEXT))
+                  .add("/rowtest/triples1.xml", new StringHandle(triplesXML).withFormat(Format.TEXT))
               );
 
 /* TODO: move to bootstrap.xqy
@@ -279,6 +305,35 @@ public class RowManagerTest {
 			checkRecordDocRows(recordRowSet);
 			recordRowSet.close();
 		}
+	}
+	@Test
+	public void testTriples() {
+		RowManager rowMgr = Common.client.newRowManager();
+
+		PlanBuilder p = rowMgr.newPlanBuilder();
+
+		PlanBuilder.ExportablePlan plan =
+			p.fromTriples(
+				p.pattern(
+						p.col("subject"),
+						p.sem.iri(
+							p.sem.iri(p.xs.string("http://example.org/rowgraph/p1")),
+							p.sem.iri(p.xs.string("http://example.org/rowgraph/p2"))
+							),
+						p.col("object")
+						)
+				)
+			 .orderBy("subject", "object");
+
+/* TODO: XDMP-MINVERSIONREQURIED error
+		int rowNum = 0;
+		for (RowRecord row: rowMgr.resultRows(plan)) {
+	        assertEquals("unexpected int value in row record "+rowNum, triples[rowNum][0], row.getInt("subject"));
+	        assertEquals("unexpected uri value in row record "+rowNum, triples[rowNum][2], row.getString("object"));
+			rowNum++;
+		}
+        assertEquals("unexpected count of result records", rowNum, triples.length);
+ */
 	}
 	@Test
 	public void testLexicons() throws IOException, XPathExpressionException {

@@ -62,7 +62,7 @@ public interface Sem {
         public interface BlankExpr extends BlankSeqExpr, BaseType.ItemExpr { }
          public interface InvalidSeqExpr extends BaseType.ItemSeqExpr { }
         public interface InvalidExpr extends InvalidSeqExpr, BaseType.ItemExpr { }
-         public interface IriSeqExpr extends BaseType.ItemSeqExpr { }
+         public interface IriSeqExpr extends BaseType.ItemSeqExpr , PlanBuilder.TriplePosition { }
         public interface IriExpr extends IriSeqExpr, BaseType.ItemExpr { }
          public interface UnknownSeqExpr extends BaseType.ItemSeqExpr { }
         public interface UnknownExpr extends UnknownSeqExpr, BaseType.ItemExpr { }

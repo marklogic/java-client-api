@@ -151,6 +151,30 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new XsExprImpl.BooleanCallImpl("op", "eq", new Object[]{ left, right });
     }
     @Override
+        public QualifiedPlan fromTriples(TriplePattern... patterns) {
+        return fromTriples(new TriplePatternSeqListImpl(patterns)); 
+    }
+    @Override
+        public QualifiedPlan fromTriples(TriplePatternSeq patterns) {
+        return new QualifiedPlanCallImpl("op", "from-triples", new Object[]{ patterns });
+    }
+    @Override
+        public QualifiedPlan fromTriples(TriplePatternSeq patterns, String qualifierName) {
+        return fromTriples(patterns, (qualifierName == null) ? null : xs.string(qualifierName)); 
+    }
+    @Override
+        public QualifiedPlan fromTriples(TriplePatternSeq patterns, Xs.StringParam qualifierName) {
+        return new QualifiedPlanCallImpl("op", "from-triples", new Object[]{ patterns, qualifierName });
+    }
+    @Override
+        public QualifiedPlan fromTriples(TriplePatternSeq patterns, String qualifierName, String graphIri) {
+        return fromTriples(patterns, (qualifierName == null) ? null : xs.string(qualifierName), (graphIri == null) ? null : xs.string(graphIri)); 
+    }
+    @Override
+        public QualifiedPlan fromTriples(TriplePatternSeq patterns, Xs.StringParam qualifierName, Xs.StringParam graphIri) {
+        return new QualifiedPlanCallImpl("op", "from-triples", new Object[]{ patterns, qualifierName, graphIri });
+    }
+    @Override
         public ViewPlan fromView(String schema, String view) {
         return fromView(xs.string(schema), xs.string(view)); 
     }
@@ -247,6 +271,30 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new XsExprImpl.BooleanCallImpl("op", "or", new Object[]{ list });
     }
     @Override
+        public TriplePattern pattern(TriplePosition... subject) {
+        return pattern(new TriplePositionSeqListImpl(subject)); 
+    }
+    @Override
+        public TriplePattern pattern(TriplePositionSeq subject) {
+        return new TriplePatternCallImpl("op", "pattern", new Object[]{ subject });
+    }
+    @Override
+        public TriplePattern pattern(TriplePositionSeq subject, TriplePosition... predicate) {
+        return pattern(subject, new TriplePositionSeqListImpl(predicate)); 
+    }
+    @Override
+        public TriplePattern pattern(TriplePositionSeq subject, TriplePositionSeq predicate) {
+        return new TriplePatternCallImpl("op", "pattern", new Object[]{ subject, predicate });
+    }
+    @Override
+        public TriplePattern pattern(TriplePositionSeq subject, TriplePositionSeq predicate, TriplePosition... object) {
+        return pattern(subject, predicate, new TriplePositionSeqListImpl(object)); 
+    }
+    @Override
+        public TriplePattern pattern(TriplePositionSeq subject, TriplePositionSeq predicate, TriplePositionSeq object) {
+        return new TriplePatternCallImpl("op", "pattern", new Object[]{ subject, predicate, object });
+    }
+    @Override
         public AggregateCol sample(String name, String column) {
         return sample(col(name), col(column)); 
     }
@@ -308,6 +356,14 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         public Column viewCol(Xs.StringParam view, Xs.StringParam column) {
         return new ColumnCallImpl("op", "view-col", new Object[]{ view, column });
     } 
+    @Override
+    public TriplePatternSeq patterns(TriplePattern... patterns) {
+        return new TriplePatternSeqListImpl(patterns);
+    }
+    @Override
+    public TriplePositionSeq positions(TriplePosition... positions) {
+        return new TriplePositionSeqListImpl(positions);
+    }
     @Override
     public QualifiedPlan fromLexicons(java.util.Map<String, CtsQuery.ReferenceExpr> indexes) {
         return new QualifiedPlanCallImpl("op", "from-lexicons", new Object[]{literal(indexes)});
@@ -375,6 +431,25 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         ModifyPlanCallImpl(PlanChainedImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
             super(prior, fnPrefix, fnName, fnArgs);
          }
+ 
+    @Override
+    public ModifyPlan select(String... cols) {
+        return select((ExprCol[]) Arrays.stream(cols)
+            .map(item -> col(item))
+            .toArray(size -> new ExprCol[size])); 
+    }
+    @Override
+    public ModifyPlan orderBy(String... cols) {
+        return orderBy((SortKey[]) Arrays.stream(cols)
+            .map(item -> col(item))
+            .toArray(size -> new SortKey[size])); 
+    }
+    @Override
+    public ModifyPlan groupBy(String... cols) {
+        return groupBy((ExprCol[]) Arrays.stream(cols)
+            .map(item -> col(item))
+            .toArray(size -> new ExprCol[size])); 
+    }
      @Override
         public ModifyPlan groupBy(ExprCol... keys) {
         return groupBy(new ExprColSeqListImpl(keys)); 
@@ -609,6 +684,26 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
  static class SortKeySeqListImpl extends PlanListImpl implements PlanBuilder.SortKeySeq {
         SortKeySeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+ static class TriplePatternCallImpl extends PlanBaseImpl implements PlanBuilder.TriplePattern {
+        TriplePatternCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+ static class TriplePatternSeqListImpl extends PlanListImpl implements PlanBuilder.TriplePatternSeq {
+        TriplePatternSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+ static class TriplePositionCallImpl extends PlanBaseImpl implements PlanBuilder.TriplePosition {
+        TriplePositionCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+ static class TriplePositionSeqListImpl extends PlanListImpl implements PlanBuilder.TriplePositionSeq {
+        TriplePositionSeqListImpl(Object[] items) {
             super(items);
         }
     }

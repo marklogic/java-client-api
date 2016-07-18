@@ -82,6 +82,12 @@ public abstract class PlanBuilder {
     public abstract SortKey desc(ExprCol column);
     public abstract Xs.AnyAtomicTypeExpr divide(Xs.AnyAtomicTypeExpr left, Xs.AnyAtomicTypeExpr right);
     public abstract Xs.BooleanExpr eq(Xs.AnyAtomicTypeExpr left, Xs.AnyAtomicTypeExpr right);
+    public abstract QualifiedPlan fromTriples(TriplePattern... patterns);
+    public abstract QualifiedPlan fromTriples(TriplePatternSeq patterns);
+    public abstract QualifiedPlan fromTriples(TriplePatternSeq patterns, String qualifierName);
+    public abstract QualifiedPlan fromTriples(TriplePatternSeq patterns, Xs.StringParam qualifierName);
+    public abstract QualifiedPlan fromTriples(TriplePatternSeq patterns, String qualifierName, String graphIri);
+    public abstract QualifiedPlan fromTriples(TriplePatternSeq patterns, Xs.StringParam qualifierName, Xs.StringParam graphIri);
     public abstract ViewPlan fromView(String schema, String view);
     public abstract ViewPlan fromView(Xs.StringParam schema, Xs.StringParam view);
     public abstract ViewPlan fromView(String schema, String view, String qualifierName);
@@ -106,6 +112,12 @@ public abstract class PlanBuilder {
     public abstract JoinKey on(ExprCol left, ExprCol right);
     public abstract Xs.BooleanExpr or(Xs.BooleanExpr... list);
     public abstract Xs.BooleanExpr or(Xs.BooleanSeqExpr list);
+    public abstract TriplePattern pattern(TriplePosition... subject);
+    public abstract TriplePattern pattern(TriplePositionSeq subject);
+    public abstract TriplePattern pattern(TriplePositionSeq subject, TriplePosition... predicate);
+    public abstract TriplePattern pattern(TriplePositionSeq subject, TriplePositionSeq predicate);
+    public abstract TriplePattern pattern(TriplePositionSeq subject, TriplePositionSeq predicate, TriplePosition... object);
+    public abstract TriplePattern pattern(TriplePositionSeq subject, TriplePositionSeq predicate, TriplePositionSeq object);
     public abstract AggregateCol sample(String name, String column);
     public abstract AggregateCol sample(ExprCol name, ExprCol column);
     public abstract Column schemaCol(String schema, String view, String column);
@@ -128,7 +140,7 @@ public abstract class PlanBuilder {
     public Column col(String column);
     public Column col(Xs.StringParam column);
 }
- public interface Column extends ExprCol, Xs.AnyURIExpr, Xs.Base64BinaryExpr, Xs.BooleanExpr, Xs.DateExpr, Xs.DateTimeExpr, Xs.DecimalExpr, Xs.IntegerExpr, Xs.LongExpr, Xs.IntExpr, Xs.ShortExpr, Xs.ByteExpr, Xs.UnsignedLongExpr, Xs.UnsignedIntExpr, Xs.UnsignedShortExpr, Xs.UnsignedByteExpr, Xs.DoubleExpr, Xs.DayTimeDurationExpr, Xs.YearMonthDurationExpr, Xs.FloatExpr, Xs.GDayExpr, Xs.GMonthExpr, Xs.GMonthDayExpr, Xs.GYearExpr, Xs.GYearMonthExpr, Xs.HexBinaryExpr, Xs.QNameExpr, Xs.StringExpr, Xs.TimeExpr, Xs.UntypedAtomicExpr {
+ public interface Column extends ExprCol, Xs.AnyURIExpr, Xs.Base64BinaryExpr, Xs.BooleanExpr, Xs.DateExpr, Xs.DateTimeExpr, Xs.DecimalExpr, Xs.IntegerExpr, Xs.LongExpr, Xs.IntExpr, Xs.ShortExpr, Xs.ByteExpr, Xs.UnsignedLongExpr, Xs.UnsignedIntExpr, Xs.UnsignedShortExpr, Xs.UnsignedByteExpr, Xs.DoubleExpr, Xs.DayTimeDurationExpr, Xs.YearMonthDurationExpr, Xs.FloatExpr, Xs.GDayExpr, Xs.GMonthExpr, Xs.GMonthDayExpr, Xs.GYearExpr, Xs.GYearMonthExpr, Xs.HexBinaryExpr, Xs.QNameExpr, Xs.StringExpr, Xs.TimeExpr, Xs.UntypedAtomicExpr, TriplePosition {
 
 }
  public interface ExprCol extends AggregateCol, SortKey, ExprColSeq {
@@ -141,7 +153,10 @@ public abstract class PlanBuilder {
 
 }
  public interface ModifyPlan extends PreparePlan {
-    public ModifyPlan groupBy(ExprCol... keys);
+    public ModifyPlan select(String... cols);
+    public ModifyPlan orderBy(String... cols);
+    public ModifyPlan groupBy(String... cols);
+     public ModifyPlan groupBy(ExprCol... keys);
     public ModifyPlan groupBy(ExprColSeq keys);
     public ModifyPlan groupBy(ExprColSeq keys, AggregateCol... aggregates);
     public ModifyPlan groupBy(ExprColSeq keys, AggregateColSeq aggregates);
@@ -204,6 +219,9 @@ public abstract class PlanBuilder {
  
     public abstract PlanParam param(String name);
 
+    public abstract TriplePatternSeq  patterns(TriplePattern... pattern);
+    public abstract TriplePositionSeq positions(TriplePosition... position);
+
     public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsQuery.ReferenceExpr> indexes);
     public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsQuery.ReferenceExpr> indexes, String qualifierName);
 
@@ -215,5 +233,9 @@ public abstract class PlanBuilder {
  public interface JoinKeySeq { }
  public interface PlanFunction { }
  public interface SortKeySeq { }
+ public interface TriplePattern extends TriplePatternSeq { }
+ public interface TriplePatternSeq { }
+ public interface TriplePosition extends TriplePositionSeq { }
+ public interface TriplePositionSeq { }
 
 }
