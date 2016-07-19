@@ -168,6 +168,9 @@ public interface RESTServices {
 	public void deleteValues(RequestLogger logger, String type)
 		throws ForbiddenUserException, FailedRequestException;
 
+	public <R extends UrisReadHandle> R uris(RequestLogger reqlog, Transaction transaction,
+			QueryDefinition qdef, long start, long pageLength, R output)
+			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public <R extends AbstractReadHandle> R getResource(RequestLogger reqlog, String path, 
 			Transaction transaction, RequestParameters params, R output)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;

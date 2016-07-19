@@ -2326,8 +2326,11 @@ public class JerseyServices implements RESTServices {
 		addTransactionScopedCookies(builder, webResource, transaction);
 
 		final HandleImplementation tempBaseHandle = baseHandle;
-		Function<WebResource.Builder, ClientResponse> doGetFunction = funcBuilder -> doGet(funcBuilder);
-		Function<WebResource.Builder, ClientResponse> doPostFunction = funcBuilder -> doPost(null, funcBuilder.type(tempBaseHandle.getMimetype()), tempBaseHandle.sendContent(), tempBaseHandle.isResendable());
+		Function<WebResource.Builder, ClientResponse> doGetFunction =
+			funcBuilder -> doGet(funcBuilder);
+		Function<WebResource.Builder, ClientResponse> doPostFunction =
+			funcBuilder -> doPost(null, funcBuilder.type(tempBaseHandle.getMimetype()),
+					tempBaseHandle.sendContent(), tempBaseHandle.isResendable());
 		ClientResponse response = baseHandle == null ? makeRequest(builder, doGetFunction, null)
 				: makeRequest(builder, doPostFunction, null);
 		ClientResponse.Status status = response.getClientResponseStatus();
@@ -2756,6 +2759,66 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
+	public <R extends UrisReadHandle> R uris(RequestLogger reqlog, Transaction transaction,
+			QueryDefinition qdef, long start, long pageLength, R output)
+			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+	{
+		RequestParameters params = new RequestParameters();
+		if ( forestName != null )        params.add("forest-name", forestName);
+		if (start > 1)                   params.add("start",       Long.toString(start));
+		if (pageLength >= 1)             params.add("pageLength",  Long.toString(pageLength));
+		if (qdef.getDirectory() != null) params.add("directory",   qdef.getDirectory());
+		if (qdef.getCollections() != null ) {
+			for ( String collection : qdef.getCollections() ) {
+				params.add("collection", collection);
+			}
+		}
+		if (qdef.getOptionsName()!= null && qdef.getOptionsName().length() > 0) {
+			params.add("options", qdef.getOptionsName());
+		}
+		if (qdef instanceof RawQueryByExampleDefinition) {
+			throw new UnsupportedOperationException("Cannot search with RawQueryByExampleDefinition");
+		} else if (qdef instanceof RawQueryDefinition) {
+			if (logger.isDebugEnabled())
+				logger.debug("Raw uris query");
+
+			StructureWriteHandle input = ((RawQueryDefinition) qdef).getHandle();
+
+			return postResource(reqlog, "internal/uris", transaction, params, input, output);
+		} else {
+			if (qdef instanceof StringQueryDefinition) {
+				String text = ((StringQueryDefinition) qdef).getCriteria();
+				if (logger.isDebugEnabled())
+					logger.debug("Query uris with {}", text);
+
+				if (text != null) {
+					params.add("q", text);
+				}
+			} else if (qdef instanceof StructuredQueryDefinition) {
+				String structure = ((StructuredQueryDefinition) qdef).serialize();
+
+				if (logger.isDebugEnabled())
+					logger.debug("Query uris with structure {}", structure);
+				if (structure != null) {
+					params.add("structuredQuery", structure);
+				}
+			} else if (qdef instanceof CombinedQueryDefinition) {
+				String structure = ((CombinedQueryDefinition) qdef).serialize();
+
+				if (logger.isDebugEnabled())
+					logger.debug("Query uris with combined query {}", structure);
+				if (structure != null) {
+					params.add("structuredQuery", structure);
+				}
+			} else {
+				throw new UnsupportedOperationException("Cannot query uris with " +
+						qdef.getClass().getName());
+			}
+			return getResource(reqlog, "internal/uris", transaction, params, output);
+		}
+	}
+
+	@Override
 	public <R extends AbstractReadHandle> R getResource(RequestLogger reqlog,
 			String path, Transaction transaction, RequestParameters params, R output)
 			throws ResourceNotFoundException, ForbiddenUserException,
@@ -2967,6 +3030,11 @@ public class JerseyServices implements RESTServices {
 				"read");
 
 		String inputMimetype = inputBase.getMimetype();
+		if ( inputMimetype == null &&
+				(Format.JSON == inputBase.getFormat() || Format.XML == inputBase.getFormat()) )
+		{
+			inputMimetype = inputBase.getFormat().getDefaultMimetype();
+		}
 		String outputMimetype = outputBase == null ? null : outputBase.getMimetype();
 		boolean isResendable = inputBase.isResendable();
 		Class as = outputBase == null ? null : outputBase.receiveAs();

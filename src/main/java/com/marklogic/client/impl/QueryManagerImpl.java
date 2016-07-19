@@ -199,6 +199,10 @@ public class QueryManagerImpl
         return searchHandle;
     }
 
+    public <T extends UrisReadHandle> T uris(QueryDefinition querydef, T urisHandle, long start, Transaction transaction) {
+        return services.uris(requestLogger, transaction, querydef, start, pageLen, urisHandle);
+    }
+
     @Override
     public void delete(DeleteQueryDefinition querydef) {
         delete(querydef, null);
