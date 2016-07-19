@@ -67,7 +67,7 @@ public class DocumentMetadataHandleTest {
 		docMgr.write(docId, new StringHandle().with(content));
 
 		String metadataText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+
-		"<rapi:metadata uri=\"/test/testMetadataXML1.xml\" xsi:schemaLocation=\"http://marklogic.com/rest-api/database dbmeta.xsd\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:rapi=\"http://marklogic.com/rest-api\" xmlns:prop=\"http://marklogic.com/xdmp/property\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"+
+		"<rapi:metadata uri=\"/test/testMetadataXML1.xml\" xsi:schemaLocation=\"http://marklogic.com/rest-api restapi.xsd\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:rapi=\"http://marklogic.com/rest-api\" xmlns:prop=\"http://marklogic.com/xdmp/property\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"+
 		  "<rapi:collections>"+
 		    "<rapi:collection>/document/collection1</rapi:collection>"+
 		    "<rapi:collection>/document/collection2</rapi:collection>"+

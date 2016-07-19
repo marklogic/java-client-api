@@ -109,7 +109,7 @@ public class GenericDocumentTest {
 
 	final static String metadata =
 	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
-	"<rapi:metadata uri=\"/test/testMetadataXML1.xml\" xsi:schemaLocation=\"http://marklogic.com/rest-api/database dbmeta.xsd\" xmlns:rapi=\"http://marklogic.com/rest-api\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"+
+	"<rapi:metadata uri=\"/test/testMetadataXML1.xml\" xsi:schemaLocation=\"http://marklogic.com/rest-api restapi.xsd\" xmlns:rapi=\"http://marklogic.com/rest-api\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"+
 	"  <rapi:collections>\n"+
 	"    <rapi:collection>/document/collection1</rapi:collection>\n"+
 	"    <rapi:collection>/document/collection2</rapi:collection>\n"+
@@ -136,7 +136,7 @@ public class GenericDocumentTest {
 
 	final static String patchedMetadata =
 		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
-		"<rapi:metadata uri=\"/test/testMetadataXML1.xml\" xsi:schemaLocation=\"http://marklogic.com/rest-api/database dbmeta.xsd\" xmlns:rapi=\"http://marklogic.com/rest-api\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"+
+		"<rapi:metadata uri=\"/test/testMetadataXML1.xml\" xsi:schemaLocation=\"http://marklogic.com/rest-api restapi.xsd\" xmlns:rapi=\"http://marklogic.com/rest-api\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"+
 		"  <rapi:collections>\n"+
 		"    <rapi:collection>/document/collection1</rapi:collection>\n"+
 		"    <rapi:collection>/document/collection2</rapi:collection>\n"+
