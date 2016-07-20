@@ -360,6 +360,9 @@ public abstract class ConnectedRESTQA {
 			System.out.println(content);
 		}
 	}
+	
+	
+	
 	/*
 	 * Creating RESTServer With default content and module database
 	 */
@@ -579,6 +582,9 @@ public abstract class ConnectedRESTQA {
 			e.printStackTrace();
 		}
 	}
+	
+	
+	
 
 	/*
 	 *  "permission": [
@@ -2443,4 +2449,162 @@ public abstract class ConnectedRESTQA {
     public static String getSslAppServerName() {
        return restSslServerName;
     }
+    
+    /*
+	 * Associate REST server with External Security (Kerberos) 
+	 * Property changes needed for Kerberos are:
+	 * 
+	 * authentication set to "kerberos-ticket"
+	 * internal security set to "false"
+	 * external security set to "$extSecurityrName"
+	 * 
+	 */
+	public static void associateRESTServerWithKerberosExtSecurity(String restServerName,String extSecurityrName)throws Exception{
+		DefaultHttpClient client = new DefaultHttpClient();
+
+		client.getCredentialsProvider().setCredentials(
+				new AuthScope("localhost", 8002),
+				new UsernamePasswordCredentials("admin", "admin"));
+		String  body = "{\"group-name\": \"Default\", \"authentication\":\"kerberos-ticket\",\"internal-security\": \"false\",\"external-security\": \"" + extSecurityrName + "\"}";
+
+		HttpPut put = new HttpPut("http://localhost:8002/manage/v2/servers/"+restServerName+"/properties?server-type=http");
+		put.addHeader("Content-type", "application/json");
+		put.setEntity(new StringEntity(body));
+
+		HttpResponse response2 = client.execute(put);
+		HttpEntity respEntity = response2.getEntity();
+		if(respEntity != null){
+			String content =  EntityUtils.toString(respEntity);
+			System.out.println(content);
+		}
+	}
+	
+	/*
+	 * Associate REST server with Digest Auth 
+	 * Property changes needed for Kerberos are:
+	 * 
+	 * authentication set to "Digest"
+	 * internal security set to "true"
+	 * 
+	 */
+	public static void associateRESTServerWithDigestAuth(String restServerName)throws Exception{
+		DefaultHttpClient client = new DefaultHttpClient();
+
+		client.getCredentialsProvider().setCredentials(
+				new AuthScope("localhost", 8002),
+				new UsernamePasswordCredentials("admin", "admin"));
+		String extSecurityrName ="";
+		String  body = "{\"group-name\": \"Default\", \"authentication\":\"Digest\",\"internal-security\": \"true\",\"external-security\": \"" + extSecurityrName + "\"}";;
+
+		HttpPut put = new HttpPut("http://localhost:8002/manage/v2/servers/"+restServerName+"/properties?server-type=http");
+		put.addHeader("Content-type", "application/json");
+		put.setEntity(new StringEntity(body));
+
+		HttpResponse response2 = client.execute(put);
+		HttpEntity respEntity = response2.getEntity();
+		if(respEntity != null){
+			String content =  EntityUtils.toString(respEntity);
+			System.out.println(content);
+		}
+	}
+	
+	/*
+	 * Creates an external security name.
+	 */
+	
+	public static void createExternalSecurityForKerberos(String restServerName,String extSecurityName)throws Exception{
+		DefaultHttpClient client = new DefaultHttpClient();
+
+		client.getCredentialsProvider().setCredentials(
+				new AuthScope("localhost", 8002),
+				new UsernamePasswordCredentials("admin", "admin"));
+		String  body = "{\"authentication\": \"kerberos\", \"external-security-name\":\"" + extSecurityName + "\", \"description\":\"External Kerberos Security\""
+				+ ",\"cache-timeout\":\"300\", \"authorization\":\"internal\","
+				+ "\"ldap-server-uri\":\"\","
+				+ "\"ldap-base\":\"\","
+				+ "\"ldap-attribute\":\"\","
+				+ "\"ldap-default-user\":\"\","
+				+ "\"ldap-password\":\"\","
+				+ "\"ldap-bind-method\":\"MD5\""
+				+ "}";
+
+		HttpPost post = new HttpPost("http://localhost:8002/manage/v2/external-security");
+		post.addHeader("Content-type", "application/json");
+		post.setEntity(new StringEntity(body));
+
+		HttpResponse response2 = client.execute(post);
+		HttpEntity respEntity = response2.getEntity();
+		if(respEntity != null){
+			String content =  EntityUtils.toString(respEntity);
+			System.out.println(content);
+		}
+	}
+	
+	/*
+	 * This function creates a REST user with a Kerberos External name and given roles 
+	 */
+
+	public static void createRESTKerberosUser(String usrName, String pass, String externalName, String... roleNames ){
+		try{
+			DefaultHttpClient client = new DefaultHttpClient();
+			client.getCredentialsProvider().setCredentials(
+					new AuthScope("localhost", 8002),
+					new UsernamePasswordCredentials("admin", "admin"));
+			HttpGet getrequest = new HttpGet("http://localhost:8002"+ "/manage/v2/users/"+usrName);
+			HttpResponse resp = client.execute(getrequest);
+
+			if( resp.getStatusLine().getStatusCode() == 200)
+			{
+				System.out.println("User already exist");
+			}
+			else {
+				System.out.println("User dont exist");
+				client = new DefaultHttpClient();
+				client.getCredentialsProvider().setCredentials(
+						new AuthScope("localhost", 8002),
+						new UsernamePasswordCredentials("admin", "admin"));
+
+				ObjectMapper mapper = new ObjectMapper();
+				ObjectNode mainNode = mapper.createObjectNode();
+				//			ObjectNode childNode = mapper.createObjectNode();
+				ArrayNode childArray = mapper.createArrayNode();
+				mainNode.put("user-name",usrName);
+				mainNode.put("description", "user discription");
+				mainNode.put("password", pass);
+				for(String rolename: roleNames)
+					childArray.add(rolename);
+				mainNode.withArray("role").addAll(childArray);
+				
+				//Enable External Name(s)
+				ArrayNode childArrayExtNames = mapper.createArrayNode();
+				ObjectNode extNameNode = mapper.createObjectNode();
+				extNameNode.put("external-name", externalName);
+				
+				childArrayExtNames.add(extNameNode);
+				mainNode.withArray("external-names").addAll(childArrayExtNames);
+				
+				System.out.println(mainNode.toString());
+				HttpPost post = new HttpPost("http://localhost:8002"+ "/manage/v2/users?format=json");
+				post.addHeader("Content-type", "application/json");
+				post.setEntity(new StringEntity(mainNode.toString()));
+
+				HttpResponse response = client.execute(post);
+				HttpEntity respEntity = response.getEntity();
+				if( response.getStatusLine().getStatusCode() == 400)
+				{
+					System.out.println("User already exist");
+				}
+				else if (respEntity != null) {
+					// EntityUtils to get the response content
+					String content =  EntityUtils.toString(respEntity);
+					System.out.println(content);
+				}
+				else {System.out.println("No Proper Response");}
+			}
+		}catch (Exception e) {
+			// writing error to Log
+			e.printStackTrace();
+		}
+	}
+	
 }

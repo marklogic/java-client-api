@@ -11,6 +11,7 @@ test {
 
 	exclude 'com/marklogic/client/functionaltest/TestSSLConnection.class'
 	exclude 'com/marklogic/client/functionaltest/TestBug18993.class'
+	exclude 'com/marklogic/client/functionaltest/TestDatabaseClientWithKerberos.class'
 }
 
 /* The code repositories to consult for dependencies */
