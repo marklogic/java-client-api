@@ -86,7 +86,7 @@ public interface RESTServices {
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 	public DocumentPage getBulkDocuments(RequestLogger logger, QueryDefinition querydef,
 			long start, long pageLength, Transaction transaction, SearchReadHandle searchHandle, 
-            QueryView view, Set<Metadata> categories, Format format, RequestParameters extraParams)
+			QueryView view, Set<Metadata> categories, Format format, RequestParameters extraParams)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
 	public void postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
@@ -114,35 +114,35 @@ public interface RESTServices {
 		throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException;
 
-    public <T> T search(RequestLogger logger, Class <T> as, QueryDefinition queryDef, String mimetype,
-    		long start, long len, QueryView view, Transaction transaction)
-    	throws ForbiddenUserException, FailedRequestException;
+	public <T> T search(RequestLogger logger, Class<T> as, QueryDefinition queryDef, String mimetype,
+			long start, long len, QueryView view, Transaction transaction)
+		throws ForbiddenUserException, FailedRequestException;
 	public <T> T search(RequestLogger reqlog, Class<T> as, QueryDefinition queryDef, String mimetype,
 			String view)
 		throws ForbiddenUserException, FailedRequestException;
 
-    public void deleteSearch(RequestLogger logger, DeleteQueryDefinition queryDef, Transaction transaction)
-            throws ForbiddenUserException, FailedRequestException;
-    public void delete(RequestLogger logger, Transaction transaction, String... uris)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+	public void deleteSearch(RequestLogger logger, DeleteQueryDefinition queryDef, Transaction transaction)
+		throws ForbiddenUserException, FailedRequestException;
+	public void delete(RequestLogger logger, Transaction transaction, String... uris)
+		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    public Transaction openTransaction(String name, int timeLimit)
+	public Transaction openTransaction(String name, int timeLimit)
 		throws ForbiddenUserException, FailedRequestException;
 	public void commitTransaction(Transaction transaction)
 		throws ForbiddenUserException, FailedRequestException;
 	public void rollbackTransaction(Transaction transaction)
 		throws ForbiddenUserException, FailedRequestException;
 
-    public <T> T values(Class <T> as, ValuesDefinition valdef, String mimetype, long start, long pageLength, Transaction transaction)
-            throws ForbiddenUserException, FailedRequestException;
+	public <T> T values(Class <T> as, ValuesDefinition valdef, String mimetype, long start, long pageLength, Transaction transaction)
+		throws ForbiddenUserException, FailedRequestException;
 
-    public <T> T valuesList(Class <T> as, ValuesListDefinition valdef, String mimetype, Transaction transaction)
-            throws ForbiddenUserException, FailedRequestException;
+	public <T> T valuesList(Class <T> as, ValuesListDefinition valdef, String mimetype, Transaction transaction)
+		throws ForbiddenUserException, FailedRequestException;
 
-    public <T> T optionsList(Class <T> as, String mimetype, Transaction transaction)
-            throws ForbiddenUserException, FailedRequestException;
+	public <T> T optionsList(Class <T> as, String mimetype, Transaction transaction)
+		throws ForbiddenUserException, FailedRequestException;
 
-    // namespaces, etc.
+	// namespaces, etc.
 	public <T> T getValue(RequestLogger logger, String type, String key,
 			boolean isNullable, String mimetype, Class<T> as)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -192,18 +192,18 @@ public interface RESTServices {
 	public <R extends AbstractReadHandle> R postResource(
 			RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
 			AbstractWriteHandle input, R output)
-		throws ResourceNotFoundException, ResourceNotResendableException, 
-            ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+		throws ResourceNotFoundException, ResourceNotResendableException,
+					 ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R postResource(
 			RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
 			W[] input, R output)
-		throws ResourceNotFoundException, ResourceNotResendableException, 
-            ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+		throws ResourceNotFoundException, ResourceNotResendableException,
+					 ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R postResource(
 			RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
 			W[] input, Map<String, List<String>>[] headers, R output)
-		throws ResourceNotFoundException, ResourceNotResendableException, 
-            ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+		throws ResourceNotFoundException, ResourceNotResendableException,
+					 ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 	public RESTServiceResultIterator postIteratedResource(
 			RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
 			AbstractWriteHandle input, String... outputMimetypes)
@@ -306,7 +306,7 @@ public interface RESTServices {
 	public void mergeGraph(RequestLogger reqlog, String uri, AbstractWriteHandle input,
 			GraphPermissions permissions, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,
-			   FailedRequestException;
+					 FailedRequestException;
 
 	public void mergeGraphs(RequestLogger reqlog, AbstractWriteHandle input, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
