@@ -26,9 +26,7 @@ jacocoTestReport {
 					additionalSourceDirs = files(sourceSets.main.allJava.srcDirs)
 				}
 
-dependencies {
-	compile 'org.apache.httpcomponents:httpcore:4.4.3'
-	compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.3.4'
+dependencies {	
 	compile('com.marklogic:java-client-api:4.0-SNAPSHOT')
 	compile('xmlunit:xmlunit:1.5')
 	compile('junit:junit:4.11')

@@ -43,7 +43,10 @@ public class TestBug18993 extends BasicJavaClientREST {
 	{
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
+		if (!IsSecurityEnabled()) {
+			// Run it only in non-SSL mode.
 		loadBug18993();
+		}
 	}
 
 @After
@@ -56,6 +59,8 @@ public class TestBug18993 extends BasicJavaClientREST {
 	@Test
 	public void testBug18993() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	{
+		if (!IsSecurityEnabled()) {
+			// Run it only in non-SSL mode.
 		System.out.println("Running testBug18993");
 		
 		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
@@ -81,6 +86,7 @@ public class TestBug18993 extends BasicJavaClientREST {
 		
 		// release client
 		client.release();
+		}
 	}
 	@AfterClass
 	public static void tearDown() throws Exception
@@ -89,4 +95,3 @@ public class TestBug18993 extends BasicJavaClientREST {
 		cleanupRESTServer(dbName, fNames);
 	}
 }
-
