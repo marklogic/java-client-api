@@ -1,3 +1,18 @@
+/*
+ * Copyright 2016 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.marklogic.client.impl;
 
 import java.io.ByteArrayInputStream;
@@ -7,6 +22,7 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.expression.Cts;
 import com.marklogic.client.expression.Fn;
 import com.marklogic.client.expression.Json;
@@ -18,8 +34,6 @@ import com.marklogic.client.expression.Sql;
 import com.marklogic.client.expression.Xdmp;
 import com.marklogic.client.expression.Xs;
 import com.marklogic.client.expression.XsValue;
-import com.marklogic.client.expression.PlanBuilder.Plan;
-import com.marklogic.client.expression.PlanBuilder.PlanParam;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
@@ -27,12 +41,21 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 
 abstract class PlanBuilderBase extends PlanBuilder {
+	private HandleFactoryRegistry handleRegistry;
+
 	PlanBuilderBase(
         Cts cts, Fn fn, Json json, com.marklogic.client.expression.Map map,
         Math math, Rdf rdf, Sem sem, Sql sql, Xdmp xdmp, Xs xs
     ) {
         super(cts, fn, json, map, math, rdf, sem, sql, xdmp, xs);
     }
+
+	HandleFactoryRegistry getHandleRegistry() {
+		return handleRegistry;
+	}
+	void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
+		this.handleRegistry = handleRegistry;
+	}
 
 	@Override
     public PlanParam param(String name) {
@@ -58,7 +81,6 @@ abstract class PlanBuilderBase extends PlanBuilder {
 	}
 
     static interface RequestPlan {
-// TODO: datatypes other than string
     	public Map<PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl> getParams();
     	public AbstractWriteHandle getHandle();
     }
@@ -98,8 +120,12 @@ abstract class PlanBuilderBase extends PlanBuilder {
 		}
 		@Override
 	    public <T> T exportAs(Class<T> as) {
+			if (as == null) {
+				throw new IllegalArgumentException("Must specify a class to export content with a registered handle");
+			}
+
 // TODO: look up in registry
-	    	return null;
+			throw new UnsupportedOperationException("exportAs() is not implemented yet");
 	    }
 
 		String getAst() {
@@ -166,7 +192,6 @@ abstract class PlanBuilderBase extends PlanBuilder {
 // TODO: return clone with param for immutability
 	    	return this;
 	    }
-// TODO: implementation method for constructing request parameters
 	}
 
     static class PlanBaseImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> {

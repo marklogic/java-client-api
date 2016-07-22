@@ -55,7 +55,6 @@ import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
-import com.marklogic.client.row.RowRecord.ColumnKind;
 import com.marklogic.client.util.RequestParameters;
 
 public class RowManagerImpl
@@ -80,11 +79,16 @@ public class RowManagerImpl
 	@Override
 	public PlanBuilder newPlanBuilder() {
 		Xs xs = new XsExprImpl();
-		return new PlanBuilderImpl(
+
+		PlanBuilderImpl planBuilder = new PlanBuilderImpl(
 				new CtsExprImpl(xs), new FnExprImpl(xs), new JsonExprImpl(xs), new MapExprImpl(xs),
 				new MathExprImpl(xs), new RdfExprImpl(xs), new SemExprImpl(xs), new SqlExprImpl(xs),
 				new XdmpExprImpl(xs), xs
 				);
+
+		planBuilder.setHandleRegistry(getHandleRegistry());
+
+		return planBuilder;
 	}
 
 	@Override
@@ -139,11 +143,11 @@ public class RowManagerImpl
 
 	@Override
 	public RowSet<RowRecord> resultRows(Plan plan) {
-		return resultRows(plan, new RowRecordImpl(), null);
+		return resultRows(plan, new RowRecordImpl(getHandleRegistry()), null);
 	}
 	@Override
 	public RowSet<RowRecord> resultRows(Plan plan, Transaction transaction) {
-		return resultRows(plan, new RowRecordImpl(), transaction);
+		return resultRows(plan, new RowRecordImpl(getHandleRegistry()), transaction);
 	}
 	@Override
 	public <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle) {
@@ -232,7 +236,7 @@ public class RowManagerImpl
 
 		@Override
 		public String[] getColumnNames() {
-// TODO
+// TODO: send as first part
 			throw new UnsupportedOperationException("getColumnNames() is not implemented yet");
 		}
 
@@ -283,8 +287,6 @@ public class RowManagerImpl
 				row.replaceAll((key, rawBinding) -> {
 					@SuppressWarnings("unchecked")
 					Map<String,Object> binding = (Map<String,Object>) rawBinding;
-// TODO: capture SPARQL type and datatype for casting on request
-// TODO: special processing for cid?
 					String kind = (String) binding.get("type");
 					if (kind != null) {
 						kinds.put(key, kind);
@@ -380,6 +382,16 @@ public class RowManagerImpl
 
 		private Map<String, Object> row = null;
 
+		private HandleFactoryRegistry handleRegistry = null;
+
+		RowRecordImpl(HandleFactoryRegistry handleRegistry) {
+			this.handleRegistry = handleRegistry;
+		}
+
+		HandleFactoryRegistry getHandleRegistry() {
+			return handleRegistry;
+		}
+
 // QUESTION:  threading guarantees - multiple handles? precedent?
 		void init(Map<String, String> kinds, Map<String, String> datatypes, Map<String, Object> row) {
 			this.kinds     = kinds;
@@ -467,8 +479,6 @@ public class RowManagerImpl
 			throw new UnsupportedOperationException("cannot modify row record");
 		}
 
-// TODO: metadata accessors
-
 		// literal casting convenience getters
 		@Override
 		public boolean getBoolean(String columnName) {
@@ -528,7 +538,7 @@ public class RowManagerImpl
 		@Override
 		public <T extends AnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as) throws Exception {
 // TODO: constructor array for sequence
-			return null;
+			throw new UnsupportedOperationException("sequence of values not supported");
 		}
 
 		@Override
@@ -557,8 +567,20 @@ public class RowManagerImpl
 		}
 		@Override
 		public <T> T getContentAs(String columnName, Class<T> as) {
-// TODO
-			return null;
+			if (as == null) {
+				throw new IllegalArgumentException("Must specify a class for content with a registered handle");
+			}
+
+			ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+			if (handle == null) {
+				throw new IllegalArgumentException("No handle registered for class: "+as.getName());
+			}
+
+			handle = getContent(columnName, handle);
+
+			T content = (handle == null) ? null : handle.get();
+
+			return content;
 		}
 	}
 	static class RawPlanDefinitionImpl implements RawPlanDefinition, PlanBuilderBase.RequestPlan {

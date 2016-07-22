@@ -18,7 +18,6 @@ package com.marklogic.client.row;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
-import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.RowReadHandle;
 
