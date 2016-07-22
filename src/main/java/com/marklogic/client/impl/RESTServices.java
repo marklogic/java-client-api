@@ -80,11 +80,11 @@ public interface RESTServices {
 	public DocumentDescriptor head(RequestLogger logger, String uri, Transaction transaction)
 		throws ForbiddenUserException, FailedRequestException;
 
-	public DocumentPage getBulkDocuments(RequestLogger logger, Transaction transaction,
+	public DocumentPage getBulkDocuments(RequestLogger logger, long serverTimestamp, Transaction transaction,
 			Set<Metadata> categories, Format format, RequestParameters extraParams,
 			boolean withContent, String... uris)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
-	public DocumentPage getBulkDocuments(RequestLogger logger, QueryDefinition querydef,
+	public DocumentPage getBulkDocuments(RequestLogger logger, long serverTimestamp, QueryDefinition querydef,
 			long start, long pageLength, Transaction transaction, SearchReadHandle searchHandle, 
 			QueryView view, Set<Metadata> categories, Format format, RequestParameters extraParams)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
@@ -114,11 +114,8 @@ public interface RESTServices {
 		throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException;
 
-	public <T> T search(RequestLogger logger, Class<T> as, QueryDefinition queryDef, String mimetype,
+	public <T extends SearchReadHandle> T search(RequestLogger logger, T searchHandle, QueryDefinition queryDef,
 			long start, long len, QueryView view, Transaction transaction)
-		throws ForbiddenUserException, FailedRequestException;
-	public <T> T search(RequestLogger reqlog, Class<T> as, QueryDefinition queryDef, String mimetype,
-			String view)
 		throws ForbiddenUserException, FailedRequestException;
 
 	public void deleteSearch(RequestLogger logger, DeleteQueryDefinition queryDef, Transaction transaction)

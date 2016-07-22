@@ -403,24 +403,46 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 
   @Override
   public DocumentPage read(String... uris) {
-    return read(null, null, uris);
+    return read(-1, null, null, uris);
+  }
+
+  @Override
+  public DocumentPage read(long serverTimestamp, String... uris) {
+    return read(serverTimestamp, null, null, uris);
   }
 
   @Override
   public DocumentPage read(Transaction transaction, String... uris) {
-    return read(null, transaction, uris);
+    return read(-1, null, transaction, uris);
+  }
+
+  @Override
+  public DocumentPage read(long serverTimestamp, Transaction transaction, String... uris) {
+    return read(serverTimestamp, null, transaction, uris);
   }
 
   @Override
   public DocumentPage read(ServerTransform transform, String... uris) {
-    return read(transform, null, uris);
+    return read(-1, transform, null, uris);
+  }
+
+  @Override
+  public DocumentPage read(long serverTimestamp, ServerTransform transform, String... uris) {
+    return read(serverTimestamp, transform, null, uris);
   }
 
   @Override
   public DocumentPage read(ServerTransform transform, Transaction transaction,
       String... uris) {
     boolean withContent = true;
-    return read(transform, transaction, withContent, null, uris);
+    return read(-1, transform, transaction, withContent, null, uris);
+  }
+
+  @Override
+  public DocumentPage read(long serverTimestamp, ServerTransform transform, Transaction transaction,
+      String... uris) {
+    boolean withContent = true;
+    return read(serverTimestamp, transform, transaction, withContent, null, uris);
   }
 
   /*
@@ -429,7 +451,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
    * withContent = true; return read(transform, transaction, withContent,
    * temporalCollection, uris); }
    */
-  public DocumentPage read(ServerTransform transform, Transaction transaction,
+  public DocumentPage read(long serverTimestamp, ServerTransform transform, Transaction transaction,
       boolean withContent, String temporalCollection, String[] uris) {
     if (uris == null || uris.length == 0)
       throw new IllegalArgumentException("Attempt to call read with no uris");
@@ -444,6 +466,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 
     return services.getBulkDocuments(
         requestLogger,
+        serverTimestamp,
         transaction,
         // the default for bulk is no metadata, which differs from the normal
         // default of ALL
@@ -455,30 +478,44 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 
   public DocumentPage readMetadata(String... uris) {
     boolean withContent = false;
-    return read(null, null, withContent, null, uris);
+    return read(-1, null, null, withContent, null, uris);
   }
 
   public DocumentPage readMetadata(Transaction transaction, String... uris) {
     boolean withContent = false;
-    return read(null, transaction, withContent, null, uris);
+    return read(-1, null, transaction, withContent, null, uris);
   }
 
   public DocumentPage search(QueryDefinition querydef, long start) {
-    return search(querydef, start, null, null);
+    return search(querydef, start, -1, null, null);
+  }
+
+  public DocumentPage search(QueryDefinition querydef, long start, long serverTimestamp) {
+    return search(querydef, start, serverTimestamp, null, null);
   }
 
   public DocumentPage search(QueryDefinition querydef, long start,
       SearchReadHandle searchHandle) {
-    return search(querydef, start, searchHandle, null);
+    return search(querydef, start, -1, searchHandle, null);
   }
 
   public DocumentPage search(QueryDefinition querydef, long start,
       Transaction transaction) {
-    return search(querydef, start, null, transaction);
+    return search(querydef, start, -1, null, transaction);
+  }
+
+  public DocumentPage search(QueryDefinition querydef, long start,
+      long serverTimestamp, Transaction transaction) {
+    return search(querydef, start, serverTimestamp, null, transaction);
   }
 
   public DocumentPage search(QueryDefinition querydef, long start,
       SearchReadHandle searchHandle, Transaction transaction) {
+    return search(querydef, start, -1, searchHandle, transaction);
+  }
+
+  private DocumentPage search(QueryDefinition querydef, long start,
+      long serverTimestamp, SearchReadHandle searchHandle, Transaction transaction) {
 
     if (searchHandle != null) {
       HandleImplementation searchBase = HandleAccessor.checkHandle(
@@ -502,7 +539,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     // default of ALL
     Set<Metadata> metadata = isProcessedMetadataModified ? processedMetadata
         : null;
-    return services.getBulkDocuments(requestLogger, querydef, start,
+    return services.getBulkDocuments(requestLogger, serverTimestamp, querydef, start,
         getPageLength(), transaction, searchHandle, searchView, metadata,
         nonDocumentFormat, null);
   }

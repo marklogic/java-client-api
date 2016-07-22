@@ -37,6 +37,7 @@ public abstract class BaseHandle<R,W>
 {
 	private Format format = Format.UNKNOWN;
 	private String mimetype;
+	private long serverTimestamp = -1;
 	private long length = UNKNOWN_LENGTH;
 
 	/**
@@ -65,6 +66,14 @@ public abstract class BaseHandle<R,W>
 	@Override
 	public void setMimetype(String mimetype) {
 		this.mimetype = mimetype;
+	}
+
+	@Override
+	public long getServerTimestamp() {
+		return super.getServerTimestamp();
+	}
+	public void setServerTimestamp(long serverTimestamp) {
+		super.setPointInTimeQueryTimestamp(serverTimestamp);
 	}
 
 	@Override

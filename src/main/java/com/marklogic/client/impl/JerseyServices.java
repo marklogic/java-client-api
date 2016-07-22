@@ -693,6 +693,8 @@ public class JerseyServices implements RESTServices {
 		if (logger.isDebugEnabled())
 			logger.debug("Getting {} in transaction {}", uri, getTransactionId(transaction));
 
+		addPointInTimeQueryParam(extraParams, handle);
+
 		WebResource webResource = makeDocumentResource(
 				makeDocumentParams(uri, categories, transaction, extraParams));
 		WebResource.Builder builder = webResource.accept(mimetype);
@@ -756,18 +758,18 @@ public class JerseyServices implements RESTServices {
 	}
 
     @Override
-	public DocumentPage getBulkDocuments(RequestLogger reqlog,
+	public DocumentPage getBulkDocuments(RequestLogger reqlog, long serverTimestamp,
 			Transaction transaction, Set<Metadata> categories, 
 			Format format, RequestParameters extraParams, boolean withContent, String... uris)
 			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 		boolean hasMetadata = categories != null && categories.size() > 0;
 		JerseyResultIterator iterator = 
-			getBulkDocumentsImpl(reqlog, transaction, categories, format, extraParams, withContent, uris);
+			getBulkDocumentsImpl(reqlog, serverTimestamp, transaction, categories, format, extraParams, withContent, uris);
 		return new JerseyDocumentPage(iterator, withContent, hasMetadata);
 	}
 
     @Override
-	public DocumentPage getBulkDocuments(RequestLogger reqlog,
+	public DocumentPage getBulkDocuments(RequestLogger reqlog, long serverTimestamp,
 			QueryDefinition querydef,
 			long start, long pageLength,
 			Transaction transaction,
@@ -777,7 +779,7 @@ public class JerseyServices implements RESTServices {
 		boolean hasMetadata = categories != null && categories.size() > 0;
 		boolean hasContent = true;
 		JerseyResultIterator iterator = 
-			getBulkDocumentsImpl(reqlog, querydef, start, pageLength, transaction, 
+			getBulkDocumentsImpl(reqlog, serverTimestamp, querydef, start, pageLength, transaction, 
 				searchHandle, view, categories, format, extraParams);
 		return new JerseyDocumentPage(iterator, hasContent, hasMetadata);
 	}
@@ -852,7 +854,7 @@ public class JerseyServices implements RESTServices {
 		}
 	}
 
-	private JerseyResultIterator getBulkDocumentsImpl(RequestLogger reqlog,
+	private JerseyResultIterator getBulkDocumentsImpl(RequestLogger reqlog, long serverTimestamp,
 			Transaction transaction, Set<Metadata> categories, 
 			Format format, RequestParameters extraParams, boolean withContent, String... uris)
 			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
@@ -860,6 +862,7 @@ public class JerseyServices implements RESTServices {
 		String path = "documents";
 		RequestParameters params = new RequestParameters();
 		if ( extraParams != null ) params.putAll(extraParams);
+		if (serverTimestamp != -1) params.add("timestamp", Long.toString(serverTimestamp));
 		addCategoryParams(categories, params, withContent);
 		if (format != null)        params.add("format",     format.toString().toLowerCase());
 		for (String uri: uris) {
@@ -877,7 +880,7 @@ public class JerseyServices implements RESTServices {
 		return iterator;
 	}
 
-	private JerseyResultIterator getBulkDocumentsImpl(RequestLogger reqlog,
+	private JerseyResultIterator getBulkDocumentsImpl(RequestLogger reqlog, long serverTimestamp,
 			QueryDefinition querydef, long start, long pageLength,
 			Transaction transaction, SearchReadHandle searchHandle, QueryView view,
             Set<Metadata> categories, Format format, RequestParameters extraParams)
@@ -889,9 +892,11 @@ public class JerseyServices implements RESTServices {
 		if (searchHandle != null && view != null) params.add("view", view.toString().toLowerCase());
 		if (start > 1)             params.add("start",      Long.toString(start));
 		if (pageLength >= 0)       params.add("pageLength", Long.toString(pageLength));
+		if (serverTimestamp != -1) params.add("timestamp",  Long.toString(serverTimestamp));
+		addPointInTimeQueryParam(params, searchHandle);
 		if (format != null)        params.add("format",     format.toString().toLowerCase());
+        HandleImplementation handleBase = HandleAccessor.as(searchHandle);
 		if ( format == null && searchHandle != null ) {
-			HandleImplementation handleBase = HandleAccessor.as(searchHandle);
 			if ( Format.XML == handleBase.getFormat() ) {
 				params.add("format", "xml");
 			} else if ( Format.JSON == handleBase.getFormat() ) {
@@ -905,13 +910,13 @@ public class JerseyServices implements RESTServices {
         if ( response == null ) return null;
         MultiPart entity = null;
         if ( searchHandle != null ) {
+            updateServerTimestamp(handleBase, response.getHeaders());
             if ( response.hasEntity() ) {
                 entity = response.getEntity(MultiPart.class);
                 if ( entity != null ) {
                     List<BodyPart> partList = entity.getBodyParts();
                     if ( partList != null && partList.size() > 0 ) {
                         BodyPart searchResponsePart = partList.get(0);
-                        HandleImplementation handleBase = HandleAccessor.as(searchHandle);
                         handleBase.receiveContent(
                             searchResponsePart.getEntityAs(handleBase.receiveAs())
                         );
@@ -943,6 +948,8 @@ public class JerseyServices implements RESTServices {
 		if (logger.isDebugEnabled())
 			logger.debug("Getting multipart for {} in transaction {}", uri,
 					getTransactionId(transaction));
+
+		addPointInTimeQueryParam(extraParams, contentHandle);
 
 		MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
 				categories, transaction, extraParams, true);
@@ -1011,9 +1018,7 @@ public class JerseyServices implements RESTServices {
 			updateLength(desc, contentHeaders);
 			copyDescriptor(desc, contentBase);
 		} else {
-			updateFormat(contentBase, responseHeaders);
-			updateMimetype(contentBase, contentHeaders);
-			updateLength(contentBase, contentHeaders);
+			updateDescriptor(contentBase, responseHeaders);
 		}
 
 		metadataBase.receiveContent(partList.get(0).getEntityAs(
@@ -1713,6 +1718,7 @@ public class JerseyServices implements RESTServices {
 		updateFormat(desc, headers);
 		updateMimetype(desc, headers);
 		updateLength(desc, headers);
+		updateServerTimestamp(desc, headers);
 	}
 
 	private TemporalDescriptor updateTemporalSystemTime(DocumentDescriptor desc,
@@ -1828,6 +1834,30 @@ public class JerseyServices implements RESTServices {
 		descriptor.setByteLength(length);
 	}
 
+	private void updateServerTimestamp(ContentDescriptor descriptor,
+			MultivaluedMap<String,String> headers) {
+		updateServerTimestamp(descriptor, getHeaderServerTimestamp(headers));
+	}
+
+	private long getHeaderServerTimestamp(MultivaluedMap<String,String> headers) {
+		List<String> values = headers.get("ML-Effective-Timestamp");
+		if (values != null) {
+			String timestamp = values.get(0);
+			if (timestamp != null && timestamp.length() > 0) {
+				return Long.valueOf(timestamp);
+			}
+		}
+		return -1;
+	}
+
+	private void updateServerTimestamp(ContentDescriptor descriptor, long timestamp) {
+		if ( descriptor instanceof HandleImplementation ) {
+			if ( descriptor != null && timestamp != -1 ) {
+				((HandleImplementation) descriptor).setResponseServerTimestamp(timestamp);
+			}
+		}
+	}
+
 	private long getHeaderLength(MultivaluedMap<String, String> headers) {
 		if (headers.containsKey(HttpHeaders.CONTENT_LENGTH)) {
 			List<String> values = headers.get(HttpHeaders.CONTENT_LENGTH);
@@ -1874,9 +1904,10 @@ public class JerseyServices implements RESTServices {
 	}
 
 	@Override
-	public <T> T search(RequestLogger reqlog, Class<T> as, QueryDefinition queryDef, String mimetype,
-			long start, long len, QueryView view, Transaction transaction
-	) throws ForbiddenUserException, FailedRequestException {
+	public <T extends SearchReadHandle> T search(RequestLogger reqlog, T searchHandle,
+			QueryDefinition queryDef, long start, long len, QueryView view, Transaction transaction)
+		throws ForbiddenUserException, FailedRequestException
+	{
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
 		if (start > 1) {
@@ -1899,41 +1930,43 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 
-		T entity = search(reqlog, as, queryDef, mimetype, transaction, params);
+		addPointInTimeQueryParam(params, searchHandle);
 
-		logRequest(
-				reqlog,
-				"searched starting at %s with length %s in %s transaction with %s mime type",
-				start, len, getTransactionId(transaction), mimetype);
-		
-		return entity;
-	}
-	@Override
-	public <T> T search(
-			RequestLogger reqlog, Class<T> as, QueryDefinition queryDef, String mimetype, String view
-	) throws ForbiddenUserException, FailedRequestException {
-		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+		@SuppressWarnings("rawtypes")
+		HandleImplementation searchBase = HandleAccessor.checkHandle(searchHandle, "search");
 
-		if (view != null) {
-			params.add("view", view);
+		Format searchFormat = searchBase.getFormat();
+		switch(searchFormat) {
+			case UNKNOWN:
+				searchFormat = Format.XML;
+				break;
+			case JSON:
+			case XML:
+				break;
+			default:
+				throw new UnsupportedOperationException("Only XML and JSON search results are possible.");
 		}
 
-		return search(reqlog, as, queryDef, mimetype, null, params);
-	}
-	private <T> T search(RequestLogger reqlog, Class<T> as, QueryDefinition queryDef, String mimetype,
-			 Transaction transaction, MultivaluedMap<String, String> params
-	) throws ForbiddenUserException, FailedRequestException {
+		String mimetype = searchFormat.getDefaultMimetype();
 
-        JerseySearchRequest request = generateSearchRequest(reqlog, queryDef, mimetype, transaction, params);
+		JerseySearchRequest request = generateSearchRequest(reqlog, queryDef, mimetype, transaction, params);
 
-        ClientResponse response = request.getResponse();		
-        if ( response == null ) return null;
+		ClientResponse response = request.getResponse();
+		if ( response == null ) return null;
+		
+		Class as = searchBase.receiveAs();
 
-		T entity = response.hasEntity() ? response.getEntity(as) : null;
+		Object entity = response.hasEntity() ? response.getEntity(as) : null;
 		if (entity == null || (as != InputStream.class && as != Reader.class))
 			response.close();
+		searchBase.receiveContent(entity);
+		updateDescriptor(searchBase, response.getHeaders());
 
-		return entity;
+		logRequest( reqlog,
+			"searched starting at %s with length %s in %s transaction with %s mime type",
+			start, len, getTransactionId(transaction), mimetype);
+
+		return searchHandle;
 	}
 
     private JerseySearchRequest generateSearchRequest(RequestLogger reqlog, QueryDefinition queryDef, 
@@ -2779,8 +2812,7 @@ public class JerseyServices implements RESTServices {
 		if (qdef instanceof RawQueryByExampleDefinition) {
 			throw new UnsupportedOperationException("Cannot search with RawQueryByExampleDefinition");
 		} else if (qdef instanceof RawQueryDefinition) {
-			if (logger.isDebugEnabled())
-				logger.debug("Raw uris query");
+			logger.debug("Raw uris query");
 
 			StructureWriteHandle input = ((RawQueryDefinition) qdef).getHandle();
 
@@ -2788,8 +2820,7 @@ public class JerseyServices implements RESTServices {
 		} else {
 			if (qdef instanceof StringQueryDefinition) {
 				String text = ((StringQueryDefinition) qdef).getCriteria();
-				if (logger.isDebugEnabled())
-					logger.debug("Query uris with {}", text);
+				logger.debug("Query uris with {}", text);
 
 				if (text != null) {
 					params.add("q", text);
@@ -2797,16 +2828,14 @@ public class JerseyServices implements RESTServices {
 			} else if (qdef instanceof StructuredQueryDefinition) {
 				String structure = ((StructuredQueryDefinition) qdef).serialize();
 
-				if (logger.isDebugEnabled())
-					logger.debug("Query uris with structure {}", structure);
+				logger.debug("Query uris with structure {}", structure);
 				if (structure != null) {
 					params.add("structuredQuery", structure);
 				}
 			} else if (qdef instanceof CombinedQueryDefinition) {
 				String structure = ((CombinedQueryDefinition) qdef).serialize();
 
-				if (logger.isDebugEnabled())
-					logger.debug("Query uris with combined query {}", structure);
+				logger.debug("Query uris with combined query {}", structure);
 				if (structure != null) {
 					params.add("structuredQuery", structure);
 				}
@@ -2825,6 +2854,7 @@ public class JerseyServices implements RESTServices {
 			FailedRequestException {
 		if ( params == null ) params = new RequestParameters();
 		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
+		addPointInTimeQueryParam(params, output);
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
 				"read");
 
@@ -3920,6 +3950,20 @@ public class JerseyServices implements RESTServices {
 
 		return UriComponent.encode(value, UriComponent.Type.QUERY_PARAM)
 				.replace("+", "%20");
+	}
+
+	private void addPointInTimeQueryParam(Map<String, List<String>> params, Object outputHandle) {
+		HandleImplementation handleBase = HandleAccessor.as(outputHandle);
+		if ( params != null && handleBase.getPointInTimeQueryTimestamp() != -1 ) {
+			logger.trace("param timestamp=[" + handleBase.getPointInTimeQueryTimestamp() + "]");
+			if ( params instanceof RequestParameters ) {
+				((RequestParameters)            params).add("timestamp",
+					Long.toString(handleBase.getPointInTimeQueryTimestamp()));
+			} else if ( params instanceof MultivaluedMap ) {
+				((MultivaluedMap) params).add("timestamp",
+					Long.toString(handleBase.getPointInTimeQueryTimestamp()));
+			}
+		}
 	}
 
 	private void addTransactionScopedCookies(WebResource.Builder builder, WebResource webResource,
