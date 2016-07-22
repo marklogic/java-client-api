@@ -17,7 +17,13 @@ import com.marklogic.client.expression.Sem;
 import com.marklogic.client.expression.Sql;
 import com.marklogic.client.expression.Xdmp;
 import com.marklogic.client.expression.Xs;
+import com.marklogic.client.expression.XsValue;
+import com.marklogic.client.expression.PlanBuilder.Plan;
+import com.marklogic.client.expression.PlanBuilder.PlanParam;
 import com.marklogic.client.io.BaseHandle;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 
 abstract class PlanBuilderBase extends PlanBuilder {
@@ -30,16 +36,17 @@ abstract class PlanBuilderBase extends PlanBuilder {
 
 	@Override
     public PlanParam param(String name) {
-    	return param(name);
+    	return new PlanParamBase(name);
     }
 
 	static BaseTypeImpl.Literal literal(Object value) {
 		return new BaseTypeImpl.Literal(value);
 	}
 
-    static class PlanParamBase implements PlanParam {
+    static class PlanParamBase extends BaseTypeImpl.BaseCallImpl<XsValueImpl.StringValImpl> implements PlanParam {
 		String name = null;
 		PlanParamBase(String name) {
+			super("op", "param", new XsValueImpl.StringValImpl[]{new XsValueImpl.StringValImpl(name)});
 			if (name == null) {
 				throw new IllegalArgumentException("cannot define parameter with null name");
 			}
@@ -50,14 +57,21 @@ abstract class PlanBuilderBase extends PlanBuilder {
 		}
 	}
 
+    static interface RequestPlan {
+// TODO: datatypes other than string
+    	public Map<PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl> getParams();
+    	public AbstractWriteHandle getHandle();
+    }
+
     static abstract class PlanBase
     extends PlanChainedImpl
-    implements PlanBuilder.Plan, PlanBuilder.ExportablePlan, BaseTypeImpl.BaseArgImpl {
-		Map<PlanParamBase,String> params = null;
+    implements PlanBuilder.Plan, PlanBuilder.ExportablePlan, RequestPlan, BaseTypeImpl.BaseArgImpl {
+		private Map<PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl> params = null;
 		PlanBase(PlanChainedImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
 			super(prior, fnPrefix, fnName, fnArgs);
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public <T extends JSONReadHandle> T export(T handle) {
 			if (!(handle instanceof BaseHandle)) {
@@ -65,7 +79,9 @@ abstract class PlanBuilderBase extends PlanBuilder {
 			}
 			String planAst = getAst();
 // TODO: move to utility?
+			@SuppressWarnings("rawtypes")
 			BaseHandle baseHandle = (BaseHandle) handle;
+			@SuppressWarnings("rawtypes")
 			Class as = baseHandle.receiveAs();
 			if (InputStream.class.isAssignableFrom(as)) {
 				baseHandle.receiveContent(new ByteArrayInputStream(planAst.getBytes()));
@@ -86,25 +102,67 @@ abstract class PlanBuilderBase extends PlanBuilder {
 	    	return null;
 	    }
 
-		public String getAst() {
+		String getAst() {
 	    	StringBuilder strb = new StringBuilder();
 	    	strb.append("{$optic:");
 	    	return exportAst(strb).append("}").toString();
 	    }
 
-	    Map<PlanParamBase,String> getParams() {
-	    	if (params == null) {
-	    		params = new HashMap<PlanParamBase,String>();
-	    	}
+		@Override
+		public Map<PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl> getParams() {
 	    	return params;
 	    }
 
+		@Override
+		public AbstractWriteHandle getHandle() {
+// TODO: maybe serialize plan to JSON using JSON writer?
+			return new StringHandle(getAst()).withFormat(Format.JSON);
+		}
+
+	    @Override
+	    public Plan bindParam(PlanParam param, boolean literal) {
+	    	return bindParam(param, new XsValueImpl.BooleanValImpl(literal));
+	    }
+	    @Override
+	    public Plan bindParam(PlanParam param, byte literal) {
+	    	return bindParam(param, new XsValueImpl.ByteValImpl(literal));
+	    }
+	    @Override
+	    public Plan bindParam(PlanParam param, double literal) {
+	    	return bindParam(param, new XsValueImpl.DoubleValImpl(literal));
+	    }
+	    @Override
+	    public Plan bindParam(PlanParam param, float literal) {
+	    	return bindParam(param, new XsValueImpl.FloatValImpl(literal));
+	    }
+	    @Override
+	    public Plan bindParam(PlanParam param, int literal) {
+	    	return bindParam(param, new XsValueImpl.IntValImpl(literal));
+	    }
+	    @Override
+	    public Plan bindParam(PlanParam param, long literal) {
+	    	return bindParam(param, new XsValueImpl.LongValImpl(literal));
+	    }
+	    @Override
+	    public Plan bindParam(PlanParam param, short literal) {
+	    	return bindParam(param, new XsValueImpl.ShortValImpl(literal));
+	    }
 	    @Override
 	    public Plan bindParam(PlanParam param, String literal) {
+	    	return bindParam(param, new XsValueImpl.StringValImpl(literal));
+	    }
+	    @Override
+	    public Plan bindParam(PlanParam param, XsValue.AnyAtomicTypeVal literal) {
 	    	if (!(param instanceof PlanParamBase)) {
 	    		throw new IllegalArgumentException("cannot set parameter that doesn't extend base");
 	    	}
-	    	getParams().put((PlanParamBase) param, literal);
+	    	if (!(literal instanceof XsValueImpl.AnyAtomicTypeValImpl)) {
+	    		throw new IllegalArgumentException("cannot set value with unknown implementation");
+	    	}
+	    	if (params == null) {
+	    		params = new HashMap<PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl>();
+	    	}
+	    	params.put((PlanParamBase) param, (XsValueImpl.AnyAtomicTypeValImpl)literal);
 // TODO: return clone with param for immutability
 	    	return this;
 	    }

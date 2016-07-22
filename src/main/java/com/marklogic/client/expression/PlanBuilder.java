@@ -29,7 +29,8 @@ import com.marklogic.client.expression.Rdf;
 import com.marklogic.client.expression.Sem; 
 import com.marklogic.client.expression.Sql; 
 import com.marklogic.client.expression.Xdmp; 
-import com.marklogic.client.expression.Xs; import com.marklogic.client.expression.Xs;
+import com.marklogic.client.expression.Xs; import com.marklogic.client.expression.Cts;
+ import com.marklogic.client.expression.Xs;
  import com.marklogic.client.expression.BaseType;
 
 
@@ -88,10 +89,16 @@ public abstract class PlanBuilder {
     public abstract QualifiedPlan fromTriples(TriplePatternSeq patterns, Xs.StringParam qualifierName);
     public abstract QualifiedPlan fromTriples(TriplePatternSeq patterns, String qualifierName, String graphIri);
     public abstract QualifiedPlan fromTriples(TriplePatternSeq patterns, Xs.StringParam qualifierName, Xs.StringParam graphIri);
+    public abstract QualifiedPlan fromTriples(TriplePatternSeq patterns, String qualifierName, String graphIri, CtsQuery.QueryExpr constrainingQuery);
+    public abstract QualifiedPlan fromTriples(TriplePatternSeq patterns, Xs.StringParam qualifierName, Xs.StringParam graphIri, CtsQuery.QueryExpr constrainingQuery);
     public abstract ViewPlan fromView(String schema, String view);
     public abstract ViewPlan fromView(Xs.StringParam schema, Xs.StringParam view);
     public abstract ViewPlan fromView(String schema, String view, String qualifierName);
     public abstract ViewPlan fromView(Xs.StringParam schema, Xs.StringParam view, Xs.StringParam qualifierName);
+    public abstract ViewPlan fromView(String schema, String view, String qualifierName, Column... sysCols);
+    public abstract ViewPlan fromView(Xs.StringParam schema, Xs.StringParam view, Xs.StringParam qualifierName, ColumnSeq sysCols);
+    public abstract ViewPlan fromView(String schema, String view, String qualifierName, ColumnSeq sysCols, CtsQuery.QueryExpr constrainingQuery);
+    public abstract ViewPlan fromView(Xs.StringParam schema, Xs.StringParam view, Xs.StringParam qualifierName, ColumnSeq sysCols, CtsQuery.QueryExpr constrainingQuery);
     public abstract Xs.BooleanExpr ge(Xs.AnyAtomicTypeExpr left, Xs.AnyAtomicTypeExpr right);
     public abstract AggregateCol groupConcat(String name, String column);
     public abstract AggregateCol groupConcat(ExprCol name, ExprCol column);
@@ -133,14 +140,23 @@ public abstract class PlanBuilder {
     public abstract AggregateCol uda(ExprCol name, ExprCol column, Xs.StringParam module, Xs.StringParam function);
     public abstract Column viewCol(String view, String column);
     public abstract Column viewCol(Xs.StringParam view, Xs.StringParam column); public interface Plan {
-    public Plan bindParam(PlanParam param, String literal);
+    
+    public Plan bindParam(PlanParam param, boolean                  literal);
+    public Plan bindParam(PlanParam param, byte                     literal);
+    public Plan bindParam(PlanParam param, double                   literal);
+    public Plan bindParam(PlanParam param, float                    literal);
+    public Plan bindParam(PlanParam param, int                      literal);
+    public Plan bindParam(PlanParam param, long                     literal);
+    public Plan bindParam(PlanParam param, short                    literal);
+    public Plan bindParam(PlanParam param, String                   literal);
+    public Plan bindParam(PlanParam param, XsValue.AnyAtomicTypeVal literal);
 
 }
  public interface ViewPlan extends AccessPlan {
     public Column col(String column);
     public Column col(Xs.StringParam column);
 }
- public interface Column extends ExprCol, Xs.AnyURIExpr, Xs.Base64BinaryExpr, Xs.BooleanExpr, Xs.DateExpr, Xs.DateTimeExpr, Xs.DecimalExpr, Xs.IntegerExpr, Xs.LongExpr, Xs.IntExpr, Xs.ShortExpr, Xs.ByteExpr, Xs.UnsignedLongExpr, Xs.UnsignedIntExpr, Xs.UnsignedShortExpr, Xs.UnsignedByteExpr, Xs.DoubleExpr, Xs.DayTimeDurationExpr, Xs.YearMonthDurationExpr, Xs.FloatExpr, Xs.GDayExpr, Xs.GMonthExpr, Xs.GMonthDayExpr, Xs.GYearExpr, Xs.GYearMonthExpr, Xs.HexBinaryExpr, Xs.QNameExpr, Xs.StringExpr, Xs.TimeExpr, Xs.UntypedAtomicExpr, TriplePosition {
+ public interface Column extends ExprCol, Xs.AnyURIExpr, Xs.Base64BinaryExpr, Xs.BooleanExpr, Xs.DateExpr, Xs.DateTimeExpr, Xs.DecimalExpr, Xs.IntegerExpr, Xs.LongExpr, Xs.IntExpr, Xs.ShortExpr, Xs.ByteExpr, Xs.UnsignedLongExpr, Xs.UnsignedIntExpr, Xs.UnsignedShortExpr, Xs.UnsignedByteExpr, Xs.DoubleExpr, Xs.DayTimeDurationExpr, Xs.YearMonthDurationExpr, Xs.FloatExpr, Xs.GDayExpr, Xs.GMonthExpr, Xs.GMonthDayExpr, Xs.GYearExpr, Xs.GYearMonthExpr, Xs.HexBinaryExpr, Xs.QNameExpr, Xs.StringExpr, Xs.TimeExpr, Xs.UntypedAtomicExpr, ColumnSeq, TriplePosition {
 
 }
  public interface ExprCol extends AggregateCol, SortKey, ExprColSeq {
@@ -224,10 +240,13 @@ public abstract class PlanBuilder {
 
     public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsQuery.ReferenceExpr> indexes);
     public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsQuery.ReferenceExpr> indexes, String qualifierName);
+    public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsQuery.ReferenceExpr> indexes, String qualifierName, Column... sysCols);
+    public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsQuery.ReferenceExpr> indexes, String qualifierName, ColumnSeq sysCols, CtsQuery.QueryExpr constrainingQuery);
 
     public abstract QualifiedPlan fromLiterals(@SuppressWarnings("unchecked") java.util.Map<String,Object>... rows);
     public abstract QualifiedPlan fromLiterals(java.util.Map<String,Object>[] rows, String qualifierName);
  public interface AggregateColSeq { }
+ public interface ColumnSeq extends ExprColSeq { }
  public interface ExprColSeq extends AggregateColSeq, SortKeySeq { }
  public interface JoinKey extends JoinKeySeq { }
  public interface JoinKeySeq { }

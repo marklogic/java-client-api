@@ -44,8 +44,10 @@ import com.marklogic.client.impl.SqlExprImpl;
 import com.marklogic.client.expression.Xdmp;
 import com.marklogic.client.impl.XdmpExprImpl; 
 import com.marklogic.client.expression.Xs;
-import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.expression.Xs;
+import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.expression.Cts;
+ import com.marklogic.client.expression.Xs;
  import com.marklogic.client.expression.BaseType;
+ import com.marklogic.client.impl.CtsExprImpl;
  import com.marklogic.client.impl.XsExprImpl;
  import com.marklogic.client.impl.BaseTypeImpl;
 
@@ -175,6 +177,14 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new QualifiedPlanCallImpl("op", "from-triples", new Object[]{ patterns, qualifierName, graphIri });
     }
     @Override
+        public QualifiedPlan fromTriples(TriplePatternSeq patterns, String qualifierName, String graphIri, CtsQuery.QueryExpr constrainingQuery) {
+        return fromTriples(patterns, (qualifierName == null) ? null : xs.string(qualifierName), (graphIri == null) ? null : xs.string(graphIri), constrainingQuery); 
+    }
+    @Override
+        public QualifiedPlan fromTriples(TriplePatternSeq patterns, Xs.StringParam qualifierName, Xs.StringParam graphIri, CtsQuery.QueryExpr constrainingQuery) {
+        return new QualifiedPlanCallImpl("op", "from-triples", new Object[]{ patterns, qualifierName, graphIri, constrainingQuery });
+    }
+    @Override
         public ViewPlan fromView(String schema, String view) {
         return fromView(xs.string(schema), xs.string(view)); 
     }
@@ -189,6 +199,22 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     @Override
         public ViewPlan fromView(Xs.StringParam schema, Xs.StringParam view, Xs.StringParam qualifierName) {
         return new ViewPlanCallImpl("op", "from-view", new Object[]{ schema, view, qualifierName });
+    }
+    @Override
+        public ViewPlan fromView(String schema, String view, String qualifierName, Column... sysCols) {
+        return fromView(xs.string(schema), xs.string(view), (qualifierName == null) ? null : xs.string(qualifierName), new ColumnSeqListImpl(sysCols)); 
+    }
+    @Override
+        public ViewPlan fromView(Xs.StringParam schema, Xs.StringParam view, Xs.StringParam qualifierName, ColumnSeq sysCols) {
+        return new ViewPlanCallImpl("op", "from-view", new Object[]{ schema, view, qualifierName, sysCols });
+    }
+    @Override
+        public ViewPlan fromView(String schema, String view, String qualifierName, ColumnSeq sysCols, CtsQuery.QueryExpr constrainingQuery) {
+        return fromView(xs.string(schema), xs.string(view), (qualifierName == null) ? null : xs.string(qualifierName), sysCols, constrainingQuery); 
+    }
+    @Override
+        public ViewPlan fromView(Xs.StringParam schema, Xs.StringParam view, Xs.StringParam qualifierName, ColumnSeq sysCols, CtsQuery.QueryExpr constrainingQuery) {
+        return new ViewPlanCallImpl("op", "from-view", new Object[]{ schema, view, qualifierName, sysCols, constrainingQuery });
     }
     @Override
         public Xs.BooleanExpr ge(Xs.AnyAtomicTypeExpr left, Xs.AnyAtomicTypeExpr right) {
@@ -371,6 +397,14 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     @Override
     public QualifiedPlan fromLexicons(java.util.Map<String, CtsQuery.ReferenceExpr> indexes, String qualifierName) {
         return new QualifiedPlanCallImpl("op", "from-lexicons", new Object[]{literal(indexes), xs.string(qualifierName)});
+    }
+    @Override
+    public QualifiedPlan fromLexicons(java.util.Map<String, CtsQuery.ReferenceExpr> indexes, String qualifierName, Column... sysCols) {
+        return new QualifiedPlanCallImpl("op", "from-lexicons", new Object[]{literal(indexes), xs.string(qualifierName), sysCols});
+    }
+    @Override
+    public QualifiedPlan fromLexicons(java.util.Map<String, CtsQuery.ReferenceExpr> indexes, String qualifierName, ColumnSeq sysCols, CtsQuery.QueryExpr constrainingQuery) {
+        return new QualifiedPlanCallImpl("op", "from-lexicons", new Object[]{literal(indexes), xs.string(qualifierName), sysCols, constrainingQuery});
     }
     @Override
     public QualifiedPlan fromLiterals(@SuppressWarnings("unchecked") java.util.Map<String,Object>... rows) {
@@ -659,6 +693,11 @@ public class PlanBuilderImpl extends PlanBuilderBase {
 }
  static class AggregateColSeqListImpl extends PlanListImpl implements PlanBuilder.AggregateColSeq {
         AggregateColSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+ static class ColumnSeqListImpl extends PlanListImpl implements PlanBuilder.ColumnSeq {
+        ColumnSeqListImpl(Object[] items) {
             super(items);
         }
     }

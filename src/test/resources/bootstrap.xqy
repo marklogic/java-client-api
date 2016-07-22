@@ -555,6 +555,35 @@ $command as xs:string
     </options>)
 };
 
+declare function bootstrap:schema-config() { 
+    xdmp:eval('xquery version "1.0-ml";
+declare default function namespace "http://www.w3.org/2005/xpath-functions";
+declare option xdmp:mapping "false";
+
+xdmp:document-insert("/optic/test/musician.tdex",
+    <template xmlns="http://marklogic.com/xdmp/tdex">
+      <context>/musician</context>
+      <rows>
+        <row>
+          <schema-name>opticUnitTest</schema-name>
+          <view-name>musician</view-name>
+          <columns>
+            <column><name>lastName</name><scalar-type>string</scalar-type><val>lastName</val></column>
+            <column><name>firstName</name><scalar-type>string</scalar-type><val>firstName</val></column>
+            <column><name>dob</name><scalar-type>date</scalar-type><val>dob</val></column>
+          </columns>
+        </row>
+      </rows>
+    </template>,
+    (xdmp:permission("rest-reader", "read"), xdmp:permission("rest-writer", "update")),
+    "http://marklogic.com/xdmp/tde"
+    )',
+    (),
+    <options xmlns="xdmp:eval">
+        <database>{xdmp:database("Schemas")}</database>
+    </options>)
+};
+
 declare function bootstrap:temporal-setup() as xs:string*
 {
     try {
@@ -1141,7 +1170,40 @@ xdmp:document-set-permissions("/sample/tuples-test4.xml",
         (xdmp:permission("rest-reader","read"),
         xdmp:permission("rest-writer","update"))
             ),
-    xdmp:document-add-collections("/sample2/suggestion.xml",("http://some.org/suggestions"))
+    xdmp:document-add-collections("/sample2/suggestion.xml",("http://some.org/suggestions")),
+
+    xdmp:document-insert(
+    "/optic/test/musician1.json",
+    xdmp:unquote(string(<t>{{"musician":{{
+        "lastName":"Armstrong", "firstName":"Louis", "dob":"1901-08-04", "instrument":["trumpet", "vocal"]
+        }}}}</t>)),
+    (xdmp:permission("rest-reader","read"), xdmp:permission("rest-writer","update")),
+    ("/optic/test", "/optic/music")
+    ),
+    xdmp:document-insert(
+    "/optic/test/musician2.json",
+    xdmp:unquote(string(<t>{{"musician":{{
+        "lastName":"Byron", "firstName":"Don", "dob":"1958-11-08", "instrument":["clarinet", "saxophone"]
+        }}}}</t>)),
+    (xdmp:permission("rest-reader","read"), xdmp:permission("rest-writer","update")),
+    ("/optic/test", "/optic/music")
+    ),
+    xdmp:document-insert(
+    "/optic/test/musician3.json",
+    xdmp:unquote(string(<t>{{"musician":{{
+        "lastName":"Coltrane", "firstName":"John", "dob":"1926-09-23", "instrument":["saxophone"]
+        }}}}</t>)),
+    (xdmp:permission("rest-reader","read"), xdmp:permission("rest-writer","update")),
+    ("/optic/test", "/optic/music")
+    ),
+    xdmp:document-insert(
+    "/optic/test/musician4.json",
+    xdmp:unquote(string(<t>{{"musician":{{
+        "lastName":"Davis", "firstName":"Miles", "dob":"1926-05-26", "instrument":["trumpet"]
+        }}}}</t>)),
+    (xdmp:permission("rest-reader","read"), xdmp:permission("rest-writer","update")),
+    ("/optic/test", "/optic/music")
+    )
 '
     )
 };
@@ -1161,6 +1223,7 @@ declare function bootstrap:post(
         let $dbid := xdmp:database("java-unittest")
         return (
             bootstrap:security-config(),
+            bootstrap:schema-config(),
             bootstrap:database-configure($dbid),
             xdmp:log(concat("Configured Java test database:", xdmp:database-name($dbid)))
             ),

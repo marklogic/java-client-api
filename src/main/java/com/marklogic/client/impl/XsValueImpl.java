@@ -449,7 +449,7 @@ public class XsValueImpl implements XsValue {
 		return new AnyAtomicTypeSeqValImpl<AnyAtomicTypeValImpl>(BaseTypeImpl.convertList(items, AnyAtomicTypeValImpl.class));
 	}
 
-	private static class AnySimpleTypeSeqValImpl<T extends AnySimpleTypeValImpl>
+	static class AnySimpleTypeSeqValImpl<T extends AnySimpleTypeValImpl>
 	extends BaseTypeImpl.BaseListImpl<T>
 	implements XsValue.AnySimpleTypeSeqVal, BaseTypeImpl.BaseArgImpl {
 		AnySimpleTypeSeqValImpl(T[] values) {
@@ -460,13 +460,13 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
 	}
-	private static class AnySimpleTypeValImpl implements XsValue.AnySimpleTypeVal, BaseTypeImpl.BaseArgImpl {
+	static class AnySimpleTypeValImpl implements XsValue.AnySimpleTypeVal, BaseTypeImpl.BaseArgImpl {
 		private String typePrefix = null;
 		private String typeName   = null;
-		private AnySimpleTypeValImpl(String typeName) {
+		AnySimpleTypeValImpl(String typeName) {
 			this("xs", typeName);
 		}
-		private AnySimpleTypeValImpl(String typePrefix, String typeName) {
+		AnySimpleTypeValImpl(String typePrefix, String typeName) {
 			this.typePrefix = typePrefix;
 			this.typeName   = typeName;
 		}
@@ -485,7 +485,7 @@ public class XsValueImpl implements XsValue {
 					.append("\", \"args\":[\"").append(toString()).append("\"]}");
 		}
 	}
-	private static class AnyAtomicTypeSeqValImpl<T extends AnyAtomicTypeValImpl>
+	static class AnyAtomicTypeSeqValImpl<T extends AnyAtomicTypeValImpl>
 	extends AnySimpleTypeSeqValImpl<T>
 	implements XsValue.AnyAtomicTypeSeqVal {
 		AnyAtomicTypeSeqValImpl(T[] values) {
@@ -496,11 +496,11 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
 	}
-	private static class AnyAtomicTypeValImpl extends AnySimpleTypeValImpl implements XsValue.AnyAtomicTypeVal {
-		private AnyAtomicTypeValImpl(String typeName) {
+	static class AnyAtomicTypeValImpl extends AnySimpleTypeValImpl implements XsValue.AnyAtomicTypeVal {
+		AnyAtomicTypeValImpl(String typeName) {
 			super(typeName);
 		}
-		private AnyAtomicTypeValImpl(String typePrefix, String typeName) {
+		AnyAtomicTypeValImpl(String typePrefix, String typeName) {
 			super(typePrefix, typeName);
 		}
 		@Override
@@ -510,7 +510,7 @@ public class XsValueImpl implements XsValue {
 	}
 
     // implementations
-	private static class AnyURISeqValImpl extends AnyAtomicTypeSeqValImpl<AnyURIValImpl> implements XsValue.AnyURISeqVal {
+	static class AnyURISeqValImpl extends AnyAtomicTypeSeqValImpl<AnyURIValImpl> implements XsValue.AnyURISeqVal {
 		AnyURISeqValImpl(String[] values) {
 			super(Arrays.stream(values)
 					              .map(val -> new AnyURIValImpl(val))
@@ -521,9 +521,9 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class AnyURIValImpl extends AnyAtomicTypeValImpl implements XsValue.AnyURIVal {
+    static class AnyURIValImpl extends AnyAtomicTypeValImpl implements XsValue.AnyURIVal {
     	private String value = null;
-    	private AnyURIValImpl(String value) {
+    	AnyURIValImpl(String value) {
     		super("anyURI");
     		checkNull(value);
     		this.value = value;
@@ -541,8 +541,8 @@ public class XsValueImpl implements XsValue {
         	return DatatypeConverter.printAnySimpleType(value);
         }
     }
-    private static class Base64BinarySeqValImpl extends AnyAtomicTypeSeqValImpl<Base64BinaryValImpl> implements XsValue.Base64BinarySeqVal {
-    	private Base64BinarySeqValImpl(byte[][] values) {
+    static class Base64BinarySeqValImpl extends AnyAtomicTypeSeqValImpl<Base64BinaryValImpl> implements XsValue.Base64BinarySeqVal {
+    	Base64BinarySeqValImpl(byte[][] values) {
 			super(Arrays.stream(values)
 		                                .map(val -> new Base64BinaryValImpl(val))
 		                                .toArray(size -> new Base64BinaryValImpl[size]));
@@ -553,9 +553,9 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class Base64BinaryValImpl extends AnyAtomicTypeValImpl implements XsValue.Base64BinaryVal {
+    static class Base64BinaryValImpl extends AnyAtomicTypeValImpl implements XsValue.Base64BinaryVal {
     	private byte[] value = null;
-    	private Base64BinaryValImpl(byte[] value) {
+    	Base64BinaryValImpl(byte[] value) {
 			super("base64Binary");
     		checkLength(value);
     		this.value = value;
@@ -573,8 +573,8 @@ public class XsValueImpl implements XsValue {
         	return DatatypeConverter.printBase64Binary(value);
         }
     }
-    private static class BooleanSeqValImpl extends AnyAtomicTypeSeqValImpl<BooleanValImpl> implements XsValue.BooleanSeqVal {
-    	private BooleanSeqValImpl(boolean[] values) {
+    static class BooleanSeqValImpl extends AnyAtomicTypeSeqValImpl<BooleanValImpl> implements XsValue.BooleanSeqVal {
+    	BooleanSeqValImpl(boolean[] values) {
 			super(toArray(values));
 		}
         private static BooleanValImpl[] toArray(boolean[] vals) {
@@ -592,9 +592,9 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class BooleanValImpl extends AnyAtomicTypeValImpl implements XsValue.BooleanVal {
+    static class BooleanValImpl extends AnyAtomicTypeValImpl implements XsValue.BooleanVal {
     	private boolean value = false;
-    	private BooleanValImpl(boolean value) {
+    	BooleanValImpl(boolean value) {
 			super("boolean");
     		this.value = value;
     	}
@@ -611,8 +611,8 @@ public class XsValueImpl implements XsValue {
         	return DatatypeConverter.printBoolean(value);
         }
     }
-    private static class ByteSeqValImpl extends AnyAtomicTypeSeqValImpl<ByteValImpl> implements XsValue.ByteSeqVal {
-    	private ByteSeqValImpl(byte[] values) {
+    static class ByteSeqValImpl extends AnyAtomicTypeSeqValImpl<ByteValImpl> implements XsValue.ByteSeqVal {
+    	ByteSeqValImpl(byte[] values) {
 			super(toArray(values));
 		}
 		@Override
@@ -654,9 +654,9 @@ public class XsValueImpl implements XsValue {
 	    	return result;
 	    }
     }
-    private static class ByteValImpl extends AnyAtomicTypeValImpl implements XsValue.ByteVal {
+    static class ByteValImpl extends AnyAtomicTypeValImpl implements XsValue.ByteVal {
     	private byte value = 0;
-    	private ByteValImpl(byte value) {
+    	ByteValImpl(byte value) {
 			super("byte");
     		this.value = value;
     	}
@@ -717,23 +717,23 @@ public class XsValueImpl implements XsValue {
         	return DatatypeConverter.printByte(value);
         }
     }
-    private static class DateSeqValImpl extends AnyAtomicTypeSeqValImpl<DateValImpl> implements XsValue.DateSeqVal {
-    	private DateSeqValImpl(String[] values) {
+    static class DateSeqValImpl extends AnyAtomicTypeSeqValImpl<DateValImpl> implements XsValue.DateSeqVal {
+    	DateSeqValImpl(String[] values) {
     		this((DateValImpl[]) Arrays.stream(values)
 				     .map(val -> new DateValImpl(val))
 				     .toArray(size -> new DateValImpl[size]));
 		}
-    	private DateSeqValImpl(XMLGregorianCalendar[] values) {
+    	DateSeqValImpl(XMLGregorianCalendar[] values) {
 			this((DateValImpl[]) Arrays.stream(values)
 					   .map(val -> new DateValImpl(val))
 					   .toArray(size -> new DateValImpl[size]));
 		}
-    	private DateSeqValImpl(Calendar[] values) {
+    	DateSeqValImpl(Calendar[] values) {
 			this((DateValImpl[]) Arrays.stream(values)
 					   .map(val -> new DateValImpl(val))
 					   .toArray(size -> new DateValImpl[size]));
 		}
-    	private DateSeqValImpl(DateValImpl[] values) {
+    	DateSeqValImpl(DateValImpl[] values) {
 			super(values);
 		}
 		@Override
@@ -741,15 +741,15 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class DateValImpl extends AnyAtomicTypeValImpl implements XsValue.DateVal {
+    static class DateValImpl extends AnyAtomicTypeValImpl implements XsValue.DateVal {
     	private Calendar value = null;
-    	private DateValImpl(String value) {
+    	DateValImpl(String value) {
     		this(DatatypeConverter.parseDate(value));
     	}
-    	private DateValImpl(XMLGregorianCalendar value) {
+    	DateValImpl(XMLGregorianCalendar value) {
     		this((value == null) ? (Calendar) null : value.toGregorianCalendar());
     	}
-    	private DateValImpl(Calendar value) {
+    	DateValImpl(Calendar value) {
     		super("date");
     		checkNull(value);
 /* TODO: validation
@@ -774,28 +774,28 @@ public class XsValueImpl implements XsValue {
         	return DatatypeConverter.printDate(value);
         }
     }
-    private static class DateTimeSeqValImpl extends AnyAtomicTypeSeqValImpl<DateTimeValImpl> implements XsValue.DateTimeSeqVal {
-    	private DateTimeSeqValImpl(String[] values) {
+    static class DateTimeSeqValImpl extends AnyAtomicTypeSeqValImpl<DateTimeValImpl> implements XsValue.DateTimeSeqVal {
+    	DateTimeSeqValImpl(String[] values) {
 			this((DateTimeValImpl[]) Arrays.stream(values)
 					   .map(val -> new DateTimeValImpl(val))
 					   .toArray(size -> new DateTimeValImpl[size]));
 		}
-    	private DateTimeSeqValImpl(Date[] values) {
+    	DateTimeSeqValImpl(Date[] values) {
 			this((DateTimeValImpl[]) Arrays.stream(values)
 					   .map(val -> new DateTimeValImpl(val))
 					   .toArray(size -> new DateTimeValImpl[size]));
 		}
-    	private DateTimeSeqValImpl(XMLGregorianCalendar[] values) {
+    	DateTimeSeqValImpl(XMLGregorianCalendar[] values) {
 			this((DateTimeValImpl[]) Arrays.stream(values)
 					   .map(val -> new DateTimeValImpl(val))
 					   .toArray(size -> new DateTimeValImpl[size]));
 		}
-    	private DateTimeSeqValImpl(Calendar[] values) {
+    	DateTimeSeqValImpl(Calendar[] values) {
 			this((DateTimeValImpl[]) Arrays.stream(values)
 					   .map(val -> new DateTimeValImpl(val))
 					   .toArray(size -> new DateTimeValImpl[size]));
 		}
-    	private DateTimeSeqValImpl(DateTimeValImpl[] values) {
+    	DateTimeSeqValImpl(DateTimeValImpl[] values) {
 			super(values);
 		}
 		@Override
@@ -803,19 +803,19 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class DateTimeValImpl extends AnyAtomicTypeValImpl implements XsValue.DateTimeVal {
+    static class DateTimeValImpl extends AnyAtomicTypeValImpl implements XsValue.DateTimeVal {
 // TODO: SHOULD Xs.DateTime BE REPRESENTED AS XMLGregorianCalendar?
     	private Calendar value = null;
-    	private DateTimeValImpl(String value) {
+    	DateTimeValImpl(String value) {
     		this(DatatypeConverter.parseDateTime(value));
     	}
-    	private DateTimeValImpl(Date value) {
+    	DateTimeValImpl(Date value) {
     		this(from(value));
     	}
-    	private DateTimeValImpl(XMLGregorianCalendar value) {
+    	DateTimeValImpl(XMLGregorianCalendar value) {
     		this((value == null) ? (Calendar) null : value.toGregorianCalendar());
     	}
-    	private DateTimeValImpl(Calendar value) {
+    	DateTimeValImpl(Calendar value) {
     		super("dateTime");
     		checkNull(value);
     		this.value = value;
@@ -833,18 +833,18 @@ public class XsValueImpl implements XsValue {
         	return DatatypeConverter.printDateTime(value);
         }
     }
-    private static class DayTimeDurationSeqValImpl extends AnyAtomicTypeSeqValImpl<DayTimeDurationValImpl> implements XsValue.DayTimeDurationSeqVal {
-    	private DayTimeDurationSeqValImpl(String[] values) {
+    static class DayTimeDurationSeqValImpl extends AnyAtomicTypeSeqValImpl<DayTimeDurationValImpl> implements XsValue.DayTimeDurationSeqVal {
+    	DayTimeDurationSeqValImpl(String[] values) {
 			this((DayTimeDurationValImpl[]) Arrays.stream(values)
 					   .map(val -> new DayTimeDurationValImpl(val))
 					   .toArray(size -> new DayTimeDurationValImpl[size]));
 		}
-    	private DayTimeDurationSeqValImpl(Duration[] values) {
+    	DayTimeDurationSeqValImpl(Duration[] values) {
 			this((DayTimeDurationValImpl[]) Arrays.stream(values)
 					   .map(val -> new DayTimeDurationValImpl(val))
 					   .toArray(size -> new DayTimeDurationValImpl[size]));
 		}
-    	private DayTimeDurationSeqValImpl(DayTimeDurationValImpl[] values) {
+    	DayTimeDurationSeqValImpl(DayTimeDurationValImpl[] values) {
 			super(values);
 		}
 		@Override
@@ -856,12 +856,12 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class DayTimeDurationValImpl extends AnyAtomicTypeValImpl implements XsValue.DayTimeDurationVal {
+    static class DayTimeDurationValImpl extends AnyAtomicTypeValImpl implements XsValue.DayTimeDurationVal {
     	private Duration value = null;
-    	private DayTimeDurationValImpl(String value) {
+    	DayTimeDurationValImpl(String value) {
     		this(Utilities.getDatatypeFactory().newDuration(value));
     	}
-    	private DayTimeDurationValImpl(Duration value) {
+    	DayTimeDurationValImpl(Duration value) {
     		super("dayTimeDuration");
     		checkNull(value);
     		checkType("dayTimeDuration", value.getXMLSchemaType());
@@ -884,28 +884,28 @@ public class XsValueImpl implements XsValue {
         	return value.toString();
         }
     }
-    private static class DecimalSeqValImpl extends AnyAtomicTypeSeqValImpl<DecimalValImpl> implements XsValue.DecimalSeqVal {
-    	private DecimalSeqValImpl(String[] values) {
+    static class DecimalSeqValImpl extends AnyAtomicTypeSeqValImpl<DecimalValImpl> implements XsValue.DecimalSeqVal {
+    	DecimalSeqValImpl(String[] values) {
 			this((DecimalValImpl[]) Arrays.stream(values)
 					   .map(val -> new DecimalValImpl(val))
 					   .toArray(size -> new DecimalValImpl[size]));
 		}
-    	private DecimalSeqValImpl(double[] values) {
+    	DecimalSeqValImpl(double[] values) {
 			this((DecimalValImpl[]) Arrays.stream(values)
 					   .mapToObj(val -> new DecimalValImpl(val))
 					   .toArray(size -> new DecimalValImpl[size]));
 		}
-    	private DecimalSeqValImpl(long[] values) {
+    	DecimalSeqValImpl(long[] values) {
 			this((DecimalValImpl[]) Arrays.stream(values)
 					   .mapToObj(val -> new DecimalValImpl(val))
 					   .toArray(size -> new DecimalValImpl[size]));
 		}
-    	private DecimalSeqValImpl(BigDecimal[] values) {
+    	DecimalSeqValImpl(BigDecimal[] values) {
 			this((DecimalValImpl[]) Arrays.stream(values)
 					   .map(val -> new DecimalValImpl(val))
 					   .toArray(size -> new DecimalValImpl[size]));
 		}
-    	private DecimalSeqValImpl(DecimalValImpl[] values) {
+    	DecimalSeqValImpl(DecimalValImpl[] values) {
 			super(values);
 		}
 		@Override
@@ -917,18 +917,18 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class DecimalValImpl extends AnyAtomicTypeValImpl implements XsValue.DecimalVal {
+    static class DecimalValImpl extends AnyAtomicTypeValImpl implements XsValue.DecimalVal {
     	private BigDecimal value = null;
-    	private DecimalValImpl(String value) {
+    	DecimalValImpl(String value) {
     		this(new BigDecimal(value));
     	}
-    	private DecimalValImpl(long value) {
+    	DecimalValImpl(long value) {
     		this(BigDecimal.valueOf(value));
     	}
-    	private DecimalValImpl(double value) {
+    	DecimalValImpl(double value) {
     		this(BigDecimal.valueOf(value));
     	}
-    	private DecimalValImpl(BigDecimal value) {
+    	DecimalValImpl(BigDecimal value) {
     		super("decimal");
     		checkNull(value);
     		this.value = value;
@@ -950,8 +950,8 @@ public class XsValueImpl implements XsValue {
         	return DatatypeConverter.printDecimal(value);
         }
     }
-    private static class DoubleSeqValImpl extends AnyAtomicTypeSeqValImpl<DoubleValImpl> implements XsValue.DoubleSeqVal {
-    	private DoubleSeqValImpl(double[] values) {
+    static class DoubleSeqValImpl extends AnyAtomicTypeSeqValImpl<DoubleValImpl> implements XsValue.DoubleSeqVal {
+    	DoubleSeqValImpl(double[] values) {
 			super(toArray(values));
 		}
 		@Override
@@ -973,9 +973,9 @@ public class XsValueImpl implements XsValue {
 	    	return result;
 	    }
     }
-    private static class DoubleValImpl extends AnyAtomicTypeValImpl implements XsValue.DoubleVal {
+    static class DoubleValImpl extends AnyAtomicTypeValImpl implements XsValue.DoubleVal {
     	private double value = 0;
-    	private DoubleValImpl(double value) {
+    	DoubleValImpl(double value) {
     		super("double");
     		this.value = value;
     	}
@@ -996,8 +996,8 @@ public class XsValueImpl implements XsValue {
         	return DatatypeConverter.printDouble(value);
         }
     }
-    private static class FloatSeqValImpl extends AnyAtomicTypeSeqValImpl<FloatValImpl> implements XsValue.FloatSeqVal {
-    	private FloatSeqValImpl(float[] values) {
+    static class FloatSeqValImpl extends AnyAtomicTypeSeqValImpl<FloatValImpl> implements XsValue.FloatSeqVal {
+    	FloatSeqValImpl(float[] values) {
 			super(toArray(values));
 		}
 		@Override
@@ -1019,9 +1019,9 @@ public class XsValueImpl implements XsValue {
 	    	return result;
 	    }
     }
-    private static class FloatValImpl extends AnyAtomicTypeValImpl implements XsValue.FloatVal {
+    static class FloatValImpl extends AnyAtomicTypeValImpl implements XsValue.FloatVal {
     	private float value = 0;
-    	private FloatValImpl(float value) {
+    	FloatValImpl(float value) {
     		super("float");
     		this.value = value;
     	}
@@ -1042,18 +1042,18 @@ public class XsValueImpl implements XsValue {
         	return DatatypeConverter.printFloat(value);
         }
     }
-    private static class GDaySeqValImpl extends AnyAtomicTypeSeqValImpl<GDayValImpl> implements XsValue.GDaySeqVal {
-    	private GDaySeqValImpl(String[] values) {
+    static class GDaySeqValImpl extends AnyAtomicTypeSeqValImpl<GDayValImpl> implements XsValue.GDaySeqVal {
+    	GDaySeqValImpl(String[] values) {
 			this((GDayValImpl[]) Arrays.stream(values)
 		                .map(val -> new GDayValImpl(val))
 		                .toArray(size -> new GDayValImpl[size]));
 		}
-    	private GDaySeqValImpl(XMLGregorianCalendar[] values) {
+    	GDaySeqValImpl(XMLGregorianCalendar[] values) {
 			this((GDayValImpl[]) Arrays.stream(values)
 		                .map(val -> new GDayValImpl(val))
 		                .toArray(size -> new GDayValImpl[size]));
 		}
-    	private GDaySeqValImpl(GDayValImpl[] values) {
+    	GDaySeqValImpl(GDayValImpl[] values) {
 			super(values);
 		}
 		@Override
@@ -1061,12 +1061,12 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class GDayValImpl extends AnyAtomicTypeValImpl implements XsValue.GDayVal {
+    static class GDayValImpl extends AnyAtomicTypeValImpl implements XsValue.GDayVal {
     	private XMLGregorianCalendar value = null;
-    	private GDayValImpl(String value) {
+    	GDayValImpl(String value) {
     		this(Utilities.getDatatypeFactory().newXMLGregorianCalendar(value));
     	}
-    	private GDayValImpl(XMLGregorianCalendar value) {
+    	GDayValImpl(XMLGregorianCalendar value) {
     		super("gDay");
     		checkNull(value);
     		checkType("gDay", value.getXMLSchemaType());
@@ -1085,18 +1085,18 @@ public class XsValueImpl implements XsValue {
         	return value.toXMLFormat();
         }
     }
-    private static class GMonthSeqValImpl extends AnyAtomicTypeSeqValImpl<GMonthValImpl> implements XsValue.GMonthSeqVal {
-    	private GMonthSeqValImpl(String[] values) {
+    static class GMonthSeqValImpl extends AnyAtomicTypeSeqValImpl<GMonthValImpl> implements XsValue.GMonthSeqVal {
+    	GMonthSeqValImpl(String[] values) {
 			this((GMonthValImpl[]) Arrays.stream(values)
 		                .map(val -> new GMonthValImpl(val))
 		                .toArray(size -> new GMonthValImpl[size]));
 		}
-    	private GMonthSeqValImpl(XMLGregorianCalendar[] values) {
+    	GMonthSeqValImpl(XMLGregorianCalendar[] values) {
 			this((GMonthValImpl[]) Arrays.stream(values)
 		                .map(val -> new GMonthValImpl(val))
 		                .toArray(size -> new GMonthValImpl[size]));
 		}
-    	private GMonthSeqValImpl(GMonthValImpl[] values) {
+    	GMonthSeqValImpl(GMonthValImpl[] values) {
 			super(values);
 		}
 		@Override
@@ -1104,12 +1104,12 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class GMonthValImpl extends AnyAtomicTypeValImpl implements XsValue.GMonthVal {
+    static class GMonthValImpl extends AnyAtomicTypeValImpl implements XsValue.GMonthVal {
     	private XMLGregorianCalendar value = null;
-    	private GMonthValImpl(String value) {
+    	GMonthValImpl(String value) {
     		this(Utilities.getDatatypeFactory().newXMLGregorianCalendar(value));
     	}
-    	private GMonthValImpl(XMLGregorianCalendar value) {
+    	GMonthValImpl(XMLGregorianCalendar value) {
     		super("gMonth");
     		checkNull(value);
     		checkType("gMonth", value.getXMLSchemaType());
@@ -1128,18 +1128,18 @@ public class XsValueImpl implements XsValue {
         	return value.toXMLFormat();
         }
     }
-    private static class GMonthDaySeqValImpl extends AnyAtomicTypeSeqValImpl<GMonthDayValImpl> implements XsValue.GMonthDaySeqVal {
-    	private GMonthDaySeqValImpl(String[] values) {
+    static class GMonthDaySeqValImpl extends AnyAtomicTypeSeqValImpl<GMonthDayValImpl> implements XsValue.GMonthDaySeqVal {
+    	GMonthDaySeqValImpl(String[] values) {
 			this((GMonthDayValImpl[]) Arrays.stream(values)
 		                .map(val -> new GMonthDayValImpl(val))
 		                .toArray(size -> new GMonthDayValImpl[size]));
 		}
-    	private GMonthDaySeqValImpl(XMLGregorianCalendar[] values) {
+    	GMonthDaySeqValImpl(XMLGregorianCalendar[] values) {
 			this((GMonthDayValImpl[]) Arrays.stream(values)
 		                .map(val -> new GMonthDayValImpl(val))
 		                .toArray(size -> new GMonthDayValImpl[size]));
 		}
-    	private GMonthDaySeqValImpl(GMonthDayValImpl[] values) {
+    	GMonthDaySeqValImpl(GMonthDayValImpl[] values) {
 			super(values);
 		}
 		@Override
@@ -1147,12 +1147,12 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class GMonthDayValImpl extends AnyAtomicTypeValImpl implements XsValue.GMonthDayVal {
+    static class GMonthDayValImpl extends AnyAtomicTypeValImpl implements XsValue.GMonthDayVal {
     	private XMLGregorianCalendar value = null;
-    	private GMonthDayValImpl(String value) {
+    	GMonthDayValImpl(String value) {
     		this(Utilities.getDatatypeFactory().newXMLGregorianCalendar(value));
     	}
-    	private GMonthDayValImpl(XMLGregorianCalendar value) {
+    	GMonthDayValImpl(XMLGregorianCalendar value) {
     		super("gMonthDay");
     		checkNull(value);
     		checkType("gMonthDay", value.getXMLSchemaType());
@@ -1171,18 +1171,18 @@ public class XsValueImpl implements XsValue {
         	return value.toXMLFormat();
         }
     }
-    private static class GYearSeqValImpl extends AnyAtomicTypeSeqValImpl<GYearValImpl> implements XsValue.GYearSeqVal {
-    	private GYearSeqValImpl(String[] values) {
+    static class GYearSeqValImpl extends AnyAtomicTypeSeqValImpl<GYearValImpl> implements XsValue.GYearSeqVal {
+    	GYearSeqValImpl(String[] values) {
 			this((GYearValImpl[]) Arrays.stream(values)
 		                .map(val -> new GYearValImpl(val))
 		                .toArray(size -> new GYearValImpl[size]));
 		}
-    	private GYearSeqValImpl(XMLGregorianCalendar[] values) {
+    	GYearSeqValImpl(XMLGregorianCalendar[] values) {
 			this((GYearValImpl[]) Arrays.stream(values)
 		                .map(val -> new GYearValImpl(val))
 		                .toArray(size -> new GYearValImpl[size]));
 		}
-    	private GYearSeqValImpl(GYearValImpl[] values) {
+    	GYearSeqValImpl(GYearValImpl[] values) {
 			super(values);
 		}
 		@Override
@@ -1190,12 +1190,12 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class GYearValImpl extends AnyAtomicTypeValImpl implements XsValue.GYearVal {
+    static class GYearValImpl extends AnyAtomicTypeValImpl implements XsValue.GYearVal {
     	private XMLGregorianCalendar value = null;
-    	private GYearValImpl(String value) {
+    	GYearValImpl(String value) {
     		this(Utilities.getDatatypeFactory().newXMLGregorianCalendar(value));
     	}
-    	private GYearValImpl(XMLGregorianCalendar value) {
+    	GYearValImpl(XMLGregorianCalendar value) {
 			super("gYear");
     		checkNull(value);
     		checkType("gYear", value.getXMLSchemaType());
@@ -1215,18 +1215,18 @@ public class XsValueImpl implements XsValue {
         }
     }
 // TODO: confim
-    private static class GYearMonthSeqValImpl extends AnyAtomicTypeSeqValImpl<GYearMonthValImpl> implements XsValue.GYearMonthSeqVal {
-    	private GYearMonthSeqValImpl(String[] values) {
+    static class GYearMonthSeqValImpl extends AnyAtomicTypeSeqValImpl<GYearMonthValImpl> implements XsValue.GYearMonthSeqVal {
+    	GYearMonthSeqValImpl(String[] values) {
 			this((GYearMonthValImpl[]) Arrays.stream(values)
 		                .map(val -> new GYearMonthValImpl(val))
 		                .toArray(size -> new GYearMonthValImpl[size]));
 		}
-    	private GYearMonthSeqValImpl(XMLGregorianCalendar[] values) {
+    	GYearMonthSeqValImpl(XMLGregorianCalendar[] values) {
 			this((GYearMonthValImpl[]) Arrays.stream(values)
 		                .map(val -> new GYearMonthValImpl(val))
 		                .toArray(size -> new GYearMonthValImpl[size]));
 		}
-    	private GYearMonthSeqValImpl(GYearMonthValImpl[] values) {
+    	GYearMonthSeqValImpl(GYearMonthValImpl[] values) {
 			super(values);
 		}
 		@Override
@@ -1235,12 +1235,12 @@ public class XsValueImpl implements XsValue {
 		}
     }
  // TODO: confim
-    private static class GYearMonthValImpl extends AnyAtomicTypeValImpl implements XsValue.GYearMonthVal {
+    static class GYearMonthValImpl extends AnyAtomicTypeValImpl implements XsValue.GYearMonthVal {
     	private XMLGregorianCalendar value = null;
-    	private GYearMonthValImpl(String value) {
+    	GYearMonthValImpl(String value) {
     		this(Utilities.getDatatypeFactory().newXMLGregorianCalendar(value));
     	}
-    	private GYearMonthValImpl(XMLGregorianCalendar value) {
+    	GYearMonthValImpl(XMLGregorianCalendar value) {
 			super("gYear");
     		checkNull(value);
     		checkType("gYear", value.getXMLSchemaType());
@@ -1259,8 +1259,8 @@ public class XsValueImpl implements XsValue {
         	return value.toXMLFormat();
         }
     }
-    private static class HexBinarySeqValImpl extends AnyAtomicTypeSeqValImpl<HexBinaryValImpl> implements XsValue.HexBinarySeqVal {
-    	private HexBinarySeqValImpl(byte[][] values) {
+    static class HexBinarySeqValImpl extends AnyAtomicTypeSeqValImpl<HexBinaryValImpl> implements XsValue.HexBinarySeqVal {
+    	HexBinarySeqValImpl(byte[][] values) {
 			super(Arrays.stream(values)
 		                .map(val -> new HexBinaryValImpl(val))
 		                .toArray(size -> new HexBinaryValImpl[size]));
@@ -1270,9 +1270,9 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class HexBinaryValImpl extends AnyAtomicTypeValImpl implements XsValue.HexBinaryVal {
+    static class HexBinaryValImpl extends AnyAtomicTypeValImpl implements XsValue.HexBinaryVal {
     	private byte[] value = null;
-    	private HexBinaryValImpl(byte[] value) {
+    	HexBinaryValImpl(byte[] value) {
 			super("hexBinary");
     		checkLength(value);
     		this.value = value;
@@ -1290,7 +1290,7 @@ public class XsValueImpl implements XsValue {
         	return DatatypeConverter.printHexBinary(value);
         }
     }
-    private static class IntSeqValImpl extends AnyAtomicTypeSeqValImpl<IntValImpl> implements XsValue.IntSeqVal {
+    static class IntSeqValImpl extends AnyAtomicTypeSeqValImpl<IntValImpl> implements XsValue.IntSeqVal {
     	IntSeqValImpl(int[] values) {
 			super(Arrays.stream(values)
    					    .mapToObj(val -> new IntValImpl(val))
@@ -1317,9 +1317,9 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class IntValImpl extends AnyAtomicTypeValImpl implements XsValue.IntVal {
+    static class IntValImpl extends AnyAtomicTypeValImpl implements XsValue.IntVal {
     	private int value = 0;
-    	private IntValImpl(int value) {
+    	IntValImpl(int value) {
 			super("int");
     		this.value = value;
     	}
@@ -1364,23 +1364,23 @@ public class XsValueImpl implements XsValue {
         	return DatatypeConverter.printInt(value);
         }
     }
-    private static class IntegerSeqValImpl extends AnyAtomicTypeSeqValImpl<IntegerValImpl> implements XsValue.IntegerSeqVal {
-    	private IntegerSeqValImpl(String[] values) {
+    static class IntegerSeqValImpl extends AnyAtomicTypeSeqValImpl<IntegerValImpl> implements XsValue.IntegerSeqVal {
+    	IntegerSeqValImpl(String[] values) {
 			this((IntegerValImpl[]) Arrays.stream(values)
 					   .map(val -> new IntegerValImpl(val))
 					   .toArray(size -> new IntegerValImpl[size]));
 		}
-    	private IntegerSeqValImpl(long[] values) {
+    	IntegerSeqValImpl(long[] values) {
 			this((IntegerValImpl[]) Arrays.stream(values)
 					   .mapToObj(val -> new IntegerValImpl(val))
 					   .toArray(size -> new IntegerValImpl[size]));
 		}
-    	private IntegerSeqValImpl(BigInteger[] values) {
+    	IntegerSeqValImpl(BigInteger[] values) {
 			this((IntegerValImpl[]) Arrays.stream(values)
 					   .map(val -> new IntegerValImpl(val))
 					   .toArray(size -> new IntegerValImpl[size]));
 		}
-    	private IntegerSeqValImpl(IntegerValImpl[] values) {
+    	IntegerSeqValImpl(IntegerValImpl[] values) {
 			super(values);
 		}
 		@Override
@@ -1396,15 +1396,15 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class IntegerValImpl extends AnyAtomicTypeValImpl implements XsValue.IntegerVal {
+    static class IntegerValImpl extends AnyAtomicTypeValImpl implements XsValue.IntegerVal {
     	private BigInteger value = null;
-    	private IntegerValImpl(String value) {
+    	IntegerValImpl(String value) {
     		this(new BigInteger(value));
     	}
-    	private IntegerValImpl(long value) {
+    	IntegerValImpl(long value) {
     		this(BigInteger.valueOf(value));
     	}
-    	private IntegerValImpl(BigInteger value) {
+    	IntegerValImpl(BigInteger value) {
 			super("integer");
     		checkNull(value);
     		this.value = value;
@@ -1434,7 +1434,7 @@ public class XsValueImpl implements XsValue {
         	return DatatypeConverter.printInteger(value);
         }
     }
-    private static class LongSeqValImpl extends AnyAtomicTypeSeqValImpl<LongValImpl> implements XsValue.LongSeqVal {
+    static class LongSeqValImpl extends AnyAtomicTypeSeqValImpl<LongValImpl> implements XsValue.LongSeqVal {
     	LongSeqValImpl(long[] values) {
 			super(Arrays.stream(values)
    					    .mapToObj(val -> new LongValImpl(val))
@@ -1457,9 +1457,9 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class LongValImpl extends AnyAtomicTypeValImpl implements XsValue.LongVal {
+    static class LongValImpl extends AnyAtomicTypeValImpl implements XsValue.LongVal {
     	private long value = 0;
-    	private LongValImpl(long value) {
+    	LongValImpl(long value) {
 			super("long");
     		this.value = value;
     	}
@@ -1496,7 +1496,7 @@ public class XsValueImpl implements XsValue {
         	return DatatypeConverter.printLong(value);
         }
     }
-    private static class ShortSeqValImpl extends AnyAtomicTypeSeqValImpl<ShortValImpl> implements XsValue.ShortSeqVal {
+    static class ShortSeqValImpl extends AnyAtomicTypeSeqValImpl<ShortValImpl> implements XsValue.ShortSeqVal {
     	ShortSeqValImpl(short[] values) {
 			super(toArray(values));
 		}
@@ -1535,9 +1535,9 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class ShortValImpl extends AnyAtomicTypeValImpl implements XsValue.ShortVal {
+    static class ShortValImpl extends AnyAtomicTypeValImpl implements XsValue.ShortVal {
     	private short value = 0;
-    	private ShortValImpl(short value) {
+    	ShortValImpl(short value) {
 			super("short");
     		this.value = value;
     	}
@@ -1590,8 +1590,8 @@ public class XsValueImpl implements XsValue {
         	return DatatypeConverter.printShort(value);
         }
     }
-    private static class StringSeqValImpl extends AnyAtomicTypeSeqValImpl<StringValImpl> implements XsValue.StringSeqVal {
-    	private StringSeqValImpl(String[] values) {
+    static class StringSeqValImpl extends AnyAtomicTypeSeqValImpl<StringValImpl> implements XsValue.StringSeqVal {
+    	StringSeqValImpl(String[] values) {
 			super(Arrays.stream(values)
 		                .map(val -> new StringValImpl(val))
 		                .toArray(size -> new StringValImpl[size]));
@@ -1601,9 +1601,9 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class StringValImpl extends AnyAtomicTypeValImpl implements XsValue.StringVal {
+    static class StringValImpl extends AnyAtomicTypeValImpl implements XsValue.StringVal {
     	private String value = null;
-    	private StringValImpl(String value) {
+    	StringValImpl(String value) {
     		super("string");
     		checkNull(value);
     		this.value = value;
@@ -1621,28 +1621,28 @@ public class XsValueImpl implements XsValue {
         	return DatatypeConverter.printString(value);
         }
     }
-    private static class TimeSeqValImpl extends AnyAtomicTypeSeqValImpl<TimeValImpl> implements XsValue.TimeSeqVal {
-    	private TimeSeqValImpl(String[] values) {
+    static class TimeSeqValImpl extends AnyAtomicTypeSeqValImpl<TimeValImpl> implements XsValue.TimeSeqVal {
+    	TimeSeqValImpl(String[] values) {
 			this((TimeValImpl[]) Arrays.stream(values)
 					   .map(val -> new TimeValImpl(val))
 					   .toArray(size -> new TimeValImpl[size]));
 		}
-    	private TimeSeqValImpl(Date[] values) {
+    	TimeSeqValImpl(Date[] values) {
 			this((TimeValImpl[]) Arrays.stream(values)
 					   .map(val -> new TimeValImpl(val))
 					   .toArray(size -> new TimeValImpl[size]));
 		}
-    	private TimeSeqValImpl(XMLGregorianCalendar[] values) {
+    	TimeSeqValImpl(XMLGregorianCalendar[] values) {
 			this((TimeValImpl[]) Arrays.stream(values)
 					   .map(val -> new TimeValImpl(val))
 					   .toArray(size -> new TimeValImpl[size]));
 		}
-    	private TimeSeqValImpl(Calendar[] values) {
+    	TimeSeqValImpl(Calendar[] values) {
 			this((TimeValImpl[]) Arrays.stream(values)
 					   .map(val -> new TimeValImpl(val))
 					   .toArray(size -> new TimeValImpl[size]));
 		}
-    	private TimeSeqValImpl(TimeValImpl[] values) {
+    	TimeSeqValImpl(TimeValImpl[] values) {
 			super(values);
 		}
 		@Override
@@ -1650,18 +1650,18 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class TimeValImpl extends AnyAtomicTypeValImpl implements XsValue.TimeVal {
+    static class TimeValImpl extends AnyAtomicTypeValImpl implements XsValue.TimeVal {
     	private Calendar value = null;
-    	private TimeValImpl(String value) {
+    	TimeValImpl(String value) {
     		this(DatatypeConverter.parseDateTime(value));
     	}
-    	private TimeValImpl(Date value) {
+    	TimeValImpl(Date value) {
     		this(from(value));
     	}
-    	private TimeValImpl(XMLGregorianCalendar value) {
+    	TimeValImpl(XMLGregorianCalendar value) {
     		this((value == null) ? (Calendar) null : value.toGregorianCalendar());
     	}
-    	private TimeValImpl(Calendar value) {
+    	TimeValImpl(Calendar value) {
     		super("time");
     		checkNull(value);
 /* TODO: validation
@@ -1686,7 +1686,7 @@ public class XsValueImpl implements XsValue {
         	return DatatypeConverter.printTime(value);
         }
     }
-    private static class UnsignedByteSeqValImpl extends AnyAtomicTypeSeqValImpl<UnsignedByteValImpl> implements XsValue.UnsignedByteSeqVal {
+    static class UnsignedByteSeqValImpl extends AnyAtomicTypeSeqValImpl<UnsignedByteValImpl> implements XsValue.UnsignedByteSeqVal {
     	UnsignedByteSeqValImpl(byte[] values) {
 			super(toArray(values));
 		}
@@ -1733,9 +1733,9 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class UnsignedByteValImpl extends AnyAtomicTypeValImpl implements XsValue.UnsignedByteVal {
+    static class UnsignedByteValImpl extends AnyAtomicTypeValImpl implements XsValue.UnsignedByteVal {
     	private byte value = 0;
-    	private UnsignedByteValImpl(byte value) {
+    	UnsignedByteValImpl(byte value) {
     		super("unsignedByte");
     		this.value = value;
     	}
@@ -1800,7 +1800,7 @@ public class XsValueImpl implements XsValue {
         	return Integer.toUnsignedString(Byte.toUnsignedInt(value));
         }
     }
-    private static class UnsignedIntSeqValImpl extends AnyAtomicTypeSeqValImpl<UnsignedIntValImpl> implements XsValue.UnsignedIntSeqVal {
+    static class UnsignedIntSeqValImpl extends AnyAtomicTypeSeqValImpl<UnsignedIntValImpl> implements XsValue.UnsignedIntSeqVal {
     	UnsignedIntSeqValImpl(int[] values) {
 			super(Arrays.stream(values)
    					    .mapToObj(val -> new UnsignedIntValImpl(val))
@@ -1831,9 +1831,9 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class UnsignedIntValImpl extends AnyAtomicTypeValImpl implements XsValue.UnsignedIntVal {
+    static class UnsignedIntValImpl extends AnyAtomicTypeValImpl implements XsValue.UnsignedIntVal {
     	private int value = 0;
-    	private UnsignedIntValImpl(int value) {
+    	UnsignedIntValImpl(int value) {
     		super("unsignedInt");
     		this.value = value;
     	}
@@ -1882,7 +1882,7 @@ public class XsValueImpl implements XsValue {
         	return Integer.toUnsignedString(value);
         }
     }
-    private static class UnsignedLongSeqValImpl extends AnyAtomicTypeSeqValImpl<UnsignedLongValImpl> implements XsValue.UnsignedLongSeqVal {
+    static class UnsignedLongSeqValImpl extends AnyAtomicTypeSeqValImpl<UnsignedLongValImpl> implements XsValue.UnsignedLongSeqVal {
     	UnsignedLongSeqValImpl(long[] values) {
 			super(Arrays.stream(values)
    					    .mapToObj(val -> new UnsignedLongValImpl(val))
@@ -1909,9 +1909,9 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class UnsignedLongValImpl extends AnyAtomicTypeValImpl implements XsValue.UnsignedLongVal {
+    static class UnsignedLongValImpl extends AnyAtomicTypeValImpl implements XsValue.UnsignedLongVal {
     	private long value = 0;
-    	private UnsignedLongValImpl(long value) {
+    	UnsignedLongValImpl(long value) {
     		super("unsignedLong");
     		this.value = value;
     	}
@@ -1952,7 +1952,7 @@ public class XsValueImpl implements XsValue {
         	return Long.toUnsignedString(value);
         }
     }
-    private static class UnsignedShortSeqValImpl extends AnyAtomicTypeSeqValImpl<UnsignedShortValImpl> implements XsValue.UnsignedShortSeqVal {
+    static class UnsignedShortSeqValImpl extends AnyAtomicTypeSeqValImpl<UnsignedShortValImpl> implements XsValue.UnsignedShortSeqVal {
     	UnsignedShortSeqValImpl(short[] values) {
 			super(toArray(values));
 		}
@@ -1995,9 +1995,9 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class UnsignedShortValImpl extends AnyAtomicTypeValImpl implements XsValue.UnsignedShortVal {
+    static class UnsignedShortValImpl extends AnyAtomicTypeValImpl implements XsValue.UnsignedShortVal {
     	private short value = 0;
-    	private UnsignedShortValImpl(short value) {
+    	UnsignedShortValImpl(short value) {
     		super("unsignedShort");
     		this.value = value;
     	}
@@ -2054,8 +2054,8 @@ public class XsValueImpl implements XsValue {
         	return Integer.toUnsignedString(Short.toUnsignedInt(value));
         }
     }
-    private static class UntypedAtomicSeqValImpl extends AnyAtomicTypeSeqValImpl<UntypedAtomicValImpl> implements XsValue.UntypedAtomicSeqVal {
-    	private UntypedAtomicSeqValImpl(String[] values) {
+    static class UntypedAtomicSeqValImpl extends AnyAtomicTypeSeqValImpl<UntypedAtomicValImpl> implements XsValue.UntypedAtomicSeqVal {
+    	UntypedAtomicSeqValImpl(String[] values) {
 			super(Arrays.stream(values)
 		                .map(val -> new UntypedAtomicValImpl(val))
 		                .toArray(size -> new UntypedAtomicValImpl[size]));
@@ -2065,9 +2065,9 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class UntypedAtomicValImpl extends AnyAtomicTypeValImpl implements XsValue.UntypedAtomicVal {
+    static class UntypedAtomicValImpl extends AnyAtomicTypeValImpl implements XsValue.UntypedAtomicVal {
     	private String value = null;
-    	private UntypedAtomicValImpl(String value) {
+    	UntypedAtomicValImpl(String value) {
     		super("unsignedAtomic");
     		this.value = value;
     	}
@@ -2084,18 +2084,18 @@ public class XsValueImpl implements XsValue {
         	return DatatypeConverter.printAnySimpleType(value);
         }
     }
-    private static class YearMonthDurationSeqValImpl extends AnyAtomicTypeSeqValImpl<YearMonthDurationValImpl> implements XsValue.YearMonthDurationSeqVal {
-    	private YearMonthDurationSeqValImpl(String[] values) {
+    static class YearMonthDurationSeqValImpl extends AnyAtomicTypeSeqValImpl<YearMonthDurationValImpl> implements XsValue.YearMonthDurationSeqVal {
+    	YearMonthDurationSeqValImpl(String[] values) {
 			this((YearMonthDurationValImpl[]) Arrays.stream(values)
 					   .map(val -> new YearMonthDurationValImpl(val))
 					   .toArray(size -> new YearMonthDurationValImpl[size]));
 		}
-    	private YearMonthDurationSeqValImpl(Duration[] values) {
+    	YearMonthDurationSeqValImpl(Duration[] values) {
 			this((YearMonthDurationValImpl[]) Arrays.stream(values)
 					   .map(val -> new YearMonthDurationValImpl(val))
 					   .toArray(size -> new YearMonthDurationValImpl[size]));
 		}
-    	private YearMonthDurationSeqValImpl(YearMonthDurationValImpl[] values) {
+    	YearMonthDurationSeqValImpl(YearMonthDurationValImpl[] values) {
 			super(values);
 		}
 		@Override
@@ -2107,12 +2107,12 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class YearMonthDurationValImpl extends AnyAtomicTypeValImpl implements XsValue.YearMonthDurationVal {
+    static class YearMonthDurationValImpl extends AnyAtomicTypeValImpl implements XsValue.YearMonthDurationVal {
     	private Duration value = null;
-    	private YearMonthDurationValImpl(String value) {
+    	YearMonthDurationValImpl(String value) {
     		this(Utilities.getDatatypeFactory().newDuration(value));
     	}
-    	private YearMonthDurationValImpl(Duration value) {
+    	YearMonthDurationValImpl(Duration value) {
     		super("yearMonthDuration");
     		checkNull(value);
     		checkType("yearMonthDuration", value.getXMLSchemaType());
@@ -2137,23 +2137,23 @@ public class XsValueImpl implements XsValue {
     }
 
     // XML types
-    private static class QNameSeqValImpl extends AnyAtomicTypeSeqValImpl<QNameValImpl> implements XsValue.QNameSeqVal {
-    	private QNameSeqValImpl(String[] values) {
+    static class QNameSeqValImpl extends AnyAtomicTypeSeqValImpl<QNameValImpl> implements XsValue.QNameSeqVal {
+    	QNameSeqValImpl(String[] values) {
 			this((QNameValImpl[]) Arrays.stream(values)
 		               .map(val -> new QNameValImpl(val))
 		               .toArray(size -> new QNameValImpl[size]));
     	}
-    	private QNameSeqValImpl(String namespace, String prefix, String[] localNames) {
+    	QNameSeqValImpl(String namespace, String prefix, String[] localNames) {
 			this((QNameValImpl[]) Arrays.stream(localNames)
 		               .map(val -> new QNameValImpl(namespace, prefix, val))
 		               .toArray(size -> new QNameValImpl[size]));
     	}
-    	private QNameSeqValImpl(QName[] values) {
+    	QNameSeqValImpl(QName[] values) {
 			this((QNameValImpl[]) Arrays.stream(values)
 		               .map(val -> new QNameValImpl(val))
 		               .toArray(size -> new QNameValImpl[size]));
     	}
-    	private QNameSeqValImpl(QNameValImpl[] values) {
+    	QNameSeqValImpl(QNameValImpl[] values) {
 			super(values);
 		}
 		@Override
@@ -2161,15 +2161,15 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
-    private static class QNameValImpl extends AnyAtomicTypeValImpl implements XsValue.QNameVal {
+    static class QNameValImpl extends AnyAtomicTypeValImpl implements XsValue.QNameVal {
     	private QName value = null;
-    	private QNameValImpl(String localName) {
+    	QNameValImpl(String localName) {
     		this(new QName(localName));
     	}
-    	private QNameValImpl(String namespace, String prefix, String localName) {
+    	QNameValImpl(String namespace, String prefix, String localName) {
     		this(new QName(namespace, localName, prefix));
     	}
-    	private QNameValImpl(QName value) {
+    	QNameValImpl(QName value) {
     		super("QName");
     		checkNull(value);
     		this.value = value;

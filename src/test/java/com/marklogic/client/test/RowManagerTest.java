@@ -135,36 +135,6 @@ public class RowManagerTest {
                   .add(uris[2], new StringHandle(docs[2]).withFormat(Format.TEXT))
                   .add("/rowtest/triples1.xml", new StringHandle(triplesXML).withFormat(Format.TEXT))
               );
-
-/* TODO: move to bootstrap.xqy
-
-    private static final String MASTER_DETAIL_TDE_FILE  = "masterDetail.tdex";
-    private static final String MASTER_DETAIL_DATA_FILE = "masterDetail.xml";
-
-		BufferedReader         fileReader = null;
-		XMLDocumentManager     docMgr     = null;
-		DocumentMetadataHandle docMeta    = null;
-
-		Common.connectDatabase("Schemas");
-        fileReader = new BufferedReader(Common.testFileToReader(MASTER_DETAIL_TDE_FILE, "UTF-8"));
-        docMgr = Common.client.newXMLDocumentManager();
-        docMeta = new DocumentMetadataHandle();
-        docMeta.getCollections().add("http://marklogic.com/xdmp/tde");
-        docMgr.write("/optic/test/masterDetail.tdex", docMeta, new ReaderHandle(fileReader));
-        fileReader.close();
-		Common.release();
-
-        Common.connect();
-        fileReader = new BufferedReader(Common.testFileToReader(MASTER_DETAIL_DATA_FILE, "UTF-8"));
-        docMgr     = Common.client.newXMLDocumentManager();
-        docMeta    = new DocumentMetadataHandle();
-        docMeta.getCollections().add("/optic/test");
-        docMgr.write("/optic/test/masterDetail.xml",  docMeta, new ReaderHandle(fileReader));
-        fileReader.close();
-
-        // wait for reindexing
-        Thread.sleep(1000);
- */
 	}
 	@AfterClass
 	public static void afterClass() {
@@ -307,6 +277,31 @@ public class RowManagerTest {
 		}
 	}
 	@Test
+	public void testView() {
+		RowManager rowMgr = Common.client.newRowManager();
+
+		PlanBuilder p = rowMgr.newPlanBuilder();
+
+		PlanBuilder.ExportablePlan builtPlan =
+				p.fromView("opticUnitTest", "musician", null, null,
+						p.cts.jsonPropertyWordQuery(p.xs.string("instrument"), p.xs.string("trumpet")))
+				  .select(null, "") 
+				  .orderBy("lastName");
+
+        String[] lastName  = {"Armstrong",  "Davis"};
+        String[] firstName = {"Louis",      "Miles"};
+        String[] dob       = {"1901-08-04", "1926-05-26"};
+
+        int rowNum = 0;
+		for (RowRecord row: rowMgr.resultRows(builtPlan)) {
+	        assertEquals("unexpected lastName value in row record "+rowNum,  lastName[rowNum],  row.getString("lastName"));
+	        assertEquals("unexpected firstName value in row record "+rowNum, firstName[rowNum], row.getString("firstName"));
+	        assertEquals("unexpected dob value in row record "+rowNum,       dob[rowNum],       row.getString("dob"));
+			rowNum++;
+		}
+        assertEquals("unexpected count of result records", 2, rowNum);
+	}
+	@Test
 	public void testTriples() {
 		RowManager rowMgr = Common.client.newRowManager();
 
@@ -326,14 +321,14 @@ public class RowManagerTest {
 			 .orderBy("subject", "object");
 
 /* TODO: XDMP-MINVERSIONREQURIED error
+ */
 		int rowNum = 0;
 		for (RowRecord row: rowMgr.resultRows(plan)) {
 	        assertEquals("unexpected int value in row record "+rowNum, triples[rowNum][0], row.getInt("subject"));
 	        assertEquals("unexpected uri value in row record "+rowNum, triples[rowNum][2], row.getString("object"));
 			rowNum++;
 		}
-        assertEquals("unexpected count of result records", rowNum, triples.length);
- */
+        assertEquals("unexpected count of result records", triples.length, rowNum);
 	}
 	@Test
 	public void testLexicons() throws IOException, XPathExpressionException {
@@ -379,7 +374,35 @@ public class RowManagerTest {
 	        assertEquals("unexpected uri value in row record "+rowNum, expectedUris[rowNum], row.getString("uri"));
 			rowNum++;
 		}
-        assertEquals("unexpected count of result records", rowNum, expectedInts.length);
+        assertEquals("unexpected count of result records", expectedInts.length, rowNum);
+	}
+	@Test
+	public void testParams() throws IOException, XPathExpressionException {
+		RowManager rowMgr = Common.client.newRowManager();
+
+		PlanBuilder p = rowMgr.newPlanBuilder();
+
+		PlanBuilder.PlanParam cityParam  = p.param("city");
+		PlanBuilder.PlanParam limitParam = p.param("limit");
+
+		PlanBuilder.ExportablePlan builtPlan =
+				p.fromLiterals(litRows)
+				 .orderBy(p.col("rowNum"))
+				 .where(p.eq(p.col("city"), cityParam))
+				 .select(p.cols("rowNum", "temp"))
+				 .limit(limitParam);
+
+		RowSet<RowRecord> recordRowSet = rowMgr.resultRows(
+				builtPlan.bindParam(cityParam, "Seattle").bindParam(limitParam, 1)
+				);
+
+		Iterator<RowRecord> recordRowItr = recordRowSet.iterator();
+		assertTrue("no record row to iterate", recordRowItr.hasNext());
+		RowRecord recordRow = recordRowItr.next();
+		checkSingleRow(recordRow);
+        assertFalse("expected one record row", recordRowItr.hasNext());
+
+        recordRowSet.close();
 	}
 	private DOMHandle initNamespaces(DOMHandle handle) {
         EditableNamespaceContext namespaces = new EditableNamespaceContext();
