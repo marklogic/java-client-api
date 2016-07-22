@@ -60,6 +60,7 @@ import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
+import com.marklogic.client.row.RowRecord.ColumnKind;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.RDFMimeTypes;
 import com.marklogic.client.util.EditableNamespaceContext;
@@ -493,16 +494,24 @@ public class RowManagerTest {
 		for (RowRecord row: rowSet) {
 			rowCount++;
 
-	        assertEquals("unexpected first binding value in row record", rowCount, row.getInt("rowNum"));
+			assertEquals("unexpected first binding kind in row record", ColumnKind.ATOMIC_VALUE, row.getKind("rowNum"));
+			assertEquals("unexpected first binding datatype in row record", "integer", row.getAtomicDatatype("rowNum").getLocalPart());
+			assertEquals("unexpected first binding value in row record", rowCount, row.getInt("rowNum"));
 
+			assertEquals("unexpected second binding kind in row record", ColumnKind.ATOMIC_VALUE, row.getKind("uri"));
+			assertEquals("unexpected second binding datatype in row record", "string", row.getAtomicDatatype("uri").getLocalPart());
 	        assertEquals("unexpected second binding value in row record", uris[rowCount - 1], row.getString("uri"));
 
+			assertEquals("unexpected third binding kind in row record", ColumnKind.CONTENT, row.getKind("doc"));
     		String doc = row.getContent("doc", new StringHandle()).get();
 	        if (uris[rowCount - 1].endsWith(".json")) {
+				assertEquals("unexpected third binding mimetype in row record", "application/json", row.getContentMimetype("doc"));
 		        assertEquals("unexpected third binding JSON value in row record", docs[rowCount - 1], doc);
 	        } else if (uris[rowCount - 1].endsWith(".xml")) {
+				assertEquals("unexpected third binding mimetype in row record", "application/xml", row.getContentMimetype("doc"));
 	        	assertXMLEqual("unexpected third binding XML value in row record", docs[rowCount - 1], doc);
 	        } else {
+				assertEquals("unexpected third binding mimetype in row record", "text/plain", row.getContentMimetype("doc"));
 		        assertEquals("unexpected third binding value in row record", docs[rowCount - 1], doc);
 	        }
 		}

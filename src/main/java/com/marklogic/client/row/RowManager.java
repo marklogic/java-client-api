@@ -36,12 +36,11 @@ import com.marklogic.client.io.marker.RowReadHandle;
    + RawPlanDefinition
    + RowSet
    + RowRecord
+   + RowRecord - column metadata
 
    TO DO:
    + move type interfaces into expression.marker package
-   + RowSet - column name
    + RowRecord - sequence column values
-   + RowRecord - column metadata
    + RowManager.resultRowsAs()
    + PlanBuilder - node constructors
  */

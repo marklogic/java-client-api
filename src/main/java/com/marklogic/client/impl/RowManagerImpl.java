@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import javax.xml.namespace.QName;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,6 +55,7 @@ import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
+import com.marklogic.client.row.RowRecord.ColumnKind;
 import com.marklogic.client.util.RequestParameters;
 
 public class RowManagerImpl
@@ -229,8 +232,8 @@ public class RowManagerImpl
 
 		@Override
 		public String[] getColumnNames() {
-			// TODO: get from SPARQL header
-			return null;
+// TODO
+			throw new UnsupportedOperationException("getColumnNames() is not implemented yet");
 		}
 
 		@Override
@@ -269,6 +272,9 @@ public class RowManagerImpl
 
 			try {
 				RowRecordImpl rowRecord = (RowRecordImpl) rowHandle;
+				
+				Map<String, String> kinds     = new HashMap<String, String>();
+				Map<String, String> datatypes = new HashMap<String, String>();
 
 				@SuppressWarnings("unchecked")
 				Map<String, Object> row = new ObjectMapper().readValue(
@@ -279,9 +285,19 @@ public class RowManagerImpl
 					Map<String,Object> binding = (Map<String,Object>) rawBinding;
 // TODO: capture SPARQL type and datatype for casting on request
 // TODO: special processing for cid?
-					String type     = (String) binding.get("type");
-					String datatype = (String) binding.get("datatype");
-					Object value    = binding.get("value");
+					String kind = (String) binding.get("type");
+					if (kind != null) {
+						kinds.put(key, kind);
+						if ("literal".equals(kind)) {
+							String datatype = (String) binding.get("datatype");
+							if (datatype != null) {
+								datatypes.put(key, datatype);
+							} else {
+								datatypes.put(key, "http://www.w3.org/2001/XMLSchema#string");
+							}
+						}
+					}
+					Object value = binding.get("value");
 					return value;
 				});
 
@@ -313,12 +329,14 @@ public class RowManagerImpl
 					}
 					String colName = headerValue.substring(1, pos);
 
+					kinds.put(colName, "content");
+
 					row.put(colName, currentRow);
 
 					hasMoreRows = results.hasNext();
 				}
 
-				rowRecord.init(row);
+				rowRecord.init(kinds, datatypes, row);
 
 				if (hasMoreRows) {
 					nextRow = currentRow;
@@ -357,11 +375,44 @@ public class RowManagerImpl
 	static class RowRecordImpl implements RowRecord {
 		private static final Map<Class<?>,Constructor<?>> constructors = new HashMap<Class<?>,Constructor<?>>();
 
+		private Map<String, String> kinds     = null;
+		private Map<String, String> datatypes = null;
+
 		private Map<String, Object> row = null;
 
 // QUESTION:  threading guarantees - multiple handles? precedent?
-		void init(Map<String, Object> row) {
-			this.row = row;
+		void init(Map<String, String> kinds, Map<String, String> datatypes, Map<String, Object> row) {
+			this.kinds     = kinds;
+			this.datatypes = datatypes;
+			this.row       = row;
+		}
+
+		@Override
+		public ColumnKind getKind(String columnName) {
+			switch(kinds.get(columnName)) {
+			case "literal":
+				return ColumnKind.ATOMIC_VALUE;
+			case "content":
+				return ColumnKind.CONTENT;
+			case "uri":
+				return ColumnKind.URI;
+			case "bnode":
+				return ColumnKind.BNODE;
+			}
+			return ColumnKind.NULL;
+		}
+
+		@Override
+		public QName getAtomicDatatype(String columnName) {
+			String datatype = datatypes.get(columnName);
+			if (datatype == null) {
+				return null;
+			}
+			int pos = datatype.indexOf("#");
+			if (pos == -1) {
+				return new QName(datatype);
+			}
+			return new QName(datatype.substring(0, pos), datatype.substring(pos + 1));
 		}
 
 		// supported operations for unmodifiable map
@@ -479,8 +530,6 @@ public class RowManagerImpl
 // TODO: constructor array for sequence
 			return null;
 		}
-
-// TODO: ColumnDocument interface inherited by RESTServiceResult?
 
 		@Override
 		public Format getContentFormat(String columnName) {

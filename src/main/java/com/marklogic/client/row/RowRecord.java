@@ -17,6 +17,8 @@ package com.marklogic.client.row;
 
 import java.util.Map;
 
+import javax.xml.namespace.QName;
+
 import com.marklogic.client.expression.XsValue;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.AbstractReadHandle;
@@ -24,7 +26,13 @@ import com.marklogic.client.io.marker.RowReadHandle;
 
 // TODO: JavaDoc
 public interface RowRecord extends RowReadHandle, Map<String, Object> {
-	// TODO: metadata accessors
+	public enum ColumnKind {
+        ATOMIC_VALUE, CONTENT, URI, BNODE, NULL;
+    }
+
+	public ColumnKind getKind(String columnName);
+
+	public QName getAtomicDatatype(String columnName);
 
 	public boolean   getBoolean(String columnName);
     public byte      getByte(String    columnName);
