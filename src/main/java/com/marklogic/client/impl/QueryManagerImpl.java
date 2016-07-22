@@ -56,25 +56,25 @@ import com.marklogic.client.query.ValuesListDefinition;
 import com.marklogic.client.util.RequestParameters;
 
 public class QueryManagerImpl
-	extends AbstractLoggingManager
-	implements QueryManager
+    extends AbstractLoggingManager
+    implements QueryManager
 {
     private RESTServices          services;
-	private HandleFactoryRegistry handleRegistry;
+    private HandleFactoryRegistry handleRegistry;
     private long pageLen = -1;
     private QueryView view = QueryView.DEFAULT;
 
     public QueryManagerImpl(RESTServices services) {
         super();
-    	this.services = services;
+        this.services = services;
     }
 
-	HandleFactoryRegistry getHandleRegistry() {
-		return handleRegistry;
-	}
-	void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
-		this.handleRegistry = handleRegistry;
-	}
+    HandleFactoryRegistry getHandleRegistry() {
+        return handleRegistry;
+    }
+    void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
+        this.handleRegistry = handleRegistry;
+    }
 
     @Override
     public long getPageLength() {
@@ -91,7 +91,7 @@ public class QueryManagerImpl
     }
     @Override
     public void setView(QueryView view) {
-    	this.view = (view == null) ? QueryView.DEFAULT : view;
+        this.view = (view == null) ? QueryView.DEFAULT : view;
     }
 
     @Override
@@ -210,8 +210,8 @@ public class QueryManagerImpl
     @Override
     @SuppressWarnings("unchecked")
     public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, long start, Transaction transaction) {
-    	@SuppressWarnings("rawtypes")
-    	HandleImplementation valuesBase = HandleAccessor.checkHandle(valueHandle, "values");
+        @SuppressWarnings("rawtypes")
+        HandleImplementation valuesBase = HandleAccessor.checkHandle(valueHandle, "values");
 
         if (valueHandle instanceof ValuesHandle) {
             ((ValuesHandle) valueHandle).setQueryCriteria(valdef);
@@ -220,11 +220,11 @@ public class QueryManagerImpl
         Format valuesFormat = valuesBase.getFormat();
         switch(valuesFormat) {
         case UNKNOWN:
-        	valuesFormat = Format.XML;
-        	break;
+            valuesFormat = Format.XML;
+            break;
         case JSON:
         case XML:
-        	break;
+            break;
         default:
             throw new UnsupportedOperationException("Only XML and JSON values results are possible.");
         }
@@ -234,10 +234,10 @@ public class QueryManagerImpl
 
         String tid = transaction == null ? null : transaction.getTransactionId();
         valuesBase.receiveContent(
-        	services.values(
-        		valuesBase.receiveAs(), valdef, mimetype, start, pageLength, transaction
-        		)
-        	);
+            services.values(
+                valuesBase.receiveAs(), valdef, mimetype, start, pageLength, transaction
+            )
+        );
         return valueHandle;
     }
 
@@ -256,7 +256,7 @@ public class QueryManagerImpl
     @Override
     @SuppressWarnings("unchecked")
     public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, long start, Transaction transaction) {
-		@SuppressWarnings("rawtypes")
+        @SuppressWarnings("rawtypes")
         HandleImplementation valuesBase = HandleAccessor.checkHandle(tupleHandle, "values");
 
         if (tupleHandle instanceof TuplesHandle) {
@@ -280,10 +280,10 @@ public class QueryManagerImpl
 
         String tid = transaction == null ? null : transaction.getTransactionId();
         valuesBase.receiveContent(
-        	services.values(
-        		valuesBase.receiveAs(), valdef, mimetype, start, pageLength, transaction
-        		)
-        	);
+            services.values(
+                valuesBase.receiveAs(), valdef, mimetype, start, pageLength, transaction
+            )
+        );
         return tupleHandle;
     }
 
@@ -292,19 +292,19 @@ public class QueryManagerImpl
         return valuesList(valdef, valueHandle, null);
     }
     @SuppressWarnings("unchecked")
-	@Override
+    @Override
     public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valuesHandle, Transaction transaction) {
-		@SuppressWarnings("rawtypes")
-    	HandleImplementation valuesBase = HandleAccessor.checkHandle(valuesHandle, "valueslist");
+        @SuppressWarnings("rawtypes")
+        HandleImplementation valuesBase = HandleAccessor.checkHandle(valuesHandle, "valueslist");
 
         Format valuesFormat = valuesBase.getFormat();
         switch(valuesFormat) {
         case UNKNOWN:
-        	valuesFormat = Format.XML;
-        	break;
+            valuesFormat = Format.XML;
+            break;
         case JSON:
         case XML:
-        	break;
+            break;
         default:
             throw new UnsupportedOperationException("Only XML and JSON values list results are possible.");
         }
@@ -321,19 +321,19 @@ public class QueryManagerImpl
         return optionsList(optionsHandle, null);
     }
     @SuppressWarnings("unchecked")
-	@Override
+    @Override
     public <T extends QueryOptionsListReadHandle> T optionsList(T optionsHandle, Transaction transaction) {
-		@SuppressWarnings("rawtypes")
-    	HandleImplementation optionsBase = HandleAccessor.checkHandle(optionsHandle, "optionslist");
+        @SuppressWarnings("rawtypes")
+        HandleImplementation optionsBase = HandleAccessor.checkHandle(optionsHandle, "optionslist");
 
         Format optionsFormat = optionsBase.getFormat();
         switch(optionsFormat) {
         case UNKNOWN:
-        	optionsFormat = Format.XML;
-        	break;
+            optionsFormat = Format.XML;
+            break;
         case JSON:
         case XML:
-        	break;
+            break;
         default:
             throw new UnsupportedOperationException("Only XML and JSON options list results are possible.");
         }
@@ -366,24 +366,24 @@ public class QueryManagerImpl
         }
     }
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public String[] suggest(SuggestDefinition suggestDef) {
-		DOMHandle handle = new DOMHandle();
+    @SuppressWarnings("unchecked")
+    @Override
+    public String[] suggest(SuggestDefinition suggestDef) {
+        DOMHandle handle = new DOMHandle();
 
-		@SuppressWarnings("rawtypes")
-		HandleImplementation suggestBase = HandleAccessor.checkHandle(handle, "suggest");
+        @SuppressWarnings("rawtypes")
+        HandleImplementation suggestBase = HandleAccessor.checkHandle(handle, "suggest");
 
         suggestBase.receiveContent(services.suggest(suggestBase.receiveAs(), suggestDef));
-        
-		Document doc = handle.get();
+
+        Document doc = handle.get();
         NodeList nodeList = doc.getDocumentElement().getChildNodes();
         List<String> suggestions = new ArrayList<String>();
         for (int i=0; i <nodeList.getLength(); i++) {
-        	suggestions.add(nodeList.item(i).getTextContent());
+            suggestions.add(nodeList.item(i).getTextContent());
         }
         return suggestions.toArray(new String[suggestions.size()]);
-	}
+    }
 
     @Override
     public <T extends StructureReadHandle> T convert(RawQueryByExampleDefinition query, T convertedHandle) {
@@ -420,91 +420,91 @@ public class QueryManagerImpl
         return convertedHandle;
     }
 
-	@Override
-	public SuggestDefinition newSuggestDefinition() {
-		SuggestDefinition def = new SuggestDefinitionImpl();
-		return def;
-	}
-	@Override
-	public SuggestDefinition newSuggestDefinition(String optionsName) {
-		SuggestDefinition def = new SuggestDefinitionImpl();
-		def.setStringCriteria("");
-		def.setOptionsName(optionsName);
-		return def;
-	}
-	@Override
-	public SuggestDefinition newSuggestDefinition(String suggestString,
-			String optionsName) {
-		SuggestDefinition def = new SuggestDefinitionImpl();
-		def.setStringCriteria(suggestString);
-		def.setOptionsName(optionsName);
-		return def;
-	}
+    @Override
+    public SuggestDefinition newSuggestDefinition() {
+        SuggestDefinition def = new SuggestDefinitionImpl();
+        return def;
+    }
+    @Override
+    public SuggestDefinition newSuggestDefinition(String optionsName) {
+        SuggestDefinition def = new SuggestDefinitionImpl();
+        def.setStringCriteria("");
+        def.setOptionsName(optionsName);
+        return def;
+    }
+    @Override
+    public SuggestDefinition newSuggestDefinition(String suggestString,
+        String optionsName) {
+        SuggestDefinition def = new SuggestDefinitionImpl();
+        def.setStringCriteria(suggestString);
+        def.setOptionsName(optionsName);
+        return def;
+    }
 
-	@Override
-	public RawCombinedQueryDefinition newRawCombinedQueryDefinitionAs(Format format, Object rawQuery) {
-		return newRawCombinedQueryDefinitionAs(format, rawQuery, null);
-	}
-	@Override
-	public RawCombinedQueryDefinition newRawCombinedQueryDefinitionAs(Format format, Object rawQuery, String optionsName) {
-		return newRawCombinedQueryDefinition(structuredWrite(format, rawQuery), optionsName);
-	}
-	@Override
-	public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle) {
-		return new RawQueryDefinitionImpl.Combined(handle);
-	}
-	@Override
-	public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle, String optionsName) {
-		return new RawQueryDefinitionImpl.Combined(handle, optionsName);
-	}
+    @Override
+    public RawCombinedQueryDefinition newRawCombinedQueryDefinitionAs(Format format, Object rawQuery) {
+        return newRawCombinedQueryDefinitionAs(format, rawQuery, null);
+    }
+    @Override
+    public RawCombinedQueryDefinition newRawCombinedQueryDefinitionAs(Format format, Object rawQuery, String optionsName) {
+        return newRawCombinedQueryDefinition(structuredWrite(format, rawQuery), optionsName);
+    }
+    @Override
+    public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle) {
+        return new RawQueryDefinitionImpl.Combined(handle);
+    }
+    @Override
+    public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle, String optionsName) {
+        return new RawQueryDefinitionImpl.Combined(handle, optionsName);
+    }
 
-	@Override
-	public RawStructuredQueryDefinition newRawStructuredQueryDefinitionAs(Format format, Object query) {
-		return newRawStructuredQueryDefinitionAs(format, query, null);
-	}
-	@Override
-	public RawStructuredQueryDefinition newRawStructuredQueryDefinitionAs(Format format, Object query, String optionsName) {
-		return newRawStructuredQueryDefinition(structuredWrite(format, query), optionsName);
-	}
-	@Override
-	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle) {
-		return new RawQueryDefinitionImpl.Structured(handle);
-	}
-	@Override
-	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle, String optionsName) {
-		return new RawQueryDefinitionImpl.Structured(handle, optionsName);
-	}
+    @Override
+    public RawStructuredQueryDefinition newRawStructuredQueryDefinitionAs(Format format, Object query) {
+        return newRawStructuredQueryDefinitionAs(format, query, null);
+    }
+    @Override
+    public RawStructuredQueryDefinition newRawStructuredQueryDefinitionAs(Format format, Object query, String optionsName) {
+        return newRawStructuredQueryDefinition(structuredWrite(format, query), optionsName);
+    }
+    @Override
+    public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle) {
+        return new RawQueryDefinitionImpl.Structured(handle);
+    }
+    @Override
+    public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle, String optionsName) {
+        return new RawQueryDefinitionImpl.Structured(handle, optionsName);
+    }
 
-	@Override
-	public RawQueryByExampleDefinition newRawQueryByExampleDefinitionAs(Format format, Object query) {
-		return newRawQueryByExampleDefinitionAs(format, query, null);
-	}
-	@Override
-	public RawQueryByExampleDefinition newRawQueryByExampleDefinitionAs(Format format, Object query, String optionsName) {
-		return newRawQueryByExampleDefinition(structuredWrite(format, query), optionsName);
-	}
-	@Override
-	public RawQueryByExampleDefinition newRawQueryByExampleDefinition(StructureWriteHandle handle) {
-		return new RawQueryDefinitionImpl.ByExample(handle);
-	}
-	@Override
-	public RawQueryByExampleDefinition newRawQueryByExampleDefinition(StructureWriteHandle handle, String optionsName) {
-		return new RawQueryDefinitionImpl.ByExample(handle, optionsName);
-	}
+    @Override
+    public RawQueryByExampleDefinition newRawQueryByExampleDefinitionAs(Format format, Object query) {
+        return newRawQueryByExampleDefinitionAs(format, query, null);
+    }
+    @Override
+    public RawQueryByExampleDefinition newRawQueryByExampleDefinitionAs(Format format, Object query, String optionsName) {
+        return newRawQueryByExampleDefinition(structuredWrite(format, query), optionsName);
+    }
+    @Override
+    public RawQueryByExampleDefinition newRawQueryByExampleDefinition(StructureWriteHandle handle) {
+        return new RawQueryDefinitionImpl.ByExample(handle);
+    }
+    @Override
+    public RawQueryByExampleDefinition newRawQueryByExampleDefinition(StructureWriteHandle handle, String optionsName) {
+        return new RawQueryDefinitionImpl.ByExample(handle, optionsName);
+    }
 
-	private StructureWriteHandle structuredWrite(Format format, Object query) {
-		Class<?> as = query.getClass();
-    	ContentHandle<?> queryHandle = getHandleRegistry().makeHandle(as);
-		if (!StructureWriteHandle.class.isAssignableFrom(queryHandle.getClass())) {
-			throw new IllegalArgumentException(
-					"Handle "+queryHandle.getClass().getName()+
-					" does not provide structure write handle for "+as.getName()
-					);
-		}
+    private StructureWriteHandle structuredWrite(Format format, Object query) {
+        Class<?> as = query.getClass();
+        ContentHandle<?> queryHandle = getHandleRegistry().makeHandle(as);
+        if (!StructureWriteHandle.class.isAssignableFrom(queryHandle.getClass())) {
+            throw new IllegalArgumentException(
+                    "Handle "+queryHandle.getClass().getName()+
+                    " does not provide structure write handle for "+as.getName()
+            );
+        }
 
-		Utilities.setHandleContent(queryHandle, query);
-		Utilities.setHandleStructuredFormat(queryHandle, format);
+        Utilities.setHandleContent(queryHandle, query);
+        Utilities.setHandleStructuredFormat(queryHandle, format);
 
-		return (StructureWriteHandle) queryHandle;
-	}
+        return (StructureWriteHandle) queryHandle;
+    }
 }
