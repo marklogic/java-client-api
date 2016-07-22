@@ -276,7 +276,7 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 
-		if (authenType != null && authenType != Authentication.KERBEROS) {
+		if (authenType != null && (authenType != Authentication.KERBEROS && authenType != Authentication.CERTIFICATE)) {
 			if (user == null)
 				throw new IllegalArgumentException("No user provided");
 			if (password == null)
@@ -373,7 +373,7 @@ public class JerseyServices implements RESTServices {
 
 		HttpParams httpParams = new BasicHttpParams();
 
-		if (authenType != null) {
+		if (authenType != null && authenType != Authentication.CERTIFICATE) {
 			List<String> authpref = new ArrayList<String>();
 			if (authenType == Authentication.BASIC)
 				authpref.add(AuthPolicy.BASIC);
@@ -421,7 +421,7 @@ public class JerseyServices implements RESTServices {
 
 		// System.setProperty("javax.net.debug", "all"); // all or ssl
 
-		if (authenType == null) {
+		if (authenType == null || authenType == Authentication.CERTIFICATE) {
 			checkFirstRequest = false;
 		} else if (authenType == Authentication.BASIC) {
 			checkFirstRequest = false;
@@ -434,8 +434,8 @@ public class JerseyServices implements RESTServices {
 			client.addFilter(new DigestChallengeFilter());
 
 			client.addFilter(new HTTPDigestAuthFilter(user, password));
-		}  else if (authenType == Authentication.KERBEROS) {
-			checkFirstRequest = true;
+		} else if (authenType == Authentication.KERBEROS) {
+			checkFirstRequest = false;
 			client.addFilter(new HTTPKerberosAuthFilter(host, user));
 		}
 		else {

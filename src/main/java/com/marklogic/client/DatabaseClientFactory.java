@@ -15,11 +15,21 @@
  */
 package com.marklogic.client;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.Date;
 import java.util.Set;
 
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 
@@ -36,7 +46,6 @@ import com.marklogic.client.io.marker.ContentHandleFactory;
 import sun.security.krb5.Credentials;
 import sun.security.krb5.KrbException;
 import sun.security.krb5.PrincipalName;
-import sun.security.krb5.RealmException;
 
 /**
  * A Database Client Factory configures a database client for making
@@ -67,8 +76,11 @@ public class DatabaseClientFactory {
 		/**
 		 * Authentication using Kerberos.
 		 */
-		KERBEROS;
-
+		KERBEROS,
+		/**
+		 * Authentication using Certificates;
+		 */
+		CERTIFICATE;
 		/**
 		 * Returns the enumerated value for the case-insensitive name.
 		 * @param name	the name of the enumerated value
@@ -365,6 +377,67 @@ public class DatabaseClientFactory {
 		}
 	}
 
+	public static class CertificateAuthContext extends AuthContext {
+		String certFile;
+		String certPassword;
+		public CertificateAuthContext(SSLContext context) {
+			this.sslContext = context;
+		}
+
+		public CertificateAuthContext(SSLContext context, SSLHostnameVerifier verifier) {
+			this.sslContext = context;
+			this.sslVerifier = verifier;
+		}
+
+		public CertificateAuthContext(String certFile)
+				throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException,
+				UnrecoverableKeyException, KeyManagementException {
+			this.certFile = certFile;
+			this.certPassword = "";
+			this.sslContext = createSSLContext();
+		}
+
+		public CertificateAuthContext(String certFile, String certPassword)
+				throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException,
+				UnrecoverableKeyException, KeyManagementException {
+			this.certFile = certFile;
+			this.certPassword = certPassword;
+			this.sslContext = createSSLContext();
+		}
+
+		private SSLContext createSSLContext() throws NoSuchAlgorithmException, KeyStoreException, CertificateException,
+				IOException, UnrecoverableKeyException, KeyManagementException {
+			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+			KeyStore keyStore = KeyStore.getInstance("PKCS12");
+			FileInputStream certFileStream = new FileInputStream(certFile);
+			try {
+				keyStore.load(certFileStream, certPassword.toCharArray());
+			} finally {
+				if (certFileStream != null)
+					certFileStream.close();
+			}
+			keyManagerFactory.init(keyStore, certPassword.toCharArray());
+			KeyManager[] keyMgr = keyManagerFactory.getKeyManagers();
+			sslContext = SSLContext.getInstance("TLSv1.2");
+			sslContext.init(keyMgr, null, null);
+			return sslContext;
+		}
+
+		@Override
+		public CertificateAuthContext withSSLHostnameVerifier(SSLHostnameVerifier verifier) {
+			this.sslVerifier = verifier;
+			return this;
+		}
+
+		public String getCertificate() {
+			return certFile;
+		}
+
+		public String getCertificatePassword() {
+			return certPassword;
+		}
+	}
+
 	/**
 	 * Creates a client to access the database by means of a REST server
 	 * without any authentication. Such clients can be convenient for
@@ -464,6 +537,16 @@ public class DatabaseClientFactory {
 				}
 			}
 			return newClient(host, port, database, kerberosContext.externalName, null, type, null, sslContext, sslVerifier);
+		} else if (securityContext instanceof CertificateAuthContext) {
+			CertificateAuthContext certificateContext = (CertificateAuthContext) securityContext;
+			type = Authentication.CERTIFICATE;
+			if (certificateContext.sslVerifier != null) {
+				sslVerifier = certificateContext.sslVerifier;
+			} else {
+				sslVerifier = SSLHostnameVerifier.COMMON;
+			}
+			return newClient(host, port, database, null, null, type, null, certificateContext.getSSLContext(),
+					sslVerifier);
 		}
 		return null;
 	}
