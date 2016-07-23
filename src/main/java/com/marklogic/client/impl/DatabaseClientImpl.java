@@ -61,14 +61,13 @@ public class DatabaseClientImpl implements DatabaseClient {
 	private String                user;
 	private String                password;
 	private Authentication        type;
-	private String                forestName;
 	private SSLContext            context;
 	private SSLHostnameVerifier   verifier;
 	private HandleFactoryRegistry handleRegistry;
 	private SecurityContext       securityContext; // Would be used once we remove Authentication entirely
 
 	public DatabaseClientImpl(RESTServices services, String host, int port, String database,
-		String user, String password, Authentication type, String forestName, SSLContext context, SSLHostnameVerifier verifier)
+		String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier)
 	{
 		this.services = services;
 		this.host     = host;
@@ -77,7 +76,6 @@ public class DatabaseClientImpl implements DatabaseClient {
 		this.user     = user;
 		this.password = password;
 		this.type     = type;
-		this.forestName=forestName;
 		this.context  = context;
 		this.verifier = verifier;
 		services.setDatabaseClient(this);
@@ -108,35 +106,30 @@ public class DatabaseClientImpl implements DatabaseClient {
 	@Override
 	public GenericDocumentManager newDocumentManager() {
 		GenericDocumentImpl docMgr = new GenericDocumentImpl(services);
-		docMgr.setForestName(getForestName());
 		docMgr.setHandleRegistry(getHandleRegistry());
 		return docMgr;
 	}
 	@Override
 	public BinaryDocumentManager newBinaryDocumentManager() {
 		BinaryDocumentImpl docMgr = new BinaryDocumentImpl(services);
-		docMgr.setForestName(getForestName());
 		docMgr.setHandleRegistry(getHandleRegistry());
 		return docMgr;
 	}
 	@Override
 	public JSONDocumentManager newJSONDocumentManager() {
 		JSONDocumentImpl docMgr = new JSONDocumentImpl(services);
-		docMgr.setForestName(getForestName());
 		docMgr.setHandleRegistry(getHandleRegistry());
 		return docMgr;
 	}
 	@Override
 	public TextDocumentManager newTextDocumentManager() {
 		TextDocumentImpl docMgr = new TextDocumentImpl(services);
-		docMgr.setForestName(getForestName());
 		docMgr.setHandleRegistry(getHandleRegistry());
 		return docMgr;
 	}
 	@Override
 	public XMLDocumentManager newXMLDocumentManager() {
 		XMLDocumentImpl docMgr = new XMLDocumentImpl(services);
-		docMgr.setForestName(getForestName());
 		docMgr.setHandleRegistry(getHandleRegistry());
 		return docMgr;
 	}
@@ -264,11 +257,6 @@ public class DatabaseClientImpl implements DatabaseClient {
 	@Override
 	public Authentication getAuthentication() {
 		return type;
-	}
-
-	@Override
-	public String getForestName() {
-		return forestName;
 	}
 
 	@Override

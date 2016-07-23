@@ -89,7 +89,6 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   private HandleFactoryRegistry handleRegistry;
   private ServerTransform readTransform;
   private ServerTransform writeTransform;
-  private String forestName;
   private long pageLength = DEFAULT_PAGE_LENGTH;
   private QueryView searchView = QueryView.RESULTS;
   private Format nonDocumentFormat = null;
@@ -1256,16 +1255,6 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   @Override
   public void setWriteTransform(ServerTransform transform) {
     this.writeTransform = transform;
-  }
-
-  @Override
-  public String getForestName() {
-    return forestName;
-  }
-
-  @Override
-  public void setForestName(String forestName) {
-    this.forestName = forestName;
   }
 
   @Override

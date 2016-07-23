@@ -63,7 +63,7 @@ import com.sun.jersey.api.client.ClientResponse;
 
 public interface RESTServices {
 	public void connect(String host, int port, String database, String user, String password, Authentication type,
-			String forestName, SSLContext context, SSLHostnameVerifier verifier);
+			SSLContext context, SSLHostnameVerifier verifier);
 	public DatabaseClient getDatabaseClient();
 	public void setDatabaseClient(DatabaseClient client);
 	public void release();
@@ -115,7 +115,7 @@ public interface RESTServices {
 			ForbiddenUserException, FailedRequestException;
 
 	public <T extends SearchReadHandle> T search(RequestLogger logger, T searchHandle, QueryDefinition queryDef,
-			long start, long len, QueryView view, Transaction transaction)
+			long start, long len, QueryView view, Transaction transaction, String forestName)
 		throws ForbiddenUserException, FailedRequestException;
 
 	public void deleteSearch(RequestLogger logger, DeleteQueryDefinition queryDef, Transaction transaction)
@@ -166,7 +166,7 @@ public interface RESTServices {
 		throws ForbiddenUserException, FailedRequestException;
 
 	public <R extends UrisReadHandle> R uris(RequestLogger reqlog, Transaction transaction,
-			QueryDefinition qdef, long start, long pageLength, R output)
+			QueryDefinition qdef, long start, long pageLength, String forestName, R output)
 			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	public <R extends AbstractReadHandle> R getResource(RequestLogger reqlog, String path, 
 			Transaction transaction, RequestParameters params, R output)

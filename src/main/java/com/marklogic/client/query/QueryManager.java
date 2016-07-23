@@ -262,6 +262,16 @@ public interface QueryManager {
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle);
     /**
      * Searches documents based on query criteria and, potentially, previously
+     * saved query options.
+     * @param querydef	the definition of query criteria and query options
+     * @param searchHandle	a handle for reading the results from the search
+     * @param <T> the type of SearchReadHandle to return
+     * @param forestName a forest to limit this search
+     * @return	the handle populated with the results from the search
+     */
+    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, String forestName);
+    /**
+     * Searches documents based on query criteria and, potentially, previously
      * saved query options starting with the specified page listing 
      * document results.
      * @param querydef	the definition of query criteria and query options
@@ -271,6 +281,18 @@ public interface QueryManager {
      * @return	the handle populated with the results from the search
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start);
+    /**
+     * Searches documents based on query criteria and, potentially, previously
+     * saved query options starting with the specified page listing 
+     * document results.
+     * @param querydef	the definition of query criteria and query options
+     * @param searchHandle	a handle for reading the results from the search
+     * @param start	the offset of the first document in the page (where 1 is the first result)
+     * @param <T> the type of SearchReadHandle to return
+     * @param forestName a forest to limit this search
+     * @return	the handle populated with the results from the search
+     */
+    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, String forestName);
     /**
      * Searches documents based on query criteria and, potentially, previously
      * saved query options.  The search includes documents modified by the
@@ -284,6 +306,18 @@ public interface QueryManager {
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction);
     /**
      * Searches documents based on query criteria and, potentially, previously
+     * saved query options.  The search includes documents modified by the
+     * transaction and ignores documents deleted by the transaction.
+     * @param querydef	the definition of query criteria and query options
+     * @param searchHandle	a handle for reading the results from the search
+     * @param transaction	a open transaction for matching documents
+     * @param <T> the type of SearchReadHandle to return
+     * @param forestName a forest to limit this search
+     * @return	the handle populated with the results from the search
+     */
+    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction, String forestName);
+    /**
+     * Searches documents based on query criteria and, potentially, previously
      * saved query options starting with the specified page listing 
      * document results.  The search includes documents modified by the
      * transaction and ignores documents deleted by the transaction.
@@ -295,6 +329,20 @@ public interface QueryManager {
      * @return	the handle populated with the results from the search
      */
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction);
+    /**
+     * Searches documents based on query criteria and, potentially, previously
+     * saved query options starting with the specified page listing 
+     * document results.  The search includes documents modified by the
+     * transaction and ignores documents deleted by the transaction.
+     * @param querydef	the definition of query criteria and query options
+     * @param searchHandle	a handle for reading the results from the search
+     * @param start	the offset of the first document in the page (where 1 is the first result)
+     * @param transaction	a open transaction for matching documents
+     * @param <T> the type of SearchReadHandle to return
+     * @param forestName a forest to limit this search
+     * @return	the handle populated with the results from the search
+     */
+    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction, String forestName);
 
     /**
      * Queries the REST server for suggested string completions based on

@@ -1373,19 +1373,6 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
     public void setWriteTransform(ServerTransform transform);
 
     /**
-     * Returns the name of the forest that should store written documents.
-     * @return	the name of the forest
-     */
-    public String getForestName();
-    /**
-     * Specifies the name of the forest that should store written documents. You
-     * can leave this name null to let the server select a forest.
-     * 
-     * @param forestName	the name of the forest
-     */
-    public void setForestName(String forestName);
-
-    /**
      * Starts debugging client requests. You can suspend and resume debugging output
      * using the methods of the logger.
      * 

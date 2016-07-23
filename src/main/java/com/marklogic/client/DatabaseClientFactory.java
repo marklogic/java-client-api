@@ -448,7 +448,7 @@ public class DatabaseClientFactory {
 	 * @return	a new client for making database requests
 	 */
 	static public DatabaseClient newClient(String host, int port) {
-		return newClient(host, port, null, null, null, null, null, null, null);
+		return newClient(host, port, null, null, null, null, null, null);
 	}
 
 	/**
@@ -462,7 +462,7 @@ public class DatabaseClientFactory {
 	 * @return	a new client for making database requests
 	 */
 	static public DatabaseClient newClient(String host, int port, String database) {
-		return newClient(host, port, database, null, null, null, null, null, null);
+		return newClient(host, port, database, null, null, null, null, null);
 	}
 
 	/**
@@ -510,7 +510,7 @@ public class DatabaseClientFactory {
 					sslVerifier = SSLHostnameVerifier.COMMON;
 				}
 			}
-			return newClient(host, port, database, user, password, type, null, sslContext, sslVerifier);
+			return newClient(host, port, database, user, password, type, sslContext, sslVerifier);
 		} else if (securityContext instanceof DigestAuthContext) {
 			DigestAuthContext digestContext = (DigestAuthContext) securityContext;
 			user = digestContext.user;
@@ -524,7 +524,7 @@ public class DatabaseClientFactory {
 					sslVerifier = SSLHostnameVerifier.COMMON;
 				}
 			}
-			return newClient(host, port, database, user, password, type, null, sslContext, sslVerifier);
+			return newClient(host, port, database, user, password, type, sslContext, sslVerifier);
 		} else if (securityContext instanceof KerberosAuthContext) {
 			KerberosAuthContext kerberosContext = (KerberosAuthContext) securityContext;
 			type = Authentication.KERBEROS;
@@ -536,7 +536,7 @@ public class DatabaseClientFactory {
 					sslVerifier = SSLHostnameVerifier.COMMON;
 				}
 			}
-			return newClient(host, port, database, kerberosContext.externalName, null, type, null, sslContext, sslVerifier);
+			return newClient(host, port, database, kerberosContext.externalName, null, type, sslContext, sslVerifier);
 		} else if (securityContext instanceof CertificateAuthContext) {
 			CertificateAuthContext certificateContext = (CertificateAuthContext) securityContext;
 			type = Authentication.CERTIFICATE;
@@ -545,8 +545,7 @@ public class DatabaseClientFactory {
 			} else {
 				sslVerifier = SSLHostnameVerifier.COMMON;
 			}
-			return newClient(host, port, database, null, null, type, null, certificateContext.getSSLContext(),
-					sslVerifier);
+			return newClient(host, port, database, null, null, type, certificateContext.getSSLContext(), sslVerifier);
 		}
 		return null;
 	}
@@ -563,7 +562,7 @@ public class DatabaseClientFactory {
 	 */
 	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type) {
-		return newClient(host, port, null, user, password, type, null, null, null);
+		return newClient(host, port, null, user, password, type, null, null);
 	}
 	/**
 	 * Creates a client to access the database by means of a REST server.
@@ -579,7 +578,7 @@ public class DatabaseClientFactory {
 	 */
 	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type) {
-		return newClient(host, port, database, user, password, type, null, null, null);
+		return newClient(host, port, database, user, password, type, null, null);
 	}
 	/**
 	 * Creates a client to access the database by means of a REST server.
@@ -629,7 +628,7 @@ public class DatabaseClientFactory {
 	 */
 	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
-		DatabaseClientImpl client = newClientImpl(host, port, null, user, password, type, null, context, verifier);
+		DatabaseClientImpl client = newClientImpl(host, port, null, user, password, type, context, verifier);
 		client.setHandleRegistry(getHandleRegistry().copy());
 		return client;
 	}
@@ -649,110 +648,15 @@ public class DatabaseClientFactory {
 	 */
 	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
-		DatabaseClientImpl client = newClientImpl(host, port, database, user, password, type, null, context, verifier);
-		client.setHandleRegistry(getHandleRegistry().copy());
-		return client;
-	}   /**
-			 * Creates a client to access the database by means of a REST server.
-			 * 
-			 * @param host	the host with the REST server
-			 * @param port	the port for the REST server
-			 * @param user	the user with read, write, or administrative privileges
-			 * @param password	the password for the user
-			 * @param type	the type of authentication applied to the request
-			 * @param forestName	a forest to pass along to new DocumentManager and QueryManager instances
-			 * @return	a new client for making database requests
-			 */
-	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, String forestName) {
-		return newClient(host, port, null, user, password, type, forestName, null, null);
-	}
-	/**
-	 * Creates a client to access the database by means of a REST server.
-	 * 
-	 * @param host	the host with the REST server
-	 * @param port	the port for the REST server
-	 * @param database	the database to access (default: configured database for the REST server)
-	 * @param user	the user with read, write, or administrative privileges
-	 * @param password	the password for the user
-	 * @param type	the type of authentication applied to the request
-	 * @param forestName	a forest to pass along to new DocumentManager and QueryManager instances
-	 * @return	a new client for making database requests
-	 */
-	static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, String forestName) {
-		return newClient(host, port, database, user, password, type, forestName, null, null);
-	}
-	/**
-	 * Creates a client to access the database by means of a REST server.
-	 * 
-	 * @param host	the host with the REST server
-	 * @param port	the port for the REST server
-	 * @param user	the user with read, write, or administrative privileges
-	 * @param password	the password for the user
-	 * @param type	the type of authentication applied to the request
-	 * @param forestName	a forest to pass along to new DocumentManager and QueryManager instances
-	 * @param context	the SSL context for authenticating with the server
-	 * @return	a new client for making database requests
-	 */
-	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, String forestName, SSLContext context) {
-		return newClient(host, port, null, user, password, type, forestName, context, SSLHostnameVerifier.COMMON);
-	}
-	/**
-	 * Creates a client to access the database by means of a REST server.
-	 * 
-	 * @param host	the host with the REST server
-	 * @param port	the port for the REST server
-	 * @param database	the database to access (default: configured database for the REST server)
-	 * @param user	the user with read, write, or administrative privileges
-	 * @param password	the password for the user
-	 * @param type	the type of authentication applied to the request
-	 * @param forestName	a forest to pass along to new DocumentManager and QueryManager instances
-	 * @param context	the SSL context for authenticating with the server
-	 * @return	a new client for making database requests
-	 */
-	static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, String forestName, SSLContext context) {
-		return newClient(host, port, database, user, password, type, forestName, context, SSLHostnameVerifier.COMMON);
-	}
-	/**
-	 * Creates a client to access the database by means of a REST server.
-	 * 
-	 * @param host	the host with the REST server
-	 * @param port	the port for the REST server
-	 * @param user	the user with read, write, or administrative privileges
-	 * @param password	the password for the user
-	 * @param type	the type of authentication applied to the request
-	 * @param forestName	a forest to pass along to new DocumentManager and QueryManager instances
-	 * @param context	the SSL context for authenticating with the server
-	 * @param verifier	a callback for checking hostnames
-	 * @return	a new client for making database requests
-	 */
-	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, String forestName, SSLContext context, SSLHostnameVerifier verifier) {
-		DatabaseClientImpl client = newClientImpl(host, port, null, user, password, type, forestName, context, verifier);
+		DatabaseClientImpl client = newClientImpl(host, port, database, user, password, type, context, verifier);
 		client.setHandleRegistry(getHandleRegistry().copy());
 		return client;
 	}
-	/**
-	 * Creates a client to access the database by means of a REST server.
-	 * 
-	 * @param host	the host with the REST server
-	 * @param port	the port for the REST server
-	 * @param database	the database to access (default: configured database for the REST server)
-	 * @param user	the user with read, write, or administrative privileges
-	 * @param password	the password for the user
-	 * @param type	the type of authentication applied to the request
-	 * @param forestName	a forest to pass along to new DocumentManager and QueryManager instances
-	 * @param context 	the SSL context for authenticating with the server
-	 * @param verifier	a callback for checking hostnames
-	 * @return	a new client for making database requests
-	 */
-	static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, String forestName, SSLContext context, SSLHostnameVerifier verifier) {
-		DatabaseClientImpl client = newClientImpl(host, port, database, user, password, type, forestName, context, verifier);
-		client.setHandleRegistry(getHandleRegistry().copy());
-		return client;
-	}
-	static private DatabaseClientImpl newClientImpl(String host, int port, String database, String user, String password, Authentication type, String forestName, SSLContext context, SSLHostnameVerifier verifier) {
+
+	static private DatabaseClientImpl newClientImpl(String host, int port, String database, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
 		logger.debug("Creating new database client for server at "+host+":"+port);
 		JerseyServices services = new JerseyServices();
-		services.connect(host, port, database, user, password, type, forestName, context, verifier);
+		services.connect(host, port, database, user, password, type, context, verifier);
 
 		if (clientConfigurator != null) {
 			((HttpClientConfigurator) clientConfigurator).configure(
@@ -760,7 +664,7 @@ public class DatabaseClientFactory {
 				);
 		}
 
-		return new DatabaseClientImpl(services, host, port, database, user, password, type, forestName, context, verifier);
+		return new DatabaseClientImpl(services, host, port, database, user, password, type, context, verifier);
 	}
 
 	/**
@@ -838,7 +742,6 @@ public class DatabaseClientFactory {
 		private           Authentication        authentication;
 		private           String                externalName;
 		private           SecurityContext       securityContext;
-		private           String                forestName;
 		private           HandleFactoryRegistry handleRegistry =
 			HandleFactoryRegistryImpl.newDefault();
 
@@ -967,22 +870,6 @@ public class DatabaseClientFactory {
 			this.authentication = Authentication.valueOfUncased(authentication);
 		}
 		/**
-		 * Returns the forest name for clients created with a
-		 * DatabaseClientFactory.Bean object.
-		 * @return	the forest name
-		 */
-		public String getForestName() {
-			return forestName;
-		}
-		/**
-		 * Specifies the forest name for clients created with a
-		 * DatabaseClientFactory.Bean object.
-		 * @param forestName	a forest to pass along to new DocumentManager and QueryManager instances
-		 */
-		public void setForestName(String forestName) {
-			this.forestName = forestName;
-		}
-		/**
 		 * Returns the database for clients created with a
 		 * DatabaseClientFactory.Bean object.
 		 * @return	the database
@@ -1086,7 +973,7 @@ public class DatabaseClientFactory {
 		 * @return	a new client for making database requests
 		 */
 		public DatabaseClient newClient() {
-			DatabaseClientImpl client = newClientImpl(host, port, database, user, password, authentication, forestName, context, verifier);
+			DatabaseClientImpl client = newClientImpl(host, port, database, user, password, authentication, context, verifier);
 			client.setHandleRegistry(getHandleRegistry().copy());
 
 			return client;

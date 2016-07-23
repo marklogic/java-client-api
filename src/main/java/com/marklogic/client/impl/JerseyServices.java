@@ -192,7 +192,6 @@ public class JerseyServices implements RESTServices {
 
 	private DatabaseClient databaseClient;
 	private String database = null;
-	private String forestName = null;
 	private ApacheHttpClient4 client;
 	private WebResource connection;
 	private boolean released = false;
@@ -238,7 +237,7 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public void connect(String host, int port, String database, String user, String password,
-			Authentication authenType, String forestName, SSLContext context,
+			Authentication authenType, SSLContext context,
 			SSLHostnameVerifier verifier) {
 		X509HostnameVerifier x509Verifier = null;
 		if (verifier == null) {
@@ -257,11 +256,11 @@ public class JerseyServices implements RESTServices {
 			throw new IllegalArgumentException(
 					"Null SSLContent but non-null SSLHostnameVerifier for client");
 
-		connect(host, port, database, user, password, authenType, forestName, context, x509Verifier);
+		connect(host, port, database, user, password, authenType, context, x509Verifier);
 	}
 
 	private void connect(String host, int port, String database, String user, String password,
-			Authentication authenType, String forestName, SSLContext context,
+			Authentication authenType, SSLContext context,
 			X509HostnameVerifier verifier) {
 		if (logger.isDebugEnabled())
 			logger.debug("Connecting to {} at {} as {}", new Object[] { host,
@@ -291,7 +290,6 @@ public class JerseyServices implements RESTServices {
 		}
 
 		this.database = database;
-		this.forestName = forestName;
 
 		String baseUri = ((context == null) ? "http" : "https") + "://" + host
 				+ ":" + port + "/v1/";
@@ -905,7 +903,7 @@ public class JerseyServices implements RESTServices {
 		}
 
 		JerseySearchRequest request = 
-			generateSearchRequest(reqlog, querydef, MultiPartMediaTypes.MULTIPART_MIXED, transaction, params);
+			generateSearchRequest(reqlog, querydef, MultiPartMediaTypes.MULTIPART_MIXED, transaction, params, null);
         ClientResponse response = request.getResponse();
         if ( response == null ) return null;
         MultiPart entity = null;
@@ -1221,8 +1219,6 @@ public class JerseyServices implements RESTServices {
 				(mimetype != null) ? mimetype : "no",
 				stringJoin(categories, ", ", "no"));
 
-		if ( forestName != null ) extraParams.add("forest-name", forestName);
-
 		WebResource webResource = makeDocumentResource(
 				makeDocumentParams(
 						uri, categories, transaction, extraParams, isOnContent
@@ -1383,8 +1379,6 @@ public class JerseyServices implements RESTServices {
 				(uri != null) ? uri : "new",
 				(transaction != null) ? transaction.getTransactionId() : "no",
 				stringJoin(categories, ", ", "no"));
-
-		if ( forestName != null ) extraParams.add("forest-name", forestName);
 
 		MultivaluedMap<String, String> docParams =
 			makeDocumentParams(uri, categories, transaction, extraParams, true);
@@ -1905,7 +1899,7 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public <T extends SearchReadHandle> T search(RequestLogger reqlog, T searchHandle,
-			QueryDefinition queryDef, long start, long len, QueryView view, Transaction transaction)
+			QueryDefinition queryDef, long start, long len, QueryView view, Transaction transaction, String forestName)
 		throws ForbiddenUserException, FailedRequestException
 	{
 		MultivaluedMap<String, String> params = new MultivaluedMapImpl();
@@ -1949,7 +1943,7 @@ public class JerseyServices implements RESTServices {
 
 		String mimetype = searchFormat.getDefaultMimetype();
 
-		JerseySearchRequest request = generateSearchRequest(reqlog, queryDef, mimetype, transaction, params);
+		JerseySearchRequest request = generateSearchRequest(reqlog, queryDef, mimetype, transaction, params, forestName);
 
 		ClientResponse response = request.getResponse();
 		if ( response == null ) return null;
@@ -1970,7 +1964,7 @@ public class JerseyServices implements RESTServices {
 	}
 
     private JerseySearchRequest generateSearchRequest(RequestLogger reqlog, QueryDefinition queryDef, 
-            String mimetype, Transaction transaction, MultivaluedMap<String, String> params) {
+            String mimetype, Transaction transaction, MultivaluedMap<String, String> params, String forestName) {
         if ( params == null ) params = new MultivaluedMapImpl();
         if ( database != null ) addEncodedParam(params, "database", database);
         if ( forestName != null ) addEncodedParam(params, "forest-name", forestName);
@@ -2245,8 +2239,9 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public <T> T values(Class<T> as, ValuesDefinition valDef, String mimetype,
-		long start, long pageLength, Transaction transaction
-	) throws ForbiddenUserException, FailedRequestException {
+			long start, long pageLength, Transaction transaction)
+		throws ForbiddenUserException, FailedRequestException
+	{
 		MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
 
 		String optionsName = valDef.getOptionsName();
@@ -2345,10 +2340,6 @@ public class JerseyServices implements RESTServices {
 			docParams.add("txid", transaction.getTransactionId());
 		}
 
-		if ( forestName != null ) {
-			addEncodedParam(docParams, "forest-name", forestName);
-		}
-
 		String uri = "values";
 		if (valDef.getName() != null) {
 			uri += "/" + valDef.getName();
@@ -2398,10 +2389,6 @@ public class JerseyServices implements RESTServices {
 
 		if (transaction != null) {
 			docParams.add("txid", transaction.getTransactionId());
-		}
-
-		if ( forestName != null ) {
-			addEncodedParam(docParams, "forest-name", forestName);
 		}
 
 		String uri = "values";
@@ -2793,7 +2780,7 @@ public class JerseyServices implements RESTServices {
 
 	@Override
 	public <R extends UrisReadHandle> R uris(RequestLogger reqlog, Transaction transaction,
-			QueryDefinition qdef, long start, long pageLength, R output)
+			QueryDefinition qdef, long start, long pageLength, String forestName, R output)
 			throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
 	{
 		RequestParameters params = new RequestParameters();
@@ -3954,7 +3941,9 @@ public class JerseyServices implements RESTServices {
 
 	private void addPointInTimeQueryParam(Map<String, List<String>> params, Object outputHandle) {
 		HandleImplementation handleBase = HandleAccessor.as(outputHandle);
-		if ( params != null && handleBase.getPointInTimeQueryTimestamp() != -1 ) {
+		if ( params != null && handleBase != null &&
+		        handleBase.getPointInTimeQueryTimestamp() != -1 )
+		{
 			logger.trace("param timestamp=[" + handleBase.getPointInTimeQueryTimestamp() + "]");
 			if ( params instanceof RequestParameters ) {
 				((RequestParameters)            params).add("timestamp",
