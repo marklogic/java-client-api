@@ -47,14 +47,11 @@ public class ConditionalDocumentTest {
 	public static void beforeClass()
 	throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
 		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-		Common.connectAdmin();
-		serverConfig = Common.client.newServerConfigManager();
+		adminClient = Common.newAdminClient();
+		serverConfig = adminClient.newServerConfigManager();
 		serverConfig.readConfiguration();
 		serverConfig.setUpdatePolicy(UpdatePolicy.VERSION_REQUIRED);
 		serverConfig.writeConfiguration();
-		adminClient = Common.client;
-		Common.release();
-
 		Common.connect();
 	}
 	@AfterClass
