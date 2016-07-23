@@ -89,7 +89,7 @@ public class QueryByExampleTest {
                 "</q:query>" +
               "</q:qbe>";
         RawQueryByExampleDefinition query = 
-                qm.newRawQueryByExampleDefinition(new StringHandle(queryAsString));
+                qm.newRawQueryByExampleDefinition(new StringHandle(queryAsString).withFormat(Format.XML));
 
         StringHandle report = qm.validate(query, new StringHandle());
         System.out.println(report.toString());
