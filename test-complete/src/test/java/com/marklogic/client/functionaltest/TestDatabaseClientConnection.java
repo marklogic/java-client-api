@@ -161,9 +161,12 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8033, "rest-reader", "x", Authentication.DIGEST);
 		
-		//String expectedException = "com.sun.jersey.api.client.ClientHandlerException: org.apache.http.conn.HttpHostConnectException: Connection to http://localhost:8033 refused";
-		String expectedException = "com.sun.jersey.api.client.ClientHandlerException: java.net.ConnectException: Connection refused";
+		String expectedException = null;		                              
 		String exception = "";
+		if 	(IsSecurityEnabled()) 
+			expectedException = "com.sun.jersey.api.client.ClientHandlerException: java.net.ConnectException: Connection refused";
+		else
+			expectedException = "com.sun.jersey.api.client.ClientHandlerException: org.apache.http.conn.HttpHostConnectException: Connection to http://localhost:8033 refused";
 		
 		// write doc
 		try {

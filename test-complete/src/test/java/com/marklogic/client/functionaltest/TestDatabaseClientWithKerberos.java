@@ -115,8 +115,8 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 	private static final String DIRECTORY ="/bulkTransform/";
 	
 	private static String appServerHostName;
-	private static int appServerHostPort;
-	
+	private static int appServerHostPort = 8021;
+		
 	private static String UberdbName = "UberDatabaseClientConnectionDB";
 	private static String UberDefaultdbName = "Documents";
 	private static String [] UberfNames = {"UberDatabaseClientConnectionDB-1"};
@@ -135,7 +135,6 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 		System.out.println("In setup");
 		loadGradleProperties();
 		appServerHostName = getRestAppServerHostName();
-		appServerHostPort = 8021;
 		
 		setupJavaRESTServer(dbName, fNames[0], appServerName, appServerHostPort);
 		createAutomaticGeoIndex();
@@ -153,19 +152,32 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
-		//tearDownJavaRESTServer(dbName, fNames, appServerName);	
+		tearDownJavaRESTServer(dbName, fNames, appServerName);	
 	}
 	
 	@Before
-	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {		
-		client =  DatabaseClientFactory.newClient(appServerHostName, appServerHostPort, new KerberosAuthContext());
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+		SSLContext sslcontext = null;
+
+		if (IsSecurityEnabled()) {
+			sslcontext = getSslContext();
+			try {
+				client = DatabaseClientFactory.newClient(
+						getRestServerHostName(), getRestServerPort(),
+						new KerberosAuthContext().withSSLContext(sslcontext));
+			} catch (KrbException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else
+			client = DatabaseClientFactory.newClient(appServerHostName,
+					appServerHostPort, new KerberosAuthContext());
 	}
 	
 	@After
 	public void tearDown() throws Exception {
 		// release client
 		client.release();
-
 	}
 	
 	public static void createAutomaticGeoIndex() throws KeyManagementException, NoSuchAlgorithmException, Exception {		
@@ -200,13 +212,13 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 		}
 	}
 	
-	public GeoSpecialArtifact getGeoArtifact(int counter){
+	public GeoSpecialArtifact getGeoArtifact(int counter) {
 
 		GeoSpecialArtifact cogs = new GeoSpecialArtifact();
 		cogs.setId(counter);
-		if( counter % 5 == 0){
+		if( counter % 5 == 0) {
 			cogs.setName("Cogs special");
-			if(counter % 2 ==0){
+			if(counter % 2 ==0) {
 				GeoCompany acme = new GeoCompany();
 				acme.setName("Acme special, Inc.");
 				acme.setState("Reno");
@@ -215,7 +227,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 				acme.setLatLongPoint("39.5272 119.8219");
 				cogs.setManufacturer(acme);
 
-			}else{
+			} else {
 				GeoCompany widgets = new GeoCompany();
 				widgets.setName("Widgets counter Inc.");
 				widgets.setState("Las Vegas");
@@ -224,7 +236,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 				widgets.setLatLongPoint("36.1215 115.1739");
 				cogs.setManufacturer(widgets);
 			}
-		}else{
+		} else {
 			cogs.setName("Cogs "+counter);
 			if(counter % 2 ==0){
 				GeoCompany acme = new GeoCompany();
@@ -235,7 +247,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 				acme.setLatLongPoint("34.0500 118.2500");
 				cogs.setManufacturer(acme);
 
-			}else{
+			} else {
 				GeoCompany widgets = new GeoCompany();
 				widgets.setName("Widgets "+counter+", Inc.");
 				widgets.setState("San Fransisco");
@@ -248,17 +260,16 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 		cogs.setInventory(1000+counter);
 		return cogs;
 	}
-	public void validateArtifact(GeoSpecialArtifact art)
-	{
+	
+	public void validateArtifact(GeoSpecialArtifact art) {
 		assertNotNull("Artifact object should never be Null",art);
 		assertNotNull("Id should never be Null",art.id);
 		assertTrue("Inventry is always greater than 1000", art.getInventory()>1000);
 	}
 	
-	public void loadSimplePojos(PojoRepository products)
-	{
-		for(int i=1;i<111;i++){
-			if(i%2==0){
+	public void loadSimplePojos(PojoRepository products) {
+		for(int i=1;i<111;i++) {
+			if(i%2==0) {
 				products.write(this.getGeoArtifact(i),"even","numbers");
 			}
 			else {
@@ -522,10 +533,10 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 			System.out.println(jh.get().toString());
 			
 			long pageNo=1,count=0;
-			do{
+			do {
 				count =0;
 				p = products.search(qd,pageNo);
-				while(p.hasNext()){
+				while(p.hasNext()) {
 					GeoSpecialArtifact a =p.next();
 					validateArtifact(a);
 					assertTrue("Verifying document id is part of the search ids",a.getId()%5==0);
@@ -534,7 +545,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 				}
 				assertEquals("Page size",count,p.size());
 				pageNo=pageNo+p.getPageSize();
-			}while(!p.isLastPage() && pageNo<=p.getTotalSize());
+			} while(!p.isLastPage() && pageNo<=p.getTotalSize());
 			assertEquals("page number after the loop",3,p.getPageNumber());
 			assertEquals("total no of pages",3,p.getTotalPages());
 			assertEquals("page length from search handle",5,jh.get().path("page-length").asInt());
@@ -551,7 +562,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 	}
 	
 	@Test
-	public void testBinaryCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException{		
+	public void testBinaryCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException {		
 		System.out.println("Running testBinaryCRUD");
 		String filename = "Pandakarlino.jpg";
 		String uri = "/write-bin-Bytehandle/";
@@ -823,11 +834,11 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 		HashMap<String,String> map= new HashMap<String,String>();
 		DocumentWriteSet writesetRollback = docMgr.newWriteSet();
 		// Verify rollback with a smaller number of documents.
-		for(int i = 0;i<12;i++){
+		for(int i = 0;i<12;i++) {
 
 			writesetRollback.add(DIRECTORY+"fooWithTrans"+i+".xml", new DOMHandle(getDocumentContent("This is so foo"+i)));
 			map.put(DIRECTORY+"fooWithTrans"+i+".xml", convertXMLDocumentToString(getDocumentContent("This is so foo"+i)));
-			if(count%10 == 0){
+			if(count%10 == 0) {
 				docMgr.write(writesetRollback, transform, tRollback);
 				writesetRollback = docMgr.newWriteSet();
 			}
@@ -884,8 +895,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 	}
 	
 	@Test	
-	public void testRequestLogger() throws KeyManagementException, NoSuchAlgorithmException, IOException
-	{	
+	public void testRequestLogger() throws KeyManagementException, NoSuchAlgorithmException, IOException {	
 		System.out.println("Running testRequestLogger");
 
 		String filename = "bbq1.xml";
@@ -1023,8 +1033,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 	
 	// Access database on Uber port with specifying the database name.
 	@Ignore	
-	public void testUberClientWithDbName() throws IOException,  SAXException, ParserConfigurationException, KrbException
-	{
+	public void testUberClientWithDbName() throws IOException,  SAXException, ParserConfigurationException, KrbException {
 		System.out.println("Running testUberClientWithDbName method");
 		
 		// Associate the external security with the App Server.
@@ -1073,31 +1082,6 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 		deleteForest(UberfNames[0]);
 		// release client		
 		clientUber.release();
-	}
-	
-	@Test  
-	public void testWriteTextDocWithSSL() throws KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
-		SSLContext sslcontext = null;
-		// Run the test only if SSL enabled.
-		if (IsSecurityEnabled()) {
-			sslcontext = getSslContext();
-			DatabaseClient clientSSL = null;
-			try {
-				clientSSL = DatabaseClientFactory.newClient(
-						getRestServerHostName(), getRestServerPort(),
-						new KerberosAuthContext().withSSLContext(sslcontext));
-			} catch (KrbException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			String docId = "/foo/test/myFoo.txt";
-			TextDocumentManager docMgr = clientSSL.newTextDocumentManager();
-			docMgr.write(docId, new StringHandle().with("This is so foo"));
-			assertEquals("Text document write difference", "This is so foo",
-					docMgr.read(docId, new StringHandle()).get());
-			clientSSL.release();
-		}
 	}
 	
 	// Test DatabaseCLient with Basic Auth DIGEST auth type. Should expect an Exception.
