@@ -60,19 +60,15 @@ public class TestSearchMultipleForests extends BasicJavaClientREST {
 		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
 		DocumentManager docMgr = client.newDocumentManager();
-		docMgr.setForestName("TestSearchMultipleForestsDB-1");
 		StringHandle writeHandle1 = new StringHandle();
-		for(int a = 1; a <= 10; a++ )
-		{
+		for(int a = 1; a <= 10; a++ ) {
 			writeHandle1.set("<root>hello</root>");
 			docMgr.write("/forest-A/file" + a + ".xml", writeHandle1);
 		}
-
-		docMgr.setForestName("TestSearchMultipleForestsDB-2");
+		
 		StringHandle writeHandle2 = new StringHandle();
-		for(int b = 1; b <= 10; b++ )
-		{
-			writeHandle1.set("<root>hello</root>");
+		for(int b = 1; b <= 10; b++ ) {
+			writeHandle2.set("<root>hello</root>");
 			docMgr.write("/forest-B/file" + b + ".xml", writeHandle1);
 		}
 
@@ -83,7 +79,21 @@ public class TestSearchMultipleForests extends BasicJavaClientREST {
 		querydef.setCriteria("");
 
 		SearchHandle sHandle = new SearchHandle();
+		// New handles to search for documents on individual forests.
+		SearchHandle sHandleOnForest1 = new SearchHandle();
+		SearchHandle sHandleOnForest2 = new SearchHandle();
+		
 		queryMgr.search(querydef, sHandle);
+		queryMgr.search(querydef, sHandleOnForest1, fNames[0]);
+		System.out.println("Documents available on Forest 1 is " + sHandleOnForest1.getTotalResults());
+		
+		queryMgr.search(querydef, sHandleOnForest2, fNames[1]);
+		System.out.println("Documents available on Forest 2 is " + sHandleOnForest2.getTotalResults());
+		
+		// Assert on the total from individual forest counts. Round robin scheme yeilds 10 on F1 and 10 on F2.
+		// Future assignments schemes?
+		assertTrue("Document count is incorrect", sHandleOnForest1.getTotalResults() + sHandleOnForest2.getTotalResults() == 20);
+		
 		System.out.println(sHandle.getTotalResults());
 		assertTrue("Document count is incorrect", sHandle.getTotalResults() == 20);
 
@@ -91,8 +101,7 @@ public class TestSearchMultipleForests extends BasicJavaClientREST {
 	}
 
 	@AfterClass	
-	public static void tearDown() throws Exception
-	{
+	public static void tearDown() throws Exception {
 		System.out.println("In tear down");
 		cleanupRESTServer(dbName, fNames);
 	}
