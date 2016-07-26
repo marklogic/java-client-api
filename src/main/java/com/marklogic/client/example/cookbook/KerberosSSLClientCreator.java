@@ -32,8 +32,6 @@ import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.StringHandle;
 
-import sun.security.krb5.KrbException;
-
 /**
  * KerberosSSLClientCreator illustrates the basic approach for creating a client using SSL and Kerberos Authentication.
  * 
@@ -69,11 +67,7 @@ public class KerberosSSLClientCreator {
 		// create the client
 		// (note: a real application should use a COMMON, STRICT, or implemented hostname verifier)
 		DatabaseClient client = null;
-		try {
-			client = DatabaseClientFactory.newClient(props.host, props.port, new KerberosAuthContext().withSSLContext(sslContext).withSSLHostnameVerifier(SSLHostnameVerifier.ANY));
-		} catch (KrbException | IOException e) {
-			e.printStackTrace();
-		}
+		client = DatabaseClientFactory.newClient(props.host, props.port, new KerberosAuthContext().withSSLContext(sslContext).withSSLHostnameVerifier(SSLHostnameVerifier.ANY));
 
 		// make use of the client connection
 		TextDocumentManager docMgr = client.newTextDocumentManager();

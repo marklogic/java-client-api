@@ -19,7 +19,6 @@ import java.io.IOException;
 
 import java.security.Principal;
 import java.security.PrivilegedAction;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,15 +40,10 @@ import org.ietf.jgss.Oid;
 
 import com.sun.jersey.core.util.Base64;
 
-import sun.security.krb5.Credentials;
-import sun.security.krb5.KrbException;
-import sun.security.krb5.PrincipalName;
-
 import com.marklogic.client.FailedRequestException;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.client.filter.ClientFilter;
 import javax.security.auth.kerberos.KerberosTicket;
 
@@ -66,7 +60,7 @@ class HTTPKerberosAuthFilter extends ClientFilter {
         this.username = username;
         try {
             buildSubjectCredentials();
-        } catch (LoginException | KrbException | IOException e) {
+        } catch (LoginException e) {
             throw new FailedRequestException(e.getMessage(), e);
         }
     }
@@ -77,12 +71,18 @@ class HTTPKerberosAuthFilter extends ClientFilter {
      *
      */
     private class KerberosLoginConfiguration extends Configuration {
-
+        String principalName = null;
+        public KerberosLoginConfiguration() {}
+        KerberosLoginConfiguration(String principalName) {
+            this.principalName = principalName;
+        }
         @Override
         public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
             Map<String, String> options = new HashMap<String, String>();
             options.put("refreshKrb5Config", "true");
             options.put("useTicketCache", "true");
+            options.put("doNotPrompt", "true");
+            if(principalName != null) options.put("principal", principalName);
             return new AppConfigurationEntry[] {
                     new AppConfigurationEntry("com.sun.security.auth.module.Krb5LoginModule",
                             AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, options) };
@@ -99,34 +99,16 @@ class HTTPKerberosAuthFilter extends ClientFilter {
      * @throws IOException
      * @throws LoginException
      */
-    private void buildSubjectCredentials() throws KrbException, IOException, LoginException {
-        Subject subject = new Subject();
-        Credentials cred;
-        // Check if the cache already has valid TGT information. If not, throw exceptions
-        if(username != null) {
-            cred = Credentials.acquireTGTFromCache(new PrincipalName(username), null);
-        }
-        else {
-            cred = Credentials.acquireTGTFromCache(null, null);
-        }
-        if (cred == null) {
-            throw new KrbException("No ticket granting ticket in the cache");
-        } else {
-            Date endTime = cred.getEndTime();
-            if (endTime != null) {
-                if (endTime.compareTo(new Date()) == -1) {
-                    throw new KrbException("The ticket granting ticket in the cache is no longer valid");
-                }
-            }
-        }
-
+    private void buildSubjectCredentials() throws LoginException {
+      Subject subject = new Subject();
         /*
          * We are not getting the TGT from KDC here. The actual TGT is got from
          * the KDC using kinit or equivalent but we use the cached TGT in order
          * to build the LoginContext and populate the TGT inside the Subject
          * using Krb5LoginModule
          */
-        LoginContext lc = new LoginContext("Krb5LoginContext", subject, null, new KerberosLoginConfiguration());
+        LoginContext lc = new LoginContext("Krb5LoginContext", subject,
+                null, (username != null)? new KerberosLoginConfiguration(username) : new KerberosLoginConfiguration());
         lc.login();
         loginContext = lc;
     }
@@ -198,7 +180,7 @@ class HTTPKerberosAuthFilter extends ClientFilter {
         final Set<Principal> principalSet = loginContext.getSubject().getPrincipals();
         if (principalSet.size() != 1)
             throw new IllegalStateException(
-                    "Only one principal per subject is expected. Found 0 or more than one principals :" + principalSet);
+                    "Only one principal is expected. Found 0 or more than one principals :" + principalSet);
         return principalSet.iterator().next().getName();
     }
 
@@ -212,7 +194,7 @@ class HTTPKerberosAuthFilter extends ClientFilter {
      *            need to authenticate
      * @return the HTTP Authorization header token
      */
-    private String getAuthorizationHeader(String serverPrincipalName) throws GSSException, LoginException, KrbException, IOException 
+    private String getAuthorizationHeader(String serverPrincipalName) throws GSSException, LoginException
     {
         /*
          * Get the principal from the Subject's private credentials and populate

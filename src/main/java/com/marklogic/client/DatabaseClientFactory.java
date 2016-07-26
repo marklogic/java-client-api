@@ -16,7 +16,6 @@
 package com.marklogic.client;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.KeyManagementException;
@@ -42,10 +41,6 @@ import com.marklogic.client.impl.HandleFactoryRegistryImpl;
 import com.marklogic.client.impl.JerseyServices;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
-
-import sun.security.krb5.Credentials;
-import sun.security.krb5.KrbException;
-import sun.security.krb5.PrincipalName;
 
 /**
  * A Database Client Factory configures a database client for making
@@ -224,27 +219,6 @@ public class DatabaseClientFactory {
 	private DatabaseClientFactory() {
 	}
 
-	private static void checkTGT(String username) throws KrbException, IOException {
-		Credentials cred;
-		// Check if the cache already has valid TGT information. If not, throw
-		// exceptions
-		if (username != null) {
-			cred = Credentials.acquireTGTFromCache(new PrincipalName(username), null);
-		} else {
-			cred = Credentials.acquireTGTFromCache(null, null);
-		}
-		if (cred == null) {
-			throw new KrbException("No ticket granting ticket in the cache");
-		} else {
-			Date endTime = cred.getEndTime();
-			if (endTime != null) {
-				if (endTime.compareTo(new Date()) == -1) {
-					throw new KrbException("The ticket granting ticket in the cache is no longer valid");
-				}
-			}
-		}
-	}
-
 	public interface SecurityContext {
 		SSLContext getSSLContext();
 		void setSSLContext(SSLContext context);
@@ -355,13 +329,10 @@ public class DatabaseClientFactory {
 	public static class KerberosAuthContext extends AuthContext {
 		String externalName;
 
-		public KerberosAuthContext() throws KrbException, IOException {
-			checkTGT(null);
-		}
+		public KerberosAuthContext() {}
 
-		public KerberosAuthContext(String externalName) throws KrbException, IOException {
+		public KerberosAuthContext(String externalName) {
 			this.externalName = externalName;
-			checkTGT(externalName);
 		}
 
 		@Override
@@ -380,45 +351,115 @@ public class DatabaseClientFactory {
 	public static class CertificateAuthContext extends AuthContext {
 		String certFile;
 		String certPassword;
+		/**
+		 * Creates a CertificateAuthContext by initializing the SSLContext
+		 * of the HTTPS channel with the SSLContext object passed. The KeyManager of
+		 * the SSLContext should be initialized with the appropriate client
+		 * certificate and client's private key
+		 * @param context the SSLContext with which we initialize the
+		 *				  CertificateAuthContext
+		 */
 		public CertificateAuthContext(SSLContext context) {
 			this.sslContext = context;
 		}
 
+		/**
+		 * Creates a CertificateAuthContext by initializing the SSLContext
+		 * of the HTTPS channel with the SSLContext object passed and assigns the 
+		 * SSLHostnameVerifier passed to be used for checking host names. The KeyManager of
+		 * the SSLContext should be initialized with the appropriate client
+		 * certificate and client's private key
+		 * @param context the SSLContext with which we initialize the
+		 *				  CertificateAuthContext
+		 * @param verifier a callback for checking host names
+		 */
 		public CertificateAuthContext(SSLContext context, SSLHostnameVerifier verifier) {
 			this.sslContext = context;
 			this.sslVerifier = verifier;
 		}
 
+		/**
+		 * Creates a CertificateAuthContext with a PKCS12 file. The SSLContext
+		 * is created from the information in the PKCS12 file. This constructor
+		 * should be called when the export password of the PKCS12 file is empty.
+		 * @param certFile the p12 file which contains the client's private key 
+		 * 					and the client's certificate chain
+		 * @throws CertificateException if any of the certificates in the certFile cannot be loaded
+		 * @throws UnrecoverableKeyException if the certFile has an export password
+		 * @throws KeyManagementException if initializing the SSLContext with the KeyManager fails
+		 * @throws IOException if there is an I/O or format problem with the keystore data,
+		 *                     if a password is required but not given, or if the given password was
+		 *                     incorrect or if the certFile path is invalid or if the file is not found
+		 *                     If the error is due to a wrong password, the cause of the IOException
+		 *                     should be an UnrecoverableKeyException.
+		 */
 		public CertificateAuthContext(String certFile)
-				throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException,
+				throws CertificateException, IOException,
 				UnrecoverableKeyException, KeyManagementException {
 			this.certFile = certFile;
 			this.certPassword = "";
 			this.sslContext = createSSLContext();
 		}
 
+		/**
+		 * Creates a CertificateAuthContext with a PKCS12 file. The SSLContext
+		 * is created from the information in the PKCS12 file. This constructor
+		 * should be called when the export password of the PKCS12 file is non-empty.
+		 * @param certFile the p12 file which contains the client's private key 
+		 * 					and the client's certificate chain
+		 * @param certPassword the export password of the p12 file
+		 * @throws CertificateException if any of the certificates in the certFile cannot be loaded
+		 * @throws UnrecoverableKeyException if the certFile has an export password
+		 * @throws KeyManagementException if initializing the SSLContext with the KeyManager fails
+		 * @throws IOException if there is an I/O or format problem with the keystore data,
+		 *                     if a password is required but not given, or if the given password was
+		 *                     incorrect or if the certFile path is invalid or if the file is not found
+		 *                     If the error is due to a wrong password, the cause of the IOException
+		 *                     should be an UnrecoverableKeyException.
+		 */
 		public CertificateAuthContext(String certFile, String certPassword)
-				throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException,
+				throws CertificateException, IOException,
 				UnrecoverableKeyException, KeyManagementException {
 			this.certFile = certFile;
 			this.certPassword = certPassword;
 			this.sslContext = createSSLContext();
 		}
 
-		private SSLContext createSSLContext() throws NoSuchAlgorithmException, KeyStoreException, CertificateException,
-				IOException, UnrecoverableKeyException, KeyManagementException {
-			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-			KeyStore keyStore = KeyStore.getInstance("PKCS12");
-			FileInputStream certFileStream = new FileInputStream(certFile);
-			try {
-				keyStore.load(certFileStream, certPassword.toCharArray());
-			} finally {
-				if (certFileStream != null)
-					certFileStream.close();
+		private SSLContext createSSLContext()
+				throws CertificateException, IOException, UnrecoverableKeyException, KeyManagementException {
+			if(certPassword == null) {
+				throw new IllegalArgumentException("Certificate export password must not be null");
 			}
-			keyManagerFactory.init(keyStore, certPassword.toCharArray());
-			KeyManager[] keyMgr = keyManagerFactory.getKeyManagers();
-			sslContext = SSLContext.getInstance("TLSv1.2");
+			KeyStore keyStore = null;
+			KeyManagerFactory keyManagerFactory = null;
+			KeyManager[] keyMgr = null;
+			try {
+				keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+			} catch (NoSuchAlgorithmException e) {
+				throw new IllegalStateException(
+						"CertificateAuthContext requires KeyManagerFactory.getInstance(\"SunX509\")");
+			}
+			try {
+				keyStore = KeyStore.getInstance("PKCS12");
+			} catch (KeyStoreException e) {
+				throw new IllegalStateException("CertificateAuthContext requires KeyStore.getInstance(\"PKCS12\")");
+			}
+			try {
+				FileInputStream certFileStream = new FileInputStream(certFile);
+				try {
+					keyStore.load(certFileStream, certPassword.toCharArray());
+				} finally {
+					if (certFileStream != null)
+						certFileStream.close();
+				}
+				keyManagerFactory.init(keyStore, certPassword.toCharArray());
+				keyMgr = keyManagerFactory.getKeyManagers();
+				sslContext = SSLContext.getInstance("TLSv1.2");
+			} catch (NoSuchAlgorithmException | KeyStoreException e) {
+				throw new IllegalStateException("The certificate algorithm used or the Key store "
+						+ "Service provider Implementaion (SPI) is invalid. CertificateAuthContext "
+						+ "requires SunX509 algorithm and PKCS12 Key store SPI", e);
+			}
 			sslContext.init(keyMgr, null, null);
 			return sslContext;
 		}

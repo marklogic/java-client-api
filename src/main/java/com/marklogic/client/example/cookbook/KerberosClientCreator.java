@@ -23,7 +23,6 @@ import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.io.StringHandle;
 
-import sun.security.krb5.KrbException;
 
 /**
 * KerberosClientCreator illustrates how to create a database client using Kerberos Authentication
@@ -39,11 +38,7 @@ class KerberosClientCreator
 
 		// create the client
 		DatabaseClient client = null; 
-		try {
-			client = DatabaseClientFactory.newClient(props.host, props.port, new KerberosAuthContext());
-		} catch (KrbException | IOException e) {
-			e.printStackTrace();
-		}
+		client = DatabaseClientFactory.newClient(props.host, props.port, new KerberosAuthContext());
 		
 		// make use of the client connection
 		TextDocumentManager docMgr = client.newTextDocumentManager();
