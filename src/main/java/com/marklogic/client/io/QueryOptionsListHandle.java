@@ -45,7 +45,6 @@ public class QueryOptionsListHandle
     static final private Logger logger = LoggerFactory.getLogger(QueryOptionsListHandle.class);
 
     private QueryOptionsListBuilder.OptionsList optionsHolder;
-    private JAXBContext jc;
     private Marshaller marshaller;
     private Unmarshaller unmarshaller;
 
@@ -56,12 +55,14 @@ public class QueryOptionsListHandle
     	super();
     	super.setFormat(Format.XML);
         try {
-            jc = JAXBContext.newInstance(QueryOptionsListBuilder.OptionsList.class);
+            JAXBContext jc = JaxbContextLoader.CACHED_CONTEXT;
             marshaller = jc.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             unmarshaller = jc.createUnmarshaller();
         } catch (JAXBException e) {
             throw new MarkLogicBindingException(e);
+        } catch (NoClassDefFoundError ncdfe) {
+            throw new MarkLogicBindingException(new JAXBException("JAXB context initialization failed"));
         }
     }
 
@@ -122,5 +123,21 @@ public class QueryOptionsListHandle
     public HashMap<String, String> getValuesMap() {
     	if (optionsHolder == null ) return null;
     	else return optionsHolder.getOptionsMap();
+    }
+
+    /**
+     * Initialization-on-demand holder for {@link QueryOptionsListHandle}'s JAXB context.
+     */
+    private static class JaxbContextLoader {
+
+        private static final JAXBContext CACHED_CONTEXT;
+
+        static {
+            try {
+                CACHED_CONTEXT = JAXBContext.newInstance(QueryOptionsListBuilder.OptionsList.class);
+            } catch (JAXBException e) {
+                throw new MarkLogicBindingException(e);
+            }
+        }
     }
 }
