@@ -15,18 +15,17 @@
  */
 package com.marklogic.client.expression;
 
-// TODO: single import
-import com.marklogic.client.expression.BaseType;
-
-import com.marklogic.client.expression.Xs;
+import com.marklogic.client.type.XsStringExpr;
+ import com.marklogic.client.type.XsStringSeqExpr;
+ import com.marklogic.client.type.XsIntegerExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
 public interface Spell {
-    public Xs.StringSeqExpr doubleMetaphone(String word);
-    public Xs.StringSeqExpr doubleMetaphone(Xs.StringExpr word);
-    public Xs.IntegerExpr levenshteinDistance(String str1, String str2);
-    public Xs.IntegerExpr levenshteinDistance(Xs.StringExpr str1, Xs.StringExpr str2);
-    public Xs.StringExpr romanize(String string);
-    public Xs.StringExpr romanize(Xs.StringExpr string);
+    public XsStringSeqExpr doubleMetaphone(String word);
+    public XsStringSeqExpr doubleMetaphone(XsStringExpr word);
+    public XsIntegerExpr levenshteinDistance(String str1, String str2);
+    public XsIntegerExpr levenshteinDistance(XsStringExpr str1, XsStringExpr str2);
+    public XsStringExpr romanize(String string);
+    public XsStringExpr romanize(XsStringExpr string);
 }

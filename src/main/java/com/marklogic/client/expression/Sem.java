@@ -15,56 +15,59 @@
  */
 package com.marklogic.client.expression;
 
-// TODO: single import
-import com.marklogic.client.expression.BaseType;
-
-import com.marklogic.client.expression.Xs;
- import com.marklogic.client.expression.BaseType;
+import com.marklogic.client.type.SemInvalidExpr;
+ import com.marklogic.client.type.SemIriExpr;
+ import com.marklogic.client.type.XsDoubleExpr;
+ import com.marklogic.client.type.XsStringExpr;
+ import com.marklogic.client.type.XsAnyAtomicTypeExpr;
+ import com.marklogic.client.type.SemInvalidSeqExpr;
+ import com.marklogic.client.type.SemBlankSeqExpr;
+ import com.marklogic.client.type.SemUnknownExpr;
+ import com.marklogic.client.type.SemUnknownSeqExpr;
+ import com.marklogic.client.type.SemIriSeqExpr;
+ import com.marklogic.client.type.SemBlankExpr;
+ import com.marklogic.client.type.XsBooleanExpr;
+ import com.marklogic.client.type.XsQNameExpr;
+ import com.marklogic.client.type.ItemExpr;
+ import com.marklogic.client.type.XsDateTimeExpr;
+ import com.marklogic.client.type.ItemSeqExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
 public interface Sem {
-    public Sem.BlankExpr bnode();
-    public Sem.BlankExpr bnode(Xs.AnyAtomicTypeExpr value);
-    public BaseType.ItemSeqExpr coalesce(BaseType.ItemExpr... parameter1);
-    public Sem.IriExpr datatype(Xs.AnyAtomicTypeExpr value);
-    public Sem.IriExpr defaultGraphIri();
-    public BaseType.ItemSeqExpr ifExpr(boolean condition, BaseType.ItemSeqExpr then, BaseType.ItemExpr... elseExpr);
-    public BaseType.ItemSeqExpr ifExpr(Xs.BooleanExpr condition, BaseType.ItemSeqExpr then, BaseType.ItemSeqExpr elseExpr);
-    public Sem.InvalidExpr invalid(String string, Sem.IriExpr datatype);
-    public Sem.InvalidExpr invalid(Xs.StringExpr string, Sem.IriExpr datatype);
-    public Sem.IriExpr invalidDatatype(Sem.InvalidExpr val);
-    public Sem.IriExpr iri(Xs.AnyAtomicTypeExpr stringIri);
-    public Xs.QNameExpr iriToQName(String arg1);
-    public Xs.QNameExpr iriToQName(Xs.StringExpr arg1);
-    public Xs.BooleanExpr isBlank(Xs.AnyAtomicTypeExpr value);
-    public Xs.BooleanExpr isIRI(Xs.AnyAtomicTypeExpr value);
-    public Xs.BooleanExpr isLiteral(Xs.AnyAtomicTypeExpr value);
-    public Xs.BooleanExpr isNumeric(Xs.AnyAtomicTypeExpr value);
-    public Xs.StringExpr lang(Xs.AnyAtomicTypeExpr value);
-    public Xs.BooleanExpr langMatches(String langTag, String langRange);
-    public Xs.BooleanExpr langMatches(Xs.StringExpr langTag, Xs.StringExpr langRange);
-    public Sem.IriExpr QNameToIri(Xs.QNameExpr arg1);
-    public Xs.DoubleExpr random();
-    public Xs.BooleanExpr sameTerm(Xs.AnyAtomicTypeExpr a, Xs.AnyAtomicTypeExpr b);
-    public Xs.StringExpr timezoneString(Xs.DateTimeExpr value);
-    public Xs.AnyAtomicTypeExpr typedLiteral(String value, Sem.IriExpr datatype);
-    public Xs.AnyAtomicTypeExpr typedLiteral(Xs.StringExpr value, Sem.IriExpr datatype);
-    public Sem.UnknownExpr unknown(String string, Sem.IriExpr datatype);
-    public Sem.UnknownExpr unknown(Xs.StringExpr string, Sem.IriExpr datatype);
-    public Sem.IriExpr unknownDatatype(Sem.UnknownExpr val);
-    public Sem.IriExpr uuid();
-    public Xs.StringExpr uuidString();     public Sem.BlankSeqExpr blank(Sem.BlankExpr... items);
-     public Sem.InvalidSeqExpr invalid(Sem.InvalidExpr... items);
-     public Sem.IriSeqExpr iri(Sem.IriExpr... items);
-     public Sem.UnknownSeqExpr unknown(Sem.UnknownExpr... items);
-        public interface BlankSeqExpr extends BaseType.ItemSeqExpr { }
-        public interface BlankExpr extends BlankSeqExpr, BaseType.ItemExpr { }
-         public interface InvalidSeqExpr extends BaseType.ItemSeqExpr { }
-        public interface InvalidExpr extends InvalidSeqExpr, BaseType.ItemExpr { }
-         public interface IriSeqExpr extends BaseType.ItemSeqExpr , PlanBuilder.TriplePosition { }
-        public interface IriExpr extends IriSeqExpr, BaseType.ItemExpr { }
-         public interface UnknownSeqExpr extends BaseType.ItemSeqExpr { }
-        public interface UnknownExpr extends UnknownSeqExpr, BaseType.ItemExpr { }
+    public SemBlankExpr bnode();
+    public SemBlankExpr bnode(XsAnyAtomicTypeExpr value);
+    public ItemSeqExpr coalesce(ItemExpr... parameter1);
+    public SemIriExpr datatype(XsAnyAtomicTypeExpr value);
+    public SemIriExpr defaultGraphIri();
+    public ItemSeqExpr ifExpr(boolean condition, ItemSeqExpr then, ItemExpr... elseExpr);
+    public ItemSeqExpr ifExpr(XsBooleanExpr condition, ItemSeqExpr then, ItemSeqExpr elseExpr);
+    public SemInvalidExpr invalid(String string, SemIriExpr datatype);
+    public SemInvalidExpr invalid(XsStringExpr string, SemIriExpr datatype);
+    public SemIriExpr invalidDatatype(SemInvalidExpr val);
+    public SemIriExpr iri(XsAnyAtomicTypeExpr stringIri);
+    public XsQNameExpr iriToQName(String arg1);
+    public XsQNameExpr iriToQName(XsStringExpr arg1);
+    public XsBooleanExpr isBlank(XsAnyAtomicTypeExpr value);
+    public XsBooleanExpr isIRI(XsAnyAtomicTypeExpr value);
+    public XsBooleanExpr isLiteral(XsAnyAtomicTypeExpr value);
+    public XsBooleanExpr isNumeric(XsAnyAtomicTypeExpr value);
+    public XsStringExpr lang(XsAnyAtomicTypeExpr value);
+    public XsBooleanExpr langMatches(String langTag, String langRange);
+    public XsBooleanExpr langMatches(XsStringExpr langTag, XsStringExpr langRange);
+    public SemIriExpr QNameToIri(XsQNameExpr arg1);
+    public XsDoubleExpr random();
+    public XsBooleanExpr sameTerm(XsAnyAtomicTypeExpr a, XsAnyAtomicTypeExpr b);
+    public XsStringExpr timezoneString(XsDateTimeExpr value);
+    public XsAnyAtomicTypeExpr typedLiteral(String value, SemIriExpr datatype);
+    public XsAnyAtomicTypeExpr typedLiteral(XsStringExpr value, SemIriExpr datatype);
+    public SemUnknownExpr unknown(String string, SemIriExpr datatype);
+    public SemUnknownExpr unknown(XsStringExpr string, SemIriExpr datatype);
+    public SemIriExpr unknownDatatype(SemUnknownExpr val);
+    public SemIriExpr uuid();
+    public XsStringExpr uuidString();     public SemBlankSeqExpr blank(SemBlankExpr... items);
+     public SemInvalidSeqExpr invalid(SemInvalidExpr... items);
+     public SemIriSeqExpr iri(SemIriExpr... items);
+     public SemUnknownSeqExpr unknown(SemUnknownExpr... items);
 
 }

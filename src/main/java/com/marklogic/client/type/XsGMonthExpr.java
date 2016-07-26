@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.expression;
+package com.marklogic.client.type;
 
-// TODO: replace placeholder with interface generated from signatures of functions in namespace
-public interface Map {
-    public interface MapExpr { }
+public interface XsGMonthExpr extends XsGMonthSeqExpr, XsAnyAtomicTypeExpr {
 }

@@ -15,29 +15,30 @@
  */
 package com.marklogic.client.expression;
 
-// TODO: single import
-import com.marklogic.client.expression.BaseType;
-
-import com.marklogic.client.expression.Xs;
- import com.marklogic.client.expression.BaseType;
+import com.marklogic.client.type.JsonArrayExpr;
+ import com.marklogic.client.type.XsUnsignedLongExpr;
+ import com.marklogic.client.type.NodeElementExpr;
+ import com.marklogic.client.type.XsNumericExpr;
+ import com.marklogic.client.type.JsonArraySeqExpr;
+ import com.marklogic.client.type.XsBooleanExpr;
+ import com.marklogic.client.type.ItemExpr;
+ import com.marklogic.client.type.ItemSeqExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
 public interface Json {
-    public Json.ArrayExpr array();
-    public Json.ArrayExpr array(BaseType.ElementExpr array);
-    public Xs.UnsignedLongExpr arraySize(Json.ArrayExpr array);
-    public BaseType.ItemSeqExpr arrayValues(Json.ArrayExpr array);
-    public BaseType.ItemSeqExpr arrayValues(Json.ArrayExpr array, boolean flatten);
-    public BaseType.ItemSeqExpr arrayValues(Json.ArrayExpr array, Xs.BooleanExpr flatten);
-    public Json.ArrayExpr arrayWith(Json.ArrayExpr arg1, BaseType.ItemSeqExpr arg2);
-    public Json.ArrayExpr subarray(Json.ArrayExpr array, Xs.NumericExpr startingLoc);
-    public Json.ArrayExpr subarray(Json.ArrayExpr array, Xs.NumericExpr startingLoc, Xs.NumericExpr length);
-    public Json.ArrayExpr toArray();
-    public Json.ArrayExpr toArray(BaseType.ItemSeqExpr items);
-    public Json.ArrayExpr toArray(BaseType.ItemSeqExpr items, Xs.NumericExpr limit);
-    public Json.ArrayExpr toArray(BaseType.ItemSeqExpr items, Xs.NumericExpr limit, BaseType.ItemExpr zero);     public Json.ArraySeqExpr array(Json.ArrayExpr... items);
-        public interface ArraySeqExpr extends BaseType.ItemSeqExpr { }
-        public interface ArrayExpr extends ArraySeqExpr, BaseType.ItemExpr { }
+    public JsonArrayExpr array();
+    public JsonArrayExpr array(NodeElementExpr array);
+    public XsUnsignedLongExpr arraySize(JsonArrayExpr array);
+    public ItemSeqExpr arrayValues(JsonArrayExpr array);
+    public ItemSeqExpr arrayValues(JsonArrayExpr array, boolean flatten);
+    public ItemSeqExpr arrayValues(JsonArrayExpr array, XsBooleanExpr flatten);
+    public JsonArrayExpr arrayWith(JsonArrayExpr arg1, ItemSeqExpr arg2);
+    public JsonArrayExpr subarray(JsonArrayExpr array, XsNumericExpr startingLoc);
+    public JsonArrayExpr subarray(JsonArrayExpr array, XsNumericExpr startingLoc, XsNumericExpr length);
+    public JsonArrayExpr toArray();
+    public JsonArrayExpr toArray(ItemSeqExpr items);
+    public JsonArrayExpr toArray(ItemSeqExpr items, XsNumericExpr limit);
+    public JsonArrayExpr toArray(ItemSeqExpr items, XsNumericExpr limit, ItemExpr zero);     public JsonArraySeqExpr array(JsonArrayExpr... items);
 
 }

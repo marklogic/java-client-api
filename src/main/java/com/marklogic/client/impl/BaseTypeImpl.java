@@ -18,7 +18,12 @@ package com.marklogic.client.impl;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
-import com.marklogic.client.expression.BaseType;
+import com.marklogic.client.type.ItemExpr;
+import com.marklogic.client.type.ItemSeqExpr;
+import com.marklogic.client.type.NodeElementExpr;
+import com.marklogic.client.type.NodeElementSeqExpr;
+import com.marklogic.client.type.NodeExpr;
+import com.marklogic.client.type.NodeSeqExpr;
 
 public class BaseTypeImpl {
 	public static interface BaseArgImpl {
@@ -102,48 +107,48 @@ public class BaseTypeImpl {
 		}
 	}
 
-	static BaseType.ItemSeqExpr items(BaseType.ItemExpr... items) {
+	static ItemSeqExpr items(ItemExpr... items) {
 		return new ItemSeqListImpl(items);
 	}
-	static BaseType.NodeSeqExpr nodes(BaseType.NodeExpr... items) {
+	static NodeSeqExpr nodes(NodeExpr... items) {
 		return new NodeSeqListImpl(items);
 	}
-	static BaseType.ElementSeqExpr elements(BaseType.ElementExpr... items) {
-		return new ElementSeqListImpl(items);
+	static NodeElementSeqExpr elements(NodeElementExpr... items) {
+		return new NodeElementSeqListImpl(items);
 	}
 
-    static class ItemSeqListImpl extends BaseListImpl<BaseArgImpl> implements BaseType.ItemSeqExpr {
+    static class ItemSeqListImpl extends BaseListImpl<BaseArgImpl> implements ItemSeqExpr {
     	ItemSeqListImpl(Object[] items) {
             super(convertList(items));
         }
     }
-    static class ItemSeqCallImpl extends BaseCallImpl<BaseArgImpl> implements BaseType.ItemSeqExpr {
+    static class ItemSeqCallImpl extends BaseCallImpl<BaseArgImpl> implements ItemSeqExpr {
     	ItemSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, convertList(fnArgs));
         }
     }
-    static class ItemCallImpl extends BaseCallImpl<BaseArgImpl> implements BaseType.ItemExpr {
+    static class ItemCallImpl extends BaseCallImpl<BaseArgImpl> implements ItemExpr {
     	ItemCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, convertList(fnArgs));
         }
     }
-    static class NodeSeqListImpl extends BaseListImpl<BaseArgImpl> implements BaseType.NodeSeqExpr {
+    static class NodeSeqListImpl extends BaseListImpl<BaseArgImpl> implements NodeSeqExpr {
     	NodeSeqListImpl(Object[] items) {
             super(convertList(items));
         }
     }
-    static class NodeCallImpl extends BaseCallImpl<BaseArgImpl> implements BaseType.NodeExpr {
+    static class NodeCallImpl extends BaseCallImpl<BaseArgImpl> implements NodeExpr {
     	NodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, convertList(fnArgs));
         }
     }
-    static class ElementSeqListImpl extends BaseListImpl<BaseArgImpl> implements BaseType.ElementSeqExpr {
-    	ElementSeqListImpl(Object[] items) {
+    static class NodeElementSeqListImpl extends BaseListImpl<BaseArgImpl> implements NodeElementSeqExpr {
+    	NodeElementSeqListImpl(Object[] items) {
             super(convertList(items));
         }
     }
-    static class ElementCallImpl extends BaseCallImpl<BaseArgImpl> implements BaseType.ElementExpr {
-    	ElementCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+    static class NodeElementCallImpl extends BaseCallImpl<BaseArgImpl> implements NodeElementExpr {
+    	NodeElementCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, convertList(fnArgs));
         }
     }

@@ -15,52 +15,51 @@
  */
 package com.marklogic.client.impl;
 
-// TODO: single import
-import com.marklogic.client.expression.BaseType;
 import com.marklogic.client.expression.Xs;
+import com.marklogic.client.expression.XsValue;
 
 import com.marklogic.client.expression.Rdf;
-import com.marklogic.client.expression.Xs;
- import com.marklogic.client.expression.Sql;
- import com.marklogic.client.impl.XsExprImpl;
- import com.marklogic.client.impl.SqlExprImpl;
+import com.marklogic.client.type.XsStringExpr;
+ import com.marklogic.client.type.SqlCollatedStringExpr;
+ import com.marklogic.client.type.RdfLangStringExpr;
+ import com.marklogic.client.type.RdfLangStringSeqExpr;
 
 import com.marklogic.client.impl.BaseTypeImpl;
 
 // IMPORTANT: Do not edit. This file is generated.
 
 public class RdfExprImpl implements Rdf {
-    private Xs xs = null;
-    public RdfExprImpl(Xs xs) {
+    private XsExprImpl xs = null;
+    public RdfExprImpl(XsExprImpl xs) {
         this.xs = xs;
     }
      @Override
-        public Rdf.LangStringExpr langString(String string, String lang) {
+        public RdfLangStringExpr langString(String string, String lang) {
         return langString(xs.string(string), xs.string(lang)); 
     }
     @Override
-        public Rdf.LangStringExpr langString(Xs.StringExpr string, Xs.StringExpr lang) {
-        return new RdfExprImpl.LangStringCallImpl("rdf", "langString", new Object[]{ string, lang });
+        public RdfLangStringExpr langString(XsStringExpr string, XsStringExpr lang) {
+        return new RdfExprImpl.RdfLangStringCallImpl("rdf", "langString", new Object[]{ string, lang });
     }
     @Override
-        public Sql.CollatedStringExpr langStringLanguage(Rdf.LangStringExpr val) {
-        return new SqlExprImpl.CollatedStringCallImpl("rdf", "langString-language", new Object[]{ val });
+        public SqlCollatedStringExpr langStringLanguage(RdfLangStringExpr val) {
+        return new SqlExprImpl.SqlCollatedStringCallImpl("rdf", "langString-language", new Object[]{ val });
     }     @Override
-    public Rdf.LangStringSeqExpr langString(Rdf.LangStringExpr... items) {
-        return new RdfExprImpl.LangStringSeqListImpl(items);
+    public RdfLangStringSeqExpr langString(RdfLangStringExpr... items) {
+        return new RdfLangStringSeqListImpl(items);
     }
-        static class LangStringSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements LangStringSeqExpr {
-            LangStringSeqListImpl(Object[] items) {
+        static class RdfLangStringSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements RdfLangStringSeqExpr {
+            RdfLangStringSeqListImpl(Object[] items) {
                 super(BaseTypeImpl.convertList(items));
             }
         }
-        static class LangStringSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements LangStringSeqExpr {
-            LangStringSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+        static class RdfLangStringSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements RdfLangStringSeqExpr {
+            RdfLangStringSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
                 super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
             }
         }
-        static class LangStringCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements LangStringExpr {
-            LangStringCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+        static class RdfLangStringCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements RdfLangStringExpr {
+            RdfLangStringCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
                 super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
             }
         }

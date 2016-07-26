@@ -15,19 +15,14 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.expression.Map;
-import com.marklogic.client.expression.Xs;
 import com.marklogic.client.impl.BaseTypeImpl.BaseArgImpl;
 import com.marklogic.client.impl.BaseTypeImpl.BaseCallImpl;
+import com.marklogic.client.type.MapMapExpr;
 
 // TODO: replace placeholder with interface generated from signatures of functions in namespace
-public class MapExprImpl implements Map {
-    private Xs v = null;
-    public MapExprImpl(Xs v) {
-        this.v = v;
-    }
-   	static class MapCallImpl extends BaseCallImpl<BaseArgImpl> implements Map.MapExpr {
-   		MapCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+public class MapExprImpl {
+   	static class MapMapCallImpl extends BaseCallImpl<BaseArgImpl> implements MapMapExpr {
+   		MapMapCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
     	}
     	

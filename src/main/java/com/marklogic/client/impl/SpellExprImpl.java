@@ -15,45 +15,45 @@
  */
 package com.marklogic.client.impl;
 
-// TODO: single import
-import com.marklogic.client.expression.BaseType;
 import com.marklogic.client.expression.Xs;
+import com.marklogic.client.expression.XsValue;
 
 import com.marklogic.client.expression.Spell;
-import com.marklogic.client.expression.Xs;
- import com.marklogic.client.impl.XsExprImpl;
+import com.marklogic.client.type.XsStringExpr;
+ import com.marklogic.client.type.XsStringSeqExpr;
+ import com.marklogic.client.type.XsIntegerExpr;
 
 import com.marklogic.client.impl.BaseTypeImpl;
 
 // IMPORTANT: Do not edit. This file is generated.
 
 public class SpellExprImpl implements Spell {
-    private Xs xs = null;
-    public SpellExprImpl(Xs xs) {
+    private XsExprImpl xs = null;
+    public SpellExprImpl(XsExprImpl xs) {
         this.xs = xs;
     }
      @Override
-        public Xs.StringSeqExpr doubleMetaphone(String word) {
+        public XsStringSeqExpr doubleMetaphone(String word) {
         return doubleMetaphone(xs.string(word)); 
     }
     @Override
-        public Xs.StringSeqExpr doubleMetaphone(Xs.StringExpr word) {
-        return new XsExprImpl.StringSeqCallImpl("spell", "double-metaphone", new Object[]{ word });
+        public XsStringSeqExpr doubleMetaphone(XsStringExpr word) {
+        return new XsExprImpl.XsStringSeqCallImpl("spell", "double-metaphone", new Object[]{ word });
     }
     @Override
-        public Xs.IntegerExpr levenshteinDistance(String str1, String str2) {
+        public XsIntegerExpr levenshteinDistance(String str1, String str2) {
         return levenshteinDistance(xs.string(str1), xs.string(str2)); 
     }
     @Override
-        public Xs.IntegerExpr levenshteinDistance(Xs.StringExpr str1, Xs.StringExpr str2) {
-        return new XsExprImpl.IntegerCallImpl("spell", "levenshtein-distance", new Object[]{ str1, str2 });
+        public XsIntegerExpr levenshteinDistance(XsStringExpr str1, XsStringExpr str2) {
+        return new XsExprImpl.XsIntegerCallImpl("spell", "levenshtein-distance", new Object[]{ str1, str2 });
     }
     @Override
-        public Xs.StringExpr romanize(String string) {
+        public XsStringExpr romanize(String string) {
         return romanize(xs.string(string)); 
     }
     @Override
-        public Xs.StringExpr romanize(Xs.StringExpr string) {
-        return new XsExprImpl.StringCallImpl("spell", "romanize", new Object[]{ string });
+        public XsStringExpr romanize(XsStringExpr string) {
+        return new XsExprImpl.XsStringCallImpl("spell", "romanize", new Object[]{ string });
     }
 }

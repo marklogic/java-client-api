@@ -15,22 +15,20 @@
  */
 package com.marklogic.client.expression;
 
-// TODO: single import
-import com.marklogic.client.expression.BaseType;
-
-import com.marklogic.client.expression.Xs;
+import com.marklogic.client.type.XsStringExpr;
+ import com.marklogic.client.type.XsStringSeqExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
 public interface Cts extends CtsQuery {
-    public Xs.StringSeqExpr stem(String text);
-    public Xs.StringSeqExpr stem(Xs.StringExpr text);
-    public Xs.StringSeqExpr stem(String text, String language);
-    public Xs.StringSeqExpr stem(Xs.StringExpr text, Xs.StringExpr language);
-    public Xs.StringSeqExpr tokenize(String text);
-    public Xs.StringSeqExpr tokenize(Xs.StringExpr text);
-    public Xs.StringSeqExpr tokenize(String text, String language);
-    public Xs.StringSeqExpr tokenize(Xs.StringExpr text, Xs.StringExpr language);
-    public Xs.StringSeqExpr tokenize(String text, String language, String field);
-    public Xs.StringSeqExpr tokenize(Xs.StringExpr text, Xs.StringExpr language, Xs.StringExpr field);
+    public XsStringSeqExpr stem(String text);
+    public XsStringSeqExpr stem(XsStringExpr text);
+    public XsStringSeqExpr stem(String text, String language);
+    public XsStringSeqExpr stem(XsStringExpr text, XsStringExpr language);
+    public XsStringSeqExpr tokenize(String text);
+    public XsStringSeqExpr tokenize(XsStringExpr text);
+    public XsStringSeqExpr tokenize(String text, String language);
+    public XsStringSeqExpr tokenize(XsStringExpr text, XsStringExpr language);
+    public XsStringSeqExpr tokenize(String text, String language, String field);
+    public XsStringSeqExpr tokenize(XsStringExpr text, XsStringExpr language, XsStringExpr field);
 }

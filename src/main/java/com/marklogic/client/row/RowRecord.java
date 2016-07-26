@@ -19,10 +19,10 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
-import com.marklogic.client.expression.XsValue;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.RowReadHandle;
+import com.marklogic.client.type.XsAnyAtomicTypeVal;
 
 // TODO: JavaDoc
 public interface RowRecord extends RowReadHandle, Map<String, Object> {
@@ -43,8 +43,8 @@ public interface RowRecord extends RowReadHandle, Map<String, Object> {
     public short     getShort(String   columnName);
     public String    getString(String  columnName);
 
-	public <T extends XsValue.AnyAtomicTypeVal> T   getValueAs(String columnName,  Class<T> as) throws Exception;
-	public <T extends XsValue.AnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as) throws Exception;
+	public <T extends XsAnyAtomicTypeVal> T   getValueAs(String columnName,  Class<T> as) throws Exception;
+	public <T extends XsAnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as) throws Exception;
 
 	public Format getContentFormat(String columnName);
 	public String getContentMimetype(String columnName);

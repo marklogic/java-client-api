@@ -17,11 +17,7 @@ package com.marklogic.client.impl;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
-
-import com.marklogic.client.expression.BaseType;
-import com.marklogic.client.expression.Xs;
-import com.marklogic.client.expression.XsValue;
-import com.marklogic.client.expression.CtsQuery;
+import java.util.Map;
 
 import com.marklogic.client.expression.PlanBuilder;
 
@@ -31,8 +27,6 @@ import com.marklogic.client.expression.Fn;
 import com.marklogic.client.impl.FnExprImpl; 
 import com.marklogic.client.expression.Json;
 import com.marklogic.client.impl.JsonExprImpl; 
-import com.marklogic.client.expression.Map;
-import com.marklogic.client.impl.MapExprImpl; 
 import com.marklogic.client.expression.Math;
 import com.marklogic.client.impl.MathExprImpl; 
 import com.marklogic.client.expression.Rdf;
@@ -44,144 +38,221 @@ import com.marklogic.client.impl.SqlExprImpl;
 import com.marklogic.client.expression.Xdmp;
 import com.marklogic.client.impl.XdmpExprImpl; 
 import com.marklogic.client.expression.Xs;
-import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.expression.Cts;
- import com.marklogic.client.expression.Xs;
- import com.marklogic.client.expression.BaseType;
- import com.marklogic.client.impl.CtsExprImpl;
- import com.marklogic.client.impl.XsExprImpl;
- import com.marklogic.client.impl.BaseTypeImpl;
+import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.XsUnsignedLongExpr;
+ import com.marklogic.client.type.XsGMonthDayExpr;
+ import com.marklogic.client.type.XsDecimalParam;
+ import com.marklogic.client.type.XsDoubleExpr;
+ import com.marklogic.client.type.XsDecimalExpr;
+ import com.marklogic.client.type.PlanFunction;
+ import com.marklogic.client.type.XsGYearMonthParam;
+ import com.marklogic.client.type.XsUnsignedShortParam;
+ import com.marklogic.client.type.XsYearMonthDurationParam;
+ import com.marklogic.client.type.XsGDayExpr;
+ import com.marklogic.client.type.PlanTriplePatternSeq;
+ import com.marklogic.client.type.XsLongParam;
+ import com.marklogic.client.type.XsHexBinaryExpr;
+ import com.marklogic.client.type.PlanSortKey;
+ import com.marklogic.client.type.PlanJoinKeySeq;
+ import com.marklogic.client.type.XsBase64BinaryParam;
+ import com.marklogic.client.type.XsUnsignedIntParam;
+ import com.marklogic.client.type.XsLongExpr;
+ import com.marklogic.client.type.PlanTriplePosition;
+ import com.marklogic.client.type.XsUnsignedIntExpr;
+ import com.marklogic.client.type.XsGYearExpr;
+ import com.marklogic.client.type.PlanTriplePositionSeq;
+ import com.marklogic.client.type.XsAnyAtomicTypeExpr;
+ import com.marklogic.client.type.XsGMonthExpr;
+ import com.marklogic.client.type.XsUnsignedLongParam;
+ import com.marklogic.client.type.XsDateParam;
+ import com.marklogic.client.type.XsShortParam;
+ import com.marklogic.client.type.PlanColumnSeq;
+ import com.marklogic.client.type.XsIntegerParam;
+ import com.marklogic.client.type.XsAnyURIExpr;
+ import com.marklogic.client.type.XsDateExpr;
+ import com.marklogic.client.type.XsByteExpr;
+ import com.marklogic.client.type.XsBooleanExpr;
+ import com.marklogic.client.type.XsStringParam;
+ import com.marklogic.client.type.PlanAggregateCol;
+ import com.marklogic.client.type.XsDateTimeParam;
+ import com.marklogic.client.type.ItemExpr;
+ import com.marklogic.client.type.PlanJoinKey;
+ import com.marklogic.client.type.XsBooleanParam;
+ import com.marklogic.client.type.XsByteParam;
+ import com.marklogic.client.type.XsGMonthParam;
+ import com.marklogic.client.type.XsHexBinaryParam;
+ import com.marklogic.client.type.XsUnsignedShortExpr;
+ import com.marklogic.client.type.PlanColumn;
+ import com.marklogic.client.type.PlanSortKeySeq;
+ import com.marklogic.client.type.XsDayTimeDurationExpr;
+ import com.marklogic.client.type.XsGYearMonthExpr;
+ import com.marklogic.client.type.XsStringExpr;
+ import com.marklogic.client.type.XsAnyAtomicTypeParam;
+ import com.marklogic.client.type.PlanParam;
+ import com.marklogic.client.type.XsIntExpr;
+ import com.marklogic.client.type.XsQNameParam;
+ import com.marklogic.client.type.PlanTriplePattern;
+ import com.marklogic.client.type.PlanExprColSeq;
+ import com.marklogic.client.type.XsDoubleParam;
+ import com.marklogic.client.type.XsBase64BinaryExpr;
+ import com.marklogic.client.type.XsQNameExpr;
+ import com.marklogic.client.type.XsAnyURIParam;
+ import com.marklogic.client.type.XsUntypedAtomicExpr;
+ import com.marklogic.client.type.XsUnsignedByteParam;
+ import com.marklogic.client.type.XsGDayParam;
+ import com.marklogic.client.type.XsFloatParam;
+ import com.marklogic.client.type.CtsQueryExpr;
+ import com.marklogic.client.type.XsIntegerExpr;
+ import com.marklogic.client.type.XsBooleanSeqExpr;
+ import com.marklogic.client.type.XsTimeExpr;
+ import com.marklogic.client.type.XsDayTimeDurationParam;
+ import com.marklogic.client.type.XsShortExpr;
+ import com.marklogic.client.type.XsGYearParam;
+ import com.marklogic.client.type.XsIntParam;
+ import com.marklogic.client.type.PlanParamSeq;
+ import com.marklogic.client.type.XsUntypedAtomicParam;
+ import com.marklogic.client.type.CtsReferenceExpr;
+ import com.marklogic.client.type.XsUnsignedByteExpr;
+ import com.marklogic.client.type.PlanFunctionSeq;
+ import com.marklogic.client.type.PlanExprCol;
+ import com.marklogic.client.type.PlanAggregateColSeq;
+ import com.marklogic.client.type.XsAnyAtomicTypeVal;
+ import com.marklogic.client.type.XsYearMonthDurationExpr;
+ import com.marklogic.client.type.XsTimeParam;
+ import com.marklogic.client.type.XsFloatExpr;
+ import com.marklogic.client.type.XsDateTimeExpr;
+ import com.marklogic.client.type.XsGMonthDayParam;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
 public class PlanBuilderImpl extends PlanBuilderBase {
     public PlanBuilderImpl(
-        Cts cts, Fn fn, Json json, Map map, Math math, Rdf rdf, Sem sem, Sql sql, Xdmp xdmp, Xs xs
+        Cts cts, Fn fn, Json json, Math math, Rdf rdf, Sem sem, Sql sql, Xdmp xdmp, Xs xs
         ) {
         super(
-            cts, fn, json, map, math, rdf, sem, sql, xdmp, xs
+            cts, fn, json, math, rdf, sem, sql, xdmp, xs
             );
     }
 
     @Override
-        public Xs.AnyAtomicTypeExpr add(Xs.AnyAtomicTypeExpr left, Xs.AnyAtomicTypeExpr right) {
-        return new XsExprImpl.AnyAtomicTypeCallImpl("op", "add", new Object[]{ left, right });
+        public XsAnyAtomicTypeExpr add(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+        return new XsExprImpl.XsAnyAtomicTypeCallImpl("op", "add", new Object[]{ left, right });
     }
     @Override
-        public AggregateColSeq aggregates(AggregateCol... aggregate) {
-        return new AggregateColSeqListImpl(aggregate);
+        public PlanAggregateColSeq aggregates(PlanAggregateCol... aggregate) {
+        return new PlanAggregateColSeqListImpl(aggregate);
     }
     @Override
-        public Xs.BooleanExpr and(Xs.BooleanExpr... list) {
+        public XsBooleanExpr and(XsBooleanExpr... list) {
         return and(list); 
     }
     @Override
-        public Xs.BooleanExpr and(Xs.BooleanSeqExpr list) {
-        return new XsExprImpl.BooleanCallImpl("op", "and", new Object[]{ list });
+        public XsBooleanExpr and(XsBooleanSeqExpr list) {
+        return new XsExprImpl.XsBooleanCallImpl("op", "and", new Object[]{ list });
     }
     @Override
-        public AggregateCol arrayAggregate(String name, String column) {
+        public PlanAggregateCol arrayAggregate(String name, String column) {
         return arrayAggregate(col(name), col(column)); 
     }
     @Override
-        public AggregateCol arrayAggregate(ExprCol name, ExprCol column) {
-        return new AggregateColCallImpl("op", "array-aggregate", new Object[]{ name, column });
+        public PlanAggregateCol arrayAggregate(PlanExprCol name, PlanExprCol column) {
+        return new PlanAggregateColCallImpl("op", "array-aggregate", new Object[]{ name, column });
     }
     @Override
-        public ExprCol as(String column, BaseType.ItemExpr expression) {
+        public PlanExprCol as(String column, ItemExpr expression) {
         return as(col(column), expression); 
     }
     @Override
-        public ExprCol as(Column column, BaseType.ItemExpr expression) {
-        return new ExprColCallImpl("op", "as", new Object[]{ column, expression });
+        public PlanExprCol as(PlanColumn column, ItemExpr expression) {
+        return new PlanExprColCallImpl("op", "as", new Object[]{ column, expression });
     }
     @Override
-        public SortKey asc(String column) {
+        public PlanSortKey asc(String column) {
         return asc(col(column)); 
     }
     @Override
-        public SortKey asc(ExprCol column) {
-        return new SortKeyCallImpl("op", "asc", new Object[]{ column });
+        public PlanSortKey asc(PlanExprCol column) {
+        return new PlanSortKeyCallImpl("op", "asc", new Object[]{ column });
     }
     @Override
-        public AggregateCol avg(String name, String column) {
+        public PlanAggregateCol avg(String name, String column) {
         return avg(col(name), col(column)); 
     }
     @Override
-        public AggregateCol avg(ExprCol name, ExprCol column) {
-        return new AggregateColCallImpl("op", "avg", new Object[]{ name, column });
+        public PlanAggregateCol avg(PlanExprCol name, PlanExprCol column) {
+        return new PlanAggregateColCallImpl("op", "avg", new Object[]{ name, column });
     }
     @Override
-        public Column col(String column) {
+        public PlanColumn col(String column) {
         return col(xs.string(column)); 
     }
     @Override
-        public Column col(Xs.StringParam column) {
-        return new ColumnCallImpl("op", "col", new Object[]{ column });
+        public PlanColumn col(XsStringParam column) {
+        return new PlanColumnCallImpl("op", "col", new Object[]{ column });
     }
     @Override
-        public ExprColSeq cols(String... col) {
-        return cols((ExprCol[]) Arrays.stream(col)
+        public PlanExprColSeq cols(String... col) {
+        return cols((PlanExprCol[]) Arrays.stream(col)
             .map(item -> col(item))
-            .toArray(size -> new ExprCol[size])); 
+            .toArray(size -> new PlanExprCol[size])); 
     }
     @Override
-        public ExprColSeq cols(ExprCol... col) {
-        return new ExprColSeqListImpl(col);
+        public PlanExprColSeq cols(PlanExprCol... col) {
+        return new PlanExprColSeqListImpl(col);
     }
     @Override
-        public AggregateCol count(String name, String column) {
+        public PlanAggregateCol count(String name, String column) {
         return count(col(name), col(column)); 
     }
     @Override
-        public AggregateCol count(ExprCol name, ExprCol column) {
-        return new AggregateColCallImpl("op", "count", new Object[]{ name, column });
+        public PlanAggregateCol count(PlanExprCol name, PlanExprCol column) {
+        return new PlanAggregateColCallImpl("op", "count", new Object[]{ name, column });
     }
     @Override
-        public SortKey desc(String column) {
+        public PlanSortKey desc(String column) {
         return desc(col(column)); 
     }
     @Override
-        public SortKey desc(ExprCol column) {
-        return new SortKeyCallImpl("op", "desc", new Object[]{ column });
+        public PlanSortKey desc(PlanExprCol column) {
+        return new PlanSortKeyCallImpl("op", "desc", new Object[]{ column });
     }
     @Override
-        public Xs.AnyAtomicTypeExpr divide(Xs.AnyAtomicTypeExpr left, Xs.AnyAtomicTypeExpr right) {
-        return new XsExprImpl.AnyAtomicTypeCallImpl("op", "divide", new Object[]{ left, right });
+        public XsAnyAtomicTypeExpr divide(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+        return new XsExprImpl.XsAnyAtomicTypeCallImpl("op", "divide", new Object[]{ left, right });
     }
     @Override
-        public Xs.BooleanExpr eq(Xs.AnyAtomicTypeExpr left, Xs.AnyAtomicTypeExpr right) {
-        return new XsExprImpl.BooleanCallImpl("op", "eq", new Object[]{ left, right });
+        public XsBooleanExpr eq(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+        return new XsExprImpl.XsBooleanCallImpl("op", "eq", new Object[]{ left, right });
     }
     @Override
-        public QualifiedPlan fromTriples(TriplePattern... patterns) {
-        return fromTriples(new TriplePatternSeqListImpl(patterns)); 
+        public QualifiedPlan fromTriples(PlanTriplePattern... patterns) {
+        return fromTriples(new PlanTriplePatternSeqListImpl(patterns)); 
     }
     @Override
-        public QualifiedPlan fromTriples(TriplePatternSeq patterns) {
+        public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns) {
         return new QualifiedPlanCallImpl("op", "from-triples", new Object[]{ patterns });
     }
     @Override
-        public QualifiedPlan fromTriples(TriplePatternSeq patterns, String qualifierName) {
+        public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName) {
         return fromTriples(patterns, (qualifierName == null) ? null : xs.string(qualifierName)); 
     }
     @Override
-        public QualifiedPlan fromTriples(TriplePatternSeq patterns, Xs.StringParam qualifierName) {
+        public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName) {
         return new QualifiedPlanCallImpl("op", "from-triples", new Object[]{ patterns, qualifierName });
     }
     @Override
-        public QualifiedPlan fromTriples(TriplePatternSeq patterns, String qualifierName, String graphIri) {
+        public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, String graphIri) {
         return fromTriples(patterns, (qualifierName == null) ? null : xs.string(qualifierName), (graphIri == null) ? null : xs.string(graphIri)); 
     }
     @Override
-        public QualifiedPlan fromTriples(TriplePatternSeq patterns, Xs.StringParam qualifierName, Xs.StringParam graphIri) {
+        public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, XsStringParam graphIri) {
         return new QualifiedPlanCallImpl("op", "from-triples", new Object[]{ patterns, qualifierName, graphIri });
     }
     @Override
-        public QualifiedPlan fromTriples(TriplePatternSeq patterns, String qualifierName, String graphIri, CtsQuery.QueryExpr constrainingQuery) {
+        public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, String graphIri, CtsQueryExpr constrainingQuery) {
         return fromTriples(patterns, (qualifierName == null) ? null : xs.string(qualifierName), (graphIri == null) ? null : xs.string(graphIri), constrainingQuery); 
     }
     @Override
-        public QualifiedPlan fromTriples(TriplePatternSeq patterns, Xs.StringParam qualifierName, Xs.StringParam graphIri, CtsQuery.QueryExpr constrainingQuery) {
+        public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, XsStringParam graphIri, CtsQueryExpr constrainingQuery) {
         return new QualifiedPlanCallImpl("op", "from-triples", new Object[]{ patterns, qualifierName, graphIri, constrainingQuery });
     }
     @Override
@@ -189,7 +260,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return fromView(xs.string(schema), xs.string(view)); 
     }
     @Override
-        public ViewPlan fromView(Xs.StringParam schema, Xs.StringParam view) {
+        public ViewPlan fromView(XsStringParam schema, XsStringParam view) {
         return new ViewPlanCallImpl("op", "from-view", new Object[]{ schema, view });
     }
     @Override
@@ -197,221 +268,221 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return fromView(xs.string(schema), xs.string(view), (qualifierName == null) ? null : xs.string(qualifierName)); 
     }
     @Override
-        public ViewPlan fromView(Xs.StringParam schema, Xs.StringParam view, Xs.StringParam qualifierName) {
+        public ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName) {
         return new ViewPlanCallImpl("op", "from-view", new Object[]{ schema, view, qualifierName });
     }
     @Override
-        public ViewPlan fromView(String schema, String view, String qualifierName, Column... sysCols) {
-        return fromView(xs.string(schema), xs.string(view), (qualifierName == null) ? null : xs.string(qualifierName), new ColumnSeqListImpl(sysCols)); 
+        public ViewPlan fromView(String schema, String view, String qualifierName, PlanColumn... sysCols) {
+        return fromView(xs.string(schema), xs.string(view), (qualifierName == null) ? null : xs.string(qualifierName), new PlanColumnSeqListImpl(sysCols)); 
     }
     @Override
-        public ViewPlan fromView(Xs.StringParam schema, Xs.StringParam view, Xs.StringParam qualifierName, ColumnSeq sysCols) {
+        public ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName, PlanColumnSeq sysCols) {
         return new ViewPlanCallImpl("op", "from-view", new Object[]{ schema, view, qualifierName, sysCols });
     }
     @Override
-        public ViewPlan fromView(String schema, String view, String qualifierName, ColumnSeq sysCols, CtsQuery.QueryExpr constrainingQuery) {
+        public ViewPlan fromView(String schema, String view, String qualifierName, PlanColumnSeq sysCols, CtsQueryExpr constrainingQuery) {
         return fromView(xs.string(schema), xs.string(view), (qualifierName == null) ? null : xs.string(qualifierName), sysCols, constrainingQuery); 
     }
     @Override
-        public ViewPlan fromView(Xs.StringParam schema, Xs.StringParam view, Xs.StringParam qualifierName, ColumnSeq sysCols, CtsQuery.QueryExpr constrainingQuery) {
+        public ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName, PlanColumnSeq sysCols, CtsQueryExpr constrainingQuery) {
         return new ViewPlanCallImpl("op", "from-view", new Object[]{ schema, view, qualifierName, sysCols, constrainingQuery });
     }
     @Override
-        public Xs.BooleanExpr ge(Xs.AnyAtomicTypeExpr left, Xs.AnyAtomicTypeExpr right) {
-        return new XsExprImpl.BooleanCallImpl("op", "ge", new Object[]{ left, right });
+        public XsBooleanExpr ge(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+        return new XsExprImpl.XsBooleanCallImpl("op", "ge", new Object[]{ left, right });
     }
     @Override
-        public AggregateCol groupConcat(String name, String column) {
+        public PlanAggregateCol groupConcat(String name, String column) {
         return groupConcat(col(name), col(column)); 
     }
     @Override
-        public AggregateCol groupConcat(ExprCol name, ExprCol column) {
-        return new AggregateColCallImpl("op", "group-concat", new Object[]{ name, column });
+        public PlanAggregateCol groupConcat(PlanExprCol name, PlanExprCol column) {
+        return new PlanAggregateColCallImpl("op", "group-concat", new Object[]{ name, column });
     }
     @Override
-        public Xs.BooleanExpr gt(Xs.AnyAtomicTypeExpr left, Xs.AnyAtomicTypeExpr right) {
-        return new XsExprImpl.BooleanCallImpl("op", "gt", new Object[]{ left, right });
+        public XsBooleanExpr gt(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+        return new XsExprImpl.XsBooleanCallImpl("op", "gt", new Object[]{ left, right });
     }
     @Override
-        public Xs.BooleanExpr isDefined(BaseType.ItemExpr expression) {
-        return new XsExprImpl.BooleanCallImpl("op", "is-defined", new Object[]{ expression });
+        public XsBooleanExpr isDefined(ItemExpr expression) {
+        return new XsExprImpl.XsBooleanCallImpl("op", "is-defined", new Object[]{ expression });
     }
     @Override
-        public JoinKeySeq joinKeys(JoinKey... key) {
-        return new JoinKeySeqListImpl(key);
+        public PlanJoinKeySeq joinKeys(PlanJoinKey... key) {
+        return new PlanJoinKeySeqListImpl(key);
     }
     @Override
-        public Xs.BooleanExpr le(Xs.AnyAtomicTypeExpr left, Xs.AnyAtomicTypeExpr right) {
-        return new XsExprImpl.BooleanCallImpl("op", "le", new Object[]{ left, right });
+        public XsBooleanExpr le(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+        return new XsExprImpl.XsBooleanCallImpl("op", "le", new Object[]{ left, right });
     }
     @Override
-        public Xs.BooleanExpr lt(Xs.AnyAtomicTypeExpr left, Xs.AnyAtomicTypeExpr right) {
-        return new XsExprImpl.BooleanCallImpl("op", "lt", new Object[]{ left, right });
+        public XsBooleanExpr lt(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+        return new XsExprImpl.XsBooleanCallImpl("op", "lt", new Object[]{ left, right });
     }
     @Override
-        public AggregateCol max(String name, String column) {
+        public PlanAggregateCol max(String name, String column) {
         return max(col(name), col(column)); 
     }
     @Override
-        public AggregateCol max(ExprCol name, ExprCol column) {
-        return new AggregateColCallImpl("op", "max", new Object[]{ name, column });
+        public PlanAggregateCol max(PlanExprCol name, PlanExprCol column) {
+        return new PlanAggregateColCallImpl("op", "max", new Object[]{ name, column });
     }
     @Override
-        public AggregateCol min(String name, String column) {
+        public PlanAggregateCol min(String name, String column) {
         return min(col(name), col(column)); 
     }
     @Override
-        public AggregateCol min(ExprCol name, ExprCol column) {
-        return new AggregateColCallImpl("op", "min", new Object[]{ name, column });
+        public PlanAggregateCol min(PlanExprCol name, PlanExprCol column) {
+        return new PlanAggregateColCallImpl("op", "min", new Object[]{ name, column });
     }
     @Override
-        public Xs.AnyAtomicTypeExpr modulo(Xs.AnyAtomicTypeExpr left, Xs.AnyAtomicTypeExpr right) {
-        return new XsExprImpl.AnyAtomicTypeCallImpl("op", "modulo", new Object[]{ left, right });
+        public XsAnyAtomicTypeExpr modulo(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+        return new XsExprImpl.XsAnyAtomicTypeCallImpl("op", "modulo", new Object[]{ left, right });
     }
     @Override
-        public Xs.AnyAtomicTypeExpr multiply(Xs.AnyAtomicTypeExpr left, Xs.AnyAtomicTypeExpr right) {
-        return new XsExprImpl.AnyAtomicTypeCallImpl("op", "multiply", new Object[]{ left, right });
+        public XsAnyAtomicTypeExpr multiply(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+        return new XsExprImpl.XsAnyAtomicTypeCallImpl("op", "multiply", new Object[]{ left, right });
     }
     @Override
-        public Xs.BooleanExpr ne(Xs.AnyAtomicTypeExpr left, Xs.AnyAtomicTypeExpr right) {
-        return new XsExprImpl.BooleanCallImpl("op", "ne", new Object[]{ left, right });
+        public XsBooleanExpr ne(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+        return new XsExprImpl.XsBooleanCallImpl("op", "ne", new Object[]{ left, right });
     }
     @Override
-        public Xs.BooleanExpr not(Xs.BooleanExpr condition) {
-        return new XsExprImpl.BooleanCallImpl("op", "not", new Object[]{ condition });
+        public XsBooleanExpr not(XsBooleanExpr condition) {
+        return new XsExprImpl.XsBooleanCallImpl("op", "not", new Object[]{ condition });
     }
     @Override
-        public JoinKey on(String left, String right) {
+        public PlanJoinKey on(String left, String right) {
         return on(col(left), col(right)); 
     }
     @Override
-        public JoinKey on(ExprCol left, ExprCol right) {
-        return new JoinKeyCallImpl("op", "on", new Object[]{ left, right });
+        public PlanJoinKey on(PlanExprCol left, PlanExprCol right) {
+        return new PlanJoinKeyCallImpl("op", "on", new Object[]{ left, right });
     }
     @Override
-        public Xs.BooleanExpr or(Xs.BooleanExpr... list) {
+        public XsBooleanExpr or(XsBooleanExpr... list) {
         return or(list); 
     }
     @Override
-        public Xs.BooleanExpr or(Xs.BooleanSeqExpr list) {
-        return new XsExprImpl.BooleanCallImpl("op", "or", new Object[]{ list });
+        public XsBooleanExpr or(XsBooleanSeqExpr list) {
+        return new XsExprImpl.XsBooleanCallImpl("op", "or", new Object[]{ list });
     }
     @Override
-        public TriplePattern pattern(TriplePosition... subject) {
-        return pattern(new TriplePositionSeqListImpl(subject)); 
+        public PlanTriplePattern pattern(PlanTriplePosition... subject) {
+        return pattern(new PlanTriplePositionSeqListImpl(subject)); 
     }
     @Override
-        public TriplePattern pattern(TriplePositionSeq subject) {
-        return new TriplePatternCallImpl("op", "pattern", new Object[]{ subject });
+        public PlanTriplePattern pattern(PlanTriplePositionSeq subject) {
+        return new PlanTriplePatternCallImpl("op", "pattern", new Object[]{ subject });
     }
     @Override
-        public TriplePattern pattern(TriplePositionSeq subject, TriplePosition... predicate) {
-        return pattern(subject, new TriplePositionSeqListImpl(predicate)); 
+        public PlanTriplePattern pattern(PlanTriplePositionSeq subject, PlanTriplePosition... predicate) {
+        return pattern(subject, new PlanTriplePositionSeqListImpl(predicate)); 
     }
     @Override
-        public TriplePattern pattern(TriplePositionSeq subject, TriplePositionSeq predicate) {
-        return new TriplePatternCallImpl("op", "pattern", new Object[]{ subject, predicate });
+        public PlanTriplePattern pattern(PlanTriplePositionSeq subject, PlanTriplePositionSeq predicate) {
+        return new PlanTriplePatternCallImpl("op", "pattern", new Object[]{ subject, predicate });
     }
     @Override
-        public TriplePattern pattern(TriplePositionSeq subject, TriplePositionSeq predicate, TriplePosition... object) {
-        return pattern(subject, predicate, new TriplePositionSeqListImpl(object)); 
+        public PlanTriplePattern pattern(PlanTriplePositionSeq subject, PlanTriplePositionSeq predicate, PlanTriplePosition... object) {
+        return pattern(subject, predicate, new PlanTriplePositionSeqListImpl(object)); 
     }
     @Override
-        public TriplePattern pattern(TriplePositionSeq subject, TriplePositionSeq predicate, TriplePositionSeq object) {
-        return new TriplePatternCallImpl("op", "pattern", new Object[]{ subject, predicate, object });
+        public PlanTriplePattern pattern(PlanTriplePositionSeq subject, PlanTriplePositionSeq predicate, PlanTriplePositionSeq object) {
+        return new PlanTriplePatternCallImpl("op", "pattern", new Object[]{ subject, predicate, object });
     }
     @Override
-        public AggregateCol sample(String name, String column) {
+        public PlanAggregateCol sample(String name, String column) {
         return sample(col(name), col(column)); 
     }
     @Override
-        public AggregateCol sample(ExprCol name, ExprCol column) {
-        return new AggregateColCallImpl("op", "sample", new Object[]{ name, column });
+        public PlanAggregateCol sample(PlanExprCol name, PlanExprCol column) {
+        return new PlanAggregateColCallImpl("op", "sample", new Object[]{ name, column });
     }
     @Override
-        public Column schemaCol(String schema, String view, String column) {
+        public PlanColumn schemaCol(String schema, String view, String column) {
         return schemaCol(xs.string(schema), xs.string(view), xs.string(column)); 
     }
     @Override
-        public Column schemaCol(Xs.StringParam schema, Xs.StringParam view, Xs.StringParam column) {
-        return new ColumnCallImpl("op", "schema-col", new Object[]{ schema, view, column });
+        public PlanColumn schemaCol(XsStringParam schema, XsStringParam view, XsStringParam column) {
+        return new PlanColumnCallImpl("op", "schema-col", new Object[]{ schema, view, column });
     }
     @Override
-        public AggregateCol sequenceAggregate(String name, String column) {
+        public PlanAggregateCol sequenceAggregate(String name, String column) {
         return sequenceAggregate(col(name), col(column)); 
     }
     @Override
-        public AggregateCol sequenceAggregate(ExprCol name, ExprCol column) {
-        return new AggregateColCallImpl("op", "sequence-aggregate", new Object[]{ name, column });
+        public PlanAggregateCol sequenceAggregate(PlanExprCol name, PlanExprCol column) {
+        return new PlanAggregateColCallImpl("op", "sequence-aggregate", new Object[]{ name, column });
     }
     @Override
-        public SortKeySeq sortKeys(String... key) {
-        return sortKeys((SortKey[]) Arrays.stream(key)
+        public PlanSortKeySeq sortKeys(String... key) {
+        return sortKeys((PlanSortKey[]) Arrays.stream(key)
             .map(item -> col(item))
-            .toArray(size -> new SortKey[size])); 
+            .toArray(size -> new PlanSortKey[size])); 
     }
     @Override
-        public SortKeySeq sortKeys(SortKey... key) {
-        return new SortKeySeqListImpl(key);
+        public PlanSortKeySeq sortKeys(PlanSortKey... key) {
+        return new PlanSortKeySeqListImpl(key);
     }
     @Override
-        public Xs.AnyAtomicTypeExpr subtract(Xs.AnyAtomicTypeExpr left, Xs.AnyAtomicTypeExpr right) {
-        return new XsExprImpl.AnyAtomicTypeCallImpl("op", "subtract", new Object[]{ left, right });
+        public XsAnyAtomicTypeExpr subtract(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+        return new XsExprImpl.XsAnyAtomicTypeCallImpl("op", "subtract", new Object[]{ left, right });
     }
     @Override
-        public AggregateCol sum(String name, String column) {
+        public PlanAggregateCol sum(String name, String column) {
         return sum(col(name), col(column)); 
     }
     @Override
-        public AggregateCol sum(ExprCol name, ExprCol column) {
-        return new AggregateColCallImpl("op", "sum", new Object[]{ name, column });
+        public PlanAggregateCol sum(PlanExprCol name, PlanExprCol column) {
+        return new PlanAggregateColCallImpl("op", "sum", new Object[]{ name, column });
     }
     @Override
-        public AggregateCol uda(String name, String column, String module, String function) {
+        public PlanAggregateCol uda(String name, String column, String module, String function) {
         return uda(col(name), col(column), xs.string(module), xs.string(function)); 
     }
     @Override
-        public AggregateCol uda(ExprCol name, ExprCol column, Xs.StringParam module, Xs.StringParam function) {
-        return new AggregateColCallImpl("op", "uda", new Object[]{ name, column, module, function });
+        public PlanAggregateCol uda(PlanExprCol name, PlanExprCol column, XsStringParam module, XsStringParam function) {
+        return new PlanAggregateColCallImpl("op", "uda", new Object[]{ name, column, module, function });
     }
     @Override
-        public Column viewCol(String view, String column) {
+        public PlanColumn viewCol(String view, String column) {
         return viewCol(xs.string(view), xs.string(column)); 
     }
     @Override
-        public Column viewCol(Xs.StringParam view, Xs.StringParam column) {
-        return new ColumnCallImpl("op", "view-col", new Object[]{ view, column });
+        public PlanColumn viewCol(XsStringParam view, XsStringParam column) {
+        return new PlanColumnCallImpl("op", "view-col", new Object[]{ view, column });
     } 
     @Override
-    public TriplePatternSeq patterns(TriplePattern... patterns) {
-        return new TriplePatternSeqListImpl(patterns);
+    public PlanTriplePatternSeq patterns(PlanTriplePattern... patterns) {
+        return new PlanTriplePatternSeqListImpl(patterns);
     }
     @Override
-    public TriplePositionSeq positions(TriplePosition... positions) {
-        return new TriplePositionSeqListImpl(positions);
+    public PlanTriplePositionSeq positions(PlanTriplePosition... positions) {
+        return new PlanTriplePositionSeqListImpl(positions);
     }
     @Override
-    public QualifiedPlan fromLexicons(java.util.Map<String, CtsQuery.ReferenceExpr> indexes) {
+    public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes) {
         return new QualifiedPlanCallImpl("op", "from-lexicons", new Object[]{literal(indexes)});
     }
     @Override
-    public QualifiedPlan fromLexicons(java.util.Map<String, CtsQuery.ReferenceExpr> indexes, String qualifierName) {
+    public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName) {
         return new QualifiedPlanCallImpl("op", "from-lexicons", new Object[]{literal(indexes), xs.string(qualifierName)});
     }
     @Override
-    public QualifiedPlan fromLexicons(java.util.Map<String, CtsQuery.ReferenceExpr> indexes, String qualifierName, Column... sysCols) {
+    public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanColumn... sysCols) {
         return new QualifiedPlanCallImpl("op", "from-lexicons", new Object[]{literal(indexes), xs.string(qualifierName), sysCols});
     }
     @Override
-    public QualifiedPlan fromLexicons(java.util.Map<String, CtsQuery.ReferenceExpr> indexes, String qualifierName, ColumnSeq sysCols, CtsQuery.QueryExpr constrainingQuery) {
+    public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanColumnSeq sysCols, CtsQueryExpr constrainingQuery) {
         return new QualifiedPlanCallImpl("op", "from-lexicons", new Object[]{literal(indexes), xs.string(qualifierName), sysCols, constrainingQuery});
     }
     @Override
-    public QualifiedPlan fromLiterals(@SuppressWarnings("unchecked") java.util.Map<String,Object>... rows) {
+    public QualifiedPlan fromLiterals(@SuppressWarnings("unchecked") Map<String,Object>... rows) {
         return new QualifiedPlanCallImpl("op", "from-literals", new Object[]{literal(rows)});
     }
     @Override
-    public QualifiedPlan fromLiterals(java.util.Map<String,Object>[] rows, String qualifierName) {
+    public QualifiedPlan fromLiterals(Map<String,Object>[] rows, String qualifierName) {
         return new QualifiedPlanCallImpl("op", "from-literals", new Object[]{literal(rows), xs.string(qualifierName)});
     }
  public class PlanCallImpl  extends PlanBase  implements PlanBuilder.Plan {
@@ -421,30 +492,24 @@ public class PlanBuilderImpl extends PlanBuilderBase {
 
 }
  public class ViewPlanCallImpl  extends AccessPlanCallImpl  implements PlanBuilder.ViewPlan {
-        Xs.StringParam view = null;
-         Xs.StringParam schema = null;
+        XsStringParam view = null;
+         XsStringParam schema = null;
          ViewPlanCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(null, fnPrefix, fnName, fnArgs);
-         schema = (fnArgs.length <= 0) ? null : (Xs.StringParam) fnArgs[0];
-         view = (fnArgs.length <= 1) ? null : (Xs.StringParam) fnArgs[1];
+         schema = (fnArgs.length <= 0) ? null : (XsStringParam) fnArgs[0];
+         view = (fnArgs.length <= 1) ? null : (XsStringParam) fnArgs[1];
          }
      @Override
-        public Column col(String column) {
+        public PlanColumn col(String column) {
         return col(xs.string(column)); 
     }
     @Override
-        public Column col(Xs.StringParam column) {
+        public PlanColumn col(XsStringParam column) {
         return schemaCol(this.schema, this.view, column);
     }
 }
- public class ColumnCallImpl  extends ExprColCallImpl  implements PlanBuilder.Column {
-        ColumnCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-            super(fnPrefix, fnName, fnArgs);
-         }
-
-}
- public class ExprColCallImpl  extends AggregateColCallImpl  implements PlanBuilder.ExprCol {
-        ExprColCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+ public class PlanColumnCallImpl  extends PlanExprColCallImpl  implements PlanBuilder.PlanColumn {
+        PlanColumnCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, fnArgs);
          }
 
@@ -455,12 +520,6 @@ public class PlanBuilderImpl extends PlanBuilderBase {
          }
 
 }
- public class SortKeyCallImpl  extends PlanBaseImpl  implements PlanBuilder.SortKey {
-        SortKeyCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-            super(fnPrefix, fnName, fnArgs);
-         }
-
-}
  public class ModifyPlanCallImpl  extends PreparePlanCallImpl  implements PlanBuilder.ModifyPlan {
         ModifyPlanCallImpl(PlanChainedImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
             super(prior, fnPrefix, fnName, fnArgs);
@@ -468,36 +527,36 @@ public class PlanBuilderImpl extends PlanBuilderBase {
  
     @Override
     public ModifyPlan select(String... cols) {
-        return select((ExprCol[]) Arrays.stream(cols)
+        return select((PlanExprCol[]) Arrays.stream(cols)
             .map(item -> col(item))
-            .toArray(size -> new ExprCol[size])); 
+            .toArray(size -> new PlanExprCol[size])); 
     }
     @Override
     public ModifyPlan orderBy(String... cols) {
-        return orderBy((SortKey[]) Arrays.stream(cols)
+        return orderBy((PlanSortKey[]) Arrays.stream(cols)
             .map(item -> col(item))
-            .toArray(size -> new SortKey[size])); 
+            .toArray(size -> new PlanSortKey[size])); 
     }
     @Override
     public ModifyPlan groupBy(String... cols) {
-        return groupBy((ExprCol[]) Arrays.stream(cols)
+        return groupBy((PlanExprCol[]) Arrays.stream(cols)
             .map(item -> col(item))
-            .toArray(size -> new ExprCol[size])); 
+            .toArray(size -> new PlanExprCol[size])); 
     }
      @Override
-        public ModifyPlan groupBy(ExprCol... keys) {
-        return groupBy(new ExprColSeqListImpl(keys)); 
+        public ModifyPlan groupBy(PlanExprCol... keys) {
+        return groupBy(new PlanExprColSeqListImpl(keys)); 
     }
     @Override
-        public ModifyPlan groupBy(ExprColSeq keys) {
+        public ModifyPlan groupBy(PlanExprColSeq keys) {
         return new ModifyPlanCallImpl(this, "op", "group-by", new Object[]{ keys });
     }
     @Override
-        public ModifyPlan groupBy(ExprColSeq keys, AggregateCol... aggregates) {
-        return groupBy(keys, new AggregateColSeqListImpl(aggregates)); 
+        public ModifyPlan groupBy(PlanExprColSeq keys, PlanAggregateCol... aggregates) {
+        return groupBy(keys, new PlanAggregateColSeqListImpl(aggregates)); 
     }
     @Override
-        public ModifyPlan groupBy(ExprColSeq keys, AggregateColSeq aggregates) {
+        public ModifyPlan groupBy(PlanExprColSeq keys, PlanAggregateColSeq aggregates) {
         return new ModifyPlanCallImpl(this, "op", "group-by", new Object[]{ keys, aggregates });
     }
     @Override
@@ -505,19 +564,19 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new ModifyPlanCallImpl(this, "op", "join-cross-product", new Object[]{ right });
     }
     @Override
-        public ModifyPlan joinCrossProduct(ModifyPlan right, Xs.BooleanExpr condition) {
+        public ModifyPlan joinCrossProduct(ModifyPlan right, XsBooleanExpr condition) {
         return new ModifyPlanCallImpl(this, "op", "join-cross-product", new Object[]{ right, condition });
     }
     @Override
-        public ModifyPlan joinInner(ModifyPlan right, JoinKey... keys) {
-        return joinInner(right, new JoinKeySeqListImpl(keys)); 
+        public ModifyPlan joinInner(ModifyPlan right, PlanJoinKey... keys) {
+        return joinInner(right, new PlanJoinKeySeqListImpl(keys)); 
     }
     @Override
-        public ModifyPlan joinInner(ModifyPlan right, JoinKeySeq keys) {
+        public ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys) {
         return new ModifyPlanCallImpl(this, "op", "join-inner", new Object[]{ right, keys });
     }
     @Override
-        public ModifyPlan joinInner(ModifyPlan right, JoinKeySeq keys, Xs.BooleanExpr condition) {
+        public ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys, XsBooleanExpr condition) {
         return new ModifyPlanCallImpl(this, "op", "join-inner", new Object[]{ right, keys, condition });
     }
     @Override
@@ -525,19 +584,19 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return joinInnerDoc(col(docCol), col(uriCol)); 
     }
     @Override
-        public ModifyPlan joinInnerDoc(Column docCol, ExprCol uriCol) {
+        public ModifyPlan joinInnerDoc(PlanColumn docCol, PlanExprCol uriCol) {
         return new ModifyPlanCallImpl(this, "op", "join-inner-doc", new Object[]{ docCol, uriCol });
     }
     @Override
-        public ModifyPlan joinLeftOuter(ModifyPlan right, JoinKey... keys) {
-        return joinLeftOuter(right, new JoinKeySeqListImpl(keys)); 
+        public ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKey... keys) {
+        return joinLeftOuter(right, new PlanJoinKeySeqListImpl(keys)); 
     }
     @Override
-        public ModifyPlan joinLeftOuter(ModifyPlan right, JoinKeySeq keys) {
+        public ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys) {
         return new ModifyPlanCallImpl(this, "op", "join-left-outer", new Object[]{ right, keys });
     }
     @Override
-        public ModifyPlan joinLeftOuter(ModifyPlan right, JoinKeySeq keys, Xs.BooleanExpr condition) {
+        public ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, XsBooleanExpr condition) {
         return new ModifyPlanCallImpl(this, "op", "join-left-outer", new Object[]{ right, keys, condition });
     }
     @Override
@@ -545,7 +604,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return joinLeftOuterDoc(col(docCol), col(uriCol)); 
     }
     @Override
-        public ModifyPlan joinLeftOuterDoc(Column docCol, ExprCol uriCol) {
+        public ModifyPlan joinLeftOuterDoc(PlanColumn docCol, PlanExprCol uriCol) {
         return new ModifyPlanCallImpl(this, "op", "join-left-outer-doc", new Object[]{ docCol, uriCol });
     }
     @Override
@@ -553,7 +612,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return limit(xs.longVal(length)); 
     }
     @Override
-        public ModifyPlan limit(Xs.LongParam length) {
+        public ModifyPlan limit(XsLongParam length) {
         return new ModifyPlanCallImpl(this, "op", "limit", new Object[]{ length });
     }
     @Override
@@ -561,7 +620,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return offset(xs.longVal(start)); 
     }
     @Override
-        public ModifyPlan offset(Xs.LongParam start) {
+        public ModifyPlan offset(XsLongParam start) {
         return new ModifyPlanCallImpl(this, "op", "offset", new Object[]{ start });
     }
     @Override
@@ -569,15 +628,15 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return offsetLimit(xs.longVal(start), xs.longVal(length)); 
     }
     @Override
-        public ModifyPlan offsetLimit(Xs.LongParam start, Xs.LongParam length) {
+        public ModifyPlan offsetLimit(XsLongParam start, XsLongParam length) {
         return new ModifyPlanCallImpl(this, "op", "offset-limit", new Object[]{ start, length });
     }
     @Override
-        public ModifyPlan orderBy(SortKey... keys) {
-        return orderBy(new SortKeySeqListImpl(keys)); 
+        public ModifyPlan orderBy(PlanSortKey... keys) {
+        return orderBy(new PlanSortKeySeqListImpl(keys)); 
     }
     @Override
-        public ModifyPlan orderBy(SortKeySeq keys) {
+        public ModifyPlan orderBy(PlanSortKeySeq keys) {
         return new ModifyPlanCallImpl(this, "op", "order-by", new Object[]{ keys });
     }
     @Override
@@ -585,23 +644,23 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return prepare(xs.intVal(optimize)); 
     }
     @Override
-        public PreparePlan prepare(Xs.IntParam optimize) {
+        public PreparePlan prepare(XsIntParam optimize) {
         return new PreparePlanCallImpl(this, "op", "prepare", new Object[]{ optimize });
     }
     @Override
-        public ModifyPlan select(ExprCol... columns) {
-        return select(new ExprColSeqListImpl(columns)); 
+        public ModifyPlan select(PlanExprCol... columns) {
+        return select(new PlanExprColSeqListImpl(columns)); 
     }
     @Override
-        public ModifyPlan select(ExprColSeq columns) {
+        public ModifyPlan select(PlanExprColSeq columns) {
         return new ModifyPlanCallImpl(this, "op", "select", new Object[]{ columns });
     }
     @Override
-        public ModifyPlan select(ExprColSeq columns, String qualifierName) {
+        public ModifyPlan select(PlanExprColSeq columns, String qualifierName) {
         return select(columns, (qualifierName == null) ? null : xs.string(qualifierName)); 
     }
     @Override
-        public ModifyPlan select(ExprColSeq columns, Xs.StringParam qualifierName) {
+        public ModifyPlan select(PlanExprColSeq columns, XsStringParam qualifierName) {
         return new ModifyPlanCallImpl(this, "op", "select", new Object[]{ columns, qualifierName });
     }
     @Override
@@ -609,7 +668,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new ModifyPlanCallImpl(this, "op", "union", new Object[]{ right });
     }
     @Override
-        public ModifyPlan where(Xs.BooleanExpr condition) {
+        public ModifyPlan where(XsBooleanExpr condition) {
         return new ModifyPlanCallImpl(this, "op", "where", new Object[]{ condition });
     }
     @Override
@@ -626,7 +685,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return installedFunction(xs.string(modulePath), xs.string(functionName)); 
     }
     @Override
-        public PlanFunction installedFunction(Xs.StringParam modulePath, Xs.StringParam functionName) {
+        public PlanFunction installedFunction(XsStringParam modulePath, XsStringParam functionName) {
         return new PlanFunctionCallImpl("op", "installed-function", new Object[]{ modulePath, functionName });
     }
     @Override
@@ -638,7 +697,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return mapFunction(xs.string(moduleName)); 
     }
     @Override
-        public PlanFunction mapFunction(Xs.StringParam moduleName) {
+        public PlanFunction mapFunction(XsStringParam moduleName) {
         return new PlanFunctionCallImpl("op", "map-function", new Object[]{ moduleName });
     }
     @Override
@@ -646,7 +705,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new ExportablePlanCallImpl(this, "op", "reduce", new Object[]{ func });
     }
     @Override
-        public ExportablePlan reduce(PlanFunction func, Xs.AnyAtomicTypeParam seed) {
+        public ExportablePlan reduce(PlanFunction func, XsAnyAtomicTypeParam seed) {
         return new ExportablePlanCallImpl(this, "op", "reduce", new Object[]{ func, seed });
     }
     @Override
@@ -654,7 +713,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return reduceFunction(xs.string(moduleName)); 
     }
     @Override
-        public PlanFunction reduceFunction(Xs.StringParam moduleName) {
+        public PlanFunction reduceFunction(XsStringParam moduleName) {
         return new PlanFunctionCallImpl("op", "reduce-function", new Object[]{ moduleName });
     }
 }
@@ -665,19 +724,25 @@ public class PlanBuilderImpl extends PlanBuilderBase {
 
 }
  public class QualifiedPlanCallImpl  extends AccessPlanCallImpl  implements PlanBuilder.QualifiedPlan {
-        Xs.StringParam qualifier = null;
+        XsStringParam qualifier = null;
          QualifiedPlanCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(null, fnPrefix, fnName, fnArgs);
-         qualifier = (fnArgs.length <= 1) ? null : (Xs.StringParam) fnArgs[1];
+         qualifier = (fnArgs.length <= 1) ? null : (XsStringParam) fnArgs[1];
          }
      @Override
-        public Column col(String column) {
+        public PlanColumn col(String column) {
         return col(xs.string(column)); 
     }
     @Override
-        public Column col(Xs.StringParam column) {
+        public PlanColumn col(XsStringParam column) {
         return viewCol(this.qualifier, column);
     }
+}
+ public class PlanExprColCallImpl  extends PlanAggregateColCallImpl  implements PlanBuilder.PlanExprCol {
+        PlanExprColCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+         }
+
 }
  public class ExportablePlanCallImpl  extends PlanCallImpl  implements PlanBuilder.ExportablePlan {
         ExportablePlanCallImpl(PlanChainedImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
@@ -685,64 +750,80 @@ public class PlanBuilderImpl extends PlanBuilderBase {
          }
 
 }
- public class AggregateColCallImpl  extends PlanBaseImpl  implements PlanBuilder.AggregateCol {
-        AggregateColCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+ public class PlanAggregateColCallImpl  extends PlanBaseImpl  implements PlanBuilder.PlanAggregateCol {
+        PlanAggregateColCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, fnArgs);
          }
 
 }
- static class AggregateColSeqListImpl extends PlanListImpl implements PlanBuilder.AggregateColSeq {
-        AggregateColSeqListImpl(Object[] items) {
-            super(items);
-        }
-    }
- static class ColumnSeqListImpl extends PlanListImpl implements PlanBuilder.ColumnSeq {
-        ColumnSeqListImpl(Object[] items) {
-            super(items);
-        }
-    }
- static class ExprColSeqListImpl extends PlanListImpl implements PlanBuilder.ExprColSeq {
-        ExprColSeqListImpl(Object[] items) {
-            super(items);
-        }
-    }
- static class JoinKeyCallImpl extends PlanBaseImpl implements PlanBuilder.JoinKey {
-        JoinKeyCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+ public class PlanSortKeyCallImpl  extends PlanBaseImpl  implements PlanBuilder.PlanSortKey {
+        PlanSortKeyCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, fnArgs);
-        }
-    }
- static class JoinKeySeqListImpl extends PlanListImpl implements PlanBuilder.JoinKeySeq {
-        JoinKeySeqListImpl(Object[] items) {
+         }
+
+}
+ static class PlanAggregateColSeqListImpl extends PlanListImpl implements PlanAggregateColSeq {
+        PlanAggregateColSeqListImpl(Object[] items) {
             super(items);
         }
     }
- static class PlanFunctionCallImpl extends PlanBaseImpl implements PlanBuilder.PlanFunction {
+ static class PlanColumnSeqListImpl extends PlanListImpl implements PlanColumnSeq {
+        PlanColumnSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+ static class PlanExprColSeqListImpl extends PlanListImpl implements PlanExprColSeq {
+        PlanExprColSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+ static class PlanFunctionCallImpl extends PlanBaseImpl implements PlanFunction {
         PlanFunctionCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, fnArgs);
         }
     }
- static class SortKeySeqListImpl extends PlanListImpl implements PlanBuilder.SortKeySeq {
-        SortKeySeqListImpl(Object[] items) {
+ static class PlanFunctionSeqListImpl extends PlanListImpl implements PlanFunctionSeq {
+        PlanFunctionSeqListImpl(Object[] items) {
             super(items);
         }
     }
- static class TriplePatternCallImpl extends PlanBaseImpl implements PlanBuilder.TriplePattern {
-        TriplePatternCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+ static class PlanJoinKeyCallImpl extends PlanBaseImpl implements PlanJoinKey {
+        PlanJoinKeyCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, fnArgs);
         }
     }
- static class TriplePatternSeqListImpl extends PlanListImpl implements PlanBuilder.TriplePatternSeq {
-        TriplePatternSeqListImpl(Object[] items) {
+ static class PlanJoinKeySeqListImpl extends PlanListImpl implements PlanJoinKeySeq {
+        PlanJoinKeySeqListImpl(Object[] items) {
             super(items);
         }
     }
- static class TriplePositionCallImpl extends PlanBaseImpl implements PlanBuilder.TriplePosition {
-        TriplePositionCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+ static class PlanParamSeqListImpl extends PlanListImpl implements PlanParamSeq {
+        PlanParamSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+ static class PlanSortKeySeqListImpl extends PlanListImpl implements PlanSortKeySeq {
+        PlanSortKeySeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+ static class PlanTriplePatternCallImpl extends PlanBaseImpl implements PlanTriplePattern {
+        PlanTriplePatternCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, fnArgs);
         }
     }
- static class TriplePositionSeqListImpl extends PlanListImpl implements PlanBuilder.TriplePositionSeq {
-        TriplePositionSeqListImpl(Object[] items) {
+ static class PlanTriplePatternSeqListImpl extends PlanListImpl implements PlanTriplePatternSeq {
+        PlanTriplePatternSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+ static class PlanTriplePositionCallImpl extends PlanBaseImpl implements PlanTriplePosition {
+        PlanTriplePositionCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+ static class PlanTriplePositionSeqListImpl extends PlanListImpl implements PlanTriplePositionSeq {
+        PlanTriplePositionSeqListImpl(Object[] items) {
             super(items);
         }
     }

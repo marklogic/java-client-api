@@ -49,7 +49,6 @@ import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.expression.CtsQuery;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
@@ -59,10 +58,9 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
-import com.marklogic.client.row.RowSet;
 import com.marklogic.client.row.RowRecord.ColumnKind;
-import com.marklogic.client.semantics.GraphManager;
-import com.marklogic.client.semantics.RDFMimeTypes;
+import com.marklogic.client.row.RowSet;
+import com.marklogic.client.type.CtsReferenceExpr;
 import com.marklogic.client.util.EditableNamespaceContext;
 
 public class RowManagerTest {
@@ -337,7 +335,7 @@ public class RowManagerTest {
 
 		PlanBuilder p = rowMgr.newPlanBuilder();
 
-		Map<String, CtsQuery.ReferenceExpr> lexicons = new HashMap<String, CtsQuery.ReferenceExpr>();
+		Map<String, CtsReferenceExpr> lexicons = new HashMap<String, CtsReferenceExpr>();
 		lexicons.put("uri", p.cts.uriReference());
 		lexicons.put("int", p.cts.elementReference(p.xs.qname("int")));
 

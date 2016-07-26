@@ -15,19 +15,16 @@
  */
 package com.marklogic.client.expression;
 
-// TODO: single import
-import com.marklogic.client.expression.BaseType;
-
-import com.marklogic.client.expression.Xs;
- import com.marklogic.client.expression.Sql;
+import com.marklogic.client.type.XsStringExpr;
+ import com.marklogic.client.type.SqlCollatedStringExpr;
+ import com.marklogic.client.type.RdfLangStringExpr;
+ import com.marklogic.client.type.RdfLangStringSeqExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
 public interface Rdf {
-    public Rdf.LangStringExpr langString(String string, String lang);
-    public Rdf.LangStringExpr langString(Xs.StringExpr string, Xs.StringExpr lang);
-    public Sql.CollatedStringExpr langStringLanguage(Rdf.LangStringExpr val);     public Rdf.LangStringSeqExpr langString(Rdf.LangStringExpr... items);
-        public interface LangStringSeqExpr extends BaseType.ItemSeqExpr { }
-        public interface LangStringExpr extends LangStringSeqExpr, BaseType.ItemExpr { }
+    public RdfLangStringExpr langString(String string, String lang);
+    public RdfLangStringExpr langString(XsStringExpr string, XsStringExpr lang);
+    public SqlCollatedStringExpr langStringLanguage(RdfLangStringExpr val);     public RdfLangStringSeqExpr langString(RdfLangStringExpr... items);
 
 }

@@ -38,9 +38,6 @@ import com.marklogic.client.Transaction;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
 import com.marklogic.client.expression.PlanBuilder.PlanParam;
-import com.marklogic.client.expression.Xs;
-import com.marklogic.client.expression.XsValue;
-import com.marklogic.client.expression.XsValue.AnyAtomicTypeVal;
 import com.marklogic.client.impl.RESTServices.RESTServiceResult;
 import com.marklogic.client.impl.RESTServices.RESTServiceResultIterator;
 import com.marklogic.client.io.BaseHandle;
@@ -55,6 +52,7 @@ import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
+import com.marklogic.client.type.XsAnyAtomicTypeVal;
 import com.marklogic.client.util.RequestParameters;
 
 public class RowManagerImpl
@@ -78,12 +76,12 @@ public class RowManagerImpl
 
 	@Override
 	public PlanBuilder newPlanBuilder() {
-		Xs xs = new XsExprImpl();
+		XsExprImpl xs = new XsExprImpl();
 
 		PlanBuilderImpl planBuilder = new PlanBuilderImpl(
-				new CtsExprImpl(xs), new FnExprImpl(xs), new JsonExprImpl(xs), new MapExprImpl(xs),
-				new MathExprImpl(xs), new RdfExprImpl(xs), new SemExprImpl(xs), new SqlExprImpl(xs),
-				new XdmpExprImpl(xs), xs
+				new CtsExprImpl(xs), new FnExprImpl(xs), new JsonExprImpl(xs),
+				new MathExprImpl(xs), new RdfExprImpl(xs), new SemExprImpl(xs),
+				new SqlExprImpl(xs), new XdmpExprImpl(xs), xs
 				);
 
 		planBuilder.setHandleRegistry(getHandleRegistry());
@@ -526,7 +524,7 @@ public class RowManagerImpl
 		}
 
 		@Override
-		public <T extends AnyAtomicTypeVal> T getValueAs(String columnName, Class<T> as) throws Exception {
+		public <T extends XsAnyAtomicTypeVal> T getValueAs(String columnName, Class<T> as) throws Exception {
 			@SuppressWarnings("unchecked")
 			Constructor<T> constructor = (Constructor<T>) constructors.get(as);
 			if (constructor == null) {
@@ -536,7 +534,7 @@ public class RowManagerImpl
 			return constructor.newInstance(getString(columnName));
 		}
 		@Override
-		public <T extends AnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as) throws Exception {
+		public <T extends XsAnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as) throws Exception {
 // TODO: constructor array for sequence
 			throw new UnsupportedOperationException("sequence of values not supported");
 		}
@@ -628,7 +626,7 @@ public class RowManagerImpl
 	    	return bindParam(param, new XsValueImpl.StringValImpl(literal));
 	    }
 	    @Override
-	    public Plan bindParam(PlanParam param, XsValue.AnyAtomicTypeVal literal) {
+	    public Plan bindParam(PlanParam param, XsAnyAtomicTypeVal literal) {
 	    	if (!(param instanceof PlanBuilderBase.PlanParamBase)) {
 	    		throw new IllegalArgumentException("cannot set parameter that doesn't extend base");
 	    	}

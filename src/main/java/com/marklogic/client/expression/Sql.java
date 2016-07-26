@@ -15,70 +15,73 @@
  */
 package com.marklogic.client.expression;
 
-// TODO: single import
-import com.marklogic.client.expression.BaseType;
-
-import com.marklogic.client.expression.Xs;
- import com.marklogic.client.expression.BaseType;
+import com.marklogic.client.type.XsStringExpr;
+ import com.marklogic.client.type.SqlCollatedStringExpr;
+ import com.marklogic.client.type.XsIntegerExpr;
+ import com.marklogic.client.type.XsUnsignedLongExpr;
+ import com.marklogic.client.type.XsIntExpr;
+ import com.marklogic.client.type.SqlGenericDateTimeExpr;
+ import com.marklogic.client.type.XsUnsignedIntExpr;
+ import com.marklogic.client.type.SqlCollatedStringSeqExpr;
+ import com.marklogic.client.type.XsNumericExpr;
+ import com.marklogic.client.type.XsDecimalExpr;
+ import com.marklogic.client.type.SqlGenericDateTimeSeqExpr;
+ import com.marklogic.client.type.ItemSeqExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
 public interface Sql {
-    public Xs.IntegerExpr bitLength();
-    public Xs.IntegerExpr bitLength(String arg1);
-    public Xs.IntegerExpr bitLength(Xs.StringExpr arg1);
-    public Sql.GenericDateTimeExpr dateadd(String datepart, int number, Sql.GenericDateTimeExpr date);
-    public Sql.GenericDateTimeExpr dateadd(Xs.StringExpr datepart, Xs.IntExpr number, Sql.GenericDateTimeExpr date);
-    public Xs.IntegerExpr datediff(String datepart, Sql.GenericDateTimeExpr startdate, Sql.GenericDateTimeExpr enddate);
-    public Xs.IntegerExpr datediff(Xs.StringExpr datepart, Sql.GenericDateTimeExpr startdate, Sql.GenericDateTimeExpr enddate);
-    public Xs.IntegerExpr datepart(String datepart, Sql.GenericDateTimeExpr date);
-    public Xs.IntegerExpr datepart(Xs.StringExpr datepart, Sql.GenericDateTimeExpr date);
-    public Xs.IntegerExpr day(Sql.GenericDateTimeExpr arg1);
-    public Xs.StringExpr dayname(Sql.GenericDateTimeExpr arg1);
-    public Xs.IntegerExpr hours(Sql.GenericDateTimeExpr arg1);
-    public Xs.StringExpr insert(String arg1, Xs.NumericExpr arg2, Xs.NumericExpr arg3, String arg4);
-    public Xs.StringExpr insert(Xs.StringExpr arg1, Xs.NumericExpr arg2, Xs.NumericExpr arg3, Xs.StringExpr arg4);
-    public Xs.UnsignedIntExpr instr(String arg1, String arg2);
-    public Xs.UnsignedIntExpr instr(Xs.StringExpr arg1, Xs.StringExpr arg2);
-    public Xs.StringExpr left(BaseType.ItemSeqExpr arg1, Xs.NumericExpr arg2);
-    public Xs.StringExpr ltrim(String arg1);
-    public Xs.StringExpr ltrim(Xs.StringExpr arg1);
-    public Xs.StringExpr ltrim(String arg1, String arg2);
-    public Xs.StringExpr ltrim(Xs.StringExpr arg1, Xs.StringExpr arg2);
-    public Xs.IntegerExpr minutes(Sql.GenericDateTimeExpr arg1);
-    public Xs.IntegerExpr month(Sql.GenericDateTimeExpr arg1);
-    public Xs.StringExpr monthname(Sql.GenericDateTimeExpr arg1);
-    public Xs.IntegerExpr octetLength();
-    public Xs.IntegerExpr octetLength(String arg1);
-    public Xs.IntegerExpr octetLength(Xs.StringExpr arg1);
-    public Xs.IntegerExpr quarter(Sql.GenericDateTimeExpr arg1);
-    public Xs.UnsignedLongExpr rand();
-    public Xs.UnsignedLongExpr rand(Xs.UnsignedLongExpr arg1);
-    public Xs.StringExpr repeat(BaseType.ItemSeqExpr arg1, Xs.NumericExpr arg2);
-    public Xs.StringExpr right(BaseType.ItemSeqExpr arg1, Xs.NumericExpr arg2);
-    public Xs.StringExpr rtrim(String arg1);
-    public Xs.StringExpr rtrim(Xs.StringExpr arg1);
-    public Xs.StringExpr rtrim(String arg1, String arg2);
-    public Xs.StringExpr rtrim(Xs.StringExpr arg1, Xs.StringExpr arg2);
-    public Xs.DecimalExpr seconds(Sql.GenericDateTimeExpr arg1);
-    public BaseType.ItemSeqExpr sign(Xs.NumericExpr arg1);
-    public Xs.StringExpr space(Xs.NumericExpr arg1);
-    public Sql.GenericDateTimeExpr timestampadd(String arg1, int arg2, Sql.GenericDateTimeExpr arg3);
-    public Sql.GenericDateTimeExpr timestampadd(Xs.StringExpr arg1, Xs.IntExpr arg2, Sql.GenericDateTimeExpr arg3);
-    public Xs.IntegerExpr timestampdiff(String arg1, Sql.GenericDateTimeExpr arg2, Sql.GenericDateTimeExpr arg3);
-    public Xs.IntegerExpr timestampdiff(Xs.StringExpr arg1, Sql.GenericDateTimeExpr arg2, Sql.GenericDateTimeExpr arg3);
-    public Xs.StringExpr trim(String arg1);
-    public Xs.StringExpr trim(Xs.StringExpr arg1);
-    public Xs.StringExpr trim(String arg1, String arg2);
-    public Xs.StringExpr trim(Xs.StringExpr arg1, Xs.StringExpr arg2);
-    public Xs.IntegerExpr week(Sql.GenericDateTimeExpr arg1);
-    public Xs.IntegerExpr weekday(Sql.GenericDateTimeExpr arg1);
-    public Xs.IntegerExpr year(Sql.GenericDateTimeExpr arg1);
-    public Xs.IntegerExpr yearday(Sql.GenericDateTimeExpr arg1);     public Sql.CollatedStringSeqExpr collatedString(Sql.CollatedStringExpr... items);
-     public Sql.GenericDateTimeSeqExpr genericDateTime(Sql.GenericDateTimeExpr... items);
-        public interface CollatedStringSeqExpr extends BaseType.ItemSeqExpr { }
-        public interface CollatedStringExpr extends CollatedStringSeqExpr, BaseType.ItemExpr { }
-         public interface GenericDateTimeSeqExpr extends BaseType.ItemSeqExpr { }
-        public interface GenericDateTimeExpr extends GenericDateTimeSeqExpr, BaseType.ItemExpr { }
+    public XsIntegerExpr bitLength();
+    public XsIntegerExpr bitLength(String arg1);
+    public XsIntegerExpr bitLength(XsStringExpr arg1);
+    public SqlGenericDateTimeExpr dateadd(String datepart, int number, SqlGenericDateTimeExpr date);
+    public SqlGenericDateTimeExpr dateadd(XsStringExpr datepart, XsIntExpr number, SqlGenericDateTimeExpr date);
+    public XsIntegerExpr datediff(String datepart, SqlGenericDateTimeExpr startdate, SqlGenericDateTimeExpr enddate);
+    public XsIntegerExpr datediff(XsStringExpr datepart, SqlGenericDateTimeExpr startdate, SqlGenericDateTimeExpr enddate);
+    public XsIntegerExpr datepart(String datepart, SqlGenericDateTimeExpr date);
+    public XsIntegerExpr datepart(XsStringExpr datepart, SqlGenericDateTimeExpr date);
+    public XsIntegerExpr day(SqlGenericDateTimeExpr arg1);
+    public XsStringExpr dayname(SqlGenericDateTimeExpr arg1);
+    public XsIntegerExpr hours(SqlGenericDateTimeExpr arg1);
+    public XsStringExpr insert(String arg1, XsNumericExpr arg2, XsNumericExpr arg3, String arg4);
+    public XsStringExpr insert(XsStringExpr arg1, XsNumericExpr arg2, XsNumericExpr arg3, XsStringExpr arg4);
+    public XsUnsignedIntExpr instr(String arg1, String arg2);
+    public XsUnsignedIntExpr instr(XsStringExpr arg1, XsStringExpr arg2);
+    public XsStringExpr left(ItemSeqExpr arg1, XsNumericExpr arg2);
+    public XsStringExpr ltrim(String arg1);
+    public XsStringExpr ltrim(XsStringExpr arg1);
+    public XsStringExpr ltrim(String arg1, String arg2);
+    public XsStringExpr ltrim(XsStringExpr arg1, XsStringExpr arg2);
+    public XsIntegerExpr minutes(SqlGenericDateTimeExpr arg1);
+    public XsIntegerExpr month(SqlGenericDateTimeExpr arg1);
+    public XsStringExpr monthname(SqlGenericDateTimeExpr arg1);
+    public XsIntegerExpr octetLength();
+    public XsIntegerExpr octetLength(String arg1);
+    public XsIntegerExpr octetLength(XsStringExpr arg1);
+    public XsIntegerExpr quarter(SqlGenericDateTimeExpr arg1);
+    public XsUnsignedLongExpr rand();
+    public XsUnsignedLongExpr rand(XsUnsignedLongExpr arg1);
+    public XsStringExpr repeat(ItemSeqExpr arg1, XsNumericExpr arg2);
+    public XsStringExpr right(ItemSeqExpr arg1, XsNumericExpr arg2);
+    public XsStringExpr rtrim(String arg1);
+    public XsStringExpr rtrim(XsStringExpr arg1);
+    public XsStringExpr rtrim(String arg1, String arg2);
+    public XsStringExpr rtrim(XsStringExpr arg1, XsStringExpr arg2);
+    public XsDecimalExpr seconds(SqlGenericDateTimeExpr arg1);
+    public ItemSeqExpr sign(XsNumericExpr arg1);
+    public XsStringExpr space(XsNumericExpr arg1);
+    public SqlGenericDateTimeExpr timestampadd(String arg1, int arg2, SqlGenericDateTimeExpr arg3);
+    public SqlGenericDateTimeExpr timestampadd(XsStringExpr arg1, XsIntExpr arg2, SqlGenericDateTimeExpr arg3);
+    public XsIntegerExpr timestampdiff(String arg1, SqlGenericDateTimeExpr arg2, SqlGenericDateTimeExpr arg3);
+    public XsIntegerExpr timestampdiff(XsStringExpr arg1, SqlGenericDateTimeExpr arg2, SqlGenericDateTimeExpr arg3);
+    public XsStringExpr trim(String arg1);
+    public XsStringExpr trim(XsStringExpr arg1);
+    public XsStringExpr trim(String arg1, String arg2);
+    public XsStringExpr trim(XsStringExpr arg1, XsStringExpr arg2);
+    public XsIntegerExpr week(SqlGenericDateTimeExpr arg1);
+    public XsIntegerExpr weekday(SqlGenericDateTimeExpr arg1);
+    public XsIntegerExpr year(SqlGenericDateTimeExpr arg1);
+    public XsIntegerExpr yearday(SqlGenericDateTimeExpr arg1);     public SqlCollatedStringSeqExpr collatedString(SqlCollatedStringExpr... items);
+     public SqlGenericDateTimeSeqExpr genericDateTime(SqlGenericDateTimeExpr... items);
 
 }

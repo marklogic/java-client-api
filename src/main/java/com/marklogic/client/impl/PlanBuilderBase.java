@@ -33,21 +33,21 @@ import com.marklogic.client.expression.Sem;
 import com.marklogic.client.expression.Sql;
 import com.marklogic.client.expression.Xdmp;
 import com.marklogic.client.expression.Xs;
-import com.marklogic.client.expression.XsValue;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
+import com.marklogic.client.type.XsAnyAtomicTypeVal;
 
 abstract class PlanBuilderBase extends PlanBuilder {
 	private HandleFactoryRegistry handleRegistry;
 
 	PlanBuilderBase(
-        Cts cts, Fn fn, Json json, com.marklogic.client.expression.Map map,
+        Cts cts, Fn fn, Json json,
         Math math, Rdf rdf, Sem sem, Sql sql, Xdmp xdmp, Xs xs
     ) {
-        super(cts, fn, json, map, math, rdf, sem, sql, xdmp, xs);
+        super(cts, fn, json, math, rdf, sem, sql, xdmp, xs);
     }
 
 	HandleFactoryRegistry getHandleRegistry() {
@@ -178,7 +178,7 @@ abstract class PlanBuilderBase extends PlanBuilder {
 	    	return bindParam(param, new XsValueImpl.StringValImpl(literal));
 	    }
 	    @Override
-	    public Plan bindParam(PlanParam param, XsValue.AnyAtomicTypeVal literal) {
+	    public Plan bindParam(PlanParam param, XsAnyAtomicTypeVal literal) {
 	    	if (!(param instanceof PlanParamBase)) {
 	    		throw new IllegalArgumentException("cannot set parameter that doesn't extend base");
 	    	}
