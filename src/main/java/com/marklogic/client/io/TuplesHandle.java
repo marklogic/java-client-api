@@ -49,7 +49,6 @@ public class TuplesHandle
     static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
 
     private TuplesBuilder.Tuples tuplesHolder;
-    private JAXBContext jc;
     private Unmarshaller unmarshaller;
 
     private ValuesDefinition valdef = null;
@@ -60,10 +59,12 @@ public class TuplesHandle
     	super.setFormat(Format.XML);
 
         try {
-            jc = JAXBContext.newInstance(TuplesBuilder.Tuples.class);
+            JAXBContext jc = JaxbContextLoader.CACHED_CONTEXT;
             unmarshaller = jc.createUnmarshaller();
         } catch (JAXBException e) {
             throw new MarkLogicBindingException(e);
+        } catch (NoClassDefFoundError ncdfe) {
+            throw new MarkLogicBindingException(new JAXBException("JAXB context initialization failed"));
         }
     }
 
@@ -174,4 +175,21 @@ public class TuplesHandle
     public ValuesMetrics getMetrics() {
         return tuplesHolder.getMetrics();
     }
+
+    /**
+     * Initialization-on-demand holder for {@link TuplesHandle}'s JAXB context.
+     */
+    private static class JaxbContextLoader {
+
+        private static final JAXBContext CACHED_CONTEXT;
+
+        static {
+            try {
+                CACHED_CONTEXT = JAXBContext.newInstance(TuplesBuilder.Tuples.class);
+            } catch (JAXBException e) {
+                throw new MarkLogicBindingException(e);
+            }
+        }
+    }
+
 }
