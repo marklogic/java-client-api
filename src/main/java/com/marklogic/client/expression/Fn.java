@@ -187,7 +187,6 @@ public interface Fn {
     public XsStringExpr string(ItemExpr arg);
     public XsStringExpr stringJoin(String... parameter1);
     public XsStringExpr stringJoin(XsStringSeqExpr parameter1);
-    public XsStringExpr stringJoin(String parameter1, String parameter2);
     public XsStringExpr stringJoin(XsStringSeqExpr parameter1, XsStringExpr parameter2);
     public XsIntegerExpr stringLength(String sourceString);
     public XsIntegerExpr stringLength(XsStringExpr sourceString);

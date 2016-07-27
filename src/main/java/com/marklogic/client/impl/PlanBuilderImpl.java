@@ -376,16 +376,8 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new PlanTriplePatternCallImpl("op", "pattern", new Object[]{ subject });
     }
     @Override
-        public PlanTriplePattern pattern(PlanTriplePositionSeq subject, PlanTriplePosition... predicate) {
-        return pattern(subject, new PlanTriplePositionSeqListImpl(predicate)); 
-    }
-    @Override
         public PlanTriplePattern pattern(PlanTriplePositionSeq subject, PlanTriplePositionSeq predicate) {
         return new PlanTriplePatternCallImpl("op", "pattern", new Object[]{ subject, predicate });
-    }
-    @Override
-        public PlanTriplePattern pattern(PlanTriplePositionSeq subject, PlanTriplePositionSeq predicate, PlanTriplePosition... object) {
-        return pattern(subject, predicate, new PlanTriplePositionSeqListImpl(object)); 
     }
     @Override
         public PlanTriplePattern pattern(PlanTriplePositionSeq subject, PlanTriplePositionSeq predicate, PlanTriplePositionSeq object) {

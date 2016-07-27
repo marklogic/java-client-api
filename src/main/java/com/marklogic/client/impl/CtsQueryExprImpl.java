@@ -95,10 +95,6 @@ public class CtsQueryExprImpl implements CtsQuery {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "directory-query", new Object[]{ uris });
     }
     @Override
-        public CtsQueryExpr directoryQuery(String uris, String depth) {
-        return directoryQuery((uris == null) ? null : xs.strings(uris), (depth == null) ? null : xs.string(depth)); 
-    }
-    @Override
         public CtsQueryExpr directoryQuery(XsStringSeqVal uris, XsStringVal depth) {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "directory-query", new Object[]{ uris, depth });
     }
@@ -167,16 +163,12 @@ public class CtsQueryExprImpl implements CtsQuery {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "element-attribute-value-query", new Object[]{ elementName, attributeName, text });
     }
     @Override
-        public CtsQueryExpr elementAttributeValueQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, String text, String... options) {
-        return elementAttributeValueQuery(elementName, attributeName, (text == null) ? null : xs.strings(text), (options == null) ? null : xs.strings(options)); 
-    }
-    @Override
         public CtsQueryExpr elementAttributeValueQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringSeqVal text, XsStringSeqVal options) {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "element-attribute-value-query", new Object[]{ elementName, attributeName, text, options });
     }
     @Override
-        public CtsQueryExpr elementAttributeValueQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, String text, String options, double weight) {
-        return elementAttributeValueQuery(elementName, attributeName, (text == null) ? null : xs.strings(text), (options == null) ? null : xs.strings(options), xs.doubleVal(weight)); 
+        public CtsQueryExpr elementAttributeValueQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringSeqVal text, XsStringSeqVal options, double weight) {
+        return elementAttributeValueQuery(elementName, attributeName, text, options, xs.doubleVal(weight)); 
     }
     @Override
         public CtsQueryExpr elementAttributeValueQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight) {
@@ -195,16 +187,12 @@ public class CtsQueryExprImpl implements CtsQuery {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "element-attribute-word-query", new Object[]{ elementName, attributeName, text });
     }
     @Override
-        public CtsQueryExpr elementAttributeWordQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, String text, String... options) {
-        return elementAttributeWordQuery(elementName, attributeName, (text == null) ? null : xs.strings(text), (options == null) ? null : xs.strings(options)); 
-    }
-    @Override
         public CtsQueryExpr elementAttributeWordQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringSeqVal text, XsStringSeqVal options) {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "element-attribute-word-query", new Object[]{ elementName, attributeName, text, options });
     }
     @Override
-        public CtsQueryExpr elementAttributeWordQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, String text, String options, double weight) {
-        return elementAttributeWordQuery(elementName, attributeName, (text == null) ? null : xs.strings(text), (options == null) ? null : xs.strings(options), xs.doubleVal(weight)); 
+        public CtsQueryExpr elementAttributeWordQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringSeqVal text, XsStringSeqVal options, double weight) {
+        return elementAttributeWordQuery(elementName, attributeName, text, options, xs.doubleVal(weight)); 
     }
     @Override
         public CtsQueryExpr elementAttributeWordQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight) {
@@ -311,16 +299,12 @@ public class CtsQueryExprImpl implements CtsQuery {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "element-value-query", new Object[]{ elementName, text });
     }
     @Override
-        public CtsQueryExpr elementValueQuery(XsQNameSeqVal elementName, String text, String... options) {
-        return elementValueQuery(elementName, (text == null) ? null : xs.strings(text), (options == null) ? null : xs.strings(options)); 
-    }
-    @Override
         public CtsQueryExpr elementValueQuery(XsQNameSeqVal elementName, XsStringSeqVal text, XsStringSeqVal options) {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "element-value-query", new Object[]{ elementName, text, options });
     }
     @Override
-        public CtsQueryExpr elementValueQuery(XsQNameSeqVal elementName, String text, String options, double weight) {
-        return elementValueQuery(elementName, (text == null) ? null : xs.strings(text), (options == null) ? null : xs.strings(options), xs.doubleVal(weight)); 
+        public CtsQueryExpr elementValueQuery(XsQNameSeqVal elementName, XsStringSeqVal text, XsStringSeqVal options, double weight) {
+        return elementValueQuery(elementName, text, options, xs.doubleVal(weight)); 
     }
     @Override
         public CtsQueryExpr elementValueQuery(XsQNameSeqVal elementName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight) {
@@ -335,16 +319,12 @@ public class CtsQueryExprImpl implements CtsQuery {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "element-word-query", new Object[]{ elementName, text });
     }
     @Override
-        public CtsQueryExpr elementWordQuery(XsQNameSeqVal elementName, String text, String... options) {
-        return elementWordQuery(elementName, (text == null) ? null : xs.strings(text), (options == null) ? null : xs.strings(options)); 
-    }
-    @Override
         public CtsQueryExpr elementWordQuery(XsQNameSeqVal elementName, XsStringSeqVal text, XsStringSeqVal options) {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "element-word-query", new Object[]{ elementName, text, options });
     }
     @Override
-        public CtsQueryExpr elementWordQuery(XsQNameSeqVal elementName, String text, String options, double weight) {
-        return elementWordQuery(elementName, (text == null) ? null : xs.strings(text), (options == null) ? null : xs.strings(options), xs.doubleVal(weight)); 
+        public CtsQueryExpr elementWordQuery(XsQNameSeqVal elementName, XsStringSeqVal text, XsStringSeqVal options, double weight) {
+        return elementWordQuery(elementName, text, options, xs.doubleVal(weight)); 
     }
     @Override
         public CtsQueryExpr elementWordQuery(XsQNameSeqVal elementName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight) {
@@ -411,16 +391,16 @@ public class CtsQueryExprImpl implements CtsQuery {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "field-word-query", new Object[]{ fieldName, text });
     }
     @Override
-        public CtsQueryExpr fieldWordQuery(String fieldName, String text, String... options) {
-        return fieldWordQuery((fieldName == null) ? null : xs.strings(fieldName), (text == null) ? null : xs.strings(text), (options == null) ? null : xs.strings(options)); 
+        public CtsQueryExpr fieldWordQuery(String fieldName, XsStringSeqVal text, XsStringVal... options) {
+        return fieldWordQuery((fieldName == null) ? null : xs.strings(fieldName), text, xs.strings(options)); 
     }
     @Override
         public CtsQueryExpr fieldWordQuery(XsStringSeqVal fieldName, XsStringSeqVal text, XsStringSeqVal options) {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "field-word-query", new Object[]{ fieldName, text, options });
     }
     @Override
-        public CtsQueryExpr fieldWordQuery(String fieldName, String text, String options, double weight) {
-        return fieldWordQuery((fieldName == null) ? null : xs.strings(fieldName), (text == null) ? null : xs.strings(text), (options == null) ? null : xs.strings(options), xs.doubleVal(weight)); 
+        public CtsQueryExpr fieldWordQuery(String fieldName, XsStringSeqVal text, XsStringSeqVal options, double weight) {
+        return fieldWordQuery((fieldName == null) ? null : xs.strings(fieldName), text, options, xs.doubleVal(weight)); 
     }
     @Override
         public CtsQueryExpr fieldWordQuery(XsStringSeqVal fieldName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight) {
@@ -563,16 +543,16 @@ public class CtsQueryExprImpl implements CtsQuery {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "json-property-word-query", new Object[]{ propertyName, text });
     }
     @Override
-        public CtsQueryExpr jsonPropertyWordQuery(String propertyName, String text, String... options) {
-        return jsonPropertyWordQuery((propertyName == null) ? null : xs.strings(propertyName), (text == null) ? null : xs.strings(text), (options == null) ? null : xs.strings(options)); 
+        public CtsQueryExpr jsonPropertyWordQuery(String propertyName, XsStringSeqVal text, XsStringVal... options) {
+        return jsonPropertyWordQuery((propertyName == null) ? null : xs.strings(propertyName), text, xs.strings(options)); 
     }
     @Override
         public CtsQueryExpr jsonPropertyWordQuery(XsStringSeqVal propertyName, XsStringSeqVal text, XsStringSeqVal options) {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "json-property-word-query", new Object[]{ propertyName, text, options });
     }
     @Override
-        public CtsQueryExpr jsonPropertyWordQuery(String propertyName, String text, String options, double weight) {
-        return jsonPropertyWordQuery((propertyName == null) ? null : xs.strings(propertyName), (text == null) ? null : xs.strings(text), (options == null) ? null : xs.strings(options), xs.doubleVal(weight)); 
+        public CtsQueryExpr jsonPropertyWordQuery(String propertyName, XsStringSeqVal text, XsStringSeqVal options, double weight) {
+        return jsonPropertyWordQuery((propertyName == null) ? null : xs.strings(propertyName), text, options, xs.doubleVal(weight)); 
     }
     @Override
         public CtsQueryExpr jsonPropertyWordQuery(XsStringSeqVal propertyName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight) {
@@ -791,16 +771,12 @@ public class CtsQueryExprImpl implements CtsQuery {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "triple-range-query", new Object[]{ subject, predicate, object, operator });
     }
     @Override
-        public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqVal subject, XsAnyAtomicTypeSeqVal predicate, XsAnyAtomicTypeSeqVal object, String operator, String... options) {
-        return tripleRangeQuery(subject, predicate, object, (operator == null) ? null : xs.strings(operator), (options == null) ? null : xs.strings(options)); 
-    }
-    @Override
         public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqVal subject, XsAnyAtomicTypeSeqVal predicate, XsAnyAtomicTypeSeqVal object, XsStringSeqVal operator, XsStringSeqVal options) {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "triple-range-query", new Object[]{ subject, predicate, object, operator, options });
     }
     @Override
-        public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqVal subject, XsAnyAtomicTypeSeqVal predicate, XsAnyAtomicTypeSeqVal object, String operator, String options, double weight) {
-        return tripleRangeQuery(subject, predicate, object, (operator == null) ? null : xs.strings(operator), (options == null) ? null : xs.strings(options), xs.doubleVal(weight)); 
+        public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqVal subject, XsAnyAtomicTypeSeqVal predicate, XsAnyAtomicTypeSeqVal object, XsStringSeqVal operator, XsStringSeqVal options, double weight) {
+        return tripleRangeQuery(subject, predicate, object, operator, options, xs.doubleVal(weight)); 
     }
     @Override
         public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqVal subject, XsAnyAtomicTypeSeqVal predicate, XsAnyAtomicTypeSeqVal object, XsStringSeqVal operator, XsStringSeqVal options, XsDoubleVal weight) {
@@ -819,16 +795,12 @@ public class CtsQueryExprImpl implements CtsQuery {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "word-query", new Object[]{ text });
     }
     @Override
-        public CtsQueryExpr wordQuery(String text, String... options) {
-        return wordQuery((text == null) ? null : xs.strings(text), (options == null) ? null : xs.strings(options)); 
-    }
-    @Override
         public CtsQueryExpr wordQuery(XsStringSeqVal text, XsStringSeqVal options) {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "word-query", new Object[]{ text, options });
     }
     @Override
-        public CtsQueryExpr wordQuery(String text, String options, double weight) {
-        return wordQuery((text == null) ? null : xs.strings(text), (options == null) ? null : xs.strings(options), xs.doubleVal(weight)); 
+        public CtsQueryExpr wordQuery(XsStringSeqVal text, XsStringSeqVal options, double weight) {
+        return wordQuery(text, options, xs.doubleVal(weight)); 
     }
     @Override
         public CtsQueryExpr wordQuery(XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight) {

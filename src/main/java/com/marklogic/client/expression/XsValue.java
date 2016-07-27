@@ -146,6 +146,7 @@ public interface XsValue {
     public XsShortSeqVal             shortVals(short... values);
     public XsStringVal               string(String value);
     public XsStringSeqVal            strings(String... values);
+    public XsStringSeqVal            strings(XsStringVal... values);
     public XsTimeVal                 time(String value);
     public XsTimeVal                 time(Calendar value);
     public XsTimeVal                 time(XMLGregorianCalendar value);

@@ -633,10 +633,6 @@ public class FnExprImpl implements Fn {
         return new XsExprImpl.XsStringCallImpl("fn", "string-join", new Object[]{ parameter1 });
     }
     @Override
-        public XsStringExpr stringJoin(String parameter1, String parameter2) {
-        return stringJoin((parameter1 == null) ? null : xs.strings(parameter1), xs.string(parameter2)); 
-    }
-    @Override
         public XsStringExpr stringJoin(XsStringSeqExpr parameter1, XsStringExpr parameter2) {
         return new XsExprImpl.XsStringCallImpl("fn", "string-join", new Object[]{ parameter1, parameter2 });
     }

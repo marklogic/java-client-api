@@ -409,6 +409,10 @@ public class XsValueImpl implements XsValue {
 	public XsStringSeqVal strings(String... values) {
 		return new StringSeqValImpl(values);
 	}
+    @Override
+    public XsStringSeqVal strings(XsStringVal... values) {
+       return new StringSeqValImpl(values);
+    }
 
 	@Override
 	public XsTimeVal time(String value) {
@@ -1672,9 +1676,22 @@ public class XsValueImpl implements XsValue {
     }
     static class StringSeqValImpl extends AnyAtomicTypeSeqValImpl<StringValImpl> implements XsStringSeqVal {
     	StringSeqValImpl(String[] values) {
-			super(Arrays.stream(values)
+			this((StringValImpl[]) Arrays.stream(values)
 		                .map(val -> new StringValImpl(val))
 		                .toArray(size -> new StringValImpl[size]));
+		}
+    	StringSeqValImpl(XsStringVal[] values) {
+			this((StringValImpl[]) Arrays.stream(values)
+	                .map(val -> {
+	                	if (!(val instanceof StringValImpl)) {
+	                		throw new IllegalArgumentException("argument with unknown class "+val.getClass().getName());
+	                	}
+	                	return (StringValImpl) val;
+	                	})
+	                .toArray(size -> new StringValImpl[size]));
+    	}
+    	StringSeqValImpl(StringValImpl[] values) {
+			super(values);
 		}
 		@Override
 		public XsStringVal[] getStringItems() {

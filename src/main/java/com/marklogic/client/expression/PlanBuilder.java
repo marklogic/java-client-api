@@ -197,9 +197,7 @@ public abstract class PlanBuilder {
     public abstract XsBooleanExpr or(XsBooleanSeqExpr list);
     public abstract PlanTriplePattern pattern(PlanTriplePosition... subject);
     public abstract PlanTriplePattern pattern(PlanTriplePositionSeq subject);
-    public abstract PlanTriplePattern pattern(PlanTriplePositionSeq subject, PlanTriplePosition... predicate);
     public abstract PlanTriplePattern pattern(PlanTriplePositionSeq subject, PlanTriplePositionSeq predicate);
-    public abstract PlanTriplePattern pattern(PlanTriplePositionSeq subject, PlanTriplePositionSeq predicate, PlanTriplePosition... object);
     public abstract PlanTriplePattern pattern(PlanTriplePositionSeq subject, PlanTriplePositionSeq predicate, PlanTriplePositionSeq object);
     public abstract PlanAggregateCol sample(String name, String column);
     public abstract PlanAggregateCol sample(PlanExprCol name, PlanExprCol column);
