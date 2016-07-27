@@ -46,7 +46,6 @@ public class ValuesListHandle
     static final private Logger logger = LoggerFactory.getLogger(ValuesListHandle.class);
 
     private ValuesListBuilder.ValuesList valuesHolder;
-    private JAXBContext jc;
     private Unmarshaller unmarshaller;
 
     String optionsName = null;
@@ -59,10 +58,12 @@ public class ValuesListHandle
     	super.setFormat(Format.XML);
 
         try {
-            jc = JAXBContext.newInstance(ValuesListBuilder.ValuesList.class);
+            JAXBContext jc = JaxbContextLoader.CACHED_CONTEXT;
             unmarshaller = jc.createUnmarshaller();
         } catch (JAXBException e) {
             throw new MarkLogicBindingException(e);
+        } catch (NoClassDefFoundError ncdfe) {
+            throw new MarkLogicBindingException(new JAXBException("JAXB context initialization failed"));
         }
     }
 
@@ -148,5 +149,21 @@ public class ValuesListHandle
     @Override
     public HashMap<String, String> getValuesMap() {
         return valuesHolder.getValuesMap();
+    }
+
+    /**
+     * Initialization-on-demand holder for {@link ValuesListHandle}'s JAXB context.
+     */
+    private static class JaxbContextLoader {
+
+        private static final JAXBContext CACHED_CONTEXT;
+
+        static {
+            try {
+                CACHED_CONTEXT = JAXBContext.newInstance(ValuesListBuilder.ValuesList.class);
+            } catch (JAXBException e) {
+                throw new MarkLogicBindingException(e);
+            }
+        }
     }
 }
