@@ -108,7 +108,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for more on contributing to this github p
 ### Running JUnit Tests
 
     $ mvn test-compile
-    $ sh src/test/resources/boot-test.sh
+    $ mvn exec:java@test-server-init
     $ mvn test
 
 ## Support
