@@ -300,7 +300,8 @@ public class RowManagerTest {
 		}
         assertEquals("unexpected count of result records", 2, rowNum);
 	}
-	@Test
+// NOTE: currently failing due to internal bug 41105
+    @Test
 	public void testTriples() {
 		RowManager rowMgr = Common.client.newRowManager();
 
@@ -310,26 +311,26 @@ public class RowManagerTest {
 			p.fromTriples(
 				p.pattern(
 						p.col("subject"),
-						p.sem.iri(
-							p.sem.iri(p.xs.string("http://example.org/rowgraph/p1")),
-							p.sem.iri(p.xs.string("http://example.org/rowgraph/p2"))
-							),
+						p.sem.iri(p.xs.string("http://example.org/rowgraph/p1")),
 						p.col("object")
 						)
 				)
 			 .orderBy("subject", "object");
 
-/* TODO: XDMP-MINVERSIONREQURIED error
- */
 		int rowNum = 0;
 		for (RowRecord row: rowMgr.resultRows(plan)) {
-	        assertEquals("unexpected int value in row record "+rowNum, triples[rowNum][0], row.getInt("subject"));
-	        assertEquals("unexpected uri value in row record "+rowNum, triples[rowNum][2], row.getString("object"));
+			int testRow = rowNum;
+			switch(rowNum) {
+			case 1: testRow = 3; break;
+			}
+
+			assertEquals("unexpected int value in row record "+rowNum, triples[testRow][0], row.getInt("subject"));
+	        assertEquals("unexpected uri value in row record "+rowNum, triples[testRow][2], row.getString("object"));
 			rowNum++;
 		}
-        assertEquals("unexpected count of result records", triples.length, rowNum);
+        assertEquals("unexpected count of result records", 2, rowNum);
 	}
-	@Test
+    @Test
 	public void testLexicons() throws IOException, XPathExpressionException {
 		RowManager rowMgr = Common.client.newRowManager();
 
