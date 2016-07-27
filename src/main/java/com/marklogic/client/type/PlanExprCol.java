@@ -15,5 +15,6 @@
  */
 package com.marklogic.client.type;
 
+// IMPORTANT: Do not edit. This file is generated.
 public interface PlanExprCol extends PlanAggregateCol, PlanSortKey, PlanExprColSeq {
 }

@@ -561,19 +561,19 @@ declare default function namespace "http://www.w3.org/2005/xpath-functions";
 declare option xdmp:mapping "false";
 
 xdmp:document-insert("/optic/test/musician.tdex",
-    <template xmlns="http://marklogic.com/xdmp/tdex">
-      <context>/musician</context>
-      <rows>
-        <row>
-          <schema-name>opticUnitTest</schema-name>
-          <view-name>musician</view-name>
-          <columns>
-            <column><name>lastName</name><scalar-type>string</scalar-type><val>lastName</val></column>
-            <column><name>firstName</name><scalar-type>string</scalar-type><val>firstName</val></column>
-            <column><name>dob</name><scalar-type>date</scalar-type><val>dob</val></column>
-          </columns>
-        </row>
-      </rows>
+    <template xmlns="http://marklogic.com/xdmp/tde">
+    <context>/musician</context>
+    <rows>
+    <row>
+      <schema-name>opticUnitTest</schema-name>
+      <view-name>musician</view-name>
+      <columns>
+        <column><name>lastName</name><scalar-type>string</scalar-type><val>lastName</val></column>
+        <column><name>firstName</name><scalar-type>string</scalar-type><val>firstName</val></column>
+        <column><name>dob</name><scalar-type>date</scalar-type><val>dob</val></column>
+      </columns>
+    </row>
+    </rows>
     </template>,
     (xdmp:permission("rest-reader", "read"), xdmp:permission("rest-writer", "update")),
     "http://marklogic.com/xdmp/tde"

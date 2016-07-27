@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.type;
 
+// IMPORTANT: Do not edit. This file is generated.
 public interface XsGYearSeqVal extends XsGYearSeqExpr, XsAnyAtomicTypeSeqVal {
     public XsGYearVal[] getGYearItems();
 }

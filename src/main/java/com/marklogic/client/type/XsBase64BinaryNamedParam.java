@@ -15,5 +15,6 @@
  */
 package com.marklogic.client.type;
 
+// IMPORTANT: Do not edit. This file is generated.
 public interface XsBase64BinaryNamedParam extends XsBase64BinaryParam, ItemNamedParam {
 }

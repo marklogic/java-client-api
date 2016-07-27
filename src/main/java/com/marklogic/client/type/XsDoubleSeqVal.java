@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.type;
 
+// IMPORTANT: Do not edit. This file is generated.
 public interface XsDoubleSeqVal extends XsDoubleSeqExpr, XsAnyAtomicTypeSeqVal, XsNumericSeqVal {
     public XsDoubleVal[] getDoubleItems();
 }

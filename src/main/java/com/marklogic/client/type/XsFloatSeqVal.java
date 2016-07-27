@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.type;
 
+// IMPORTANT: Do not edit. This file is generated.
 public interface XsFloatSeqVal extends XsFloatSeqExpr, XsAnyAtomicTypeSeqVal, XsNumericSeqVal {
     public XsFloatVal[] getFloatItems();
 }
