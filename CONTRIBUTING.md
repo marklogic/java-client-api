@@ -115,8 +115,16 @@ Be sure to run the tests before submitting your pull request. PRs with failing
 tests won't be accepted. 
 
     $ mvn test-compile
-    $ sh src/test/resources/boot-test.sh
+    $ mvn exec:java@test-server-init
     $ mvn test
+
+If your Maven installation is older than 3.3.1 you will get an error from the
+`mvn exec:java@...` command as this syntax variant was introduced with Maven
+3.3.1. Simply replace the original command with
+
+    $ ...
+    $ mvn exec:java -DexecutionId=test-server-init
+    $ ...
 
 #### Push your changes
 

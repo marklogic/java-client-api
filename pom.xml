@@ -185,7 +185,35 @@
                         <phase>deploy</phase>
                     </execution>
                 </executions>
-        </plugin>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.5.0</version>
+                <executions>
+                    <execution>
+                        <id>test-server-init</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>test-server-teardown</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>
+                                <argument>teardown</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>com.marklogic.client.test.util.TestServerBootstrapper</mainClass>
+                    <classpathScope>test</classpathScope>
+                </configuration>
+            </plugin>
 		</plugins>
 	</build>
 	<dependencies>
