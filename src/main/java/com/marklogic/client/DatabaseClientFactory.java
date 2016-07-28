@@ -87,34 +87,41 @@ public class DatabaseClientFactory {
 	}
 
 	/**
-	 * An SSLHostnameVerifier checks whether a hostname is acceptable
-	 * during SSL authentication.
+	 * An SSLHostnameVerifier checks whether a hostname is acceptable during SSL
+	 * authentication.  By default, {@link #COMMON} is used, allowing any level
+	 * of subdomains for SSL certificates with wildcard domains.  If only one
+	 * level of subdomains is allowed for SSL certificates with wildcard domains,
+	 * use {@link #STRICT}.
 	 */
 	public interface SSLHostnameVerifier {
 		/**
-		 * The ANY SSLHostnameVerifier allows any hostname, which
-		 * can be useful during initial development but is not
-		 * recommended for production.
+		 * The ANY SSLHostnameVerifier allows any hostname, which can be useful
+		 * during initial development when a valid SSL certificate is not available
+		 * but is not recommended for production because it would permit an invalid
+		 * SSL certificate.
 		 */
 		final static public Builtin ANY    = new Builtin("ANY");
 		/**
-		 * The COMMON SSLHostnameVerifier applies common rules
-		 * for checking hostnames during SSL authentication (similar
-		 * to org.apache.http.conn.ssl.BrowserCompatHostnameVerifier).
+		 * The COMMON SSLHostnameVerifier applies common rules for checking
+		 * hostnames during SSL authentication (similar to
+		 * org.apache.http.conn.ssl.BrowserCompatHostnameVerifier). It allows any
+		 * level of subdomains for SSL certificates with wildcard domains.
 		 */
 		final static public Builtin COMMON = new Builtin("COMMON");
 		/**
 		 * The STRICT SSLHostnameVerifier applies strict rules
-		 * for checking hostnames during SSL authentication (similar
-		 * to org.apache.http.conn.ssl.StrictHostnameVerifier).
+		 * for checking hostnames during SSL authentication (similar to
+		 * org.apache.http.conn.ssl.StrictHostnameVerifier).  It allows one level
+		 * of subdomain for SSL certificates with wildcard domains like RFC 2818.
 		 */
 		final static public Builtin STRICT = new Builtin("STRICT");
 
 		/**
-		 * Checks a hostname during SSL authentication.
-		 * @param hostname	the name of the checked host
-		 * @param cns	common names for the checked host
-		 * @param subjectAlts	alternative subject names for the checked host
+		 * Checks during SSL authentication that a hostname matches the Common Name
+		 * or "DNS" Subject alts from the SSL certificate presented by the server.
+		 * @param hostname	the DNS host name of the server
+		 * @param cns	common names from the SSL certificate presented by the server
+		 * @param subjectAlts	alternative subject names from the SSL certificate presented by the server
 		 * @throws SSLException if the hostname isn't acceptable
 		 */
 		public void verify(String hostname, String[] cns, String[] subjectAlts) throws SSLException;
