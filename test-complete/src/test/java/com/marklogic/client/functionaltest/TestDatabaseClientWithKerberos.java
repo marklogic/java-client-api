@@ -161,14 +161,9 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 
 		if (IsSecurityEnabled()) {
 			sslcontext = getSslContext();
-			try {
-				client = DatabaseClientFactory.newClient(
-						getRestServerHostName(), getRestServerPort(),
-						new KerberosAuthContext().withSSLContext(sslcontext));
-			} catch (KrbException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			client = DatabaseClientFactory.newClient(
+					getRestServerHostName(), getRestServerPort(),
+					new KerberosAuthContext().withSSLContext(sslcontext));
 		} else
 			client = DatabaseClientFactory.newClient(appServerHostName,
 					appServerHostPort, new KerberosAuthContext());
