@@ -300,7 +300,6 @@ public class RowManagerTest {
 		}
         assertEquals("unexpected count of result records", 2, rowNum);
 	}
-// NOTE: currently failing due to internal bug 41105
     @Test
 	public void testTriples() {
 		RowManager rowMgr = Common.client.newRowManager();
@@ -321,11 +320,11 @@ public class RowManagerTest {
 		for (RowRecord row: rowMgr.resultRows(plan)) {
 			int testRow = rowNum;
 			switch(rowNum) {
-			case 1: testRow = 3; break;
+			case 1: testRow = 2; break;
 			}
 
-			assertEquals("unexpected int value in row record "+rowNum, triples[testRow][0], row.getInt("subject"));
-	        assertEquals("unexpected uri value in row record "+rowNum, triples[testRow][2], row.getString("object"));
+			assertEquals("unexpected subject value in row record "+rowNum, triples[testRow][0], row.getString("subject"));
+	        assertEquals("unexpected object  value in row record "+rowNum, triples[testRow][2], row.getString("object"));
 			rowNum++;
 		}
         assertEquals("unexpected count of result records", 2, rowNum);
