@@ -37,7 +37,7 @@ import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
-import com.marklogic.client.expression.PlanBuilder.PlanParam;
+import com.marklogic.client.type.PlanParam;
 import com.marklogic.client.impl.RESTServices.RESTServiceResult;
 import com.marklogic.client.impl.RESTServices.RESTServiceResultIterator;
 import com.marklogic.client.io.BaseHandle;

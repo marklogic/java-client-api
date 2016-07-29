@@ -38,6 +38,7 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
+import com.marklogic.client.type.PlanParam;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 
 abstract class PlanBuilderBase extends PlanBuilder {

@@ -230,9 +230,6 @@ public abstract class PlanBuilder {
     public PlanColumn col(String column);
     public PlanColumn col(XsStringParam column);
 }
- public interface PlanColumn extends PlanExprCol, XsAnyURIExpr, XsBase64BinaryExpr, XsBooleanExpr, XsDateExpr, XsDateTimeExpr, XsDecimalExpr, XsIntegerExpr, XsLongExpr, XsIntExpr, XsShortExpr, XsByteExpr, XsUnsignedLongExpr, XsUnsignedIntExpr, XsUnsignedShortExpr, XsUnsignedByteExpr, XsDoubleExpr, XsDayTimeDurationExpr, XsYearMonthDurationExpr, XsFloatExpr, XsGDayExpr, XsGMonthExpr, XsGMonthDayExpr, XsGYearExpr, XsGYearMonthExpr, XsHexBinaryExpr, XsQNameExpr, XsStringExpr, XsTimeExpr, XsUntypedAtomicExpr, PlanColumnSeq, PlanTriplePosition {
-
-}
  public interface AccessPlan extends ModifyPlan {
 
 }
@@ -285,25 +282,13 @@ public abstract class PlanBuilder {
     public PlanFunction reduceFunction(String moduleName);
     public PlanFunction reduceFunction(XsStringParam moduleName);
 }
- public interface PlanParam extends XsAnyURIParam, XsBase64BinaryParam, XsBooleanParam, XsDateParam, XsDateTimeParam, XsDecimalParam, XsIntegerParam, XsLongParam, XsIntParam, XsShortParam, XsByteParam, XsUnsignedLongParam, XsUnsignedIntParam, XsUnsignedShortParam, XsUnsignedByteParam, XsDoubleParam, XsDayTimeDurationParam, XsYearMonthDurationParam, XsFloatParam, XsGDayParam, XsGMonthParam, XsGMonthDayParam, XsGYearParam, XsGYearMonthParam, XsHexBinaryParam, XsQNameParam, XsStringParam, XsTimeParam, XsUntypedAtomicParam, PlanParamSeq {
-
-}
  public interface QualifiedPlan extends AccessPlan {
     public PlanColumn col(String column);
     public PlanColumn col(XsStringParam column);
 }
- public interface PlanExprCol extends PlanAggregateCol, PlanSortKey, PlanExprColSeq {
-
-}
  public interface ExportablePlan extends Plan {
     public <T extends JSONReadHandle> T export(T handle);
     public <T> T exportAs(Class<T> as);
-
-}
- public interface PlanAggregateCol extends PlanAggregateColSeq {
-
-}
- public interface PlanSortKey extends PlanSortKeySeq {
 
 }
  

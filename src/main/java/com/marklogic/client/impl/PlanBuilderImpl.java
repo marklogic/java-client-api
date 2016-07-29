@@ -477,13 +477,13 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     public QualifiedPlan fromLiterals(Map<String,Object>[] rows, String qualifierName) {
         return new QualifiedPlanCallImpl("op", "from-literals", new Object[]{literal(rows), xs.string(qualifierName)});
     }
- public class PlanCallImpl  extends PlanBase  implements PlanBuilder.Plan {
+ public class PlanCallImpl  extends PlanBase  implements Plan {
         PlanCallImpl(PlanChainedImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
             super(prior, fnPrefix, fnName, fnArgs);
          }
 
 }
- public class ViewPlanCallImpl  extends AccessPlanCallImpl  implements PlanBuilder.ViewPlan {
+ public class ViewPlanCallImpl  extends AccessPlanCallImpl  implements ViewPlan {
         XsStringParam view = null;
          XsStringParam schema = null;
          ViewPlanCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
@@ -500,19 +500,19 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return schemaCol(this.schema, this.view, column);
     }
 }
- public class PlanColumnCallImpl  extends PlanExprColCallImpl  implements PlanBuilder.PlanColumn {
+ public class PlanColumnCallImpl  extends PlanExprColCallImpl  implements PlanColumn {
         PlanColumnCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, fnArgs);
          }
 
 }
- public class AccessPlanCallImpl  extends ModifyPlanCallImpl  implements PlanBuilder.AccessPlan {
+ public class AccessPlanCallImpl  extends ModifyPlanCallImpl  implements AccessPlan {
         AccessPlanCallImpl(PlanChainedImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
             super(prior, fnPrefix, fnName, fnArgs);
          }
 
 }
- public class ModifyPlanCallImpl  extends PreparePlanCallImpl  implements PlanBuilder.ModifyPlan {
+ public class ModifyPlanCallImpl  extends PreparePlanCallImpl  implements ModifyPlan {
         ModifyPlanCallImpl(PlanChainedImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
             super(prior, fnPrefix, fnName, fnArgs);
          }
@@ -668,7 +668,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new ModifyPlanCallImpl(this, "op", "whereDistinct", null);
     }
 }
- public class PreparePlanCallImpl  extends ExportablePlanCallImpl  implements PlanBuilder.PreparePlan {
+ public class PreparePlanCallImpl  extends ExportablePlanCallImpl  implements PreparePlan {
         PreparePlanCallImpl(PlanChainedImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
             super(prior, fnPrefix, fnName, fnArgs);
          }
@@ -709,13 +709,13 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new PlanFunctionCallImpl("op", "reduce-function", new Object[]{ moduleName });
     }
 }
- public class PlanParamCallImpl  extends PlanBaseImpl  implements PlanBuilder.PlanParam {
+ public class PlanParamCallImpl  extends PlanBaseImpl  implements PlanParam {
         PlanParamCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, fnArgs);
          }
 
 }
- public class QualifiedPlanCallImpl  extends AccessPlanCallImpl  implements PlanBuilder.QualifiedPlan {
+ public class QualifiedPlanCallImpl  extends AccessPlanCallImpl  implements QualifiedPlan {
         XsStringParam qualifier = null;
          QualifiedPlanCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(null, fnPrefix, fnName, fnArgs);
@@ -730,25 +730,25 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return viewCol(this.qualifier, column);
     }
 }
- public class PlanExprColCallImpl  extends PlanAggregateColCallImpl  implements PlanBuilder.PlanExprCol {
+ public class PlanExprColCallImpl  extends PlanAggregateColCallImpl  implements PlanExprCol {
         PlanExprColCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, fnArgs);
          }
 
 }
- public class ExportablePlanCallImpl  extends PlanCallImpl  implements PlanBuilder.ExportablePlan {
+ public class ExportablePlanCallImpl  extends PlanCallImpl  implements ExportablePlan {
         ExportablePlanCallImpl(PlanChainedImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
             super(prior, fnPrefix, fnName, fnArgs);
          }
 
 }
- public class PlanAggregateColCallImpl  extends PlanBaseImpl  implements PlanBuilder.PlanAggregateCol {
+ public class PlanAggregateColCallImpl  extends PlanBaseImpl  implements PlanAggregateCol {
         PlanAggregateColCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, fnArgs);
          }
 
 }
- public class PlanSortKeyCallImpl  extends PlanBaseImpl  implements PlanBuilder.PlanSortKey {
+ public class PlanSortKeyCallImpl  extends PlanBaseImpl  implements PlanSortKey {
         PlanSortKeyCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, fnArgs);
          }

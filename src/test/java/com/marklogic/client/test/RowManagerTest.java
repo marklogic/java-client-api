@@ -61,6 +61,7 @@ import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowRecord.ColumnKind;
 import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.CtsReferenceExpr;
+import com.marklogic.client.type.PlanParam;
 import com.marklogic.client.util.EditableNamespaceContext;
 
 public class RowManagerTest {
@@ -381,8 +382,8 @@ public class RowManagerTest {
 
 		PlanBuilder p = rowMgr.newPlanBuilder();
 
-		PlanBuilder.PlanParam cityParam  = p.param("city");
-		PlanBuilder.PlanParam limitParam = p.param("limit");
+		PlanParam cityParam  = p.param("city");
+		PlanParam limitParam = p.param("limit");
 
 		PlanBuilder.ExportablePlan builtPlan =
 				p.fromLiterals(litRows)

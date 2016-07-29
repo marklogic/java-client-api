@@ -16,5 +16,5 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
-public interface PlanColumn extends PlanExprCol, PlanColumnSeq {
+public interface PlanColumn extends PlanExprCol, XsAnyURIExpr, XsBase64BinaryExpr, XsBooleanExpr, XsDateExpr, XsDateTimeExpr, XsDecimalExpr, XsIntegerExpr, XsLongExpr, XsIntExpr, XsShortExpr, XsByteExpr, XsUnsignedLongExpr, XsUnsignedIntExpr, XsUnsignedShortExpr, XsUnsignedByteExpr, XsDoubleExpr, XsDayTimeDurationExpr, XsYearMonthDurationExpr, XsFloatExpr, XsGDayExpr, XsGMonthExpr, XsGMonthDayExpr, XsGYearExpr, XsGYearMonthExpr, XsHexBinaryExpr, XsQNameExpr, XsStringExpr, XsTimeExpr, XsUntypedAtomicExpr, PlanTriplePosition, PlanColumnSeq {
 }
