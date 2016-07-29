@@ -50,9 +50,10 @@ public interface ContentDescriptor {
 	public void setMimetype(String mimetype);
 
 	/** 
-	 * Returns the length of the content in bytes.  The byte length can be
-	 * larger than the character length if the content contains multi-byte
-	 * characters.
+	 * Returns the length of the content in bytes as returned by the server.
+	 * This value is usually not set when reading from a local source (such as a
+	 * file or an input stream).  The byte length can be larger than the
+	 * character length if the content contains multi-byte characters.
 	 * @return	the content length in bytes
 	 */
 	public long getByteLength();
