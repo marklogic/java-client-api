@@ -28,14 +28,14 @@ import com.marklogic.client.impl.BaseTypeImpl;
 
 // IMPORTANT: Do not edit. This file is generated.
 
-public class RdfExprImpl implements Rdf {
+public class RdfExprImpl extends RdfValueImpl implements Rdf {
     private XsExprImpl xs = null;
     public RdfExprImpl(XsExprImpl xs) {
         this.xs = xs;
     }
      @Override
-        public RdfLangStringExpr langString(String string, String lang) {
-        return langString(xs.string(string), xs.string(lang)); 
+        public RdfLangStringExpr langString(XsStringExpr string, String lang) {
+        return langString(string, xs.string(lang)); 
     }
     @Override
         public RdfLangStringExpr langString(XsStringExpr string, XsStringExpr lang) {

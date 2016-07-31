@@ -17,6 +17,6 @@ package com.marklogic.client.type;
 
 import javax.xml.namespace.QName;
 
-public interface XsQNameVal extends XsAnyAtomicTypeVal, XsQNameSeqVal, XsQNameParam {
+public interface XsQNameVal extends XsAnyAtomicTypeVal, XsQNameSeqVal, XsQNameParam, PlanTripleVal {
 	public QName getQName();
 }

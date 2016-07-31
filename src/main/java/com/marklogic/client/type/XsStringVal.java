@@ -15,6 +15,6 @@
  */
 package com.marklogic.client.type;
 
-public interface XsStringVal extends XsAnyAtomicTypeVal, XsStringSeqVal, XsStringParam {
+public interface XsStringVal extends XsAnyAtomicTypeVal, XsStringSeqVal, XsStringParam, PlanTripleVal {
 	public String getString();
 }

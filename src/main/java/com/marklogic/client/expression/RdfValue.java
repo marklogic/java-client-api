@@ -13,8 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.type;
+package com.marklogic.client.expression;
 
-// IMPORTANT: Do not edit. This file is generated.
-public interface XsFloatNamedParam extends XsFloatParam, ItemNamedParam {
+import com.marklogic.client.type.RdfLangStringSeqVal;
+import com.marklogic.client.type.RdfLangStringVal;
+
+public interface RdfValue {
+    public RdfLangStringVal    langString(String string, String lang);
+    public RdfLangStringSeqVal langStrings(RdfLangStringVal... langString);
 }

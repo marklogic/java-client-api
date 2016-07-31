@@ -15,6 +15,6 @@
  */
 package com.marklogic.client.type;
 
-public interface XsUnsignedLongVal extends XsNonNegativeIntegerVal, XsUnsignedLongSeqVal, XsUnsignedLongParam {
+public interface XsUnsignedLongVal extends XsNonNegativeIntegerVal, XsUnsignedLongSeqVal, XsUnsignedLongParam, PlanTripleVal {
 	public long getLong();
 }

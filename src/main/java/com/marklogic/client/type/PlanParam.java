@@ -16,5 +16,5 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
-public interface PlanParam extends XsAnyURIParam, XsBase64BinaryParam, XsBooleanParam, XsDateParam, XsDateTimeParam, XsDecimalParam, XsIntegerParam, XsLongParam, XsIntParam, XsShortParam, XsByteParam, XsUnsignedLongParam, XsUnsignedIntParam, XsUnsignedShortParam, XsUnsignedByteParam, XsDoubleParam, XsDayTimeDurationParam, XsYearMonthDurationParam, XsFloatParam, XsGDayParam, XsGMonthParam, XsGMonthDayParam, XsGYearParam, XsGYearMonthParam, XsHexBinaryParam, XsQNameParam, XsStringParam, XsTimeParam, XsUntypedAtomicParam, PlanTriplePosition, PlanParamSeq {
+public interface PlanParam extends RdfLangStringParam, SemIriParam, XsAnyURIParam, XsBase64BinaryParam, XsBooleanParam, XsDateParam, XsDateTimeParam, XsDecimalParam, XsIntegerParam, XsLongParam, XsIntParam, XsShortParam, XsByteParam, XsUnsignedLongParam, XsUnsignedIntParam, XsUnsignedShortParam, XsUnsignedByteParam, XsDoubleParam, XsDayTimeDurationParam, XsYearMonthDurationParam, XsFloatParam, XsGDayParam, XsGMonthParam, XsGMonthDayParam, XsGYearParam, XsGYearMonthParam, XsHexBinaryParam, XsQNameParam, XsStringParam, XsTimeParam, XsUntypedAtomicParam, PlanTripleIri, PlanTripleVal, PlanParamSeq {
 }

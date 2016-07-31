@@ -17,6 +17,6 @@ package com.marklogic.client.type;
 
 import java.math.BigInteger;
 
-public interface XsIntegerVal extends XsDecimalVal, XsIntegerSeqVal, XsIntegerParam {
+public interface XsIntegerVal extends XsDecimalVal, XsIntegerSeqVal, XsIntegerParam, PlanTripleVal {
 	public BigInteger getBigInteger();
 }

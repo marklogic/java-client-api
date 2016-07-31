@@ -13,8 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.type;
+package com.marklogic.client.expression;
 
-// IMPORTANT: Do not edit. This file is generated.
-public interface XsUnsignedShortNamedParam extends XsUnsignedShortParam, ItemNamedParam {
+import com.marklogic.client.type.SemIriSeqVal;
+import com.marklogic.client.type.SemIriVal;
+
+public interface SemValue {
+    public SemIriVal     iri(String stringIri);
+    public SemIriSeqVal iris(String... stringIris);
 }

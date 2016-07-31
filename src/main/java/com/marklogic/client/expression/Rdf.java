@@ -22,8 +22,8 @@ import com.marklogic.client.type.XsStringExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
-public interface Rdf {
-    public RdfLangStringExpr langString(String string, String lang);
+public interface Rdf extends RdfValue {
+    public RdfLangStringExpr langString(XsStringExpr string, String lang);
     public RdfLangStringExpr langString(XsStringExpr string, XsStringExpr lang);
     public SqlCollatedStringExpr langStringLanguage(RdfLangStringExpr val);     public RdfLangStringSeqExpr langString(RdfLangStringExpr... items);
 

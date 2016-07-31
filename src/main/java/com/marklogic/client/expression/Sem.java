@@ -34,7 +34,7 @@ import com.marklogic.client.type.SemInvalidExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
-public interface Sem {
+public interface Sem extends SemValue {
     public SemBlankExpr bnode();
     public SemBlankExpr bnode(XsAnyAtomicTypeExpr value);
     public ItemSeqExpr coalesce(ItemExpr... parameter1);
@@ -46,14 +46,13 @@ public interface Sem {
     public SemInvalidExpr invalid(XsStringExpr string, SemIriExpr datatype);
     public SemIriExpr invalidDatatype(SemInvalidExpr val);
     public SemIriExpr iri(XsAnyAtomicTypeExpr stringIri);
-    public XsQNameExpr iriToQName(String arg1);
     public XsQNameExpr iriToQName(XsStringExpr arg1);
     public XsBooleanExpr isBlank(XsAnyAtomicTypeExpr value);
     public XsBooleanExpr isIRI(XsAnyAtomicTypeExpr value);
     public XsBooleanExpr isLiteral(XsAnyAtomicTypeExpr value);
     public XsBooleanExpr isNumeric(XsAnyAtomicTypeExpr value);
     public XsStringExpr lang(XsAnyAtomicTypeExpr value);
-    public XsBooleanExpr langMatches(String langTag, String langRange);
+    public XsBooleanExpr langMatches(XsStringExpr langTag, String langRange);
     public XsBooleanExpr langMatches(XsStringExpr langTag, XsStringExpr langRange);
     public SemIriExpr QNameToIri(XsQNameExpr arg1);
     public XsDoubleExpr random();

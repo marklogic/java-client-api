@@ -40,7 +40,7 @@ import com.marklogic.client.impl.BaseTypeImpl;
 
 // IMPORTANT: Do not edit. This file is generated.
 
-public class SemExprImpl implements Sem {
+public class SemExprImpl extends SemValueImpl implements Sem {
     private XsExprImpl xs = null;
     public SemExprImpl(XsExprImpl xs) {
         this.xs = xs;
@@ -90,10 +90,6 @@ public class SemExprImpl implements Sem {
         return new SemExprImpl.SemIriCallImpl("sem", "iri", new Object[]{ stringIri });
     }
     @Override
-        public XsQNameExpr iriToQName(String arg1) {
-        return iriToQName(xs.string(arg1)); 
-    }
-    @Override
         public XsQNameExpr iriToQName(XsStringExpr arg1) {
         return new XsExprImpl.XsQNameCallImpl("sem", "iri-to-QName", new Object[]{ arg1 });
     }
@@ -118,8 +114,8 @@ public class SemExprImpl implements Sem {
         return new XsExprImpl.XsStringCallImpl("sem", "lang", new Object[]{ value });
     }
     @Override
-        public XsBooleanExpr langMatches(String langTag, String langRange) {
-        return langMatches(xs.string(langTag), xs.string(langRange)); 
+        public XsBooleanExpr langMatches(XsStringExpr langTag, String langRange) {
+        return langMatches(langTag, xs.string(langRange)); 
     }
     @Override
         public XsBooleanExpr langMatches(XsStringExpr langTag, XsStringExpr langRange) {

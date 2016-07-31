@@ -15,6 +15,6 @@
  */
 package com.marklogic.client.type;
 
-public interface XsDoubleVal extends XsAnyAtomicTypeVal, XsNumericVal, XsDoubleSeqVal, XsDoubleParam {
+public interface XsDoubleVal extends XsAnyAtomicTypeVal, XsNumericVal, XsDoubleSeqVal, XsDoubleParam, PlanTripleVal {
 	public double getDouble();
 }

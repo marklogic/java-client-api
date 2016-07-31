@@ -16,5 +16,6 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
-public interface XsByteNamedParam extends XsByteParam, ItemNamedParam {
+public interface SemIriSeqVal extends SemIriSeqExpr, ItemSeqVal {
+    public SemIriVal[] getIriItems();
 }

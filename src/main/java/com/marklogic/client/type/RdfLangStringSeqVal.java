@@ -16,5 +16,6 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
-public interface XsDateTimeNamedParam extends XsDateTimeParam, ItemNamedParam {
+public interface RdfLangStringSeqVal extends RdfLangStringSeqExpr, ItemSeqVal {
+    public RdfLangStringVal[] getLangStringItems();
 }

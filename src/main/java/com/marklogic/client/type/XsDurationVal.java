@@ -15,4 +15,4 @@
  */
 package com.marklogic.client.type;
 
-public interface XsDurationVal extends XsAnyAtomicTypeVal, XsDurationSeqVal, XsDurationParam { }
+public interface XsDurationVal extends XsAnyAtomicTypeVal, XsDurationSeqVal, XsDurationParam, PlanTripleVal { }

@@ -15,6 +15,6 @@
  */
 package com.marklogic.client.type;
 
-// IMPORTANT: Do not edit. This file is generated.
-public interface XsTimeNamedParam extends XsTimeParam, ItemNamedParam {
+public interface SemIriVal extends ItemVal, SemIriSeqVal, SemIriParam, PlanTripleIri, PlanTripleVal {
+	public String getString();
 }

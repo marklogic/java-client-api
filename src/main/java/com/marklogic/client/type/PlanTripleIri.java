@@ -15,6 +15,6 @@
  */
 package com.marklogic.client.type;
 
-public interface ItemNamedParam extends ItemParam {
-	String getName();
+// IMPORTANT: Do not edit. This file is generated.
+public interface PlanTripleIri extends PlanTripleIriSeq {
 }

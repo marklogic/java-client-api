@@ -15,6 +15,6 @@
  */
 package com.marklogic.client.type;
 
-public interface XsFloatVal extends XsAnyAtomicTypeVal, XsNumericVal, XsFloatSeqVal, XsFloatParam { 
+public interface XsFloatVal extends XsAnyAtomicTypeVal, XsNumericVal, XsFloatSeqVal, XsFloatParam, PlanTripleVal { 
 	public float getFloat();
 }

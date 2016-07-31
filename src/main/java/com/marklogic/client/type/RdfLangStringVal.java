@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.type;
 
-// IMPORTANT: Do not edit. This file is generated.
-public interface XsGMonthDayNamedParam extends XsGMonthDayParam, ItemNamedParam {
+public interface RdfLangStringVal extends ItemVal, RdfLangStringSeqVal, RdfLangStringParam, PlanTripleVal {
+	public String getString();
+	public String getLang();
 }

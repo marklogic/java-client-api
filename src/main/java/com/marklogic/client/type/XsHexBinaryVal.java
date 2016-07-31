@@ -15,6 +15,6 @@
  */
 package com.marklogic.client.type;
 
-public interface XsHexBinaryVal extends XsAnyAtomicTypeVal, XsHexBinarySeqVal, XsHexBinaryParam {
+public interface XsHexBinaryVal extends XsAnyAtomicTypeVal, XsHexBinarySeqVal, XsHexBinaryParam, PlanTripleVal {
 	public byte[] getBytes();
 }

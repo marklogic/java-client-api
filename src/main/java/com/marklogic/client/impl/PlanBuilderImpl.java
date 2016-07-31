@@ -38,7 +38,9 @@ import com.marklogic.client.impl.SqlExprImpl;
 import com.marklogic.client.expression.Xdmp;
 import com.marklogic.client.impl.XdmpExprImpl; 
 import com.marklogic.client.expression.Xs;
-import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.XsUnsignedLongExpr;
+import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.SemIriParam;
+ import com.marklogic.client.type.SemIriExpr;
+ import com.marklogic.client.type.XsUnsignedLongExpr;
  import com.marklogic.client.type.XsGMonthDayExpr;
  import com.marklogic.client.type.XsDecimalParam;
  import com.marklogic.client.type.XsDoubleExpr;
@@ -47,26 +49,28 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Xs
  import com.marklogic.client.type.XsGYearMonthParam;
  import com.marklogic.client.type.XsUnsignedShortParam;
  import com.marklogic.client.type.XsYearMonthDurationParam;
+ import com.marklogic.client.type.RdfLangStringExpr;
  import com.marklogic.client.type.XsGDayExpr;
  import com.marklogic.client.type.PlanTriplePatternSeq;
  import com.marklogic.client.type.XsLongParam;
+ import com.marklogic.client.type.RdfLangStringParam;
  import com.marklogic.client.type.XsHexBinaryExpr;
  import com.marklogic.client.type.PlanSortKey;
  import com.marklogic.client.type.PlanJoinKeySeq;
  import com.marklogic.client.type.XsBase64BinaryParam;
+ import com.marklogic.client.type.PlanTripleVal;
  import com.marklogic.client.type.XsUnsignedIntParam;
  import com.marklogic.client.type.XsLongExpr;
- import com.marklogic.client.type.PlanTriplePosition;
  import com.marklogic.client.type.XsUnsignedIntExpr;
  import com.marklogic.client.type.XsGYearExpr;
- import com.marklogic.client.type.PlanTriplePositionSeq;
+ import com.marklogic.client.type.XsStringExpr;
  import com.marklogic.client.type.XsAnyAtomicTypeExpr;
  import com.marklogic.client.type.XsGMonthExpr;
  import com.marklogic.client.type.XsUnsignedLongParam;
- import com.marklogic.client.type.XsDateParam;
- import com.marklogic.client.type.XsShortParam;
- import com.marklogic.client.type.PlanColumnSeq;
  import com.marklogic.client.type.XsIntegerParam;
+ import com.marklogic.client.type.XsShortParam;
+ import com.marklogic.client.type.XsDateParam;
+ import com.marklogic.client.type.PlanColumnSeq;
  import com.marklogic.client.type.XsAnyURIExpr;
  import com.marklogic.client.type.XsDateExpr;
  import com.marklogic.client.type.XsByteExpr;
@@ -76,16 +80,16 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Xs
  import com.marklogic.client.type.XsDateTimeParam;
  import com.marklogic.client.type.ItemExpr;
  import com.marklogic.client.type.PlanJoinKey;
+ import com.marklogic.client.type.PlanTripleValSeq;
  import com.marklogic.client.type.XsBooleanParam;
  import com.marklogic.client.type.XsByteParam;
  import com.marklogic.client.type.XsGMonthParam;
  import com.marklogic.client.type.XsHexBinaryParam;
- import com.marklogic.client.type.XsUnsignedShortExpr;
  import com.marklogic.client.type.PlanColumn;
  import com.marklogic.client.type.PlanSortKeySeq;
+ import com.marklogic.client.type.XsUnsignedShortExpr;
  import com.marklogic.client.type.XsDayTimeDurationExpr;
  import com.marklogic.client.type.XsGYearMonthExpr;
- import com.marklogic.client.type.XsStringExpr;
  import com.marklogic.client.type.XsAnyAtomicTypeParam;
  import com.marklogic.client.type.PlanParam;
  import com.marklogic.client.type.XsIntExpr;
@@ -101,18 +105,20 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Xs
  import com.marklogic.client.type.XsGDayParam;
  import com.marklogic.client.type.XsFloatParam;
  import com.marklogic.client.type.CtsQueryExpr;
- import com.marklogic.client.type.XsIntegerExpr;
+ import com.marklogic.client.type.PlanTripleIri;
  import com.marklogic.client.type.XsBooleanSeqExpr;
- import com.marklogic.client.type.XsTimeExpr;
+ import com.marklogic.client.type.XsIntegerExpr;
  import com.marklogic.client.type.XsDayTimeDurationParam;
  import com.marklogic.client.type.XsShortExpr;
  import com.marklogic.client.type.XsGYearParam;
  import com.marklogic.client.type.XsIntParam;
  import com.marklogic.client.type.PlanParamSeq;
+ import com.marklogic.client.type.XsTimeExpr;
  import com.marklogic.client.type.XsUntypedAtomicParam;
  import com.marklogic.client.type.CtsReferenceExpr;
  import com.marklogic.client.type.XsUnsignedByteExpr;
  import com.marklogic.client.type.PlanFunctionSeq;
+ import com.marklogic.client.type.PlanTripleIriSeq;
  import com.marklogic.client.type.PlanExprCol;
  import com.marklogic.client.type.PlanAggregateColSeq;
  import com.marklogic.client.type.XsAnyAtomicTypeVal;
@@ -368,19 +374,11 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new XsExprImpl.XsBooleanCallImpl("op", "or", new Object[]{ list });
     }
     @Override
-        public PlanTriplePattern pattern(PlanTriplePosition... subject) {
-        return pattern(new PlanTriplePositionSeqListImpl(subject)); 
+        public PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleVal... object) {
+        return pattern(subject, predicate, new PlanTripleValSeqListImpl(object)); 
     }
     @Override
-        public PlanTriplePattern pattern(PlanTriplePositionSeq subject) {
-        return new PlanTriplePatternCallImpl("op", "pattern", new Object[]{ subject });
-    }
-    @Override
-        public PlanTriplePattern pattern(PlanTriplePositionSeq subject, PlanTriplePositionSeq predicate) {
-        return new PlanTriplePatternCallImpl("op", "pattern", new Object[]{ subject, predicate });
-    }
-    @Override
-        public PlanTriplePattern pattern(PlanTriplePositionSeq subject, PlanTriplePositionSeq predicate, PlanTriplePositionSeq object) {
+        public PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleValSeq object) {
         return new PlanTriplePatternCallImpl("op", "pattern", new Object[]{ subject, predicate, object });
     }
     @Override
@@ -450,8 +448,14 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new PlanTriplePatternSeqListImpl(patterns);
     }
     @Override
-    public PlanTriplePositionSeq positions(PlanTriplePosition... positions) {
-        return new PlanTriplePositionSeqListImpl(positions);
+    public PlanTripleIriSeq subjects(PlanTripleIri...   subjects) {
+        return new PlanTripleIriSeqListImpl(subjects);
+    }
+    public PlanTripleIriSeq predicates(PlanTripleIri... predicates) {
+        return new PlanTripleIriSeqListImpl(predicates);
+    }
+    public PlanTripleValSeq objects(PlanTripleVal...    objects) {
+        return new PlanTripleValSeqListImpl(objects);
     }
     @Override
     public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes) {
@@ -799,6 +803,16 @@ public class PlanBuilderImpl extends PlanBuilderBase {
             super(items);
         }
     }
+ static class PlanTripleIriCallImpl extends PlanBaseImpl implements PlanTripleIri {
+        PlanTripleIriCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+ static class PlanTripleIriSeqListImpl extends PlanListImpl implements PlanTripleIriSeq {
+        PlanTripleIriSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
  static class PlanTriplePatternCallImpl extends PlanBaseImpl implements PlanTriplePattern {
         PlanTriplePatternCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, fnArgs);
@@ -809,13 +823,13 @@ public class PlanBuilderImpl extends PlanBuilderBase {
             super(items);
         }
     }
- static class PlanTriplePositionCallImpl extends PlanBaseImpl implements PlanTriplePosition {
-        PlanTriplePositionCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+ static class PlanTripleValCallImpl extends PlanBaseImpl implements PlanTripleVal {
+        PlanTripleValCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, fnArgs);
         }
     }
- static class PlanTriplePositionSeqListImpl extends PlanListImpl implements PlanTriplePositionSeq {
-        PlanTriplePositionSeqListImpl(Object[] items) {
+ static class PlanTripleValSeqListImpl extends PlanListImpl implements PlanTripleValSeq {
+        PlanTripleValSeqListImpl(Object[] items) {
             super(items);
         }
     }

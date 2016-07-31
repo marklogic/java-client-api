@@ -15,4 +15,4 @@
  */
 package com.marklogic.client.type;
 
-public interface XsNumericVal extends XsAnySimpleTypeVal, XsNumericSeqVal, XsNumericParam { }
+public interface XsNumericVal extends XsAnySimpleTypeVal, XsNumericSeqVal, XsNumericParam, PlanTripleVal { }

@@ -15,6 +15,6 @@
  */
 package com.marklogic.client.type;
 
-public interface XsUntypedAtomicVal extends XsAnyAtomicTypeVal, XsUntypedAtomicSeqVal, XsUntypedAtomicParam {
+public interface XsUntypedAtomicVal extends XsAnyAtomicTypeVal, XsUntypedAtomicSeqVal, XsUntypedAtomicParam, PlanTripleVal {
 	public String getString();
 }

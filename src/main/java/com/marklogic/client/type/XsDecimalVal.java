@@ -17,6 +17,6 @@ package com.marklogic.client.type;
 
 import java.math.BigDecimal;
 
-public interface XsDecimalVal extends XsAnyAtomicTypeVal, XsNumericVal, XsDecimalSeqVal, XsDecimalParam { 
+public interface XsDecimalVal extends XsAnyAtomicTypeVal, XsNumericVal, XsDecimalSeqVal, XsDecimalParam, PlanTripleVal { 
 	public BigDecimal getBigDecimal();
 }

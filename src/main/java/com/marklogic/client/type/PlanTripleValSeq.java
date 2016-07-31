@@ -16,5 +16,5 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
-public interface XsAnyURINamedParam extends XsAnyURIParam, ItemNamedParam {
+public interface PlanTripleValSeq {
 }

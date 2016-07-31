@@ -311,7 +311,7 @@ public class RowManagerTest {
 			p.fromTriples(
 				p.pattern(
 						p.col("subject"),
-						p.sem.iri(p.xs.string("http://example.org/rowgraph/p1")),
+						p.sem.iri("http://example.org/rowgraph/p1"),
 						p.col("object")
 						)
 				)

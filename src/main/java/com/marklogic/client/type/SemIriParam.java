@@ -16,5 +16,5 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
-public interface XsDecimalNamedParam extends XsDecimalParam, ItemNamedParam {
+public interface SemIriParam extends SemIriExpr, ItemParam {
 }
