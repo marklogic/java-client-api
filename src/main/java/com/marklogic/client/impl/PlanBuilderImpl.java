@@ -487,18 +487,24 @@ public class PlanBuilderImpl extends PlanBuilderBase {
  public class ViewPlanCallImpl  extends AccessPlanCallImpl  implements ViewPlan {
         XsStringParam view = null;
          XsStringParam schema = null;
+         XsStringParam qualifier = null;
          ViewPlanCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(null, fnPrefix, fnName, fnArgs);
          schema = (fnArgs.length <= 0) ? null : (XsStringParam) fnArgs[0];
          view = (fnArgs.length <= 1) ? null : (XsStringParam) fnArgs[1];
+         qualifier = (fnArgs.length <= 2) ? null : (XsStringParam) fnArgs[2];
          }
      @Override
         public PlanColumn col(String column) {
         return col(xs.string(column)); 
     }
     @Override
-        public PlanColumn col(XsStringParam column) {
+        public PlanColumn col(XsStringParam column) { 
+        if (this.qualifier != null) { 
+        return viewCol(this.qualifier, column); 
+        } else { 
         return schemaCol(this.schema, this.view, column);
+        }
     }
 }
  public class PlanColumnCallImpl  extends PlanExprColCallImpl  implements PlanColumn {
@@ -727,7 +733,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return col(xs.string(column)); 
     }
     @Override
-        public PlanColumn col(XsStringParam column) {
+        public PlanColumn col(XsStringParam column) { 
         return viewCol(this.qualifier, column);
     }
 }
