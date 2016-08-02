@@ -51,6 +51,7 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Se
  import com.marklogic.client.type.XsYearMonthDurationParam;
  import com.marklogic.client.type.RdfLangStringExpr;
  import com.marklogic.client.type.XsGDayExpr;
+ import com.marklogic.client.type.XsNumericExpr;
  import com.marklogic.client.type.PlanTriplePatternSeq;
  import com.marklogic.client.type.XsLongParam;
  import com.marklogic.client.type.RdfLangStringParam;
@@ -140,8 +141,8 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
 
     @Override
-        public XsAnyAtomicTypeExpr add(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
-        return new XsExprImpl.XsAnyAtomicTypeCallImpl("op", "add", new Object[]{ left, right });
+        public XsNumericExpr add(XsNumericExpr left, XsNumericExpr right) {
+        return new XsExprImpl.XsNumericCallImpl("op", "add", new Object[]{ left, right });
     }
     @Override
         public PlanAggregateColSeq aggregates(PlanAggregateCol... aggregate) {
@@ -149,11 +150,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public XsBooleanExpr and(XsBooleanExpr... list) {
-        return and(list); 
-    }
-    @Override
-        public XsBooleanExpr and(XsBooleanSeqExpr list) {
-        return new XsExprImpl.XsBooleanCallImpl("op", "and", new Object[]{ list });
+        return new XsExprImpl.XsBooleanCallImpl("op", "and", list);
     }
     @Override
         public PlanAggregateCol arrayAggregate(String name, String column) {
@@ -222,8 +219,8 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new PlanSortKeyCallImpl("op", "desc", new Object[]{ column });
     }
     @Override
-        public XsAnyAtomicTypeExpr divide(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
-        return new XsExprImpl.XsAnyAtomicTypeCallImpl("op", "divide", new Object[]{ left, right });
+        public XsNumericExpr divide(XsNumericExpr left, XsNumericExpr right) {
+        return new XsExprImpl.XsNumericCallImpl("op", "divide", new Object[]{ left, right });
     }
     @Override
         public XsBooleanExpr eq(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
@@ -279,7 +276,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public ViewPlan fromView(String schema, String view, String qualifierName, PlanColumn... sysCols) {
-        return fromView(xs.string(schema), xs.string(view), (qualifierName == null) ? null : xs.string(qualifierName), new PlanColumnSeqListImpl(sysCols)); 
+        return fromView(xs.string(schema), xs.string(view), (qualifierName == null) ? null : xs.string(qualifierName), (sysCols == null || sysCols.length == 0) ? null : new PlanColumnSeqListImpl(sysCols)); 
     }
     @Override
         public ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName, PlanColumnSeq sysCols) {
@@ -342,12 +339,12 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new PlanAggregateColCallImpl("op", "min", new Object[]{ name, column });
     }
     @Override
-        public XsAnyAtomicTypeExpr modulo(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
-        return new XsExprImpl.XsAnyAtomicTypeCallImpl("op", "modulo", new Object[]{ left, right });
+        public XsNumericExpr modulo(XsNumericExpr left, XsNumericExpr right) {
+        return new XsExprImpl.XsNumericCallImpl("op", "modulo", new Object[]{ left, right });
     }
     @Override
-        public XsAnyAtomicTypeExpr multiply(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
-        return new XsExprImpl.XsAnyAtomicTypeCallImpl("op", "multiply", new Object[]{ left, right });
+        public XsNumericExpr multiply(XsNumericExpr left, XsNumericExpr right) {
+        return new XsExprImpl.XsNumericCallImpl("op", "multiply", new Object[]{ left, right });
     }
     @Override
         public XsBooleanExpr ne(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
@@ -367,11 +364,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public XsBooleanExpr or(XsBooleanExpr... list) {
-        return or(list); 
-    }
-    @Override
-        public XsBooleanExpr or(XsBooleanSeqExpr list) {
-        return new XsExprImpl.XsBooleanCallImpl("op", "or", new Object[]{ list });
+        return new XsExprImpl.XsBooleanCallImpl("op", "or", list);
     }
     @Override
         public PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleVal... object) {
@@ -416,8 +409,8 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new PlanSortKeySeqListImpl(key);
     }
     @Override
-        public XsAnyAtomicTypeExpr subtract(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
-        return new XsExprImpl.XsAnyAtomicTypeCallImpl("op", "subtract", new Object[]{ left, right });
+        public XsNumericExpr subtract(XsNumericExpr left, XsNumericExpr right) {
+        return new XsExprImpl.XsNumericCallImpl("op", "subtract", new Object[]{ left, right });
     }
     @Override
         public PlanAggregateCol sum(String name, String column) {
@@ -467,11 +460,15 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
     public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanColumn... sysCols) {
-        return new QualifiedPlanCallImpl("op", "from-lexicons", new Object[]{literal(indexes), xs.string(qualifierName), sysCols});
+        return new QualifiedPlanCallImpl("op", "from-lexicons", new Object[]{
+            literal(indexes), (qualifierName == null) ? null : xs.string(qualifierName), sysCols
+            });
     }
     @Override
     public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanColumnSeq sysCols, CtsQueryExpr constrainingQuery) {
-        return new QualifiedPlanCallImpl("op", "from-lexicons", new Object[]{literal(indexes), xs.string(qualifierName), sysCols, constrainingQuery});
+        return new QualifiedPlanCallImpl("op", "from-lexicons", new Object[]{
+            literal(indexes), (qualifierName == null) ? null : xs.string(qualifierName), sysCols, constrainingQuery
+            });
     }
     @Override
     public QualifiedPlan fromLiterals(@SuppressWarnings("unchecked") Map<String,Object>... rows) {
@@ -549,7 +546,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public ModifyPlan groupBy(PlanExprColSeq keys, PlanAggregateCol... aggregates) {
-        return groupBy(keys, new PlanAggregateColSeqListImpl(aggregates)); 
+        return groupBy(keys, (aggregates == null || aggregates.length == 0) ? null : new PlanAggregateColSeqListImpl(aggregates)); 
     }
     @Override
         public ModifyPlan groupBy(PlanExprColSeq keys, PlanAggregateColSeq aggregates) {

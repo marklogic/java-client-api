@@ -119,7 +119,7 @@ public class SqlExprImpl implements Sql {
     }
     @Override
         public XsStringExpr ltrim(String arg1, String arg2) {
-        return ltrim(xs.string(arg1), xs.string(arg2)); 
+        return ltrim(xs.string(arg1), (arg2 == null) ? null : xs.string(arg2)); 
     }
     @Override
         public XsStringExpr ltrim(XsStringExpr arg1, XsStringExpr arg2) {
@@ -179,7 +179,7 @@ public class SqlExprImpl implements Sql {
     }
     @Override
         public XsStringExpr rtrim(String arg1, String arg2) {
-        return rtrim(xs.string(arg1), xs.string(arg2)); 
+        return rtrim(xs.string(arg1), (arg2 == null) ? null : xs.string(arg2)); 
     }
     @Override
         public XsStringExpr rtrim(XsStringExpr arg1, XsStringExpr arg2) {
@@ -223,7 +223,7 @@ public class SqlExprImpl implements Sql {
     }
     @Override
         public XsStringExpr trim(String arg1, String arg2) {
-        return trim(xs.string(arg1), xs.string(arg2)); 
+        return trim(xs.string(arg1), (arg2 == null) ? null : xs.string(arg2)); 
     }
     @Override
         public XsStringExpr trim(XsStringExpr arg1, XsStringExpr arg2) {

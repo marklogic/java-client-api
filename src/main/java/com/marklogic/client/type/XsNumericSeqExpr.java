@@ -16,5 +16,5 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
-public interface XsNumericSeqExpr extends XsAnySimpleTypeSeqExpr {
+public interface XsNumericSeqExpr extends XsAnyAtomicTypeSeqExpr {
 }

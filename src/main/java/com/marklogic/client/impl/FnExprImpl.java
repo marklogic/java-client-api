@@ -82,7 +82,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public NodeElementExpr analyzeString(String in, String regex) {
-        return analyzeString((in == null) ? null : xs.string(in), xs.string(regex)); 
+        return analyzeString(xs.string(in), xs.string(regex)); 
     }
     @Override
         public NodeElementExpr analyzeString(XsStringExpr in, XsStringExpr regex) {
@@ -90,7 +90,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public NodeElementExpr analyzeString(String in, String regex, String flags) {
-        return analyzeString((in == null) ? null : xs.string(in), xs.string(regex), xs.string(flags)); 
+        return analyzeString(xs.string(in), xs.string(regex), (flags == null) ? null : xs.string(flags)); 
     }
     @Override
         public NodeElementExpr analyzeString(XsStringExpr in, XsStringExpr regex, XsStringExpr flags) {
@@ -114,7 +114,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsBooleanExpr codepointEqual(String comparand1, String comparand2) {
-        return codepointEqual((comparand1 == null) ? null : xs.string(comparand1), (comparand2 == null) ? null : xs.string(comparand2)); 
+        return codepointEqual(xs.string(comparand1), xs.string(comparand2)); 
     }
     @Override
         public XsBooleanExpr codepointEqual(XsStringExpr comparand1, XsStringExpr comparand2) {
@@ -126,7 +126,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsIntegerExpr compare(String comparand1, String comparand2) {
-        return compare((comparand1 == null) ? null : xs.string(comparand1), (comparand2 == null) ? null : xs.string(comparand2)); 
+        return compare(xs.string(comparand1), xs.string(comparand2)); 
     }
     @Override
         public XsIntegerExpr compare(XsStringExpr comparand1, XsStringExpr comparand2) {
@@ -134,7 +134,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsIntegerExpr compare(String comparand1, String comparand2, String collation) {
-        return compare((comparand1 == null) ? null : xs.string(comparand1), (comparand2 == null) ? null : xs.string(comparand2), xs.string(collation)); 
+        return compare(xs.string(comparand1), xs.string(comparand2), (collation == null) ? null : xs.string(collation)); 
     }
     @Override
         public XsIntegerExpr compare(XsStringExpr comparand1, XsStringExpr comparand2, XsStringExpr collation) {
@@ -170,7 +170,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsBooleanExpr contains(String parameter1, String parameter2) {
-        return contains((parameter1 == null) ? null : xs.string(parameter1), (parameter2 == null) ? null : xs.string(parameter2)); 
+        return contains(xs.string(parameter1), xs.string(parameter2)); 
     }
     @Override
         public XsBooleanExpr contains(XsStringExpr parameter1, XsStringExpr parameter2) {
@@ -178,7 +178,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsBooleanExpr contains(String parameter1, String parameter2, String collation) {
-        return contains((parameter1 == null) ? null : xs.string(parameter1), (parameter2 == null) ? null : xs.string(parameter2), xs.string(collation)); 
+        return contains(xs.string(parameter1), xs.string(parameter2), (collation == null) ? null : xs.string(collation)); 
     }
     @Override
         public XsBooleanExpr contains(XsStringExpr parameter1, XsStringExpr parameter2, XsStringExpr collation) {
@@ -202,7 +202,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsBooleanExpr deepEqual(ItemSeqExpr parameter1, ItemSeqExpr parameter2, String collation) {
-        return deepEqual(parameter1, parameter2, xs.string(collation)); 
+        return deepEqual(parameter1, parameter2, (collation == null) ? null : xs.string(collation)); 
     }
     @Override
         public XsBooleanExpr deepEqual(ItemSeqExpr parameter1, ItemSeqExpr parameter2, XsStringExpr collation) {
@@ -218,7 +218,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsAnyAtomicTypeSeqExpr distinctValues(XsAnyAtomicTypeSeqExpr arg, String collation) {
-        return distinctValues(arg, xs.string(collation)); 
+        return distinctValues(arg, (collation == null) ? null : xs.string(collation)); 
     }
     @Override
         public XsAnyAtomicTypeSeqExpr distinctValues(XsAnyAtomicTypeSeqExpr arg, XsStringExpr collation) {
@@ -234,7 +234,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr encodeForUri(String uriPart) {
-        return encodeForUri((uriPart == null) ? null : xs.string(uriPart)); 
+        return encodeForUri(xs.string(uriPart)); 
     }
     @Override
         public XsStringExpr encodeForUri(XsStringExpr uriPart) {
@@ -242,7 +242,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsBooleanExpr endsWith(String parameter1, String parameter2) {
-        return endsWith((parameter1 == null) ? null : xs.string(parameter1), (parameter2 == null) ? null : xs.string(parameter2)); 
+        return endsWith(xs.string(parameter1), xs.string(parameter2)); 
     }
     @Override
         public XsBooleanExpr endsWith(XsStringExpr parameter1, XsStringExpr parameter2) {
@@ -250,7 +250,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsBooleanExpr endsWith(String parameter1, String parameter2, String collation) {
-        return endsWith((parameter1 == null) ? null : xs.string(parameter1), (parameter2 == null) ? null : xs.string(parameter2), xs.string(collation)); 
+        return endsWith(xs.string(parameter1), xs.string(parameter2), (collation == null) ? null : xs.string(collation)); 
     }
     @Override
         public XsBooleanExpr endsWith(XsStringExpr parameter1, XsStringExpr parameter2, XsStringExpr collation) {
@@ -258,7 +258,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr escapeHtmlUri(String uriPart) {
-        return escapeHtmlUri((uriPart == null) ? null : xs.string(uriPart)); 
+        return escapeHtmlUri(xs.string(uriPart)); 
     }
     @Override
         public XsStringExpr escapeHtmlUri(XsStringExpr uriPart) {
@@ -302,7 +302,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr formatNumber(XsNumericSeqExpr value, String picture, String decimalFormatName) {
-        return formatNumber(value, xs.string(picture), xs.string(decimalFormatName)); 
+        return formatNumber(value, xs.string(picture), (decimalFormatName == null) ? null : xs.string(decimalFormatName)); 
     }
     @Override
         public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture, XsStringExpr decimalFormatName) {
@@ -346,7 +346,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsIntegerSeqExpr indexOf(XsAnyAtomicTypeSeqExpr seqParam, XsAnyAtomicTypeExpr srchParam, String collationLiteral) {
-        return indexOf(seqParam, srchParam, xs.string(collationLiteral)); 
+        return indexOf(seqParam, srchParam, (collationLiteral == null) ? null : xs.string(collationLiteral)); 
     }
     @Override
         public XsIntegerSeqExpr indexOf(XsAnyAtomicTypeSeqExpr seqParam, XsAnyAtomicTypeExpr srchParam, XsStringExpr collationLiteral) {
@@ -362,7 +362,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr iriToUri(String uriPart) {
-        return iriToUri((uriPart == null) ? null : xs.string(uriPart)); 
+        return iriToUri(xs.string(uriPart)); 
     }
     @Override
         public XsStringExpr iriToUri(XsStringExpr uriPart) {
@@ -370,7 +370,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsBooleanExpr lang(String testlang, NodeExpr node) {
-        return lang((testlang == null) ? null : xs.string(testlang), node); 
+        return lang(xs.string(testlang), node); 
     }
     @Override
         public XsBooleanExpr lang(XsStringExpr testlang, NodeExpr node) {
@@ -386,7 +386,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr lowerCase(String string) {
-        return lowerCase((string == null) ? null : xs.string(string)); 
+        return lowerCase(xs.string(string)); 
     }
     @Override
         public XsStringExpr lowerCase(XsStringExpr string) {
@@ -394,7 +394,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsBooleanExpr matches(String input, String pattern) {
-        return matches((input == null) ? null : xs.string(input), xs.string(pattern)); 
+        return matches(xs.string(input), xs.string(pattern)); 
     }
     @Override
         public XsBooleanExpr matches(XsStringExpr input, XsStringExpr pattern) {
@@ -402,7 +402,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsBooleanExpr matches(String input, String pattern, String flags) {
-        return matches((input == null) ? null : xs.string(input), xs.string(pattern), xs.string(flags)); 
+        return matches(xs.string(input), xs.string(pattern), (flags == null) ? null : xs.string(flags)); 
     }
     @Override
         public XsBooleanExpr matches(XsStringExpr input, XsStringExpr pattern, XsStringExpr flags) {
@@ -414,7 +414,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsAnyAtomicTypeExpr max(XsAnyAtomicTypeSeqExpr arg, String collation) {
-        return max(arg, xs.string(collation)); 
+        return max(arg, (collation == null) ? null : xs.string(collation)); 
     }
     @Override
         public XsAnyAtomicTypeExpr max(XsAnyAtomicTypeSeqExpr arg, XsStringExpr collation) {
@@ -426,7 +426,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsAnyAtomicTypeExpr min(XsAnyAtomicTypeSeqExpr arg, String collation) {
-        return min(arg, xs.string(collation)); 
+        return min(arg, (collation == null) ? null : xs.string(collation)); 
     }
     @Override
         public XsAnyAtomicTypeExpr min(XsAnyAtomicTypeSeqExpr arg, XsStringExpr collation) {
@@ -466,7 +466,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsAnyURIExpr namespaceUriForPrefix(String prefix, NodeElementExpr element) {
-        return namespaceUriForPrefix((prefix == null) ? null : xs.string(prefix), element); 
+        return namespaceUriForPrefix(xs.string(prefix), element); 
     }
     @Override
         public XsAnyURIExpr namespaceUriForPrefix(XsStringExpr prefix, NodeElementExpr element) {
@@ -494,7 +494,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr normalizeSpace(String input) {
-        return normalizeSpace((input == null) ? null : xs.string(input)); 
+        return normalizeSpace(xs.string(input)); 
     }
     @Override
         public XsStringExpr normalizeSpace(XsStringExpr input) {
@@ -502,7 +502,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr normalizeUnicode(String arg) {
-        return normalizeUnicode((arg == null) ? null : xs.string(arg)); 
+        return normalizeUnicode(xs.string(arg)); 
     }
     @Override
         public XsStringExpr normalizeUnicode(XsStringExpr arg) {
@@ -510,7 +510,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr normalizeUnicode(String arg, String normalizationForm) {
-        return normalizeUnicode((arg == null) ? null : xs.string(arg), xs.string(normalizationForm)); 
+        return normalizeUnicode(xs.string(arg), (normalizationForm == null) ? null : xs.string(normalizationForm)); 
     }
     @Override
         public XsStringExpr normalizeUnicode(XsStringExpr arg, XsStringExpr normalizationForm) {
@@ -530,7 +530,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsQNameExpr QName(String paramURI, String paramQName) {
-        return QName((paramURI == null) ? null : xs.string(paramURI), xs.string(paramQName)); 
+        return QName(xs.string(paramURI), xs.string(paramQName)); 
     }
     @Override
         public XsQNameExpr QName(XsStringExpr paramURI, XsStringExpr paramQName) {
@@ -542,7 +542,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr replace(String input, String pattern, String replacement) {
-        return replace((input == null) ? null : xs.string(input), xs.string(pattern), xs.string(replacement)); 
+        return replace(xs.string(input), xs.string(pattern), xs.string(replacement)); 
     }
     @Override
         public XsStringExpr replace(XsStringExpr input, XsStringExpr pattern, XsStringExpr replacement) {
@@ -550,7 +550,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr replace(String input, String pattern, String replacement, String flags) {
-        return replace((input == null) ? null : xs.string(input), xs.string(pattern), xs.string(replacement), xs.string(flags)); 
+        return replace(xs.string(input), xs.string(pattern), xs.string(replacement), (flags == null) ? null : xs.string(flags)); 
     }
     @Override
         public XsStringExpr replace(XsStringExpr input, XsStringExpr pattern, XsStringExpr replacement, XsStringExpr flags) {
@@ -558,7 +558,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsQNameExpr resolveQName(String qname, NodeElementExpr element) {
-        return resolveQName((qname == null) ? null : xs.string(qname), element); 
+        return resolveQName(xs.string(qname), element); 
     }
     @Override
         public XsQNameExpr resolveQName(XsStringExpr qname, NodeElementExpr element) {
@@ -566,7 +566,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsAnyURIExpr resolveUri(String relative, String base) {
-        return resolveUri((relative == null) ? null : xs.string(relative), xs.string(base)); 
+        return resolveUri(xs.string(relative), xs.string(base)); 
     }
     @Override
         public XsAnyURIExpr resolveUri(XsStringExpr relative, XsStringExpr base) {
@@ -606,7 +606,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsBooleanExpr startsWith(String parameter1, String parameter2) {
-        return startsWith((parameter1 == null) ? null : xs.string(parameter1), (parameter2 == null) ? null : xs.string(parameter2)); 
+        return startsWith(xs.string(parameter1), xs.string(parameter2)); 
     }
     @Override
         public XsBooleanExpr startsWith(XsStringExpr parameter1, XsStringExpr parameter2) {
@@ -614,7 +614,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsBooleanExpr startsWith(String parameter1, String parameter2, String collation) {
-        return startsWith((parameter1 == null) ? null : xs.string(parameter1), (parameter2 == null) ? null : xs.string(parameter2), xs.string(collation)); 
+        return startsWith(xs.string(parameter1), xs.string(parameter2), (collation == null) ? null : xs.string(collation)); 
     }
     @Override
         public XsBooleanExpr startsWith(XsStringExpr parameter1, XsStringExpr parameter2, XsStringExpr collation) {
@@ -626,7 +626,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr stringJoin(String... parameter1) {
-        return stringJoin((parameter1 == null) ? null : xs.strings(parameter1)); 
+        return stringJoin(xs.strings(parameter1)); 
     }
     @Override
         public XsStringExpr stringJoin(XsStringSeqExpr parameter1) {
@@ -638,7 +638,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsIntegerExpr stringLength(String sourceString) {
-        return stringLength((sourceString == null) ? null : xs.string(sourceString)); 
+        return stringLength(xs.string(sourceString)); 
     }
     @Override
         public XsIntegerExpr stringLength(XsStringExpr sourceString) {
@@ -646,7 +646,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsIntegerSeqExpr stringToCodepoints(String arg) {
-        return stringToCodepoints((arg == null) ? null : xs.string(arg)); 
+        return stringToCodepoints(xs.string(arg)); 
     }
     @Override
         public XsIntegerSeqExpr stringToCodepoints(XsStringExpr arg) {
@@ -662,7 +662,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr substring(String sourceString, XsNumericExpr startingLoc) {
-        return substring((sourceString == null) ? null : xs.string(sourceString), startingLoc); 
+        return substring(xs.string(sourceString), startingLoc); 
     }
     @Override
         public XsStringExpr substring(XsStringExpr sourceString, XsNumericExpr startingLoc) {
@@ -670,7 +670,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr substring(String sourceString, XsNumericExpr startingLoc, XsNumericExpr length) {
-        return substring((sourceString == null) ? null : xs.string(sourceString), startingLoc, length); 
+        return substring(xs.string(sourceString), startingLoc, length); 
     }
     @Override
         public XsStringExpr substring(XsStringExpr sourceString, XsNumericExpr startingLoc, XsNumericExpr length) {
@@ -678,7 +678,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr substringAfter(String input, String after) {
-        return substringAfter((input == null) ? null : xs.string(input), (after == null) ? null : xs.string(after)); 
+        return substringAfter(xs.string(input), xs.string(after)); 
     }
     @Override
         public XsStringExpr substringAfter(XsStringExpr input, XsStringExpr after) {
@@ -686,7 +686,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr substringAfter(String input, String after, String collation) {
-        return substringAfter((input == null) ? null : xs.string(input), (after == null) ? null : xs.string(after), xs.string(collation)); 
+        return substringAfter(xs.string(input), xs.string(after), (collation == null) ? null : xs.string(collation)); 
     }
     @Override
         public XsStringExpr substringAfter(XsStringExpr input, XsStringExpr after, XsStringExpr collation) {
@@ -694,7 +694,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr substringBefore(String input, String before) {
-        return substringBefore((input == null) ? null : xs.string(input), (before == null) ? null : xs.string(before)); 
+        return substringBefore(xs.string(input), xs.string(before)); 
     }
     @Override
         public XsStringExpr substringBefore(XsStringExpr input, XsStringExpr before) {
@@ -702,7 +702,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr substringBefore(String input, String before, String collation) {
-        return substringBefore((input == null) ? null : xs.string(input), (before == null) ? null : xs.string(before), xs.string(collation)); 
+        return substringBefore(xs.string(input), xs.string(before), (collation == null) ? null : xs.string(collation)); 
     }
     @Override
         public XsStringExpr substringBefore(XsStringExpr input, XsStringExpr before, XsStringExpr collation) {
@@ -734,7 +734,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringSeqExpr tokenize(String input, String pattern) {
-        return tokenize((input == null) ? null : xs.string(input), xs.string(pattern)); 
+        return tokenize(xs.string(input), xs.string(pattern)); 
     }
     @Override
         public XsStringSeqExpr tokenize(XsStringExpr input, XsStringExpr pattern) {
@@ -742,7 +742,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringSeqExpr tokenize(String input, String pattern, String flags) {
-        return tokenize((input == null) ? null : xs.string(input), xs.string(pattern), xs.string(flags)); 
+        return tokenize(xs.string(input), xs.string(pattern), (flags == null) ? null : xs.string(flags)); 
     }
     @Override
         public XsStringSeqExpr tokenize(XsStringExpr input, XsStringExpr pattern, XsStringExpr flags) {
@@ -750,7 +750,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr translate(String src, String mapString, String transString) {
-        return translate((src == null) ? null : xs.string(src), xs.string(mapString), xs.string(transString)); 
+        return translate(xs.string(src), xs.string(mapString), xs.string(transString)); 
     }
     @Override
         public XsStringExpr translate(XsStringExpr src, XsStringExpr mapString, XsStringExpr transString) {
@@ -766,7 +766,7 @@ public class FnExprImpl implements Fn {
     }
     @Override
         public XsStringExpr upperCase(String string) {
-        return upperCase((string == null) ? null : xs.string(string)); 
+        return upperCase(xs.string(string)); 
     }
     @Override
         public XsStringExpr upperCase(XsStringExpr string) {

@@ -40,6 +40,7 @@ import com.marklogic.client.expression.Xs; import com.marklogic.client.type.SemI
  import com.marklogic.client.type.XsYearMonthDurationParam;
  import com.marklogic.client.type.RdfLangStringExpr;
  import com.marklogic.client.type.XsGDayExpr;
+ import com.marklogic.client.type.XsNumericExpr;
  import com.marklogic.client.type.PlanTriplePatternSeq;
  import com.marklogic.client.type.XsLongParam;
  import com.marklogic.client.type.RdfLangStringParam;
@@ -143,10 +144,9 @@ public abstract class PlanBuilder {
      public final Sql sql;
      public final Xdmp xdmp;
      public final Xs xs;
-     public abstract XsAnyAtomicTypeExpr add(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
+     public abstract XsNumericExpr add(XsNumericExpr left, XsNumericExpr right);
     public abstract PlanAggregateColSeq aggregates(PlanAggregateCol... aggregate);
     public abstract XsBooleanExpr and(XsBooleanExpr... list);
-    public abstract XsBooleanExpr and(XsBooleanSeqExpr list);
     public abstract PlanAggregateCol arrayAggregate(String name, String column);
     public abstract PlanAggregateCol arrayAggregate(PlanExprCol name, PlanExprCol column);
     public abstract PlanExprCol as(String column, ItemExpr expression);
@@ -163,7 +163,7 @@ public abstract class PlanBuilder {
     public abstract PlanAggregateCol count(PlanExprCol name, PlanExprCol column);
     public abstract PlanSortKey desc(String column);
     public abstract PlanSortKey desc(PlanExprCol column);
-    public abstract XsAnyAtomicTypeExpr divide(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
+    public abstract XsNumericExpr divide(XsNumericExpr left, XsNumericExpr right);
     public abstract XsBooleanExpr eq(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
     public abstract QualifiedPlan fromTriples(PlanTriplePattern... patterns);
     public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns);
@@ -193,14 +193,13 @@ public abstract class PlanBuilder {
     public abstract PlanAggregateCol max(PlanExprCol name, PlanExprCol column);
     public abstract PlanAggregateCol min(String name, String column);
     public abstract PlanAggregateCol min(PlanExprCol name, PlanExprCol column);
-    public abstract XsAnyAtomicTypeExpr modulo(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
-    public abstract XsAnyAtomicTypeExpr multiply(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
+    public abstract XsNumericExpr modulo(XsNumericExpr left, XsNumericExpr right);
+    public abstract XsNumericExpr multiply(XsNumericExpr left, XsNumericExpr right);
     public abstract XsBooleanExpr ne(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
     public abstract XsBooleanExpr not(XsBooleanExpr condition);
     public abstract PlanJoinKey on(String left, String right);
     public abstract PlanJoinKey on(PlanExprCol left, PlanExprCol right);
     public abstract XsBooleanExpr or(XsBooleanExpr... list);
-    public abstract XsBooleanExpr or(XsBooleanSeqExpr list);
     public abstract PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleVal... object);
     public abstract PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleValSeq object);
     public abstract PlanAggregateCol sample(String name, String column);
@@ -211,7 +210,7 @@ public abstract class PlanBuilder {
     public abstract PlanAggregateCol sequenceAggregate(PlanExprCol name, PlanExprCol column);
     public abstract PlanSortKeySeq sortKeys(String... key);
     public abstract PlanSortKeySeq sortKeys(PlanSortKey... key);
-    public abstract XsAnyAtomicTypeExpr subtract(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
+    public abstract XsNumericExpr subtract(XsNumericExpr left, XsNumericExpr right);
     public abstract PlanAggregateCol sum(String name, String column);
     public abstract PlanAggregateCol sum(PlanExprCol name, PlanExprCol column);
     public abstract PlanAggregateCol uda(String name, String column, String module, String function);

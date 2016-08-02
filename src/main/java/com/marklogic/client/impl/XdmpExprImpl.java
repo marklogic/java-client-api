@@ -237,7 +237,7 @@ public class XdmpExprImpl implements Xdmp {
     }
     @Override
         public XsStringExpr hmacMd5(ItemExpr secretkey, ItemExpr message, String encoding) {
-        return hmacMd5(secretkey, message, xs.string(encoding)); 
+        return hmacMd5(secretkey, message, (encoding == null) ? null : xs.string(encoding)); 
     }
     @Override
         public XsStringExpr hmacMd5(ItemExpr secretkey, ItemExpr message, XsStringExpr encoding) {
@@ -249,7 +249,7 @@ public class XdmpExprImpl implements Xdmp {
     }
     @Override
         public XsStringExpr hmacSha1(ItemExpr secretkey, ItemExpr message, String encoding) {
-        return hmacSha1(secretkey, message, xs.string(encoding)); 
+        return hmacSha1(secretkey, message, (encoding == null) ? null : xs.string(encoding)); 
     }
     @Override
         public XsStringExpr hmacSha1(ItemExpr secretkey, ItemExpr message, XsStringExpr encoding) {
@@ -261,7 +261,7 @@ public class XdmpExprImpl implements Xdmp {
     }
     @Override
         public XsStringExpr hmacSha256(ItemExpr secretkey, ItemExpr message, String encoding) {
-        return hmacSha256(secretkey, message, xs.string(encoding)); 
+        return hmacSha256(secretkey, message, (encoding == null) ? null : xs.string(encoding)); 
     }
     @Override
         public XsStringExpr hmacSha256(ItemExpr secretkey, ItemExpr message, XsStringExpr encoding) {
@@ -273,7 +273,7 @@ public class XdmpExprImpl implements Xdmp {
     }
     @Override
         public XsStringExpr hmacSha512(ItemExpr secretkey, ItemExpr message, String encoding) {
-        return hmacSha512(secretkey, message, xs.string(encoding)); 
+        return hmacSha512(secretkey, message, (encoding == null) ? null : xs.string(encoding)); 
     }
     @Override
         public XsStringExpr hmacSha512(ItemExpr secretkey, ItemExpr message, XsStringExpr encoding) {
@@ -281,7 +281,7 @@ public class XdmpExprImpl implements Xdmp {
     }
     @Override
         public XsStringExpr initcap(String string) {
-        return initcap((string == null) ? null : xs.string(string)); 
+        return initcap(xs.string(string)); 
     }
     @Override
         public XsStringExpr initcap(XsStringExpr string) {
@@ -313,7 +313,7 @@ public class XdmpExprImpl implements Xdmp {
     }
     @Override
         public XsStringExpr md5(ItemExpr data, String encoding) {
-        return md5(data, xs.string(encoding)); 
+        return md5(data, (encoding == null) ? null : xs.string(encoding)); 
     }
     @Override
         public XsStringExpr md5(ItemExpr data, XsStringExpr encoding) {
@@ -353,7 +353,7 @@ public class XdmpExprImpl implements Xdmp {
     }
     @Override
         public ItemSeqExpr nodePermissions(NodeExpr node, String outputKind) {
-        return nodePermissions(node, xs.string(outputKind)); 
+        return nodePermissions(node, (outputKind == null) ? null : xs.string(outputKind)); 
     }
     @Override
         public ItemSeqExpr nodePermissions(NodeExpr node, XsStringExpr outputKind) {
@@ -457,7 +457,7 @@ public class XdmpExprImpl implements Xdmp {
     }
     @Override
         public XsIntegerExpr position(String test, String target) {
-        return position((test == null) ? null : xs.string(test), (target == null) ? null : xs.string(target)); 
+        return position(xs.string(test), xs.string(target)); 
     }
     @Override
         public XsIntegerExpr position(XsStringExpr test, XsStringExpr target) {
@@ -465,7 +465,7 @@ public class XdmpExprImpl implements Xdmp {
     }
     @Override
         public XsIntegerExpr position(String test, String target, String collation) {
-        return position((test == null) ? null : xs.string(test), (target == null) ? null : xs.string(target), (collation == null) ? null : xs.string(collation)); 
+        return position(xs.string(test), xs.string(target), (collation == null) ? null : xs.string(collation)); 
     }
     @Override
         public XsIntegerExpr position(XsStringExpr test, XsStringExpr target, XsStringExpr collation) {
@@ -493,7 +493,7 @@ public class XdmpExprImpl implements Xdmp {
     }
     @Override
         public XsAnyURIExpr resolveUri(String relative, String base) {
-        return resolveUri((relative == null) ? null : xs.string(relative), xs.string(base)); 
+        return resolveUri(xs.string(relative), xs.string(base)); 
     }
     @Override
         public XsAnyURIExpr resolveUri(XsStringExpr relative, XsStringExpr base) {
@@ -513,7 +513,7 @@ public class XdmpExprImpl implements Xdmp {
     }
     @Override
         public XsStringExpr sha1(ItemExpr data, String encoding) {
-        return sha1(data, xs.string(encoding)); 
+        return sha1(data, (encoding == null) ? null : xs.string(encoding)); 
     }
     @Override
         public XsStringExpr sha1(ItemExpr data, XsStringExpr encoding) {
@@ -525,7 +525,7 @@ public class XdmpExprImpl implements Xdmp {
     }
     @Override
         public XsStringExpr sha256(ItemExpr data, String encoding) {
-        return sha256(data, xs.string(encoding)); 
+        return sha256(data, (encoding == null) ? null : xs.string(encoding)); 
     }
     @Override
         public XsStringExpr sha256(ItemExpr data, XsStringExpr encoding) {
@@ -537,7 +537,7 @@ public class XdmpExprImpl implements Xdmp {
     }
     @Override
         public XsStringExpr sha384(ItemExpr data, String encoding) {
-        return sha384(data, xs.string(encoding)); 
+        return sha384(data, (encoding == null) ? null : xs.string(encoding)); 
     }
     @Override
         public XsStringExpr sha384(ItemExpr data, XsStringExpr encoding) {
@@ -549,7 +549,7 @@ public class XdmpExprImpl implements Xdmp {
     }
     @Override
         public XsStringExpr sha512(ItemExpr data, String encoding) {
-        return sha512(data, xs.string(encoding)); 
+        return sha512(data, (encoding == null) ? null : xs.string(encoding)); 
     }
     @Override
         public XsStringExpr sha512(ItemExpr data, XsStringExpr encoding) {
